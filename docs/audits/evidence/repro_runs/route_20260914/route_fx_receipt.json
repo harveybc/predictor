@@ -1,0 +1,227 @@
+{
+ "schema": "consumer_adoption_check.v2",
+ "gov_url": "http://127.0.0.1:49577",
+ "label": "e2",
+ "lake": "synthetic_fixtures",
+ "classification": "NON_GOVERNING",
+ "route": {
+  "lake": "synthetic_fixtures",
+  "kind": "lake",
+  "engine": "files_inventory",
+  "transport": "http",
+  "in_catalogue": true
+ },
+ "fixtures": "1ca00f81a282b96236b5566142919bba3f842562a1c9763669a5f82b5b586474",
+ "cube_before": {},
+ "consumers": {
+  "feature-extractor": {
+   "cases": {
+    "success": {
+     "case": "success",
+     "exit_code": 0,
+     "wall_seconds": 11.691,
+     "status": "COMPLETED",
+     "reason": null,
+     "campaign_sha256": "8c210f50f569804d1173796b7824c79a2fa2071f1b1461c1474c5c3017f0e928",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_train.csv",
+       "role": "x_train_file",
+       "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_train.csv",
+       "role": "y_train_file",
+       "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_validation.csv",
+       "role": "x_validation_file",
+       "sha256": "1135e3c0f00f49543c1d786640736a4c80e20cbb9e915544aef1e217fb45399a",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_validation.csv",
+       "role": "y_validation_file",
+       "sha256": "1135e3c0f00f49543c1d786640736a4c80e20cbb9e915544aef1e217fb45399a",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_test.csv",
+       "role": "x_test_file",
+       "sha256": "bc88826b945e9854d4f20c287ac646a6e7fff741ef721f2e6509715a3c38dbe5",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_test.csv",
+       "role": "y_test_file",
+       "sha256": "bc88826b945e9854d4f20c287ac646a6e7fff741ef721f2e6509715a3c38dbe5",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "COMPLETED",
+       null,
+       "{\"wall_seconds\":11.595205702993553}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "8c210f50f569804d1173796b7824c79a2fa2071f1b1461c1474c5c3017f0e928",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json",
+      "config_out.json",
+      "debug_out.json",
+      "governed_config.json",
+      "phase_4_2_cnn_small_decoder_model.keras",
+      "phase_4_2_cnn_small_encoder_model.keras",
+      "phase_4_2_cnn_small_loss_plot_ld32.png",
+      "run.log"
+     ]
+    },
+    "stale": {
+     "case": "stale",
+     "exit_code": 1,
+     "wall_seconds": 0.093,
+     "status": "REFUSED",
+     "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/route_fx2/feature-extractor/run/config_out.json, ~/scratch/route_fx2/feature-extractor/run/debug_out.json, ~/scratch/route_fx2/feature-extractor/run/governed_config.json, ~/scratch/route_fx2/feature-extractor/run/phase_4_2_cnn_small_decoder_model.keras, ~/scratch/route_fx2/feature-extractor/run/phase_4_2_cnn_small_encoder_model.keras, ~/scratch/route_fx2/feature-extractor/run/run.log",
+     "campaign_sha256": "38463c7a9392affb79befa321677c05383028db6cd82a55934f823dad875f459",
+     "classification": "NON_GOVERNING",
+     "inputs": [],
+     "cube_rows": [
+      [
+       "REFUSED",
+       "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/route_fx2/feature-extractor/run/config_out.json, ~/scratch/route_fx2/feature-extractor/run/debug_out.json, ~/scratch/route_fx2/feature-extractor/run/governed_config.json, ~/scratch/route_fx2/feature-extractor/run/phase_4_2_cnn_small_decoder_model.keras, ~/scratch/route_fx2/feature-extractor/run/phase_4_2_cnn_small_encoder_model.keras, ~/scratch/route_fx2/feature-extractor/run/run.log",
+       "{\"wall_seconds\":0.00037149101262912154}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "38463c7a9392affb79befa321677c05383028db6cd82a55934f823dad875f459",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json",
+      "config_out.json",
+      "debug_out.json",
+      "governed_config.json",
+      "phase_4_2_cnn_small_decoder_model.keras",
+      "phase_4_2_cnn_small_encoder_model.keras",
+      "phase_4_2_cnn_small_loss_plot_ld32.png",
+      "run.log"
+     ]
+    },
+    "failure": {
+     "case": "failure",
+     "exit_code": 1,
+     "wall_seconds": 2.892,
+     "status": "FAILED",
+     "reason": "COMMAND_EXIT_1",
+     "campaign_sha256": "b392d7f3c8c03a8680e160b082f21be1fe153914cee26eef76a9d0c8a99d9497",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_train.csv",
+       "role": "x_train_file",
+       "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_train.csv",
+       "role": "y_train_file",
+       "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_validation.csv",
+       "role": "x_validation_file",
+       "sha256": "1135e3c0f00f49543c1d786640736a4c80e20cbb9e915544aef1e217fb45399a",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_validation.csv",
+       "role": "y_validation_file",
+       "sha256": "1135e3c0f00f49543c1d786640736a4c80e20cbb9e915544aef1e217fb45399a",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_test.csv",
+       "role": "x_test_file",
+       "sha256": "bc88826b945e9854d4f20c287ac646a6e7fff741ef721f2e6509715a3c38dbe5",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_test.csv",
+       "role": "y_test_file",
+       "sha256": "bc88826b945e9854d4f20c287ac646a6e7fff741ef721f2e6509715a3c38dbe5",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "FAILED",
+       "COMMAND_EXIT_1",
+       "{\"wall_seconds\":2.7988113140163478}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "b392d7f3c8c03a8680e160b082f21be1fe153914cee26eef76a9d0c8a99d9497",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json",
+      "governed_config.json",
+      "run.log"
+     ]
+    },
+    "retry": {
+     "flush": {
+      "exit_code": 0,
+      "failures": {},
+      "pending": 0,
+      "sent": 0
+     },
+     "cube_before": {},
+     "cube_after": {},
+     "sends_nothing": true
+    }
+   },
+   "verdict": {
+    "governed_delivery": true,
+    "success": true,
+    "stale_refused": true,
+    "failure_recorded": true,
+    "retry_sends_nothing": true
+   },
+   "scope": "FULL",
+   "adopted": true,
+   "transport_proven": null,
+   "missing": null
+  }
+ },
+ "cube_after": {},
+ "cube_delta": {},
+ "ok": true
+}

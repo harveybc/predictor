@@ -1,0 +1,68 @@
+{
+ "schema": "n5_real_retry.v1",
+ "stack": {
+  "gov_url": "http://127.0.0.1:53949",
+  "lake": "synthetic_fixtures"
+ },
+ "with_destination_down": {
+  "exit_code": 1,
+  "status": "COMPLETED",
+  "terminal_pending": true,
+  "campaign_sha256": "6c88ce6430f2ea091a52493d18f01909a5ef24ac9620951d71cf625040f79003"
+ },
+ "outbox_after_outage": {
+  "adjudicated": [],
+  "awaiting_adjudication": 0,
+  "pending": [
+   {
+    "attempts": 1,
+    "campaign_sha256": "6c88ce6430f2ea091a52493d18f01909a5ef24ac9620951d71cf625040f79003",
+    "class": "TRANSIENT",
+    "file": "cebe5243b5ad6baf7b1010b3696c70959817d999c4ba2d00cf4a4402e84dc26a.json",
+    "generation": 1,
+    "last_error": "GovernedExecError: terminal refused: http 503 terminal lake unreachable: lake unreachable: [Errno 111] Connection refused",
+    "status": "COMPLETED",
+    "unit_id": "n5-preprocessor-pending-a2"
+   }
+  ],
+  "recoverable": 1,
+  "schema": "terminal_outbox_status.v1",
+  "sent": 0,
+  "unresolved": 0
+ },
+ "recovery_flush": {
+  "failures": {},
+  "pending": 0,
+  "sent": 1
+ },
+ "cube_rows_after_recovery": [
+  [
+   "1378ab1b767e2dfabde672a05c2b534f39e04f8ac222c8c695dd6b96d6dbf96e",
+   "COMPLETED"
+  ]
+ ],
+ "second_flush": {
+  "failures": {},
+  "pending": 0,
+  "sent": 0
+ },
+ "cube_rows_after_second_flush": [
+  [
+   "1378ab1b767e2dfabde672a05c2b534f39e04f8ac222c8c695dd6b96d6dbf96e",
+   "COMPLETED"
+  ]
+ ],
+ "second_run": {
+  "exit_code": 0,
+  "status": "COMPLETED",
+  "inputs": [
+   {
+    "role": "input_file",
+    "resource": "synthetic_typical_price_4h_train.csv",
+    "cached": true,
+    "verification_state": "VERIFIED_CACHE"
+   }
+  ]
+ },
+ "ok": true
+}

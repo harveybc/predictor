@@ -160,7 +160,15 @@ def main(argv=None) -> int:
                  "key_file": str(key_file), "fixtures": str(fixtures),
                  "cube": str(work / "cube.sqlite"),
                  "lake_pid": processes[0].pid, "warehouse_pid": processes[1].pid,
-                 "gov_pid": processes[2].pid}
+                 "gov_pid": processes[2].pid,
+                 # disposable secrets of a disposable stack: recorded so a test can stop and
+                 # restart one of these services exactly as it was started
+                 "lake_token": token,
+                 "warehouse_command": [str(HOSTS_PYTHON), "-m", "data_warehouse_service.main",
+                                       "--load_config", str(work / "warehouse.json")],
+                 "lake_command": [str(HOSTS_PYTHON), "-m", "data_lake_service.main",
+                                  "--load_config", str(work / "lake.json")],
+                 "work": str(work)}
         (work / "STACK.json").write_text(json.dumps(state, indent=1) + "\n", encoding="utf-8")
         print(json.dumps(state, indent=1))
         if args.hold:

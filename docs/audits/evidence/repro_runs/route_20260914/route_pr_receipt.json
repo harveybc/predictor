@@ -1,0 +1,230 @@
+{
+ "schema": "consumer_adoption_check.v2",
+ "gov_url": "http://127.0.0.1:49577",
+ "label": "e3",
+ "lake": "synthetic_fixtures",
+ "classification": "NON_GOVERNING",
+ "route": {
+  "lake": "synthetic_fixtures",
+  "kind": "lake",
+  "engine": "files_inventory",
+  "transport": "http",
+  "in_catalogue": true
+ },
+ "fixtures": "1ca00f81a282b96236b5566142919bba3f842562a1c9763669a5f82b5b586474",
+ "cube_before": {},
+ "consumers": {
+  "predictor": {
+   "cases": {
+    "success": {
+     "case": "success",
+     "exit_code": 0,
+     "wall_seconds": 15.475,
+     "status": "COMPLETED",
+     "reason": null,
+     "campaign_sha256": "2b06d22fe49c3bc5bbde32780725fdece8e9b545fbdc8fc96101169d27e8ce35",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "role": "x_train_file",
+       "resource": "synthetic_typical_price_4h_train.csv",
+       "sha256": "6de45a7d86564ee7a7b3c04a62de859158770fc3760e3911248e1cbc4c6dd9c7",
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "role": "y_train_file",
+       "resource": "synthetic_typical_price_4h_train.csv",
+       "sha256": "6de45a7d86564ee7a7b3c04a62de859158770fc3760e3911248e1cbc4c6dd9c7",
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "x_validation_file",
+       "resource": "synthetic_typical_price_4h_validation.csv",
+       "sha256": "96bff6f31d5553345097b72bf74ae7b119001c15aa869d29ea8f5271d916db22",
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "role": "y_validation_file",
+       "resource": "synthetic_typical_price_4h_validation.csv",
+       "sha256": "96bff6f31d5553345097b72bf74ae7b119001c15aa869d29ea8f5271d916db22",
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "x_test_file",
+       "resource": "synthetic_typical_price_4h_test.csv",
+       "sha256": "c08017c550050531b002f37d6559ff2d1d98946a93c45ab0d59458bc6bb92eb6",
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "role": "y_test_file",
+       "resource": "synthetic_typical_price_4h_test.csv",
+       "sha256": "c08017c550050531b002f37d6559ff2d1d98946a93c45ab0d59458bc6bb92eb6",
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "COMPLETED",
+       null,
+       "{\"wall_seconds\":15.37734564798302}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "2b06d22fe49c3bc5bbde32780725fdece8e9b545fbdc8fc96101169d27e8ce35",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json",
+      "config_out.json",
+      "governed_config.json",
+      "phase_1_ann_1575_1d_loss_plot.png",
+      "phase_1_ann_1575_1d_prediction.csv",
+      "phase_1_ann_1575_1d_predictions_plot.png",
+      "phase_1_ann_1575_1d_results.csv",
+      "phase_1_ann_1575_1d_uncertanties.csv",
+      "phase_1_ann_1d_model_plot.png",
+      "predictor_model.keras"
+     ]
+    },
+    "stale": {
+     "case": "stale",
+     "exit_code": 1,
+     "wall_seconds": 0.09,
+     "status": "REFUSED",
+     "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/route_pr/predictor/run/config_out.json, ~/scratch/route_pr/predictor/run/governed_config.json, ~/scratch/route_pr/predictor/run/phase_1_ann_1575_1d_loss_plot.png, ~/scratch/route_pr/predictor/run/phase_1_ann_1575_1d_prediction.csv, ~/scratch/route_pr/predictor/run/phase_1_ann_1575_1d_predictions_plot.png, ~/scratch/route_pr/predictor/run/phase_1_ann_1575_1d_results.csv, ~/scratch/route_pr/predictor/run/phase_1_ann_1575_1d_uncertanties.csv, ~/scratch/route_pr/predictor/run/phase_1_ann_1d_model_plot.png, ~/scratch/route_pr/predictor/run/predictor_model.keras",
+     "campaign_sha256": "e7c4c10940cd97c2541da33089d41aca211e7c7cad8d92df352a395fe759408e",
+     "classification": "NON_GOVERNING",
+     "inputs": [],
+     "cube_rows": [
+      [
+       "REFUSED",
+       "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/route_pr/predictor/run/config_out.json, ~/scratch/route_pr/predictor/run/governed_config.json, ~/scratch/route_pr/predictor/run/phase_1_ann_1575_1d_loss_plot.png, ~/scratch/route_pr/predictor/run/phase_1_ann_1575_1d_prediction.csv, ~/scratch/route_pr/predictor/run/phase_1_ann_1575_1d_predictions_plot.png, ~/scratch/route_pr/predictor/run/phase_1_ann_1575_1d_results.csv, ~/scratch/route_pr/predictor/run/phase_1_ann_1575_1d_uncertanties.csv, ~/scratch/route_pr/predictor/run/phase_1_ann_1d_model_plot.png, ~/scratch/route_pr/predictor/run/predictor_model.keras",
+       "{\"wall_seconds\":0.0003080540045630187}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "e7c4c10940cd97c2541da33089d41aca211e7c7cad8d92df352a395fe759408e",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json",
+      "config_out.json",
+      "governed_config.json",
+      "phase_1_ann_1575_1d_loss_plot.png",
+      "phase_1_ann_1575_1d_prediction.csv",
+      "phase_1_ann_1575_1d_predictions_plot.png",
+      "phase_1_ann_1575_1d_results.csv",
+      "phase_1_ann_1575_1d_uncertanties.csv",
+      "phase_1_ann_1d_model_plot.png",
+      "predictor_model.keras"
+     ]
+    },
+    "failure": {
+     "case": "failure",
+     "exit_code": 1,
+     "wall_seconds": 0.518,
+     "status": "FAILED",
+     "reason": "PREDICTOR_EXIT_1",
+     "campaign_sha256": "6f6279b376cff0ab06601a75daf338d12b6ff97fd0f57d08045e7d7da95f4931",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "role": "x_train_file",
+       "resource": "synthetic_typical_price_4h_train.csv",
+       "sha256": "6de45a7d86564ee7a7b3c04a62de859158770fc3760e3911248e1cbc4c6dd9c7",
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "y_train_file",
+       "resource": "synthetic_typical_price_4h_train.csv",
+       "sha256": "6de45a7d86564ee7a7b3c04a62de859158770fc3760e3911248e1cbc4c6dd9c7",
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "x_validation_file",
+       "resource": "synthetic_typical_price_4h_validation.csv",
+       "sha256": "96bff6f31d5553345097b72bf74ae7b119001c15aa869d29ea8f5271d916db22",
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "y_validation_file",
+       "resource": "synthetic_typical_price_4h_validation.csv",
+       "sha256": "96bff6f31d5553345097b72bf74ae7b119001c15aa869d29ea8f5271d916db22",
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "x_test_file",
+       "resource": "synthetic_typical_price_4h_test.csv",
+       "sha256": "c08017c550050531b002f37d6559ff2d1d98946a93c45ab0d59458bc6bb92eb6",
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "y_test_file",
+       "resource": "synthetic_typical_price_4h_test.csv",
+       "sha256": "c08017c550050531b002f37d6559ff2d1d98946a93c45ab0d59458bc6bb92eb6",
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "FAILED",
+       "PREDICTOR_EXIT_1",
+       "{\"wall_seconds\":0.42663177801296115}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "6f6279b376cff0ab06601a75daf338d12b6ff97fd0f57d08045e7d7da95f4931",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json",
+      "governed_config.json"
+     ]
+    },
+    "retry": {
+     "flush": {
+      "exit_code": 0,
+      "failures": {},
+      "pending": 0,
+      "sent": 0
+     },
+     "cube_before": {},
+     "cube_after": {},
+     "sends_nothing": true
+    }
+   },
+   "verdict": {
+    "governed_delivery": true,
+    "success": true,
+    "stale_refused": true,
+    "failure_recorded": true,
+    "retry_sends_nothing": true
+   },
+   "scope": "FULL",
+   "adopted": true,
+   "transport_proven": null,
+   "missing": null
+  }
+ },
+ "cube_after": {},
+ "cube_delta": {},
+ "ok": true
+}

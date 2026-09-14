@@ -1,0 +1,334 @@
+{
+ "schema": "consumer_fixtures.v1",
+ "generator": "predictor/tools/make_consumer_fixtures.py",
+ "generator_sha256": "1ca00f81a282b96236b5566142919bba3f842562a1c9763669a5f82b5b586474",
+ "seed": 20260914,
+ "rows_per_series": 900,
+ "synthetic": "every value is produced by the declared generator from the declared seed; no financial file is copied or renamed here",
+ "grid_start_utc": "2024-01-01T00:00:00Z",
+ "files": {
+  "synthetic_typical_price_4h_train.csv": {
+   "file": "synthetic_typical_price_4h_train.csv",
+   "rows": 900,
+   "columns": [
+    "DATE_TIME",
+    "typical_price"
+   ],
+   "sha256": "6de45a7d86564ee7a7b3c04a62de859158770fc3760e3911248e1cbc4c6dd9c7",
+   "bytes": 26124,
+   "seed": 20260914,
+   "frequency": "14400s",
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "first_event": "2024-01-01 00:00:00",
+   "last_event": "2024-05-29 20:00:00",
+   "availability_rule": "a row is available one step after its timestamp, by construction of this generator"
+  },
+  "synthetic_typical_price_4h_validation.csv": {
+   "file": "synthetic_typical_price_4h_validation.csv",
+   "rows": 900,
+   "columns": [
+    "DATE_TIME",
+    "typical_price"
+   ],
+   "sha256": "96bff6f31d5553345097b72bf74ae7b119001c15aa869d29ea8f5271d916db22",
+   "bytes": 26124,
+   "seed": 20260915,
+   "frequency": "14400s",
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "first_event": "2024-01-01 00:00:00",
+   "last_event": "2024-05-29 20:00:00",
+   "availability_rule": "a row is available one step after its timestamp, by construction of this generator"
+  },
+  "synthetic_typical_price_4h_test.csv": {
+   "file": "synthetic_typical_price_4h_test.csv",
+   "rows": 900,
+   "columns": [
+    "DATE_TIME",
+    "typical_price"
+   ],
+   "sha256": "c08017c550050531b002f37d6559ff2d1d98946a93c45ab0d59458bc6bb92eb6",
+   "bytes": 26124,
+   "seed": 20260916,
+   "frequency": "14400s",
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "first_event": "2024-01-01 00:00:00",
+   "last_event": "2024-05-29 20:00:00",
+   "availability_rule": "a row is available one step after its timestamp, by construction of this generator"
+  },
+  "synthetic_features_4h_train.csv": {
+   "file": "synthetic_features_4h_train.csv",
+   "rows": 900,
+   "columns": [
+    "DATE_TIME",
+    "RSI",
+    "MACD",
+    "MACD_Histogram",
+    "MACD_Signal",
+    "EMA",
+    "Stochastic_%K",
+    "Stochastic_%D",
+    "ADX",
+    "DI+",
+    "DI-",
+    "ATR",
+    "CCI",
+    "WilliamsR",
+    "Momentum",
+    "ROC",
+    "OPEN",
+    "HIGH",
+    "LOW",
+    "CLOSE",
+    "BC-BO",
+    "BH-BL",
+    "BH-BO",
+    "BO-BL",
+    "S&P500_Close",
+    "vix_close",
+    "CLOSE_15m_ti"
+   ],
+   "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+   "bytes": 228801,
+   "seed": 20260924,
+   "frequency": "14400s",
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "first_event": "2024-01-01 00:00:00",
+   "last_event": "2024-05-29 20:00:00"
+  },
+  "synthetic_features_4h_validation.csv": {
+   "file": "synthetic_features_4h_validation.csv",
+   "rows": 900,
+   "columns": [
+    "DATE_TIME",
+    "RSI",
+    "MACD",
+    "MACD_Histogram",
+    "MACD_Signal",
+    "EMA",
+    "Stochastic_%K",
+    "Stochastic_%D",
+    "ADX",
+    "DI+",
+    "DI-",
+    "ATR",
+    "CCI",
+    "WilliamsR",
+    "Momentum",
+    "ROC",
+    "OPEN",
+    "HIGH",
+    "LOW",
+    "CLOSE",
+    "BC-BO",
+    "BH-BL",
+    "BH-BO",
+    "BO-BL",
+    "S&P500_Close",
+    "vix_close",
+    "CLOSE_15m_ti"
+   ],
+   "sha256": "1135e3c0f00f49543c1d786640736a4c80e20cbb9e915544aef1e217fb45399a",
+   "bytes": 228801,
+   "seed": 20260925,
+   "frequency": "14400s",
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "first_event": "2024-01-01 00:00:00",
+   "last_event": "2024-05-29 20:00:00"
+  },
+  "synthetic_features_4h_test.csv": {
+   "file": "synthetic_features_4h_test.csv",
+   "rows": 900,
+   "columns": [
+    "DATE_TIME",
+    "RSI",
+    "MACD",
+    "MACD_Histogram",
+    "MACD_Signal",
+    "EMA",
+    "Stochastic_%K",
+    "Stochastic_%D",
+    "ADX",
+    "DI+",
+    "DI-",
+    "ATR",
+    "CCI",
+    "WilliamsR",
+    "Momentum",
+    "ROC",
+    "OPEN",
+    "HIGH",
+    "LOW",
+    "CLOSE",
+    "BC-BO",
+    "BH-BL",
+    "BH-BO",
+    "BO-BL",
+    "S&P500_Close",
+    "vix_close",
+    "CLOSE_15m_ti"
+   ],
+   "sha256": "bc88826b945e9854d4f20c287ac646a6e7fff741ef721f2e6509715a3c38dbe5",
+   "bytes": 228801,
+   "seed": 20260926,
+   "frequency": "14400s",
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "first_event": "2024-01-01 00:00:00",
+   "last_event": "2024-05-29 20:00:00"
+  },
+  "synthetic_ohlc_1h.csv": {
+   "file": "synthetic_ohlc_1h.csv",
+   "rows": 1800,
+   "columns": [
+    "DATE_TIME",
+    "OPEN",
+    "HIGH",
+    "LOW",
+    "CLOSE",
+    "volume"
+   ],
+   "sha256": "1373a56cd9f5e210c1fc61b84e6d1ec61bd031b9ccb1b777eb23ef7ba137ac08",
+   "bytes": 115496,
+   "seed": 20260934,
+   "frequency": "3600s",
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "first_event": "2024-01-01 00:00:00",
+   "last_event": "2024-03-15 23:00:00"
+  }
+ },
+ "roles": {
+  "predictor": {
+   "x_train_file": "synthetic_typical_price_4h_train.csv",
+   "y_train_file": "synthetic_typical_price_4h_train.csv",
+   "x_validation_file": "synthetic_typical_price_4h_validation.csv",
+   "y_validation_file": "synthetic_typical_price_4h_validation.csv",
+   "x_test_file": "synthetic_typical_price_4h_test.csv",
+   "y_test_file": "synthetic_typical_price_4h_test.csv"
+  },
+  "preprocessor": {
+   "input_file": "synthetic_typical_price_4h_train.csv"
+  },
+  "feature-extractor": {
+   "x_train_file": "synthetic_features_4h_train.csv",
+   "y_train_file": "synthetic_features_4h_train.csv",
+   "x_validation_file": "synthetic_features_4h_validation.csv",
+   "y_validation_file": "synthetic_features_4h_validation.csv",
+   "x_test_file": "synthetic_features_4h_test.csv",
+   "y_test_file": "synthetic_features_4h_test.csv"
+  },
+  "feature-eng": {
+   "input_file": "synthetic_ohlc_1h.csv"
+  }
+ },
+ "horizon": {
+  "predictor": "the configuration's predicted horizons; the fixture itself carries no target column"
+ },
+ "contracts": {
+  "synthetic_typical_price_4h_train.csv": {
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "timezone": "NAIVE_WALL_CLOCK",
+   "time_unit": null,
+   "frequency": "4h",
+   "availability": {
+    "label": "WINDOW_START",
+    "completion_lag_max": "4h",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "use_class": "OFFLINE_DAY_GRANULAR"
+   }
+  },
+  "synthetic_typical_price_4h_validation.csv": {
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "timezone": "NAIVE_WALL_CLOCK",
+   "time_unit": null,
+   "frequency": "4h",
+   "availability": {
+    "label": "WINDOW_START",
+    "completion_lag_max": "4h",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "use_class": "OFFLINE_DAY_GRANULAR"
+   }
+  },
+  "synthetic_typical_price_4h_test.csv": {
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "timezone": "NAIVE_WALL_CLOCK",
+   "time_unit": null,
+   "frequency": "4h",
+   "availability": {
+    "label": "WINDOW_START",
+    "completion_lag_max": "4h",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "use_class": "OFFLINE_DAY_GRANULAR"
+   }
+  },
+  "synthetic_features_4h_train.csv": {
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "timezone": "NAIVE_WALL_CLOCK",
+   "time_unit": null,
+   "frequency": "4h",
+   "availability": {
+    "label": "WINDOW_START",
+    "completion_lag_max": "4h",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "use_class": "OFFLINE_DAY_GRANULAR"
+   }
+  },
+  "synthetic_features_4h_validation.csv": {
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "timezone": "NAIVE_WALL_CLOCK",
+   "time_unit": null,
+   "frequency": "4h",
+   "availability": {
+    "label": "WINDOW_START",
+    "completion_lag_max": "4h",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "use_class": "OFFLINE_DAY_GRANULAR"
+   }
+  },
+  "synthetic_features_4h_test.csv": {
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "timezone": "NAIVE_WALL_CLOCK",
+   "time_unit": null,
+   "frequency": "4h",
+   "availability": {
+    "label": "WINDOW_START",
+    "completion_lag_max": "4h",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "use_class": "OFFLINE_DAY_GRANULAR"
+   }
+  },
+  "synthetic_ohlc_1h.csv": {
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "timezone": "NAIVE_WALL_CLOCK",
+   "time_unit": null,
+   "frequency": "1h",
+   "availability": {
+    "label": "WINDOW_START",
+    "completion_lag_max": "1h",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "use_class": "OFFLINE_DAY_GRANULAR"
+   }
+  }
+ },
+ "contracts_sha256": {
+  "synthetic_typical_price_4h_train.csv": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+  "synthetic_typical_price_4h_validation.csv": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+  "synthetic_typical_price_4h_test.csv": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+  "synthetic_features_4h_train.csv": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+  "synthetic_features_4h_validation.csv": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+  "synthetic_features_4h_test.csv": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+  "synthetic_ohlc_1h.csv": "e0f5ce6c02aa76e721b51a9f29f82cb5904b1dbcdcc7ba04dd7d330d186171b6"
+ }
+}

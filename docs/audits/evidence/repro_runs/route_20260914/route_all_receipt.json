@@ -1,0 +1,359 @@
+{
+ "schema": "consumer_adoption_check.v2",
+ "gov_url": "http://127.0.0.1:49577",
+ "label": "e1",
+ "lake": "synthetic_fixtures",
+ "classification": "NON_GOVERNING",
+ "route": {
+  "lake": "synthetic_fixtures",
+  "kind": "lake",
+  "engine": "files_inventory",
+  "transport": "http",
+  "in_catalogue": true
+ },
+ "fixtures": "1ca00f81a282b96236b5566142919bba3f842562a1c9763669a5f82b5b586474",
+ "cube_before": {},
+ "consumers": {
+  "feature-eng": {
+   "cases": {
+    "success": {
+     "case": "success",
+     "exit_code": 0,
+     "wall_seconds": 5.364,
+     "status": "COMPLETED",
+     "reason": null,
+     "campaign_sha256": "e7ae10e11cceef6f7a2d21633391a17fb9696d70c8bc0e545b9cae9624059187",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "availability_contract_sha256": "e0f5ce6c02aa76e721b51a9f29f82cb5904b1dbcdcc7ba04dd7d330d186171b6",
+       "resource": "synthetic_ohlc_1h.csv",
+       "role": "input_file",
+       "sha256": "1373a56cd9f5e210c1fc61b84e6d1ec61bd031b9ccb1b777eb23ef7ba137ac08",
+       "verification_state": "VERIFIED_TRANSFER"
+      }
+     ],
+     "cube_rows": [
+      [
+       "COMPLETED",
+       null,
+       "{\"wall_seconds\":5.267681554978481}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "e7ae10e11cceef6f7a2d21633391a17fb9696d70c8bc0e545b9cae9624059187",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json",
+      "debug_log.json",
+      "governed_config.json",
+      "hourly_dataset_aligned.csv",
+      "indicators_output.csv",
+      "merged_features.csv",
+      "output_config.json",
+      "run.log",
+      "seasonality_dataset.csv",
+      "technical_indicators_aligned.csv",
+      "variability_normality_analysis.png"
+     ]
+    },
+    "stale": {
+     "case": "stale",
+     "exit_code": 1,
+     "wall_seconds": 0.091,
+     "status": "REFUSED",
+     "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/route_all/feature-eng/run/debug_log.json, ~/scratch/route_all/feature-eng/run/governed_config.json, ~/scratch/route_all/feature-eng/run/indicators_output.csv, ~/scratch/route_all/feature-eng/run/output_config.json, ~/scratch/route_all/feature-eng/run/run.log",
+     "campaign_sha256": "73ae259beab77f2608d008f6ca7e84bdbc5b7f32040e35c90e094eaccef56b90",
+     "classification": "NON_GOVERNING",
+     "inputs": [],
+     "cube_rows": [
+      [
+       "REFUSED",
+       "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/route_all/feature-eng/run/debug_log.json, ~/scratch/route_all/feature-eng/run/governed_config.json, ~/scratch/route_all/feature-eng/run/indicators_output.csv, ~/scratch/route_all/feature-eng/run/output_config.json, ~/scratch/route_all/feature-eng/run/run.log",
+       "{\"wall_seconds\":0.00013715500244870782}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "73ae259beab77f2608d008f6ca7e84bdbc5b7f32040e35c90e094eaccef56b90",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json",
+      "debug_log.json",
+      "governed_config.json",
+      "hourly_dataset_aligned.csv",
+      "indicators_output.csv",
+      "merged_features.csv",
+      "output_config.json",
+      "run.log",
+      "seasonality_dataset.csv",
+      "technical_indicators_aligned.csv",
+      "variability_normality_analysis.png"
+     ]
+    },
+    "failure": {
+     "case": "failure",
+     "exit_code": 1,
+     "wall_seconds": 1.142,
+     "status": "FAILED",
+     "reason": "COMMAND_EXIT_1",
+     "campaign_sha256": "0f9332ebafd3dfdb4cdbf7ca52b238b93220cda3f7edf83b552a9d4d2cdfcf8b",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "availability_contract_sha256": "e0f5ce6c02aa76e721b51a9f29f82cb5904b1dbcdcc7ba04dd7d330d186171b6",
+       "resource": "synthetic_ohlc_1h.csv",
+       "role": "input_file",
+       "sha256": "1373a56cd9f5e210c1fc61b84e6d1ec61bd031b9ccb1b777eb23ef7ba137ac08",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "FAILED",
+       "COMMAND_EXIT_1",
+       "{\"wall_seconds\":1.049964743986493}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "0f9332ebafd3dfdb4cdbf7ca52b238b93220cda3f7edf83b552a9d4d2cdfcf8b",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json",
+      "governed_config.json",
+      "run.log"
+     ]
+    },
+    "retry": {
+     "flush": {
+      "exit_code": 0,
+      "failures": {},
+      "pending": 0,
+      "sent": 0
+     },
+     "cube_before": {},
+     "cube_after": {},
+     "sends_nothing": true
+    }
+   },
+   "verdict": {
+    "governed_delivery": true,
+    "success": true,
+    "stale_refused": true,
+    "failure_recorded": true,
+    "retry_sends_nothing": true
+   },
+   "scope": "FULL",
+   "adopted": true,
+   "transport_proven": null,
+   "missing": null
+  },
+  "feature-extractor": {
+   "cases": {
+    "success": {
+     "case": "success",
+     "exit_code": 1,
+     "wall_seconds": 3.349,
+     "status": "FAILED",
+     "reason": "COMMAND_EXIT_1",
+     "campaign_sha256": "3134ffb8dcb9d78ec445cfd5466ed9a4a4507bd0bfedb203a9deedef14ebd43e",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_train.csv",
+       "role": "x_train_file",
+       "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_train.csv",
+       "role": "y_train_file",
+       "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_validation.csv",
+       "role": "x_validation_file",
+       "sha256": "1135e3c0f00f49543c1d786640736a4c80e20cbb9e915544aef1e217fb45399a",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_validation.csv",
+       "role": "y_validation_file",
+       "sha256": "1135e3c0f00f49543c1d786640736a4c80e20cbb9e915544aef1e217fb45399a",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_test.csv",
+       "role": "x_test_file",
+       "sha256": "bc88826b945e9854d4f20c287ac646a6e7fff741ef721f2e6509715a3c38dbe5",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_test.csv",
+       "role": "y_test_file",
+       "sha256": "bc88826b945e9854d4f20c287ac646a6e7fff741ef721f2e6509715a3c38dbe5",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "FAILED",
+       "COMMAND_EXIT_1",
+       "{\"wall_seconds\":3.253950515005272}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "3134ffb8dcb9d78ec445cfd5466ed9a4a4507bd0bfedb203a9deedef14ebd43e",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json",
+      "governed_config.json",
+      "run.log"
+     ]
+    },
+    "stale": {
+     "case": "stale",
+     "exit_code": 1,
+     "wall_seconds": 0.093,
+     "status": "REFUSED",
+     "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/route_all/feature-extractor/run/governed_config.json, ~/scratch/route_all/feature-extractor/run/run.log",
+     "campaign_sha256": "1138fe04f7f87e9410a9d487d41842cc9bdd314a5982add32d45e70838a43c40",
+     "classification": "NON_GOVERNING",
+     "inputs": [],
+     "cube_rows": [
+      [
+       "REFUSED",
+       "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/route_all/feature-extractor/run/governed_config.json, ~/scratch/route_all/feature-extractor/run/run.log",
+       "{\"wall_seconds\":0.00036252301651984453}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "1138fe04f7f87e9410a9d487d41842cc9bdd314a5982add32d45e70838a43c40",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json",
+      "governed_config.json",
+      "run.log"
+     ]
+    },
+    "failure": {
+     "case": "failure",
+     "exit_code": 1,
+     "wall_seconds": 2.897,
+     "status": "FAILED",
+     "reason": "COMMAND_EXIT_1",
+     "campaign_sha256": "6f39f772002a7eb29764c0e731721b8a170df83398e7e26c144d643ea8e7c444",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_train.csv",
+       "role": "x_train_file",
+       "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_train.csv",
+       "role": "y_train_file",
+       "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_validation.csv",
+       "role": "x_validation_file",
+       "sha256": "1135e3c0f00f49543c1d786640736a4c80e20cbb9e915544aef1e217fb45399a",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_validation.csv",
+       "role": "y_validation_file",
+       "sha256": "1135e3c0f00f49543c1d786640736a4c80e20cbb9e915544aef1e217fb45399a",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_test.csv",
+       "role": "x_test_file",
+       "sha256": "bc88826b945e9854d4f20c287ac646a6e7fff741ef721f2e6509715a3c38dbe5",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+       "resource": "synthetic_features_4h_test.csv",
+       "role": "y_test_file",
+       "sha256": "bc88826b945e9854d4f20c287ac646a6e7fff741ef721f2e6509715a3c38dbe5",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "FAILED",
+       "COMMAND_EXIT_1",
+       "{\"wall_seconds\":2.7988608949817717}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "6f39f772002a7eb29764c0e731721b8a170df83398e7e26c144d643ea8e7c444",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json",
+      "governed_config.json",
+      "run.log"
+     ]
+    },
+    "retry": {
+     "flush": {
+      "exit_code": 0,
+      "failures": {},
+      "pending": 0,
+      "sent": 0
+     },
+     "cube_before": {},
+     "cube_after": {},
+     "sends_nothing": true
+    }
+   },
+   "verdict": {
+    "governed_delivery": true,
+    "success": false,
+    "stale_refused": true,
+    "failure_recorded": true,
+    "retry_sends_nothing": true
+   },
+   "scope": "FULL",
+   "adopted": false,
+   "transport_proven": null,
+   "missing": null
+  }
+ },
+ "cube_after": {},
+ "cube_delta": {},
+ "ok": false
+}

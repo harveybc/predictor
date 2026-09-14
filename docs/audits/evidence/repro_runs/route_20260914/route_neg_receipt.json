@@ -1,0 +1,125 @@
+{
+ "schema": "consumer_adoption_check.v2",
+ "gov_url": "http://127.0.0.1:49577",
+ "label": "n1",
+ "lake": "synthetic_fixtures",
+ "classification": "NON_GOVERNING",
+ "route": {
+  "lake": "synthetic_fixtures",
+  "kind": "lake",
+  "engine": null,
+  "transport": "http",
+  "in_catalogue": true
+ },
+ "fixtures": "1ca00f81a282b96236b5566142919bba3f842562a1c9763669a5f82b5b586474",
+ "cube_before": {},
+ "consumers": {
+  "preprocessor": {
+   "cases": {
+    "success": {
+     "case": "success",
+     "exit_code": 1,
+     "wall_seconds": 0.099,
+     "status": "REFUSED",
+     "reason": "GOVERNED_RUN_REFUSED:download synthetic_fixtures/synthetic_typical_price_4h_train.csv refused: http 503 lake unreachable: [Errno 111] Connection refused",
+     "campaign_sha256": "4f63decb855ee6e0602f5deebf0941ba351f7637ea5b21b82122bc50c812085d",
+     "classification": "NON_GOVERNING",
+     "inputs": [],
+     "cube_rows": [
+      [
+       "REFUSED",
+       "GOVERNED_RUN_REFUSED:download synthetic_fixtures/synthetic_typical_price_4h_train.csv refused: http 503 lake unreachable: [Errno 111] Connection refused",
+       "{\"wall_seconds\":0.001418461004504934}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "4f63decb855ee6e0602f5deebf0941ba351f7637ea5b21b82122bc50c812085d",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json"
+     ]
+    },
+    "stale": {
+     "case": "stale",
+     "exit_code": 1,
+     "wall_seconds": 0.097,
+     "status": "REFUSED",
+     "reason": "GOVERNED_RUN_REFUSED:download synthetic_fixtures/synthetic_typical_price_4h_train.csv refused: http 503 lake unreachable: [Errno 111] Connection refused",
+     "campaign_sha256": "c21c5bd5930904b5f7f9bffbfc769b3967872c7ac6d6c6667b742d83d00ecaf8",
+     "classification": "NON_GOVERNING",
+     "inputs": [],
+     "cube_rows": [
+      [
+       "REFUSED",
+       "GOVERNED_RUN_REFUSED:download synthetic_fixtures/synthetic_typical_price_4h_train.csv refused: http 503 lake unreachable: [Errno 111] Connection refused",
+       "{\"wall_seconds\":0.0013860500184819102}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "c21c5bd5930904b5f7f9bffbfc769b3967872c7ac6d6c6667b742d83d00ecaf8",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json"
+     ]
+    },
+    "failure": {
+     "case": "failure",
+     "exit_code": 1,
+     "wall_seconds": 0.096,
+     "status": "REFUSED",
+     "reason": "GOVERNED_RUN_REFUSED:download synthetic_fixtures/synthetic_typical_price_4h_train.csv refused: http 503 lake unreachable: [Errno 111] Connection refused",
+     "campaign_sha256": "e57ca11a7bc3fafec545872ec29410db91be002ba4cbfb845e14284ac8c08fc0",
+     "classification": "NON_GOVERNING",
+     "inputs": [],
+     "cube_rows": [
+      [
+       "REFUSED",
+       "GOVERNED_RUN_REFUSED:download synthetic_fixtures/synthetic_typical_price_4h_train.csv refused: http 503 lake unreachable: [Errno 111] Connection refused",
+       "{\"wall_seconds\":0.0015064439794514328}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "e57ca11a7bc3fafec545872ec29410db91be002ba4cbfb845e14284ac8c08fc0",
+      "lake_only": [],
+      "missing_units": []
+     },
+     "produced": [
+      "GOVERNED_RUN.json"
+     ]
+    },
+    "retry": {
+     "flush": {
+      "exit_code": 0,
+      "failures": {},
+      "pending": 0,
+      "sent": 0
+     },
+     "cube_before": {},
+     "cube_after": {},
+     "sends_nothing": true
+    }
+   },
+   "verdict": {
+    "governed_delivery": false,
+    "success": false,
+    "stale_refused": true,
+    "failure_recorded": false,
+    "retry_sends_nothing": true
+   },
+   "scope": "FULL",
+   "adopted": false,
+   "transport_proven": null,
+   "missing": null
+  }
+ },
+ "cube_after": {},
+ "cube_delta": {},
+ "ok": false
+}
