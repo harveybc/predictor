@@ -1,0 +1,18 @@
+# R6 rehearsal on throwaway database data_gov_v3_throwaway_r6_1789365305 (schema of the three coverage tables copied; synthetic rows: v1 run c140 with two code digests x 4 cells, v2 run c170 with 6 cells)
+CREATE DATABASE
+ERROR:  unrecognized configuration parameter "transaction_timeout"
+ set_config 
+------------
+ 
+(1 row)
+
+INSERT 0 8
+INSERT 0 6
+current rows (expect 6): 6
+history rows (expect 14 = 8 v1 + 6 v2): 14
+history by version/code: v1|31e3376d|4;v1|b4c9157c|4;v2|b4c9157c|6;
+current denominator (expect ds|6|6): ds|6|6
+v1 naive count (8 rows for 4 cells: the duplication the current view avoids): 8
+selection table rows: 1
+DROP DATABASE
+throwaway remaining: 0

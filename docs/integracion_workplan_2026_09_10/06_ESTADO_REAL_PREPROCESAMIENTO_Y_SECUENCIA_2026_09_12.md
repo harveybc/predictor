@@ -165,3 +165,36 @@ revision externa.
 La orden se detiene en `D2_CURRENT_API_FRESH_CONFIRMATION_READY_FOR_MUSASHI_REVIEW`.
 D3-D5, seleccion, modelos, RL, DOIN y live siguen cerrados hasta la decision
 separada de Musashi.
+
+## 8. Gobernanza Flow v3 y soporte de D2 (2026-09-14)
+
+La revision de Musashi (`MUSASHI_REVIEW_C166_C184_AND_DATA_GOV_2026_09_13.md`,
+`REVISE_D2_ADJUDICATION_BEFORE_CONSUMPTION`) encontro que el adjudicador contaba
+como valida una semilla con cualquier metrica y que las ausencias pasaban los
+chequeos. Estado tras las ordenes GOV-N1..N8 y D2-R1..R8:
+
+* **Flow v3** (transporte y contabilidad de datos): integrado con lake/warehouse,
+  contratos con alcance ejecutable (`availability`: etiqueta, cota de finalizacion,
+  evidencia de zona horaria, clase de uso), disposicion de terminales rechazados,
+  consumidores de predictor, preprocessor y feature-eng probados en stack
+  desechable. Los servicios productivos siguen con codigo anterior: el reinicio
+  esta bloqueado en el operador (N3). Nada de esto prueba causalidad del
+  preprocesamiento ni calidad de modelo.
+* **Soporte D2 (R1-R2):** contrato de soporte declarado como ocho pruebas antes
+  de la reparacion (PRE 10/10 fallando, POST 26/26); el adjudicador reparado exige
+  semillas COMPLETAS, deriva aplicabilidad del contrato, publica
+  planificadas/observadas/completas/inaplicables y nunca deja pasar una ausencia.
+  Vista previa NO gobernante sobre las 3.591 decisiones: 138 cambian; los cinco
+  casos revisados y dos controles de identidad pierden su pase
+  (`NOT_IDENTIFIABLE`, semillas completas < diseno); ninguna decision gana un
+  pase. Universo: 0 filas faltantes; 1 desacuerdo de eventos, en el control
+  oraculo no causal al borde de ventana.
+* **R3 (re-adjudicacion gobernada):** pendiente del micro-run productivo
+  reconciliado. **R4:** margenes de las 1.026 decisiones SNR, inventario de
+  entorno del coordinador y subconjunto diagnostico (16 regimenes, 32 unidades)
+  congelados por regla; sin ejecutar; AT9 sigue abierto con su tolerancia
+  original. **R6:** vistas de cobertura vigente/historica propuestas y ensayadas
+  en base desechable, sin aplicar. **R7:** diseno D3 (documento 07) sin ejecutar.
+  **N7:** plan de integracion agent-multi/DOIN/live (documento 08).
+
+Estado: `D2_SUPPORT_REPAIRED_PREVIEW_NON_GOVERNING_R3_PENDING_PRODUCTION_RUN`.

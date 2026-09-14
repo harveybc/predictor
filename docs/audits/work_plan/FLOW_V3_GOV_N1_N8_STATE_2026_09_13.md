@@ -15,15 +15,16 @@ States: `NOT_STARTED` | `IN_PROGRESS` | `IMPLEMENTED` | `PROVEN_DISPOSABLE` | `D
 | N2 temporal contract scope | `IMPLEMENTED` + `PROVEN_DISPOSABLE` | data-gov `da8b881`, financial-data `f00bc6c15`, predictor `fa78edf`/`06edee9`: `availability` block executed by both lakes (completion lag in cuts and holdout, calendar-day ranges), published in headers, recorded by consumers, tagged on terminals; toy contracts re-validated against bytes (`p02_validate_contracts.n2.out`, digest `5a521473…`); throwaway runs carry `OFFLINE_DAY_GRANULAR / WINDOW_END / 1h / UNKNOWN` into the cube (`p03_throwaway_governed_runs.n2.out`) |
 | N3 bounded deployment | `BLOCKED(restart of :5057/:5056/:5055, Musashi in a permitted environment or operator, N3)` | recorded once here; Appendix A of the previous packet is a description, not a script to run literally; the old pids there are an observation, not instructions |
 | N4 permanent-rejection disposition | `IMPLEMENTED` + `PROVEN_DISPOSABLE` | predictor `tools/governed_run.py` + `flush_governed_terminals.py` (`--status/--dispose/--supersede`), data-gov `app/outbox.py` + `governed_exec` mirror; defect found and fixed: an unreachable terminal lake answered 409 (RuntimeError) and was classified as a server refusal → `LakeUnreachable` → 503 (data-gov `ade6471`); proof `p4_outbox_disposition_throwaway.out`: 400 → awaiting adjudication, 401 → configuration then recovery, supersede as generation 3 (same outcome/deliveries, replay already_stored, counts unchanged), explicit `INVALID_ENVELOPE`, isolation of a second campaign through an outage, both reconciliations exact |
-| N5 feature-eng / feature-extractor real runs | `NOT_STARTED` | |
-| N6 / D2-R1 PRE and support contract | `IN_PROGRESS` | |
-| D2-R2 adjudicator repair | `NOT_STARTED` | |
-| D2-R3 governed re-adjudication | `BLOCKED(reconciled production micro-run, N3)` | |
-| D2-R4 AT9 portability | `NOT_STARTED` (preparation allowed) | |
-| D2-R6 OLAP coverage view + proposal update | `NOT_STARTED` | |
-| D2-R7 D3 design | `NOT_STARTED` | |
-| N7 plans agent-multi / DOIN / live | `NOT_STARTED` | |
-| N8 packet | `NOT_STARTED` | |
+| N5 feature-eng real run | `IMPLEMENTED` + `PROVEN_DISPOSABLE` | feature-eng `c7319a6`/`c086367`/`799af5a` (synthetic fixtures with provenance and contracts; ISO-8601-first wall clock — `dayfirst=True` swapped months and days on governed deliveries; `requirements-governed.txt` per-application environment: pandas_ta 0.4 + keras/tensorflow-cpu/scikit-learn undeclared in requirements.txt); proof `p5_feature_eng_throwaway.out` (predictor `174cb88`): COMPLETED with two governed inputs, six CSVs + plot hashed, lineage changes with input B, stale REFUSED, bogus plugin FAILED with cost, retry sends nothing |
+| N5 feature-extractor real run | `IMPLEMENTED` (wrapper, profile test, `requirements-governed.txt`) — `BLOCKED(API drift: feature-extractor calls stl_preprocessor.run_preprocessing(config) but predictor's plugin is run_preprocessing(self, target_plugin, config) since predictor 9b7d611 (2026-02-18); Musashi decides: pin an older predictor or port feature-extractor; not modernised here)` | smoke in its own environment fails at `app/data_processor.py:72` with that TypeError; predictor installed non-editably as the entry-point provider, no other checkout on the path |
+| N6 / D2-R1 PRE and support contract | `IMPLEMENTED` | `d2_support_r1/D2_SUPPORT_CONTRACT_R1.md`, `musashi_reproducer_frozen.out`, `PRE_declared_tests.out` (10/10 failing), `tests/test_df_d2_support.py` |
+| D2-R2 adjudicator repair | `IMPLEMENTED` + preview | predictor `41fee5b`, `91de809`, `a318668`; POST 26/26; `tools/df_d2_support.py` → `IMPACT_TABLE.json` (138 of 3,591 change, no decision gains a pass), `UNIVERSE_CHECK.json` ok (1 named oracle-edge disagreement); `df_load_d0_d2 --table-dir` needs `--universe-check` |
+| D2-R3 governed re-adjudication | `BLOCKED(reconciled production micro-run, N3)` | preview is non-governing |
+| D2-R4 AT9 portability | `IMPLEMENTED` (preparation only, not executed) | `d2_support_r1/r4/R4_SNR_MARGINS.json` (1,026 decisions vs every threshold), `R4_ENVIRONMENT_INVENTORY.json` (coordinator role), `R4_DIAGNOSTIC_SUBSET.json` (16 regimes, 32 units, fixed rule; ≤6 CPU-h, ≤4 h wall, 2 GiB/process); tolerance unchanged |
+| D2-R6 OLAP coverage view + proposal update | `IMPLEMENTED` + `PROVEN_DISPOSABLE` (not applied) | `d2_support_r1/R6_COVERAGE_VIEWS.sql` + `R6_THROWAWAY_TEST.out`; data-gov `05_PROPUESTA…` supersession header |
+| D2-R7 D3 design | `IMPLEMENTED` (design only) | `docs/integracion_workplan_2026_09_10/07_DISENO_D3_…_2026_09_14.md` |
+| N7 plans agent-multi / DOIN / live | `IMPLEMENTED` (plan only) | `docs/integracion_workplan_2026_09_10/08_PLAN_INTEGRACION_FLOW_V3_…_2026_09_14.md` |
+| N8 packet | `IN_PROGRESS` | |
 
 ## Requirement → test → evidence
 
