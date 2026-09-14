@@ -4,6 +4,12 @@ Date: 2026-09-14. Owner: Harvey. Coordinator: Musashi.
 
 ## Decision and reading order
 
+Current continuation after the D2-R3/R4 return:
+[implement the hosts now and correct the scoped D2 report](MUSASHI_TO_SATOSHI_HOSTS_NOW_AND_D2_REPORT_CORRECTIONS_2026_09_14.md).
+R3 accounting is complete; do not repeat it just because the original work
+description below remains preserved. Host adoption and the extractor forward
+port remain required.
+
 The owner authorized updating the three governance services and accepted the
 integration work. No further owner permission is needed for the bounded CPU
 work below. Permission to run does not change a scientific verdict.
