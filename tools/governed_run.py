@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-"""Governed predictor run (data-gov docs/04_FLOW_V2.md, section 8).
+"""Fail-safe governed predictor run (data-gov Flow v3).
 
-Every distinct input file of a config is downloaded through data-gov under
-the experiment key (hash verified, cached as <cache>/<lake>/<sha256><ext>),
-predictor runs on CPU from a config whose outputs all land under --out-dir,
-and the results CSV is reported as metrics together with the dataset hashes,
-the canonical config hash and the code commit. The receipt is
-<out-dir>/GOVERNED_RUN.json. Any failure exits 1 with a one-line reason.
+The campaign and its units are registered before data is opened. Each role is
+delivered and confirmed independently, predictor runs on CPU, and every
+outcome is persisted to a durable local outbox before it is reported to the
+remote terminal lake. Network calls never occur inside training.
 
     tools/governed_run.py --load_config <cfg> --experiment-key K
         [--experiment-set-key S] --gov-url http://127.0.0.1:5055
@@ -33,6 +31,8 @@ import subprocess
 import sys
 import time
 import uuid
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlencode, urlsplit
 
@@ -56,6 +56,7 @@ OUTPUT_DEFAULTS = {
 }
 PRIVATE_DEFAULTS = {"save_config": "config_out.json", "save_log": "debug_out.json"}
 DEFAULT_CACHE = "~/.cache/data-gov"
+DEFAULT_OUTBOX = "~/.local/state/data-gov/terminal-outbox"
 KEY_RE = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 METRIC_ROW = re.compile(r"^\s*(Train|Validation|Test)\s+(.+?)(?:\s+H(\d+))?\s*$", re.I)
 CHUNK = 1 << 20
@@ -111,6 +112,22 @@ def governed_config(config: dict, cached: dict, out_dir) -> dict:
     for key, path in cached.items():
         out[key] = str(path)
     return out
+
+
+def refuse_stale_outputs(config: dict, out_dir) -> None:
+    """A governing unit gets a fresh output namespace; prior bytes are never replaced."""
+    redirected = redirect_outputs(config, out_dir)
+    paths = {Path(redirected[key]) for key in {**OUTPUT_DEFAULTS, **PRIVATE_DEFAULTS}}
+    paths.update(
+        Path(value) for key, value in redirected.items()
+        if key.endswith("_plot_file") and value
+    )
+    paths.add(Path(out_dir) / "governed_config.json")
+    stale = sorted(str(path) for path in paths if path.exists())
+    if stale:
+        raise GovernedRunError(
+            "governing output namespace is not fresh: " + ", ".join(stale)
+        )
 
 
 def _num(value):
@@ -190,14 +207,151 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
-def code_commit(repo_root) -> str:
+def strict_code_identity(repo_root) -> dict:
+    """Return a governing commit only for an exact, clean checkout."""
     head = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=repo_root, capture_output=True, text=True, check=True
     ).stdout.strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", head):
+        raise GovernedRunError("governing run requires a 40-hex git commit")
     dirty = subprocess.run(
-        ["git", "status", "--porcelain"], cwd=repo_root, capture_output=True, text=True, check=True
+        ["git", "status", "--porcelain", "--untracked-files=all"],
+        cwd=repo_root, capture_output=True, text=True, check=True,
     ).stdout.strip()
-    return head + ("-dirty" if dirty else "")
+    if dirty:
+        raise GovernedRunError("governing run requires a clean checkout")
+    return {"kind": "git_commit", "value": head}
+
+
+def code_commit(repo_root) -> str:
+    """Compatibility helper; governing callers use strict_code_identity()."""
+    identity = strict_code_identity(repo_root)
+    return identity["value"]
+
+
+def execution_spec(config: dict, datasets: list, extra: list) -> str:
+    """Canonical pre-execution contract, independent of local paths."""
+    body = {
+        key: value for key, value in config.items()
+        if key not in set(INPUT_KEYS) | set(PRIVATE_DEFAULTS) | {"load_config"}
+    }
+    for key in list(body):
+        if key in OUTPUT_DEFAULTS or key.endswith("_plot_file"):
+            body[key] = Path(str(body[key])).name if body[key] else body[key]
+    body = {
+        "schema": "predictor_execution_spec.v1",
+        "config": body,
+        "datasets": sorted(datasets, key=lambda item: (
+            item["lake"], item["resource"], item["role"],
+            item.get("from") or "", item.get("to") or "",
+        )),
+        "extra_arguments": list(extra),
+    }
+    return json.dumps(body, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
+def _sha256_file(path) -> tuple[str, int]:
+    digest = hashlib.sha256()
+    size = 0
+    with open(path, "rb") as handle:
+        while True:
+            block = handle.read(CHUNK)
+            if not block:
+                break
+            digest.update(block)
+            size += len(block)
+    return digest.hexdigest(), size
+
+
+def _fsync_dir(path: Path):
+    fd = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+def _write_json_atomic(path: Path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    raw = (json.dumps(value, indent=2, sort_keys=False, allow_nan=False) + "\n").encode("utf-8")
+    part = path.parent / f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.part"
+    fd = os.open(part, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(raw)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(part, path)
+        _fsync_dir(path.parent)
+    except BaseException:
+        part.unlink(missing_ok=True)
+        raise
+
+
+@dataclass(frozen=True)
+class OutboxItem:
+    path: Path
+    state: str
+    payload: dict
+
+
+class TerminalOutbox:
+    """Write-once terminal queue; accepted sends move atomically to sent/."""
+
+    def __init__(self, root):
+        self.root = Path(root)
+        self.pending = self.root / "pending"
+        self.sent = self.root / "sent"
+        self.pending.mkdir(parents=True, exist_ok=True)
+        self.sent.mkdir(parents=True, exist_ok=True)
+
+    def put(self, payload):
+        raw = (json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), allow_nan=False
+        ) + "\n").encode("ascii")
+        digest = hashlib.sha256(raw).hexdigest()
+        path = self.pending / f"{digest}.json"
+        if path.exists():
+            if path.read_bytes() != raw:
+                raise GovernedRunError("outbox identity conflict")
+            return OutboxItem(path, "PENDING", payload)
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        try:
+            with os.fdopen(fd, "wb") as handle:
+                handle.write(raw)
+                handle.flush()
+                os.fsync(handle.fileno())
+        except BaseException:
+            path.unlink(missing_ok=True)
+            raise
+        _fsync_dir(self.pending)
+        return OutboxItem(path, "PENDING", payload)
+
+    def flush(self, sender):
+        sent = 0
+        for path in sorted(self.pending.glob("*.json")):
+            try:
+                payload = json.loads(path.read_text(encoding="ascii"))
+                receipt = sender(payload)
+                if not isinstance(receipt, dict) or not receipt.get("terminal_sha256"):
+                    raise GovernedRunError("terminal receipt missing")
+            except Exception:
+                continue
+            target = self.sent / path.name
+            if target.exists():
+                if target.read_bytes() != path.read_bytes():
+                    raise GovernedRunError("sent outbox identity conflict")
+                path.unlink()
+            else:
+                os.replace(path, target)
+            _fsync_dir(self.pending)
+            _fsync_dir(self.sent)
+            sent += 1
+        return {"sent": sent, "pending": len(list(self.pending.glob("*.json")))}
+
+
+def _utc_now():
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 def build_report(metrics_lake, metrics, datasets, *, experiment_set_key=None,
@@ -240,6 +394,14 @@ class GovHttp:
             "X-Experiment-Key": experiment_key,
         }
 
+    def _request_headers(self, campaign_sha256=None, unit_id=None):
+        headers = dict(self._headers)
+        if campaign_sha256:
+            headers["X-Campaign-SHA256"] = campaign_sha256
+        if unit_id:
+            headers["X-Unit-ID"] = unit_id
+        return headers
+
     def _connection(self, connect_timeout=30):
         cls = http.client.HTTPSConnection if self._parts.scheme == "https" else http.client.HTTPConnection
         try:
@@ -254,12 +416,13 @@ class GovHttp:
         query = urlencode({k: v for k, v in (params or {}).items() if v is not None})
         return self._parts.path.rstrip("/") + path + (f"?{query}" if query else "")
 
-    def post_json(self, path: str, body: dict):
+    def post_json(self, path: str, body: dict, *, campaign_sha256=None, unit_id=None):
         data = json.dumps(body, allow_nan=False).encode()
         conn = self._connection()
         try:
             conn.request("POST", self._path(path), body=data,
-                         headers={**self._headers, "Content-Type": "application/json"})
+                         headers={**self._request_headers(campaign_sha256, unit_id),
+                                  "Content-Type": "application/json"})
             response = conn.getresponse()
             status, raw = response.status, response.read()
         finally:
@@ -269,6 +432,162 @@ class GovHttp:
         except ValueError:
             payload = {"error": raw[:200].decode(errors="replace")}
         return status, payload
+
+    def get_json(self, path: str, *, campaign_sha256=None, unit_id=None):
+        conn = self._connection()
+        try:
+            conn.request(
+                "GET", self._path(path),
+                headers=self._request_headers(campaign_sha256, unit_id),
+            )
+            response = conn.getresponse()
+            status, raw = response.status, response.read()
+        finally:
+            conn.close()
+        try:
+            payload = json.loads(raw.decode() or "{}")
+        except ValueError:
+            payload = {"error": raw[:200].decode(errors="replace")}
+        return status, payload
+
+    def submit_campaign(self, body):
+        return self.post_json("/api/v2/campaigns", body)
+
+    def governed_download(
+        self, campaign_sha256, unit_id, lake, resource, role, cache_dir,
+        start=None, end=None, attempts=20,
+    ):
+        """Receive and confirm one role only after both stream and cache verify."""
+        params = {
+            "lake": lake, "resource": resource, "role": role,
+            "from": start, "to": end,
+        }
+        target_dir = Path(cache_dir) / lake
+        target_dir.mkdir(parents=True, exist_ok=True)
+        ext = Path(resource).suffix
+        for _ in range(attempts):
+            conn = self._connection()
+            try:
+                conn.request(
+                    "GET", self._path("/api/v2/download", params),
+                    headers=self._request_headers(campaign_sha256, unit_id),
+                )
+                response = conn.getresponse()
+                if response.status == 503 and response.getheader("Retry-After"):
+                    response.read()
+                    wait = _num(response.getheader("Retry-After")) or 30
+                    time.sleep(min(wait, 300))
+                    continue
+                if response.status != 200:
+                    raise GovernedRunError(
+                        f"download {lake}/{resource}: http {response.status} "
+                        f"{_error_text(response.read())}"
+                    )
+                expected = (response.getheader("X-Content-SHA256") or "").lower()
+                delivery_id = response.getheader("X-Delivery-ID") or ""
+                contract_sha = (
+                    response.getheader("X-Availability-Contract-SHA256") or ""
+                ).lower()
+                if not re.fullmatch(r"[0-9a-f]{64}", expected):
+                    raise GovernedRunError(f"download {lake}/{resource}: missing content digest")
+                if not re.fullmatch(r"[0-9a-f]{32}", delivery_id):
+                    raise GovernedRunError(f"download {lake}/{resource}: missing delivery identity")
+                if not re.fullmatch(r"[0-9a-f]{64}", contract_sha):
+                    raise GovernedRunError(
+                        f"download {lake}/{resource}: missing availability contract digest"
+                    )
+                target = target_dir / f"{expected}{ext}"
+                cached = target.is_file()
+                if cached:
+                    cache_digest, cache_size = _sha256_file(target)
+                    if cache_digest != expected:
+                        raise GovernedRunError(
+                            f"cached {lake}/{resource} has a different digest; refused"
+                        )
+                part = target_dir / (
+                    f"{expected}{ext}.{os.getpid()}.{uuid.uuid4().hex}.part"
+                )
+                digest = hashlib.sha256()
+                size = 0
+                fd = os.open(part, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                try:
+                    with os.fdopen(fd, "wb") as handle:
+                        while True:
+                            chunk = response.read(CHUNK)
+                            if not chunk:
+                                break
+                            digest.update(chunk)
+                            handle.write(chunk)
+                            size += len(chunk)
+                        handle.flush()
+                        os.fsync(handle.fileno())
+                except BaseException:
+                    part.unlink(missing_ok=True)
+                    raise
+                actual = digest.hexdigest()
+                if actual != expected:
+                    part.unlink(missing_ok=True)
+                    raise GovernedRunError(
+                        f"download {lake}/{resource}: sha256 mismatch "
+                        f"(lake said {expected[:12]}, got {actual[:12]})"
+                    )
+                if cached:
+                    if cache_size != size:
+                        part.unlink(missing_ok=True)
+                        raise GovernedRunError("cache size differs from governed delivery")
+                    part.unlink()
+                else:
+                    try:
+                        os.link(part, target)
+                    except FileExistsError:
+                        winner_digest, winner_size = _sha256_file(target)
+                        if winner_digest != expected or winner_size != size:
+                            raise GovernedRunError("cache publication identity conflict")
+                        cached = True
+                    finally:
+                        part.unlink(missing_ok=True)
+                    _fsync_dir(target_dir)
+                info = {
+                    "path": str(target), "sha256": actual, "bytes": size,
+                    "source_sha256": response.getheader("X-Source-SHA256") or None,
+                    "delivery": response.getheader("X-Delivery") or None,
+                    "time_column": response.getheader("X-Time-Column") or None,
+                    "availability_contract_sha256": contract_sha,
+                    "delivery_id": delivery_id, "cached": cached,
+                    "resource": resource, "role": role,
+                }
+            finally:
+                conn.close()
+            status, receipt = self.post_json(
+                f"/api/v2/deliveries/{delivery_id}/confirm",
+                {
+                    "schema": "delivery_confirmation.v1",
+                    "sha256": actual,
+                    "bytes": size,
+                    "cached": cached,
+                },
+                campaign_sha256=campaign_sha256,
+            )
+            if status != 200:
+                raise GovernedRunError(
+                    f"delivery confirmation refused: http {status} "
+                    f"{receipt.get('error', '')}".strip()
+                )
+            info["verification_state"] = receipt.get("state")
+            return 200, info
+        raise GovernedRunError(f"download {lake}/{resource}: busy after {attempts} attempts")
+
+    def report_terminal(self, campaign_sha256, unit_id, terminal):
+        return self.post_json(
+            f"/api/v2/campaigns/{campaign_sha256}/units/{unit_id}/terminal",
+            terminal, campaign_sha256=campaign_sha256, unit_id=unit_id,
+        )
+
+    def reconcile_campaign(self, campaign_sha256):
+        return self.get_json(
+            f"/api/v2/campaigns/{campaign_sha256}/reconcile",
+            campaign_sha256=campaign_sha256,
+        )
 
     def download(self, lake: str, resource: str, cache_dir, start=None, end=None,
                  attempts=20) -> dict:
@@ -359,6 +678,7 @@ def parse_args(argv):
     parser.add_argument("--metrics-lake", default="olap_cube")
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--cache-dir", default=DEFAULT_CACHE)
+    parser.add_argument("--outbox-dir", default=DEFAULT_OUTBOX)
     parser.add_argument("--from", dest="range_from", metavar="YYYY-MM-DD")
     parser.add_argument("--to", dest="range_to", metavar="YYYY-MM-DD")
     parser.add_argument("--project", default="predictor")
@@ -371,22 +691,98 @@ def _under_repo(path) -> Path:
     return path if path.is_absolute() else REPO_ROOT / path
 
 
+def _artifact(role, path):
+    path = Path(path)
+    if not path.is_file():
+        return None
+    digest, size = _sha256_file(path)
+    return {"role": role, "sha256": digest, "bytes": size}
+
+
+def _terminal_artifacts(config):
+    artifacts = []
+    candidates = {
+        "governed_config": config.get("_governed_config_path"),
+        "effective_config": config.get("save_config"),
+        "results": config.get("results_file"),
+        "predictions": config.get("output_file"),
+        "uncertainties": config.get("uncertainties_file"),
+        "model": config.get("save_model"),
+    }
+    for role, path in candidates.items():
+        if path:
+            item = _artifact(role, path)
+            if item:
+                artifacts.append(item)
+    return artifacts
+
+
+def _send_pending(gov, outbox):
+    def sender(envelope):
+        status, receipt = gov.report_terminal(
+            envelope["campaign_sha256"], envelope["unit_id"], envelope["terminal"]
+        )
+        if status not in (200, 201):
+            raise GovernedRunError(
+                f"terminal refused: http {status} {receipt.get('error', '')}".strip()
+            )
+        _require_reconciled(
+            gov, envelope["campaign_sha256"], envelope["unit_id"], before_run=False
+        )
+        return receipt
+
+    return outbox.flush(sender)
+
+
+def _require_reconciled(gov, campaign_sha256, unit_id, *, before_run=False):
+    status, body = gov.reconcile_campaign(campaign_sha256)
+    if status != 200:
+        raise GovernedRunError(
+            f"reconciliation failed: http {status} {body.get('error', '')}".strip()
+        )
+    if body.get("accounting_only") or body.get("lake_only"):
+        raise GovernedRunError("terminal accounting and terminal lake diverge")
+    missing = body.get("missing_units")
+    if not isinstance(missing, list):
+        raise GovernedRunError("invalid reconciliation response")
+    if before_run and unit_id not in missing:
+        raise GovernedRunError("campaign unit already has a terminal")
+    if not before_run and unit_id in missing:
+        raise GovernedRunError("terminal is missing after accepted report")
+    return body
+
+
 def run(args, extra) -> dict:
     key = args.experiment_key
     if not KEY_RE.match(key):
         raise GovernedRunError(f"invalid --experiment-key {key!r}")
     if args.experiment_set_key and not KEY_RE.match(args.experiment_set_key):
         raise GovernedRunError(f"invalid --experiment-set-key {args.experiment_set_key!r}")
+    refuse_governed_overrides(extra)
     api_key = load_api_key(args.api_key_file)
     config_path = _under_repo(args.load_config)
     with open(config_path, encoding="utf-8") as handle:
         config = json.load(handle)
+    code_identity = strict_code_identity(REPO_ROOT)
+    inputs = resolve_inputs(config, REPO_ROOT)
+    if not inputs:
+        raise GovernedRunError("the config names none of the six input keys")
+    lake_root = _under_repo(args.lake_root)
+    datasets = [{
+        "lake": args.lake,
+        "resource": resource_for(path, lake_root),
+        "role": role,
+        "from": args.range_from,
+        "to": args.range_to,
+    } for role, path in inputs.items()]
+    spec = execution_spec(config, datasets, extra)
+    config_sha256 = sha256_text(spec)
     out_dir = Path(args.out_dir).expanduser().resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     cache_dir = Path(os.path.expanduser(args.cache_dir)).resolve()
-    lake_root = _under_repo(args.lake_root)
+    outbox = TerminalOutbox(Path(os.path.expanduser(args.outbox_dir)).resolve())
     state = {
-        "status": "running",
+        "status": "RUNNING",
         "experiment_key": key,
         "experiment_set_key": args.experiment_set_key,
         "gov_url": args.gov_url,
@@ -396,36 +792,90 @@ def run(args, extra) -> dict:
         "cache_dir": args.cache_dir,
         "out_dir": str(out_dir),
         "range": {"from": args.range_from, "to": args.range_to},
+        "code_identity": code_identity,
+        "execution_spec": json.loads(spec),
+        "config_sha256": config_sha256,
     }
     receipt_path = out_dir / "GOVERNED_RUN.json"
 
     def checkpoint():
-        receipt_path.write_text(json.dumps(state, indent=2, sort_keys=False) + "\n", encoding="utf-8")
+        _write_json_atomic(receipt_path, state)
 
+    gov = GovHttp(args.gov_url, api_key, key)
+    campaign = {
+        "schema": "governed_campaign.v1",
+        "campaign_key": key,
+        "classification": "GOVERNING",
+        "project": args.project,
+        "code_identity": code_identity,
+        "config_sha256": config_sha256,
+        "input_mode": "DATASETS",
+        "synthetic_spec_sha256": None,
+        "units": [key],
+        "datasets": datasets,
+        "terminal_lake": args.metrics_lake,
+    }
+    status, campaign_receipt = gov.submit_campaign(campaign)
+    if status not in (200, 201):
+        raise GovernedRunError(
+            f"campaign refused: http {status} {campaign_receipt.get('error', '')}".strip()
+        )
+    campaign_sha256 = campaign_receipt.get("campaign_sha256")
+    if not isinstance(campaign_sha256, str) or not re.fullmatch(
+        r"[0-9a-f]{64}", campaign_sha256
+    ):
+        raise GovernedRunError("campaign receipt has no valid identity")
+    state["campaign_sha256"] = campaign_sha256
+    state["campaign_receipt"] = campaign_receipt
+    checkpoint()
+
+    prior = _send_pending(gov, outbox)
+    state["prior_outbox_flush"] = prior
+    if prior["pending"]:
+        state["status"] = "REFUSED"
+        state["reason"] = "PRIOR_TERMINAL_PENDING"
+        checkpoint()
+        raise GovernedRunError("a prior terminal remains pending")
+    _require_reconciled(gov, campaign_sha256, key, before_run=True)
+
+    started_at = _utc_now()
+    wall_start = time.monotonic()
+    downloads = {}
+    delivery_ids = []
+    metrics = []
+    gcfg = {}
+    failure = None
+    terminal_status = "COMPLETED"
+    terminal_reason = None
     try:
-        inputs = resolve_inputs(config, REPO_ROOT)
-        if not inputs:
-            raise GovernedRunError("the config names none of the six input keys")
-        gov = GovHttp(args.gov_url, api_key, key)
-        downloads = {}
-        for path in distinct_paths(inputs):
-            resource = resource_for(path, lake_root)
-            downloads[path] = gov.download(
-                args.lake, resource, cache_dir, args.range_from, args.range_to
+        refuse_stale_outputs(config, out_dir)
+        for item in datasets:
+            status, info = gov.governed_download(
+                campaign_sha256, key, item["lake"], item["resource"], item["role"],
+                cache_dir, item["from"], item["to"],
             )
+            if status != 200:
+                raise GovernedRunError(
+                    f"download {item['lake']}/{item['resource']} refused: "
+                    f"http {status} {info.get('error', '')}".strip()
+                )
+            downloads[item["role"]] = info
+            delivery_ids.append(info["delivery_id"])
         state["inputs"] = [
-            {"role": role, "path": str(path),
-             **{k: downloads[path][k] for k in (
-                 "resource", "sha256", "bytes", "cached", "source_sha256", "delivery", "time_column")}}
-            for role, path in inputs.items()
+            {"role": role, **{k: downloads[role].get(k) for k in (
+                "resource", "sha256", "bytes", "cached", "source_sha256", "delivery",
+                "time_column", "availability_contract_sha256", "delivery_id",
+                "verification_state",
+            )}}
+            for role in inputs
         ]
-        cached = {role: downloads[path]["path"] for role, path in inputs.items()}
+        cached = {role: downloads[role]["path"] for role in inputs}
         gcfg = governed_config(config, cached, out_dir)
         gcfg_path = out_dir / "governed_config.json"
-        gcfg_path.write_text(json.dumps(gcfg, indent=4) + "\n", encoding="utf-8")
+        _write_json_atomic(gcfg_path, gcfg)
+        gcfg["_governed_config_path"] = str(gcfg_path)
         state["governed_config"] = str(gcfg_path)
 
-        refuse_governed_overrides(extra)
         cmd = [sys.executable, "app/main.py", "--load_config", str(gcfg_path), *extra]
         env = dict(os.environ, CUDA_VISIBLE_DEVICES="", PYTHONPATH=str(REPO_ROOT))
         state["command"] = cmd
@@ -433,6 +883,8 @@ def run(args, extra) -> dict:
         proc = subprocess.run(cmd, cwd=REPO_ROOT, env=env)
         state["exit_code"] = proc.returncode
         if proc.returncode != 0:
+            terminal_status = "FAILED"
+            terminal_reason = f"PREDICTOR_EXIT_{proc.returncode}"
             raise GovernedRunError(f"predictor exited {proc.returncode}")
 
         effective_path = Path(gcfg["save_config"])
@@ -445,13 +897,12 @@ def run(args, extra) -> dict:
             if used is None or Path(str(used)).resolve() != Path(cached_path).resolve():
                 raise GovernedRunError(f"the run did not use the governed input for {role}: {used!r}")
         identities = {
-            role: f"gov:{args.lake}/{downloads[path]['resource']}@{downloads[path]['sha256']}"
-            for role, path in inputs.items()
+            role: f"gov:{args.lake}/{downloads[role]['resource']}@{downloads[role]['sha256']}"
+            for role in inputs
         }
         canonical = canonical_config(effective, identities)
         state["config_canonical"] = canonical
-        state["config_sha256"] = sha256_text(canonical)
-        state["code_commit"] = code_commit(REPO_ROOT)
+        state["effective_config_sha256"] = sha256_text(canonical)
 
         results_path = Path(gcfg["results_file"])
         if not results_path.is_file():
@@ -459,33 +910,63 @@ def run(args, extra) -> dict:
         metrics = parse_results_csv(results_path)
         if not metrics:
             raise GovernedRunError(f"no metric rows in {results_path}")
-        datasets = [
-            {"lake": args.lake, "resource": downloads[path]["resource"],
-             "sha256": downloads[path]["sha256"], "role": role}
-            for role, path in inputs.items()
-        ]
-        plugin = config.get("predictor_plugin") or config.get("plugin")
-        report = build_report(
-            args.metrics_lake, metrics, datasets,
-            experiment_set_key=args.experiment_set_key,
-            config_sha256=state["config_sha256"], code_commit=state["code_commit"],
-            project=args.project, phase=args.phase or config_path.parent.name,
-            tags={"plugin": str(plugin)} if plugin else {},
-        )
-        state["report"] = report
-        status, receipt = gov.post_json(f"/api/v1/experiments/{key}/metrics", report)
-        state["report_status"] = status
-        state["receipt"] = receipt
-        if status not in (200, 201):
-            raise GovernedRunError(f"report refused: http {status} {receipt.get('error', '')}".strip())
-        state["status"] = "ok"
-        checkpoint()
-        return state
     except BaseException as exc:
-        state["status"] = "failed"
-        state["reason"] = f"{type(exc).__name__}: {exc}" if not isinstance(exc, GovernedRunError) else str(exc)
+        failure = exc
+        if terminal_status == "COMPLETED":
+            terminal_status = "REFUSED" if isinstance(exc, GovernedRunError) else "FAILED"
+            terminal_reason = (
+                f"GOVERNED_RUN_REFUSED:{exc}" if isinstance(exc, GovernedRunError)
+                else f"UNEXPECTED_{type(exc).__name__.upper()}"
+            )
+    finished_at = _utc_now()
+    plugin = config.get("predictor_plugin") or config.get("plugin")
+    terminal = {
+        "schema": "governed_terminal.v1",
+        "generation": 1,
+        "status": terminal_status,
+        "reason": terminal_reason,
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "costs": {"wall_seconds": max(0.0, time.monotonic() - wall_start)},
+        "deliveries": delivery_ids,
+        "artifacts": _terminal_artifacts(gcfg),
+        "metrics": metrics if terminal_status == "COMPLETED" else [],
+        "tags": {
+            "phase": str(args.phase or config_path.parent.name),
+            "experiment_set_key": str(args.experiment_set_key or ""),
+            "plugin": str(plugin or ""),
+            "exit_code": str(state.get("exit_code", "")),
+        },
+    }
+    envelope = {
+        "campaign_sha256": campaign_sha256,
+        "unit_id": key,
+        "terminal": terminal,
+    }
+    item = outbox.put(envelope)
+    state["terminal_outbox"] = str(item.path)
+    state["terminal"] = terminal
+    state["status"] = terminal_status
+    if terminal_reason:
+        state["reason"] = terminal_reason
+    checkpoint()
+
+    flushed = _send_pending(gov, outbox)
+    state["outbox_flush"] = flushed
+    if flushed["pending"]:
+        state["terminal_pending"] = True
         checkpoint()
-        raise
+        raise GovernedRunError("terminal remains pending; scientific result is not governing")
+    state["reconciliation"] = _require_reconciled(
+        gov, campaign_sha256, key, before_run=False
+    )
+    state["terminal_pending"] = False
+    checkpoint()
+    if failure is not None:
+        if isinstance(failure, GovernedRunError):
+            raise failure
+        raise GovernedRunError(f"{type(failure).__name__}: {failure}") from failure
+    return state
 
 
 def main(argv=None) -> int:
@@ -503,10 +984,9 @@ def main(argv=None) -> int:
     except Exception as exc:
         print(f"governed_run: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 1
-    receipt = state["receipt"]
     print(
-        f"governed_run: {state['experiment_key']} report_sha256={receipt.get('report_sha256')} "
-        f"lineage={receipt.get('lineage')} http={state['report_status']} "
+        f"governed_run: {state['experiment_key']} status={state['status']} "
+        f"campaign={state['campaign_sha256']} "
         f"receipt={Path(state['out_dir']) / 'GOVERNED_RUN.json'}"
     )
     return 0
