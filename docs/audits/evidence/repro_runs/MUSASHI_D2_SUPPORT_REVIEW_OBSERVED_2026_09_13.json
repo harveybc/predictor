@@ -1,0 +1,28 @@
+{
+  "kind": "INDEPENDENT_REVIEW_OBSERVATIONS_NOT_AUTHORIZATION",
+  "reviewed_commit": "d26fdc9",
+  "published_decisions_sha256": "f4958c88f8caa6b78d67fb7ff00c2a6a697276aa9b19b6b73411b78d97622510",
+  "published_decisions": 3591,
+  "candidate_passes": 51,
+  "candidate_limited": 7,
+  "favorable_decisions_with_missing_primary_seed_metrics": 5,
+  "affected": [
+    {"subject": "local_linear_trend_kalman", "family": "motif", "snr_db": 5, "decision": "LAB_CALIBRATED", "reported_valid": 30, "improvement_n": 22},
+    {"subject": "local_level_kalman", "family": "motif", "snr_db": 5, "decision": "LAB_CALIBRATED", "reported_valid": 30, "improvement_n": 22},
+    {"subject": "trailing_haar_threshold", "levels": 3, "threshold_k": 3.0, "family": "steps", "snr_db": 20, "decision": "LAB_CALIBRATED", "reported_valid": 30, "improvement_n": 25},
+    {"subject": "trailing_haar_threshold", "levels": 2, "threshold_k": 3.0, "family": "steps", "snr_db": 20, "decision": "LAB_CALIBRATED", "reported_valid": 30, "improvement_n": 25},
+    {"subject": "local_linear_trend_kalman", "family": "steps", "snr_db": 20, "decision": "REGIME_LIMITED", "reported_valid": 30, "improvement_n": 25}
+  ],
+  "shared_regime_fields": {"perturbation": "white", "length": 2048, "missingness": "none"},
+  "missing_metrics_in_each_affected_seed": ["snr_improvement_db", "delay_samples", "residual_signal_share"],
+  "fixture_observations": {
+    "complete": "LAB_CALIBRATED",
+    "measured_extreme_damage": "LAB_REJECTED",
+    "omit_extreme_metric": "LAB_CALIBRATED",
+    "inconclusive_delay": "LAB_CALIBRATED",
+    "inconclusive_residual": "LAB_CALIBRATED"
+  },
+  "independent_focal_tests": {"passed": 29, "seconds": 47.62},
+  "full_distributed_campaign_replayed": false,
+  "live_cube_inspected_or_modified": false
+}
