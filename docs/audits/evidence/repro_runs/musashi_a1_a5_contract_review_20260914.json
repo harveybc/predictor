@@ -1,0 +1,9 @@
+{
+  "revision": "1b4a23431a0607eb130a3ac7b25cee0a66a6e378",
+  "scope": "OFFLINE_SYNTHETIC_REVIEW_NOT_SCIENTIFIC",
+  "live_class_is_accepted_by_scope_validator": true,
+  "invalid_facts_still_generate_zero_lag_contract": true,
+  "day_one_cut_includes_row_received_on_day_two": true,
+  "delayed_cut_sha256": "c54bbc81b2a7db08ce86fd9caf7d23fa935d8cd2fc3e78f642b0c7ca946c1846",
+  "zero_span_explicitly_nonfinal_bar_is_delivered": true
+}

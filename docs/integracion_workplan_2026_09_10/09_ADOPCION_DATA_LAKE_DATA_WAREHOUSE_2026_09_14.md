@@ -88,4 +88,17 @@ Las condiciones de activacion operativa y validacion causal siguen vigentes.
 - Este cambio de infraestructura no demuestra utilidad de preprocesamiento,
   ausencia universal de fuga temporal ni rentabilidad de un modelo.
 
-Orden ejecutiva vigente: [contratos y adopcion de consumidores](../handoffs/MUSASHI_TO_SATOSHI_CONTRACTS_AND_CONSUMER_ADOPTION_2026_09_14.md).
+## Revision del retorno A1-A5
+
+Musashi verifico los doce desenlaces en el cubo y la salud de los servicios.
+Preprocessor y predictor completaron sus pruebas mecanicas con el adaptador
+local predictor_examples; esto no completa aun la adopcion del host de
+entrada nuevo. Feature-eng y feature-extractor probaron transporte, no exito
+de sus pipelines. PR 1 financiero conserva valor descriptivo, pero no se
+instala: cierre de barra no demuestra disponibilidad.
+
+La investigacion financiera y los fixtures sinteticos avanzan en paralelo.
+No se requiere una nueva decision del owner para empezar la continuacion.
+Ver [dictamen](../audits/work_plan/MUSASHI_REVIEW_A1_A5_CONTRACT_AND_ADOPTION_2026_09_14.md).
+
+Orden ejecutiva vigente: [semantica temporal y adopcion real](../handoffs/MUSASHI_TO_SATOSHI_TEMPORAL_SEMANTICS_AND_REAL_HOST_ADOPTION_2026_09_14.md).
