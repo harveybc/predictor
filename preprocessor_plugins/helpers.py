@@ -3,6 +3,11 @@ import pandas as pd
 import json
 from sklearn.preprocessing import StandardScaler
 
+# Which columns may become features is declared, never inferred: an ISO timestamp reached a
+# float tensor when every column of a file was treated as a feature (2026-09-14). The plan
+# is resolved once per file and recorded, so a result says which columns produced it.
+from app.column_roles import ColumnRoleError, resolve as resolve_roles, select_features
+
 def load_normalized_csv(config):
     """Step 1: Load normalized CSV data as-is, limiting rows to max_steps_ configurations.
                also returns the corresponding dates.
@@ -69,6 +74,16 @@ def load_normalized_csv(config):
                 print(f"WARNING: Empty dataframe loaded from {path}")
             else:
                 print(f"  Loaded {data_key}: {df.shape}")
+            index_name = df.index.name
+            plan = resolve_roles(config, ([index_name] if index_name else []) + list(df.columns))
+            if plan.migration is None:
+                keep = [name for name in plan.features if name in df.columns]
+                df = df.loc[:, keep] if keep else df
+                select_features(df, type(plan)(features=keep, targets=plan.targets,
+                                               time=plan.time, metadata=plan.metadata,
+                                               target_is_feature=plan.target_is_feature,
+                                               contract=plan.contract))
+            config.setdefault("column_roles_applied", {})[data_key] = plan.as_record()
             data[data_key] = df
             # Extract DATE_TIME column if present; otherwise use index
             if "DATE_TIME" in df.columns:
@@ -78,6 +93,9 @@ def load_normalized_csv(config):
                     dates[data_key] = df.index.values
                 except Exception:
                     dates[data_key] = None
+        except ColumnRoleError:
+            # a contract refusal is not a missing file: it must stop the run, not be skipped
+            raise
         except Exception as e:
             print(f"ERROR loading {file_key} ({path}): {e}")
             continue

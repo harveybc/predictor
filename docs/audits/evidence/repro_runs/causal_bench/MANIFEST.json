@@ -1,0 +1,217 @@
+{
+ "schema": "causal_bench.v1",
+ "generator": "predictor/tools/make_causal_bench.py",
+ "generator_sha256": "c8e60a0d4cdc8f417ec860d5b5ae29bd65865f180b82177c538b93a8faf7f9ec",
+ "seed": 20260915,
+ "rows": 1440,
+ "step_hours": 4,
+ "horizon": 6,
+ "lookback": 24,
+ "embargo_rows": 30,
+ "noise_sd": 0.25,
+ "partitions": {
+  "train": {
+   "row_range": [
+    0,
+    864
+   ]
+  },
+  "validation": {
+   "row_range": [
+    894,
+    1110
+   ]
+  },
+  "test": {
+   "row_range": [
+    1140,
+    1440
+   ]
+  }
+ },
+ "regimes": {
+  "trend": "level",
+  "periodic_daily": "seasonal_daily",
+  "periodic_weekly": "seasonal_weekly",
+  "jumps": "jump",
+  "extremes": "spike",
+  "noise": "noise",
+  "missingness": "observed"
+ },
+ "availability": "SIMULATED: a row of the grid is complete one step after its timestamp, by construction of this generator; it is not an observation of any data provider",
+ "column_roles": {
+  "time": "DATE_TIME",
+  "features": [
+   "observed"
+  ],
+  "targets": [
+   "signal"
+  ],
+  "metadata": [
+   "level",
+   "seasonal_daily",
+   "seasonal_weekly",
+   "jump",
+   "spike",
+   "noise"
+  ]
+ },
+ "files": {
+  "causal_train.csv": {
+   "file": "causal_train.csv",
+   "rows": 864,
+   "columns": [
+    "DATE_TIME",
+    "level",
+    "seasonal_daily",
+    "seasonal_weekly",
+    "jump",
+    "spike",
+    "noise",
+    "signal",
+    "observed"
+   ],
+   "sha256": "d852430737538f604ba68e516ed101d3a6cb2418eb0c17ef95b5d648c59c3982",
+   "bytes": 83220,
+   "first_event": "2024-01-01 00:00:00",
+   "last_event": "2024-05-23 20:00:00",
+   "missing_rows": 0,
+   "partition": "train",
+   "row_range": [
+    0,
+    864
+   ],
+   "first_index": 0,
+   "last_index": 863
+  },
+  "causal_validation.csv": {
+   "file": "causal_validation.csv",
+   "rows": 216,
+   "columns": [
+    "DATE_TIME",
+    "level",
+    "seasonal_daily",
+    "seasonal_weekly",
+    "jump",
+    "spike",
+    "noise",
+    "signal",
+    "observed"
+   ],
+   "sha256": "468435cb6808979973596990cda202b77629785623361d970716c0a7c5ed8e84",
+   "bytes": 20671,
+   "first_event": "2024-05-29 00:00:00",
+   "last_event": "2024-07-03 20:00:00",
+   "missing_rows": 27,
+   "partition": "validation",
+   "row_range": [
+    894,
+    1110
+   ],
+   "first_index": 894,
+   "last_index": 1109
+  },
+  "causal_test.csv": {
+   "file": "causal_test.csv",
+   "rows": 300,
+   "columns": [
+    "DATE_TIME",
+    "level",
+    "seasonal_daily",
+    "seasonal_weekly",
+    "jump",
+    "spike",
+    "noise",
+    "signal",
+    "observed"
+   ],
+   "sha256": "af9cd31b62ca01b516a5778f022dd05f1746c9f8ffeeca1ce2b4b056e8dad987",
+   "bytes": 29033,
+   "first_event": "2024-07-09 00:00:00",
+   "last_event": "2024-08-27 20:00:00",
+   "missing_rows": 0,
+   "partition": "test",
+   "row_range": [
+    1140,
+    1440
+   ],
+   "first_index": 1140,
+   "last_index": 1439
+  },
+  "causal_whole.csv": {
+   "file": "causal_whole.csv",
+   "rows": 1440,
+   "columns": [
+    "DATE_TIME",
+    "level",
+    "seasonal_daily",
+    "seasonal_weekly",
+    "jump",
+    "spike",
+    "noise",
+    "signal",
+    "observed"
+   ],
+   "sha256": "7b55fb6496aca01fd7c4698efeca53180762db1974318478cad514ff572e09dc",
+   "bytes": 138537,
+   "first_event": "2024-01-01 00:00:00",
+   "last_event": "2024-08-27 20:00:00",
+   "missing_rows": 29,
+   "partition": "whole"
+  }
+ },
+ "contracts": {
+  "causal_train.csv": {
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "timezone": "NAIVE_WALL_CLOCK",
+   "time_unit": null,
+   "frequency": "4h",
+   "availability": {
+    "label": "WINDOW_START",
+    "completion_lag_max": "4h",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "use_class": "OFFLINE_DAY_GRANULAR"
+   }
+  },
+  "causal_validation.csv": {
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "timezone": "NAIVE_WALL_CLOCK",
+   "time_unit": null,
+   "frequency": "4h",
+   "availability": {
+    "label": "WINDOW_START",
+    "completion_lag_max": "4h",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "use_class": "OFFLINE_DAY_GRANULAR"
+   }
+  },
+  "causal_test.csv": {
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "timezone": "NAIVE_WALL_CLOCK",
+   "time_unit": null,
+   "frequency": "4h",
+   "availability": {
+    "label": "WINDOW_START",
+    "completion_lag_max": "4h",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "use_class": "OFFLINE_DAY_GRANULAR"
+   }
+  },
+  "causal_whole.csv": {
+   "event_time_column": "DATE_TIME",
+   "available_time_column": "DATE_TIME",
+   "timezone": "NAIVE_WALL_CLOCK",
+   "time_unit": null,
+   "frequency": "4h",
+   "availability": {
+    "label": "WINDOW_START",
+    "completion_lag_max": "4h",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "use_class": "OFFLINE_DAY_GRANULAR"
+   }
+  }
+ }
+}
