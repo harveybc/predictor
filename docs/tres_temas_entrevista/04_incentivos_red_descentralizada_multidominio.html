@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta doctoral - Aprendizaje multiagente para distribuir computo</title>
+<style>
+  @page { size: Letter; margin: 0; }
+  * { box-sizing: border-box; }
+  :root { --ink: #20282c; --muted: #57656b; --accent: #176d68; --line: #bdc9cc; --soft: #eef5f4; }
+  body { margin: 0; color: var(--ink); font-family: "DejaVu Sans", Arial, sans-serif; background: #e8ecef; }
+  .page { width: 8.5in; height: 11in; margin: 0 auto 8mm; padding: 16mm 18mm 15mm; background: #fff; position: relative; page-break-after: always; overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
+  .rule { width: 38mm; height: 1.5mm; background: var(--accent); margin-bottom: 4.5mm; }
+  h1 { margin: 0 0 3.2mm; font-family: "DejaVu Serif", Georgia, serif; font-size: 19.5pt; line-height: 1.12; color: #173b3d; letter-spacing: 0; }
+  .subtitle { margin: 0 0 5mm; color: var(--muted); font-size: 10pt; line-height: 1.3; text-align: left; }
+  h2 { margin: 4mm 0 1.8mm; font-size: 13.5pt; line-height: 1.2; color: #145e5a; letter-spacing: 0; }
+  h3 { margin: 2.8mm 0 1.2mm; font-size: 11pt; line-height: 1.22; color: #263c42; letter-spacing: 0; }
+  p, li, td, th, .refs { font-size: 10pt; line-height: 1.28; }
+  p { margin: 0 0 2.1mm; text-align: justify; }
+  ul, ol { margin: 1mm 0 2.2mm 4mm; padding-left: 4.2mm; }
+  li { margin-bottom: 1mm; }
+  strong { color: #183a3e; }
+  a { color: inherit; text-decoration: none; }
+  .lead { font-family: "DejaVu Serif", Georgia, serif; font-size: 10.4pt; line-height: 1.34; color: #20383d; }
+  .question { border-left: 1.4mm solid var(--accent); background: var(--soft); padding: 3mm 3.8mm; margin: 3mm 0; font-family: "DejaVu Serif", Georgia, serif; font-size: 10.3pt; line-height: 1.32; }
+  .note { border-top: 0.35mm solid var(--line); border-bottom: 0.35mm solid var(--line); padding: 2.4mm 0; margin: 2.6mm 0; }
+  .formula { margin: 2.4mm 0; padding: 2.4mm 3mm; text-align: center; background: #f2f5f5; font-family: "DejaVu Serif", Georgia, serif; font-size: 10pt; line-height: 1.3; }
+  table { width: 100%; border-collapse: collapse; margin: 1.8mm 0 2.5mm; }
+  th { background: #eaf2f1; color: #173d40; text-align: left; }
+  th, td { border: 0.25mm solid var(--line); padding: 1.7mm 2mm; vertical-align: top; }
+  .cite { white-space: nowrap; }
+  .refs { margin-top: 1.5mm; }
+  .ref { break-inside: avoid; margin: 0 0 1.55mm; padding-left: 6mm; text-indent: -6mm; text-align: left; }
+  .footer { position: absolute; bottom: 6mm; left: 18mm; right: 18mm; border-top: 0.25mm solid #c8d0d4; padding-top: 1.6mm; color: #68777d; font-size: 8.5pt; display: flex; justify-content: space-between; }
+  @media print { body { background: #fff; } .page { margin: 0; } }
+  @media screen and (max-width: 8.5in) {
+    body { background: #fff; }
+    .page { width: 100%; height: auto; min-height: 0; margin: 0; padding: 24px 20px; overflow: visible; page-break-after: auto; }
+    .footer { position: static; margin-top: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<section class="page" id="page-1">
+  <div class="rule"></div>
+  <h1>Aprendizaje multiagente para distribuir cómputo entre tareas de optimización de inteligencia artificial</h1>
+  <p class="subtitle"><strong>Recompensas financiadas, autoselección y verificación por dominio</strong><br>Propuesta doctoral preliminar · Harvey Demian Bastidas Caicedo · Doctorado en Inteligencia Artificial · Universidad de La Sabana</p>
+
+  <h2>Resumen</h2>
+  <p class="lead">Una red abierta puede reunir capacidad de cómputo que pertenece a personas y organizaciones distintas, pero disponer de muchas máquinas no resuelve por sí solo qué trabajo debe hacer cada una. Cuando varios dominios de inteligencia artificial compiten por los mismos nodos, estos tenderán a escoger las tareas con mayor pago esperado y menor costo local. Esa decisión es razonable para cada participante, pero puede concentrar el cómputo en el dominio más fácil de verificar y dejar sin atender otros trabajos que sí tienen demanda financiada.</p>
+
+  <p>Esta investigación estudiará una población de nodos que aprende en línea a escoger entre dominios permitidos por su operador. Cada dominio publicará una recompensa cubierta por fondos reales, una regla de aceptación y un presupuesto. El nodo no enviará una oferta ni revelará su costo: podrá trabajar en un dominio fijo, usar listas de inclusión o exclusión, o aplicar una política de aprendizaje que estime el pago neto de cada opción. El protocolo ajustará recompensas mediante una regla pública, interpretable y de baja dimensión; no mediante un modelo opaco entrenado con señales que los propios participantes puedan fabricar.</p>
+
+  <p>El aporte científico será identificar las condiciones bajo las cuales esas interacciones distribuyen el cómputo de acuerdo con la demanda financiada, sin premiar resultados rechazados ni hacer rentable la manipulación. El estudio combinará aprendizaje en línea, juegos de congestión y diseño de mecanismos. Se buscarán cotas de arrepentimiento y concentración bajo supuestos explícitos, junto con regiones de imposibilidad cuando la demanda sea recapturable, la verificación no distinga trabajo válido o la retroalimentación pueda manipularse. DOIN servirá como prototipo y laboratorio reproducible; el ledger registrará compromisos y pagos, pero no decidirá la calidad de un modelo.</p>
+
+  <h2>1. Planteamiento del problema</h2>
+  <p>Los servicios de inferencia y optimización pueden aprovechar recursos heterogéneos que hoy permanecen ociosos. Un operador podría ofrecer solo inferencia, solo optimización, ambas actividades o ninguna; además, puede negarse a participar en ciertos dominios y conservar en privado sus límites de hardware, energía y rentabilidad. El problema aparece cuando esa libertad de elección interactúa con tareas de costos y verificaciones muy diferentes. Una recompensa uniforme favorece el dominio barato; una recompensa que reacciona de forma ingenua a las colas puede ser manipulada; y pagar sin fondos comprometidos promete recursos que no existen.</p>
+
+  <div class="question"><strong>Pregunta de investigación.</strong> ¿Bajo qué reglas de recompensa publicada y verificación por dominio puede una población de nodos con aprendizaje en línea distribuir su cómputo entre trabajos heterogéneos de optimización de modelos, de acuerdo con demanda financiada, sin concentrarse en el dominio de menor costo verificable ni hacer rentable la manipulación de demanda o resultados?</div>
+
+  <div class="footer"><span>Propuesta doctoral preliminar · Aprendizaje multiagente</span><span>1 / 8</span></div>
+</section>
+
+<section class="page" id="page-2">
+  <h2>2. Objetivos, hipótesis y alcance</h2>
+  <h3>2.1 Objetivo general</h3>
+  <p>Diseñar y evaluar un mecanismo financiado de recompensas publicadas que dirija, sin pujas, la autoselección de nodos heterogéneos con aprendizaje en línea entre dominios de optimización de inteligencia artificial, preservando el presupuesto y limitando la concentración y la manipulación.</p>
+
+  <h3>2.2 Objetivos específicos</h3>
+  <ol>
+    <li>Formalizar el juego entre dominios financiados, una regla pública de recompensa y nodos con costos privados, restricciones locales y resultados sujetos a una prueba de aceptación propia de cada dominio.</li>
+    <li>Diseñar y analizar una regla interpretable de ajuste de recompensas y políticas locales de aprendizaje que permitan a los nodos escoger dominios sin revelar sus costos ni renunciar a la configuración manual.</li>
+    <li>Evaluar el mecanismo frente a cambios de demanda, costos heterogéneos y participantes estratégicos, usando un dominio tabular de control y un dominio confirmatorio que exija entrenamiento real.</li>
+  </ol>
+
+  <h3>2.3 Hipótesis</h3>
+  <table>
+    <tr><th>Hipótesis</th><th>Resultado contrastable</th></tr>
+    <tr><td><strong>H1 · Distribución</strong></td><td>Con presupuesto igual, la regla propuesta reducirá la demanda financiada no atendida y la desviación entre cómputo aceptado y metas de servicio frente a recompensas uniformes o estáticas.</td></tr>
+    <tr><td><strong>H2 · Aprendizaje</strong></td><td>Ante cambios de régimen predeclarados, los nodos con aprendizaje sin arrepentimiento tendrán menor pérdida acumulada que políticas fijas, aleatorias y codiciosas.</td></tr>
+    <tr><td><strong>H3 · Manipulación</strong></td><td>Con depósitos no recapturables, aceptación reproducible y penalización acotada, fabricar demanda, repetir resultados o declarar mejoras falsas tendrá utilidad esperada no positiva; de no ser posible, se caracterizará el límite.</td></tr>
+  </table>
+
+  <p>Un piloto separado fijará tamaños de efecto, márgenes, número de nodos, duración de ventanas y potencia estadística; todo quedará registrado antes de evaluar las hipótesis.</p>
+
+  <h3>2.4 Alcance y límites</h3>
+  <p>La tesis estudiará <strong>optimización de modelos</strong>. La inferencia aparecerá solo como servicio capaz de financiar un dominio; no tendrá otra hipótesis ni evaluación subjetiva. Cada dominio conservará su métrica, tolerancia y método de aceptación. No se sumarán mejoras incompatibles en una unidad universal.</p>
+
+  <p>No habrá token propio, pagos reales ni subastas. Los experimentos usarán unidades simuladas: la red publica una recompensa cubierta y cada nodo decide si participa. Una liquidación común mantendrá dominios lógicos separados; crear una blockchain por dominio queda fuera.</p>
+
+  <div class="note"><strong>Recorte.</strong> Quedan fuera los precios aprendidos, la selección de modelos, los jueces LLM y la comparación de blockchains. El objeto es la decisión repetida de los nodos frente a una regla publicada.</div>
+
+  <div class="footer"><span>Objetivos, hipótesis y alcance</span><span>2 / 8</span></div>
+</section>
+
+<section class="page" id="page-3">
+  <h2>3. Marco teórico</h2>
+  <h3>3.1 Decisión secuencial de los nodos</h3>
+  <p>Cada nodo conoce las recompensas, los dominios autorizados y sus costos, pero no cuánto tardará una tarea, si será aceptada ni cuántos competidores llegarán. El problema puede formularse como un bandit: se elige una opción, se observa su resultado y se actualiza la política. El <em>arrepentimiento</em> será la pérdida acumulada frente a la mejor decisión fija conocida al final.</p>
+
+  <p>La dificultad adicional es que los demás participantes también aprenden. Los dominios se parecen a recursos compartidos: si demasiados nodos escogen el mismo, disminuye la oportunidad de trabajo o el pago sostenible. Los juegos de congestión garantizan la existencia de ciertos equilibrios, pero no que sean socialmente deseables <span class="cite">[2], [3]</span>. Resultados recientes muestran que dinámicas sin arrepentimiento pueden converger bajo estructuras concretas de congestión <span class="cite">[7]</span>. La tesis no supondrá que esas garantías se transfieren automáticamente; identificará qué supuestos sobreviven cuando hay verificación costosa, presupuestos separados y recompensas que cambian por ventanas.</p>
+
+  <h3>3.2 Participantes estratégicos y aprendizaje</h3>
+  <p>Un algoritmo de aprendizaje puede fallar si los datos que observa son producidos por agentes que desean influir en él. En bandits con brazos estratégicos, algoritmos clásicos de bajo arrepentimiento pueden inducir malos resultados para el principal, mientras que mecanismos diseñados para ese comportamiento cambian los incentivos <span class="cite">[4]</span>. También existen resultados de robustez y compatibilidad de incentivos en aprendizaje en línea bajo modelos más restringidos <span class="cite">[5], [6]</span>. Esta literatura justifica estudiar juntos el aprendizaje local y las reglas del entorno, pero no autoriza a afirmar compatibilidad de incentivos sin demostrarla para el juego propuesto.</p>
+
+  <h3>3.3 Recompensa publicada y conocimiento disperso</h3>
+  <p>El mecanismo no pide pujas. El dominio <em>d</em> publica una recompensa <em>r<sub>d</sub></em> cubierta por un fondo <em>F<sub>d</sub></em>; el nodo acepta según su utilidad esperada sin revelar el costo. Hayek explicó que los precios coordinan conocimiento disperso <span class="cite">[1]</span>, pero aquí la analogía es limitada: no hay formación bilateral de precios. La recompensa expresa demanda solo si el demandante no puede recuperar el depósito con identidades propias. Si los nodos no responden a ella, se rechaza su interpretación como señal.</p>
+
+  <p>Una recompensa dinámica es además un controlador. Reglas históricas de precio pueden converger u oscilar según su actualización y la respuesta de los usuarios <span class="cite">[8]</span>. Por esta razón, la tesis usará una función publicada, de baja dimensión y actualizada en ventanas. No entrenará una red neuronal con colas o telemetría aportada por los mismos nodos para decidir cuánto pagar.</p>
+
+  <h3>3.4 Verificación, resultado y utilidad</h3>
+  <p>Pagar por tiempo de cómputo no garantiza un resultado útil; pagar solo al ganador puede producir alta varianza y trabajo desperdiciado. Este es un problema de riesgo moral: el esfuerzo del participante no es directamente observable y el pago debe relacionarse con una salida medible <span class="cite">[9]</span>. En la tesis, “aceptado” significará algo concreto en cada dominio: consulta exacta a una tabla reservada, o re-ejecución sobre datos y código comprometidos con una tolerancia predeclarada. La reproducibilidad prueba que el resultado ocurrió; su utilidad económica se expresa por la demanda financiada del dominio, no por el sello.</p>
+
+  <div class="note"><strong>Tres autoridades.</strong> El fondo prueba presupuesto; el sello, cumplimiento del dominio; el ledger, el orden de compromisos y pagos. Ninguna reemplaza a las otras.</div>
+
+  <div class="footer"><span>Marco teórico</span><span>3 / 8</span></div>
+</section>
+
+<section class="page" id="page-4">
+  <h2>4. Estado del arte y brecha</h2>
+  <p>La propuesta se sitúa entre aprendizaje multiagente, mecanismos de recompensa y cómputo distribuido para inteligencia artificial. No reclama como novedad la existencia de bandits, precios publicados, prueba de trabajo útil o redes con mineros y validadores. La diferencia buscada está en su combinación acotada: nodos que aprenden a autoseleccionarse entre dominios de optimización, recompensas conservadas por dominio y aceptación ejecutable que no pretende comparar métricas incompatibles.</p>
+
+  <table>
+    <tr><th>Línea</th><th>Qué resuelve</th><th>Brecha frente a esta tesis</th></tr>
+    <tr><td>Bandits estratégicos y aprendizaje compatible con incentivos <span class="cite">[4]–[6]</span></td><td>Decisiones repetidas cuando brazos o expertos pueden actuar estratégicamente.</td><td>Aquí los agentes escogen dominios, tienen hardware y costos distintos, y reciben resultados sujetos a presupuesto y aceptación.</td></tr>
+    <tr><td>Juegos de congestión y aprendizaje sin arrepentimiento <span class="cite">[2], [3], [7]</span></td><td>Equilibrio y pérdida de eficiencia cuando agentes comparten recursos.</td><td>Un dominio no es solo una ruta: tiene fondo, servicio objetivo y costo de verificación propios.</td></tr>
+    <tr><td>Prueba de trabajo útil y prueba de aprendizaje <span class="cite">[10]–[12]</span></td><td>Relacionan consenso o evidencia de entrenamiento con cómputo considerado útil.</td><td>Esta tesis separa la seguridad del ledger de la recompensa por optimización y no confía en una trayectoria de entrenamiento como prueba de mejora.</td></tr>
+    <tr><td>Bittensor, Gensyn y Akash <span class="cite">[14]–[16]</span></td><td>Incentivos por subred, verificación de ejecución o contratación de cómputo.</td><td>La propuesta no emite token, no subasta recursos y paga desde fondos conservados por resultados aceptados bajo un contrato de dominio.</td></tr>
+  </table>
+
+  <h3>4.1 Vecinos más cercanos</h3>
+  <p>Bittensor distribuye emisiones entre subredes mediante tokens y señales de mercado <span class="cite">[14]</span>. Gensyn coordina ejecución y verificación de aprendizaje distribuido <span class="cite">[15]</span>. Akash contrata cómputo mediante ofertas <span class="cite">[16]</span>. Prueban que la participación abierta y la especialización son viables, pero usan pagos y criterios distintos.</p>
+
+  <p>Ofelimos combina búsqueda combinatoria con seguridad de blockchain <span class="cite">[10]</span>; aquí no se afirmará que optimizar modelos asegura el ledger. Las vulnerabilidades de las pruebas de aprendizaje también impiden aceptar una trayectoria declarada como evidencia suficiente <span class="cite">[12]</span>. La prueba ocurrirá en el dominio y el registro conservará orden e identidad.</p>
+
+  <h3>4.2 Brecha concreta</h3>
+  <p>Falta establecer qué ocurre cuando una población de nodos con aprendizaje local puede moverse entre dominios que ofrecen recompensas financiadas, pero no comparten métrica de calidad ni costo de verificación. Una regla estática puede dejar demanda sin atender; una regla reactiva puede inducir ciclos; una señal fabricable puede ser explotada. La investigación abordará esta brecha mediante un juego repetido, una regla de recompensa interpretable, adversarios de mejor respuesta y dos tipos de dominio con verificación conocida.</p>
+
+  <h3>4.3 Continuidad y diferencia frente al trabajo previo</h3>
+  <p>La maestría propuso la Prueba de Trabajo de Optimización y una implementación inicial de DOIN <span class="cite">[17], [18]</span>. El prototipo registra incrementos y ajusta un umbral global; no implementa fondos por dominio ni aprendizaje multiagente. El doctorado estudiará si una regla puede dirigir esa población sin premiar el dominio fácil o la manipulación.</p>
+
+  <div class="footer"><span>Estado del arte y brecha</span><span>4 / 8</span></div>
+</section>
+
+<section class="page" id="page-5">
+  <h2>5. Modelo y mecanismo propuesto</h2>
+  <h3>5.1 Entidades y decisiones</h3>
+  <p>Habrá un conjunto de dominios <em>D</em> y nodos <em>N</em>. Cada dominio <em>d</em> declara un fondo <em>F<sub>d</sub></em>, una recompensa <em>r<sub>d</sub></em>, una meta de servicio, un costo de verificación y un sello de aceptación. Cada nodo <em>i</em> mantiene en privado su costo <em>c<sub>i,d</sub></em>, su capacidad y sus restricciones. En cada ronda puede escoger un dominio permitido o permanecer inactivo. Si completa un trabajo y este es aceptado, su utilidad observada será:</p>
+
+  <div class="formula">u<sub>i,t</sub> = r<sub>d,t</sub> · A<sub>i,t</sub> − c<sub>i,d,t</sub> − s<sub>i,t</sub>, &nbsp; con A<sub>i,t</sub> ∈ {0,1}</div>
+
+  <p><em>A</em> indica aceptación y <em>s</em> reúne costos o penalizaciones previamente declarados. El nodo no transmite <em>c</em>. Puede operar en modo manual, aleatorio, codicioso o con una política bandit. Su configuración admite dominio fijo, lista de inclusión, lista de exclusión, solo optimización, solo inferencia, ambas actividades o inactividad, además de límites de CPU, GPU, memoria, tiempo y energía.</p>
+
+  <h3>5.2 Conservación y separación por dominio</h3>
+  <p>Las recompensas no se crean. Para cada dominio se comprobará en todo instante:</p>
+
+  <div class="formula">pagos<sub>d</sub>(t) + reserva<sub>d</sub>(t) ≤ fondo inicial<sub>d</sub> + depósitos netos<sub>d</sub>(t)</div>
+
+  <p>Una tarea no podrá publicarse si su pago no está reservado. Los fondos podrán provenir de un patrocinador, un presupuesto de investigación o una fracción declarada de ingresos de inferencia del mismo dominio. El depositante no podrá recuperar su aporte a través de nodos bajo su control; cuando esa separación económica no pueda demostrarse, la señal de demanda se marcará como no identificable y no alimentará la regla.</p>
+
+  <h3>5.3 Regla de recompensa</h3>
+  <p>La regla será pública y se actualizará al terminar cada ventana. Sus entradas se limitarán a fondos disponibles, demanda financiada pendiente, trabajo aceptado, objetivo de servicio y costo de verificación. No usará mejoras de desempeño comparadas entre dominios. Una familia inicial de reglas tendrá la forma:</p>
+
+  <div class="formula">r<sub>d,t+1</sub> = clip[r<sub>min,d</sub>, r<sub>max,d</sub>]{r<sub>d,t</sub> · g(brecha de servicio<sub>d</sub>, gasto<sub>d</sub>, aceptación<sub>d</sub>)}</div>
+
+  <p>La función <em>g</em> será monotónica, acotada y auditable. Sus parámetros se estimarán en el piloto y luego quedarán fijos. Ajustar por ventanas reduce la posibilidad de que una sola llegada cambie su propio pago. Las colas no financiadas, los anuncios sin depósito y los resultados rechazados no aumentarán la recompensa.</p>
+
+  <h3>5.4 Aceptación y liquidación</h3>
+  <p>El dominio tabular aceptará una evaluación mediante consulta reproducible a una tabla reservada. El dominio de entrenamiento exigirá código, datos, semilla y presupuesto comprometidos antes de ejecutar, seguido de re-ejecución parcial o total según costo. Repeticiones, resultados ya conocidos y artefactos que no correspondan al compromiso serán rechazados. El ledger común almacenará identidades de dominio, compromisos, retos, resultados y balances. Su función será permitir auditoría y evitar doble pago; nunca inferirá por sí mismo que un modelo mejoró.</p>
+
+  <div class="note"><strong>Pago ordinario y mejora.</strong> Una evaluación podrá recibir pago solo si fue solicitada y presupuestada porque el dominio necesita esa información. Un bono adicional podrá reconocer una mejora reproducible. La distribución amortizada de ese bono se estudiará como ablación, no como regla asumida.</div>
+
+  <div class="footer"><span>Modelo y mecanismo propuesto</span><span>5 / 8</span></div>
+</section>
+
+<section class="page" id="page-6">
+  <h2>6. Metodología experimental</h2>
+  <h3>6.1 Entornos de evaluación</h3>
+  <p>Un simulador de eventos discretos fijará costos, hardware, disponibilidad, fondos y demanda. El primer dominio será HPO-B, un banco público de evaluaciones de hiperparámetros basado en OpenML <span class="cite">[13]</span>. Su consulta tabular será un control reproducible, no un entrenamiento.</p>
+
+  <p>El dominio confirmatorio entrenará modelos compactos de clasificación bajo un presupuesto fijo. Incluirá variación de datos, arquitectura y costo de evaluación, con un conjunto de prueba reservado. Esta segunda familia es obligatoria: impide que el mecanismo parezca exitoso solo porque una consulta a tabla es mucho más barata que una optimización real. No se usarán modelos fundacionales, jueces humanos ni negociación algorítmica como condición de éxito.</p>
+
+  <h3>6.2 Factores y controles</h3>
+  <table>
+    <tr><th>Componente</th><th>Niveles principales</th></tr>
+    <tr><td>Regla de recompensa</td><td>Uniforme; estática por dominio; ajuste reactivo ingenuo; regla publicada propuesta.</td></tr>
+    <tr><td>Política del nodo</td><td>Manual o fija; aleatoria; codiciosa; aprendizaje sin arrepentimiento con descuento.</td></tr>
+    <tr><td>Población</td><td>Costos homogéneos y heterogéneos; hardware especializado; entradas y salidas de nodos.</td></tr>
+    <tr><td>Entorno</td><td>Demanda estable; cambios de régimen; dominio fácil; verificación costosa; fondos insuficientes.</td></tr>
+    <tr><td>Conducta estratégica</td><td>Demanda recapturable, duplicación, mejora falsa, ocultamiento, cartel de oferta y atacante de mejor respuesta.</td></tr>
+  </table>
+
+  <p>El diseño comparará componentes con semillas y secuencias de eventos pareadas. La atribución mínima separará el efecto de la regla global del efecto del aprendizaje local: cada regla se probará con políticas fijas y aprendidas; cada política se probará bajo recompensas estáticas y adaptativas. El atacante de mejor respuesta optimizará su estrategia contra la regla publicada, en lugar de limitarse a ataques escritos a mano.</p>
+
+  <h3>6.3 Medidas</h3>
+  <p>Las medidas primarias serán demanda financiada no atendida; desalineación L1 entre la proporción de cómputo aceptado y las metas financiadas; gasto rechazado; y utilidad de desviaciones. El índice HHI describirá concentración. Las secundarias incluirán arrepentimiento, respuesta, uso de fondos, varianza de ingresos, costo de verificación y recuperación tras cambios. El desempeño se reportará dentro de cada dominio, nunca como puntuación global.</p>
+
+  <h3>6.4 Análisis estadístico y falsación</h3>
+  <p>La unidad primaria será una campaña completa; sus decisiones no serán muestras independientes. El piloto determinará el número de campañas. Se usarán bootstrap por campaña, comparaciones pareadas y corrección de Holm. Escenarios y márgenes quedarán registrados antes de la corrida final.</p>
+
+  <p>H1 fallará si la regla propuesta no reduce demanda no atendida y concentración con el mismo presupuesto. H2 fallará si los agentes aprendidos no superan controles simples o no se recuperan ante cambios. H3 fallará si una desviación obtiene utilidad positiva. No se corregirá el mecanismo después de observar la prueba confirmatoria: el resultado negativo definirá los límites del enfoque.</p>
+
+  <div class="footer"><span>Metodología experimental</span><span>6 / 8</span></div>
+</section>
+
+<section class="page" id="page-7">
+  <h2>7. Resultados formales, contribuciones y plan</h2>
+  <h3>7.1 Resultados formales buscados</h3>
+  <p>El resultado teórico principal establecerá condiciones sobre elasticidad de participación, duración de ventana, fondos y costo de verificación bajo las cuales la dinámica mantiene acotada la demanda financiada no atendida y evita concentración extrema. En paralelo, se buscará una cota de arrepentimiento para el nodo bajo recompensas por tramos y retroalimentación parcial. Estas cotas no se presentarán como equilibrio universal de una red abierta.</p>
+
+  <p>El segundo resultado será una región de imposibilidad. Si el demandante puede recuperar su depósito, si el sello acepta con igual probabilidad un resultado válido y uno falso, o si una coalición puede fabricar la señal que aumenta su recompensa a menor costo que el pago recibido, ninguna regla basada solo en esas observaciones podrá distinguir demanda real de manipulación. Probar ese límite será un resultado válido, no un apéndice defensivo.</p>
+
+  <h3>7.2 Contribuciones esperadas</h3>
+  <ol>
+    <li>Un modelo de aprendizaje multiagente para autoselección entre dominios financiados de optimización de inteligencia artificial, con restricciones locales y costos privados.</li>
+    <li>Una familia interpretable de recompensas por dominio, junto con condiciones de estabilidad, concentración y no rentabilidad de desviaciones.</li>
+    <li>Un simulador reproducible con adversarios de mejor respuesta, un dominio tabular y uno de reentrenamiento, además de protocolos de falsación y contabilidad.</li>
+    <li>Una caracterización explícita de los casos en que la demanda, la aceptación o el aprendizaje no contienen información suficiente para dirigir el cómputo.</li>
+  </ol>
+
+  <h3>7.3 Plan de tres años</h3>
+  <table>
+    <tr><th>Periodo</th><th>Actividad y producto</th></tr>
+    <tr><td><strong>Año 1</strong></td><td>Revisión sistemática; modelo formal; simulador; dominio HPO-B; piloto; prerregistro. Producto: artículo de formulación y región de imposibilidad.</td></tr>
+    <tr><td><strong>Año 2</strong></td><td>Políticas sin arrepentimiento; regla adaptativa; análisis de estabilidad; adversarios de mejor respuesta; campaña principal. Producto: artículo metodológico.</td></tr>
+    <tr><td><strong>Año 3</strong></td><td>Dominio de reentrenamiento; confirmación; integración experimental con DOIN; tesis y publicación de artefactos. Producto: artículo confirmatorio y tesis.</td></tr>
+  </table>
+
+  <h3>7.4 Viabilidad, ética y pertinencia</h3>
+  <p>HPO-B reduce el costo del piloto y el dominio confirmatorio se limitará a modelos pequeños. Si la integración distribuida se retrasa, el simulador y ambos dominios bastarán para evaluar las hipótesis. DOIN, ya iniciado en el trabajo de maestría, aporta experiencia e infraestructura, no una dependencia científica <span class="cite">[17], [18]</span>.</p>
+
+  <p>No se usarán participantes humanos, datos personales, dinero real ni credenciales de producción. Se registrarán consumo de cómputo, semillas, configuraciones, resultados negativos y fallos. Los ataques se ejecutarán solo en simulación o testnet aislada. Cualquier conjunto externo deberá tener licencia y procedencia documentadas.</p>
+
+  <p>La pertinencia para inteligencia artificial está en estudiar cómo aprende y se coordina una población de agentes autónomos que recibe retroalimentación parcial, actúa con intereses propios y comparte recursos limitados. El objeto no es construir otra blockchain ni administrar pagos: es entender y controlar la dinámica de aprendizaje que decide dónde se aplica el cómputo destinado a mejorar modelos.</p>
+
+  <div class="footer"><span>Resultados, contribuciones y plan</span><span>7 / 8</span></div>
+</section>
+
+<section class="page" id="page-8">
+  <h2>Referencias</h2>
+  <div class="refs">
+    <p class="ref">[1] F. A. Hayek, “The Use of Knowledge in Society,” <em>The American Economic Review</em>, vol. 35, no. 4, pp. 519–530, 1945. [En línea]. Disponible: <a href="https://www.jstor.org/stable/1809376">jstor.org/stable/1809376</a>.</p>
+    <p class="ref">[2] R. W. Rosenthal, “A Class of Games Possessing Pure-Strategy Nash Equilibria,” <em>International Journal of Game Theory</em>, vol. 2, pp. 65–67, 1973, doi: 10.1007/BF01737559.</p>
+    <p class="ref">[3] T. Roughgarden and É. Tardos, “How Bad Is Selfish Routing?” <em>Journal of the ACM</em>, vol. 49, no. 2, pp. 236–259, 2002, doi: 10.1145/506147.506153.</p>
+    <p class="ref">[4] M. Braverman, J. Mao, J. Schneider and S. M. Weinberg, “Multi-Armed Bandit Problems with Strategic Arms,” in <em>Proc. 32nd Conference on Learning Theory</em>, PMLR 99, pp. 1–33, 2019. [En línea]. Disponible: <a href="https://proceedings.mlr.press/v99/braverman19b.html">proceedings.mlr.press/v99/braverman19b.html</a>.</p>
+    <p class="ref">[5] Z. Feng, D. C. Parkes and H. Xu, “The Intrinsic Robustness of Stochastic Bandits to Strategic Manipulation,” in <em>Proc. 37th International Conference on Machine Learning</em>, PMLR 119, pp. 3092–3101, 2020.</p>
+    <p class="ref">[6] R. Freeman, D. M. Pennock, C. Podimata and J. W. Vaughan, “No-Regret and Incentive-Compatible Online Learning,” in <em>Proc. 37th International Conference on Machine Learning</em>, PMLR 119, pp. 3270–3279, 2020.</p>
+    <p class="ref">[7] V. Cevher et al., “Convergence to Equilibrium of No-Regret Dynamics in Congestion Games,” in <em>Proc. 20th Conference on Web and Internet Economics</em>, 2024. [En línea]. Disponible: <a href="https://www.microsoft.com/en-us/research/publication/convergence-to-equilibrium-of-no-regret-dynamics-in-congestion-games/">microsoft.com/research</a>.</p>
+    <p class="ref">[8] S. Leonardos, B. Monnot, D. Reijsbergen, S. Skoulakis and G. Piliouras, “Dynamical Analysis of the EIP-1559 Ethereum Fee Market,” in <em>Proc. 3rd ACM Conference on Advances in Financial Technologies</em>, 2021.</p>
+    <p class="ref">[9] B. Holmström, “Moral Hazard in Teams,” <em>The Bell Journal of Economics</em>, vol. 13, no. 2, pp. 324–340, 1982.</p>
+    <p class="ref">[10] M. Fitzi, A. Kiayias, G. Panagiotakos and A. Russell, “Ofelimos: Combinatorial Optimization via Proof-of-Useful-Work,” in <em>Advances in Cryptology - CRYPTO 2022</em>, LNCS 13508, pp. 339–369, 2022, doi: 10.1007/978-3-031-15979-4_12.</p>
+    <p class="ref">[11] P. Dikshit, A. Emami, J. Sedlmeir and G. Fridgen, “SoK: Is Proof-of-Useful-Work Really Useful?” <em>IACR Cryptology ePrint Archive</em>, Report 2025/1814, 2025. [En línea]. Disponible: <a href="https://eprint.iacr.org/2025/1814">eprint.iacr.org/2025/1814</a>.</p>
+    <p class="ref">[12] J. Fang et al., “Proof-of-Learning Is Currently More Broken Than You Think,” in <em>2023 IEEE European Symposium on Security and Privacy</em>, pp. 797–816, 2023, doi: 10.1109/EuroSP57164.2023.00052.</p>
+    <p class="ref">[13] S. Pineda Arango, H. S. Jomaa, M. Wistuba and J. Grabocka, “HPO-B: A Large-Scale Reproducible Benchmark for Black-Box HPO Based on OpenML,” in <em>NeurIPS Datasets and Benchmarks</em>, 2021.</p>
+    <p class="ref">[14] Opentensor Foundation, “dTAO Whitepaper: Subnet Token Economics,” 2025. [En línea]. Disponible: <a href="https://www.bittensor.com/dtao-whitepaper">bittensor.com/dtao-whitepaper</a>.</p>
+    <p class="ref">[15] Gensyn, “Core Components,” documentación técnica, 2026. [En línea]. Disponible: <a href="https://docs.gensyn.ai/core-components">docs.gensyn.ai/core-components</a>.</p>
+    <p class="ref">[16] Overclock Labs, “Akash Deployments,” documentación técnica, 2026. [En línea]. Disponible: <a href="https://akash.network/docs/learn/core-concepts/deployments/">akash.network/docs</a>.</p>
+    <p class="ref">[17] H. D. Bastidas Caicedo, <em>Computación Evolutiva Descentralizada de Modelo Híbrido usando Blockchain y Prueba de Trabajo de Optimización</em>, tesis de Maestría, Pontificia Universidad Javeriana, 2018.</p>
+    <p class="ref">[18] H. D. Bastidas Caicedo, “DOIN Core: Proof-of-Optimization Consensus,” repositorio de software, 2026. [En línea]. Disponible: <a href="https://github.com/harveybc/doin-core">github.com/harveybc/doin-core</a>.</p>
+  </div>
+
+  <div class="footer"><span>Referencias</span><span>8 / 8</span></div>
+</section>
+
+<script>
+  const renderPage = new URLSearchParams(window.location.search).get("page");
+  if (renderPage) {
+    document.querySelectorAll(".page").forEach((page) => {
+      if (page.id !== `page-${renderPage}`) page.remove();
+    });
+  }
+</script>
+</body>
+</html>

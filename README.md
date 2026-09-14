@@ -1,6 +1,6 @@
 # predictor
 
-Phased deep-learning prediction platform for financial time series. predictor
+Configurable deep-learning experiments for time-series forecasting and classification. predictor
 trains, evaluates and optimizes Keras/TensorFlow forecasting and
 classification models — ANN, CNN, LSTM, Transformer, TCN, TFT, N-BEATS, MIMO
 and binary/direction classifier variants — through a plugin architecture in
@@ -9,12 +9,36 @@ plugins are selected by name from JSON configs. Experiments are organized as
 numbered phases under [`examples/config/`](examples/config/), each phase a
 reproducible sweep over architectures, dataset sizes and horizons.
 
+## Research and current development
+
+This project supports a data-centric research program: characterize the inputs,
+test temporal preprocessing, and compare learned representations before scaling
+model search. The doctoral proposal investigates modular temporal representations
+for forecasting and reinforcement learning. It is a proposal, not a claim that
+its hypotheses have already been confirmed.
+
+- **[Current doctoral proposal (PDF)](docs/propuesta_doctoral_representaciones_temporales_modulares.pdf)**
+  and [editable LaTeX](docs/propuesta_doctoral_representaciones_temporales_modulares.tex).
+- [Research repository map](docs/RESEARCH_STACK.md): data, preprocessing,
+  feature engineering, representation learning, optimization and evaluation.
+- [Related proposals and earlier formulations](docs/tres_temas_entrevista/README.md).
+- [Data governance](https://github.com/harveybc/data-gov): dataset receipts,
+  experiment provenance and results in an analytical warehouse.
+
+**Branch scope (2026-09-14):** `master` contains the standalone trainer and
+the documents linked above. The larger data-characterization and governed-run
+implementation remains on the
+[published research snapshot](https://github.com/harveybc/predictor/tree/174cb8869848691e8e720e7f57c1fe938a3976d1).
+Its [governed-run guide](https://github.com/harveybc/predictor/blob/174cb8869848691e8e720e7f57c1fe938a3976d1/docs/GOVERNED_RUN.md)
+applies to that revision, not automatically to this branch. Research snapshots
+are linked by commit so that development cannot silently change a cited implementation.
+
 ## Status
 
-**Lifecycle: ACTIVE-CORE.** predictor is the model-training side of the
-owner's trading-research stack: its champion models are served by
-[prediction_provider](https://github.com/harveybc/prediction_provider) and its
-binary/direction experiments feed current campaigns.
+**Research software under active development.** predictor is the offline
+model-training component. Model serving belongs to
+[prediction_provider](https://github.com/harveybc/prediction_provider).
+Example results are not evidence of out-of-sample trading profitability.
 
 > **Disclaimer:** all training and evaluation happens offline on historical
 > data (simulation/backtest). Model outputs are research artifacts, not
@@ -102,6 +126,9 @@ pip install -e .        # installs the `predictor` console script
 *Unverified in a clean environment* — the commands above are the standard
 install; they were not re-executed from scratch for this README. The imports
 and CLI below were verified in an existing Python 3.12.13 environment.
+The 2026-09-14 publication check used an existing environment and generated
+local entry-point metadata with `python setup.py egg_info`; it did not install
+or upgrade packages in a shared environment.
 
 ## Smallest working example
 
@@ -113,11 +140,19 @@ PYTHONPATH=. python app/main.py --help
 # full flag list (plugin, epochs, iterations, load/save config, horizons, ...)
 ```
 
-Smallest real run (*unverified for this README* — trains a small ANN):
+Bounded CPU example using the bundled daily dataset (completed with exit 0 in
+the 2026-09-14 publication check):
 
 ```bash
-sh predictor.sh --load_config examples/config/phase_1/phase_1_ann_1575_1h_config.json
+CUDA_VISIBLE_DEVICES="" PYTHONPATH=. python app/main.py \
+  --load_config examples/config/phase_1_daily/phase_1_ann_1575_1d_config.json \
+  --epochs 2 --max_steps_train 300 --max_steps_test 300 --mc_samples 2
 ```
+
+This is a mechanics demonstration, not a validated trading experiment. It writes
+the configured sample outputs; use a separate clone and fresh output paths for
+your own work. Use long-form `--flags`; short forms do not consistently override
+config values. Several 1h configs reference datasets absent from a fresh clone.
 
 [`predictor.sh`](predictor.sh) simply prepends the checkout to `PYTHONPATH`
 and runs `python app/main.py`. Training data ship under
@@ -170,11 +205,11 @@ python -m pytest tests --collect-only -q
 # observed: "3 tests collected, 8 errors in 3.21s"
 ```
 
-Known issue, stated honestly: most of the committed suite predates the
+Known limitation of this standalone branch: much of the committed suite predates the
 current plugin architecture and fails at import (e.g.
 `app.autoencoder_manager`, `load_encoder_decoder_plugins`, `merge_config` no
-longer exist). Only 3 tests collect cleanly today; the suite needs a rewrite
-against the current `app/` API. Verified sanity check:
+longer exist). The count above is a recorded baseline observation, not a test
+count for the newer research branch. Verified sanity check:
 
 ```bash
 PYTHONPATH=. python -c "from app.plugin_loader import load_plugin; print('plugin_loader OK')"
