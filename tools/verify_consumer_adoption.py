@@ -113,6 +113,41 @@ def config_for(consumer: str, work: Path, case: str) -> Path:
         base["save_log"] = "./debug_out.json"
         base["save_config"] = "./config_out.json"
         body = base
+    elif consumer in ("feature-eng", "feature-extractor"):
+        # These two consume column sets that no lake data-gov serves today: their own
+        # fixtures are inside their repositories. What can be checked in production is the
+        # transport — a governed delivery, a terminal with its cost, reconciliation — and
+        # the pipeline is expected to refuse the sample columns. That is reported as
+        # TRANSPORT_ONLY, never as adoption.
+        if consumer == "feature-eng":
+            body = {"input_file": str(SAMPLE_ROOT / "phase_1" / "normalized_d4.csv"),
+                    "output_file": "./indicators_output.csv", "save_log": "./debug_log.json",
+                    "save_config": "./output_config.json",
+                    "plugin": "tech_indicator" if case != "failure" else "no_such_plugin_a3",
+                    "dataset_type": "forex_15m", "tech_indicators": True,
+                    "seasonality_columns": False, "correlation_analysis": False,
+                    "distribution_plot": False, "quiet_mode": True,
+                    "high_freq_dataset": None, "sp500_dataset": None, "vix_dataset": None,
+                    "economic_calendar": None, "forex_datasets": None}
+        else:
+            base = json.loads((GITHUB / "feature-extractor" / "examples" / "config"
+                               / "phase_4_2" / "phase_4_2_small.json").read_text(encoding="utf-8"))
+            sample = {"x_train_file": "phase_1/normalized_d4.csv",
+                      "y_train_file": "phase_1/normalized_d4.csv",
+                      "x_validation_file": "phase_1/normalized_d5.csv",
+                      "y_validation_file": "phase_1/normalized_d5.csv",
+                      "x_test_file": "phase_1/normalized_d6.csv",
+                      "y_test_file": "phase_1/normalized_d6.csv"}
+            base.update({k: str(SAMPLE_ROOT / v) for k, v in sample.items()})
+            base.update({"epochs": 1, "kl_anneal_epochs": 1, "start_from_epoch": 0,
+                         "quiet_mode": True, "save_log": "./debug_out.json",
+                         "save_config": "./config_out.json"})
+            if case == "failure":
+                base["encoder_plugin"] = "no_such_plugin_a3"
+            for key, value in list(base.items()):
+                if isinstance(value, str) and value.startswith("examples/results/"):
+                    base[key] = "./" + Path(value).name
+            body = base
     else:
         raise SystemExit(f"no bounded configuration is defined for {consumer}")
     path.write_text(json.dumps(body, indent=1), encoding="utf-8")
@@ -214,7 +249,11 @@ def main(argv=None) -> int:
                            and r.get("lake_only") == [])
         cases["retry"]["sends_nothing"] = (cases["retry"]["flush"].get("sent") == 0
                                            and before == cases["retry"]["cube_after"])
+        transport_only = consumer in ("feature-eng", "feature-extractor")
         verdict = {
+            "governed_delivery": bool(cases["success"]["inputs"])
+            and all(i.get("verification_state", "").startswith("VERIFIED")
+                    for i in cases["success"]["inputs"]),
             "success": (cases["success"]["status"] == "COMPLETED"
                         and cases["success"]["exit_code"] == 0
                         and bool(cases["success"]["inputs"])
@@ -227,12 +266,22 @@ def main(argv=None) -> int:
                                  and bool(cases["failure"]["cube_rows"])),
             "retry_sends_nothing": cases["retry"]["sends_nothing"],
         }
-        report["consumers"][consumer] = {"cases": cases, "verdict": verdict,
-                                         "adopted": all(verdict.values())}
+        report["consumers"][consumer] = {
+            "cases": cases, "verdict": verdict,
+            "scope": "TRANSPORT_ONLY" if transport_only else "FULL",
+            "adopted": all(verdict.values()) if not transport_only else False,
+            "transport_proven": (verdict["governed_delivery"]
+                                 and bool(cases["success"]["cube_rows"])
+                                 and cases["retry"]["sends_nothing"]) if transport_only else None,
+            "missing": ("no lake data-gov serves the columns this consumer needs; its own "
+                        "fixtures are inside its repository. Next action: publish those "
+                        "fixtures as a governed resource with a derived contract")
+            if transport_only else None}
     report["cube_after"] = cube_counts()
     report["cube_delta"] = {k: report["cube_after"][k] - report["cube_before"][k]
                             for k in report["cube_after"]}
-    report["ok"] = all(c["adopted"] for c in report["consumers"].values())
+    report["ok"] = all(c["adopted"] if c["scope"] == "FULL" else c["transport_proven"]
+                       for c in report["consumers"].values())
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, indent=1, default=str).replace(str(Path.home()), "~")
                         + "\n", encoding="utf-8")
