@@ -81,6 +81,8 @@ def main(argv=None):
         indent=1))
     base_cfg = json.loads((prep / "examples/config_downsampled/phase_1b.json").read_text(encoding="utf-8"))
     base_cfg["input_file"] = str(lake_root / "phase_1/normalized_d4.csv")
+    # the preprocessor's own eligibility gate: a replay, not gated evidence
+    base_cfg["execution_purpose"] = "ARCHIVAL_REPLAY_NON_AUTHORITATIVE"
     cfg_dir = work / "phase_1b_governed"
     cfg_dir.mkdir()
     cfg_path = cfg_dir / "config.json"
@@ -96,8 +98,11 @@ def main(argv=None):
                "--lake-root", str(lake_root), "--metrics-lake", "olap_cube", "--out-dir", str(out_dir),
                "--cache-dir", str(work / "cache"), "--outbox-dir", str(work / "outbox")]
         with open(log, "ab") as handle:
-            return subprocess.run(cmd, cwd=prep, env=dict(os.environ, DATA_GOV_CHECKOUT=str(data_gov), CUDA_VISIBLE_DEVICES=""),
-                                  stdout=handle, stderr=subprocess.STDOUT).returncode
+            # the shared eligibility gate lives in the predictor checkout; the clean
+            # preprocessor worktree is not its sibling, so the adapter is pointed at it
+            env = dict(os.environ, DATA_GOV_CHECKOUT=str(data_gov), CUDA_VISIBLE_DEVICES="",
+                       CRISPDM_ELIGIBILITY_GATE=str(predictor))
+            return subprocess.run(cmd, cwd=prep, env=env, stdout=handle, stderr=subprocess.STDOUT).returncode
 
     try:
         procs["olap"] = p03.start(olap, work / "olap.json", olap_env, work / "olap.log")

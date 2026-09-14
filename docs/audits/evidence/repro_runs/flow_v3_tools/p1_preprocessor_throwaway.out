@@ -1,0 +1,233 @@
+{
+ "schema": "flow_v3_p1_preprocessor_throwaway.v1",
+ "code_sha256": "e3ab9c281e42d6f181e8b5f270b3712c2651eb063d8377e0b1e2be1429efdaab",
+ "preprocessor_commit": "20db3fb3c91d54968fdc148827531a0cdc17b11f",
+ "preprocessor_clean": true,
+ "data_gov_commit": "8cd45f5b4239fa2a5bed0b5324f1a07e79de5fb8",
+ "pg_db": "data_gov_v3_throwaway_p1_1789357882",
+ "runs": {
+  "1_completed": {
+   "exit_code": 0,
+   "status": "COMPLETED",
+   "reason": null,
+   "campaign_sha256": "a60a7110bbce575b3ed8626489462a3d492bf55d63b81421095fb99520518ed8",
+   "terminal_pending": false,
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "20db3fb3c91d54968fdc148827531a0cdc17b11f"
+   },
+   "inputs": [
+    {
+     "availability_contract_sha256": "4d0ead37c2e471faced996f7b065eb2c5327be00c26a3861cf53171caaf72821",
+     "bytes": 247741,
+     "cached": false,
+     "delivery": "AS_IS",
+     "delivery_id": "3d690c4ca27a4996a9ed375f8c94c3b7",
+     "lake": "predictor_examples",
+     "path": "~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/cache/predictor_examples/6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "phase_1/normalized_d4.csv",
+     "role": "input_file",
+     "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+     "source_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+     "time_column": "DATE_TIME",
+     "verification_state": "VERIFIED_TRANSFER"
+    }
+   ],
+   "cube_rows": [
+    [
+     "COMPLETED",
+     null
+    ]
+   ],
+   "metrics": [
+    [
+     "rows",
+     "base_d1",
+     1685.0
+    ],
+    [
+     "rows",
+     "base_d2",
+     423.0
+    ],
+    [
+     "rows",
+     "base_d3",
+     423.0
+    ],
+    [
+     "rows",
+     "base_d4",
+     1685.0
+    ],
+    [
+     "rows",
+     "base_d5",
+     423.0
+    ],
+    [
+     "rows",
+     "base_d6",
+     468.0
+    ],
+    [
+     "rows",
+     "normalized_d1",
+     1685.0
+    ],
+    [
+     "rows",
+     "normalized_d2",
+     423.0
+    ],
+    [
+     "rows",
+     "normalized_d3",
+     423.0
+    ],
+    [
+     "rows",
+     "normalized_d4",
+     1685.0
+    ],
+    [
+     "rows",
+     "normalized_d5",
+     423.0
+    ],
+    [
+     "rows",
+     "normalized_d6",
+     468.0
+    ]
+   ],
+   "datasets": [
+    [
+     "input_file",
+     "phase_1/normalized_d4.csv",
+     "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+     "VERIFIED_TRANSFER",
+     "4d0ead37c2e471faced996f7b065eb2c5327be00c26a3861cf53171caaf72821"
+    ]
+   ],
+   "artifacts": [
+    [
+     "base:base_d1.csv",
+     401698
+    ],
+    [
+     "base:base_d2.csv",
+     102292
+    ],
+    [
+     "base:base_d3.csv",
+     100605
+    ],
+    [
+     "base:base_d4.csv",
+     407583
+    ],
+    [
+     "base:base_d5.csv",
+     100956
+    ],
+    [
+     "base:base_d6.csv",
+     114398
+    ],
+    [
+     "effective_config",
+     2229
+    ],
+    [
+     "governed_config",
+     4481
+    ],
+    [
+     "normalization_config_a",
+     1176
+    ],
+    [
+     "normalization_config_b",
+     1183
+    ],
+    [
+     "normalized:normalized_d1.csv",
+     428867
+    ],
+    [
+     "normalized:normalized_d2.csv",
+     108669
+    ],
+    [
+     "normalized:normalized_d3.csv",
+     106939
+    ],
+    [
+     "normalized:normalized_d4.csv",
+     430175
+    ],
+    [
+     "normalized:normalized_d5.csv",
+     107970
+    ],
+    [
+     "normalized:normalized_d6.csv",
+     119230
+    ]
+   ],
+   "reconcile_http": {
+    "accounting_only": [],
+    "campaign_sha256": "a60a7110bbce575b3ed8626489462a3d492bf55d63b81421095fb99520518ed8",
+    "lake_only": [],
+    "missing_units": []
+   },
+   "produced_files": [
+    "GOVERNED_RUN.json",
+    "base_d1.csv",
+    "base_d2.csv",
+    "base_d3.csv",
+    "base_d4.csv",
+    "base_d5.csv",
+    "base_d6.csv",
+    "governed_config.json",
+    "normalization_config_a.json",
+    "normalization_config_b.json",
+    "normalized_d1.csv",
+    "normalized_d2.csv",
+    "normalized_d3.csv",
+    "normalized_d4.csv",
+    "normalized_d5.csv",
+    "normalized_d6.csv",
+    "preprocessor_config.json",
+    "run.log"
+   ],
+   "log_tail": "",
+   "ok": true
+  },
+  "2_refused_stale_outputs": {
+   "exit_code": 1,
+   "status": "REFUSED",
+   "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d1.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d2.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d3.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d4.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d5.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d6.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/governed_config.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalization_config_a.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalization_config_b.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d1.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d2.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d3.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d4.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d5.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d6.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/preprocessor_config.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/run.log",
+   "cube_rows": [
+    [
+     "REFUSED",
+     "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d1.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d2.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d3.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d4.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d5.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d6.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/governed_config.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalization_config_a.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalization_config_b.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d1.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d2.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d3.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d4.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d5.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d6.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/preprocessor_config.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/run.log"
+    ]
+   ],
+   "no_downloads": true,
+   "ok": true
+  }
+ },
+ "config_sha256": "de7a2a34ea5d301187df3ff1723adf10eac67a6b5dd61babdb86383a2b173a2b",
+ "throwaway_cube_counts_final": {
+  "gov_terminal": 2,
+  "gov_terminal_metric": 12,
+  "gov_terminal_dataset": 1,
+  "gov_terminal_artifact": 16
+ },
+ "ok": true,
+ "pg_db_dropped": true
+}
