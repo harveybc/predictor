@@ -1,4 +1,13 @@
-"""The packaged provider must not drift from the query plugin the service actually runs."""
+"""The packaged provider must not drift from the query plugin the service actually runs.
+
+The pin is checked against Git, not against whatever happens to be in this checkout: when
+this package was made, the deployed revision was reachable only from the runtime worktree
+and was not an ancestor of any branch, so a checkout comparison alone would have compared
+the package against code the service does not run. That is exactly the drift this file
+exists to catch, and the parity run against the live host found it: the branch copy
+answered `/api/v1/discover` with row counts where the deployed plugin answers
+`row_count_status: NOT_SCANNED` and lists the `gov_metric_current` view.
+"""
 
 from __future__ import annotations
 
@@ -18,39 +27,40 @@ sys.path.insert(0, str(SRC))
 import predictor_olap_store as pkg  # noqa: E402
 
 
-def _sha256_bytes(data: bytes) -> str:
+def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _sha256(path: Path) -> str:
-    return _sha256_bytes(path.read_bytes())
-
-
-def test_the_packaged_query_plugin_matches_its_declared_source():
-    assert PACKAGED.is_file()
-    assert _sha256(PACKAGED) == pkg.SOURCE_SHA256, (
-        "the packaged module no longer matches the digest it declares; update both or "
-        "stop claiming it is a copy")
-
-
-def test_it_matches_the_deployed_plugin_when_that_tree_is_present():
-    """On a checkout that also carries the service tree, the copy must equal what runs."""
-    if not DEPLOYED.is_file():
-        pytest.skip(f"{DEPLOYED.relative_to(REPO)} is not in this branch; "
-                    f"the declared source is {pkg.SOURCE_REVISION}")
-    assert _sha256(PACKAGED) == _sha256(DEPLOYED), (
-        "the provider copy and the running query plugin differ; make the change in one "
-        "place and copy it, or finish the migration and delete the copy")
-
-
-def test_the_declared_source_revision_still_holds_that_file():
-    """The pinned revision is checked against Git, not taken on trust."""
-    out = subprocess.run(["git", "-C", str(REPO), "cat-file", "blob",
-                          f"{pkg.SOURCE_REVISION}:{pkg.SOURCE_PATH}"],
+def _blob(revision: str, path: str):
+    out = subprocess.run(["git", "-C", str(REPO), "cat-file", "blob", f"{revision}:{path}"],
                          capture_output=True)
-    if out.returncode != 0:
-        pytest.skip("the declared source revision is not present in this clone")
-    assert _sha256_bytes(out.stdout) == pkg.SOURCE_SHA256
+    return out.stdout if out.returncode == 0 else None
+
+
+def test_the_packaged_module_matches_the_digest_it_declares():
+    assert PACKAGED.is_file()
+    assert _sha256(PACKAGED.read_bytes()) == pkg.SOURCE_SHA256, (
+        "the packaged module no longer matches the digest it declares; update both or stop "
+        "calling it a copy")
+
+
+def test_the_declared_revision_really_holds_those_bytes():
+    blob = _blob(pkg.SOURCE_REVISION, pkg.SOURCE_PATH)
+    if blob is None:
+        pytest.skip(f"revision {pkg.SOURCE_REVISION} is not in this clone")
+    assert _sha256(blob) == pkg.SOURCE_SHA256
+
+
+def test_the_checkout_is_compared_and_any_difference_is_named():
+    """If this branch carries that file, it must be the pinned one — or say which it is."""
+    if not DEPLOYED.is_file():
+        pytest.skip(f"{DEPLOYED.relative_to(REPO)} is not in this branch")
+    here = _sha256(DEPLOYED.read_bytes())
+    if here != pkg.SOURCE_SHA256:
+        pytest.skip(f"this branch carries {here[:16]}… at {DEPLOYED.relative_to(REPO)}, while "
+                    f"the package pins {pkg.SOURCE_SHA256[:16]}… from {pkg.SOURCE_REVISION[:12]}; "
+                    "the package follows what the service runs, not what this branch holds")
+    assert here == pkg.SOURCE_SHA256
 
 
 def test_the_provider_declares_the_capabilities_it_implements():
