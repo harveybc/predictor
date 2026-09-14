@@ -1,0 +1,448 @@
+{
+ "schema": "d2_operator_totals.v1",
+ "grain": "subject_kind + subject + operator_params + regime",
+ "rows": {
+  "published": 3591,
+  "successor": 3591
+ },
+ "totals_published": {
+  "(none)": {
+   "SNR_ESTIMATOR": {
+    "SNR_CALIBRATED_FOR_REGIME": {
+     "rows": 39,
+     "regimes": 28,
+     "methods": 4
+    },
+    "SNR_NOT_IDENTIFIABLE": {
+     "rows": 587,
+     "regimes": 171,
+     "methods": 6
+    },
+    "SNR_REGIME_LIMITED": {
+     "rows": 171,
+     "regimes": 82,
+     "methods": 5
+    },
+    "SNR_REJECTED": {
+     "rows": 229,
+     "regimes": 108,
+     "methods": 5
+    }
+   }
+  },
+  "CANDIDATE": {
+   "OPERATOR": {
+    "LAB_CALIBRATED": {
+     "rows": 51,
+     "regimes": 15,
+     "methods": 7
+    },
+    "LAB_REJECTED": {
+     "rows": 816,
+     "regimes": 114,
+     "methods": 7
+    },
+    "NOT_IDENTIFIABLE": {
+     "rows": 307,
+     "regimes": 125,
+     "methods": 7
+    },
+    "REGIME_LIMITED": {
+     "rows": 7,
+     "regimes": 7,
+     "methods": 3
+    },
+    "UNDERPOWERED": {
+     "rows": 871,
+     "regimes": 106,
+     "methods": 7
+    }
+   }
+  },
+  "IDENTITY_RAW_CONTROL": {
+   "OPERATOR": {
+    "LAB_CALIBRATED": {
+     "rows": 28,
+     "regimes": 28,
+     "methods": 1
+    },
+    "LAB_REJECTED": {
+     "rows": 134,
+     "regimes": 134,
+     "methods": 1
+    },
+    "NOT_IDENTIFIABLE": {
+     "rows": 9,
+     "regimes": 9,
+     "methods": 1
+    }
+   }
+  },
+  "NON_CAUSAL_ORACLE_CONTROL": {
+   "OPERATOR": {
+    "CONTROL_NOT_AN_ARM": {
+     "rows": 171,
+     "regimes": 171,
+     "methods": 1
+    }
+   }
+  },
+  "PREVIOUSLY_REJECTED_CONTROL": {
+   "OPERATOR": {
+    "LAB_CALIBRATED": {
+     "rows": 2,
+     "regimes": 2,
+     "methods": 1
+    },
+    "LAB_REJECTED": {
+     "rows": 158,
+     "regimes": 158,
+     "methods": 1
+    },
+    "NOT_IDENTIFIABLE": {
+     "rows": 11,
+     "regimes": 11,
+     "methods": 1
+    }
+   }
+  }
+ },
+ "totals_successor": {
+  "(none)": {
+   "SNR_ESTIMATOR": {
+    "SNR_CALIBRATED_FOR_REGIME": {
+     "rows": 39,
+     "regimes": 28,
+     "methods": 4
+    },
+    "SNR_NOT_IDENTIFIABLE": {
+     "rows": 604,
+     "regimes": 171,
+     "methods": 6
+    },
+    "SNR_REGIME_LIMITED": {
+     "rows": 167,
+     "regimes": 81,
+     "methods": 5
+    },
+    "SNR_REJECTED": {
+     "rows": 216,
+     "regimes": 107,
+     "methods": 5
+    }
+   }
+  },
+  "CANDIDATE": {
+   "OPERATOR": {
+    "LAB_CALIBRATED": {
+     "rows": 47,
+     "regimes": 13,
+     "methods": 7
+    },
+    "LAB_REJECTED": {
+     "rows": 825,
+     "regimes": 116,
+     "methods": 7
+    },
+    "NOT_IDENTIFIABLE": {
+     "rows": 294,
+     "regimes": 125,
+     "methods": 7
+    },
+    "REGIME_LIMITED": {
+     "rows": 6,
+     "regimes": 6,
+     "methods": 2
+    },
+    "UNDERPOWERED": {
+     "rows": 880,
+     "regimes": 106,
+     "methods": 7
+    }
+   }
+  },
+  "IDENTITY_RAW_CONTROL": {
+   "OPERATOR": {
+    "LAB_CALIBRATED": {
+     "rows": 26,
+     "regimes": 26,
+     "methods": 1
+    },
+    "LAB_REJECTED": {
+     "rows": 40,
+     "regimes": 40,
+     "methods": 1
+    },
+    "NOT_IDENTIFIABLE": {
+     "rows": 105,
+     "regimes": 105,
+     "methods": 1
+    }
+   }
+  },
+  "NON_CAUSAL_ORACLE_CONTROL": {
+   "OPERATOR": {
+    "CONTROL_NOT_AN_ARM": {
+     "rows": 171,
+     "regimes": 171,
+     "methods": 1
+    }
+   }
+  },
+  "PREVIOUSLY_REJECTED_CONTROL": {
+   "OPERATOR": {
+    "LAB_CALIBRATED": {
+     "rows": 2,
+     "regimes": 2,
+     "methods": 1
+    },
+    "LAB_REJECTED": {
+     "rows": 158,
+     "regimes": 158,
+     "methods": 1
+    },
+    "NOT_IDENTIFIABLE": {
+     "rows": 11,
+     "regimes": 11,
+     "methods": 1
+    }
+   }
+  }
+ },
+ "operator_passes": {
+  "published": {
+   "CANDIDATE": {
+    "LAB_CALIBRATED": 51,
+    "REGIME_LIMITED": 7
+   },
+   "IDENTITY_RAW_CONTROL": {
+    "LAB_CALIBRATED": 28,
+    "REGIME_LIMITED": 0
+   },
+   "NON_CAUSAL_ORACLE_CONTROL": {
+    "LAB_CALIBRATED": 0,
+    "REGIME_LIMITED": 0
+   },
+   "PREVIOUSLY_REJECTED_CONTROL": {
+    "LAB_CALIBRATED": 2,
+    "REGIME_LIMITED": 0
+   }
+  },
+  "successor": {
+   "CANDIDATE": {
+    "LAB_CALIBRATED": 47,
+    "REGIME_LIMITED": 6
+   },
+   "IDENTITY_RAW_CONTROL": {
+    "LAB_CALIBRATED": 26,
+    "REGIME_LIMITED": 0
+   },
+   "NON_CAUSAL_ORACLE_CONTROL": {
+    "LAB_CALIBRATED": 0,
+    "REGIME_LIMITED": 0
+   },
+   "PREVIOUSLY_REJECTED_CONTROL": {
+    "LAB_CALIBRATED": 2,
+    "REGIME_LIMITED": 0
+   }
+  }
+ },
+ "snr_passes": {
+  "published": {
+   "SNR_CALIBRATED_FOR_REGIME": 39,
+   "SNR_REGIME_LIMITED": 171
+  },
+  "successor": {
+   "SNR_CALIBRATED_FOR_REGIME": 39,
+   "SNR_REGIME_LIMITED": 167
+  }
+ },
+ "transitions": {
+  "compared_grains": 3591,
+  "only_in_published": [],
+  "only_in_successor": [],
+  "moves": [
+   {
+    "arm_role": "(none)",
+    "from": "SNR_REGIME_LIMITED",
+    "to": "SNR_NOT_IDENTIFIABLE",
+    "rows": 4
+   },
+   {
+    "arm_role": "(none)",
+    "from": "SNR_REJECTED",
+    "to": "SNR_NOT_IDENTIFIABLE",
+    "rows": 13
+   },
+   {
+    "arm_role": "CANDIDATE",
+    "from": "LAB_CALIBRATED",
+    "to": "NOT_IDENTIFIABLE",
+    "rows": 4
+   },
+   {
+    "arm_role": "CANDIDATE",
+    "from": "LAB_REJECTED",
+    "to": "NOT_IDENTIFIABLE",
+    "rows": 1
+   },
+   {
+    "arm_role": "CANDIDATE",
+    "from": "NOT_IDENTIFIABLE",
+    "to": "LAB_REJECTED",
+    "rows": 10
+   },
+   {
+    "arm_role": "CANDIDATE",
+    "from": "NOT_IDENTIFIABLE",
+    "to": "UNDERPOWERED",
+    "rows": 9
+   },
+   {
+    "arm_role": "CANDIDATE",
+    "from": "REGIME_LIMITED",
+    "to": "NOT_IDENTIFIABLE",
+    "rows": 1
+   },
+   {
+    "arm_role": "IDENTITY_RAW_CONTROL",
+    "from": "LAB_CALIBRATED",
+    "to": "NOT_IDENTIFIABLE",
+    "rows": 2
+   },
+   {
+    "arm_role": "IDENTITY_RAW_CONTROL",
+    "from": "LAB_REJECTED",
+    "to": "NOT_IDENTIFIABLE",
+    "rows": 94
+   }
+  ],
+  "changed_rows": 138,
+  "passes_lost": [
+   {
+    "arm_role": "IDENTITY_RAW_CONTROL",
+    "subject": "identity",
+    "operator_params": {},
+    "regime": {
+     "declared_snr_db": "inf",
+     "family": "motif",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "old": "LAB_CALIBRATED",
+    "new": "NOT_IDENTIFIABLE",
+    "n_seeds_valid_old": 30,
+    "n_seeds_valid_new": 24
+   },
+   {
+    "arm_role": "IDENTITY_RAW_CONTROL",
+    "subject": "identity",
+    "operator_params": {},
+    "regime": {
+     "declared_snr_db": "inf",
+     "family": "steps",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "old": "LAB_CALIBRATED",
+    "new": "NOT_IDENTIFIABLE",
+    "n_seeds_valid_old": 30,
+    "n_seeds_valid_new": 24
+   },
+   {
+    "arm_role": "CANDIDATE",
+    "subject": "local_level_kalman",
+    "operator_params": {},
+    "regime": {
+     "declared_snr_db": "5",
+     "family": "motif",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "old": "LAB_CALIBRATED",
+    "new": "NOT_IDENTIFIABLE",
+    "n_seeds_valid_old": 30,
+    "n_seeds_valid_new": 22
+   },
+   {
+    "arm_role": "CANDIDATE",
+    "subject": "local_linear_trend_kalman",
+    "operator_params": {},
+    "regime": {
+     "declared_snr_db": "20",
+     "family": "steps",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "old": "REGIME_LIMITED",
+    "new": "NOT_IDENTIFIABLE",
+    "n_seeds_valid_old": 30,
+    "n_seeds_valid_new": 25
+   },
+   {
+    "arm_role": "CANDIDATE",
+    "subject": "local_linear_trend_kalman",
+    "operator_params": {},
+    "regime": {
+     "declared_snr_db": "5",
+     "family": "motif",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "old": "LAB_CALIBRATED",
+    "new": "NOT_IDENTIFIABLE",
+    "n_seeds_valid_old": 30,
+    "n_seeds_valid_new": 22
+   },
+   {
+    "arm_role": "CANDIDATE",
+    "subject": "trailing_haar_threshold",
+    "operator_params": {
+     "levels": 2,
+     "threshold_k": 3.0
+    },
+    "regime": {
+     "declared_snr_db": "20",
+     "family": "steps",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "old": "LAB_CALIBRATED",
+    "new": "NOT_IDENTIFIABLE",
+    "n_seeds_valid_old": 30,
+    "n_seeds_valid_new": 25
+   },
+   {
+    "arm_role": "CANDIDATE",
+    "subject": "trailing_haar_threshold",
+    "operator_params": {
+     "levels": 3,
+     "threshold_k": 3.0
+    },
+    "regime": {
+     "declared_snr_db": "20",
+     "family": "steps",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "old": "LAB_CALIBRATED",
+    "new": "NOT_IDENTIFIABLE",
+    "n_seeds_valid_old": 30,
+    "n_seeds_valid_new": 25
+   }
+  ],
+  "passes_gained": [],
+  "passes_lost_by_arm": {
+   "CANDIDATE": 5,
+   "IDENTITY_RAW_CONTROL": 2
+  }
+ },
+ "supersedes": "the prose of the earlier reports: '48 LAB_CALIBRATED plus 6 REGIME_LIMITED' and 'seven lose a pass' are withdrawn; the records say 47 + 6 for the CANDIDATE arm, and five candidate losses plus two identity-control losses"
+}

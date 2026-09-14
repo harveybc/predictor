@@ -94,8 +94,13 @@ modified on any machine. Cost: 403 CPU-seconds in total across the three roles (
 
 The pattern behind AT9: COORDINATOR and WORKER_A reproduce each other **bit for bit** in
 both directions; WORKER_B differs in both, with identical Python 3.12.13, numpy 2.5.1,
-scipy 1.18.0, statsmodels 0.14.6, scipy-openblas and glibc 2.43. The variable is the
-processor, and AT9's 0.006 dB was one case of it. Prospective policy per estimator is in
+scipy 1.18.0, statsmodels 0.14.6, scipy-openblas and glibc 2.43. **Corrected 2026-09-14:**
+one host differs; *why* is not measured. Matching version strings do not isolate the
+processor — the same wheel dispatches different kernels by CPU feature detection — and the
+library build identity, the runtime dispatch and the optimiser's convergence path were never
+recorded. The finding is that this estimator is not reproducible across these hosts, cause
+unisolated; AT9's 0.006 dB is one case of it. The observed deviations are not bounds for
+future runs. Prospective policy per estimator is in
 `d2_support_r1/r4/R4_PORTABILITY_POLICY.md`: the four exact estimators and `ar_residual` carry no
 portability restriction beyond recording the reference environment; `local_level_kalman`
 is restricted — producing role and environment recorded with every governing result, no

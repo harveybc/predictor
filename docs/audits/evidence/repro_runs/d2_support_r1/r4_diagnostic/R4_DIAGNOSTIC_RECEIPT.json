@@ -1,0 +1,529 @@
+{
+ "schema": "d2_r4_diagnostic_receipt.v1",
+ "campaign_key": "d2-r4-portability-diagnostic",
+ "campaign_sha256": "aef32e8723d998793d2601e32c44143927a2066ae38ac947a4e3f050cb949b75",
+ "unit_id": "recomparison",
+ "classification": "GOVERNING",
+ "code_identity": {
+  "kind": "git_commit",
+  "value": "ed3dad109e1229051a329eac5fc8f627ff54cc19"
+ },
+ "config_sha256": "6189f06ed49ba0ff9df8f51a373ea7843c12b2c689d852b073c896ee46936a7a",
+ "synthetic_spec_sha256": "12a664df8fd56aa1c0fdb50f618c2787aecf4e043fdf19e35c8400640a553296",
+ "evidence_spec": {
+  "schema": "d2_r4_diagnostic_evidence_spec.v1",
+  "design_file_sha256": "61872db71a4c9bcbeeb62e7a0e1a9296fd874167c27ed386a3d36ce447930ba5",
+  "design_sha256": "3577c154c21dc5706e7134145197d591b13088a553ca1d41af80242789aa41ad",
+  "subset_sha256": "9890a1dc766dbc0e2eb464c557a921531d3cebc56c6dff2c534baac19debfe1e",
+  "snr_table_sha256": "76cb309caf589412821221a464c15c818e335cc24b0a58ffd5b48b19a404a2da",
+  "decisions_sha256": "f4958c88f8caa6b78d67fb7ff00c2a6a697276aa9b19b6b73411b78d97622510",
+  "replays": {
+   "COORDINATOR": "caae95dad0d39cc64e136cdf0a4d3e5b3926bf2612a8fa878564b0e534f1357e",
+   "WORKER_A": "ccc68e854e72bab195232b68c0b09ed81fdb2146861b0e3160efd1933a4700da",
+   "WORKER_B": "502152a3db003efbee5402f97dfefa55556f1d3c405111fc9591466d6da33e4f"
+  },
+  "comparator_code_sha256": "7014e488643ce2ac3c318ae7ed13e81b277c71acfb767b80fcb669cf4e810ec8",
+  "adjudicator_code_sha256": "cfb8bd609bf2dc60898b8dcebeebc9e9a2aa91e60b330b24d9c68eaf8336c0a1",
+  "note": "conserved replay files and conserved rows; nothing is recomputed here"
+ },
+ "execution_spec": {
+  "schema": "d2_r4_diagnostic_execution.v1",
+  "project": "predictor",
+  "unit": "recomparison",
+  "evidence": "12a664df8fd56aa1c0fdb50f618c2787aecf4e043fdf19e35c8400640a553296",
+  "tolerance_db": 1e-09,
+  "outputs": [
+   "R4_PORTABILITY_REPORT.json",
+   "R4_CELLS.jsonl"
+  ],
+  "population_rule": "every selected key, replayed exactly once by every role"
+ },
+ "comparator_exit": 0,
+ "comparator_stderr": "",
+ "verdict": "MEASURED",
+ "denominators": {
+  "selected_units": 32,
+  "expected_facts_per_role": 572,
+  "roles": 3,
+  "expected_cells": 1716,
+  "compared_cells": 1716,
+  "regimes": 16,
+  "decisions_compared": 288
+ },
+ "substituted_states": {
+  "ESTIMATED": 639,
+  "NOT_IDENTIFIABLE": 153
+ },
+ "decision_stability": {
+  "verdict": "MEASURED",
+  "compared": 288,
+  "changed": 0,
+  "note": "stability is asserted only over the compared scope"
+ },
+ "terminal": {
+  "schema": "governed_terminal.v1",
+  "generation": 1,
+  "status": "COMPLETED",
+  "reason": null,
+  "started_at": "2026-09-14T17:22:22.370215Z",
+  "finished_at": "2026-09-14T17:22:24.868065Z",
+  "costs": {
+   "wall_seconds": 2.4978548569779377
+  },
+  "deliveries": [],
+  "artifacts": [
+   {
+    "role": "portability_report",
+    "sha256": "e7d32a996bdfd119d2ea0c1419bc7e2b9ad17bc3e812a2460c92348d77c73163",
+    "bytes": 67145
+   },
+   {
+    "role": "cells",
+    "sha256": "0b3b834993c06030df79961b67140c122b7388935e0eba958e44d9e13239d7c2",
+    "bytes": 900924
+   }
+  ],
+  "metrics": [
+   {
+    "metric": "population.selected_units",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 32.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "population.expected_facts_per_role",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 572.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "population.roles",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 3.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "population.expected_cells",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 1716.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "population.compared_cells",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 1716.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "population.regimes",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 16.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "coverage.missing_selected_facts",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "coverage.duplicated_facts",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "coverage.carried_unselected_rows",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 63024.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "coverage.substituted_facts",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 792.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "coverage.substituted_non_estimates",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 153.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "comparison.bytes_equal",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 1223.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "comparison.within_tolerance",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 1306.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "comparison.outside_tolerance",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 83.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "comparison.identifiability_changed",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "comparison.max_abs_delta_db",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 1.0986786316645691,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "decisions.compared",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 288.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "decisions.changed",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.ar_residual.cells",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 264.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.ar_residual.bytes_equal",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 207.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.ar_residual.outside_tolerance",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.ar_residual.max_abs_delta_db",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 1.9184653865522705e-13,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.local_level_kalman.cells",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 264.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.local_level_kalman.bytes_equal",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 119.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.local_level_kalman.outside_tolerance",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 83.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.local_level_kalman.max_abs_delta_db",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 1.0986786316645691,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.mad_first_difference.cells",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 264.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.mad_first_difference.bytes_equal",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 255.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.mad_first_difference.outside_tolerance",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.mad_first_difference.max_abs_delta_db",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.spectral_floor.cells",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 264.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.spectral_floor.bytes_equal",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 249.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.spectral_floor.outside_tolerance",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.spectral_floor.max_abs_delta_db",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.trailing_median_residual.cells",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 264.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.trailing_median_residual.bytes_equal",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 261.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.trailing_median_residual.outside_tolerance",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.trailing_median_residual.max_abs_delta_db",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.wavelet_mad.cells",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 396.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.wavelet_mad.bytes_equal",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 132.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.wavelet_mad.outside_tolerance",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "estimator.wavelet_mad.max_abs_delta_db",
+    "split": null,
+    "horizon": null,
+    "unit": null,
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  ],
+  "tags": {
+   "purpose": "D2_R4_PORTABILITY_DIAGNOSTIC",
+   "grants": "NONE",
+   "evidence": "CONSERVED_REPLAYS",
+   "availability_use": "SYNTHETIC_EVIDENCE",
+   "population_enforced": "true",
+   "externally_reviewed": "false"
+  }
+ },
+ "outbox_flush": {
+  "sent": 1,
+  "pending": 0,
+  "failures": {}
+ },
+ "reconciliation": {
+  "accounting_only": [],
+  "campaign_sha256": "aef32e8723d998793d2601e32c44143927a2066ae38ac947a4e3f050cb949b75",
+  "lake_only": [],
+  "missing_units": []
+ },
+ "scope": "a numerical diagnostic over conserved evidence; it grants nothing and changes no decision"
+}

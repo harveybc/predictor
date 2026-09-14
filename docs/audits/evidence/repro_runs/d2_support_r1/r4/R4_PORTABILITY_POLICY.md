@@ -45,12 +45,26 @@ Intel Core i9 (WORKER_A) and AMD Ryzen 9 (WORKER_B).
 | WORKER_B (14 units) | 37/0/29/**1.099** | 37/0/29/**1.099** | 37/37/0/0 |
 
 COORDINATOR and WORKER_A reproduce each other **bit for bit** in both directions;
-WORKER_B is the one that differs, in both directions, with the same code and the same
-package versions. AT9 (up to 0.006 dB between two CPUs on one unit) is therefore a case
-of a wider, reproducible phenomenon: the local-level Kalman MLE follows a different
-optimisation path on that processor. The largest deviation, 1.099 dB, is in a
-**calibration** cell of a high-SNR regime (≈ 85 dB), where the likelihood is nearly flat;
-governing confirmation cells stay at 2.44e-05 dB.
+WORKER_B is the one that differs, in both directions, with the same code digests and the
+same package version strings. AT9 (up to 0.006 dB between two CPUs on one unit) is a case
+of the same phenomenon: the local-level Kalman MLE follows a different optimisation path
+on that host.
+
+**Attribution is a hypothesis, not a result (corrected 2026-09-14).** What is measured is
+that one of three hosts differs; what is *not* measured is why. Matching version strings
+do not isolate the processor: the same wheel dispatches different kernels by CPU feature
+detection, and the build identity of the linear-algebra library, its runtime dispatch and
+the optimiser's own convergence path were never recorded. Processor-only attribution needs
+an intervention (pin the dispatch, or run the same host under different kernels) or
+controls that exclude the alternatives. Until that diagnostic runs, the finding is: *this
+estimator is not reproducible across these hosts*, cause unisolated. The proposal is
+`docs/integracion_workplan_2026_09_10/10_DIAGNOSTICO_KALMAN_…`.
+
+The largest deviation, 1.099 dB, is in a **calibration** cell of a high-SNR regime
+(≈ 85 dB) where the likelihood is nearly flat; governing confirmation cells stay at
+2.44e-05 dB. **These are observations, not bounds.** Nothing here licenses treating
+1.099 dB or 2.44e-05 dB as a maximum for future runs, on these hosts or any other: they are
+the largest values seen in 32 units of one frozen subset.
 
 ## 4. Prospective policy per estimator
 
@@ -65,7 +79,7 @@ the environment are recorded with the result.
 | `spectral_floor` | exact | idem |
 | `trailing_median_residual` | exact | idem |
 | `ar_residual` | **not exact**; within the observed tolerance (max \|Δ\| = 1.918e-13 dB) | no restriction from portability; environment recorded, and the non-zero deviation is stated wherever exactness is claimed |
-| `local_level_kalman` | **CPU-dependent**: ≤ 2.44e-05 dB on confirmation, up to 1.099 dB on a near-flat calibration cell | restricted scope: (a) every governing result records the producing role and environment; (b) no decision may rest on a Kalman margin smaller than the deviation observed for that partition class; today none does — 0/288 decisions move; (c) before any use in selection, live or a public claim, replace it with a deterministic algorithm (fixed iteration budget and declared convergence tolerance, or a closed-form estimator) proven independently; (d) **AT9 stays open** under its original criterion |
+| `local_level_kalman` | **not reproducible across these hosts** (cause unisolated): ≤ 2.44e-05 dB on confirmation, up to 1.099 dB on a near-flat calibration cell | restricted scope: (a) every governing result records the producing role and environment; (b) no decision may rest on a Kalman margin smaller than the deviation observed for that partition class — an observed value used as a caution, never as a proven bound; today none does — 0/288 decisions move; (c) before any use in selection, live or a public claim, replace it with a deterministic algorithm (fixed iteration budget and declared convergence tolerance, or a closed-form estimator) proven independently; (d) **AT9 stays open** under its original criterion |
 
 The four exact estimators and `ar_residual` (exact to within 1.918e-13 dB) can be submitted separately; `local_level_kalman` does not hold
 the rest of the project blocked. Nothing here grants eligibility: the D2 gate keeps
