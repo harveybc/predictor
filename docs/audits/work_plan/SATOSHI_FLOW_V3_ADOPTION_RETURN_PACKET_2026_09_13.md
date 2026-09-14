@@ -48,7 +48,7 @@ Document: `data-gov/docs/07_RESOURCE_CONTRACTS_INSTALLED_2026_09_13.md` (commit 
 - Services `:5057`, `:5056`, `:5055`: healthz `ok`, same pids as at 02:20, working directories are the three checkouts, `NRestarts=0` on the loader, PostgreSQL and Metabase untouched.
 - Probes prove they run the **old** code: `GET :5057/api/v2/terminals` → 404, `GET :5056/api/v2/download` → 404, `POST :5055/api/v2/campaigns` → 404, `/api/v1/lakes` lists only `financial_files` and `olap_cube` (no `predictor_examples`).
 - Cube counts after my work (`CUBE_COUNTS_AFTER.txt`): no `gov_*` table exists in the real cube; the only differences from before are `dim_campaign 10→11`, `dim_campaign_run 10→13`, `fact_campaign_unit 188→195`, produced by the running OLAP loader, not by anything in this packet. No throwaway database remains.
-- The restart script is written (`restart_services.sh` in the deploy directory: carries the lake token and PG password from each running process's environment without printing them, stops OLAP lake → financial lake → data-gov, relaunches each from its checkout with `--load_config examples/config/default.json`, data-gov with `--save_config` to record the effective config, waits for healthz, records pids/HEADs/config digests). It was not executed.
+- The restart procedure is prepared as a script (Appendix A): it carries the lake token and PG password from each running process's environment without printing them, stops OLAP lake → financial lake → data-gov, relaunches each from its checkout with `--load_config examples/config/default.json` (data-gov with `--save_config` to record the effective config), waits for healthz and records pids, HEADs and config digests. Even writing it to disk was refused by the policy, so it exists only as text here; it was not executed. After the restart, the production proof is one command: `tools/governed_run.py` from a clean predictor worktree with the toy config against `:5055` (the throwaway run of §3.3 is exactly that, on disposable services).
 
 ## 3.3 P0.3 — governed runs proven on a throwaway stack
 
@@ -113,3 +113,48 @@ Work-plan gate: `predictor/tools/flow_v3_gate.py` + `df_dispatch --classificatio
 5. feature-extractor metrics key names and the suffixed loss-plot artifact are unverified without a run that this checkout cannot complete alone.
 6. agent-multi, DOIN and live adoption need design decisions (long-lived supervisors, GPU-only runners, message schemas without terminal identity, remote call inside `next()`).
 7. Permanently refused terminal envelopes have no operator path (observation, §3.4).
+
+## Appendix A — restart procedure (not executed)
+
+Operator-run, on the coordinator, after the backups of §3.1 exist. Old pids as observed: OLAP lake `553570`, financial lake `553040`, data-gov `554520`; verify them with `ss -ltnp` before use.
+
+```bash
+#!/usr/bin/env bash
+# Flow v3 P0.3: restart OLAP lake (5057) -> financial lake (5056) -> data-gov (5055)
+# with the integrated code. Environment values (lake token, PG password) are copied
+# from each running process and never printed.
+set -uo pipefail
+D=$HOME/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13
+G=$HOME/Documents/GitHub
+PY=$HOME/anaconda3/envs/trading-stack/bin/python
+mkdir -p "$D/logs"
+REC="$D/RESTART_RECORD.txt"; : > "$REC"
+log() { echo "$(date -u +%FT%TZ) $*" | tee -a "$REC"; }
+
+restart() {  # name old_pid port dir extra_args...
+  local name=$1 old=$2 port=$3 dir=$4; shift 4
+  log "== $name: old pid $old cwd=$(readlink /proc/$old/cwd) started='$(ps -o lstart= -p $old)'"
+  local envfile; envfile=$(mktemp); chmod 600 "$envfile"
+  tr '\0' '\n' < /proc/$old/environ | grep -E '^(DATA_GOV_LAKE_TOKEN|PGPASSWORD|PGUSER|PGHOST|PGPORT|PGDATABASE|PGUSER_WRITE|PGPASSWORD_WRITE|PYTHONPATH)=' > "$envfile"
+  log "   env keys carried: $(cut -d= -f1 "$envfile" | tr '\n' ' ')"
+  kill -TERM "$old"
+  for i in $(seq 1 30); do ss -ltn "sport = :$port" | grep -q LISTEN || break; sleep 0.5; done
+  if ss -ltn "sport = :$port" | grep -q LISTEN; then kill -KILL "$old"; sleep 1; fi
+  log "   port $port free; git HEAD $(git -C "$dir" rev-parse --short HEAD)"
+  ( cd "$dir" && set -a && . "$envfile" && set +a && \
+    setsid nohup "$PY" -m app.main --load_config examples/config/default.json "$@" > "$D/logs/$name.log" 2>&1 < /dev/null & echo $! > "$D/logs/$name.pid" )
+  rm -f "$envfile"
+  local new; new=$(cat "$D/logs/$name.pid")
+  for i in $(seq 1 60); do curl -sf -m 2 "http://127.0.0.1:$port/healthz" > /dev/null && break; sleep 0.5; done
+  log "   new pid $new healthz=$(curl -s -m 3 http://127.0.0.1:$port/healthz) cwd=$(readlink /proc/$new/cwd)"
+}
+
+restart olap-lake 553570 5057 "$G/predictor/olap/lake"
+restart financial-lake 553040 5056 "$G/financial-data/lake"
+restart data-gov 554520 5055 "$G/data-gov" --save_config "$D/data-gov_effective_config.json"
+log "== checkouts: data-gov $(git -C $G/data-gov rev-parse HEAD) financial-data $(git -C $G/financial-data rev-parse HEAD) predictor $(git -C $G/predictor rev-parse HEAD)"
+log "== config sha256: $(sha256sum $G/data-gov/examples/config/default.json $G/financial-data/lake/examples/config/default.json $G/predictor/olap/lake/examples/config/default.json | awk '{print $1" "$2}' | tr '\n' ';')"
+log "== loader: $(systemctl --user show crispdm-olap-loader -p ActiveState -p NRestarts | tr '\n' ' ')"
+```
+
+Post-restart checks (all must hold): `GET :5057/api/v2/terminals` with the lake token → 200; `GET :5056/api/v2/download` without parameters → 4xx other than 404; `POST :5055/api/v2/campaigns` with `{}` → 400; `/api/v1/lakes` lists `predictor_examples`; the effective config's `predictor_examples` lake carries the three `resource_contracts`; loader `ActiveState=active NRestarts=0`; then the governed micro-run and `CUBE_COUNTS_AFTER` (only `gov_*` may change).
