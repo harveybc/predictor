@@ -1,0 +1,120 @@
+{
+  "affected": [
+    {
+      "decision": "LAB_CALIBRATED",
+      "improvement_n": 22,
+      "missing_by_metric": {
+        "cost": 0,
+        "delay_samples": 8,
+        "residual_signal_share": 8,
+        "snr_improvement_db": 8
+      },
+      "n_valid": 30,
+      "params": {},
+      "regime": {
+        "declared_snr_db": "5",
+        "family": "motif",
+        "length": 2048,
+        "missingness": "none",
+        "perturbation": "white"
+      },
+      "subject": "local_linear_trend_kalman"
+    },
+    {
+      "decision": "LAB_CALIBRATED",
+      "improvement_n": 22,
+      "missing_by_metric": {
+        "cost": 0,
+        "delay_samples": 8,
+        "residual_signal_share": 8,
+        "snr_improvement_db": 8
+      },
+      "n_valid": 30,
+      "params": {},
+      "regime": {
+        "declared_snr_db": "5",
+        "family": "motif",
+        "length": 2048,
+        "missingness": "none",
+        "perturbation": "white"
+      },
+      "subject": "local_level_kalman"
+    },
+    {
+      "decision": "LAB_CALIBRATED",
+      "improvement_n": 25,
+      "missing_by_metric": {
+        "cost": 0,
+        "delay_samples": 5,
+        "residual_signal_share": 5,
+        "snr_improvement_db": 5
+      },
+      "n_valid": 30,
+      "params": {
+        "levels": 3,
+        "threshold_k": 3.0
+      },
+      "regime": {
+        "declared_snr_db": "20",
+        "family": "steps",
+        "length": 2048,
+        "missingness": "none",
+        "perturbation": "white"
+      },
+      "subject": "trailing_haar_threshold"
+    },
+    {
+      "decision": "LAB_CALIBRATED",
+      "improvement_n": 25,
+      "missing_by_metric": {
+        "cost": 0,
+        "delay_samples": 5,
+        "residual_signal_share": 5,
+        "snr_improvement_db": 5
+      },
+      "n_valid": 30,
+      "params": {
+        "levels": 2,
+        "threshold_k": 3.0
+      },
+      "regime": {
+        "declared_snr_db": "20",
+        "family": "steps",
+        "length": 2048,
+        "missingness": "none",
+        "perturbation": "white"
+      },
+      "subject": "trailing_haar_threshold"
+    },
+    {
+      "decision": "REGIME_LIMITED",
+      "improvement_n": 25,
+      "missing_by_metric": {
+        "cost": 0,
+        "delay_samples": 5,
+        "residual_signal_share": 5,
+        "snr_improvement_db": 5
+      },
+      "n_valid": 30,
+      "params": {},
+      "regime": {
+        "declared_snr_db": "20",
+        "family": "steps",
+        "length": 2048,
+        "missingness": "none",
+        "perturbation": "white"
+      },
+      "subject": "local_linear_trend_kalman"
+    }
+  ],
+  "candidate_passes_or_limited": 58,
+  "decisions": 3591,
+  "fixture_outcomes": {
+    "baseline": "LAB_CALIBRATED",
+    "inconclusive_delay_samples": "LAB_CALIBRATED",
+    "inconclusive_residual_signal_share": "LAB_CALIBRATED",
+    "measured_damage": "LAB_REJECTED",
+    "omitted_damage_metric": "LAB_CALIBRATED"
+  },
+  "published_sha256": "f4958c88f8caa6b78d67fb7ff00c2a6a697276aa9b19b6b73411b78d97622510"
+}

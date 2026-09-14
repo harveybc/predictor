@@ -574,6 +574,11 @@ class GovHttp:
                     "delivery": response.getheader("X-Delivery") or None,
                     "time_column": response.getheader("X-Time-Column") or None,
                     "availability_contract_sha256": contract_sha,
+                    # the contract's scope, published by the lake separately from its digest
+                    "availability_use": response.getheader("X-Availability-Use") or "UNDECLARED",
+                    "availability_label": response.getheader("X-Availability-Label") or "UNKNOWN",
+                    "availability_completion_lag_max": response.getheader("X-Availability-Completion-Lag-Max") or None,
+                    "timezone_evidence": response.getheader("X-Timezone-Evidence") or "UNKNOWN",
                     "delivery_id": delivery_id, "cached": cached,
                     "resource": resource, "role": role,
                 }
@@ -885,7 +890,8 @@ def run(args, extra) -> dict:
         state["inputs"] = [
             {"role": role, **{k: downloads[role].get(k) for k in (
                 "resource", "sha256", "bytes", "cached", "source_sha256", "delivery",
-                "time_column", "availability_contract_sha256", "delivery_id",
+                "time_column", "availability_contract_sha256", "availability_use", "availability_label",
+                "availability_completion_lag_max", "timezone_evidence", "delivery_id",
                 "verification_state",
             )}}
             for role in inputs
@@ -957,6 +963,10 @@ def run(args, extra) -> dict:
             "experiment_set_key": str(args.experiment_set_key or ""),
             "plugin": str(plugin or ""),
             "exit_code": str(state.get("exit_code", "")),
+            # the weakest availability scope among the inputs bounds what the result may claim
+            "availability_use": ",".join(sorted({
+                str(info.get("availability_use") or "UNDECLARED") for info in downloads.values()
+            })) or "NONE",
         },
     }
     envelope = {
