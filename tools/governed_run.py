@@ -307,15 +307,169 @@ class OutboxItem:
     payload: dict
 
 
+FAILURE_CLASSES = ("TRANSIENT", "CONFIGURATION", "REFUSED_BY_SERVER", "UNRESOLVED")
+DISPOSITIONS = ("INVALID_ENVELOPE", "SUPERSEDED")
+_HTTP_IN_ERROR = re.compile(r"\bhttp (\d{3})\b")
+
+
+def classify_failure(error: str) -> str:
+    """What a send failure means for the pending envelope. A 4xx alone never
+    decides that the envelope is invalid: it awaits an explicit disposition."""
+    match = _HTTP_IN_ERROR.search(error or "")
+    if match is None:
+        text = (error or "").lower()
+        if "diverge" in text or "reconciliation" in text or "missing after accepted" in text:
+            return "UNRESOLVED"
+        return "TRANSIENT"
+    status = int(match.group(1))
+    if status >= 500 or status == 429:
+        return "TRANSIENT"
+    if status in (401, 403, 404):
+        return "CONFIGURATION"
+    return "REFUSED_BY_SERVER"
+
+
 class TerminalOutbox:
-    """Write-once terminal queue; accepted sends move atomically to sent/."""
+    """Write-once terminal queue; accepted sends move atomically to sent/.
+
+    A refused send never deletes evidence: the envelope stays in pending/ with a
+    failure sidecar (attempts, last error, class). An envelope that can never be
+    accepted, or that a corrected successor replaces, is moved unchanged to
+    adjudicated/ next to a write-once disposition record, so a permanent
+    refusal is visible, traceable and no longer blocks other work."""
 
     def __init__(self, root):
         self.root = Path(root)
         self.pending = self.root / "pending"
         self.sent = self.root / "sent"
+        self.adjudicated = self.root / "adjudicated"
         self.pending.mkdir(parents=True, exist_ok=True)
         self.sent.mkdir(parents=True, exist_ok=True)
+        self.adjudicated.mkdir(parents=True, exist_ok=True)
+
+    # failure sidecars -------------------------------------------------
+    def _failure_path(self, path: Path) -> Path:
+        # sidecars are not envelopes: a different suffix keeps every *.json glob honest
+        return path.with_name(path.name[:-5] + ".failure")
+
+    def _record_failure(self, path: Path, error: str):
+        sidecar = self._failure_path(path)
+        record = {"attempts": 0, "first_seen": _utc_now()}
+        if sidecar.is_file():
+            record = json.loads(sidecar.read_text(encoding="utf-8"))
+        record.update(attempts=int(record.get("attempts", 0)) + 1, last_seen=_utc_now(),
+                      last_error=error, **{"class": classify_failure(error)})
+        _write_json_atomic(sidecar, record)
+        return record
+
+    def _failure(self, path: Path):
+        sidecar = self._failure_path(path)
+        return json.loads(sidecar.read_text(encoding="utf-8")) if sidecar.is_file() else None
+
+    def _pending_files(self):
+        return sorted(self.pending.glob("*.json"))
+
+    # health -----------------------------------------------------------
+    def status(self) -> dict:
+        """Recoverable pendings, envelopes awaiting adjudication, unresolved
+        failures and adjudicated cases are told apart; nothing is hidden."""
+        pending = []
+        for path in self._pending_files():
+            envelope = json.loads(path.read_text(encoding="ascii"))
+            failure = self._failure(path) or {}
+            pending.append({
+                "file": path.name, "campaign_sha256": envelope["campaign_sha256"],
+                "unit_id": envelope["unit_id"], "generation": envelope["terminal"].get("generation"),
+                "status": envelope["terminal"].get("status"),
+                "class": failure.get("class", "NOT_YET_SENT"), "attempts": failure.get("attempts", 0),
+                "last_error": failure.get("last_error"),
+            })
+        adjudicated = []
+        for path in sorted(self.adjudicated.glob("*.disposition.json")):
+            adjudicated.append(json.loads(path.read_text(encoding="utf-8")))
+        counts = {"recoverable": sum(p["class"] in ("NOT_YET_SENT", "TRANSIENT", "CONFIGURATION") for p in pending),
+                  "awaiting_adjudication": sum(p["class"] == "REFUSED_BY_SERVER" for p in pending),
+                  "unresolved": sum(p["class"] == "UNRESOLVED" for p in pending)}
+        return {"schema": "terminal_outbox_status.v1", "sent": len(list(self.sent.glob("*.json"))),
+                "pending": pending, "adjudicated": adjudicated, **counts}
+
+    # disposition ------------------------------------------------------
+    def dispose(self, name: str, decision: str, reason: str, *, successor_terminal_sha256=None,
+                successor_generation=None) -> dict:
+        """Move a pending envelope, unchanged, to adjudicated/ with a write-once
+        disposition. INVALID_ENVELOPE closes it; SUPERSEDED links the accepted
+        successor terminal. Nothing is deleted or rewritten."""
+        if decision not in DISPOSITIONS:
+            raise GovernedRunError(f"unknown disposition {decision!r}")
+        if not reason or not str(reason).strip():
+            raise GovernedRunError("a disposition states its reason")
+        path = self.pending / name
+        if not path.is_file() or not name.endswith(".json"):
+            raise GovernedRunError(f"{name} is not a pending envelope")
+        if decision == "SUPERSEDED" and not (isinstance(successor_terminal_sha256, str)
+                                             and re.fullmatch(r"[0-9a-f]{64}", successor_terminal_sha256)):
+            raise GovernedRunError("SUPERSEDED needs the accepted successor terminal_sha256")
+        raw = path.read_bytes()
+        envelope = json.loads(raw)
+        record = {
+            "schema": "terminal_outbox_disposition.v1", "file": name, "decision": decision,
+            "reason": str(reason), "envelope_sha256": hashlib.sha256(raw).hexdigest(),
+            "campaign_sha256": envelope["campaign_sha256"], "unit_id": envelope["unit_id"],
+            "generation": envelope["terminal"].get("generation"), "status": envelope["terminal"].get("status"),
+            "failure": self._failure(path), "successor_terminal_sha256": successor_terminal_sha256,
+            "successor_generation": successor_generation, "disposed_at": _utc_now(),
+        }
+        target = self.adjudicated / name
+        if target.exists():
+            raise GovernedRunError("adjudicated outbox identity conflict")
+        disposition = self.adjudicated / (name[:-5] + ".disposition.json")
+        fd = os.open(disposition, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            json.dump(record, handle, indent=2, sort_keys=True)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(path, target)
+        sidecar = self._failure_path(path)
+        if sidecar.is_file():
+            os.replace(sidecar, self.adjudicated / sidecar.name)
+        _fsync_dir(self.pending)
+        _fsync_dir(self.adjudicated)
+        return record
+
+    def supersede(self, name: str, corrected_terminal: dict, sender, reason: str) -> dict:
+        """Send a corrected terminal as the next generation of the same campaign and
+        unit, then dispose the original as SUPERSEDED. The successor keeps the
+        original's outcome and deliveries: a FAILED run never becomes COMPLETED
+        by correction, and no delivery is added or dropped."""
+        path = self.pending / name
+        if not path.is_file() or not name.endswith(".json"):
+            raise GovernedRunError(f"{name} is not a pending envelope")
+        original = json.loads(path.read_text(encoding="ascii"))
+        base = original["terminal"]
+        if not isinstance(corrected_terminal, dict) or corrected_terminal.get("schema") != "governed_terminal.v1":
+            raise GovernedRunError("the successor must be a governed_terminal.v1")
+        if corrected_terminal.get("status") != base.get("status"):
+            raise GovernedRunError("a successor keeps the original outcome")
+        if sorted(corrected_terminal.get("deliveries") or []) != sorted(base.get("deliveries") or []):
+            raise GovernedRunError("a successor keeps the original deliveries")
+        generation = int(base.get("generation", 1)) + 1
+        successor = dict(corrected_terminal, generation=generation)
+        successor["tags"] = {**(successor.get("tags") or {}),
+                             "supersedes_envelope_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                             "supersedes_generation": str(base.get("generation", 1))}
+        envelope = {"campaign_sha256": original["campaign_sha256"], "unit_id": original["unit_id"],
+                    "terminal": successor}
+        item = self.put(envelope)
+        receipt = sender(envelope)
+        if not isinstance(receipt, dict) or not re.fullmatch(r"[0-9a-f]{64}", str(receipt.get("terminal_sha256"))):
+            self._record_failure(item.path, "terminal receipt missing")
+            raise GovernedRunError("successor terminal was not accepted")
+        target = self.sent / item.path.name
+        os.replace(item.path, target)
+        _fsync_dir(self.pending)
+        _fsync_dir(self.sent)
+        return self.dispose(name, "SUPERSEDED", reason, successor_terminal_sha256=receipt["terminal_sha256"],
+                            successor_generation=generation)
 
     def put(self, payload):
         raw = (json.dumps(
@@ -345,7 +499,7 @@ class TerminalOutbox:
         is diagnosable from GOVERNED_RUN.json instead of a bare pending count."""
         sent = 0
         failures = {}
-        for path in sorted(self.pending.glob("*.json")):
+        for path in self._pending_files():
             try:
                 payload = json.loads(path.read_text(encoding="ascii"))
                 receipt = sender(payload)
@@ -353,6 +507,7 @@ class TerminalOutbox:
                     raise GovernedRunError("terminal receipt missing")
             except Exception as exc:
                 failures[path.name] = f"{type(exc).__name__}: {exc}"
+                self._record_failure(path, failures[path.name])
                 continue
             target = self.sent / path.name
             if target.exists():
@@ -361,12 +516,13 @@ class TerminalOutbox:
                 path.unlink()
             else:
                 os.replace(path, target)
+            self._failure_path(path).unlink(missing_ok=True)
             _fsync_dir(self.pending)
             _fsync_dir(self.sent)
             sent += 1
         return {
             "sent": sent,
-            "pending": len(list(self.pending.glob("*.json"))),
+            "pending": len(self._pending_files()),
             "failures": failures,
         }
 
@@ -858,10 +1014,15 @@ def run(args, extra) -> dict:
     prior = _send_pending(gov, outbox)
     state["prior_outbox_flush"] = prior
     if prior["pending"]:
+        # adjudicated envelopes no longer block; pending ones do, and their class says why
+        health = outbox.status()
         state["status"] = "REFUSED"
         state["reason"] = "PRIOR_TERMINAL_PENDING"
+        state["outbox_status"] = health
         checkpoint()
-        raise GovernedRunError("a prior terminal remains pending")
+        raise GovernedRunError(
+            "a prior terminal remains pending: " + ", ".join(
+                f"{p['file'][:12]} {p['class']}" for p in health["pending"]))
     _require_reconciled(gov, campaign_sha256, key, before_run=True)
 
     started_at = _utc_now()
