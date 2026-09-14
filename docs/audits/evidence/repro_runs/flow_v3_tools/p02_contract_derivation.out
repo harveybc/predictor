@@ -1,0 +1,503 @@
+{
+ "schema": "flow_v3_p02_contract_derivation.v1",
+ "code_sha256": "d3dc273c1e733be915f9f885e4190fe318d58e6f470e9540235bf2bc42173414",
+ "toy_resources": {
+  "phase_1/normalized_d4.csv": {
+   "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+   "bytes": 247741,
+   "rows": 6298,
+   "columns": [
+    "DATE_TIME",
+    "typical_price"
+   ],
+   "t_min": "2012-10-16 20:00:00",
+   "t_max": "2017-09-20 00:00:00",
+   "monotonic_increasing": true,
+   "duplicate_timestamps": 0,
+   "hours_of_day": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "weekdays": [
+    [
+     "Friday",
+     964
+    ],
+    [
+     "Monday",
+     920
+    ],
+    [
+     "Thursday",
+     1460
+    ],
+    [
+     "Tuesday",
+     1461
+    ],
+    [
+     "Wednesday",
+     1493
+    ]
+   ],
+   "spacing_seconds_top3": [
+    [
+     14400,
+     6027
+    ],
+    [
+     244800,
+     221
+    ],
+    [
+     331200,
+     29
+    ]
+   ],
+   "last_bar_before_gap_top3": [
+    [
+     [
+      "Friday",
+      12
+     ],
+     245
+    ],
+    [
+     [
+      "Thursday",
+      12
+     ],
+     7
+    ],
+    [
+     [
+      "Wednesday",
+      12
+     ],
+     6
+    ]
+   ],
+   "first_bar_after_gap_top3": [
+    [
+     [
+      "Monday",
+      8
+     ],
+     232
+    ],
+    [
+     [
+      "Tuesday",
+      8
+     ],
+     23
+    ],
+    [
+     [
+      "Friday",
+      8
+     ],
+     8
+    ]
+   ],
+   "last_day_bar_hour_max": 20
+  },
+  "phase_1/normalized_d5.csv": {
+   "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+   "bytes": 62823,
+   "rows": 1584,
+   "columns": [
+    "DATE_TIME",
+    "typical_price"
+   ],
+   "t_min": "2017-09-20 04:00:00",
+   "t_max": "2018-12-14 00:00:00",
+   "monotonic_increasing": true,
+   "duplicate_timestamps": 0,
+   "hours_of_day": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "weekdays": [
+    [
+     "Friday",
+     241
+    ],
+    [
+     "Monday",
+     232
+    ],
+    [
+     "Thursday",
+     370
+    ],
+    [
+     "Tuesday",
+     368
+    ],
+    [
+     "Wednesday",
+     373
+    ]
+   ],
+   "spacing_seconds_top3": [
+    [
+     14400,
+     1515
+    ],
+    [
+     244800,
+     55
+    ],
+    [
+     331200,
+     7
+    ]
+   ],
+   "last_bar_before_gap_top3": [
+    [
+     [
+      "Friday",
+      12
+     ],
+     61
+    ],
+    [
+     [
+      "Thursday",
+      16
+     ],
+     2
+    ],
+    [
+     [
+      "Wednesday",
+      12
+     ],
+     2
+    ]
+   ],
+   "first_bar_after_gap_top3": [
+    [
+     [
+      "Monday",
+      8
+     ],
+     58
+    ],
+    [
+     [
+      "Tuesday",
+      8
+     ],
+     6
+    ],
+    [
+     [
+      "Friday",
+      8
+     ],
+     2
+    ]
+   ],
+   "last_day_bar_hour_max": 20
+  },
+  "phase_1/normalized_d6.csv": {
+   "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+   "bytes": 69257,
+   "rows": 1737,
+   "columns": [
+    "DATE_TIME",
+    "typical_price"
+   ],
+   "t_min": "2018-12-14 04:00:00",
+   "t_max": "2020-04-29 20:00:00",
+   "monotonic_increasing": true,
+   "duplicate_timestamps": 0,
+   "hours_of_day": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "weekdays": [
+    [
+     "Friday",
+     273
+    ],
+    [
+     "Monday",
+     260
+    ],
+    [
+     "Thursday",
+     395
+    ],
+    [
+     "Tuesday",
+     404
+    ],
+    [
+     "Wednesday",
+     405
+    ]
+   ],
+   "spacing_seconds_top3": [
+    [
+     14400,
+     1656
+    ],
+    [
+     244800,
+     65
+    ],
+    [
+     331200,
+     8
+    ]
+   ],
+   "last_bar_before_gap_top3": [
+    [
+     [
+      "Friday",
+      12
+     ],
+     70
+    ],
+    [
+     [
+      "Wednesday",
+      12
+     ],
+     3
+    ],
+    [
+     [
+      "Monday",
+      12
+     ],
+     2
+    ]
+   ],
+   "first_bar_after_gap_top3": [
+    [
+     [
+      "Monday",
+      8
+     ],
+     66
+    ],
+    [
+     [
+      "Tuesday",
+      8
+     ],
+     6
+    ],
+    [
+     [
+      "Thursday",
+      8
+     ],
+     3
+    ]
+   ],
+   "last_day_bar_hour_max": 20
+  }
+ },
+ "lineage": {
+  "base_identity": {
+   "base_d4": {
+    "predictor_sha256": "ea3161a234fc9c0e9d8b379fcd22b2d97dd626b940f46fc11f5f88734336f33e",
+    "preprocessor_sha256": "ea3161a234fc9c0e9d8b379fcd22b2d97dd626b940f46fc11f5f88734336f33e",
+    "identical": true
+   },
+   "base_d5": {
+    "predictor_sha256": "578695e6f0ae9922cf6ab3d284358085e3b857ed5273923039fd4ce7a4a679f1",
+    "preprocessor_sha256": "578695e6f0ae9922cf6ab3d284358085e3b857ed5273923039fd4ce7a4a679f1",
+    "identical": true
+   },
+   "base_d6": {
+    "predictor_sha256": "00efe2ef702a43a3b15a63457cd35b356a4b3f82d7b56d62263dddb7dff83d5d",
+    "preprocessor_sha256": "00efe2ef702a43a3b15a63457cd35b356a4b3f82d7b56d62263dddb7dff83d5d",
+    "identical": true
+   }
+  },
+  "normalized_vs_preprocessor": {
+   "normalized_d4": {
+    "predictor_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+    "preprocessor_sha256": "3bfb75880d1fc701f87e24e84567b964b5a2729d97423cfb16e2702d0f07d158",
+    "identical": false
+   },
+   "normalized_d5": {
+    "predictor_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+    "preprocessor_sha256": "ffd328aa134d67c20d7b7fa8c6ccf84aef66fdc2f4305670dd1806b9f1f562fa",
+    "identical": false
+   },
+   "normalized_d6": {
+    "predictor_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+    "preprocessor_sha256": "51fb5e3b08f3075856dfaff33de8f4b94742d7a55335f31f7ccd8a5656113c45",
+    "identical": false
+   }
+  },
+  "normalized_d4_timestamps_equal_base_d4": true,
+  "phase_3b_downsampled": {
+   "sha256": "25bfa0a22810d61a6ae7a374a4bdf5db9090b9c809c4a3bdd8fa9887e9efc4a8",
+   "rows": 22521,
+   "t_min": "2005-05-12 12:00:00",
+   "t_max": "2020-04-29 20:00:00",
+   "hours_of_day": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "base_d4_timestamps_present": "6298/6298",
+   "base_d4_typical_price_exact_equal": 6298
+  },
+  "phase_3b_hourly": {
+   "sha256": "d1282f0e97dc5e03b9fad9aae808ddd1a36e9c0dc4ce4e3f4e924fc240deb05e",
+   "rows": 88084,
+   "t_min": "2005-05-12 11:00:00",
+   "t_max": "2020-04-29 22:00:00",
+   "spacing_seconds_top3": [
+    [
+     3600,
+     87260
+    ],
+    [
+     187200,
+     447
+    ],
+    [
+     183600,
+     232
+    ]
+   ],
+   "hours_of_day": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+   ],
+   "last_row_before_gap_top3": [
+    [
+     [
+      "Friday",
+      20
+     ],
+     482
+    ],
+    [
+     [
+      "Friday",
+      21
+     ],
+     271
+    ],
+    [
+     [
+      "Thursday",
+      23
+     ],
+     21
+    ]
+   ],
+   "first_row_after_gap_top3": [
+    [
+     [
+      "Monday",
+      0
+     ],
+     705
+    ],
+    [
+     [
+      "Tuesday",
+      0
+     ],
+     73
+    ],
+    [
+     [
+      "Friday",
+      0
+     ],
+     22
+    ]
+   ],
+   "window_tests": {
+    "decimation_same_hour_row": {
+     "common": 22521,
+     "exact_equal": 18
+    },
+    "mean_of_hourly_label_left": {
+     "window": "[t, t+4h)",
+     "common": 22521,
+     "exact_equal": 4
+    },
+    "mean_of_hourly_label_right": {
+     "window": "(t-4h, t]",
+     "common": 22521,
+     "exact_equal": 21703
+    },
+    "right_label_restricted_to_full_windows": {
+     "full_4_row_windows": 21702,
+     "exact_equal_in_full_windows": 21702,
+     "partial_windows": 819
+    }
+   }
+  },
+  "dukascopy_4h_raw_not_in_lineage": {
+   "sha256": "d18bdd94dca353756dc99032f9c2891c4a0662285234f9e6dd2b728c2f48df1d",
+   "rows": 28860,
+   "hours_of_day": [
+    1,
+    2,
+    5,
+    6,
+    9,
+    10,
+    13,
+    14,
+    17,
+    18,
+    21,
+    22
+   ],
+   "base_d4_timestamps_present": "0/6298"
+  }
+ }
+}
