@@ -1,0 +1,9 @@
+{
+ "schema": "d2_universe_check.v1",
+ "expected_rows": 432623,
+ "observed_rows": 402811,
+ "missing_rows": 0,
+ "events_disagree": 655,
+ "events_disagree_missingness_none": 442,
+ "ok": false
+}

@@ -471,19 +471,20 @@ def _decide_arm(op, regime, rs, R, ent, n_design, paired, noise_free, fam, desig
                       len(valid))
     if not paired:
         return result("NOT_IDENTIFIABLE", ["UNPAIRED: arms of the regime do not share the same seeds"], len(valid))
-    if len(valid) < n_design:
-        gaps = {m: len(us) for m, us in support["unsupported_by_metric"].items()}
-        return result("NOT_IDENTIFIABLE", [f"COMPLETE_SEEDS {len(valid)} < DESIGN {n_design}"
-                                           + (f"; unsupported seeds by metric {gaps}" if gaps else "")], len(valid))
     if ev["abstention_rate"] > R["abstention"]["max_rate"]:
         return result("NOT_IDENTIFIABLE", [f"ABSTENTION_RATE {ev['abstention_rate']:.3f} > {R['abstention']['max_rate']}"],
                       len(valid))
     per_spec = ent["per_spec"].get(op["spec_sha256"])
     underpowered = per_spec is not None and per_spec["status"] == "UNDERPOWERED"
     reasons_rej = []
-    # event and extreme floors, and leakage, on EVERY seed
+    # Event and extreme floors, and leakage, on EVERY observed seed. Damage measured on
+    # one seed is proven by that seed alone: another seed's incompleteness never hides it
+    # (D2-R1 rule 1, post-result clarification of the sealed precedence). A seed whose
+    # applicable floor could not be measured makes the arm NOT_IDENTIFIABLE below.
+    observed = {u: s for u, s in seeds.items() if not s["abstained"] and s["variables"]}
+    unmeasured_floors = {}
     for metric, (how, bound) in R["event_floors"].items():
-        applicable = {u: s for u, s in valid.items()
+        applicable = {u: s for u, s in observed.items()
                       if any(_applicable(s, v, metric, noise_free, R) for v in s["variables"])}
         worst = {u: _agg(s, metric, "min" if how == "min" else "max") for u, s in applicable.items()}
         unmeasured = sorted(u for u, v in worst.items() if v is None)
@@ -495,10 +496,12 @@ def _decide_arm(op, regime, rs, R, ent, n_design, paired, noise_free, fam, desig
         if bad:
             reasons_rej.append(f"EVENT_OR_EXTREME_DESTROYED {metric} on seeds {sorted(bad)}")
         if unmeasured:
-            return result("NOT_IDENTIFIABLE", [f"FLOOR_UNSUPPORTED {metric} on seeds {unmeasured}"], len(valid))
-    leak = {u: _agg(s, R["residual_leakage"]["metric"], "max") for u, s in valid.items()}
+            unmeasured_floors[metric] = unmeasured
+    leak = {u: _agg(s, R["residual_leakage"]["metric"], "max") for u, s in observed.items()}
     bad = {u: v for u, v in leak.items() if v is not None and v > R["residual_leakage"]["max"]}
-    ev["checks"]["residual_leakage"] = {"passed": not bad, "failing_seeds": bad}
+    ev["checks"]["residual_leakage"] = {"passed": not bad and all(v is not None for v in leak.values()),
+                                        "failing_seeds": bad,
+                                        "unmeasured_seeds": sorted(u for u, v in leak.items() if v is None)}
     if bad:
         reasons_rej.append(f"RESIDUAL_LEAKAGE on seeds {sorted(bad)}")
     if underpowered:
@@ -506,6 +509,13 @@ def _decide_arm(op, regime, rs, R, ent, n_design, paired, noise_free, fam, desig
                       [f"(not governing) {x}" for x in reasons_rej], len(valid))
     if reasons_rej:
         return result("LAB_REJECTED", reasons_rej, len(valid))
+    if len(valid) < n_design:
+        gaps = {m: len(us) for m, us in support["unsupported_by_metric"].items()}
+        return result("NOT_IDENTIFIABLE", [f"COMPLETE_SEEDS {len(valid)} < DESIGN {n_design}"
+                                           + (f"; unsupported seeds by metric {gaps}" if gaps else "")], len(valid))
+    if unmeasured_floors:
+        metric, units = next(iter(unmeasured_floors.items()))
+        return result("NOT_IDENTIFIABLE", [f"FLOOR_UNSUPPORTED {metric} on seeds {units}"], len(valid))
     if noise_free:
         dist = {u: _agg(s, "distortion_ratio", "max") for u, s in valid.items()}
         vals = [v for v in dist.values() if v is not None]

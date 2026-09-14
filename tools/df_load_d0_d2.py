@@ -437,9 +437,19 @@ def main(argv=None) -> int:
                     help="a sealed profile root; repeat once per role of the campaign")
     ap.add_argument("--table-dir", type=Path, action="append",
                     help="C164 output directory of table-named JSONL files; repeatable")
+    ap.add_argument("--universe-check", type=Path,
+                    help="D2-R2: UNIVERSE_CHECK.json of tools/df_d2_support.py for the offered D2 tables; the load "
+                         "refuses unless the expected units x arms x variables x metrics all arrived")
     a = ap.parse_args(argv)
     if a.receipt.exists():
         raise SystemExit("REFUSED: the receipt exists; each load is write-once")
+    universe = None
+    if a.universe_check is not None:
+        universe = json.loads(a.universe_check.read_text(encoding="utf-8"))
+        if universe.get("schema") != "d2_universe_check.v1" or not universe.get("ok"):
+            raise SystemExit(f"REFUSED: the D2 universe check is not clean: {universe}")
+    elif a.table_dir:
+        raise SystemExit("REFUSED: a D2 table-dir load needs --universe-check (expected universe, not row counts)")
     tables, cov = collect(a)
     offered = {t: len(v) for t, v in tables.items()}
     receipt = {"schema": "crispdm.data_foundation.load_receipt.v1", "mode": a.mode, "offered": offered,

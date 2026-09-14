@@ -76,6 +76,16 @@ def test_rule_1_removing_a_damage_metric_never_turns_rejection_into_pass(design)
     assert "extreme_retention" in omitted["evidence"]["support"]["unsupported_by_metric"]
 
 
+def test_rule_1_corollary_measured_damage_is_never_hidden_by_another_seeds_incompleteness(design):
+    damaged = _inconclusive(F._den(design), "ewma", "snr_improvement_db", units={"u_203"})
+    for r in damaged:
+        if r["operator_kind"] == "ewma" and r["metric"] == "extreme_retention" and r["unit_id"] == "u_200":
+            r["value"] = 0.2
+    d = _ewma(design, damaged)
+    assert d["decision"] == "LAB_REJECTED" and "u_200" in " ".join(d["reasons"])
+    assert d["n_seeds_valid"] == 9 and d["evidence"]["support"]["seeds_complete"] == 9
+
+
 @pytest.mark.parametrize("metric", ["delay_samples", "residual_signal_share"])
 def test_rule_2_inconclusive_limit_metrics_do_not_pass(design, metric):
     d = _ewma(design, _inconclusive(F._den(design), "ewma", metric))
