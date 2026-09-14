@@ -1,0 +1,145 @@
+{
+ "schema": "consumer_adoption_check.v1",
+ "gov_url": "http://127.0.0.1:5055",
+ "label": "r2",
+ "sample_lake": "predictor_examples",
+ "classification": "NON_GOVERNING",
+ "cube_before": {
+  "gov_terminal": 8,
+  "gov_terminal_metric": 251,
+  "gov_terminal_dataset": 15,
+  "gov_terminal_artifact": 22
+ },
+ "consumers": {
+  "preprocessor": {
+   "cases": {
+    "success": {
+     "case": "success",
+     "exit_code": 0,
+     "wall_seconds": 1.769,
+     "status": "COMPLETED",
+     "reason": null,
+     "campaign_sha256": "dc738d2cc086cd3d78db1695b6830c8dc742de521f5b30c3b6345f1349aff790",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d4.csv",
+       "role": "input_file",
+       "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+       "verification_state": "VERIFIED_TRANSFER"
+      }
+     ],
+     "cube_rows": [
+      [
+       "COMPLETED",
+       null,
+       "{\"wall_seconds\":1.6426599310070742}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "dc738d2cc086cd3d78db1695b6830c8dc742de521f5b30c3b6345f1349aff790",
+      "lake_only": [],
+      "missing_units": []
+     }
+    },
+    "stale": {
+     "case": "stale",
+     "exit_code": 1,
+     "wall_seconds": 0.119,
+     "status": "REFUSED",
+     "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/a3_preprocessor/preprocessor/run/base_d1.csv, ~/scratch/a3_preprocessor/preprocessor/run/base_d2.csv, ~/scratch/a3_preprocessor/preprocessor/run/base_d3.csv, ~/scratch/a3_preprocessor/preprocessor/run/base_d4.csv, ~/scratch/a3_preprocessor/preprocessor/run/base_d5.csv, ~/scratch/a3_preprocessor/preprocessor/run/base_d6.csv, ~/scratch/a3_preprocessor/preprocessor/run/config_out.json, ~/scratch/a3_preprocessor/preprocessor/run/debug_out.json, ~/scratch/a3_preprocessor/preprocessor/run/governed_config.json, ~/scratch/a3_preprocessor/preprocessor/run/norm_a.json, ~/scratch/a3_preprocessor/preprocessor/run/norm_b.json, ~/scratch/a3_preprocessor/preprocessor/run/normalized_d1.csv, ~/scratch/a3_preprocessor/preprocessor/run/normalized_d2.csv, ~/scratch/a3_preprocessor/preprocessor/run/normalized_d3.csv, ~/scratch/a3_preprocessor/preprocessor/run/normalized_d4.csv, ~/scratch/a3_preprocessor/preprocessor/run/normalized_d5.csv, ~/scratch/a3_preprocessor/preprocessor/run/normalized_d6.csv, ~/scratch/a3_preprocessor/preprocessor/run/run.log",
+     "campaign_sha256": "75e1bf0d0b8d9a9de15bb99b66ded562034886348e769ad6b3f90e9b4998222b",
+     "classification": "NON_GOVERNING",
+     "inputs": [],
+     "cube_rows": [
+      [
+       "REFUSED",
+       "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/a3_preprocessor/preprocessor/run/base_d1.csv, ~/scratch/a3_preprocessor/preprocessor/run/base_d2.csv, ~/scratch/a3_preprocessor/preprocessor/run/base_d3.csv, ~/scratch/a3_preprocessor/preprocessor/run/base_d4.csv, ~/scratch/a3_preprocessor/preprocessor/run/base_d5.csv, ~/scratch/a3_preprocessor/preprocessor/run/base_d6.csv, ~/scratch/a3_preprocessor/preprocessor/run/config_out.json, ~/scratch/a3_preprocessor/preprocessor/run/debug_out.json, ~/scratch/a3_preprocessor/preprocessor/run/governed_config.json, ~/scratch/a3_preprocessor/preprocessor/run/norm_a.json, ~/scratch/a3_preprocessor/preprocessor/run/norm_b.json, ~/scratch/a3_preprocessor/preprocessor/run/normalized_d1.csv, ~/scratch/a3_preprocessor/preprocessor/run/normalized_d2.csv, ~/scratch/a3_preprocessor/preprocessor/run/normalized_d3.csv, ~/scratch/a3_preprocessor/preprocessor/run/normalized_d4.csv, ~/scratch/a3_preprocessor/preprocessor/run/normalized_d5.csv, ~/scratch/a3_preprocessor/preprocessor/run/normalized_d6.csv, ~/scratch/a3_preprocessor/preprocessor/run/run.log",
+       "{\"wall_seconds\":0.0007352399989031255}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "75e1bf0d0b8d9a9de15bb99b66ded562034886348e769ad6b3f90e9b4998222b",
+      "lake_only": [],
+      "missing_units": []
+     }
+    },
+    "failure": {
+     "case": "failure",
+     "exit_code": 1,
+     "wall_seconds": 0.61,
+     "status": "FAILED",
+     "reason": "COMMAND_EXIT_1",
+     "campaign_sha256": "d937924bc0fddf28bf8721860a57356badac5a8fbb39bf59c24e019c061295d8",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d4.csv",
+       "role": "input_file",
+       "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "FAILED",
+       "COMMAND_EXIT_1",
+       "{\"wall_seconds\":0.4879354810109362}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "d937924bc0fddf28bf8721860a57356badac5a8fbb39bf59c24e019c061295d8",
+      "lake_only": [],
+      "missing_units": []
+     }
+    },
+    "retry": {
+     "flush": {
+      "exit_code": 0,
+      "failures": {},
+      "pending": 0,
+      "sent": 0
+     },
+     "cube_before": {
+      "gov_terminal": 11,
+      "gov_terminal_metric": 275,
+      "gov_terminal_dataset": 17,
+      "gov_terminal_artifact": 39
+     },
+     "cube_after": {
+      "gov_terminal": 11,
+      "gov_terminal_metric": 275,
+      "gov_terminal_dataset": 17,
+      "gov_terminal_artifact": 39
+     },
+     "sends_nothing": true
+    }
+   },
+   "verdict": {
+    "success": true,
+    "stale_refused": true,
+    "failure_recorded": true,
+    "retry_sends_nothing": true
+   },
+   "adopted": true
+  }
+ },
+ "cube_after": {
+  "gov_terminal": 11,
+  "gov_terminal_metric": 275,
+  "gov_terminal_dataset": 17,
+  "gov_terminal_artifact": 39
+ },
+ "cube_delta": {
+  "gov_terminal": 3,
+  "gov_terminal_metric": 24,
+  "gov_terminal_dataset": 2,
+  "gov_terminal_artifact": 17
+ },
+ "ok": true
+}

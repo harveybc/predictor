@@ -1,0 +1,215 @@
+{
+ "schema": "consumer_adoption_check.v1",
+ "gov_url": "http://127.0.0.1:5055",
+ "label": "r3",
+ "sample_lake": "predictor_examples",
+ "classification": "NON_GOVERNING",
+ "cube_before": {
+  "gov_terminal": 11,
+  "gov_terminal_metric": 275,
+  "gov_terminal_dataset": 17,
+  "gov_terminal_artifact": 39
+ },
+ "consumers": {
+  "predictor": {
+   "cases": {
+    "success": {
+     "case": "success",
+     "exit_code": 0,
+     "wall_seconds": 17.1,
+     "status": "COMPLETED",
+     "reason": null,
+     "campaign_sha256": "ed8d6d4a66c93136cb362d5a706550a890ded38acc56506abd59984a0bc60eb2",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "role": "x_train_file",
+       "resource": "phase_1/normalized_d4.csv",
+       "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "role": "y_train_file",
+       "resource": "phase_1/normalized_d4.csv",
+       "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "x_validation_file",
+       "resource": "phase_1/normalized_d5.csv",
+       "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "role": "y_validation_file",
+       "resource": "phase_1/normalized_d5.csv",
+       "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "x_test_file",
+       "resource": "phase_1/normalized_d6.csv",
+       "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "role": "y_test_file",
+       "resource": "phase_1/normalized_d6.csv",
+       "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "COMPLETED",
+       null,
+       "{\"wall_seconds\":16.980758125020657}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "ed8d6d4a66c93136cb362d5a706550a890ded38acc56506abd59984a0bc60eb2",
+      "lake_only": [],
+      "missing_units": []
+     }
+    },
+    "stale": {
+     "case": "stale",
+     "exit_code": 1,
+     "wall_seconds": 0.105,
+     "status": "REFUSED",
+     "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/a3_predictor/predictor/run/config_out.json, ~/scratch/a3_predictor/predictor/run/governed_config.json, ~/scratch/a3_predictor/predictor/run/phase_1_ann_1575_1d_loss_plot.png, ~/scratch/a3_predictor/predictor/run/phase_1_ann_1575_1d_prediction.csv, ~/scratch/a3_predictor/predictor/run/phase_1_ann_1575_1d_predictions_plot.png, ~/scratch/a3_predictor/predictor/run/phase_1_ann_1575_1d_results.csv, ~/scratch/a3_predictor/predictor/run/phase_1_ann_1575_1d_uncertanties.csv, ~/scratch/a3_predictor/predictor/run/phase_1_ann_1d_model_plot.png, ~/scratch/a3_predictor/predictor/run/predictor_model.keras",
+     "campaign_sha256": "e7c15dfb945a822fd2476cf12b297a010c2847fa1fb8b0a3a798916829bedaaf",
+     "classification": "NON_GOVERNING",
+     "inputs": [],
+     "cube_rows": [
+      [
+       "REFUSED",
+       "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/a3_predictor/predictor/run/config_out.json, ~/scratch/a3_predictor/predictor/run/governed_config.json, ~/scratch/a3_predictor/predictor/run/phase_1_ann_1575_1d_loss_plot.png, ~/scratch/a3_predictor/predictor/run/phase_1_ann_1575_1d_prediction.csv, ~/scratch/a3_predictor/predictor/run/phase_1_ann_1575_1d_predictions_plot.png, ~/scratch/a3_predictor/predictor/run/phase_1_ann_1575_1d_results.csv, ~/scratch/a3_predictor/predictor/run/phase_1_ann_1575_1d_uncertanties.csv, ~/scratch/a3_predictor/predictor/run/phase_1_ann_1d_model_plot.png, ~/scratch/a3_predictor/predictor/run/predictor_model.keras",
+       "{\"wall_seconds\":0.00033948099007830024}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "e7c15dfb945a822fd2476cf12b297a010c2847fa1fb8b0a3a798916829bedaaf",
+      "lake_only": [],
+      "missing_units": []
+     }
+    },
+    "failure": {
+     "case": "failure",
+     "exit_code": 1,
+     "wall_seconds": 0.683,
+     "status": "FAILED",
+     "reason": "PREDICTOR_EXIT_1",
+     "campaign_sha256": "e27bd1196bf62cb3acc90c12da06fd187d877460704f4c849eef7001147bb665",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "role": "x_train_file",
+       "resource": "phase_1/normalized_d4.csv",
+       "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "y_train_file",
+       "resource": "phase_1/normalized_d4.csv",
+       "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "x_validation_file",
+       "resource": "phase_1/normalized_d5.csv",
+       "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "y_validation_file",
+       "resource": "phase_1/normalized_d5.csv",
+       "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "x_test_file",
+       "resource": "phase_1/normalized_d6.csv",
+       "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "role": "y_test_file",
+       "resource": "phase_1/normalized_d6.csv",
+       "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "FAILED",
+       "PREDICTOR_EXIT_1",
+       "{\"wall_seconds\":0.5798383149958681}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "e27bd1196bf62cb3acc90c12da06fd187d877460704f4c849eef7001147bb665",
+      "lake_only": [],
+      "missing_units": []
+     }
+    },
+    "retry": {
+     "flush": {
+      "exit_code": 0,
+      "failures": {},
+      "pending": 0,
+      "sent": 0
+     },
+     "cube_before": {
+      "gov_terminal": 14,
+      "gov_terminal_metric": 365,
+      "gov_terminal_dataset": 29,
+      "gov_terminal_artifact": 46
+     },
+     "cube_after": {
+      "gov_terminal": 14,
+      "gov_terminal_metric": 365,
+      "gov_terminal_dataset": 29,
+      "gov_terminal_artifact": 46
+     },
+     "sends_nothing": true
+    }
+   },
+   "verdict": {
+    "success": true,
+    "stale_refused": true,
+    "failure_recorded": true,
+    "retry_sends_nothing": true
+   },
+   "adopted": true
+  }
+ },
+ "cube_after": {
+  "gov_terminal": 14,
+  "gov_terminal_metric": 365,
+  "gov_terminal_dataset": 29,
+  "gov_terminal_artifact": 46
+ },
+ "cube_delta": {
+  "gov_terminal": 3,
+  "gov_terminal_metric": 90,
+  "gov_terminal_dataset": 12,
+  "gov_terminal_artifact": 7
+ },
+ "ok": true
+}

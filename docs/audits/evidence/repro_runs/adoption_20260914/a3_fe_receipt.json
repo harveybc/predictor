@@ -1,0 +1,340 @@
+{
+ "schema": "consumer_adoption_check.v1",
+ "gov_url": "http://127.0.0.1:5055",
+ "label": "r3",
+ "sample_lake": "predictor_examples",
+ "classification": "NON_GOVERNING",
+ "cube_before": {
+  "gov_terminal": 14,
+  "gov_terminal_metric": 365,
+  "gov_terminal_dataset": 29,
+  "gov_terminal_artifact": 46
+ },
+ "consumers": {
+  "feature-eng": {
+   "cases": {
+    "success": {
+     "case": "success",
+     "exit_code": 1,
+     "wall_seconds": 5.067,
+     "status": "FAILED",
+     "reason": "COMMAND_EXIT_1",
+     "campaign_sha256": "5f9f92d3a34b4fef4d70f9e553f3a67b1992f39dfe96d919e31780a76b58558b",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d4.csv",
+       "role": "input_file",
+       "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+       "verification_state": "VERIFIED_TRANSFER"
+      }
+     ],
+     "cube_rows": [
+      [
+       "FAILED",
+       "COMMAND_EXIT_1",
+       "{\"wall_seconds\":4.958115193992853}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "5f9f92d3a34b4fef4d70f9e553f3a67b1992f39dfe96d919e31780a76b58558b",
+      "lake_only": [],
+      "missing_units": []
+     }
+    },
+    "stale": {
+     "case": "stale",
+     "exit_code": 1,
+     "wall_seconds": 0.116,
+     "status": "REFUSED",
+     "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/a3_fe/feature-eng/run/governed_config.json, ~/scratch/a3_fe/feature-eng/run/run.log",
+     "campaign_sha256": "ad046680211a74e72196519a7441d6a2f59609ee498e9a41a6d8ac52effb67a5",
+     "classification": "NON_GOVERNING",
+     "inputs": [],
+     "cube_rows": [
+      [
+       "REFUSED",
+       "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/a3_fe/feature-eng/run/governed_config.json, ~/scratch/a3_fe/feature-eng/run/run.log",
+       "{\"wall_seconds\":0.00023865699768066406}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "ad046680211a74e72196519a7441d6a2f59609ee498e9a41a6d8ac52effb67a5",
+      "lake_only": [],
+      "missing_units": []
+     }
+    },
+    "failure": {
+     "case": "failure",
+     "exit_code": 1,
+     "wall_seconds": 1.358,
+     "status": "FAILED",
+     "reason": "COMMAND_EXIT_1",
+     "campaign_sha256": "3fc4d6a473e6778512b61f37849f1b07073fc6f8fe3f346ee1b6405acfd2c5fd",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d4.csv",
+       "role": "input_file",
+       "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "FAILED",
+       "COMMAND_EXIT_1",
+       "{\"wall_seconds\":1.2428036339988466}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "3fc4d6a473e6778512b61f37849f1b07073fc6f8fe3f346ee1b6405acfd2c5fd",
+      "lake_only": [],
+      "missing_units": []
+     }
+    },
+    "retry": {
+     "flush": {
+      "exit_code": 0,
+      "failures": {},
+      "pending": 0,
+      "sent": 0
+     },
+     "cube_before": {
+      "gov_terminal": 17,
+      "gov_terminal_metric": 365,
+      "gov_terminal_dataset": 31,
+      "gov_terminal_artifact": 46
+     },
+     "cube_after": {
+      "gov_terminal": 17,
+      "gov_terminal_metric": 365,
+      "gov_terminal_dataset": 31,
+      "gov_terminal_artifact": 46
+     },
+     "sends_nothing": true
+    }
+   },
+   "verdict": {
+    "governed_delivery": true,
+    "success": false,
+    "stale_refused": true,
+    "failure_recorded": true,
+    "retry_sends_nothing": true
+   },
+   "scope": "TRANSPORT_ONLY",
+   "adopted": false,
+   "transport_proven": true,
+   "missing": "no lake data-gov serves the columns this consumer needs; its own fixtures are inside its repository. Next action: publish those fixtures as a governed resource with a derived contract"
+  },
+  "feature-extractor": {
+   "cases": {
+    "success": {
+     "case": "success",
+     "exit_code": 1,
+     "wall_seconds": 4.517,
+     "status": "FAILED",
+     "reason": "COMMAND_EXIT_1",
+     "campaign_sha256": "5ee63f78a05122f5e4607df27239df31c6f29e0ed0f86b24cfe5ab7a6ae5477b",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d4.csv",
+       "role": "x_train_file",
+       "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d4.csv",
+       "role": "y_train_file",
+       "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d5.csv",
+       "role": "x_validation_file",
+       "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d5.csv",
+       "role": "y_validation_file",
+       "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d6.csv",
+       "role": "x_test_file",
+       "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+       "verification_state": "VERIFIED_TRANSFER"
+      },
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d6.csv",
+       "role": "y_test_file",
+       "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "FAILED",
+       "COMMAND_EXIT_1",
+       "{\"wall_seconds\":4.387677563994657}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "5ee63f78a05122f5e4607df27239df31c6f29e0ed0f86b24cfe5ab7a6ae5477b",
+      "lake_only": [],
+      "missing_units": []
+     }
+    },
+    "stale": {
+     "case": "stale",
+     "exit_code": 1,
+     "wall_seconds": 0.131,
+     "status": "REFUSED",
+     "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/a3_fe/feature-extractor/run/governed_config.json, ~/scratch/a3_fe/feature-extractor/run/run.log",
+     "campaign_sha256": "5323141b945c312080e340171d7381b1ab6a4e6d9f66edb94a978e883cf30298",
+     "classification": "NON_GOVERNING",
+     "inputs": [],
+     "cube_rows": [
+      [
+       "REFUSED",
+       "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/scratch/a3_fe/feature-extractor/run/governed_config.json, ~/scratch/a3_fe/feature-extractor/run/run.log",
+       "{\"wall_seconds\":0.00039145900518633425}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "5323141b945c312080e340171d7381b1ab6a4e6d9f66edb94a978e883cf30298",
+      "lake_only": [],
+      "missing_units": []
+     }
+    },
+    "failure": {
+     "case": "failure",
+     "exit_code": 1,
+     "wall_seconds": 3.247,
+     "status": "FAILED",
+     "reason": "COMMAND_EXIT_1",
+     "campaign_sha256": "96b4e9f9a1612a98d59ad579cf937c3cad7ca200dd9b201dd62b975295aae079",
+     "classification": "NON_GOVERNING",
+     "inputs": [
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d4.csv",
+       "role": "x_train_file",
+       "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d4.csv",
+       "role": "y_train_file",
+       "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d5.csv",
+       "role": "x_validation_file",
+       "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d5.csv",
+       "role": "y_validation_file",
+       "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d6.csv",
+       "role": "x_test_file",
+       "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+       "verification_state": "VERIFIED_CACHE"
+      },
+      {
+       "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+       "resource": "phase_1/normalized_d6.csv",
+       "role": "y_test_file",
+       "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+       "verification_state": "VERIFIED_CACHE"
+      }
+     ],
+     "cube_rows": [
+      [
+       "FAILED",
+       "COMMAND_EXIT_1",
+       "{\"wall_seconds\":3.1319719580060337}"
+      ]
+     ],
+     "reconcile": {
+      "accounting_only": [],
+      "campaign_sha256": "96b4e9f9a1612a98d59ad579cf937c3cad7ca200dd9b201dd62b975295aae079",
+      "lake_only": [],
+      "missing_units": []
+     }
+    },
+    "retry": {
+     "flush": {
+      "exit_code": 0,
+      "failures": {},
+      "pending": 0,
+      "sent": 0
+     },
+     "cube_before": {
+      "gov_terminal": 20,
+      "gov_terminal_metric": 365,
+      "gov_terminal_dataset": 43,
+      "gov_terminal_artifact": 46
+     },
+     "cube_after": {
+      "gov_terminal": 20,
+      "gov_terminal_metric": 365,
+      "gov_terminal_dataset": 43,
+      "gov_terminal_artifact": 46
+     },
+     "sends_nothing": true
+    }
+   },
+   "verdict": {
+    "governed_delivery": true,
+    "success": false,
+    "stale_refused": true,
+    "failure_recorded": true,
+    "retry_sends_nothing": true
+   },
+   "scope": "TRANSPORT_ONLY",
+   "adopted": false,
+   "transport_proven": true,
+   "missing": "no lake data-gov serves the columns this consumer needs; its own fixtures are inside its repository. Next action: publish those fixtures as a governed resource with a derived contract"
+  }
+ },
+ "cube_after": {
+  "gov_terminal": 20,
+  "gov_terminal_metric": 365,
+  "gov_terminal_dataset": 43,
+  "gov_terminal_artifact": 46
+ },
+ "cube_delta": {
+  "gov_terminal": 6,
+  "gov_terminal_metric": 0,
+  "gov_terminal_dataset": 14,
+  "gov_terminal_artifact": 0
+ },
+ "ok": true
+}

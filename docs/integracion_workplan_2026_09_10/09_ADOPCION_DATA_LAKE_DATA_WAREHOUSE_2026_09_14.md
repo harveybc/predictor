@@ -123,3 +123,39 @@ enmienda no activa operaciones reales.
 3. **`predictor-olap-store` en la rama por defecto**: el empuje directo a `master` fue
    rechazado; va como PR #44, y la revisión fijada queda declarada como origen instalable
    mientras se integra.
+
+
+## Actualizacion 2026-09-14 (Satoshi, tras el acta productiva de Musashi)
+
+Etapas 1-5: **cerradas por Musashi** (repos publicos, PR 44 integrado, hosts sirviendo con
+servicios persistentes, micro-run productivo conciliado). Verifique la identidad que sirve
+realmente en `/api/v1/host` de cada puerto, el inventario 5.275 y que el cargador **avanza**
+(latido publicado en el instante de la comprobacion, `healthy: true`, pendientes 0), no solo
+que el proceso este activo. Dos detalles registrados: `governance_smoke` no aparece en
+`/api/v1/lakes` porque su politica concede `download` y no `discover`, y el almacen agrega
+un campo aditivo `transport` en `describe` que el adaptador anterior no enviaba.
+
+### Etapa 6 — adopcion por consumidor (estado real)
+
+| consumidor | entrega gobernada | exito | salida rancia | fallo con costo | reintento sin duplicado | alcance |
+|---|---|---|---|---|---|---|
+| preprocessor | VERIFIED_TRANSFER | **COMPLETED** | REFUSED | FAILED | si | **completo** |
+| predictor | 6 entradas verificadas | **COMPLETED** | REFUSED | FAILED | si | **completo** |
+| feature-eng | VERIFIED | su pipeline rechaza las columnas de muestra | REFUSED | FAILED | si | solo transporte |
+| feature-extractor | 6 entradas verificadas | idem | REFUSED | FAILED | si | solo transporte |
+| agent-multi / DOIN | — | — | — | — | — | sin empezar |
+
+Recibos: `docs/audits/evidence/repro_runs/adoption_20260914/`. Todas las campanas
+NON_GOVERNING; 12 terminales aditivos, conciliacion exacta, sin filas duplicadas.
+
+Falta por consumidor, declarado: feature-eng y feature-extractor necesitan que sus fixtures
+propios se publiquen como recurso gobernado con contrato derivado; agent-multi/DOIN necesita
+el contrato `doin_governed_result.v1` y su fixture, en sus repositorios.
+
+### Contratos de disponibilidad financiera
+
+Primer candidato entregado como **financial-data PR #1**
+(`market_data/crypto/spot_top50/ethusdt/4h.parquet`, `contract_sha256` `998e3f80…`), con la
+evidencia del productor, once pruebas sobre bytes y tres desconocidos declarados
+(latencia de entrega UNOBSERVED, politica de revisiones UNKNOWN, derechos de uso UNKNOWN).
+**No instalado**: instalarlo cambia lo que una campana puede consumir y pasa por revision.
