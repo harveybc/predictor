@@ -1,0 +1,149 @@
+{
+ "campaign_key": "doin-offline-replay-d1",
+ "campaign_sha256": "f4f904e926ed7829f1220be40d64dc25575b75756c33c83bde74146146e7d02d",
+ "classification": "NON_GOVERNING",
+ "code_identity": {
+  "kind": "git_commit",
+  "value": "909db61596b788b4cd78932babaa5d161ef843e1-dirty"
+ },
+ "command": [
+  "~/anaconda3/envs/trading-stack/bin/python",
+  "~/Documents/GitHub/agent-multi/tools/governed_offline_replay.py",
+  "--load_config",
+  "~/scratch/doin_gov/run/governed_config.json"
+ ],
+ "config_sha256": "1c0701e9018f453396b302b417798287c8bb8e28eea2e58a29104e1d6dde8c8a",
+ "cwd": "~/scratch/doin_gov/run",
+ "execution_spec": {
+  "artifacts": [
+   "effective_config",
+   "replay_log"
+  ],
+  "command": [
+   "~/anaconda3/envs/trading-stack/bin/python",
+   "{repo_root}/tools/governed_offline_replay.py",
+   "--load_config",
+   "{config}"
+  ],
+  "config": {
+   "experiment_config": "~/scratch/doin_smoke.json",
+   "experiment_name": "governed-offline-replay",
+   "input_data_file": "role:input_data_file",
+   "max_rows": 384,
+   "runtime_overlay": "~/scratch/doin_overlay.json",
+   "save_config": "replay_config.json",
+   "save_log": "replay_log.json",
+   "total_timesteps": 64
+  },
+  "datasets": [
+   {
+    "from": null,
+    "lake": "synthetic_fixtures",
+    "resource": "synthetic_features_4h_train.csv",
+    "role": "input_data_file",
+    "to": null
+   }
+  ],
+  "extra_args": [],
+  "metrics": {
+   "keys": [
+    "wall_seconds",
+    "best_fitness",
+    "champion_fitness",
+    "final_reward",
+    "total_timesteps",
+    "candidates_evaluated",
+    "generations"
+   ],
+   "kind": "json_numbers",
+   "path": "replay_log.json"
+  },
+  "project": "agent-multi",
+  "schema": "governed_exec_execution_spec.v1"
+ },
+ "exit_code": 0,
+ "governed_config": "~/scratch/doin_gov/run/governed_config.json",
+ "inputs": [
+  {
+   "availability_completion_lag_max": "4h",
+   "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+   "availability_label": "WINDOW_START",
+   "availability_use": "OFFLINE_DAY_GRANULAR",
+   "bytes": 228801,
+   "cached": false,
+   "delivery": "AS_IS",
+   "delivery_id": "bebdadc94b3c44189a8119480adf20c4",
+   "lake": "synthetic_fixtures",
+   "path": "~/scratch/doin_gov/cache/synthetic_fixtures/4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027.csv",
+   "range_from": null,
+   "range_to": null,
+   "resource": "synthetic_features_4h_train.csv",
+   "role": "input_data_file",
+   "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+   "source_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+   "time_column": "DATE_TIME",
+   "timezone_evidence": "PRODUCER_STATEMENT",
+   "verification_state": "VERIFIED_TRANSFER"
+  }
+ ],
+ "out_dir": "~/scratch/doin_gov/run",
+ "outbox_flush": {
+  "failures": {},
+  "pending": 0,
+  "sent": 1
+ },
+ "prior_outbox_flush": {
+  "failures": {},
+  "pending": 0,
+  "sent": 0
+ },
+ "project": "agent-multi",
+ "reconciliation": {
+  "accounting_only": [],
+  "campaign_sha256": "f4f904e926ed7829f1220be40d64dc25575b75756c33c83bde74146146e7d02d",
+  "lake_only": [],
+  "missing_units": []
+ },
+ "repo_root": "~/Documents/GitHub/agent-multi",
+ "schema": "governed_exec_run.v1",
+ "status": "COMPLETED",
+ "terminal": {
+  "artifacts": [
+   {
+    "bytes": 256,
+    "role": "replay_log",
+    "sha256": "7036e88cb6b6f73a0a06b0811970ac6d3e760963d06e411d6d042b34b567f5a4"
+   },
+   {
+    "bytes": 938,
+    "role": "governed_config",
+    "sha256": "ff49aab468935f1ab08358370d3c871452b8126257afd9c1ace4a8e03254d1d4"
+   }
+  ],
+  "costs": {
+   "wall_seconds": 6.972080247011036
+  },
+  "deliveries": [
+   "bebdadc94b3c44189a8119480adf20c4"
+  ],
+  "finished_at": "2026-09-14T22:14:31.950997Z",
+  "generation": 1,
+  "metrics": [],
+  "reason": null,
+  "schema": "governed_terminal.v1",
+  "started_at": "2026-09-14T22:14:24.978918Z",
+  "status": "COMPLETED",
+  "tags": {
+   "availability_use": "OFFLINE_DAY_GRANULAR",
+   "device": "cpu",
+   "exit_code": "0",
+   "experiment_set_key": "",
+   "network": "none",
+   "offline": "true",
+   "phase": "doin_gov"
+  }
+ },
+ "terminal_outbox": "~/scratch/doin_gov/outbox/pending/816b8d29353575316b7be9c8ec35e8418c2a4acb36e88604357e78be064a9eef.json",
+ "terminal_pending": false,
+ "unit_id": "doin-offline-replay-d1"
+}
