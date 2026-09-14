@@ -45,7 +45,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--fresh-root", type=Path, required=True)
-    ap.add_argument("--load-receipt", type=Path, required=True)
+    ap.add_argument("--load-receipt", type=Path, action="append", required=True,
+                    help="a real load receipt; repeat for the D0-D2 load and the D2 load")
     ap.add_argument("--gate-refusal", type=Path, required=True, help="the gate's refusal output for the fresh decisions")
     a = ap.parse_args()
     if a.out.exists():
@@ -58,7 +59,7 @@ def main() -> int:
     fresh_manifest = json.loads((a.fresh_root / "RUN_MANIFEST.json").read_text())
     adj = json.loads((a.fresh_root / "ADJUDICATION_SUMMARY.json").read_text())
     comparison = S / "d2_reanalysis_c172_v2_comparison"
-    receipt = json.loads(a.load_receipt.read_text())
+    receipts = [(p, json.loads(p.read_text())) for p in a.load_receipt]
     doc = {
         "schema": "crispdm.data_foundation.d2_review_submission.v1",
         "kind": "SUBMISSION_FOR_EXTERNAL_REVIEW",
@@ -89,12 +90,19 @@ def main() -> int:
                                "decisions_sha256": adj["decisions_sha256"], "decision_rows": adj["decision_rows"],
                                "decisions_by_kind": adj["decisions_by_kind"], "externally_reviewed": False,
                                "adjudication_summary_sha256": sha(a.fresh_root / "ADJUDICATION_SUMMARY.json")},
-        "dispatch": {r: (sha(S / r / "DISPATCH_RECEIPT.json") if (S / r / "DISPATCH_RECEIPT.json").is_file() else None)
-                     for r in ("d2_dispatch_c172_v2", "d2_dispatch_c174_coordinator", "d2_dispatch_c174_workers",
-                               "d2_dispatch_c174_workers_v2")},
-        "olap_load": {"receipt": a.load_receipt.name, "receipt_sha256": sha(a.load_receipt), "mode": receipt["mode"],
-                      "historical_unchanged": receipt.get("historical_unchanged"),
-                      "offered": receipt.get("offered"), "loader_code_sha256": receipt.get("loader_code_sha256")},
+        # a dispatcher stopped on purpose writes DISPATCH_PROGRESS.N.json, not DISPATCH_RECEIPT.json; both are bound,
+        # and so is the reconciliation of the units it left running
+        "dispatch": {r: {"receipt_sha256": sha(S / r / "DISPATCH_RECEIPT.json") if (S / r / "DISPATCH_RECEIPT.json").is_file() else None,
+                         "progress_sha256": {p.name: sha(p) for p in sorted((S / r).glob("DISPATCH_PROGRESS.*.json"))},
+                         "reconciliation_sha256": sha(S / f"{r}_reconciliation/RECONCILIATION.json")
+                         if (S / f"{r}_reconciliation/RECONCILIATION.json").is_file() else None}
+                     for r in ("d2_dispatch_c172_v1", "d2_dispatch_c172_v2", "d2_dispatch_c174_coordinator",
+                               "d2_dispatch_c174_workers", "d2_dispatch_c174_workers_v2", "d2_dispatch_c174_workers_tail")},
+        "olap_loads": [{"receipt": p.name, "receipt_sha256": sha(p), "mode": r["mode"],
+                        "historical_unchanged": r.get("historical_unchanged"),
+                        "rows_refused": r.get("rows_refused") or {t: v["rows_refused"] for t, v in (r.get("load") or {}).items()},
+                        "no_silent_dedup": r.get("no_silent_dedup"),
+                        "loader_code_sha256": r.get("loader_code_sha256")} for p, r in receipts],
         "gate": {"refusal_sha256": sha(a.gate_refusal), "refusal": json.loads(a.gate_refusal.read_text())},
         "not_done_by_order": ["D3", "D4", "D5", "GPU", "feature selection", "models", "RL", "DOIN", "live", "venue"],
     }
