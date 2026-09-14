@@ -247,4 +247,6 @@ if __name__ == "__main__":
         raise SystemExit(split(a.root, a.work))
     if a.step == "decide":
         raise SystemExit(decide(a.root, a.work, a.family, design))
+    if a.step == "tables":
+        raise SystemExit(tables(a.root))
     raise SystemExit(merge(a.root, a.work))
