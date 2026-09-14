@@ -1,11 +1,76 @@
 {
- "schema": "d2_r4_portability_report.v1",
+ "schema": "d2_r4_portability_report.v2",
  "roles": [
   "COORDINATOR",
   "WORKER_A",
   "WORKER_B"
  ],
  "units": 32,
+ "coverage": {
+  "units_requested": 32,
+  "units_replayed": 32,
+  "units_missing": [],
+  "replayed_facts": 1716,
+  "compared_cells": 1716,
+  "facts_without_historical_row": 0,
+  "regimes_in_scope": 16,
+  "substituted_facts": 639,
+  "regimes_without_substitution": [],
+  "decisions_without_published_counterpart": 0,
+  "decisions_compared": 288
+ },
+ "verdict": "MEASURED",
+ "inconclusive_reasons": [],
+ "per_estimator": {
+  "ar_residual": {
+   "cells": 264,
+   "bytes_equal": 207,
+   "comparable": 258,
+   "within_tolerance": 258,
+   "outside_tolerance": 0,
+   "max_abs_delta_db": 1.9184653865522705e-13
+  },
+  "local_level_kalman": {
+   "cells": 264,
+   "bytes_equal": 119,
+   "comparable": 234,
+   "within_tolerance": 151,
+   "outside_tolerance": 83,
+   "max_abs_delta_db": 1.0986786316645691
+  },
+  "mad_first_difference": {
+   "cells": 264,
+   "bytes_equal": 255,
+   "comparable": 255,
+   "within_tolerance": 255,
+   "outside_tolerance": 0,
+   "max_abs_delta_db": 0.0
+  },
+  "spectral_floor": {
+   "cells": 264,
+   "bytes_equal": 249,
+   "comparable": 249,
+   "within_tolerance": 249,
+   "outside_tolerance": 0,
+   "max_abs_delta_db": 0.0
+  },
+  "trailing_median_residual": {
+   "cells": 264,
+   "bytes_equal": 261,
+   "comparable": 261,
+   "within_tolerance": 261,
+   "outside_tolerance": 0,
+   "max_abs_delta_db": 0.0
+  },
+  "wavelet_mad": {
+   "cells": 396,
+   "bytes_equal": 132,
+   "comparable": 132,
+   "within_tolerance": 132,
+   "outside_tolerance": 0,
+   "max_abs_delta_db": 0.0
+  }
+ },
  "tolerance_db_original": 1e-09,
  "cells": 1716,
  "bytes_equal": 1223,
@@ -316,9 +381,11 @@
   }
  ],
  "decision_stability": {
+  "verdict": "MEASURED",
   "compared": 288,
   "changed": 0,
-  "changed_rows": []
+  "changed_rows": [],
+  "note": "stability is asserted only over the compared scope"
  },
  "environments": {
   "COORDINATOR": {
@@ -849,7 +916,1455 @@
     0.09425120393263334
    ],
    "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multiband__student_t__snr0__none__n2048__v1__seed156262637282954937",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": -0.8616808249544321,
+   "replay": -0.8616809004894808,
+   "abs_delta_db": 7.553504866031346e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -7.069039181438141,
+    0.6931269192316696
+   ],
+   "ci_replay": [
+    -7.069038748569081,
+    0.6931266417702496
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multiband__student_t__snr0__none__n2048__v1__seed156262637282954937",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": -0.8638091173479111,
+   "replay": -0.8638092378085999,
+   "abs_delta_db": 1.2046068875726235e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -5.922872983189369,
+    0.09425075902875307
+   ],
+   "ci_replay": [
+    -5.9228727221478215,
+    0.09425120393263334
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multiband__student_t__snr0__none__n2048__v1__seed156262637282954937",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": -0.8616808249544321,
+   "replay": -0.8616809004894808,
+   "abs_delta_db": 7.553504866031346e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -7.069039181438141,
+    0.6931269192316696
+   ],
+   "ci_replay": [
+    -7.069038748569081,
+    0.6931266417702496
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 1.7261918282265285,
+   "replay": 1.7261918127371279,
+   "abs_delta_db": 1.5489400650992025e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.5391119258794475,
+    3.2851648881427087
+   ],
+   "ci_replay": [
+    -1.5391119606195194,
+    3.285164880161988
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 0.15821113953825117,
+   "replay": 0.1582110024731427,
+   "abs_delta_db": 1.3706510845756803e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -6.052648366976606,
+    0.9487114023948529
+   ],
+   "ci_replay": [
+    -6.052648193728556,
+    0.9487114065697626
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 1.3984868431803708,
+   "replay": 1.3984868661285768,
+   "abs_delta_db": 2.294820600212688e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.9196526732175356,
+    3.2867709719967984
+   ],
+   "ci_replay": [
+    -1.9196524867126845,
+    3.2867711335535965
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 0.16353850244525509,
+   "replay": 0.16353735955405835,
+   "abs_delta_db": 1.1428911967370503e-06,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -6.478829824238435,
+    1.2193285697968017
+   ],
+   "ci_replay": [
+    -6.478830284635288,
+    1.2193285715161024
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 0.8662789907190676,
+   "replay": 0.8662791048650227,
+   "abs_delta_db": 1.1414595513237202e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -2.2552604621109564,
+    1.4963276597806985
+   ],
+   "ci_replay": [
+    -2.2552603757397365,
+    1.4963279361695794
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 1.070894445094519,
+   "replay": 1.070894384748028,
+   "abs_delta_db": 6.034649113750845e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -4.675825924223304,
+    1.6484466614232904
+   ],
+   "ci_replay": [
+    -4.675825872451849,
+    1.6484465825772463
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 1.7261918282265285,
+   "replay": 1.7261918127371279,
+   "abs_delta_db": 1.5489400650992025e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.5391119258794475,
+    3.2851648881427087
+   ],
+   "ci_replay": [
+    -1.5391119606195194,
+    3.285164880161988
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 0.15821113953825117,
+   "replay": 0.1582110024731427,
+   "abs_delta_db": 1.3706510845756803e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -6.052648366976606,
+    0.9487114023948529
+   ],
+   "ci_replay": [
+    -6.052648193728556,
+    0.9487114065697626
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 1.3984868431803708,
+   "replay": 1.3984868661285768,
+   "abs_delta_db": 2.294820600212688e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.9196526732175356,
+    3.2867709719967984
+   ],
+   "ci_replay": [
+    -1.9196524867126845,
+    3.2867711335535965
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 0.16353850244525509,
+   "replay": 0.16353735955405835,
+   "abs_delta_db": 1.1428911967370503e-06,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -6.478829824238435,
+    1.2193285697968017
+   ],
+   "ci_replay": [
+    -6.478830284635288,
+    1.2193285715161024
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 0.8662789907190676,
+   "replay": 0.8662791048650227,
+   "abs_delta_db": 1.1414595513237202e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -2.2552604621109564,
+    1.4963276597806985
+   ],
+   "ci_replay": [
+    -2.2552603757397365,
+    1.4963279361695794
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 1.070894445094519,
+   "replay": 1.070894384748028,
+   "abs_delta_db": 6.034649113750845e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -4.675825924223304,
+    1.6484466614232904
+   ],
+   "ci_replay": [
+    -4.675825872451849,
+    1.6484465825772463
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed76631531250570454",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 0.6674050523383147,
+   "replay": 0.6674048853878718,
+   "abs_delta_db": 1.6695044291470396e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.1373492750634533,
+    2.077835747226241
+   ],
+   "ci_replay": [
+    -1.1373493828467864,
+    2.077836058015778
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed76631531250570454",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 0.45035343581818055,
+   "replay": 0.4503533727767143,
+   "abs_delta_db": 6.30414662694534e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.0997675927859543,
+    1.173843597967694
+   ],
+   "ci_replay": [
+    -1.099767035785698,
+    1.1738430915960656
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed76631531250570454",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 0.34584001180851764,
+   "replay": 0.34583967913654395,
+   "abs_delta_db": 3.3267197369069024e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.145774526601534,
+    0.8237030795679594
+   ],
+   "ci_replay": [
+    -1.1457747089446024,
+    0.8237035153229171
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed76631531250570454",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 0.7955913418533855,
+   "replay": 0.7955930671570639,
+   "abs_delta_db": 1.7253036783682063e-06,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -0.3638077448388951,
+    1.5019516956957708
+   ],
+   "ci_replay": [
+    -0.3638080003930278,
+    1.5019516957240762
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed76631531250570454",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": -0.08867734057917903,
+   "replay": -0.08867689182957965,
+   "abs_delta_db": 4.4874959938268066e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.9917969608953512,
+    0.7536494128709005
+   ],
+   "ci_replay": [
+    -1.9917969606419916,
+    0.7536493808335197
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed76631531250570454",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 1.019506816965821,
+   "replay": 1.0195070156301125,
+   "abs_delta_db": 1.9866429146198072e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -0.5185573122539875,
+    1.6172855602723533
+   ],
+   "ci_replay": [
+    -0.518557311777454,
+    1.6172855033413516
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed76631531250570454",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 0.6674050523383147,
+   "replay": 0.6674048853878718,
+   "abs_delta_db": 1.6695044291470396e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.1373492750634533,
+    2.077835747226241
+   ],
+   "ci_replay": [
+    -1.1373493828467864,
+    2.077836058015778
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed76631531250570454",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 0.45035343581818055,
+   "replay": 0.4503533727767143,
+   "abs_delta_db": 6.30414662694534e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.0997675927859543,
+    1.173843597967694
+   ],
+   "ci_replay": [
+    -1.099767035785698,
+    1.1738430915960656
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed76631531250570454",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 0.34584001180851764,
+   "replay": 0.34583967913654395,
+   "abs_delta_db": 3.3267197369069024e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.145774526601534,
+    0.8237030795679594
+   ],
+   "ci_replay": [
+    -1.1457747089446024,
+    0.8237035153229171
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed76631531250570454",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 0.7955913418533855,
+   "replay": 0.7955930671570639,
+   "abs_delta_db": 1.7253036783682063e-06,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -0.3638077448388951,
+    1.5019516956957708
+   ],
+   "ci_replay": [
+    -0.3638080003930278,
+    1.5019516957240762
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed76631531250570454",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": -0.08867734057917903,
+   "replay": -0.08867689182957965,
+   "abs_delta_db": 4.4874959938268066e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.9917969608953512,
+    0.7536494128709005
+   ],
+   "ci_replay": [
+    -1.9917969606419916,
+    0.7536493808335197
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr0__none__n2048__v3__seed76631531250570454",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 1.019506816965821,
+   "replay": 1.0195070156301125,
+   "abs_delta_db": 1.9866429146198072e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -0.5185573122539875,
+    1.6172855602723533
+   ],
+   "ci_replay": [
+    -0.518557311777454,
+    1.6172855033413516
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr10__blocks__n2048__v3__seed4252840715656218",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 11.176753137772703,
+   "replay": 11.176753747296628,
+   "abs_delta_db": 6.095239246661777e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    3.6594250044712835,
+    12.172930534114188
+   ],
+   "ci_replay": [
+    3.6594245210957563,
+    12.172931227234965
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr10__blocks__n2048__v3__seed4252840715656218",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 11.26547177714718,
+   "replay": 11.265472257351504,
+   "abs_delta_db": 4.802043243046228e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -0.4835519042712693,
+    11.580572242824566
+   ],
+   "ci_replay": [
+    -0.48355184665451545,
+    11.58057209377347
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr10__blocks__n2048__v3__seed4252840715656218",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 12.039507847241953,
+   "replay": 12.03950757814479,
+   "abs_delta_db": 2.6909716410727924e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    2.1625984526542026,
+    13.65688254404191
+   ],
+   "ci_replay": [
+    2.162599103825991,
+    13.656882204344774
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr10__blocks__n2048__v3__seed4252840715656218",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 10.883272190061389,
+   "replay": 10.883271203004167,
+   "abs_delta_db": 9.870572217351992e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -3.4395762061018518,
+    12.741648345493966
+   ],
+   "ci_replay": [
+    -3.4395747267041377,
+    12.741648817370194
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr10__blocks__n2048__v3__seed4252840715656218",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 11.022107445962686,
+   "replay": 11.022108036272474,
+   "abs_delta_db": 5.903097886061914e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    3.7297573584119297,
+    14.065351751065183
+   ],
+   "ci_replay": [
+    3.729757233086865,
+    14.065350690786174
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr10__blocks__n2048__v3__seed7925967323029223",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 13.640531488438716,
+   "replay": 13.640531454874676,
+   "abs_delta_db": 3.356404043586281e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    5.5926009813234545,
+    13.46718639550874
+   ],
+   "ci_replay": [
+    5.592600680360422,
+    13.46718693119463
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr10__blocks__n2048__v3__seed7925967323029223",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 11.559288041437842,
+   "replay": 11.559287820228022,
+   "abs_delta_db": 2.2120982023920988e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    4.164103834301675,
+    12.005039213658101
+   ],
+   "ci_replay": [
+    4.164103833878681,
+    12.005039213092964
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr10__blocks__n2048__v3__seed7925967323029223",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 11.971071950772663,
+   "replay": 11.971062255778936,
+   "abs_delta_db": 9.694993726938606e-06,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    4.11515482650093,
+    13.560329496821506
+   ],
+   "ci_replay": [
+    4.115154462721041,
+    13.560329497278623
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr10__blocks__n2048__v3__seed7925967323029223",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 11.31876685679046,
+   "replay": 11.31876686354219,
+   "abs_delta_db": 6.7517316182375e-09,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    3.5729118031361278,
+    12.763316388068649
+   ],
+   "ci_replay": [
+    3.572911803240775,
+    12.76331639168625
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr10__blocks__n2048__v3__seed7925967323029223",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 13.762158257122817,
+   "replay": 13.762158207002205,
+   "abs_delta_db": 5.012061166098647e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    6.709154777313319,
+    14.490077457178227
+   ],
+   "ci_replay": [
+    6.709154707195902,
+    14.49007761786171
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr10__blocks__n2048__v3__seed7925967323029223",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 12.990100558251743,
+   "replay": 12.990099270773952,
+   "abs_delta_db": 1.2874777919336111e-06,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    5.89904854609723,
+    13.794220617464703
+   ],
+   "ci_replay": [
+    5.899048854262897,
+    13.794220587918389
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr5__none__n2048__v3__seed103135073239852969",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 9.022817557443869,
+   "replay": 9.022817476269426,
+   "abs_delta_db": 8.117444316724232e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    7.281932301625201,
+    9.832856564269246
+   ],
+   "ci_replay": [
+    7.281932282120165,
+    9.832856607300297
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "multivariate__white__snr5__none__n2048__v3__seed103135073239852969",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 2.7389359836062805,
+   "replay": 2.7389359601358065,
+   "abs_delta_db": 2.3470474008746578e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -1.8640674084283142,
+    3.836862151242886
+   ],
+   "ci_replay": [
+    -1.8640681944541666,
+    3.836848322356705
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr5__none__n2048__v3__seed75416546637930856",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 3.5844549791761757,
+   "replay": 3.5844545591342483,
+   "abs_delta_db": 4.200419274624778e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -0.14875591700586788,
+    7.318358107192836
+   ],
+   "ci_replay": [
+    -0.14875635662927655,
+    7.318358107260905
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr5__none__n2048__v3__seed75416546637930856",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 3.2394313534078814,
+   "replay": 3.239431859322143,
+   "abs_delta_db": 5.059142615948531e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    0.43879617644428226,
+    6.199641339085034
+   ],
+   "ci_replay": [
+    0.43880227258173116,
+    6.1996412297498
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr5__none__n2048__v3__seed75416546637930856",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 6.271763423771266,
+   "replay": 6.271763545152714,
+   "abs_delta_db": 1.2138144800388773e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    2.429880159199599,
+    7.161049433670319
+   ],
+   "ci_replay": [
+    2.4298801593226655,
+    7.161049433802144
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr5__none__n2048__v3__seed75416546637930856",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 5.339343206885574,
+   "replay": 5.3393432788229,
+   "abs_delta_db": 7.193732631805005e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    1.2703185406572282,
+    6.567386514715425
+   ],
+   "ci_replay": [
+    1.270318526392402,
+    6.567386444182738
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "multivariate__white__snr5__none__n2048__v3__seed75416546637930856",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 5.257718666280846,
+   "replay": 5.257718601518655,
+   "abs_delta_db": 6.476219116535731e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    1.0160108486366157,
+    6.858048314464971
+   ],
+   "ci_replay": [
+    1.0160106458219016,
+    6.858048112288637
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr5__none__n2048__v3__seed75416546637930856",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 3.5844549791761757,
+   "replay": 3.5844545591342483,
+   "abs_delta_db": 4.200419274624778e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -0.14875591700586788,
+    7.318358107192836
+   ],
+   "ci_replay": [
+    -0.14875635662927655,
+    7.318358107260905
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr5__none__n2048__v3__seed75416546637930856",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 3.2394313534078814,
+   "replay": 3.239431859322143,
+   "abs_delta_db": 5.059142615948531e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    0.43879617644428226,
+    6.199641339085034
+   ],
+   "ci_replay": [
+    0.43880227258173116,
+    6.1996412297498
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr5__none__n2048__v3__seed75416546637930856",
+   "variable_index": 1,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 6.271763423771266,
+   "replay": 6.271763545152714,
+   "abs_delta_db": 1.2138144800388773e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    2.429880159199599,
+    7.161049433670319
+   ],
+   "ci_replay": [
+    2.4298801593226655,
+    7.161049433802144
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr5__none__n2048__v3__seed75416546637930856",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 5.339343206885574,
+   "replay": 5.3393432788229,
+   "abs_delta_db": 7.193732631805005e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    1.2703185406572282,
+    6.567386514715425
+   ],
+   "ci_replay": [
+    1.270318526392402,
+    6.567386444182738
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "multivariate__white__snr5__none__n2048__v3__seed75416546637930856",
+   "variable_index": 2,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 5.257718666280846,
+   "replay": 5.257718601518655,
+   "abs_delta_db": 6.476219116535731e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    1.0160108486366157,
+    6.858048314464971
+   ],
+   "ci_replay": [
+    1.0160106458219016,
+    6.858048112288637
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "seasonal__white__snr5__none__n2048__v1__seed14629435133335404",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 7.436722084825406,
+   "replay": 7.436721857861071,
+   "abs_delta_db": 2.2696433443769592e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    4.954613624368181,
+    9.409131404257321
+   ],
+   "ci_replay": [
+    4.954613624271305,
+    9.409131407106653
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "seasonal__white__snr5__none__n2048__v1__seed14629435133335404",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 8.378240241442146,
+   "replay": 8.378240210217164,
+   "abs_delta_db": 3.122498171137522e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    6.044603146478023,
+    11.031646040893119
+   ],
+   "ci_replay": [
+    6.0446031464881145,
+    11.031646252830372
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "seasonal__white__snr5__none__n2048__v1__seed14629435133335404",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 7.436722084825406,
+   "replay": 7.436721857861071,
+   "abs_delta_db": 2.2696433443769592e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    4.954613624368181,
+    9.409131404257321
+   ],
+   "ci_replay": [
+    4.954613624271305,
+    9.409131407106653
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "seasonal__white__snr5__none__n2048__v1__seed14629435133335404",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 8.378240241442146,
+   "replay": 8.378240210217164,
+   "abs_delta_db": 3.122498171137522e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    6.044603146478023,
+    11.031646040893119
+   ],
+   "ci_replay": [
+    6.0446031464881145,
+    11.031646252830372
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "seasonal__white__snr5__none__n2048__v1__seed20300629363850963",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 6.712155356744174,
+   "replay": 6.712153986982021,
+   "abs_delta_db": 1.3697621525921022e-06,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    1.9228493637650745,
+    8.05990032856252
+   ],
+   "ci_replay": [
+    1.922849363819309,
+    8.059900370353898
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "sinusoid__heteroscedastic__snr5__none__n2048__v1__seed475818842168273138",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 1.9060071580918319,
+   "replay": 1.9060075467706394,
+   "abs_delta_db": 3.8867880758353124e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    -0.6918805680353547,
+    2.2238509279298437
+   ],
+   "ci_replay": [
+    -0.6918765038725443,
+    2.2238508978399025
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "sinusoid__heteroscedastic__snr5__none__n2048__v1__seed475818842168273138",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 3.1106618472879886,
+   "replay": 3.110661773848279,
+   "abs_delta_db": 7.343970942486067e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    0.13236117537435585,
+    4.063264569293519
+   ],
+   "ci_replay": [
+    0.13236100634708467,
+    4.063264642057213
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "trend_linear__white__snr20__none__n2048__v1__seed200948907690155957",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": 10.591827610424938,
+   "replay": 10.591827609330835,
+   "abs_delta_db": 1.0941025863075993e-09,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    4.572735641113619,
+    12.240005660782312
+   ],
+   "ci_replay": [
+    4.572735444409134,
+    12.240005660767414
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_B",
+   "unit_id": "trend_linear__white__snr5__none__n2048__v1__seed192611671174411159",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": -4.140008210900297,
+   "replay": -4.140008186806206,
+   "abs_delta_db": 2.4094091166659837e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    null,
+    -3.3098361597862795
+   ],
+   "ci_replay": [
+    null,
+    -3.309836344173109
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "trend_linear__white__snr5__none__n2048__v1__seed236160849609059326",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": -3.9432124210433885,
+   "replay": -3.9432115342087948,
+   "abs_delta_db": 8.868345937607103e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    null,
+    -2.6544595140692433
+   ],
+   "ci_replay": [
+    null,
+    -2.6544595141230856
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "trend_linear__white__snr5__none__n2048__v1__seed236160849609059326",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "confirmation",
+   "historical": -3.9432124210433885,
+   "replay": -3.9432115342087948,
+   "abs_delta_db": 8.868345937607103e-07,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    null,
+    -2.6544595140692433
+   ],
+   "ci_replay": [
+    null,
+    -2.6544595141230856
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "COORDINATOR",
+   "unit_id": "trend_piecewise__white__snr20__none__n2048__v1__seed10754071479350539",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 12.69507303023433,
+   "replay": 12.69507301788654,
+   "abs_delta_db": 1.2347790345756948e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    6.108950571561657,
+    13.301045232724793
+   ],
+   "ci_replay": [
+    6.108950571564291,
+    13.301045232707253
+   ],
+   "reason_replay": ""
+  },
+  {
+   "role": "WORKER_A",
+   "unit_id": "trend_piecewise__white__snr20__none__n2048__v1__seed10754071479350539",
+   "variable_index": 0,
+   "estimator": "local_level_kalman",
+   "partition": "calibration",
+   "historical": 12.69507303023433,
+   "replay": 12.69507301788654,
+   "abs_delta_db": 1.2347790345756948e-08,
+   "bytes_equal": false,
+   "identifiability_historical": "ESTIMATED",
+   "identifiability_replay": "ESTIMATED",
+   "identifiability_changed": false,
+   "ci_historical": [
+    6.108950571561657,
+    13.301045232724793
+   ],
+   "ci_replay": [
+    6.108950571564291,
+    13.301045232707253
+   ],
+   "reason_replay": ""
   }
- ],
- "note_full_cells": "every cell is in R4_CELLS.jsonl under the campaign state root; this file keeps the first 20 deviations"
+ ]
 }

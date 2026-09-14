@@ -1,0 +1,13 @@
+# PRE: the declared comparator rules against tools/df_d2_r4_replay.py at 11f2a16 (before the repair)
+E        +  where 0 = CompletedProcess(args=['/home/harveybc/anaconda3/bin/python', '-B', '/tmp/claude-1000/-home-harveybc-Documents-GitHub-...null,\n  "decision_stability": {\n   "compared": 0,\n   "changed": 0,\n   "changed_rows": []\n  }\n }\n}\n', stderr='').returncode
+
+tests/test_df_d2_r4_comparator_guard.py:176: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_df_d2_r4_comparator_guard.py::test_no_replayed_facts_is_inconclusive_not_zero_changes
+FAILED tests/test_df_d2_r4_comparator_guard.py::test_facts_without_a_historical_row_are_counted_and_refuse
+FAILED tests/test_df_d2_r4_comparator_guard.py::test_a_unit_missing_from_the_replay_is_named
+FAILED tests/test_df_d2_r4_comparator_guard.py::test_a_regime_without_substitution_never_counts_as_stable
+FAILED tests/test_df_d2_r4_comparator_guard.py::test_a_covered_comparison_is_measured_and_reports_per_estimator
+FAILED tests/test_df_d2_r4_comparator_guard.py::test_a_deviating_estimator_is_separated_from_the_exact_ones
+FAILED tests/test_df_d2_r4_comparator_guard.py::test_the_cli_refuses_an_empty_comparison
+7 failed in 0.71s

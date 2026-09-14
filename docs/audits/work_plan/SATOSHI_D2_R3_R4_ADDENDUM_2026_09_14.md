@@ -18,11 +18,18 @@ content **byte-identical** to my tested `f00bc6c15`, the warehouse at predictor 
 So the N2 and N4 corrections are in production, which the acta could not yet state because
 it was written before the 06:35Z restart.
 
-**Declared provenance deficit:** `financial-data/master` carries that content by copy, not
-by ancestry — `7f77e3ce6 → 13e6b1f47 → f00bc6c15` are not ancestors of `master`. Equality
-holds by digest (three files compared byte for byte), not by history. Minimum action: a
-merge by identity of `satoshi/c122-c145-20260912` into `master`, which changes no byte; it
-belongs to the owner of the publication branch, so I did not perform it.
+**Declared provenance deficit — resolved, and my recommendation withdrawn (2026-09-14):**
+`financial-data/master` carries that content by copy, not by ancestry — `7f77e3ce6 →
+13e6b1f47 → f00bc6c15` are not ancestors of `master`. Equality holds by digest, not by
+history. I recommended merging `satoshi/c122-c145-20260912` into `master` "without changing
+a byte"; that was wrong twice over. The owner's disposition is to document provenance **per
+file**, and the published record does so:
+`financial-data/docs/ADAPTER_PUBLICATION_PROVENANCE_2026_09_14.md` (`2dbe92286`) maps
+`cc0f15e6e` ← `f00bc6c15` for the three adapter files with their SHA-256. I re-executed its
+reproduction command: `git diff --exit-code` over those three paths is clean, while the two
+full revisions differ in **80 paths** (research scripts, census artefacts, documentation) —
+so a whole-branch merge would not have been byte-neutral, and none is needed. No merge is
+pending on anyone.
 
 The operator console is incorporated as what it is: a **pending** configuration is neither
 an authorization nor a deployment; activation remains the service's configuration load.
@@ -61,8 +68,12 @@ and two identity controls on flat noise-free windows — all to `NOT_IDENTIFIABL
 on incomplete seeds without measured damage), 10 `NOT_IDENTIFIABLE` become `LAB_REJECTED`
 (damage measured on an observed seed now rejects regardless of another seed's
 incompleteness), 9 become `UNDERPOWERED`, and 17 SNR decisions become
-`SNR_NOT_IDENTIFIABLE`. Candidate passes: 58 favourable or limited → 48 `LAB_CALIBRATED`
-plus 6 `REGIME_LIMITED`; SNR calibrations 39 → 39. Evidence:
+`SNR_NOT_IDENTIFIABLE`. Candidate passes (arm role `CANDIDATE` only): 51 `LAB_CALIBRATED` + 7 `REGIME_LIMITED`
+→ **47 `LAB_CALIBRATED` + 6 `REGIME_LIMITED`**; SNR calibrations 39 → 39 and
+`SNR_REGIME_LIMITED` 171 → 167. Corrected on 2026-09-14 after the owner's finding: the
+earlier "48 plus 6" was wrong. Recount executed against the cube
+(`SELECT run_id, arm_role, decision, count(*) FROM df_fact_d2_decision …`, read-only),
+recorded in `d2_support_r1/r3/R3_CANDIDATE_RECOUNT.json`. Evidence:
 `docs/audits/evidence/repro_runs/d2_support_r1/r3/`.
 
 ## 3. D2-R4 — portability measured, scope restricted, tolerance untouched
@@ -76,16 +87,16 @@ modified on any machine. Cost: 403 CPU-seconds in total across the three roles (
 
 | question | answer |
 |---|---|
-| byte equality | 1,716 cells; five of the six estimators (`mad_first_difference`, `wavelet_mad`, `spectral_floor`, `trailing_median_residual`, `ar_residual`) reproduce exactly on the three CPUs — largest deviation 1.9e-13 dB |
+| byte equality | 1,716 cells; **four** estimators reproduce **exactly** (`mad_first_difference`, `wavelet_mad`, `spectral_floor`, `trailing_median_residual`: max \|Δ\| = 0.0 dB). `ar_residual` meets the observed tolerance but is **not** exact: 1.9184653865522705e-13 dB. Corrected 2026-09-14 (owner's finding); counts per estimator in `R4_PORTABILITY_REPORT.json.per_estimator` |
 | numerical tolerance | 83 cells deviate beyond 1e-9 dB, **all `local_level_kalman`**: ≤ 2.44e-05 dB on confirmation (median 2.3e-07), 1.099 dB on one calibration cell of a ~85 dB regime where the likelihood is nearly flat |
-| decision stability | 0 identifiability changes; the subset's regimes re-adjudicated with the replayed values leave **288 of 288 decisions unchanged** |
+| decision stability | 0 identifiability changes; the subset's regimes re-adjudicated with the replayed values leave **288 of 288 decisions unchanged** — now stated with its coverage: 32/32 units, 1,716 cells, **639 substituted facts**, 16/16 regimes, nothing missing, verdict `MEASURED`. The comparator that produced the first version of this line could report `changed: 0` from empty inputs; repaired and re-run on 2026-09-14 (`d2_support_r1/r4_guard/`, PRE 7/7 failing → POST 7/7) |
 | convergence | no failure; the only reasons recorded are `signal_variance_nonpositive`, a contract state, identical in both runs |
 
 The pattern behind AT9: COORDINATOR and WORKER_A reproduce each other **bit for bit** in
 both directions; WORKER_B differs in both, with identical Python 3.12.13, numpy 2.5.1,
 scipy 1.18.0, statsmodels 0.14.6, scipy-openblas and glibc 2.43. The variable is the
 processor, and AT9's 0.006 dB was one case of it. Prospective policy per estimator is in
-`d2_support_r1/r4/R4_PORTABILITY_POLICY.md`: the five exact estimators carry no
+`d2_support_r1/r4/R4_PORTABILITY_POLICY.md`: the four exact estimators and `ar_residual` carry no
 portability restriction beyond recording the reference environment; `local_level_kalman`
 is restricted — producing role and environment recorded with every governing result, no
 decision may rest on a margin below the deviation observed for its partition class (none
@@ -121,8 +132,8 @@ the other five estimators back; they can be submitted separately.
 
 | pending | owner | minimum action |
 |---|---|---|
-| `financial-data/master` lineage | owner of the publication branch | merge `satoshi/c122-c145-20260912` by identity (no byte changes) |
-| feature-extractor API drift | Musashi decides | pin a predictor commit before `9b7d611` or port feature-extractor to the target-plugin API |
+| ~~`financial-data/master` lineage~~ | — | **closed 2026-09-14**: provenance documented per file in `ADAPTER_PUBLICATION_PROVENANCE_2026_09_14.md`; no branch merge required |
+| ~~feature-extractor API drift~~ | — | **decided by the owner 2026-09-14**: port feature-extractor to predictor's `run_preprocessing(self, target_plugin, config)`; no further authorization awaited |
 | R6 coverage views | adoption route | pending configuration + deliberate activation window; never a direct edit of the cube |
 | `local_level_kalman` | design | deterministic algorithm with independent proof before selection, live or public claim |
 | financial resource contracts | data producer/integrator | provider time semantics before any scientific use |

@@ -30,9 +30,9 @@ Intel Core i9 (WORKER_A) and AMD Ryzen 9 (WORKER_B).
 
 | question | answer |
 |---|---|
-| **byte equality** | 1,716 (unit × variable × estimator × partition × role) cells; every cell of five of the six estimators reproduces the historical value exactly (largest deviation 1.9e-13 dB, i.e. double-precision noise) |
+| **byte equality** | 1,716 (unit × variable × estimator × partition × role) cells; **four** estimators reproduce the historical value exactly on the three CPUs (`mad_first_difference`, `wavelet_mad`, `spectral_floor`, `trailing_median_residual`: max \|Δ\| = 0.0 dB). A **fifth**, `ar_residual`, stays inside the observed tolerance but is **not** exact: max \|Δ\| = 1.9184653865522705e-13 dB. Corrected on 2026-09-14 (owner's finding); per-estimator counts in `R4_PORTABILITY_REPORT.json.per_estimator` |
 | **numerical tolerance** | 83 cells deviate beyond 1e-9 dB, **all of them `local_level_kalman`**: confirmation partition max 2.44e-05 dB (median 2.3e-07), calibration partition max 1.099 dB |
-| **decision stability** | the subset's regimes were re-adjudicated with the replayed values substituted: **288 decisions compared, 0 changed**; 0 identifiability changes; no convergence failure (the only reasons recorded are `signal_variance_nonpositive`, a contract state, identical in both runs) |
+| **decision stability** | the subset's regimes were re-adjudicated with the replayed values substituted, and the comparison now states its own coverage (32/32 units, 1,716 cells, 639 substituted facts, 16/16 regimes, 0 units or regimes missing; verdict `MEASURED`): **288 decisions compared, 0 changed**; 0 identifiability changes; no convergence failure (the only reasons recorded are `signal_variance_nonpositive`, a contract state, identical in both runs) |
 
 ## 3. The pattern behind AT9
 
@@ -64,10 +64,10 @@ the environment are recorded with the result.
 | `wavelet_mad` | exact | idem |
 | `spectral_floor` | exact | idem |
 | `trailing_median_residual` | exact | idem |
-| `ar_residual` | exact (≤ 1.9e-13 dB) | idem |
+| `ar_residual` | **not exact**; within the observed tolerance (max \|Δ\| = 1.918e-13 dB) | no restriction from portability; environment recorded, and the non-zero deviation is stated wherever exactness is claimed |
 | `local_level_kalman` | **CPU-dependent**: ≤ 2.44e-05 dB on confirmation, up to 1.099 dB on a near-flat calibration cell | restricted scope: (a) every governing result records the producing role and environment; (b) no decision may rest on a Kalman margin smaller than the deviation observed for that partition class; today none does — 0/288 decisions move; (c) before any use in selection, live or a public claim, replace it with a deterministic algorithm (fixed iteration budget and declared convergence tolerance, or a closed-form estimator) proven independently; (d) **AT9 stays open** under its original criterion |
 
-The five exact estimators can be submitted separately; `local_level_kalman` does not hold
+The four exact estimators and `ar_residual` (exact to within 1.918e-13 dB) can be submitted separately; `local_level_kalman` does not hold
 the rest of the project blocked. Nothing here grants eligibility: the D2 gate keeps
 refusing every subject without an external review record.
 

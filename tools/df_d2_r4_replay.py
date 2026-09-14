@@ -124,11 +124,14 @@ def _hat(fact):
     return result.get("snr_db"), result.get("status"), (result.get("reason") or ""), (result.get("bootstrap") or {})
 
 
-def compare(design: dict, replays: list, snr_table: Path, decisions: Path, out: Path, tolerance_db: float) -> dict:
+def compare(design: dict, replays: list, snr_table: Path, decisions: Path, out: Path, tolerance_db: float,
+            subset: dict | None = None) -> dict:
     A = _load("df_d2_adjudicate")
     docs = [json.loads(Path(p).read_text(encoding="utf-8")) for p in replays]
     roles = [d["role"] for d in docs]
     units = sorted({u for d in docs for u in d["units"]})
+    requested_units = sorted({u for group in (subset or {}).get("units", {}).values() for u in group})
+    replayed_facts = sum(len(f) for d in docs for f in d["units"].values())
     historical = {}
     regimes = {}
     with open(snr_table, encoding="utf-8") as handle:
@@ -144,6 +147,8 @@ def compare(design: dict, replays: list, snr_table: Path, decisions: Path, out: 
             if d["subject_kind"] == "SNR_ESTIMATOR":
                 published[(d["subject"], D.regime_key(d["regime"]))] = d
     cells, byte_equal, within, outside, state_changed, convergence = [], 0, 0, 0, 0, []
+    unmatched_facts = 0
+    per_estimator: dict[str, dict] = {}
     for unit in units:
         for doc in docs:
             for fact in doc["units"].get(unit, []):
@@ -151,6 +156,7 @@ def compare(design: dict, replays: list, snr_table: Path, decisions: Path, out: 
                 hat, status, reason, boot = _hat(fact)
                 row = historical.get((unit, v, est, part))
                 if row is None:
+                    unmatched_facts += 1
                     continue
                 ref = row["snr_db_hat"]
                 same_bytes = (hat is not None and ref is not None
@@ -167,9 +173,19 @@ def compare(design: dict, replays: list, snr_table: Path, decisions: Path, out: 
                               "ci_replay": [boot.get("ci_low_db"), boot.get("ci_high_db")],
                               "reason_replay": reason})
                 byte_equal += 1 if same_bytes else 0
+                stats = per_estimator.setdefault(est, {"cells": 0, "bytes_equal": 0, "comparable": 0,
+                                                       "within_tolerance": 0, "outside_tolerance": 0,
+                                                       "max_abs_delta_db": None})
+                stats["cells"] += 1
+                stats["bytes_equal"] += 1 if same_bytes else 0
                 if delta is not None:
                     within += 1 if delta <= tolerance_db else 0
                     outside += 0 if delta <= tolerance_db else 1
+                    stats["comparable"] += 1
+                    stats["within_tolerance"] += 1 if delta <= tolerance_db else 0
+                    stats["outside_tolerance"] += 0 if delta <= tolerance_db else 1
+                    stats["max_abs_delta_db"] = delta if stats["max_abs_delta_db"] is None \
+                        else max(stats["max_abs_delta_db"], delta)
                 state_changed += 1 if changed else 0
                 if reason:
                     convergence.append({"role": doc["role"], "unit_id": unit, "estimator": est, "reason": reason})
@@ -182,6 +198,9 @@ def compare(design: dict, replays: list, snr_table: Path, decisions: Path, out: 
             key = D.regime_key(row["regime"])
             if key in regimes and row["partition"] == "confirmation":
                 by_regime.setdefault(key, []).append(row)
+    substituted_facts = 0
+    regimes_skipped_no_substitution = set()
+    decisions_unmatched = 0
     for doc in docs:
         for key, rows in by_regime.items():
             patched = []
@@ -201,27 +220,61 @@ def compare(design: dict, replays: list, snr_table: Path, decisions: Path, out: 
                     low, high = boot.get("ci_low_db"), boot.get("ci_high_db")
                     if low is not None and high is not None:
                         new["ci_covers_true"] = 1.0 if low <= row["true_snr_db"] <= high else 0.0
-                touched += 1
+                    touched += 1
+                    substituted_facts += 1
                 patched.append(new)
             if not touched:
+                regimes_skipped_no_substitution.add(key)
                 continue
             for decision in A.decide_snr(patched, design):
                 old = published.get((decision["subject"], key))
                 if old is None:
+                    decisions_unmatched += 1
                     continue
                 stability.append({"role": doc["role"], "estimator": decision["subject"], "regime_key": key,
                                   "published": old["decision"], "replayed": decision["decision"],
                                   "changed": old["decision"] != decision["decision"],
                                   "published_upper": (old["evidence"].get("ci95_abs_error_db") or [None, None])[1],
                                   "replayed_upper": (decision["evidence"].get("ci95_abs_error_db") or [None, None])[1]})
-    report = {"schema": "d2_r4_portability_report.v1", "roles": roles, "units": len(units),
+    coverage = {"units_requested": len(requested_units), "units_replayed": len(units),
+                "units_missing": sorted(set(requested_units) - set(units)),
+                "replayed_facts": replayed_facts, "compared_cells": len(cells),
+                "facts_without_historical_row": unmatched_facts,
+                "regimes_in_scope": len(by_regime), "substituted_facts": substituted_facts,
+                "regimes_without_substitution": sorted(regimes_skipped_no_substitution),
+                "decisions_without_published_counterpart": decisions_unmatched,
+                "decisions_compared": len(stability)}
+    refusals = []
+    if not docs:
+        refusals.append("NO_REPLAY_FILES")
+    if replayed_facts == 0:
+        refusals.append("NO_REPLAYED_FACTS")
+    if not cells:
+        refusals.append("NO_COMPARED_CELLS")
+    if substituted_facts == 0:
+        refusals.append("NO_SUBSTITUTED_FACTS")
+    if not stability:
+        refusals.append("NO_DECISIONS_COMPARED")
+    if requested_units and coverage["units_missing"]:
+        refusals.append("UNITS_MISSING_FROM_REPLAY")
+    if coverage["regimes_without_substitution"]:
+        refusals.append("REGIMES_WITHOUT_SUBSTITUTION")
+    verdict = "MEASURED" if not refusals else "INCONCLUSIVE"
+    report = {"schema": "d2_r4_portability_report.v2", "roles": roles, "units": len(units),
+              "coverage": coverage, "verdict": verdict, "inconclusive_reasons": refusals,
+              "per_estimator": per_estimator,
               "tolerance_db_original": tolerance_db,
               "cells": len(cells), "bytes_equal": byte_equal, "within_tolerance": within,
               "outside_tolerance": outside, "identifiability_changed": state_changed,
               "max_abs_delta_db": max((c["abs_delta_db"] for c in cells if c["abs_delta_db"] is not None), default=None),
               "convergence_reasons": convergence[:50],
-              "decision_stability": {"compared": len(stability), "changed": sum(s["changed"] for s in stability),
-                                     "changed_rows": [s for s in stability if s["changed"]]},
+              "decision_stability": {"verdict": verdict,
+                                     "compared": len(stability),
+                                     "changed": sum(s["changed"] for s in stability) if stability else None,
+                                     "changed_rows": [s for s in stability if s["changed"]],
+                                     "note": ("stability is asserted only over the compared scope"
+                                              if verdict == "MEASURED"
+                                              else "no stability conclusion: " + ", ".join(refusals))},
               "environments": {d["role"]: d["environment"] for d in docs},
               "cpu_seconds": {d["role"]: d["cpu_seconds_total"] for d in docs},
               "peak_rss_bytes": {d["role"]: d["peak_rss_bytes"] for d in docs},
@@ -231,9 +284,10 @@ def compare(design: dict, replays: list, snr_table: Path, decisions: Path, out: 
     with open(out / "R4_CELLS.jsonl", "w", encoding="utf-8") as handle:
         for cell in cells:
             handle.write(json.dumps(cell, sort_keys=True, allow_nan=False) + "\n")
-    return {k: report[k] for k in ("roles", "units", "cells", "bytes_equal", "within_tolerance",
+    return {k: report[k] for k in ("roles", "units", "verdict", "inconclusive_reasons", "coverage",
+                                   "cells", "bytes_equal", "within_tolerance",
                                    "outside_tolerance", "identifiability_changed", "max_abs_delta_db",
-                                   "decision_stability")}
+                                   "per_estimator", "decision_stability")}
 
 
 def main(argv=None) -> int:
@@ -263,8 +317,13 @@ def main(argv=None) -> int:
     if a.compare:
         if not (a.replay_file and a.snr_table and a.decisions):
             raise SystemExit("--compare needs --replay-file, --snr-table and --decisions")
-        result["compare"] = compare(design, a.replay_file, a.snr_table, a.decisions, a.out, a.tolerance_db)
+        result["compare"] = compare(design, a.replay_file, a.snr_table, a.decisions, a.out, a.tolerance_db,
+                                    subset=subset)
     print(json.dumps(result, indent=1, default=float))
+    if result.get("compare", {}).get("verdict") == "INCONCLUSIVE":
+        print("REFUSED: the comparison covers nothing it claims to measure: "
+              + ", ".join(result["compare"]["inconclusive_reasons"]), file=sys.stderr)
+        return 4
     return 0
 
 

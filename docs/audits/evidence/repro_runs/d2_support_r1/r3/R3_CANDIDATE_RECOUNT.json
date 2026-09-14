@@ -1,0 +1,107 @@
+{
+ "schema": "d2_r3_candidate_recount.v1",
+ "purpose": "owner's correction of 2026-09-14: the successor run leaves 47 calibrated candidates and six limited, not 48 and six",
+ "source": "read-only query against the production cube table public.df_fact_d2_decision",
+ "query": "SELECT run_id, arm_role, subject_kind, decision, count(*) FROM df_fact_d2_decision WHERE run_id IN ('d2r3_733736b795e075bffc8c1331','d2v2_fresh_1fd0e710bc0689b3bf9d7162') GROUP BY 1,2,3,4",
+ "published_run_id": "d2v2_fresh_1fd0e710bc0689b3bf9d7162",
+ "successor_run_id": "d2r3_733736b795e075bffc8c1331",
+ "counts": {
+  "d2r3_733736b795e075bffc8c1331": {
+   "CANDIDATE": {
+    "OPERATOR": {
+     "LAB_CALIBRATED": 47,
+     "LAB_REJECTED": 825,
+     "NOT_IDENTIFIABLE": 294,
+     "REGIME_LIMITED": 6,
+     "UNDERPOWERED": 880
+    }
+   },
+   "IDENTITY_RAW_CONTROL": {
+    "OPERATOR": {
+     "LAB_CALIBRATED": 26,
+     "LAB_REJECTED": 40,
+     "NOT_IDENTIFIABLE": 105
+    }
+   },
+   "NON_CAUSAL_ORACLE_CONTROL": {
+    "OPERATOR": {
+     "CONTROL_NOT_AN_ARM": 171
+    }
+   },
+   "(none)": {
+    "SNR_ESTIMATOR": {
+     "SNR_CALIBRATED_FOR_REGIME": 39,
+     "SNR_NOT_IDENTIFIABLE": 604,
+     "SNR_REGIME_LIMITED": 167,
+     "SNR_REJECTED": 216
+    }
+   },
+   "PREVIOUSLY_REJECTED_CONTROL": {
+    "OPERATOR": {
+     "LAB_CALIBRATED": 2,
+     "LAB_REJECTED": 158,
+     "NOT_IDENTIFIABLE": 11
+    }
+   }
+  },
+  "d2v2_fresh_1fd0e710bc0689b3bf9d7162": {
+   "CANDIDATE": {
+    "OPERATOR": {
+     "LAB_CALIBRATED": 51,
+     "LAB_REJECTED": 816,
+     "NOT_IDENTIFIABLE": 307,
+     "REGIME_LIMITED": 7,
+     "UNDERPOWERED": 871
+    }
+   },
+   "IDENTITY_RAW_CONTROL": {
+    "OPERATOR": {
+     "LAB_CALIBRATED": 28,
+     "LAB_REJECTED": 134,
+     "NOT_IDENTIFIABLE": 9
+    }
+   },
+   "NON_CAUSAL_ORACLE_CONTROL": {
+    "OPERATOR": {
+     "CONTROL_NOT_AN_ARM": 171
+    }
+   },
+   "(none)": {
+    "SNR_ESTIMATOR": {
+     "SNR_CALIBRATED_FOR_REGIME": 39,
+     "SNR_NOT_IDENTIFIABLE": 587,
+     "SNR_REGIME_LIMITED": 171,
+     "SNR_REJECTED": 229
+    }
+   },
+   "PREVIOUSLY_REJECTED_CONTROL": {
+    "OPERATOR": {
+     "LAB_CALIBRATED": 2,
+     "LAB_REJECTED": 158,
+     "NOT_IDENTIFIABLE": 11
+    }
+   }
+  }
+ },
+ "candidate_arm": {
+  "published": {
+   "LAB_CALIBRATED": 51,
+   "REGIME_LIMITED": 7
+  },
+  "successor": {
+   "LAB_CALIBRATED": 47,
+   "REGIME_LIMITED": 6
+  }
+ },
+ "snr_estimators": {
+  "published": {
+   "SNR_CALIBRATED_FOR_REGIME": 39,
+   "SNR_REGIME_LIMITED": 171
+  },
+  "successor": {
+   "SNR_CALIBRATED_FOR_REGIME": 39,
+   "SNR_REGIME_LIMITED": 167
+  }
+ },
+ "superseded_statement": "48 LAB_CALIBRATED plus 6 REGIME_LIMITED (wrong; withdrawn 2026-09-14)"
+}

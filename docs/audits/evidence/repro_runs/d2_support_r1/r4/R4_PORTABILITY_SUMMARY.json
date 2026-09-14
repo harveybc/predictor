@@ -1,5 +1,5 @@
 {
- "schema": "d2_r4_portability_summary.v1",
+ "schema": "d2_r4_portability_summary.v2",
  "roles": [
   "COORDINATOR",
   "WORKER_A",
@@ -18,9 +18,11 @@
  "identifiability_changed": 0,
  "max_abs_delta_db": 1.0986786316645691,
  "decision_stability": {
+  "verdict": "MEASURED",
   "compared": 288,
   "changed": 0,
-  "changed_rows": []
+  "changed_rows": [],
+  "note": "stability is asserted only over the compared scope"
  },
  "deviating_estimators": {
   "local_level_kalman": 83
@@ -157,5 +159,82 @@
   "WORKER_B": 191238144
  },
  "tolerance_db_original": 1e-09,
- "note": "same code digests and same package versions on the three roles; only the CPU model differs"
+ "note": "same code digests and same package versions on the three roles; only the CPU model differs",
+ "verdict": "MEASURED",
+ "coverage": {
+  "units_requested": 32,
+  "units_replayed": 32,
+  "units_missing": [],
+  "replayed_facts": 1716,
+  "compared_cells": 1716,
+  "facts_without_historical_row": 0,
+  "regimes_in_scope": 16,
+  "substituted_facts": 639,
+  "regimes_without_substitution": [],
+  "decisions_without_published_counterpart": 0,
+  "decisions_compared": 288
+ },
+ "per_estimator": {
+  "ar_residual": {
+   "cells": 264,
+   "bytes_equal": 207,
+   "comparable": 258,
+   "within_tolerance": 258,
+   "outside_tolerance": 0,
+   "max_abs_delta_db": 1.9184653865522705e-13
+  },
+  "local_level_kalman": {
+   "cells": 264,
+   "bytes_equal": 119,
+   "comparable": 234,
+   "within_tolerance": 151,
+   "outside_tolerance": 83,
+   "max_abs_delta_db": 1.0986786316645691
+  },
+  "mad_first_difference": {
+   "cells": 264,
+   "bytes_equal": 255,
+   "comparable": 255,
+   "within_tolerance": 255,
+   "outside_tolerance": 0,
+   "max_abs_delta_db": 0.0
+  },
+  "spectral_floor": {
+   "cells": 264,
+   "bytes_equal": 249,
+   "comparable": 249,
+   "within_tolerance": 249,
+   "outside_tolerance": 0,
+   "max_abs_delta_db": 0.0
+  },
+  "trailing_median_residual": {
+   "cells": 264,
+   "bytes_equal": 261,
+   "comparable": 261,
+   "within_tolerance": 261,
+   "outside_tolerance": 0,
+   "max_abs_delta_db": 0.0
+  },
+  "wavelet_mad": {
+   "cells": 396,
+   "bytes_equal": 132,
+   "comparable": 132,
+   "within_tolerance": 132,
+   "outside_tolerance": 0,
+   "max_abs_delta_db": 0.0
+  }
+ },
+ "exactly_equal_estimators": [
+  "mad_first_difference",
+  "spectral_floor",
+  "trailing_median_residual",
+  "wavelet_mad"
+ ],
+ "within_tolerance_but_not_exact": {
+  "ar_residual": 1.9184653865522705e-13
+ },
+ "deviating_beyond_tolerance": {
+  "local_level_kalman": 1.0986786316645691
+ },
+ "correction_2026_09_14": "owner's correction: four estimators are exactly equal on the three CPUs (mad_first_difference, spectral_floor, trailing_median_residual, wavelet_mad); a fifth, ar_residual, meets the observed tolerance with a largest deviation of 1.9184653865522705e-13 dB but is not exactly equal; local_level_kalman deviates beyond it"
 }
