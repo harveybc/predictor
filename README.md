@@ -33,6 +33,19 @@ Its [governed-run guide](https://github.com/harveybc/predictor/blob/174cb8869848
 applies to that revision, not automatically to this branch. Research snapshots
 are linked by commit so that development cannot silently change a cited implementation.
 
+## Use with a coding agent
+
+> Read this README and the selected revision's configuration and entry points.
+> Use an isolated environment. Run CLI help and the bounded CPU example below
+> in a temporary checkout, preserving committed example outputs. Report the
+> effective configuration, exact input/output paths and any failed tests.
+> Do not start a sweep or write to the production cube. For governed runs,
+> follow the linked integration version and keep delivery receipts and every
+> outcome, including failures; do not claim that a profile test is training.
+
+The [repository map](docs/RESEARCH_STACK.md) identifies component ownership.
+The [warehouse service](olap/lake/README.md) installs separately from training.
+
 ## Status
 
 **Research software under active development.** predictor is the offline

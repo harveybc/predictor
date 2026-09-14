@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}OLAP warehouse{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/adminlte.min.css') }}">
+  <style>
+    body { background:#1f2d3d; color:#f8f9fa; font-size:14px; }
+    .content-wrapper { margin-left:0 !important; background:#1f2d3d; }
+    code, td { overflow-wrap:anywhere; }
+    .table-responsive { max-width:100%; }
+    .form-control { min-width:0; }
+  </style>
+</head>
+<body class="hold-transition layout-top-nav dark-mode">
+<div class="wrapper">
+  <nav class="main-header navbar navbar-expand navbar-dark">
+    <a class="navbar-brand" href="{{ url_for('home') }}"><strong>OLAP</strong> warehouse</a>
+  </nav>
+  <main class="content-wrapper"><div class="content py-3"><div class="container-fluid">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}<div class="alert alert-{{ cat }} text-break" role="status">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </div></div></main>
+</div>
+</body>
+</html>

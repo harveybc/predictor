@@ -1,0 +1,5 @@
+__pycache__/
+*.egg-info/
+.venv/
+examples/config/local.json
+.pytest_cache/
