@@ -159,3 +159,38 @@ Primer candidato entregado como **financial-data PR #1**
 evidencia del productor, once pruebas sobre bytes y tres desconocidos declarados
 (latencia de entrega UNOBSERVED, politica de revisiones UNKNOWN, derechos de uso UNKNOWN).
 **No instalado**: instalarlo cambia lo que una campana puede consumir y pasa por revision.
+
+
+## Actualizacion 2026-09-14 (Satoshi, tras el dictamen A1-A5)
+
+**Semantica temporal corregida.** El contrato candidato con `close_time` como columna de
+disponibilidad y lag cero queda **retirado**: el cierre de una ventana no es disponibilidad.
+El recurso ETH 4h se caracteriza como **archivo retrospectivo** (publicacion y recepcion
+UNOBSERVED, finalizacion NO DEMOSTRADA, revisiones UNKNOWN), con las 21 barras anomalas
+clasificadas desde los bytes (1 marcador vacio, 12 intervalos nominales mas cortos, 8
+agregados parciales) y ninguna declarada final. Extension minima propuesta para poder decirlo
+sin inventar un numero: `use_class: ARCHIVE_RETROSPECTIVE` con `completion_lag_max: "UNKNOWN"`,
+entrega entera o nada, rango rechazado. financial-data **PR #2**; nada instalado.
+
+**Etapa 6 — ruta real probada por consumidor.** Con fixtures deterministas
+(`tools/make_consumer_fixtures.py`, semilla 20260914, siete archivos con los esquemas que los
+consumidores realmente leen) servidos por **data-lake + proveedor externo por http**, los
+cuatro consumidores producen salida real en stack desechable:
+
+| consumidor | entrega gobernada | salida del pipeline | rancio | fallo con costo | reintento |
+|---|---|---|---|---|---|
+| preprocessor | VERIFIED_TRANSFER | producida | REFUSED | FAILED | sin duplicado |
+| feature-eng | VERIFIED_TRANSFER | producida | REFUSED | FAILED | sin duplicado |
+| feature-extractor | VERIFIED_TRANSFER | producida | REFUSED | FAILED | sin duplicado |
+| predictor | VERIFIED (transfer + cache) | producida | REFUSED | FAILED | sin duplicado |
+
+Control negativo: con el host de entrada detenido, la misma corrida falla en la entrega con
+`503 lake unreachable`. Reintento real (N5): terminal varado por caida del destino durante la
+corrida, recuperado por el outbox del wrapper, **una sola fila** en el cubo, segundo vaciado
+sin envio y recibo de cache en la segunda corrida.
+
+**Pendiente de activacion:** el catalogo sintetico ampliado esta escrito como configuracion
+**pendiente** (`5058.pending.json`); la activa sigue sirviendo un solo recurso. Activar =
+promover ese archivo y reiniciar solo `crispdm-data-lake-synthetic`; este agente no puede
+controlar procesos de servicios vivos. Tras la activacion, repetir los cuatro consumidores
+contra produccion es una sola ejecucion del mismo arnes.
