@@ -1,0 +1,78 @@
+{
+  "status": "FOUR_CONSUMERS_PRODUCTION_MECHANICS_ACCEPTED",
+  "source_revision": "0723fd16ed2ff84f3d5da15a110026c2ebb4dc9d",
+  "route_evidence": "active governance configuration http_lake plus verified host receipts; restricted catalogue not used as proof",
+  "fixture_generator_sha256": "1ca00f81a282b96236b5566142919bba3f842562a1c9763669a5f82b5b586474",
+  "results": {
+    "feature-eng": {
+      "success": "COMPLETED",
+      "stale": "REFUSED",
+      "failure": "FAILED"
+    },
+    "feature-extractor": {
+      "success": "COMPLETED",
+      "stale": "REFUSED",
+      "failure": "FAILED"
+    },
+    "preprocessor": {
+      "success": "COMPLETED",
+      "stale": "REFUSED",
+      "failure": "FAILED"
+    },
+    "predictor": {
+      "success": "COMPLETED",
+      "stale": "REFUSED",
+      "failure": "FAILED"
+    }
+  },
+  "counts": {
+    "terminals": 12,
+    "metrics": 119,
+    "datasets": 28,
+    "artifacts": 39
+  },
+  "cube_terminal_total": 32,
+  "all_twelve_reconciled": true,
+  "campaigns": [
+    "3da92a0b1e1a21a607b25e45e8f3e5534183b99cb2cbb21a6292e52d96473564",
+    "80aec5ab861e2fe5db1c109894179c5b8378f7a64ea7f729add7cedb313df94a",
+    "11b603d7e514e6853dc89f7f23549cdb9108441ae9907a440636071498b6bbc7",
+    "ec83b2e2ecb1cca022a00d5660483a43ac5e59daf9ec6124435c54334b6f1a9c",
+    "edf899cff9da635d3427b5273ac7887ef54ce447f26e78706a24c573ac8c5a51",
+    "4e7a0c819ed0824e5dbaa7847a3e4ea29231406320416ee946db1110118a7c45",
+    "452b0be059931a6daf61f0ae492fb66aa24d2e959ff46cc1fe3fe9adc354b342",
+    "9cb9ab7672c153e31208803728303a6015093a9afbf735b4e48ca454e0c7f545",
+    "41516709ad87b0b55d3e42b3139186338183d3e216671d083cca9b0ce408beb9",
+    "f63f334a1c5fe3eca2dbe7485ae1381a004166eb160dc99b940002baa5b76afa",
+    "d34af6b4b6a8c295bba7cd29c51ebc357a480b2ecdd744d6bfbd77c14c0c3af9",
+    "6d8993ab81cadf16cf859eac47e3ff6688fe5e9fee700bb10e4df0110aaab2a6"
+  ],
+  "services": {
+    "crispdm-data-gov": {
+      "ActiveState": "active",
+      "NRestarts": "0"
+    },
+    "crispdm-data-lake-financial": {
+      "ActiveState": "active",
+      "NRestarts": "0"
+    },
+    "crispdm-data-warehouse-olap": {
+      "ActiveState": "active",
+      "NRestarts": "0"
+    },
+    "crispdm-data-lake-synthetic": {
+      "ActiveState": "active",
+      "NRestarts": "0"
+    },
+    "crispdm-olap-loader": {
+      "ActiveState": "active",
+      "NRestarts": "0"
+    }
+  },
+  "limits": [
+    "mechanics only",
+    "same calendar interval in the independent synthetic partitions",
+    "no fit/transform causality claim",
+    "real stranded-outbox recovery previously measured only for preprocessor"
+  ]
+}

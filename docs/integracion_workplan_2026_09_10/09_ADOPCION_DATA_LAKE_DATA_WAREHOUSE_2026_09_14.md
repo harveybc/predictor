@@ -1,9 +1,9 @@
 # Plan obligatorio: crear y adoptar data-lake y data-warehouse
 
 Fecha: 2026-09-14. Decisor: Harvey. Ejecutor: Satoshi. Revision: Musashi.
-Estado actual: repositorios publicos y hosts desplegados; prueba productiva
-sintetica conciliada. Contratos financieros y adopcion completa por consumidor
-siguen pendientes.
+Estado actual: repositorios publicos y hosts desplegados; catalogo sintetico
+ampliado activo y cuatro consumidores probados en produccion. Siguen las
+pruebas causales del procesamiento, el replay DOIN y la semantica financiera.
 
 Actualizacion de Musashi tras el retorno `329af81`: ver
 [acta productiva](../handoffs/MUSASHI_STORE_HOSTS_PRODUCTION_ACCEPTANCE_2026_09_14.md).
@@ -49,7 +49,7 @@ detalla la separacion y las pruebas.
 | 3. Integrar | Paridad con las APIs actuales: inventario, bytes, disponibilidad temporal, particiones, recibos, resultados y reintentos | Paridad previa 8/8 y 11/11; E2E desechable re-ejecutado por Musashi |
 | 4. Probar interfaz | Configuracion e inventario AdminLTE, esquema de recursos, escritorio y movil; pruebas de sistema y aceptacion | Pruebas y capturas publicadas por Satoshi; suites de consola re-ejecutadas por Musashi |
 | 5. Poner en uso | Transicion controlada con los mismos datos, IDs y cubo; microexperimento gobernado por ambos hosts y conciliacion exacta | Completado en infraestructura y transporte sintetico; 5.275 recursos conservados, terminal y cuatro metricas en cubo real |
-| 6. Adoptar | Configuraciones de consumidores actualizadas y cobertura documentada por proyecto; nuevos experimentos usan esta ruta | Pendiente, Satoshi |
+| 6. Adoptar | Configuraciones de consumidores actualizadas y cobertura documentada por proyecto; nuevos experimentos usan esta ruta | Mecanica productiva probada: preprocessor, feature-eng, feature-extractor y predictor. Pendientes: causalidad de procesamiento y replay offline agent-multi/DOIN |
 
 Satoshi actualiza cada etapa al terminarla, con commits, pruebas y evidencia.
 Los resultados esperados no cuentan como evidencia. La metodologia sigue
@@ -101,4 +101,14 @@ La investigacion financiera y los fixtures sinteticos avanzan en paralelo.
 No se requiere una nueva decision del owner para empezar la continuacion.
 Ver [dictamen](../audits/work_plan/MUSASHI_REVIEW_A1_A5_CONTRACT_AND_ADOPTION_2026_09_14.md).
 
-Orden ejecutiva vigente: [semantica temporal y adopcion real](../handoffs/MUSASHI_TO_SATOSHI_TEMPORAL_SEMANTICS_AND_REAL_HOST_ADOPTION_2026_09_14.md).
+## Activacion completada tras el retorno N1-N8
+
+Musashi activo solo el lago sintetico y ejecuto los cuatro consumidores
+contra produccion: doce terminales conciliados, 119 metricas, datos y
+artefactos ligados. La activacion NO esta pendiente del owner.
+Ver [acta](../handoffs/MUSASHI_SYNTHETIC_CATALOG_AND_FOUR_CONSUMERS_ACCEPTANCE_2026_09_14.md).
+El exito mecanico no demuestra todavia fit solo en train ni ausencia de fuga
+en transformaciones; esos trabajos y el replay DOIN siguen ahora en paralelo
+a la investigacion financiera.
+
+Orden ejecutiva vigente: [causalidad del pipeline y replay offline DOIN](../handoffs/MUSASHI_TO_SATOSHI_CAUSAL_PIPELINE_AND_OFFLINE_DOIN_2026_09_14.md).
