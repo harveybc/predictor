@@ -94,3 +94,71 @@ sustituye la revision externa de Musashi.
 5. **Hosts reutilizables** (`STORE_PACKAGES_DESIGN`): diseno aceptado como
    siguiente etapa de arquitectura; no se migra nada mientras los servicios
    actuales sirvan los cierres en curso.
+
+## 7. Ordenes del 2026-09-14 (correcciones del owner y dos repositorios en uso)
+
+Estas ordenes llegaron despues de la seccion 6 y la sustituyen donde se cruzan.
+
+### 7.1 Tres correcciones
+
+| correccion | estado | evidencia |
+|---|---|---|
+| «Quedan 47 resultados calibrados de candidatos y seis limitados, no 48 y seis» | aplicada | reconteo de solo lectura contra el cubo: brazo `CANDIDATE` 51 `LAB_CALIBRATED` + 7 `REGIME_LIMITED` → **47 + 6**; `SNR_CALIBRATED_FOR_REGIME` 39 → 39 y `SNR_REGIME_LIMITED` 171 → 167. `d2_support_r1/r3/R3_CANDIDATE_RECOUNT.json`; corregidos el addendum, el packet y el archivo de estado |
+| «Cinco estimadores cumplen la tolerancia observada, pero solo cuatro son exactamente iguales» | aplicada | cuatro exactos (max \|Δ\| = 0,0 dB): `mad_first_difference`, `wavelet_mad`, `spectral_floor`, `trailing_median_residual`; `ar_residual` cumple la tolerancia pero **no** es exacto (1,9184653865522705e-13 dB). Conteo por estimador en `R4_PORTABILITY_REPORT.json.per_estimator`; politica, addendum, packet y estado corregidos |
+| «El comparador puede informar cero cambios con entradas vacias» | reparado y re-ejecutado | siete reglas declaradas como tests antes de tocar el codigo: PRE 7/7 fallan contra `11f2a16`, POST 7/7 pasan (`d2_support_r1/r4_guard/`). El comparador declara su cobertura, cuenta una sustitucion solo cuando un valor reemplaza a otro, emite veredicto `MEASURED`/`INCONCLUSIVE` con razones y **sale con codigo 4** cuando no cubre lo que dice medir. Re-ejecucion: `MEASURED`, 32/32 unidades, 1.716 celdas, **639 hechos sustituidos**, 16/16 regimenes, 288 decisiones comparadas, 0 cambian — la conclusion de estabilidad sobrevive a la reparacion y ahora viene con su alcance |
+
+### 7.2 Los dos repositorios, creados y en uso
+
+`data-lake` (`data_lake_service`, grupo `datalake.backends`) y `data-warehouse`
+(`data_warehouse_service`, `datawarehouse.backends`), con los proveedores
+empaquetados aparte: `financial-data-store` (financial-data `8a76119d0`) y
+`predictor-olap-store` (`predictor/olap/store`). Ningun paquete nuevo usa `app`,
+`web_plugins` ni `query_plugins` de primer nivel; `datagov.lake` y los contratos
+de ruta y recibo no cambian.
+
+El primer entregable exigido por el diseno no es «dos repositorios con codigo
+parecido» sino un proveedor externo instalado que pasa el contrato de gobernanza
+sin cambios, y eso es lo que esta probado:
+
+1. instalacion real en entornos virtuales desechables (host + proveedor como
+   distribuciones separadas), resolucion por CLI y rechazos con nombre cuando la
+   distribucion no coincide o no esta instalada;
+2. paridad de rutas contra los hosts actuales: 8/8 en el lago (estado, bytes y
+   cabeceras) y 11/11 en el almacen (incluidas la idempotencia del reporte y del
+   terminal), `store_hosts_20260914/`;
+3. la campana Flow v3 completa atravesando ambos hosts nuevos con la
+   configuracion de gobernanza intacta: mismo contrato de disponibilidad
+   `139f3adc…`, mismo digest de dataset `5b4cabe4…`, conciliacion exacta.
+
+Un defecto real aparecio en la primera paridad: el `HoldoutError` del proveedor
+no es la clase del host, asi que un holdout salia como 500 donde el host legado
+respondia 403. El host clasifica ahora el rechazo por su tipo y **relanza** lo
+que no puede clasificar: un defecto no se sirve como rechazo cortes.
+
+Nada esta desplegado. Los servicios `:5055/:5056/:5057` siguen intactos desde el
+reinicio de Musashi; la migracion sigue la secuencia por pruebas del diseno y su
+ventana la decide el owner.
+
+### 7.3 feature-extractor: portado, sin esperar otra autorizacion
+
+Rama `satoshi/port-preprocessor-api-20260914` (`5d10f0d`). El sitio de llamada
+inspecciona `run_preprocessing` en vez de suponer su forma, y carga un plugin de
+`target.plugins` cuando el preprocesador lo pide. El port destapo una segunda
+deriva, mas silenciosa: el preprocesador recorta sus ventanas a los objetivos
+(`windows[:target_length]`) pero no recorta los vectores `*_dates` paralelos
+(24.913 ventanas contra 25.057 fechas; la diferencia es exactamente el horizonte
+mayor, 144). `align_timestamps` toma las primeras `n` fechas por la misma regla
+y **rechaza** lo que no puede alinear. Prueba gobernada:
+`flow_v3_tools/p6_feature_extractor_throwaway.out` (COMPLETED con seis entregas
+sobre tres recursos, REFUSED por salidas rancias, FAILED con costo, reintento que
+no envia nada, base desechable eliminada).
+
+### 7.4 financial-data: cerrado por procedencia por archivo
+
+La disposicion del owner es documentar la procedencia **por archivo**, no fusionar
+la rama experimental. El registro publicado
+(`financial-data/docs/ADAPTER_PUBLICATION_PROVENANCE_2026_09_14.md`, `2dbe92286`)
+mapea `cc0f15e6e` ← `f00bc6c15` para los tres archivos del adaptador con sus
+SHA-256. Verifique su comando de reproduccion: los tres archivos son identicos y
+las revisiones completas difieren en **80 rutas**. Mi recomendacion de fusion
+queda retirada; no hay fusion pendiente de nadie.
