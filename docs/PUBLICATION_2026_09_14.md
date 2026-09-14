@@ -73,6 +73,13 @@ proposal. Bibliographic papers by other authors were not republished in this pas
 
 ## Integration discipline
 
+All 14 selected updates were pushed to their actual default branches and
+checked against GitHub: each README matches the selected local bytes, and the
+current proposal PDF and LaTeX match the hashes above. Thirteen of these
+repositories are public. `doin-domains` remains private and requires access;
+its visibility was not changed. The linked `data-gov`, `doin-core` and
+`doin-node` repositories were also checked as public.
+
 All edits were made in isolated publication checkouts. Existing development
 worktrees, deployed services, data stores and running experiments were not
 modified or restarted. Updates to default branches use ordinary fast-forward

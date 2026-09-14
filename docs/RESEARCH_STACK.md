@@ -19,6 +19,11 @@ part of that evidence.
 
 ## Components
 
+The repositories below are public except `doin-domains`, which requires
+repository access. Its restricted visibility is intentional and was not changed
+by this publication pass; evaluators can inspect the public `doin-plugins`
+interfaces without access to it.
+
 | Stage | Repository | Responsibility |
 |---|---|---|
 | Data inventory | [financial-data](https://github.com/harveybc/financial-data) | Data dictionaries, provenance, inventory and file-lake adapter; restricted datasets are not redistributed |
@@ -29,7 +34,7 @@ part of that evidence.
 | Forecasting | [predictor](https://github.com/harveybc/predictor) | Configurable Keras/TensorFlow training and evaluation |
 | RL experiments | [agent-multi](https://github.com/harveybc/agent-multi) / [gym-fx](https://github.com/harveybc/gym-fx) | Agents, optimizers, environments and offline evaluation |
 | Distributed research | [doin-core](https://github.com/harveybc/doin-core) / [doin-node](https://github.com/harveybc/doin-node) | Shared protocol and participant runtime |
-| Domain adapters | [doin-plugins](https://github.com/harveybc/doin-plugins) / [doin-domains](https://github.com/harveybc/doin-domains) | Integration plugins and non-financial benchmark domains |
+| Domain adapters | [doin-plugins](https://github.com/harveybc/doin-plugins) / [doin-domains (private)](https://github.com/harveybc/doin-domains) | Integration plugins and non-financial benchmark domains |
 | Serving | [prediction_provider](https://github.com/harveybc/prediction_provider) | Prediction API and model adapters, separate from training |
 | Simulation and execution | [heuristic-strategy](https://github.com/harveybc/heuristic-strategy) / [lts](https://github.com/harveybc/lts) | Backtests and configured execution adapters; inspection does not require broker access |
 | Synthetic controls | [synthetic-datagen](https://github.com/harveybc/synthetic-datagen) / [timeseries-gan](https://github.com/harveybc/timeseries-gan) | Controlled signal generation and generative-model experiments |
