@@ -34,9 +34,19 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-CONTRACT = {"event_time_column": "DATE_TIME", "available_time_column": "DATE_TIME",
-            "timezone": "NAIVE_WALL_CLOCK", "time_unit": None, "frequency": "4h"}
 RESOURCES = ["phase_1/normalized_d4.csv", "phase_1/normalized_d5.csv", "phase_1/normalized_d6.csv"]
+
+
+def deployed_contract(data_gov: Path) -> dict:
+    """The contract exactly as installed in the data-gov config (scope block included)."""
+    config = json.loads((data_gov / "examples/config/default.json").read_text(encoding="utf-8"))
+    lake = next(l for l in config["lakes"] if l.get("lake_id") == "predictor_examples")
+    contracts = lake["resource_contracts"]
+    assert all(contracts[r] == contracts[RESOURCES[0]] for r in RESOURCES)
+    return contracts[RESOURCES[0]]
+
+
+CONTRACT = deployed_contract(Path(__file__).resolve().parents[5].parent / "data-gov")
 TOY_CONFIG = "examples/config/phase_1_daily/phase_1_ann_1575_1d_config.json"
 EXTRA = ["--epochs", "2", "--max_steps_train", "300", "--max_steps_test", "300", "--mc_samples", "2",
          "--execution_purpose", "ARCHIVAL_REPLAY_NON_AUTHORITATIVE"]
