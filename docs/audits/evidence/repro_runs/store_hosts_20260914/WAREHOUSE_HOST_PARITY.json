@@ -1,0 +1,441 @@
+{
+ "schema": "warehouse_host_parity.v1",
+ "routes": {
+  "describe": {
+   "path": "/api/v1/describe",
+   "method": "GET",
+   "params": {},
+   "legacy": {
+    "status": 200,
+    "json": {
+     "description": "Read-only cube. Never runs reset_olap. Postgres via PG* or sqlite_path for tests.",
+     "holdout_start": "2025-01-01",
+     "kind": "sql_olap",
+     "lake_id": "olap_cube",
+     "n_resources": 7,
+     "root_path": "~/scratch/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wh_parity/legacy.sqlite",
+     "title": "predictor OLAP"
+    },
+    "sha256": "8da18c58c361e502569f6e5b9138254f8837b80c6eef2b448ecb258df4cdfa27"
+   },
+   "new": {
+    "status": 200,
+    "json": {
+     "description": "",
+     "holdout_start": "2025-01-01",
+     "kind": "sql_olap",
+     "lake_id": "olap_cube",
+     "n_resources": 7,
+     "root_path": "~/scratch/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wh_parity/new.sqlite",
+     "title": "predictor OLAP",
+     "transport": "http"
+    },
+    "sha256": "ef9edfccd2744985eee276f606d5c435635c6cea93b6aa8fef31d49e860a240b"
+   },
+   "identity_route": true,
+   "identical": false,
+   "same": {
+    "status": true,
+    "json": false
+   }
+  },
+  "storage": {
+   "path": "/api/v1/storage",
+   "method": "GET",
+   "params": {},
+   "legacy": {
+    "status": 200,
+    "json": {
+     "host_free": 13245411328,
+     "host_total": 16389177344,
+     "host_used": 3143766016,
+     "lake_bytes": 4096,
+     "root": "~/scratch/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wh_parity/legacy.sqlite"
+    },
+    "sha256": "03f5d347d701cb2a685177fb08ed0eb906c19a6cdf47a0e42409b6ceeba4c184"
+   },
+   "new": {
+    "status": 200,
+    "json": {
+     "host_free": 13245411328,
+     "host_total": 16389177344,
+     "host_used": 3143766016,
+     "lake_bytes": 4096,
+     "root": "~/scratch/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wh_parity/new.sqlite"
+    },
+    "sha256": "bd6d6438c23bf14ed811f758bbe866a45ce1c405bd2609d5a24702b31d2981c6"
+   },
+   "identity_route": true,
+   "identical": false,
+   "same": {
+    "status": true,
+    "json": false
+   }
+  },
+  "discover": {
+   "path": "/api/v1/discover",
+   "method": "GET",
+   "params": {},
+   "legacy": {
+    "status": 200,
+    "json": {
+     "resources": [
+      {
+       "kind": "table",
+       "resource_id": "gov_dataset",
+       "rows": 0
+      },
+      {
+       "kind": "table",
+       "resource_id": "gov_metric",
+       "rows": 0
+      },
+      {
+       "kind": "table",
+       "resource_id": "gov_report",
+       "rows": 0
+      },
+      {
+       "kind": "table",
+       "resource_id": "gov_terminal",
+       "rows": 0
+      },
+      {
+       "kind": "table",
+       "resource_id": "gov_terminal_artifact",
+       "rows": 0
+      },
+      {
+       "kind": "table",
+       "resource_id": "gov_terminal_dataset",
+       "rows": 0
+      },
+      {
+       "kind": "table",
+       "resource_id": "gov_terminal_metric",
+       "rows": 0
+      }
+     ]
+    },
+    "sha256": "56b8a02179129c242906c3514fc1cce717aeafa9c0646cf83cdcd233fd420fa0"
+   },
+   "new": {
+    "status": 200,
+    "json": {
+     "resources": [
+      {
+       "kind": "table",
+       "resource_id": "gov_dataset",
+       "rows": 0
+      },
+      {
+       "kind": "table",
+       "resource_id": "gov_metric",
+       "rows": 0
+      },
+      {
+       "kind": "table",
+       "resource_id": "gov_report",
+       "rows": 0
+      },
+      {
+       "kind": "table",
+       "resource_id": "gov_terminal",
+       "rows": 0
+      },
+      {
+       "kind": "table",
+       "resource_id": "gov_terminal_artifact",
+       "rows": 0
+      },
+      {
+       "kind": "table",
+       "resource_id": "gov_terminal_dataset",
+       "rows": 0
+      },
+      {
+       "kind": "table",
+       "resource_id": "gov_terminal_metric",
+       "rows": 0
+      }
+     ]
+    },
+    "sha256": "56b8a02179129c242906c3514fc1cce717aeafa9c0646cf83cdcd233fd420fa0"
+   },
+   "identity_route": false,
+   "identical": true,
+   "same": {
+    "status": true,
+    "json": true
+   }
+  },
+  "query": {
+   "path": "/api/v1/query",
+   "method": "GET",
+   "params": {
+    "sql": "SELECT 1 AS one"
+   },
+   "legacy": {
+    "status": 400,
+    "json": {
+     "error": "LIMIT n is required"
+    },
+    "sha256": "926b07935bf93804031671f0520b82ea06820f93c1470d124f35526ae77ac35f"
+   },
+   "new": {
+    "status": 400,
+    "json": {
+     "error": "LIMIT n is required"
+    },
+    "sha256": "926b07935bf93804031671f0520b82ea06820f93c1470d124f35526ae77ac35f"
+   },
+   "identity_route": false,
+   "identical": true,
+   "same": {
+    "status": true,
+    "json": true
+   }
+  },
+  "query_write_refused": {
+   "path": "/api/v1/query",
+   "method": "GET",
+   "params": {
+    "sql": "DELETE FROM gov_metric"
+   },
+   "legacy": {
+    "status": 400,
+    "json": {
+     "error": "only SELECT/WITH is allowed"
+    },
+    "sha256": "c7ddb87a90a33d8a62c6b7c31025cb53dee8e3f6bdce7a066b527034a5fce8c5"
+   },
+   "new": {
+    "status": 400,
+    "json": {
+     "error": "only SELECT/WITH is allowed"
+    },
+    "sha256": "c7ddb87a90a33d8a62c6b7c31025cb53dee8e3f6bdce7a066b527034a5fce8c5"
+   },
+   "identity_route": false,
+   "identical": true,
+   "same": {
+    "status": true,
+    "json": true
+   }
+  },
+  "query_empty": {
+   "path": "/api/v1/query",
+   "method": "GET",
+   "params": {
+    "sql": ""
+   },
+   "legacy": {
+    "status": 400,
+    "json": {
+     "error": "only SELECT/WITH is allowed"
+    },
+    "sha256": "c7ddb87a90a33d8a62c6b7c31025cb53dee8e3f6bdce7a066b527034a5fce8c5"
+   },
+   "new": {
+    "status": 400,
+    "json": {
+     "error": "only SELECT/WITH is allowed"
+    },
+    "sha256": "c7ddb87a90a33d8a62c6b7c31025cb53dee8e3f6bdce7a066b527034a5fce8c5"
+   },
+   "identity_route": false,
+   "identical": true,
+   "same": {
+    "status": true,
+    "json": true
+   }
+  },
+  "metrics_first": {
+   "path": "/api/v1/metrics",
+   "method": "POST",
+   "params": {},
+   "legacy": {
+    "status": 400,
+    "json": {
+     "error": "actor is required"
+    },
+    "sha256": "54b3656ab4456aefe3e1aa6e7cafd620547ac58766e000da7cdd87abc0da6523"
+   },
+   "new": {
+    "status": 400,
+    "json": {
+     "error": "actor is required"
+    },
+    "sha256": "54b3656ab4456aefe3e1aa6e7cafd620547ac58766e000da7cdd87abc0da6523"
+   },
+   "identity_route": false,
+   "identical": true,
+   "same": {
+    "status": true,
+    "json": true
+   }
+  },
+  "metrics_repeat": {
+   "path": "/api/v1/metrics",
+   "method": "POST",
+   "params": {},
+   "legacy": {
+    "status": 400,
+    "json": {
+     "error": "actor is required"
+    },
+    "sha256": "54b3656ab4456aefe3e1aa6e7cafd620547ac58766e000da7cdd87abc0da6523"
+   },
+   "new": {
+    "status": 400,
+    "json": {
+     "error": "actor is required"
+    },
+    "sha256": "54b3656ab4456aefe3e1aa6e7cafd620547ac58766e000da7cdd87abc0da6523"
+   },
+   "identity_route": false,
+   "identical": true,
+   "same": {
+    "status": true,
+    "json": true
+   }
+  },
+  "metrics_not_an_object": {
+   "path": "/api/v1/metrics",
+   "method": "POST",
+   "params": {},
+   "legacy": {
+    "status": 400,
+    "json": {
+     "error": "report must be a JSON object"
+    },
+    "sha256": "ce69da5f5ab07c9b3d8764500f7cb0b32b3e83988a0076f8b3ad092c07bbcd2f"
+   },
+   "new": {
+    "status": 400,
+    "json": {
+     "error": "report must be a JSON object"
+    },
+    "sha256": "ce69da5f5ab07c9b3d8764500f7cb0b32b3e83988a0076f8b3ad092c07bbcd2f"
+   },
+   "identity_route": false,
+   "identical": true,
+   "same": {
+    "status": true,
+    "json": true
+   }
+  },
+  "terminal_first": {
+   "path": "/api/v2/terminals",
+   "method": "POST",
+   "params": {},
+   "legacy": {
+    "status": 400,
+    "json": {
+     "error": "invalid terminal schema"
+    },
+    "sha256": "589c1a012727da6686136b10db55b93c52856541ce8138dc2cd5c7b360726bd4"
+   },
+   "new": {
+    "status": 400,
+    "json": {
+     "error": "invalid terminal schema"
+    },
+    "sha256": "589c1a012727da6686136b10db55b93c52856541ce8138dc2cd5c7b360726bd4"
+   },
+   "identity_route": false,
+   "identical": true,
+   "same": {
+    "status": true,
+    "json": true
+   }
+  },
+  "terminal_repeat": {
+   "path": "/api/v2/terminals",
+   "method": "POST",
+   "params": {},
+   "legacy": {
+    "status": 400,
+    "json": {
+     "error": "invalid terminal schema"
+    },
+    "sha256": "589c1a012727da6686136b10db55b93c52856541ce8138dc2cd5c7b360726bd4"
+   },
+   "new": {
+    "status": 400,
+    "json": {
+     "error": "invalid terminal schema"
+    },
+    "sha256": "589c1a012727da6686136b10db55b93c52856541ce8138dc2cd5c7b360726bd4"
+   },
+   "identity_route": false,
+   "identical": true,
+   "same": {
+    "status": true,
+    "json": true
+   }
+  },
+  "terminal_list": {
+   "path": "/api/v2/terminals",
+   "method": "GET",
+   "params": {
+    "campaign_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+   },
+   "legacy": {
+    "status": 200,
+    "json": {
+     "terminals": []
+    },
+    "sha256": "999f042bcec5f4c3cd224660a990a90af05b956168d8dbdf705ad5bb95061038"
+   },
+   "new": {
+    "status": 200,
+    "json": {
+     "terminals": []
+    },
+    "sha256": "999f042bcec5f4c3cd224660a990a90af05b956168d8dbdf705ad5bb95061038"
+   },
+   "identity_route": false,
+   "identical": true,
+   "same": {
+    "status": true,
+    "json": true
+   }
+  },
+  "terminal_list_without_campaign": {
+   "path": "/api/v2/terminals",
+   "method": "GET",
+   "params": {},
+   "legacy": {
+    "status": 400,
+    "json": {
+     "error": "invalid campaign_sha256"
+    },
+    "sha256": "d4171c24bb22f56d5e492d7f6e0ec1b20c6c6ef220218c1257452b30ee96aee1"
+   },
+   "new": {
+    "status": 400,
+    "json": {
+     "error": "invalid campaign_sha256"
+    },
+    "sha256": "d4171c24bb22f56d5e492d7f6e0ec1b20c6c6ef220218c1257452b30ee96aee1"
+   },
+   "identity_route": false,
+   "identical": true,
+   "same": {
+    "status": true,
+    "json": true
+   }
+  }
+ },
+ "legacy_port": 57569,
+ "new_port": 35991,
+ "database": "throwaway sqlite; PG* removed from the environment",
+ "summary": {
+  "routes_compared": 13,
+  "data_routes": 11,
+  "data_routes_identical": 11,
+  "identity_routes_status_equal": 2,
+  "differences": []
+ }
+}

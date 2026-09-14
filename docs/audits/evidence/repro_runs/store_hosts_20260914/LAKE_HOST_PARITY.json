@@ -1,0 +1,458 @@
+{
+ "schema": "lake_host_parity.v1",
+ "resource": "market_data/a.csv",
+ "routes": {
+  "describe": {
+   "path": "/api/v1/describe",
+   "params": {},
+   "legacy": {
+    "status": 200,
+    "sha256": "6b335857867423363be5e91123e66f80a3f71133f73a25bda56294371127fd3c",
+    "bytes": 347,
+    "headers": {
+     "Content-Length": "347"
+    },
+    "json": {
+     "description": "Curated market and contextual files. Hash on read, not on discover.",
+     "holdout_start": "2025-01-01",
+     "kind": "files_inventory",
+     "lake_id": "financial_files",
+     "n_resources": 1,
+     "root_path": "~/scratch/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/lake_parity/root",
+     "title": "financial-data"
+    }
+   },
+   "new": {
+    "status": 200,
+    "sha256": "8d2394a39cb10b9ca3425960e1406d43a94a09d5028a13ed0ae75fcfe63870dd",
+    "bytes": 299,
+    "headers": {
+     "Content-Length": "299"
+    },
+    "json": {
+     "description": "",
+     "holdout_start": "2025-01-01",
+     "kind": "files_inventory",
+     "lake_id": "financial_files",
+     "n_resources": 1,
+     "root_path": "~/scratch/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/lake_parity/root",
+     "title": "financial-data",
+     "transport": "http"
+    }
+   },
+   "identical": false,
+   "identity_route": true,
+   "same": {
+    "status": true,
+    "bytes": false,
+    "headers": false
+   }
+  },
+  "storage": {
+   "path": "/api/v1/storage",
+   "params": {},
+   "legacy": {
+    "status": 200,
+    "sha256": "a480fbb4c86e3040e4785d47d9c708554dcd7daad16659e7adba1a645f54b411",
+    "bytes": 224,
+    "headers": {
+     "Content-Length": "224"
+    },
+    "json": {
+     "host_free": 13259153408,
+     "host_total": 16389177344,
+     "host_used": 3130023936,
+     "lake_bytes": 102,
+     "root": "~/scratch/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/lake_parity/root"
+    }
+   },
+   "new": {
+    "status": 200,
+    "sha256": "a480fbb4c86e3040e4785d47d9c708554dcd7daad16659e7adba1a645f54b411",
+    "bytes": 224,
+    "headers": {
+     "Content-Length": "224"
+    },
+    "json": {
+     "host_free": 13259153408,
+     "host_total": 16389177344,
+     "host_used": 3130023936,
+     "lake_bytes": 102,
+     "root": "~/scratch/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/lake_parity/root"
+    }
+   },
+   "identical": true,
+   "identity_route": true,
+   "same": {
+    "status": true,
+    "bytes": true,
+    "headers": true
+   }
+  },
+  "discover": {
+   "path": "/api/v1/discover",
+   "params": {},
+   "legacy": {
+    "status": 200,
+    "sha256": "c04c8fa18a37fc4974be533b1c32285274ec6740d37d4f2bad3fcd340954bbc1",
+    "bytes": 121,
+    "headers": {
+     "Content-Length": "121"
+    },
+    "json": {
+     "resources": [
+      {
+       "bytes": 102,
+       "kind": "file",
+       "mtime": "2026-09-14T08:06:40.662463+00:00",
+       "resource_id": "market_data/a.csv"
+      }
+     ]
+    }
+   },
+   "new": {
+    "status": 200,
+    "sha256": "c04c8fa18a37fc4974be533b1c32285274ec6740d37d4f2bad3fcd340954bbc1",
+    "bytes": 121,
+    "headers": {
+     "Content-Length": "121"
+    },
+    "json": {
+     "resources": [
+      {
+       "bytes": 102,
+       "kind": "file",
+       "mtime": "2026-09-14T08:06:40.662463+00:00",
+       "resource_id": "market_data/a.csv"
+      }
+     ]
+    }
+   },
+   "identical": true,
+   "identity_route": false,
+   "same": {
+    "status": true,
+    "bytes": true,
+    "headers": true
+   }
+  },
+  "coverage": {
+   "path": "/api/v1/coverage",
+   "params": {
+    "resource": "market_data/a.csv"
+   },
+   "legacy": {
+    "status": 200,
+    "sha256": "05f3dd6898aa5711889128d0992b3b3b2f1348a2c0e360df613072d5bd79a061",
+    "bytes": 132,
+    "headers": {
+     "Content-Length": "132"
+    },
+    "json": {
+     "resource_id": "market_data/a.csv",
+     "rows": 3,
+     "t_max": "2024-12-30 00:00:00",
+     "t_min": "2024-12-28 00:00:00",
+     "time_column": "event_time"
+    }
+   },
+   "new": {
+    "status": 200,
+    "sha256": "05f3dd6898aa5711889128d0992b3b3b2f1348a2c0e360df613072d5bd79a061",
+    "bytes": 132,
+    "headers": {
+     "Content-Length": "132"
+    },
+    "json": {
+     "resource_id": "market_data/a.csv",
+     "rows": 3,
+     "t_max": "2024-12-30 00:00:00",
+     "t_min": "2024-12-28 00:00:00",
+     "time_column": "event_time"
+    }
+   },
+   "identical": true,
+   "identity_route": false,
+   "same": {
+    "status": true,
+    "bytes": true,
+    "headers": true
+   }
+  },
+  "read": {
+   "path": "/api/v1/read",
+   "params": {
+    "resource": "market_data/a.csv",
+    "from": "2024-12-28",
+    "to": "2024-12-30"
+   },
+   "legacy": {
+    "status": 200,
+    "sha256": "707ed4484f61a5ab5d5de6b2a404eccddd79b6ba052b11ce792a9b7e09b55ff4",
+    "bytes": 331,
+    "headers": {
+     "Content-Length": "331"
+    },
+    "json": {
+     "bytes": 199,
+     "resource_id": "market_data/a.csv",
+     "rows": [
+      {
+       "available_at": "2024-12-29",
+       "event_time": "2024-12-28",
+       "value": 1
+      },
+      {
+       "available_at": "2024-12-30",
+       "event_time": "2024-12-29",
+       "value": 2
+      },
+      {
+       "available_at": "2025-01-02",
+       "event_time": "2024-12-30",
+       "value": 3
+      }
+     ],
+     "sha256": "8b0ed3dea4cedcdd26e3bc0f878f4658c989fd6aa2a068eed0737903fe11676b"
+    }
+   },
+   "new": {
+    "status": 200,
+    "sha256": "707ed4484f61a5ab5d5de6b2a404eccddd79b6ba052b11ce792a9b7e09b55ff4",
+    "bytes": 331,
+    "headers": {
+     "Content-Length": "331"
+    },
+    "json": {
+     "bytes": 199,
+     "resource_id": "market_data/a.csv",
+     "rows": [
+      {
+       "available_at": "2024-12-29",
+       "event_time": "2024-12-28",
+       "value": 1
+      },
+      {
+       "available_at": "2024-12-30",
+       "event_time": "2024-12-29",
+       "value": 2
+      },
+      {
+       "available_at": "2025-01-02",
+       "event_time": "2024-12-30",
+       "value": 3
+      }
+     ],
+     "sha256": "8b0ed3dea4cedcdd26e3bc0f878f4658c989fd6aa2a068eed0737903fe11676b"
+    }
+   },
+   "identical": true,
+   "identity_route": false,
+   "same": {
+    "status": true,
+    "bytes": true,
+    "headers": true
+   }
+  },
+  "download": {
+   "path": "/api/v1/download",
+   "params": {
+    "resource": "market_data/a.csv"
+   },
+   "legacy": {
+    "status": 200,
+    "sha256": "de7a3339ce79152f419aa58eafb72e4b533ee317f190e0d35d6e50fdfd19320e",
+    "bytes": 102,
+    "headers": {
+     "X-Content-SHA256": "de7a3339ce79152f419aa58eafb72e4b533ee317f190e0d35d6e50fdfd19320e",
+     "X-Source-SHA256": "de7a3339ce79152f419aa58eafb72e4b533ee317f190e0d35d6e50fdfd19320e",
+     "X-Delivery": "AS_IS",
+     "X-Time-Column": "event_time",
+     "Content-Disposition": "attachment; filename=\"a.csv\"",
+     "Content-Length": "102"
+    },
+    "json": null
+   },
+   "new": {
+    "status": 200,
+    "sha256": "de7a3339ce79152f419aa58eafb72e4b533ee317f190e0d35d6e50fdfd19320e",
+    "bytes": 102,
+    "headers": {
+     "X-Content-SHA256": "de7a3339ce79152f419aa58eafb72e4b533ee317f190e0d35d6e50fdfd19320e",
+     "X-Source-SHA256": "de7a3339ce79152f419aa58eafb72e4b533ee317f190e0d35d6e50fdfd19320e",
+     "X-Delivery": "AS_IS",
+     "X-Time-Column": "event_time",
+     "Content-Disposition": "attachment; filename=\"a.csv\"",
+     "Content-Length": "102"
+    },
+    "json": null
+   },
+   "identical": true,
+   "identity_route": false,
+   "same": {
+    "status": true,
+    "bytes": true,
+    "headers": true
+   }
+  },
+  "governed_download": {
+   "path": "/api/v2/download",
+   "params": {
+    "resource": "market_data/a.csv",
+    "from": "2024-12-28",
+    "to": "2024-12-30"
+   },
+   "legacy": {
+    "status": 200,
+    "sha256": "ea6d765c8ec28a1e43c48ab6f973ab80156ef06056c4c21187742dd963cbbcf6",
+    "bytes": 78,
+    "headers": {
+     "X-Content-SHA256": "ea6d765c8ec28a1e43c48ab6f973ab80156ef06056c4c21187742dd963cbbcf6",
+     "X-Source-SHA256": "de7a3339ce79152f419aa58eafb72e4b533ee317f190e0d35d6e50fdfd19320e",
+     "X-Delivery": "CUT",
+     "X-Time-Column": "available_at",
+     "X-Availability-Contract-SHA256": "b61c85bf8daf4924e77f09026432303113baf05e5a882d5ea0b3aed141a7eea2",
+     "X-Availability-Label": "WINDOW_END",
+     "X-Availability-Completion-Lag-Max": "1h",
+     "X-Timezone-Evidence": "PRODUCER_STATEMENT",
+     "X-Availability-Use": "OFFLINE_DAY_GRANULAR",
+     "Content-Disposition": "attachment; filename=\"2024-12-28_2024-12-30.csv\"",
+     "Content-Length": "78"
+    },
+    "json": null
+   },
+   "new": {
+    "status": 200,
+    "sha256": "ea6d765c8ec28a1e43c48ab6f973ab80156ef06056c4c21187742dd963cbbcf6",
+    "bytes": 78,
+    "headers": {
+     "X-Content-SHA256": "ea6d765c8ec28a1e43c48ab6f973ab80156ef06056c4c21187742dd963cbbcf6",
+     "X-Source-SHA256": "de7a3339ce79152f419aa58eafb72e4b533ee317f190e0d35d6e50fdfd19320e",
+     "X-Delivery": "CUT",
+     "X-Time-Column": "available_at",
+     "X-Availability-Contract-SHA256": "b61c85bf8daf4924e77f09026432303113baf05e5a882d5ea0b3aed141a7eea2",
+     "X-Availability-Label": "WINDOW_END",
+     "X-Availability-Completion-Lag-Max": "1h",
+     "X-Timezone-Evidence": "PRODUCER_STATEMENT",
+     "X-Availability-Use": "OFFLINE_DAY_GRANULAR",
+     "Content-Disposition": "attachment; filename=\"2024-12-28_2024-12-30.csv\"",
+     "Content-Length": "78"
+    },
+    "json": null
+   },
+   "identical": true,
+   "identity_route": false,
+   "same": {
+    "status": true,
+    "bytes": true,
+    "headers": true
+   }
+  },
+  "download_holdout": {
+   "path": "/api/v2/download",
+   "params": {
+    "resource": "market_data/a.csv",
+    "from": "2024-12-30",
+    "to": "2025-01-05"
+   },
+   "legacy": {
+    "status": 403,
+    "sha256": "a62ff86be8f1e8357fa6fdddbc8195c33ded4721144d11d8adc3fc1318a93db7",
+    "bytes": 20,
+    "headers": {},
+    "json": {
+     "error": "holdout"
+    }
+   },
+   "new": {
+    "status": 403,
+    "sha256": "a62ff86be8f1e8357fa6fdddbc8195c33ded4721144d11d8adc3fc1318a93db7",
+    "bytes": 20,
+    "headers": {},
+    "json": {
+     "error": "holdout"
+    }
+   },
+   "identical": true,
+   "identity_route": false,
+   "same": {
+    "status": true,
+    "bytes": true,
+    "headers": true
+   }
+  },
+  "unknown_resource": {
+   "path": "/api/v1/coverage",
+   "params": {
+    "resource": "market_data/absent.csv"
+   },
+   "legacy": {
+    "status": 404,
+    "sha256": "d88211623d6d44ad3f1d2cab99fe86bebc0c635a88e7b42f351d1d51eba6172c",
+    "bytes": 29,
+    "headers": {},
+    "json": {
+     "error": "unknown resource"
+    }
+   },
+   "new": {
+    "status": 404,
+    "sha256": "d88211623d6d44ad3f1d2cab99fe86bebc0c635a88e7b42f351d1d51eba6172c",
+    "bytes": 29,
+    "headers": {},
+    "json": {
+     "error": "unknown resource"
+    }
+   },
+   "identical": true,
+   "identity_route": false,
+   "same": {
+    "status": true,
+    "bytes": true,
+    "headers": true
+   }
+  },
+  "bad_range": {
+   "path": "/api/v1/download",
+   "params": {
+    "resource": "market_data/a.csv",
+    "from": "nope",
+    "to": "2024-12-30"
+   },
+   "legacy": {
+    "status": 400,
+    "sha256": "36a267f595a3275c4465753b0708d2149ae74c28bf98eb947c493aa52e4fd573",
+    "bytes": 28,
+    "headers": {},
+    "json": {
+     "error": "invalid from/to"
+    }
+   },
+   "new": {
+    "status": 400,
+    "sha256": "36a267f595a3275c4465753b0708d2149ae74c28bf98eb947c493aa52e4fd573",
+    "bytes": 28,
+    "headers": {},
+    "json": {
+     "error": "invalid from/to"
+    }
+   },
+   "identical": true,
+   "identity_route": false,
+   "same": {
+    "status": true,
+    "bytes": true,
+    "headers": true
+   }
+  }
+ },
+ "legacy_port": 59807,
+ "new_port": 48809,
+ "summary": {
+  "routes_compared": 10,
+  "data_routes_identical": 8,
+  "data_routes": 8,
+  "identity_routes_status_equal": 2,
+  "differences": []
+ }
+}

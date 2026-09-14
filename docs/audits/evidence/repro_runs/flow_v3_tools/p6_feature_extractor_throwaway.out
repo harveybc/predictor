@@ -1,0 +1,522 @@
+{
+ "schema": "flow_v3_n5_feature_extractor_throwaway.v1",
+ "code_sha256": "be98723fab6029ce6214d21d19dad73ca24be602353713a1104447a48b0ef026",
+ "feature_extractor_commit": "5d10f0d345c2d64d1d5cfd5e113ecb4cec7aa4c6",
+ "feature_extractor_python": "~/.venvs/feature-extractor/bin/python",
+ "egg_info_rc": 0,
+ "resource_sha256": {
+  "normalized_d1.csv": "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+  "normalized_d2.csv": "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+  "normalized_d3.csv": "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121"
+ },
+ "pg_db": "data_gov_v3_throwaway_p6fext",
+ "runs": {
+  "1_completed_six_governed_inputs": {
+   "exit_code": 0,
+   "status": "COMPLETED",
+   "reason": null,
+   "campaign_sha256": "cbc2c84f1816757b47c0f5716f1c68a16a0ddd499c74b2c1ed5399edb0549c8e",
+   "terminal_pending": false,
+   "inputs": [
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a",
+     "availability_label": "WINDOW_END",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 26225606,
+     "cached": false,
+     "delivery": "AS_IS",
+     "delivery_id": "192a852f04cf4aae8d4a050b44ba732c",
+     "lake": "feature_extractor_examples",
+     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/cache/feature_extractor_examples/34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "normalized_d1.csv",
+     "role": "x_train_file",
+     "sha256": "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+     "source_sha256": "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+     "time_column": "DATE_TIME",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_TRANSFER"
+    },
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a",
+     "availability_label": "WINDOW_END",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 26225606,
+     "cached": true,
+     "delivery": "AS_IS",
+     "delivery_id": "a51f1b2f0bcf4cecb13f37afb185d7fd",
+     "lake": "feature_extractor_examples",
+     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/cache/feature_extractor_examples/34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "normalized_d1.csv",
+     "role": "y_train_file",
+     "sha256": "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+     "source_sha256": "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+     "time_column": "DATE_TIME",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_CACHE"
+    },
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a",
+     "availability_label": "WINDOW_END",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 6585742,
+     "cached": false,
+     "delivery": "AS_IS",
+     "delivery_id": "7a60b6ebb2b546e8bb8bf14f957a119d",
+     "lake": "feature_extractor_examples",
+     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/cache/feature_extractor_examples/68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "normalized_d2.csv",
+     "role": "x_validation_file",
+     "sha256": "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+     "source_sha256": "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+     "time_column": "DATE_TIME",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_TRANSFER"
+    },
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a",
+     "availability_label": "WINDOW_END",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 6585742,
+     "cached": true,
+     "delivery": "AS_IS",
+     "delivery_id": "87659eda63de4269b1ee398b8a3c8bf5",
+     "lake": "feature_extractor_examples",
+     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/cache/feature_extractor_examples/68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "normalized_d2.csv",
+     "role": "y_validation_file",
+     "sha256": "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+     "source_sha256": "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+     "time_column": "DATE_TIME",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_CACHE"
+    },
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a",
+     "availability_label": "WINDOW_END",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 6598259,
+     "cached": false,
+     "delivery": "AS_IS",
+     "delivery_id": "1d2351be3aa3452f8ee45456b5a4327e",
+     "lake": "feature_extractor_examples",
+     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/cache/feature_extractor_examples/e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "normalized_d3.csv",
+     "role": "x_test_file",
+     "sha256": "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121",
+     "source_sha256": "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121",
+     "time_column": "DATE_TIME",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_TRANSFER"
+    },
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a",
+     "availability_label": "WINDOW_END",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 6598259,
+     "cached": true,
+     "delivery": "AS_IS",
+     "delivery_id": "585ce86e8b834c2bb2759a080d89de5e",
+     "lake": "feature_extractor_examples",
+     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/cache/feature_extractor_examples/e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "normalized_d3.csv",
+     "role": "y_test_file",
+     "sha256": "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121",
+     "source_sha256": "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121",
+     "time_column": "DATE_TIME",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_CACHE"
+    }
+   ],
+   "cube_rows": [
+    [
+     "COMPLETED",
+     null,
+     "{\"wall_seconds\":71.53950610200991}"
+    ]
+   ],
+   "metrics": [
+    [
+     "execution_time_seconds",
+     67.71818423271179
+    ],
+    [
+     "final_training_mae_logged",
+     0.18245138227939606
+    ],
+    [
+     "final_validation_mae_logged",
+     0.08148059248924255
+    ]
+   ],
+   "datasets": [
+    [
+     "x_test_file",
+     "normalized_d3.csv",
+     "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121",
+     "VERIFIED_TRANSFER",
+     "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a"
+    ],
+    [
+     "x_train_file",
+     "normalized_d1.csv",
+     "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+     "VERIFIED_TRANSFER",
+     "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a"
+    ],
+    [
+     "x_validation_file",
+     "normalized_d2.csv",
+     "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+     "VERIFIED_TRANSFER",
+     "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a"
+    ],
+    [
+     "y_test_file",
+     "normalized_d3.csv",
+     "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121",
+     "VERIFIED_CACHE",
+     "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a"
+    ],
+    [
+     "y_train_file",
+     "normalized_d1.csv",
+     "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+     "VERIFIED_CACHE",
+     "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a"
+    ],
+    [
+     "y_validation_file",
+     "normalized_d2.csv",
+     "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+     "VERIFIED_CACHE",
+     "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a"
+    ]
+   ],
+   "artifacts": [
+    [
+     "debug_log",
+     "000afef40202c5993445d3c731572cfa6d66bd9abe008fc1d19aebc63f3ccb91",
+     4351
+    ],
+    [
+     "decoder",
+     "0b3a506f836822c6cc17bfa9f95c40992c0e2a3158c06791b8286ab66f1bd7e7",
+     205384
+    ],
+    [
+     "effective_config",
+     "709245300e82fc0ac75b8848f1bba29ffc63d25980287fe712eddc71f8f60a71",
+     9210
+    ],
+    [
+     "encoder",
+     "65f675729ded29eb9b3bc5c5454a320f0ce6e1258b5021afe5ec36057d8e81ca",
+     775762
+    ],
+    [
+     "governed_config",
+     "5a2666820f9e06c4ebb1bee26b17eb95266b594675de71969264ebbf7f3e14f8",
+     6429
+    ]
+   ],
+   "reconcile": {
+    "accounting_only": [],
+    "campaign_sha256": "cbc2c84f1816757b47c0f5716f1c68a16a0ddd499c74b2c1ed5399edb0549c8e",
+    "lake_only": [],
+    "missing_units": []
+   },
+   "produced_files": [
+    "GOVERNED_RUN.json",
+    "config_out.json",
+    "debug_out.json",
+    "governed_config.json",
+    "phase_4_2_cnn_small_decoder_model.keras",
+    "phase_4_2_cnn_small_encoder_model.keras",
+    "phase_4_2_cnn_small_loss_plot_ld32.png",
+    "run.log"
+   ],
+   "log_tail": "",
+   "ok": true
+  },
+  "2_refused_stale_outputs": {
+   "exit_code": 1,
+   "status": "REFUSED",
+   "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/config_out.json, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/debug_out.json, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/governed_config.json, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/phase_4_2_cnn_small_decoder_model.keras, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/phase_4_2_cnn_small_encoder_model.keras, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/run.log",
+   "campaign_sha256": "6c371d2ffb3a384871e211749b81f03935d0cd16bf0475f9eda96e58dd71c414",
+   "terminal_pending": false,
+   "inputs": null,
+   "cube_rows": [
+    [
+     "REFUSED",
+     "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/config_out.json, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/debug_out.json, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/governed_config.json, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/phase_4_2_cnn_small_decoder_model.keras, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/phase_4_2_cnn_small_encoder_model.keras, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/run.log",
+     "{\"wall_seconds\":0.0005200809973757714}"
+    ]
+   ],
+   "metrics": [],
+   "datasets": [],
+   "artifacts": [],
+   "reconcile": {
+    "accounting_only": [],
+    "campaign_sha256": "6c371d2ffb3a384871e211749b81f03935d0cd16bf0475f9eda96e58dd71c414",
+    "lake_only": [],
+    "missing_units": []
+   },
+   "produced_files": [
+    "GOVERNED_RUN.json",
+    "config_out.json",
+    "debug_out.json",
+    "governed_config.json",
+    "phase_4_2_cnn_small_decoder_model.keras",
+    "phase_4_2_cnn_small_encoder_model.keras",
+    "phase_4_2_cnn_small_loss_plot_ld32.png",
+    "run.log"
+   ],
+   "log_tail": "governed_run: governing output namespace is not fresh: /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/config_out.json, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/debug_out.json, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/governed_config.json, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/phase_4_2_cnn_small_decoder_model.keras, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/phase_4_2_cnn_small_encoder_model.keras, /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/run1/run.log\n",
+   "ok": true
+  },
+  "3_failed_bogus_encoder": {
+   "exit_code": 1,
+   "status": "FAILED",
+   "reason": "COMMAND_EXIT_1",
+   "campaign_sha256": "33f1e3a9b5c6448e6c12a760255ab94b88cd728b9b8eb6a82ee35ef7e2cb1e7a",
+   "terminal_pending": false,
+   "inputs": [
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a",
+     "availability_label": "WINDOW_END",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 26225606,
+     "cached": true,
+     "delivery": "AS_IS",
+     "delivery_id": "96e4d64e7c0f4fc1ab9580bb1751bf1c",
+     "lake": "feature_extractor_examples",
+     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/cache/feature_extractor_examples/34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "normalized_d1.csv",
+     "role": "x_train_file",
+     "sha256": "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+     "source_sha256": "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+     "time_column": "DATE_TIME",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_CACHE"
+    },
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a",
+     "availability_label": "WINDOW_END",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 26225606,
+     "cached": true,
+     "delivery": "AS_IS",
+     "delivery_id": "56ef764c3de24683a10aceb7518132c1",
+     "lake": "feature_extractor_examples",
+     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/cache/feature_extractor_examples/34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "normalized_d1.csv",
+     "role": "y_train_file",
+     "sha256": "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+     "source_sha256": "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+     "time_column": "DATE_TIME",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_CACHE"
+    },
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a",
+     "availability_label": "WINDOW_END",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 6585742,
+     "cached": true,
+     "delivery": "AS_IS",
+     "delivery_id": "bff89aec22644a9086ee7a3a787feac8",
+     "lake": "feature_extractor_examples",
+     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/cache/feature_extractor_examples/68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "normalized_d2.csv",
+     "role": "x_validation_file",
+     "sha256": "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+     "source_sha256": "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+     "time_column": "DATE_TIME",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_CACHE"
+    },
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a",
+     "availability_label": "WINDOW_END",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 6585742,
+     "cached": true,
+     "delivery": "AS_IS",
+     "delivery_id": "89b33955459a484db33d8c144e1a6090",
+     "lake": "feature_extractor_examples",
+     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/cache/feature_extractor_examples/68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "normalized_d2.csv",
+     "role": "y_validation_file",
+     "sha256": "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+     "source_sha256": "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+     "time_column": "DATE_TIME",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_CACHE"
+    },
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a",
+     "availability_label": "WINDOW_END",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 6598259,
+     "cached": true,
+     "delivery": "AS_IS",
+     "delivery_id": "563c708208ee447aa093d43da3294dfb",
+     "lake": "feature_extractor_examples",
+     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/cache/feature_extractor_examples/e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "normalized_d3.csv",
+     "role": "x_test_file",
+     "sha256": "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121",
+     "source_sha256": "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121",
+     "time_column": "DATE_TIME",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_CACHE"
+    },
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a",
+     "availability_label": "WINDOW_END",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 6598259,
+     "cached": true,
+     "delivery": "AS_IS",
+     "delivery_id": "1414593d091048148d28530814c31ef1",
+     "lake": "feature_extractor_examples",
+     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/p6_work/cache/feature_extractor_examples/e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "normalized_d3.csv",
+     "role": "y_test_file",
+     "sha256": "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121",
+     "source_sha256": "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121",
+     "time_column": "DATE_TIME",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_CACHE"
+    }
+   ],
+   "cube_rows": [
+    [
+     "FAILED",
+     "COMMAND_EXIT_1",
+     "{\"wall_seconds\":3.7416599839925766}"
+    ]
+   ],
+   "metrics": [],
+   "datasets": [
+    [
+     "x_test_file",
+     "normalized_d3.csv",
+     "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121",
+     "VERIFIED_CACHE",
+     "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a"
+    ],
+    [
+     "x_train_file",
+     "normalized_d1.csv",
+     "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+     "VERIFIED_CACHE",
+     "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a"
+    ],
+    [
+     "x_validation_file",
+     "normalized_d2.csv",
+     "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+     "VERIFIED_CACHE",
+     "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a"
+    ],
+    [
+     "y_test_file",
+     "normalized_d3.csv",
+     "e4323708e9bf4bc6a12c753427dbf2de40a653d8295524752dcfa9ce22212121",
+     "VERIFIED_CACHE",
+     "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a"
+    ],
+    [
+     "y_train_file",
+     "normalized_d1.csv",
+     "34caac64b48046a3ce6255d9ffdfa6003c86eb19043ae2817f9ddaaffd0d2ff1",
+     "VERIFIED_CACHE",
+     "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a"
+    ],
+    [
+     "y_validation_file",
+     "normalized_d2.csv",
+     "68184a63f434e5693febe9d16c0ca25c4427d0c0b6306de557731d808f4d5436",
+     "VERIFIED_CACHE",
+     "ff3fcb0a1ac838e71fa400901153837d010608e112a3ae50f6effa894207939a"
+    ]
+   ],
+   "artifacts": [],
+   "reconcile": {
+    "accounting_only": [],
+    "campaign_sha256": "33f1e3a9b5c6448e6c12a760255ab94b88cd728b9b8eb6a82ee35ef7e2cb1e7a",
+    "lake_only": [],
+    "missing_units": []
+   },
+   "produced_files": [
+    "GOVERNED_RUN.json",
+    "governed_config.json",
+    "run.log"
+   ],
+   "log_tail": "governed_run: command exited 1\n",
+   "ok": true
+  },
+  "4_retry_sends_nothing": {
+   "flush_stdout": "{\"failures\": {}, \"pending\": 0, \"sent\": 0}",
+   "rc": 0,
+   "before": {
+    "gov_terminal": 3,
+    "gov_terminal_metric": 3,
+    "gov_terminal_dataset": 12,
+    "gov_terminal_artifact": 5
+   },
+   "after": {
+    "gov_terminal": 3,
+    "gov_terminal_metric": 3,
+    "gov_terminal_dataset": 12,
+    "gov_terminal_artifact": 5
+   },
+   "ok": true
+  }
+ },
+ "throwaway_cube_counts_final": {
+  "gov_terminal": 3,
+  "gov_terminal_metric": 3,
+  "gov_terminal_dataset": 12,
+  "gov_terminal_artifact": 5
+ },
+ "ok": true,
+ "pg_db_dropped": true
+}

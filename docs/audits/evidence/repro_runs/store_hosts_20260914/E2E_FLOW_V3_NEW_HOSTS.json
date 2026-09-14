@@ -1,0 +1,16 @@
+{
+  "availability_contract_sha256": "139f3adcd7028fbd2bec90381f9ec34170d32528f5c40a6a63bc41f2a02c90a1",
+  "campaign_sha256": "444dc0263b5fe7e646b37098216a18b2c4720461aa85be4bfda66db56dbe07e5",
+  "dataset_sha256": "5b4cabe43696951ea62d6c67ad4fb0e00f3a3822acc33077eec9fbccd44965d4",
+  "hosts": {
+    "financial": "data_lake_service",
+    "olap": "data_warehouse_service"
+  },
+  "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "444dc0263b5fe7e646b37098216a18b2c4720461aa85be4bfda66db56dbe07e5",
+    "lake_only": [],
+    "missing_units": []
+  },
+  "terminal_sha256": "bd30db977e76ab440a7629264c2f371705b9203d08a9c2a13ca416e8ca6d472a"
+}
