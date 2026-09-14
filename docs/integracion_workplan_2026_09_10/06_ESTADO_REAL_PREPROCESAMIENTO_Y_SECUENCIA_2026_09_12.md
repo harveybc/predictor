@@ -197,4 +197,17 @@ chequeos. Estado tras las ordenes GOV-N1..N8 y D2-R1..R8:
   en base desechable, sin aplicar. **R7:** diseno D3 (documento 07) sin ejecutar.
   **N7:** plan de integracion agent-multi/DOIN/live (documento 08).
 
-Estado: `D2_SUPPORT_REPAIRED_PREVIEW_NON_GOVERNING_R3_PENDING_PRODUCTION_RUN`.
+Estado: `D2_SUPPORT_READJUDICATED_UNDER_GOVERNANCE_R4_REPLAY_PENDING`.
+
+## 9. Cierre de R3 sobre los servicios productivos (2026-09-14)
+
+Musashi ejecuto el reinicio acotado y el micro-run reconciliado (acta
+`docs/handoffs/MUSASHI_FLOW_V3_PRODUCTION_RESTART_COMPLETED_2026_09_14.md`), de modo
+que el prerrequisito operativo de R3 dejo de estar pendiente. La re-adjudicacion
+se registro entonces como campana gobernada contra los servicios activos, sin
+reiniciarlos: terminal COMPLETED, conciliacion exacta y filas sucesoras cargadas
+de forma aditiva bajo un run id nuevo, con la historia intacta. De las 3.591
+decisiones, 138 cambian y ninguna gana un pase; siete lo pierden. Los detalles y
+la regla de operacion vigente estan en el documento
+`09_INCORPORACION_ORDENES_ACTUALIZADAS_2026_09_14.md`. Sigue pendiente el replay
+diagnostico de R4; AT9 permanece abierto con su tolerancia original.

@@ -1,0 +1,20 @@
+{
+ "schema": "d2_universe_check.v1",
+ "expected_rows": 416873,
+ "observed_rows": 388499,
+ "missing_rows": 0,
+ "events_disagree": 1,
+ "events_disagree_missingness_none": 0,
+ "events_disagree_cases": [
+  {
+   "arm_role": "NON_CAUSAL_ORACLE_CONTROL",
+   "operator": "centered_mean_oracle",
+   "unit_id": "impulses__white__snr10__none__n2048__v1__seed280300963067556766",
+   "variable": 0,
+   "event_type": "impulse",
+   "truth": 2,
+   "evaluator": 1.0
+  }
+ ],
+ "ok": true
+}

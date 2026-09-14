@@ -1,0 +1,57 @@
+# D2-R3 production cube verification, 2026-09-14T07:05:02Z
+## gov_terminal (production)
+flow-v3-production-mechanics-20260914T045557Z|flow-v3-production-mechanics-20260914T045557Z|1|COMPLETED|GOVERNING|predictor|05f5515f6dcdcb55c0c753a406e4df0daea1baf48f7fb99369f296299efd87f4|2026-09-14T05:00:53.060394+00:00
+n3-mechanics-musashi-n3-20260914T063541Z|n3-mechanics-musashi-n3-20260914T063541Z|1|COMPLETED|GOVERNING|predictor|3a7e47a9783cfab78266b3d80b713d5c7e010628d2cd5a219dc8948513d356a4|2026-09-14T06:36:50.563252+00:00
+d2-support-readjudication-r3|readjudication|1|COMPLETED|GOVERNING|predictor|f6dc8ac0a3341b1289d1ab214f6bc557f3149bf8c11607f670df10d07edf326b|2026-09-14T07:03:16.550106+00:00
+## metrics of the R3 terminal
+decisions.changed|138|decisions
+decisions.published|3591|decisions
+decisions.successor|3591|decisions
+successor.rows|3591|rows
+transition.CONTROL_NOT_AN_ARM.to.CONTROL_NOT_AN_ARM|171|decisions
+transition.LAB_CALIBRATED.to.LAB_CALIBRATED|75|decisions
+transition.LAB_CALIBRATED.to.NOT_IDENTIFIABLE|6|decisions
+transition.LAB_REJECTED.to.LAB_REJECTED|1013|decisions
+transition.LAB_REJECTED.to.NOT_IDENTIFIABLE|95|decisions
+transition.NOT_IDENTIFIABLE.to.LAB_REJECTED|10|decisions
+transition.NOT_IDENTIFIABLE.to.NOT_IDENTIFIABLE|308|decisions
+transition.NOT_IDENTIFIABLE.to.UNDERPOWERED|9|decisions
+transition.REGIME_LIMITED.to.NOT_IDENTIFIABLE|1|decisions
+transition.REGIME_LIMITED.to.REGIME_LIMITED|6|decisions
+transition.SNR_CALIBRATED_FOR_REGIME.to.SNR_CALIBRATED_FOR_REGIME|39|decisions
+transition.SNR_NOT_IDENTIFIABLE.to.SNR_NOT_IDENTIFIABLE|587|decisions
+transition.SNR_REGIME_LIMITED.to.SNR_NOT_IDENTIFIABLE|4|decisions
+transition.SNR_REGIME_LIMITED.to.SNR_REGIME_LIMITED|167|decisions
+transition.SNR_REJECTED.to.SNR_NOT_IDENTIFIABLE|13|decisions
+transition.SNR_REJECTED.to.SNR_REJECTED|216|decisions
+transition.UNDERPOWERED.to.UNDERPOWERED|871|decisions
+universe.events_disagree|1|cells
+universe.expected_rows|416873|cells
+universe.missing_rows|0|cells
+universe.observed_rows|388499|cells
+## artifacts of the R3 terminal
+decisions_preview|fa3b044812f99bf54f7943032cb09a480c63f2bf3d3cd53bf571c32bb2b63f7a|32276392
+impact_rows|697e2cd6587b6ef2744752e8e4d904ccb016d0fd08e3a2af0cda32d9e963c442|6623193
+impact_table|0dd9fa0e5d0aff81217a8c66c8b226d72d8da5485efb70e11c55e2ba69493c03|364836
+successor_decisions|2afb89aebd71c82e4673fbcf87b5b578407a2a67a0dcfa4f6dc810934c627041|32756060
+support_summary|23a016d392b54c3e641b17d6c20f031cdb55b3c50cbfdfc44c1a4d1da168cdc2|1282026
+support_table|bcee8f18568595a4c734e7922606c37015f32d4beca4a40815cd68d944e50a18|517292948
+universe_check|b97a86033844a511548dad87e67642f0e91da37fb4a75e8d2b12a05d9fab7a88|471
+## df_fact_d2_decision by run id
+d2r3_733736b795e075bffc8c1331|3591|1|ade05d8ba6d779412673141e8fdb381b1636779d2a77a46bfd846f8b5771ab63
+d2v2_fresh_1fd0e710bc0689b3bf9d7162|3591|1|1924dbdfebd9676fde37703315e0c6e75066906b58c2b8f2721a8736a07e0ff0
+## cube table counts, before -> after the additive load (only these differ)
+3c3
+< df_dim_run 18
+---
+> df_dim_run 22
+9c9
+< df_fact_d2_decision 3591
+---
+> df_fact_d2_decision 7182
+19c19
+< df_fact_load_receipt 78
+---
+> df_fact_load_receipt 85
+## loader service
+ActiveState=active NRestarts=0 

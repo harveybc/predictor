@@ -1,0 +1,121 @@
+{
+ "schema": "d2_support_readjudication_preview.v1",
+ "governing": false,
+ "note": "preview from conserved rows with the repaired adjudicator; D2-R3 registers the governed re-adjudication",
+ "published_decisions_sha256": "f4958c88f8caa6b78d67fb7ff00c2a6a697276aa9b19b6b73411b78d97622510",
+ "design_sha256": "3577c154c21dc5706e7134145197d591b13088a553ca1d41af80242789aa41ad",
+ "adjudicator_code_sha256": "cfb8bd609bf2dc60898b8dcebeebc9e9a2aa91e60b330b24d9c68eaf8336c0a1",
+ "support_code_sha256": "f92d7d38f39863c8a525092723f4c0a4ab1b44fc7d80bdf72edf9fe581795240",
+ "decisions_published": 3591,
+ "decisions_preview": 3591,
+ "changed": 138,
+ "transitions": {
+  "LAB_REJECTED -> LAB_REJECTED": 1013,
+  "UNDERPOWERED -> UNDERPOWERED": 871,
+  "SNR_NOT_IDENTIFIABLE -> SNR_NOT_IDENTIFIABLE": 587,
+  "NOT_IDENTIFIABLE -> NOT_IDENTIFIABLE": 308,
+  "SNR_REJECTED -> SNR_REJECTED": 216,
+  "CONTROL_NOT_AN_ARM -> CONTROL_NOT_AN_ARM": 171,
+  "SNR_REGIME_LIMITED -> SNR_REGIME_LIMITED": 167,
+  "LAB_REJECTED -> NOT_IDENTIFIABLE": 95,
+  "LAB_CALIBRATED -> LAB_CALIBRATED": 75,
+  "SNR_CALIBRATED_FOR_REGIME -> SNR_CALIBRATED_FOR_REGIME": 39,
+  "SNR_REJECTED -> SNR_NOT_IDENTIFIABLE": 13,
+  "NOT_IDENTIFIABLE -> LAB_REJECTED": 10,
+  "NOT_IDENTIFIABLE -> UNDERPOWERED": 9,
+  "LAB_CALIBRATED -> NOT_IDENTIFIABLE": 6,
+  "REGIME_LIMITED -> REGIME_LIMITED": 6,
+  "SNR_REGIME_LIMITED -> SNR_NOT_IDENTIFIABLE": 4,
+  "REGIME_LIMITED -> NOT_IDENTIFIABLE": 1
+ },
+ "universe": {
+  "expected_rows": 416873,
+  "observed_rows": 388499,
+  "missing_rows": 0,
+  "events_disagree": 1,
+  "events_disagree_missingness_none": 0
+ },
+ "successor_run_id": "d2r3_733736b795e075bffc8c1331",
+ "supersedes_run_id": "d2v2_fresh_1fd0e710bc0689b3bf9d7162",
+ "successor_rows_sha256": "2afb89aebd71c82e4673fbcf87b5b578407a2a67a0dcfa4f6dc810934c627041",
+ "successor_rows": 3591,
+ "candidate_passes_lost": [
+  {
+   "subject": "identity",
+   "operator_params": {},
+   "regime_key": "{\"declared_snr_db\": \"inf\", \"family\": \"motif\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}",
+   "old": "LAB_CALIBRATED",
+   "new": "NOT_IDENTIFIABLE",
+   "old_n_valid": 30,
+   "new_n_valid": 24,
+   "reason": "COMPLETE_SEEDS 24 < DESIGN 30; unsupported seeds by metric {'delay_samples': 6, 'distortion_ratio': 6}"
+  },
+  {
+   "subject": "identity",
+   "operator_params": {},
+   "regime_key": "{\"declared_snr_db\": \"inf\", \"family\": \"steps\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}",
+   "old": "LAB_CALIBRATED",
+   "new": "NOT_IDENTIFIABLE",
+   "old_n_valid": 30,
+   "new_n_valid": 24,
+   "reason": "COMPLETE_SEEDS 24 < DESIGN 30; unsupported seeds by metric {'delay_samples': 6, 'distortion_ratio': 6}"
+  },
+  {
+   "subject": "local_level_kalman",
+   "operator_params": {},
+   "regime_key": "{\"declared_snr_db\": \"5\", \"family\": \"motif\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}",
+   "old": "LAB_CALIBRATED",
+   "new": "NOT_IDENTIFIABLE",
+   "old_n_valid": 30,
+   "new_n_valid": 22,
+   "reason": "COMPLETE_SEEDS 22 < DESIGN 30; unsupported seeds by metric {'delay_samples': 8, 'distortion_ratio': 8, 'residual_signal_share': 8, 'snr_improvement_db': 8}"
+  },
+  {
+   "subject": "local_linear_trend_kalman",
+   "operator_params": {},
+   "regime_key": "{\"declared_snr_db\": \"20\", \"family\": \"steps\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}",
+   "old": "REGIME_LIMITED",
+   "new": "NOT_IDENTIFIABLE",
+   "old_n_valid": 30,
+   "new_n_valid": 25,
+   "reason": "COMPLETE_SEEDS 25 < DESIGN 30; unsupported seeds by metric {'delay_samples': 5, 'distortion_ratio': 5, 'residual_signal_share': 5, 'snr_improvement_db': 5}"
+  },
+  {
+   "subject": "local_linear_trend_kalman",
+   "operator_params": {},
+   "regime_key": "{\"declared_snr_db\": \"5\", \"family\": \"motif\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}",
+   "old": "LAB_CALIBRATED",
+   "new": "NOT_IDENTIFIABLE",
+   "old_n_valid": 30,
+   "new_n_valid": 22,
+   "reason": "COMPLETE_SEEDS 22 < DESIGN 30; unsupported seeds by metric {'delay_samples': 8, 'distortion_ratio': 8, 'residual_signal_share': 8, 'snr_improvement_db': 8}"
+  },
+  {
+   "subject": "trailing_haar_threshold",
+   "operator_params": {
+    "levels": 2,
+    "threshold_k": 3.0
+   },
+   "regime_key": "{\"declared_snr_db\": \"20\", \"family\": \"steps\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}",
+   "old": "LAB_CALIBRATED",
+   "new": "NOT_IDENTIFIABLE",
+   "old_n_valid": 30,
+   "new_n_valid": 25,
+   "reason": "COMPLETE_SEEDS 25 < DESIGN 30; unsupported seeds by metric {'delay_samples': 5, 'distortion_ratio': 5, 'residual_signal_share': 5, 'snr_improvement_db': 5}"
+  },
+  {
+   "subject": "trailing_haar_threshold",
+   "operator_params": {
+    "levels": 3,
+    "threshold_k": 3.0
+   },
+   "regime_key": "{\"declared_snr_db\": \"20\", \"family\": \"steps\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}",
+   "old": "LAB_CALIBRATED",
+   "new": "NOT_IDENTIFIABLE",
+   "old_n_valid": 30,
+   "new_n_valid": 25,
+   "reason": "COMPLETE_SEEDS 25 < DESIGN 30; unsupported seeds by metric {'delay_samples': 5, 'distortion_ratio': 5, 'residual_signal_share': 5, 'snr_improvement_db': 5}"
+  }
+ ],
+ "candidate_passes_gained": []
+}

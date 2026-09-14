@@ -1,0 +1,414 @@
+{
+ "schema": "d2_r3_review_receipt.v1",
+ "campaign_key": "d2-support-readjudication-r3",
+ "campaign_sha256": "733736b795e075bffc8c1331a0ce7c910e0ecf721b91123f19990eb1e577ab66",
+ "unit_id": "readjudication",
+ "classification": "GOVERNING",
+ "code_identity": {
+  "kind": "git_commit",
+  "value": "3ac95e1958e3c4b06edf707af6bfea0724dfe54f"
+ },
+ "config_sha256": "62ee4add9a5bad31d35f11e0cfb3f43d7be1793a3514d26aed0ac894357969b5",
+ "synthetic_spec_sha256": "33b28f8b8e5ce1d508993fdd12f577b0f8db2e7de9282d2d6f85e20ec05ed5d8",
+ "evidence_spec": {
+  "schema": "d2_r3_synthetic_evidence_spec.v1",
+  "bank": "SYNTHETIC_D2_FRESH_CONFIRMATION",
+  "design_sha256": "3577c154c21dc5706e7134145197d591b13088a553ca1d41af80242789aa41ad",
+  "design_file_sha256": "61872db71a4c9bcbeeb62e7a0e1a9296fd874167c27ed386a3d36ce447930ba5",
+  "generator": {
+   "code_sha256": "b0fa131340426c30e6c9e36d64d8be5b3689ef868664b9b12dc1d29832ffae88",
+   "version": "df_synthetic_bank.c128.v1"
+  },
+  "tape_sha256": "230a0a44c41492c1577f744c2d910744bde753bc6efc2068f9544ba902bce036",
+  "reserve_manifest_sha256": "918109021ff66f7960e04c72d539f3b433c0f16506a826bac37a55bcd954b542",
+  "reserve_units": 3972,
+  "seed_tape_file_sha256": "29487904365dab8104d02ed1ff235b3598700925ecb4b90c3494d1a94eb992a2",
+  "run_id_superseded": "d2v2_fresh_1fd0e710bc0689b3bf9d7162",
+  "run_manifest_sha256": "90942903f9efddf1851693069704d12f711dbd47136dc0654dcd4cef603853ea",
+  "terminals_by_status": {
+   "COMPLETED": 3972
+  },
+  "conserved_tables": {
+   "df_fact_d2_decision": {
+    "sha256": "f4958c88f8caa6b78d67fb7ff00c2a6a697276aa9b19b6b73411b78d97622510",
+    "rows": 3591
+   },
+   "df_fact_d2_unit_denoising": {
+    "sha256": "a7741e1c93ec23919cb59c0c912ce8591f66b4aa0289ba700dcc2c376679b1b1",
+    "rows": 2601160
+   },
+   "df_fact_d2_unit_snr": {
+    "sha256": "76cb309caf589412821221a464c15c818e335cc24b0a58ffd5b48b19a404a2da",
+    "rows": 63596
+   }
+  },
+  "tables_manifest_sha256": "16a152510fce6f52ff689992b494ba7475049520f8debc2d3869071783c1d72a",
+  "lab_code_sha256s_at_creation": "1924dbdfebd9676fde37703315e0c6e75066906b58c2b8f2721a8736a07e0ff0",
+  "lab_code_sha256s_now": {
+   "df_d2_design": "6f6fa898e7d2fe2c6d817cbcb02cddd3078daeeb250233a946aafca6553a2069",
+   "df_seed_tape": "881a408aee3a6a93d7bd9e0d9c3e9a2c115c074175d36d4ddbd565fe8a2e2339",
+   "df_d2_unit_worker": "deac99f82c4985ae09cd61530becda0de5603c9b50c8ae3466ad52340a1488c8",
+   "df_d2_adjudicate": "cfb8bd609bf2dc60898b8dcebeebc9e9a2aa91e60b330b24d9c68eaf8336c0a1",
+   "df_lab_evaluation": "7f1850f16c1c35bd99704f93b767b26ed4e7824bc228cf51deea963eb5b3ff6d",
+   "df_synthetic_bank": "b0fa131340426c30e6c9e36d64d8be5b3689ef868664b9b12dc1d29832ffae88",
+   "df_synthetic_contract": "a3c56fb09b6cc83ba97aa7ace2d5070b5ac1b8da3aeecedf53a97cd3e3b4065e",
+   "df_snr": "a5ad155f82456ee315badfa0916d11d370755e5e8600381d503b8b94a8e0d955",
+   "df_operators": "669d5cdb3a49e7cd79a067e01f8c871ba8371321430fe06601bd2875bb2b8106",
+   "df_snapshot": "d0f82d492af90a924df2a4d3c07e722650dcfaa0035dae0f00a7decccfbe5d46",
+   "df_contract": "2bd12b33ff34209c3d58ff22c95204d8d7cfa4c30cf021ef54d11aa826273f93",
+   "df_isolated_runner": "10b4d1e51655f7c5b3c7d8ca9f7158056811215dbf078d86337036a742e207f2",
+   "df_profile_run": "5f546afa913009b0214ed6fc27f5c4d8f58d527a3db7e17eb6e5837ac4310dd4"
+  },
+  "readjudication_code": {
+   "df_d2_adjudicate": "cfb8bd609bf2dc60898b8dcebeebc9e9a2aa91e60b330b24d9c68eaf8336c0a1",
+   "df_d2_support": "f92d7d38f39863c8a525092723f4c0a4ab1b44fc7d80bdf72edf9fe581795240",
+   "df_d2_r3_campaign": "13e6cef79437269a52a27efbc2eac495ae432d9d0aa39e206b23e35a92909748"
+  },
+  "partition": "confirmation",
+  "note": "the arrays and rows were produced before Flow v3; this receipt is current and does not claim a governed download of the original production"
+ },
+ "execution_spec": {
+  "schema": "d2_r3_review_execution.v1",
+  "project": "predictor",
+  "unit": "readjudication",
+  "evidence": "33b28f8b8e5ce1d508993fdd12f577b0f8db2e7de9282d2d6f85e20ec05ed5d8",
+  "decisions_sha256": "f4958c88f8caa6b78d67fb7ff00c2a6a697276aa9b19b6b73411b78d97622510",
+  "rules": {
+   "denoising": "37daed81c770c51cb73627e286abf0207b148a95dcfa3fa7947a42fd48942017",
+   "snr": "8db500d2c7f641a66a2f0ce7af09b69a57bccf6d973ebba5b40e3f7aac9e8f76"
+  },
+  "outputs": [
+   "DECISIONS_SUCCESSOR.jsonl",
+   "IMPACT_TABLE.json",
+   "IMPACT_ROWS.jsonl",
+   "UNIVERSE_CHECK.json",
+   "SUPPORT_SUMMARY.json",
+   "SUPPORT_TABLE.jsonl"
+  ]
+ },
+ "successor_run_id": "d2r3_733736b795e075bffc8c1331",
+ "support_tool_exit": 0,
+ "support_tool_stderr": "",
+ "terminal": {
+  "schema": "governed_terminal.v1",
+  "generation": 1,
+  "status": "COMPLETED",
+  "reason": null,
+  "started_at": "2026-09-14T07:02:00.981005Z",
+  "finished_at": "2026-09-14T07:03:16.222303Z",
+  "costs": {
+   "wall_seconds": 75.24130196099577
+  },
+  "deliveries": [],
+  "artifacts": [
+   {
+    "role": "decisions_preview",
+    "sha256": "fa3b044812f99bf54f7943032cb09a480c63f2bf3d3cd53bf571c32bb2b63f7a",
+    "bytes": 32276392
+   },
+   {
+    "role": "impact_rows",
+    "sha256": "697e2cd6587b6ef2744752e8e4d904ccb016d0fd08e3a2af0cda32d9e963c442",
+    "bytes": 6623193
+   },
+   {
+    "role": "impact_table",
+    "sha256": "0dd9fa0e5d0aff81217a8c66c8b226d72d8da5485efb70e11c55e2ba69493c03",
+    "bytes": 364836
+   },
+   {
+    "role": "successor_decisions",
+    "sha256": "2afb89aebd71c82e4673fbcf87b5b578407a2a67a0dcfa4f6dc810934c627041",
+    "bytes": 32756060
+   },
+   {
+    "role": "support_summary",
+    "sha256": "23a016d392b54c3e641b17d6c20f031cdb55b3c50cbfdfc44c1a4d1da168cdc2",
+    "bytes": 1282026
+   },
+   {
+    "role": "support_table",
+    "sha256": "bcee8f18568595a4c734e7922606c37015f32d4beca4a40815cd68d944e50a18",
+    "bytes": 517292948
+   },
+   {
+    "role": "universe_check",
+    "sha256": "b97a86033844a511548dad87e67642f0e91da37fb4a75e8d2b12a05d9fab7a88",
+    "bytes": 471
+   }
+  ],
+  "metrics": [
+   {
+    "metric": "decisions.published",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 3591.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "decisions.successor",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 3591.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "decisions.changed",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 138.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "successor.rows",
+    "split": null,
+    "horizon": null,
+    "unit": "rows",
+    "value": 3591.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.CONTROL_NOT_AN_ARM.to.CONTROL_NOT_AN_ARM",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 171.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.LAB_CALIBRATED.to.LAB_CALIBRATED",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 75.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.LAB_CALIBRATED.to.NOT_IDENTIFIABLE",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 6.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.LAB_REJECTED.to.LAB_REJECTED",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 1013.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.LAB_REJECTED.to.NOT_IDENTIFIABLE",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 95.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.NOT_IDENTIFIABLE.to.LAB_REJECTED",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 10.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.NOT_IDENTIFIABLE.to.NOT_IDENTIFIABLE",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 308.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.NOT_IDENTIFIABLE.to.UNDERPOWERED",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 9.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.REGIME_LIMITED.to.NOT_IDENTIFIABLE",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 1.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.REGIME_LIMITED.to.REGIME_LIMITED",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 6.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.SNR_CALIBRATED_FOR_REGIME.to.SNR_CALIBRATED_FOR_REGIME",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 39.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.SNR_NOT_IDENTIFIABLE.to.SNR_NOT_IDENTIFIABLE",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 587.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.SNR_REGIME_LIMITED.to.SNR_NOT_IDENTIFIABLE",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 4.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.SNR_REGIME_LIMITED.to.SNR_REGIME_LIMITED",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 167.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.SNR_REJECTED.to.SNR_NOT_IDENTIFIABLE",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 13.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.SNR_REJECTED.to.SNR_REJECTED",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 216.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "transition.UNDERPOWERED.to.UNDERPOWERED",
+    "split": null,
+    "horizon": null,
+    "unit": "decisions",
+    "value": 871.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "universe.expected_rows",
+    "split": null,
+    "horizon": null,
+    "unit": "cells",
+    "value": 416873.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "universe.observed_rows",
+    "split": null,
+    "horizon": null,
+    "unit": "cells",
+    "value": 388499.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "universe.missing_rows",
+    "split": null,
+    "horizon": null,
+    "unit": "cells",
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "universe.events_disagree",
+    "split": null,
+    "horizon": null,
+    "unit": "cells",
+    "value": 1.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  ],
+  "tags": {
+   "purpose": "D2_R3_GOVERNED_REVIEW",
+   "grants": "NONE",
+   "evidence": "CONSERVED_FRESH_CONFIRMATION",
+   "availability_use": "SYNTHETIC_EVIDENCE",
+   "supersedes_run_id": "d2v2_fresh_1fd0e710bc0689b3bf9d7162",
+   "successor_run_id": "d2r3_733736b795e075bffc8c1331",
+   "externally_reviewed": "false"
+  }
+ },
+ "outbox_flush": {
+  "sent": 1,
+  "pending": 0,
+  "failures": {}
+ },
+ "reconciliation": {
+  "accounting_only": [],
+  "campaign_sha256": "733736b795e075bffc8c1331a0ce7c910e0ecf721b91123f19990eb1e577ab66",
+  "lake_only": [],
+  "missing_units": []
+ },
+ "governing_scope": "a review of conserved evidence; it grants no eligibility and opens no D3"
+}

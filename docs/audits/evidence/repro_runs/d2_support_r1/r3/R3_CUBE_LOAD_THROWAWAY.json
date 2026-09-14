@@ -1,0 +1,169 @@
+{
+ "coverage": {
+  "cells": 0,
+  "counts": {
+   "FAILED": 0,
+   "INCONCLUSIVE": 0,
+   "NOT_RUN": 0,
+   "RESULT": 0,
+   "UNAVAILABLE": 0
+  },
+  "ledger_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "undeclared_rows": 0,
+  "v2": {
+   "applicability": {
+    "APPLICABLE": 0,
+    "NOT_APPLICABLE": 0,
+    "UNDETERMINED": 0
+   },
+   "cells": 0,
+   "counts": {
+    "FAILED": 0,
+    "INCONCLUSIVE": 0,
+    "NOT_APPLICABLE": 0,
+    "NOT_RUN": 0,
+    "REFUSED": 0,
+    "RESOURCE_EXCEEDED": 0,
+    "RESULT": 0,
+    "UNAVAILABLE": 0,
+    "UNCERTAIN": 0
+   },
+   "counts_verified_member_by_member": true,
+   "ledger_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "map_entries": 0,
+   "transitions": {},
+   "undeclared_rows": 0,
+   "unmapped_v1_cells": 0
+  }
+ },
+ "first_load": {
+  "df_dim_dataset": {
+   "rows_already_present": 0,
+   "rows_inserted": 0,
+   "rows_offered": 0,
+   "rows_refused": 0,
+   "run_id": "none",
+   "table_name": "df_dim_dataset"
+  },
+  "df_dim_run": {
+   "rows_already_present": 0,
+   "rows_inserted": 4,
+   "rows_offered": 4,
+   "rows_refused": 0,
+   "run_id": "d0_e3b0c44298fc1c149afbf4c8",
+   "table_name": "df_dim_run"
+  },
+  "df_dim_variable": {
+   "rows_already_present": 0,
+   "rows_inserted": 0,
+   "rows_offered": 0,
+   "rows_refused": 0,
+   "run_id": "none",
+   "table_name": "df_dim_variable"
+  },
+  "df_fact_coverage": {
+   "rows_already_present": 0,
+   "rows_inserted": 0,
+   "rows_offered": 0,
+   "rows_refused": 0,
+   "run_id": "none",
+   "table_name": "df_fact_coverage"
+  },
+  "df_fact_coverage_v1_v2_map": {
+   "rows_already_present": 0,
+   "rows_inserted": 0,
+   "rows_offered": 0,
+   "rows_refused": 0,
+   "run_id": "none",
+   "table_name": "df_fact_coverage_v1_v2_map"
+  },
+  "df_fact_coverage_v2": {
+   "rows_already_present": 0,
+   "rows_inserted": 0,
+   "rows_offered": 0,
+   "rows_refused": 0,
+   "run_id": "none",
+   "table_name": "df_fact_coverage_v2"
+  },
+  "df_fact_d2_decision": {
+   "rows_already_present": 0,
+   "rows_inserted": 3591,
+   "rows_offered": 3591,
+   "rows_refused": 0,
+   "run_id": "d2r3_733736b795e075bffc8c1331",
+   "table_name": "df_fact_d2_decision"
+  }
+ },
+ "idempotent": true,
+ "loader_code_sha256": "c25008af6a2cb4516d8ff843c3192018c32cdc72e88e8d57eec69a17f6c8551d",
+ "mode": "throwaway",
+ "offered": {
+  "df_dim_dataset": 0,
+  "df_dim_run": 4,
+  "df_dim_variable": 0,
+  "df_fact_coverage": 0,
+  "df_fact_coverage_v1_v2_map": 0,
+  "df_fact_coverage_v2": 0,
+  "df_fact_d2_decision": 3591
+ },
+ "schema": "crispdm.data_foundation.load_receipt.v1",
+ "second_load": {
+  "df_dim_dataset": {
+   "rows_already_present": 0,
+   "rows_inserted": 0,
+   "rows_offered": 0,
+   "rows_refused": 0,
+   "run_id": "none",
+   "table_name": "df_dim_dataset"
+  },
+  "df_dim_run": {
+   "rows_already_present": 4,
+   "rows_inserted": 0,
+   "rows_offered": 4,
+   "rows_refused": 0,
+   "run_id": "d0_e3b0c44298fc1c149afbf4c8",
+   "table_name": "df_dim_run"
+  },
+  "df_dim_variable": {
+   "rows_already_present": 0,
+   "rows_inserted": 0,
+   "rows_offered": 0,
+   "rows_refused": 0,
+   "run_id": "none",
+   "table_name": "df_dim_variable"
+  },
+  "df_fact_coverage": {
+   "rows_already_present": 0,
+   "rows_inserted": 0,
+   "rows_offered": 0,
+   "rows_refused": 0,
+   "run_id": "none",
+   "table_name": "df_fact_coverage"
+  },
+  "df_fact_coverage_v1_v2_map": {
+   "rows_already_present": 0,
+   "rows_inserted": 0,
+   "rows_offered": 0,
+   "rows_refused": 0,
+   "run_id": "none",
+   "table_name": "df_fact_coverage_v1_v2_map"
+  },
+  "df_fact_coverage_v2": {
+   "rows_already_present": 0,
+   "rows_inserted": 0,
+   "rows_offered": 0,
+   "rows_refused": 0,
+   "run_id": "none",
+   "table_name": "df_fact_coverage_v2"
+  },
+  "df_fact_d2_decision": {
+   "rows_already_present": 3591,
+   "rows_inserted": 0,
+   "rows_offered": 3591,
+   "rows_refused": 0,
+   "run_id": "d2r3_733736b795e075bffc8c1331",
+   "table_name": "df_fact_d2_decision"
+  }
+ },
+ "throwaway_database_dropped": true
+}
