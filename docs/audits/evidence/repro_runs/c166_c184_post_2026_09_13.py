@@ -43,7 +43,9 @@ ROLES_FILE = HOME / ".config/crispdm/host_roles.json"
 PY = HOME / "anaconda3/envs/trading-stack/bin/python"
 BASE_PY = HOME / "anaconda3/bin/python"
 BASE = "e009cb14b570"
-POST_DIR = HOME / ".cache/crispdm-post/c166_c184_post"
+# v2: the first run (c166_c184_post, output committed unchanged) found two harness errors and one measured difference
+POST_DIR = HOME / ".cache/crispdm-post/c166_c184_post_v2"
+WORKER_CHECKOUT = "Documents/GitHub/.worktrees/predictor-c146"
 ROLES = ("COORDINATOR", "WORKER_A", "WORKER_B")
 
 DESIGN = STATE / "d2_design_c171_v2/D2_DESIGN_V2.json"
@@ -168,19 +170,24 @@ def _code_tokens(path: Path) -> list[str]:
 
 def sec_switches():
     def t1():
+        # A switch needs a name to be assigned or read: identifiers containing "guard" must be 0. String literals
+        # are listed, not counted: the first POST counted the probe module's file name and an evidence key as switches.
         scan = {}
         for m in ("df_snapshot", "df_operators", "df_causal_battery"):
             toks = _code_tokens(TOOLS / f"{m}.py")
-            scan[m] = {"guard_names_or_strings": sum(bool(re.search("guard", t, re.I)) for t in toks),
-                       "environment_reads": sum(t in ("environ", "getenv") for t in toks),
-                       "global_statements": sum(t == "global" for t in toks)}
+            names = [t for t in toks if t.isidentifier()]
+            scan[m] = {"guard_identifiers": sum(bool(re.search("guard", t, re.I)) for t in names),
+                       "guard_string_literals": sorted({t for t in toks if not t.isidentifier() and re.search("guard", t, re.I)}),
+                       "environment_reads": sum(t in ("environ", "getenv") for t in names),
+                       "global_statements": sum(t == "global" for t in names)}
         rc, out, err = capped("switch-tests", "3G", "20m", [PY, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider",
                                                             "tests/test_df_operators_causality.py::test_no_switch_in_production_modules",
                                                             "tests/test_df_operators_causality.py::test_battery_has_no_switch_and_emits_no_guard_mutation",
                                                             "tests/test_df_operators_causality.py::test_no_attribute_table_or_environment_switches_a_check_off",
                                                             "tests/test_df_operators_causality.py::test_oracle_mode_does_not_lift_a_causal_check"])
         tail = (out.strip().splitlines() or [err[-200:]])[-1]
-        clean = all(v == {"guard_names_or_strings": 0, "environment_reads": 0, "global_statements": 0} for v in scan.values())
+        clean = all(v["guard_identifiers"] == 0 and v["environment_reads"] == 0 and v["global_statements"] == 0
+                    for v in scan.values())
         return clean and rc == 0 and "failed" not in tail, {"ast_scan": scan, "behaviour_tests": tail}
     guarded("AT1.C166.1-4", "no public switch can skip a causal check: no guard table, environment read or global flag "
             "in the productive modules; assigning tables, setting variables or passing oracle_mode lifts nothing", t1)
@@ -331,7 +338,9 @@ def sec_counts():
                             'echo "completed=$(cat $b/shard_*/terminals/*.json 2>/dev/null | grep -c \'"status": "COMPLETED"\')"; '
                             'echo "markers=$(ls $b/shard_*/ROOT_INVALIDATED__* 2>/dev/null | wc -l)"; '
                             'echo "reserve_manifest=$(sha256sum $HOME/.local/state/crispdm-data-foundation/d2_fresh_reserve_c173_v1/ROOT_MANIFEST.json | cut -c1-64)"; '
-                            'echo "tape=$(sha256sum $HOME/.local/state/crispdm-data-foundation/d2_fresh_tape_c173_v1/SEED_TAPE.json | cut -c1-64)"; '
+                            # the workers hold the tape inside the reserve, which is the copy the unit worker reads;
+                            # the first POST looked for the separate tape root, which only the COORDINATOR has
+                            'echo "tape=$(sha256sum $HOME/.local/state/crispdm-data-foundation/d2_fresh_reserve_c173_v1/SEED_TAPE.json | cut -c1-64)"; '
                             'echo "design=$(sha256sum $HOME/.local/state/crispdm-data-foundation/d2_design_c171_v2/D2_DESIGN_V2.json | cut -c1-64)"'))
             per_role[role] = dict(ln.split("=", 1) for ln in out.splitlines() if "=" in ln)
         fresh_units = sum(int(v["terminals"]) for v in per_role.values())
@@ -532,6 +541,58 @@ def sec_fresh():
             and c["rerun_vs_stored"].get("numbers_over_tolerance") == 0 for c in checks.values())), checks
     guarded("AT9", "results re-derive from arrays and bound contracts: two fresh units, one from each worker, regenerate "
             "from their seeds and re-run in a new process to the same rows", t9)
+
+    def t9b():
+        # The first POST found one cross-host difference (a WORKER_B unit re-run on the COORDINATOR differs in the
+        # local_level_kalman SNR estimate). This check re-runs each picked unit on the role that produced it, in a
+        # new process under crispdm-run on that host, and requires every number to be exactly equal.
+        probe = r'''
+import json, glob, sys
+S, W, unit, role = sys.argv[1:5]
+stored = glob.glob(f"{S}/d2_fresh_c174_v1/{role}/shard_*/attempts/*__{unit}/attempt-1/d2_unit_rows.jsonl")[0]
+rerun = glob.glob(f"{W}/root/attempts/*__{unit}/attempt-*/d2_unit_rows.jsonl")[0]
+def load(p):
+    out = {}
+    for line in open(p):
+        o = json.loads(line); r = dict(o["row"]); r.pop("run_id", None)
+        cost = o["table"] == "df_fact_d2_unit_denoising" and r.get("branch") == "COST"
+        nums = {k: v for k, v in r.items() if isinstance(v, float) and not (cost and k == "value")}
+        rest = {k: v for k, v in r.items() if k not in nums and not (cost and k == "value")}
+        out.setdefault(json.dumps({"table": o["table"], "row": rest}, sort_keys=True), []).append(nums)
+    return out
+a, b = load(stored), load(rerun)
+exact = diff = 0
+for k in a:
+    for x, y in zip(a[k], b.get(k, [])):
+        for f in x:
+            if x[f] == y[f]: exact += 1
+            else: diff += 1
+print(json.dumps({"same_row_identities": set(a) == set(b), "numbers_exactly_equal": exact, "numbers_different": diff}))
+'''
+        out = {}
+        for role in ("WORKER_A", "WORKER_B"):
+            term = next(json.loads(Path(p).read_text()) for p in sorted(glob.glob(str(FRESH_ROOT / "terminals" / "*.json")))
+                        if json.loads(Path(p).read_text())["host_role"] == role
+                        and json.loads(Path(p).read_text())["status"] == "COMPLETED")
+            unit = term["dataset_id"].rsplit(".", 1)[-1]
+            w = "$HOME/.cache/crispdm-post/c166_c184_post_v2_same_role"
+            s = "$HOME/.local/state/crispdm-data-foundation"
+            script = (f'set -e; W={w}/{role}; rm -rf $W; mkdir -p $W/units; ln -s {s}/d2_fresh_reserve_c173_v1/{unit} $W/units/{unit}; '
+                      f'cd $HOME/{WORKER_CHECKOUT}; $HOME/.local/bin/crispdm-run -m 3G -t 20m -n post-same-role -- env -u PYTHONPATH '
+                      f'OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= '
+                      f'$HOME/anaconda3/envs/trading-stack/bin/python -B tools/df_d2_unit_worker.py --out $W/root '
+                      f'--design {s}/d2_design_c171_v2/D2_DESIGN_V2.json --units-root $W/units --mode FRESH_CONFIRMATION '
+                      f'--host-role {role} --task-memory 2147483648 >/dev/null; '
+                      f'echo "code=$(git log --oneline -1 | cut -c1-12) cpu=$(lscpu | grep \'Model name\' | sed \'s/.*: *//\')"; '
+                      f'python3 - {s} $W {unit} {role} <<\'PY\'\n{probe}\nPY')
+            text = on(role, script, timeout=1500)
+            lines = [ln for ln in text.splitlines() if ln.strip()]
+            res = json.loads(lines[-1]) if lines and lines[-1].startswith("{") else {"error": text[-400:]}
+            res["host"] = next((ln for ln in lines if ln.startswith("code=")), None)
+            out[f"{role}:{unit}"] = res
+        return all(v.get("same_row_identities") and v.get("numbers_different") == 0 for v in out.values()), out
+    guarded("AT9b", "each re-derived unit re-runs on the role that produced it, in a new process, to exactly equal numbers",
+            t9b)
 
 
 # ------------------------------------------------------------- OLAP
