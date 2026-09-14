@@ -217,6 +217,9 @@ def main(argv=None) -> int:
     ap.add_argument("--decisions", type=Path, required=True, help="published DECISIONS.jsonl")
     ap.add_argument("--out", type=Path, required=True, help="work/output dir (created)")
     ap.add_argument("--evidence", type=Path, help="where to copy the compact summaries")
+    ap.add_argument("--successor-run-id", help="D2-R3: write DECISIONS_SUCCESSOR.jsonl (validated df_fact_d2_decision "
+                                               "rows) under this run id; historical rows are never touched")
+    ap.add_argument("--supersedes-run-id", help="the run id of the published decisions these succeed")
     a = ap.parse_args(argv)
     out = a.out.resolve()
     if out.exists():
@@ -272,6 +275,15 @@ def main(argv=None) -> int:
     with open(out / "DECISIONS_PREVIEW.jsonl", "w", encoding="utf-8") as handle:
         for d in new_decisions:
             handle.write(json.dumps(dict(d, preview="NON_GOVERNING_PREVIEW_R3_PENDING"), sort_keys=True, default=float) + "\n")
+    successor = None
+    if a.successor_run_id:
+        # successor rows for the cube: validated against the df_fact_d2_decision grain, under a
+        # NEW run id; the published rows keep their own run id and are never rewritten (D2-R3)
+        rows = A.decision_rows(new_decisions, a.successor_run_id)
+        successor = out / "DECISIONS_SUCCESSOR.jsonl"
+        with open(successor, "w", encoding="utf-8") as handle:
+            for row in rows:
+                handle.write(json.dumps(row, sort_keys=True, default=float) + "\n")
     impact_doc = {"schema": "d2_support_readjudication_preview.v1", "governing": False,
                   "note": "preview from conserved rows with the repaired adjudicator; D2-R3 registers the governed re-adjudication",
                   "published_decisions_sha256": published_sha, "design_sha256": design["design_sha256"],
@@ -280,6 +292,9 @@ def main(argv=None) -> int:
                   "changed": sum(r["changed"] for r in impact),
                   "transitions": {f"{o} -> {n}": c for (o, n), c in sorted(flips.items(), key=lambda x: (-x[1], str(x[0])))},
                   "universe": dict(summary_universe), "split": {k: v for k, v in split.items() if k != "paths"},
+                  "successor_run_id": a.successor_run_id, "supersedes_run_id": a.supersedes_run_id,
+                  "successor_rows_sha256": sha256_file(successor) if successor else None,
+                  "successor_rows": sum(1 for _ in open(successor, encoding="utf-8")) if successor else 0,
                   "changed_rows": [r for r in impact if r["changed"]]}
     (out / "IMPACT_TABLE.json").write_text(json.dumps(impact_doc, indent=1, default=float) + "\n", encoding="utf-8")
     (out / "IMPACT_ROWS.jsonl").write_text("".join(json.dumps(r, sort_keys=True, default=float) + "\n" for r in impact), encoding="utf-8")
