@@ -1,0 +1,161 @@
+{
+ "schema": "d2_r4_portability_summary.v1",
+ "roles": [
+  "COORDINATOR",
+  "WORKER_A",
+  "WORKER_B"
+ ],
+ "units": 32,
+ "subset_units_by_producing_role": {
+  "WORKER_A": 16,
+  "WORKER_B": 14,
+  "COORDINATOR": 2
+ },
+ "cells": 1716,
+ "bytes_equal": 1223,
+ "within_tolerance_1e-9": 1306,
+ "outside_tolerance": 83,
+ "identifiability_changed": 0,
+ "max_abs_delta_db": 1.0986786316645691,
+ "decision_stability": {
+  "compared": 288,
+  "changed": 0,
+  "changed_rows": []
+ },
+ "deviating_estimators": {
+  "local_level_kalman": 83
+ },
+ "deviations_by_partition": {
+  "calibration": 40,
+  "confirmation": 43
+ },
+ "confirmation_max_abs_delta_db": 2.4427409558261913e-05,
+ "calibration_max_abs_delta_db": 1.0986786316645691,
+ "kalman_pairs": {
+  "COORDINATOR->COORDINATOR": {
+   "cells": 4,
+   "exact": 4,
+   "outside": 0,
+   "max": 0.0
+  },
+  "COORDINATOR->WORKER_A": {
+   "cells": 4,
+   "exact": 4,
+   "outside": 0,
+   "max": 0.0
+  },
+  "COORDINATOR->WORKER_B": {
+   "cells": 4,
+   "exact": 0,
+   "outside": 0,
+   "max": 5.6640914181116386e-11
+  },
+  "WORKER_A->COORDINATOR": {
+   "cells": 37,
+   "exact": 37,
+   "outside": 0,
+   "max": 0.0
+  },
+  "WORKER_A->WORKER_A": {
+   "cells": 37,
+   "exact": 37,
+   "outside": 0,
+   "max": 0.0
+  },
+  "WORKER_A->WORKER_B": {
+   "cells": 37,
+   "exact": 0,
+   "outside": 25,
+   "max": 2.4427409558261913e-05
+  },
+  "WORKER_B->COORDINATOR": {
+   "cells": 37,
+   "exact": 0,
+   "outside": 29,
+   "max": 1.0986786316645691
+  },
+  "WORKER_B->WORKER_A": {
+   "cells": 37,
+   "exact": 0,
+   "outside": 29,
+   "max": 1.0986786316645691
+  },
+  "WORKER_B->WORKER_B": {
+   "cells": 37,
+   "exact": 37,
+   "outside": 0,
+   "max": 0.0
+  }
+ },
+ "environments": {
+  "COORDINATOR": {
+   "cpu_model": "AMD Ryzen 7 7435HS",
+   "python": "3.12.13",
+   "numpy": "2.5.1",
+   "scipy": "1.18.0",
+   "statsmodels": "0.14.6",
+   "blas_lapack": {
+    "blas": "scipy-openblas",
+    "lapack": "scipy-openblas"
+   },
+   "threads": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "float_precision": "float64",
+   "libc": "2.43",
+   "kernel": "7.0.0-31-generic"
+  },
+  "WORKER_A": {
+   "cpu_model": "13th Gen Intel(R) Core(TM) i9-13900HX",
+   "python": "3.12.13",
+   "numpy": "2.5.1",
+   "scipy": "1.18.0",
+   "statsmodels": "0.14.6",
+   "blas_lapack": {
+    "blas": "scipy-openblas",
+    "lapack": "scipy-openblas"
+   },
+   "threads": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "float_precision": "float64",
+   "libc": "2.43",
+   "kernel": "7.0.0-29-generic"
+  },
+  "WORKER_B": {
+   "cpu_model": "AMD Ryzen 9 8940HX with Radeon Graphics",
+   "python": "3.12.13",
+   "numpy": "2.5.1",
+   "scipy": "1.18.0",
+   "statsmodels": "0.14.6",
+   "blas_lapack": {
+    "blas": "scipy-openblas",
+    "lapack": "scipy-openblas"
+   },
+   "threads": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "float_precision": "float64",
+   "libc": "2.43",
+   "kernel": "7.0.0-31-generic"
+  }
+ },
+ "cpu_seconds": {
+  "COORDINATOR": 133.07807699999998,
+  "WORKER_A": 192.39817,
+  "WORKER_B": 78.07576399999999
+ },
+ "peak_rss_bytes": {
+  "COORDINATOR": 189366272,
+  "WORKER_A": 190185472,
+  "WORKER_B": 191238144
+ },
+ "tolerance_db_original": 1e-09,
+ "note": "same code digests and same package versions on the three roles; only the CPU model differs"
+}
