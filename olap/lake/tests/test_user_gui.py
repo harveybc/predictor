@@ -20,6 +20,7 @@ def _client(tmp_path):
             "secret_key": "t",
             "time_column": "ts",
             "lake_service_token": TOKEN,
+            "operator_config_path": str(tmp_path / "pending.json"),
         }
     )
     plugins = assemble(config)
@@ -42,6 +43,43 @@ def test_gui_lists_tables(tmp_path):
 def test_api_requires_token(tmp_path):
     client = _client(tmp_path)
     assert client.get("/api/v1/discover").status_code == 401
+
+
+def test_schema_page_and_api(tmp_path):
+    client = _client(tmp_path)
+    page = client.get('/resources/fact_performance')
+    assert page.status_code == 200
+    assert b'metric' in page.data and b'TEXT' in page.data
+    assert client.get('/api/v1/schema?resource=fact_performance').status_code == 401
+    response = client.get('/api/v1/schema?resource=fact_performance', headers=_h())
+    assert response.status_code == 200
+    assert len(response.get_json()['columns']) == 3
+    assert client.get('/resources/missing').status_code == 404
+
+
+def test_configuration_validates_then_stages(tmp_path):
+    import json
+    client = _client(tmp_path)
+    response = client.post('/config', data={'holdout_start': 'not-a-date'}, follow_redirects=True)
+    assert b'Invalid configuration' in response.data
+    assert not (tmp_path / 'pending.json').exists()
+    response = client.post('/config', data={
+        'holdout_start': '2026-01-01', 'title': 'Research warehouse',
+        'schema': 'public', 'data_gov_url': 'http://127.0.0.1:15055',
+    }, follow_redirects=True)
+    saved = json.loads((tmp_path / 'pending.json').read_text())
+    assert saved['data_gov_url'] == 'http://127.0.0.1:15055'
+    assert saved['title'] == 'Research warehouse'
+    assert b'Pending restart' in response.data
+    assert b'2025-01-01' in response.data
+
+
+def test_query_results_are_visible(tmp_path):
+    client = _client(tmp_path)
+    response = client.post('/ops/query', data={'sql': 'SELECT metric, value FROM fact_performance LIMIT 2'})
+    assert response.status_code == 200
+    assert b'MAE' in response.data
+    assert b'Result' in response.data
 
 
 def test_api_query(tmp_path):

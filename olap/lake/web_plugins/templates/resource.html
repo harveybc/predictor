@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ resource.resource_id }} | OLAP warehouse{% endblock %}
+{% block content %}
+<a href="{{ url_for('home') }}">Inventory</a>
+<h1 class="h4 mt-3">{{ resource.resource_id }}</h1>
+<p><span class="badge badge-info">{{ resource.kind }}</span> {{ resource.schema or 'SQLite' }}</p>
+<h2 class="h5">Columns</h2>
+<div class="table-responsive"><table class="table table-sm table-striped table-dark">
+  <thead><tr><th>Name</th><th>Type</th><th>Nullable</th><th>Default</th></tr></thead>
+  <tbody>{% for column in resource.columns %}<tr><td>{{ column.name }}</td><td>{{ column.type }}</td><td>{{ column.nullable }}</td><td>{{ column.default if column.default is not none else '' }}</td></tr>{% endfor %}</tbody>
+</table></div>
+<h2 class="h5 mt-4">Primary key</h2><p>{{ resource.primary_key|join(', ') or 'None declared' }}</p>
+<h2 class="h5 mt-4">Foreign keys</h2>
+<div class="table-responsive"><table class="table table-sm table-dark">
+  <thead><tr><th>Columns</th><th>Referenced table</th><th>Referenced columns</th></tr></thead>
+  <tbody>{% for key in resource.foreign_keys %}<tr><td>{{ key.constrained_columns|join(', ') }}</td><td>{{ key.referred_table }}</td><td>{{ key.referred_columns|join(', ') }}</td></tr>{% else %}<tr><td colspan="3">None declared</td></tr>{% endfor %}</tbody>
+</table></div>
+<h2 class="h5 mt-4">Indexes</h2>
+<div class="table-responsive"><table class="table table-sm table-dark">
+  <thead><tr><th>Name</th><th>Columns</th><th>Unique</th></tr></thead>
+  <tbody>{% for idx in resource.indexes %}<tr><td>{{ idx.name }}</td><td>{{ idx.column_names|join(', ') }}</td><td>{{ idx.unique }}</td></tr>{% else %}<tr><td colspan="3">None declared</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

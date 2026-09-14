@@ -1,0 +1,193 @@
+{
+  "scope": "Read-only evidence audit and disposable comparator fixture; no scientific replay",
+  "transition_total": 3591,
+  "transition_changes": 138,
+  "lost": 7,
+  "gained": 0,
+  "successor_counts": [
+    {
+      "kind": "OPERATOR",
+      "role": "CANDIDATE",
+      "decision": "LAB_CALIBRATED",
+      "count": 47
+    },
+    {
+      "kind": "OPERATOR",
+      "role": "CANDIDATE",
+      "decision": "LAB_REJECTED",
+      "count": 825
+    },
+    {
+      "kind": "OPERATOR",
+      "role": "CANDIDATE",
+      "decision": "NOT_IDENTIFIABLE",
+      "count": 294
+    },
+    {
+      "kind": "OPERATOR",
+      "role": "CANDIDATE",
+      "decision": "REGIME_LIMITED",
+      "count": 6
+    },
+    {
+      "kind": "OPERATOR",
+      "role": "CANDIDATE",
+      "decision": "UNDERPOWERED",
+      "count": 880
+    },
+    {
+      "kind": "OPERATOR",
+      "role": "IDENTITY_RAW_CONTROL",
+      "decision": "LAB_CALIBRATED",
+      "count": 26
+    },
+    {
+      "kind": "OPERATOR",
+      "role": "IDENTITY_RAW_CONTROL",
+      "decision": "LAB_REJECTED",
+      "count": 40
+    },
+    {
+      "kind": "OPERATOR",
+      "role": "IDENTITY_RAW_CONTROL",
+      "decision": "NOT_IDENTIFIABLE",
+      "count": 105
+    },
+    {
+      "kind": "OPERATOR",
+      "role": "NON_CAUSAL_ORACLE_CONTROL",
+      "decision": "CONTROL_NOT_AN_ARM",
+      "count": 171
+    },
+    {
+      "kind": "OPERATOR",
+      "role": "PREVIOUSLY_REJECTED_CONTROL",
+      "decision": "LAB_CALIBRATED",
+      "count": 2
+    },
+    {
+      "kind": "OPERATOR",
+      "role": "PREVIOUSLY_REJECTED_CONTROL",
+      "decision": "LAB_REJECTED",
+      "count": 158
+    },
+    {
+      "kind": "OPERATOR",
+      "role": "PREVIOUSLY_REJECTED_CONTROL",
+      "decision": "NOT_IDENTIFIABLE",
+      "count": 11
+    },
+    {
+      "kind": "SNR_ESTIMATOR",
+      "role": null,
+      "decision": "SNR_CALIBRATED_FOR_REGIME",
+      "count": 39
+    },
+    {
+      "kind": "SNR_ESTIMATOR",
+      "role": null,
+      "decision": "SNR_NOT_IDENTIFIABLE",
+      "count": 604
+    },
+    {
+      "kind": "SNR_ESTIMATOR",
+      "role": null,
+      "decision": "SNR_REGIME_LIMITED",
+      "count": 167
+    },
+    {
+      "kind": "SNR_ESTIMATOR",
+      "role": null,
+      "decision": "SNR_REJECTED",
+      "count": 216
+    }
+  ],
+  "replay_files_verified": [
+    "COORDINATOR",
+    "WORKER_A",
+    "WORKER_B"
+  ],
+  "recount_by_estimator": {
+    "ar_residual": {
+      "cells": 264,
+      "numeric": 258,
+      "not_numeric": 6,
+      "exact_numeric": 207,
+      "nonzero_delta": 51,
+      "outside_1e_9": 0,
+      "max_delta_db": 1.9184653865522705e-13
+    },
+    "local_level_kalman": {
+      "cells": 264,
+      "numeric": 234,
+      "not_numeric": 30,
+      "exact_numeric": 119,
+      "nonzero_delta": 115,
+      "outside_1e_9": 83,
+      "max_delta_db": 1.0986786316645691
+    },
+    "mad_first_difference": {
+      "cells": 264,
+      "numeric": 255,
+      "not_numeric": 9,
+      "exact_numeric": 255,
+      "nonzero_delta": 0,
+      "outside_1e_9": 0,
+      "max_delta_db": 0.0
+    },
+    "spectral_floor": {
+      "cells": 264,
+      "numeric": 249,
+      "not_numeric": 15,
+      "exact_numeric": 249,
+      "nonzero_delta": 0,
+      "outside_1e_9": 0,
+      "max_delta_db": 0.0
+    },
+    "trailing_median_residual": {
+      "cells": 264,
+      "numeric": 261,
+      "not_numeric": 3,
+      "exact_numeric": 261,
+      "nonzero_delta": 0,
+      "outside_1e_9": 0,
+      "max_delta_db": 0.0
+    },
+    "wavelet_mad": {
+      "cells": 396,
+      "numeric": 132,
+      "not_numeric": 264,
+      "exact_numeric": 132,
+      "nonzero_delta": 0,
+      "outside_1e_9": 0,
+      "max_delta_db": 0.0
+    }
+  },
+  "environment_kernels": {
+    "COORDINATOR": "7.0.0-31-generic",
+    "WORKER_A": "7.0.0-29-generic",
+    "WORKER_B": "7.0.0-31-generic"
+  },
+  "empty_comparison_actual_result": {
+    "roles": [
+      "COORDINATOR"
+    ],
+    "units": 0,
+    "cells": 0,
+    "bytes_equal": 0,
+    "within_tolerance": 0,
+    "outside_tolerance": 0,
+    "identifiability_changed": 0,
+    "max_abs_delta_db": null,
+    "decision_stability": {
+      "compared": 0,
+      "changed": 0,
+      "changed_rows": []
+    }
+  },
+  "cube_terminal_status": "COMPLETED",
+  "gov_terminal_metric_count": 25,
+  "gov_terminal_artifact_count": 7,
+  "cube_artifact_binding_matches_receipt": true,
+  "loader": "ActiveState=active\nNRestarts=0"
+}

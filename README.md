@@ -1,6 +1,6 @@
 # predictor
 
-Phased deep-learning prediction platform for financial time series. predictor
+Configurable deep-learning experiments for time-series forecasting and classification. predictor
 trains, evaluates and optimizes Keras/TensorFlow forecasting and
 classification models — ANN, CNN, LSTM, Transformer, TCN, TFT, N-BEATS, MIMO
 and binary/direction classifier variants — through a plugin architecture in
@@ -9,30 +9,54 @@ plugins are selected by name from JSON configs. Experiments are organized as
 numbered phases under [`examples/config/`](examples/config/), each phase a
 reproducible sweep over architectures, dataset sizes and horizons.
 
+## Research and current development
+
+This project supports a data-centric research program: characterize the inputs,
+test temporal preprocessing, and compare learned representations before scaling
+model search. The doctoral proposal investigates modular temporal representations
+for forecasting and reinforcement learning. It is a proposal, not a claim that
+its hypotheses have already been confirmed.
+
+- **[Current doctoral proposal (PDF)](docs/propuesta_doctoral_representaciones_temporales_modulares.pdf)**
+  and [editable LaTeX](docs/propuesta_doctoral_representaciones_temporales_modulares.tex).
+- [Research repository map](docs/RESEARCH_STACK.md): data, preprocessing,
+  feature engineering, representation learning, optimization and evaluation.
+- [Related proposals and earlier formulations](docs/tres_temas_entrevista/README.md).
+- [Data governance](https://github.com/harveybc/data-gov): dataset receipts,
+  experiment provenance and results in an analytical warehouse.
+
+**Branch scope (2026-09-14):** `master` contains the standalone trainer and
+the documents linked above. The larger data-characterization and governed-run
+implementation remains on the
+[published research snapshot](https://github.com/harveybc/predictor/tree/174cb8869848691e8e720e7f57c1fe938a3976d1).
+Its [governed-run guide](https://github.com/harveybc/predictor/blob/174cb8869848691e8e720e7f57c1fe938a3976d1/docs/GOVERNED_RUN.md)
+applies to that revision, not automatically to this branch. Research snapshots
+are linked by commit so that development cannot silently change a cited implementation.
+
+## Use with a coding agent
+
+> Read this README and the selected revision's configuration and entry points.
+> Use an isolated environment. Run CLI help and the bounded CPU example below
+> in a temporary checkout, preserving committed example outputs. Report the
+> effective configuration, exact input/output paths and any failed tests.
+> Do not start a sweep or write to the production cube. For governed runs,
+> follow the linked integration version and keep delivery receipts and every
+> outcome, including failures; do not claim that a profile test is training.
+
+The [repository map](docs/RESEARCH_STACK.md) identifies component ownership.
+The [warehouse service](olap/lake/README.md) installs separately from training.
+
 ## Status
 
-**Lifecycle: ACTIVE-CORE.** predictor is the model-training side of the
-owner's trading-research stack: its champion models are served by
-[prediction_provider](https://github.com/harveybc/prediction_provider) and its
-binary/direction experiments feed current campaigns.
+**Research software under active development.** predictor is the offline
+model-training component. Model serving belongs to
+[prediction_provider](https://github.com/harveybc/prediction_provider).
+Example results are not evidence of out-of-sample trading profitability.
 
 > **Disclaimer:** all training and evaluation happens offline on historical
 > data (simulation/backtest). Model outputs are research artifacts, not
 > trading signals; nothing in this repository is financial advice, and no
 > real-capital execution happens here.
-
-## Run this with an AI agent
-
-Paste this into Claude Code, Cursor, Codex, GitHub Copilot or any coding agent
-with shell access:
-
-> Read `AGENTS.md` in this repository and follow the **Agent quickstart**
-> section end to end: set up the environment, run the smoke test, execute the
-> example run, load the results into the OLAP cube, then tell me the exact URL
-> or file paths where I can see the results and one query I should try first.
-
-`AGENTS.md` is the [agents.md](https://agents.md) convention, read natively by
-most coding agents.
 
 ## Role and non-responsibilities
 
@@ -112,12 +136,16 @@ pip install -r requirements.txt
 pip install -e .        # installs the `predictor` console script
 ```
 
-These commands were not re-executed from a clean environment; the imports and
-CLI below were verified in an existing Python 3.12.13 environment.
+*Unverified in a clean environment* — the commands above are the standard
+install; they were not re-executed from scratch for this README. The imports
+and CLI below were verified in an existing Python 3.12.13 environment.
+The 2026-09-14 publication check used an existing environment and generated
+local entry-point metadata with `python setup.py egg_info`; it did not install
+or upgrade packages in a shared environment.
 
 ## Smallest working example
 
-The CLI parses and prints its full usage:
+Verified (cheap) — the CLI parses and prints its full usage:
 
 ```bash
 PYTHONPATH=. python app/main.py --help
@@ -125,7 +153,8 @@ PYTHONPATH=. python app/main.py --help
 # full flag list (plugin, epochs, iterations, load/save config, horizons, ...)
 ```
 
-Smallest real run — a small daily ANN, verified at ~12 s on CPU:
+Bounded CPU example using the bundled daily dataset (completed with exit 0 in
+the 2026-09-14 publication check):
 
 ```bash
 CUDA_VISIBLE_DEVICES="" PYTHONPATH=. python app/main.py \
@@ -133,11 +162,10 @@ CUDA_VISIBLE_DEVICES="" PYTHONPATH=. python app/main.py \
   --epochs 2 --max_steps_train 300 --max_steps_test 300 --mc_samples 2
 ```
 
-Drop the overrides to run the real experiment. Only long-form `--flags`
-override the config file — short flags such as `-e` are silently ignored by
-`app/config_merger.py`. Note that not all configs are runnable from a fresh
-checkout: the `examples/config/phase_1/` (1h) configs reference
-`examples/data/phase_1/normalized_d*.csv`, which are not committed.
+This is a mechanics demonstration, not a validated trading experiment. It writes
+the configured sample outputs; use a separate clone and fresh output paths for
+your own work. Use long-form `--flags`; short forms do not consistently override
+config values. Several 1h configs reference datasets absent from a fresh clone.
 
 [`predictor.sh`](predictor.sh) simply prepends the checkout to `PYTHONPATH`
 and runs `python app/main.py`. Training data ship under
@@ -153,9 +181,10 @@ predictor is a DOIN *domain*: the external
 wrap this repository, and [doin-node](https://github.com/harveybc/doin-node)
 — the unified participant runtime — runs them collaboratively (candidate
 leasing, deduplication, champion migration and blockchain persistence are
-doin-node's responsibility). predictor runs standalone; DOIN is optional. The
-retired `doin-optimizer`/`doin-evaluator` services are not required. OLAP/ETL
-helpers for analyzing experiment databases live under [`olap/`](olap/).
+doin-node's responsibility). predictor always works locally first; DOIN
+extends its optimizers, it does not absorb them. The retired
+`doin-optimizer`/`doin-evaluator` services are not required. OLAP/ETL helpers
+for analyzing experiment databases live under [`olap/`](olap/).
 
 ## Configuration and plugins
 
@@ -189,11 +218,11 @@ python -m pytest tests --collect-only -q
 # observed: "3 tests collected, 8 errors in 3.21s"
 ```
 
-Known issue: most of the committed suite predates the
+Known limitation of this standalone branch: much of the committed suite predates the
 current plugin architecture and fails at import (e.g.
 `app.autoencoder_manager`, `load_encoder_decoder_plugins`, `merge_config` no
-longer exist). Only 3 tests collect cleanly today; the suite needs a rewrite
-against the current `app/` API. Verified sanity check:
+longer exist). The count above is a recorded baseline observation, not a test
+count for the newer research branch. Verified sanity check:
 
 ```bash
 PYTHONPATH=. python -c "from app.plugin_loader import load_plugin; print('plugin_loader OK')"

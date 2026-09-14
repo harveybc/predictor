@@ -7,7 +7,7 @@ from pathlib import Path
 
 from flask import Flask, flash, jsonify, redirect, render_template, request, url_for
 
-from app.config_handler import save_config
+from app.operator_config import save_pending
 from app.lake_auth import check_bearer, load_token
 
 
@@ -67,16 +67,17 @@ class Plugin:
                 resources=resources,
                 error=err,
                 holdout=cfg().get("holdout_start") or "",
+                config=cfg(), result=None,
             )
 
         @app.post("/config")
         def save():
-            holdout = (request.form.get("holdout_start") or "").strip() or None
-            cfg()["holdout_start"] = holdout
-            q().set_params(**cfg())
-            dest = Path(__file__).resolve().parents[1] / "examples" / "config" / "local.json"
-            save_config({k: cfg()[k] for k in cfg() if k != "plugins"}, dest)
-            flash("Saved holdout and local.json", "success")
+            try:
+                dest = save_pending(cfg(), request.form)
+            except (ValueError, TypeError, OSError) as exc:
+                flash(f"Invalid configuration: {exc}", "danger")
+            else:
+                flash(f"Pending restart: {dest}. Active configuration unchanged.", "success")
             return redirect(url_for("home"))
 
         @app.post("/ops/query")
@@ -87,8 +88,19 @@ class Plugin:
             except (ValueError, PermissionError) as exc:
                 flash(str(exc), "danger")
                 return redirect(url_for("home"))
-            flash(f"{len(payload['rows'])} rows sha256={payload['sha256'][:12]}…", "info")
-            return redirect(url_for("home"))
+            return render_template(
+                "home.html", meta=q().describe(), storage=q().storage(),
+                resources=q().discover(), error=None, config=cfg(),
+                holdout=cfg().get("holdout_start") or "", result=payload,
+            )
+
+        @app.get("/resources/<resource_id>")
+        def resource_detail(resource_id):
+            try:
+                resource = q().resource_schema(resource_id)
+            except ValueError as exc:
+                return str(exc), 404
+            return render_template("resource.html", resource=resource)
 
         def _api_ok():
             expected = cfg().get("lake_service_token") or load_token()
@@ -150,6 +162,16 @@ class Plugin:
             result["report_sha256"] = report.get("report_sha256")
             return jsonify(result), (201 if result.get("stored") else 200)
 
+        @app.get("/api/v1/schema")
+        def api_schema():
+            denied = _api_ok()
+            if denied:
+                return denied
+            try:
+                return jsonify(q().resource_schema(request.args.get("resource", "")))
+            except ValueError as exc:
+                return jsonify({"error": str(exc)}), 404
+
         @app.route("/api/v2/terminals", methods=["GET", "POST"])
         def api_terminals():
             denied = _api_ok()
@@ -180,7 +202,7 @@ class Plugin:
         app = self.create_app(context)
         host = self.params.get("web_host") or "127.0.0.1"
         port = int(self.params.get("web_port") or 5057)
-        print(f"OLAP lake UI → http://{host}:{port}")
+        print(f"OLAP warehouse UI → http://{host}:{port}")
         print("SELECT for query; append-only gov_* through write_metrics; never reset_olap")
         app.run(host=host, port=port, debug=False, use_reloader=False, threaded=True)
         return 0

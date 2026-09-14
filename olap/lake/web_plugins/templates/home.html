@@ -1,82 +1,57 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OLAP lake</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/adminlte.min.css') }}">
-  <style>
-    body { background:#1f2d3d; color:#f8f9fa; font-size:14px; }
-    .content-wrapper { margin-left:0 !important; background:#1f2d3d; }
-  </style>
-</head>
-<body class="hold-transition layout-top-nav dark-mode">
-<div class="wrapper">
-  <nav class="main-header navbar navbar-expand navbar-dark">
-    <span class="navbar-brand"><strong>OLAP</strong> cube (read-only)</span>
-  </nav>
-  <div class="content-wrapper">
-    <section class="content pt-3">
-      <div class="container-fluid">
-        {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% for cat, msg in messages %}
-            <div class="alert alert-{{ cat }}">{{ msg }}</div>
-          {% endfor %}
-        {% endwith %}
-        <div class="row">
-          <div class="col-md-4">
-            <div class="small-box bg-info"><div class="inner">
-              <h3>{{ resources|length }}</h3><p>Tables in inventory</p>
-            </div></div>
-            <div class="card card-dark">
-              <div class="card-body">
-                <p>{{ meta.description or meta.title }}</p>
-                <p class="small text-muted">{{ storage.root }}</p>
-                <p>Host free {{ fmt_bytes(storage.host_free) }}</p>
-              </div>
-            </div>
-            <div class="card card-dark">
-              <div class="card-header"><h3 class="card-title">Holdout</h3></div>
-              <div class="card-body">
-                <form method="post" action="{{ url_for('save') }}">
-                  <input name="holdout_start" class="form-control" value="{{ holdout }}">
-                  <button class="btn btn-primary btn-block mt-2" type="submit">Save</button>
-                </form>
-              </div>
-            </div>
-            <div class="card card-dark">
-              <div class="card-header"><h3 class="card-title">SELECT</h3></div>
-              <div class="card-body">
-                <form method="post" action="{{ url_for('ops_query') }}">
-                  <textarea name="sql" class="form-control" rows="5" placeholder="SELECT …">SELECT * FROM fact_performance LIMIT 20</textarea>
-                  <button class="btn btn-secondary btn-block mt-2" type="submit">Run (read-only)</button>
-                </form>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-8">
-            <div class="card card-dark">
-              <div class="card-header"><h3 class="card-title">Inventory</h3></div>
-              <div class="card-body p-0">
-                <table class="table table-sm table-striped table-dark mb-0">
-                  <thead><tr><th>Table</th><th>Rows</th></tr></thead>
-                  <tbody>
-                    {% for r in resources %}
-                    <tr><td><code>{{ r.resource_id }}</code></td><td>{{ r.rows }}</td></tr>
-                    {% else %}
-                    <tr><td colspan="2">No tables (or cube unreachable).</td></tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
+{% extends "base.html" %}
+{% block content %}
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+<div class="row">
+  <section class="col-lg-8">
+    <h1 class="h4">{{ meta.title or 'OLAP warehouse' }}</h1>
+    <p>{{ meta.description }}</p>
+    <div class="d-flex flex-wrap mb-3">
+      <span class="badge badge-info mr-2">{{ resources|length }} resources</span>
+      <span class="badge badge-secondary">{{ config.schema or 'public' }} schema</span>
+    </div>
+    <h2 class="h5">Inventory</h2>
+    <div class="table-responsive mb-4">
+      <table class="table table-sm table-striped table-dark">
+        <thead><tr><th>Resource</th><th>Kind</th><th>Rows</th></tr></thead>
+        <tbody>{% for r in resources %}
+          <tr><td><a href="{{ url_for('resource_detail', resource_id=r.resource_id) }}">{{ r.resource_id }}</a></td><td>{{ r.kind }}</td><td>{{ r.rows if r.rows is not none else 'Not scanned' }}</td></tr>
+        {% else %}<tr><td colspan="3">No resources available.</td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+    <h2 class="h5">SELECT query</h2>
+    <form method="post" action="{{ url_for('ops_query') }}">
+      <label for="sql">SQL</label>
+      <textarea id="sql" name="sql" class="form-control text-monospace" rows="3">SELECT * FROM gov_terminal LIMIT 20</textarea>
+      <button class="btn btn-secondary my-2" type="submit">Run query</button>
+    </form>
+    {% if result is not none %}
+      <h2 class="h5 mt-3">Result: {{ result.rows|length }} rows</h2>
+      <p class="text-break"><code>{{ result.sha256 }}</code></p>
+      <div class="table-responsive"><table class="table table-sm table-dark">
+        {% if result.rows %}<thead><tr>{% for key in result.rows[0] %}<th>{{ key }}</th>{% endfor %}</tr></thead>{% endif %}
+        <tbody>{% for row in result.rows %}<tr>{% for value in row.values() %}<td>{{ value }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+      </table></div>
+    {% endif %}
+  </section>
+  <aside class="col-lg-4 border-left">
+    <h2 class="h5">Configuration</h2>
+    <form method="post" action="{{ url_for('save') }}">
+      <label for="title">Warehouse title</label>
+      <input id="title" name="title" class="form-control mb-2" value="{{ config.title or meta.title }}">
+      <label for="schema">Database schema</label>
+      <input id="schema" name="schema" class="form-control mb-2" value="{{ config.schema or 'public' }}">
+      <label for="data_gov_url">Governance dashboard URL</label>
+      <input id="data_gov_url" name="data_gov_url" type="url" class="form-control mb-2" value="{{ config.data_gov_url or 'http://127.0.0.1:5055' }}">
+      <label for="holdout">Holdout starts</label>
+      <input id="holdout" name="holdout_start" type="date" class="form-control mb-2" value="{{ holdout }}">
+      <button class="btn btn-primary mt-2 mb-4" type="submit">Save pending configuration</button>
+    </form>
+    <h2 class="h6">Connection</h2>
+    <dl><dt>Storage</dt><dd>{{ 'SQLite (development)' if config.sqlite_path else 'PostgreSQL (PG* environment)' }}</dd>
+      <dt>Adapter host disk free</dt><dd>{{ fmt_bytes(storage.host_free) }}</dd>
+      <dt>Remote database size</dt><dd>Not measured</dd>
+    </dl>
+    <a href="{{ config.data_gov_url or 'http://127.0.0.1:5055' }}">Governance dashboard</a>
+  </aside>
 </div>
-</body>
-</html>
+{% endblock %}

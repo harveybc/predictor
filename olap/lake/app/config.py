@@ -7,7 +7,7 @@ DEFAULT_VALUES = {
     "secret_key": "change-me-olap",
     "lake_id": "olap_cube",
     "title": "predictor OLAP",
-    "description": "Read-only cube. Never runs reset_olap. Postgres via PG* or sqlite_path for tests.",
+    "description": "Experiment inventory, SELECT queries and append-only governed outcomes.",
     "kind": "sql_olap",
     "sqlite_path": None,
     "schema": "public",
