@@ -262,9 +262,18 @@ def route_of(gov_url: str, key: str, lake: str) -> dict:
 
     catalogue = fetch(f"{gov_url}/api/v1/lakes", key)
     entry = next((e for e in catalogue.get("lakes", []) if e.get("lake_id") == lake), {})
-    route = {"lake": lake, "kind": entry.get("kind"), "engine": entry.get("engine"),
-             "transport": entry.get("transport"), "in_catalogue": bool(entry)}
-    return route
+    if not entry:
+        # P4: a principal may hold `download` without `discover`; the catalogue then shows
+        # nothing for this store and the route is simply not observable from here. That is
+        # recorded as such — never inferred as "local", and never inferred as "http proven".
+        return {"lake": lake, "in_catalogue": False, "observable": False,
+                "kind": None, "engine": None, "transport": None,
+                "why": "this principal cannot discover this store; the route is evidenced by "
+                       "the delivery receipts and the operator's active configuration, not by "
+                       "this listing"}
+    return {"lake": lake, "in_catalogue": True, "observable": True,
+            "kind": entry.get("kind"), "engine": entry.get("engine"),
+            "transport": entry.get("transport")}
 
 
 def run_case(consumer: str, case: str, work: Path, key_file: Path, key: str,

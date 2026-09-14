@@ -27,16 +27,14 @@ spec.loader.exec_module(governed_run)
 
 
 def parse(argv):
-    """The wrapper's own parser, so the rules are the ones the tool applies."""
-    import argparse
+    """The wrapper's **own** parser, invoked — not an argparse reconstruction.
 
-    parser = argparse.ArgumentParser()
-    # rebuild only what this test asserts on, from the tool's definition
-    source = TOOL.read_text(encoding="utf-8")
-    assert '"--classification", choices=("GOVERNING", "NON_GOVERNING")' in source
-    parser.add_argument("--classification", choices=("GOVERNING", "NON_GOVERNING"),
-                        default="GOVERNING")
-    return parser.parse_args(argv)
+    Musashi's P4: rebuilding the parser in the test and asserting on source text proves what
+    the test wrote, not what the tool does. `governed_run.build_parser()` is the object the
+    CLI uses, so these rules move when the tool moves.
+    """
+    return governed_run.build_parser().parse_args(
+        ["--load_config", "x.json", "--experiment-key", "k", "--out-dir", "o", *argv])
 
 
 def test_the_default_is_governing():
@@ -60,15 +58,35 @@ def test_the_cli_refuses_an_invalid_classification():
     assert "invalid choice" in result.stderr
 
 
-def test_the_classification_reaches_both_the_campaign_and_the_receipt():
-    """Not a mock: the two places the tool writes it are pinned by source, and the receipts
-    of the runs already executed carry it."""
-    source = TOOL.read_text(encoding="utf-8")
-    assert '"classification": args.classification,' in source
-    assert source.count('"classification": args.classification,') == 2, (
-        "the classification must reach the campaign submitted to data-gov and the receipt "
-        "written next to the outputs; if one of them stops carrying it, a run's own record "
-        "and the kernel's record can disagree")
+def test_the_classification_reaches_the_campaign_and_the_receipt(tmp_path, monkeypatch):
+    """Run the entry point far enough to see what it submits, with nothing reconstructed.
+
+    The campaign never leaves the process: the HTTP client is replaced, so the assertion is on
+    the object the tool builds, and the receipt it writes next to the outputs.
+    """
+    submitted = {}
+
+    class Capture:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def submit_campaign(self, campaign):
+            submitted["campaign"] = campaign
+            raise SystemExit("stop after the campaign: this test asks what was submitted")
+
+    config = tmp_path / "config.json"
+    config.write_text(json.dumps({"x_train_file": str(tmp_path / "x.csv"),
+                                  "column_roles_migration": "LEGACY_ALL_COLUMNS_ARE_FEATURES"}))
+    (tmp_path / "x.csv").write_text("DATE_TIME,value\n2024-01-01 00:00:00,1\n")
+    monkeypatch.setattr(governed_run, "GovHttp", Capture)
+    monkeypatch.setattr(governed_run, "load_api_key", lambda *a, **k: "key")
+    monkeypatch.setattr(governed_run, "strict_code_identity",
+                        lambda *a, **k: {"kind": "file_manifest", "value": "t" * 64})
+    with pytest.raises(SystemExit):
+        governed_run.main(["--load_config", str(config), "--experiment-key", "k",
+                           "--out-dir", str(tmp_path / "out"), "--lake", "predictor_examples",
+                           "--lake-root", str(tmp_path), "--classification", "NON_GOVERNING"])
+    assert submitted["campaign"]["classification"] == "NON_GOVERNING"
 
 
 @pytest.mark.parametrize("receipt", sorted(

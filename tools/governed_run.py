@@ -844,7 +844,7 @@ def load_api_key(path) -> str:
     return key
 
 
-def parse_args(argv):
+def _parser():
     parser = argparse.ArgumentParser(
         description="Run predictor on data-gov governed inputs and report the metrics.",
         epilog="Arguments after `--` are passed to app/main.py (long flags only).",
@@ -869,6 +869,11 @@ def parse_args(argv):
                         default="GOVERNING",
                         help="NON_GOVERNING for a mechanical check: it records transport and "
                              "cost, and grants nothing scientific")
+    return parser
+
+
+def parse_args(argv):
+    parser = _parser()
     return parser.parse_args(argv)
 
 
@@ -1164,6 +1169,12 @@ def run(args, extra) -> dict:
             raise failure
         raise GovernedRunError(f"{type(failure).__name__}: {failure}") from failure
     return state
+
+
+def build_parser():
+    """The CLI surface as one object, so a caller or a test exercises it instead of
+    rebuilding it (order P4: a reconstructed parser proves what the test wrote)."""
+    return _parser()
 
 
 def main(argv=None) -> int:
