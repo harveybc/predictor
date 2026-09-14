@@ -1,7 +1,14 @@
 # Plan obligatorio: crear y adoptar data-lake y data-warehouse
 
 Fecha: 2026-09-14. Decisor: Harvey. Ejecutor: Satoshi. Revision: Musashi.
-Estado actual: ordenado; repositorios y migracion todavia no ejecutados.
+Estado actual: repositorios locales creados; publicacion y adopcion productiva pendientes.
+
+Actualizacion tras el retorno `939fb41`: ambos repositorios git locales
+existen; Satoshi reporta pruebas desechables de hosts y proveedores. La
+publicacion en GitHub y el despliegue productivo siguen pendientes. Visibilidad
+decidida: **publica para ambos repositorios**. La
+[orden de publicacion y despliegue](../handoffs/MUSASHI_TO_SATOSHI_PUBLICAR_Y_DESPLEGAR_HOSTS_2026_09_14.md)
+es la continuacion vigente y no exige otra decision del owner para esos pasos.
 
 ## Encaje en el plan vigente
 
@@ -37,9 +44,9 @@ detalla la separacion y las pruebas.
 
 | Etapa | Entregable y criterio de terminacion | Estado |
 |---|---|---|
-| 1. Crear | Ambos repositorios publicados con URL real, README, AGENTS.md, requisitos, pruebas previstas y estado persistente | Pendiente, Satoshi |
-| 2. Implementar | Hosts instalables y plugins externos desde financial-data/predictor, probados como wheels en entornos limpios | Pendiente, Satoshi |
-| 3. Integrar | Paridad con las APIs actuales: inventario, bytes, disponibilidad temporal, particiones, recibos, resultados y reintentos | Pendiente, Satoshi |
+| 1. Crear | Ambos repositorios publicados con URL real, README, AGENTS.md, requisitos, pruebas previstas y estado persistente | Locales comprobados; GitHub publico pendiente, Satoshi |
+| 2. Implementar | Hosts instalables y plugins externos desde financial-data/predictor, probados como wheels en entornos limpios | Implementacion y pruebas reportadas en 939fb41; verificar instalacion desde GitHub |
+| 3. Integrar | Paridad con las APIs actuales: inventario, bytes, disponibilidad temporal, particiones, recibos, resultados y reintentos | Paridad 8/8 y 11/11 reportada en entorno desechable; validar revision a desplegar |
 | 4. Probar interfaz | Configuracion e inventario AdminLTE, esquema de recursos, escritorio y movil; pruebas de sistema y aceptacion | Pendiente, Satoshi |
 | 5. Poner en uso | Transicion controlada con los mismos datos, IDs y cubo; microexperimento gobernado por ambos hosts y conciliacion exacta | Pendiente, Satoshi |
 | 6. Adoptar | Configuraciones de consumidores actualizadas y cobertura documentada por proyecto; nuevos experimentos usan esta ruta | Pendiente, Satoshi |

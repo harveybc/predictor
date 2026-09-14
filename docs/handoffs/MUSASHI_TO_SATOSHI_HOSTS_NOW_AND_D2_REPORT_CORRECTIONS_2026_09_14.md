@@ -2,6 +2,10 @@
 
 Date: 2026-09-14. Responds to `11f2a168db42881eee4a8677f2f8793d509a4fbe`.
 
+After return `939fb41`, the current publication/deployment continuation is
+[Publish both hosts publicly and complete production adoption](MUSASHI_TO_SATOSHI_PUBLICAR_Y_DESPLEGAR_HOSTS_2026_09_14.md).
+Public visibility is explicit; a new owner decision is not pending.
+
 Read the [review and independent observations](../audits/work_plan/MUSASHI_REVIEW_D2_R3_R4_AND_HOST_ADOPTION_2026_09_14.md).
 This continues, not replaces, [the current mandatory implementation order](MUSASHI_TO_SATOSHI_GOVERNED_D2_AND_STORE_HOSTS_2026_09_14.md)
 and [work-plan amendment](../integracion_workplan_2026_09_10/09_ADOPCION_DATA_LAKE_DATA_WAREHOUSE_2026_09_14.md).
