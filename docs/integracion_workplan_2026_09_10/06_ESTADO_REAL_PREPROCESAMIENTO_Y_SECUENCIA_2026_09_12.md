@@ -19,7 +19,7 @@ Ninguno implica automaticamente el siguiente.
 | I0 decisiones y roles | Parcial | contratos de campanas cerradas | contrato por nuevo banco y uso |
 | I1 inventarios | En curso | lago financiero censado; banco publico sin panel elegible | datasets con licencia, semantica y tiempo |
 | I2 perfil de calidad e informacion | Evidencia obtenida en D1 | 715 datasets, 866.661 filas de perfil, ejecucion acotada por memoria | corregir identidad de bloques y cobertura v2 |
-| I3 calibracion sintetica | Mecanica actual; evidencia historica no consumible | SNR C163 descriptivo; C137 usa la semantica anterior | reanalisis de migracion y confirmacion en semillas frescas |
+| I3 calibracion sintetica | Evidencia candidata D2, sin revision | reanalisis C137 con la API actual (513 unidades, 2 cambios de decision) y confirmacion fresca en 3.972 unidades con semillas no vistas; denoising: 51 aprobaciones y 7 limitadas por regimen de candidatos en 2.052 regimen-operador; SNR: 39 calibraciones por regimen en 1.026, ningun estimador general | revision de Musashi de la evidencia fresca |
 | I4 utilidad publica | Un resultado negativo | EWMA `DOES_NOT_ADVANCE` en seis paneles T2 | probar solo operadores calibrados nuevos |
 | I5 seleccion | Bloqueada | diseno v5, poblacion cero | minimo seis paneles y 30 variables elegibles |
 | I6 pronostico | Bloqueada | sin contrato nuevo | salida revisada de I5 |
@@ -34,7 +34,7 @@ Ninguno implica automaticamente el siguiente.
 |---|---|---|---|---|
 | 01 muestreo/Nyquist | Escrito | Comun bajo contratos | Perfil acotado de 715 datasets | Pendiente de revision por variable/regimen |
 | 02 ruido/SNR | Escrito | Comun y acotado | 513 unidades; resultado descriptivo y sesgo dependiente del regimen | Ningun estimador general |
-| 03 denoising | Escrito | API causal y bateria exhaustiva; requiere quitar switches de mutacion | C137 historico no compatible con la API actual | Ningun operador vigente |
+| 03 denoising | Escrito | API causal sin interruptores; 17 mutantes estructurales detectados; auditoria wavelet por unidad (7.312 auditorias, 0 fallos) | Confirmacion fresca: 12 especificaciones candidatas aprueban en 1 a 11 regimenes cada una, siempre sin datos faltantes; 871 decisiones sin potencia suficiente; el oraculo se detecto en las 3.908 unidades evaluadas | Ninguna hasta la revision externa; la reja D2 sigue rehusando |
 | 04 cuantizacion | Escrito | No comun | No | No |
 | 05 entropia/compresion | Escrito | No comun | No | No |
 | 06 tiempo/frecuencia | Escrito | Codigo historico disperso | No bajo contrato nuevo | No |
@@ -123,15 +123,45 @@ La reparacion C146-C165 completo 715 de 715 datasets sin OOM del host. El peor
 caso observo 1,56 GiB bajo un limite de 3,77 GiB. La campana SNR tambien termino
 y el cubo recibio sus resultados de forma aditiva.
 
-Persisten cuatro fronteras antes de aceptar D2: los guards causales son mutables
-desde produccion, C137 no se reejecuto con la API actual, la cobertura mezcla
-rechazo, fallo e inaplicabilidad, y la paridad PCA es numerica pero no exacta.
+La orden C166-C184 cerro las cuatro fronteras que quedaban:
 
-Estado: `D0_D1_ACCEPTED_D2_REATTESTATION_REQUIRED`.
+* **Guardas.** Ninguna guarda causal puede apagarse desde produccion: no hay
+  tabla, variable de entorno ni argumento que la omita. Cada una de las 17
+  guardas fue retirada por separado en un proceso aislado, y las 17 mutaciones
+  fueron detectadas.
+* **Identidad y cobertura.** Cada bloque ADF/KPSS tiene identidad propia
+  (257.884 estimaciones distintas, antes 255.786). La cobertura separa
+  `REFUSED`, `FAILED`, `NOT_APPLICABLE` y `NOT_RUN`.
+* **Paridad PCA.** Se cumple bajo una tolerancia declarada antes de medir y una
+  representacion canonica, en tres roles y dos pilas de algebra lineal.
+* **C137.** Se re-ejecuto con la API actual como reanalisis no confirmatorio:
+  mismas unidades y misma verdad, 2 de 2.565 decisiones cambian, y ninguna
+  decision historica pasa la reja D2.
+
+Durante la ejecucion hubo un defecto propio. El trabajador invalidaba el root
+completo cuando la regla de datos faltantes rechazaba todos los brazos de una
+unidad MCAR. Se corrigio y el diseno se re-sello antes de generar cualquier
+unidad fresca.
+
+Estado: `D0_D1_ACCEPTED_D2_CANDIDATE_EVIDENCE_PENDING_REVIEW`.
 
 ## 7. Proxima puerta
 
-La orden C166-C184 elimina los interruptores de mutacion de produccion, corrige
-identidad y cobertura, repite C137 como reanalisis y ejecuta una confirmacion
-sintetica fresca. D3-D5, seleccion y entrenamiento permanecen cerrados hasta la
-revision externa de ese resultado.
+La evidencia D2 fresca queda como candidata:
+
+* **Diseno.** Sellado antes de la reserva.
+* **Semillas.** 3.972 unidades con semillas no vistas en C128-C163.
+* **Ejecucion.** Distribuida por memoria en los tres roles, sin OOM de host y
+  sin invalidacion.
+* **Decisiones.** 3.591, ninguna revisada externamente: en denoising, 51
+  aprobaciones y 7 limitadas por regimen de candidatos; en SNR, 39 calibraciones
+  por regimen y ningun estimador general.
+* **Cubo.** Cargadas de forma aditiva con la historia intacta.
+
+Una submission liga diseno, codigo, cinta, raices, decisiones y carga; no
+concede nada. La reja de consumo sigue rehusando todo sujeto sin registro de
+revision externa.
+
+La orden se detiene en `D2_CURRENT_API_FRESH_CONFIRMATION_READY_FOR_MUSASHI_REVIEW`.
+D3-D5, seleccion, modelos, RL, DOIN y live siguen cerrados hasta la decision
+separada de Musashi.
