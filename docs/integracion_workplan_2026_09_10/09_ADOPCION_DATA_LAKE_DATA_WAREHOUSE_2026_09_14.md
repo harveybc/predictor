@@ -112,3 +112,23 @@ en transformaciones; esos trabajos y el replay DOIN siguen ahora en paralelo
 a la investigacion financiera.
 
 Orden ejecutiva vigente: [causalidad del pipeline y replay offline DOIN](../handoffs/MUSASHI_TO_SATOSHI_CAUSAL_PIPELINE_AND_OFFLINE_DOIN_2026_09_14.md).
+
+## Revision independiente de la continuacion
+
+Sobre predictor 90d4fcf, Musashi verifico 35 terminales en el cubo y los cinco
+servicios activos. El replay agent-multi tiene entrega y metricas persistidas;
+su identidad dirty y el origen de los contadores limitan su reproducibilidad.
+No demuestra ejecucion distribuida DOIN. No se repite la activacion anterior.
+
+La bateria causal usa operadores de prueba, no los plugins reales. Dos
+contraejemplos permiten target implicito y metadata numerica como features.
+La validacion causal productiva queda pendiente, no completada por esos tests.
+
+Secuencia ahora: roles reales -> procesamiento e indicadores reales -> replay
+reproducible y recuperacion de outbox -> archivo retrospectivo end-to-end.
+Investigacion de revisiones y derechos avanza en paralelo sin bloquear lo
+sintetico. No se abre seleccion cientifica por completar transporte.
+
+Orden ejecutiva vigente para esta continuacion:
+[R1-R6: plugins reales y replay reproducible](../handoffs/MUSASHI_TO_SATOSHI_REAL_PLUGIN_CAUSALITY_AND_REPLAY_2026_09_14.md).
+Ver [dictamen y pruebas](../audits/work_plan/MUSASHI_REVIEW_STANDING_ORDERS_2026_09_14.md).
