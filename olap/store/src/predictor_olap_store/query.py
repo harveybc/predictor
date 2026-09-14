@@ -649,17 +649,32 @@ class Plugin:
         insp = inspect(self.engine())
         dialect = self.engine().dialect.name
         schema = None if dialect == "sqlite" else (self.params.get("schema") or "public")
-        names = insp.get_table_names(schema=schema)
         items = []
-        with self.engine().connect() as conn:
-            for name in names:
-                if schema:
-                    q = text(f'SELECT COUNT(*) FROM "{schema}"."{name}"')
-                else:
-                    q = text(f'SELECT COUNT(*) FROM "{name}"')
-                n = conn.execute(q).scalar()
-                items.append({"resource_id": name, "kind": "table", "rows": int(n or 0)})
-        return items
+        for kind, names in [('table', insp.get_table_names(schema=schema)), ('view', insp.get_view_names(schema=schema))]:
+            for name in sorted(names):
+                items.append({"resource_id": name, "kind": kind, "schema": schema, "rows": None,
+                              "row_count_status": "NOT_SCANNED"})
+        return sorted(items, key=lambda item: item['resource_id'])
+
+    def resource_schema(self, resource_id):
+        inventory = {item['resource_id']: item for item in self.discover()}
+        if resource_id not in inventory:
+            raise ValueError('resource not in inventory')
+        resource = inventory[resource_id]
+        schema = resource['schema']
+        inspector = inspect(self.engine())
+        columns = inspector.get_columns(resource_id, schema=schema)
+        return {
+            **resource,
+            'columns': [
+                {'name': column['name'], 'type': str(column['type']),
+                 'nullable': column.get('nullable'), 'default': column.get('default')}
+                for column in columns
+            ],
+            'primary_key': inspector.get_pk_constraint(resource_id, schema=schema).get('constrained_columns', []),
+            'foreign_keys': inspector.get_foreign_keys(resource_id, schema=schema),
+            'indexes': inspector.get_indexes(resource_id, schema=schema),
+        }
 
     def list_resources(self):
         return self.discover()
