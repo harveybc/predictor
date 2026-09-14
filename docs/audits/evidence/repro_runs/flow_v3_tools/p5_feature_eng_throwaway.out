@@ -1,0 +1,537 @@
+{
+ "schema": "flow_v3_n5_feature_eng_throwaway.v1",
+ "code_sha256": "e9f5e8f7e4b21bb8763959f3cb9270f90824750fc0894a6e66674b5cf801194d",
+ "feature_eng_commit": "c0863673daf43bbb60f54ccd6752117328096b49",
+ "feature_eng_clean": true,
+ "egg_info_rc": 0,
+ "feature_eng_python": "~/.venvs/feature-eng/bin/python",
+ "fixtures_manifest": {
+  "files": [
+   {
+    "completion_lag_max": "1h",
+    "file": "synthetic_ohlc_1h_a.csv",
+    "frequency": "1h",
+    "generator": "governed/make_synthetic_ohlc.py",
+    "label": "WINDOW_START",
+    "rows": 2160,
+    "seed": 20260914,
+    "sha256": "d75ab18c5e94ea10d0594eb7dea8480e6e184350ac423d2c2451448e6a2fb591",
+    "time_column": "datetime",
+    "timezone": "NAIVE_WALL_CLOCK (synthetic)"
+   },
+   {
+    "completion_lag_max": "1h",
+    "file": "synthetic_ohlc_1h_b.csv",
+    "frequency": "1h",
+    "generator": "governed/make_synthetic_ohlc.py",
+    "label": "WINDOW_START",
+    "rows": 2160,
+    "seed": 20260915,
+    "sha256": "79e768f6896f1571576997b2c08cb309665b96e9201172620714628a78d3a35c",
+    "time_column": "datetime",
+    "timezone": "NAIVE_WALL_CLOCK (synthetic)"
+   },
+   {
+    "completion_lag_max": "1d",
+    "file": "synthetic_vix_daily.csv",
+    "frequency": "1d",
+    "generator": "governed/make_synthetic_ohlc.py",
+    "label": "WINDOW_START",
+    "rows": 104,
+    "seed": 20260916,
+    "sha256": "0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e",
+    "time_column": "date",
+    "timezone": "NAIVE_WALL_CLOCK (synthetic)"
+   }
+  ],
+  "generator_sha256": "f57752b0e84beaac9958357c05490bc02ffb17322299ff11242fb5af1c9c0e0c",
+  "schema": "feature_eng_synthetic_ohlc_fixtures.v1"
+ },
+ "pg_db": "data_gov_v3_throwaway_p5_1789363493",
+ "runs": {
+  "1_completed_input_a": {
+   "exit_code": 0,
+   "status": "COMPLETED",
+   "reason": null,
+   "campaign_sha256": "54c31f3828fc5f8eb973e2e4bcd6cb71a31244b60e8ee2da01607e4a425d636f",
+   "terminal_pending": false,
+   "inputs": [
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "d6cda073a3de78734b3b08861cbdaa06b20ee6b53f3565df2dd1c62d4e2efc71",
+     "availability_label": "WINDOW_START",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 112349,
+     "cached": false,
+     "delivery": "AS_IS",
+     "delivery_id": "247c448189ff4abe8e796f549c539232",
+     "lake": "feature_eng_fixtures",
+     "path": "~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/cache/feature_eng_fixtures/d75ab18c5e94ea10d0594eb7dea8480e6e184350ac423d2c2451448e6a2fb591.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "synthetic_ohlc_1h_a.csv",
+     "role": "input_file",
+     "sha256": "d75ab18c5e94ea10d0594eb7dea8480e6e184350ac423d2c2451448e6a2fb591",
+     "source_sha256": "d75ab18c5e94ea10d0594eb7dea8480e6e184350ac423d2c2451448e6a2fb591",
+     "time_column": "datetime",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_TRANSFER"
+    },
+    {
+     "availability_completion_lag_max": "1d",
+     "availability_contract_sha256": "12031406a6a7d5d256aebe835a8002a0cd0686485e6b698e7d3a8ef3bc85fcd8",
+     "availability_label": "WINDOW_START",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 3665,
+     "cached": false,
+     "delivery": "AS_IS",
+     "delivery_id": "b1b1e043599d41898df3c6021d294bff",
+     "lake": "feature_eng_fixtures",
+     "path": "~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/cache/feature_eng_fixtures/0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "synthetic_vix_daily.csv",
+     "role": "vix_dataset",
+     "sha256": "0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e",
+     "source_sha256": "0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e",
+     "time_column": "date",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_TRANSFER"
+    }
+   ],
+   "cube_rows": [
+    [
+     "COMPLETED",
+     null,
+     "{\"wall_seconds\":5.372126903996104}"
+    ]
+   ],
+   "metrics": [
+    [
+     "columns",
+     "output",
+     27.0
+    ],
+    [
+     "rows",
+     "output",
+     2160.0
+    ]
+   ],
+   "datasets": [
+    [
+     "input_file",
+     "synthetic_ohlc_1h_a.csv",
+     "d75ab18c5e94ea10d0594eb7dea8480e6e184350ac423d2c2451448e6a2fb591",
+     "VERIFIED_TRANSFER",
+     "d6cda073a3de78734b3b08861cbdaa06b20ee6b53f3565df2dd1c62d4e2efc71"
+    ],
+    [
+     "vix_dataset",
+     "synthetic_vix_daily.csv",
+     "0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e",
+     "VERIFIED_TRANSFER",
+     "12031406a6a7d5d256aebe835a8002a0cd0686485e6b698e7d3a8ef3bc85fcd8"
+    ]
+   ],
+   "artifacts": [
+    [
+     "csv:hourly_dataset_aligned.csv",
+     "94d3036121ae3025a70a764fe311fe3e1e6d160bbcc9553c325ca9bc79c14c58",
+     254224
+    ],
+    [
+     "csv:indicators_output.csv",
+     "b1778348ef45f0b3ee7c5cfc2e0caf53639baded928a6d31f48197b80a81e45f",
+     922926
+    ],
+    [
+     "csv:merged_features.csv",
+     "0a33edb851f1210092f13a7febf45e2c78ca9b1e2f1410cab56f5aa8487192c2",
+     282770
+    ],
+    [
+     "csv:seasonality_dataset.csv",
+     "0a33edb851f1210092f13a7febf45e2c78ca9b1e2f1410cab56f5aa8487192c2",
+     282770
+    ],
+    [
+     "csv:technical_indicators_aligned.csv",
+     "aa9320137909c5b6204c793d58163d8290909786df17ac4967cdf4c72af859da",
+     691647
+    ],
+    [
+     "csv:vix_aligned.csv",
+     "9f334e5a0463609080548777cd8df5b8a957c6eef42388f1d176240f9a6ff01b",
+     55987
+    ],
+    [
+     "debug_log",
+     "b9d90f2c060e5c0bf3969ee68f89f2e0d19b82a92d5b2850eb8866eb9d7097ea",
+     44
+    ],
+    [
+     "effective_config",
+     "534951b9ea2727e700301522b9210d740cc5b2c992a7e9cb64cbf3cb072d18b9",
+     1076
+    ],
+    [
+     "governed_config",
+     "9551acd71df5f4af8ac2cd3f97ebb417444b1af02e419c2e5e9a8f327234df24",
+     1103
+    ],
+    [
+     "output",
+     "b1778348ef45f0b3ee7c5cfc2e0caf53639baded928a6d31f48197b80a81e45f",
+     922926
+    ],
+    [
+     "plot",
+     "140c925205042b3f5651862a84efd84360611d448503a0e48c6c08283bc72889",
+     355607
+    ]
+   ],
+   "reconcile": {
+    "accounting_only": [],
+    "campaign_sha256": "54c31f3828fc5f8eb973e2e4bcd6cb71a31244b60e8ee2da01607e4a425d636f",
+    "lake_only": [],
+    "missing_units": []
+   },
+   "produced_files": [
+    "GOVERNED_RUN.json",
+    "debug_log.json",
+    "governed_config.json",
+    "hourly_dataset_aligned.csv",
+    "indicators_output.csv",
+    "merged_features.csv",
+    "output_config.json",
+    "run.log",
+    "seasonality_dataset.csv",
+    "technical_indicators_aligned.csv",
+    "variability_normality_analysis.png",
+    "vix_aligned.csv"
+   ],
+   "log_tail": "",
+   "ok": true
+  },
+  "2_refused_stale_outputs": {
+   "exit_code": 1,
+   "status": "REFUSED",
+   "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/debug_log.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/governed_config.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/indicators_output.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/output_config.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/run.log",
+   "campaign_sha256": "b6f0239f8bec9547ec764280d6fecee48ed4d8cfa0bcefbba204a9facce27c13",
+   "terminal_pending": false,
+   "inputs": null,
+   "cube_rows": [
+    [
+     "REFUSED",
+     "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/debug_log.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/governed_config.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/indicators_output.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/output_config.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/run.log",
+     "{\"wall_seconds\":0.00019482699281070381}"
+    ]
+   ],
+   "metrics": [],
+   "datasets": [],
+   "artifacts": [],
+   "reconcile": {
+    "accounting_only": [],
+    "campaign_sha256": "b6f0239f8bec9547ec764280d6fecee48ed4d8cfa0bcefbba204a9facce27c13",
+    "lake_only": [],
+    "missing_units": []
+   },
+   "produced_files": [
+    "GOVERNED_RUN.json",
+    "debug_log.json",
+    "governed_config.json",
+    "hourly_dataset_aligned.csv",
+    "indicators_output.csv",
+    "merged_features.csv",
+    "output_config.json",
+    "run.log",
+    "seasonality_dataset.csv",
+    "technical_indicators_aligned.csv",
+    "variability_normality_analysis.png",
+    "vix_aligned.csv"
+   ],
+   "log_tail": "governed_run: governing output namespace is not fresh: ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/debug_log.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/governed_config.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/indicators_output.csv, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/output_config.json, ~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/run.log\n",
+   "ok": true
+  },
+  "3_completed_input_b_changes_lineage": {
+   "exit_code": 0,
+   "status": "COMPLETED",
+   "reason": null,
+   "campaign_sha256": "3f1c641cb6a96c66e05ef52cf914cc71a7f83ca6d0b2c3d1511b8c00dbe6e974",
+   "terminal_pending": false,
+   "inputs": [
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "d6cda073a3de78734b3b08861cbdaa06b20ee6b53f3565df2dd1c62d4e2efc71",
+     "availability_label": "WINDOW_START",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 112349,
+     "cached": false,
+     "delivery": "AS_IS",
+     "delivery_id": "583cfc37d6c94e01ab214969551f6929",
+     "lake": "feature_eng_fixtures",
+     "path": "~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/cache/feature_eng_fixtures/79e768f6896f1571576997b2c08cb309665b96e9201172620714628a78d3a35c.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "synthetic_ohlc_1h_b.csv",
+     "role": "input_file",
+     "sha256": "79e768f6896f1571576997b2c08cb309665b96e9201172620714628a78d3a35c",
+     "source_sha256": "79e768f6896f1571576997b2c08cb309665b96e9201172620714628a78d3a35c",
+     "time_column": "datetime",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_TRANSFER"
+    },
+    {
+     "availability_completion_lag_max": "1d",
+     "availability_contract_sha256": "12031406a6a7d5d256aebe835a8002a0cd0686485e6b698e7d3a8ef3bc85fcd8",
+     "availability_label": "WINDOW_START",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 3665,
+     "cached": true,
+     "delivery": "AS_IS",
+     "delivery_id": "23cceaed06524b9cbcedf78f3b7229f9",
+     "lake": "feature_eng_fixtures",
+     "path": "~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/cache/feature_eng_fixtures/0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "synthetic_vix_daily.csv",
+     "role": "vix_dataset",
+     "sha256": "0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e",
+     "source_sha256": "0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e",
+     "time_column": "date",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_CACHE"
+    }
+   ],
+   "cube_rows": [
+    [
+     "COMPLETED",
+     null,
+     "{\"wall_seconds\":5.532567544010817}"
+    ]
+   ],
+   "metrics": [
+    [
+     "columns",
+     "output",
+     27.0
+    ],
+    [
+     "rows",
+     "output",
+     2160.0
+    ]
+   ],
+   "datasets": [
+    [
+     "vix_dataset",
+     "synthetic_vix_daily.csv",
+     "0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e",
+     "VERIFIED_CACHE",
+     "12031406a6a7d5d256aebe835a8002a0cd0686485e6b698e7d3a8ef3bc85fcd8"
+    ],
+    [
+     "input_file",
+     "synthetic_ohlc_1h_b.csv",
+     "79e768f6896f1571576997b2c08cb309665b96e9201172620714628a78d3a35c",
+     "VERIFIED_TRANSFER",
+     "d6cda073a3de78734b3b08861cbdaa06b20ee6b53f3565df2dd1c62d4e2efc71"
+    ]
+   ],
+   "artifacts": [
+    [
+     "csv:hourly_dataset_aligned.csv",
+     "068e11e56526c65b7ab4efa4bf13481dc39821332e2be9203aeefa179f618095",
+     254116
+    ],
+    [
+     "csv:indicators_output.csv",
+     "1363a45927ff11ca311db8430b6d7113e2110f5683276f88d0f1f84f59f0da9f",
+     923731
+    ],
+    [
+     "csv:merged_features.csv",
+     "59e56fcca9f4c4aec025c2229b17b58a1f9be3c89166aaa29b8ac5b36a05827e",
+     282662
+    ],
+    [
+     "csv:seasonality_dataset.csv",
+     "59e56fcca9f4c4aec025c2229b17b58a1f9be3c89166aaa29b8ac5b36a05827e",
+     282662
+    ],
+    [
+     "csv:technical_indicators_aligned.csv",
+     "727175eb189ce96457db07d77f48696f4c05a25b922b3cdc0000e28b5fcc886e",
+     690589
+    ],
+    [
+     "csv:vix_aligned.csv",
+     "9f334e5a0463609080548777cd8df5b8a957c6eef42388f1d176240f9a6ff01b",
+     55987
+    ],
+    [
+     "debug_log",
+     "1f5a15a2042cc22e27f766d873cc436ddb2871d691f94c476a38a28f2d89f9d7",
+     43
+    ],
+    [
+     "effective_config",
+     "93afc56c12552659e9700a31d497a83ad7b81309a834013a49858d0c0f926c7f",
+     1076
+    ],
+    [
+     "governed_config",
+     "563c6630cf0b0f136daa118819148f7d8fe132077992339683db0833ea91422c",
+     1103
+    ],
+    [
+     "output",
+     "1363a45927ff11ca311db8430b6d7113e2110f5683276f88d0f1f84f59f0da9f",
+     923731
+    ],
+    [
+     "plot",
+     "486ac7ba5ed576a8b4b5fc03547408b5c6cd8587c0e222fffea2326beb53c4f5",
+     358228
+    ]
+   ],
+   "reconcile": {
+    "accounting_only": [],
+    "campaign_sha256": "3f1c641cb6a96c66e05ef52cf914cc71a7f83ca6d0b2c3d1511b8c00dbe6e974",
+    "lake_only": [],
+    "missing_units": []
+   },
+   "produced_files": [
+    "GOVERNED_RUN.json",
+    "debug_log.json",
+    "governed_config.json",
+    "hourly_dataset_aligned.csv",
+    "indicators_output.csv",
+    "merged_features.csv",
+    "output_config.json",
+    "run.log",
+    "seasonality_dataset.csv",
+    "technical_indicators_aligned.csv",
+    "variability_normality_analysis.png",
+    "vix_aligned.csv"
+   ],
+   "log_tail": "",
+   "ok": true
+  },
+  "4_failed_bogus_plugin": {
+   "exit_code": 1,
+   "status": "FAILED",
+   "reason": "COMMAND_EXIT_1",
+   "campaign_sha256": "28c4cfe10b3a3f28d518c729970888c30e8932703904399dac5499cc6f59e1ce",
+   "terminal_pending": false,
+   "inputs": [
+    {
+     "availability_completion_lag_max": "1h",
+     "availability_contract_sha256": "d6cda073a3de78734b3b08861cbdaa06b20ee6b53f3565df2dd1c62d4e2efc71",
+     "availability_label": "WINDOW_START",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 112349,
+     "cached": true,
+     "delivery": "AS_IS",
+     "delivery_id": "6f9a9d398ff442c4b9254e006d87a73f",
+     "lake": "feature_eng_fixtures",
+     "path": "~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/cache/feature_eng_fixtures/d75ab18c5e94ea10d0594eb7dea8480e6e184350ac423d2c2451448e6a2fb591.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "synthetic_ohlc_1h_a.csv",
+     "role": "input_file",
+     "sha256": "d75ab18c5e94ea10d0594eb7dea8480e6e184350ac423d2c2451448e6a2fb591",
+     "source_sha256": "d75ab18c5e94ea10d0594eb7dea8480e6e184350ac423d2c2451448e6a2fb591",
+     "time_column": "datetime",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_CACHE"
+    },
+    {
+     "availability_completion_lag_max": "1d",
+     "availability_contract_sha256": "12031406a6a7d5d256aebe835a8002a0cd0686485e6b698e7d3a8ef3bc85fcd8",
+     "availability_label": "WINDOW_START",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "bytes": 3665,
+     "cached": true,
+     "delivery": "AS_IS",
+     "delivery_id": "6dda4a8e403149c6bcb8f3fff3367be1",
+     "lake": "feature_eng_fixtures",
+     "path": "~/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/cache/feature_eng_fixtures/0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e.csv",
+     "range_from": null,
+     "range_to": null,
+     "resource": "synthetic_vix_daily.csv",
+     "role": "vix_dataset",
+     "sha256": "0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e",
+     "source_sha256": "0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e",
+     "time_column": "date",
+     "timezone_evidence": "PRODUCER_STATEMENT",
+     "verification_state": "VERIFIED_CACHE"
+    }
+   ],
+   "cube_rows": [
+    [
+     "FAILED",
+     "COMMAND_EXIT_1",
+     "{\"wall_seconds\":1.1316637609997997}"
+    ]
+   ],
+   "metrics": [],
+   "datasets": [
+    [
+     "vix_dataset",
+     "synthetic_vix_daily.csv",
+     "0bb5ac6b5e90c3d69178fb58a7b7ededb6abdc8cb652044f07381d3605cbfe6e",
+     "VERIFIED_CACHE",
+     "12031406a6a7d5d256aebe835a8002a0cd0686485e6b698e7d3a8ef3bc85fcd8"
+    ],
+    [
+     "input_file",
+     "synthetic_ohlc_1h_a.csv",
+     "d75ab18c5e94ea10d0594eb7dea8480e6e184350ac423d2c2451448e6a2fb591",
+     "VERIFIED_CACHE",
+     "d6cda073a3de78734b3b08861cbdaa06b20ee6b53f3565df2dd1c62d4e2efc71"
+    ]
+   ],
+   "artifacts": [],
+   "reconcile": {
+    "accounting_only": [],
+    "campaign_sha256": "28c4cfe10b3a3f28d518c729970888c30e8932703904399dac5499cc6f59e1ce",
+    "lake_only": [],
+    "missing_units": []
+   },
+   "produced_files": [
+    "GOVERNED_RUN.json",
+    "governed_config.json",
+    "run.log"
+   ],
+   "log_tail": "governed_run: command exited 1\n",
+   "ok": true
+  },
+  "5_retry_sends_nothing": {
+   "flush_stdout": "{\"failures\": {}, \"pending\": 0, \"sent\": 0}",
+   "rc": 0,
+   "before": {
+    "gov_terminal": 4,
+    "gov_terminal_metric": 4,
+    "gov_terminal_dataset": 6,
+    "gov_terminal_artifact": 22
+   },
+   "after": {
+    "gov_terminal": 4,
+    "gov_terminal_metric": 4,
+    "gov_terminal_dataset": 6,
+    "gov_terminal_artifact": 22
+   },
+   "ok": true
+  }
+ },
+ "throwaway_cube_counts_final": {
+  "gov_terminal": 4,
+  "gov_terminal_metric": 4,
+  "gov_terminal_dataset": 6,
+  "gov_terminal_artifact": 22
+ },
+ "ok": true,
+ "pg_db_dropped": true
+}
