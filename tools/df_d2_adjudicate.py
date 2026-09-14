@@ -250,10 +250,16 @@ def decide_snr(rows: list, design: dict) -> list:
                  if r["status"] != "NOT_APPLICABLE")
         ni_rate = ni / len(applicable) if applicable else None
         per_seed = {}
+        incomplete = []
         for u, vs in by_seed.items():
-            errs = [abs(v["error_db"]) for v in vs if v["identifiability"] == "ESTIMATED" and v["error_db"] is not None]
-            if errs:
+            # a seed's error averages ALL its required variables; a variable that is not
+            # ESTIMATED makes the seed not identifiable instead of leaving the average (D2-R1 rule 8)
+            required = [v for v in vs if v["status"] != "NOT_APPLICABLE" and v["identifiability"] != "NOT_APPLICABLE"]
+            errs = [abs(v["error_db"]) for v in required if v["identifiability"] == "ESTIMATED" and v["error_db"] is not None]
+            if required and len(errs) == len(required):
                 per_seed[u] = float(np.mean(errs))
+            else:
+                incomplete.append(u)
         cov = [v["ci_covers_true"] for v in rs if v["ci_covers_true"] is not None]
         coverage = float(np.mean(cov)) if cov else None
         signed = [v["error_db"] for v in rs if v["error_db"] is not None]
@@ -263,7 +269,9 @@ def decide_snr(rows: list, design: dict) -> list:
               "mean_abs_error_db": b["mean"], "sd_seed_abs_error_db": b["sd"], "ci95_abs_error_db": [b["lower"], b["upper"]],
               "mean_signed_error_db_for_information_only": float(np.mean(signed)) if signed else None,
               "coverage": coverage, "n_coverage": len(cov), "thresholds": {k: R[k] for k in (
-                  "mean_abs_error_ci_upper_max_db", "coverage_min", "not_identifiable_rate_max", "ci_level")}}
+                  "mean_abs_error_ci_upper_max_db", "coverage_min", "not_identifiable_rate_max", "ci_level")},
+              "support": {"seeds_planned": n_design, "seeds_observed": len(by_seed),
+                          "seeds_identifiable": len(per_seed), "seeds_incomplete": sorted(incomplete)}}
         if not applicable:
             decision, reasons = "SNR_NOT_IDENTIFIABLE", ["NO_CONFIRMATION_ESTIMATE_BY_CONTRACT"]
         elif all(r["true_snr_db"] is None for r in applicable):
@@ -293,11 +301,14 @@ def decide_snr(rows: list, design: dict) -> list:
 
 # ------------------------------------------------------------ denoising
 def _seed_table(rs: list) -> dict:
-    """unit -> {"seed", "abstained", "vars": {v: {metric: value}}, "cost": {metric: max}}."""
+    """unit -> {"seed", "abstained", "vars": {v: {metric: value}}, "states": {v: {metric: status}},
+    "events": {v: {event_metric: count}}, "variables": set, "cost": {metric: max}}.
+    Every row leaves a trace: a metric that is not COMPLETED is still known by its status
+    (D2-R1), so absence and inconclusiveness can never be read as a pass."""
     out: dict = {}
     for r in rs:
-        e = out.setdefault(r["unit_id"], {"seed": r["seed"], "abstained": False, "vars": {}, "cost": {},
-                                          "unavailable": 0})
+        e = out.setdefault(r["unit_id"], {"seed": r["seed"], "abstained": False, "vars": {}, "states": {},
+                                          "events": {}, "variables": set(), "cost": {}, "unavailable": 0})
         if r["metric"] == "arm_status":
             e["abstained"] = True
             e["abstain_reason"] = r["reason"]
@@ -306,12 +317,88 @@ def _seed_table(rs: list) -> dict:
             if r["value"] is not None:
                 e["cost"][r["metric"]] = max(e["cost"].get(r["metric"], -math.inf), r["value"])
             continue
+        v = r["variable_index"]
+        e["variables"].add(v)
         if r["status"] == "UNAVAILABLE":
             e["unavailable"] += 1
+            e["states"].setdefault(v, {})["partition_support"] = "UNAVAILABLE"
             continue
-        if r["status"] == "COMPLETED":
-            e["vars"].setdefault(r["variable_index"], {})[r["metric"]] = r["value"]
+        if r["metric"].endswith("__events"):
+            if r["status"] == "COMPLETED" and r["value"]:
+                e["events"].setdefault(v, {})[r["metric"][:-len("__events")]] = float(r["value"])
+            continue
+        e["states"].setdefault(v, {})[r["metric"]] = r["status"]
+        if r["status"] == "COMPLETED" and r["value"] is not None:
+            e["vars"].setdefault(v, {})[r["metric"]] = r["value"]
     return out
+
+
+PRIMARY_METRICS = ("distortion_ratio", "delay_samples", "residual_signal_share")
+
+
+def _applicable(seed: dict, v: int, metric: str, noise_free: bool, R: dict) -> bool:
+    """Applicability derived from the contract and the evaluator's own event/geometry
+    rows, never from whether a metric row happened to arrive (D2-R1 rules 3 and 4)."""
+    if metric == R["improvement"]["metric"]:
+        return not noise_free
+    if metric in PRIMARY_METRICS:
+        return True
+    states = seed["states"].get(v, {})
+    events = seed["events"].get(v, {})
+    if metric in ("extreme_retention", "extreme_retention_raw"):
+        # extremes exist when the raw counterpart could be measured; an undefined raw
+        # (flat clean signal) means no extreme geometry, an absent raw means unknown -> required
+        raw = states.get("extreme_retention_raw")
+        return raw != "INCONCLUSIVE"
+    base = metric[:-len("_raw")] if metric.endswith("_raw") else metric
+    if base in R["event_floors"]:
+        return events.get(base, 0) > 0
+    return True
+
+
+def _support(seeds: dict, R: dict, noise_free: bool, n_design: int) -> dict:
+    """Per seed: which metrics apply, which applicable ones are unsupported, and whether the
+    seed is complete (every applicable metric of every variable observed, cost observed).
+    Seeds are never removed from the denominator: planned, observed, complete and
+    inapplicable counts are all published (D2-R1 rules 5 and 6)."""
+    required = [R["improvement"]["metric"], *PRIMARY_METRICS, "extreme_retention", "extreme_retention_raw",
+                *R["event_floors"], *sum(([m, raw] for m, raw in R["non_inferiority"]["pairs"].items()), [])]
+    required = list(dict.fromkeys(required))
+    unsupported: dict = {}
+    inapplicable: dict = {m: 0 for m in required}
+    per_seed = {}
+    for u, s in seeds.items():
+        missing = {}
+        applicable_any = set()
+        if s["abstained"]:
+            per_seed[u] = {"complete": False, "abstained": True, "unsupported": {}}
+            continue
+        for v in sorted(s["variables"]):
+            if s["states"].get(v, {}).get("partition_support") == "UNAVAILABLE":
+                missing.setdefault("partition_support", []).append(v)
+                continue
+            for m in required:
+                if not _applicable(s, v, m, noise_free, R):
+                    continue
+                applicable_any.add(m)
+                if s["vars"].get(v, {}).get(m) is None:
+                    missing.setdefault(m, []).append(v)
+        if not s["variables"]:
+            missing["primary_contrast"] = []
+        if s["cost"].get(R["cost"]["metric"]) is None:
+            missing.setdefault(R["cost"]["metric"], [])
+        for m in required:
+            if m not in applicable_any:
+                inapplicable[m] += 1
+        per_seed[u] = {"complete": not missing, "abstained": False, "unsupported": missing}
+        for m in missing:
+            unsupported.setdefault(m, []).append(u)
+    complete = sorted(u for u, p in per_seed.items() if p["complete"])
+    return {"seeds_planned": n_design, "seeds_observed": len(seeds), "seeds_complete": len(complete),
+            "seeds_abstained": sum(p["abstained"] for p in per_seed.values()),
+            "unsupported_by_metric": {m: sorted(us) for m, us in sorted(unsupported.items())},
+            "inapplicable_by_metric": {m: n for m, n in inapplicable.items() if n},
+            "per_seed": per_seed, "complete_units": complete}
 
 
 def _agg(seed: dict, metric: str, how: str):
@@ -366,7 +453,10 @@ def _decide_arm(op, regime, rs, R, ent, n_design, paired, noise_free, fam, desig
     def result(decision, reasons, n_valid):
         return dict(base, decision=decision, reasons=reasons, evidence=ev, n_seeds_valid=n_valid)
 
-    valid = {u: s for u, s in seeds.items() if not s["abstained"] and s["vars"]}
+    support = _support(seeds, R, noise_free, n_design)
+    ev["support"] = {k: v for k, v in support.items() if k not in ("per_seed", "complete_units")}
+    # a valid seed is a COMPLETE seed: every applicable metric observed (D2-R2)
+    valid = {u: seeds[u] for u in support["complete_units"]}
     abst = sum(s["abstained"] for s in seeds.values())
     ev["abstention_rate"] = abst / len(seeds) if seeds else None
     for u, s in seeds.items():
@@ -382,7 +472,9 @@ def _decide_arm(op, regime, rs, R, ent, n_design, paired, noise_free, fam, desig
     if not paired:
         return result("NOT_IDENTIFIABLE", ["UNPAIRED: arms of the regime do not share the same seeds"], len(valid))
     if len(valid) < n_design:
-        return result("NOT_IDENTIFIABLE", [f"VALID_SEEDS {len(valid)} < DESIGN {n_design}"], len(valid))
+        gaps = {m: len(us) for m, us in support["unsupported_by_metric"].items()}
+        return result("NOT_IDENTIFIABLE", [f"COMPLETE_SEEDS {len(valid)} < DESIGN {n_design}"
+                                           + (f"; unsupported seeds by metric {gaps}" if gaps else "")], len(valid))
     if ev["abstention_rate"] > R["abstention"]["max_rate"]:
         return result("NOT_IDENTIFIABLE", [f"ABSTENTION_RATE {ev['abstention_rate']:.3f} > {R['abstention']['max_rate']}"],
                       len(valid))
@@ -391,13 +483,19 @@ def _decide_arm(op, regime, rs, R, ent, n_design, paired, noise_free, fam, desig
     reasons_rej = []
     # event and extreme floors, and leakage, on EVERY seed
     for metric, (how, bound) in R["event_floors"].items():
-        worst = {u: _agg(s, metric, "min" if how == "min" else "max") for u, s in valid.items()}
+        applicable = {u: s for u, s in valid.items()
+                      if any(_applicable(s, v, metric, noise_free, R) for v in s["variables"])}
+        worst = {u: _agg(s, metric, "min" if how == "min" else "max") for u, s in applicable.items()}
+        unmeasured = sorted(u for u, v in worst.items() if v is None)
         bad = {u: v for u, v in worst.items() if v is not None and ((how == "min" and v < bound) or
                                                                  (how == "max" and v > bound))}
-        ev["checks"][f"floor:{metric}"] = {"passed": not bad, "bound": bound, "failing_seeds": bad,
-                                          "applicable_seeds": sum(v is not None for v in worst.values())}
+        ev["checks"][f"floor:{metric}"] = {"passed": not bad and not unmeasured, "bound": bound,
+                                          "failing_seeds": bad, "unmeasured_seeds": unmeasured,
+                                          "applicable": bool(applicable), "applicable_seeds": len(applicable)}
         if bad:
             reasons_rej.append(f"EVENT_OR_EXTREME_DESTROYED {metric} on seeds {sorted(bad)}")
+        if unmeasured:
+            return result("NOT_IDENTIFIABLE", [f"FLOOR_UNSUPPORTED {metric} on seeds {unmeasured}"], len(valid))
     leak = {u: _agg(s, R["residual_leakage"]["metric"], "max") for u, s in valid.items()}
     bad = {u: v for u, v in leak.items() if v is not None and v > R["residual_leakage"]["max"]}
     ev["checks"]["residual_leakage"] = {"passed": not bad, "failing_seeds": bad}
@@ -438,13 +536,25 @@ def _decide_arm(op, regime, rs, R, ent, n_design, paired, noise_free, fam, desig
     NI = R["non_inferiority"]
     for metric, raw in NI["pairs"].items():
         deltas = []
+        applicable_any = False
         for s in valid.values():
-            ds = [m[metric] - m[raw] for m in s["vars"].values() if m.get(metric) is not None and m.get(raw) is not None]
+            ds = []
+            for v, m in s["vars"].items():
+                if not _applicable(s, v, metric, noise_free, R):
+                    continue
+                applicable_any = True
+                if m.get(metric) is not None and m.get(raw) is not None:
+                    ds.append(m[metric] - m[raw])
             if ds:
                 deltas.append(float(np.min(ds)))
-        if len(deltas) < 2:
-            ev["checks"][f"non_inferiority:{metric}"] = {"passed": True, "applicable": False, "n": len(deltas)}
+        if not applicable_any:
+            # the event does not exist in this regime's windows: inapplicable, never a pass
+            ev["checks"][f"non_inferiority:{metric}"] = {"passed": None, "applicable": False, "n": 0}
             continue
+        if len(deltas) < 2:
+            ev["checks"][f"non_inferiority:{metric}"] = {"passed": False, "applicable": True, "n": len(deltas)}
+            return result("NOT_IDENTIFIABLE", [f"NON_INFERIORITY_UNSUPPORTED {metric}: {len(deltas)} complete pair(s) < 2"],
+                          len(valid))
         b = _mean_bounds(deltas, alpha)
         passed = b["lower"] > -NI["margin"]
         ev["checks"][f"non_inferiority:{metric}"] = dict(b, passed=passed, margin=NI["margin"], applicable=True)

@@ -1,0 +1,16 @@
+# PRE: declared support tests against the unrepaired adjudicator (tools/df_d2_adjudicate.py sha256 b52fc9616e3d7f227e6d1e70141aa5109577e8f7b5321218206f06a0509bf21d)
+E        +  where True = <built-in method get of dict object at 0x723b80c0c200>('passed')
+E        +    where <built-in method get of dict object at 0x723b80c0c200> = {'passed': True, 'applicable': False, 'n': 1}.get
+tests/test_df_d2_support.py:134: AssertionError
+tests/test_df_d2_support.py:144: AssertionError
+FAILED tests/test_df_d2_support.py::test_control_full_fixture_still_calibrates
+FAILED tests/test_df_d2_support.py::test_rule_1_removing_a_damage_metric_never_turns_rejection_into_pass
+FAILED tests/test_df_d2_support.py::test_rule_2_inconclusive_limit_metrics_do_not_pass[delay_samples]
+FAILED tests/test_df_d2_support.py::test_rule_2_inconclusive_limit_metrics_do_not_pass[residual_signal_share]
+FAILED tests/test_df_d2_support.py::test_rule_3_event_absent_by_contract_is_inapplicable_not_zero
+FAILED tests/test_df_d2_support.py::test_rule_4_event_present_with_missing_metric_is_unsupported
+FAILED tests/test_df_d2_support.py::test_rule_5_unsupported_variable_stays_in_the_denominator
+FAILED tests/test_df_d2_support.py::test_rule_6_a_seed_with_only_cost_rows_is_not_complete
+FAILED tests/test_df_d2_support.py::test_rule_7_fewer_than_two_applicable_pairs_never_pass
+FAILED tests/test_df_d2_support.py::test_rule_8_snr_seed_missing_a_required_variable_is_not_identifiable
+10 failed in 0.99s
