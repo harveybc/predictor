@@ -73,6 +73,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import df_host_capacity as HC  # noqa: E402
 import df_placement as PL  # noqa: E402
+import flow_v3_gate as G3  # noqa: E402
 
 SCHEMA = "crispdm.data_foundation.dispatch_receipt.v2"
 RESUME_SKIP = ("COMPLETED", "FAILED", "RESOURCE_EXCEEDED", "UNPLACEABLE", "SPLIT")
@@ -642,7 +643,17 @@ def main(argv=None) -> int:
     ap.add_argument("--rerun-uncertain", action="store_true")
     ap.add_argument("--poll-seconds", type=float, default=5.0)
     ap.add_argument("--max-wait-seconds", type=float, default=3600.0)
+    G3.add_gate_arguments(ap)
     a = ap.parse_args(argv)
+    # Flow v3 work-plan gate: a GOVERNING dispatch needs a campaign manifest with
+    # declared deliveries and a terminal destination; anything else is dispatched
+    # as NON_GOVERNING and says so in the root (sealed once, not on --resume).
+    gate = G3.require_governed_dispatch(
+        a.classification, a.campaign_manifest,
+        root=(a.root if a.root and not a.dry_run and not a.resume else None),
+        jobs_sha256=hashlib.sha256(a.jobs_file.read_bytes()).hexdigest(),
+        non_governing_reason=a.non_governing_reason or "not declared as a decision campaign",
+    )
     caps = dict(PL.DEFAULT_ROLE_CAPS)
     for s in a.role_cap:
         k, _, v = s.partition("=")
