@@ -1,0 +1,22 @@
+{
+ "schema": "agent_multi_offline_replay.v2",
+ "exit_code": 0,
+ "custody": {
+  "experiment_template_sha256": "bc64aeac32fa9ca00a2c054eef4176a47ebc59039fb3d837a8c528bc328bb950",
+  "runtime_overlay_sha256": "41560c01631364b086e5050e7293b69cf2e2f2696ede6d5ddb957c709aa0fa0c",
+  "resolved_config_sha256": "b6535b2a9ded5af22ed3fbf1df8a93006f145024e3c0c5c1628b9cce116168f3",
+  "runner_source_sha256": "b8ada89d1708715a958f56dea486ee670696fae51c849931458911b3ed47bc9b",
+  "entry_point_sha256": "b1b4b23b171659d2704c0bda6907ffbf27351016ab9c278bab21f2cb87f6edef",
+  "input_data_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+  "summary_origin": "this_run"
+ },
+ "experiment_config_sha256": "b6535b2a9ded5af22ed3fbf1df8a93006f145024e3c0c5c1628b9cce116168f3",
+ "wall_seconds": 15.772641364019364,
+ "requested_timesteps": 64.0,
+ "observed_timesteps": 10240.0,
+ "observed_updates": 400.0,
+ "offline": true,
+ "network": "none",
+ "device": "cpu",
+ "stdout_tail": ""
+}

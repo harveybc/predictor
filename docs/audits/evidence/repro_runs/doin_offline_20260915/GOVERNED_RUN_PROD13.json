@@ -1,0 +1,192 @@
+{
+  "campaign_key": "doin-offline-replay-prod-13",
+  "campaign_sha256": "5e7fb4db0a4b8940aa8a6fc753d678eb5d9f414add4739080c5a3a5252445f99",
+  "classification": "NON_GOVERNING",
+  "code_identity": {
+    "kind": "git_commit",
+    "value": "55b1eea44af991293f2e9ce8bf059027d976984e-dirty"
+  },
+  "command": [
+    "/home/harveybc/anaconda3/envs/trading-stack/bin/python",
+    "/home/harveybc/Documents/GitHub/agent-multi/tools/governed_offline_replay.py",
+    "--load_config",
+    "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/r3prod/out13/governed_config.json"
+  ],
+  "config_sha256": "d9100e24ea9482c006b13c6b0993add5810c3463a1d8aabe63e916aca663d410",
+  "cwd": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/r3prod/out13",
+  "execution_spec": {
+    "artifacts": [
+      "effective_config",
+      "replay_log"
+    ],
+    "command": [
+      "/home/harveybc/anaconda3/envs/trading-stack/bin/python",
+      "{repo_root}/tools/governed_offline_replay.py",
+      "--load_config",
+      "{config}"
+    ],
+    "config": {
+      "experiment_config": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/r3prod/doin_smoke.json",
+      "experiment_name": "governed-offline-replay-production",
+      "input_data_file": "role:input_data_file",
+      "max_rows": 384,
+      "runtime_overlay": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/r3prod/doin_overlay.json",
+      "save_config": "replay_config.json",
+      "save_log": "replay_log.json",
+      "total_timesteps": 64
+    },
+    "datasets": [
+      {
+        "from": null,
+        "lake": "governance_smoke",
+        "resource": "synthetic_features_4h_train.csv",
+        "role": "input_data_file",
+        "to": null
+      }
+    ],
+    "extra_args": [],
+    "metrics": {
+      "keys": [
+        "wall_seconds",
+        "requested_timesteps",
+        "observed_timesteps",
+        "observed_updates",
+        "best_fitness",
+        "champion_fitness",
+        "final_reward",
+        "candidates_evaluated",
+        "generations"
+      ],
+      "kind": "json_numbers",
+      "path": "replay_log.json"
+    },
+    "project": "agent-multi",
+    "schema": "governed_exec_execution_spec.v1"
+  },
+  "exit_code": 0,
+  "governed_config": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/r3prod/out13/governed_config.json",
+  "inputs": [
+    {
+      "availability_completion_lag_max": "4h",
+      "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+      "availability_label": "WINDOW_START",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "bytes": 228801,
+      "cached": true,
+      "delivery": "AS_IS",
+      "delivery_id": "3d392ba3ac7746f7a2735dedc063024f",
+      "lake": "governance_smoke",
+      "path": "/home/harveybc/.cache/data-gov/governance_smoke/4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027.csv",
+      "range_from": null,
+      "range_to": null,
+      "resource": "synthetic_features_4h_train.csv",
+      "role": "input_data_file",
+      "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+      "source_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+      "time_column": "DATE_TIME",
+      "timezone_evidence": "PRODUCER_STATEMENT",
+      "verification_state": "VERIFIED_CACHE"
+    }
+  ],
+  "out_dir": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/r3prod/out13",
+  "outbox_flush": {
+    "failures": {},
+    "pending": 0,
+    "sent": 1
+  },
+  "prior_outbox_flush": {
+    "failures": {},
+    "pending": 0,
+    "sent": 0
+  },
+  "project": "agent-multi",
+  "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "5e7fb4db0a4b8940aa8a6fc753d678eb5d9f414add4739080c5a3a5252445f99",
+    "lake_only": [],
+    "missing_units": []
+  },
+  "repo_root": "/home/harveybc/Documents/GitHub/agent-multi",
+  "schema": "governed_exec_run.v1",
+  "status": "COMPLETED",
+  "terminal": {
+    "artifacts": [
+      {
+        "bytes": 979,
+        "role": "replay_log",
+        "sha256": "0ce4e1735c50878d648702dd01f69bfba42ed1090e6f13bce3c812c2b6b09241"
+      },
+      {
+        "bytes": 870,
+        "role": "governed_config",
+        "sha256": "d41553a3f2add5ea70e52b52b98355a8e3057745773742fb27cfdea3cb613821"
+      }
+    ],
+    "costs": {
+      "wall_seconds": 4.4546295299660414
+    },
+    "deliveries": [
+      "3d392ba3ac7746f7a2735dedc063024f"
+    ],
+    "finished_at": "2026-09-15T19:55:22.897581Z",
+    "generation": 1,
+    "metrics": [
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "wall_seconds",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 4.4064683499746025
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "requested_timesteps",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 64.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "observed_timesteps",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 256.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "observed_updates",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 10.0
+      }
+    ],
+    "reason": null,
+    "schema": "governed_terminal.v1",
+    "started_at": "2026-09-15T19:55:18.442956Z",
+    "status": "COMPLETED",
+    "tags": {
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "device": "cpu",
+      "exit_code": "0",
+      "experiment_set_key": "",
+      "network": "none",
+      "offline": "true",
+      "phase": "r3prod"
+    }
+  },
+  "terminal_outbox": "/home/harveybc/.local/state/data-gov/terminal-outbox/pending/b973f21009721c631d9034e18e0c15b4cd54c792e9dd2647a9bda5169c8c7193.json",
+  "terminal_pending": false,
+  "unit_id": "doin-offline-replay-prod-13"
+}
