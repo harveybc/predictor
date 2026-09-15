@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
-"""One governed delivery, from whichever machine runs this, through data-gov.
+"""One governed unit — delivery AND terminal — from whichever machine runs this.
 
 Musashi's instruction of 2026-09-15: check the identity contract that exists, configure the
 workers with it, and prove a governed delivery **from each machine**.
 
-Nothing here reimplements the protocol: it drives `data-gov`'s own `DataGovClient`, the same
-class every consumer uses, so what is proven is the deployed path — campaign, authenticated
-download with its content hash, confirmation, and a terminal with the cost of the work.
+Nothing here reimplements the protocol: it drives `data-gov`'s own `DataGovClient` and its
+`TerminalOutbox`, so what is proven is the deployed path — campaign, authenticated download
+with its content hash, confirmation, a terminal carrying the measured cost, and reconciliation.
+
+Musashi's inspection of 2026-09-15 was right: the first version stopped after the download and
+wrote a local receipt, while its docstring spoke of a terminal. A campaign left without a
+terminal is an open campaign, which is exactly what the accounting exists to notice. The
+terminal now goes through the outbox, so a destination that disappears strands it on disk
+instead of losing it.
 
 The point of running it from gamma or dragon is that those machines hold no copy of any
 dataset. They reach the real lake over the operator's tunnel and the bytes arrive governed,
@@ -76,6 +82,11 @@ def main(argv=None) -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--cache-dir", type=Path,
                         default=Path.home() / ".cache" / "data-gov")
+    parser.add_argument("--terminal-lake", default="olap_cube")
+    parser.add_argument("--outbox-dir", type=Path,
+                        default=Path.home() / ".cache" / "data-gov-outbox")
+    parser.add_argument("--unit-suffix", default="1",
+                        help="a second bounded unit proves the content cache is used")
     parser.add_argument("--repo-root", type=Path, default=None,
                         help="the checkout whose commit identifies this code; data-gov "
                              "refuses a campaign without one, which is why a probe copied "
@@ -97,14 +108,14 @@ def main(argv=None) -> int:
          "resource": args.resource}, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     campaign = {
         "schema": "governed_campaign.v1",
-        "campaign_key": f"worker-delivery-{host}-{int(time.time())}",
+        "campaign_key": f"worker-delivery-{host}-{args.unit_suffix}-{int(time.time())}",
         "classification": "NON_GOVERNING",
         "project": "predictor",
         "code_identity": code_identity,
         "config_sha256": config_sha256,
         "input_mode": "DATASETS",
         "synthetic_spec_sha256": None,
-        "units": [f"{host}-probe-1"],
+        "units": [f"{host}-probe-{args.unit_suffix}"],
         "datasets": [{"lake": args.lake, "resource": args.resource, "role": "probe",
                       "from": None, "to": None}],
         "terminal_lake": "olap_cube",
@@ -115,6 +126,7 @@ def main(argv=None) -> int:
     campaign_sha = submitted.get("campaign_sha256") or submitted.get("sha256")
     unit_id = campaign["units"][0]
 
+    started_at = now()
     started = time.monotonic()
     args.cache_dir.mkdir(parents=True, exist_ok=True)
     # the GOVERNED path: it carries the campaign and unit headers and confirms the delivery
@@ -128,8 +140,33 @@ def main(argv=None) -> int:
     path = Path(delivery["path"]) if isinstance(delivery, dict) and delivery.get("path") else None
     local_sha = hashlib.sha256(path.read_bytes()).hexdigest() if path and path.is_file() else None
 
+    # the unit is closed: a terminal through the outbox, then reconciliation
+    sys.path.insert(0, str(Path(os.environ.get("DATA_GOV_CHECKOUT")
+                                or Path.home() / "Documents/GitHub/data-gov").expanduser()))
+    from app.outbox import TerminalOutbox
+
+    terminal = {
+        "schema": "governed_terminal.v1", "generation": 1, "status": "COMPLETED",
+        "reason": None, "started_at": started_at, "finished_at": now(),
+        "costs": {"wall_seconds": round(wall, 3),
+                  "bytes_received": float(delivery.get("bytes") or 0)},
+        "deliveries": [delivery["delivery_id"]] if delivery.get("delivery_id") else [],
+        "artifacts": [],
+        "metrics": [{"metric": "bytes_delivered", "split": "test", "horizon": 0,
+                     "unit": "bytes", "value": float(delivery.get("bytes") or 0),
+                     "std_dev": None, "min_value": None, "max_value": None},
+                    {"metric": "delivery_from_cache", "split": "test", "horizon": 0,
+                     "unit": "bool", "value": 1.0 if delivery.get("cached") else 0.0,
+                     "std_dev": None, "min_value": None, "max_value": None}],
+        "tags": {"host": host, "probe": "worker_delivery"},
+    }
+    outbox = TerminalOutbox(args.outbox_dir)
+    outbox.put({"campaign_sha256": campaign_sha, "unit_id": unit_id, "terminal": terminal})
+    terminal_status, terminal_receipt = client.report_terminal(campaign_sha, unit_id, terminal)
+    reconcile_status, reconciliation = client.reconcile_campaign(campaign_sha)
+
     receipt = {
-        "schema": "worker_delivery_probe.v1",
+        "schema": "worker_delivery_probe.v2",
         "at": now(), "host": host, "gov_url": args.gov_url,
         "experiment_key": experiment, "campaign_sha256": campaign_sha, "unit_id": unit_id,
         "lake": args.lake, "resource": args.resource,
@@ -138,8 +175,23 @@ def main(argv=None) -> int:
                                 "source_sha256", "path")},
         "bytes_on_disk_sha256": local_sha,
         "wall_seconds": round(wall, 3),
+        "terminal": {"status": terminal_status,
+                     "sha256": (terminal_receipt or {}).get("terminal_sha256"),
+                     "already_stored": (terminal_receipt or {}).get("already_stored")},
+        "reconciliation": reconciliation if reconcile_status == 200 else
+                          {"status": reconcile_status},
+        # WHO the accounting recorded is not self-reportable: `governed_deliveries.actor`
+        # lives in data-gov's store, so the coordinator reads it there against this
+        # delivery_id. A worker asserting its own identity would prove nothing.
+        "actor_verification": {"where": "data-gov governed_deliveries.actor",
+                               "key_file": str(args.api_key_file),
+                               "delivery_id": delivery.get("delivery_id")},
         "note": "the bytes were obtained through data-gov, not copied between machines",
     }
+    if terminal_status not in (200, 201):
+        receipt["refusal"] = f"the terminal was refused: {terminal_status} {terminal_receipt}"
+    elif reconciliation.get("missing_units"):
+        receipt["refusal"] = f"the campaign is still open: {reconciliation['missing_units']}"
     if local_sha and delivery.get("sha256") and local_sha != delivery["sha256"]:
         receipt["refusal"] = "the bytes on disk do not match the delivered digest"
     args.out.parent.mkdir(parents=True, exist_ok=True)

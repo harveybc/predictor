@@ -1,0 +1,38 @@
+{
+ "schema": "worker_delivery_probe.v2",
+ "at": "2026-09-15T12:05:19.016Z",
+ "host": "gamma",
+ "gov_url": "http://127.0.0.1:15055",
+ "experiment_key": "worker-delivery-gamma-1789473918",
+ "campaign_sha256": "ad65885e74d3a509ce3d34bbc2dd0b83dc49c669636d3ea4a9fa23955000931a",
+ "unit_id": "gamma-probe-1",
+ "lake": "governance_smoke",
+ "resource": "synthetic_typical_price_4h_train.csv",
+ "delivery": {
+  "sha256": "6de45a7d86564ee7a7b3c04a62de859158770fc3760e3911248e1cbc4c6dd9c7",
+  "source_sha256": "6de45a7d86564ee7a7b3c04a62de859158770fc3760e3911248e1cbc4c6dd9c7",
+  "delivery": "AS_IS",
+  "cached": false,
+  "path": "/home/harveybc/.cache/data-gov/6de45a7d86564ee7a7b3c04a62de859158770fc3760e3911248e1cbc4c6dd9c7.csv",
+  "bytes": 26124
+ },
+ "bytes_on_disk_sha256": "6de45a7d86564ee7a7b3c04a62de859158770fc3760e3911248e1cbc4c6dd9c7",
+ "wall_seconds": 0.068,
+ "terminal": {
+  "status": 201,
+  "sha256": "6ffe402c1079f8111b7324bf6f014cdf21f4b8f581d21a1750596adf104e31d0",
+  "already_stored": false
+ },
+ "reconciliation": {
+  "accounting_only": [],
+  "campaign_sha256": "ad65885e74d3a509ce3d34bbc2dd0b83dc49c669636d3ea4a9fa23955000931a",
+  "lake_only": [],
+  "missing_units": []
+ },
+ "actor_verification": {
+  "where": "data-gov governed_deliveries.actor",
+  "key_file": "/home/harveybc/work/gov/worker.key",
+  "delivery_id": "fb64402ef83d4bff93355a8021992ee8"
+ },
+ "note": "the bytes were obtained through data-gov, not copied between machines"
+}

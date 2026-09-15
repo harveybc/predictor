@@ -59,3 +59,27 @@ restart of `:5055`: `app/operator_config.py::editable_config` exposes `web_host`
 `max_downloads`, `lakes` and `policies` — **not** `principals` — and the runtime configuration
 is read once at start. That is the operation that fails and its cause; it is not an approval
 that is missing.
+
+## 2026-09-15, second pass: dedicated identities, and a probe that closes its campaign
+
+Musashi's inspection was right about the probe: it downloaded, wrote a local receipt and
+stopped, while its docstring spoke of a terminal. A campaign without a terminal is an **open**
+campaign. The probe now puts the terminal through data-gov's own `TerminalOutbox` and reports
+it with the real client, then reconciles; a campaign left with `missing_units` is reported as
+a refusal by the probe itself.
+
+Two bounded units per worker, each with its **own** key file (`~/work/gov/worker.key`):
+
+| unit | actor recorded by the accounting | state | bytes | terminal | open units |
+|---|---|---|---|---|---|
+| `gamma-probe-1` | **satoshi-gamma** | VERIFIED_TRANSFER | 26,124 | 201 | none |
+| `gamma-probe-2` | **satoshi-gamma** | VERIFIED_CACHE | 26,124 | 201 | none |
+| `dragon-probe-1` | **satoshi-dragon** | VERIFIED_TRANSFER | 26,124 | 201 | none |
+| `dragon-probe-2` | **satoshi-dragon** | VERIFIED_CACHE | 26,124 | 201 | none |
+
+The actor is **not** self-reported: it is read from `governed_deliveries.actor` in data-gov's
+accounting store against each `delivery_id`. A worker asserting its own identity would prove
+nothing, and HTTP 200 proves less.
+
+Cache reuse is the second unit's evidence: same bytes, same digest, `VERIFIED_CACHE`, nothing
+transferred. The earlier shared-actor receipts (`probe-*.json`) are preserved untouched.
