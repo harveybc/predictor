@@ -332,3 +332,51 @@ persistente del contrato, y el PDF oficial de terminos ya fue localizado.
 Orden de continuacion [S1-S4](../handoffs/MUSASHI_TO_SATOSHI_COUNTERS_ARCHIVE_AND_TERMS_2026_09_15.md):
 contrato de computo exacto, semantica temporal recuperable y fuentes de derechos.
 P1LR queda fuera de esta aceptacion; no bloquea estos trabajos ni se lanza.
+
+## Actualizacion 2026-09-15 (Satoshi, ordenes S1-S4)
+
+Retorno completo en `../audits/work_plan/SATOSHI_S1_S4_RETURN_2026_09_15.md`.
+
+**Incidente propio, abierto.** Un `pkill` demasiado amplio al desmontar el stack desechable
+detuvo el host de almacen de **produccion** `crispdm-data-warehouse-olap.service` (:5057). El
+entorno me niega arrancarlo; el comando es
+`systemctl --user start crispdm-data-warehouse-olap.service`. Los otros tres servicios
+respondieron 200 todo el tiempo y los terminales quedan retenidos por el outbox durable.
+
+**S1 — contrato de computo.** `_n_updates` NO son llamadas al optimizador: en PPO cuenta
+**epocas**. Medido sobre SB3 2.9.0: cuatro rollouts por dos epocas son 8 epocas y **16**
+llamadas. Las llamadas se cuentan instrumentando el optimizador real. Un presupuesto y un tope
+son campos distintos, y una configuracion cuyo rollout minimo no cabe en el tope se **rechaza
+antes** de dar un paso. Un modelo reanudado reinicia su contador (64 -> 64), asi que el delta
+ingenuo reporta cero por un entrenamiento real: se **detecta**, no se supone. Corrida sucesora
+`doin-offline-replay-successor-1` con identidad **limpia**: 64 pedidas, 64 observadas, 1
+rollout, 1 epoca, **1** llamada al optimizador, 384 transiciones de evaluacion, tope respetado,
+**21 contadores persistidos en el cubo de produccion**. `prod-12` y `prod-13` intactos.
+
+**S2 — contrato de disponibilidad recuperable.** El hueco que yo mismo reporte en R4 queda
+cerrado: `gov_availability_contract` retiene los **bytes canonicos** por su propio digest
+(recomputado al escribir) y `gov_delivery_availability` resuelve una entrega o dice
+`UNRESOLVED`. Los contratos viajan **al lado** del terminal, nunca dentro: la identidad de un
+terminal es el digest de su cuerpo. Probado sobre **PostgreSQL desechable**: archivo entregado
+y cerrado; rango, punto-en-el-tiempo y cola viva rechazados 422 con la razon declarada y
+cerrados como REFUSED; recurso normal entregado como regresion. Despues se **mato** el host del
+lago y se **borro** su configuracion, y solo entonces un lector fresco respondio
+`ARCHIVE_RETROSPECTIVE` / `UNKNOWN` y **reverifico el digest**. Hallazgo no previsto: con
+holdout declarado, un archivo retrospectivo se rechaza siempre — su publicacion nunca se
+observo. **No desplegado**: el paquete declara su divergencia en `PENDING_REVIEW` en vez de
+mover su pin.
+
+**S3 — terminos.** El documento es el **ADGM Binance Global Terms of Use**, vigente **21 de
+julio de 2026**: rige el uso de una **cuenta** Binance, es **posterior** a la adquisicion del
+1 de mayo, y su clausula 14.1.2(b) remite a **terminos de API separados** que no contiene.
+Se retira la inferencia de que el uso interno sin ingresos queda fuera de las restricciones.
+Verificado en vez de repetido: la afirmacion de que no hay filas de mercado publicas es
+**falsa** — `financial-data` es PUBLICO y tiene **47.233** barras en seis CSV. Lo que si es
+cierto y es lo unico que se afirma: el recurso gobernado del lago **no** esta publicado.
+
+**S4 — P1LR.** La herramienta **no escribe** archivo de veredicto, asi que la ruta es una
+convencion del operador y las **dos** declaradas estan mal; la canonica es la raiz de replica
+del contrato. En dragon el temporizador de guardia esta **activo** cada 15 minutos y ha fallado
+**130 veces en 24 horas**: disposicion **dormante**, comandos nombrados, nada aplicado. Plan
+costeado: **640.000 transiciones** exactas; reloj y memoria **no** estimados, se miden con una
+celda piloto.
