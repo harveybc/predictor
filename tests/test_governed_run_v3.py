@@ -44,6 +44,10 @@ def _args(tmp_path):
         lake_root=str(source.parent), metrics_lake="cube", out_dir=str(tmp_path / "out"),
         cache_dir=str(tmp_path / "cache"), outbox_dir=str(tmp_path / "outbox"),
         range_from=None, range_to=None, project="predictor", phase="test",
+        # `--classification` arrived with the mechanical-run flag and this fixture was not
+        # updated with it, so every rule here raised AttributeError before reaching its
+        # subject. The default matches the parser's.
+        classification="GOVERNING",
     )
 
 

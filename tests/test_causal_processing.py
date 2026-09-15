@@ -31,8 +31,16 @@ pd = pytest.importorskip("pandas")
 
 @pytest.fixture(scope="module")
 def bench(tmp_path_factory):
-    """The bench is regenerated from its declared seed when it is not already present."""
-    if (BENCH / "MANIFEST.json").is_file():
+    """The bench is regenerated from its declared seed when it is not already present.
+
+    Presence means the manifest AND the frames it describes. The manifest is committed and the
+    CSVs are not, so checking only the manifest let a half-present bench through the guard and
+    the failure surfaced as a FileNotFoundError from pandas, which reads as a broken test
+    rather than an absent fixture.
+    """
+    needed = ["MANIFEST.json"] + [f"causal_{name}.csv"
+                                  for name in ("train", "validation", "test", "whole")]
+    if all((BENCH / name).is_file() for name in needed):
         root = BENCH
     else:
         root = tmp_path_factory.mktemp("causal")
