@@ -1,0 +1,53 @@
+{
+ "schema": "archive_route_probe.v1",
+ "at": "2026-09-15T19:47:08.030Z",
+ "stack": {
+  "gov_url": "http://127.0.0.1:53291",
+  "work": "/home/harveybc/work/r4-stack"
+ },
+ "archive_resource": "synthetic_typical_price_4h_train.csv",
+ "plain_resource": "synthetic_features_4h_train.csv",
+ "findings": {
+  "campaign_whole": 201,
+  "whole_archive": {
+   "status": 200,
+   "state": "VERIFIED_TRANSFER",
+   "bytes": 1416,
+   "availability": null,
+   "delivery_id": "6581d3d206244f7eb05007b9848eed4e"
+  },
+  "terminal": 201,
+  "reconciliation": {
+   "accounting_only": [],
+   "campaign_sha256": "e0c59271d38710f764d1cfca19eec7c859decb4135045a201efe01a3f5903851",
+   "lake_only": [],
+   "missing_units": []
+  },
+  "ranged_archive": {
+   "status": 422,
+   "body": {
+    "error": "this resource is a retrospective archive: its publication time was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   }
+  },
+  "plain_whole": {
+   "status": 200,
+   "bytes": 12393
+  },
+  "persisted_deliveries": [
+   {
+    "unit_id": "plain-1",
+    "resource_id": "synthetic_features_4h_train.csv",
+    "state": "VERIFIED_TRANSFER",
+    "bytes": 12393,
+    "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b"
+   },
+   {
+    "unit_id": "archive-whole-1",
+    "resource_id": "synthetic_typical_price_4h_train.csv",
+    "state": "VERIFIED_TRANSFER",
+    "bytes": 1416,
+    "availability_contract_sha256": "62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d"
+   }
+  ]
+ }
+}

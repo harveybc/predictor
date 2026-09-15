@@ -31,8 +31,13 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
 GITHUB = REPO.parent
-DATA_GOV = GITHUB / "data-gov"
-HOSTS_PYTHON = Path.home() / ".venvs" / "store-hosts" / "bin" / "python"
+#: the data-gov checkout that provides the governance service for the disposable stack;
+#: overridable so a worker whose layout differs can still run this path (R4)
+DATA_GOV = Path(os.environ.get("DATA_GOV_CHECKOUT") or GITHUB / "data-gov").expanduser()
+#: The interpreter that runs the two store hosts. Overridable so a worker can run this stack
+#: against a CANDIDATE provider without touching the venv the live hosts use (R4).
+HOSTS_PYTHON = Path(os.environ.get("STORE_HOSTS_PYTHON")
+                    or Path.home() / ".venvs" / "store-hosts" / "bin" / "python")
 
 
 def free_port() -> int:
