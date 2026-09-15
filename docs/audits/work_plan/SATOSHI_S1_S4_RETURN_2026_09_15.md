@@ -167,4 +167,27 @@ Document: `SATOSHI_P1LR_DORMANT_DISPOSITION_S4_2026_09_15.md`.
 | the 16 screen records and the replica proof | owner of that front | costed; deferred by this order |
 | per-delivery capability tokens | deferred | unchanged |
 
+## Two stale fixtures that were red when I filed the audit request
+
+Running the whole predictor suite — rather than the focal set — found four failures and nine
+errors that have nothing to do with S1–S4. They fail identically at **`2574890`**, the revision
+I asked to have audited. They were red when I filed it and I did not report them. Both are mine:
+
+* **`test_governed_run_v3`** built its `Namespace` without `classification`, an attribute the
+  governed runner gained when I added the mechanical-run flag. All four rules raised
+  `AttributeError` **before reaching their subject**, so they had been proving nothing;
+* **`test_causal_processing`** guarded on the bench `MANIFEST.json`, which is committed, and not
+  on the frames, which are not. A half-present bench passed the guard and died inside pandas,
+  reading as a broken test rather than an absent fixture.
+
+Both corrected at `bd08b6d`. This also corrects a sentence in my previous return: the "81
+green" I reported was the focal set I ran, not the state of the suite. The warning against
+claiming a full suite from a focal run applied to me more than I recognised.
+
+**The suite, run whole and measured:** predictor `tests` + `olap/store/tests`, excluding the
+two legacy directories AGENTS.md documents as stale (`tests/unit_tests`,
+`tests/integration_tests`, which fail at import against the current architecture) —
+**1333 passed, 25 skipped, 0 failed, 0 errors** in 6m20s, CPU only, with
+`ARCHIVE_PROVIDER_SRC` pointing at the candidate lake provider.
+
 No full-suite claim is made from a focal run: the suites named above are the ones I executed.
