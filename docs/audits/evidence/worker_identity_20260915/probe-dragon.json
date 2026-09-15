@@ -1,0 +1,22 @@
+{
+ "schema": "worker_delivery_probe.v1",
+ "at": "2026-09-15T07:51:05.778Z",
+ "host": "dragon",
+ "gov_url": "http://127.0.0.1:15055",
+ "experiment_key": "worker-delivery-dragon-1789458665",
+ "campaign_sha256": "c4020a472f95953f9457020f2e3efc4d991e86cb77507419121e10a5aeed6149",
+ "unit_id": "dragon-probe-1",
+ "lake": "governance_smoke",
+ "resource": "synthetic_features_4h_train.csv",
+ "delivery": {
+  "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+  "source_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+  "delivery": "AS_IS",
+  "cached": false,
+  "path": "/home/harveybc/.cache/data-gov/4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027.csv",
+  "bytes": 228801
+ },
+ "bytes_on_disk_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+ "wall_seconds": 0.089,
+ "note": "the bytes were obtained through data-gov, not copied between machines"
+}

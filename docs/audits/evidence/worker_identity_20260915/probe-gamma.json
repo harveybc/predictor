@@ -1,0 +1,22 @@
+{
+ "schema": "worker_delivery_probe.v1",
+ "at": "2026-09-15T07:50:09.360Z",
+ "host": "gamma",
+ "gov_url": "http://127.0.0.1:15055",
+ "experiment_key": "worker-delivery-gamma-1789458609",
+ "campaign_sha256": "33c90915f5594b8b053f6f6b4c47497be666e008f317545a632dab3bbc56b590",
+ "unit_id": "gamma-probe-1",
+ "lake": "governance_smoke",
+ "resource": "synthetic_features_4h_train.csv",
+ "delivery": {
+  "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+  "source_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+  "delivery": "AS_IS",
+  "cached": false,
+  "path": "/home/harveybc/.cache/data-gov/4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027.csv",
+  "bytes": 228801
+ },
+ "bytes_on_disk_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+ "wall_seconds": 0.02,
+ "note": "the bytes were obtained through data-gov, not copied between machines"
+}

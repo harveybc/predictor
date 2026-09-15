@@ -1,0 +1,22 @@
+{
+ "schema": "worker_delivery_probe.v1",
+ "at": "2026-09-15T07:49:38.145Z",
+ "host": "omega",
+ "gov_url": "http://127.0.0.1:5055",
+ "experiment_key": "worker-delivery-omega-1789458578",
+ "campaign_sha256": "cee1eafcea567787f55480cd9151085d9204c8d86e28b4064b16948945453b69",
+ "unit_id": "omega-probe-1",
+ "lake": "governance_smoke",
+ "resource": "synthetic_features_4h_train.csv",
+ "delivery": {
+  "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+  "source_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+  "delivery": "AS_IS",
+  "cached": false,
+  "path": "/home/harveybc/.cache/data-gov/4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027.csv",
+  "bytes": 228801
+ },
+ "bytes_on_disk_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+ "wall_seconds": 0.012,
+ "note": "the bytes were obtained through data-gov, not copied between machines"
+}
