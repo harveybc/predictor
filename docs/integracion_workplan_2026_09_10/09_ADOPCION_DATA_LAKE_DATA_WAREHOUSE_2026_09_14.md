@@ -234,3 +234,33 @@ Quedan dos preguntas: revisiones (medibles con un re-fetch acotado, llamada sali
 
 **Cubo medido tras el ultimo replay: 35 terminales**, historia intacta, servicios `:5055/:5056/
 :5057/:5058` sanos y sin reinicios.
+
+
+## Actualizacion 2026-09-15 (Satoshi, ordenes R1-R6 ejecutadas)
+
+Retorno completo en `docs/audits/work_plan/SATOSHI_R1_R6_RETURN_2026_09_15.md`. Resumen para
+este plan, con lo que cambia en la adopcion:
+
+**Las tres maquinas consumen por data-gov.** Entrega gobernada probada desde omega, gamma y
+dragon contra los hosts reales (tunel inverso desde omega, porque los servicios escuchan en
+`127.0.0.1`), verificada contra `X-Content-SHA256`. La segunda campana de gamma **no
+transfirio nada**: confirmo contra la cache por contenido. Es decir, "una descarga por grupo de
+experimentos" ya es conducta desplegada. Ninguna maquina necesita copias locales de datasets.
+
+**Etapa 6, fila agent-multi/DOIN corregida.** `doin-offline-replay-prod-11` COMPLETED,
+NON_GOVERNING, conciliacion vacia, 15.7 s. Su recibo declara `requested_timesteps 64` y **no**
+declara `observed_timesteps`: la aplicacion no escribio resumen y eso se dice, en vez de
+presentar el presupuesto como trabajo hecho. El recibo anterior (`prod-3`) si lo presentaba.
+
+**Adquisicion publica registrada.** La comparacion del archivo ETH contra una segunda toma
+publica quedo en la contabilidad como campana `d3cf00b6ea06…`, terminal `2a4b455d7e9a…`,
+metricas `bars_compared 3000` y `bars_materially_differing 0`.
+
+**Contratos de disponibilidad.** `ARCHIVE_RETROSPECTIVE` tiene nueve reglas que prueban que
+UNKNOWN no se convierte en cero y que un rango se rechaza por su razon declarada; **sigue sin
+instalarse**: el proveedor que el host del lake importa hoy no contiene la clase, y una regla
+falla el dia que la contenga.
+
+**Pendiente de operador:** los principales por maquina (`satoshi-gamma`, `satoshi-dragon`) ya
+estan escritos en la configuracion de ejecucion pero **no cargados**; cargarlos es
+`systemctl --user restart crispdm-data-gov.service`, que esta sesion no puede ejecutar.
