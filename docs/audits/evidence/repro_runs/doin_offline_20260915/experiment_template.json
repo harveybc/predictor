@@ -1,0 +1,42 @@
+{
+ "experiment": {
+  "name": "governed-offline-replay-production"
+ },
+ "data": {
+  "input_data_file": null
+ },
+ "training": {
+  "total_timesteps": 64
+ },
+ "environment": {
+  "max_rows": 384,
+  "require_feature_aware_preprocessor": true,
+  "feature_columns": [
+   "CLOSE",
+   "HIGH",
+   "LOW",
+   "OPEN"
+  ],
+  "observation_scaling": {
+   "kind": "rolling_zscore",
+   "window": 64,
+   "causal": true
+  }
+ },
+ "require_feature_aware_preprocessor": true,
+ "feature_columns": [
+  "CLOSE",
+  "HIGH",
+  "LOW",
+  "OPEN"
+ ],
+ "observation_scaling": {
+  "kind": "rolling_zscore",
+  "window": 64,
+  "causal": true
+ },
+ "preprocessor_plugin": "feature_window_preprocessor",
+ "feature_scaling": "rolling_zscore",
+ "feature_scaling_window": 64,
+ "include_price_window": false
+}
