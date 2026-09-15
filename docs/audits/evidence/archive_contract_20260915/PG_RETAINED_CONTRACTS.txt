@@ -1,0 +1,2 @@
+62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d|ARCHIVE_RETROSPECTIVE|UNKNOWN|WINDOW_START|UNKNOWN|sha256|json.sort_keys.separators-comma-colon.ascii.v1
+41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b|OFFLINE_DAY_GRANULAR|4h|WINDOW_START|PRODUCER_STATEMENT|sha256|json.sort_keys.separators-comma-colon.ascii.v1

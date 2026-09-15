@@ -38,8 +38,17 @@ DATASET_LINEAGE_FIELDS = (
 GOV_TABLES = (
     "gov_report", "gov_metric", "gov_dataset", "gov_terminal",
     "gov_terminal_metric", "gov_terminal_dataset", "gov_terminal_artifact",
+    "gov_availability_contract",
 )
 GOV_VIEW = "gov_metric_current"
+#: S2: a delivery carries a contract DIGEST; without somewhere to resolve it, the cube cannot
+#: say that a delivery was a retrospective archive without asking the producer, and a stopped
+#: producer makes that unanswerable. This view resolves it, or says UNRESOLVED.
+GOV_AVAILABILITY_VIEW = "gov_delivery_availability"
+#: The exact canonicalization the digest is taken over, recorded per row so a future change of
+#: canonicalization cannot be mistaken for a corrupted contract.
+CANONICALIZATION = "json.sort_keys.separators-comma-colon.ascii.v1"
+DIGEST_ALGORITHM = "sha256"
 
 TERMINAL_STATES = {"COMPLETED", "FAILED", "INCONCLUSIVE", "REFUSED", "QUARANTINED"}
 TERMINAL_KEYS = {
@@ -417,6 +426,15 @@ class Plugin:
             " verification_state TEXT NOT NULL)",
             f"CREATE TABLE IF NOT EXISTS {t('gov_terminal_artifact')} ("
             " terminal_sha256 TEXT NOT NULL, role TEXT NOT NULL, sha256 TEXT NOT NULL, bytes INTEGER NOT NULL)",
+            # S2: the contract dimension. Keyed by its own digest, immutable by construction:
+            # the bytes ARE the key, so a row can be inserted or left alone, never updated.
+            # `completion_lag_max` is TEXT on purpose — an archive's lag is the string
+            # 'UNKNOWN', and a numeric column would have to turn that into a zero or a null.
+            f"CREATE TABLE IF NOT EXISTS {t('gov_availability_contract')} ("
+            " contract_sha256 TEXT NOT NULL PRIMARY KEY, canonical_bytes TEXT NOT NULL,"
+            " digest_algorithm TEXT NOT NULL, canonicalization TEXT NOT NULL,"
+            " use_class TEXT NOT NULL, completion_lag_max TEXT NOT NULL,"
+            " availability_label TEXT, timezone_evidence TEXT, first_seen TEXT NOT NULL)",
             f"CREATE INDEX IF NOT EXISTS gov_metric_report_idx ON {t('gov_metric')} (report_sha256)",
             f"CREATE INDEX IF NOT EXISTS gov_dataset_report_idx ON {t('gov_dataset')} (report_sha256)",
             f"CREATE INDEX IF NOT EXISTS gov_dataset_sha256_idx ON {t('gov_dataset')} (sha256)",
@@ -429,6 +447,16 @@ class Plugin:
             f"CREATE INDEX IF NOT EXISTS gov_terminal_dataset_sha_idx ON {t('gov_terminal_dataset')}"
             " (sha256)",
             f"{create_view} {t(GOV_VIEW)} AS {view_select}",
+            # Resolution, with the unresolved case named rather than hidden by an inner join.
+            f"{create_view} {t(GOV_AVAILABILITY_VIEW)} AS"
+            " SELECT d.terminal_sha256, d.delivery_id, d.lake_id, d.resource_id, d.role,"
+            " d.availability_contract_sha256,"
+            " CASE WHEN c.contract_sha256 IS NULL THEN 'UNRESOLVED' ELSE 'RESOLVED' END"
+            " AS contract_resolution,"
+            " c.use_class, c.completion_lag_max, c.availability_label, c.timezone_evidence,"
+            " c.digest_algorithm, c.canonicalization, c.canonical_bytes"
+            f" FROM {t('gov_terminal_dataset')} d LEFT JOIN {t('gov_availability_contract')} c"
+            " ON c.contract_sha256 = d.availability_contract_sha256",
         ]
 
     def _ensure_schema(self, engine):
@@ -633,6 +661,111 @@ class Plugin:
                     " (:terminal_sha256, :role, :sha256, :bytes)"
                 ), artifacts)
         return {"stored": True, "already_stored": False, "terminal_sha256": digest}
+
+    # ---- S2: the availability contract dimension ---------------------------------
+    def write_availability_contracts(self, contracts):
+        """Retain canonical contracts keyed by their own digest. Additive and idempotent.
+
+        Three rules, each from what would otherwise be guessed:
+
+        * the digest is **recomputed** over the submitted bytes and a mismatch is refused, so
+          a caller cannot file arbitrary text under a digest a delivery already trusts;
+        * `use_class` and `completion_lag_max` are READ OUT of the canonical bytes, never
+          supplied alongside them, so the retained semantics and the retained bytes cannot
+          disagree;
+        * an archive's lag is the string it declares. `UNKNOWN` is stored as `UNKNOWN`; there
+          is no path in this method that turns an absent or unknown lag into a zero.
+
+        A contract already present is left exactly as it is: the bytes are the key, so a
+        second submission of the same digest is the same contract.
+        """
+        if not isinstance(contracts, list):
+            raise ValueError("contracts must be a list")
+        rows, seen = [], set()
+        for item in contracts:
+            if not isinstance(item, dict):
+                raise ValueError("each contract must be an object")
+            given = item.get("contract_sha256")
+            canonical = item.get("canonical_bytes")
+            if not isinstance(given, str) or not _HEX64.match(given):
+                raise ValueError("contract_sha256 is required")
+            if not isinstance(canonical, str) or not canonical:
+                raise ValueError(f"canonical_bytes is required for {given}")
+            actual = hashlib.sha256(canonical.encode("ascii", "strict")).hexdigest()
+            if actual != given.lower():
+                raise ValueError(
+                    f"contract_sha256 mismatch: declared {given.lower()}, bytes hash to {actual}")
+            algorithm = item.get("digest_algorithm") or DIGEST_ALGORITHM
+            canonicalization = item.get("canonicalization") or CANONICALIZATION
+            if algorithm != DIGEST_ALGORITHM:
+                raise ValueError(f"unsupported digest algorithm {algorithm!r}")
+            try:
+                body = json.loads(canonical)
+            except ValueError as exc:
+                raise ValueError(f"canonical_bytes for {actual} is not JSON: {exc}") from exc
+            if not isinstance(body, dict):
+                raise ValueError(f"canonical_bytes for {actual} is not an object")
+            scope = body.get("availability")
+            if not isinstance(scope, dict):
+                raise ValueError(
+                    f"contract {actual} declares no availability block: its semantics cannot "
+                    "be retained, and inventing them is what this table exists to prevent")
+            lag = scope.get("completion_lag_max")
+            use_class = scope.get("use_class")
+            if lag is None or not isinstance(use_class, str) or not use_class:
+                raise ValueError(
+                    f"contract {actual} must declare use_class and completion_lag_max")
+            if actual in seen:
+                continue
+            seen.add(actual)
+            rows.append({
+                "contract_sha256": actual,
+                "canonical_bytes": canonical,
+                "digest_algorithm": algorithm,
+                "canonicalization": canonicalization,
+                "use_class": use_class,
+                # the DECLARED lag, as a string: 'UNKNOWN' survives as itself
+                "completion_lag_max": str(lag),
+                "availability_label": _opt_str(scope, "label"),
+                "timezone_evidence": _opt_str(scope, "timezone_evidence"),
+                "first_seen": _now_utc(),
+            })
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"gov_* schema not ready: {self._schema_error}")
+        t = self._qualified
+        stored = 0
+        with self.write_engine().begin() as conn:
+            for row in rows:
+                stored += conn.execute(text(
+                    f"INSERT INTO {t('gov_availability_contract')} (contract_sha256,"
+                    " canonical_bytes, digest_algorithm, canonicalization, use_class,"
+                    " completion_lag_max, availability_label, timezone_evidence, first_seen)"
+                    " VALUES (:contract_sha256, :canonical_bytes, :digest_algorithm,"
+                    " :canonicalization, :use_class, :completion_lag_max, :availability_label,"
+                    " :timezone_evidence, :first_seen)"
+                    " ON CONFLICT (contract_sha256) DO NOTHING"
+                ), row).rowcount
+        return {"stored": stored, "already_stored": len(rows) - stored,
+                "contracts": [row["contract_sha256"] for row in rows]}
+
+    def resolve_delivery_availability(self, delivery_id):
+        """What a fresh reader gets: the retained contract, or an explicit UNRESOLVED.
+
+        This is the whole point of the dimension. It answers from the warehouse alone; the
+        producer may be stopped and its configuration gone.
+        """
+        if not isinstance(delivery_id, str) or not _KEY.match(delivery_id):
+            raise ValueError("invalid delivery_id")
+        t = self._qualified
+        with self.engine().connect() as conn:
+            row = conn.execute(text(
+                f"SELECT * FROM {t(GOV_AVAILABILITY_VIEW)} WHERE delivery_id = :delivery"
+            ), {"delivery": delivery_id}).first()
+        if row is None:
+            return {"delivery_id": delivery_id, "contract_resolution": "NO_SUCH_DELIVERY"}
+        return dict(row._mapping)
 
     def terminal_digests(self, campaign_sha256):
         if not isinstance(campaign_sha256, str) or not _HEX64.fullmatch(campaign_sha256):

@@ -1,0 +1,157 @@
+{
+ "schema": "archive_contract_persistence_probe.v1",
+ "at": "2026-09-15T21:16:30.225Z",
+ "stack": {
+  "gov_url": "http://127.0.0.1:38139",
+  "cube": "postgresql:s2_disposable_211525",
+  "cube_postgres": "s2_disposable_211525",
+  "work": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/s2work/stack"
+ },
+ "archive_resource": "synthetic_typical_price_4h_train.csv",
+ "plain_resource": "synthetic_features_4h_train.csv",
+ "findings": {
+  "archive-whole": {
+   "campaign_key": "s2-archive-whole-1789506984809",
+   "unit_id": "archive-whole-1",
+   "campaign_status": 201,
+   "campaign_sha256": "04943f768b22a8febd525454c763754efc319f40fdbec2596dc58f483d1aa770",
+   "download_status": 200,
+   "delivery_id": "0ea73e0de07140afbc4960154e15b925",
+   "bytes": 26124,
+   "verification_state": "VERIFIED_TRANSFER",
+   "availability_contract_sha256": "62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d",
+   "availability": null,
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "04943f768b22a8febd525454c763754efc319f40fdbec2596dc58f483d1aa770",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "archive-range": {
+   "campaign_key": "s2-archive-range-1789506984941",
+   "unit_id": "archive-range-1",
+   "campaign_status": 201,
+   "campaign_sha256": "57099183d9e76fea6c2e730ff20236a743e14ff4b3b3205b800ad00e9bd017a1",
+   "download_status": 422,
+   "refusal": {
+    "error": "this resource is a retrospective archive: its publication time was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   },
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "57099183d9e76fea6c2e730ff20236a743e14ff4b3b3205b800ad00e9bd017a1",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "archive-point-in-time": {
+   "campaign_key": "s2-archive-point-in-time-1789506984952",
+   "unit_id": "archive-point-in-time-1",
+   "campaign_status": 201,
+   "campaign_sha256": "9cd92ca9818de3e79062b0eadf5aa6e17dfc3e32690ebc4b3741fe93a8a3e8aa",
+   "download_status": 422,
+   "refusal": {
+    "error": "this resource is a retrospective archive: its publication time was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   },
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "9cd92ca9818de3e79062b0eadf5aa6e17dfc3e32690ebc4b3741fe93a8a3e8aa",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "archive-live-tail": {
+   "campaign_key": "s2-archive-live-tail-1789506984963",
+   "unit_id": "archive-live-tail-1",
+   "campaign_status": 201,
+   "campaign_sha256": "0dc345b8a4c21932df5cebb4f67e5e8681dccd58b82f5d6d5826e41ba5bd5d1f",
+   "download_status": 422,
+   "refusal": {
+    "error": "this resource is a retrospective archive: its publication time was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   },
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "0dc345b8a4c21932df5cebb4f67e5e8681dccd58b82f5d6d5826e41ba5bd5d1f",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "plain-crosses-holdout": {
+   "not_exercised": "the disposable stack declares no holdout_start, so no range can cross one; run with --holdout to exercise this refusal"
+  },
+  "plain-whole": {
+   "campaign_key": "s2-plain-whole-1789506984971",
+   "unit_id": "plain-whole-1",
+   "campaign_status": 201,
+   "campaign_sha256": "c8b2ddf3d117e7d077163b7faa9cde6b44f298d1ef75ae5dc910a193138c0e6d",
+   "download_status": 200,
+   "delivery_id": "3ebd8a83f88445f0930a41c23f99fe59",
+   "bytes": 228801,
+   "verification_state": "VERIFIED_TRANSFER",
+   "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+   "availability": null,
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "c8b2ddf3d117e7d077163b7faa9cde6b44f298d1ef75ae5dc910a193138c0e6d",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "producer_teardown": {
+   "lake_pid": 3704909,
+   "stopped": true,
+   "config_existed": true,
+   "config_sha256": "1cd8dad5d8a1e5a2882dcb19d2596461481ac973ef806ae78b4ca510a5e7d608",
+   "config_present_after": false,
+   "lake_still_answers": false,
+   "lake_error": "URLError"
+  },
+  "fresh_reader": {
+   "archive-whole": {
+    "terminal_sha256": "b075f6d03e185f2ad5bc4635242897f9faad22451caad8f31a07324200dbf91c",
+    "delivery_id": "0ea73e0de07140afbc4960154e15b925",
+    "lake_id": "synthetic_fixtures",
+    "resource_id": "synthetic_typical_price_4h_train.csv",
+    "role": "archive",
+    "availability_contract_sha256": "62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d",
+    "contract_resolution": "RESOLVED",
+    "use_class": "ARCHIVE_RETROSPECTIVE",
+    "completion_lag_max": "UNKNOWN",
+    "availability_label": "WINDOW_START",
+    "timezone_evidence": "UNKNOWN",
+    "digest_algorithm": "sha256",
+    "canonicalization": "json.sort_keys.separators-comma-colon.ascii.v1",
+    "canonical_sha256_recomputed": "62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d",
+    "canonical_says_lag": "UNKNOWN",
+    "canonical_says_use_class": "ARCHIVE_RETROSPECTIVE"
+   },
+   "plain-whole": {
+    "terminal_sha256": "1dd52b49390b9df2300dea09ced881a458db38b342b7de89c0a198860b22fa0d",
+    "delivery_id": "3ebd8a83f88445f0930a41c23f99fe59",
+    "lake_id": "synthetic_fixtures",
+    "resource_id": "synthetic_features_4h_train.csv",
+    "role": "input",
+    "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+    "contract_resolution": "RESOLVED",
+    "use_class": "OFFLINE_DAY_GRANULAR",
+    "completion_lag_max": "4h",
+    "availability_label": "WINDOW_START",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "digest_algorithm": "sha256",
+    "canonicalization": "json.sort_keys.separators-comma-colon.ascii.v1",
+    "canonical_sha256_recomputed": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+    "canonical_says_lag": "4h",
+    "canonical_says_use_class": "OFFLINE_DAY_GRANULAR"
+   },
+   "never-retained": {
+    "delivery_id": "delivery-that-never-existed",
+    "contract_resolution": "NO_SUCH_DELIVERY"
+   }
+  }
+ }
+}

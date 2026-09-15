@@ -14,7 +14,11 @@ from pathlib import Path
 from .query import Plugin as _Query
 
 CAPABILITIES = ("describe", "storage", "discover", "query",
-                "write_metrics", "write_terminal", "terminal_digests")
+                "write_metrics", "write_terminal", "terminal_digests",
+                # S2: retaining the availability contract a delivery already references.
+                # It is additive: a caller that does not send contracts is unaffected, and a
+                # delivery whose contract was never sent resolves as UNRESOLVED, not as zero.
+                "write_availability_contracts", "resolve_delivery_availability")
 
 
 def _source_commit() -> str | None:

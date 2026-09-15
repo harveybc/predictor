@@ -39,9 +39,26 @@ def _blob(revision: str, path: str):
 
 def test_the_packaged_module_matches_the_digest_it_declares():
     assert PACKAGED.is_file()
-    assert _sha256(PACKAGED.read_bytes()) == pkg.SOURCE_SHA256, (
+    assert _sha256(PACKAGED.read_bytes()) == pkg.MODULE_SHA256, (
         "the packaged module no longer matches the digest it declares; update both or stop "
         "calling it a copy")
+
+
+def test_a_divergence_from_production_is_stated_and_a_stated_one_is_real():
+    """The package may carry a candidate change; it may not carry a silent one.
+
+    Either these bytes ARE the deployed plugin, and nothing is pending, or they are not, and
+    the package says which change is awaiting review. A pin quietly moved to match new code
+    is how a candidate starts being described as deployed.
+    """
+    diverged = pkg.MODULE_SHA256 != pkg.SOURCE_SHA256
+    stated = bool((pkg.PENDING_REVIEW or "").strip())
+    assert diverged == stated, (
+        "the module diverges from the deployed digest without naming the pending change"
+        if diverged else "a pending change is named while the module is identical to production")
+    if diverged:
+        assert "NOT deployed" in pkg.PENDING_REVIEW, (
+            "a pending change must say it is not deployed")
 
 
 def test_the_declared_revision_really_holds_those_bytes():

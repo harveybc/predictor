@@ -1,0 +1,2 @@
+3ebd8a83f88445f0930a41c23f99fe59|synthetic_features_4h_train.csv|RESOLVED|OFFLINE_DAY_GRANULAR|4h
+0ea73e0de07140afbc4960154e15b925|synthetic_typical_price_4h_train.csv|RESOLVED|ARCHIVE_RETROSPECTIVE|UNKNOWN

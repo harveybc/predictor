@@ -1,0 +1,137 @@
+{
+ "schema": "archive_contract_persistence_probe.v1",
+ "at": "2026-09-15T21:15:03.218Z",
+ "stack": {
+  "gov_url": "http://127.0.0.1:59357",
+  "cube": "postgresql:s2_disposable_211307",
+  "cube_postgres": "s2_disposable_211307",
+  "work": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/s2work/stack"
+ },
+ "archive_resource": "synthetic_typical_price_4h_train.csv",
+ "plain_resource": "synthetic_features_4h_train.csv",
+ "findings": {
+  "archive-whole": {
+   "campaign_key": "s2-archive-whole-1789506897852",
+   "unit_id": "archive-whole-1",
+   "campaign_status": 201,
+   "campaign_sha256": "d2c27975253a29ae8f29555a1f1858db7e79facc002ade50ae84fe0077c2908a",
+   "download_status": 403,
+   "refusal": {
+    "error": "holdout"
+   },
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "d2c27975253a29ae8f29555a1f1858db7e79facc002ade50ae84fe0077c2908a",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "archive-range": {
+   "campaign_key": "s2-archive-range-1789506897967",
+   "unit_id": "archive-range-1",
+   "campaign_status": 201,
+   "campaign_sha256": "4c2a8b2dc104dd2cc0220aa8d7a9394919780d6264363bf36e23e93019a5f886",
+   "download_status": 422,
+   "refusal": {
+    "error": "this resource is a retrospective archive: its publication time was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   },
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "4c2a8b2dc104dd2cc0220aa8d7a9394919780d6264363bf36e23e93019a5f886",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "archive-point-in-time": {
+   "campaign_key": "s2-archive-point-in-time-1789506897979",
+   "unit_id": "archive-point-in-time-1",
+   "campaign_status": 201,
+   "campaign_sha256": "db84d62ee62789062b4ac77fcfac4cf87aae4fbb5b7cdb456148dc1f3045a06a",
+   "download_status": 422,
+   "refusal": {
+    "error": "this resource is a retrospective archive: its publication time was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   },
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "db84d62ee62789062b4ac77fcfac4cf87aae4fbb5b7cdb456148dc1f3045a06a",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "archive-live-tail": {
+   "campaign_key": "s2-archive-live-tail-1789506897988",
+   "unit_id": "archive-live-tail-1",
+   "campaign_status": 403,
+   "refused_at": "campaign",
+   "body": {
+    "error": "holdout"
+   },
+   "terminal": null
+  },
+  "plain-crosses-holdout": {
+   "campaign_key": "s2-plain-crosses-holdout-1789506897989",
+   "unit_id": "plain-crosses-holdout-1",
+   "campaign_status": 403,
+   "refused_at": "campaign",
+   "body": {
+    "error": "holdout"
+   },
+   "terminal": null
+  },
+  "plain-whole": {
+   "campaign_key": "s2-plain-whole-1789506897990",
+   "unit_id": "plain-whole-1",
+   "campaign_status": 201,
+   "campaign_sha256": "3a76f668b649c16756d99786fc3c92b19af7e4b867f56d3d1c3dd8c0bed2ddaf",
+   "download_status": 200,
+   "delivery_id": "b3d59067158749d39971a57b6662cb93",
+   "bytes": 228801,
+   "verification_state": "VERIFIED_TRANSFER",
+   "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+   "availability": null,
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "3a76f668b649c16756d99786fc3c92b19af7e4b867f56d3d1c3dd8c0bed2ddaf",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "producer_teardown": {
+   "lake_pid": 3703781,
+   "stopped": true,
+   "config_existed": true,
+   "config_sha256": "92fd26f7239b76d2ae6ab50f2d91bd5fe7fe8f524a939fd8ae38eef11e74c967",
+   "config_present_after": false,
+   "lake_still_answers": false,
+   "lake_error": "URLError"
+  },
+  "fresh_reader": {
+   "plain-whole": {
+    "terminal_sha256": "1fcdde53a52a473f39576346e3041b53168d7be05bc392d53b18c0de6b837fd2",
+    "delivery_id": "b3d59067158749d39971a57b6662cb93",
+    "lake_id": "synthetic_fixtures",
+    "resource_id": "synthetic_features_4h_train.csv",
+    "role": "input",
+    "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+    "contract_resolution": "RESOLVED",
+    "use_class": "OFFLINE_DAY_GRANULAR",
+    "completion_lag_max": "4h",
+    "availability_label": "WINDOW_START",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "digest_algorithm": "sha256",
+    "canonicalization": "json.sort_keys.separators-comma-colon.ascii.v1",
+    "canonical_sha256_recomputed": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+    "canonical_says_lag": "4h",
+    "canonical_says_use_class": "OFFLINE_DAY_GRANULAR"
+   },
+   "never-retained": {
+    "delivery_id": "delivery-that-never-existed",
+    "contract_resolution": "NO_SUCH_DELIVERY"
+   }
+  }
+ }
+}
