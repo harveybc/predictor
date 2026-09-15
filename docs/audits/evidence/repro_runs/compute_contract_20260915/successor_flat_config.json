@@ -1,0 +1,16 @@
+{
+ "experiment_config": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/s1prod/successor_experiment.json",
+ "runtime_overlay": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/r3prod/doin_overlay.json",
+ "experiment_name": "governed-offline-replay-successor",
+ "input_data_file": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/synthetic-source/synthetic_features_4h_train.csv",
+ "total_timesteps": 64,
+ "training_transition_cap": 64,
+ "evaluation_transition_cap": 384,
+ "agent_plugin": "ppo_agent",
+ "n_steps": 64,
+ "batch_size": 64,
+ "n_epochs": 1,
+ "max_rows": 384,
+ "save_config": "replay_config.json",
+ "save_log": "replay_log.json"
+}

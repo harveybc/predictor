@@ -1,0 +1,31 @@
+The primary document is identified here, not republished: it is a third party's text and
+the repository carries its digest, not its bytes.
+
+url    https://bin.bnbstatic.com/static/cms/cg08ou2ak0tn7mcplvfg/file/bf4879710c904b991848972ec4818ba2cf9e4ce314c09adae84fa2750d3477f7.pdf
+sha256 bf4879710c904b991848972ec4818ba2cf9e4ce314c09adae84fa2750d3477f7
+bytes  1362587
+retrieved 2026-09-15T20:49:41Z (HTTP 200, no credential, no account)
+
+The URL basename equals the content digest, so the retrieved bytes are exactly the
+document the reviewer pointed at; no substitution is possible without changing the URL.
+
+pdfinfo:
+Title:           Copy of ADGM Binance Global Terms of Use (17 July 2026).docx
+Producer:        Skia/PDF m152 Google Docs Renderer
+Custom Metadata: no
+Metadata Stream: no
+Tagged:          yes
+UserProperties:  no
+Suspects:        no
+Form:            none
+JavaScript:      no
+Pages:           73
+Encrypted:       no
+Page size:       596 x 842 pts (A4)
+Page rot:        0
+File size:       1362587 bytes
+Optimized:       no
+PDF version:     1.4
+
+Note: `file(1)` reports '8 page(s)' for this PDF and is wrong; pdfinfo reports 73, which
+matches the reviewer's page references. Recorded because the disagreement is reproducible.

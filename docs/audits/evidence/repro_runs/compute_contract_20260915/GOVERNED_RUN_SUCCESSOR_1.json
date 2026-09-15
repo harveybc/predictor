@@ -1,0 +1,386 @@
+{
+  "campaign_key": "doin-offline-replay-successor-1",
+  "campaign_sha256": "e6bec2868a7ff70fc040a1b49a4dc769d3d0261e77b8d12beaf3d97daded0796",
+  "classification": "NON_GOVERNING",
+  "code_identity": {
+    "kind": "git_commit",
+    "value": "ddbff4d6256f5137d91ff442954b6d6dc472a56f"
+  },
+  "command": [
+    "/home/harveybc/anaconda3/envs/trading-stack/bin/python",
+    "/home/harveybc/Documents/GitHub/.worktrees/satoshi-s1-successor-20260915/tools/governed_offline_replay.py",
+    "--load_config",
+    "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/s1prod/out14/governed_config.json"
+  ],
+  "config_sha256": "8932abba42452b557ee7ce11daa140a9fe80e7e0ab5e5532017fcb149793a12e",
+  "cwd": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/s1prod/out14",
+  "execution_spec": {
+    "artifacts": [
+      "effective_config",
+      "replay_log"
+    ],
+    "command": [
+      "/home/harveybc/anaconda3/envs/trading-stack/bin/python",
+      "{repo_root}/tools/governed_offline_replay.py",
+      "--load_config",
+      "{config}"
+    ],
+    "config": {
+      "agent_plugin": "ppo_agent",
+      "batch_size": 64,
+      "evaluation_transition_cap": 384,
+      "experiment_config": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/s1prod/successor_experiment.json",
+      "experiment_name": "governed-offline-replay-successor",
+      "input_data_file": "role:input_data_file",
+      "max_rows": 384,
+      "n_epochs": 1,
+      "n_steps": 64,
+      "runtime_overlay": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/r3prod/doin_overlay.json",
+      "save_config": "replay_config.json",
+      "save_log": "replay_log.json",
+      "total_timesteps": 64,
+      "training_transition_cap": 64
+    },
+    "datasets": [
+      {
+        "from": null,
+        "lake": "governance_smoke",
+        "resource": "synthetic_features_4h_train.csv",
+        "role": "input_data_file",
+        "to": null
+      }
+    ],
+    "extra_args": [],
+    "metrics": {
+      "keys": [
+        "wall_seconds",
+        "requested_timesteps",
+        "observed_timesteps",
+        "observed_updates",
+        "best_fitness",
+        "champion_fitness",
+        "final_reward",
+        "candidates_evaluated",
+        "generations",
+        "compute_requested_training_transitions",
+        "compute_training_transition_cap",
+        "compute_training_transitions_observed",
+        "compute_collected_rollouts",
+        "compute_optimization_epochs_completed",
+        "compute_gradient_updates",
+        "compute_optimizer_step_calls",
+        "compute_environment_count",
+        "compute_rollout_steps_per_environment",
+        "compute_batch_size",
+        "compute_optimization_epochs_configured",
+        "compute_minimum_training_transitions",
+        "compute_evaluation_transitions",
+        "compute_evaluation_transition_cap",
+        "compute_cap_respected",
+        "compute_evaluation_cap_respected",
+        "compute_partial_rollout",
+        "compute_timestep_counter_was_reset"
+      ],
+      "kind": "json_numbers",
+      "path": "replay_log.json"
+    },
+    "project": "agent-multi",
+    "schema": "governed_exec_execution_spec.v1"
+  },
+  "exit_code": 0,
+  "governed_config": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/s1prod/out14/governed_config.json",
+  "inputs": [
+    {
+      "availability_completion_lag_max": "4h",
+      "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+      "availability_label": "WINDOW_START",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "bytes": 228801,
+      "cached": true,
+      "delivery": "AS_IS",
+      "delivery_id": "57b47b11f80e4bfa9ba1ae687ac28c21",
+      "lake": "governance_smoke",
+      "path": "/home/harveybc/.cache/data-gov/governance_smoke/4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027.csv",
+      "range_from": null,
+      "range_to": null,
+      "resource": "synthetic_features_4h_train.csv",
+      "role": "input_data_file",
+      "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+      "source_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+      "time_column": "DATE_TIME",
+      "timezone_evidence": "PRODUCER_STATEMENT",
+      "verification_state": "VERIFIED_CACHE"
+    }
+  ],
+  "out_dir": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/s1prod/out14",
+  "outbox_flush": {
+    "failures": {},
+    "pending": 0,
+    "sent": 1
+  },
+  "prior_outbox_flush": {
+    "failures": {},
+    "pending": 0,
+    "sent": 0
+  },
+  "project": "agent-multi",
+  "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "e6bec2868a7ff70fc040a1b49a4dc769d3d0261e77b8d12beaf3d97daded0796",
+    "lake_only": [],
+    "missing_units": []
+  },
+  "repo_root": "/home/harveybc/Documents/GitHub/.worktrees/satoshi-s1-successor-20260915",
+  "schema": "governed_exec_run.v1",
+  "status": "COMPLETED",
+  "terminal": {
+    "artifacts": [
+      {
+        "bytes": 2591,
+        "role": "replay_log",
+        "sha256": "ff2dfc7428c3ec816abc855b18c50719cdbe2b755913c4ed4675950fdd6b8941"
+      },
+      {
+        "bytes": 1033,
+        "role": "governed_config",
+        "sha256": "a3ea25c4f6e84b7b8d6a7e4407bfef925118c0cecf90580e69d9c7a9f1e43289"
+      }
+    ],
+    "costs": {
+      "wall_seconds": 3.8595679799909703
+    },
+    "deliveries": [
+      "57b47b11f80e4bfa9ba1ae687ac28c21"
+    ],
+    "finished_at": "2026-09-15T20:48:46.152227Z",
+    "generation": 1,
+    "metrics": [
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "wall_seconds",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 3.8114864620147273
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "requested_timesteps",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 64.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "observed_timesteps",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 64.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "observed_updates",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 1.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_requested_training_transitions",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 64.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_training_transition_cap",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 64.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_training_transitions_observed",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 64.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_collected_rollouts",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 1.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_optimization_epochs_completed",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 1.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_optimizer_step_calls",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 1.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_environment_count",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 1.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_rollout_steps_per_environment",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 64.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_batch_size",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 64.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_optimization_epochs_configured",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 1.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_minimum_training_transitions",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 64.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_evaluation_transitions",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 384.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_evaluation_transition_cap",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 384.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_cap_respected",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 1.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_evaluation_cap_respected",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 1.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_partial_rollout",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 0.0
+      },
+      {
+        "horizon": null,
+        "max_value": null,
+        "metric": "compute_timestep_counter_was_reset",
+        "min_value": null,
+        "split": null,
+        "std_dev": null,
+        "unit": null,
+        "value": 0.0
+      }
+    ],
+    "reason": null,
+    "schema": "governed_terminal.v1",
+    "started_at": "2026-09-15T20:48:42.292664Z",
+    "status": "COMPLETED",
+    "tags": {
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "device": "cpu",
+      "exit_code": "0",
+      "experiment_set_key": "",
+      "network": "none",
+      "offline": "true",
+      "phase": "s1prod"
+    }
+  },
+  "terminal_outbox": "/home/harveybc/.local/state/data-gov/terminal-outbox/pending/73d2bf5a049cbaf7c1d4b31a06c89fc3aab2d5abf4b2e9e7cdf38d7994a58842.json",
+  "terminal_pending": false,
+  "unit_id": "doin-offline-replay-successor-1"
+}
