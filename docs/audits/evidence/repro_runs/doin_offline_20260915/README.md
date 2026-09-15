@@ -39,3 +39,24 @@ they stay separate.
 
 That is the point of the requirement. A receipt that reported "64" would have been wrong twice
 over and looked right both times.
+
+## The factor of four, now explained and no longer open
+
+The defaults decide, and they are in `app/config.py`: `agent_plugin: ppo_agent`,
+`env_plugin: gym_fx_env`, `pipeline_plugin: rl_pipeline`. PPO's own defaults are
+`n_steps: 256` (the rollout length) and `n_epochs: 10`.
+
+Stable-Baselines3 collects **whole rollouts**: `learn(total_timesteps=64)` does not stop
+mid-rollout, so it gathers one complete rollout of 256 environment steps and then checks the
+budget. That is the entire factor of four:
+
+    256 observed steps  =  1 rollout x n_steps 256,   requested 64
+    10 observed updates =  n_epochs 10 over that single rollout
+
+The same arithmetic explains `prod-12` exactly: the agent's own default budget of 10,000 steps
+rounds up to 40 whole rollouts, **40 x 256 = 10,240** — the number that receipt reported.
+
+So both figures are now accounted for, and the reading stands: `requested_timesteps` is a
+budget in the agent's units, `observed_timesteps` is environment steps at rollout granularity,
+and they are not the same quantity. A run that wants 64 steps executed must set `n_steps`
+accordingly; asking PPO for 64 with a 256-step rollout will always do 256.
