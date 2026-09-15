@@ -143,3 +143,16 @@ propia, contadores observados del replay y archivo retrospectivo end-to-end.
 El retorno 7c6df0e no sustituye esos entregables con pruebas parciales.
 
 Orden vigente: [activacion y cierre efectivo de R1-R6](../handoffs/MUSASHI_WORKER_ACTIVATION_AND_R1_R6_COMPLETION_2026_09_15.md).
+
+## Auditoria de cierre 2574890
+
+Las cuatro entregas y terminales de trabajadores fueron contrastadas con SQLite
+y PostgreSQL por Musashi: aceptadas como atribucion en data-gov, no identidad
+independiente en el store. Los tokens por entrega siguen diferidos.
+La aritmetica de PPO explica 256 pasos, pero _n_updates mide epocas en PPO,
+no llamadas al optimizador. El archivo retrospectivo necesita resolucion
+persistente del contrato, y el PDF oficial de terminos ya fue localizado.
+
+Orden de continuacion [S1-S4](../handoffs/MUSASHI_TO_SATOSHI_COUNTERS_ARCHIVE_AND_TERMS_2026_09_15.md):
+contrato de computo exacto, semantica temporal recuperable y fuentes de derechos.
+P1LR queda fuera de esta aceptacion; no bloquea estos trabajos ni se lanza.
