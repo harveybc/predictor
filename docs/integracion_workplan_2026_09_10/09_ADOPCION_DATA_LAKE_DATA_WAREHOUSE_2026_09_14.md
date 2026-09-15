@@ -132,3 +132,14 @@ sintetico. No se abre seleccion cientifica por completar transporte.
 Orden ejecutiva vigente para esta continuacion:
 [R1-R6: plugins reales y replay reproducible](../handoffs/MUSASHI_TO_SATOSHI_REAL_PLUGIN_CAUSALITY_AND_REPLAY_2026_09_14.md).
 Ver [dictamen y pruebas](../audits/work_plan/MUSASHI_REVIEW_STANDING_ORDERS_2026_09_14.md).
+
+## Activacion de trabajadores, 2026-09-15
+
+Musashi completo la carga de identidades y la instalacion privada de llaves
+propias en ambos trabajadores. Autenticacion HTTP comprobada desde ambos;
+solo data-gov reiniciado, los otros cuatro servicios conservados. La activacion
+ya no depende del owner. Falta completar entrega y terminal con la identidad
+propia, contadores observados del replay y archivo retrospectivo end-to-end.
+El retorno 7c6df0e no sustituye esos entregables con pruebas parciales.
+
+Orden vigente: [activacion y cierre efectivo de R1-R6](../handoffs/MUSASHI_WORKER_ACTIVATION_AND_R1_R6_COMPLETION_2026_09_15.md).
