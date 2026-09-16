@@ -1,0 +1,15 @@
+[Unit]
+Description=Run the OLAP consistency watch at the cadence its own measured cost earns
+
+[Timer]
+# Measured 2026-09-16 against the live cube: 16 queries, 0.055 s wall. At a one percent duty
+# cycle that earns a 5.5 s interval, so the floor governs. The floor is deliberate: a check
+# this cheap still should not be continuous.
+OnBootSec=10min
+OnUnitActiveSec=300s
+RandomizedDelaySec=60s
+AccuracySec=30s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

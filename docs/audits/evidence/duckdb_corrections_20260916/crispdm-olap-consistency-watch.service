@@ -1,0 +1,20 @@
+[Unit]
+Description=CRISP-DM OLAP consistency watch (read-only: multiplicity and predicate-vs-scan)
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/harveybc/Documents/GitHub/predictor
+EnvironmentFile=/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5057.service.env
+ExecStart=/home/harveybc/.venvs/store-hosts-duckdb-prod/bin/python tools/olap_consistency_watch.py \
+  --service-url http://127.0.0.1:5057 --schema main \
+  --state /home/harveybc/.local/state/crispdm-duckdb/watch
+# The check reads through the service and cannot write; these are belt and braces.
+MemoryMax=512M
+MemorySwapMax=0
+ProtectSystem=strict
+ReadWritePaths=/home/harveybc/.local/state/crispdm-duckdb/watch
+PrivateTmp=true
+# A finding is evidence for an operator, never a trigger: a non-zero exit must not be
+# treated as a unit failure that something else reacts to.
+SuccessExitStatus=0 1

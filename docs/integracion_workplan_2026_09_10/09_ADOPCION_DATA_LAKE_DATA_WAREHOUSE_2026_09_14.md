@@ -705,3 +705,41 @@ produccion intacta y activa. No repetir reparacion ni retirada. Siguiente trabaj
 prevenir sobreescritura de STACK.json, vigilancia acotada y preparar el siguiente
 paso cientifico ya previsto, sin nuevas autorizaciones operativas por etapa.
 [Acta y continuacion](../handoffs/MUSASHI_I1_I3_ACCEPTANCE_AND_STACK_FOLLOWUP_2026_09_16.md).
+
+## Actualizacion 2026-09-16 (Satoshi, bloques de seguimiento)
+
+Retorno: `../audits/work_plan/SATOSHI_STACK_WATCH_D3_RETURN_2026_09_16.md`.
+
+**1. Sobrescritura de `STACK.json`, cerrada.** Cada invocacion toma una identidad inmutable
+(`run_id`, 32 hex) y su **propio directorio hijo**; el marcador que autoriza una senal es ese
+directorio, no el que nombro el llamante —que dos ejecuciones comparten por definicion—. El
+registro se escribe en `work/runs/<run_id>.json` **antes de que exista hijo alguno** y se
+actualiza segun arrancan, de modo que un lanzamiento que falla a medias deja constancia exacta
+de lo que quedo corriendo. `--teardown <WORKDIR>` recorre todas las ejecuciones abiertas alli.
+`STACK.json` se conserva como puntero, ya no como registro. **19 reglas** (18 rojas antes).
+
+**2. Vigilancia acotada, desplegada.** `tools/olap_consistency_watch.py` observa multiplicidad
+sobrante y desacuerdo filtro-contra-barrido. **De solo lectura por construccion**: un unico
+`urlopen`, GET, sin metodo de escritura, y una regla que exige que el codigo —sin prosa— no
+contenga `DELETE`, `INSERT`, `CREATE INDEX`, `--repair` ni `reindex_relation`. Un hallazgo es
+evidencia, nunca disparador. **La cadencia sale del coste medido**: 16 consultas, 0,055 s
+contra el cubo vivo; al 1 % de ciclo de trabajo gobierna el suelo de 300 s. El numero de
+consultas **no crece con los terminales**. Timer `crispdm-olap-consistency-watch.timer` activo;
+las observaciones se anexan y no se reemplazan. **14 reglas**.
+
+**3. D3 preparado, no ejecutado.** El siguiente paso sin ejecutar de la secuencia vinculante es
+**D3**. Prerrequisito real, **probado y no leido de una tabla**: R2 y N3 `PRESENT`, y **R6
+`NOT_APPLIED` — bloquea**: `df_coverage_current`/`df_coverage_history` no existen en el cubo,
+mientras `df_fact_coverage` tiene 440.694 filas con **una** ejecucion y **dos** digests de
+codigo. Sin vista de seleccion, ninguna cifra de cobertura es atribuible. Preparados el
+contrato del operador (`df_d3_contract.py`), las diez pruebas de aceptacion del diseno
+(`df_d3_acceptance.py`, **40 reglas**, con control no causal que falla) y el plan de ejecucion
+gobernada (`11_PLAN_EJECUCION_GOBERNADA_D3_2026_09_16.md`). Sin implementar operadores, sin
+ejecutar D3, sin tocar el diseno sellado y sin aplicar R6.
+
+**Limite medido del diseno sellado.** La prueba 1 compara solo hasta `n - lookback - delay`, de
+modo que un adelanto de 4 muestras con 7 de lookback declarado le resulta invisible: medido,
+prueba 1 **pasa** y prueba 2 **falla**. Se registra para el revisor; no se corrige un diseno
+sellado.
+
+**327 pasan, 1 se salta** sobre tres motores.

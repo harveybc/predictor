@@ -1,0 +1,43 @@
+{
+ "schema": "df_d3_prerequisites.v1",
+ "generated_utc": "2026-09-16T23:29:36Z",
+ "service": "http://127.0.0.1:5057",
+ "step": "D3 \u2014 quantization/compression, time-frequency, detectors",
+ "design": "docs/integracion_workplan_2026_09_10/07_DISENO_D3_CUANTIZACION_TIEMPO_FRECUENCIA_DETECTORES_2026_09_14.md",
+ "prerequisites": {
+  "R2_adjudicator": {
+   "state": "PRESENT",
+   "tool": "tools/df_d2_adjudicate.py",
+   "bytes": 48035,
+   "detail": "present in the checkout; whether its verdicts are accepted is a review question, not a probe"
+  },
+  "R6_coverage_selection": {
+   "state": "NOT_APPLIED",
+   "views_present": [],
+   "views_missing": [
+    "df_coverage_current",
+    "df_coverage_history"
+   ],
+   "coverage_rows": {
+    "df_fact_coverage": 440694,
+    "df_fact_coverage_v2": 633189,
+    "df_fact_coverage_v1_v2_map": 633189
+   },
+   "unselected_population": {
+    "runs": 1,
+    "code_digests": 2
+   },
+   "detail": "['df_coverage_current', 'df_coverage_history'] do not exist in the cube, so a coverage figure read today cannot say which run and which code digest it counted; the fact tables hold more than one"
+  },
+  "N3_productive_micro_run": {
+   "state": "PRESENT",
+   "act": "docs/handoffs/MUSASHI_FLOW_V3_PRODUCTION_RESTART_COMPLETED_2026_09_14.md",
+   "detail": "the act exists; it records a restart executed by the reviewer"
+  }
+ },
+ "blocking": [
+  "R6_coverage_selection"
+ ],
+ "ready_to_measure": false,
+ "note": "Probed, not read from a status table. A prerequisite recorded as satisfied in a past packet is a claim about that moment; what governs a measurement today is what is there today. Nothing here executes D3, selects an operator or writes anything."
+}

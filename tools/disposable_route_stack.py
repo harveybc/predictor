@@ -115,6 +115,115 @@ def reap(pid: int) -> None:
         pass
 
 
+# --- run identity and the process manifest -------------------------------------------------
+# A second stack started in the same `--work` directory used to write its own STACK.json over
+# the first one's. The first run's children were then recorded nowhere, and its own teardown
+# answered ALREADY_GONE for three PIDs that had belonged to the newer run; one process stayed
+# alive for a day. Two runs cannot be told apart by anything they share, so each invocation
+# takes an identity nothing else can hold, keeps its own record, and puts that identity into
+# its children's command lines.
+
+RUNS_DIRNAME = "runs"
+
+
+def begin_run(work: Path) -> dict:
+    """Open a run: a unique identity, its own child directory, and a record written NOW.
+
+    Written before any child exists, rather than after all of them are healthy. A launch that
+    fails part-way used to leave running children and no record at all, which is the same
+    stranding by a different route.
+    """
+    work = Path(work).resolve()
+    run_id = os.urandom(16).hex()
+    directory = work / f"run-{run_id}"
+    directory.mkdir(parents=True, exist_ok=False)
+    runs = work / RUNS_DIRNAME
+    runs.mkdir(parents=True, exist_ok=True)
+    run = {"schema": "disposable_route_stack_run.v1",
+           "run_id": run_id,
+           # The marker carries the identity, so no other run - and nothing else on the host -
+           # can match it. The directory the caller named is shared by definition and is
+           # therefore never what authorises a signal.
+           "marker": str(directory),
+           "directory": str(directory),
+           "work": str(work),
+           "manifest": str(runs / f"{run_id}.json"),
+           "opened_utc": _now(),
+           # Wall-clock seconds are not enough to order two runs opened in the same second,
+           # and the order is what a directory teardown walks.
+           "opened_ns": time.time_ns(),
+           "complete": False,
+           "children": []}
+    _write_manifest(run)
+    return run
+
+
+def _now() -> str:
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def _write_manifest(run: dict) -> None:
+    """One run, one file, named by its own identity: nothing can be written over."""
+    path = Path(run["manifest"])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(run, indent=1) + "\n", encoding="utf-8")
+
+
+def record_child(run: dict, role: str, pid: int, argv: list) -> dict:
+    """Record a child the moment it exists, with the argv it was started with."""
+    run[role] = pid
+    run["children"] = [entry for entry in run.get("children", []) if entry["role"] != role]
+    run["children"].append({"role": role, "pid": pid, "argv": [str(item) for item in argv],
+                            "started_utc": _now()})
+    _write_manifest(run)
+    return run
+
+
+def finish_run(run: dict, **extra) -> dict:
+    """Mark the run healthy. Until this is written the record says so, and teardown still works."""
+    run.update(extra)
+    run["complete"] = True
+    run["ready_utc"] = _now()
+    _write_manifest(run)
+    return run
+
+
+def recorded_runs(work: Path) -> list:
+    """Every run ever opened at this destination, newest last. Nothing here is ever removed."""
+    runs = Path(work).resolve() / RUNS_DIRNAME
+    if not runs.is_dir():
+        return []
+    held = []
+    for item in sorted(runs.glob("*.json")):
+        try:
+            body = json.loads(item.read_text(encoding="utf-8"))
+        except ValueError:
+            continue
+        if isinstance(body, dict) and body.get("run_id"):
+            held.append(body)
+    return sorted(held, key=lambda run: (run.get("opened_ns") or 0,
+                                        run.get("opened_utc") or "",
+                                        run.get("run_id") or ""))
+
+
+def teardown_directory(work: Path, *, grace: float = 20.0) -> dict:
+    """Stop every run recorded at this destination, each by its own identity.
+
+    This is the entry point the stranded process needed and did not have: the older run's
+    record still exists, so it can still be found and stopped.
+    """
+    reports = []
+    for run in recorded_runs(work):
+        reports.append(teardown(run, grace=grace))
+    return {"work": str(Path(work).resolve()), "runs": len(reports),
+            "stopped": sum(report["stopped"] for report in reports),
+            "refused": sum(report["refused"] for report in reports),
+            "complete": all(report["complete"] for report in reports),
+            "reports": reports}
+
+
 def teardown(state: dict, *, grace: float = 20.0) -> dict:
     """Stop exactly the processes this stack started, and nothing else.
 
@@ -125,8 +234,13 @@ def teardown(state: dict, *, grace: float = 20.0) -> dict:
     its own command line (its unique work directory) before anything is signalled, and a
     mismatch is REFUSED and reported rather than resolved in favour of killing.
     """
-    marker = str(state["work"])
-    report = {"marker": marker, "processes": []}
+    # The run's own marker when it has one, and the work directory only for records written
+    # before run identities existed - those are the ones that could be confused, and they are
+    # reported as such rather than silently trusted.
+    marker = str(state.get("marker") or state["work"])
+    report = {"marker": marker, "run_id": state.get("run_id"),
+              "identity": "run" if state.get("marker") else "legacy_work_directory",
+              "processes": []}
     for name in ("lake_pid", "warehouse_pid", "gov_pid"):
         pid = state.get(name)
         entry = {"role": name, "pid": pid}
@@ -201,7 +315,7 @@ def stop(process):
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--teardown", type=Path, metavar="STACK.json",
+    parser.add_argument("--teardown", type=Path, metavar="STACK.json|WORKDIR",
                         help="stop exactly the processes that stack started and report what "
                              "happened; refuses any PID whose command line is not this "
                              "stack's. Takes no other argument.")
@@ -226,8 +340,12 @@ def main(argv=None) -> int:
                              "can be exercised without installing it into a live venv")
     args = parser.parse_args(argv)
     if args.teardown is not None:
-        state = json.loads(args.teardown.read_text(encoding="utf-8"))
-        report = teardown(state)
+        if args.teardown.is_dir():
+            # Every run ever opened here, each by its own identity. A directory used to be
+            # unusable for teardown, which is precisely how a run became unreachable.
+            report = teardown_directory(args.teardown)
+        else:
+            report = teardown(json.loads(args.teardown.read_text(encoding="utf-8")))
         print(json.dumps(report, indent=1))
         return 0 if report["complete"] and not report["refused"] else 1
     for required in ("fixtures", "work"):
@@ -235,6 +353,10 @@ def main(argv=None) -> int:
             parser.error(f"--{required} is required unless --teardown is given")
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=True)
+    # The run identity, and its own directory, BEFORE anything is written or started. Two
+    # invocations at the same destination now cannot touch each other's files or records.
+    run = begin_run(work)
+    work = Path(run["directory"])
     fixtures = args.fixtures.resolve()
     manifest = json.loads((fixtures / "MANIFEST.json").read_text(encoding="utf-8"))
 
@@ -322,22 +444,29 @@ def main(argv=None) -> int:
             PGPORT=os.environ.get("PGPORT", "5432"),
             PGUSER=os.environ.get("PGUSER", ""),
             PGPASSWORD=os.environ.get("PGPASSWORD", ""))
+    lake_command = [str(HOSTS_PYTHON), "-m", "data_lake_service.main",
+                    "--load_config", str(work / "lake.json")]
+    warehouse_command = [str(HOSTS_PYTHON), "-m", "data_warehouse_service.main",
+                         "--load_config", str(work / "warehouse.json")]
+    gov_command = [sys.executable, "-m", "app.main",
+                   "--load_config", str(work / "governance.json")]
     processes = []
     try:
-        processes.append(start([str(HOSTS_PYTHON), "-m", "data_lake_service.main",
-                                "--load_config", str(work / "lake.json")], work, env,
-                               work / "lake.log"))
-        processes.append(start([str(HOSTS_PYTHON), "-m", "data_warehouse_service.main",
-                                "--load_config", str(work / "warehouse.json")], work,
-                               warehouse_env, work / "warehouse.log"))
+        # Each child is recorded the moment it exists. A launch that fails at the first
+        # `wait_for` therefore leaves a record of exactly what is running, not nothing.
+        processes.append(start(lake_command, work, env, work / "lake.log"))
+        record_child(run, "lake_pid", processes[-1].pid, lake_command)
+        processes.append(start(warehouse_command, work, warehouse_env, work / "warehouse.log"))
+        record_child(run, "warehouse_pid", processes[-1].pid, warehouse_command)
         wait_for(f"http://127.0.0.1:{lake_port}/healthz", processes)
         wait_for(f"http://127.0.0.1:{warehouse_port}/healthz", processes)
         gov_env = dict(env, PYTHONPATH=str(DATA_GOV))
-        processes.append(start([sys.executable, "-m", "app.main", "--load_config",
-                                str(work / "governance.json")], DATA_GOV, gov_env,
-                               work / "governance.log"))
+        processes.append(start(gov_command, DATA_GOV, gov_env, work / "governance.log"))
+        record_child(run, "gov_pid", processes[-1].pid, gov_command)
         wait_for(f"http://127.0.0.1:{gov_port}/healthz", processes)
         state = {"schema": "disposable_route_stack.v1",
+                 "run_id": run["run_id"], "marker": run["marker"],
+                 "manifest": run["manifest"],
                  "gov_url": f"http://127.0.0.1:{gov_port}",
                  "lake_url": f"http://127.0.0.1:{lake_port}",
                  "warehouse_url": f"http://127.0.0.1:{warehouse_port}",
@@ -357,10 +486,16 @@ def main(argv=None) -> int:
                  "lake_token": token,
                  "warehouse_command": [str(HOSTS_PYTHON), "-m", "data_warehouse_service.main",
                                        "--load_config", str(work / "warehouse.json")],
-                 "lake_command": [str(HOSTS_PYTHON), "-m", "data_lake_service.main",
-                                  "--load_config", str(work / "lake.json")],
+                 "lake_command": lake_command,
                  "work": str(work)}
+        finish_run(run, **{key: value for key, value in state.items()
+                           if key not in ("schema", "run_id", "marker", "manifest", "work")})
+        # Written inside the run's OWN directory, so no invocation can write over another's.
+        # The pointer at the destination is advisory and additive; the record of record is the
+        # manifest, which is named by the run identity and is never overwritten.
         (work / "STACK.json").write_text(json.dumps(state, indent=1) + "\n", encoding="utf-8")
+        (Path(run["work"]) / "STACK.json").write_text(
+            json.dumps(state, indent=1) + "\n", encoding="utf-8")
         print(json.dumps(state, indent=1))
         if args.hold:
             time.sleep(args.hold)

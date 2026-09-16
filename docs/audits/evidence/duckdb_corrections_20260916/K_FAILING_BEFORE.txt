@@ -1,0 +1,689 @@
+FFFFFFFFFF.FFFFFFFF........................................              [100%]
+=================================== FAILURES ===================================
+__________ test_every_invocation_gets_its_own_identity_and_directory ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_every_invocation_gets_its0')
+reaper = []
+
+    def test_every_invocation_gets_its_own_identity_and_directory(tmp_path, reaper):
+>       first = launch(tmp_path / "work", reaper)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_disposable_stack_run_identity.py:95: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+work = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_every_invocation_gets_its0/work')
+reaper = [], roles = ('lake', 'warehouse', 'gov')
+
+    def launch(work: Path, reaper, roles=("lake", "warehouse", "gov")) -> dict:
+        """One run's worth of children under a fresh identity, recorded as the harness records it."""
+>       run = harness.begin_run(work)
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'begin_run'
+
+tests/test_disposable_stack_run_identity.py:82: AttributeError
+___________ test_a_second_run_never_overwrites_the_first_ones_record ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_a_second_run_never_overwr0')
+reaper = []
+
+    def test_a_second_run_never_overwrites_the_first_ones_record(tmp_path, reaper):
+        work = tmp_path / "work"
+>       first = launch(work, reaper)
+                ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_disposable_stack_run_identity.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+work = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_a_second_run_never_overwr0/work')
+reaper = [], roles = ('lake', 'warehouse', 'gov')
+
+    def launch(work: Path, reaper, roles=("lake", "warehouse", "gov")) -> dict:
+        """One run's worth of children under a fresh identity, recorded as the harness records it."""
+>       run = harness.begin_run(work)
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'begin_run'
+
+tests/test_disposable_stack_run_identity.py:82: AttributeError
+___________ test_the_marker_cannot_be_the_directory_the_caller_named ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_the_marker_cannot_be_the_0')
+reaper = []
+
+    def test_the_marker_cannot_be_the_directory_the_caller_named(tmp_path, reaper):
+        """Two runs share `--work` by definition, so it can never be what authorises a signal."""
+        work = tmp_path / "work"
+>       first = launch(work, reaper)
+                ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_disposable_stack_run_identity.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+work = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_the_marker_cannot_be_the_0/work')
+reaper = [], roles = ('lake', 'warehouse', 'gov')
+
+    def launch(work: Path, reaper, roles=("lake", "warehouse", "gov")) -> dict:
+        """One run's worth of children under a fresh identity, recorded as the harness records it."""
+>       run = harness.begin_run(work)
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'begin_run'
+
+tests/test_disposable_stack_run_identity.py:82: AttributeError
+______________ test_tearing_down_one_run_leaves_the_other_running ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_tearing_down_one_run_leav0')
+reaper = []
+
+    def test_tearing_down_one_run_leaves_the_other_running(tmp_path, reaper):
+        work = tmp_path / "work"
+>       first = launch(work, reaper)
+                ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_disposable_stack_run_identity.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+work = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_tearing_down_one_run_leav0/work')
+reaper = [], roles = ('lake', 'warehouse', 'gov')
+
+    def launch(work: Path, reaper, roles=("lake", "warehouse", "gov")) -> dict:
+        """One run's worth of children under a fresh identity, recorded as the harness records it."""
+>       run = harness.begin_run(work)
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'begin_run'
+
+tests/test_disposable_stack_run_identity.py:82: AttributeError
+________ test_tearing_down_a_directory_reaches_every_run_recorded_in_it ________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_tearing_down_a_directory_0')
+reaper = []
+
+    def test_tearing_down_a_directory_reaches_every_run_recorded_in_it(tmp_path, reaper):
+        """The case that stranded a process: the older run must still be findable."""
+        work = tmp_path / "work"
+>       first = launch(work, reaper)
+                ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_disposable_stack_run_identity.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+work = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_tearing_down_a_directory_0/work')
+reaper = [], roles = ('lake', 'warehouse', 'gov')
+
+    def launch(work: Path, reaper, roles=("lake", "warehouse", "gov")) -> dict:
+        """One run's worth of children under a fresh identity, recorded as the harness records it."""
+>       run = harness.begin_run(work)
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'begin_run'
+
+tests/test_disposable_stack_run_identity.py:82: AttributeError
+____________ test_children_are_recorded_before_the_launch_can_fail _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_children_are_recorded_bef0')
+reaper = []
+
+    def test_children_are_recorded_before_the_launch_can_fail(tmp_path, reaper):
+        """The record used to be written only once all three were healthy."""
+        work = tmp_path / "work"
+>       run = launch(work, reaper, roles=("lake",))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_disposable_stack_run_identity.py:151: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+work = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_children_are_recorded_bef0/work')
+reaper = [], roles = ('lake',)
+
+    def launch(work: Path, reaper, roles=("lake", "warehouse", "gov")) -> dict:
+        """One run's worth of children under a fresh identity, recorded as the harness records it."""
+>       run = harness.begin_run(work)
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'begin_run'
+
+tests/test_disposable_stack_run_identity.py:82: AttributeError
+_________ test_a_partly_launched_run_is_torn_down_from_its_own_record __________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_a_partly_launched_run_is_0')
+reaper = []
+
+    def test_a_partly_launched_run_is_torn_down_from_its_own_record(tmp_path, reaper):
+        work = tmp_path / "work"
+>       run = launch(work, reaper, roles=("lake", "warehouse"))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_disposable_stack_run_identity.py:161: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+work = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_a_partly_launched_run_is_0/work')
+reaper = [], roles = ('lake', 'warehouse')
+
+    def launch(work: Path, reaper, roles=("lake", "warehouse", "gov")) -> dict:
+        """One run's worth of children under a fresh identity, recorded as the harness records it."""
+>       run = harness.begin_run(work)
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'begin_run'
+
+tests/test_disposable_stack_run_identity.py:82: AttributeError
+______________ test_a_run_is_marked_complete_only_when_it_says_so ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_a_run_is_marked_complete_0')
+reaper = []
+
+    def test_a_run_is_marked_complete_only_when_it_says_so(tmp_path, reaper):
+        work = tmp_path / "work"
+>       run = launch(work, reaper)
+              ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_disposable_stack_run_identity.py:169: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+work = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_a_run_is_marked_complete_0/work')
+reaper = [], roles = ('lake', 'warehouse', 'gov')
+
+    def launch(work: Path, reaper, roles=("lake", "warehouse", "gov")) -> dict:
+        """One run's worth of children under a fresh identity, recorded as the harness records it."""
+>       run = harness.begin_run(work)
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'begin_run'
+
+tests/test_disposable_stack_run_identity.py:82: AttributeError
+_______ test_teardown_works_from_the_record_alone_after_the_parent_exits _______
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_teardown_works_from_the_r0')
+reaper = []
+
+    def test_teardown_works_from_the_record_alone_after_the_parent_exits(tmp_path, reaper):
+        """No handle, no parent, no directory name: the record and the marker are enough."""
+        work = tmp_path / "work"
+>       run = launch(work, reaper)
+              ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_disposable_stack_run_identity.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+work = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_teardown_works_from_the_r0/work')
+reaper = [], roles = ('lake', 'warehouse', 'gov')
+
+    def launch(work: Path, reaper, roles=("lake", "warehouse", "gov")) -> dict:
+        """One run's worth of children under a fresh identity, recorded as the harness records it."""
+>       run = harness.begin_run(work)
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'begin_run'
+
+tests/test_disposable_stack_run_identity.py:82: AttributeError
+__________ test_a_reused_pid_is_still_refused_under_the_new_identity ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_a_reused_pid_is_still_ref0')
+reaper = []
+
+    def test_a_reused_pid_is_still_refused_under_the_new_identity(tmp_path, reaper):
+        work = tmp_path / "work"
+>       run = launch(work, reaper)
+              ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_disposable_stack_run_identity.py:189: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+work = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_a_reused_pid_is_still_ref0/work')
+reaper = [], roles = ('lake', 'warehouse', 'gov')
+
+    def launch(work: Path, reaper, roles=("lake", "warehouse", "gov")) -> dict:
+        """One run's worth of children under a fresh identity, recorded as the harness records it."""
+>       run = harness.begin_run(work)
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'begin_run'
+
+tests/test_disposable_stack_run_identity.py:82: AttributeError
+___________ test_the_directory_name_alone_never_authorises_a_signal ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_the_directory_name_alone_0')
+reaper = []
+
+    def test_the_directory_name_alone_never_authorises_a_signal(tmp_path, reaper):
+        """A child whose argv merely mentions the work directory is not this run's child."""
+        work = tmp_path / "work"
+>       run = launch(work, reaper)
+              ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_disposable_stack_run_identity.py:210: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+work = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_the_directory_name_alone_0/work')
+reaper = [], roles = ('lake', 'warehouse', 'gov')
+
+    def launch(work: Path, reaper, roles=("lake", "warehouse", "gov")) -> dict:
+        """One run's worth of children under a fresh identity, recorded as the harness records it."""
+>       run = harness.begin_run(work)
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'begin_run'
+
+tests/test_disposable_stack_run_identity.py:82: AttributeError
+__________ test_the_launcher_gives_each_invocation_its_own_directory ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0')
+fixtures = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/fixtures')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x786eb95c7b30>
+
+    def test_the_launcher_gives_each_invocation_its_own_directory(tmp_path, fixtures, monkeypatch):
+        work = tmp_path / "work"
+        fake_launch(monkeypatch)
+        assert run_main(work, fixtures) == 0
+        assert run_main(work, fixtures) == 0
+>       held = harness.recorded_runs(work)
+               ^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'recorded_runs'
+
+tests/test_disposable_stack_run_identity.py:269: AttributeError
+----------------------------- Captured stdout call -----------------------------
+{
+ "schema": "disposable_route_stack.v1",
+ "gov_url": "http://127.0.0.1:45623",
+ "lake_url": "http://127.0.0.1:40189",
+ "warehouse_url": "http://127.0.0.1:37015",
+ "lake": "synthetic_fixtures",
+ "metrics_lake": "olap_cube",
+ "holdout_start": null,
+ "key_file": "/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/work/actor.key",
+ "fixtures": "/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/fixtures",
+ "cube": "/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/work/cube.sqlite",
+ "cube_postgres": null,
+ "cube_duckdb": null,
+ "lake_pid": 900001,
+ "warehouse_pid": 900002,
+ "gov_pid": 900003,
+ "lake_token": "disposable-lake-f085979442fa1d4d",
+ "warehouse_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_warehouse_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/work/warehouse.json"
+ ],
+ "lake_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_lake_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/work/lake.json"
+ ],
+ "work": "/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/work"
+}
+{
+ "schema": "disposable_route_stack.v1",
+ "gov_url": "http://127.0.0.1:45689",
+ "lake_url": "http://127.0.0.1:46697",
+ "warehouse_url": "http://127.0.0.1:46949",
+ "lake": "synthetic_fixtures",
+ "metrics_lake": "olap_cube",
+ "holdout_start": null,
+ "key_file": "/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/work/actor.key",
+ "fixtures": "/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/fixtures",
+ "cube": "/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/work/cube.sqlite",
+ "cube_postgres": null,
+ "cube_duckdb": null,
+ "lake_pid": 900004,
+ "warehouse_pid": 900005,
+ "gov_pid": 900006,
+ "lake_token": "disposable-lake-63ebc88c56027ba8",
+ "warehouse_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_warehouse_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/work/warehouse.json"
+ ],
+ "lake_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_lake_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/work/lake.json"
+ ],
+ "work": "/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_gives_each_i0/work"
+}
+____________ test_two_launches_at_one_destination_keep_both_records ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_two_launches_at_one_desti0')
+fixtures = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_two_launches_at_one_desti0/fixtures')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x786eb95c7e00>
+
+    def test_two_launches_at_one_destination_keep_both_records(tmp_path, fixtures, monkeypatch):
+        """The exact recurrence: the first run's ownership record must survive the second run."""
+        work = tmp_path / "work"
+        fake_launch(monkeypatch)
+        run_main(work, fixtures)
+>       first = harness.recorded_runs(work)[0]
+                ^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'recorded_runs'
+
+tests/test_disposable_stack_run_identity.py:281: AttributeError
+----------------------------- Captured stdout call -----------------------------
+{
+ "schema": "disposable_route_stack.v1",
+ "gov_url": "http://127.0.0.1:33517",
+ "lake_url": "http://127.0.0.1:52239",
+ "warehouse_url": "http://127.0.0.1:34333",
+ "lake": "synthetic_fixtures",
+ "metrics_lake": "olap_cube",
+ "holdout_start": null,
+ "key_file": "/tmp/pytest-of-harveybc/pytest-607/test_two_launches_at_one_desti0/work/actor.key",
+ "fixtures": "/tmp/pytest-of-harveybc/pytest-607/test_two_launches_at_one_desti0/fixtures",
+ "cube": "/tmp/pytest-of-harveybc/pytest-607/test_two_launches_at_one_desti0/work/cube.sqlite",
+ "cube_postgres": null,
+ "cube_duckdb": null,
+ "lake_pid": 900001,
+ "warehouse_pid": 900002,
+ "gov_pid": 900003,
+ "lake_token": "disposable-lake-c106ed0cc32cdb7c",
+ "warehouse_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_warehouse_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_two_launches_at_one_desti0/work/warehouse.json"
+ ],
+ "lake_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_lake_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_two_launches_at_one_desti0/work/lake.json"
+ ],
+ "work": "/tmp/pytest-of-harveybc/pytest-607/test_two_launches_at_one_desti0/work"
+}
+_______ test_the_launcher_records_children_before_the_first_health_check _______
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_records_chil0')
+fixtures = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_the_launcher_records_chil0/fixtures')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x786eb95c5550>
+
+    def test_the_launcher_records_children_before_the_first_health_check(tmp_path, fixtures,
+                                                                        monkeypatch):
+        work = tmp_path / "work"
+        fake_launch(monkeypatch, fail_at=2)
+        with pytest.raises(RuntimeError):
+            run_main(work, fixtures)
+>       held = harness.recorded_runs(work)
+               ^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'recorded_runs'
+
+tests/test_disposable_stack_run_identity.py:295: AttributeError
+_______ test_a_failed_launch_still_records_the_argv_each_child_was_given _______
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_a_failed_launch_still_rec0')
+fixtures = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_a_failed_launch_still_rec0/fixtures')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x786eb95c5940>
+
+    def test_a_failed_launch_still_records_the_argv_each_child_was_given(tmp_path, fixtures,
+                                                                        monkeypatch):
+        work = tmp_path / "work"
+        fake_launch(monkeypatch, fail_at=1)
+        with pytest.raises(RuntimeError):
+            run_main(work, fixtures)
+>       child = harness.recorded_runs(work)[0]["children"][0]
+                ^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'recorded_runs'
+
+tests/test_disposable_stack_run_identity.py:309: AttributeError
+__________ test_concurrent_launches_at_one_destination_do_not_collide __________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0')
+fixtures = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/fixtures')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x786eb95c5910>
+
+    def test_concurrent_launches_at_one_destination_do_not_collide(tmp_path, fixtures, monkeypatch):
+        import threading
+    
+        work = tmp_path / "work"
+        fake_launch(monkeypatch)
+        errors = []
+    
+        def go():
+            try:
+                run_main(work, fixtures)
+            except Exception as exc:                        # pragma: no cover - reported below
+                errors.append(exc)
+    
+        threads = [threading.Thread(target=go) for _ in range(4)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        assert errors == []
+>       held = harness.recorded_runs(work)
+               ^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'recorded_runs'
+
+tests/test_disposable_stack_run_identity.py:334: AttributeError
+----------------------------- Captured stdout call -----------------------------
+{
+ "schema": "disposable_route_stack.v1",
+ "gov_url": "http://127.0.0.1:50409",
+ "lake_url": "http://127.0.0.1:55039",
+ "warehouse_url": "http://127.0.0.1:39735",
+ "lake": "synthetic_fixtures",
+ "metrics_lake": "olap_cube",
+ "holdout_start": null,
+ "key_file": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/actor.key",
+ "fixtures": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/fixtures",
+ "cube": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/cube.sqlite",
+ "cube_postgres": null,
+ "cube_duckdb": null,
+ "lake_pid": 900001,
+ "warehouse_pid": 900002,
+ "gov_pid": 900003,
+ "lake_token": "disposable-lake-b0d64203c080cfc0",
+ "warehouse_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_warehouse_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/warehouse.json"
+ ],
+ "lake_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_lake_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/lake.json"
+ ],
+ "work": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work"
+}
+{
+ "schema": "disposable_route_stack.v1",
+ "gov_url": "http://127.0.0.1:48641",
+ "lake_url": "http://127.0.0.1:46733",
+ "warehouse_url": "http://127.0.0.1:58443",
+ "lake": "synthetic_fixtures",
+ "metrics_lake": "olap_cube",
+ "holdout_start": null,
+ "key_file": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/actor.key",
+ "fixtures": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/fixtures",
+ "cube": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/cube.sqlite",
+ "cube_postgres": null,
+ "cube_duckdb": null,
+ "lake_pid": 900004,
+ "warehouse_pid": 900005,
+ "gov_pid": 900006,
+ "lake_token": "disposable-lake-f219f92f479ad840",
+ "warehouse_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_warehouse_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/warehouse.json"
+ ],
+ "lake_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_lake_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/lake.json"
+ ],
+ "work": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work"
+}{
+ "schema": "disposable_route_stack.v1",
+ "gov_url": "http://127.0.0.1:49643",
+ "lake_url": "http://127.0.0.1:39049",
+ "warehouse_url": "http://127.0.0.1:56943",
+ "lake": "synthetic_fixtures",
+ "metrics_lake": "olap_cube",
+ "holdout_start": null,
+ "key_file": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/actor.key",
+ "fixtures": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/fixtures",
+ "cube": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/cube.sqlite",
+ "cube_postgres": null,
+ "cube_duckdb": null,
+ "lake_pid": 900007,
+ "warehouse_pid": 900008,
+ "gov_pid": 900009,
+ "lake_token": "disposable-lake-d0cd645e1b823d59",
+ "warehouse_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_warehouse_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/warehouse.json"
+ ],
+ "lake_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_lake_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/lake.json"
+ ],
+ "work": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work"
+}
+
+{
+ "schema": "disposable_route_stack.v1",
+ "gov_url": "http://127.0.0.1:48281",
+ "lake_url": "http://127.0.0.1:56213",
+ "warehouse_url": "http://127.0.0.1:52251",
+ "lake": "synthetic_fixtures",
+ "metrics_lake": "olap_cube",
+ "holdout_start": null,
+ "key_file": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/actor.key",
+ "fixtures": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/fixtures",
+ "cube": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/cube.sqlite",
+ "cube_postgres": null,
+ "cube_duckdb": null,
+ "lake_pid": 900010,
+ "warehouse_pid": 900011,
+ "gov_pid": 900012,
+ "lake_token": "disposable-lake-8270495884860a38",
+ "warehouse_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_warehouse_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/warehouse.json"
+ ],
+ "lake_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_lake_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work/lake.json"
+ ],
+ "work": "/tmp/pytest-of-harveybc/pytest-607/test_concurrent_launches_at_on0/work"
+}
+________ test_the_pointer_at_the_destination_never_replaces_the_record _________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_the_pointer_at_the_destin0')
+fixtures = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_the_pointer_at_the_destin0/fixtures')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x786eb95bc0e0>
+
+    def test_the_pointer_at_the_destination_never_replaces_the_record(tmp_path, fixtures,
+                                                                      monkeypatch):
+        """`STACK.json` stays, for whoever reads it, but it is no longer what teardown depends on."""
+        work = tmp_path / "work"
+        fake_launch(monkeypatch)
+        run_main(work, fixtures)
+>       first = harness.recorded_runs(work)[0]
+                ^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'recorded_runs'
+
+tests/test_disposable_stack_run_identity.py:346: AttributeError
+----------------------------- Captured stdout call -----------------------------
+{
+ "schema": "disposable_route_stack.v1",
+ "gov_url": "http://127.0.0.1:46001",
+ "lake_url": "http://127.0.0.1:42679",
+ "warehouse_url": "http://127.0.0.1:60157",
+ "lake": "synthetic_fixtures",
+ "metrics_lake": "olap_cube",
+ "holdout_start": null,
+ "key_file": "/tmp/pytest-of-harveybc/pytest-607/test_the_pointer_at_the_destin0/work/actor.key",
+ "fixtures": "/tmp/pytest-of-harveybc/pytest-607/test_the_pointer_at_the_destin0/fixtures",
+ "cube": "/tmp/pytest-of-harveybc/pytest-607/test_the_pointer_at_the_destin0/work/cube.sqlite",
+ "cube_postgres": null,
+ "cube_duckdb": null,
+ "lake_pid": 900001,
+ "warehouse_pid": 900002,
+ "gov_pid": 900003,
+ "lake_token": "disposable-lake-16bbaf80543aba22",
+ "warehouse_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_warehouse_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_the_pointer_at_the_destin0/work/warehouse.json"
+ ],
+ "lake_command": [
+  "/home/harveybc/.venvs/store-hosts/bin/python",
+  "-m",
+  "data_lake_service.main",
+  "--load_config",
+  "/tmp/pytest-of-harveybc/pytest-607/test_the_pointer_at_the_destin0/work/lake.json"
+ ],
+ "work": "/tmp/pytest-of-harveybc/pytest-607/test_the_pointer_at_the_destin0/work"
+}
+_________________ test_teardown_by_directory_runs_as_a_command _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_teardown_by_directory_run0')
+reaper = []
+
+    def test_teardown_by_directory_runs_as_a_command(tmp_path, reaper):
+        import subprocess
+    
+        work = tmp_path / "work"
+>       launch(work, reaper)
+
+tests/test_disposable_stack_run_identity.py:358: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+work = PosixPath('/tmp/pytest-of-harveybc/pytest-607/test_teardown_by_directory_run0/work')
+reaper = [], roles = ('lake', 'warehouse', 'gov')
+
+    def launch(work: Path, reaper, roles=("lake", "warehouse", "gov")) -> dict:
+        """One run's worth of children under a fresh identity, recorded as the harness records it."""
+>       run = harness.begin_run(work)
+              ^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'disposable_stack_identity_under_test' has no attribute 'begin_run'
+
+tests/test_disposable_stack_run_identity.py:82: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_disposable_stack_run_identity.py::test_every_invocation_gets_its_own_identity_and_directory
+FAILED tests/test_disposable_stack_run_identity.py::test_a_second_run_never_overwrites_the_first_ones_record
+FAILED tests/test_disposable_stack_run_identity.py::test_the_marker_cannot_be_the_directory_the_caller_named
+FAILED tests/test_disposable_stack_run_identity.py::test_tearing_down_one_run_leaves_the_other_running
+FAILED tests/test_disposable_stack_run_identity.py::test_tearing_down_a_directory_reaches_every_run_recorded_in_it
+FAILED tests/test_disposable_stack_run_identity.py::test_children_are_recorded_before_the_launch_can_fail
+FAILED tests/test_disposable_stack_run_identity.py::test_a_partly_launched_run_is_torn_down_from_its_own_record
+FAILED tests/test_disposable_stack_run_identity.py::test_a_run_is_marked_complete_only_when_it_says_so
+FAILED tests/test_disposable_stack_run_identity.py::test_teardown_works_from_the_record_alone_after_the_parent_exits
+FAILED tests/test_disposable_stack_run_identity.py::test_a_reused_pid_is_still_refused_under_the_new_identity
+FAILED tests/test_disposable_stack_run_identity.py::test_the_directory_name_alone_never_authorises_a_signal
+FAILED tests/test_disposable_stack_run_identity.py::test_the_launcher_gives_each_invocation_its_own_directory
+FAILED tests/test_disposable_stack_run_identity.py::test_two_launches_at_one_destination_keep_both_records
+FAILED tests/test_disposable_stack_run_identity.py::test_the_launcher_records_children_before_the_first_health_check
+FAILED tests/test_disposable_stack_run_identity.py::test_a_failed_launch_still_records_the_argv_each_child_was_given
+FAILED tests/test_disposable_stack_run_identity.py::test_concurrent_launches_at_one_destination_do_not_collide
+FAILED tests/test_disposable_stack_run_identity.py::test_the_pointer_at_the_destination_never_replaces_the_record
+FAILED tests/test_disposable_stack_run_identity.py::test_teardown_by_directory_runs_as_a_command
+18 failed, 41 passed in 0.57s
+
+Note on scope: `git stash` restores tracked files only. The 18 red rules above are therefore
+the disposable-stack ones, measured against the launcher as it was. The D3 contract and
+battery are new modules, so their "before" is that they did not exist; the 41 green above are
+theirs and are not evidence of a fix.
