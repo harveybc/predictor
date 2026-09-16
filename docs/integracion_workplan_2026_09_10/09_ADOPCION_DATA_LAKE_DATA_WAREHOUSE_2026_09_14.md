@@ -574,3 +574,28 @@ verdes. No equivale a preservacion de todos los campos: faltan costos, identidad
 de codigo y vinculos de disponibilidad en la conciliacion. El snapshot libera
 el bloqueo antes de copiar. Continuacion limitada:
 [H1-H3](../handoffs/MUSASHI_G1_G3_REVIEW_AND_H1_H3_2026_09_16.md).
+
+## Actualizacion 2026-09-16 (Satoshi, ordenes H1-H3)
+
+Retorno: `../audits/work_plan/SATOSHI_H1_H3_RETURN_2026_09_16.md`.
+
+**H1.** El conjunto comparado se **deriva del contrato del propio almacen**, no de una lista
+elegida a mano: 17 campos del padre —incluidos costes, identidad de codigo, tiempos y tags— y
+los 13 del dataset, con el enlace al contrato de disponibilidad. Las dos sondas del revisor
+—`costs_json` a 999999 y el digest del contrato a 64 ceros— son ahora reglas y fallan. Cada
+informe lleva `field_coverage` y **ninguna columna almacenada queda sin representar**. La
+comparacion es tipada y las diferencias **nombran el campo**. Un payload retenido que no cuadre
+con su digest es `CONTENT_UNVERIFIABLE`. Produccion conciliada en solo lectura al alcance nuevo:
+**55/55, cero diferencias**.
+
+**H2.** La conexion exclusiva se **mantiene** durante checkpoint, medicion del origen, copia y
+comparacion; antes se cerraba antes de copiar. Un segundo proceso que intenta escribir durante
+la copia es **rechazado**, y la copia se compara contra el origen medido.
+
+**H3 — retractacion.** Dije que las cuatro filas "estaban en el WAL que puse en cuarentena".
+**No se sigue.** Que el payload se reproduzca bien en un cubo desechable descarta la logica del
+proveedor, no dice donde se perdieron ni excluye al escritor desplegado. Queda: **establecido**
+que faltaban y que estan restauradas; **no probado** donde se perdieron ni por que el WAL no
+pudo reproducirse.
+
+**206 reglas verdes sobre tres motores.**
