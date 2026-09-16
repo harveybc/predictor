@@ -138,7 +138,7 @@ both lakes are unchanged. No scientific campaign was re-run, no GPU used, no res
 | suite | command scope | result |
 |---|---|---|
 | `olap/store/tests`, three engines | `U2_DUCKDB_PATH=1 U2_PG_DATABASE=<disposable>` under the DuckDB venv | **136 passed, 1 skipped** |
-| predictor `tests` + `olap/store/tests` | trading-stack, `--ignore=tests/unit_tests --ignore=tests/integration_tests` (stale per AGENTS.md) | recorded below |
+| predictor `tests` + `olap/store/tests` | trading-stack, `--ignore=tests/unit_tests --ignore=tests/integration_tests` (stale per AGENTS.md) | **1447 passed, 2 skipped, 0 failed** in 6m44s |
 | data-gov / data-warehouse / data-lake / financial-data store | unchanged from U1–U4 | 167 / 28 / 33 / 22 |
 
 The two environment variables decide what runs: without `U2_DUCKDB_PATH` the DuckDB half is
