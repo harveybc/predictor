@@ -231,3 +231,13 @@ metricas, 53 terminales coincidentes; los dos reparados contienen cuatro metrica
 sobrantes por duplicacion exacta. No se atribuye causa ni momento sin evidencia.
 Orden de conciliacion y reparacion acotada autorizada:
 [I1-I3](../handoffs/MUSASHI_H1_H3_LIVE_REVIEW_AND_I1_I3_2026_09_16.md).
+
+### Retorno 18ffa4e aceptado al alcance operacional medido
+
+Musashi ejecuto conciliacion por API viva: 55/55, cero diferencias, 533 metricas,
+filtro/barrido concordante en metricas, datasets y artefactos. 64 pruebas focales
+independientes pasan. Pila desechable huerfana retirada por su scope exacto;
+produccion intacta y activa. No repetir reparacion ni retirada. Siguiente trabajo:
+prevenir sobreescritura de STACK.json, vigilancia acotada y preparar el siguiente
+paso cientifico ya previsto, sin nuevas autorizaciones operativas por etapa.
+[Acta y continuacion](../handoffs/MUSASHI_I1_I3_ACCEPTANCE_AND_STACK_FOLLOWUP_2026_09_16.md).
