@@ -1,0 +1,38 @@
+{
+ "schema": "olap_live_evidence.v1",
+ "generated_utc": "2026-09-16T19:54:57Z",
+ "service": "http://127.0.0.1:5057",
+ "target": "/home/harveybc/.local/state/crispdm-duckdb/rehearsal/i1_live_evidence_v2.duckdb",
+ "counts": {
+  "gov_terminal": 55,
+  "gov_terminal_metric": 537,
+  "gov_terminal_dataset": 92,
+  "gov_terminal_artifact": 97,
+  "gov_availability_contract": 0
+ },
+ "service_digests_before_read": {
+  "gov_terminal": "4fe3539cd97c7514f1511281f6bf2cdf",
+  "gov_terminal_metric": "85d650b83cdb52243a15712e15b699d2",
+  "gov_terminal_dataset": "e472408f58458861e8493154235e5c9a",
+  "gov_terminal_artifact": "8dd86ce3424e962eabf8c482a46d46ce",
+  "gov_availability_contract": null
+ },
+ "service_digests_after_read": {
+  "gov_terminal": "4fe3539cd97c7514f1511281f6bf2cdf",
+  "gov_terminal_metric": "85d650b83cdb52243a15712e15b699d2",
+  "gov_terminal_dataset": "e472408f58458861e8493154235e5c9a",
+  "gov_terminal_artifact": "8dd86ce3424e962eabf8c482a46d46ce",
+  "gov_availability_contract": null
+ },
+ "evidence_copy_digests": {
+  "gov_terminal": "4fe3539cd97c7514f1511281f6bf2cdf",
+  "gov_terminal_metric": "85d650b83cdb52243a15712e15b699d2",
+  "gov_terminal_dataset": "e472408f58458861e8493154235e5c9a",
+  "gov_terminal_artifact": "8dd86ce3424e962eabf8c482a46d46ce",
+  "gov_availability_contract": null
+ },
+ "relations_that_moved_during_the_read": [],
+ "relations_whose_copy_differs": [],
+ "kind": "CONSISTENT_LIVE_READ",
+ "limit": "A live read, not a transactional snapshot: it proves the content did not move while it was read, not that no writer could have moved it. The boundary-held snapshot path remains the stronger evidence and needs the owning service stopped."
+}

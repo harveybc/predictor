@@ -21,8 +21,19 @@ Three populations are kept apart, because they mean different things:
 
 Nothing here opens the quarantined write-ahead log. Read-only throughout.
 
+I2 adds the other direction. A child row the cube holds MORE times than the accepted payload
+declares is surplus multiplicity, and `--repair-surplus` removes exactly that excess: expected
+multiplicity is counted from the payload, never deduplicated globally, so a contract that
+legitimately carries the same row twice keeps both. A row whose value merely differs is
+missing-and-extra, not surplus, and is refused.
+
+The cube can be read either from its file or through the RUNNING service, because a snapshot
+describes a moment that has already passed and the live contents are the thing in question.
+
 usage:
   incident_evidence_reconcile.py --accounting DB --cube FILE [--outbox DIR ...] --out R.json
+  incident_evidence_reconcile.py --accounting DB --service-url URL --out R.json
+  incident_evidence_reconcile.py --accounting DB --cube FILE --repair-surplus --evidence E.json
 """
 
 from __future__ import annotations
@@ -30,7 +41,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sqlite3
+import urllib.parse
+import urllib.request
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -120,15 +135,158 @@ CHILD_SHAPES = {
 }
 
 
-def field_coverage(con, schema: str) -> dict:
+class FileCube:
+    """The cube read from its file. What a snapshot or a stopped owner gives you."""
+
+    def __init__(self, path: Path, schema: str, writable: bool = False):
+        import duckdb
+
+        self.schema = schema
+        self.path = Path(path)
+        self.con = duckdb.connect(str(path), read_only=not writable)
+
+    def describe(self) -> str:
+        return str(self.path)
+
+    def columns(self, relation: str) -> list:
+        try:
+            return [row[1] for row in self.con.execute(
+                f'PRAGMA table_info("{self.schema}"."{relation}")').fetchall()]
+        except Exception:
+            return []
+
+    def rows(self, relation: str) -> list:
+        columns = self.columns(relation)
+        if not columns:
+            return []
+        projection = ", ".join(f'"{column}"' for column in columns)
+        return [dict(zip(columns, row)) for row in self.con.execute(
+            f'SELECT {projection} FROM "{self.schema}"."{relation}"').fetchall()]
+
+    def content_digest(self, relation: str, columns: list):
+        projection = ", ".join(f'"{column}"' for column in columns)
+        return self.con.execute(
+            "SELECT md5(string_agg(h, '' ORDER BY h)) FROM (SELECT md5(CAST(ROW("
+            f'{projection}) AS VARCHAR)) AS h FROM "{self.schema}"."{relation}") t'
+        ).fetchone()[0]
+
+    def rows_with_rowid(self, relation: str, digest: str) -> list:
+        """The physical rows of one terminal, each carrying the identity used to remove it."""
+        columns = self.columns(relation)
+        projection = ", ".join(f'"{column}"' for column in columns)
+        rows = self.con.execute(
+            f'SELECT rowid AS __rowid, {projection} FROM "{self.schema}"."{relation}"'
+            " WHERE terminal_sha256 = ?", [digest]).fetchall()
+        return [dict(zip(["__rowid", *columns], row)) for row in rows]
+
+    def close(self) -> None:
+        self.con.close()
+
+
+class ServiceCube:
+    """The cube read through the RUNNING service, which is the only live reading of it.
+
+    A snapshot answers what the cube held at a moment that has already passed. When the
+    question is what the deployed warehouse currently serves, the deployed warehouse has to be
+    the one answering. Every relation is read in pages under the host's own `LIMIT` ceiling and
+    the total is checked against a separate `count(*)`, so a truncated page cannot be mistaken
+    for a complete population.
+    """
+
+    PAGE = 1000
+
+    def __init__(self, url: str, token_env: str, schema: str):
+        self.url = url.rstrip("/")
+        self.schema = schema
+        self.token = os.environ.get(token_env)
+        if not self.token:
+            raise SystemExit(f"{token_env} is not set: the service token comes from the "
+                             "environment, never from an argument")
+
+    def describe(self) -> str:
+        return f"{self.url} (live service)"
+
+    def _get(self, path: str, params: dict):
+        request = urllib.request.Request(
+            f"{self.url}{path}?{urllib.parse.urlencode(params)}",
+            headers={"Authorization": f"Bearer {self.token}"})
+        with urllib.request.urlopen(request, timeout=120) as handle:
+            return json.load(handle)
+
+    def _query(self, sql: str) -> list:
+        return self._get("/api/v1/query", {"sql": sql})["rows"]
+
+    def columns(self, relation: str) -> list:
+        try:
+            body = self._get("/api/v1/schema", {"relation": relation})
+        except Exception:
+            return []
+        return [column["name"] for column in body.get("columns") or []]
+
+    def rows(self, relation: str) -> list:
+        columns = self.columns(relation)
+        if not columns:
+            return []
+        expected = self._query(
+            f'SELECT count(*) AS n FROM "{self.schema}"."{relation}" LIMIT 1')[0]["n"]
+        order = ", ".join(str(index + 1) for index in range(len(columns)))
+        projection = ", ".join(f'"{column}"' for column in columns)
+        collected, offset = [], 0
+        while True:
+            page = self._query(
+                f'SELECT {projection} FROM "{self.schema}"."{relation}" ORDER BY {order}'
+                f" OFFSET {offset} LIMIT {self.PAGE}")
+            collected.extend(page)
+            if len(page) < self.PAGE:
+                break
+            offset += self.PAGE
+        if len(collected) != expected:
+            # A page short of its own count is a truncated read, and a truncated read that is
+            # reported as a population is exactly the mistake this whole tool exists to catch.
+            raise RuntimeError(f"{relation}: read {len(collected)} rows, the service counts "
+                               f"{expected}")
+        return collected
+
+    def content_digest(self, relation: str, columns: list):
+        projection = ", ".join(f'"{column}"' for column in columns)
+        return self._query(
+            "SELECT md5(string_agg(h, '' ORDER BY h)) AS d FROM (SELECT md5(CAST(ROW("
+            f'{projection}) AS VARCHAR)) AS h FROM "{self.schema}"."{relation}") t LIMIT 1'
+        )[0]["d"]
+
+    def close(self) -> None:
+        return None
+
+
+def source_content(source) -> dict:
+    """The content this report was computed from, as counts and order-independent digests.
+
+    A reconciliation receipt that does not say WHICH bytes it read cannot be checked against
+    the snapshot receipt taken beside it. Mine could not: an H1 report stating 55 matches and
+    a snapshot receipt stating 537 metric rows named the same file, and re-running the same
+    code over content with that exact digest reports two differing terminals. Which step was
+    wrong is not recoverable, because neither receipt carried the other's evidence. From here
+    a report carries it.
+    """
+    content = {}
+    for relation in ("gov_terminal", *CHILD_SHAPES):
+        columns = source.columns(relation)
+        if not columns:
+            content[relation] = None
+            continue
+        try:
+            content[relation] = {"rows": len(source.rows(relation)),
+                                 "md5": str(source.content_digest(relation, columns))}
+        except Exception as exc:
+            content[relation] = {"error": f"{type(exc).__name__}: {str(exc)[:120]}"}
+    return content
+
+
+def field_coverage(source) -> dict:
     """Which stored columns are compared, and which are excused and why. Checkable, not claimed."""
     coverage = {}
     for relation in ("gov_terminal", *CHILD_SHAPES):
-        try:
-            columns = [row[1] for row in con.execute(
-                f'PRAGMA table_info("{schema}"."{relation}")').fetchall()]
-        except Exception:
-            columns = []
+        columns = source.columns(relation)
         if relation == "gov_terminal":
             compared = {PARENT_COLUMN_OF.get(field, field) for field in PARENT_FIELDS}
             compared.add("terminal_sha256")
@@ -210,6 +368,72 @@ def observed_children(con, schema: str, digest: str) -> dict:
     return out
 
 
+def children_by_terminal(source) -> dict:
+    """Every child row the cube holds, canonicalised and grouped by its terminal.
+
+    Read once per relation rather than once per terminal: the same rows, far fewer round trips
+    against a live service, and one place where a truncated read is caught.
+    """
+    out = {}
+    for relation, (_key, fields) in CHILD_SHAPES.items():
+        aliases = COLUMN_ALIASES.get(relation, {})
+        for row in source.rows(relation):
+            values = {field: row.get(aliases.get(field, field)) for field in fields}
+            out.setdefault(row.get("terminal_sha256"), {}).setdefault(relation, []).append(
+                canonical_row(values, fields))
+    for terminal in out:
+        for relation in out[terminal]:
+            out[terminal][relation].sort()
+    return out
+
+
+def surplus_plan(payload: dict, source, digest: str) -> dict:
+    """Which physical rows are the EXCESS copies, per relation, with their before-images.
+
+    Expected multiplicity is counted from the accepted payload. Two identical rows in a
+    contract are two rows; the excess is `observed - expected` for that exact row and nothing
+    else. `SELECT DISTINCT` and a global de-duplication rule are both wrong here: they would
+    rewrite the first case as well as the second.
+    """
+    plan = {}
+    for relation, (key, fields) in CHILD_SHAPES.items():
+        expected = Counter(canonical_row(row, fields) for row in (payload.get(key) or [])
+                           if isinstance(row, dict))
+        aliases = COLUMN_ALIASES.get(relation, {})
+        columns = [aliases.get(field, field) for field in fields]
+        held = {}
+        for row in source.rows_with_rowid(relation, digest):
+            values = {field: row[aliases.get(field, field)] for field in fields}
+            held.setdefault(canonical_row(values, fields), []).append(row)
+        groups = []
+        for canonical, rows in held.items():
+            excess = len(rows) - expected.get(canonical, 0)
+            if excess <= 0:
+                continue
+            # The copies kept are the earliest ones: identical rows are interchangeable, and a
+            # deterministic choice is what makes a second invocation a no-op.
+            doomed = sorted(rows, key=lambda row: row["__rowid"])[-excess:]
+            groups.append({"relation": relation, "canonical": canonical,
+                           "expected": expected.get(canonical, 0), "observed": len(rows),
+                           "rowids": [row["__rowid"] for row in doomed],
+                           "before_images": [
+                               {"relation": relation, "terminal_sha256": digest,
+                                "rowid": row["__rowid"],
+                                "values": {column: row[column] for column in columns}}
+                               for row in doomed]})
+        if groups:
+            plan[relation] = groups
+    return plan
+
+
+def delete_by_rowid(con, schema: str, relation: str, rowids: list) -> int:
+    """Remove exactly these physical rows. Patched in tests to prove the operation is atomic."""
+    placeholders = ", ".join("?" for _ in rowids)
+    con.execute(f'DELETE FROM "{schema}"."{relation}" WHERE rowid IN ({placeholders})',
+                list(rowids))
+    return len(rowids)
+
+
 def compare_multisets(expected: list, observed: list, fields=()) -> dict:
     """What is missing and what is extra, and WHICH FIELDS changed where that is answerable.
 
@@ -275,7 +499,14 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--accounting", type=Path, required=True)
-    parser.add_argument("--cube", type=Path, required=True)
+    parser.add_argument("--cube", type=Path,
+                        help="the cube file: a snapshot, a rehearsal copy, or the production "
+                             "file with its owner stopped. Required for any repair.")
+    parser.add_argument("--service-url",
+                        help="read the cube through the RUNNING service instead of its file, "
+                             "which is the only reading of what it currently serves")
+    parser.add_argument("--token-env", default="DATA_GOV_LAKE_TOKEN",
+                        help="environment variable holding the store token; never a literal")
     parser.add_argument("--schema", default="main")
     parser.add_argument("--outbox", action="append", type=Path, default=[])
     parser.add_argument("--out", type=Path, required=True)
@@ -283,26 +514,36 @@ def main(argv=None) -> int:
                         help="restore child rows the accepted payload says should exist and "
                              "the cube does not hold. Only ADDS what is missing under a "
                              "matching identity; never edits or deletes anything.")
+    parser.add_argument("--repair-surplus", action="store_true",
+                        help="remove the EXCESS copies of child rows the cube holds more times "
+                             "than the accepted payload declares. Multiplicity comes from the "
+                             "payload; nothing is deduplicated globally.")
+    parser.add_argument("--evidence", type=Path,
+                        help="where the surplus rows are preserved BEFORE they are removed")
     args = parser.parse_args(argv)
 
-    import duckdb
+    if not args.cube and not args.service_url:
+        parser.error("one of --cube or --service-url is required")
+    if args.service_url and (args.repair or args.repair_surplus):
+        parser.error("a repair writes to the cube file, with its owner stopped; the service "
+                     "route is read-only")
+    if args.repair_surplus and not args.evidence:
+        # Removing a row without first preserving it is not a repair, whatever it is called.
+        parser.error("--repair-surplus requires --evidence: the surplus rows are preserved "
+                     "before they leave the operational projection")
 
     accepted = accepted_terminals(args.accounting)
     outboxes = outbox_identities([root.expanduser() for root in args.outbox])
 
-    con = duckdb.connect(str(args.cube), read_only=not args.repair)
-    try:
-        parent_columns = [row[1] for row in con.execute(
-            f'PRAGMA table_info("{args.schema}"."gov_terminal")').fetchall()]
-        in_cube = {}
-        for row in con.execute(
-                f'SELECT * FROM "{args.schema}".gov_terminal').fetchall():
-            record = dict(zip(parent_columns, row))
-            in_cube[record["terminal_sha256"]] = record
-        observed = {digest: observed_children(con, args.schema, digest) for digest in in_cube}
-        coverage = field_coverage(con, args.schema)
-    finally:
-        con.close()
+    writable = bool(args.repair or args.repair_surplus)
+    source = (ServiceCube(args.service_url, args.token_env, args.schema) if args.service_url
+              else FileCube(args.cube, args.schema, writable=writable))
+    in_cube = {row["terminal_sha256"]: row for row in source.rows("gov_terminal")}
+    grouped = children_by_terminal(source)
+    observed = {digest: {relation: grouped.get(digest, {}).get(relation, [])
+                         for relation in CHILD_SHAPES} for digest in in_cube}
+    coverage = field_coverage(source)
+    read_content = source_content(source)
 
     matches, differs, missing, replayable, unverifiable = [], [], [], [], []
     for row in accepted:
@@ -391,46 +632,140 @@ def main(argv=None) -> int:
         # Restore from the INDEPENDENT record: the payload governance accepted. Only rows that
         # are missing are added, only under an identity whose parent already matches, and
         # nothing is edited or removed - a repair that could overwrite would be a rewrite.
-        con = duckdb.connect(str(args.cube))
-        try:
-            for record in differs:
-                digest = record["terminal_sha256"]
-                payload = next(row["body"] for row in accepted
-                               if row["terminal_sha256"] == digest)
-                if record["differences"].get("parent"):
-                    record["repair"] = "REFUSED_PARENT_DIFFERS"
-                    continue
-                added = {}
-                con.execute("BEGIN TRANSACTION")
-                try:
-                    for relation, outcome in record["differences"]["children"].items():
-                        if outcome["extra"]:
-                            raise RuntimeError(
-                                f"{relation} holds rows the payload does not: not a repair")
-                        key, fields = CHILD_SHAPES[relation]
-                        aliases = COLUMN_ALIASES.get(relation, {})
-                        columns = ["terminal_sha256"] + [aliases.get(f, f) for f in fields]
-                        held = set(observed_children(con, args.schema, digest)[relation])
-                        rows = [row for row in (payload.get(key) or [])
-                                if canonical_row(row, fields) not in held]
-                        for row in rows:
-                            placeholders = ", ".join("?" for _ in columns)
-                            con.execute(
-                                f'INSERT INTO "{args.schema}"."{relation}" '
-                                f'({", ".join(chr(34) + c + chr(34) for c in columns)}) '
-                                f"VALUES ({placeholders})",
-                                [digest] + [row.get(field) for field in fields])
-                        added[relation] = len(rows)
-                    con.execute("COMMIT")
-                except Exception as exc:
-                    con.execute("ROLLBACK")
-                    record["repair"] = f"FAILED: {type(exc).__name__}: {exc}"
-                    continue
-                record["repair"] = "RESTORED"
-                record["rows_restored"] = added
-                repaired.append(record)
-        finally:
-            con.close()
+        con = source.con
+        for record in differs:
+            digest = record["terminal_sha256"]
+            payload = next(row["body"] for row in accepted
+                           if row["terminal_sha256"] == digest)
+            if record["differences"].get("parent"):
+                record["repair"] = "REFUSED_PARENT_DIFFERS"
+                continue
+            added = {}
+            con.execute("BEGIN TRANSACTION")
+            try:
+                for relation, outcome in record["differences"]["children"].items():
+                    if outcome["extra"]:
+                        raise RuntimeError(
+                            f"{relation} holds rows the payload does not: not a repair")
+                    key, fields = CHILD_SHAPES[relation]
+                    aliases = COLUMN_ALIASES.get(relation, {})
+                    columns = ["terminal_sha256"] + [aliases.get(f, f) for f in fields]
+                    held = set(observed_children(con, args.schema, digest)[relation])
+                    rows = [row for row in (payload.get(key) or [])
+                            if canonical_row(row, fields) not in held]
+                    for row in rows:
+                        placeholders = ", ".join("?" for _ in columns)
+                        con.execute(
+                            f'INSERT INTO "{args.schema}"."{relation}" '
+                            f'({", ".join(chr(34) + c + chr(34) for c in columns)}) '
+                            f"VALUES ({placeholders})",
+                            [digest] + [row.get(field) for field in fields])
+                    added[relation] = len(rows)
+                con.execute("COMMIT")
+            except Exception as exc:
+                con.execute("ROLLBACK")
+                record["repair"] = f"FAILED: {type(exc).__name__}: {exc}"
+                continue
+            record["repair"] = "RESTORED"
+            record["rows_restored"] = added
+            repaired.append(record)
+
+    # --- I2: the other direction, bounded to proven surplus multiplicity --------------------
+    surplus_removed, surplus_repaired, before_images = 0, [], []
+    if args.repair_surplus:
+        # The evidence file is written BEFORE anything is removed, and it names every physical
+        # row. Preserving the rows after the fact would preserve whatever survived the removal.
+        plans = {}
+        for record in differs:
+            if record.get("repair") == "RESTORED":
+                # An additive repair in the same invocation already changed this terminal, so
+                # the difference report above no longer describes the cube. A refused or
+                # failed additive attempt changed nothing, and its read still stands.
+                continue
+            digest = record["terminal_sha256"]
+            payload = next(row["body"] for row in accepted
+                           if row["terminal_sha256"] == digest)
+            if record["differences"].get("parent"):
+                record["repair"] = "REFUSED_PARENT_DIFFERS"
+                continue
+            if any(outcome["missing"]
+                   for outcome in record["differences"].get("children", {}).values()):
+                # Missing AND extra is a CHANGED value, not a surplus copy. Removing either
+                # side would pick a winner between two contents, which is a rewrite.
+                record["repair"] = "REFUSED_NOT_PURE_SURPLUS"
+                continue
+            plan = surplus_plan(payload, source, digest)
+            if not plan:
+                record["repair"] = "NOTHING_TO_REMOVE"
+                continue
+            plans[digest] = (record, plan)
+            for groups in plan.values():
+                for group in groups:
+                    before_images.extend(group["before_images"])
+        args.evidence.write_text(json.dumps(
+            {"schema": "surplus_multiplicity_evidence.v1", "generated_utc": now(),
+             "cube": source.describe(),
+             "planned": before_images,
+             "note": ("Every physical row below is a copy the cube holds beyond the "
+                      "multiplicity the accepted payload declares. It is recorded here before "
+                      "it leaves the operational projection.")}, indent=1) + "\n",
+            encoding="utf-8")
+        for digest, (record, plan) in plans.items():
+            removed_here = {}
+            source.con.execute("BEGIN TRANSACTION")
+            try:
+                for relation, groups in plan.items():
+                    for group in groups:
+                        removed_here[relation] = removed_here.get(relation, 0) + delete_by_rowid(
+                            source.con, args.schema, relation, group["rowids"])
+                source.con.execute("COMMIT")
+            except Exception as exc:
+                source.con.execute("ROLLBACK")
+                record["repair"] = f"FAILED: {type(exc).__name__}: {exc}"
+                continue
+            record["repair"] = "SURPLUS_REMOVED"
+            record["rows_removed"] = removed_here
+            record["removed_rows"] = [image for groups in plan.values()
+                                      for group in groups
+                                      for image in group["before_images"]]
+            surplus_removed += sum(removed_here.values())
+            surplus_repaired.append(record)
+        if surplus_repaired:
+            args.evidence.write_text(json.dumps(
+                {"schema": "surplus_multiplicity_evidence.v1", "generated_utc": now(),
+                 "cube": source.describe(),
+                 "planned": before_images,
+                 "removed": [image for record in surplus_repaired
+                             for image in record["removed_rows"]],
+                 "terminals": sorted(record["terminal_sha256"]
+                                     for record in surplus_repaired),
+                 "note": ("Every physical row below is a copy the cube held beyond the "
+                          "multiplicity the accepted payload declares, preserved here before "
+                          "it left the operational projection.")}, indent=1) + "\n",
+                encoding="utf-8")
+        # A terminal whose only difference WAS the surplus now matches: it stops being a
+        # difference, so the verdict is measured on what is left rather than on what was found.
+        settled = {record["terminal_sha256"] for record in surplus_repaired}
+        for record in surplus_repaired:
+            record.pop("differences", None)
+        differs = [record for record in differs if record["terminal_sha256"] not in settled]
+        matches.extend(surplus_repaired)
+
+    # A repair writes from a process that is NOT the service. If it leaves a write-ahead log
+    # beside the file, that log can later be replayed onto a base that already contains it, and
+    # every row it carries appears twice - which is reproducibly how identical child rows
+    # double. The log is folded in here, and the receipt states that it was.
+    log_after, content_after = None, None
+    if writable:
+        source.con.execute("CHECKPOINT")
+        # `source_content` describes what the report was COMPUTED from; after a write the
+        # cube is no longer that, and a receipt that states only the first is unfalsifiable
+        # against the cube it left behind.
+        content_after = source_content(source)
+        log = Path(str(args.cube) + ".wal")
+        log_after = log.stat().st_size if log.exists() else 0
+    described = source.describe()
+    source.close()
 
     accepted_digests = {row["terminal_sha256"] for row in accepted}
     orphans = sorted(set(in_cube) - accepted_digests)
@@ -442,11 +777,14 @@ def main(argv=None) -> int:
         verdict = "INCONCLUSIVE"
 
     body = {"schema": "incident_evidence_reconcile.v2", "generated_utc": now(),
-            "accounting": str(args.accounting), "cube": str(args.cube),
+            "accounting": str(args.accounting), "cube": described,
             "expectation_source": ("data-gov governed_terminals.body_json — the canonical "
                                    "payload as accepted, in a database the incident never "
                                    "touched. Expectations are NOT derived from the cube."),
             "field_coverage": coverage,
+            "source_content": read_content,
+            "content_after_repair": content_after,
+            "write_ahead_log_bytes_after_checkpoint": log_after,
             "counts": {"accepted_by_governance": len(accepted),
                        "content_matches": len(matches),
                        "content_differs": len(differs),
@@ -454,9 +792,12 @@ def main(argv=None) -> int:
                        "replayable_from_outbox": len(replayable),
                        "content_unverifiable": len(unverifiable),
                        "repaired": len(repaired),
+                       "surplus_rows_removed": surplus_removed,
+                       "terminals_with_surplus_removed": len(surplus_repaired),
                        "terminals_in_cube": len(in_cube),
                        "cube_rows_without_an_accepted_record": len(orphans)},
             "repaired": repaired,
+            "surplus_removed": surplus_repaired,
             "content_differs": differs, "missing_from_cube": missing,
             "replayable_from_outbox": replayable,
             "content_unverifiable": unverifiable,

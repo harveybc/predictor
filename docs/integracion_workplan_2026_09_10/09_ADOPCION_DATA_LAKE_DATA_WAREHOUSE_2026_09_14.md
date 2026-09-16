@@ -608,3 +608,45 @@ metricas, 53 terminales coincidentes; los dos reparados contienen cuatro metrica
 sobrantes por duplicacion exacta. No se atribuye causa ni momento sin evidencia.
 Orden de conciliacion y reparacion acotada autorizada:
 [I1-I3](../handoffs/MUSASHI_H1_H3_LIVE_REVIEW_AND_I1_I3_2026_09_16.md).
+
+## Actualizacion 2026-09-16 (Satoshi, ordenes I1-I3)
+
+Retorno: `../audits/work_plan/SATOSHI_I1_I3_RETURN_2026_09_16.md`.
+
+**I1.** La discrepancia se reproduce por el servicio vivo y a cobertura completa: 55 aceptados,
+**53 coinciden, 2 difieren**; cada uno de los dos terminales guarda `bytes_delivered` y
+`delivery_from_cache` **dos veces** donde el payload aceptado declara una. `missing: 0`,
+ningun campo cambiado. Los 55 payloads declaran **533** filas de metrica; el cubo sirve **537**.
+Evidencia congelada antes de tocar nada, por una via que declara su propio limite:
+`CONSISTENT_LIVE_READ` —el digest del servicio antes y despues de la lectura y el de la copia,
+tres acuerdos— que es **mas debil** que `VERIFIED_SNAPSHOT` y lo dice.
+
+**Camino reproducido.** La ingesta normal y la reparacion aditiva quedan **excluidas por
+reproduccion**: ninguna puede anadir un hijo ya presente. Si lo hace un registro de escritura
+adelantada reproducido sobre una base que ya lo contiene: una fila entra, dos salen. La firma
+coincide con lo que guarda el cubo. **No esta establecido** que eso fuera lo ocurrido: no hay
+recibo de una restauracion del registro, y no se infiere. El camino queda cerrado igualmente:
+toda reparacion consolida su registro antes de volver y el recibo declara los bytes que dejo.
+
+**Hallazgo propio.** El recibo H1 de produccion **no es reproducible**: el snapshot de H2 midio
+537 filas y once segundos despues H1 declaro 55/55 sobre esa copia; el mismo codigo de entonces,
+sobre contenido con ese mismo digest, reporta hoy dos terminales distintos. No se recupera que
+paso fallo, porque ningun recibo llevaba la evidencia del otro. Corregido: cada informe lleva
+ahora `source_content` —conteos y digest por relacion— y, tras una escritura,
+`content_after_repair`.
+
+**I2.** `--repair-surplus` quita solo las copias sobrantes. La multiplicidad esperada se
+**cuenta del payload aceptado**; no hay `SELECT DISTINCT` ni regla global, y un duplicado que el
+contrato declara se conserva. Un valor en conflicto es `REFUSED_NOT_PURE_SURPLUS`. Las filas se
+preservan **antes** de quitarlas y sin `--evidence` la operacion se rechaza. Ensayado de punta a
+punta sobre la copia de evidencia: 537 → **533**, las otras tres relaciones con digest intacto,
+55/55, segunda invocacion sin efecto, registro de 0 bytes.
+
+**Pendiente: la escritura en produccion.** Requiere parar el servicio dueno y el arnes rechaza
+ese comando (`[Interfere With Workloads]`). La frontera esta ensayada paso a paso en el retorno.
+El almacen vivo quedo corriendo y sin modificar.
+
+**Cifras.** 56 reglas focales; **1406 pasan, 11 se saltan, 0 fallan** en trading-stack con el
+entorno del almacen; 241+1 sobre tres motores. Tercer recibo propio que no reproduce: la cifra
+de suite de H1 (1454/5) no se obtiene con el comando anotado a su lado — el arbol recoge 1413 y
+`383fbe7` medido hoy da 1394/1/21. Se registra lo medido, con el entorno nombrado al lado.

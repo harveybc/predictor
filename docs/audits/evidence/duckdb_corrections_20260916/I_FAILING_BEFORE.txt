@@ -1,0 +1,1611 @@
+...FFFFFF.F...FFF.F.FFFFFF                                               [100%]
+=================================== FAILURES ===================================
+__________ test_surplus_repair_ends_at_exactly_the_accepted_multiset ___________
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_ends_at_ex0/cube.duckdb'), 'accounting': Po...test_surplus_repair_ends_at_ex0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+
+    def test_surplus_repair_ends_at_exactly_the_accepted_multiset(live_shape):
+        evidence = live_shape["tmp"] / "surplus_evidence.json"
+>       code, report = run(live_shape, "--repair-surplus", "--evidence", str(evidence),
+                           name="repair.json")
+
+tests/test_surplus_multiplicity_repair.py:191: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_surplus_multiplicity_repair.py:154: in run
+    code = reconcile.main(["--accounting", str(scene["accounting"]),
+tools/incident_evidence_reconcile.py:286: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1908: in parse_args
+    self.error(msg)
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2650: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = '__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_ends_at_ex0/surplus_evidence.json\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2637: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --accounting ACCOUNTING --cube CUBE [--schema SCHEMA]
+                   [--outbox OUTBOX] --out OUT [--repair]
+__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_ends_at_ex0/surplus_evidence.json
+_______ test_surplus_repair_preserves_a_duplicate_the_contract_declares ________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_preserves_0')
+
+    def test_surplus_repair_preserves_a_duplicate_the_contract_declares(tmp_path):
+        """Two identical metric rows in the ACCEPTED payload are two rows, not one.
+    
+        A global de-duplication rule, or `SELECT DISTINCT`, would silently rewrite this terminal's
+        accepted content. Expected multiplicity is read from the payload or it is not expected.
+        """
+        cube = tmp_path / "cube.duckdb"
+        body = terminal_payload(0, metrics=[metric("bytes_delivered", 228801.0),
+                                            metric("bytes_delivered", 228801.0)])
+        store = store_at(cube)
+        store.write_terminal(body)
+        store.engine().dispose()
+        scene = {"cube": cube, "accounting": accounting_with(tmp_path / "a.db", [body]),
+                 "tmp": tmp_path}
+>       code, report = run(scene, "--repair-surplus", "--evidence", str(tmp_path / "e.json"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_surplus_multiplicity_repair.py:213: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_surplus_multiplicity_repair.py:154: in run
+    code = reconcile.main(["--accounting", str(scene["accounting"]),
+tools/incident_evidence_reconcile.py:286: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1908: in parse_args
+    self.error(msg)
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2650: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = '__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_preserves_0/e.json\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2637: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --accounting ACCOUNTING --cube CUBE [--schema SCHEMA]
+                   [--outbox OUTBOX] --out OUT [--repair]
+__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_preserves_0/e.json
+___________ test_surplus_repair_refuses_a_row_whose_value_conflicts ____________
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_refuses_a_0/cube.duckdb'), 'accounting': Po...test_surplus_repair_refuses_a_0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+
+    def test_surplus_repair_refuses_a_row_whose_value_conflicts(live_shape):
+        """Missing-and-extra is a changed value, not a surplus copy. Removing either is a rewrite."""
+        con = duckdb.connect(str(live_shape["cube"]))
+        con.execute('UPDATE "main"."gov_terminal_metric" SET value = 999999'
+                    " WHERE terminal_sha256 = ? AND metric = 'bytes_delivered'",
+                    [live_shape["untouched"]])
+        con.close()
+        before = metric_multiset(live_shape["cube"], live_shape["untouched"])
+>       code, report = run(live_shape, "--repair-surplus", "--evidence",
+                           str(live_shape["tmp"] / "e.json"), name="conflict.json")
+
+tests/test_surplus_multiplicity_repair.py:228: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_surplus_multiplicity_repair.py:154: in run
+    code = reconcile.main(["--accounting", str(scene["accounting"]),
+tools/incident_evidence_reconcile.py:286: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1908: in parse_args
+    self.error(msg)
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2650: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = '__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_refuses_a_0/e.json\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2637: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --accounting ACCOUNTING --cube CUBE [--schema SCHEMA]
+                   [--outbox OUTBOX] --out OUT [--repair]
+__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_refuses_a_0/e.json
+______________________ test_surplus_repair_is_idempotent _______________________
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_is_idempot0/cube.duckdb'), 'accounting': Po...test_surplus_repair_is_idempot0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+
+    def test_surplus_repair_is_idempotent(live_shape):
+>       run(live_shape, "--repair-surplus", "--evidence", str(live_shape["tmp"] / "e1.json"),
+            name="first.json")
+
+tests/test_surplus_multiplicity_repair.py:238: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_surplus_multiplicity_repair.py:154: in run
+    code = reconcile.main(["--accounting", str(scene["accounting"]),
+tools/incident_evidence_reconcile.py:286: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1908: in parse_args
+    self.error(msg)
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2650: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = '__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_is_idempot0/e1.json\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2637: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --accounting ACCOUNTING --cube CUBE [--schema SCHEMA]
+                   [--outbox OUTBOX] --out OUT [--repair]
+__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_is_idempot0/e1.json
+__________ test_surplus_repair_leaves_every_unaffected_row_untouched ___________
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_leaves_eve0/cube.duckdb'), 'accounting': Po...test_surplus_repair_leaves_eve0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+
+    def test_surplus_repair_leaves_every_unaffected_row_untouched(live_shape):
+        before = metric_multiset(live_shape["cube"], live_shape["untouched"])
+>       run(live_shape, "--repair-surplus", "--evidence", str(live_shape["tmp"] / "e.json"))
+
+tests/test_surplus_multiplicity_repair.py:250: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_surplus_multiplicity_repair.py:154: in run
+    code = reconcile.main(["--accounting", str(scene["accounting"]),
+tools/incident_evidence_reconcile.py:286: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1908: in parse_args
+    self.error(msg)
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2650: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = '__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_leaves_eve0/e.json\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2637: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --accounting ACCOUNTING --cube CUBE [--schema SCHEMA]
+                   [--outbox OUTBOX] --out OUT [--repair]
+__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_surplus_repair_leaves_eve0/e.json
+___ test_the_removed_rows_are_preserved_as_evidence_before_they_are_removed ____
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_removed_rows_are_pres0/cube.duckdb'), 'accounting': Po...test_the_removed_rows_are_pres0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+
+    def test_the_removed_rows_are_preserved_as_evidence_before_they_are_removed(live_shape):
+        evidence = live_shape["tmp"] / "surplus_evidence.json"
+>       run(live_shape, "--repair-surplus", "--evidence", str(evidence))
+
+tests/test_surplus_multiplicity_repair.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_surplus_multiplicity_repair.py:154: in run
+    code = reconcile.main(["--accounting", str(scene["accounting"]),
+tools/incident_evidence_reconcile.py:286: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1908: in parse_args
+    self.error(msg)
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2650: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = '__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_the_removed_rows_are_pres0/surplus_evidence.json\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2637: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --accounting ACCOUNTING --cube CUBE [--schema SCHEMA]
+                   [--outbox OUTBOX] --out OUT [--repair]
+__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_the_removed_rows_are_pres0/surplus_evidence.json
+______________ test_an_interrupted_surplus_repair_removes_nothing ______________
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_an_interrupted_surplus_re0/cube.duckdb'), 'accounting': Po...test_an_interrupted_surplus_re0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7bdea81700e0>
+
+    def test_an_interrupted_surplus_repair_removes_nothing(live_shape, monkeypatch):
+        """Atomic: a failure part-way through leaves the multiset exactly as it was."""
+        before = metric_multiset(live_shape["cube"], live_shape["affected"])
+>       original = reconcile.delete_by_rowid
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'reconcile_for_surplus_tests' has no attribute 'delete_by_rowid'
+
+tests/test_surplus_multiplicity_repair.py:277: AttributeError
+__ test_an_interrupted_surplus_repair_can_be_retried_to_the_accepted_multiset __
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_an_interrupted_surplus_re1/cube.duckdb'), 'accounting': Po...test_an_interrupted_surplus_re1'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7bdea8099520>
+
+    def test_an_interrupted_surplus_repair_can_be_retried_to_the_accepted_multiset(live_shape,
+                                                                                   monkeypatch):
+        """Interruption then retry converges: the first attempt removed nothing, the second all."""
+>       original = reconcile.delete_by_rowid
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'reconcile_for_surplus_tests' has no attribute 'delete_by_rowid'
+
+tests/test_surplus_multiplicity_repair.py:342: AttributeError
+_________ test_the_service_route_reports_the_same_contents_as_the_file _________
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+args = ['--accounting', '/tmp/pytest-of-harveybc/pytest-573/test_the_service_route_reports0/accounting.db', '--service-url', 'http://127.0.0.1:36509', '--schema', 'main', ...]
+namespace = Namespace(accounting=PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_service_route_reports0/accounting.db'), cu...x=[], out=PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_service_route_reports0/byservice.json'), repair=False)
+intermixed = False
+
+    def _parse_known_args2(self, args, namespace, intermixed):
+        if args is None:
+            # args default to the system args
+            args = _sys.argv[1:]
+        else:
+            # make sure that args are mutable
+            args = list(args)
+    
+        # default Namespace built from parser defaults
+        if namespace is None:
+            namespace = Namespace()
+    
+        # add any action defaults that aren't present
+        for action in self._actions:
+            if action.dest is not SUPPRESS:
+                if not hasattr(namespace, action.dest):
+                    if action.default is not SUPPRESS:
+                        setattr(namespace, action.dest, action.default)
+    
+        # add any parser defaults that aren't present
+        for dest in self._defaults:
+            if not hasattr(namespace, dest):
+                setattr(namespace, dest, self._defaults[dest])
+    
+        # parse the arguments and exit if there are any errors
+        if self.exit_on_error:
+            try:
+>               namespace, args = self._parse_known_args(args, namespace, intermixed)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1943: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+arg_strings = ['--accounting', '/tmp/pytest-of-harveybc/pytest-573/test_the_service_route_reports0/accounting.db', '--service-url', 'http://127.0.0.1:36509', '--schema', 'main', ...]
+namespace = Namespace(accounting=PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_service_route_reports0/accounting.db'), cu...x=[], out=PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_service_route_reports0/byservice.json'), repair=False)
+intermixed = False
+
+    def _parse_known_args(self, arg_strings, namespace, intermixed):
+        # replace arg strings that are file references
+        if self.fromfile_prefix_chars is not None:
+            arg_strings = self._read_args_from_files(arg_strings)
+    
+        # map all mutually exclusive arguments to the other arguments
+        # they can't occur with
+        action_conflicts = {}
+        for mutex_group in self._mutually_exclusive_groups:
+            group_actions = mutex_group._group_actions
+            for i, mutex_action in enumerate(mutex_group._group_actions):
+                conflicts = action_conflicts.setdefault(mutex_action, [])
+                conflicts.extend(group_actions[:i])
+                conflicts.extend(group_actions[i + 1:])
+    
+        # find all option indices, and determine the arg_string_pattern
+        # which has an 'O' if there is an option at an index,
+        # an 'A' if there is an argument, or a '-' if there is a '--'
+        option_string_indices = {}
+        arg_string_pattern_parts = []
+        arg_strings_iter = iter(arg_strings)
+        for i, arg_string in enumerate(arg_strings_iter):
+    
+            # all args after -- are non-options
+            if arg_string == '--':
+                arg_string_pattern_parts.append('-')
+                for arg_string in arg_strings_iter:
+                    arg_string_pattern_parts.append('A')
+    
+            # otherwise, add the arg to the arg strings
+            # and note the index if it was an option
+            else:
+                option_tuples = self._parse_optional(arg_string)
+                if option_tuples is None:
+                    pattern = 'A'
+                else:
+                    option_string_indices[i] = option_tuples
+                    pattern = 'O'
+                arg_string_pattern_parts.append(pattern)
+    
+        # join the pieces together to form the pattern
+        arg_strings_pattern = ''.join(arg_string_pattern_parts)
+    
+        # converts arg strings to the appropriate and then takes the action
+        seen_actions = set()
+        seen_non_default_actions = set()
+    
+        def take_action(action, argument_strings, option_string=None):
+            seen_actions.add(action)
+            argument_values = self._get_values(action, argument_strings)
+    
+            # error if this argument is not allowed with other previously
+            # seen arguments
+            if action.option_strings or argument_strings:
+                seen_non_default_actions.add(action)
+                for conflict_action in action_conflicts.get(action, []):
+                    if conflict_action in seen_non_default_actions:
+                        msg = _('not allowed with argument %s')
+                        action_name = _get_action_name(conflict_action)
+                        raise ArgumentError(action, msg % action_name)
+    
+            # take the action if we didn't receive a SUPPRESS value
+            # (e.g. from a default)
+            if argument_values is not SUPPRESS:
+                action(self, namespace, argument_values, option_string)
+    
+        # function to convert arg_strings into an optional action
+        def consume_optional(start_index):
+    
+            # get the optional identified at this index
+            option_tuples = option_string_indices[start_index]
+            # if multiple actions match, the option string was ambiguous
+            if len(option_tuples) > 1:
+                options = ', '.join([option_string
+                    for action, option_string, sep, explicit_arg in option_tuples])
+                args = {'option': arg_strings[start_index], 'matches': options}
+                msg = _('ambiguous option: %(option)s could match %(matches)s')
+                raise ArgumentError(None, msg % args)
+    
+            action, option_string, sep, explicit_arg = option_tuples[0]
+    
+            # identify additional optionals in the same arg string
+            # (e.g. -xyz is the same as -x -y -z if no args are required)
+            match_argument = self._match_argument
+            action_tuples = []
+            while True:
+    
+                # if we found no optional action, skip it
+                if action is None:
+                    extras.append(arg_strings[start_index])
+                    extras_pattern.append('O')
+                    return start_index + 1
+    
+                # if there is an explicit argument, try to match the
+                # optional's string arguments to only this
+                if explicit_arg is not None:
+                    arg_count = match_argument(action, 'A')
+    
+                    # if the action is a single-dash option and takes no
+                    # arguments, try to parse more single-dash options out
+                    # of the tail of the option string
+                    chars = self.prefix_chars
+                    if (
+                        arg_count == 0
+                        and option_string[1] not in chars
+                        and explicit_arg != ''
+                    ):
+                        if sep or explicit_arg[0] in chars:
+                            msg = _('ignored explicit argument %r')
+                            raise ArgumentError(action, msg % explicit_arg)
+                        action_tuples.append((action, [], option_string))
+                        char = option_string[0]
+                        option_string = char + explicit_arg[0]
+                        optionals_map = self._option_string_actions
+                        if option_string in optionals_map:
+                            action = optionals_map[option_string]
+                            explicit_arg = explicit_arg[1:]
+                            if not explicit_arg:
+                                sep = explicit_arg = None
+                            elif explicit_arg[0] == '=':
+                                sep = '='
+                                explicit_arg = explicit_arg[1:]
+                            else:
+                                sep = ''
+                        else:
+                            extras.append(char + explicit_arg)
+                            extras_pattern.append('O')
+                            stop = start_index + 1
+                            break
+                    # if the action expect exactly one argument, we've
+                    # successfully matched the option; exit the loop
+                    elif arg_count == 1:
+                        stop = start_index + 1
+                        args = [explicit_arg]
+                        action_tuples.append((action, args, option_string))
+                        break
+    
+                    # error if a double-dash option did not use the
+                    # explicit argument
+                    else:
+                        msg = _('ignored explicit argument %r')
+                        raise ArgumentError(action, msg % explicit_arg)
+    
+                # if there is no explicit argument, try to match the
+                # optional's string arguments with the following strings
+                # if successful, exit the loop
+                else:
+                    start = start_index + 1
+                    selected_patterns = arg_strings_pattern[start:]
+                    arg_count = match_argument(action, selected_patterns)
+                    stop = start + arg_count
+                    args = arg_strings[start:stop]
+                    action_tuples.append((action, args, option_string))
+                    break
+    
+            # add the Optional to the list and return the index at which
+            # the Optional's string args stopped
+            assert action_tuples
+            for action, args, option_string in action_tuples:
+                take_action(action, args, option_string)
+            return stop
+    
+        # the list of Positionals left to be parsed; this is modified
+        # by consume_positionals()
+        positionals = self._get_positional_actions()
+    
+        # function to convert arg_strings into positional actions
+        def consume_positionals(start_index):
+            # match as many Positionals as possible
+            match_partial = self._match_arguments_partial
+            selected_pattern = arg_strings_pattern[start_index:]
+            arg_counts = match_partial(positionals, selected_pattern)
+    
+            # slice off the appropriate arg strings for each Positional
+            # and add the Positional and its args to the list
+            for action, arg_count in zip(positionals, arg_counts):
+                args = arg_strings[start_index: start_index + arg_count]
+                # Strip out the first '--' if it is not in REMAINDER arg.
+                if action.nargs == PARSER:
+                    if arg_strings_pattern[start_index] == '-':
+                        assert args[0] == '--'
+                        args.remove('--')
+                elif action.nargs != REMAINDER:
+                    if (arg_strings_pattern.find('-', start_index,
+                                                 start_index + arg_count) >= 0):
+                        args.remove('--')
+                start_index += arg_count
+                take_action(action, args)
+    
+            # slice off the Positionals that we just parsed and return the
+            # index at which the Positionals' string args stopped
+            positionals[:] = positionals[len(arg_counts):]
+            return start_index
+    
+        # consume Positionals and Optionals alternately, until we have
+        # passed the last option string
+        extras = []
+        extras_pattern = []
+        start_index = 0
+        if option_string_indices:
+            max_option_string_index = max(option_string_indices)
+        else:
+            max_option_string_index = -1
+        while start_index <= max_option_string_index:
+    
+            # consume any Positionals preceding the next option
+            next_option_string_index = min([
+                index
+                for index in option_string_indices
+                if index >= start_index])
+            if not intermixed and start_index != next_option_string_index:
+                positionals_end_index = consume_positionals(start_index)
+    
+                # only try to parse the next optional if we didn't consume
+                # the option string during the positionals parsing
+                if positionals_end_index > start_index:
+                    start_index = positionals_end_index
+                    continue
+                else:
+                    start_index = positionals_end_index
+    
+            # if we consumed all the positionals we could and we're not
+            # at the index of an option string, there were extra arguments
+            if start_index not in option_string_indices:
+                strings = arg_strings[start_index:next_option_string_index]
+                extras.extend(strings)
+                extras_pattern.extend(arg_strings_pattern[start_index:next_option_string_index])
+                start_index = next_option_string_index
+    
+            # consume the next optional and any arguments for it
+            start_index = consume_optional(start_index)
+    
+        if not intermixed:
+            # consume any positionals following the last Optional
+            stop_index = consume_positionals(start_index)
+    
+            # if we didn't consume all the argument strings, there were extras
+            extras.extend(arg_strings[stop_index:])
+        else:
+            extras.extend(arg_strings[start_index:])
+            extras_pattern.extend(arg_strings_pattern[start_index:])
+            extras_pattern = ''.join(extras_pattern)
+            assert len(extras_pattern) == len(extras)
+            # consume all positionals
+            arg_strings = [s for s, c in zip(extras, extras_pattern) if c != 'O']
+            arg_strings_pattern = extras_pattern.replace('O', '')
+            stop_index = consume_positionals(0)
+            # leave unknown optionals and non-consumed positionals in extras
+            for i, c in enumerate(extras_pattern):
+                if not stop_index:
+                    break
+                if c != 'O':
+                    stop_index -= 1
+                    extras[i] = None
+            extras = [s for s in extras if s is not None]
+    
+        # make sure all required actions were present and also convert
+        # action defaults which were not given as arguments
+        required_actions = []
+        for action in self._actions:
+            if action not in seen_actions:
+                if action.required:
+                    required_actions.append(_get_action_name(action))
+                else:
+                    # Convert action default now instead of doing it before
+                    # parsing arguments to avoid calling convert functions
+                    # twice (which may fail) if the argument was given, but
+                    # only if it was defined already in the namespace
+                    if (action.default is not None and
+                        isinstance(action.default, str) and
+                        hasattr(namespace, action.dest) and
+                        action.default is getattr(namespace, action.dest)):
+                        setattr(namespace, action.dest,
+                                self._get_value(action, action.default))
+    
+        if required_actions:
+>           raise ArgumentError(None, _('the following arguments are required: %s') %
+                       ', '.join(required_actions))
+E           argparse.ArgumentError: the following arguments are required: --cube
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2230: ArgumentError
+
+During handling of the above exception, another exception occurred:
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_service_route_reports0/cube.duckdb'), 'accounting': Po...test_the_service_route_reports0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7bdea91dc920>
+
+    def test_the_service_route_reports_the_same_contents_as_the_file(live_shape, monkeypatch):
+        monkeypatch.setenv("DATA_GOV_LAKE_TOKEN", "test-token")
+        _code, by_file = run(live_shape, name="byfile.json")
+        server, url = serve(live_shape["cube"])
+        try:
+            out = live_shape["tmp"] / "byservice.json"
+>           code = reconcile.main(["--accounting", str(live_shape["accounting"]),
+                                   "--service-url", url, "--schema", "main", "--out", str(out)])
+
+tests/test_surplus_multiplicity_repair.py:417: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tools/incident_evidence_reconcile.py:286: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1904: in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1914: in parse_known_args
+    return self._parse_known_args2(args, namespace, intermixed=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1945: in _parse_known_args2
+    self.error(str(err))
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2650: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = '__main__.py: error: the following arguments are required: --cube\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2637: SystemExit
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "LOSS_OR_ALTERATION_FOUND",
+ "accepted_by_governance": 2,
+ "content_matches": 1,
+ "content_differs": 1,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 2,
+ "cube_rows_without_an_accepted_record": 0
+}
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --accounting ACCOUNTING --cube CUBE [--schema SCHEMA]
+                   [--outbox OUTBOX] --out OUT [--repair]
+__main__.py: error: the following arguments are required: --cube
+____ test_a_truncated_service_page_is_refused_not_reported_as_a_population _____
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+args = ['--accounting', '/tmp/pytest-of-harveybc/pytest-573/test_a_truncated_service_page_0/accounting.db', '--service-url', 'http://127.0.0.1:36905', '--schema', 'main', ...]
+namespace = Namespace(accounting=PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_a_truncated_service_page_0/accounting.db'), cu...x=[], out=PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_a_truncated_service_page_0/truncated.json'), repair=False)
+intermixed = False
+
+    def _parse_known_args2(self, args, namespace, intermixed):
+        if args is None:
+            # args default to the system args
+            args = _sys.argv[1:]
+        else:
+            # make sure that args are mutable
+            args = list(args)
+    
+        # default Namespace built from parser defaults
+        if namespace is None:
+            namespace = Namespace()
+    
+        # add any action defaults that aren't present
+        for action in self._actions:
+            if action.dest is not SUPPRESS:
+                if not hasattr(namespace, action.dest):
+                    if action.default is not SUPPRESS:
+                        setattr(namespace, action.dest, action.default)
+    
+        # add any parser defaults that aren't present
+        for dest in self._defaults:
+            if not hasattr(namespace, dest):
+                setattr(namespace, dest, self._defaults[dest])
+    
+        # parse the arguments and exit if there are any errors
+        if self.exit_on_error:
+            try:
+>               namespace, args = self._parse_known_args(args, namespace, intermixed)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1943: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+arg_strings = ['--accounting', '/tmp/pytest-of-harveybc/pytest-573/test_a_truncated_service_page_0/accounting.db', '--service-url', 'http://127.0.0.1:36905', '--schema', 'main', ...]
+namespace = Namespace(accounting=PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_a_truncated_service_page_0/accounting.db'), cu...x=[], out=PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_a_truncated_service_page_0/truncated.json'), repair=False)
+intermixed = False
+
+    def _parse_known_args(self, arg_strings, namespace, intermixed):
+        # replace arg strings that are file references
+        if self.fromfile_prefix_chars is not None:
+            arg_strings = self._read_args_from_files(arg_strings)
+    
+        # map all mutually exclusive arguments to the other arguments
+        # they can't occur with
+        action_conflicts = {}
+        for mutex_group in self._mutually_exclusive_groups:
+            group_actions = mutex_group._group_actions
+            for i, mutex_action in enumerate(mutex_group._group_actions):
+                conflicts = action_conflicts.setdefault(mutex_action, [])
+                conflicts.extend(group_actions[:i])
+                conflicts.extend(group_actions[i + 1:])
+    
+        # find all option indices, and determine the arg_string_pattern
+        # which has an 'O' if there is an option at an index,
+        # an 'A' if there is an argument, or a '-' if there is a '--'
+        option_string_indices = {}
+        arg_string_pattern_parts = []
+        arg_strings_iter = iter(arg_strings)
+        for i, arg_string in enumerate(arg_strings_iter):
+    
+            # all args after -- are non-options
+            if arg_string == '--':
+                arg_string_pattern_parts.append('-')
+                for arg_string in arg_strings_iter:
+                    arg_string_pattern_parts.append('A')
+    
+            # otherwise, add the arg to the arg strings
+            # and note the index if it was an option
+            else:
+                option_tuples = self._parse_optional(arg_string)
+                if option_tuples is None:
+                    pattern = 'A'
+                else:
+                    option_string_indices[i] = option_tuples
+                    pattern = 'O'
+                arg_string_pattern_parts.append(pattern)
+    
+        # join the pieces together to form the pattern
+        arg_strings_pattern = ''.join(arg_string_pattern_parts)
+    
+        # converts arg strings to the appropriate and then takes the action
+        seen_actions = set()
+        seen_non_default_actions = set()
+    
+        def take_action(action, argument_strings, option_string=None):
+            seen_actions.add(action)
+            argument_values = self._get_values(action, argument_strings)
+    
+            # error if this argument is not allowed with other previously
+            # seen arguments
+            if action.option_strings or argument_strings:
+                seen_non_default_actions.add(action)
+                for conflict_action in action_conflicts.get(action, []):
+                    if conflict_action in seen_non_default_actions:
+                        msg = _('not allowed with argument %s')
+                        action_name = _get_action_name(conflict_action)
+                        raise ArgumentError(action, msg % action_name)
+    
+            # take the action if we didn't receive a SUPPRESS value
+            # (e.g. from a default)
+            if argument_values is not SUPPRESS:
+                action(self, namespace, argument_values, option_string)
+    
+        # function to convert arg_strings into an optional action
+        def consume_optional(start_index):
+    
+            # get the optional identified at this index
+            option_tuples = option_string_indices[start_index]
+            # if multiple actions match, the option string was ambiguous
+            if len(option_tuples) > 1:
+                options = ', '.join([option_string
+                    for action, option_string, sep, explicit_arg in option_tuples])
+                args = {'option': arg_strings[start_index], 'matches': options}
+                msg = _('ambiguous option: %(option)s could match %(matches)s')
+                raise ArgumentError(None, msg % args)
+    
+            action, option_string, sep, explicit_arg = option_tuples[0]
+    
+            # identify additional optionals in the same arg string
+            # (e.g. -xyz is the same as -x -y -z if no args are required)
+            match_argument = self._match_argument
+            action_tuples = []
+            while True:
+    
+                # if we found no optional action, skip it
+                if action is None:
+                    extras.append(arg_strings[start_index])
+                    extras_pattern.append('O')
+                    return start_index + 1
+    
+                # if there is an explicit argument, try to match the
+                # optional's string arguments to only this
+                if explicit_arg is not None:
+                    arg_count = match_argument(action, 'A')
+    
+                    # if the action is a single-dash option and takes no
+                    # arguments, try to parse more single-dash options out
+                    # of the tail of the option string
+                    chars = self.prefix_chars
+                    if (
+                        arg_count == 0
+                        and option_string[1] not in chars
+                        and explicit_arg != ''
+                    ):
+                        if sep or explicit_arg[0] in chars:
+                            msg = _('ignored explicit argument %r')
+                            raise ArgumentError(action, msg % explicit_arg)
+                        action_tuples.append((action, [], option_string))
+                        char = option_string[0]
+                        option_string = char + explicit_arg[0]
+                        optionals_map = self._option_string_actions
+                        if option_string in optionals_map:
+                            action = optionals_map[option_string]
+                            explicit_arg = explicit_arg[1:]
+                            if not explicit_arg:
+                                sep = explicit_arg = None
+                            elif explicit_arg[0] == '=':
+                                sep = '='
+                                explicit_arg = explicit_arg[1:]
+                            else:
+                                sep = ''
+                        else:
+                            extras.append(char + explicit_arg)
+                            extras_pattern.append('O')
+                            stop = start_index + 1
+                            break
+                    # if the action expect exactly one argument, we've
+                    # successfully matched the option; exit the loop
+                    elif arg_count == 1:
+                        stop = start_index + 1
+                        args = [explicit_arg]
+                        action_tuples.append((action, args, option_string))
+                        break
+    
+                    # error if a double-dash option did not use the
+                    # explicit argument
+                    else:
+                        msg = _('ignored explicit argument %r')
+                        raise ArgumentError(action, msg % explicit_arg)
+    
+                # if there is no explicit argument, try to match the
+                # optional's string arguments with the following strings
+                # if successful, exit the loop
+                else:
+                    start = start_index + 1
+                    selected_patterns = arg_strings_pattern[start:]
+                    arg_count = match_argument(action, selected_patterns)
+                    stop = start + arg_count
+                    args = arg_strings[start:stop]
+                    action_tuples.append((action, args, option_string))
+                    break
+    
+            # add the Optional to the list and return the index at which
+            # the Optional's string args stopped
+            assert action_tuples
+            for action, args, option_string in action_tuples:
+                take_action(action, args, option_string)
+            return stop
+    
+        # the list of Positionals left to be parsed; this is modified
+        # by consume_positionals()
+        positionals = self._get_positional_actions()
+    
+        # function to convert arg_strings into positional actions
+        def consume_positionals(start_index):
+            # match as many Positionals as possible
+            match_partial = self._match_arguments_partial
+            selected_pattern = arg_strings_pattern[start_index:]
+            arg_counts = match_partial(positionals, selected_pattern)
+    
+            # slice off the appropriate arg strings for each Positional
+            # and add the Positional and its args to the list
+            for action, arg_count in zip(positionals, arg_counts):
+                args = arg_strings[start_index: start_index + arg_count]
+                # Strip out the first '--' if it is not in REMAINDER arg.
+                if action.nargs == PARSER:
+                    if arg_strings_pattern[start_index] == '-':
+                        assert args[0] == '--'
+                        args.remove('--')
+                elif action.nargs != REMAINDER:
+                    if (arg_strings_pattern.find('-', start_index,
+                                                 start_index + arg_count) >= 0):
+                        args.remove('--')
+                start_index += arg_count
+                take_action(action, args)
+    
+            # slice off the Positionals that we just parsed and return the
+            # index at which the Positionals' string args stopped
+            positionals[:] = positionals[len(arg_counts):]
+            return start_index
+    
+        # consume Positionals and Optionals alternately, until we have
+        # passed the last option string
+        extras = []
+        extras_pattern = []
+        start_index = 0
+        if option_string_indices:
+            max_option_string_index = max(option_string_indices)
+        else:
+            max_option_string_index = -1
+        while start_index <= max_option_string_index:
+    
+            # consume any Positionals preceding the next option
+            next_option_string_index = min([
+                index
+                for index in option_string_indices
+                if index >= start_index])
+            if not intermixed and start_index != next_option_string_index:
+                positionals_end_index = consume_positionals(start_index)
+    
+                # only try to parse the next optional if we didn't consume
+                # the option string during the positionals parsing
+                if positionals_end_index > start_index:
+                    start_index = positionals_end_index
+                    continue
+                else:
+                    start_index = positionals_end_index
+    
+            # if we consumed all the positionals we could and we're not
+            # at the index of an option string, there were extra arguments
+            if start_index not in option_string_indices:
+                strings = arg_strings[start_index:next_option_string_index]
+                extras.extend(strings)
+                extras_pattern.extend(arg_strings_pattern[start_index:next_option_string_index])
+                start_index = next_option_string_index
+    
+            # consume the next optional and any arguments for it
+            start_index = consume_optional(start_index)
+    
+        if not intermixed:
+            # consume any positionals following the last Optional
+            stop_index = consume_positionals(start_index)
+    
+            # if we didn't consume all the argument strings, there were extras
+            extras.extend(arg_strings[stop_index:])
+        else:
+            extras.extend(arg_strings[start_index:])
+            extras_pattern.extend(arg_strings_pattern[start_index:])
+            extras_pattern = ''.join(extras_pattern)
+            assert len(extras_pattern) == len(extras)
+            # consume all positionals
+            arg_strings = [s for s, c in zip(extras, extras_pattern) if c != 'O']
+            arg_strings_pattern = extras_pattern.replace('O', '')
+            stop_index = consume_positionals(0)
+            # leave unknown optionals and non-consumed positionals in extras
+            for i, c in enumerate(extras_pattern):
+                if not stop_index:
+                    break
+                if c != 'O':
+                    stop_index -= 1
+                    extras[i] = None
+            extras = [s for s in extras if s is not None]
+    
+        # make sure all required actions were present and also convert
+        # action defaults which were not given as arguments
+        required_actions = []
+        for action in self._actions:
+            if action not in seen_actions:
+                if action.required:
+                    required_actions.append(_get_action_name(action))
+                else:
+                    # Convert action default now instead of doing it before
+                    # parsing arguments to avoid calling convert functions
+                    # twice (which may fail) if the argument was given, but
+                    # only if it was defined already in the namespace
+                    if (action.default is not None and
+                        isinstance(action.default, str) and
+                        hasattr(namespace, action.dest) and
+                        action.default is getattr(namespace, action.dest)):
+                        setattr(namespace, action.dest,
+                                self._get_value(action, action.default))
+    
+        if required_actions:
+>           raise ArgumentError(None, _('the following arguments are required: %s') %
+                       ', '.join(required_actions))
+E           argparse.ArgumentError: the following arguments are required: --cube
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2230: ArgumentError
+
+During handling of the above exception, another exception occurred:
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_a_truncated_service_page_0/cube.duckdb'), 'accounting': Po...test_a_truncated_service_page_0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7bdeb48a6e40>
+
+    def test_a_truncated_service_page_is_refused_not_reported_as_a_population(live_shape,
+                                                                             monkeypatch):
+        """A short page that is counted as the whole population is how a count-based claim lies."""
+        monkeypatch.setenv("DATA_GOV_LAKE_TOKEN", "test-token")
+        server, url = serve(live_shape["cube"], page_cap=1)
+        try:
+            with pytest.raises(RuntimeError, match="the service counts"):
+>               reconcile.main(["--accounting", str(live_shape["accounting"]),
+                                "--service-url", url, "--schema", "main",
+                                "--out", str(live_shape["tmp"] / "truncated.json")])
+
+tests/test_surplus_multiplicity_repair.py:435: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tools/incident_evidence_reconcile.py:286: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1904: in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1914: in parse_known_args
+    return self._parse_known_args2(args, namespace, intermixed=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1945: in _parse_known_args2
+    self.error(str(err))
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2650: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = '__main__.py: error: the following arguments are required: --cube\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2637: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --accounting ACCOUNTING --cube CUBE [--schema SCHEMA]
+                   [--outbox OUTBOX] --out OUT [--repair]
+__main__.py: error: the following arguments are required: --cube
+_________________ test_the_service_token_is_never_an_argument __________________
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_service_token_is_neve0/cube.duckdb'), 'accounting': Po...test_the_service_token_is_neve0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7bdeb48a61e0>
+
+    def test_the_service_token_is_never_an_argument(live_shape, monkeypatch):
+        monkeypatch.delenv("DATA_GOV_LAKE_TOKEN", raising=False)
+>       with pytest.raises(SystemExit, match="is not set"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'is not set'
+E         Actual message: '2'
+
+tests/test_surplus_multiplicity_repair.py:453: AssertionError
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --accounting ACCOUNTING --cube CUBE [--schema SCHEMA]
+                   [--outbox OUTBOX] --out OUT [--repair]
+__main__.py: error: the following arguments are required: --cube
+_______ test_a_repair_folds_its_own_log_into_the_cube_before_it_returns ________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_a_repair_folds_its_own_lo0')
+
+    def test_a_repair_folds_its_own_log_into_the_cube_before_it_returns(tmp_path):
+        """So the repair cannot become the input to that mechanism."""
+        cube = tmp_path / "cube.duckdb"
+        body = terminal_payload(0, metrics=LIVE_SHAPE)
+        store = store_at(cube)
+        store.write_terminal(body)
+        store.engine().dispose()
+        digest = body["terminal_sha256"]
+        con = duckdb.connect(str(cube))
+        con.execute('DELETE FROM "main"."gov_terminal_metric" WHERE terminal_sha256 = ?', [digest])
+        con.close()
+    
+        scene = {"cube": cube, "accounting": accounting_with(tmp_path / "a.db", [body]),
+                 "tmp": tmp_path}
+        _code, report = run(scene, "--repair", name="checkpointed.json")
+        assert report["counts"]["repaired"] == 1
+>       assert report["write_ahead_log_bytes_after_checkpoint"] == 0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'write_ahead_log_bytes_after_checkpoint'
+
+tests/test_surplus_multiplicity_repair.py:517: KeyError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "LOSS_OR_ALTERATION_FOUND",
+ "accepted_by_governance": 1,
+ "content_matches": 0,
+ "content_differs": 1,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 1,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+__________ test_a_read_only_reconciliation_reports_no_log_measurement __________
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_a_read_only_reconciliatio0/cube.duckdb'), 'accounting': Po...test_a_read_only_reconciliatio0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+
+    def test_a_read_only_reconciliation_reports_no_log_measurement(live_shape):
+        """Nothing is checkpointed on a read, so nothing is claimed about the log."""
+        _code, report = run(live_shape, name="readonly.json")
+>       assert report["write_ahead_log_bytes_after_checkpoint"] is None
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'write_ahead_log_bytes_after_checkpoint'
+
+tests/test_surplus_multiplicity_repair.py:523: KeyError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "LOSS_OR_ALTERATION_FOUND",
+ "accepted_by_governance": 2,
+ "content_matches": 1,
+ "content_differs": 1,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 2,
+ "cube_rows_without_an_accepted_record": 0
+}
+___________ test_the_report_states_the_content_it_was_computed_from ____________
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_report_states_the_con0/cube.duckdb'), 'accounting': Po...test_the_report_states_the_con0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+
+    def test_the_report_states_the_content_it_was_computed_from(live_shape):
+        _code, report = run(live_shape, name="stated.json")
+>       content = report["source_content"]
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'source_content'
+
+tests/test_surplus_multiplicity_repair.py:530: KeyError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "LOSS_OR_ALTERATION_FOUND",
+ "accepted_by_governance": 2,
+ "content_matches": 1,
+ "content_differs": 1,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 2,
+ "cube_rows_without_an_accepted_record": 0
+}
+________ test_the_stated_content_moves_when_a_single_row_is_duplicated _________
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_stated_content_moves_0/cube.duckdb'), 'accounting': Po...test_the_stated_content_moves_0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+
+    def test_the_stated_content_moves_when_a_single_row_is_duplicated(live_shape):
+        _code, before = run(live_shape, name="before.json")
+        duplicate_rows(live_shape["cube"], live_shape["untouched"], ("bytes_delivered",))
+        _code, after = run(live_shape, name="after.json")
+>       assert (after["source_content"]["gov_terminal_metric"]["md5"]
+                ^^^^^^^^^^^^^^^^^^^^^^^
+                != before["source_content"]["gov_terminal_metric"]["md5"])
+E       KeyError: 'source_content'
+
+tests/test_surplus_multiplicity_repair.py:540: KeyError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "LOSS_OR_ALTERATION_FOUND",
+ "accepted_by_governance": 2,
+ "content_matches": 1,
+ "content_differs": 1,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 2,
+ "cube_rows_without_an_accepted_record": 0
+}
+{
+ "verdict": "LOSS_OR_ALTERATION_FOUND",
+ "accepted_by_governance": 2,
+ "content_matches": 0,
+ "content_differs": 2,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 2,
+ "cube_rows_without_an_accepted_record": 0
+}
+______________ test_the_stated_content_survives_the_service_route ______________
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+args = ['--accounting', '/tmp/pytest-of-harveybc/pytest-573/test_the_stated_content_surviv0/accounting.db', '--service-url', 'http://127.0.0.1:38989', '--schema', 'main', ...]
+namespace = Namespace(accounting=PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_stated_content_surviv0/accounting.db'), cu...', outbox=[], out=PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_stated_content_surviv0/s.json'), repair=False)
+intermixed = False
+
+    def _parse_known_args2(self, args, namespace, intermixed):
+        if args is None:
+            # args default to the system args
+            args = _sys.argv[1:]
+        else:
+            # make sure that args are mutable
+            args = list(args)
+    
+        # default Namespace built from parser defaults
+        if namespace is None:
+            namespace = Namespace()
+    
+        # add any action defaults that aren't present
+        for action in self._actions:
+            if action.dest is not SUPPRESS:
+                if not hasattr(namespace, action.dest):
+                    if action.default is not SUPPRESS:
+                        setattr(namespace, action.dest, action.default)
+    
+        # add any parser defaults that aren't present
+        for dest in self._defaults:
+            if not hasattr(namespace, dest):
+                setattr(namespace, dest, self._defaults[dest])
+    
+        # parse the arguments and exit if there are any errors
+        if self.exit_on_error:
+            try:
+>               namespace, args = self._parse_known_args(args, namespace, intermixed)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1943: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+arg_strings = ['--accounting', '/tmp/pytest-of-harveybc/pytest-573/test_the_stated_content_surviv0/accounting.db', '--service-url', 'http://127.0.0.1:38989', '--schema', 'main', ...]
+namespace = Namespace(accounting=PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_stated_content_surviv0/accounting.db'), cu...', outbox=[], out=PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_stated_content_surviv0/s.json'), repair=False)
+intermixed = False
+
+    def _parse_known_args(self, arg_strings, namespace, intermixed):
+        # replace arg strings that are file references
+        if self.fromfile_prefix_chars is not None:
+            arg_strings = self._read_args_from_files(arg_strings)
+    
+        # map all mutually exclusive arguments to the other arguments
+        # they can't occur with
+        action_conflicts = {}
+        for mutex_group in self._mutually_exclusive_groups:
+            group_actions = mutex_group._group_actions
+            for i, mutex_action in enumerate(mutex_group._group_actions):
+                conflicts = action_conflicts.setdefault(mutex_action, [])
+                conflicts.extend(group_actions[:i])
+                conflicts.extend(group_actions[i + 1:])
+    
+        # find all option indices, and determine the arg_string_pattern
+        # which has an 'O' if there is an option at an index,
+        # an 'A' if there is an argument, or a '-' if there is a '--'
+        option_string_indices = {}
+        arg_string_pattern_parts = []
+        arg_strings_iter = iter(arg_strings)
+        for i, arg_string in enumerate(arg_strings_iter):
+    
+            # all args after -- are non-options
+            if arg_string == '--':
+                arg_string_pattern_parts.append('-')
+                for arg_string in arg_strings_iter:
+                    arg_string_pattern_parts.append('A')
+    
+            # otherwise, add the arg to the arg strings
+            # and note the index if it was an option
+            else:
+                option_tuples = self._parse_optional(arg_string)
+                if option_tuples is None:
+                    pattern = 'A'
+                else:
+                    option_string_indices[i] = option_tuples
+                    pattern = 'O'
+                arg_string_pattern_parts.append(pattern)
+    
+        # join the pieces together to form the pattern
+        arg_strings_pattern = ''.join(arg_string_pattern_parts)
+    
+        # converts arg strings to the appropriate and then takes the action
+        seen_actions = set()
+        seen_non_default_actions = set()
+    
+        def take_action(action, argument_strings, option_string=None):
+            seen_actions.add(action)
+            argument_values = self._get_values(action, argument_strings)
+    
+            # error if this argument is not allowed with other previously
+            # seen arguments
+            if action.option_strings or argument_strings:
+                seen_non_default_actions.add(action)
+                for conflict_action in action_conflicts.get(action, []):
+                    if conflict_action in seen_non_default_actions:
+                        msg = _('not allowed with argument %s')
+                        action_name = _get_action_name(conflict_action)
+                        raise ArgumentError(action, msg % action_name)
+    
+            # take the action if we didn't receive a SUPPRESS value
+            # (e.g. from a default)
+            if argument_values is not SUPPRESS:
+                action(self, namespace, argument_values, option_string)
+    
+        # function to convert arg_strings into an optional action
+        def consume_optional(start_index):
+    
+            # get the optional identified at this index
+            option_tuples = option_string_indices[start_index]
+            # if multiple actions match, the option string was ambiguous
+            if len(option_tuples) > 1:
+                options = ', '.join([option_string
+                    for action, option_string, sep, explicit_arg in option_tuples])
+                args = {'option': arg_strings[start_index], 'matches': options}
+                msg = _('ambiguous option: %(option)s could match %(matches)s')
+                raise ArgumentError(None, msg % args)
+    
+            action, option_string, sep, explicit_arg = option_tuples[0]
+    
+            # identify additional optionals in the same arg string
+            # (e.g. -xyz is the same as -x -y -z if no args are required)
+            match_argument = self._match_argument
+            action_tuples = []
+            while True:
+    
+                # if we found no optional action, skip it
+                if action is None:
+                    extras.append(arg_strings[start_index])
+                    extras_pattern.append('O')
+                    return start_index + 1
+    
+                # if there is an explicit argument, try to match the
+                # optional's string arguments to only this
+                if explicit_arg is not None:
+                    arg_count = match_argument(action, 'A')
+    
+                    # if the action is a single-dash option and takes no
+                    # arguments, try to parse more single-dash options out
+                    # of the tail of the option string
+                    chars = self.prefix_chars
+                    if (
+                        arg_count == 0
+                        and option_string[1] not in chars
+                        and explicit_arg != ''
+                    ):
+                        if sep or explicit_arg[0] in chars:
+                            msg = _('ignored explicit argument %r')
+                            raise ArgumentError(action, msg % explicit_arg)
+                        action_tuples.append((action, [], option_string))
+                        char = option_string[0]
+                        option_string = char + explicit_arg[0]
+                        optionals_map = self._option_string_actions
+                        if option_string in optionals_map:
+                            action = optionals_map[option_string]
+                            explicit_arg = explicit_arg[1:]
+                            if not explicit_arg:
+                                sep = explicit_arg = None
+                            elif explicit_arg[0] == '=':
+                                sep = '='
+                                explicit_arg = explicit_arg[1:]
+                            else:
+                                sep = ''
+                        else:
+                            extras.append(char + explicit_arg)
+                            extras_pattern.append('O')
+                            stop = start_index + 1
+                            break
+                    # if the action expect exactly one argument, we've
+                    # successfully matched the option; exit the loop
+                    elif arg_count == 1:
+                        stop = start_index + 1
+                        args = [explicit_arg]
+                        action_tuples.append((action, args, option_string))
+                        break
+    
+                    # error if a double-dash option did not use the
+                    # explicit argument
+                    else:
+                        msg = _('ignored explicit argument %r')
+                        raise ArgumentError(action, msg % explicit_arg)
+    
+                # if there is no explicit argument, try to match the
+                # optional's string arguments with the following strings
+                # if successful, exit the loop
+                else:
+                    start = start_index + 1
+                    selected_patterns = arg_strings_pattern[start:]
+                    arg_count = match_argument(action, selected_patterns)
+                    stop = start + arg_count
+                    args = arg_strings[start:stop]
+                    action_tuples.append((action, args, option_string))
+                    break
+    
+            # add the Optional to the list and return the index at which
+            # the Optional's string args stopped
+            assert action_tuples
+            for action, args, option_string in action_tuples:
+                take_action(action, args, option_string)
+            return stop
+    
+        # the list of Positionals left to be parsed; this is modified
+        # by consume_positionals()
+        positionals = self._get_positional_actions()
+    
+        # function to convert arg_strings into positional actions
+        def consume_positionals(start_index):
+            # match as many Positionals as possible
+            match_partial = self._match_arguments_partial
+            selected_pattern = arg_strings_pattern[start_index:]
+            arg_counts = match_partial(positionals, selected_pattern)
+    
+            # slice off the appropriate arg strings for each Positional
+            # and add the Positional and its args to the list
+            for action, arg_count in zip(positionals, arg_counts):
+                args = arg_strings[start_index: start_index + arg_count]
+                # Strip out the first '--' if it is not in REMAINDER arg.
+                if action.nargs == PARSER:
+                    if arg_strings_pattern[start_index] == '-':
+                        assert args[0] == '--'
+                        args.remove('--')
+                elif action.nargs != REMAINDER:
+                    if (arg_strings_pattern.find('-', start_index,
+                                                 start_index + arg_count) >= 0):
+                        args.remove('--')
+                start_index += arg_count
+                take_action(action, args)
+    
+            # slice off the Positionals that we just parsed and return the
+            # index at which the Positionals' string args stopped
+            positionals[:] = positionals[len(arg_counts):]
+            return start_index
+    
+        # consume Positionals and Optionals alternately, until we have
+        # passed the last option string
+        extras = []
+        extras_pattern = []
+        start_index = 0
+        if option_string_indices:
+            max_option_string_index = max(option_string_indices)
+        else:
+            max_option_string_index = -1
+        while start_index <= max_option_string_index:
+    
+            # consume any Positionals preceding the next option
+            next_option_string_index = min([
+                index
+                for index in option_string_indices
+                if index >= start_index])
+            if not intermixed and start_index != next_option_string_index:
+                positionals_end_index = consume_positionals(start_index)
+    
+                # only try to parse the next optional if we didn't consume
+                # the option string during the positionals parsing
+                if positionals_end_index > start_index:
+                    start_index = positionals_end_index
+                    continue
+                else:
+                    start_index = positionals_end_index
+    
+            # if we consumed all the positionals we could and we're not
+            # at the index of an option string, there were extra arguments
+            if start_index not in option_string_indices:
+                strings = arg_strings[start_index:next_option_string_index]
+                extras.extend(strings)
+                extras_pattern.extend(arg_strings_pattern[start_index:next_option_string_index])
+                start_index = next_option_string_index
+    
+            # consume the next optional and any arguments for it
+            start_index = consume_optional(start_index)
+    
+        if not intermixed:
+            # consume any positionals following the last Optional
+            stop_index = consume_positionals(start_index)
+    
+            # if we didn't consume all the argument strings, there were extras
+            extras.extend(arg_strings[stop_index:])
+        else:
+            extras.extend(arg_strings[start_index:])
+            extras_pattern.extend(arg_strings_pattern[start_index:])
+            extras_pattern = ''.join(extras_pattern)
+            assert len(extras_pattern) == len(extras)
+            # consume all positionals
+            arg_strings = [s for s, c in zip(extras, extras_pattern) if c != 'O']
+            arg_strings_pattern = extras_pattern.replace('O', '')
+            stop_index = consume_positionals(0)
+            # leave unknown optionals and non-consumed positionals in extras
+            for i, c in enumerate(extras_pattern):
+                if not stop_index:
+                    break
+                if c != 'O':
+                    stop_index -= 1
+                    extras[i] = None
+            extras = [s for s in extras if s is not None]
+    
+        # make sure all required actions were present and also convert
+        # action defaults which were not given as arguments
+        required_actions = []
+        for action in self._actions:
+            if action not in seen_actions:
+                if action.required:
+                    required_actions.append(_get_action_name(action))
+                else:
+                    # Convert action default now instead of doing it before
+                    # parsing arguments to avoid calling convert functions
+                    # twice (which may fail) if the argument was given, but
+                    # only if it was defined already in the namespace
+                    if (action.default is not None and
+                        isinstance(action.default, str) and
+                        hasattr(namespace, action.dest) and
+                        action.default is getattr(namespace, action.dest)):
+                        setattr(namespace, action.dest,
+                                self._get_value(action, action.default))
+    
+        if required_actions:
+>           raise ArgumentError(None, _('the following arguments are required: %s') %
+                       ', '.join(required_actions))
+E           argparse.ArgumentError: the following arguments are required: --cube
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2230: ArgumentError
+
+During handling of the above exception, another exception occurred:
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_the_stated_content_surviv0/cube.duckdb'), 'accounting': Po...test_the_stated_content_surviv0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7bdeb49f5dc0>
+
+    def test_the_stated_content_survives_the_service_route(live_shape, monkeypatch):
+        monkeypatch.setenv("DATA_GOV_LAKE_TOKEN", "test-token")
+        _code, by_file = run(live_shape, name="f.json")
+        server, url = serve(live_shape["cube"])
+        try:
+            out = live_shape["tmp"] / "s.json"
+>           reconcile.main(["--accounting", str(live_shape["accounting"]), "--service-url", url,
+                            "--schema", "main", "--out", str(out)])
+
+tests/test_surplus_multiplicity_repair.py:551: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tools/incident_evidence_reconcile.py:286: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1904: in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1914: in parse_known_args
+    return self._parse_known_args2(args, namespace, intermixed=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1945: in _parse_known_args2
+    self.error(str(err))
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2650: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = '__main__.py: error: the following arguments are required: --cube\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2637: SystemExit
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "LOSS_OR_ALTERATION_FOUND",
+ "accepted_by_governance": 2,
+ "content_matches": 1,
+ "content_differs": 1,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 2,
+ "cube_rows_without_an_accepted_record": 0
+}
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --accounting ACCOUNTING --cube CUBE [--schema SCHEMA]
+                   [--outbox OUTBOX] --out OUT [--repair]
+__main__.py: error: the following arguments are required: --cube
+___________ test_a_repair_receipt_states_the_content_it_left_behind ____________
+
+live_shape = {'cube': PosixPath('/tmp/pytest-of-harveybc/pytest-573/test_a_repair_receipt_states_t0/cube.duckdb'), 'accounting': Po...test_a_repair_receipt_states_t0'), 'affected': 'cdb3a1df3d3c0750e7dfb1ec27d1423702cdf177c8f0bc10f5b5317ad630e30f', ...}
+
+    def test_a_repair_receipt_states_the_content_it_left_behind(live_shape):
+>       _code, report = run(live_shape, "--repair-surplus", "--evidence",
+                            str(live_shape["tmp"] / "e.json"), name="after.json")
+
+tests/test_surplus_multiplicity_repair.py:559: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_surplus_multiplicity_repair.py:154: in run
+    code = reconcile.main(["--accounting", str(scene["accounting"]),
+tools/incident_evidence_reconcile.py:286: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1908: in parse_args
+    self.error(msg)
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2650: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='What governance says was accepted, against what the recove...out R.json\n', formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = '__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_a_repair_receipt_states_t0/e.json\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2637: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --accounting ACCOUNTING --cube CUBE [--schema SCHEMA]
+                   [--outbox OUTBOX] --out OUT [--repair]
+__main__.py: error: unrecognized arguments: --repair-surplus --evidence /tmp/pytest-of-harveybc/pytest-573/test_a_repair_receipt_states_t0/e.json
+=========================== short test summary info ============================
+FAILED tests/test_surplus_multiplicity_repair.py::test_surplus_repair_ends_at_exactly_the_accepted_multiset
+FAILED tests/test_surplus_multiplicity_repair.py::test_surplus_repair_preserves_a_duplicate_the_contract_declares
+FAILED tests/test_surplus_multiplicity_repair.py::test_surplus_repair_refuses_a_row_whose_value_conflicts
+FAILED tests/test_surplus_multiplicity_repair.py::test_surplus_repair_is_idempotent
+FAILED tests/test_surplus_multiplicity_repair.py::test_surplus_repair_leaves_every_unaffected_row_untouched
+FAILED tests/test_surplus_multiplicity_repair.py::test_the_removed_rows_are_preserved_as_evidence_before_they_are_removed
+FAILED tests/test_surplus_multiplicity_repair.py::test_an_interrupted_surplus_repair_removes_nothing
+FAILED tests/test_surplus_multiplicity_repair.py::test_an_interrupted_surplus_repair_can_be_retried_to_the_accepted_multiset
+FAILED tests/test_surplus_multiplicity_repair.py::test_the_service_route_reports_the_same_contents_as_the_file
+FAILED tests/test_surplus_multiplicity_repair.py::test_a_truncated_service_page_is_refused_not_reported_as_a_population
+FAILED tests/test_surplus_multiplicity_repair.py::test_the_service_token_is_never_an_argument
+FAILED tests/test_surplus_multiplicity_repair.py::test_a_repair_folds_its_own_log_into_the_cube_before_it_returns
+FAILED tests/test_surplus_multiplicity_repair.py::test_a_read_only_reconciliation_reports_no_log_measurement
+FAILED tests/test_surplus_multiplicity_repair.py::test_the_report_states_the_content_it_was_computed_from
+FAILED tests/test_surplus_multiplicity_repair.py::test_the_stated_content_moves_when_a_single_row_is_duplicated
+FAILED tests/test_surplus_multiplicity_repair.py::test_the_stated_content_survives_the_service_route
+FAILED tests/test_surplus_multiplicity_repair.py::test_a_repair_receipt_states_the_content_it_left_behind
+17 failed, 9 passed in 5.50s
