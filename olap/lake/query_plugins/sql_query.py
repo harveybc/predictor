@@ -38,7 +38,7 @@ DATASET_LINEAGE_FIELDS = (
 GOV_TABLES = (
     "gov_report", "gov_metric", "gov_dataset", "gov_terminal",
     "gov_terminal_metric", "gov_terminal_dataset", "gov_terminal_artifact",
-    "gov_availability_contract",
+    "gov_availability_contract", "gov_campaign_disposition",
 )
 GOV_VIEW = "gov_metric_current"
 #: S2: a delivery carries a contract DIGEST; without somewhere to resolve it, the cube cannot
@@ -580,6 +580,16 @@ class Plugin:
             # the bytes ARE the key, so a row can be inserted or left alone, never updated.
             # `completion_lag_max` is TEXT on purpose — an archive's lag is the string
             # 'UNKNOWN', and a numeric column would have to turn that into a zero or a null.
+            # F4: membership and admissibility, as data rather than as a document. Including
+            # a run in the current campaign does not make its evidence scientific, and a
+            # campaign reviewed under another gate is a member whose admissibility is simply
+            # not the current comparison. Both were conflated before; they are two columns now.
+            f"CREATE TABLE IF NOT EXISTS {t('gov_campaign_disposition')} ("
+            " run_id TEXT NOT NULL, kind TEXT NOT NULL, campaign_key TEXT,"
+            " disposition TEXT NOT NULL, admissibility TEXT NOT NULL,"
+            " status TEXT, rationale TEXT, admissibility_reason TEXT,"
+            " declared_in TEXT NOT NULL, recorded_at TEXT NOT NULL,"
+            " PRIMARY KEY (run_id, kind))",
             f"CREATE TABLE IF NOT EXISTS {t('gov_availability_contract')} ("
             " contract_sha256 TEXT NOT NULL PRIMARY KEY, canonical_bytes TEXT NOT NULL,"
             " digest_algorithm TEXT NOT NULL, canonicalization TEXT NOT NULL,"
@@ -597,6 +607,22 @@ class Plugin:
             f"CREATE INDEX IF NOT EXISTS gov_terminal_dataset_sha_idx ON {t('gov_terminal_dataset')}"
             " (sha256)",
             f"{create_view} {t(GOV_VIEW)} AS {view_select}",
+            # Membership is not admissibility: one view per question, so a query cannot
+            # accidentally treat an operational smoke test as a scientific result.
+            f"{create_view} {t('gov_campaign_membership')} AS"
+            " SELECT run_id, kind, campaign_key, disposition, status, rationale"
+            f" FROM {t('gov_campaign_disposition')}",
+            f"{create_view} {t('gov_scientific_evidence')} AS"
+            " SELECT run_id, kind, campaign_key, status, admissibility,"
+            " admissibility_reason"
+            f" FROM {t('gov_campaign_disposition')}"
+            " WHERE disposition = 'INCLUDED_CURRENT'"
+            " AND admissibility = 'CURRENT_SCIENTIFIC'",
+            f"{create_view} {t('gov_mechanical_evidence')} AS"
+            " SELECT run_id, kind, campaign_key, status, admissibility,"
+            " admissibility_reason"
+            f" FROM {t('gov_campaign_disposition')}"
+            " WHERE admissibility <> 'CURRENT_SCIENTIFIC'",
             # What is STORED, and only that. A join proves a key matched; it does not hash
             # anything, so every semantic column here is prefixed `stored_` and the reference
             # column says STORED/ABSENT rather than RESOLVED/UNRESOLVED. Calling a row

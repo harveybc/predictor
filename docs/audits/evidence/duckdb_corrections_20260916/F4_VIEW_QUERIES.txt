@@ -1,0 +1,16 @@
+== membership is not admissibility
+   SELECT admissibility, count(*) AS runs FROM gov_campaign_disposition GROUP BY 1 ORDER BY runs DESC LIMIT 10
+{"bytes":160,"rows":[{"admissibility":"MECHANICAL_OPERATIONAL","runs":48},{"admissibility":"CURRENT_SCIENTIFIC","runs":24},{"admissibility":"NON_CONFIRMATORY_HISTORICAL","runs":1}],"sha256":"2ee473f0f6a3019777a2d70bc3cb14a11f2947c61473512d47d7d9456c86cd67"}
+
+== what is admissible as current scientific evidence
+   SELECT campaign_key, status, count(*) AS n FROM gov_scientific_evidence GROUP BY 1,2 ORDER BY n DESC LIMIT 10
+{"bytes":632,"rows":[{"campaign_key":"C164","n":6,"status":"COMPLETED"},{"campaign_key":"C170","n":2,"status":"COMPLETED"},{"campaign_key":"D0","n":2,"status":"COMPLETED"},{"campaign_key":"D2","n":2,"status":"COMPLETED"},{"campaign_key":"C140","n":2,"status":"COMPLETED"},{"campaign_key":"n3-mechanics-musashi-n3-20260914T063541Z","n":1,"status":"COMPLETED"},{"campaign_key":"C134","n":1,"status":"COMPLETED"},{"campaign_key":"flow-v3-production-mechanics-20260914T045557Z","n":1,"status":"COMPLETED"},{"campaign_key":"d2-r4-portability-diagnostic","n":1,"status":"COMPLETED"},{"campaign_key":"d2-support-readjudication-r3","n":1,"status":"COMPLETED"}],"sha256":"39ddfc136f1bc605bc89e9fef2d716a88950531748b95c32f65b982f4482a6ca"}
+
+== what is a member but NOT current scientific evidence
+   SELECT admissibility, count(*) AS n FROM gov_mechanical_evidence GROUP BY 1 ORDER BY n DESC LIMIT 10
+{"bytes":105,"rows":[{"admissibility":"MECHANICAL_OPERATIONAL","n":48},{"admissibility":"NON_CONFIRMATORY_HISTORICAL","n":1}],"sha256":"0f85e60f56c7416e1e6e32ceba26ec6b882a9f84d8d8264fc0050bfe5c45931a"}
+
+== why B4, T2 and M4 are members with their own scope
+   SELECT campaign_key, admissibility, substr(admissibility_reason,1,90) AS why FROM gov_campaign_disposition WHERE admissibility IN ('OWN_CONTRACT_SCOPE','SEPARATE_GATE_I4','EXPERIMENTAL_DIAGNOSTIC') LIMIT 10
+{"bytes":2,"rows":[],"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"}
+

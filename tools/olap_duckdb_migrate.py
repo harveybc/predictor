@@ -217,6 +217,29 @@ def classify_run(row: dict, current_campaigns: set) -> tuple:
         "comparison view opts into it and states its limitations")
 
 
+def classify_admissibility(row: dict, declared: dict) -> tuple:
+    """What this run's evidence may be USED FOR. A different question from membership.
+
+    Including 52 governed terminals as current does not make 52 pieces of scientific evidence:
+    a NON_GOVERNING campaign declared, before it ran, that it grants nothing scientific. And a
+    campaign reviewed under a different gate is not obsolete — the master plan assigns B4, T2
+    and M4 each a role, so they are MEMBERS whose admissibility is simply not the current
+    comparison. Both errors were mine and in opposite directions.
+    """
+    table = (declared.get("admissibility") or {})
+    by_campaign = table.get("by_campaign") or {}
+    by_classification = table.get("by_classification") or {}
+    campaign = row.get("campaign_key")
+    if campaign in by_campaign:
+        entry = by_campaign[campaign]
+        return entry["admissibility"], entry.get("why", "")
+    classification = row.get("result_class") or row.get("classification")
+    if classification in by_classification:
+        return by_classification[classification], (
+            f"declared {classification} before execution")
+    return table.get("default", "CURRENT_SCIENTIFIC"), "no narrower rule applies"
+
+
 def rows_for_runs(database: str, schema: str, relation: str, run_ids: set) -> int:
     """How many rows of a relation belong to these runs. Row level, not table level."""
     import duckdb
@@ -524,6 +547,8 @@ def cmd_select(args) -> int:
                   "config_sha256": row.get("config_sha256"),
                   "received_at": str(row["received_at"])}
         record["disposition"], record["rationale"] = classify_run(record, current)
+        record["admissibility"], record["admissibility_reason"] = classify_admissibility(
+            record, declared)
         runs.append(record)
 
     # the data-foundation runs, linked to their campaign through dim_campaign.run_id
@@ -545,6 +570,8 @@ def cmd_select(args) -> int:
                   "code_sha256": row.get("code_sha256"),
                   "inputs_sha256": row.get("inputs_sha256")}
         record["disposition"], record["rationale"] = classify_run(record, current)
+        record["admissibility"], record["admissibility_reason"] = classify_admissibility(
+            record, declared)
         runs.append(record)
 
     included_runs = {entry["run_id"] for entry in runs
@@ -599,6 +626,11 @@ def cmd_select(args) -> int:
                 "table-name prefix, not from a date, a metric's sign or an outcome."),
             "runs": runs, "relations": relations,
             "counts": {"runs": counts,
+                       "admissibility": {
+                           label: sum(1 for entry in runs
+                                      if entry.get("admissibility") == label)
+                           for label in sorted({entry.get("admissibility") or "?"
+                                                for entry in runs})},
                        "relations": {label: sum(1 for entry in relations
                                                 if entry["disposition"] == label)
                                      for label in sorted({e["disposition"]
@@ -1306,6 +1338,58 @@ def cmd_rollback(args) -> int:
     return 0 if not report["summary"].get("unresolved") else 2
 
 
+def cmd_publish_selection(args) -> int:
+    """Write the reviewed manifest's dispositions into the cube, so the views have data.
+
+    A manifest in a file is a document; F4 asks for executable views. This puts one row per run
+    into `gov_campaign_disposition`, keyed by identity so a second publication replaces nothing
+    and adds nothing, and names the file it came from in every row — a disposition whose source
+    cannot be pointed at is an opinion.
+    """
+    from predictor_duckdb_store.provider import PredictorDuckdbStore
+    from sqlalchemy import text as sql
+
+    manifest = json.loads(Path(args.selection).read_text(encoding="utf-8"))
+    store = PredictorDuckdbStore()
+    store.set_params(duckdb_path=str(args.destination), schema=args.schema,
+                     memory_limit="1GB", threads=2, min_free_bytes=1)
+    store.engine()
+    stamp = now()
+    written = 0
+    with store.write_engine().begin() as conn:
+        for entry in manifest["runs"]:
+            inserted = conn.execute(sql(
+                f'INSERT INTO "{args.schema}".gov_campaign_disposition (run_id, kind,'
+                " campaign_key, disposition, admissibility, status, rationale,"
+                " admissibility_reason, declared_in, recorded_at)"
+                " VALUES (:run_id, :kind, :campaign_key, :disposition, :admissibility,"
+                " :status, :rationale, :admissibility_reason, :declared_in, :recorded_at)"
+                " ON CONFLICT (run_id, kind) DO NOTHING RETURNING run_id"),
+                {"run_id": entry["run_id"], "kind": entry["kind"],
+                 "campaign_key": entry.get("campaign_key"),
+                 "disposition": entry["disposition"],
+                 "admissibility": entry.get("admissibility", "UNCLASSIFIED"),
+                 "status": entry.get("status"),
+                 "rationale": entry.get("rationale"),
+                 "admissibility_reason": entry.get("admissibility_reason"),
+                 "declared_in": str(args.selection), "recorded_at": stamp}).fetchall()
+            written += len(inserted)
+    counts = {}
+    with store.engine().connect() as conn:
+        for label, view in (("membership", "gov_campaign_membership"),
+                            ("scientific", "gov_scientific_evidence"),
+                            ("mechanical", "gov_mechanical_evidence")):
+            counts[label] = conn.execute(
+                sql(f'SELECT count(*) FROM "{args.schema}"."{view}"')).scalar()
+    store._engine.dispose()
+    body = {"schema": "olap_publish_selection.v1", "generated_utc": stamp,
+            "destination": str(args.destination), "selection": str(args.selection),
+            "rows_written": written, "view_counts": counts}
+    args.out.write_text(json.dumps(body, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"rows_written": written, **counts}, indent=1))
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1385,6 +1469,13 @@ def main(argv=None) -> int:
     copy_cube.add_argument("--batch-rows", type=int, default=100_000)
     copy_cube.add_argument("--out", type=Path, required=True)
     copy_cube.set_defaults(func=cmd_copy_cube)
+
+    publish = sub.add_parser("publish-selection")
+    publish.add_argument("--destination", type=Path, required=True)
+    publish.add_argument("--selection", type=Path, required=True)
+    publish.add_argument("--schema", default="main")
+    publish.add_argument("--out", type=Path, required=True)
+    publish.set_defaults(func=cmd_publish_selection)
 
     args = parser.parse_args(argv)
     return args.func(args)

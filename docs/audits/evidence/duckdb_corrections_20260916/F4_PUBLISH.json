@@ -1,0 +1,12 @@
+{
+ "schema": "olap_publish_selection.v1",
+ "generated_utc": "2026-09-16T10:50:01Z",
+ "destination": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb",
+ "selection": "docs/audits/evidence/duckdb_corrections_20260916/F4_SELECTION_V3.json",
+ "rows_written": 73,
+ "view_counts": {
+  "membership": 73,
+  "scientific": 19,
+  "mechanical": 49
+ }
+}

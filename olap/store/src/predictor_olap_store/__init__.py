@@ -39,7 +39,7 @@ ENVELOPE_SOURCE_SHA256 = "f2729ef73f90fdccdc00e2fa3b9dc7e71f1c971b930714384e4b69
 #: candidate change is awaiting production review, and PENDING_REVIEW says which one. The
 #: package's tests require the two to be consistent: a divergence without a stated reason is
 #: a failure, and a stated reason without a divergence is one too.
-MODULE_SHA256 = "5dfa5a6b7de68db774ae4f23bf80db0921f87cb0630cebbaa1ef34c800f60e49"
+MODULE_SHA256 = "7beab42dd7e647fc3593621013249e576d392a7d451f76b2d8403c771f9e489d"
 PENDING_REVIEW = (
     "S2 availability-contract dimension: additive `gov_availability_contract` table, the "
     "`gov_delivery_availability` view and `write_availability_contracts` / "

@@ -1,6 +1,6 @@
 {
  "schema": "current_campaigns.v1",
- "$doc": "The campaigns the COMMITTED ORDERS name as current, and nothing else. This file exists so that membership is a reviewable input rather than a constant inside a tool: Musashi's E1 finding was that selection used a table-name prefix, which is not lineage. Each entry says which order names it and why it is current or not. Adding a campaign here changes what a migration selects, which is exactly why it belongs under review.",
+ "$doc": "The campaigns the COMMITTED ORDERS name as current, and nothing else. This file exists so that membership is a reviewable input rather than a constant inside a tool: Musashi's E1 finding was that selection used a table-name prefix, which is not lineage. Each entry says which order names it and why it is current or not. Adding a campaign here changes what a migration selects, which is exactly why it belongs under review. F4 correction: membership and scientific admissibility are DIFFERENT questions and were conflated here. B4, T2 and M4 are members of the programme - the master plan assigns each a role - and were wrongly listed as not current because they are reviewed elsewhere. They are members; what they are admissible FOR is recorded separately in `admissibility`.",
  "campaigns": [
   "C130",
   "C134",
@@ -45,6 +45,8 @@
   "a3-preprocessor-success",
   "a3-preprocessor-success-musashi-synthetic-catalog-20260914T211202Z",
   "a3-preprocessor-success-r2",
+  "b4::screen_b_v7_campaign",
+  "b4_campaign_generation_v7_20260908",
   "crispdm::lake_characterization",
   "d2-r4-portability-diagnostic",
   "d2-support-readjudication-r3",
@@ -64,9 +66,12 @@
   "doin-offline-replay-successor-1",
   "eth-public-snapshot-1789462219",
   "flow-v3-production-mechanics-20260914T045557Z",
+  "m4_v5_calibration_attempt3_20260909",
   "n3-mechanics-musashi-n3-20260914T063541Z",
   "predictor::governed_config",
   "store-adoption-1789410013265913997",
+  "t2::resource_successor_screen",
+  "t2_resource_successor_v1_20260909",
   "worker-delivery-dragon-1-1789473919",
   "worker-delivery-dragon-2-1789473927",
   "worker-delivery-gamma-1-1789473918",
@@ -83,11 +88,55 @@
  },
  "explicitly_not_current": {
   "HISTORICAL_MIGRATION_REANALYSIS_NON_CONFIRMATORY": "labels itself historical and non-confirmatory; kept as LEGACY_COMPARISON_ONLY, not discarded.",
-  "b4_campaign_generation_v7_20260908": "the Data-First SOTA front, a separate campaign with its own pending review; legacy for comparison here.",
-  "t2_resource_successor_v1_20260909": "same front; its screen adjudication is reviewed elsewhere.",
-  "m4_v5_calibration_attempt3_20260909": "same front; calibration attempt under separate review.",
   "predictor::predictor_run": "development runs of the example configs, not a campaign.",
   "predictor::cfg": "development runs of the example configs, not a campaign.",
   "predictor::phase_1_ann_1575_1d_config": "development runs of the example configs, not a campaign."
+ },
+ "admissibility": {
+  "$doc": "What each campaign's evidence may be used for. Membership does not make evidence admissible for the current scientific comparison, and being reviewed elsewhere does not make work obsolete.",
+  "default": "CURRENT_SCIENTIFIC",
+  "by_campaign": {
+   "b4_campaign_generation_v7_20260908": {
+    "admissibility": "OWN_CONTRACT_SCOPE",
+    "why": "docs/integracion_workplan_2026_09_10/00_PLAN_MAESTRO_CRISP_DM_DATA_CENTRIC.md line 161: 'B4 y campanas RL: se adjudican bajo el contrato con que fueron ejecutadas. Los hallazgos nuevos solo gobiernan campanas sucesoras.' A member of the programme, adjudicated under its own contract, not comparable against the current data-foundation work."
+   },
+   "b4::screen_b_v7_campaign": {
+    "admissibility": "OWN_CONTRACT_SCOPE",
+    "why": "same clause; the screen belongs to the B4 front."
+   },
+   "t2_resource_successor_v1_20260909": {
+    "admissibility": "SEPARATE_GATE_I4",
+    "why": "same plan, line 159: 'T2: su banco publico y sus resultados pertenecen a la reja I4. La adjudicacion existente se revisa con su identidad original; no se mezcla con el nuevo inventario.' Explicitly NOT mixed with the new inventory - which is a scope rule, not a judgement of quality."
+   },
+   "t2::resource_successor_screen": {
+    "admissibility": "SEPARATE_GATE_I4",
+    "why": "same clause."
+   },
+   "m4_v5_calibration_attempt3_20260909": {
+    "admissibility": "EXPERIMENTAL_DIAGNOSTIC",
+    "why": "same plan, line 160: 'M3/M4: las mediciones de capacidad, complejidad y aprendizaje se incorporan como diagnosticos experimentales en I2-I3.' A diagnostic, admissible as such and not as a confirmatory result."
+   },
+   "predictor::predictor_run": {
+    "admissibility": "EXPLORATORY",
+    "why": "development runs of the example configs; no campaign contract."
+   },
+   "predictor::cfg": {
+    "admissibility": "EXPLORATORY",
+    "why": "as above."
+   },
+   "predictor::phase_1_ann_1575_1d_config": {
+    "admissibility": "EXPLORATORY",
+    "why": "as above."
+   },
+   "HISTORICAL_MIGRATION_REANALYSIS_NON_CONFIRMATORY": {
+    "admissibility": "NON_CONFIRMATORY_HISTORICAL",
+    "why": "labels itself so; retained, never promoted."
+   }
+  },
+  "by_classification": {
+   "$doc": "Governed terminals declare a classification BEFORE execution. NON_GOVERNING grants nothing scientific by its own declaration - that is admissibility, not membership.",
+   "NON_GOVERNING": "MECHANICAL_OPERATIONAL",
+   "GOVERNING": "CURRENT_SCIENTIFIC"
+  }
  }
 }
