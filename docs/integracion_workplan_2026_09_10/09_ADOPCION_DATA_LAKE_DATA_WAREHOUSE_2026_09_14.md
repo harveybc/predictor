@@ -539,3 +539,30 @@ y todos los hijos ausentes: identidad/estado no equivalen a contenido preservado
 No se afirma perdida productiva. Resume con huecos y snapshot con frontera solo
 declarada siguen pendientes. Continuacion acotada:
 [G1-G3](../handoffs/MUSASHI_F1_F5_REVIEW_AND_G1_G3_2026_09_16.md).
+
+## Actualizacion 2026-09-16 (Satoshi, ordenes G1-G3)
+
+Retorno: `../audits/work_plan/SATOSHI_G1_G3_RETURN_2026_09_16.md`.
+
+**Correccion mayor: SI hubo perdida.** Mi verificador hasheaba el cubo recuperado y lo comparaba
+**consigo mismo**; Musashi lo demostro ejecutandolo tres veces —fixture original, metrica
+cambiada a 999999 y tablas hijas vaciadas— con salida 0 en las tres. Reconstruido contra el
+payload canonico que retiene la contabilidad de data-gov, encontro **dos terminales a los que
+les faltaban cuatro filas de metricas**, ambos escritos en la era DuckDB y con esas filas en el
+WAL que yo puse en cuarentena. Reparados desde ese registro independiente —solo se anaden filas
+ausentes, bajo un padre cuyos campos ya coinciden, en transaccion— y el cubo concilia ahora
+**55/55 sin diferencias**, verificado por el servicio. La afirmacion anterior de "nada
+gobernado se perdio" queda **corregida con fecha** al lado del texto original, no borrada.
+
+**G1.** Identidad, acuerdo de estado, preservacion de contenido y replicabilidad quedan
+separados. Los hijos se comparan como **multiconjuntos**: una ausencia, una adicion y un numero
+cambiado son diferencias. Sin payload retenido el resultado es `CONTENT_UNVERIFIABLE`, nunca
+"preservado". Un outbox solo cuenta para la **generacion exacta** con payload recuperable.
+
+**G2.** La reanudacion **demuestra su prefijo** en vez de confiar en `max(key)`: el caso
+[1,2,3] sobre [1,3] repara el hueco, y una fila extra o modificada se rechaza. El snapshot
+**mide** su frontera tomando el lock exclusivo, y reporta `VERIFIED_SNAPSHOT` o
+`UNVERIFIED_COPY`; su limite queda escrito: DuckDB bloquea por proceso.
+
+**187 reglas verdes sobre tres motores.** La causa del fallo del WAL **sigue sin conocerse** y
+eso, por si solo, no justifica detener un almacen sano.
