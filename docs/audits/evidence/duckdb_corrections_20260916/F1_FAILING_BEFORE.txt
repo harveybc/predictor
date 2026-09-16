@@ -1,0 +1,303 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+_________ test_resuming_a_constrained_table_skips_the_completed_prefix _________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-509/test_resuming_a_constrained_ta0')
+
+    def test_resuming_a_constrained_table_skips_the_completed_prefix(tmp_path):
+        """The reviewer's first probe: source [1,2,3], target [1], batch of 1."""
+        path = str(tmp_path / "probe.duckdb")
+        table(path, name="source", rows=(1, 2, 3))
+        table(path, name="target", rows=(1,))
+        con = duckdb.connect(path)
+    
+>       copied = migrate.copy_relation(con, "source", "target", 3, "id", 1)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_migration_cli_contract.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+con = <_duckdb.DuckDBPyConnection object at 0x751e4b479130>, source = 'source'
+target = 'target', total = 3, key = 'id', batch_rows = 1, predicate = ''
+parameters = []
+
+    def copy_relation(con, source: str, target: str, total: int, key: str | None,
+                      batch_rows: int, *, predicate: str = "", parameters=None) -> int:
+        """Copy every row exactly once, in bounded work units.
+    
+        With a unique key: keyset pagination, which is ordered and therefore complete. Without one:
+        a single streaming INSERT, whose memory is bounded by the connection's own `memory_limit`
+        rather than by slicing. Never LIMIT/OFFSET.
+        """
+        parameters = list(parameters or [])
+        if key is None:
+            con.execute(f"INSERT INTO {target} SELECT * FROM {source} {predicate}", parameters)
+            return con.execute(f"SELECT count(*) FROM {target}").fetchone()[0]
+        copied, last = 0, None
+        while True:
+            if last is None:
+                where, values = predicate, list(parameters)
+            elif predicate:
+                where = f'{predicate} AND "{key}" > ?'
+                values = list(parameters) + [last]
+            else:
+                where, values = f'WHERE "{key}" > ?', [last]
+>           rows = con.execute(
+                f'INSERT INTO {target} SELECT * FROM {source} {where} '
+                f'ORDER BY "{key}" LIMIT {batch_rows} RETURNING "{key}"', values).fetchall()
+E           _duckdb.ConstraintException: Constraint Error: Duplicate key "id: 1" violates primary key constraint.
+
+tools/olap_duckdb_migrate.py:631: ConstraintException
+___________ test_resuming_an_unconstrained_table_does_not_duplicate ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-509/test_resuming_an_unconstrained0')
+
+    def test_resuming_an_unconstrained_table_does_not_duplicate(tmp_path):
+        """Without a key constraint nothing raises — it just silently doubles rows."""
+        path = str(tmp_path / "bag.duckdb")
+        table(path, name="source", rows=(1, 2, 3), key=False)
+        table(path, name="target", rows=(1,), key=False)
+        con = duckdb.connect(path)
+    
+        migrate.copy_relation(con, "source", "target", 3, "id", 1)
+    
+        held = sorted(row[0] for row in con.execute("SELECT id FROM target").fetchall())
+        con.close()
+>       assert held == [1, 2, 3], f"duplicated rows: {held}"
+E       AssertionError: duplicated rows: [1, 1, 2, 3]
+E       assert [1, 1, 2, 3] == [1, 2, 3]
+E         
+E         At index 1 diff: 1 != 2
+E         Left contains one more item: 3
+E         Use -v to get more diff
+
+tests/test_migration_cli_contract.py:77: AssertionError
+____________ test_an_existing_parent_does_not_hide_missing_children ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-509/test_an_existing_parent_does_n0')
+
+    def test_an_existing_parent_does_not_hide_missing_children(tmp_path):
+        """The reviewer's second probe: the parent is already there, the children are not."""
+        source = str(tmp_path / "src.duckdb")
+        target = str(tmp_path / "dst.duckdb")
+        migrate.build_fixture_cube(source, terminals=1, with_children=True, with_contract=True)
+        migrate.build_fixture_cube(target, terminals=1)          # parent only, no children
+    
+        report = migrate.replay_between(source, target, schema="main", dry_run=False)
+    
+        con = duckdb.connect(target, read_only=True)
+        metrics = con.execute("SELECT count(*) FROM main.gov_terminal_metric").fetchone()[0]
+        datasets = con.execute("SELECT count(*) FROM main.gov_terminal_dataset").fetchone()[0]
+        con.close()
+>       assert metrics == 1, "the parent was present; its metric was not, and must be restored"
+E       AssertionError: the parent was present; its metric was not, and must be restored
+E       assert 0 == 1
+
+tests/test_migration_cli_contract.py:95: AssertionError
+____________ test_conflicting_parent_content_is_refused_not_ignored ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-509/test_conflicting_parent_conten0')
+
+    def test_conflicting_parent_content_is_refused_not_ignored(tmp_path):
+        """Same identity, different content: that is an unresolved state, not a match."""
+        source = str(tmp_path / "src.duckdb")
+        target = str(tmp_path / "dst.duckdb")
+        migrate.build_fixture_cube(source, terminals=1, with_children=True)
+        migrate.build_fixture_cube(target, terminals=1, with_children=True)
+        con = duckdb.connect(target)
+        con.execute("UPDATE main.gov_terminal SET status = 'FAILED'")
+        con.close()
+    
+        report = migrate.replay_between(source, target, schema="main", dry_run=False)
+    
+>       assert report["summary"]["conflicting_parents"] == 1
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'conflicting_parents'
+
+tests/test_migration_cli_contract.py:112: KeyError
+_ test_the_export_command_refuses_an_overfilled_destination_with_a_nonzero_exit _
+
+self = ArgumentParser(prog='__main__.py', usage=None, description="Move the OLAP cube to DuckDB: inventory, select, export, v...nd> --help\n", formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+args = ['copy-cube', '--source', '/tmp/pytest-of-harveybc/pytest-509/test_the_export_command_refuse0/src.duckdb', '--destination', '/tmp/pytest-of-harveybc/pytest-509/test_the_export_command_refuse0/dst.duckdb', '--schema', ...]
+namespace = Namespace(command=None), intermixed = False
+
+    def _parse_known_args2(self, args, namespace, intermixed):
+        if args is None:
+            # args default to the system args
+            args = _sys.argv[1:]
+        else:
+            # make sure that args are mutable
+            args = list(args)
+    
+        # default Namespace built from parser defaults
+        if namespace is None:
+            namespace = Namespace()
+    
+        # add any action defaults that aren't present
+        for action in self._actions:
+            if action.dest is not SUPPRESS:
+                if not hasattr(namespace, action.dest):
+                    if action.default is not SUPPRESS:
+                        setattr(namespace, action.dest, action.default)
+    
+        # add any parser defaults that aren't present
+        for dest in self._defaults:
+            if not hasattr(namespace, dest):
+                setattr(namespace, dest, self._defaults[dest])
+    
+        # parse the arguments and exit if there are any errors
+        if self.exit_on_error:
+            try:
+>               namespace, args = self._parse_known_args(args, namespace, intermixed)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1943: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2165: in _parse_known_args
+    positionals_end_index = consume_positionals(start_index)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2141: in consume_positionals
+    take_action(action, args)
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2003: in take_action
+    argument_values = self._get_values(action, argument_strings)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2523: in _get_values
+    self._check_value(action, value[0])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description="Move the OLAP cube to DuckDB: inventory, select, export, v...nd> --help\n", formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+action = _SubParsersAction(option_strings=[], dest='command', nargs='A...', const=None, default=None, type=None, choices={'inve...ss=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)}, required=True, help=None, metavar=None)
+value = 'copy-cube'
+
+    def _check_value(self, action, value):
+        # converted value must be one of the choices (if specified)
+        choices = action.choices
+        if choices is not None:
+            if isinstance(choices, str):
+                choices = iter(choices)
+            if value not in choices:
+                args = {'value': str(value),
+                        'choices': ', '.join(map(str, action.choices))}
+                msg = _('invalid choice: %(value)r (choose from %(choices)s)')
+>               raise ArgumentError(action, msg % args)
+E               argparse.ArgumentError: argument command: invalid choice: 'copy-cube' (choose from inventory, select, export, validate, catchup, snapshot, rollback)
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2573: ArgumentError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-509/test_the_export_command_refuse0')
+
+    def test_the_export_command_refuses_an_overfilled_destination_with_a_nonzero_exit(tmp_path):
+        """`OVERFILLED_REFUSED` used to be reported and then exit 0, which reads as success."""
+        source = str(tmp_path / "src.duckdb")
+        target = str(tmp_path / "dst.duckdb")
+        migrate.build_fixture_cube(source, terminals=1)
+        migrate.build_fixture_cube(target, terminals=3)
+        out = tmp_path / "report.json"
+    
+>       code = migrate.main(["copy-cube", "--source", source, "--destination", target,
+                             "--schema", "main", "--out", str(out)])
+
+tests/test_migration_cli_contract.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tools/olap_duckdb_migrate.py:1034: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1904: in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1914: in parse_known_args
+    return self._parse_known_args2(args, namespace, intermixed=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1945: in _parse_known_args2
+    self.error(str(err))
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2650: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description="Move the OLAP cube to DuckDB: inventory, select, export, v...nd> --help\n", formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = "__main__.py: error: argument command: invalid choice: 'copy-cube' (choose from inventory, select, export, validate, catchup, snapshot, rollback)\n"
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2637: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h]
+                   {inventory,select,export,validate,catchup,snapshot,rollback}
+                   ...
+__main__.py: error: argument command: invalid choice: 'copy-cube' (choose from inventory, select, export, validate, catchup, snapshot, rollback)
+_____ test_the_rollback_command_runs_through_main_and_reports_its_summary ______
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-509/test_the_rollback_command_runs0')
+
+    def test_the_rollback_command_runs_through_main_and_reports_its_summary(tmp_path):
+        source = str(tmp_path / "src.duckdb")
+        target = str(tmp_path / "dst.duckdb")
+        migrate.build_fixture_cube(source, terminals=2, with_children=True, with_contract=True)
+        migrate.build_fixture_cube(target, terminals=0)
+        out = tmp_path / "rollback.json"
+    
+>       code = migrate.main(["rollback", "--duckdb", source, "--target", target,
+                             "--target-engine", "duckdb", "--schema", "main", "--out", str(out)])
+
+tests/test_migration_cli_contract.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tools/olap_duckdb_migrate.py:1034: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:1908: in parse_args
+    self.error(msg)
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2650: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description="Move the OLAP cube to DuckDB: inventory, select, export, v...nd> --help\n", formatter_class=<class 'argparse.RawDescriptionHelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = '__main__.py: error: unrecognized arguments: --target-engine duckdb\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../../anaconda3/envs/trading-stack/lib/python3.12/argparse.py:2637: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h]
+                   {inventory,select,export,validate,catchup,snapshot,rollback}
+                   ...
+__main__.py: error: unrecognized arguments: --target-engine duckdb
+__________ test_a_row_count_alone_never_declares_a_relation_complete ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-509/test_a_row_count_alone_never_d0')
+
+    def test_a_row_count_alone_never_declares_a_relation_complete(tmp_path):
+        """Equal counts, different content: the destination is NOT complete."""
+        path = str(tmp_path / "counts.duckdb")
+        table(path, name="source", rows=(1, 2, 3))
+        con = duckdb.connect(path)
+        con.execute("CREATE TABLE target (id INTEGER PRIMARY KEY, v VARCHAR)")
+        con.execute("INSERT INTO target VALUES (1,'v1'),(2,'DIFFERENT'),(3,'v3')")
+        con.close()
+    
+        con = duckdb.connect(path)
+>       state = migrate.relation_state(con, "source", "target", ["id", "v"])
+                ^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'olap_duckdb_migrate_cli_under_test' has no attribute 'relation_state'. Did you mean: 'relations_for'?
+
+tests/test_migration_cli_contract.py:162: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_migration_cli_contract.py::test_resuming_a_constrained_table_skips_the_completed_prefix
+FAILED tests/test_migration_cli_contract.py::test_resuming_an_unconstrained_table_does_not_duplicate
+FAILED tests/test_migration_cli_contract.py::test_an_existing_parent_does_not_hide_missing_children
+FAILED tests/test_migration_cli_contract.py::test_conflicting_parent_content_is_refused_not_ignored
+FAILED tests/test_migration_cli_contract.py::test_the_export_command_refuses_an_overfilled_destination_with_a_nonzero_exit
+FAILED tests/test_migration_cli_contract.py::test_the_rollback_command_runs_through_main_and_reports_its_summary
+FAILED tests/test_migration_cli_contract.py::test_a_row_count_alone_never_declares_a_relation_complete
+7 failed in 1.33s
