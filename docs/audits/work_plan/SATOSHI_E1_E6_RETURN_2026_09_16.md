@@ -81,6 +81,15 @@ the log — copied twice, never deleted — and the main file opened intact: 54 
 foundation runs, 440,694 coverage rows. **Nothing governed was lost**; what the log held were
 my own test envelope writes, which are re-drainable.
 
+> **Correction, 2026-09-16 (G1).** The no-loss statement above was **wrong**, and the evidence
+> offered for it could not have detected the error: the verifier hashed the recovered cube and
+> compared it with itself. Rebuilt to compare against the canonical payloads `data-gov`'s
+> accounting retained, it found **two terminals missing four metric rows** — both DuckDB-era
+> writes whose rows were in the write-ahead log I quarantined. They were restored from that
+> independent record and the cube now reconciles 55/55 with zero differences. See
+> `SATOSHI_G1_G3_RETURN_2026_09_16.md` and `G1_EVIDENCE_RECONCILE.json`. This paragraph is left
+> in place rather than edited away.
+
 Root cause **corrected on 2026-09-16 after F3**: I stated the cause as fact. A minimal
 disposable reproducer — schema created during the write, then the process killed before it
 could checkpoint — does **not** reproduce the failure on DuckDB 1.5.5, in any of four

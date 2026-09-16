@@ -56,6 +56,15 @@ Child content present for 45; the other **10 are exactly the REFUSED** terminals
 deliveries or metrics by construction — checked, not assumed. Both WAL copies are byte-identical
 and neither was opened.
 
+> **Correction, 2026-09-16 (G1).** The no-loss statement above was **wrong**, and the evidence
+> offered for it could not have detected the error: the verifier hashed the recovered cube and
+> compared it with itself. Rebuilt to compare against the canonical payloads `data-gov`'s
+> accounting retained, it found **two terminals missing four metric rows** — both DuckDB-era
+> writes whose rows were in the write-ahead log I quarantined. They were restored from that
+> independent record and the cube now reconciles 55/55 with zero differences. See
+> `SATOSHI_G1_G3_RETURN_2026_09_16.md` and `G1_EVIDENCE_RECONCILE.json`. This paragraph is left
+> in place rather than edited away.
+
 **The correction.** I stated the root cause as fact. A minimal disposable reproducer — four
 arrangements differing in where the schema is created and whether the process is killed before
 it can checkpoint — **does not reproduce the failure** on DuckDB 1.5.5; every case reopens. So
