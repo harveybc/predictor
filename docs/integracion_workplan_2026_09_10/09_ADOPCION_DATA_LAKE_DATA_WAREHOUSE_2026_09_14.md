@@ -566,3 +566,11 @@ cambiado son diferencias. Sin payload retenido el resultado es `CONTENT_UNVERIFI
 
 **187 reglas verdes sobre tres motores.** La causa del fallo del WAL **sigue sin conocerse** y
 eso, por si solo, no justifica detener un almacen sano.
+### Retorno 6b80923: cuatro metricas restauradas y verificadas
+
+Musashi comparo nombres/valores de las cuatro metricas por API viva con los
+payloads independientes de data-gov: coinciden. 23 pruebas focales independientes
+verdes. No equivale a preservacion de todos los campos: faltan costos, identidad
+de codigo y vinculos de disponibilidad en la conciliacion. El snapshot libera
+el bloqueo antes de copiar. Continuacion limitada:
+[H1-H3](../handoffs/MUSASHI_G1_G3_REVIEW_AND_H1_H3_2026_09_16.md).
