@@ -1,0 +1,64 @@
+{
+ "schema": "olap_duckdb_snapshot.v4",
+ "generated_utc": "2026-09-16T18:19:07Z",
+ "source": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb",
+ "target": "/home/harveybc/.local/state/crispdm-duckdb/rehearsal/h1_snapshot.duckdb",
+ "files_copied": [
+  {
+   "file": "cube.duckdb",
+   "bytes": 169881600
+  }
+ ],
+ "boundary": {
+  "measured": true,
+  "method": "exclusive_open_held_through_copy",
+  "writer_present": false,
+  "held_through_copy": true
+ },
+ "caller_claimed_owner_stopped": true,
+ "counts_in_snapshot": {
+  "gov_report": 0,
+  "gov_metric": 0,
+  "gov_dataset": 0,
+  "gov_terminal": 55,
+  "gov_terminal_metric": 537,
+  "gov_terminal_dataset": 92,
+  "gov_terminal_artifact": 97,
+  "gov_availability_contract": 0
+ },
+ "content_digests": {
+  "gov_report": null,
+  "gov_metric": null,
+  "gov_dataset": null,
+  "gov_terminal": "4fe3539cd97c7514f1511281f6bf2cdf",
+  "gov_terminal_metric": "85d650b83cdb52243a15712e15b699d2",
+  "gov_terminal_dataset": "e472408f58458861e8493154235e5c9a",
+  "gov_terminal_artifact": "8dd86ce3424e962eabf8c482a46d46ce",
+  "gov_availability_contract": null
+ },
+ "source_counts": {
+  "gov_report": 0,
+  "gov_metric": 0,
+  "gov_dataset": 0,
+  "gov_terminal": 55,
+  "gov_terminal_metric": 537,
+  "gov_terminal_dataset": 92,
+  "gov_terminal_artifact": 97,
+  "gov_availability_contract": 0
+ },
+ "source_digests": {
+  "gov_report": null,
+  "gov_metric": null,
+  "gov_dataset": null,
+  "gov_terminal": "4fe3539cd97c7514f1511281f6bf2cdf",
+  "gov_terminal_metric": "85d650b83cdb52243a15712e15b699d2",
+  "gov_terminal_dataset": "e472408f58458861e8493154235e5c9a",
+  "gov_terminal_artifact": "8dd86ce3424e962eabf8c482a46d46ce",
+  "gov_availability_contract": null
+ },
+ "relations_differing_from_source": [],
+ "expected_terminals": 55,
+ "verified": true,
+ "kind": "VERIFIED_SNAPSHOT",
+ "unverified_because": []
+}

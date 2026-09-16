@@ -59,29 +59,26 @@ def accounting_with(path: Path, terminals: list[dict]) -> Path:
     return path
 
 
-def fixture_payload(digest: str) -> dict:
-    """The payload the fixture cube's one terminal corresponds to."""
-    return {
-        "terminal_sha256": digest, "campaign_sha256": "c" * 64, "unit_id": "unit-0",
-        "generation": 1, "status": "COMPLETED", "actor": "a", "project": "p",
-        "classification": "NON_GOVERNING", "config_sha256": "e" * 64,
-        "metrics": [{"metric": "wall_seconds", "split": "test", "horizon": 0, "unit": "s",
-                     "value": 1.0, "std_dev": None, "min_value": None, "max_value": None}],
-        "artifacts": [{"role": "log", "sha256": "a" * 64, "bytes": 10}],
-        "verified_datasets": [{"delivery_id": "delivery-0", "lake_id": "l",
-                               "resource_id": "r", "role": "input", "sha256": "b" * 64,
-                               "bytes": 1, "state": "VERIFIED_TRANSFER"}],
-    }
+def payloads_written() -> list:
+    """The payloads the fixture builder actually wrote.
+
+    Taken from the builder rather than rebuilt beside it: a hand-copied expectation drifts from
+    the fixture the moment either changes, and an expectation that drifts is the defect being
+    corrected. It also has to carry the SAME availability contract digest the builder used.
+    """
+    return list(migrate.build_fixture_cube.last_payloads)
 
 
 @pytest.fixture
 def scene(tmp_path):
     cube = str(tmp_path / "cube.duckdb")
     migrate.build_fixture_cube(cube, terminals=1, with_children=True, with_contract=True)
-    digest = hashlib.sha256(b"terminal-0").hexdigest()
+    payload = payloads_written()[0]
+    digest = payload["terminal_sha256"]
     accounting = accounting_with(tmp_path / "accounting.db", [{
-        "terminal_sha256": digest, "campaign_sha256": "c" * 64, "unit_id": "unit-0",
-        "generation": 1, "status": "COMPLETED", "body": fixture_payload(digest)}])
+        "terminal_sha256": digest, "campaign_sha256": payload["campaign_sha256"],
+        "unit_id": payload["unit_id"], "generation": 1, "status": "COMPLETED",
+        "body": payload}])
     return {"cube": cube, "accounting": accounting, "digest": digest, "tmp": tmp_path}
 
 
@@ -154,14 +151,22 @@ def test_a_refused_terminal_with_no_children_is_legitimate(tmp_path):
     """A REFUSED unit has no deliveries or metrics BY CONSTRUCTION. That is not loss."""
     cube = str(tmp_path / "refused.duckdb")
     migrate.build_fixture_cube(cube, terminals=1)
-    digest = hashlib.sha256(b"terminal-0").hexdigest()
-    payload = fixture_payload(digest)
-    payload.update(status="REFUSED", metrics=[], artifacts=[], verified_datasets=[])
+    payload = dict(payloads_written()[0])
+    payload["status"] = "REFUSED"
+    import sys as _sys
+    _sys.path.insert(0, str(REPO / "olap" / "store" / "src"))
+    from predictor_olap_store.query import canonical_text
+    payload.pop("terminal_sha256")
+    payload["terminal_sha256"] = hashlib.sha256(
+        canonical_text(payload).encode("ascii")).hexdigest()
+    digest = payload["terminal_sha256"]
     accounting = accounting_with(tmp_path / "acc.db", [{
-        "terminal_sha256": digest, "campaign_sha256": "c" * 64, "unit_id": "unit-0",
-        "generation": 1, "status": "COMPLETED", "body": payload}])
+        "terminal_sha256": digest, "campaign_sha256": payload["campaign_sha256"],
+        "unit_id": payload["unit_id"], "generation": 1, "status": "COMPLETED",
+        "body": payload}])
     con = duckdb.connect(cube)
-    con.execute("UPDATE main.gov_terminal SET status = 'REFUSED'")
+    con.execute("UPDATE main.gov_terminal SET terminal_sha256 = ?, status = 'REFUSED'",
+                [digest])
     con.close()
     out = tmp_path / "r.json"
     code = reconcile.main(["--accounting", str(accounting), "--cube", cube,
@@ -174,7 +179,7 @@ def test_a_refused_terminal_with_no_children_is_legitimate(tmp_path):
 def test_a_terminal_without_a_retained_payload_is_unverifiable_not_preserved(tmp_path):
     cube = str(tmp_path / "c.duckdb")
     migrate.build_fixture_cube(cube, terminals=1, with_children=True)
-    digest = hashlib.sha256(b"terminal-0").hexdigest()
+    digest = payloads_written()[0]["terminal_sha256"]
     accounting = accounting_with(tmp_path / "acc.db", [{
         "terminal_sha256": digest, "campaign_sha256": "c" * 64, "unit_id": "unit-0",
         "generation": 1, "status": "COMPLETED", "body": {}}])      # no payload retained
@@ -283,8 +288,8 @@ def test_a_payload_that_does_not_match_its_digest_is_unverifiable(tmp_path):
     """A retained expectation must itself be valid, or it cannot be an expectation."""
     cube = str(tmp_path / "c.duckdb")
     migrate.build_fixture_cube(cube, terminals=1, with_children=True)
-    digest = hashlib.sha256(b"terminal-0").hexdigest()
-    payload = fixture_payload(digest)
+    payload = dict(payloads_written()[0])
+    digest = payload["terminal_sha256"]
     payload["campaign_key"] = "tampered-after-acceptance"   # no longer hashes to its digest
     accounting = accounting_with(tmp_path / "acc.db", [{
         "terminal_sha256": digest, "campaign_sha256": "c" * 64, "unit_id": "unit-0",

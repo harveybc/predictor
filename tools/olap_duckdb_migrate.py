@@ -32,6 +32,7 @@ usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -258,6 +259,44 @@ def rows_for_runs(database: str, schema: str, relation: str, run_ids: set) -> in
         con.close()
 
 
+def fixture_terminal_payload(index: int, *, with_children: bool, contract_digest=None) -> dict:
+    """A complete, contract-valid terminal payload whose digest is its own canonical body.
+
+    The fixture used to invent a digest (`sha256("terminal-0")`), which made it useless as an
+    EXPECTATION: a reconciler that validates a retained payload against its recorded digest has
+    to be given a payload that really is one.
+    """
+    import sys as _sys
+
+    _sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "olap" / "store" / "src"))
+    from predictor_olap_store.query import canonical_text
+
+    body = {
+        "schema": "governed_terminal.v1", "campaign_sha256": "c" * 64,
+        "campaign_key": f"fixture-{index}", "unit_id": f"unit-{index}", "generation": 1,
+        "actor": "a", "project": "p", "classification": "NON_GOVERNING",
+        "status": "COMPLETED", "reason": None, "started_at": "2026-01-01T00:00:00Z",
+        "finished_at": "2026-01-01T00:00:01Z", "terminal_lake": "olap_cube",
+        "config_sha256": "e" * 64, "code_identity": {"kind": "git_commit", "value": "d" * 40},
+        "costs": {"wall_seconds": 1.0}, "tags": {}, "synthetic_spec_sha256": None,
+        "deliveries": [f"{index:032x}"] if with_children else [],
+        "metrics": ([{"metric": "wall_seconds", "split": "test", "horizon": 0, "unit": "s",
+                      "value": 1.0, "std_dev": None, "min_value": None, "max_value": None}]
+                    if with_children else []),
+        "artifacts": ([{"role": "log", "sha256": "a" * 64, "bytes": 10}]
+                      if with_children else []),
+        "verified_datasets": ([{"delivery_id": f"{index:032x}", "lake_id": "l",
+                                "resource_id": "r", "role": "input", "sha256": "b" * 64,
+                                "bytes": 1, "source_sha256": None, "range_from": None,
+                                "range_to": None, "delivery_kind": "AS_IS", "time_column": "",
+                                "availability_contract_sha256": contract_digest or "f" * 64,
+                                "state": "VERIFIED_TRANSFER"}] if with_children else []),
+    }
+    body["terminal_sha256"] = hashlib.sha256(
+        canonical_text(body).encode("ascii")).hexdigest()
+    return body
+
+
 def build_fixture_cube(path: str, *, terminals: int = 0, with_children: bool = False,
                        with_contract: bool = False, drop_contract_table: bool = False):
     """A disposable cube with the governed schema, for tests and rehearsals.
@@ -279,6 +318,7 @@ def build_fixture_cube(path: str, *, terminals: int = 0, with_children: bool = F
         with store.write_engine().begin() as conn:
             conn.execute(sql('DROP TABLE IF EXISTS "main"."gov_availability_contract"'))
     contract_digest = None
+    written = []
     if with_contract:
         body = json.dumps({"resource_id": "r", "availability": {
             "label": "WINDOW_START", "completion_lag_max": "UNKNOWN",
@@ -291,7 +331,10 @@ def build_fixture_cube(path: str, *, terminals: int = 0, with_children: bool = F
         held = {row[0] for row in conn.execute(
             sql('SELECT terminal_sha256 FROM "main"."gov_terminal"'))}
         for index in range(terminals):
-            digest = hashlib.sha256(f"terminal-{index}".encode()).hexdigest()
+            payload = fixture_terminal_payload(index, with_children=with_children,
+                                               contract_digest=contract_digest)
+            written.append(payload)
+            digest = payload["terminal_sha256"]
             if digest in held:
                 continue          # idempotent: growing a fixture must not re-insert its past
             conn.execute(sql(
@@ -300,28 +343,45 @@ def build_fixture_cube(path: str, *, terminals: int = 0, with_children: bool = F
                 " reason, started_at, finished_at, terminal_lake, config_sha256,"
                 " code_identity_json, costs_json, tags_json, synthetic_spec_sha256,"
                 " received_at) VALUES (:d, :c, :k, :u, 1, 'a', 'p', 'NON_GOVERNING',"
-                " 'COMPLETED', NULL, '2026-01-01', '2026-01-01', 'olap_cube', :cfg, '{}',"
-                " '{}', '{}', NULL, '2026-01-01T00:00:00+00:00')"),
-                {"d": digest, "c": "c" * 64, "k": f"fixture-{index}", "u": f"unit-{index}",
-                 "cfg": "e" * 64})
+                " 'COMPLETED', NULL, '2026-01-01T00:00:00Z', '2026-01-01T00:00:01Z',"
+                " 'olap_cube', :cfg, :ci, :co, '{}', NULL,"
+                " '2026-01-01T00:00:00+00:00')"),
+                {"d": digest, "c": payload["campaign_sha256"], "k": payload["campaign_key"],
+                 "u": payload["unit_id"], "cfg": payload["config_sha256"],
+                 "ci": json.dumps(payload["code_identity"], sort_keys=True,
+                                  separators=(",", ":")),
+                 "co": json.dumps(payload["costs"], sort_keys=True,
+                                  separators=(",", ":"))})
             if with_children:
                 conn.execute(sql(
                     'INSERT INTO "main"."gov_terminal_metric" (terminal_sha256, metric, split,'
                     " horizon, unit, value, std_dev, min_value, max_value)"
                     " VALUES (:d, 'wall_seconds', 'test', 0, 's', 1.0, NULL, NULL, NULL)"),
                     {"d": digest})
+                # every column of the payload's dataset, so the fixture IS what it claims:
+                # writing a subset made the cube disagree with its own payload
+                dataset = payload["verified_datasets"][0]
                 conn.execute(sql(
                     'INSERT INTO "main"."gov_terminal_dataset" (terminal_sha256, delivery_id,'
-                    " lake_id, resource_id, role, sha256, bytes,"
-                    " availability_contract_sha256, verification_state)"
-                    " VALUES (:d, :dl, 'l', 'r', 'input', :s, 1, :c, 'VERIFIED_TRANSFER')"),
-                    {"d": digest, "dl": f"delivery-{index}", "s": "b" * 64,
-                     "c": contract_digest or "f" * 64})
+                    " lake_id, resource_id, role, sha256, bytes, source_sha256, range_from,"
+                    " range_to, delivery_kind, time_column, availability_contract_sha256,"
+                    " verification_state) VALUES (:d, :dl, :lake, :res, :role, :s, :bytes,"
+                    " :src, :rf, :rt, :kind, :tc, :c, :state)"),
+                    {"d": digest, "dl": dataset["delivery_id"], "lake": dataset["lake_id"],
+                     "res": dataset["resource_id"], "role": dataset["role"],
+                     "s": dataset["sha256"], "bytes": dataset["bytes"],
+                     "src": dataset["source_sha256"], "rf": dataset["range_from"],
+                     "rt": dataset["range_to"], "kind": dataset["delivery_kind"],
+                     "tc": dataset["time_column"],
+                     "c": dataset["availability_contract_sha256"],
+                     "state": dataset["state"]})
                 conn.execute(sql(
                     'INSERT INTO "main"."gov_terminal_artifact" (terminal_sha256, role,'
                     " sha256, bytes) VALUES (:d, 'log', :s, 10)"),
                     {"d": digest, "s": "a" * 64})
     store._engine.dispose()
+    # the payloads actually written, so a test's expectation cannot drift from the fixture
+    build_fixture_cube.last_payloads = written
     return path
 
 
@@ -1094,57 +1154,9 @@ def catchup_from_postgres(destination: str, *, schema: str = "main", since=None,
     return report
 
 
-def measure_boundary(source: str) -> dict:
-    """Is anyone else writing this database RIGHT NOW? Measured, not asserted.
-
-    DuckDB takes an exclusive lock for writing, so the question has an answer the process can
-    obtain for itself: try to open the file for writing. Success means no other writer holds
-    it, which is the boundary. Failure with a lock conflict means a writer is present and there
-    is no boundary to copy at.
-
-    The previous version took the caller's word (`owner_stopped=True`) and called the result
-    verified. Requiring a flag is not a measurement, and the reviewer was right that adding
-    another required flag would not have been a correction either.
-
-    Its limit, stated because it is real: DuckDB's lock is per PROCESS. A second connection
-    inside THIS process would not conflict, so this detects a writer in another process — which
-    is the case that matters here, since the warehouse service is a separate process — and not
-    a concurrent writer inside the caller itself.
-    """
-    import duckdb
-
-    try:
-        probe = duckdb.connect(source)          # exclusive: only succeeds if nobody writes
-        probe.execute("CHECKPOINT")             # and fold the log in while we hold it
-        probe.close()
-        return {"measured": True, "method": "exclusive_open_then_checkpoint",
-                "writer_present": False}
-    except Exception as exc:
-        return {"measured": True, "method": "exclusive_open_then_checkpoint",
-                "writer_present": True, "detail": f"{type(exc).__name__}: {str(exc)[:160]}"}
-
-
-def snapshot_database(source: str, target: str, *, schema: str = "main",
-                      expect_terminals=None, owner_stopped: bool = False) -> dict:
-    """A copy of a DuckDB cube, and an honest name for what the copy is.
-
-    Two outcomes, and the artefact says which it is:
-
-      VERIFIED_SNAPSHOT  no other writer held the file, the log was folded in BEFORE copying,
-                         and the copy's contents match what was expected;
-      UNVERIFIED_COPY    anything else. The files are still copied — an unverified copy is
-                         better than none — but it is never described as a snapshot.
-
-    `owner_stopped` is retained only as the caller's INTENT, recorded beside the measurement so
-    the two can be compared. It no longer decides anything.
-    """
+def _copy_files(source_path: Path, target_path: Path) -> list:
+    """Copy the database and its write-ahead log. Separated so a test can race the interval."""
     import shutil
-
-    import duckdb
-
-    source_path, target_path = Path(source), Path(target)
-    target_path.parent.mkdir(parents=True, exist_ok=True)
-    boundary = measure_boundary(source)
 
     copied = []
     for suffix in ("", ".wal"):
@@ -1152,32 +1164,86 @@ def snapshot_database(source: str, target: str, *, schema: str = "main",
         if candidate.is_file():
             shutil.copy2(candidate, Path(str(target_path) + suffix))
             copied.append({"file": candidate.name, "bytes": candidate.stat().st_size})
+    return copied
 
-    counts, relations = {}, {}
+
+def _governance_digests(con, schema: str) -> tuple:
+    """Row counts and content digests for the governed relations, from one connection."""
+    counts, digests = {}, {}
+    for name in GOVERNANCE:
+        try:
+            columns = [row[1] for row in con.execute(
+                f'PRAGMA table_info("{schema}"."{name}")').fetchall()]
+            counts[name] = con.execute(
+                f'SELECT count(*) FROM "{schema}"."{name}"').fetchone()[0]
+            digests[name] = content_digest(con, f'"{schema}"."{name}"', columns)
+        except Exception:
+            counts[name] = None
+            digests[name] = None
+    return counts, digests
+
+
+def snapshot_database(source: str, target: str, *, schema: str = "main",
+                      expect_terminals=None, owner_stopped: bool = False) -> dict:
+    """A copy taken while the boundary is HELD, and compared against the source that made it.
+
+    The previous version measured the boundary and then let go of it: it opened the database,
+    checkpointed, closed, and only afterwards copied the files. Anything could write in that
+    interval, so the measurement described a moment that had already passed. The reviewer was
+    right that this is a different defect from the documented same-process limit.
+
+    Now the exclusive connection is taken and **kept** across the checkpoint, the measurement
+    of the source, the copy of both files, and the comparison of the copy against that
+    measurement. While it is held no other process can open the database for writing, so the
+    files cannot move under the copy.
+
+    Outcomes are named: `VERIFIED_SNAPSHOT` only when the boundary was held throughout AND the
+    copy's content digests equal the source's; anything else is an `UNVERIFIED_COPY`, which is
+    still produced — a copy is better than none — and never called a snapshot.
+
+    The limit stays what it was, and is real: DuckDB locks per PROCESS, so this excludes other
+    processes and not a concurrent writer inside this one.
+    """
+    import duckdb
+
+    source_path, target_path = Path(source), Path(target)
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+
+    boundary = {"measured": True, "method": "exclusive_open_held_through_copy",
+                "writer_present": False, "held_through_copy": False}
+    copied, source_counts, source_digests = [], {}, {}
+    held = None
+    try:
+        held = duckdb.connect(str(source_path))       # exclusive for the whole operation
+    except Exception as exc:
+        boundary.update(writer_present=True,
+                        detail=f"{type(exc).__name__}: {str(exc)[:160]}")
+    if held is not None:
+        try:
+            held.execute("CHECKPOINT")                # fold the log in BEFORE measuring
+            source_counts, source_digests = _governance_digests(held, schema)
+            copied = _copy_files(source_path, target_path)
+            boundary["held_through_copy"] = True
+        finally:
+            held.close()
+    else:
+        copied = _copy_files(source_path, target_path)
+
+    counts, digests, readable = {}, {}, True
     try:
         con = duckdb.connect(str(target_path))
         con.execute("CHECKPOINT")
-        for name in GOVERNANCE:
-            try:
-                columns = [row[1] for row in con.execute(
-                    f'PRAGMA table_info("{schema}"."{name}")').fetchall()]
-                counts[name] = con.execute(
-                    f'SELECT count(*) FROM "{schema}"."{name}"').fetchone()[0]
-                relations[name] = content_digest(con, f'"{schema}"."{name}"', columns)
-            except Exception:
-                counts[name] = None
-                relations[name] = None
+        counts, digests = _governance_digests(con, schema)
         con.close()
-        readable = True
     except Exception as exc:
         readable = False
-        relations["error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
+        digests["error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
 
     reasons = []
     if boundary["writer_present"]:
-        reasons.append("a writer holds the source, so the main file and the write-ahead log "
-                       "were read at two different moments and the pair need not correspond "
-                       "to any single instant")
+        reasons.append("another process holds the database, so there was no boundary to copy at")
+    if not boundary["held_through_copy"]:
+        reasons.append("the boundary was not held across the copy")
     if not readable:
         reasons.append("the copy could not be opened")
     if expect_terminals is None:
@@ -1185,11 +1251,21 @@ def snapshot_database(source: str, target: str, *, schema: str = "main",
     elif counts.get("gov_terminal") != expect_terminals:
         reasons.append(f"the copy holds {counts.get('gov_terminal')} terminals, "
                        f"{expect_terminals} were expected")
+    differing = [name for name, digest in source_digests.items()
+                 if not digests_agree(digest, digests.get(name))
+                 and not (source_counts.get(name) == 0 and counts.get(name) == 0
+                          and digest is None and digests.get(name) is None)]
+    if source_digests and differing:
+        reasons.append(f"the copy differs from the source it was taken from: {differing}")
+    if not source_digests:
+        reasons.append("the source was never measured under a held boundary")
 
-    return {"schema": "olap_duckdb_snapshot.v3", "generated_utc": now(),
+    return {"schema": "olap_duckdb_snapshot.v4", "generated_utc": now(),
             "source": source, "target": target, "files_copied": copied,
             "boundary": boundary, "caller_claimed_owner_stopped": owner_stopped,
-            "counts_in_snapshot": counts, "content_digests": relations,
+            "counts_in_snapshot": counts, "content_digests": digests,
+            "source_counts": source_counts, "source_digests": source_digests,
+            "relations_differing_from_source": differing,
             "expected_terminals": expect_terminals,
             "verified": not reasons,
             "kind": "VERIFIED_SNAPSHOT" if not reasons else "UNVERIFIED_COPY",

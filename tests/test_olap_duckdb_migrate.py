@@ -242,7 +242,7 @@ def test_the_destination_can_resolve_the_replayed_contract(tmp_path):
     store.set_params(duckdb_path=target, schema="main", memory_limit="1GB", threads=2,
                      min_free_bytes=1)
     store.engine()
-    answer = store.resolve_delivery_availability("delivery-0")
+    answer = store.resolve_delivery_availability("00000000000000000000000000000000")
 
     assert answer["contract_resolution"] == "VERIFIED"
     assert answer["use_class"] == "ARCHIVE_RETROSPECTIVE"

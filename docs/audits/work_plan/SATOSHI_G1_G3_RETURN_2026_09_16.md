@@ -18,8 +18,15 @@ incident never touched — and run against production evidence, it found:
 > `omega-probe-duckdb-cutover-2` and `omega-probe-post-incident-1`, two metrics each.
 
 Both are DuckDB-era writes. Replaying their exact accepted payloads through the provider on a
-disposable cube stores both metrics correctly, so the provider is not the cause: those rows
-were in the write-ahead log **I quarantined**.
+disposable cube stores both metrics correctly, which rules the **provider logic** out.
+
+> **Correction, 2026-09-16 (H3).** I then wrote that the rows "were in the write-ahead log I
+> quarantined". That does not follow. A payload replaying correctly on a disposable cube does
+> not establish where the rows went, and it does not exclude the deployed writer, its version
+> or the transaction path at the time. **Where the four rows were lost is an unproven
+> hypothesis.** What is established is narrower and still worth stating: four metric rows
+> accepted by governance were absent from the cube, and they have been restored from the
+> independent record. The recovery and the reason are separate findings.
 
 **So "nothing governed was lost" was wrong.** It is corrected in place in the E1–E6 and F1–F5
 returns, as a dated note beside the original paragraph rather than an edit over it.

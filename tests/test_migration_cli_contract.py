@@ -84,7 +84,15 @@ def test_an_existing_parent_does_not_hide_missing_children(tmp_path):
     source = str(tmp_path / "src.duckdb")
     target = str(tmp_path / "dst.duckdb")
     migrate.build_fixture_cube(source, terminals=1, with_children=True, with_contract=True)
-    migrate.build_fixture_cube(target, terminals=1)          # parent only, no children
+    # the destination holds the SAME parent with its children removed. Building it with
+    # `with_children=False` would now produce a DIFFERENT terminal digest - the payload differs
+    # - and the store's uniqueness constraint would refuse it, which is correct but is not the
+    # situation being tested.
+    migrate.build_fixture_cube(target, terminals=1, with_children=True, with_contract=True)
+    con = duckdb.connect(target)
+    for child in ("gov_terminal_metric", "gov_terminal_dataset", "gov_terminal_artifact"):
+        con.execute(f"DELETE FROM main.{child}")
+    con.close()
 
     report = migrate.replay_between(source, target, schema="main", dry_run=False)
 
@@ -193,7 +201,11 @@ def test_a_partially_present_outcome_is_completed_by_catchup(tmp_path):
     source = str(tmp_path / "src.duckdb")
     destination = str(tmp_path / "dst.duckdb")
     migrate.build_fixture_cube(source, terminals=1, with_children=True, with_contract=True)
-    migrate.build_fixture_cube(destination, terminals=1)
+    migrate.build_fixture_cube(destination, terminals=1, with_children=True,
+                               with_contract=True)
+    con = duckdb.connect(destination)
+    con.execute("DELETE FROM main.gov_terminal_metric")
+    con.close()
     out = tmp_path / "catchup.json"
 
     migrate.main(["catchup", "--source", source, "--destination", destination,
