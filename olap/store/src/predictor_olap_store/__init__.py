@@ -31,7 +31,7 @@ SOURCE_PATH = "olap/lake/query_plugins/sql_query.py"
 #: candidate change is awaiting production review, and PENDING_REVIEW says which one. The
 #: package's tests require the two to be consistent: a divergence without a stated reason is
 #: a failure, and a stated reason without a divergence is one too.
-MODULE_SHA256 = "23e31cafe05b5275ddc87eb93bf5d7bdddaa91eeaa3cd0a824148a3cd49196e7"
+MODULE_SHA256 = "5dfa5a6b7de68db774ae4f23bf80db0921f87cb0630cebbaa1ef34c800f60e49"
 PENDING_REVIEW = (
     "S2 availability-contract dimension: additive `gov_availability_contract` table, the "
     "`gov_delivery_availability` view and `write_availability_contracts` / "

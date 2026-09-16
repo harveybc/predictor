@@ -120,6 +120,71 @@ def run_case(client, findings, name, datasets, cache, *, expect_delivery=True,
     return sha, body
 
 
+def negative_contract_cases(stack) -> dict:
+    """An archive declaring a known lag: refused by the host, and refused again on read."""
+    import urllib.error
+    import urllib.request
+
+    out = {}
+    contract = {"resource_id": "negative", "availability": {
+        "label": "WINDOW_START", "completion_lag_max": "0s",
+        "timezone_evidence": "UNKNOWN", "use_class": "ARCHIVE_RETROSPECTIVE"}}
+    body = json.dumps(contract, sort_keys=True, separators=(",", ":"))
+    digest = hashlib.sha256(body.encode("ascii")).hexdigest()
+
+    payload = json.dumps({"contracts": [
+        {"contract_sha256": digest, "canonical_bytes": body}]}).encode()
+    request = urllib.request.Request(
+        stack["warehouse_url"] + "/api/v2/availability-contracts", data=payload,
+        headers={"Content-Type": "application/json",
+                 "Authorization": f"Bearer {stack['lake_token']}"}, method="POST")
+    try:
+        with urllib.request.urlopen(request, timeout=20) as answer:
+            out["host_write"] = {"status": answer.status,
+                                 "body": json.loads(answer.read() or b"{}")}
+    except urllib.error.HTTPError as exc:
+        out["host_write"] = {"status": exc.code,
+                             "body": json.loads(exc.read() or b"{}")}
+    except Exception as exc:
+        out["host_write"] = {"status": None, "error": f"{type(exc).__name__}: {exc}"}
+
+    # planted directly, so no writer check can be what refuses it
+    out["planted_then_read"] = plant_and_read(stack, body, digest)
+    return out
+
+
+def plant_and_read(stack, body: str, digest: str) -> dict:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "olap" / "store" / "src"))
+    from sqlalchemy import text
+
+    from predictor_olap_store.query import CANONICALIZATION, Plugin
+
+    plugin = Plugin()
+    if stack.get("cube_postgres"):
+        os.environ["PGDATABASE"] = stack["cube_postgres"]
+        plugin.set_params(sqlite_path=None, schema="public")
+    else:
+        plugin.set_params(sqlite_path=stack["cube"])
+    plugin.engine()
+    with plugin.write_engine().begin() as conn:
+        conn.execute(text(
+            "INSERT INTO gov_availability_contract (contract_sha256, canonical_bytes,"
+            " digest_algorithm, canonicalization, use_class, completion_lag_max,"
+            " availability_label, timezone_evidence, first_seen) VALUES (:c, :b, 'sha256', :z,"
+            " 'ARCHIVE_RETROSPECTIVE', '0s', 'WINDOW_START', 'UNKNOWN', 'planted')"),
+            {"c": digest, "b": body, "z": CANONICALIZATION})
+        conn.execute(text(
+            "INSERT INTO gov_terminal_dataset (terminal_sha256, delivery_id, lake_id,"
+            " resource_id, role, sha256, bytes, availability_contract_sha256,"
+            " verification_state) VALUES ('planted', 'd-negative', 'l', 'negative', 'archive',"
+            " 'b', 1, :c, 'VERIFIED_TRANSFER')"), {"c": digest})
+    answer = plugin.resolve_delivery_availability("d-negative")
+    return {"contract_resolution": answer.get("contract_resolution"),
+            "use_class": answer.get("use_class"),
+            "completion_lag_max": answer.get("completion_lag_max"),
+            "reason": answer.get("reason")}
+
+
 def fresh_reader(stack, deliveries):
     """A NEW process-local provider over the same database, and nothing else.
 
@@ -235,6 +300,11 @@ def main(argv=None) -> int:
         teardown["lake_still_answers"] = False
         teardown["lake_error"] = type(exc).__name__
     findings["producer_teardown"] = teardown
+
+    # 4b. a temporally INVALID contract, pushed through the real host over HTTP, and a row
+    # planted straight into the store. The first proves the write path refuses it; the second
+    # proves the READER refuses what no writer ever checked (V2).
+    findings["negative_temporal_contract"] = negative_contract_cases(stack)
 
     # 5. the fresh reader, with only the database left
     findings["fresh_reader"] = fresh_reader(stack, deliveries)

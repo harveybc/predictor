@@ -776,7 +776,7 @@ class Plugin:
             "received_at": _now_utc(),
         }
         with self.write_engine().begin() as conn:
-            inserted = conn.execute(text(
+            inserted = len(conn.execute(text(
                 f"INSERT INTO {t('gov_terminal')} (terminal_sha256, campaign_sha256,"
                 " campaign_key, unit_id, generation, actor, project, classification, status,"
                 " reason, started_at, finished_at, terminal_lake, config_sha256, code_identity_json,"
@@ -785,7 +785,9 @@ class Plugin:
                 " :actor, :project, :classification, :status, :reason, :started_at, :finished_at,"
                 " :terminal_lake, :config_sha256, :code_identity_json, :costs_json, :tags_json,"
                 " :synthetic_spec_sha256, :received_at) ON CONFLICT (terminal_sha256) DO NOTHING"
-            ), row).rowcount
+                # counted, not inferred: see write_availability_contracts
+                " RETURNING terminal_sha256"
+            ), row).fetchall())
             if not inserted:
                 return {"stored": False, "already_stored": True, "terminal_sha256": digest}
             metrics = [{"terminal_sha256": digest, **item} for item in terminal["metrics"]]
@@ -904,7 +906,11 @@ class Plugin:
         stored = 0
         with self.write_engine().begin() as conn:
             for row in rows:
-                stored += conn.execute(text(
+                # RETURNING, not rowcount: DuckDB reports -1 for an INSERT ... DO NOTHING, so a
+                # rowcount-based counter reported "-1 stored, 2 already stored" for a single
+                # new contract. Idempotency has to be COUNTED, not inferred from a driver
+                # convention, and all three engines return the rows they actually inserted.
+                inserted = conn.execute(text(
                     f"INSERT INTO {t('gov_availability_contract')} (contract_sha256,"
                     " canonical_bytes, digest_algorithm, canonicalization, use_class,"
                     " completion_lag_max, availability_label, timezone_evidence, first_seen)"
@@ -912,7 +918,9 @@ class Plugin:
                     " :canonicalization, :use_class, :completion_lag_max, :availability_label,"
                     " :timezone_evidence, :first_seen)"
                     " ON CONFLICT (contract_sha256) DO NOTHING"
-                ), row).rowcount
+                    " RETURNING contract_sha256"
+                ), row).fetchall()
+                stored += len(inserted)
         return {"stored": stored, "already_stored": len(rows) - stored,
                 "contracts": [row["contract_sha256"] for row in rows]}
 

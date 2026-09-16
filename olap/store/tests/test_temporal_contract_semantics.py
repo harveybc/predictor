@@ -38,7 +38,22 @@ from predictor_olap_store.query import (  # noqa: E402
 
 PG_DATABASE = os.environ.get("U2_PG_DATABASE")
 PROTECTED = {"predictor_olap"}
-ENGINES = ["sqlite"] + (["postgres"] if PG_DATABASE else [])
+#: A DuckDB file for the same rules. The governed logic is shared, so the same rules must hold
+#: on every engine the cube can run on; a rule that passes only on one is not a property.
+DUCKDB_PATH = os.environ.get("U2_DUCKDB_PATH")
+
+ENGINES = (["sqlite"] + (["postgres"] if PG_DATABASE else [])
+           + (["duckdb"] if DUCKDB_PATH else []))
+
+
+def _reopen_duckdb(tmp_path):
+    from predictor_duckdb_store.provider import PredictorDuckdbStore
+
+    other = PredictorDuckdbStore()
+    other.set_params(duckdb_path=str(tmp_path / "cube.duckdb"), schema="main",
+                     memory_limit="1GB", threads=2, min_free_bytes=1)
+    other.engine()
+    return other
 
 
 @pytest.fixture(params=ENGINES)
@@ -53,6 +68,15 @@ def store(request, tmp_path):
         with plugin.write_engine().begin() as conn:
             conn.execute(text("DELETE FROM gov_availability_contract"))
             conn.execute(text("DELETE FROM gov_terminal_dataset"))
+        return plugin
+    if request.param == "duckdb":
+        from predictor_duckdb_store.provider import PredictorDuckdbStore
+
+        plugin = PredictorDuckdbStore()
+        plugin.set_params(duckdb_path=str(tmp_path / "cube.duckdb"), schema="main",
+                          memory_limit="1GB", threads=2, min_free_bytes=1)
+        plugin.engine()
+        plugin.reopen_for_test = lambda: _reopen_duckdb(tmp_path)
         return plugin
     plugin.set_params(sqlite_path=str(tmp_path / "cube.sqlite"))
     plugin.engine()

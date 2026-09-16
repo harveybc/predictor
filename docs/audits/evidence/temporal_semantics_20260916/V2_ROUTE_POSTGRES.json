@@ -1,0 +1,187 @@
+{
+ "schema": "archive_contract_persistence_probe.v1",
+ "at": "2026-09-16T05:52:14.315Z",
+ "stack": {
+  "gov_url": "http://127.0.0.1:55517",
+  "cube": "postgresql:v2_route_055121",
+  "cube_postgres": "v2_route_055121",
+  "work": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/s2work/stack"
+ },
+ "archive_resource": "synthetic_typical_price_4h_train.csv",
+ "plain_resource": "synthetic_features_4h_train.csv",
+ "findings": {
+  "archive-whole": {
+   "campaign_key": "s2-archive-whole-1789537928499",
+   "unit_id": "archive-whole-1",
+   "campaign_status": 201,
+   "campaign_sha256": "ab46131dbc7bae8d225c1c242fc8faf2961803a987b0d1f9a75d127fb4ccfbc3",
+   "download_status": 200,
+   "delivery_id": "fe8d4427277f4c98b9a0e0bd792383bc",
+   "bytes": 26124,
+   "verification_state": "VERIFIED_TRANSFER",
+   "availability_contract_sha256": "62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d",
+   "availability": null,
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "ab46131dbc7bae8d225c1c242fc8faf2961803a987b0d1f9a75d127fb4ccfbc3",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "archive-range": {
+   "campaign_key": "s2-archive-range-1789537928626",
+   "unit_id": "archive-range-1",
+   "campaign_status": 201,
+   "campaign_sha256": "c516a18fa926392fa504535aa3245943c49d36fe8cb78e15a604f577c440bfab",
+   "download_status": 422,
+   "refusal": {
+    "error": "this resource is a retrospective archive: its publication time was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   },
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "c516a18fa926392fa504535aa3245943c49d36fe8cb78e15a604f577c440bfab",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "archive-point-in-time": {
+   "campaign_key": "s2-archive-point-in-time-1789537928638",
+   "unit_id": "archive-point-in-time-1",
+   "campaign_status": 201,
+   "campaign_sha256": "9c0eddb9ac52bfdf2ef0190b33a40f7b00c3c50cfa2eea5c13cc88d80dd945e5",
+   "download_status": 422,
+   "refusal": {
+    "error": "this resource is a retrospective archive: its publication time was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   },
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "9c0eddb9ac52bfdf2ef0190b33a40f7b00c3c50cfa2eea5c13cc88d80dd945e5",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "archive-live-tail": {
+   "campaign_key": "s2-archive-live-tail-1789537928647",
+   "unit_id": "archive-live-tail-1",
+   "campaign_status": 201,
+   "campaign_sha256": "178131cdb737147bbb4daf539d7a352b993098a52844f5e6d1fb7b9c70c7f316",
+   "download_status": 422,
+   "refusal": {
+    "error": "this resource is a retrospective archive: its publication time was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   },
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "178131cdb737147bbb4daf539d7a352b993098a52844f5e6d1fb7b9c70c7f316",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "plain-crosses-holdout": {
+   "not_exercised": "the disposable stack declares no holdout_start, so no range can cross one; run with --holdout to exercise this refusal"
+  },
+  "plain-whole": {
+   "campaign_key": "s2-plain-whole-1789537928656",
+   "unit_id": "plain-whole-1",
+   "campaign_status": 201,
+   "campaign_sha256": "4dd9bd7254f1497069c6abe5ea3c0110f62aba4bea8be763feefe94190c8de45",
+   "download_status": 200,
+   "delivery_id": "847a5084f54045b79f8e781be91f744c",
+   "bytes": 228801,
+   "verification_state": "VERIFIED_TRANSFER",
+   "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+   "availability": null,
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "4dd9bd7254f1497069c6abe5ea3c0110f62aba4bea8be763feefe94190c8de45",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "producer_teardown": {
+   "lake_pid": 4141783,
+   "stopped": true,
+   "config_existed": true,
+   "config_sha256": "c7ddc1109670c93fda7cc22c5a607b7edd213c6c961d9f61d9b8ee2615c2a938",
+   "config_present_after": false,
+   "lake_still_answers": false,
+   "lake_error": "URLError"
+  },
+  "negative_temporal_contract": {
+   "host_write": {
+    "status": 400,
+    "body": {
+     "error": "contract e18842a5a2b0ef0cc4efd61a6d49b0b1c9bc7d126df82b1ee3978eb1c3d0e8f1: a retrospective archive declares completion_lag_max 'UNKNOWN'; '0s' would assert a publication time nothing observed"
+    }
+   },
+   "planted_then_read": {
+    "contract_resolution": "UNRESOLVED_INVALID_TEMPORAL_SEMANTICS",
+    "use_class": null,
+    "completion_lag_max": null,
+    "reason": "a retrospective archive declares completion_lag_max 'UNKNOWN'; '0s' would assert a publication time nothing observed"
+   }
+  },
+  "fresh_reader": {
+   "archive-whole": {
+    "delivery_id": "fe8d4427277f4c98b9a0e0bd792383bc",
+    "contract_resolution": "VERIFIED",
+    "use_class": "ARCHIVE_RETROSPECTIVE",
+    "completion_lag_max": "UNKNOWN",
+    "availability_label": "WINDOW_START",
+    "timezone_evidence": "UNKNOWN",
+    "terminal_sha256": "747946f8f6f46ca76cd391fbd6ba67f935abe6ccc65bf5fdba5d90f13e6d87bd",
+    "lake_id": "synthetic_fixtures",
+    "resource_id": "synthetic_typical_price_4h_train.csv",
+    "role": "archive",
+    "availability_contract_sha256": "62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d",
+    "contract_reference": "STORED",
+    "stored_use_class": "ARCHIVE_RETROSPECTIVE",
+    "stored_completion_lag_max": "UNKNOWN",
+    "stored_availability_label": "WINDOW_START",
+    "stored_timezone_evidence": "UNKNOWN",
+    "stored_digest_algorithm": "sha256",
+    "stored_canonicalization": "json.sort_keys.separators-comma-colon.ascii.v1",
+    "verified_sha256": "62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d",
+    "probe_recomputed_sha256": "62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d",
+    "canonical_says_lag": "UNKNOWN",
+    "canonical_says_use_class": "ARCHIVE_RETROSPECTIVE"
+   },
+   "plain-whole": {
+    "delivery_id": "847a5084f54045b79f8e781be91f744c",
+    "contract_resolution": "VERIFIED",
+    "use_class": "OFFLINE_DAY_GRANULAR",
+    "completion_lag_max": "4h",
+    "availability_label": "WINDOW_START",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "terminal_sha256": "39016eb35acdd3fe22f0a51f9ee8aa63b5448ecee7b21080690ec8087da5a38c",
+    "lake_id": "synthetic_fixtures",
+    "resource_id": "synthetic_features_4h_train.csv",
+    "role": "input",
+    "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+    "contract_reference": "STORED",
+    "stored_use_class": "OFFLINE_DAY_GRANULAR",
+    "stored_completion_lag_max": "4h",
+    "stored_availability_label": "WINDOW_START",
+    "stored_timezone_evidence": "PRODUCER_STATEMENT",
+    "stored_digest_algorithm": "sha256",
+    "stored_canonicalization": "json.sort_keys.separators-comma-colon.ascii.v1",
+    "verified_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+    "probe_recomputed_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+    "canonical_says_lag": "4h",
+    "canonical_says_use_class": "OFFLINE_DAY_GRANULAR"
+   },
+   "never-retained": {
+    "delivery_id": "delivery-that-never-existed",
+    "contract_resolution": "NO_SUCH_DELIVERY",
+    "use_class": null,
+    "completion_lag_max": null,
+    "availability_label": null,
+    "timezone_evidence": null
+   }
+  }
+ }
+}
