@@ -481,3 +481,11 @@ de la era DuckDB que se perderian y que `gov_availability_contract` **no existe*
 **Brechas declaradas con dueno:** Metabase v0.56.3 no trae driver DuckDB (verificado contra su
 propia API), asi que la analitica hoy es la consola del host; y `tools/olap_loader.py`, unico
 otro escritor OLAP, queda **detenido y deshabilitado** con su cola en cero.
+### Relectura del retorno 68f4e39
+
+Warehouse activo con entorno DuckDB; cargador legado detenido, verificados por
+systemd. Cierre integral NO aceptado: seleccion por tablas en vez de linaje de
+campana, rollback solo diagnostico, snapshot no coordinado, importacion parcial
+sin resume y ruta df_* pendiente. No se constata perdida de datos por esta
+revision; se conservan fuente y archivo. Orden de cierre:
+[E1-E6](../handoffs/MUSASHI_DUCKDB_CLOSEOUT_CORRECTIONS_2026_09_16.md).
