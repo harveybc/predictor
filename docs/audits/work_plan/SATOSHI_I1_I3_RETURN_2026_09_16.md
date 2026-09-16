@@ -3,11 +3,11 @@
 Order: `docs/handoffs/MUSASHI_H1_H3_LIVE_REVIEW_AND_I1_I3_2026_09_16.md` (`abad189`), over the
 live review of `383fbe7`. Executed without pausing between blocks.
 
-**The owner opened the boundary and ran the rehearsed sequence. It refused to write, correctly,
-and in refusing it found the actual fault.** The four surplus rows are the visible end of an
-inconsistent index: `gov_terminal_metric` holds 537 rows and its index reaches 533 of them.
-Everything below is measured; the production write is rehearsed against the real structure and
-is waiting on one more boundary. Section I2 says what it needs.
+**Done, on production, and verified through the running service.** The first attempt refused to
+write and in refusing it found the actual fault: the four surplus rows were the visible end of
+an inconsistent index — `gov_terminal_metric` held 537 rows and its index reached 533 of them.
+The index was rebuilt, the four rows removed, and the live warehouse now reconciles **55 of 55,
+zero differences**, with a filter and a scan returning the same population.
 
 ## I1 — the discrepancy, frozen and explained as far as evidence goes
 
@@ -181,26 +181,27 @@ Receipts: `I2_PROD_SNAPSHOT.json` (the owner's verified snapshot), `I2_PROD_REPA
 refusal that found the fault), `I2_PROD_REHEARSAL_REPAIR.json`, `I2_PROD_REHEARSAL_SECOND.json`,
 `I2_PROD_REHEARSAL_SURPLUS.json`.
 
-### Pending: one more boundary
+### Applied to production
 
-The production write needs the owning service stopped once more, and the harness refuses that
-command to me. The sequence, unchanged except that the cube is now the only argument that
-differs from the rehearsal:
+One coordinated boundary, about a minute of downtime, `NRestarts=0`. Snapshot
+`I2_PROD_SNAPSHOT_2.json` is a `VERIFIED_SNAPSHOT` — boundary held, no writer present, digests
+equal — taken before anything was written. Receipt `I2_PROD_REPAIR_2.json`:
 
-1. `systemctl --user stop crispdm-data-warehouse-olap.service`
-2. `incident_evidence_reconcile.py --cube $P/cube.duckdb --repair-surplus --evidence
-   I2_PROD_SURPLUS.json --out I2_PROD_REPAIR_2.json`
-3. `systemctl --user start crispdm-data-warehouse-olap.service`
-4. `incident_evidence_reconcile.py --service-url http://127.0.0.1:5057` → `I3_LIVE_AFTER.json`
+| | before | after |
+|---|---|---|
+| `gov_terminal_metric` rows | 537 | **533** |
+| filtered read vs forced scan | 533 / 537, **disagree** | 533 / 533, **agree** |
+| `gov_terminal` | 55 | 55, digest unchanged |
+| `gov_terminal_artifact` | 97 | 97, digest unchanged, agrees throughout |
+| `gov_terminal_dataset` | 92 | 92, digest unchanged, agrees throughout |
+| indexes rebuilt | — | `gov_terminal_metric_sha_idx` |
+| log left beside the cube | — | **0 bytes** |
 
-Expected, from the rehearsal on this exact structure: `indexes_rebuilt` naming
-`gov_terminal_metric_sha_idx`, `surplus_rows_removed: 4`, `content_matches: 55`,
-`content_differs: 0`, `gov_terminal_metric` at 533 with filter and scan agreeing, and zero bytes
-of log. If any of that fails the operation rolls back and writes nothing.
+The four surplus rows were written to `I2_PROD_SURPLUS_2.json` before they were removed.
 
-**There is no urgency and it should not be rushed.** The live warehouse currently returns the
-**correct** 533 rows to every query that filters by terminal; only unfiltered aggregates
-over-count by four. The first production attempt wrote nothing.
+An earlier window (`I2_PROD_SNAPSHOT.json`, `I2_PROD_REPAIR.json`) took its own verified
+snapshot and wrote nothing at all: that is the refusal that found the fault, and it is kept
+because it is the evidence.
 
 ## I3 — closing on measured live content
 
@@ -210,8 +211,11 @@ two named terminals. The population is what the service currently serves; nothin
 the number 55, and a new legitimate terminal would appear as a match or as an orphan without
 disturbing the finding. Scientific and operational populations remain separate views.
 
-The final live verification after the write is the one step that cannot be produced without the
-boundary above.
+**After the write, through the running service** (`I3_LIVE_AFTER.json`): 55 accepted, **55
+matching, 0 differing**, 0 missing, 0 unverifiable, 0 orphan rows. `gov_terminal_metric` at 533
+rows with filter and scan agreeing; the other three relations unchanged and agreeing throughout.
+Verdict `NO_LOSS_FOR_THE_COMPARED_POPULATION`, measured on what the warehouse currently serves
+rather than on a rehearsal.
 
 ## Suites
 
@@ -265,7 +269,6 @@ Stopping the orphan is also refused by the harness (`[Interfere With Workloads]`
 
 | item | owner |
 |---|---|
-| **the production write and its live verification** — needs one authorised service stop | owner; rehearsed against the real structure, receipts ready |
 | what made `gov_terminal_metric_sha_idx` lose four entries — four mechanisms reproduced and excluded | Satoshi; unknown, not named |
 | where the four G1 rows were originally lost, and why the incident log could not be replayed | Satoshi; quarantined log preserved |
 | orphaned stack `crispdm-s2-stack-1789506694-3701496`, and the `STACK.json` overwrite that stranded it | Satoshi, once ordered; needs the same authorisation |

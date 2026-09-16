@@ -684,3 +684,14 @@ no reproduce esta firma. Cuatro mecanismos reproducidos y descartados; la causa 
 Reensayado sobre copia del snapshot real: indice reconstruido, 537 → **533**, filtro y barrido de
 acuerdo, 55/55, segunda invocacion sin efecto, WAL de 0 bytes. Falta una sola frontera mas para
 escribirlo en produccion. 64 reglas focales; 254+1 sobre tres motores; 1406/11/0 en trading-stack.
+
+### Cierre 2026-09-16: aplicado en produccion y verificado por el servicio
+
+Una frontera coordinada, ~1 minuto de indisponibilidad, `NRestarts=0`. Snapshot
+`VERIFIED_SNAPSHOT` antes de escribir. Indice `gov_terminal_metric_sha_idx` reconstruido,
+cuatro filas sobrantes retiradas tras preservarlas, WAL de 0 bytes.
+
+`gov_terminal_metric` 537 → **533**, y filtro/barrido de **533/537 en desacuerdo** a
+**533/533 de acuerdo**. Las otras tres relaciones con digest intacto y de acuerdo en todo
+momento. Conciliado despues de la escritura **por el servicio activo**: 55 aceptados,
+**55 coinciden, 0 difieren**, cero huerfanas. I1-I3 cerrado.

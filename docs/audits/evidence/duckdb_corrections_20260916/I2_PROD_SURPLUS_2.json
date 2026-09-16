@@ -1,0 +1,134 @@
+{
+ "schema": "surplus_multiplicity_evidence.v1",
+ "generated_utc": "2026-09-16T22:45:45Z",
+ "cube": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb",
+ "planned": [
+  {
+   "relation": "gov_terminal_metric",
+   "terminal_sha256": "c045bc0b95557fcff1f8b89d13bafaa0f0a2751ac0d9af97f5f5656f76f6936a",
+   "rowid": 533,
+   "values": {
+    "metric": "bytes_delivered",
+    "split": "test",
+    "horizon": 0,
+    "unit": "bytes",
+    "value": 228801.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  },
+  {
+   "relation": "gov_terminal_metric",
+   "terminal_sha256": "c045bc0b95557fcff1f8b89d13bafaa0f0a2751ac0d9af97f5f5656f76f6936a",
+   "rowid": 534,
+   "values": {
+    "metric": "delivery_from_cache",
+    "split": "test",
+    "horizon": 0,
+    "unit": "bool",
+    "value": 1.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  },
+  {
+   "relation": "gov_terminal_metric",
+   "terminal_sha256": "daa61957c354eece4a2727de7b00db3dcc8c0c79ea38e96819136a35819f6105",
+   "rowid": 535,
+   "values": {
+    "metric": "bytes_delivered",
+    "split": "test",
+    "horizon": 0,
+    "unit": "bytes",
+    "value": 228801.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  },
+  {
+   "relation": "gov_terminal_metric",
+   "terminal_sha256": "daa61957c354eece4a2727de7b00db3dcc8c0c79ea38e96819136a35819f6105",
+   "rowid": 536,
+   "values": {
+    "metric": "delivery_from_cache",
+    "split": "test",
+    "horizon": 0,
+    "unit": "bool",
+    "value": 1.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  }
+ ],
+ "removed": [
+  {
+   "relation": "gov_terminal_metric",
+   "terminal_sha256": "c045bc0b95557fcff1f8b89d13bafaa0f0a2751ac0d9af97f5f5656f76f6936a",
+   "rowid": 533,
+   "values": {
+    "metric": "bytes_delivered",
+    "split": "test",
+    "horizon": 0,
+    "unit": "bytes",
+    "value": 228801.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  },
+  {
+   "relation": "gov_terminal_metric",
+   "terminal_sha256": "c045bc0b95557fcff1f8b89d13bafaa0f0a2751ac0d9af97f5f5656f76f6936a",
+   "rowid": 534,
+   "values": {
+    "metric": "delivery_from_cache",
+    "split": "test",
+    "horizon": 0,
+    "unit": "bool",
+    "value": 1.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  },
+  {
+   "relation": "gov_terminal_metric",
+   "terminal_sha256": "daa61957c354eece4a2727de7b00db3dcc8c0c79ea38e96819136a35819f6105",
+   "rowid": 535,
+   "values": {
+    "metric": "bytes_delivered",
+    "split": "test",
+    "horizon": 0,
+    "unit": "bytes",
+    "value": 228801.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  },
+  {
+   "relation": "gov_terminal_metric",
+   "terminal_sha256": "daa61957c354eece4a2727de7b00db3dcc8c0c79ea38e96819136a35819f6105",
+   "rowid": 536,
+   "values": {
+    "metric": "delivery_from_cache",
+    "split": "test",
+    "horizon": 0,
+    "unit": "bool",
+    "value": 1.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  }
+ ],
+ "terminals": [
+  "c045bc0b95557fcff1f8b89d13bafaa0f0a2751ac0d9af97f5f5656f76f6936a",
+  "daa61957c354eece4a2727de7b00db3dcc8c0c79ea38e96819136a35819f6105"
+ ],
+ "note": "Every physical row below is a copy the cube held beyond the multiplicity the accepted payload declares, preserved here before it left the operational projection."
+}
