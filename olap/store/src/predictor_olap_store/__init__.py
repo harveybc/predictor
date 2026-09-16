@@ -31,12 +31,13 @@ SOURCE_PATH = "olap/lake/query_plugins/sql_query.py"
 #: candidate change is awaiting production review, and PENDING_REVIEW says which one. The
 #: package's tests require the two to be consistent: a divergence without a stated reason is
 #: a failure, and a stated reason without a divergence is one too.
-MODULE_SHA256 = "3833037ca316804c18e7953e2036cd4950f4ef6431252fc871472479499955bd"
+MODULE_SHA256 = "23e31cafe05b5275ddc87eb93bf5d7bdddaa91eeaa3cd0a824148a3cd49196e7"
 PENDING_REVIEW = (
     "S2 availability-contract dimension: additive `gov_availability_contract` table, the "
     "`gov_delivery_availability` view and `write_availability_contracts` / "
-    "`resolve_delivery_availability`, the reader VERIFYING the retained bytes before it "
-    "displays any semantics (U2). Additive and idempotent; no existing table, column, row or "
+    "`resolve_delivery_availability`, the reader VERIFYING the retained bytes and "
+    "VALIDATING their temporal semantics against the producer's own rules before it "
+    "displays anything (U2, V1). Additive and idempotent; no existing table, column, row or "
     "terminal digest is altered. Proved on SQLite and on a disposable PostgreSQL stack; NOT "
     "deployed. Candidate manifest: docs/audits/work_plan/SATOSHI_S2_PRODUCTION_CANDIDATE.md"
 )

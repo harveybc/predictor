@@ -1,0 +1,50 @@
+{
+ "schema": "temporal_contract_reproducer.v1",
+ "label": "AFTER",
+ "generated_utc": "2026-09-16T05:47:16Z",
+ "cases": [
+  {
+   "declared_lag": "UNKNOWN",
+   "note": "the positive control: an archive that admits it does not know",
+   "contract_sha256": "fc2053e677754bf9bd4664ccc56de6f9267d5ced545a8c29a4fe8167907a95ec",
+   "bytes_hash_correctly": true,
+   "write": "ACCEPTED",
+   "read": "VERIFIED",
+   "read_lag": "UNKNOWN",
+   "read_use_class": "ARCHIVE_RETROSPECTIVE",
+   "read_reason": null
+  },
+  {
+   "declared_lag": "0s",
+   "note": "a known lag on an archive whose publication was never observed",
+   "contract_sha256": "42bee10d9d94b43ed21cc9a17da7b8768fdcc5545eae6a0ada295a51a124fce7",
+   "bytes_hash_correctly": true,
+   "write": "REFUSED",
+   "write_reason": "contract 42bee10d9d94b43ed21cc9a17da7b8768fdcc5545eae6a0ada295a51a124fce7: a retrospective archive declares completion_lag_max 'UNKNOWN'; '0s' would assert a publication time nothing observed",
+   "read": null
+  },
+  {
+   "declared_lag": "not-a-duration",
+   "note": "a string that is not a duration at all",
+   "contract_sha256": "f8b10876669bff8f0bed805d621ea969ec1f4d57d1dec3c89444ec2a0e9a5297",
+   "bytes_hash_correctly": true,
+   "write": "REFUSED",
+   "write_reason": "contract f8b10876669bff8f0bed805d621ea969ec1f4d57d1dec3c89444ec2a0e9a5297: a retrospective archive declares completion_lag_max 'UNKNOWN'; 'not-a-duration' would assert a publication time nothing observed",
+   "read": null
+  },
+  {
+   "declared_lag": -1,
+   "note": "a negative duration",
+   "contract_sha256": "df24f9fdb62db97b1d5a1e4fefd44ae0249e5cf430b0496172fff55f9fdaa6c5",
+   "bytes_hash_correctly": true,
+   "write": "REFUSED",
+   "write_reason": "contract df24f9fdb62db97b1d5a1e4fefd44ae0249e5cf430b0496172fff55f9fdaa6c5: a retrospective archive declares completion_lag_max 'UNKNOWN'; -1 would assert a publication time nothing observed",
+   "read": null
+  }
+ ],
+ "verdict": {
+  "control_survives": true,
+  "counterexamples_refused": true,
+  "counterexamples_wrongly_verified": []
+ }
+}

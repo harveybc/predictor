@@ -57,6 +57,133 @@ SUPPORTED_DIGEST_ALGORITHMS = (DIGEST_ALGORITHM,)
 #: The availability classes this store can interpret, matching the lake provider's own set.
 SUPPORTED_USE_CLASSES = ("OFFLINE_DAY_GRANULAR", "LIVE_EQUIVALENT", "ARCHIVE_RETROSPECTIVE")
 
+# --- the producer's accepted contract, applied here too (V1) ---------------------------
+# These are NOT a new convention invented for the warehouse. They are the rules
+# `financial_data_store.inventory.availability_scope` already enforces at the producer, mirrored
+# so that a contract cannot be semantically valid where it is written and meaningless where it
+# is read. Verifying that retained bytes hash to their digest says the bytes are intact; it says
+# nothing at all about whether they mean anything, and an ARCHIVE_RETROSPECTIVE declaring `0s`,
+# `-1` or `not-a-duration` hashes perfectly well.
+AVAILABILITY_LABELS = ("WINDOW_END", "WINDOW_START", "EVENT_INSTANT", "UNKNOWN")
+TIMEZONE_EVIDENCE = ("PRODUCER_STATEMENT", "UNKNOWN")
+ARCHIVE_RETROSPECTIVE = "ARCHIVE_RETROSPECTIVE"
+LIVE_EQUIVALENT = "LIVE_EQUIVALENT"
+UNKNOWN_LAG = "UNKNOWN"
+#: The exact key set an availability block may carry. A block with extra or missing keys is not
+#: a contract this store can reason about, and is refused rather than read past.
+AVAILABILITY_KEYS = frozenset(
+    {"label", "completion_lag_max", "timezone_evidence", "use_class"})
+
+
+class TemporalContractError(ValueError):
+    """An availability block whose SEMANTICS are invalid, whatever its bytes hash to."""
+
+
+def _no_duplicate_keys(pairs):
+    seen = {}
+    for key, value in pairs:
+        if key in seen:
+            raise TemporalContractError(
+                f"duplicate JSON key {key!r}: the contract is ambiguous and two readers could "
+                "disagree about what it says")
+        seen[key] = value
+    return seen
+
+
+def parse_contract(canonical: str, canonicalization: str) -> dict:
+    """Parse retained bytes strictly, and check they ARE the canonical form they claim.
+
+    Two failures this catches, both of which hash perfectly well:
+
+    * **duplicate keys.** `{"use_class":"A","use_class":"B"}` is accepted by most JSON parsers,
+      which silently keep one of them. Two readers may keep different ones;
+    * **bytes that are not canonical.** If the stored text is not what the declared
+      canonicalization produces for its own content, then the digest is a digest of something
+      else's spelling. The bytes are NOT normalised here and the digest is NOT recomputed over
+      a tidied version: that would launder the defect. The contract is refused.
+    """
+    if canonicalization not in SUPPORTED_CANONICALIZATIONS:
+        raise TemporalContractError(f"canonicalization {canonicalization!r} is not supported")
+    body = json.loads(canonical, object_pairs_hook=_no_duplicate_keys)
+    if not isinstance(body, dict):
+        raise TemporalContractError("a contract must be a JSON object")
+    reserialised = json.dumps(body, sort_keys=True, separators=(",", ":"))
+    if reserialised != canonical:
+        raise TemporalContractError(
+            "the retained bytes are not the canonical form they declare; they are kept exactly "
+            "as stored and refused rather than normalised under the same digest")
+    return body
+
+
+def _duration(value):
+    """Parse a completion lag the way the producer does, or refuse.
+
+    pandas is what the producer uses, so the accepted spellings are identical by construction
+    rather than by a second implementation that agrees until it does not.
+    """
+    import pandas as pd
+
+    if isinstance(value, bool) or not isinstance(value, (str, int, float)):
+        raise TemporalContractError(
+            f"completion_lag_max must be a duration string or a number, got "
+            f"{type(value).__name__}")
+    if isinstance(value, float) and not math.isfinite(value):
+        raise TemporalContractError("completion_lag_max must be finite")
+    try:
+        delta = pd.Timedelta(str(value))
+    except (ValueError, TypeError) as exc:
+        raise TemporalContractError(
+            f"completion_lag_max {value!r} is not a duration") from exc
+    if pd.isna(delta):
+        raise TemporalContractError(f"completion_lag_max {value!r} is not a duration")
+    if delta < pd.Timedelta(0):
+        raise TemporalContractError(f"completion_lag_max {value!r} is negative")
+    return delta
+
+
+def validate_availability_block(block) -> dict:
+    """The producer's rules, enforced here at write AND independently at read.
+
+    * a retrospective archive declares `UNKNOWN` and nothing else. Its publication time was
+      never observed, so ANY number here is the invention the class exists to prevent;
+    * every other class needs a parseable, finite, non-negative duration;
+    * `LIVE_EQUIVALENT` requires exactly zero lag with a known label and a producer time-zone
+      statement. Zero is legitimate there, which is why this is not a blanket ban on zero.
+    """
+    if not isinstance(block, dict) or set(block) != AVAILABILITY_KEYS:
+        raise TemporalContractError(
+            f"availability must carry exactly {sorted(AVAILABILITY_KEYS)}")
+    use_class = block["use_class"]
+    if use_class not in SUPPORTED_USE_CLASSES:
+        raise TemporalContractError(f"use_class {use_class!r} is not one this store interprets")
+    if block["label"] not in AVAILABILITY_LABELS:
+        raise TemporalContractError(f"label {block['label']!r} is not a declared label")
+    if block["timezone_evidence"] not in TIMEZONE_EVIDENCE:
+        raise TemporalContractError(
+            f"timezone_evidence {block['timezone_evidence']!r} is not declared evidence")
+
+    lag = block["completion_lag_max"]
+    if use_class == ARCHIVE_RETROSPECTIVE:
+        if lag != UNKNOWN_LAG:
+            raise TemporalContractError(
+                f"a retrospective archive declares completion_lag_max {UNKNOWN_LAG!r}; "
+                f"{lag!r} would assert a publication time nothing observed")
+        return {"completion_lag_max": UNKNOWN_LAG, "completion_lag": None, **block}
+    if lag == UNKNOWN_LAG:
+        raise TemporalContractError(
+            f"{use_class} must declare a real completion lag; only "
+            f"{ARCHIVE_RETROSPECTIVE} may say {UNKNOWN_LAG!r}")
+    delta = _duration(lag)
+    if use_class == LIVE_EQUIVALENT:
+        import pandas as pd
+
+        if (delta != pd.Timedelta(0) or block["label"] == "UNKNOWN"
+                or block["timezone_evidence"] != "PRODUCER_STATEMENT"):
+            raise TemporalContractError(
+                "LIVE_EQUIVALENT needs a known label, zero completion lag and a producer "
+                "time-zone statement")
+    return {"completion_lag": delta, **block}
+
 #: Outcomes of resolving a delivery to its contract. Exactly one of them carries availability
 #: semantics; every other one is a refusal to make a claim, and they are distinct so that
 #: "nobody stored it" is never confused with "what is stored does not verify".
@@ -68,6 +195,10 @@ RESOLUTION_DIGEST_MISMATCH = "UNRESOLVED_DIGEST_MISMATCH"
 RESOLUTION_UNSUPPORTED = "UNRESOLVED_UNSUPPORTED_FORMAT"
 RESOLUTION_MALFORMED = "UNRESOLVED_MALFORMED_CONTRACT"
 RESOLUTION_DISAGREEMENT = "UNRESOLVED_STORED_SEMANTICS_DISAGREE"
+#: Bytes that are intact and hash correctly, and say something the contract does not allow.
+#: Kept distinct from MALFORMED: the difference between "this is not a contract" and "this is
+#: a contract that claims something it may not claim" is the whole finding.
+RESOLUTION_INVALID_SEMANTICS = "UNRESOLVED_INVALID_TEMPORAL_SEMANTICS"
 
 TERMINAL_STATES = {"COMPLETED", "FAILED", "INCONCLUSIVE", "REFUSED", "QUARANTINED"}
 TERMINAL_KEYS = {
@@ -734,32 +865,22 @@ class Plugin:
                     f"unsupported canonicalization {canonicalization!r}; this store can verify "
                     f"{list(SUPPORTED_CANONICALIZATIONS)}")
             try:
-                body = json.loads(canonical)
-            except ValueError as exc:
-                raise ValueError(f"canonical_bytes for {actual} is not JSON: {exc}") from exc
-            if not isinstance(body, dict):
-                raise ValueError(f"canonical_bytes for {actual} is not an object")
+                body = parse_contract(canonical, canonicalization)
+            except TemporalContractError as exc:
+                raise ValueError(f"contract {actual}: {exc}") from exc
             scope = body.get("availability")
             if not isinstance(scope, dict):
                 raise ValueError(
                     f"contract {actual} declares no availability block: its semantics cannot "
                     "be retained, and inventing them is what this table exists to prevent")
-            lag = scope.get("completion_lag_max")
-            use_class = scope.get("use_class")
-            if lag is None or not isinstance(use_class, str) or not use_class:
-                raise ValueError(
-                    f"contract {actual} must declare use_class and completion_lag_max")
-            # A lag is a duration or the word UNKNOWN. `str()` of a dict or a list produces a
-            # plausible-looking string that means nothing and can never be compared again, so
-            # the shape is checked instead of coerced.
-            if isinstance(lag, bool) or not isinstance(lag, (str, int, float)):
-                raise ValueError(
-                    f"contract {actual} declares completion_lag_max as {type(lag).__name__}; "
-                    "it must be a string or a number, and is not stringified here")
-            if use_class not in SUPPORTED_USE_CLASSES:
-                raise ValueError(
-                    f"contract {actual} declares use_class {use_class!r}, which this store "
-                    f"cannot interpret; supported: {list(SUPPORTED_USE_CLASSES)}")
+            # V1: the PRODUCER's rules, at the moment of writing. Bytes that hash correctly and
+            # mean nothing were being retained as if they were contracts.
+            try:
+                validate_availability_block(scope)
+            except TemporalContractError as exc:
+                raise ValueError(f"contract {actual}: {exc}") from exc
+            lag = scope["completion_lag_max"]
+            use_class = scope["use_class"]
             if actual in seen:
                 continue
             seen.add(actual)
@@ -878,16 +999,20 @@ class Plugin:
                                   "references; they have drifted or been replaced")
 
         try:
-            body = json.loads(canonical)
+            body = parse_contract(canonical, canonicalization)
             scope = body["availability"]
-            use_class = scope["use_class"]
-            lag = scope["completion_lag_max"]
-        except (ValueError, KeyError, TypeError) as exc:
+        except (TemporalContractError, ValueError, KeyError, TypeError) as exc:
             return refusal(RESOLUTION_MALFORMED, row,
                            reason=f"retained bytes are not a contract: {exc}")
-        if use_class not in SUPPORTED_USE_CLASSES:
-            return refusal(RESOLUTION_UNSUPPORTED, row,
-                           reason=f"use_class {use_class!r} is not one this store interprets")
+        # V1: validated AGAIN here, independently of whatever the writer did. A row may have
+        # been stored by an older version, by a migration, or by hand; the reader must not
+        # inherit the writer's checks, because a missing writer check would then be invisible.
+        try:
+            validate_availability_block(scope)
+        except TemporalContractError as exc:
+            return refusal(RESOLUTION_INVALID_SEMANTICS, row, reason=str(exc))
+        use_class = scope["use_class"]
+        lag = scope["completion_lag_max"]
 
         label = scope.get("label")
         evidence = scope.get("timezone_evidence")
