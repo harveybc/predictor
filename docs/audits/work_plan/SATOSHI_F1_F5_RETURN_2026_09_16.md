@@ -93,7 +93,11 @@ reconciled — healthy, backlog zero, the 16 adjudicated failures preserved.
 | suite | scope | result |
 |---|---|---|
 | `olap/store/tests` + both migration files | three engines (`U2_DUCKDB_PATH=1`, `U2_PG_DATABASE=<disposable>`) | **165 passed, 1 skipped** |
-| predictor `tests` + `olap/store/tests` | trading-stack, legacy dirs excluded | recorded below |
+| predictor `tests` + `olap/store/tests` | trading-stack, `--ignore=tests/unit_tests --ignore=tests/integration_tests` | **1448 passed, 4 skipped, 0 failed** in 6m38s |
+
+The four skips are the two migration files under trading-stack, which has no `duckdb`; those
+same files contribute 28 of the 165 rules in the DuckDB environment. Two lines, because the
+environment decides how many rules run and a single number would not say so.
 
 No test dependency was installed into the live service environment: the production interpreter
 is untouched, and the test runs use the separate DuckDB environment.
