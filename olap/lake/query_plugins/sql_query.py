@@ -49,6 +49,25 @@ GOV_AVAILABILITY_VIEW = "gov_delivery_availability"
 #: canonicalization cannot be mistaken for a corrupted contract.
 CANONICALIZATION = "json.sort_keys.separators-comma-colon.ascii.v1"
 DIGEST_ALGORITHM = "sha256"
+#: What this store can VERIFY. A contract written under anything else may be perfectly valid
+#: elsewhere; it is simply not something this reader is able to check, and it says so rather
+#: than displaying semantics it cannot stand behind.
+SUPPORTED_CANONICALIZATIONS = (CANONICALIZATION,)
+SUPPORTED_DIGEST_ALGORITHMS = (DIGEST_ALGORITHM,)
+#: The availability classes this store can interpret, matching the lake provider's own set.
+SUPPORTED_USE_CLASSES = ("OFFLINE_DAY_GRANULAR", "LIVE_EQUIVALENT", "ARCHIVE_RETROSPECTIVE")
+
+#: Outcomes of resolving a delivery to its contract. Exactly one of them carries availability
+#: semantics; every other one is a refusal to make a claim, and they are distinct so that
+#: "nobody stored it" is never confused with "what is stored does not verify".
+RESOLUTION_VERIFIED = "VERIFIED"
+RESOLUTION_NO_DELIVERY = "NO_SUCH_DELIVERY"
+RESOLUTION_ABSENT = "UNRESOLVED_REFERENCE_ABSENT"
+RESOLUTION_AMBIGUOUS = "UNRESOLVED_AMBIGUOUS_DELIVERY"
+RESOLUTION_DIGEST_MISMATCH = "UNRESOLVED_DIGEST_MISMATCH"
+RESOLUTION_UNSUPPORTED = "UNRESOLVED_UNSUPPORTED_FORMAT"
+RESOLUTION_MALFORMED = "UNRESOLVED_MALFORMED_CONTRACT"
+RESOLUTION_DISAGREEMENT = "UNRESOLVED_STORED_SEMANTICS_DISAGREE"
 
 TERMINAL_STATES = {"COMPLETED", "FAILED", "INCONCLUSIVE", "REFUSED", "QUARANTINED"}
 TERMINAL_KEYS = {
@@ -447,14 +466,22 @@ class Plugin:
             f"CREATE INDEX IF NOT EXISTS gov_terminal_dataset_sha_idx ON {t('gov_terminal_dataset')}"
             " (sha256)",
             f"{create_view} {t(GOV_VIEW)} AS {view_select}",
-            # Resolution, with the unresolved case named rather than hidden by an inner join.
+            # What is STORED, and only that. A join proves a key matched; it does not hash
+            # anything, so every semantic column here is prefixed `stored_` and the reference
+            # column says STORED/ABSENT rather than RESOLVED/UNRESOLVED. Calling a row
+            # "RESOLVED" because a key exists is exactly how tampered bytes were displayed as
+            # a valid availability claim. Verification lives in resolve_delivery_availability().
             f"{create_view} {t(GOV_AVAILABILITY_VIEW)} AS"
             " SELECT d.terminal_sha256, d.delivery_id, d.lake_id, d.resource_id, d.role,"
             " d.availability_contract_sha256,"
-            " CASE WHEN c.contract_sha256 IS NULL THEN 'UNRESOLVED' ELSE 'RESOLVED' END"
-            " AS contract_resolution,"
-            " c.use_class, c.completion_lag_max, c.availability_label, c.timezone_evidence,"
-            " c.digest_algorithm, c.canonicalization, c.canonical_bytes"
+            " CASE WHEN c.contract_sha256 IS NULL THEN 'ABSENT' ELSE 'STORED' END"
+            " AS contract_reference,"
+            " c.use_class AS stored_use_class,"
+            " c.completion_lag_max AS stored_completion_lag_max,"
+            " c.availability_label AS stored_availability_label,"
+            " c.timezone_evidence AS stored_timezone_evidence,"
+            " c.digest_algorithm AS stored_digest_algorithm,"
+            " c.canonicalization AS stored_canonicalization, c.canonical_bytes"
             f" FROM {t('gov_terminal_dataset')} d LEFT JOIN {t('gov_availability_contract')} c"
             " ON c.contract_sha256 = d.availability_contract_sha256",
         ]
@@ -697,8 +724,15 @@ class Plugin:
                     f"contract_sha256 mismatch: declared {given.lower()}, bytes hash to {actual}")
             algorithm = item.get("digest_algorithm") or DIGEST_ALGORITHM
             canonicalization = item.get("canonicalization") or CANONICALIZATION
-            if algorithm != DIGEST_ALGORITHM:
+            if algorithm not in SUPPORTED_DIGEST_ALGORITHMS:
                 raise ValueError(f"unsupported digest algorithm {algorithm!r}")
+            if canonicalization not in SUPPORTED_CANONICALIZATIONS:
+                # Retaining a contract whose canonicalization this store cannot reproduce
+                # would file bytes it can never verify again: refused on the way in rather
+                # than discovered as an unreadable row later.
+                raise ValueError(
+                    f"unsupported canonicalization {canonicalization!r}; this store can verify "
+                    f"{list(SUPPORTED_CANONICALIZATIONS)}")
             try:
                 body = json.loads(canonical)
             except ValueError as exc:
@@ -715,6 +749,17 @@ class Plugin:
             if lag is None or not isinstance(use_class, str) or not use_class:
                 raise ValueError(
                     f"contract {actual} must declare use_class and completion_lag_max")
+            # A lag is a duration or the word UNKNOWN. `str()` of a dict or a list produces a
+            # plausible-looking string that means nothing and can never be compared again, so
+            # the shape is checked instead of coerced.
+            if isinstance(lag, bool) or not isinstance(lag, (str, int, float)):
+                raise ValueError(
+                    f"contract {actual} declares completion_lag_max as {type(lag).__name__}; "
+                    "it must be a string or a number, and is not stringified here")
+            if use_class not in SUPPORTED_USE_CLASSES:
+                raise ValueError(
+                    f"contract {actual} declares use_class {use_class!r}, which this store "
+                    f"cannot interpret; supported: {list(SUPPORTED_USE_CLASSES)}")
             if actual in seen:
                 continue
             seen.add(actual)
@@ -751,21 +796,120 @@ class Plugin:
                 "contracts": [row["contract_sha256"] for row in rows]}
 
     def resolve_delivery_availability(self, delivery_id):
-        """What a fresh reader gets: the retained contract, or an explicit UNRESOLVED.
+        """Verify a delivery's contract from the retained bytes, or refuse to claim anything.
 
-        This is the whole point of the dimension. It answers from the warehouse alone; the
-        producer may be stopped and its configuration gone.
+        The defect this replaces was reproducible: the reader returned the view's row, and the
+        view calls a contract RESOLVED because a key matched. Changing the stored bytes while
+        leaving the key and the cached columns alone therefore produced `RESOLVED` with
+        `completion_lag_max: UNKNOWN` from bytes that said `0s` and did not hash to the key.
+        A test that hashes the returned text separately does not make the READER check it.
+
+        So this does the checking, in order, and each failure has its own outcome:
+
+          the delivery is not recorded at all                  NO_SUCH_DELIVERY
+          it is recorded more than once, disagreeing           UNRESOLVED_AMBIGUOUS_DELIVERY
+          no contract was ever retained for the reference      UNRESOLVED_REFERENCE_ABSENT
+          the format is not one this store can verify          UNRESOLVED_UNSUPPORTED_FORMAT
+          the bytes do not hash to the key they are filed under UNRESOLVED_DIGEST_MISMATCH
+          the bytes are not a contract                         UNRESOLVED_MALFORMED_CONTRACT
+          the cached columns disagree with the bytes           UNRESOLVED_STORED_SEMANTICS_DISAGREE
+          everything checks                                    VERIFIED
+
+        Only `VERIFIED` carries `use_class` and `completion_lag_max`, and both are derived from
+        the verified bytes rather than read from the cached columns. `stored_*` fields are
+        always returned so an operator can see what the database holds even when it does not
+        verify — visible, but never mistaken for a claim.
         """
         if not isinstance(delivery_id, str) or not _KEY.match(delivery_id):
             raise ValueError("invalid delivery_id")
         t = self._qualified
         with self.engine().connect() as conn:
-            row = conn.execute(text(
+            rows = [dict(row._mapping) for row in conn.execute(text(
                 f"SELECT * FROM {t(GOV_AVAILABILITY_VIEW)} WHERE delivery_id = :delivery"
-            ), {"delivery": delivery_id}).first()
-        if row is None:
-            return {"delivery_id": delivery_id, "contract_resolution": "NO_SUCH_DELIVERY"}
-        return dict(row._mapping)
+            ), {"delivery": delivery_id})]
+
+        def refusal(resolution, row=None, **extra):
+            body = {"delivery_id": delivery_id, "contract_resolution": resolution,
+                    "use_class": None, "completion_lag_max": None,
+                    "availability_label": None, "timezone_evidence": None}
+            if row is not None:
+                body.update({key: row.get(key) for key in (
+                    "terminal_sha256", "lake_id", "resource_id", "role",
+                    "availability_contract_sha256", "contract_reference",
+                    "stored_use_class", "stored_completion_lag_max",
+                    "stored_availability_label", "stored_timezone_evidence",
+                    "stored_digest_algorithm", "stored_canonicalization")})
+            body.update(extra)
+            return body
+
+        if not rows:
+            return refusal(RESOLUTION_NO_DELIVERY)
+        references = {row.get("availability_contract_sha256") for row in rows}
+        if len(references) > 1:
+            # The same delivery id recorded against different contracts: which one is true is
+            # not this reader's guess to make.
+            return refusal(RESOLUTION_AMBIGUOUS, rows[0],
+                           references=sorted(reference for reference in references if reference),
+                           rows=len(rows))
+        row = rows[0]
+        if row.get("contract_reference") != "STORED" or not row.get("canonical_bytes"):
+            return refusal(RESOLUTION_ABSENT, row)
+
+        algorithm = row.get("stored_digest_algorithm")
+        canonicalization = row.get("stored_canonicalization")
+        if (algorithm not in SUPPORTED_DIGEST_ALGORITHMS
+                or canonicalization not in SUPPORTED_CANONICALIZATIONS):
+            return refusal(RESOLUTION_UNSUPPORTED, row,
+                           reason=f"digest_algorithm={algorithm!r} "
+                                  f"canonicalization={canonicalization!r} is not one this "
+                                  "store can verify")
+
+        canonical = row["canonical_bytes"]
+        try:
+            recomputed = hashlib.sha256(canonical.encode("ascii", "strict")).hexdigest()
+        except UnicodeEncodeError:
+            return refusal(RESOLUTION_MALFORMED, row,
+                           reason="retained bytes are not ASCII under the declared "
+                                  "canonicalization")
+        declared = str(row.get("availability_contract_sha256") or "").lower()
+        if recomputed != declared:
+            return refusal(RESOLUTION_DIGEST_MISMATCH, row, recomputed_sha256=recomputed,
+                           reason="the retained bytes do not hash to the digest the delivery "
+                                  "references; they have drifted or been replaced")
+
+        try:
+            body = json.loads(canonical)
+            scope = body["availability"]
+            use_class = scope["use_class"]
+            lag = scope["completion_lag_max"]
+        except (ValueError, KeyError, TypeError) as exc:
+            return refusal(RESOLUTION_MALFORMED, row,
+                           reason=f"retained bytes are not a contract: {exc}")
+        if use_class not in SUPPORTED_USE_CLASSES:
+            return refusal(RESOLUTION_UNSUPPORTED, row,
+                           reason=f"use_class {use_class!r} is not one this store interprets")
+
+        label = scope.get("label")
+        evidence = scope.get("timezone_evidence")
+        # The cached columns exist for querying, not for answering. If they disagree with the
+        # verified bytes the row is internally inconsistent and no claim is made from either.
+        disagreements = {
+            name: (row.get(f"stored_{name}"), value)
+            for name, value in (("use_class", use_class), ("completion_lag_max", str(lag)),
+                                ("availability_label", label),
+                                ("timezone_evidence", evidence))
+            if row.get(f"stored_{name}") != (None if value is None else str(value))
+        }
+        if disagreements:
+            return refusal(RESOLUTION_DISAGREEMENT, row, disagreements={
+                name: {"stored": stored, "bytes_say": derived}
+                for name, (stored, derived) in disagreements.items()})
+
+        verified = refusal(RESOLUTION_VERIFIED, row)
+        verified.update(use_class=use_class, completion_lag_max=str(lag),
+                        availability_label=label, timezone_evidence=evidence,
+                        canonical_bytes=canonical, verified_sha256=recomputed)
+        return verified
 
     def terminal_digests(self, campaign_sha256):
         if not isinstance(campaign_sha256, str) or not _HEX64.fullmatch(campaign_sha256):
