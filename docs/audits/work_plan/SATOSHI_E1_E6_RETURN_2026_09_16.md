@@ -112,7 +112,12 @@ holds the rest. No equivalent-workload benchmark was run, and none is claimed.
 | suite | scope | result |
 |---|---|---|
 | `olap/store/tests` + `tests/test_olap_duckdb_migrate.py` | three engines (`U2_DUCKDB_PATH=1`, `U2_PG_DATABASE=<disposable>`) | **155 passed, 1 skipped** |
-| predictor `tests` + `olap/store/tests` | trading-stack, legacy dirs excluded | recorded below |
+| predictor `tests` + `olap/store/tests` | trading-stack, `--ignore=tests/unit_tests --ignore=tests/integration_tests` | **1448 passed, 3 skipped, 0 failed** in 6m29s |
+
+The third skip is `tests/test_olap_duckdb_migrate.py` under trading-stack, which has no
+`duckdb`: the same file contributes 18 of the 155 rules under the DuckDB environment. The
+environment decides how many rules run, which is why both lines are reported rather than one
+number.
 
 Services: `:5055`, `:5056`, `:5057`, `:5058` all 200; the successor loader active. The legacy
 direct-PostgreSQL loader remains stopped and disabled. PostgreSQL itself is untouched as the
