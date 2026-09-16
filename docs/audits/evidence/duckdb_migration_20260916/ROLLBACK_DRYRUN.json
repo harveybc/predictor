@@ -1,0 +1,52 @@
+{
+ "schema": "olap_duckdb_rollback.v1",
+ "generated_utc": "2026-09-16T06:31:30Z",
+ "duckdb": "/home/harveybc/.local/state/crispdm-duckdb/rehearsal/rollback_copy.duckdb",
+ "postgres": "rollback_rehearsal_062846",
+ "relations": [
+  {
+   "relation": "gov_report",
+   "identity": "report_sha256",
+   "missing_in_postgres": 0,
+   "outcome": "IN_SYNC"
+  },
+  {
+   "relation": "gov_metric",
+   "outcome": "CHILD_OF_PARENT"
+  },
+  {
+   "relation": "gov_dataset",
+   "outcome": "CHILD_OF_PARENT"
+  },
+  {
+   "relation": "gov_terminal",
+   "identity": "terminal_sha256",
+   "missing_in_postgres": 2,
+   "outcome": "REPLAY_REQUIRED_DRY_RUN"
+  },
+  {
+   "relation": "gov_terminal_metric",
+   "outcome": "CHILD_OF_PARENT"
+  },
+  {
+   "relation": "gov_terminal_dataset",
+   "outcome": "CHILD_OF_PARENT"
+  },
+  {
+   "relation": "gov_terminal_artifact",
+   "outcome": "CHILD_OF_PARENT"
+  },
+  {
+   "relation": "gov_availability_contract",
+   "identity": "contract_sha256",
+   "outcome": "ABSENT_IN_POSTGRES",
+   "rows_in_duckdb": 0,
+   "note": "rollback must create this relation in PostgreSQL before replaying; it is not part of the deployed PostgreSQL schema"
+  }
+ ],
+ "dry_run": true,
+ "summary": {
+  "relations": 8,
+  "rows_missing_in_postgres": 2
+ }
+}

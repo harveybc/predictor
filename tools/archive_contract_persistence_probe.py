@@ -149,7 +149,8 @@ def negative_contract_cases(stack) -> dict:
         out["host_write"] = {"status": None, "error": f"{type(exc).__name__}: {exc}"}
 
     # planted directly, so no writer check can be what refuses it
-    out["planted_then_read"] = plant_and_read(stack, body, digest)
+    out["negative_bytes_sha256"] = digest
+    out["negative_canonical_bytes"] = body
     return out
 
 
@@ -160,7 +161,13 @@ def plant_and_read(stack, body: str, digest: str) -> dict:
     from predictor_olap_store.query import CANONICALIZATION, Plugin
 
     plugin = Plugin()
-    if stack.get("cube_postgres"):
+    if stack.get("cube_duckdb"):
+        from predictor_duckdb_store.provider import PredictorDuckdbStore
+
+        plugin = PredictorDuckdbStore()
+        plugin.set_params(duckdb_path=stack["cube_duckdb"], schema="main",
+                          memory_limit="1GB", threads=2, min_free_bytes=1)
+    elif stack.get("cube_postgres"):
         os.environ["PGDATABASE"] = stack["cube_postgres"]
         plugin.set_params(sqlite_path=None, schema="public")
     else:
@@ -185,6 +192,38 @@ def plant_and_read(stack, body: str, digest: str) -> dict:
             "reason": answer.get("reason")}
 
 
+def stop_owner(stack) -> dict:
+    """Stop the process that owns the DuckDB file, so a fresh reader can open it at all."""
+    pid = stack.get("warehouse_pid")
+    report = {"warehouse_pid": pid}
+    if not pid:
+        report["stopped"] = False
+        report["reason"] = "no warehouse pid recorded"
+        return report
+    try:
+        os.killpg(os.getpgid(int(pid)), signal.SIGTERM)
+    except OSError as exc:
+        report["stopped"] = False
+        report["error"] = str(exc)
+        return report
+    for _ in range(100):
+        time.sleep(0.1)
+        try:
+            os.kill(int(pid), 0)
+        except OSError:
+            break
+    report["stopped"] = True
+    try:
+        import urllib.request
+
+        urllib.request.urlopen(stack["warehouse_url"] + "/healthz", timeout=3)
+        report["still_answers"] = True
+    except Exception as exc:
+        report["still_answers"] = False
+        report["error_kind"] = type(exc).__name__
+    return report
+
+
 def fresh_reader(stack, deliveries):
     """A NEW process-local provider over the same database, and nothing else.
 
@@ -195,7 +234,13 @@ def fresh_reader(stack, deliveries):
     from predictor_olap_store.query import Plugin
 
     plugin = Plugin()
-    if stack.get("cube_postgres"):
+    if stack.get("cube_duckdb"):
+        from predictor_duckdb_store.provider import PredictorDuckdbStore
+
+        plugin = PredictorDuckdbStore()
+        plugin.set_params(duckdb_path=stack["cube_duckdb"], schema="main",
+                          memory_limit="1GB", threads=2, min_free_bytes=1)
+    elif stack.get("cube_postgres"):
         os.environ["PGDATABASE"] = stack["cube_postgres"]
         plugin.set_params(sqlite_path=None, schema="public")
     else:
@@ -301,10 +346,23 @@ def main(argv=None) -> int:
         teardown["lake_error"] = type(exc).__name__
     findings["producer_teardown"] = teardown
 
-    # 4b. a temporally INVALID contract, pushed through the real host over HTTP, and a row
-    # planted straight into the store. The first proves the write path refuses it; the second
-    # proves the READER refuses what no writer ever checked (V2).
+    # 4b. a temporally INVALID contract, pushed through the real host over HTTP. The planted
+    # half runs later: on DuckDB the owning service holds the file, and opening it from a
+    # second process is precisely what the design forbids.
     findings["negative_temporal_contract"] = negative_contract_cases(stack)
+
+    # 4c. DuckDB admits ONE writer, and the warehouse host is it. Reading the file from a
+    # second process while the service runs raises a lock conflict — which is the rule working,
+    # not a defect. So the owning service is stopped first, and only then is the file opened.
+    # That also proves the stronger property: the evidence survives the service, not just the
+    # producer.
+    if stack.get("cube_duckdb"):
+        findings["warehouse_teardown"] = stop_owner(stack)
+
+    negative = findings.get("negative_temporal_contract") or {}
+    if negative.get("negative_canonical_bytes"):
+        findings["negative_temporal_contract"]["planted_then_read"] = plant_and_read(
+            stack, negative["negative_canonical_bytes"], negative["negative_bytes_sha256"])
 
     # 5. the fresh reader, with only the database left
     findings["fresh_reader"] = fresh_reader(stack, deliveries)

@@ -1,7 +1,7 @@
 {
  "schema": "olap_duckdb_export.v1",
- "generated_utc": "2026-09-16T06:12:19Z",
- "destination": "/home/harveybc/.local/state/crispdm-duckdb/rehearsal/cube.duckdb",
+ "generated_utc": "2026-09-16T06:26:25Z",
+ "destination": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb",
  "target_schema": "main",
  "scope": "cube",
  "batch_rows": 100000,

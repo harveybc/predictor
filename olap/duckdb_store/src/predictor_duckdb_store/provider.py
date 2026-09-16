@@ -172,16 +172,22 @@ class PredictorDuckdbStore(_Cube):
         return body
 
     def storage(self):
-        """Bytes on disk, from the file itself rather than from an engine estimate."""
+        """Bytes on disk, from the file itself rather than from an engine estimate.
+
+        `root` is part of the contract the host's `describe` reads, so it is present here even
+        though a DuckDB cube is a file rather than a directory: it is the directory that holds
+        the file. Omitting it made `/api/v1/describe` answer 500 on a service that was
+        otherwise healthy.
+        """
         try:
             path = self._database_path()
         except DuckdbUnavailable:
-            return {"bytes": None}
+            return {"bytes": None, "root": None}
         total = 0
         for candidate in (path, Path(str(path) + ".wal")):
             if candidate.is_file():
                 total += candidate.stat().st_size
-        return {"bytes": total, "path": str(path),
+        return {"bytes": total, "path": str(path), "root": str(path.parent),
                 "free_bytes": shutil.disk_usage(path.parent).free if path.parent.exists()
                 else None}
 

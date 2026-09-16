@@ -1,0 +1,27 @@
+{
+ "backend": {
+  "distribution": "predictor-duckdb-store",
+  "entry_point": "predictor_duckdb",
+  "settings": {
+   "description": "DuckDB is the OLAP engine for the current campaign. One owner process writes; workers never open the file. Historical evidence is in a separate, catalogued archive database and is not in default views.",
+   "duckdb_path": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb",
+   "schema": "main",
+   "memory_limit": "2GB",
+   "threads": 2,
+   "min_free_bytes": 2147483648,
+   "holdout_start": "2025-01-01",
+   "lake_id": "olap_cube",
+   "title": "predictor OLAP cube (DuckDB)"
+  }
+ },
+ "description": "DuckDB is the OLAP engine for the current campaign. One owner process writes; workers never open the file. Historical evidence is in a separate, catalogued archive database and is not in default views.",
+ "engine": "duckdb_olap",
+ "kind": "warehouse",
+ "max_rows": 10000,
+ "operator_config_path": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5057.pending.json",
+ "store_id": "olap_cube",
+ "title": "predictor OLAP cube (DuckDB)",
+ "transport": "http",
+ "web_host": "127.0.0.1",
+ "web_port": 5057
+}

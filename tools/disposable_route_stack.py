@@ -211,6 +211,9 @@ def main(argv=None) -> int:
                         help="keep the stack up this long (seconds) after printing its ports")
     # S2 asks for the proof on PostgreSQL, because that is what production runs and because
     # retaining bytes and resolving them through a view is where dialects differ.
+    parser.add_argument("--cube-duckdb", metavar="FILE",
+                        help="use a DuckDB file for the cube (the predictor_duckdb provider) "
+                             "instead of SQLite or PostgreSQL")
     parser.add_argument("--cube-postgres", metavar="DBNAME",
                         help="use a DISPOSABLE PostgreSQL database for the cube instead of "
                              "SQLite; PG* come from the environment and the database must "
@@ -256,11 +259,18 @@ def main(argv=None) -> int:
     (work / "warehouse.json").write_text(json.dumps({
         "store_id": "olap_cube", "title": "disposable cube", "kind": "warehouse",
         "web_host": "127.0.0.1", "web_port": warehouse_port,
-        "backend": {"entry_point": "predictor_olap", "distribution": "predictor-olap-store",
-                    "settings": {"sqlite_path": None if args.cube_postgres
-                                 else str(work / "cube.sqlite"),
-                                 "schema": "public",
-                                 "holdout_start": None, "lake_id": "olap_cube"}}}, indent=1))
+        "backend": ({"entry_point": "predictor_duckdb",
+                     "distribution": "predictor-duckdb-store",
+                     "settings": {"duckdb_path": str(Path(args.cube_duckdb).resolve()),
+                                  "schema": "main", "memory_limit": "1GB", "threads": 2,
+                                  "min_free_bytes": 1,
+                                  "holdout_start": None, "lake_id": "olap_cube"}}
+                    if args.cube_duckdb else
+                    {"entry_point": "predictor_olap", "distribution": "predictor-olap-store",
+                     "settings": {"sqlite_path": None if args.cube_postgres
+                                  else str(work / "cube.sqlite"),
+                                  "schema": "public",
+                                  "holdout_start": None, "lake_id": "olap_cube"}})}, indent=1))
     (work / "governance.json").write_text(json.dumps({
         "pipeline_plugin": "default_pipeline", "web_plugin": "default_web",
         "access_plugin": "default_access", "accounting_plugin": "default_accounting",
@@ -334,9 +344,12 @@ def main(argv=None) -> int:
                  "lake": "synthetic_fixtures", "metrics_lake": "olap_cube",
                  "holdout_start": args.holdout,
                  "key_file": str(key_file), "fixtures": str(fixtures),
-                 "cube": (f"postgresql:{args.cube_postgres}" if args.cube_postgres
+                 "cube": (f"duckdb:{args.cube_duckdb}" if args.cube_duckdb
+                          else f"postgresql:{args.cube_postgres}" if args.cube_postgres
                           else str(work / "cube.sqlite")),
                  "cube_postgres": args.cube_postgres,
+                 "cube_duckdb": str(Path(args.cube_duckdb).resolve())
+                 if args.cube_duckdb else None,
                  "lake_pid": processes[0].pid, "warehouse_pid": processes[1].pid,
                  "gov_pid": processes[2].pid,
                  # disposable secrets of a disposable stack: recorded so a test can stop and

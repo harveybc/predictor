@@ -1,0 +1,95 @@
+{
+ "schema": "olap_duckdb_catchup.v1",
+ "generated_utc": "2026-09-16T06:24:01Z",
+ "watermark": "2026-09-16T06:21:57Z",
+ "relations": [
+  {
+   "relation": "gov_report",
+   "outcome": "CAUGHT_UP",
+   "identity_column": "report_sha256",
+   "rows_added": 0
+  },
+  {
+   "relation": "gov_metric",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "gov_dataset",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "gov_terminal",
+   "outcome": "CAUGHT_UP",
+   "identity_column": "terminal_sha256",
+   "rows_added": 0
+  },
+  {
+   "relation": "gov_terminal_metric",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "gov_terminal_dataset",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "gov_terminal_artifact",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "dim_campaign",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "dim_campaign_run",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "dim_project",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "dim_phase",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "dim_experiment",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "dim_dataset",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "dim_dataset_split",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "dim_horizon",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "dim_metric",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "dim_terminal_verification",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "dim_terminal_verification_v2",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "fact_campaign_unit",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "fact_campaign_consumption",
+   "outcome": "NO_WATERMARK_COLUMN"
+  },
+  {
+   "relation": "fact_ingestion_receipt",
+   "outcome": "NO_WATERMARK_COLUMN"
+  }
+ ]
+}

@@ -1,7 +1,7 @@
 {
  "schema": "olap_duckdb_validation.v1",
- "generated_utc": "2026-09-16T06:14:22Z",
- "destination": "/home/harveybc/.local/state/crispdm-duckdb/rehearsal/archive.duckdb",
+ "generated_utc": "2026-09-16T06:31:47Z",
+ "destination": "/home/harveybc/.local/state/crispdm-duckdb/prod/archive.duckdb",
  "target_schema": "main",
  "relations": [
   {

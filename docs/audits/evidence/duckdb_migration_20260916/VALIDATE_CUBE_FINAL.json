@@ -1,0 +1,246 @@
+{
+ "schema": "olap_duckdb_validation.v1",
+ "generated_utc": "2026-09-16T06:26:35Z",
+ "destination": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb",
+ "target_schema": "main",
+ "relations": [
+  {
+   "relation": "gov_report",
+   "source_rows": 0,
+   "destination_rows": 0,
+   "source_content_md5": null,
+   "destination_content_md5": null,
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 14,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "gov_metric",
+   "source_rows": 0,
+   "destination_rows": 0,
+   "source_content_md5": null,
+   "destination_content_md5": null,
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 10,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "gov_dataset",
+   "source_rows": 0,
+   "destination_rows": 0,
+   "source_content_md5": null,
+   "destination_content_md5": null,
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 14,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "gov_terminal",
+   "source_rows": 52,
+   "destination_rows": 52,
+   "source_content_md5": "d150a2352868b9aeb53884400202c96e",
+   "destination_content_md5": "d150a2352868b9aeb53884400202c96e",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 19,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "gov_terminal_metric",
+   "source_rows": 529,
+   "destination_rows": 529,
+   "source_content_md5": "5f5b3ce8df89c76a0e11b7ccb6f75c09",
+   "destination_content_md5": "5f5b3ce8df89c76a0e11b7ccb6f75c09",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 9,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "gov_terminal_dataset",
+   "source_rows": 90,
+   "destination_rows": 90,
+   "source_content_md5": "dd5789ceb366f624df0f32cf555c6da8",
+   "destination_content_md5": "dd5789ceb366f624df0f32cf555c6da8",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 14,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "gov_terminal_artifact",
+   "source_rows": 97,
+   "destination_rows": 97,
+   "source_content_md5": "8dd86ce3424e962eabf8c482a46d46ce",
+   "destination_content_md5": "8dd86ce3424e962eabf8c482a46d46ce",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 4,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "dim_campaign",
+   "source_rows": 11,
+   "destination_rows": 11,
+   "source_content_md5": "dedffccbbf98f6edaeaecc6d0f39a346",
+   "destination_content_md5": "dedffccbbf98f6edaeaecc6d0f39a346",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 8,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "dim_campaign_run",
+   "source_rows": 20,
+   "destination_rows": 20,
+   "source_content_md5": "e88be43fc9cc1322a0b70c44dc474c17",
+   "destination_content_md5": "e88be43fc9cc1322a0b70c44dc474c17",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 10,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "dim_project",
+   "source_rows": 1,
+   "destination_rows": 1,
+   "source_content_md5": "f85ae33870562090466ff9bddf7ed7ec",
+   "destination_content_md5": "f85ae33870562090466ff9bddf7ed7ec",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 1,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "dim_phase",
+   "source_rows": 2,
+   "destination_rows": 2,
+   "source_content_md5": "1234bd8f4460074b73c078cc461b3797",
+   "destination_content_md5": "1234bd8f4460074b73c078cc461b3797",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 2,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "dim_experiment",
+   "source_rows": 39,
+   "destination_rows": 39,
+   "source_content_md5": "8803521e6b420e787f8be722cd1d7a67",
+   "destination_content_md5": "8803521e6b420e787f8be722cd1d7a67",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 35,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "dim_dataset",
+   "source_rows": 2,
+   "destination_rows": 2,
+   "source_content_md5": "ce105a6d9cdea937eaafa71aef793ded",
+   "destination_content_md5": "ce105a6d9cdea937eaafa71aef793ded",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 9,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "dim_dataset_split",
+   "source_rows": 3,
+   "destination_rows": 3,
+   "source_content_md5": "e00754f06529814778a3ae25b7f0dd81",
+   "destination_content_md5": "e00754f06529814778a3ae25b7f0dd81",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 2,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "dim_horizon",
+   "source_rows": 6,
+   "destination_rows": 6,
+   "source_content_md5": "ba01f779a5f77d22f0816e32606ae529",
+   "destination_content_md5": "ba01f779a5f77d22f0816e32606ae529",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 2,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "dim_metric",
+   "source_rows": 17,
+   "destination_rows": 17,
+   "source_content_md5": "7425a852f5e0290ffde12d7f3d64296a",
+   "destination_content_md5": "7425a852f5e0290ffde12d7f3d64296a",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 3,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "dim_terminal_verification",
+   "source_rows": 1,
+   "destination_rows": 1,
+   "source_content_md5": "4166e327065c97b06411d99e0f82f45e",
+   "destination_content_md5": "4166e327065c97b06411d99e0f82f45e",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 9,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "dim_terminal_verification_v2",
+   "source_rows": 1,
+   "destination_rows": 1,
+   "source_content_md5": "e63785a989e5dd88c3290dc43d8e5179",
+   "destination_content_md5": "e63785a989e5dd88c3290dc43d8e5179",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 9,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "fact_campaign_unit",
+   "source_rows": 214,
+   "destination_rows": 214,
+   "source_content_md5": "af0bbdd4048b40b7facdc7444b3a78d9",
+   "destination_content_md5": "af0bbdd4048b40b7facdc7444b3a78d9",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 22,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "fact_campaign_consumption",
+   "source_rows": 265,
+   "destination_rows": 265,
+   "source_content_md5": "5009fc2c2aabec651da662358b10b36b",
+   "destination_content_md5": "5009fc2c2aabec651da662358b10b36b",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 6,
+   "outcome": "MATCH"
+  },
+  {
+   "relation": "fact_ingestion_receipt",
+   "source_rows": 1,
+   "destination_rows": 1,
+   "source_content_md5": "bc03b195fe6ee8694a120b458549c62b",
+   "destination_content_md5": "bc03b195fe6ee8694a120b458549c62b",
+   "rows_match": true,
+   "content_matches": true,
+   "columns": 8,
+   "outcome": "MATCH"
+  }
+ ],
+ "mismatches": [],
+ "summary": {
+  "relations": 21,
+  "matched": 21,
+  "mismatched": 0,
+  "rows_verified": 1351
+ }
+}

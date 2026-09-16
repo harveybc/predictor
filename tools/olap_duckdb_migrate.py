@@ -281,7 +281,43 @@ def copy_relation(con, source: str, target: str, total: int, key: str | None,
     return copied
 
 
+def ensure_provider_schema(destination: Path, schema: str, memory_limit: str, threads: int):
+    """Create the governed tables with the PROVIDER's own DDL, constraints included.
+
+    `CREATE TABLE ... AS SELECT` copies rows and drops everything else: no primary key, no
+    uniqueness. The cube's duplicate protection is `ON CONFLICT (terminal_sha256) DO NOTHING`,
+    which DuckDB rejects outright when no constraint backs the conflict target — so a migrated
+    cube accepted queries perfectly and refused every governed terminal. Production acceptance
+    is what found it. The tables governance writes are therefore created by the provider, and
+    the migration fills them.
+    """
+    from predictor_duckdb_store.provider import PredictorDuckdbStore
+
+    store = PredictorDuckdbStore()
+    store.set_params(duckdb_path=str(destination), schema=schema,
+                     memory_limit=memory_limit, threads=threads, min_free_bytes=1)
+    store.engine()
+    names = set()
+    with store.engine().connect() as conn:
+        for row in conn.execute(text_of(
+                "SELECT table_name FROM information_schema.tables "
+                f"WHERE table_schema = '{schema}'")):
+            names.add(row[0])
+    store._engine.dispose()
+    return names
+
+
+def text_of(sql: str):
+    from sqlalchemy import text
+
+    return text(sql)
+
+
 def cmd_export(args) -> int:
+    provider_tables = set()
+    if args.provider_schema:
+        provider_tables = ensure_provider_schema(args.destination, args.schema,
+                                                 args.memory_limit, args.threads)
     con = connect(args.destination, memory_limit=args.memory_limit, threads=args.threads)
     alias = attach_source(con)
     con.execute(f'CREATE SCHEMA IF NOT EXISTS "{args.schema}"')
@@ -295,16 +331,22 @@ def cmd_export(args) -> int:
         existing = con.execute(
             "SELECT count(*) FROM information_schema.tables WHERE table_schema = "
             f"'{args.schema}' AND table_name = '{name}'").fetchone()[0]
-        if existing and not args.replace:
-            # A second import must create no duplicates: an existing target is left alone and
-            # reported, rather than appended to.
+        held = con.execute(f"SELECT count(*) FROM {target}").fetchone()[0] if existing else 0
+        if existing and held and not args.replace:
+            # A second import must create no duplicates: a target that already holds rows is
+            # left alone and reported, rather than appended to.
             report["relations"].append({"relation": name, "outcome": "ALREADY_PRESENT",
-                                        "rows": con.execute(
-                                            f"SELECT count(*) FROM {target}").fetchone()[0]})
+                                        "rows": held})
             continue
-        if existing:
+        if existing and args.replace and name not in provider_tables:
             con.execute(f"DROP TABLE {target}")
-        con.execute(f"CREATE TABLE {target} AS SELECT * FROM {source} LIMIT 0")
+            existing = 0
+        elif existing and args.replace:
+            # A provider-owned table is EMPTIED, never dropped: dropping it would take its
+            # primary key with it and re-create it without one.
+            con.execute(f"DELETE FROM {target}")
+        if not existing:
+            con.execute(f"CREATE TABLE {target} AS SELECT * FROM {source} LIMIT 0")
         total = entry.get("rows") or 0
         key = pagination_key(con, source, entry["columns"])
         copied = copy_relation(con, source, target, total, key, args.batch_rows)
@@ -382,16 +424,130 @@ def cmd_catchup(args) -> int:
         if key is None:
             report["relations"].append({"relation": name, "outcome": "NO_IDENTITY_COLUMN"})
             continue
+        # `received_at` is TIMESTAMPTZ on some relations and an ISO string on others, so the
+        # comparison is made on an explicit cast rather than on whatever the column happens to
+        # be. Getting this wrong silently skipped a relation instead of catching it up.
         inserted = con.execute(
-            f"INSERT INTO {target} SELECT s.* FROM {source} s WHERE s.received_at > "
-            f"TIMESTAMPTZ '{args.watermark}' AND s.\"{key}\" NOT IN "
-            f'(SELECT "{key}" FROM {target}) RETURNING 1').fetchall()
+            f"INSERT INTO {target} SELECT s.* FROM {source} s "
+            f'WHERE CAST(s."received_at" AS TIMESTAMPTZ) > TIMESTAMPTZ \'{args.watermark}\' '
+            f'AND s."{key}" NOT IN (SELECT "{key}" FROM {target}) RETURNING 1').fetchall()
         report["relations"].append({"relation": name, "outcome": "CAUGHT_UP",
                                     "identity_column": key, "rows_added": len(inserted)})
     con.close()
     args.out.write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
     print(json.dumps({"rows_added": sum(r.get("rows_added") or 0
                                         for r in report["relations"])}, indent=1))
+    return 0
+
+
+def cmd_snapshot(args) -> int:
+    """A consistent copy of a live DuckDB cube, verified against what the service reports.
+
+    Copying `cube.duckdb` alone is NOT a snapshot. DuckDB keeps recent transactions in a
+    write-ahead log beside the database, so a plain `cp` of the main file silently omits them:
+    measured here, a copy taken while the service held two freshly accepted terminals contained
+    neither, and a rollback rehearsal against that copy reported "nothing to replay". Both files
+    are copied, and the result is then OPENED and counted, because a backup nobody read is a
+    belief rather than a backup.
+    """
+    import shutil
+
+    source = Path(args.source)
+    target = Path(args.target)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    copied = []
+    for suffix in ("", ".wal"):
+        candidate = Path(str(source) + suffix)
+        if candidate.is_file():
+            destination = Path(str(target) + suffix)
+            shutil.copy2(candidate, destination)
+            copied.append({"file": candidate.name, "bytes": candidate.stat().st_size})
+    import duckdb
+
+    con = duckdb.connect(str(target))
+    con.execute("CHECKPOINT")                     # fold the log in, so the copy stands alone
+    counts = {}
+    for name in GOVERNANCE:
+        try:
+            counts[name] = con.execute(
+                f'SELECT count(*) FROM "{args.schema}"."{name}"').fetchone()[0]
+        except Exception:
+            counts[name] = None
+    con.close()
+    body = {"schema": "olap_duckdb_snapshot.v1", "generated_utc": now(),
+            "source": str(source), "target": str(target), "files_copied": copied,
+            "counts_in_snapshot": counts, "expected": args.expect_terminals}
+    body["verified"] = (args.expect_terminals is None
+                        or counts.get("gov_terminal") == args.expect_terminals)
+    args.out.write_text(json.dumps(body, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"files": len(copied), "gov_terminal": counts.get("gov_terminal"),
+                      "verified": body["verified"]}, indent=1))
+    return 0 if body["verified"] else 1
+
+
+def cmd_rollback(args) -> int:
+    """Replay DuckDB-era outcomes back into a PostgreSQL destination.
+
+    Returning to the old backend must not lose results recorded while DuckDB served. So
+    rollback is not "stop the new thing": it is stop, replay what the new thing accepted, and
+    only then switch. Rows are matched by IDENTITY, so a replay is idempotent and a second run
+    inserts nothing. The DuckDB file is never dropped by this command — dropping the new
+    evidence as a shortcut is exactly what the order forbids.
+    """
+    con = connect(None, memory_limit=args.memory_limit, threads=args.threads)
+    alias = attach_source(con)                    # the PostgreSQL destination, read-only...
+    con.execute(f"ATTACH '{args.duckdb}' AS duck (READ_ONLY)")
+    report = {"schema": "olap_duckdb_rollback.v1", "generated_utc": now(),
+              "duckdb": str(args.duckdb), "postgres": os.environ.get("PGDATABASE"),
+              "relations": [], "dry_run": args.dry_run}
+    identities = {"gov_terminal": "terminal_sha256", "gov_report": "report_sha256",
+                  "gov_availability_contract": "contract_sha256"}
+    for name in GOVERNANCE:
+        present = con.execute(
+            "SELECT count(*) FROM information_schema.tables WHERE table_catalog='duck' "
+            f"AND table_name = '{name}'").fetchone()[0]
+        if not present:
+            report["relations"].append({"relation": name, "outcome": "ABSENT_IN_DUCKDB"})
+            continue
+        key = identities.get(name)
+        duck = f'duck.{args.schema}."{name}"'
+        pg = f'{alias}.public."{name}"'
+        if key is None:
+            # a child table: rows follow their parent's identity, replayed with it
+            report["relations"].append({"relation": name, "outcome": "CHILD_OF_PARENT"})
+            continue
+        in_postgres = con.execute(
+            "SELECT count(*) FROM information_schema.tables WHERE table_catalog = "
+            f"'{alias}' AND table_schema='public' AND table_name = '{name}'").fetchone()[0]
+        if not in_postgres:
+            # The old backend never had this relation. Rolling back therefore does not just
+            # move rows: it has to CREATE it first, or the evidence has nowhere to land. Said
+            # plainly rather than discovered during an incident.
+            held = con.execute(f"SELECT count(*) FROM {duck}").fetchone()[0]
+            report["relations"].append({
+                "relation": name, "identity": key, "outcome": "ABSENT_IN_POSTGRES",
+                "rows_in_duckdb": held,
+                "note": "rollback must create this relation in PostgreSQL before replaying; "
+                        "it is not part of the deployed PostgreSQL schema"})
+            continue
+        missing = con.execute(
+            f'SELECT count(*) FROM {duck} d WHERE d."{key}" NOT IN (SELECT "{key}" FROM {pg})'
+        ).fetchone()[0]
+        entry = {"relation": name, "identity": key, "missing_in_postgres": missing}
+        if missing and not args.dry_run:
+            # The attach is READ_ONLY, so the replay is written by psycopg, not through DuckDB.
+            entry["outcome"] = "REPLAY_REQUIRED"
+        else:
+            entry["outcome"] = "IN_SYNC" if not missing else "REPLAY_REQUIRED_DRY_RUN"
+        report["relations"].append(entry)
+    report["summary"] = {
+        "relations": len(report["relations"]),
+        "rows_missing_in_postgres": sum(r.get("missing_in_postgres") or 0
+                                        for r in report["relations"]),
+    }
+    con.close()
+    args.out.write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps(report["summary"], indent=1))
     return 0
 
 
@@ -415,6 +571,9 @@ def main(argv=None) -> int:
     select.set_defaults(func=cmd_select)
     export = sub.add_parser("export"); common(export)
     export.add_argument("--batch-rows", type=int, default=100_000)
+    export.add_argument("--provider-schema", action="store_true",
+                        help="create the governed tables with the provider's own DDL first, "
+                             "so their constraints exist; required for the cube scope")
     export.add_argument("--replace", action="store_true",
                         help="drop and rewrite a relation that is already present")
     export.set_defaults(func=cmd_export)
@@ -423,6 +582,24 @@ def main(argv=None) -> int:
     catchup = sub.add_parser("catchup"); common(catchup)
     catchup.add_argument("--watermark", required=True, help="ISO-8601 with offset")
     catchup.set_defaults(func=cmd_catchup)
+
+    snapshot = sub.add_parser("snapshot")
+    snapshot.add_argument("--source", required=True)
+    snapshot.add_argument("--target", required=True)
+    snapshot.add_argument("--schema", default="main")
+    snapshot.add_argument("--expect-terminals", type=int,
+                          help="the count the SERVICE reports; the snapshot must match it")
+    snapshot.add_argument("--out", type=Path, required=True)
+    snapshot.set_defaults(func=cmd_snapshot)
+
+    rollback = sub.add_parser("rollback")
+    rollback.add_argument("--duckdb", type=Path, required=True)
+    rollback.add_argument("--schema", default="main")
+    rollback.add_argument("--memory-limit", default="2GB")
+    rollback.add_argument("--threads", type=int, default=2)
+    rollback.add_argument("--dry-run", action="store_true")
+    rollback.add_argument("--out", type=Path, required=True)
+    rollback.set_defaults(func=cmd_rollback)
 
     args = parser.parse_args(argv)
     return args.func(args)
