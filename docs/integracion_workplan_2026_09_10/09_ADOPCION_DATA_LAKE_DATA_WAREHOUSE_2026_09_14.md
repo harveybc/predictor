@@ -170,3 +170,19 @@ desplegada: 10 tests focales pasan, pero el lector aun no revalida el digest
 que presenta como RESOLVED. Corregir antes de aprobar la migracion.
 
 Orden vigente: [U1-U4: recuperacion, lector y procedencia publica](../handoffs/MUSASHI_WAREHOUSE_RECOVERY_AND_S2_REVIEW_2026_09_15.md).
+
+## DuckDB para el warehouse OLAP - 2026-09-16
+
+El owner autoriza reemplazar PostgreSQL exclusivamente como motor del cubo OLAP,
+sin afectar otras bases o servicios. La implementacion y el despliegue completos
+se asignan a Satoshi: no requieren permisos incrementales por cada bloque.
+Estado: ORDENADO, no implementado ni desplegado por este cambio documental.
+
+Orden vigente: [D0-D6: migracion autorizada a DuckDB](../handoffs/MUSASHI_DUCKDB_WAREHOUSE_MIGRATION_ORDER_2026_09_16.md).
+Extiende [V1-V4](../handoffs/MUSASHI_U1_U4_REVIEW_AND_V1_V4_2026_09_15.md),
+conserva sus correcciones semanticas y reemplaza la espera de despliegue de V3
+por aceptacion verificable seguida de despliegue autorizado. La evidencia actual
+se selecciona por procedencia de campana, no por resultados favorables; el
+historico se archiva sin borrarlo y queda fuera de las vistas cientificas por
+defecto. Se requieren scripts reproducibles, paridad de contenido, recuperacion,
+consumidores reales, analitica utilizable y conciliacion posterior al cambio.
