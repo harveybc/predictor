@@ -1,0 +1,115 @@
+{
+ "schema": "olap_duckdb_export.v1",
+ "generated_utc": "2026-09-16T06:06:57Z",
+ "destination": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/duck/mig/rehearsal_cube.duckdb",
+ "target_schema": "main",
+ "scope": "cube",
+ "batch_rows": 100000,
+ "relations": [
+  {
+   "relation": "gov_report",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 0
+  },
+  {
+   "relation": "gov_metric",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 0
+  },
+  {
+   "relation": "gov_dataset",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 0
+  },
+  {
+   "relation": "gov_terminal",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 52
+  },
+  {
+   "relation": "gov_terminal_metric",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 529
+  },
+  {
+   "relation": "gov_terminal_dataset",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 90
+  },
+  {
+   "relation": "gov_terminal_artifact",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 97
+  },
+  {
+   "relation": "dim_campaign",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 11
+  },
+  {
+   "relation": "dim_campaign_run",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 20
+  },
+  {
+   "relation": "dim_project",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 1
+  },
+  {
+   "relation": "dim_phase",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 2
+  },
+  {
+   "relation": "dim_experiment",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 39
+  },
+  {
+   "relation": "dim_dataset",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 2
+  },
+  {
+   "relation": "dim_dataset_split",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 3
+  },
+  {
+   "relation": "dim_horizon",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 6
+  },
+  {
+   "relation": "dim_metric",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 17
+  },
+  {
+   "relation": "dim_terminal_verification",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 1
+  },
+  {
+   "relation": "dim_terminal_verification_v2",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 1
+  },
+  {
+   "relation": "fact_campaign_unit",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 214
+  },
+  {
+   "relation": "fact_campaign_consumption",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 265
+  },
+  {
+   "relation": "fact_ingestion_receipt",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 1
+  }
+ ]
+}

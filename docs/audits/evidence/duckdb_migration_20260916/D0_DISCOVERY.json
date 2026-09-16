@@ -1,0 +1,1455 @@
+{
+ "schema": "warehouse_discovery.v1",
+ "generated_utc": "2026-09-16T05:53:26Z",
+ "database": "predictor_olap",
+ "size_bytes": 6992179683,
+ "relations": [
+  {
+   "name": "bridge_batch_variable",
+   "kind": "table",
+   "estimated_rows": 1965,
+   "bytes": 909312,
+   "rows": 1965,
+   "family": "bridge"
+  },
+  {
+   "name": "df_dim_dataset",
+   "kind": "table",
+   "estimated_rows": 715,
+   "bytes": 4284416,
+   "rows": 715,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_dim_run",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 65536,
+   "rows": 22,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_dim_variable",
+   "kind": "table",
+   "estimated_rows": 2487,
+   "bytes": 1392640,
+   "rows": 2487,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_causal_test",
+   "kind": "table",
+   "estimated_rows": 2158,
+   "bytes": 1130496,
+   "rows": 2158,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_coverage",
+   "kind": "table",
+   "estimated_rows": 440694,
+   "bytes": 221175808,
+   "rows": 440694,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_coverage_v1_v2_map",
+   "kind": "table",
+   "estimated_rows": 633254,
+   "bytes": 362176512,
+   "rows": 633189,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_coverage_v2",
+   "kind": "table",
+   "estimated_rows": 633314,
+   "bytes": 388956160,
+   "rows": 633189,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_d2_decision",
+   "kind": "table",
+   "estimated_rows": 7182,
+   "bytes": 26861568,
+   "rows": 7182,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_d2_historical_reanalysis",
+   "kind": "table",
+   "estimated_rows": 3762,
+   "bytes": 4718592,
+   "rows": 3762,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_d2_unit_denoising",
+   "kind": "table",
+   "estimated_rows": 2940006,
+   "bytes": 3745218560,
+   "rows": 2941709,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_d2_unit_snr",
+   "kind": "table",
+   "estimated_rows": 71825,
+   "bytes": 67952640,
+   "rows": 71825,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_dataset_terminal",
+   "kind": "table",
+   "estimated_rows": 715,
+   "bytes": 720896,
+   "rows": 715,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_group_relation",
+   "kind": "table",
+   "estimated_rows": 4973,
+   "bytes": 5160960,
+   "rows": 4973,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_host_receipt",
+   "kind": "table",
+   "estimated_rows": 54,
+   "bytes": 73728,
+   "rows": 54,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_incident_attempt",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 32768,
+   "rows": 4,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_information_metric",
+   "kind": "table",
+   "estimated_rows": 146906,
+   "bytes": 180609024,
+   "rows": 146906,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_lab_decision",
+   "kind": "table",
+   "estimated_rows": 3762,
+   "bytes": 7192576,
+   "rows": 3762,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_load_receipt",
+   "kind": "table",
+   "estimated_rows": 52,
+   "bytes": 73728,
+   "rows": 85,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_naming_isolation_decision",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 32768,
+   "rows": 6,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_operator_delay_cost",
+   "kind": "table",
+   "estimated_rows": 516,
+   "bytes": 311296,
+   "rows": 516,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_operator_run",
+   "kind": "table",
+   "estimated_rows": 13926,
+   "bytes": 12247040,
+   "rows": 13926,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_operator_signal_metric",
+   "kind": "table",
+   "estimated_rows": 382336,
+   "bytes": 210509824,
+   "rows": 382336,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_pair_relation",
+   "kind": "table",
+   "estimated_rows": 382681,
+   "bytes": 436461568,
+   "rows": 382626,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_resource_estimate",
+   "kind": "table",
+   "estimated_rows": 255799,
+   "bytes": 389218304,
+   "rows": 255786,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_resource_estimate_v2",
+   "kind": "table",
+   "estimated_rows": 257895,
+   "bytes": 477290496,
+   "rows": 257884,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_sampling_quality",
+   "kind": "table",
+   "estimated_rows": 69636,
+   "bytes": 68632576,
+   "rows": 69636,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_snr_calibration",
+   "kind": "table",
+   "estimated_rows": 37980,
+   "bytes": 20414464,
+   "rows": 37980,
+   "family": "data_foundation"
+  },
+  {
+   "name": "df_fact_variable_profile",
+   "kind": "table",
+   "estimated_rows": 262520,
+   "bytes": 248578048,
+   "rows": 262520,
+   "family": "data_foundation"
+  },
+  {
+   "name": "dim_campaign",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 32768,
+   "rows": 11,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_campaign_run",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 65536,
+   "rows": 20,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_characterization_batch",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 32768,
+   "rows": 14,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_dataset",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 32768,
+   "rows": 2,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_dataset_split",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 32768,
+   "rows": 3,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_experiment",
+   "kind": "table",
+   "estimated_rows": 27,
+   "bytes": 843776,
+   "rows": 39,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_horizon",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 32768,
+   "rows": 6,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_lake_appearance",
+   "kind": "table",
+   "estimated_rows": 1680,
+   "bytes": 2088960,
+   "rows": 1680,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_lake_variable",
+   "kind": "table",
+   "estimated_rows": 1965,
+   "bytes": 2080768,
+   "rows": 1965,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_metric",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 32768,
+   "rows": 17,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_phase",
+   "kind": "table",
+   "estimated_rows": 1,
+   "bytes": 65536,
+   "rows": 2,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_project",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 32768,
+   "rows": 1,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_public_series",
+   "kind": "table",
+   "estimated_rows": 4650,
+   "bytes": 4153344,
+   "rows": 4650,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_series",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 32768,
+   "rows": 2,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_synthetic_generator",
+   "kind": "table",
+   "estimated_rows": 202,
+   "bytes": 294912,
+   "rows": 202,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_terminal_verification",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 32768,
+   "rows": 1,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_terminal_verification_v2",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 32768,
+   "rows": 1,
+   "family": "dimension"
+  },
+  {
+   "name": "dim_variable",
+   "kind": "table",
+   "estimated_rows": 99,
+   "bytes": 90112,
+   "rows": 99,
+   "family": "dimension"
+  },
+  {
+   "name": "fact_campaign_consumption",
+   "kind": "table",
+   "estimated_rows": 250,
+   "bytes": 196608,
+   "rows": 265,
+   "family": "fact"
+  },
+  {
+   "name": "fact_campaign_unit",
+   "kind": "table",
+   "estimated_rows": 188,
+   "bytes": 385024,
+   "rows": 214,
+   "family": "fact"
+  },
+  {
+   "name": "fact_dataset_inventory",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 106496,
+   "rows": 2,
+   "family": "fact"
+  },
+  {
+   "name": "fact_eligibility_decision",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 16384,
+   "rows": 0,
+   "family": "fact"
+  },
+  {
+   "name": "fact_ingestion_receipt",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 49152,
+   "rows": 1,
+   "family": "fact"
+  },
+  {
+   "name": "fact_performance",
+   "kind": "table",
+   "estimated_rows": 1404,
+   "bytes": 843776,
+   "rows": 1404,
+   "family": "fact"
+  },
+  {
+   "name": "fact_results_summary",
+   "kind": "table",
+   "estimated_rows": 1404,
+   "bytes": 565248,
+   "rows": 1404,
+   "family": "fact"
+  },
+  {
+   "name": "fact_run_epoch",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 24576,
+   "rows": 0,
+   "family": "fact"
+  },
+  {
+   "name": "fact_split_information",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 24576,
+   "rows": 0,
+   "family": "fact"
+  },
+  {
+   "name": "fact_terminal_verification_descriptor",
+   "kind": "table",
+   "estimated_rows": 37301,
+   "bytes": 16187392,
+   "rows": 37301,
+   "family": "fact"
+  },
+  {
+   "name": "fact_terminal_verification_descriptor_v2",
+   "kind": "table",
+   "estimated_rows": 37201,
+   "bytes": 13852672,
+   "rows": 37201,
+   "family": "fact"
+  },
+  {
+   "name": "fact_terminal_verification_variable",
+   "kind": "table",
+   "estimated_rows": 1965,
+   "bytes": 983040,
+   "rows": 1965,
+   "family": "fact"
+  },
+  {
+   "name": "fact_terminal_verification_variable_v2",
+   "kind": "table",
+   "estimated_rows": 1965,
+   "bytes": 933888,
+   "rows": 1965,
+   "family": "fact"
+  },
+  {
+   "name": "fact_variable_characterization",
+   "kind": "table",
+   "estimated_rows": 38784,
+   "bytes": 53436416,
+   "rows": 40749,
+   "family": "fact"
+  },
+  {
+   "name": "fact_variable_profile",
+   "kind": "table",
+   "estimated_rows": 99,
+   "bytes": 172032,
+   "rows": 99,
+   "family": "fact"
+  },
+  {
+   "name": "gov_dataset",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 24576,
+   "rows": 0,
+   "family": "governance"
+  },
+  {
+   "name": "gov_metric",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 16384,
+   "rows": 0,
+   "family": "governance"
+  },
+  {
+   "name": "gov_metric_current",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "governance"
+  },
+  {
+   "name": "gov_report",
+   "kind": "table",
+   "estimated_rows": -1,
+   "bytes": 24576,
+   "rows": 0,
+   "family": "governance"
+  },
+  {
+   "name": "gov_terminal",
+   "kind": "table",
+   "estimated_rows": 51,
+   "bytes": 131072,
+   "rows": 52,
+   "family": "governance"
+  },
+  {
+   "name": "gov_terminal_artifact",
+   "kind": "table",
+   "estimated_rows": 78,
+   "bytes": 57344,
+   "rows": 97,
+   "family": "governance"
+  },
+  {
+   "name": "gov_terminal_dataset",
+   "kind": "table",
+   "estimated_rows": 59,
+   "bytes": 98304,
+   "rows": 90,
+   "family": "governance"
+  },
+  {
+   "name": "gov_terminal_metric",
+   "kind": "table",
+   "estimated_rows": 484,
+   "bytes": 131072,
+   "rows": 529,
+   "family": "governance"
+  },
+  {
+   "name": "v_batch_membership_integrity",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_campaign_attempts",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_campaign_run",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_characterization_evidence_layer",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_characterization_evidence_layer_v2",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_lake_appearance_ambiguous",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_lake_appearance_current",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_lake_variable_ambiguous",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_lake_variable_current",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_public_series_ambiguous",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_public_series_current",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_synthetic_generator_ambiguous",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_synthetic_generator_current",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_variable_characterization_current",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  },
+  {
+   "name": "v_variable_characterization_current_v2",
+   "kind": "view",
+   "estimated_rows": -1,
+   "bytes": 0,
+   "family": "view"
+  }
+ ],
+ "by_family": {
+  "bridge": 1,
+  "data_foundation": 28,
+  "dimension": 18,
+  "fact": 15,
+  "governance": 8,
+  "view": 15
+ },
+ "rows_by_family": {
+  "bridge": 1965,
+  "data_foundation": 6556647,
+  "dimension": 8715,
+  "fact": 122570,
+  "governance": 768,
+  "view": 0
+ },
+ "units": [
+  {
+   "unit": "crispdm-data-gov.service",
+   "active": "active",
+   "enabled": "enabled",
+   "exec_start": "/home/harveybc/anaconda3/envs/trading-stack/bin/python3.12 -m app.main --load_config /home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json",
+   "environment_file": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.service.env",
+   "touches_postgres_env": true
+  },
+  {
+   "unit": "crispdm-data-lake-financial.service",
+   "active": "active",
+   "enabled": "enabled",
+   "exec_start": "/home/harveybc/.venvs/store-hosts/bin/python -m data_lake_service.main --load_config /home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5056.host.json",
+   "environment_file": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5056.service.env",
+   "touches_postgres_env": true
+  },
+  {
+   "unit": "crispdm-data-lake-synthetic.service",
+   "active": "active",
+   "enabled": "enabled",
+   "exec_start": "/home/harveybc/.venvs/store-hosts/bin/python -m data_lake_service.main --load_config /home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5058.host.json",
+   "environment_file": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5058.service.env",
+   "touches_postgres_env": true
+  },
+  {
+   "unit": "crispdm-data-warehouse-olap.service",
+   "active": "active",
+   "enabled": "enabled",
+   "exec_start": "/home/harveybc/.venvs/store-hosts/bin/python -m data_warehouse_service.main --load_config /home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5057.host.json",
+   "environment_file": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5057.service.env",
+   "touches_postgres_env": true
+  },
+  {
+   "unit": "crispdm-memguard.service",
+   "active": "active",
+   "enabled": "enabled",
+   "exec_start": "%h/.local/bin/crispdm-memguard",
+   "environment_file": null,
+   "touches_postgres_env": false
+  },
+  {
+   "unit": "crispdm-olap-loader.service",
+   "active": "active",
+   "enabled": "enabled",
+   "exec_start": "%h/anaconda3/envs/trading-stack/bin/python",
+   "environment_file": "%h/.config/crispdm/olap-loader.env",
+   "touches_postgres_env": true
+  }
+ ],
+ "outboxes": [
+  {
+   "root": "/home/harveybc/.local/share/predictor/olap_outbox",
+   "exists": true,
+   "states": {
+    "failed": 48,
+    "loaded": 49,
+    "pending": 0,
+    "receipts": 49
+   }
+  },
+  {
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "exists": true,
+   "states": {
+    "adjudicated": 0,
+    "pending": 0,
+    "sent": 12
+   }
+  },
+  {
+   "root": "/home/harveybc/.cache/data-gov-outbox",
+   "exists": true,
+   "states": {
+    "adjudicated": 0,
+    "pending": 0,
+    "sent": 1
+   }
+  }
+ ],
+ "code_references": {
+  "bridge_batch_variable": [
+   "predictor/docs/audits/evidence/repro_runs/crispdm_c53_c66_post_2026_09_12.py",
+   "predictor/olap/c62_batch_membership.sql",
+   "predictor/tests/test_c62_batch_membership.py",
+   "predictor/tools/load_batch_membership.py"
+  ],
+  "df_dim_dataset": [
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_df_load_d0_d2.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_dim_run": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c178_d2_load.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_c164_runtime_grains.py",
+   "predictor/tests/test_df_load_d0_d2.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_dim_variable": [
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_causal_test": [
+   "predictor/docs/audits/evidence/repro_runs/c146_c165_post_2026_09_13.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_c164_runtime_grains.py",
+   "predictor/tools/df_causal_battery.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/df_structural_mutation.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_coverage": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_post_2026_09_13.py",
+   "predictor/docs/audits/evidence/repro_runs/d2_support_r1/R6_COVERAGE_VIEWS.sql",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_df_coverage_v2.py",
+   "predictor/tests/test_df_load_d0_d2.py",
+   "predictor/tools/df_coverage.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_coverage_v1_v2_map": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_post_2026_09_13.py",
+   "predictor/docs/audits/evidence/repro_runs/d2_support_r1/R6_COVERAGE_VIEWS.sql",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_df_coverage_v2.py",
+   "predictor/tests/test_df_load_d0_d2.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_coverage_v2": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_post_2026_09_13.py",
+   "predictor/docs/audits/evidence/repro_runs/d2_support_r1/R6_COVERAGE_VIEWS.sql",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_df_coverage_v2.py",
+   "predictor/tests/test_df_load_d0_d2.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_d2_decision": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_post_2026_09_13.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c178_d2_load.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/d2_fresh_adjudicate.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_df_d2_summary.py",
+   "predictor/tests/test_df_load_d0_d2.py",
+   "predictor/tools/df_d2_adjudicate.py",
+   "predictor/tools/df_d2_summary.py",
+   "predictor/tools/df_d2_support.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_d2_historical_reanalysis": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_post_2026_09_13.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c172_table_dir.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c178_d2_load.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tools/df_d2_adjudicate.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_d2_unit_denoising": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_post_2026_09_13.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c172_compare.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c172_table_dir.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c178_d2_load.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/d2_fresh_adjudicate.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tools/df_d2_adjudicate.py",
+   "predictor/tools/df_d2_support.py",
+   "predictor/tools/df_d2_unit_worker.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_d2_unit_snr": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_post_2026_09_13.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c172_table_dir.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c178_d2_load.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/d2_fresh_adjudicate.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tools/df_d2_adjudicate.py",
+   "predictor/tools/df_d2_support.py",
+   "predictor/tools/df_d2_unit_worker.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_dataset_terminal": [
+   "predictor/docs/audits/evidence/repro_runs/c146_c165_post_2026_09_13.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_c164_runtime_grains.py",
+   "predictor/tests/test_df_load_d0_d2.py",
+   "predictor/tools/df_isolated_runner.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_group_relation": [
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_c139_data_foundation_olap.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/df_profile_run.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_host_receipt": [
+   "predictor/docs/audits/evidence/repro_runs/c146_c165_post_2026_09_13.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_c164_runtime_grains.py",
+   "predictor/tools/df_host_preflight.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_incident_attempt": [
+   "predictor/docs/audits/evidence/repro_runs/c146_c165_post_2026_09_13.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_c164_runtime_grains.py",
+   "predictor/tools/df_c146_incident.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_information_metric": [
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/df_profile_run.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_lab_decision": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_post_2026_09_13.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_pre_2026_09_13.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c172_compare.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_c139_data_foundation_olap.py",
+   "predictor/tests/test_df_lab_evaluation.py",
+   "predictor/tools/df_lab_evaluation.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_load_receipt": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c178_d2_load.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_c139_data_foundation_olap.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_naming_isolation_decision": [
+   "predictor/docs/audits/evidence/repro_runs/c146_c165_post_2026_09_13.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_c164_runtime_grains.py",
+   "predictor/tools/df_causal_battery.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_operator_delay_cost": [
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_df_lab_evaluation.py",
+   "predictor/tools/df_lab_evaluation.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_operator_run": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c172_compare.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_df_d2_lab.py",
+   "predictor/tests/test_df_lab_evaluation.py",
+   "predictor/tools/df_d2_adjudicate.py",
+   "predictor/tools/df_d2_design.py",
+   "predictor/tools/df_lab_evaluation.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_operator_signal_metric": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_tools/c172_compare.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_df_d2_lab.py",
+   "predictor/tests/test_df_lab_evaluation.py",
+   "predictor/tools/df_d2_design.py",
+   "predictor/tools/df_lab_evaluation.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_pair_relation": [
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/df_profile_run.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_resource_estimate": [
+   "predictor/docs/audits/evidence/repro_runs/c146_c165_post_2026_09_13.py",
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_post_2026_09_13.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_c164_runtime_grains.py",
+   "predictor/tests/test_df_load_d0_d2.py",
+   "predictor/tests/test_df_resource_estimate_v2.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/df_memory_plan.py",
+   "predictor/tools/df_profile_run.py",
+   "predictor/tools/df_resource_estimate_v2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_resource_estimate_v2": [
+   "predictor/docs/audits/evidence/repro_runs/c166_c184_post_2026_09_13.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_df_load_d0_d2.py",
+   "predictor/tests/test_df_resource_estimate_v2.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/df_resource_estimate_v2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_sampling_quality": [
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/df_profile_run.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_snr_calibration": [
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "df_fact_variable_profile": [
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/tests/test_c139_data_foundation_olap.py",
+   "predictor/tests/test_c164_runtime_grains.py",
+   "predictor/tests/test_df_load_d0_d2.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/df_profile_run.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "dim_campaign": [
+   "predictor/docs/audits/evidence/repro_runs/c106_c121_post_2026_09_12.py",
+   "predictor/docs/audits/evidence/repro_runs/crispdm_c1_c16_pre_2026_09_10.py",
+   "predictor/docs/audits/evidence/repro_runs/crispdm_c31_c44_post_2026_09_12.py",
+   "predictor/docs/audits/evidence/repro_runs/crispdm_c31_c44_pre_2026_09_12.py",
+   "predictor/olap/acceptance_queries_c51.sql",
+   "predictor/olap/campaign_envelope.py",
+   "predictor/olap/migrate_campaign_run.py",
+   "predictor/tests/unit_tests/test_campaign_envelope.py",
+   "predictor/tests/unit_tests/test_campaign_run_and_health.py",
+   "predictor/tests/unit_tests/test_olap_c12_c15.py",
+   "predictor/tools/backfill_campaign_envelopes.py",
+   "predictor/tools/df_load_d0_d2.py"
+  ],
+  "dim_campaign_run": [
+   "predictor/docs/audits/evidence/repro_runs/c106_c121_post_2026_09_12.py",
+   "predictor/docs/audits/evidence/repro_runs/crispdm_c31_c44_post_2026_09_12.py",
+   "predictor/docs/audits/evidence/repro_runs/crispdm_c31_c44_pre_2026_09_12.py",
+   "predictor/olap/acceptance_queries_c51.sql",
+   "predictor/olap/campaign_envelope.py",
+   "predictor/olap/migrate_campaign_run.py",
+   "predictor/tests/unit_tests/test_campaign_run_and_health.py",
+   "predictor/tools/df_load_d0_d2.py"
+  ],
+  "dim_characterization_batch": [
+   "predictor/olap/c62_batch_membership.sql",
+   "predictor/tools/load_batch_membership.py"
+  ],
+  "dim_dataset": [
+   "predictor/docs/audits/evidence/repro_runs/crispdm_p0_pre_2026_09_10.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/olap/etl_migrate_v2.py",
+   "predictor/olap/information_schema.py",
+   "predictor/olap/init_db.py",
+   "predictor/olap/inventory_rows.py",
+   "predictor/olap/olap_schema_postgres.sql",
+   "predictor/olap/reset_olap.py",
+   "predictor/tests/test_df_load_d0_d2.py",
+   "predictor/tools/backfill_campaign_envelopes.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "dim_dataset_split": [
+   "predictor/olap/etl_migrate_v2.py",
+   "predictor/olap/information_schema.py",
+   "predictor/olap/init_db.py",
+   "predictor/olap/reset_olap.py"
+  ],
+  "dim_experiment": [
+   "predictor/docs/audits/evidence/repro_runs/crispdm_p0_pre_2026_09_10.py",
+   "predictor/olap/acceptance_queries_c51.sql",
+   "predictor/olap/etl_migrate_v2.py",
+   "predictor/olap/information_schema.py",
+   "predictor/olap/init_db.py",
+   "predictor/olap/inventory_rows.py",
+   "predictor/olap/migrate_campaign_run.py",
+   "predictor/olap/olap_metabase_helpers.sql",
+   "predictor/olap/olap_schema_patch_experiment_key.sql",
+   "predictor/olap/olap_schema_postgres.sql",
+   "predictor/olap/reset_olap.py",
+   "predictor/tests/unit_tests/test_acceptance_c17_c30.py",
+   "predictor/tests/unit_tests/test_acceptance_c1_c16.py",
+   "predictor/tools/backfill_campaign_envelopes.py"
+  ],
+  "dim_horizon": [
+   "predictor/olap/etl_migrate_v2.py",
+   "predictor/olap/init_db.py",
+   "predictor/olap/olap_schema_postgres.sql",
+   "predictor/olap/reset_olap.py"
+  ],
+  "dim_lake_appearance": [
+   "predictor/olap/inventory_rows.py",
+   "predictor/tests/unit_tests/test_acceptance_c17_c30.py",
+   "predictor/tools/migrate_inventory_versioning.py"
+  ],
+  "dim_lake_variable": [
+   "predictor/olap/inventory_rows.py",
+   "predictor/tests/unit_tests/test_inventory_currency_c38.py",
+   "predictor/tools/migrate_inventory_versioning.py"
+  ],
+  "dim_metric": [
+   "predictor/olap/etl_migrate_v2.py",
+   "predictor/olap/init_db.py",
+   "predictor/olap/reset_olap.py",
+   "predictor/pipeline_plugins/binary_olap.py"
+  ],
+  "dim_phase": [
+   "predictor/olap/etl_migrate_v2.py",
+   "predictor/olap/init_db.py",
+   "predictor/olap/olap_schema_postgres.sql",
+   "predictor/olap/reset_olap.py"
+  ],
+  "dim_project": [
+   "predictor/olap/etl_migrate_v2.py",
+   "predictor/olap/init_db.py",
+   "predictor/olap/olap_schema_postgres.sql",
+   "predictor/olap/reset_olap.py"
+  ],
+  "dim_public_series": [
+   "predictor/olap/inventory_rows.py",
+   "predictor/tools/migrate_inventory_versioning.py"
+  ],
+  "dim_series": [
+   "predictor/docs/audits/evidence/repro_runs/crispdm_p0_pre_2026_09_10.py",
+   "predictor/olap/information_schema.py",
+   "predictor/olap/inventory_rows.py",
+   "predictor/tools/backfill_campaign_envelopes.py"
+  ],
+  "dim_synthetic_generator": [
+   "predictor/olap/inventory_rows.py",
+   "predictor/tools/migrate_inventory_versioning.py"
+  ],
+  "dim_terminal_verification": [
+   "predictor/olap/c73_terminal_verification_layers.sql",
+   "predictor/olap/c92_terminal_verification_layers_v2.sql",
+   "predictor/tests/test_c92_terminal_verification_layers_v2.py",
+   "predictor/tools/load_terminal_verification_v3.py",
+   "predictor/tools/load_terminal_verification_v4.py"
+  ],
+  "dim_terminal_verification_v2": [
+   "predictor/olap/c92_terminal_verification_layers_v2.sql",
+   "predictor/tools/load_terminal_verification_v4.py"
+  ],
+  "dim_variable": [
+   "predictor/docs/audits/evidence/repro_runs/crispdm_p0_pre_2026_09_10.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/olap/information_schema.py",
+   "predictor/olap/inventory_rows.py",
+   "predictor/tools/backfill_campaign_envelopes.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "fact_campaign_consumption": [
+   "predictor/olap/campaign_envelope.py",
+   "predictor/olap/migrate_campaign_run.py",
+   "predictor/tests/unit_tests/test_campaign_envelope.py",
+   "predictor/tools/backfill_campaign_envelopes.py",
+   "predictor/tools/df_load_d0_d2.py"
+  ],
+  "fact_campaign_unit": [
+   "predictor/docs/audits/evidence/repro_runs/c106_c121_post_2026_09_12.py",
+   "predictor/olap/acceptance_queries_c51.sql",
+   "predictor/olap/campaign_envelope.py",
+   "predictor/olap/migrate_campaign_run.py",
+   "predictor/tests/unit_tests/test_acceptance_c17_c30.py",
+   "predictor/tests/unit_tests/test_acceptance_c1_c16.py",
+   "predictor/tests/unit_tests/test_campaign_envelope.py",
+   "predictor/tests/unit_tests/test_campaign_run_and_health.py",
+   "predictor/tests/unit_tests/test_olap_c12_c15.py",
+   "predictor/tools/backfill_campaign_envelopes.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/supersede_translated_rows.py"
+  ],
+  "fact_dataset_inventory": [
+   "predictor/docs/audits/evidence/repro_runs/crispdm_p0_pre_2026_09_10.py",
+   "predictor/olap/information_schema.py",
+   "predictor/olap/inventory_rows.py",
+   "predictor/tools/backfill_campaign_envelopes.py"
+  ],
+  "fact_eligibility_decision": [
+   "predictor/olap/inventory_rows.py"
+  ],
+  "fact_ingestion_receipt": [
+   "predictor/docs/audits/evidence/repro_runs/crispdm_p0_pre_2026_09_10.py",
+   "predictor/olap/information_schema.py",
+   "predictor/tools/backfill_campaign_envelopes.py"
+  ],
+  "fact_performance": [
+   "data-gov/accounting_plugins/default_accounting.py",
+   "data-gov/scripts/seed_olap.py",
+   "data-gov/tests/conftest.py",
+   "data-gov/tests/system/test_system_contract.py",
+   "data-gov/tests/unit/test_sql_lake.py",
+   "data-gov/tests/user/test_service_clients.py",
+   "predictor/docs/audits/evidence/repro_runs/crispdm_p0_pre_2026_09_10.py",
+   "predictor/olap/acceptance_queries_c51.sql",
+   "predictor/olap/etl_migrate_v2.py",
+   "predictor/olap/init_db.py",
+   "predictor/olap/inventory_rows.py",
+   "predictor/olap/lake/tests/test_query.py",
+   "predictor/olap/lake/tests/test_user_gui.py",
+   "predictor/olap/migrate_campaign_run.py",
+   "predictor/olap/reset_olap.py",
+   "predictor/pipeline_plugins/binary_olap.py",
+   "predictor/tests/unit_tests/test_acceptance_c17_c30.py",
+   "predictor/tests/unit_tests/test_acceptance_c1_c16.py",
+   "predictor/tools/backfill_campaign_envelopes.py"
+  ],
+  "fact_results_summary": [
+   "predictor/olap/etl_migrate_v2.py",
+   "predictor/olap/init_db.py",
+   "predictor/olap/inventory_rows.py",
+   "predictor/olap/reset_olap.py",
+   "predictor/tools/backfill_campaign_envelopes.py"
+  ],
+  "fact_run_epoch": [
+   "predictor/olap/information_schema.py"
+  ],
+  "fact_split_information": [
+   "predictor/olap/information_schema.py"
+  ],
+  "fact_terminal_verification_descriptor": [
+   "predictor/olap/c73_terminal_verification_layers.sql",
+   "predictor/olap/c92_terminal_verification_layers_v2.sql",
+   "predictor/tools/load_terminal_verification_v4.py"
+  ],
+  "fact_terminal_verification_descriptor_v2": [
+   "predictor/olap/c92_terminal_verification_layers_v2.sql",
+   "predictor/tools/load_terminal_verification_v4.py"
+  ],
+  "fact_terminal_verification_variable": [
+   "predictor/docs/audits/evidence/repro_runs/c106_c121_post_2026_09_12.py",
+   "predictor/olap/c73_terminal_verification_layers.sql",
+   "predictor/olap/c92_terminal_verification_layers_v2.sql",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_terminal_verification_v3.py",
+   "predictor/tools/load_terminal_verification_v4.py"
+  ],
+  "fact_terminal_verification_variable_v2": [
+   "predictor/docs/audits/evidence/repro_runs/c106_c121_post_2026_09_12.py",
+   "predictor/olap/c92_terminal_verification_layers_v2.sql",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_terminal_verification_v4.py"
+  ],
+  "fact_variable_characterization": [
+   "predictor/docs/audits/evidence/repro_runs/c106_c121_post_2026_09_12.py",
+   "predictor/olap/acceptance_queries_c51.sql",
+   "predictor/olap/c62_batch_membership.sql",
+   "predictor/olap/c73_terminal_verification_layers.sql",
+   "predictor/olap/c92_terminal_verification_layers_v2.sql",
+   "predictor/olap/characterization.py",
+   "predictor/tests/test_c139_data_foundation_olap.py",
+   "predictor/tests/test_c62_batch_membership.py",
+   "predictor/tests/test_c73_terminal_verification_layers.py",
+   "predictor/tests/test_c92_terminal_verification_layers_v2.py",
+   "predictor/tools/characterize_lake.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/load_terminal_verification_v3.py",
+   "predictor/tools/load_terminal_verification_v4.py"
+  ],
+  "fact_variable_profile": [
+   "predictor/docs/audits/evidence/repro_runs/c122_c145_pre_2026_09_12.py",
+   "predictor/docs/audits/evidence/repro_runs/crispdm_p0_pre_2026_09_10.py",
+   "predictor/olap/c139_data_foundation.sql",
+   "predictor/olap/information_schema.py",
+   "predictor/olap/inventory_rows.py",
+   "predictor/tests/test_c139_data_foundation_olap.py",
+   "predictor/tests/test_c164_runtime_grains.py",
+   "predictor/tests/test_df_load_d0_d2.py",
+   "predictor/tools/backfill_campaign_envelopes.py",
+   "predictor/tools/df_load_d0_d2.py",
+   "predictor/tools/df_profile_run.py",
+   "predictor/tools/load_data_foundation.py"
+  ],
+  "gov_dataset": [
+   "data-gov/lake_plugins/sql_lake.py",
+   "data-gov/tests/unit/test_sql_lake.py",
+   "data-gov/tests/user/test_flow_v2.py",
+   "predictor/olap/lake/query_plugins/sql_query.py",
+   "predictor/olap/lake/tests/test_metrics_api.py",
+   "predictor/olap/lake/tests/test_write_metrics.py",
+   "predictor/olap/lake/tests/test_write_metrics_pg.py",
+   "predictor/olap/store/src/predictor_olap_store/query.py"
+  ],
+  "gov_metric": [
+   "data-gov/lake_plugins/sql_lake.py",
+   "data-gov/tests/unit/test_sql_lake.py",
+   "data-gov/tests/user/test_flow_v2.py",
+   "data-warehouse/build/lib/data_warehouse_service/testing/sqlite_store.py",
+   "data-warehouse/data_warehouse_service/testing/sqlite_store.py",
+   "data-warehouse/tests/test_console.py",
+   "data-warehouse/tests/test_http_contract.py",
+   "data-warehouse/tools/compare_with_legacy_host.py",
+   "predictor/olap/lake/query_plugins/sql_query.py",
+   "predictor/olap/lake/tests/test_metrics_api.py",
+   "predictor/olap/lake/tests/test_write_metrics.py",
+   "predictor/olap/lake/tests/test_write_metrics_pg.py",
+   "predictor/olap/store/src/predictor_olap_store/query.py",
+   "predictor/olap/store/tests/test_parity.py"
+  ],
+  "gov_metric_current": [
+   "data-gov/lake_plugins/sql_lake.py",
+   "data-gov/tests/unit/test_sql_lake.py",
+   "predictor/olap/lake/query_plugins/sql_query.py",
+   "predictor/olap/lake/tests/test_write_metrics.py",
+   "predictor/olap/lake/tests/test_write_metrics_pg.py",
+   "predictor/olap/store/src/predictor_olap_store/query.py",
+   "predictor/olap/store/tests/test_parity.py"
+  ],
+  "gov_report": [
+   "data-gov/lake_plugins/sql_lake.py",
+   "data-gov/tests/system/test_flow_v2_system.py",
+   "data-gov/tests/unit/test_sql_lake.py",
+   "data-gov/tests/user/test_flow_v2.py",
+   "predictor/olap/lake/query_plugins/sql_query.py",
+   "predictor/olap/lake/tests/test_metrics_api.py",
+   "predictor/olap/lake/tests/test_write_metrics.py",
+   "predictor/olap/lake/tests/test_write_metrics_pg.py",
+   "predictor/olap/store/src/predictor_olap_store/query.py"
+  ],
+  "gov_terminal": [
+   "data-gov/lake_plugins/sql_lake.py",
+   "data-gov/tests/unit/test_sql_lake.py",
+   "data-gov/tests/user/test_flow_v3_failsafe.py",
+   "data-gov/tests/user/test_governed_exec.py",
+   "data-gov/tools/verify_flow_v3_e2e.py",
+   "data-warehouse/build/lib/data_warehouse_service/testing/sqlite_store.py",
+   "data-warehouse/data_warehouse_service/testing/sqlite_store.py",
+   "data-warehouse/tests/test_console.py",
+   "data-warehouse/tests/test_http_contract.py",
+   "data-warehouse/tools/console_screenshots.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p03_throwaway_governed_runs.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p1_preprocessor_throwaway.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p4_outbox_disposition_throwaway.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p5_feature_eng_throwaway.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p6_feature_extractor_throwaway.py",
+   "predictor/docs/audits/evidence/repro_runs/route_20260914/n5_real_retry.py",
+   "predictor/olap/lake/query_plugins/sql_query.py",
+   "predictor/olap/lake/tests/test_terminal_v3.py",
+   "predictor/olap/store/src/predictor_olap_store/query.py",
+   "predictor/olap/store/tests/test_availability_contract_dimension.py",
+   "predictor/olap/store/tests/test_temporal_checks_are_load_bearing.py",
+   "predictor/olap/store/tests/test_temporal_contract_semantics.py",
+   "predictor/tests/test_flow_v3_gate.py",
+   "predictor/tools/archive_contract_persistence_probe.py",
+   "predictor/tools/flow_v3_coverage.py",
+   "predictor/tools/outage_outbox_inventory.py",
+   "predictor/tools/temporal_contract_reproducer.py",
+   "predictor/tools/verify_consumer_adoption.py"
+  ],
+  "gov_terminal_artifact": [
+   "data-gov/lake_plugins/sql_lake.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p03_throwaway_governed_runs.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p1_preprocessor_throwaway.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p5_feature_eng_throwaway.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p6_feature_extractor_throwaway.py",
+   "predictor/olap/lake/query_plugins/sql_query.py",
+   "predictor/olap/store/src/predictor_olap_store/query.py",
+   "predictor/tools/verify_consumer_adoption.py"
+  ],
+  "gov_terminal_dataset": [
+   "data-gov/lake_plugins/sql_lake.py",
+   "data-gov/tests/unit/test_sql_lake.py",
+   "data-gov/tests/user/test_flow_v3_failsafe.py",
+   "data-gov/tests/user/test_governed_exec.py",
+   "data-gov/tools/verify_flow_v3_e2e.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p03_throwaway_governed_runs.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p1_preprocessor_throwaway.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p5_feature_eng_throwaway.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p6_feature_extractor_throwaway.py",
+   "predictor/olap/lake/query_plugins/sql_query.py",
+   "predictor/olap/lake/tests/test_terminal_v3.py",
+   "predictor/olap/store/src/predictor_olap_store/query.py",
+   "predictor/olap/store/tests/test_availability_contract_dimension.py",
+   "predictor/olap/store/tests/test_temporal_checks_are_load_bearing.py",
+   "predictor/olap/store/tests/test_temporal_contract_semantics.py",
+   "predictor/tools/archive_contract_persistence_probe.py",
+   "predictor/tools/temporal_contract_reproducer.py",
+   "predictor/tools/verify_consumer_adoption.py"
+  ],
+  "gov_terminal_metric": [
+   "data-gov/lake_plugins/sql_lake.py",
+   "data-gov/tests/user/test_flow_v3_failsafe.py",
+   "data-gov/tests/user/test_governed_exec.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p03_throwaway_governed_runs.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p1_preprocessor_throwaway.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p5_feature_eng_throwaway.py",
+   "predictor/docs/audits/evidence/repro_runs/flow_v3_tools/p6_feature_extractor_throwaway.py",
+   "predictor/olap/lake/query_plugins/sql_query.py",
+   "predictor/olap/store/src/predictor_olap_store/query.py",
+   "predictor/tools/verify_consumer_adoption.py"
+  ],
+  "v_batch_membership_integrity": [
+   "predictor/olap/c62_batch_membership.sql",
+   "predictor/tests/test_c62_batch_membership.py",
+   "predictor/tools/load_batch_membership.py"
+  ],
+  "v_campaign_attempts": [
+   "predictor/olap/campaign_envelope.py",
+   "predictor/olap/migrate_campaign_run.py",
+   "predictor/tests/unit_tests/test_campaign_run_and_health.py"
+  ],
+  "v_campaign_run": [
+   "predictor/olap/campaign_envelope.py"
+  ],
+  "v_characterization_evidence_layer": [
+   "predictor/olap/c73_terminal_verification_layers.sql",
+   "predictor/olap/c92_terminal_verification_layers_v2.sql",
+   "predictor/tests/test_c73_terminal_verification_layers.py",
+   "predictor/tests/test_c92_terminal_verification_layers_v2.py"
+  ],
+  "v_characterization_evidence_layer_v2": [
+   "predictor/olap/c92_terminal_verification_layers_v2.sql",
+   "predictor/tests/test_c92_terminal_verification_layers_v2.py"
+  ],
+  "v_lake_appearance_ambiguous": [
+   "predictor/olap/inventory_rows.py"
+  ],
+  "v_lake_appearance_current": [
+   "predictor/docs/audits/evidence/repro_runs/crispdm_c17_c30_post_2026_09_10.py",
+   "predictor/olap/acceptance_queries_c51.sql",
+   "predictor/olap/inventory_rows.py",
+   "predictor/tests/unit_tests/test_acceptance_c17_c30.py",
+   "predictor/tests/unit_tests/test_inventory_currency_c38.py"
+  ],
+  "v_lake_variable_ambiguous": [
+   "predictor/olap/inventory_rows.py",
+   "predictor/tests/unit_tests/test_inventory_currency_c38.py"
+  ],
+  "v_lake_variable_current": [
+   "predictor/olap/acceptance_queries_c51.sql",
+   "predictor/olap/inventory_rows.py",
+   "predictor/tests/unit_tests/test_inventory_currency_c38.py"
+  ],
+  "v_public_series_ambiguous": [
+   "predictor/olap/inventory_rows.py"
+  ],
+  "v_public_series_current": [
+   "predictor/olap/inventory_rows.py",
+   "predictor/tests/unit_tests/test_inventory_currency_c38.py"
+  ],
+  "v_synthetic_generator_ambiguous": [
+   "predictor/olap/inventory_rows.py"
+  ],
+  "v_synthetic_generator_current": [
+   "predictor/olap/inventory_rows.py",
+   "predictor/tests/unit_tests/test_inventory_currency_c38.py"
+  ],
+  "v_variable_characterization_current": [
+   "predictor/olap/c62_batch_membership.sql",
+   "predictor/olap/characterization.py",
+   "predictor/tests/test_c62_batch_membership.py"
+  ],
+  "v_variable_characterization_current_v2": [
+   "predictor/olap/c62_batch_membership.sql",
+   "predictor/tests/test_c62_batch_membership.py"
+  ]
+ }
+}

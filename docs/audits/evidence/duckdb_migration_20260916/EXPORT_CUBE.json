@@ -1,0 +1,178 @@
+{
+ "schema": "olap_duckdb_export.v1",
+ "generated_utc": "2026-09-16T06:12:19Z",
+ "destination": "/home/harveybc/.local/state/crispdm-duckdb/rehearsal/cube.duckdb",
+ "target_schema": "main",
+ "scope": "cube",
+ "batch_rows": 100000,
+ "relations": [
+  {
+   "relation": "gov_report",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "gov_metric",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "gov_dataset",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "gov_terminal",
+   "outcome": "COPIED",
+   "source_rows": 52,
+   "copied_rows": 52,
+   "pagination_key": "terminal_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "gov_terminal_metric",
+   "outcome": "COPIED",
+   "source_rows": 529,
+   "copied_rows": 529,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "gov_terminal_dataset",
+   "outcome": "COPIED",
+   "source_rows": 90,
+   "copied_rows": 90,
+   "pagination_key": "delivery_id",
+   "batching": "keyset"
+  },
+  {
+   "relation": "gov_terminal_artifact",
+   "outcome": "COPIED",
+   "source_rows": 97,
+   "copied_rows": 97,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "dim_campaign",
+   "outcome": "COPIED",
+   "source_rows": 11,
+   "copied_rows": 11,
+   "pagination_key": "campaign_key",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_campaign_run",
+   "outcome": "COPIED",
+   "source_rows": 20,
+   "copied_rows": 20,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "dim_project",
+   "outcome": "COPIED",
+   "source_rows": 1,
+   "copied_rows": 1,
+   "pagination_key": "project_key",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_phase",
+   "outcome": "COPIED",
+   "source_rows": 2,
+   "copied_rows": 2,
+   "pagination_key": "phase_key",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_experiment",
+   "outcome": "COPIED",
+   "source_rows": 39,
+   "copied_rows": 39,
+   "pagination_key": "experiment_key",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_dataset",
+   "outcome": "COPIED",
+   "source_rows": 2,
+   "copied_rows": 2,
+   "pagination_key": "dataset_key",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_dataset_split",
+   "outcome": "COPIED",
+   "source_rows": 3,
+   "copied_rows": 3,
+   "pagination_key": "split_key",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_horizon",
+   "outcome": "COPIED",
+   "source_rows": 6,
+   "copied_rows": 6,
+   "pagination_key": "horizon_key",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_metric",
+   "outcome": "COPIED",
+   "source_rows": 17,
+   "copied_rows": 17,
+   "pagination_key": "metric_key",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_terminal_verification",
+   "outcome": "COPIED",
+   "source_rows": 1,
+   "copied_rows": 1,
+   "pagination_key": "verification_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_terminal_verification_v2",
+   "outcome": "COPIED",
+   "source_rows": 1,
+   "copied_rows": 1,
+   "pagination_key": "verification_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "fact_campaign_unit",
+   "outcome": "COPIED",
+   "source_rows": 214,
+   "copied_rows": 214,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "fact_campaign_consumption",
+   "outcome": "COPIED",
+   "source_rows": 265,
+   "copied_rows": 265,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "fact_ingestion_receipt",
+   "outcome": "COPIED",
+   "source_rows": 1,
+   "copied_rows": 1,
+   "pagination_key": "receipt_sha256",
+   "batching": "keyset"
+  }
+ ]
+}

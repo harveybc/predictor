@@ -1,0 +1,522 @@
+{
+ "schema": "olap_duckdb_export.v1",
+ "generated_utc": "2026-09-16T06:12:19Z",
+ "destination": "/home/harveybc/.local/state/crispdm-duckdb/rehearsal/archive.duckdb",
+ "target_schema": "main",
+ "scope": "archive",
+ "batch_rows": 200000,
+ "relations": [
+  {
+   "relation": "bridge_batch_variable",
+   "outcome": "COPIED",
+   "source_rows": 1965,
+   "copied_rows": 1965,
+   "pagination_key": "terminal_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_dim_dataset",
+   "outcome": "COPIED",
+   "source_rows": 715,
+   "copied_rows": 715,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_dim_run",
+   "outcome": "COPIED",
+   "source_rows": 22,
+   "copied_rows": 22,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_dim_variable",
+   "outcome": "COPIED",
+   "source_rows": 2487,
+   "copied_rows": 2487,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_causal_test",
+   "outcome": "COPIED",
+   "source_rows": 2158,
+   "copied_rows": 2158,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_coverage",
+   "outcome": "COPIED",
+   "source_rows": 440694,
+   "copied_rows": 440694,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_coverage_v1_v2_map",
+   "outcome": "COPIED",
+   "source_rows": 633189,
+   "copied_rows": 633189,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_coverage_v2",
+   "outcome": "COPIED",
+   "source_rows": 633189,
+   "copied_rows": 633189,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_d2_decision",
+   "outcome": "COPIED",
+   "source_rows": 7182,
+   "copied_rows": 7182,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_d2_historical_reanalysis",
+   "outcome": "COPIED",
+   "source_rows": 3762,
+   "copied_rows": 3762,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_d2_unit_denoising",
+   "outcome": "COPIED",
+   "source_rows": 2941709,
+   "copied_rows": 2941709,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_d2_unit_snr",
+   "outcome": "COPIED",
+   "source_rows": 71825,
+   "copied_rows": 71825,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_dataset_terminal",
+   "outcome": "COPIED",
+   "source_rows": 715,
+   "copied_rows": 715,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_group_relation",
+   "outcome": "COPIED",
+   "source_rows": 4973,
+   "copied_rows": 4973,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_host_receipt",
+   "outcome": "COPIED",
+   "source_rows": 54,
+   "copied_rows": 54,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_incident_attempt",
+   "outcome": "COPIED",
+   "source_rows": 4,
+   "copied_rows": 4,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_information_metric",
+   "outcome": "COPIED",
+   "source_rows": 146906,
+   "copied_rows": 146906,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_lab_decision",
+   "outcome": "COPIED",
+   "source_rows": 3762,
+   "copied_rows": 3762,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_load_receipt",
+   "outcome": "COPIED",
+   "source_rows": 85,
+   "copied_rows": 85,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_naming_isolation_decision",
+   "outcome": "COPIED",
+   "source_rows": 6,
+   "copied_rows": 6,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_operator_delay_cost",
+   "outcome": "COPIED",
+   "source_rows": 516,
+   "copied_rows": 516,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_operator_run",
+   "outcome": "COPIED",
+   "source_rows": 13926,
+   "copied_rows": 13926,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_operator_signal_metric",
+   "outcome": "COPIED",
+   "source_rows": 382336,
+   "copied_rows": 382336,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_pair_relation",
+   "outcome": "COPIED",
+   "source_rows": 382626,
+   "copied_rows": 382626,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_resource_estimate",
+   "outcome": "COPIED",
+   "source_rows": 255786,
+   "copied_rows": 255786,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_resource_estimate_v2",
+   "outcome": "COPIED",
+   "source_rows": 257884,
+   "copied_rows": 257884,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_sampling_quality",
+   "outcome": "COPIED",
+   "source_rows": 69636,
+   "copied_rows": 69636,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_snr_calibration",
+   "outcome": "COPIED",
+   "source_rows": 37980,
+   "copied_rows": 37980,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_variable_profile",
+   "outcome": "COPIED",
+   "source_rows": 262520,
+   "copied_rows": 262520,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_characterization_batch",
+   "outcome": "COPIED",
+   "source_rows": 14,
+   "copied_rows": 14,
+   "pagination_key": "membership_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_lake_appearance",
+   "outcome": "COPIED",
+   "source_rows": 1680,
+   "copied_rows": 1680,
+   "pagination_key": "observation_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_lake_variable",
+   "outcome": "COPIED",
+   "source_rows": 1965,
+   "copied_rows": 1965,
+   "pagination_key": "observation_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_public_series",
+   "outcome": "COPIED",
+   "source_rows": 4650,
+   "copied_rows": 4650,
+   "pagination_key": "series_id",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_series",
+   "outcome": "COPIED",
+   "source_rows": 2,
+   "copied_rows": 2,
+   "pagination_key": "dataset_key",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_synthetic_generator",
+   "outcome": "COPIED",
+   "source_rows": 202,
+   "copied_rows": 202,
+   "pagination_key": "generator_id",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_variable",
+   "outcome": "COPIED",
+   "source_rows": 99,
+   "copied_rows": 99,
+   "pagination_key": "metadata_json",
+   "batching": "keyset"
+  },
+  {
+   "relation": "fact_dataset_inventory",
+   "outcome": "COPIED",
+   "source_rows": 2,
+   "copied_rows": 2,
+   "pagination_key": "physical_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "fact_eligibility_decision",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "fact_performance",
+   "outcome": "COPIED",
+   "source_rows": 1404,
+   "copied_rows": 1404,
+   "pagination_key": "id",
+   "batching": "keyset"
+  },
+  {
+   "relation": "fact_results_summary",
+   "outcome": "COPIED",
+   "source_rows": 1404,
+   "copied_rows": 1404,
+   "pagination_key": "id",
+   "batching": "keyset"
+  },
+  {
+   "relation": "fact_run_epoch",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "fact_split_information",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "fact_terminal_verification_descriptor",
+   "outcome": "COPIED",
+   "source_rows": 37301,
+   "copied_rows": 37301,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "fact_terminal_verification_descriptor_v2",
+   "outcome": "COPIED",
+   "source_rows": 37201,
+   "copied_rows": 37201,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "fact_terminal_verification_variable",
+   "outcome": "COPIED",
+   "source_rows": 1965,
+   "copied_rows": 1965,
+   "pagination_key": "terminal_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "fact_terminal_verification_variable_v2",
+   "outcome": "COPIED",
+   "source_rows": 1965,
+   "copied_rows": 1965,
+   "pagination_key": "terminal_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "fact_variable_characterization",
+   "outcome": "COPIED",
+   "source_rows": 40749,
+   "copied_rows": 40749,
+   "pagination_key": "observation_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "fact_variable_profile",
+   "outcome": "COPIED",
+   "source_rows": 99,
+   "copied_rows": 99,
+   "pagination_key": "profile_json",
+   "batching": "keyset"
+  },
+  {
+   "relation": "gov_metric_current",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "v_batch_membership_integrity",
+   "outcome": "COPIED",
+   "source_rows": 14,
+   "copied_rows": 14,
+   "pagination_key": "batch_key",
+   "batching": "keyset"
+  },
+  {
+   "relation": "v_campaign_attempts",
+   "outcome": "COPIED",
+   "source_rows": 10,
+   "copied_rows": 10,
+   "pagination_key": "campaign_key",
+   "batching": "keyset"
+  },
+  {
+   "relation": "v_campaign_run",
+   "outcome": "COPIED",
+   "source_rows": 20,
+   "copied_rows": 20,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "v_characterization_evidence_layer",
+   "outcome": "COPIED",
+   "source_rows": 40749,
+   "copied_rows": 40749,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "v_characterization_evidence_layer_v2",
+   "outcome": "COPIED",
+   "source_rows": 40749,
+   "copied_rows": 40749,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "v_lake_appearance_ambiguous",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "v_lake_appearance_current",
+   "outcome": "COPIED",
+   "source_rows": 1680,
+   "copied_rows": 1680,
+   "pagination_key": "observation_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "v_lake_variable_ambiguous",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "v_lake_variable_current",
+   "outcome": "COPIED",
+   "source_rows": 1965,
+   "copied_rows": 1965,
+   "pagination_key": "observation_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "v_public_series_ambiguous",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "v_public_series_current",
+   "outcome": "COPIED",
+   "source_rows": 4650,
+   "copied_rows": 4650,
+   "pagination_key": "series_id",
+   "batching": "keyset"
+  },
+  {
+   "relation": "v_synthetic_generator_ambiguous",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "v_synthetic_generator_current",
+   "outcome": "COPIED",
+   "source_rows": 202,
+   "copied_rows": 202,
+   "pagination_key": "generator_id",
+   "batching": "keyset"
+  },
+  {
+   "relation": "v_variable_characterization_current",
+   "outcome": "COPIED",
+   "source_rows": 40341,
+   "copied_rows": 40341,
+   "pagination_key": "observation_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "v_variable_characterization_current_v2",
+   "outcome": "COPIED",
+   "source_rows": 40341,
+   "copied_rows": 40341,
+   "pagination_key": "observation_sha256",
+   "batching": "keyset"
+  }
+ ]
+}
