@@ -111,7 +111,7 @@ which edition and which API terms applied at acquisition — is research and min
 
 | suite | result |
 |---|---|
-| predictor `tests` + `olap/store/tests` | see the measured line below |
+| predictor `tests` + `olap/store/tests` | **1395 passed, 2 skipped, 0 failed** in 6m36s |
 | — excluded: `tests/unit_tests`, `tests/integration_tests` | stale per AGENTS.md; they fail at import against the current architecture |
 | data-gov | 167 passed |
 | data-warehouse | 28 passed |
@@ -119,7 +119,38 @@ which edition and which API terms applied at acquisition — is research and min
 | financial-data `store/tests` | 22 passed, 2 skipped |
 | agent-multi governed set (5 files) | 38 passed |
 
+Exact command for the predictor line, including the environment that decides what runs:
+
+```
+U2_PG_DATABASE=<disposable> PGDATABASE=<disposable> \
+ARCHIVE_PROVIDER_SRC=<financial-data worktree>/store/src/financial_data_store \
+CUDA_VISIBLE_DEVICES="" crispdm-run -m 4G -t 1800 -n u-final -- python -m pytest \
+  tests olap/store/tests -q --ignore=tests/unit_tests --ignore=tests/integration_tests
+```
+
+`U2_PG_DATABASE` adds the PostgreSQL half of the dimension rules; without it they run on
+SQLite only. `ARCHIVE_PROVIDER_SRC` points the archive rules at the candidate lake provider;
+without it they resolve to the deployed one, which predates the class, and skip with that
+path named. Both facts are in the files themselves.
+
 No claim is made about any test not in that table.
+
+## A race the focal run hid, found by running the whole suite
+
+Two of my own new teardown rules passed alone and failed in the full run. The cause was not
+the tests. Between `fork` and `exec` a live process has no argv, and under load that window is
+wide enough to observe; `cmdline_of` read the empty argv as "already gone". In production that
+means **teardown could skip a service it had just started** — the same class of leftover that
+led me to the `pkill` in the first place.
+
+Liveness now comes from the kernel's own state field (missing, or `Z`, is gone). An empty argv
+on a live process gets a bounded wait and then `UNVERIFIABLE_IDENTITY_REFUSED`: not knowing
+whose a process is has never been a reason to signal it. Nine rules now, and the tests wait for
+`exec` instead of racing the scheduler.
+
+This is the second time this round that a focal run hid something the whole suite showed. Both
+times the correction was the one already given to me: verify in the code rather than in the
+probe, and measure the suite rather than the part I wrote.
 
 ## Open, with owners
 
