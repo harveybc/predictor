@@ -531,3 +531,11 @@ decide; excluirlos por estar revisados en otra reja fue un error mio.
 
 **F5.** Cargador sucesor verificado tras las correcciones con un envelope real: cargado,
 consultado por el servicio, reintento idempotente (`skipped_existing`) y outbox conciliado.
+### Retorno e99c6ba: progreso probado y alcance del incidente
+
+Las dos reproducciones anteriores ya pasan independientemente. Warehouse y
+cargador activos. La conciliacion del incidente todavia acepta metricas alteradas
+y todos los hijos ausentes: identidad/estado no equivalen a contenido preservado.
+No se afirma perdida productiva. Resume con huecos y snapshot con frontera solo
+declarada siguen pendientes. Continuacion acotada:
+[G1-G3](../handoffs/MUSASHI_F1_F5_REVIEW_AND_G1_G3_2026_09_16.md).
