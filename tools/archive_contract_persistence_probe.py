@@ -137,11 +137,13 @@ def fresh_reader(stack, deliveries):
         plugin.set_params(sqlite_path=stack["cube"])
     out = {}
     for name, delivery_id in deliveries.items():
-        resolved = plugin.resolve_delivery_availability(delivery_id)
-        row = dict(resolved)
+        row = dict(plugin.resolve_delivery_availability(delivery_id))
         canonical = row.pop("canonical_bytes", None)
         if canonical:
-            row["canonical_sha256_recomputed"] = hashlib.sha256(
+            # An INDEPENDENT recomputation beside the reader's own. The reader now verifies
+            # before it answers (U2); this second hash is kept so the receipt shows the two
+            # agreeing rather than asking anyone to take the reader's word for it.
+            row["probe_recomputed_sha256"] = hashlib.sha256(
                 canonical.encode("ascii")).hexdigest()
             row["canonical_says_lag"] = json.loads(canonical)["availability"][
                 "completion_lag_max"]

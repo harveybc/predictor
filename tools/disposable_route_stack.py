@@ -63,10 +63,98 @@ def wait_for(url: str, processes, deadline: float = 60.0) -> None:
 
 def start(argv, cwd, env, log: Path):
     handle = log.open("wb")
+    # Its own session, so the stack owns a process GROUP nobody else is in: teardown can then
+    # signal that group instead of matching a module name that production shares.
     process = subprocess.Popen(argv, cwd=str(cwd), env=env, stdout=handle,
                                stderr=subprocess.STDOUT, start_new_session=True)
     process._log = handle
     return process
+
+
+def cmdline_of(pid: int) -> str | None:
+    """The process's own argv, or None when the PID no longer denotes a running process.
+
+    A ZOMBIE still has a `/proc/<pid>` directory - the entry survives until its parent reaps it
+    - but its `cmdline` is empty. Reading only the directory's existence reports a process that
+    has already exited as still running, which made teardown escalate to SIGKILL and then
+    report STILL_RUNNING for a process that was gone. Both signs are checked here.
+    """
+    try:
+        raw = Path(f"/proc/{pid}/cmdline").read_bytes()
+    except (FileNotFoundError, ProcessLookupError, PermissionError):
+        return None
+    if not raw.strip(b"\x00"):
+        return None                      # zombie, or a process with no argv: not running
+    return raw.decode("utf-8", "replace").replace("\x00", " ")
+
+
+def reap(pid: int) -> None:
+    """Reap a child we started, so it does not linger as a zombie. Harmless for non-children."""
+    try:
+        os.waitpid(pid, os.WNOHANG)
+    except (ChildProcessError, OSError):
+        pass
+
+
+def teardown(state: dict, *, grace: float = 20.0) -> dict:
+    """Stop exactly the processes this stack started, and nothing else.
+
+    The rule that matters: a recorded PID alone never authorizes a signal. Between writing
+    STACK.json and tearing it down the PID may have been reused by an unrelated process — and
+    matching on a module name instead is how a disposable teardown reached the PRODUCTION
+    warehouse host on 2026-09-15. So every PID is checked against the marker this stack put in
+    its own command line (its unique work directory) before anything is signalled, and a
+    mismatch is REFUSED and reported rather than resolved in favour of killing.
+    """
+    marker = str(state["work"])
+    report = {"marker": marker, "processes": []}
+    for name in ("lake_pid", "warehouse_pid", "gov_pid"):
+        pid = state.get(name)
+        entry = {"role": name, "pid": pid}
+        if not pid:
+            entry["outcome"] = "NOT_RECORDED"
+            report["processes"].append(entry)
+            continue
+        pid = int(pid)
+        cmdline = cmdline_of(pid)
+        if cmdline is None:
+            entry["outcome"] = "ALREADY_GONE"
+            report["processes"].append(entry)
+            continue
+        if marker not in cmdline:
+            # The PID is alive and is NOT ours. This is the case that must never be a kill.
+            entry.update(outcome="PID_REUSED_REFUSED", observed_cmdline=cmdline[:200])
+            report["processes"].append(entry)
+            continue
+        try:
+            group = os.getpgid(pid)
+        except ProcessLookupError:
+            entry["outcome"] = "ALREADY_GONE"
+            report["processes"].append(entry)
+            continue
+        entry["process_group"] = group
+        os.killpg(group, signal.SIGTERM)
+        deadline = time.monotonic() + grace
+        while time.monotonic() < deadline and cmdline_of(pid) is not None:
+            reap(pid)
+            time.sleep(0.1)
+        reap(pid)
+        if cmdline_of(pid) is None:
+            entry["outcome"] = "TERMINATED"
+        else:
+            os.killpg(group, signal.SIGKILL)
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline and cmdline_of(pid) is not None:
+                reap(pid)
+                time.sleep(0.1)
+            reap(pid)
+            entry["outcome"] = ("KILLED" if cmdline_of(pid) is None else "STILL_RUNNING")
+        report["processes"].append(entry)
+    outcomes = [entry["outcome"] for entry in report["processes"]]
+    report["stopped"] = sum(1 for o in outcomes if o in ("TERMINATED", "KILLED"))
+    report["refused"] = sum(1 for o in outcomes if o == "PID_REUSED_REFUSED")
+    report["complete"] = all(o != "STILL_RUNNING" for o in outcomes)
+    return report
 
 
 def stop(process):
@@ -82,8 +170,12 @@ def stop(process):
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--fixtures", type=Path, required=True, help="the fixture root to serve")
-    parser.add_argument("--work", type=Path, required=True)
+    parser.add_argument("--teardown", type=Path, metavar="STACK.json",
+                        help="stop exactly the processes that stack started and report what "
+                             "happened; refuses any PID whose command line is not this "
+                             "stack's. Takes no other argument.")
+    parser.add_argument("--fixtures", type=Path, help="the fixture root to serve")
+    parser.add_argument("--work", type=Path)
     parser.add_argument("--hold", type=float, default=0.0,
                         help="keep the stack up this long (seconds) after printing its ports")
     # S2 asks for the proof on PostgreSQL, because that is what production runs and because
@@ -99,6 +191,14 @@ def main(argv=None) -> int:
                         help="paths importable by the store hosts, so a CANDIDATE provider "
                              "can be exercised without installing it into a live venv")
     args = parser.parse_args(argv)
+    if args.teardown is not None:
+        state = json.loads(args.teardown.read_text(encoding="utf-8"))
+        report = teardown(state)
+        print(json.dumps(report, indent=1))
+        return 0 if report["complete"] and not report["refused"] else 1
+    for required in ("fixtures", "work"):
+        if getattr(args, required) is None:
+            parser.error(f"--{required} is required unless --teardown is given")
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=True)
     fixtures = args.fixtures.resolve()

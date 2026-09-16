@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -29,6 +30,7 @@ REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "olap" / "store" / "src"))
 
 from predictor_olap_store.query import CANONICALIZATION, Plugin  # noqa: E402
+from sqlalchemy import text  # noqa: E402
 
 
 def canonical(contract: dict) -> str:
@@ -54,11 +56,48 @@ def archive_contract(resource="ethusdt_4h.parquet") -> tuple[str, str]:
     return hashlib.sha256(body.encode("ascii")).hexdigest(), body
 
 
-@pytest.fixture
-def store(tmp_path):
+#: A DISPOSABLE PostgreSQL database name. U2 asks for both engines, because a view, a
+#: LEFT JOIN and TEXT columns are where dialects differ and production runs PostgreSQL. The
+#: database must already exist and be throwaway; nothing here creates or drops one, and the
+#: production name is refused outright.
+PG_DATABASE = os.environ.get("U2_PG_DATABASE")
+PROTECTED = {"predictor_olap"}
+
+ENGINES = ["sqlite"] + (["postgres"] if PG_DATABASE else [])
+
+
+@pytest.fixture(params=ENGINES)
+def store(request, tmp_path):
     plugin = Plugin()
+    if request.param == "postgres":
+        if PG_DATABASE in PROTECTED:
+            pytest.fail(f"refusing to run against the production database {PG_DATABASE!r}")
+        os.environ["PGDATABASE"] = PG_DATABASE
+        plugin.set_params(sqlite_path=None, schema="public")
+        plugin.engine()
+        # each test starts from an empty dimension; the database is disposable by contract
+        with plugin.write_engine().begin() as conn:
+            conn.execute(text("DELETE FROM gov_availability_contract"))
+            conn.execute(text("DELETE FROM gov_terminal_dataset"))
+
+        def reopen():
+            other = Plugin()
+            other.set_params(sqlite_path=None, schema="public")
+            other.engine()
+            return other
+
+        plugin.reopen_for_test = reopen
+        return plugin
     plugin.set_params(sqlite_path=str(tmp_path / "cube.sqlite"))
     plugin.engine()
+
+    def reopen():
+        other = Plugin()
+        other.set_params(sqlite_path=str(tmp_path / "cube.sqlite"))
+        other.engine()
+        return other
+
+    plugin.reopen_for_test = reopen
     return plugin
 
 
@@ -81,7 +120,7 @@ def test_an_unresolved_reference_says_so_and_offers_no_lag(store):
     delivery_row(store, delivery_id="d-unresolved", contract_sha256=digest)
 
     resolved = store.resolve_delivery_availability("d-unresolved")
-    assert resolved["contract_resolution"] == "UNRESOLVED"
+    assert resolved["contract_resolution"] == "UNRESOLVED_REFERENCE_ABSENT"
     assert resolved["availability_contract_sha256"] == digest, "the reference is still shown"
     assert resolved["use_class"] is None, "no guessed class"
     assert resolved["completion_lag_max"] is None, (
@@ -96,13 +135,15 @@ def test_a_retained_contract_resolves_and_UNKNOWN_survives_as_itself(store):
     assert outcome == {"stored": 1, "already_stored": 0, "contracts": [digest]}
 
     resolved = store.resolve_delivery_availability("d-archive")
-    assert resolved["contract_resolution"] == "RESOLVED"
+    assert resolved["contract_resolution"] == "VERIFIED"
     assert resolved["use_class"] == "ARCHIVE_RETROSPECTIVE"
     assert resolved["completion_lag_max"] == "UNKNOWN", (
         "the string the producer declared, not a number and not a null")
     assert resolved["timezone_evidence"] == "UNKNOWN"
-    assert resolved["canonicalization"] == CANONICALIZATION
-    assert resolved["digest_algorithm"] == "sha256"
+    assert resolved["stored_canonicalization"] == CANONICALIZATION
+    assert resolved["stored_digest_algorithm"] == "sha256"
+    assert resolved["verified_sha256"] == digest, (
+        "VERIFIED means the READER hashed the bytes, not that a key matched")
 
 
 def test_the_retained_bytes_are_the_bytes_the_digest_was_taken_over(store):
@@ -126,7 +167,8 @@ def test_bytes_that_do_not_hash_to_the_declared_identity_are_refused(store):
             {"contract_sha256": digest, "canonical_bytes": forged}])
     assert "mismatch" in str(refusal.value)
     delivery_row(store, delivery_id="d-forged", contract_sha256=digest)
-    assert store.resolve_delivery_availability("d-forged")["contract_resolution"] == "UNRESOLVED"
+    assert store.resolve_delivery_availability(
+        "d-forged")["contract_resolution"] == "UNRESOLVED_REFERENCE_ABSENT"
 
 
 def test_semantics_are_read_out_of_the_bytes_and_cannot_be_supplied_beside_them(store):
@@ -177,18 +219,178 @@ def test_two_contracts_for_two_resources_do_not_collide(store):
 
 
 def test_a_delivery_nobody_ever_recorded_is_not_an_unresolved_contract(store):
-    """Three outcomes, kept apart: resolved, unresolved, and never seen."""
-    assert store.resolve_delivery_availability("d-nothing") == {
-        "delivery_id": "d-nothing", "contract_resolution": "NO_SUCH_DELIVERY"}
+    """Three outcomes, kept apart: verified, unresolved, and never seen."""
+    answer = store.resolve_delivery_availability("d-nothing")
+    assert answer["contract_resolution"] == "NO_SUCH_DELIVERY"
+    assert answer["use_class"] is None and answer["completion_lag_max"] is None
+    assert "availability_contract_sha256" not in answer, (
+        "there is no reference to report: nothing recorded this delivery at all")
 
 
 def test_the_migration_is_additive_and_repeatable(store, tmp_path):
     """Running the schema step again must not disturb a row that is already there."""
     digest, body = archive_contract()
     store.write_availability_contracts([{"contract_sha256": digest, "canonical_bytes": body}])
-    again = Plugin()
-    again.set_params(sqlite_path=str(tmp_path / "cube.sqlite"))
-    again.engine()
+    # the same database opened by a NEW provider instance: the schema step must run again
+    # over a populated store and leave what is there alone
+    again = store.reopen_for_test()
     delivery_row(again, delivery_id="d-after-migration", contract_sha256=digest)
     assert again.resolve_delivery_availability(
         "d-after-migration")["use_class"] == "ARCHIVE_RETROSPECTIVE"
+
+
+# --- U2: what the reader must refuse, each for its own distinct reason -------------------
+
+def tamper(store, digest, replacement):
+    """Change the retained bytes while leaving the key and the cached columns alone."""
+    with store.write_engine().begin() as conn:
+        conn.execute(text("UPDATE gov_availability_contract SET canonical_bytes = :b "
+                          "WHERE contract_sha256 = :c"), {"b": replacement, "c": digest})
+
+
+def stored_archive(store, delivery_id="d"):
+    digest, body = archive_contract()
+    store.write_availability_contracts([{"contract_sha256": digest, "canonical_bytes": body}])
+    delivery_row(store, delivery_id=delivery_id, contract_sha256=digest)
+    return digest, body
+
+
+def test_drifted_bytes_are_caught_by_the_reader_and_not_only_by_a_test(store):
+    """Musashi's counterexample, as a rule.
+
+    The key and the cached columns are untouched; only the retained bytes change. Before this,
+    the reader returned the view's row and reported RESOLVED with `UNKNOWN` from bytes that
+    said `0s`. The reader must hash what it is about to show.
+    """
+    digest, body = stored_archive(store, "d-drift")
+    tamper(store, digest, body.replace('"UNKNOWN"', '"0s"', 1))
+
+    answer = store.resolve_delivery_availability("d-drift")
+    assert answer["contract_resolution"] == "UNRESOLVED_DIGEST_MISMATCH"
+    assert answer["use_class"] is None
+    assert answer["completion_lag_max"] is None, "no availability claim survives a mismatch"
+    assert answer["recomputed_sha256"] != digest
+    assert answer["stored_completion_lag_max"] == "UNKNOWN", (
+        "what the database holds stays visible - it is just not an answer")
+
+
+def test_the_cached_columns_alone_never_become_the_answer(store):
+    """The mirror of the drift: bytes verify, cached columns were edited. Still no claim."""
+    digest, _body = stored_archive(store, "d-cached")
+    with store.write_engine().begin() as conn:
+        conn.execute(text("UPDATE gov_availability_contract SET use_class = 'LIVE_EQUIVALENT',"
+                          " completion_lag_max = '0s' WHERE contract_sha256 = :c"),
+                     {"c": digest})
+
+    answer = store.resolve_delivery_availability("d-cached")
+    assert answer["contract_resolution"] == "UNRESOLVED_STORED_SEMANTICS_DISAGREE"
+    assert answer["use_class"] is None and answer["completion_lag_max"] is None
+    assert answer["disagreements"]["use_class"] == {
+        "stored": "LIVE_EQUIVALENT", "bytes_say": "ARCHIVE_RETROSPECTIVE"}
+    assert answer["disagreements"]["completion_lag_max"]["bytes_say"] == "UNKNOWN"
+
+
+def test_a_canonicalization_this_store_cannot_reproduce_is_refused_on_write(store):
+    digest, body = archive_contract()
+    with pytest.raises(ValueError) as refusal:
+        store.write_availability_contracts([{
+            "contract_sha256": digest, "canonical_bytes": body,
+            "canonicalization": "cbor.deterministic.v9"}])
+    assert "unsupported canonicalization" in str(refusal.value)
+
+
+def test_a_contract_stored_under_an_unverifiable_format_is_not_displayed(store):
+    """Defence in depth: a row that got in another way still yields no claim."""
+    digest, body = stored_archive(store, "d-format")
+    with store.write_engine().begin() as conn:
+        conn.execute(text("UPDATE gov_availability_contract SET canonicalization = 'cbor.v9'"
+                          " WHERE contract_sha256 = :c"), {"c": digest})
+
+    answer = store.resolve_delivery_availability("d-format")
+    assert answer["contract_resolution"] == "UNRESOLVED_UNSUPPORTED_FORMAT"
+    assert answer["use_class"] is None
+    assert "cbor.v9" in answer["reason"]
+
+
+def test_a_lag_that_is_not_a_duration_is_refused_rather_than_stringified(store):
+    """`str({'hours': 4})` is a plausible-looking string that can never be compared again."""
+    contract = {"resource_id": "x", "availability": {
+        "label": "WINDOW_START", "completion_lag_max": {"hours": 4},
+        "timezone_evidence": "PRODUCER_STATEMENT", "use_class": "OFFLINE_DAY_GRANULAR"}}
+    body = canonical(contract)
+    digest = hashlib.sha256(body.encode("ascii")).hexdigest()
+    with pytest.raises(ValueError) as refusal:
+        store.write_availability_contracts([{"contract_sha256": digest,
+                                             "canonical_bytes": body}])
+    assert "completion_lag_max" in str(refusal.value) and "dict" in str(refusal.value)
+
+
+def test_a_use_class_this_store_cannot_interpret_is_refused_on_write(store):
+    contract = {"resource_id": "x", "availability": {
+        "label": "WINDOW_START", "completion_lag_max": "4h",
+        "timezone_evidence": "PRODUCER_STATEMENT", "use_class": "SOMETHING_NEW"}}
+    body = canonical(contract)
+    digest = hashlib.sha256(body.encode("ascii")).hexdigest()
+    with pytest.raises(ValueError) as refusal:
+        store.write_availability_contracts([{"contract_sha256": digest,
+                                             "canonical_bytes": body}])
+    assert "SOMETHING_NEW" in str(refusal.value)
+
+
+def test_bytes_that_are_not_a_contract_are_malformed_and_not_a_mismatch(store):
+    """A distinct outcome: the bytes verify against their digest but say nothing usable."""
+    body = "not json at all"
+    digest = hashlib.sha256(body.encode("ascii")).hexdigest()
+    with store.write_engine().begin() as conn:
+        conn.execute(text(
+            "INSERT INTO gov_availability_contract (contract_sha256, canonical_bytes,"
+            " digest_algorithm, canonicalization, use_class, completion_lag_max, first_seen)"
+            " VALUES (:c, :b, 'sha256', :z, 'ARCHIVE_RETROSPECTIVE', 'UNKNOWN', 'now')"),
+            {"c": digest, "b": body, "z": CANONICALIZATION})
+    delivery_row(store, delivery_id="d-malformed", contract_sha256=digest)
+
+    answer = store.resolve_delivery_availability("d-malformed")
+    assert answer["contract_resolution"] == "UNRESOLVED_MALFORMED_CONTRACT"
+    assert answer["use_class"] is None
+
+
+def test_the_same_delivery_recorded_against_two_contracts_is_ambiguous(store):
+    """Repeated delivery references: which contract is true is not the reader's guess."""
+    a_digest, a_body = archive_contract("a.parquet")
+    b_digest, b_body = archive_contract("b.parquet")
+    store.write_availability_contracts([
+        {"contract_sha256": a_digest, "canonical_bytes": a_body},
+        {"contract_sha256": b_digest, "canonical_bytes": b_body}])
+    delivery_row(store, delivery_id="d-twice", contract_sha256=a_digest, terminal="a" * 64)
+    delivery_row(store, delivery_id="d-twice", contract_sha256=b_digest, terminal="c" * 64)
+
+    answer = store.resolve_delivery_availability("d-twice")
+    assert answer["contract_resolution"] == "UNRESOLVED_AMBIGUOUS_DELIVERY"
+    assert answer["use_class"] is None
+    assert sorted(answer["references"]) == sorted([a_digest, b_digest])
+
+
+def test_the_same_delivery_recorded_twice_for_the_same_contract_still_verifies(store):
+    """A repeated reference that AGREES is not an ambiguity, and must not be refused."""
+    digest, body = archive_contract()
+    store.write_availability_contracts([{"contract_sha256": digest, "canonical_bytes": body}])
+    delivery_row(store, delivery_id="d-repeat", contract_sha256=digest, terminal="a" * 64)
+    delivery_row(store, delivery_id="d-repeat", contract_sha256=digest, terminal="c" * 64)
+
+    answer = store.resolve_delivery_availability("d-repeat")
+    assert answer["contract_resolution"] == "VERIFIED"
+    assert answer["completion_lag_max"] == "UNKNOWN"
+
+
+def test_the_view_says_stored_and_never_says_verified(store):
+    """A raw SQL join may expose what is stored; it may not imply it checked anything."""
+    stored_archive(store, "d-view")
+    with store.engine().connect() as conn:
+        row = dict(conn.execute(text(
+            "SELECT * FROM gov_delivery_availability WHERE delivery_id = 'd-view'")).first()
+            ._mapping)
+    assert row["contract_reference"] == "STORED"
+    assert "contract_resolution" not in row, "the view must not offer a verdict it cannot make"
+    for name in ("use_class", "completion_lag_max"):
+        assert name not in row, f"{name} would read as verified; it is stored_{name}"
+    assert row["stored_use_class"] == "ARCHIVE_RETROSPECTIVE"
