@@ -1,0 +1,563 @@
+........FFFFFFFFF.FFFF.FF...............FF                               [100%]
+=================================== FAILURES ===================================
+________________________ test_a_changed_cost_is_caught _________________________
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_a_changed_cost_is_caught0/cube.duckdb', 'accounting': PosixPath('/tm...562a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_a_changed_cost_is_caught0')}
+
+    def test_a_changed_cost_is_caught(scene):
+        """The reviewer's probe: costs_json altered to wall_seconds=999999, still NO_LOSS before."""
+        mutate(scene["cube"], "UPDATE main.gov_terminal SET costs_json = "
+                              "'{\"wall_seconds\":999999.0}'")
+        code, report = run(scene, "costs.json")
+>       assert code != 0
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:219: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+_____________ test_a_changed_availability_contract_link_is_caught ______________
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_a_changed_availability_co0/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_a_changed_availability_co0')}
+
+    def test_a_changed_availability_contract_link_is_caught(scene):
+        """The reviewer's second probe: the stored contract digest set to 64 zeroes."""
+        mutate(scene["cube"], "UPDATE main.gov_terminal_dataset SET "
+                              "availability_contract_sha256 = repeat('0', 64)")
+        code, report = run(scene, "contract.json")
+>       assert code != 0
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:228: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+_ test_every_persisted_parent_field_is_compared[code_identity_json-'{"kind":"git_commit","value":"deadbeef"}'] _
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi0/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi0')}
+column = 'code_identity_json'
+value = '\'{"kind":"git_commit","value":"deadbeef"}\''
+
+    @pytest.mark.parametrize("column,value", [
+        ("code_identity_json", "'{\"kind\":\"git_commit\",\"value\":\"deadbeef\"}'"),
+        ("tags_json", "'{\"tampered\":\"yes\"}'"),
+        ("started_at", "'1999-01-01T00:00:00Z'"),
+        ("finished_at", "'1999-01-01T00:00:01Z'"),
+        ("terminal_lake", "'somewhere_else'"),
+        ("campaign_key", "'a-different-campaign'"),
+        ("reason", "'invented'"),
+        ("config_sha256", "repeat('9', 64)"),
+    ])
+    def test_every_persisted_parent_field_is_compared(scene, column, value):
+        """One rule per persisted column: a list nobody checks is the defect being corrected."""
+        mutate(scene["cube"], f"UPDATE main.gov_terminal SET {column} = {value}")
+        code, report = run(scene, f"{column}.json")
+>       assert code != 0, f"{column} is persisted and was not compared"
+E       AssertionError: code_identity_json is persisted and was not compared
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:247: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+_ test_every_persisted_parent_field_is_compared[tags_json-'{"tampered":"yes"}'] _
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi1/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi1')}
+column = 'tags_json', value = '\'{"tampered":"yes"}\''
+
+    @pytest.mark.parametrize("column,value", [
+        ("code_identity_json", "'{\"kind\":\"git_commit\",\"value\":\"deadbeef\"}'"),
+        ("tags_json", "'{\"tampered\":\"yes\"}'"),
+        ("started_at", "'1999-01-01T00:00:00Z'"),
+        ("finished_at", "'1999-01-01T00:00:01Z'"),
+        ("terminal_lake", "'somewhere_else'"),
+        ("campaign_key", "'a-different-campaign'"),
+        ("reason", "'invented'"),
+        ("config_sha256", "repeat('9', 64)"),
+    ])
+    def test_every_persisted_parent_field_is_compared(scene, column, value):
+        """One rule per persisted column: a list nobody checks is the defect being corrected."""
+        mutate(scene["cube"], f"UPDATE main.gov_terminal SET {column} = {value}")
+        code, report = run(scene, f"{column}.json")
+>       assert code != 0, f"{column} is persisted and was not compared"
+E       AssertionError: tags_json is persisted and was not compared
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:247: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+_ test_every_persisted_parent_field_is_compared[started_at-'1999-01-01T00:00:00Z'] _
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi2/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi2')}
+column = 'started_at', value = "'1999-01-01T00:00:00Z'"
+
+    @pytest.mark.parametrize("column,value", [
+        ("code_identity_json", "'{\"kind\":\"git_commit\",\"value\":\"deadbeef\"}'"),
+        ("tags_json", "'{\"tampered\":\"yes\"}'"),
+        ("started_at", "'1999-01-01T00:00:00Z'"),
+        ("finished_at", "'1999-01-01T00:00:01Z'"),
+        ("terminal_lake", "'somewhere_else'"),
+        ("campaign_key", "'a-different-campaign'"),
+        ("reason", "'invented'"),
+        ("config_sha256", "repeat('9', 64)"),
+    ])
+    def test_every_persisted_parent_field_is_compared(scene, column, value):
+        """One rule per persisted column: a list nobody checks is the defect being corrected."""
+        mutate(scene["cube"], f"UPDATE main.gov_terminal SET {column} = {value}")
+        code, report = run(scene, f"{column}.json")
+>       assert code != 0, f"{column} is persisted and was not compared"
+E       AssertionError: started_at is persisted and was not compared
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:247: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+_ test_every_persisted_parent_field_is_compared[finished_at-'1999-01-01T00:00:01Z'] _
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi3/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi3')}
+column = 'finished_at', value = "'1999-01-01T00:00:01Z'"
+
+    @pytest.mark.parametrize("column,value", [
+        ("code_identity_json", "'{\"kind\":\"git_commit\",\"value\":\"deadbeef\"}'"),
+        ("tags_json", "'{\"tampered\":\"yes\"}'"),
+        ("started_at", "'1999-01-01T00:00:00Z'"),
+        ("finished_at", "'1999-01-01T00:00:01Z'"),
+        ("terminal_lake", "'somewhere_else'"),
+        ("campaign_key", "'a-different-campaign'"),
+        ("reason", "'invented'"),
+        ("config_sha256", "repeat('9', 64)"),
+    ])
+    def test_every_persisted_parent_field_is_compared(scene, column, value):
+        """One rule per persisted column: a list nobody checks is the defect being corrected."""
+        mutate(scene["cube"], f"UPDATE main.gov_terminal SET {column} = {value}")
+        code, report = run(scene, f"{column}.json")
+>       assert code != 0, f"{column} is persisted and was not compared"
+E       AssertionError: finished_at is persisted and was not compared
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:247: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+_ test_every_persisted_parent_field_is_compared[terminal_lake-'somewhere_else'] _
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi4/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi4')}
+column = 'terminal_lake', value = "'somewhere_else'"
+
+    @pytest.mark.parametrize("column,value", [
+        ("code_identity_json", "'{\"kind\":\"git_commit\",\"value\":\"deadbeef\"}'"),
+        ("tags_json", "'{\"tampered\":\"yes\"}'"),
+        ("started_at", "'1999-01-01T00:00:00Z'"),
+        ("finished_at", "'1999-01-01T00:00:01Z'"),
+        ("terminal_lake", "'somewhere_else'"),
+        ("campaign_key", "'a-different-campaign'"),
+        ("reason", "'invented'"),
+        ("config_sha256", "repeat('9', 64)"),
+    ])
+    def test_every_persisted_parent_field_is_compared(scene, column, value):
+        """One rule per persisted column: a list nobody checks is the defect being corrected."""
+        mutate(scene["cube"], f"UPDATE main.gov_terminal SET {column} = {value}")
+        code, report = run(scene, f"{column}.json")
+>       assert code != 0, f"{column} is persisted and was not compared"
+E       AssertionError: terminal_lake is persisted and was not compared
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:247: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+_ test_every_persisted_parent_field_is_compared[campaign_key-'a-different-campaign'] _
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi5/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi5')}
+column = 'campaign_key', value = "'a-different-campaign'"
+
+    @pytest.mark.parametrize("column,value", [
+        ("code_identity_json", "'{\"kind\":\"git_commit\",\"value\":\"deadbeef\"}'"),
+        ("tags_json", "'{\"tampered\":\"yes\"}'"),
+        ("started_at", "'1999-01-01T00:00:00Z'"),
+        ("finished_at", "'1999-01-01T00:00:01Z'"),
+        ("terminal_lake", "'somewhere_else'"),
+        ("campaign_key", "'a-different-campaign'"),
+        ("reason", "'invented'"),
+        ("config_sha256", "repeat('9', 64)"),
+    ])
+    def test_every_persisted_parent_field_is_compared(scene, column, value):
+        """One rule per persisted column: a list nobody checks is the defect being corrected."""
+        mutate(scene["cube"], f"UPDATE main.gov_terminal SET {column} = {value}")
+        code, report = run(scene, f"{column}.json")
+>       assert code != 0, f"{column} is persisted and was not compared"
+E       AssertionError: campaign_key is persisted and was not compared
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:247: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+_______ test_every_persisted_parent_field_is_compared[reason-'invented'] _______
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi6/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_parent_fi6')}
+column = 'reason', value = "'invented'"
+
+    @pytest.mark.parametrize("column,value", [
+        ("code_identity_json", "'{\"kind\":\"git_commit\",\"value\":\"deadbeef\"}'"),
+        ("tags_json", "'{\"tampered\":\"yes\"}'"),
+        ("started_at", "'1999-01-01T00:00:00Z'"),
+        ("finished_at", "'1999-01-01T00:00:01Z'"),
+        ("terminal_lake", "'somewhere_else'"),
+        ("campaign_key", "'a-different-campaign'"),
+        ("reason", "'invented'"),
+        ("config_sha256", "repeat('9', 64)"),
+    ])
+    def test_every_persisted_parent_field_is_compared(scene, column, value):
+        """One rule per persisted column: a list nobody checks is the defect being corrected."""
+        mutate(scene["cube"], f"UPDATE main.gov_terminal SET {column} = {value}")
+        code, report = run(scene, f"{column}.json")
+>       assert code != 0, f"{column} is persisted and was not compared"
+E       AssertionError: reason is persisted and was not compared
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:247: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+_ test_every_persisted_dataset_field_is_compared[source_sha256-repeat('7', 64)] _
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_dataset_f0/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_dataset_f0')}
+column = 'source_sha256', value = "repeat('7', 64)"
+
+    @pytest.mark.parametrize("column,value", [
+        ("source_sha256", "repeat('7', 64)"),
+        ("delivery_kind", "'REWRITTEN'"),
+        ("range_from", "'1999-01-01'"),
+        ("time_column", "'not_the_column'"),
+        ("bytes", "424242"),
+    ])
+    def test_every_persisted_dataset_field_is_compared(scene, column, value):
+        mutate(scene["cube"], f"UPDATE main.gov_terminal_dataset SET {column} = {value}")
+        code, report = run(scene, f"ds_{column}.json")
+>       assert code != 0, f"gov_terminal_dataset.{column} is persisted and was not compared"
+E       AssertionError: gov_terminal_dataset.source_sha256 is persisted and was not compared
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:260: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+__ test_every_persisted_dataset_field_is_compared[delivery_kind-'REWRITTEN'] ___
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_dataset_f1/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_dataset_f1')}
+column = 'delivery_kind', value = "'REWRITTEN'"
+
+    @pytest.mark.parametrize("column,value", [
+        ("source_sha256", "repeat('7', 64)"),
+        ("delivery_kind", "'REWRITTEN'"),
+        ("range_from", "'1999-01-01'"),
+        ("time_column", "'not_the_column'"),
+        ("bytes", "424242"),
+    ])
+    def test_every_persisted_dataset_field_is_compared(scene, column, value):
+        mutate(scene["cube"], f"UPDATE main.gov_terminal_dataset SET {column} = {value}")
+        code, report = run(scene, f"ds_{column}.json")
+>       assert code != 0, f"gov_terminal_dataset.{column} is persisted and was not compared"
+E       AssertionError: gov_terminal_dataset.delivery_kind is persisted and was not compared
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:260: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+___ test_every_persisted_dataset_field_is_compared[range_from-'1999-01-01'] ____
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_dataset_f2/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_dataset_f2')}
+column = 'range_from', value = "'1999-01-01'"
+
+    @pytest.mark.parametrize("column,value", [
+        ("source_sha256", "repeat('7', 64)"),
+        ("delivery_kind", "'REWRITTEN'"),
+        ("range_from", "'1999-01-01'"),
+        ("time_column", "'not_the_column'"),
+        ("bytes", "424242"),
+    ])
+    def test_every_persisted_dataset_field_is_compared(scene, column, value):
+        mutate(scene["cube"], f"UPDATE main.gov_terminal_dataset SET {column} = {value}")
+        code, report = run(scene, f"ds_{column}.json")
+>       assert code != 0, f"gov_terminal_dataset.{column} is persisted and was not compared"
+E       AssertionError: gov_terminal_dataset.range_from is persisted and was not compared
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:260: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+_ test_every_persisted_dataset_field_is_compared[time_column-'not_the_column'] _
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_dataset_f3/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_every_persisted_dataset_f3')}
+column = 'time_column', value = "'not_the_column'"
+
+    @pytest.mark.parametrize("column,value", [
+        ("source_sha256", "repeat('7', 64)"),
+        ("delivery_kind", "'REWRITTEN'"),
+        ("range_from", "'1999-01-01'"),
+        ("time_column", "'not_the_column'"),
+        ("bytes", "424242"),
+    ])
+    def test_every_persisted_dataset_field_is_compared(scene, column, value):
+        mutate(scene["cube"], f"UPDATE main.gov_terminal_dataset SET {column} = {value}")
+        code, report = run(scene, f"ds_{column}.json")
+>       assert code != 0, f"gov_terminal_dataset.{column} is persisted and was not compared"
+E       AssertionError: gov_terminal_dataset.time_column is persisted and was not compared
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:260: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+________________ test_the_mapping_names_every_persisted_column _________________
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-545/test_the_mapping_names_every_p0/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_the_mapping_names_every_p0')}
+
+    def test_the_mapping_names_every_persisted_column(scene):
+        """The coverage claim is checkable: each stored column is compared, excused or reported."""
+        report_code, report = run(scene, "coverage.json")
+>       coverage = report["field_coverage"]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'field_coverage'
+
+tests/test_incident_reconciler_contract.py:266: KeyError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+________ test_a_payload_that_does_not_match_its_digest_is_unverifiable _________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_a_payload_that_does_not_m0')
+
+    def test_a_payload_that_does_not_match_its_digest_is_unverifiable(tmp_path):
+        """A retained expectation must itself be valid, or it cannot be an expectation."""
+        cube = str(tmp_path / "c.duckdb")
+        migrate.build_fixture_cube(cube, terminals=1, with_children=True)
+        digest = hashlib.sha256(b"terminal-0").hexdigest()
+        payload = fixture_payload(digest)
+        payload["campaign_key"] = "tampered-after-acceptance"   # no longer hashes to its digest
+        accounting = accounting_with(tmp_path / "acc.db", [{
+            "terminal_sha256": digest, "campaign_sha256": "c" * 64, "unit_id": "unit-0",
+            "generation": 1, "status": "COMPLETED", "body": payload}])
+        out = tmp_path / "r.json"
+        code = reconcile.main(["--accounting", str(accounting), "--cube", cube,
+                               "--schema", "main", "--out", str(out)])
+        report = json.loads(out.read_text())
+>       assert report["counts"]["content_unverifiable"] == 1
+E       assert 0 == 1
+
+tests/test_incident_reconciler_contract.py:296: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "verdict": "NO_LOSS_FOR_THE_COMPARED_POPULATION",
+ "accepted_by_governance": 1,
+ "content_matches": 1,
+ "content_differs": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "content_unverifiable": 0,
+ "repaired": 0,
+ "terminals_in_cube": 1,
+ "cube_rows_without_an_accepted_record": 0
+}
+___________ test_a_writer_arriving_after_the_probe_cannot_be_missed ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_a_writer_arriving_after_t0')
+
+    def test_a_writer_arriving_after_the_probe_cannot_be_missed(tmp_path):
+        """The reviewer's finding: the probe closed its connection before the copy began.
+    
+        Between `measure_boundary` returning and `snapshot_database` reading the files, another
+        process could open the database and write. A probe that has already let go proves nothing
+        about the interval that matters.
+        """
+        source = str(tmp_path / "raced.duckdb")
+        migrate.build_fixture_cube(source, terminals=1)
+    
+        opened = {"count": 0}
+>       real_copy = migrate._copy_files
+                    ^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'olap_duckdb_migrate_cli_under_test' has no attribute '_copy_files'
+
+tests/test_migration_cli_contract.py:337: AttributeError
+_____ test_the_copy_is_compared_against_the_source_under_the_held_boundary _____
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-545/test_the_copy_is_compared_agai0')
+
+    def test_the_copy_is_compared_against_the_source_under_the_held_boundary(tmp_path):
+        """A copy whose contents were never compared with the source is not a verified snapshot."""
+        source = str(tmp_path / "compared.duckdb")
+        migrate.build_fixture_cube(source, terminals=2, with_children=True, with_contract=True)
+    
+        report = migrate.snapshot_database(source, str(tmp_path / "copy.duckdb"),
+                                           schema="main", expect_terminals=2, owner_stopped=True)
+    
+        assert report["kind"] == "VERIFIED_SNAPSHOT"
+>       assert report["source_digests"], "the source was never measured"
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'source_digests'
+
+tests/test_migration_cli_contract.py:382: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_incident_reconciler_contract.py::test_a_changed_cost_is_caught
+FAILED tests/test_incident_reconciler_contract.py::test_a_changed_availability_contract_link_is_caught
+FAILED tests/test_incident_reconciler_contract.py::test_every_persisted_parent_field_is_compared[code_identity_json-'{"kind":"git_commit","value":"deadbeef"}']
+FAILED tests/test_incident_reconciler_contract.py::test_every_persisted_parent_field_is_compared[tags_json-'{"tampered":"yes"}']
+FAILED tests/test_incident_reconciler_contract.py::test_every_persisted_parent_field_is_compared[started_at-'1999-01-01T00:00:00Z']
+FAILED tests/test_incident_reconciler_contract.py::test_every_persisted_parent_field_is_compared[finished_at-'1999-01-01T00:00:01Z']
+FAILED tests/test_incident_reconciler_contract.py::test_every_persisted_parent_field_is_compared[terminal_lake-'somewhere_else']
+FAILED tests/test_incident_reconciler_contract.py::test_every_persisted_parent_field_is_compared[campaign_key-'a-different-campaign']
+FAILED tests/test_incident_reconciler_contract.py::test_every_persisted_parent_field_is_compared[reason-'invented']
+FAILED tests/test_incident_reconciler_contract.py::test_every_persisted_dataset_field_is_compared[source_sha256-repeat('7', 64)]
+FAILED tests/test_incident_reconciler_contract.py::test_every_persisted_dataset_field_is_compared[delivery_kind-'REWRITTEN']
+FAILED tests/test_incident_reconciler_contract.py::test_every_persisted_dataset_field_is_compared[range_from-'1999-01-01']
+FAILED tests/test_incident_reconciler_contract.py::test_every_persisted_dataset_field_is_compared[time_column-'not_the_column']
+FAILED tests/test_incident_reconciler_contract.py::test_the_mapping_names_every_persisted_column
+FAILED tests/test_incident_reconciler_contract.py::test_a_payload_that_does_not_match_its_digest_is_unverifiable
+FAILED tests/test_migration_cli_contract.py::test_a_writer_arriving_after_the_probe_cannot_be_missed
+FAILED tests/test_migration_cli_contract.py::test_the_copy_is_compared_against_the_source_under_the_held_boundary
+17 failed, 25 passed in 5.79s

@@ -201,3 +201,98 @@ def test_an_empty_accounting_never_produces_a_blanket_no_loss(tmp_path):
     assert report["counts"]["accepted_by_governance"] == 0
     assert report["counts"]["cube_rows_without_an_accepted_record"] == 2
     assert report["verdict"] != "NO_LOSS"
+
+
+# --- H1: every PERSISTED field, not a handpicked list ---------------------------------------
+
+def mutate(cube: str, sql: str) -> None:
+    con = duckdb.connect(cube)
+    con.execute(sql)
+    con.close()
+
+
+def test_a_changed_cost_is_caught(scene):
+    """The reviewer's probe: costs_json altered to wall_seconds=999999, still NO_LOSS before."""
+    mutate(scene["cube"], "UPDATE main.gov_terminal SET costs_json = "
+                          "'{\"wall_seconds\":999999.0}'")
+    code, report = run(scene, "costs.json")
+    assert code != 0
+    assert any("costs" in json.dumps(entry["differences"]) for entry in report["content_differs"])
+
+
+def test_a_changed_availability_contract_link_is_caught(scene):
+    """The reviewer's second probe: the stored contract digest set to 64 zeroes."""
+    mutate(scene["cube"], "UPDATE main.gov_terminal_dataset SET "
+                          "availability_contract_sha256 = repeat('0', 64)")
+    code, report = run(scene, "contract.json")
+    assert code != 0
+    assert any("availability_contract_sha256" in json.dumps(entry["differences"])
+               for entry in report["content_differs"])
+
+
+@pytest.mark.parametrize("column,value", [
+    ("code_identity_json", "'{\"kind\":\"git_commit\",\"value\":\"deadbeef\"}'"),
+    ("tags_json", "'{\"tampered\":\"yes\"}'"),
+    ("started_at", "'1999-01-01T00:00:00Z'"),
+    ("finished_at", "'1999-01-01T00:00:01Z'"),
+    ("terminal_lake", "'somewhere_else'"),
+    ("campaign_key", "'a-different-campaign'"),
+    ("reason", "'invented'"),
+    ("config_sha256", "repeat('9', 64)"),
+])
+def test_every_persisted_parent_field_is_compared(scene, column, value):
+    """One rule per persisted column: a list nobody checks is the defect being corrected."""
+    mutate(scene["cube"], f"UPDATE main.gov_terminal SET {column} = {value}")
+    code, report = run(scene, f"{column}.json")
+    assert code != 0, f"{column} is persisted and was not compared"
+
+
+@pytest.mark.parametrize("column,value", [
+    ("source_sha256", "repeat('7', 64)"),
+    ("delivery_kind", "'REWRITTEN'"),
+    ("range_from", "'1999-01-01'"),
+    ("time_column", "'not_the_column'"),
+    ("bytes", "424242"),
+])
+def test_every_persisted_dataset_field_is_compared(scene, column, value):
+    mutate(scene["cube"], f"UPDATE main.gov_terminal_dataset SET {column} = {value}")
+    code, report = run(scene, f"ds_{column}.json")
+    assert code != 0, f"gov_terminal_dataset.{column} is persisted and was not compared"
+
+
+def test_the_mapping_names_every_persisted_column(scene):
+    """The coverage claim is checkable: each stored column is compared, excused or reported."""
+    report_code, report = run(scene, "coverage.json")
+    coverage = report["field_coverage"]
+    con = duckdb.connect(scene["cube"], read_only=True)
+    try:
+        for relation in ("gov_terminal", "gov_terminal_metric", "gov_terminal_dataset",
+                         "gov_terminal_artifact"):
+            columns = {row[1] for row in con.execute(
+                f'PRAGMA table_info("main"."{relation}")').fetchall()}
+            described = set(coverage[relation]["compared"]) | set(
+                coverage[relation]["not_persisted_from_payload"])
+            assert columns <= described, (
+                f"{relation}: {sorted(columns - described)} is stored and neither compared "
+                "nor explained")
+    finally:
+        con.close()
+
+
+def test_a_payload_that_does_not_match_its_digest_is_unverifiable(tmp_path):
+    """A retained expectation must itself be valid, or it cannot be an expectation."""
+    cube = str(tmp_path / "c.duckdb")
+    migrate.build_fixture_cube(cube, terminals=1, with_children=True)
+    digest = hashlib.sha256(b"terminal-0").hexdigest()
+    payload = fixture_payload(digest)
+    payload["campaign_key"] = "tampered-after-acceptance"   # no longer hashes to its digest
+    accounting = accounting_with(tmp_path / "acc.db", [{
+        "terminal_sha256": digest, "campaign_sha256": "c" * 64, "unit_id": "unit-0",
+        "generation": 1, "status": "COMPLETED", "body": payload}])
+    out = tmp_path / "r.json"
+    code = reconcile.main(["--accounting", str(accounting), "--cube", cube,
+                           "--schema", "main", "--out", str(out)])
+    report = json.loads(out.read_text())
+    assert report["counts"]["content_unverifiable"] == 1
+    assert code != 0
+    assert "digest" in json.dumps(report["content_unverifiable"]).lower()

@@ -319,3 +319,67 @@ def test_a_snapshot_taken_while_another_process_holds_the_file_is_an_unverified_
     assert report["verified"] is False
     assert report["caller_claimed_owner_stopped"] is True, (
         "the caller's claim is recorded beside the measurement that contradicts it")
+
+
+# --- H2: the boundary must be HELD through the copy ----------------------------------------
+
+def test_a_writer_arriving_after_the_probe_cannot_be_missed(tmp_path):
+    """The reviewer's finding: the probe closed its connection before the copy began.
+
+    Between `measure_boundary` returning and `snapshot_database` reading the files, another
+    process could open the database and write. A probe that has already let go proves nothing
+    about the interval that matters.
+    """
+    source = str(tmp_path / "raced.duckdb")
+    migrate.build_fixture_cube(source, terminals=1)
+
+    opened = {"count": 0}
+    real_copy = migrate._copy_files
+
+    def open_a_writer_midway(*args, **kwargs):
+        # a second PROCESS tries to write exactly between boundary acquisition and copying
+        import subprocess
+        script = tmp_path / "racer.py"
+        script.write_text(
+            "import duckdb, sys\n"
+            "try:\n"
+            "    con = duckdb.connect(sys.argv[1])\n"
+            "    con.execute(\"UPDATE main.gov_terminal SET actor = 'raced'\")\n"
+            "    con.close(); print('WROTE')\n"
+            "except Exception as exc:\n"
+            "    print('REFUSED', type(exc).__name__)\n", encoding="utf-8")
+        result = subprocess.run([sys.executable, str(script), source],
+                                capture_output=True, text=True, timeout=60)
+        opened["outcome"] = result.stdout.strip()
+        opened["count"] += 1
+        return real_copy(*args, **kwargs)
+
+    migrate._copy_files = open_a_writer_midway
+    try:
+        report = migrate.snapshot_database(source, str(tmp_path / "copy.duckdb"),
+                                           schema="main", expect_terminals=1,
+                                           owner_stopped=True)
+    finally:
+        migrate._copy_files = real_copy
+
+    assert opened["count"] == 1, "the race was not exercised"
+    assert opened["outcome"].startswith("REFUSED"), (
+        "the boundary must still be HELD while the files are copied, so a second process "
+        f"cannot write during it; it reported {opened['outcome']!r}")
+    assert report["kind"] == "VERIFIED_SNAPSHOT"
+    assert report["boundary"]["held_through_copy"] is True
+
+
+def test_the_copy_is_compared_against_the_source_under_the_held_boundary(tmp_path):
+    """A copy whose contents were never compared with the source is not a verified snapshot."""
+    source = str(tmp_path / "compared.duckdb")
+    migrate.build_fixture_cube(source, terminals=2, with_children=True, with_contract=True)
+
+    report = migrate.snapshot_database(source, str(tmp_path / "copy.duckdb"),
+                                       schema="main", expect_terminals=2, owner_stopped=True)
+
+    assert report["kind"] == "VERIFIED_SNAPSHOT"
+    assert report["source_digests"], "the source was never measured"
+    for relation, digest in report["source_digests"].items():
+        assert report["content_digests"].get(relation) == digest, relation
+    assert report["boundary"]["held_through_copy"] is True
