@@ -447,3 +447,37 @@ se selecciona por procedencia de campana, no por resultados favorables; el
 historico se archiva sin borrarlo y queda fuera de las vistas cientificas por
 defecto. Se requieren scripts reproducibles, paridad de contenido, recuperacion,
 consumidores reales, analitica utilizable y conciliacion posterior al cambio.
+
+## Actualizacion 2026-09-16 (Satoshi, V1-V4 y D0-D6: DuckDB es el motor OLAP)
+
+Retornos: `../audits/work_plan/SATOSHI_V1_D6_RETURN_2026_09_16.md`. Evidencia:
+`../audits/evidence/temporal_semantics_20260916/` y `../audits/evidence/duckdb_migration_20260916/`.
+
+**V1 — semantica temporal.** Musashi tenia razon y el defecto era mio: yo verificaba que los
+bytes cuadraran con su digest y trataba eso como validez. Un `ARCHIVE_RETROSPECTIVE` que declara
+`0s`, `-1` o `not-a-duration` cuadra perfectamente y volvia como VERIFIED. Reproductor congelado
+ANTES de tocar nada; ahora rigen **las reglas del productor**, aplicadas al escribir y otra vez
+al leer, mas forma canonica y claves duplicadas. Once reglas de mutacion prueban que cada
+comprobacion es la que rechaza. Cero desplegado sin revision: el pin sigue nombrando la revision
+desplegada.
+
+**D0-D6 — DuckDB en produccion.** El cubo OLAP corre sobre **DuckDB 1.5.5** en
+`~/.local/state/crispdm-duckdb/prod/cube.duckdb`, servido por el host existente con el proveedor
+externo `predictor-duckdb-store` por el mismo entry point. **Solo** cambia el almacen OLAP:
+Metabase, `fxpg` y cualquier otro uso de PostgreSQL quedan intactos, y la base previa se
+conserva como origen de reversion. Archivo historico **segregado** en `archive.duckdb`
+(6.860.035 filas, 64/64 verificadas por contenido) y fuera de toda vista cientifica por defecto.
+
+**Tres defectos que solo aparecieron al hacerlo:** `LIMIT/OFFSET` sin orden no es paginacion
+(nueve relaciones con el conteo correcto y las filas equivocadas); `CREATE TABLE AS SELECT` no
+conserva constraints, asi que `gov_terminal` quedo sin clave primaria y el cubo **respondia
+consultas y rechazaba todo terminal gobernado**; y copiar el fichero sin su WAL no es respaldo
+—la copia omitio dos terminales recien aceptados—. Los tres corregidos y con regla.
+
+**Aceptacion en produccion:** entrega gobernada y terminal **201**, conciliacion vacia, **54
+terminales** en el cubo. Reversion ensayada sobre base desechable: identifica los 2 terminales
+de la era DuckDB que se perderian y que `gov_availability_contract` **no existe** en PostgreSQL.
+
+**Brechas declaradas con dueno:** Metabase v0.56.3 no trae driver DuckDB (verificado contra su
+propia API), asi que la analitica hoy es la consola del host; y `tools/olap_loader.py`, unico
+otro escritor OLAP, queda **detenido y deshabilitado** con su cola en cero.
