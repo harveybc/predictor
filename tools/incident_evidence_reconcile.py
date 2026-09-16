@@ -50,6 +50,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 CHILDREN = ("gov_terminal_metric", "gov_terminal_dataset", "gov_terminal_artifact")
+#: A terminal identity, so it can be inlined into a query the service route cannot parameterise.
+_HEX64 = __import__("re").compile(r"^[0-9a-f]{64}$")
 
 
 def now() -> str:
@@ -171,13 +173,53 @@ class FileCube:
         ).fetchone()[0]
 
     def rows_with_rowid(self, relation: str, digest: str) -> list:
-        """The physical rows of one terminal, each carrying the identity used to remove it."""
+        """The physical rows of one terminal, each carrying the identity used to remove it.
+
+        The rows are ENUMERATED and then filtered, rather than asked for by predicate. On the
+        production cube those two are not the same answer: a pushed-down filter on
+        `terminal_sha256` returned two rows where a scan of the same table returned four, so a
+        repair that trusted the predicate found nothing to remove and said so. Physical rows
+        are a physical question; `OFFSET 0` keeps the filter above the scan.
+        """
+        columns = self.columns(relation)
+        projection = ", ".join(f'"{column}"' for column in columns)
+        rows = self.con.execute(
+            f'SELECT * FROM (SELECT rowid AS __rowid, {projection} FROM '
+            f'"{self.schema}"."{relation}" OFFSET 0) WHERE terminal_sha256 = ?',
+            [digest]).fetchall()
+        return [dict(zip(["__rowid", *columns], row)) for row in rows]
+
+    def rows_all_with_rowid(self, relation: str) -> list:
+        """Every physical row of the relation, enumerated rather than asked for."""
         columns = self.columns(relation)
         projection = ", ".join(f'"{column}"' for column in columns)
         rows = self.con.execute(
             f'SELECT rowid AS __rowid, {projection} FROM "{self.schema}"."{relation}"'
-            " WHERE terminal_sha256 = ?", [digest]).fetchall()
+            " OFFSET 0").fetchall()
         return [dict(zip(["__rowid", *columns], row)) for row in rows]
+
+    def predicate_agrees(self, relation: str) -> dict:
+        """Does asking by predicate return the same population as enumerating?
+
+        It has to, and on this cube it did not. A store whose filtered read and whose scan
+        disagree answers two different questions with one table, and nothing built on top of
+        it - a reconciliation, a repair, a dashboard - can be trusted until they agree again.
+        """
+        total = self.con.execute(
+            f'SELECT count(*) FROM "{self.schema}"."{relation}"').fetchone()[0]
+        try:
+            keys = [row[0] for row in self.con.execute(
+                f'SELECT terminal_sha256 FROM "{self.schema}"."gov_terminal"').fetchall()]
+        except Exception:
+            return {"checked": False}
+        by_predicate = sum(self.con.execute(
+            f'SELECT count(*) FROM "{self.schema}"."{relation}" WHERE terminal_sha256 = ?',
+            [key]).fetchone()[0] for key in keys)
+        by_scan = sum(self.con.execute(
+            f'SELECT count(*) FROM (SELECT * FROM "{self.schema}"."{relation}" OFFSET 0)'
+            " WHERE terminal_sha256 = ?", [key]).fetchone()[0] for key in keys)
+        return {"checked": True, "rows": total, "by_predicate": by_predicate,
+                "by_scan": by_scan, "agrees": total == by_predicate == by_scan}
 
     def close(self) -> None:
         self.con.close()
@@ -254,6 +296,24 @@ class ServiceCube:
             f'{projection}) AS VARCHAR)) AS h FROM "{self.schema}"."{relation}") t LIMIT 1'
         )[0]["d"]
 
+    def predicate_agrees(self, relation: str) -> dict:
+        """The same question as the file route asks, asked of the service that serves it."""
+        total = self._query(
+            f'SELECT count(*) AS n FROM "{self.schema}"."{relation}" LIMIT 1')[0]["n"]
+        keys = [row["terminal_sha256"] for row in
+                self.rows("gov_terminal")]
+        keys = [key for key in keys if isinstance(key, str) and _HEX64.match(key)]
+        by_predicate = by_scan = 0
+        for key in keys:
+            by_predicate += self._query(
+                f'SELECT count(*) AS n FROM "{self.schema}"."{relation}"'
+                f" WHERE terminal_sha256 = '{key}' LIMIT 1")[0]["n"]
+            by_scan += self._query(
+                f'SELECT count(*) AS n FROM (SELECT * FROM "{self.schema}"."{relation}"'
+                f" OFFSET 0) WHERE terminal_sha256 = '{key}' LIMIT 1")[0]["n"]
+        return {"checked": True, "rows": total, "by_predicate": by_predicate,
+                "by_scan": by_scan, "agrees": total == by_predicate == by_scan}
+
     def close(self) -> None:
         return None
 
@@ -277,6 +337,8 @@ def source_content(source) -> dict:
         try:
             content[relation] = {"rows": len(source.rows(relation)),
                                  "md5": str(source.content_digest(relation, columns))}
+            if hasattr(source, "predicate_agrees") and relation != "gov_terminal":
+                content[relation]["predicate_vs_scan"] = source.predicate_agrees(relation)
         except Exception as exc:
             content[relation] = {"error": f"{type(exc).__name__}: {str(exc)[:120]}"}
     return content
@@ -432,6 +494,35 @@ def delete_by_rowid(con, schema: str, relation: str, rowids: list) -> int:
     con.execute(f'DELETE FROM "{schema}"."{relation}" WHERE rowid IN ({placeholders})',
                 list(rowids))
     return len(rowids)
+
+
+def reindex_relation(source, relation: str) -> list:
+    """Drop and recreate the relation's indexes, because that is where the fault is.
+
+    The engine names it itself. A whole-relation `DELETE` on the production cube raised
+
+        Invalid Input Error: Failed to delete all rows from index.
+        Only deleted 531 out of 535 rows.
+
+    and then invalidated the database. The index holds fewer entries than the table, so a
+    predicate served by it reaches fewer rows than a scan of the same table - which is exactly
+    the 533-against-537 disagreement, and exactly why a repair that trusted the predicate found
+    nothing to remove.
+
+    So the repair is the index, not the rows. The definitions are read back from the catalogue
+    and recreated verbatim, so nothing about the schema is invented here. No row is touched.
+
+    A whole-relation DELETE is never used anywhere in this tool: against a table whose index
+    has lost entries it does not fail cleanly, it takes the database down with it.
+    """
+    definitions = [(name, sql) for name, sql in source.con.execute(
+        "SELECT index_name, sql FROM duckdb_indexes() WHERE table_name = ?",
+        [relation]).fetchall()]
+    for name, _sql in definitions:
+        source.con.execute(f'DROP INDEX "{name}"')
+    for _name, sql in definitions:
+        source.con.execute(sql)
+    return [name for name, _sql in definitions]
 
 
 def compare_multisets(expected: list, observed: list, fields=()) -> dict:
@@ -671,11 +762,64 @@ def main(argv=None) -> int:
             repaired.append(record)
 
     # --- I2: the other direction, bounded to proven surplus multiplicity --------------------
-    surplus_removed, surplus_repaired, before_images = 0, [], []
+    surplus_removed, surplus_repaired, before_images, reindexed = 0, [], [], {}
     if args.repair_surplus:
         # The evidence file is written BEFORE anything is removed, and it names every physical
         # row. Preserving the rows after the fact would preserve whatever survived the removal.
-        plans = {}
+        # A store that answers a filter and a scan differently cannot be PLANNED against, let
+        # alone repaired: the plan would be built from one of its two answers. So the index is
+        # restored first, for the whole cube, and everything below reads a settled store.
+        reindexed, unsettled = {}, []
+        disagreeing = [relation for relation in CHILD_SHAPES
+                       if not source.predicate_agrees(relation).get("agrees")]
+        for relation in disagreeing:
+            source.con.execute("BEGIN TRANSACTION")
+            try:
+                reindexed[relation] = reindex_relation(source, relation)
+                source.con.execute("COMMIT")
+            except Exception as exc:
+                source.con.execute("ROLLBACK")
+                reindexed[relation] = f"FAILED: {type(exc).__name__}: {exc}"
+                unsettled.append(relation)
+        if disagreeing:
+            # Measured on a NEW connection. Asked inside the transaction that rebuilt it, the
+            # engine still answered with the old reading; the rebuilt index is only observable
+            # once the work is committed and the database opened again. So the check that
+            # decides whether anything else may proceed is made from outside.
+            source.con.execute("CHECKPOINT")
+            source.close()
+            source = FileCube(args.cube, args.schema, writable=True)
+            for relation in disagreeing:
+                agreement = source.predicate_agrees(relation)
+                if not agreement.get("agrees"):
+                    if relation not in unsettled:
+                        unsettled.append(relation)
+                    reindexed[relation] = {"rebuilt": reindexed.get(relation),
+                                           "still_disagrees": agreement}
+        if reindexed:
+            # The differences above were measured on the unsettled store, so they are re-read.
+            grouped = children_by_terminal(source)
+            for record in differs:
+                digest = record["terminal_sha256"]
+                payload = next((row["body"] for row in accepted
+                                if row["terminal_sha256"] == digest), None)
+                if not isinstance(payload, dict):
+                    continue
+                seen = grouped.get(digest, {})
+                children = {}
+                for relation, rows in expected_children(payload).items():
+                    outcome = compare_multisets(rows, seen.get(relation, []),
+                                                CHILD_SHAPES[relation][1])
+                    if outcome["missing"] or outcome["extra"]:
+                        children[relation] = outcome
+                if children:
+                    record["differences"]["children"] = children
+                else:
+                    record["differences"].pop("children", None)
+                record["observed_child_counts"] = {
+                    relation: len(seen.get(relation, [])) for relation in CHILD_SHAPES}
+
+        plans, settled_by_reindex = {}, []
         for record in differs:
             if record.get("repair") == "RESTORED":
                 # An additive repair in the same invocation already changed this terminal, so
@@ -694,6 +838,16 @@ def main(argv=None) -> int:
                 # side would pick a winner between two contents, which is a rewrite.
                 record["repair"] = "REFUSED_NOT_PURE_SURPLUS"
                 continue
+            if unsettled:
+                record["repair"] = f"REFUSED_STORAGE_DISAGREES: {unsettled}"
+                continue
+            if not record["differences"].get("children"):
+                # The index was rebuilt and the difference went with it: there is no surplus
+                # row to remove, the store was simply answering two ways.
+                record["repair"] = "SETTLED_BY_REINDEX"
+                record.pop("differences", None)
+                settled_by_reindex.append(record)
+                continue
             plan = surplus_plan(payload, source, digest)
             if not plan:
                 record["repair"] = "NOTHING_TO_REMOVE"
@@ -711,18 +865,28 @@ def main(argv=None) -> int:
                       "it leaves the operational projection.")}, indent=1) + "\n",
             encoding="utf-8")
         for digest, (record, plan) in plans.items():
-            removed_here = {}
+            removed_here, rebuilt = {}, {}
             source.con.execute("BEGIN TRANSACTION")
             try:
                 for relation, groups in plan.items():
                     for group in groups:
                         removed_here[relation] = removed_here.get(relation, 0) + delete_by_rowid(
                             source.con, args.schema, relation, group["rowids"])
+                # The removal is only believed once the storage still agrees with itself.
+                still = [relation for relation in plan
+                         if not source.predicate_agrees(relation).get("agrees")]
+                if still:
+                    # Nothing is committed on a store that still answers a filter and a scan
+                    # differently: that is two answers, and picking one would be a guess.
+                    raise RuntimeError(
+                        f"the storage still answers a filter and a scan differently: {still}")
                 source.con.execute("COMMIT")
             except Exception as exc:
                 source.con.execute("ROLLBACK")
                 record["repair"] = f"FAILED: {type(exc).__name__}: {exc}"
                 continue
+            if rebuilt:
+                record["indexes_rebuilt"] = rebuilt
             record["repair"] = "SURPLUS_REMOVED"
             record["rows_removed"] = removed_here
             record["removed_rows"] = [image for groups in plan.values()
@@ -745,6 +909,7 @@ def main(argv=None) -> int:
                 encoding="utf-8")
         # A terminal whose only difference WAS the surplus now matches: it stops being a
         # difference, so the verdict is measured on what is left rather than on what was found.
+        surplus_repaired.extend(settled_by_reindex)
         settled = {record["terminal_sha256"] for record in surplus_repaired}
         for record in surplus_repaired:
             record.pop("differences", None)
@@ -798,6 +963,7 @@ def main(argv=None) -> int:
                        "cube_rows_without_an_accepted_record": len(orphans)},
             "repaired": repaired,
             "surplus_removed": surplus_repaired,
+            "indexes_rebuilt": reindexed if args.repair_surplus else None,
             "content_differs": differs, "missing_from_cube": missing,
             "replayable_from_outbox": replayable,
             "content_unverifiable": unverifiable,

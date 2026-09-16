@@ -1,0 +1,7 @@
+{
+ "schema": "surplus_multiplicity_evidence.v1",
+ "generated_utc": "2026-09-16T20:28:48Z",
+ "cube": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb",
+ "planned": [],
+ "note": "Every physical row below is a copy the cube holds beyond the multiplicity the accepted payload declares. It is recorded here before it leaves the operational projection."
+}

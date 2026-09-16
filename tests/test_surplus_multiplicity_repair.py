@@ -650,3 +650,118 @@ def test_both_repairs_in_one_invocation_never_act_on_a_stale_report(live_shape):
     # and the genuinely surplus terminal is still corrected
     assert sorted(metric_multiset(live_shape["cube"], live_shape["affected"]).values()) == [1, 1]
     assert before_surplus != metric_multiset(live_shape["cube"], live_shape["affected"])
+
+
+# --- a store whose filtered read and whose scan disagree -----------------------------------
+
+def test_the_physical_rows_are_enumerated_not_asked_for_by_predicate(live_shape):
+    """Production held four rows a filtered read could only see two of.
+
+    `rowid` identifies a physical row, so it has to come from a physical enumeration. Asking
+    the storage engine for "the rows where terminal_sha256 = X" and trusting the answer is what
+    made the first production repair report NOTHING_TO_REMOVE against a cube that plainly held
+    the surplus.
+    """
+    source = reconcile.FileCube(live_shape["cube"], "main")
+    try:
+        rows = source.rows_with_rowid("gov_terminal_metric", live_shape["affected"])
+    finally:
+        source.close()
+    assert len(rows) == 4
+    assert len({row["__rowid"] for row in rows}) == 4
+
+
+def test_a_store_whose_filter_and_scan_disagree_is_reported(live_shape):
+    source = reconcile.FileCube(live_shape["cube"], "main")
+    try:
+        agreement = source.predicate_agrees("gov_terminal_metric")
+    finally:
+        source.close()
+    assert agreement == {"checked": True, "rows": 6, "by_predicate": 6, "by_scan": 6,
+                         "agrees": True}
+
+
+def test_the_report_carries_the_predicate_agreement_for_every_child(live_shape):
+    _code, report = run(live_shape, name="agree.json")
+    for relation in ("gov_terminal_metric", "gov_terminal_artifact", "gov_terminal_dataset"):
+        assert report["source_content"][relation]["predicate_vs_scan"]["agrees"] is True
+    # the parent is the key table the check is derived FROM, so it carries no such claim
+    assert "predicate_vs_scan" not in report["source_content"]["gov_terminal"]
+
+
+def test_a_disagreeing_store_is_named_in_the_report(live_shape, monkeypatch):
+    """A store that answers two different questions with one table must say so out loud."""
+    real = reconcile.FileCube.predicate_agrees
+
+    def lying(self, relation):
+        outcome = real(self, relation)
+        if relation == "gov_terminal_metric":
+            outcome = {**outcome, "by_predicate": outcome["rows"] - 2, "agrees": False}
+        return outcome
+
+    monkeypatch.setattr(reconcile.FileCube, "predicate_agrees", lying)
+    _code, report = run(live_shape, name="disagree.json")
+    metric = report["source_content"]["gov_terminal_metric"]["predicate_vs_scan"]
+    assert metric["agrees"] is False
+    assert metric["by_predicate"] == metric["rows"] - 2
+
+
+def test_a_repair_that_cannot_make_the_storage_agree_commits_nothing(live_shape, monkeypatch):
+    """Two answers from one table is not a state to pick a winner from."""
+    before = metric_multiset(live_shape["cube"], live_shape["affected"])
+    real = reconcile.FileCube.predicate_agrees
+
+    def never_agrees(self, relation):
+        outcome = real(self, relation)
+        if relation == "gov_terminal_metric":
+            return {**outcome, "agrees": False}
+        return outcome
+
+    monkeypatch.setattr(reconcile.FileCube, "predicate_agrees", never_agrees)
+    _code, report = run(live_shape, "--repair-surplus", "--evidence",
+                        str(live_shape["tmp"] / "e.json"), name="unsettled.json")
+    differing = report["content_differs"][0]
+    assert differing["repair"].startswith("REFUSED_STORAGE_DISAGREES")
+    outcome = report["indexes_rebuilt"]["gov_terminal_metric"]
+    assert outcome["still_disagrees"]["agrees"] is False
+    # the index was rebuilt - that touches no row - and nothing was removed on the strength
+    # of a store that still answers two ways
+    assert outcome["rebuilt"] == ["gov_terminal_metric_sha_idx"]
+    assert metric_multiset(live_shape["cube"], live_shape["affected"]) == before
+
+
+def test_a_reindex_restores_the_index_and_touches_no_row(live_shape):
+    source = reconcile.FileCube(live_shape["cube"], "main", writable=True)
+    try:
+        before = source.rows_all_with_rowid("gov_terminal_metric")
+        rebuilt = reconcile.reindex_relation(source, "gov_terminal_metric")
+        after = source.rows_all_with_rowid("gov_terminal_metric")
+        definitions = source.con.execute(
+            "SELECT index_name FROM duckdb_indexes() WHERE table_name = 'gov_terminal_metric'"
+        ).fetchall()
+    finally:
+        source.close()
+    assert rebuilt == ["gov_terminal_metric_sha_idx"]
+    assert [row[0] for row in definitions] == ["gov_terminal_metric_sha_idx"]
+    assert [{k: v for k, v in r.items() if k != "__rowid"} for r in after] == \
+           [{k: v for k, v in r.items() if k != "__rowid"} for r in before]
+
+
+def test_no_whole_relation_delete_exists_anywhere_in_the_tool():
+    """Against a table whose index lost entries it does not fail cleanly - it takes the
+    database down. Production was one rehearsal away from that, on a copy."""
+    import re as _re
+
+    body = (REPO / "tools" / "incident_evidence_reconcile.py").read_text()
+    unqualified = _re.findall(r"DELETE FROM [^\n]*?(?=\"|\')", body)
+    for statement in _re.findall(r'DELETE FROM [^;\n]*', body):
+        assert "WHERE" in statement, statement
+
+
+def test_a_healthy_cube_is_repaired_without_a_rebuild(live_shape):
+    """The rebuild is the escalation, not the routine: it runs only when the readings differ."""
+    _code, report = run(live_shape, "--repair-surplus", "--evidence",
+                        str(live_shape["tmp"] / "e.json"), name="noRebuild.json")
+    removed = report["surplus_removed"][0]
+    assert removed["repair"] == "SURPLUS_REMOVED"
+    assert "indexes_rebuilt" not in removed

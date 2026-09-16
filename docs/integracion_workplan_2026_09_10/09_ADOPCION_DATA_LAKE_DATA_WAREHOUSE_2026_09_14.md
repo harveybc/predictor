@@ -657,3 +657,30 @@ de suite de H1 (1454/5) no se obtiene con el comando anotado a su lado — el ar
 de modo que los hijos de la anterior no quedan registrados en ninguna parte. Es la recurrencia de
 la clase U1 por otro flanco —no un grupo de procesos perdido, sino un **registro** perdido—. No se
 corrige aqui por estar fuera del alcance acotado; queda listado con su reproduccion.
+
+### Correccion 2026-09-16 (tras el intento en produccion): la falla es el indice
+
+El owner abrio la frontera y la secuencia ensayada **no escribio nada**: tomo un
+`VERIFIED_SNAPSHOT` y reporto `NOTHING_TO_REMOVE`. Al negarse encontro la falla real.
+
+**El indice de `gov_terminal_metric` tiene menos entradas que la tabla.** 537 filas; una lectura
+filtrada alcanza **533**, un barrido forzado **537**. El motor lo nombra solo, al intentar un
+borrado completo sobre una copia: *"Failed to delete all rows from index. Only deleted 531 out of
+535 rows"*, y acto seguido invalida esa base. De ahi se sigue todo: la reparacion preguntaba por
+predicado y no veia nada; borrar las filas que el predicado si veia **empeoraba** el estado
+(533 filas de las que el predicado alcanzaba 529). Los consumidores que filtran por terminal
+**ya reciben las 533 correctas**; solo los agregados sin filtro cuentan cuatro de mas.
+
+El remedio es el indice: `reindex_relation` lo reconstruye desde su propia definicion del
+catalogo —ninguna fila se toca— y el acuerdo se vuelve a medir **en una conexion nueva**, porque
+dentro de la transaccion que lo reconstruye el motor sigue respondiendo con la lectura vieja.
+Nada avanza hasta que un filtro y un barrido den la misma poblacion. El borrado de relacion
+completa queda **prohibido por regla** en la herramienta.
+
+**Retractacion.** El WAL reproducido duplica filas pero deja el indice **consistente**, asi que
+no reproduce esta firma. Cuatro mecanismos reproducidos y descartados; la causa del indice corto
+**no esta establecida**.
+
+Reensayado sobre copia del snapshot real: indice reconstruido, 537 → **533**, filtro y barrido de
+acuerdo, 55/55, segunda invocacion sin efecto, WAL de 0 bytes. Falta una sola frontera mas para
+escribirlo en produccion. 64 reglas focales; 254+1 sobre tres motores; 1406/11/0 en trading-stack.

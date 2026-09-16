@@ -3,10 +3,11 @@
 Order: `docs/handoffs/MUSASHI_H1_H3_LIVE_REVIEW_AND_I1_I3_2026_09_16.md` (`abad189`), over the
 live review of `383fbe7`. Executed without pausing between blocks.
 
-**One block is incomplete and it is the production write.** Everything up to and including the
-rehearsal is done and proven; applying the correction to the live cube needs the owning service
-stopped, and the harness refuses that command. Section I2 below says exactly what is pending
-and what it needs.
+**The owner opened the boundary and ran the rehearsed sequence. It refused to write, correctly,
+and in refusing it found the actual fault.** The four surplus rows are the visible end of an
+inconsistent index: `gov_terminal_metric` holds 537 rows and its index reaches 533 of them.
+Everything below is measured; the production write is rehearsed against the real structure and
+is waiting on one more boundary. Section I2 says what it needs.
 
 ## I1 — the discrepancy, frozen and explained as far as evidence goes
 
@@ -35,7 +36,44 @@ three agree. It proves the content did not move while it was read — not that n
 have moved it. `VERIFIED_SNAPSHOT` remains the stronger evidence and remains unavailable
 without the stop.
 
-### The duplicate-producing path: reproduced
+### What the production run found: the index, not the rows
+
+The first production attempt (`I2_PROD_SNAPSHOT.json`, `I2_PROD_REPAIR.json`) took a
+**`VERIFIED_SNAPSHOT`** — boundary held, no writer present, digests equal — and then reported
+`NOTHING_TO_REMOVE` while still showing two differing terminals. It was right to, and the
+reason is the finding:
+
+> On the production cube, `SELECT ... WHERE terminal_sha256 = X` returns **two** rows where a
+> scan of the same table returns **four**. Summed over all 55 terminals: the table holds 537
+> rows, a filtered read reaches **533**, a forced scan reaches **537**.
+
+DuckDB names it itself. A whole-relation `DELETE`, tried on a copy, raised
+
+    Invalid Input Error: Failed to delete all rows from index.
+    Only deleted 531 out of 535 rows.
+
+and then invalidated that database. **The index holds fewer entries than the table.** Every
+consequence follows from that one fact:
+
+* consumers filtering by `terminal_sha256` were already getting the accepted 533 rows — the
+  surplus was invisible to them. Only unfiltered aggregates ever saw 537;
+* my reconciler saw it because it reads each relation by full scan;
+* the repair found nothing to remove because it asked by predicate. It now **enumerates**
+  physical rows and filters above the scan;
+* deleting the four rows the predicate could see was measured to make things worse: 533 rows
+  of which a predicate reached 529. The fault is not in the rows.
+
+So the repair is the index. `reindex_relation` drops and recreates the relation's indexes from
+their own catalogue definitions — no row is touched, nothing about the schema is invented —
+and the agreement is re-measured **on a new connection**, because inside the transaction that
+rebuilt it the engine still answers with the old reading. Nothing else proceeds until a filter
+and a scan give the same population. A whole-relation `DELETE` is now absent from the tool by
+rule: against a damaged index it does not fail cleanly, it takes the database with it.
+
+Scope, measured: `gov_terminal_metric` only. `gov_terminal`, `gov_terminal_dataset` and
+`gov_terminal_artifact` all agree, before and after.
+
+### The duplicate-producing path: reproduced, and then ruled out
 
 Two candidate paths are **excluded by reproduction**, not by argument:
 
@@ -55,13 +93,22 @@ two rows out. No writer ran twice and nothing was ingested twice. The signature 
 the cube holds: the surplus is the **whole** metric child-set of exactly the two terminals the
 G1 repair wrote to, doubled, and nothing else in the cube moved.
 
-**What is not established:** that this is what happened in production. There is no receipt of a
-log being restored beside the cube between the repair and now, and I will not infer one. The
-mechanism is reproducible; the incident is a match by signature, not by record.
+**And then ruled out.** Tested against the signature the production cube actually carries, the
+replayed log doubles the rows but leaves the index **consistent with the table** — a filtered
+read and a scan both return the doubled population. Production's fault is the opposite: the
+index is short. So the mechanism I reproduced is a real way to duplicate rows, and it is **not
+this one**. I had written that the signature matched; it does not, and the claim is withdrawn
+here rather than left standing.
 
-The responsible path is closed either way: a repair now runs `CHECKPOINT` before it returns and
-the receipt states the log size it left behind, which must be zero. The repair cannot become
-the input to that mechanism again.
+**Where that leaves the cause: unknown.** Reproduced and excluded, in order: normal ingestion,
+the additive repair, sequential and overlapping repair retries, and a replayed write-ahead log.
+What made this index lose four entries is not established, and I am not going to name a
+mechanism I cannot show.
+
+Two paths are closed regardless of which one was taken. A repair now runs `CHECKPOINT` before
+it returns and states the log size it left behind, which must be zero, so it cannot feed the
+replay mechanism. And every report now measures a filter against a scan, per relation, so a
+store that answers two ways is named in the receipt instead of being quietly averaged.
 
 ### A second finding, in my own H1 receipt
 
@@ -112,26 +159,48 @@ committed receipts survived; the databases did not. Evidence is kept now.
 Receipts: `I2_REHEARSAL_BEFORE.json`, `I2_REHEARSAL_REPAIR.json`, `I2_REHEARSAL_SECOND.json`,
 `I2_REHEARSAL_SURPLUS.json`.
 
-### Pending: the production write
+### Rehearsed against the real production structure
 
-The order authorises a coordinated maintenance boundary, and the command to open it —
-`systemctl --user stop crispdm-data-warehouse-olap.service` — is refused by the harness with
-`[Interfere With Workloads]`. It is refused on its own and inside a composite command. I did
-not attempt to reach the cube file around it: the service holds the database, a repair from a
-second process would either be refused or leave exactly the log that produces this fault, and
-the service route is read-only by construction.
+The earlier rehearsal was on a cube rebuilt through the provider, whose index was therefore
+sound — which is exactly why it could not have found this. Re-rehearsed on a copy of the
+`VERIFIED_SNAPSHOT` of production itself:
 
-What remains is one boundary, already rehearsed to the row:
+| | before | after |
+|---|---|---|
+| `gov_terminal_metric` rows | 537 | **533** |
+| filtered read vs forced scan | 533 / 537, **disagree** | 533 / 533, **agree** |
+| `gov_terminal` | 55 | 55, digest unchanged |
+| `gov_terminal_artifact` | 97 | 97, digest unchanged, agrees throughout |
+| `gov_terminal_dataset` | 92 | 92, digest unchanged, agrees throughout |
+| indexes rebuilt | — | `gov_terminal_metric_sha_idx` |
+| reconciliation | 53 matching, 2 differing | **55 matching, 0 differing** |
+| second invocation | — | 0 rows removed, 0 indexes rebuilt |
+| log left beside the cube | — | **0 bytes** |
+
+Receipts: `I2_PROD_SNAPSHOT.json` (the owner's verified snapshot), `I2_PROD_REPAIR.json` (the
+refusal that found the fault), `I2_PROD_REHEARSAL_REPAIR.json`, `I2_PROD_REHEARSAL_SECOND.json`,
+`I2_PROD_REHEARSAL_SURPLUS.json`.
+
+### Pending: one more boundary
+
+The production write needs the owning service stopped once more, and the harness refuses that
+command to me. The sequence, unchanged except that the cube is now the only argument that
+differs from the rehearsal:
 
 1. `systemctl --user stop crispdm-data-warehouse-olap.service`
-2. `snapshot --owner-stopped --expect-terminals 55` → `I2_PROD_SNAPSHOT.json`
-3. `incident_evidence_reconcile.py --cube $P/cube.duckdb --repair-surplus --evidence
-   I2_PROD_SURPLUS.json --out I2_PROD_REPAIR.json`
-4. `systemctl --user start crispdm-data-warehouse-olap.service`
-5. `incident_evidence_reconcile.py --service-url http://127.0.0.1:5057` → `I3_LIVE_AFTER.json`
+2. `incident_evidence_reconcile.py --cube $P/cube.duckdb --repair-surplus --evidence
+   I2_PROD_SURPLUS.json --out I2_PROD_REPAIR_2.json`
+3. `systemctl --user start crispdm-data-warehouse-olap.service`
+4. `incident_evidence_reconcile.py --service-url http://127.0.0.1:5057` → `I3_LIVE_AFTER.json`
 
-The live warehouse has been left running and unmodified throughout. Nothing in this return
-changed production state.
+Expected, from the rehearsal on this exact structure: `indexes_rebuilt` naming
+`gov_terminal_metric_sha_idx`, `surplus_rows_removed: 4`, `content_matches: 55`,
+`content_differs: 0`, `gov_terminal_metric` at 533 with filter and scan agreeing, and zero bytes
+of log. If any of that fails the operation rolls back and writes nothing.
+
+**There is no urgency and it should not be rushed.** The live warehouse currently returns the
+**correct** 533 rows to every query that filters by terminal; only unfiltered aggregates
+over-count by four. The first production attempt wrote nothing.
 
 ## I3 — closing on measured live content
 
@@ -148,9 +217,8 @@ boundary above.
 
 | suite | scope | result |
 |---|---|---|
-| surplus + reconciler files | DuckDB test interpreter | **51 passed** |
-| store + migration + reconciler + teardown + `olap/store/tests` | three engines (`U2_DUCKDB_PATH=1`, `U2_PG_DATABASE=<disposable>`) | **241 passed, 1 skipped** |
-| surplus + reconciler files | DuckDB test interpreter, second pass after the combined-repair guard | **56 passed** |
+| surplus + reconciler files | DuckDB test interpreter | **64 passed** |
+| store + migration + reconciler + teardown + `olap/store/tests` | three engines (`U2_DUCKDB_PATH=1`, `U2_PG_DATABASE=<disposable>`) | **254 passed, 1 skipped** |
 | predictor `tests` + `olap/store/tests` | trading-stack, with the store environment | **1406 passed, 11 skipped**, 0 failed, in 7m01s |
 | the same, without `PG*` in the environment | trading-stack | 1383 passed, 34 skipped |
 
@@ -197,8 +265,8 @@ Stopping the orphan is also refused by the harness (`[Interfere With Workloads]`
 
 | item | owner |
 |---|---|
-| **the production surplus write and its live verification** — needs one authorised service stop | owner; rehearsed, receipts ready |
+| **the production write and its live verification** — needs one authorised service stop | owner; rehearsed against the real structure, receipts ready |
+| what made `gov_terminal_metric_sha_idx` lose four entries — four mechanisms reproduced and excluded | Satoshi; unknown, not named |
 | where the four G1 rows were originally lost, and why the incident log could not be replayed | Satoshi; quarantined log preserved |
-| whether the production duplication was this reproduced mechanism or another | Satoshi; unproven, not inferred |
 | orphaned stack `crispdm-s2-stack-1789506694-3701496`, and the `STACK.json` overwrite that stranded it | Satoshi, once ordered; needs the same authorisation |
 | Metabase driver decision (not blocking) | Satoshi |
