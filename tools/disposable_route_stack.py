@@ -71,21 +71,40 @@ def start(argv, cwd, env, log: Path):
     return process
 
 
-def cmdline_of(pid: int) -> str | None:
-    """The process's own argv, or None when the PID no longer denotes a running process.
+def is_gone(pid: int) -> bool:
+    """Whether this PID no longer denotes a live process.
 
-    A ZOMBIE still has a `/proc/<pid>` directory - the entry survives until its parent reaps it
-    - but its `cmdline` is empty. Reading only the directory's existence reports a process that
-    has already exited as still running, which made teardown escalate to SIGKILL and then
-    report STILL_RUNNING for a process that was gone. Both signs are checked here.
+    Gone means: no `/proc/<pid>` entry at all, or the kernel reports state `Z`. A ZOMBIE keeps
+    its directory until its parent reaps it, so directory existence alone reported an exited
+    process as running - which made teardown wait out its whole grace and then claim
+    STILL_RUNNING for something already dead.
     """
+    try:
+        stat = Path(f"/proc/{pid}/stat").read_text(encoding="utf-8", errors="replace")
+    except (FileNotFoundError, ProcessLookupError, PermissionError):
+        return True
+    # "<pid> (<comm>) <state> ..." - comm may contain spaces and parentheses, so split after it
+    try:
+        return stat[stat.rindex(")") + 2] == "Z"
+    except (ValueError, IndexError):
+        return False
+
+
+def cmdline_of(pid: int) -> str | None:
+    """The process's argv, or None when the PID does not denote a live process.
+
+    An EMPTY cmdline on a live process is not "gone": between fork and exec the kernel has no
+    argv to show, and under load that window is easily wide enough to be observed. Treating it
+    as gone made teardown skip a service it had just started. It is reported as an empty string
+    here, and the caller decides - which is never "kill it anyway".
+    """
+    if is_gone(pid):
+        return None
     try:
         raw = Path(f"/proc/{pid}/cmdline").read_bytes()
     except (FileNotFoundError, ProcessLookupError, PermissionError):
         return None
-    if not raw.strip(b"\x00"):
-        return None                      # zombie, or a process with no argv: not running
-    return raw.decode("utf-8", "replace").replace("\x00", " ")
+    return raw.decode("utf-8", "replace").replace("\x00", " ").strip()
 
 
 def reap(pid: int) -> None:
@@ -116,9 +135,20 @@ def teardown(state: dict, *, grace: float = 20.0) -> dict:
             report["processes"].append(entry)
             continue
         pid = int(pid)
+        # A process may have been forked and not yet exec'd; give it a bounded moment to
+        # become identifiable rather than deciding anything about it while it has no argv.
+        deadline = time.monotonic() + 5
         cmdline = cmdline_of(pid)
+        while cmdline == "" and time.monotonic() < deadline:
+            time.sleep(0.05)
+            cmdline = cmdline_of(pid)
         if cmdline is None:
             entry["outcome"] = "ALREADY_GONE"
+            report["processes"].append(entry)
+            continue
+        if cmdline == "":
+            # Alive, and we cannot say whose it is. That is never a reason to signal it.
+            entry["outcome"] = "UNVERIFIABLE_IDENTITY_REFUSED"
             report["processes"].append(entry)
             continue
         if marker not in cmdline:
@@ -152,7 +182,8 @@ def teardown(state: dict, *, grace: float = 20.0) -> dict:
         report["processes"].append(entry)
     outcomes = [entry["outcome"] for entry in report["processes"]]
     report["stopped"] = sum(1 for o in outcomes if o in ("TERMINATED", "KILLED"))
-    report["refused"] = sum(1 for o in outcomes if o == "PID_REUSED_REFUSED")
+    report["refused"] = sum(1 for o in outcomes
+                            if o in ("PID_REUSED_REFUSED", "UNVERIFIABLE_IDENTITY_REFUSED"))
     report["complete"] = all(o != "STILL_RUNNING" for o in outcomes)
     return report
 

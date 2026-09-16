@@ -56,6 +56,21 @@ def alive(pid: int) -> bool:
     return harness.cmdline_of(pid) is not None
 
 
+def identifiable(process, timeout: float = 30.0) -> int:
+    """Wait until the child has exec'd and shows its argv.
+
+    Under a loaded full suite these processes were being inspected between fork and exec, when
+    `/proc/<pid>/cmdline` is empty. That is a real window - the harness now waits for it too -
+    and a test that races it is measuring the scheduler, not the teardown.
+    """
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if harness.cmdline_of(process.pid):
+            return process.pid
+        time.sleep(0.05)
+    raise AssertionError(f"pid {process.pid} never became identifiable")
+
+
 @pytest.fixture
 def two_stacks(tmp_path):
     """Two stacks, same module names, different work directories."""
@@ -67,6 +82,8 @@ def two_stacks(tmp_path):
         processes = {role: sleeper(work, str(work), f"{role}_{name}")
                      for role in ("lake", "warehouse", "gov")}
         started.extend(processes.values())
+        for process in processes.values():
+            identifiable(process)
         state[name] = {"work": str(work),
                        **{f"{role}_pid": process.pid for role, process in processes.items()}}
     yield state
@@ -111,6 +128,7 @@ def test_the_survivor_still_answers_and_keeps_its_data(tmp_path):
     doomed_work = tmp_path / "doomed"
     doomed_work.mkdir()
     doomed = sleeper(doomed_work, str(doomed_work), "doomed")
+    identifiable(doomed)
 
     deadline = time.monotonic() + 30
     while time.monotonic() < deadline:
@@ -139,6 +157,7 @@ def test_a_reused_pid_is_refused_rather_than_signalled(tmp_path):
     stranger_dir = tmp_path / "stranger"
     stranger_dir.mkdir()
     stranger = sleeper(stranger_dir, str(stranger_dir), "stranger")
+    identifiable(stranger)
     stale = {"work": str(tmp_path / "a-stack-that-is-gone"), "lake_pid": stranger.pid}
     try:
         report = harness.teardown(stale, grace=5)
@@ -174,6 +193,7 @@ def test_a_partial_setup_records_what_was_never_started(tmp_path):
     work = tmp_path / "partial"
     work.mkdir()
     process = sleeper(work, str(work), "only_lake")
+    identifiable(process)
     report = harness.teardown({"work": str(work), "lake_pid": process.pid,
                                "warehouse_pid": None}, grace=10)
     outcomes = {entry["role"]: entry["outcome"] for entry in report["processes"]}
@@ -195,6 +215,7 @@ def test_teardown_runs_as_a_command_and_reports_as_json(tmp_path):
     work = tmp_path / "cli"
     work.mkdir()
     process = sleeper(work, str(work), "cli_lake")
+    identifiable(process)
     state = work / "STACK.json"
     state.write_text(json.dumps({"work": str(work), "lake_pid": process.pid}), encoding="utf-8")
 
@@ -204,3 +225,44 @@ def test_teardown_runs_as_a_command_and_reports_as_json(tmp_path):
     report = json.loads(result.stdout)
     assert report["stopped"] == 1
     assert not alive(process.pid)
+
+
+def test_a_process_that_has_not_exec_yet_is_never_signalled(tmp_path, monkeypatch):
+    """The race that the full suite exposed, as a rule.
+
+    Between fork and exec a live process shows no argv. Reading that as "already gone" made
+    teardown skip a service it had just started; reading it as "not ours" would be worse. It is
+    refused, and the refusal says why.
+    """
+    work = tmp_path / "forking"
+    work.mkdir()
+    process = sleeper(work, str(work), "forking")
+    identifiable(process)
+    monkeypatch.setattr(harness, "cmdline_of", lambda pid: "")
+
+    report = harness.teardown({"work": str(work), "lake_pid": process.pid}, grace=2)
+    entry = {item["role"]: item for item in report["processes"]}["lake_pid"]
+
+    assert entry["outcome"] == "UNVERIFIABLE_IDENTITY_REFUSED"
+    assert report["refused"] == 1
+    assert report["stopped"] == 0
+    monkeypatch.undo()
+    assert alive(process.pid), "a process we cannot identify must survive"
+    os.killpg(os.getpgid(process.pid), 9)
+
+
+def test_a_zombie_is_reported_gone_rather_than_waited_out(tmp_path):
+    """A zombie keeps its /proc entry until reaped; teardown must not call that running."""
+    work = tmp_path / "zombie"
+    work.mkdir()
+    process = sleeper(work, str(work), "zombie")
+    identifiable(process)
+    os.killpg(os.getpgid(process.pid), 9)
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline and not harness.is_gone(process.pid):
+        time.sleep(0.05)
+
+    assert harness.is_gone(process.pid) is True
+    report = harness.teardown({"work": str(work), "lake_pid": process.pid}, grace=2)
+    assert {item["role"]: item["outcome"]
+            for item in report["processes"]}["lake_pid"] == "ALREADY_GONE"
