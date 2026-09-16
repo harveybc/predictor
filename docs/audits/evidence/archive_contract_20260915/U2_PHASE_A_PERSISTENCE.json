@@ -1,0 +1,173 @@
+{
+ "schema": "archive_contract_persistence_probe.v1",
+ "at": "2026-09-16T01:29:27.285Z",
+ "stack": {
+  "gov_url": "http://127.0.0.1:57755",
+  "cube": "postgresql:u2_route_012823",
+  "cube_postgres": "u2_route_012823",
+  "work": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/s2work/stack"
+ },
+ "archive_resource": "synthetic_typical_price_4h_train.csv",
+ "plain_resource": "synthetic_features_4h_train.csv",
+ "findings": {
+  "archive-whole": {
+   "campaign_key": "s2-archive-whole-1789522161915",
+   "unit_id": "archive-whole-1",
+   "campaign_status": 201,
+   "campaign_sha256": "8d6743eb2193c3f47f5fe4800926cdaccb5a0f488776e098c31a2dda52bbd76a",
+   "download_status": 200,
+   "delivery_id": "6cf68e54f0114c89a810261fd74d6772",
+   "bytes": 26124,
+   "verification_state": "VERIFIED_TRANSFER",
+   "availability_contract_sha256": "62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d",
+   "availability": null,
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "8d6743eb2193c3f47f5fe4800926cdaccb5a0f488776e098c31a2dda52bbd76a",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "archive-range": {
+   "campaign_key": "s2-archive-range-1789522162037",
+   "unit_id": "archive-range-1",
+   "campaign_status": 201,
+   "campaign_sha256": "0249ba75ca0dbc9710d550e8b90154e407598d197e4f2173dedcb6d2b13dea26",
+   "download_status": 422,
+   "refusal": {
+    "error": "this resource is a retrospective archive: its publication time was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   },
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "0249ba75ca0dbc9710d550e8b90154e407598d197e4f2173dedcb6d2b13dea26",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "archive-point-in-time": {
+   "campaign_key": "s2-archive-point-in-time-1789522162049",
+   "unit_id": "archive-point-in-time-1",
+   "campaign_status": 201,
+   "campaign_sha256": "c9604bf44e4832f3e42586a752e808b094bb84bde0907c59c3929a564d9cbbb4",
+   "download_status": 422,
+   "refusal": {
+    "error": "this resource is a retrospective archive: its publication time was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   },
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "c9604bf44e4832f3e42586a752e808b094bb84bde0907c59c3929a564d9cbbb4",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "archive-live-tail": {
+   "campaign_key": "s2-archive-live-tail-1789522162057",
+   "unit_id": "archive-live-tail-1",
+   "campaign_status": 201,
+   "campaign_sha256": "e3963e4a0d8d362cc91862754ff9eb9212ec57f1548bacc8e8aaa34bd6a761a9",
+   "download_status": 422,
+   "refusal": {
+    "error": "this resource is a retrospective archive: its publication time was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   },
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "e3963e4a0d8d362cc91862754ff9eb9212ec57f1548bacc8e8aaa34bd6a761a9",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "plain-crosses-holdout": {
+   "not_exercised": "the disposable stack declares no holdout_start, so no range can cross one; run with --holdout to exercise this refusal"
+  },
+  "plain-whole": {
+   "campaign_key": "s2-plain-whole-1789522162067",
+   "unit_id": "plain-whole-1",
+   "campaign_status": 201,
+   "campaign_sha256": "fe506a4983af1b851839bb7be9c8974f9a9114f9d8c36f820884842b11cb644f",
+   "download_status": 200,
+   "delivery_id": "98b3603200f34ad6aff46ef217c70a57",
+   "bytes": 228801,
+   "verification_state": "VERIFIED_TRANSFER",
+   "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+   "availability": null,
+   "terminal": 201,
+   "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "fe506a4983af1b851839bb7be9c8974f9a9114f9d8c36f820884842b11cb644f",
+    "lake_only": [],
+    "missing_units": []
+   }
+  },
+  "producer_teardown": {
+   "lake_pid": 3918864,
+   "stopped": true,
+   "config_existed": true,
+   "config_sha256": "36697ebda4812247e0c2e931b00af59ff99cea510cd9c363c80513c23592aa29",
+   "config_present_after": false,
+   "lake_still_answers": false,
+   "lake_error": "URLError"
+  },
+  "fresh_reader": {
+   "archive-whole": {
+    "delivery_id": "6cf68e54f0114c89a810261fd74d6772",
+    "contract_resolution": "VERIFIED",
+    "use_class": "ARCHIVE_RETROSPECTIVE",
+    "completion_lag_max": "UNKNOWN",
+    "availability_label": "WINDOW_START",
+    "timezone_evidence": "UNKNOWN",
+    "terminal_sha256": "9516babfda73b268a88d0e352c9ef05911b7ebb54a6d5406fdd201bb6c69ea3f",
+    "lake_id": "synthetic_fixtures",
+    "resource_id": "synthetic_typical_price_4h_train.csv",
+    "role": "archive",
+    "availability_contract_sha256": "62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d",
+    "contract_reference": "STORED",
+    "stored_use_class": "ARCHIVE_RETROSPECTIVE",
+    "stored_completion_lag_max": "UNKNOWN",
+    "stored_availability_label": "WINDOW_START",
+    "stored_timezone_evidence": "UNKNOWN",
+    "stored_digest_algorithm": "sha256",
+    "stored_canonicalization": "json.sort_keys.separators-comma-colon.ascii.v1",
+    "verified_sha256": "62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d",
+    "probe_recomputed_sha256": "62965febdc580f40d5ec21c45d44a9ae78258fcebddbbe6db985cf9d37a73f6d",
+    "canonical_says_lag": "UNKNOWN",
+    "canonical_says_use_class": "ARCHIVE_RETROSPECTIVE"
+   },
+   "plain-whole": {
+    "delivery_id": "98b3603200f34ad6aff46ef217c70a57",
+    "contract_resolution": "VERIFIED",
+    "use_class": "OFFLINE_DAY_GRANULAR",
+    "completion_lag_max": "4h",
+    "availability_label": "WINDOW_START",
+    "timezone_evidence": "PRODUCER_STATEMENT",
+    "terminal_sha256": "014deba8413c511f57039999842787911f9c6ca74bddfad6392ef4a510698f90",
+    "lake_id": "synthetic_fixtures",
+    "resource_id": "synthetic_features_4h_train.csv",
+    "role": "input",
+    "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+    "contract_reference": "STORED",
+    "stored_use_class": "OFFLINE_DAY_GRANULAR",
+    "stored_completion_lag_max": "4h",
+    "stored_availability_label": "WINDOW_START",
+    "stored_timezone_evidence": "PRODUCER_STATEMENT",
+    "stored_digest_algorithm": "sha256",
+    "stored_canonicalization": "json.sort_keys.separators-comma-colon.ascii.v1",
+    "verified_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+    "probe_recomputed_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+    "canonical_says_lag": "4h",
+    "canonical_says_use_class": "OFFLINE_DAY_GRANULAR"
+   },
+   "never-retained": {
+    "delivery_id": "delivery-that-never-existed",
+    "contract_resolution": "NO_SUCH_DELIVERY",
+    "use_class": null,
+    "completion_lag_max": null,
+    "availability_label": null,
+    "timezone_evidence": null
+   }
+  }
+ }
+}

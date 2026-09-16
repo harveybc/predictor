@@ -393,3 +393,42 @@ desplegada: 10 tests focales pasan, pero el lector aun no revalida el digest
 que presenta como RESOLVED. Corregir antes de aprobar la migracion.
 
 Orden vigente: [U1-U4: recuperacion, lector y procedencia publica](../handoffs/MUSASHI_WAREHOUSE_RECOVERY_AND_S2_REVIEW_2026_09_15.md).
+
+## Actualizacion 2026-09-15 (Satoshi, ordenes U1-U4)
+
+Retorno en `../audits/work_plan/SATOSHI_U1_U4_RETURN_2026_09_15.md`.
+
+**Almacen restaurado.** Musashi arranco `crispdm-data-warehouse-olap.service`; :5057 responde
+200 y los cinco servicios estan activos sin reinicios automaticos. La caida fue mia y su
+contabilidad esta cerrada: **cero** envelopes escritos en el intervalo, sobre 11 raices de
+outbox y 97 envelopes, corroborado por el journal de data-gov. El unico pendiente era
+**anterior** a la caida y su ranura ya estaba cerrada en el cubo — marcador rancio, no
+perdida. Vaciado con la implementacion existente: pendientes 1 -> 0, **una sola fila**,
+`received_at` intacto, **52 terminales**. Dieciocho envelopes de stacks desechables del 13-sep
+quedan declarados **no verificables**, no reconciliados: sus cubos ya no existen.
+
+**Desmontaje corregido.** El arnes ya no permite seleccionar por nombre de modulo: senala al
+**grupo de procesos** propio y rechaza cualquier PID cuya linea de comando no lleve el marcador
+del stack (`PID_REUSED_REFUSED`). Un zombi ya no se lee como proceso vivo. Siete reglas, entre
+ellas dos stacks con **los mismos nombres de modulo** donde desmontar uno deja al otro
+sirviendo y con sus datos.
+
+**Lector de archivo corregido (defecto real de Musashi).** Alterar los bytes retenidos dejando
+la clave y las columnas cacheadas intactas hacia que el lector respondiera `RESOLVED` con lag
+`UNKNOWN` sobre bytes que decian `0s`. El lector devolvia la fila de la vista, y un `LEFT JOIN`
+demuestra que una clave coincide, no que algo se haya verificado. Ahora verifica algoritmo,
+canonicalizacion y **bytes**, y deriva de ellos lo que muestra: siete rechazos distintos y solo
+`VERIFIED` lleva semantica. La vista dice `STORED`/`ABSENT` y sus columnas son `stored_*`.
+**40 pruebas verdes sobre SQLite y PostgreSQL desechable.** Candidato de produccion con
+revisiones exactas, migracion aditiva, respaldo, comprobaciones de no-cambio-de-historia y
+reversion: `SATOSHI_S2_PRODUCTION_CANDIDATE.md`. **Nada desplegado**; el pin sigue nombrando la
+revision desplegada.
+
+**Filas publicas.** 47.233 confirmadas por medicion independiente, pero la union de dias
+calendario distintos es **4.125**: cuatro de los seis archivos son la misma serie BTC a tres
+resoluciones mas una tabla derivada. Procedencia establecida por **codigo publicado**:
+`fetch_binance.py` contra `/api/v3/klines` y `consolidate_data.py` leyendo su salida para los
+cuatro `btcusd_*`; los dos diarios de `feature_store` son de **Yahoo** y empiezan tres anos
+antes de que existiera BTCUSDT, asi que quedan fuera de la pregunta. Ninguno es el recurso
+gobernado del lago. Retirada mi inferencia de que unos terminos de cuenta no alcanzan una
+lectura sin credencial: la misma frase alcanza "any other Binance Services".
