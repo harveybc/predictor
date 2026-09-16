@@ -380,3 +380,16 @@ del contrato. En dragon el temporizador de guardia esta **activo** cada 15 minut
 **130 veces en 24 horas**: disposicion **dormante**, comandos nombrados, nada aplicado. Plan
 costeado: **640.000 transiciones** exactas; reloj y memoria **no** estimados, se miden con una
 celda piloto.
+## Recuperacion del warehouse tras S1-S4
+
+Musashi arranco el warehouse productivo tras la terminacion accidental reportada
+por Satoshi. Salud HTTP confirmada, 52 terminales observados y sucesor con 21
+metricas; cargador sin reinicio. Falta conciliacion explicita de los outboxes del
+intervalo, no se presume ausencia de perdidas.
+
+P1LR queda efectivamente dormante: temporizador y arranque de decision
+deshabilitados, fallos y diarios conservados. La dimension temporal no esta
+desplegada: 10 tests focales pasan, pero el lector aun no revalida el digest
+que presenta como RESOLVED. Corregir antes de aprobar la migracion.
+
+Orden vigente: [U1-U4: recuperacion, lector y procedencia publica](../handoffs/MUSASHI_WAREHOUSE_RECOVERY_AND_S2_REVIEW_2026_09_15.md).
