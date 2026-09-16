@@ -1,0 +1,38 @@
+{
+ "schema": "olap_duckdb_rollback_postgres.v1",
+ "generated_utc": "2026-09-16T10:44:40Z",
+ "source": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.before-e1-reconcile.duckdb",
+ "destination": "rb2_104348",
+ "dry_run": false,
+ "relations": [
+  {
+   "relation": "gov_terminal",
+   "outcome": "REPLAYED",
+   "rows": 2,
+   "shared_parents": 52,
+   "child_rows": 3
+  },
+  {
+   "relation": "gov_report",
+   "outcome": "REPLAYED",
+   "rows": 0,
+   "shared_parents": 0,
+   "child_rows": 0
+  },
+  {
+   "relation": "gov_availability_contract",
+   "outcome": "REPLAYED",
+   "rows": 0,
+   "shared_parents": 0,
+   "child_rows": 0
+  }
+ ],
+ "schema_created_by": "predictor_olap_store.query.Plugin",
+ "summary": {
+  "terminals_replayed": 2,
+  "child_rows_replayed": 3,
+  "contracts_replayed": 0,
+  "conflicting_parents": 0,
+  "unresolved": false
+ }
+}

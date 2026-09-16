@@ -33,8 +33,9 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import os
+import re
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -170,6 +171,26 @@ def campaign_of_module(module: str) -> str | None:
     return match.group("item") if match else None
 
 
+def relation_state(con, source: str, target: str, columns: list) -> str:
+    """Whether a destination relation is empty, partial, complete — or wrong.
+
+    Row-count equality is NOT completion. Equal counts with different values were being called
+    COMPLETE, so a corrupted or half-rewritten relation passed as finished. The content is
+    compared, and the answer distinguishes the four cases that need different actions.
+    """
+    source_rows = con.execute(f"SELECT count(*) FROM {source}").fetchone()[0]
+    target_rows = con.execute(f"SELECT count(*) FROM {target}").fetchone()[0]
+    if target_rows == 0:
+        return "EMPTY"
+    if target_rows > source_rows:
+        return "OVERFILLED"
+    if target_rows < source_rows:
+        return "PARTIAL"
+    left = content_digest(con, source, columns)
+    right = content_digest(con, target, columns)
+    return "COMPLETE" if digests_agree(left, right) else "CONTENT_DIFFERS"
+
+
 def classify_run(row: dict, current_campaigns: set) -> tuple:
     """Membership from the run's recorded CAMPAIGN, not from the table it happens to sit in.
 
@@ -282,7 +303,7 @@ def build_fixture_cube(path: str, *, terminals: int = 0, with_children: bool = F
 
 
 def replay_between(source: str, target: str, *, schema: str = "main",
-                   dry_run: bool = False) -> dict:
+                   dry_run: bool = False, since=None) -> dict:
     """Actually move accepted outcomes from one cube to another, parents and children.
 
     This is what `rollback` claimed and did not do. Rules:
@@ -314,7 +335,7 @@ def replay_between(source: str, target: str, *, schema: str = "main",
         build_fixture_cube(target)
     con = duckdb.connect(target)
     con.execute(f"ATTACH '{source}' AS src (READ_ONLY)")
-    created, replayed, children_replayed, contracts = [], 0, 0, 0
+    created, replayed, children_replayed, contracts, conflicting = [], 0, 0, 0, 0
     report = {"schema": "olap_duckdb_replay.v1", "generated_utc": now(),
               "source": source, "target": target, "dry_run": dry_run, "relations": []}
     try:
@@ -329,13 +350,44 @@ def replay_between(source: str, target: str, *, schema: str = "main",
                     report["relations"].append({"relation": parent,
                                                 "outcome": "WOULD_CREATE"})
                     continue
+            window = ""
+            if since:
+                window = (f' AND CAST(s."received_at" AS TIMESTAMPTZ) > '
+                          f"TIMESTAMPTZ '{since}'") if "received_at" in columns else ""
             missing = con.execute(
                 f'SELECT count(*) FROM src."{schema}"."{parent}" s WHERE s."{key}" NOT IN '
-                f'(SELECT "{key}" FROM "{schema}"."{parent}")').fetchone()[0]
+                f'(SELECT "{key}" FROM "{schema}"."{parent}"){window}').fetchone()[0]
             if dry_run:
                 report["relations"].append({"relation": parent, "outcome": "WOULD_REPLAY",
                                             "missing": missing})
                 continue
+            # A parent that is ALREADY in the destination may still be missing its children,
+            # and may even differ in content. Matching on identity alone declared such a
+            # destination in sync while its metrics and datasets were absent — measured by the
+            # reviewer. So identity is only the first question; content is the second, and the
+            # children of every shared parent are reconciled too.
+            columns = [row[1] for row in con.execute(
+                f'PRAGMA table_info("{schema}"."{parent}")').fetchall()]
+            projection = ", ".join(f'"{column}"' for column in columns)
+            conflicts = con.execute(
+                f'SELECT s."{key}" FROM src."{schema}"."{parent}" s '
+                f'JOIN "{schema}"."{parent}" d ON d."{key}" = s."{key}" '
+                f'WHERE md5(CAST(ROW({", ".join(f"s.{c}" for c in [chr(34)+c+chr(34) for c in columns])}) AS VARCHAR))'
+                f' <> md5(CAST(ROW({", ".join(f"d.{c}" for c in [chr(34)+c+chr(34) for c in columns])}) AS VARCHAR))'
+            ).fetchall()
+            if conflicts:
+                report["relations"].append({
+                    "relation": parent, "outcome": "CONFLICT_REFUSED",
+                    "conflicting_identities": [row[0] for row in conflicts][:20],
+                    "conflicts": len(conflicts),
+                    "note": "the destination holds these identities with DIFFERENT content; "
+                            "replaying would either duplicate or silently prefer one version, "
+                            "so the relation is left untouched and reported unresolved"})
+                conflicting += len(conflicts)
+                continue
+            shared = [row[0] for row in con.execute(
+                f'SELECT s."{key}" FROM src."{schema}"."{parent}" s '
+                f'JOIN "{schema}"."{parent}" d ON d."{key}" = s."{key}"').fetchall()]
             con.execute("BEGIN TRANSACTION")
             try:
                 inserted = con.execute(
@@ -343,35 +395,46 @@ def replay_between(source: str, target: str, *, schema: str = "main",
                     f'src."{schema}"."{parent}" s WHERE s."{key}" NOT IN '
                     f'(SELECT "{key}" FROM "{schema}"."{parent}") RETURNING "{key}"'
                 ).fetchall()
-                moved = [row[0] for row in inserted]
+                moved = [row[0] for row in inserted] + shared
                 child_rows = 0
                 if moved:
                     marks = ", ".join("?" for _ in moved)
                     for child in CHILDREN.get(parent, ()):
+                        # only the child rows the destination does not already hold: a shared
+                        # parent's children may be partly there
                         # children travel with their parent, inside the SAME transaction: a
                         # terminal whose metrics arrived separately could be observed without
                         # them, which is a half-restored outcome pretending to be whole
+                        child_columns = [row[1] for row in con.execute(
+                            f'PRAGMA table_info("{schema}"."{child}")').fetchall()]
+                        child_projection = ", ".join(f'"{column}"' for column in child_columns)
                         added = con.execute(
                             f'INSERT INTO "{schema}"."{child}" SELECT c.* FROM '
                             f'src."{schema}"."{child}" c WHERE c."{key}" IN ({marks}) '
-                            'RETURNING 1', list(moved)).fetchall()
+                            f'AND md5(CAST(ROW({child_projection}) AS VARCHAR)) NOT IN '
+                            f'(SELECT md5(CAST(ROW({child_projection}) AS VARCHAR)) FROM '
+                            f'"{schema}"."{child}") RETURNING 1', list(moved)).fetchall()
                         child_rows += len(added)
                 con.execute("COMMIT")
             except Exception:
                 con.execute("ROLLBACK")
                 raise
+            fresh = len(inserted)
             if parent == "gov_availability_contract":
-                contracts += len(moved)
+                contracts += fresh
             else:
-                replayed += len(moved)
+                replayed += fresh
             children_replayed += child_rows
             report["relations"].append({"relation": parent, "outcome": "REPLAYED",
-                                        "rows": len(moved), "child_rows": child_rows})
+                                        "rows": fresh, "shared_parents": len(shared),
+                                        "child_rows": child_rows})
     finally:
         con.close()
     report["summary"] = {"terminals_replayed": replayed, "child_rows_replayed":
                          children_replayed, "contracts_replayed": contracts,
-                         "relations_created": len(created)}
+                         "relations_created": len(created),
+                         "conflicting_parents": conflicting,
+                         "unresolved": bool(conflicting)}
     return report
 
 
@@ -617,9 +680,23 @@ def copy_relation(con, source: str, target: str, total: int, key: str | None,
     """
     parameters = list(parameters or [])
     if key is None:
+        # No key: rows are copied only when the destination is empty, because without an
+        # identity there is no way to tell a resumed copy from a duplicated one. A non-empty
+        # destination is refused rather than appended to.
+        held = con.execute(f"SELECT count(*) FROM {target}").fetchone()[0]
+        if held:
+            raise RuntimeError(
+                f"{target} already holds {held} rows and has no key to resume by; refusing "
+                "to append, because the result would be indistinguishable from a duplicate")
         con.execute(f"INSERT INTO {target} SELECT * FROM {source} {predicate}", parameters)
         return con.execute(f"SELECT count(*) FROM {target}").fetchone()[0]
-    copied, last = 0, None
+
+    # RESUME from what the destination already holds. Starting at the first source row
+    # reinserted the completed prefix: on a constrained table that raises Duplicate key, and
+    # on an unconstrained one it silently doubles the rows. Measured by the reviewer on
+    # source [1,2,3] into target [1] with a batch of one.
+    copied = 0
+    last = con.execute(f'SELECT max("{key}") FROM {target}').fetchone()[0]
     while True:
         if last is None:
             where, values = predicate, list(parameters)
@@ -697,7 +774,14 @@ def cmd_export(args) -> int:
             "SELECT count(*) FROM information_schema.tables WHERE table_schema = "
             f"'{args.schema}' AND table_name = '{name}'").fetchone()[0]
         held = con.execute(f"SELECT count(*) FROM {target}").fetchone()[0] if existing else 0
-        state = import_state(entry.get("rows") or 0, held) if existing else "EMPTY"
+        state = relation_state(con, source, target, entry["columns"]) if existing else "EMPTY"
+        if existing and state == "CONTENT_DIFFERS" and not args.replace:
+            report["relations"].append({
+                "relation": name, "outcome": "CONTENT_DIFFERS_REFUSED", "rows_held": held,
+                "source_rows": entry.get("rows"),
+                "note": "the destination holds the same NUMBER of rows with different content; "
+                        "that is not a completed copy and it is not appended to"})
+            continue
         if existing and state == "COMPLETE" and not args.replace:
             # Complete is complete: a second import copies nothing and says so.
             report["relations"].append({"relation": name, "outcome": "ALREADY_PRESENT",
@@ -744,12 +828,17 @@ def cmd_export(args) -> int:
                                     "pagination_key": key,
                                     "batching": "keyset" if key else "single_stream"})
     con.close()
+    refused = [entry for entry in report["relations"]
+               if entry["outcome"].endswith("_REFUSED")]
+    report["refused"] = refused
     args.out.write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
     print(json.dumps({"relations": len(report["relations"]),
                       "copied": sum(r.get("copied_rows") or 0 for r in report["relations"]),
                       "already_present": sum(1 for r in report["relations"]
-                                             if r["outcome"] == "ALREADY_PRESENT")}, indent=1))
-    return 0
+                                             if r["outcome"] == "ALREADY_PRESENT"),
+                      "refused": len(refused)}, indent=1))
+    # Refused work is not success. Exiting zero here is how an operator's script carried on.
+    return 0 if not refused else 2
 
 
 def cmd_validate(args) -> int:
@@ -839,41 +928,109 @@ def cmd_validate(args) -> int:
     con.close()
     args.out.write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(report["summary"], indent=1))
-    return 0 if not report["mismatches"] else 1
+    # An unresolved conflict is not a completed rollback.
+    return 0 if not report["summary"].get("unresolved") else 2 if not report["mismatches"] else 1
 
 
 def cmd_catchup(args) -> int:
-    """Rows that appeared after the watermark, by identity rather than by position."""
-    con = connect(args.destination, memory_limit=args.memory_limit, threads=args.threads)
-    alias = attach_source(con)
-    report = {"schema": "olap_duckdb_catchup.v1", "generated_utc": now(),
-              "watermark": args.watermark, "relations": []}
-    for entry in relations_for(args, con, alias):
-        name = entry["name"]
-        if "received_at" not in entry["columns"]:
-            report["relations"].append({"relation": name, "outcome": "NO_WATERMARK_COLUMN"})
-            continue
-        target = f'"{args.schema}"."{name}"'
-        source = f'{alias}.public."{name}"'
-        key = "terminal_sha256" if "terminal_sha256" in entry["columns"] else (
-            "report_sha256" if "report_sha256" in entry["columns"] else None)
-        if key is None:
-            report["relations"].append({"relation": name, "outcome": "NO_IDENTITY_COLUMN"})
-            continue
-        # `received_at` is TIMESTAMPTZ on some relations and an ISO string on others, so the
-        # comparison is made on an explicit cast rather than on whatever the column happens to
-        # be. Getting this wrong silently skipped a relation instead of catching it up.
-        inserted = con.execute(
-            f"INSERT INTO {target} SELECT s.* FROM {source} s "
-            f'WHERE CAST(s."received_at" AS TIMESTAMPTZ) > TIMESTAMPTZ \'{args.watermark}\' '
-            f'AND s."{key}" NOT IN (SELECT "{key}" FROM {target}) RETURNING 1').fetchall()
-        report["relations"].append({"relation": name, "outcome": "CAUGHT_UP",
-                                    "identity_column": key, "rows_added": len(inserted)})
-    con.close()
+    """Carry outcomes that appeared after a watermark, with their complete evidence.
+
+    The previous version filtered on `received_at` and therefore skipped every relation that
+    does not have one — which is every CHILD table. A terminal caught up without its metrics,
+    datasets and artifacts is a half-outcome, and the CLI never called the closure helper that
+    would have carried them.
+
+    So catch-up is the same closure as a replay, narrowed at the PARENT: identity decides what
+    is missing, children follow their parents whether or not they carry a timestamp, and a
+    conflicting identity is refused rather than overwritten.
+    """
+    if args.source_engine == "postgres":
+        report = catchup_from_postgres(str(args.destination), schema=args.schema,
+                                       since=args.watermark, dry_run=args.dry_run)
+    else:
+        report = replay_between(str(args.source), str(args.destination), schema=args.schema,
+                                dry_run=args.dry_run, since=args.watermark)
     args.out.write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
-    print(json.dumps({"rows_added": sum(r.get("rows_added") or 0
-                                        for r in report["relations"])}, indent=1))
-    return 0
+    print(json.dumps(report["summary"], indent=1))
+    return 0 if not report["summary"].get("unresolved") else 2
+
+
+def catchup_from_postgres(destination: str, *, schema: str = "main", since=None,
+                          dry_run: bool = False) -> dict:
+    """Catch the DuckDB cube up from the legacy PostgreSQL source, closure included."""
+    import duckdb
+
+    con = duckdb.connect(destination)
+    alias = attach_source(con)
+    replayed = children = contracts = conflicting = 0
+    report = {"schema": "olap_duckdb_catchup.v2", "generated_utc": now(),
+              "source": os.environ.get("PGDATABASE"), "destination": destination,
+              "since": since, "dry_run": dry_run, "relations": []}
+    try:
+        for parent, key in PARENTS.items():
+            in_source = con.execute(
+                "SELECT count(*) FROM information_schema.tables WHERE table_catalog="
+                f"'{alias}' AND table_schema='public' AND table_name='{parent}'"
+            ).fetchone()[0]
+            if not in_source:
+                report["relations"].append({"relation": parent, "outcome": "ABSENT_IN_SOURCE"})
+                continue
+            columns = [row[0] for row in con.execute(
+                "SELECT column_name FROM information_schema.columns WHERE table_catalog="
+                f"'{alias}' AND table_schema='public' AND table_name='{parent}' "
+                "ORDER BY ordinal_position").fetchall()]
+            src = f'{alias}.public."{parent}"'
+            dst = f'"{schema}"."{parent}"'
+            window = ""
+            if since and "received_at" in columns:
+                window = (f" AND CAST(s.\"received_at\" AS TIMESTAMPTZ) > "
+                          f"TIMESTAMPTZ '{since}'")
+            missing = [row[0] for row in con.execute(
+                f'SELECT s."{key}" FROM {src} s WHERE s."{key}" NOT IN '
+                f'(SELECT "{key}" FROM {dst}){window}').fetchall()]
+            if dry_run:
+                report["relations"].append({"relation": parent, "outcome": "WOULD_CATCH_UP",
+                                            "missing": len(missing)})
+                continue
+            child_rows = 0
+            con.execute("BEGIN TRANSACTION")
+            try:
+                if missing:
+                    marks = ", ".join("?" for _ in missing)
+                    con.execute(f'INSERT INTO {dst} SELECT s.* FROM {src} s WHERE s."{key}" '
+                                f'IN ({marks})', list(missing))
+                    for child in CHILDREN.get(parent, ()):
+                        child_columns = [row[0] for row in con.execute(
+                            "SELECT column_name FROM information_schema.columns WHERE "
+                            f"table_catalog='{alias}' AND table_schema='public' AND "
+                            f"table_name='{child}' ORDER BY ordinal_position").fetchall()]
+                        if not child_columns:
+                            continue
+                        projection = ", ".join(f'"{c}"' for c in child_columns)
+                        added = con.execute(
+                            f'INSERT INTO "{schema}"."{child}" SELECT c.* FROM '
+                            f'{alias}.public."{child}" c WHERE c."{key}" IN ({marks}) AND '
+                            f'md5(CAST(ROW({projection}) AS VARCHAR)) NOT IN (SELECT '
+                            f'md5(CAST(ROW({projection}) AS VARCHAR)) FROM '
+                            f'"{schema}"."{child}") RETURNING 1', list(missing)).fetchall()
+                        child_rows += len(added)
+                con.execute("COMMIT")
+            except Exception:
+                con.execute("ROLLBACK")
+                raise
+            if parent == "gov_availability_contract":
+                contracts += len(missing)
+            else:
+                replayed += len(missing)
+            children += child_rows
+            report["relations"].append({"relation": parent, "outcome": "CAUGHT_UP",
+                                        "rows": len(missing), "child_rows": child_rows})
+    finally:
+        con.close()
+    report["summary"] = {"terminals_replayed": replayed, "child_rows_replayed": children,
+                         "contracts_replayed": contracts, "conflicting_parents": conflicting,
+                         "unresolved": bool(conflicting)}
+    return report
 
 
 def snapshot_database(source: str, target: str, *, schema: str = "main",
@@ -953,6 +1110,180 @@ def cmd_snapshot(args) -> int:
     return 0 if body["verified"] else 1
 
 
+def replay_into_postgres(source: str, *, schema: str = "main", dry_run: bool = False) -> dict:
+    """Restore DuckDB-era outcomes into a PostgreSQL destination. The real rollback.
+
+    A DuckDB-to-DuckDB copy is not a rollback rehearsal: returning to the old backend means
+    landing in PostgreSQL, which is a different engine and, in this deployment, has no
+    `gov_availability_contract` at all. The destination schema is therefore created by the
+    PostgreSQL PROVIDER so the table arrives with its constraints; parents and children go in
+    one transaction per relation; identity decides what is missing, so a second run writes
+    nothing; and conflicting content under a shared identity is REFUSED, never overwritten.
+
+    `PGDATABASE` must name a DISPOSABLE database. This is rehearsed, never run on the live cube.
+    """
+    import duckdb
+
+    database = os.environ.get("PGDATABASE")
+    if not database:
+        raise SystemExit("PGDATABASE must name the destination; refusing to guess")
+    report = {"schema": "olap_duckdb_rollback_postgres.v1", "generated_utc": now(),
+              "source": source, "destination": database, "dry_run": dry_run, "relations": []}
+    if not dry_run:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "olap" / "store" / "src"))
+        from predictor_olap_store.query import Plugin
+
+        destination = Plugin()
+        destination.set_params(sqlite_path=None, schema="public")
+        destination.engine()
+        report["schema_created_by"] = "predictor_olap_store.query.Plugin"
+
+    con = duckdb.connect(":memory:")
+    con.execute("INSTALL postgres")
+    con.execute("LOAD postgres")
+    dsn = (f"host={os.environ.get('PGHOST', '127.0.0.1')} "
+           f"port={os.environ.get('PGPORT', '5432')} dbname={database} "
+           f"user={os.environ.get('PGUSER', '')} password={os.environ.get('PGPASSWORD', '')}")
+    con.execute(f"ATTACH '{dsn}' AS pg (TYPE postgres)")
+    con.execute(f"ATTACH '{source}' AS duck (READ_ONLY)")
+    replayed = children = contracts = conflicting = 0
+    try:
+        for parent, key in PARENTS.items():
+            present = con.execute(
+                "SELECT count(*) FROM information_schema.tables WHERE table_catalog='pg' "
+                f"AND table_schema='public' AND table_name='{parent}'").fetchone()[0]
+            if not present:
+                report["relations"].append({"relation": parent,
+                                            "outcome": "ABSENT_IN_DESTINATION"})
+                continue
+            columns = [row[0] for row in con.execute(
+                "SELECT column_name FROM information_schema.columns WHERE table_catalog='pg'"
+                f" AND table_schema='public' AND table_name='{parent}' "
+                "ORDER BY ordinal_position").fetchall()]
+            duck_table = f'duck."{schema}"."{parent}"'
+            pg_table = f'pg.public."{parent}"'
+            left = ", ".join(f's."{c}"' for c in columns)
+            right = ", ".join(f'd."{c}"' for c in columns)
+            conflicts = con.execute(
+                f'SELECT s."{key}" FROM {duck_table} s JOIN {pg_table} d '
+                f'ON d."{key}" = s."{key}" WHERE md5(CAST(ROW({left}) AS VARCHAR)) <> '
+                f'md5(CAST(ROW({right}) AS VARCHAR))').fetchall()
+            if conflicts:
+                conflicting += len(conflicts)
+                report["relations"].append({
+                    "relation": parent, "outcome": "CONFLICT_REFUSED",
+                    "conflicts": len(conflicts),
+                    "conflicting_identities": [row[0] for row in conflicts][:20]})
+                continue
+            missing = [row[0] for row in con.execute(
+                f'SELECT s."{key}" FROM {duck_table} s WHERE s."{key}" NOT IN '
+                f'(SELECT "{key}" FROM {pg_table})').fetchall()]
+            shared = [row[0] for row in con.execute(
+                f'SELECT s."{key}" FROM {duck_table} s JOIN {pg_table} d '
+                f'ON d."{key}" = s."{key}"').fetchall()]
+            if dry_run:
+                report["relations"].append({"relation": parent, "outcome": "WOULD_REPLAY",
+                                            "missing": len(missing), "shared": len(shared)})
+                continue
+            child_rows = 0
+            con.execute("BEGIN TRANSACTION")
+            try:
+                if missing:
+                    marks = ", ".join("?" for _ in missing)
+                    con.execute(f'INSERT INTO {pg_table} SELECT s.* FROM {duck_table} s '
+                                f'WHERE s."{key}" IN ({marks})', list(missing))
+                touched = missing + shared
+                if touched:
+                    marks = ", ".join("?" for _ in touched)
+                    for child in CHILDREN.get(parent, ()):
+                        child_columns = [row[0] for row in con.execute(
+                            "SELECT column_name FROM information_schema.columns WHERE "
+                            f"table_catalog='pg' AND table_schema='public' AND "
+                            f"table_name='{child}' ORDER BY ordinal_position").fetchall()]
+                        if not child_columns:
+                            continue
+                        projection = ", ".join(f'"{c}"' for c in child_columns)
+                        before = con.execute(
+                            f'SELECT count(*) FROM pg.public."{child}"').fetchone()[0]
+                        con.execute(
+                            f'INSERT INTO pg.public."{child}" SELECT c.* FROM '
+                            f'duck."{schema}"."{child}" c WHERE c."{key}" IN ({marks}) '
+                            f'AND md5(CAST(ROW({projection}) AS VARCHAR)) NOT IN '
+                            f'(SELECT md5(CAST(ROW({projection}) AS VARCHAR)) FROM '
+                            f'pg.public."{child}")', list(touched))
+                        after = con.execute(
+                            f'SELECT count(*) FROM pg.public."{child}"').fetchone()[0]
+                        child_rows += after - before
+                con.execute("COMMIT")
+            except Exception:
+                con.execute("ROLLBACK")
+                raise
+            if parent == "gov_availability_contract":
+                contracts += len(missing)
+            else:
+                replayed += len(missing)
+            children += child_rows
+            report["relations"].append({"relation": parent, "outcome": "REPLAYED",
+                                        "rows": len(missing), "shared_parents": len(shared),
+                                        "child_rows": child_rows})
+    finally:
+        con.close()
+    report["summary"] = {"terminals_replayed": replayed, "child_rows_replayed": children,
+                         "contracts_replayed": contracts, "conflicting_parents": conflicting,
+                         "unresolved": bool(conflicting)}
+    return report
+
+
+def cmd_copy_cube(args) -> int:
+    """Copy one DuckDB cube into another. Named for what it is, and NOT a rollback."""
+    import duckdb
+
+    con = duckdb.connect(str(args.destination))
+    con.execute(f"ATTACH '{args.source}' AS src (READ_ONLY)")
+    report = {"schema": "olap_duckdb_copy_cube.v1", "generated_utc": now(),
+              "source": str(args.source), "destination": str(args.destination),
+              "relations": []}
+    try:
+        for name in GOVERNANCE:
+            present = con.execute(
+                "SELECT count(*) FROM information_schema.tables WHERE table_catalog='src' "
+                f"AND table_schema='{args.schema}' AND table_name='{name}'").fetchone()[0]
+            if not present:
+                continue
+            source = f'src."{args.schema}"."{name}"'
+            target = f'"{args.schema}"."{name}"'
+            exists = con.execute(
+                "SELECT count(*) FROM information_schema.tables WHERE table_schema="
+                f"'{args.schema}' AND table_name='{name}'").fetchone()[0]
+            if not exists:
+                con.execute(f"CREATE TABLE {target} AS SELECT * FROM {source} LIMIT 0")
+            columns = [row[1] for row in con.execute(
+                f'PRAGMA table_info("{args.schema}"."{name}")').fetchall()]
+            state = relation_state(con, source, target, columns)
+            if state in ("OVERFILLED", "CONTENT_DIFFERS"):
+                report["relations"].append({"relation": name, "outcome": f"{state}_REFUSED"})
+                continue
+            if state == "COMPLETE":
+                report["relations"].append({"relation": name, "outcome": "ALREADY_PRESENT"})
+                continue
+            key = PARENTS.get(name) or pagination_key(con, source, columns)
+            copied = copy_relation(
+                con, source, target,
+                con.execute(f"SELECT count(*) FROM {source}").fetchone()[0],
+                key, args.batch_rows)
+            report["relations"].append({"relation": name, "outcome": "COPIED",
+                                        "copied_rows": copied})
+    finally:
+        con.close()
+    refused = [entry for entry in report["relations"] if entry["outcome"].endswith("_REFUSED")]
+    report["refused"] = refused
+    args.out.write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
+    print(json.dumps({"relations": len(report["relations"]), "refused": len(refused)},
+                     indent=1))
+    return 0 if not refused else 2
+
+
+
 def cmd_rollback(args) -> int:
     """Replay DuckDB-era outcomes into another cube, and do it.
 
@@ -963,11 +1294,16 @@ def cmd_rollback(args) -> int:
     The target is a DuckDB cube, which is what makes this testable against an explicitly
     disposable destination rather than against production.
     """
-    report = replay_between(str(args.duckdb), str(args.target), schema=args.schema,
-                            dry_run=args.dry_run)
+    if args.target_engine == "postgres":
+        report = replay_into_postgres(str(args.duckdb), schema=args.schema,
+                                      dry_run=args.dry_run)
+    else:
+        report = replay_between(str(args.duckdb), str(args.target), schema=args.schema,
+                                dry_run=args.dry_run)
     args.out.write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(report["summary"], indent=1))
-    return 0
+    # An unresolved conflict is not a completed rollback.
+    return 0 if not report["summary"].get("unresolved") else 2
 
 
 def main(argv=None) -> int:
@@ -1005,8 +1341,14 @@ def main(argv=None) -> int:
     validate.add_argument("--selection", type=Path,
                           help="compare against the reviewed selection, not the whole source")
     validate.set_defaults(func=cmd_validate)
-    catchup = sub.add_parser("catchup"); common(catchup)
-    catchup.add_argument("--watermark", required=True, help="ISO-8601 with offset")
+    catchup = sub.add_parser("catchup")
+    catchup.add_argument("--destination", type=Path, required=True)
+    catchup.add_argument("--source", type=Path, help="a DuckDB cube, when source-engine=duckdb")
+    catchup.add_argument("--source-engine", choices=("postgres", "duckdb"), default="postgres")
+    catchup.add_argument("--schema", default="main")
+    catchup.add_argument("--watermark", help="ISO-8601 with offset; narrows PARENTS only")
+    catchup.add_argument("--dry-run", action="store_true")
+    catchup.add_argument("--out", type=Path, required=True)
     catchup.set_defaults(func=cmd_catchup)
 
     snapshot = sub.add_parser("snapshot")
@@ -1023,13 +1365,26 @@ def main(argv=None) -> int:
 
     rollback = sub.add_parser("rollback")
     rollback.add_argument("--duckdb", type=Path, required=True, help="the DuckDB-era source")
-    rollback.add_argument("--target", type=Path, required=True,
-                          help="the destination cube; use a DISPOSABLE one to rehearse")
+    rollback.add_argument("--target", type=Path,
+                          help="the destination cube when --target-engine is duckdb; use a "
+                               "DISPOSABLE one to rehearse")
+    rollback.add_argument("--target-engine", choices=("duckdb", "postgres"),
+                          default="postgres",
+                          help="postgres is the real rollback destination; duckdb is a "
+                               "rehearsal against another cube")
     rollback.add_argument("--schema", default="main")
     rollback.add_argument("--dry-run", action="store_true",
                           help="report what WOULD be replayed and write nothing")
     rollback.add_argument("--out", type=Path, required=True)
     rollback.set_defaults(func=cmd_rollback)
+
+    copy_cube = sub.add_parser("copy-cube")
+    copy_cube.add_argument("--source", type=Path, required=True)
+    copy_cube.add_argument("--destination", type=Path, required=True)
+    copy_cube.add_argument("--schema", default="main")
+    copy_cube.add_argument("--batch-rows", type=int, default=100_000)
+    copy_cube.add_argument("--out", type=Path, required=True)
+    copy_cube.set_defaults(func=cmd_copy_cube)
 
     args = parser.parse_args(argv)
     return args.func(args)

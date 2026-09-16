@@ -163,3 +163,58 @@ def test_a_row_count_alone_never_declares_a_relation_complete(tmp_path):
     con.close()
     assert state == "CONTENT_DIFFERS", (
         "row-count equality is not completion; the contents disagree")
+
+
+# --- F2: catch-up must carry children that have no timestamp of their own ------------------
+
+def test_the_catchup_command_carries_timestamp_free_children(tmp_path):
+    """A terminal caught up without its metrics is a half-outcome, not a caught-up one."""
+    source = str(tmp_path / "src.duckdb")
+    destination = str(tmp_path / "dst.duckdb")
+    migrate.build_fixture_cube(source, terminals=2, with_children=True, with_contract=True)
+    migrate.build_fixture_cube(destination, terminals=0)
+    out = tmp_path / "catchup.json"
+
+    code = migrate.main(["catchup", "--source", source, "--destination", destination,
+                         "--source-engine", "duckdb", "--schema", "main", "--out", str(out)])
+
+    assert code == 0
+    report = json.loads(out.read_text())
+    assert report["summary"]["terminals_replayed"] == 2
+    assert report["summary"]["child_rows_replayed"] == 6, (
+        "gov_terminal_metric, _dataset and _artifact have no received_at and were skipped")
+    con = duckdb.connect(destination, read_only=True)
+    assert con.execute("SELECT count(*) FROM main.gov_terminal_artifact").fetchone()[0] == 2
+    con.close()
+
+
+def test_a_partially_present_outcome_is_completed_by_catchup(tmp_path):
+    """The parent is there and its children are not: catch-up must finish it."""
+    source = str(tmp_path / "src.duckdb")
+    destination = str(tmp_path / "dst.duckdb")
+    migrate.build_fixture_cube(source, terminals=1, with_children=True, with_contract=True)
+    migrate.build_fixture_cube(destination, terminals=1)
+    out = tmp_path / "catchup.json"
+
+    migrate.main(["catchup", "--source", source, "--destination", destination,
+                  "--source-engine", "duckdb", "--schema", "main", "--out", str(out)])
+
+    con = duckdb.connect(destination, read_only=True)
+    assert con.execute("SELECT count(*) FROM main.gov_terminal_metric").fetchone()[0] == 1
+    con.close()
+
+
+def test_the_catchup_command_exits_nonzero_on_an_unresolved_conflict(tmp_path):
+    source = str(tmp_path / "src.duckdb")
+    destination = str(tmp_path / "dst.duckdb")
+    migrate.build_fixture_cube(source, terminals=1, with_children=True)
+    migrate.build_fixture_cube(destination, terminals=1, with_children=True)
+    con = duckdb.connect(destination)
+    con.execute("UPDATE main.gov_terminal SET actor = 'somebody-else'")
+    con.close()
+    out = tmp_path / "catchup.json"
+
+    code = migrate.main(["catchup", "--source", source, "--destination", destination,
+                         "--source-engine", "duckdb", "--schema", "main", "--out", str(out)])
+
+    assert code == 2, "an unresolved conflict is not a completed catch-up"
