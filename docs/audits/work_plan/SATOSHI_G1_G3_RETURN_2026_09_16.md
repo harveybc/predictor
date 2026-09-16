@@ -68,7 +68,11 @@ Those rules stay: `olap/store/tests/test_terminal_children_are_persisted.py`, si
 | suite | scope | result |
 |---|---|---|
 | store + all migration/reconciler files | three engines (`U2_DUCKDB_PATH=1`, `U2_PG_DATABASE=<disposable>`) | **187 passed, 1 skipped** |
-| predictor `tests` + `olap/store/tests` | trading-stack, legacy dirs excluded | recorded below |
+| predictor `tests` + `olap/store/tests` | trading-stack, `--ignore=tests/unit_tests --ignore=tests/integration_tests` | **1454 passed, 5 skipped, 0 failed** in 6m32s |
+
+The five skips are the three DuckDB-dependent files under trading-stack, which has no `duckdb`;
+those same files contribute 50 of the 187 rules in the DuckDB environment. Two lines, because
+the environment decides how many rules run.
 
 Failing-before evidence: `G_FAILING_BEFORE.txt` (13 red). No test dependency was installed into
 the live service environment.
