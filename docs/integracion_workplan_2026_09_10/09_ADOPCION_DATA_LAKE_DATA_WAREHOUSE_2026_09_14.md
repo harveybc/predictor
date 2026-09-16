@@ -695,3 +695,13 @@ cuatro filas sobrantes retiradas tras preservarlas, WAL de 0 bytes.
 **533/533 de acuerdo**. Las otras tres relaciones con digest intacto y de acuerdo en todo
 momento. Conciliado despues de la escritura **por el servicio activo**: 55 aceptados,
 **55 coinciden, 0 difieren**, cero huerfanas. I1-I3 cerrado.
+
+### Retorno 18ffa4e aceptado al alcance operacional medido
+
+Musashi ejecuto conciliacion por API viva: 55/55, cero diferencias, 533 metricas,
+filtro/barrido concordante en metricas, datasets y artefactos. 64 pruebas focales
+independientes pasan. Pila desechable huerfana retirada por su scope exacto;
+produccion intacta y activa. No repetir reparacion ni retirada. Siguiente trabajo:
+prevenir sobreescritura de STACK.json, vigilancia acotada y preparar el siguiente
+paso cientifico ya previsto, sin nuevas autorizaciones operativas por etapa.
+[Acta y continuacion](../handoffs/MUSASHI_I1_I3_ACCEPTANCE_AND_STACK_FOLLOWUP_2026_09_16.md).
