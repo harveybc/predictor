@@ -650,3 +650,10 @@ El almacen vivo quedo corriendo y sin modificar.
 entorno del almacen; 241+1 sobre tres motores. Tercer recibo propio que no reproduce: la cifra
 de suite de H1 (1454/5) no se obtiene con el comando anotado a su lado — el arbol recoge 1413 y
 `383fbe7` medido hoy da 1394/1/21. Se registra lo medido, con el entorno nombrado al lado.
+
+**Hallazgo al cerrar.** Una pila desechable del 2026-09-15 sigue viva
+(`crispdm-s2-stack-1789506694-3701496`, solo un puerto efimero; su base ya no existe). Su propio
+`--teardown` no la para: una pila posterior en el mismo directorio **sobrescribio `STACK.json`**,
+de modo que los hijos de la anterior no quedan registrados en ninguna parte. Es la recurrencia de
+la clase U1 por otro flanco —no un grupo de procesos perdido, sino un **registro** perdido—. No se
+corrige aqui por estar fuera del alcance acotado; queda listado con su reproduccion.

@@ -174,6 +174,25 @@ rules skip and the same tree reports 1383 / 34.
 
 The disposable PostgreSQL database created for the three-engine run was dropped.
 
+## Found while closing out: an orphaned disposable stack, and why teardown missed it
+
+One disposable route stack from 2026-09-15 is still running — scope
+`crispdm-s2-stack-1789506694-3701496`, holding an ephemeral port and no production resource;
+its PostgreSQL database is already gone. Running its own `--teardown STACK.json` reports
+`ALREADY_GONE` for all three recorded processes and stops nothing, because **a later stack
+started in the same work directory overwrote `STACK.json`**. The record names the newest run's
+processes; the older run's children are then recorded nowhere and cannot be torn down by the
+path that is supposed to own them.
+
+That is a recurrence of exactly the class U1 was meant to close, from a direction U1 did not
+cover: not a lost process group, a lost *record*. The fix is a stack refusing to write over a
+`STACK.json` whose processes are still alive, and a teardown that can find a stack by its work
+directory rather than only by the identities in that file. I have not written it — it is
+outside the bounded scope of these orders, and it is listed below rather than done quietly.
+
+Stopping the orphan is also refused by the harness (`[Interfere With Workloads]`), both through
+`--teardown` and through its own systemd scope. It is left running and named here.
+
 ## Open, with owners
 
 | item | owner |
@@ -181,4 +200,5 @@ The disposable PostgreSQL database created for the three-engine run was dropped.
 | **the production surplus write and its live verification** — needs one authorised service stop | owner; rehearsed, receipts ready |
 | where the four G1 rows were originally lost, and why the incident log could not be replayed | Satoshi; quarantined log preserved |
 | whether the production duplication was this reproduced mechanism or another | Satoshi; unproven, not inferred |
+| orphaned stack `crispdm-s2-stack-1789506694-3701496`, and the `STACK.json` overwrite that stranded it | Satoshi, once ordered; needs the same authorisation |
 | Metabase driver decision (not blocking) | Satoshi |
