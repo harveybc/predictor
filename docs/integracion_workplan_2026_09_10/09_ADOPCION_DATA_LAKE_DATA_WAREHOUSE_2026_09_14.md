@@ -213,3 +213,12 @@ y todos los hijos ausentes: identidad/estado no equivalen a contenido preservado
 No se afirma perdida productiva. Resume con huecos y snapshot con frontera solo
 declarada siguen pendientes. Continuacion acotada:
 [G1-G3](../handoffs/MUSASHI_F1_F5_REVIEW_AND_G1_G3_2026_09_16.md).
+
+### Retorno 6b80923: cuatro metricas restauradas y verificadas
+
+Musashi comparo nombres/valores de las cuatro metricas por API viva con los
+payloads independientes de data-gov: coinciden. 23 pruebas focales independientes
+verdes. No equivale a preservacion de todos los campos: faltan costos, identidad
+de codigo y vinculos de disponibilidad en la conciliacion. El snapshot libera
+el bloqueo antes de copiar. Continuacion limitada:
+[H1-H3](../handoffs/MUSASHI_G1_G3_REVIEW_AND_H1_H3_2026_09_16.md).
