@@ -156,3 +156,17 @@ persistente del contrato, y el PDF oficial de terminos ya fue localizado.
 Orden de continuacion [S1-S4](../handoffs/MUSASHI_TO_SATOSHI_COUNTERS_ARCHIVE_AND_TERMS_2026_09_15.md):
 contrato de computo exacto, semantica temporal recuperable y fuentes de derechos.
 P1LR queda fuera de esta aceptacion; no bloquea estos trabajos ni se lanza.
+
+## Recuperacion del warehouse tras S1-S4
+
+Musashi arranco el warehouse productivo tras la terminacion accidental reportada
+por Satoshi. Salud HTTP confirmada, 52 terminales observados y sucesor con 21
+metricas; cargador sin reinicio. Falta conciliacion explicita de los outboxes del
+intervalo, no se presume ausencia de perdidas.
+
+P1LR queda efectivamente dormante: temporizador y arranque de decision
+deshabilitados, fallos y diarios conservados. La dimension temporal no esta
+desplegada: 10 tests focales pasan, pero el lector aun no revalida el digest
+que presenta como RESOLVED. Corregir antes de aprobar la migracion.
+
+Orden vigente: [U1-U4: recuperacion, lector y procedencia publica](../handoffs/MUSASHI_WAREHOUSE_RECOVERY_AND_S2_REVIEW_2026_09_15.md).
