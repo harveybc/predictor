@@ -599,3 +599,12 @@ que faltaban y que estan restauradas; **no probado** donde se perdieron ni por q
 pudo reproducirse.
 
 **206 reglas verdes sobre tres motores.**
+
+### Retorno 383fbe7: codigo verificado, discrepancia viva nueva
+
+60 pruebas focales independientes pasan; cobertura H1 y bloqueo durante copia H2
+corregidos al alcance probado. Consulta viva independiente: 55 terminales, 537
+metricas, 53 terminales coincidentes; los dos reparados contienen cuatro metricas
+sobrantes por duplicacion exacta. No se atribuye causa ni momento sin evidencia.
+Orden de conciliacion y reparacion acotada autorizada:
+[I1-I3](../handoffs/MUSASHI_H1_H3_LIVE_REVIEW_AND_I1_I3_2026_09_16.md).
