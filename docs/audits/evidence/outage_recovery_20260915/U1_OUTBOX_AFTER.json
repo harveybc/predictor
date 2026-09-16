@@ -1,0 +1,1739 @@
+{
+ "schema": "outage_outbox_inventory.v1",
+ "generated_utc": "2026-09-16T01:18:38Z",
+ "outage": {
+  "since": "2026-09-15T21:13:15+00:00",
+  "until": "2026-09-16T00:11:24+00:00",
+  "seconds": 10689.0
+ },
+ "roots": [
+  {
+   "root": "/home/harveybc/.cache/data-gov-outbox",
+   "exists": true,
+   "states": {
+    "pending": [],
+    "sent": [
+     {
+      "file": "f9cb1afe68a348a85e2c92339ece8ab2f40f72ec8a240710c912dea3ca398658.json",
+      "bytes": 745,
+      "mtime": "2026-09-15T12:04:27Z",
+      "campaign_sha256": "e199058b63530b9eeddc2dd1dc5e111cd3ac71f133c995f6880a9fa88bba2ff1",
+      "unit_id": "omega-probe-1",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "host": "omega",
+       "probe": "worker_delivery"
+      }
+     }
+    ],
+    "adjudicated": []
+   }
+  },
+  {
+   "root": "/home/harveybc/.local/share/predictor/olap_outbox",
+   "exists": true,
+   "states": {
+    "pending": [],
+    "failed": [
+     {
+      "file": "envelope-6e65c89040e758f01672e5114760bc9d51bc5cf028eb8a2316da989a3437a0c4.adjudication.json",
+      "bytes": 872,
+      "mtime": "2026-09-12T05:06:30Z",
+      "disposition": "DEAD_LETTER_ADJUDICATED"
+     },
+     {
+      "file": "envelope-6e65c89040e758f01672e5114760bc9d51bc5cf028eb8a2316da989a3437a0c4.json",
+      "bytes": 1244,
+      "mtime": "2026-09-10T18:45:55Z"
+     },
+     {
+      "file": "envelope-6e65c89040e758f01672e5114760bc9d51bc5cf028eb8a2316da989a3437a0c4.reason",
+      "bytes": 200,
+      "mtime": "2026-09-10T18:46:15Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "envelope-983c4b321370fb54a4fd8c4d73d0ee62b97dbd2f13895babb2dd08daa9a32117.adjudication.json",
+      "bytes": 789,
+      "mtime": "2026-09-12T05:39:27Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "envelope-983c4b321370fb54a4fd8c4d73d0ee62b97dbd2f13895babb2dd08daa9a32117.json",
+      "bytes": 912,
+      "mtime": "2026-09-12T05:35:56Z"
+     },
+     {
+      "file": "envelope-983c4b321370fb54a4fd8c4d73d0ee62b97dbd2f13895babb2dd08daa9a32117.reason",
+      "bytes": 133,
+      "mtime": "2026-09-12T05:36:09Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-0575cbf7c831f0b65d2ee1915e09ea34fa4133d30c764b885207a00547908e38.adjudication.json",
+      "bytes": 711,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-0575cbf7c831f0b65d2ee1915e09ea34fa4133d30c764b885207a00547908e38.json",
+      "bytes": 418,
+      "mtime": "2026-09-12T08:06:44Z"
+     },
+     {
+      "file": "event-0575cbf7c831f0b65d2ee1915e09ea34fa4133d30c764b885207a00547908e38.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:07:10Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-31052bd050ca72b7cb489efd43c17d7ac2ff27839790292c3cc0ba3ed164edef.adjudication.json",
+      "bytes": 711,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-31052bd050ca72b7cb489efd43c17d7ac2ff27839790292c3cc0ba3ed164edef.json",
+      "bytes": 418,
+      "mtime": "2026-09-12T08:06:37Z"
+     },
+     {
+      "file": "event-31052bd050ca72b7cb489efd43c17d7ac2ff27839790292c3cc0ba3ed164edef.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:06:40Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-33f6f60c129e21f3b45c499cd2dccd74ee2123e290a8e6fde6eb0a6f109fa35b.adjudication.json",
+      "bytes": 711,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-33f6f60c129e21f3b45c499cd2dccd74ee2123e290a8e6fde6eb0a6f109fa35b.json",
+      "bytes": 419,
+      "mtime": "2026-09-12T08:07:43Z"
+     },
+     {
+      "file": "event-33f6f60c129e21f3b45c499cd2dccd74ee2123e290a8e6fde6eb0a6f109fa35b.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:08:10Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-35ad41b20be530f578f808dd5173954a5f51d79f5499aa328d9610ae53c59917.adjudication.json",
+      "bytes": 711,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-35ad41b20be530f578f808dd5173954a5f51d79f5499aa328d9610ae53c59917.json",
+      "bytes": 419,
+      "mtime": "2026-09-12T08:07:32Z"
+     },
+     {
+      "file": "event-35ad41b20be530f578f808dd5173954a5f51d79f5499aa328d9610ae53c59917.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:07:40Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-36d2a1ba5f94706fbf686035357649ba6ae955aebc3ccae96ddf77d528d626f1.adjudication.json",
+      "bytes": 711,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-36d2a1ba5f94706fbf686035357649ba6ae955aebc3ccae96ddf77d528d626f1.json",
+      "bytes": 419,
+      "mtime": "2026-09-12T08:07:27Z"
+     },
+     {
+      "file": "event-36d2a1ba5f94706fbf686035357649ba6ae955aebc3ccae96ddf77d528d626f1.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:07:40Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-56c8751155fe3d2d4c02c4d5288770d2237a87cf660e53e1694c2469c58e1d9e.adjudication.json",
+      "bytes": 711,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-56c8751155fe3d2d4c02c4d5288770d2237a87cf660e53e1694c2469c58e1d9e.json",
+      "bytes": 419,
+      "mtime": "2026-09-12T08:07:48Z"
+     },
+     {
+      "file": "event-56c8751155fe3d2d4c02c4d5288770d2237a87cf660e53e1694c2469c58e1d9e.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:08:10Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-596f7e99300c43bb609d7f53de52e3de21181e6f2d1c35e5fc529c0e54e80cad.adjudication.json",
+      "bytes": 711,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-596f7e99300c43bb609d7f53de52e3de21181e6f2d1c35e5fc529c0e54e80cad.json",
+      "bytes": 419,
+      "mtime": "2026-09-12T08:07:02Z"
+     },
+     {
+      "file": "event-596f7e99300c43bb609d7f53de52e3de21181e6f2d1c35e5fc529c0e54e80cad.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:07:10Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-6e5e8ad502a756ff8141da8fa595d6a76978330c1b4651263ff28839c7400c67.adjudication.json",
+      "bytes": 711,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-6e5e8ad502a756ff8141da8fa595d6a76978330c1b4651263ff28839c7400c67.json",
+      "bytes": 419,
+      "mtime": "2026-09-12T08:07:38Z"
+     },
+     {
+      "file": "event-6e5e8ad502a756ff8141da8fa595d6a76978330c1b4651263ff28839c7400c67.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:07:40Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-7c1c13836e44102189b8f920468d9248d89185208c7353c18a624f524ed6e2dc.adjudication.json",
+      "bytes": 711,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-7c1c13836e44102189b8f920468d9248d89185208c7353c18a624f524ed6e2dc.json",
+      "bytes": 419,
+      "mtime": "2026-09-12T08:07:15Z"
+     },
+     {
+      "file": "event-7c1c13836e44102189b8f920468d9248d89185208c7353c18a624f524ed6e2dc.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:07:40Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-8a98fc461d472a25c3d5860cf712dc85510be9cce53239e481d0dc72620e46b1.adjudication.json",
+      "bytes": 711,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-8a98fc461d472a25c3d5860cf712dc85510be9cce53239e481d0dc72620e46b1.json",
+      "bytes": 419,
+      "mtime": "2026-09-12T08:06:49Z"
+     },
+     {
+      "file": "event-8a98fc461d472a25c3d5860cf712dc85510be9cce53239e481d0dc72620e46b1.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:07:10Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-c06dd2fedf79a894a2deb7810b384fe6b1916a0bd18ccedbb2075e487bb73a85.adjudication.json",
+      "bytes": 711,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-c06dd2fedf79a894a2deb7810b384fe6b1916a0bd18ccedbb2075e487bb73a85.json",
+      "bytes": 419,
+      "mtime": "2026-09-12T08:07:08Z"
+     },
+     {
+      "file": "event-c06dd2fedf79a894a2deb7810b384fe6b1916a0bd18ccedbb2075e487bb73a85.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:07:10Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-db87785dfa485f75f87694826cf1605ad32126db4c31ab097668d5dc5fb59167.adjudication.json",
+      "bytes": 711,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-db87785dfa485f75f87694826cf1605ad32126db4c31ab097668d5dc5fb59167.json",
+      "bytes": 415,
+      "mtime": "2026-09-12T08:07:48Z"
+     },
+     {
+      "file": "event-db87785dfa485f75f87694826cf1605ad32126db4c31ab097668d5dc5fb59167.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:08:10Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-dd1ae3f6b2fb436aff6c07503b63648e8215094503399b6a3cd8db76484925d3.adjudication.json",
+      "bytes": 710,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-dd1ae3f6b2fb436aff6c07503b63648e8215094503399b6a3cd8db76484925d3.json",
+      "bytes": 418,
+      "mtime": "2026-09-12T08:06:55Z"
+     },
+     {
+      "file": "event-dd1ae3f6b2fb436aff6c07503b63648e8215094503399b6a3cd8db76484925d3.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:07:10Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     },
+     {
+      "file": "event-f5e1ed3f6a447243a904fa0a781597849df123be8b9488c603379a2cbefbded1.adjudication.json",
+      "bytes": 710,
+      "mtime": "2026-09-12T08:09:31Z",
+      "disposition": "DEAD_LETTER_SUPERSEDED"
+     },
+     {
+      "file": "event-f5e1ed3f6a447243a904fa0a781597849df123be8b9488c603379a2cbefbded1.json",
+      "bytes": 419,
+      "mtime": "2026-09-12T08:07:21Z"
+     },
+     {
+      "file": "event-f5e1ed3f6a447243a904fa0a781597849df123be8b9488c603379a2cbefbded1.reason",
+      "bytes": 33,
+      "mtime": "2026-09-12T08:07:40Z",
+      "unreadable": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+     }
+    ],
+    "_loose": [
+     {
+      "file": "HEARTBEAT.json",
+      "bytes": 615,
+      "mtime": "2026-09-16T01:18:29Z"
+     }
+    ]
+   }
+  },
+  {
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "exists": true,
+   "states": {
+    "pending": [],
+    "sent": [
+     {
+      "file": "141c09715ebf52878a3cc7f1f9175c3ef75a91160dd939fe7bd3fa754aa020cf.json",
+      "bytes": 596,
+      "mtime": "2026-09-15T08:46:21Z",
+      "campaign_sha256": "2dd9b541ca6f560e233165ccd259dc2a043ab088ab013ae9c344b09208c104cd",
+      "unit_id": "doin-offline-replay-prod-9",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "COMMAND_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "device": "cpu",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "network": "none",
+       "offline": "true",
+       "phase": "r3prod"
+      }
+     },
+     {
+      "file": "206f77cd0393508ff6ca3982b4ecf7724c9e34246591c8f158838bd8b7c08344.json",
+      "bytes": 596,
+      "mtime": "2026-09-15T08:45:58Z",
+      "campaign_sha256": "e46bc98f68c80e6f6cf104785626aedb3ba593b938bde2c9bcc7f9a5954b6338",
+      "unit_id": "doin-offline-replay-prod-7",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "COMMAND_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "device": "cpu",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "network": "none",
+       "offline": "true",
+       "phase": "r3prod"
+      }
+     },
+     {
+      "file": "22fc53856535eeedab61eea344c1b0bc4c301770d007c6ace8ce7ea38e610172.json",
+      "bytes": 597,
+      "mtime": "2026-09-15T08:44:52Z",
+      "campaign_sha256": "d1c44c5610835112f7909e1432030160d7593b805dd6d9f0a3d5da29f0de434b",
+      "unit_id": "doin-offline-replay-prod-4",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "COMMAND_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "device": "cpu",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "network": "none",
+       "offline": "true",
+       "phase": "r3prod"
+      }
+     },
+     {
+      "file": "42cbe51a26bae8a448fd4e65ced7e2688a6af203d7a98d9e3ede7cf96eb9cedc.json",
+      "bytes": 597,
+      "mtime": "2026-09-15T08:45:13Z",
+      "campaign_sha256": "ff592d2a2aef09fb598d0f77e395821d52a1b5f29d650332060eb0c59cbe9a81",
+      "unit_id": "doin-offline-replay-prod-5",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "COMMAND_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "device": "cpu",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "network": "none",
+       "offline": "true",
+       "phase": "r3prod"
+      }
+     },
+     {
+      "file": "73d2bf5a049cbaf7c1d4b31a06c89fc3aab2d5abf4b2e9e7cdf38d7994a58842.json",
+      "bytes": 3848,
+      "mtime": "2026-09-15T20:48:46Z",
+      "campaign_sha256": "e6bec2868a7ff70fc040a1b49a4dc769d3d0261e77b8d12beaf3d97daded0796",
+      "unit_id": "doin-offline-replay-successor-1",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "device": "cpu",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "network": "none",
+       "offline": "true",
+       "phase": "s1prod"
+      }
+     },
+     {
+      "file": "82bdb3b5a2c66767f818565361b2c985793797cc88da15ec9dd83951ea7245de.json",
+      "bytes": 596,
+      "mtime": "2026-09-15T08:45:47Z",
+      "campaign_sha256": "000e11ca325dd8fad0e9b2178a569c2c8f4c5b67c503fd03c8a0ab79a813eff1",
+      "unit_id": "doin-offline-replay-prod-6",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "COMMAND_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "device": "cpu",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "network": "none",
+       "offline": "true",
+       "phase": "r3prod"
+      }
+     },
+     {
+      "file": "89492a13df80f8dc0f38a72ce469ae0b2c978204cdf541ae6c9684414051444e.json",
+      "bytes": 596,
+      "mtime": "2026-09-15T08:46:07Z",
+      "campaign_sha256": "28227144a5d6c31b529904dcf9c0cd48c833694d3dd3f263d4908f57d6eaec11",
+      "unit_id": "doin-offline-replay-prod-8",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "COMMAND_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "device": "cpu",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "network": "none",
+       "offline": "true",
+       "phase": "r3prod"
+      }
+     },
+     {
+      "file": "b973f21009721c631d9034e18e0c15b4cd54c792e9dd2647a9bda5169c8c7193.json",
+      "bytes": 1355,
+      "mtime": "2026-09-15T19:55:22Z",
+      "campaign_sha256": "5e7fb4db0a4b8940aa8a6fc753d678eb5d9f414add4739080c5a3a5252445f99",
+      "unit_id": "doin-offline-replay-prod-13",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "device": "cpu",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "network": "none",
+       "offline": "true",
+       "phase": "r3prod"
+      }
+     },
+     {
+      "file": "c46186c663531c32a0c44a41016f5a17cda9583e2fb7edf8f3c6b58504ae6cb0.json",
+      "bytes": 1358,
+      "mtime": "2026-09-15T19:54:38Z",
+      "campaign_sha256": "bd427dd2022816e8718358ac2c6fe44f2623642494cd5916f71be8dd21490b02",
+      "unit_id": "doin-offline-replay-prod-12",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "device": "cpu",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "network": "none",
+       "offline": "true",
+       "phase": "r3prod"
+      }
+     },
+     {
+      "file": "f32aefab7525f1de00f6159fdb9df22fb1a0907979fb839de4869a857408fa54.json",
+      "bytes": 597,
+      "mtime": "2026-09-15T08:46:30Z",
+      "campaign_sha256": "7d6d70f5a5af85dd9ba5313bb8587e89da71de56ff4f6f90c66249bd15a47bf5",
+      "unit_id": "doin-offline-replay-prod-10",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "COMMAND_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "device": "cpu",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "network": "none",
+       "offline": "true",
+       "phase": "r3prod"
+      }
+     },
+     {
+      "file": "f67b90569f5ab12b6429142aaba5d1472271366f97de57a5605a9abec5dfc987.json",
+      "bytes": 7149,
+      "mtime": "2026-09-14T17:22:24Z",
+      "campaign_sha256": "aef32e8723d998793d2601e32c44143927a2066ae38ac947a4e3f050cb949b75",
+      "unit_id": "recomparison",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "SYNTHETIC_EVIDENCE",
+       "evidence": "CONSERVED_REPLAYS",
+       "externally_reviewed": "false",
+       "grants": "NONE",
+       "population_enforced": "true",
+       "purpose": "D2_R4_PORTABILITY_DIAGNOSTIC"
+      }
+     },
+     {
+      "file": "fee2b920761d3afdde13f0ccc5eddb02a118b5b57e702ed011b446f1bd2f4ac1.json",
+      "bytes": 1088,
+      "mtime": "2026-09-15T08:47:02Z",
+      "campaign_sha256": "769a498b5ec1c0cff0b1ba8551bdbcca114bd6d485cf1017fe167b9b37a2b069",
+      "unit_id": "doin-offline-replay-prod-11",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "device": "cpu",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "network": "none",
+       "offline": "true",
+       "phase": "r3prod"
+      }
+     }
+    ],
+    "adjudicated": []
+   }
+  },
+  {
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/d2_r3_outbox",
+   "exists": true,
+   "states": {
+    "pending": [],
+    "sent": [
+     {
+      "file": "c955427215dd854e5756b37a7f19def2d6fa7c16975fbb3c361cb2ddae32b899.json",
+      "bytes": 5508,
+      "mtime": "2026-09-14T07:03:16Z",
+      "campaign_sha256": "733736b795e075bffc8c1331a0ce7c910e0ecf721b91123f19990eb1e577ab66",
+      "unit_id": "readjudication",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "SYNTHETIC_EVIDENCE",
+       "evidence": "CONSERVED_FRESH_CONFIRMATION",
+       "externally_reviewed": "false",
+       "grants": "NONE",
+       "purpose": "D2_R3_GOVERNED_REVIEW",
+       "successor_run_id": "d2r3_733736b795e075bffc8c1331",
+       "supersedes_run_id": "d2v2_fresh_1fd0e710bc0689b3bf9d7162"
+      }
+     }
+    ],
+    "adjudicated": []
+   }
+  },
+  {
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-flow-v3-deploy-20260914T045557Z/micro-outbox",
+   "exists": true,
+   "states": {
+    "pending": [],
+    "sent": [
+     {
+      "file": "8e656a4fc67fe7adff442b4136ce480382c5c0d846639335daada82a3971eb42.json",
+      "bytes": 13772,
+      "mtime": "2026-09-14T05:00:53Z",
+      "campaign_sha256": "ca2c0f1f088a3f46e616878e0eb9222813a04ee5852b72324d157d292bdd4d1b",
+      "unit_id": "flow-v3-production-mechanics-20260914T045557Z",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_1_daily",
+       "plugin": "ann"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-n3-20260914T063541Z/micro-outbox",
+   "exists": true,
+   "states": {
+    "pending": [],
+    "sent": [
+     {
+      "file": "2d9df4aeafff21425e406d10b40eb8e45ad7e2a7ea9f48b8bf19124d9956dc33.json",
+      "bytes": 13809,
+      "mtime": "2026-09-14T06:36:50Z",
+      "campaign_sha256": "05d28bf90dc06d74a5a0cde8d16d82793e88d89364423ff56ed5436a71b6f17e",
+      "unit_id": "n3-mechanics-musashi-n3-20260914T063541Z",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_1_daily",
+       "plugin": "ann"
+      }
+     }
+    ],
+    "adjudicated": []
+   }
+  },
+  {
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "exists": true,
+   "states": {
+    "pending": [],
+    "sent": [
+     {
+      "file": "0618db4581e395aa17b30d1d54205b79e385cdddfc0ea1477f7366dd97f72bee.json",
+      "bytes": 1497,
+      "mtime": "2026-09-14T21:12:49Z",
+      "campaign_sha256": "edf899cff9da635d3427b5273ac7887ef54ce447f26e78706a24c573ac8c5a51",
+      "unit_id": "a3-feature-extractor-stale-musashi-synthetic-catalog-20260914T211202Z",
+      "generation": 1,
+      "status": "REFUSED",
+      "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/feature-extractor/run/config_out.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/feature-extractor/run/debug_out.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/feature-extractor/run/governed_config.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/feature-extractor/run/phase_4_2_cnn_small_decoder_model.keras, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/feature-extractor/run/phase_4_2_cnn_small_encoder_model.keras, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/feature-extractor/run/run.log",
+      "tags": {
+       "availability_use": "NONE",
+       "exit_code": "",
+       "experiment_set_key": "",
+       "phase": "configs"
+      }
+     },
+     {
+      "file": "114a117ae893e9e0c89499bc7797bfd1a3a6aba7456d9122103adb80968cff8f.json",
+      "bytes": 613,
+      "mtime": "2026-09-14T21:12:37Z",
+      "campaign_sha256": "11b603d7e514e6853dc89f7f23549cdb9108441ae9907a440636071498b6bbc7",
+      "unit_id": "a3-feature-eng-failure-musashi-synthetic-catalog-20260914T211202Z",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "COMMAND_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "phase": "configs",
+       "plugin": "tech_indicator"
+      }
+     },
+     {
+      "file": "23fe45f55a51aab6e1c1bbc5de3027a86bda0dbadd19cdeb2e3c4387f67e2835.json",
+      "bytes": 5876,
+      "mtime": "2026-09-14T21:12:54Z",
+      "campaign_sha256": "452b0be059931a6daf61f0ae492fb66aa24d2e959ff46cc1fe3fe9adc354b342",
+      "unit_id": "a3-preprocessor-success-musashi-synthetic-catalog-20260914T211202Z",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "configs",
+       "plugin": "plugin_default"
+      }
+     },
+     {
+      "file": "2ab01268a3f92598ac496c596d28e4317ab70c81bff27e4cb21dd38b851c5117.json",
+      "bytes": 768,
+      "mtime": "2026-09-14T21:12:52Z",
+      "campaign_sha256": "4e7a0c819ed0824e5dbaa7847a3e4ea29231406320416ee946db1110118a7c45",
+      "unit_id": "a3-feature-extractor-failure-musashi-synthetic-catalog-20260914T211202Z",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "COMMAND_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "phase": "configs"
+      }
+     },
+     {
+      "file": "3d1fb16c590e7594bdb398cb7b7c7805fe638e83cd07122fde5e88cc425e8145.json",
+      "bytes": 3089,
+      "mtime": "2026-09-14T21:12:54Z",
+      "campaign_sha256": "9cb9ab7672c153e31208803728303a6015093a9afbf735b4e48ca454e0c7f545",
+      "unit_id": "a3-preprocessor-stale-musashi-synthetic-catalog-20260914T211202Z",
+      "generation": 1,
+      "status": "REFUSED",
+      "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/base_d1.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/base_d2.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/base_d3.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/base_d4.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/base_d5.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/base_d6.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/config_out.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/debug_out.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/governed_config.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/norm_a.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/norm_b.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/normalized_d1.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/normalized_d2.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/normalized_d3.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/normalized_d4.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/normalized_d5.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/normalized_d6.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/preprocessor/run/run.log",
+      "tags": {
+       "availability_use": "NONE",
+       "exit_code": "",
+       "experiment_set_key": "",
+       "phase": "configs",
+       "plugin": "plugin_default"
+      }
+     },
+     {
+      "file": "532eedebbd8899bfc959567e86655ebb97165af789d40af372643db8ec02947b.json",
+      "bytes": 2074,
+      "mtime": "2026-09-14T21:12:35Z",
+      "campaign_sha256": "3da92a0b1e1a21a607b25e45e8f3e5534183b99cb2cbb21a6292e52d96473564",
+      "unit_id": "a3-feature-eng-success-musashi-synthetic-catalog-20260914T211202Z",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "configs",
+       "plugin": "tech_indicator"
+      }
+     },
+     {
+      "file": "5f48366df965fae2accf742b36240aa8bfa80e5cd1eb44eeaa1e9798ac1c8ddd.json",
+      "bytes": 1783,
+      "mtime": "2026-09-14T21:12:49Z",
+      "campaign_sha256": "ec83b2e2ecb1cca022a00d5660483a43ac5e59daf9ec6124435c54334b6f1a9c",
+      "unit_id": "a3-feature-extractor-success-musashi-synthetic-catalog-20260914T211202Z",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "configs"
+      }
+     },
+     {
+      "file": "7bdba0a9b13560629f6b8ad0cc8b9f1dfb4509f20d00a535bfd73c2577bae20a.json",
+      "bytes": 13781,
+      "mtime": "2026-09-14T21:13:11Z",
+      "campaign_sha256": "f63f334a1c5fe3eca2dbe7485ae1381a004166eb160dc99b940002baa5b76afa",
+      "unit_id": "a3-predictor-success-musashi-synthetic-catalog-20260914T211202Z",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "configs",
+       "plugin": "ann"
+      }
+     },
+     {
+      "file": "83e357d75b185c939a8ae1661827be410111b96639dafac78cd7af72ee1a1922.json",
+      "bytes": 1306,
+      "mtime": "2026-09-14T21:12:35Z",
+      "campaign_sha256": "80aec5ab861e2fe5db1c109894179c5b8378f7a64ea7f729add7cedb313df94a",
+      "unit_id": "a3-feature-eng-stale-musashi-synthetic-catalog-20260914T211202Z",
+      "generation": 1,
+      "status": "REFUSED",
+      "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/feature-eng/run/debug_log.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/feature-eng/run/governed_config.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/feature-eng/run/indicators_output.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/feature-eng/run/output_config.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/feature-eng/run/run.log",
+      "tags": {
+       "availability_use": "NONE",
+       "exit_code": "",
+       "experiment_set_key": "",
+       "phase": "configs",
+       "plugin": "tech_indicator"
+      }
+     },
+     {
+      "file": "9b0394f4b02479ad79cf0414aea465f62d719b7dee7390c4c626363be08549a9.json",
+      "bytes": 906,
+      "mtime": "2026-09-14T21:13:11Z",
+      "campaign_sha256": "6d8993ab81cadf16cf859eac47e3ff6688fe5e9fee700bb10e4df0110aaab2a6",
+      "unit_id": "a3-predictor-failure-musashi-synthetic-catalog-20260914T211202Z",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "PREDICTOR_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "phase": "configs",
+       "plugin": "no_such_plugin_a3"
+      }
+     },
+     {
+      "file": "c67aacc45ef1bb61f26c963fe6b393680a3385b0ba0cb32d8265e9cef0bc82fa.json",
+      "bytes": 615,
+      "mtime": "2026-09-14T21:12:54Z",
+      "campaign_sha256": "41516709ad87b0b55d3e42b3139186338183d3e216671d083cca9b0ce408beb9",
+      "unit_id": "a3-preprocessor-failure-musashi-synthetic-catalog-20260914T211202Z",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "COMMAND_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "phase": "configs",
+       "plugin": "plugin_default"
+      }
+     },
+     {
+      "file": "e60185d506fb51210e61ff961ba8c61d713e40d370a7ad4eba579753d49111ff.json",
+      "bytes": 1946,
+      "mtime": "2026-09-14T21:13:11Z",
+      "campaign_sha256": "d34af6b4b6a8c295bba7cd29c51ebc357a480b2ecdd744d6bfbd77c14c0c3af9",
+      "unit_id": "a3-predictor-stale-musashi-synthetic-catalog-20260914T211202Z",
+      "generation": 1,
+      "status": "REFUSED",
+      "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/predictor/run/config_out.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/predictor/run/governed_config.json, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/predictor/run/phase_1_ann_1575_1d_loss_plot.png, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/predictor/run/phase_1_ann_1575_1d_prediction.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/predictor/run/phase_1_ann_1575_1d_predictions_plot.png, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/predictor/run/phase_1_ann_1575_1d_results.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/predictor/run/phase_1_ann_1575_1d_uncertanties.csv, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/predictor/run/phase_1_ann_1d_model_plot.png, /home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/predictor/run/predictor_model.keras",
+      "tags": {
+       "availability_use": "NONE",
+       "exit_code": "",
+       "experiment_set_key": "",
+       "phase": "configs",
+       "plugin": "ann"
+      }
+     }
+    ],
+    "adjudicated": []
+   }
+  },
+  {
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/outbox",
+   "exists": true,
+   "states": {
+    "pending": [],
+    "sent": [
+     {
+      "file": "6d59e97372e3409864e86a5f4026e8ca1551cf001860aa4f6a1528205a8a9c0e.json",
+      "bytes": 1662,
+      "mtime": "2026-09-14T05:01:30Z",
+      "campaign_sha256": "369b5c88fdac753cc62c5a13e614dc85fd0ae2e2e7e20c22fd1be49707e6cf3d",
+      "unit_id": "fv3-toy-refused",
+      "generation": 1,
+      "status": "REFUSED",
+      "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/run1/config_out.json, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/run1/governed_config.json, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/run1/phase_1_ann_1575_1d_loss_plot.png, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/run1/phase_1_ann_1575_1d_prediction.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/run1/phase_1_ann_1575_1d_predictions_plot.png, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/run1/phase_1_ann_1575_1d_results.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/run1/phase_1_ann_1575_1d_uncertanties.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/run1/phase_1_ann_1d_model_plot.png, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/run1/predictor_model.keras",
+      "tags": {
+       "availability_use": "NONE",
+       "exit_code": "",
+       "experiment_set_key": "",
+       "phase": "phase_1_daily",
+       "plugin": "ann"
+      }
+     },
+     {
+      "file": "81454a7d69827de9875291330c245abb8215f214659d667b7d2fc8e2433c197f.json",
+      "bytes": 13795,
+      "mtime": "2026-09-14T05:01:30Z",
+      "campaign_sha256": "1f8cbc92932c463e69a2fb4ed03f62f09fefdf02ebf30c39cfe93731945a1e3d",
+      "unit_id": "fv3-toy-completed",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_1_daily",
+       "plugin": "ann"
+      }
+     },
+     {
+      "file": "995bc0aa7dadd4fd42645f0700f0ba8fd33c34bee1aec866fa44e7e7df579e8e.json",
+      "bytes": 13770,
+      "mtime": "2026-09-14T05:01:47Z",
+      "campaign_sha256": "562c448aa8dc7fb740466891189d376f28c652c9e077b5a7fcf3661507eddc67",
+      "unit_id": "fv3-toy-outage",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_1_daily",
+       "plugin": "ann"
+      }
+     },
+     {
+      "file": "c35247b245e5380fc59960aca7e6103c5fe1b194f5fd183f2c883a42c00aeaf0.json",
+      "bytes": 850,
+      "mtime": "2026-09-14T05:01:31Z",
+      "campaign_sha256": "55d17f935bc4525d961d7151799c9d7a98e8c279a370b394fee1a066575d0b24",
+      "unit_id": "fv3-toy-failed",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "PREDICTOR_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "phase": "phase_1_daily",
+       "plugin": "ann"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/outbox",
+   "exists": true,
+   "states": {
+    "pending": [],
+    "sent": [
+     {
+      "file": "a45c019bae7e5fb4b687049ba2846217ecf2f02fc7c6da6a713f881ed1dcf519.json",
+      "bytes": 4078,
+      "mtime": "2026-09-14T03:51:24Z",
+      "campaign_sha256": "a60a7110bbce575b3ed8626489462a3d492bf55d63b81421095fb99520518ed8",
+      "unit_id": "fv3-prep-completed",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_1b_governed",
+       "plugin": "plugin_default"
+      }
+     },
+     {
+      "file": "c775be0b046a95e1a6502e5073515436ef689d754bbcd904924e0b2a78bedaa6.json",
+      "bytes": 2401,
+      "mtime": "2026-09-14T03:51:24Z",
+      "campaign_sha256": "9f44e43829c4f53467a7b7012a33491fb674087fed91bf9dbcf098fb584bb4be",
+      "unit_id": "fv3-prep-refused",
+      "generation": 1,
+      "status": "REFUSED",
+      "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d1.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d2.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d3.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d4.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d5.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/base_d6.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/governed_config.json, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalization_config_a.json, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalization_config_b.json, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d1.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d2.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d3.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d4.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d5.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/normalized_d6.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/preprocessor_config.json, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/run1/run.log",
+      "tags": {
+       "exit_code": "",
+       "experiment_set_key": "",
+       "phase": "phase_1b_governed",
+       "plugin": "plugin_default"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/outbox",
+   "exists": true,
+   "states": {
+    "pending": [],
+    "sent": [
+     {
+      "file": "91b193dd3ac15cfa780ecc9c33819b732fd17f42234f0e164d7f0effca269c35.json",
+      "bytes": 1115,
+      "mtime": "2026-09-14T05:25:00Z",
+      "campaign_sha256": "b6f0239f8bec9547ec764280d6fecee48ed4d8cfa0bcefbba204a9facce27c13",
+      "unit_id": "fv3-feng-stale",
+      "generation": 1,
+      "status": "REFUSED",
+      "reason": "GOVERNED_RUN_REFUSED:governing output namespace is not fresh: /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/debug_log.json, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/governed_config.json, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/indicators_output.csv, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/output_config.json, /home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/run1/run.log",
+      "tags": {
+       "availability_use": "NONE",
+       "exit_code": "",
+       "experiment_set_key": "",
+       "phase": "phase_synthetic",
+       "plugin": "tech_indicator"
+      }
+     },
+     {
+      "file": "c2d08bfa2991d0f8686013a9f70ff902e5173ecedc20e14418cf5536ae0af99c.json",
+      "bytes": 2183,
+      "mtime": "2026-09-14T05:25:00Z",
+      "campaign_sha256": "54c31f3828fc5f8eb973e2e4bcd6cb71a31244b60e8ee2da01607e4a425d636f",
+      "unit_id": "fv3-feng-a",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_synthetic",
+       "plugin": "tech_indicator"
+      }
+     },
+     {
+      "file": "ce1d1b5bec8c7ba65a23d799b97041ffdaafe6f5ec2e9a7419758929703a1325.json",
+      "bytes": 606,
+      "mtime": "2026-09-14T05:25:07Z",
+      "campaign_sha256": "28c4cfe10b3a3f28d518c729970888c30e8932703904399dac5499cc6f59e1ce",
+      "unit_id": "fv3-feng-failed",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "COMMAND_EXIT_1",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "1",
+       "experiment_set_key": "",
+       "phase": "phase_synthetic",
+       "plugin": "tech_indicator"
+      }
+     },
+     {
+      "file": "ebbafe8bea41b05ffd3b61cd432b0d28ee6cc8b45a957d726f88a12a20cab2f2.json",
+      "bytes": 2183,
+      "mtime": "2026-09-14T05:25:06Z",
+      "campaign_sha256": "3f1c641cb6a96c66e05ef52cf914cc71a7f83ca6d0b2c3d1511b8c00dbe6e974",
+      "unit_id": "fv3-feng-b",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_synthetic",
+       "plugin": "tech_indicator"
+      }
+     }
+    ],
+    "adjudicated": []
+   }
+  },
+  {
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p4_work/outbox",
+   "exists": true,
+   "states": {
+    "pending": [],
+    "sent": [
+     {
+      "file": "5cc29aa0e94e3ade00480ea08f852db0d5cebc2dae9e1e8d49444c5ab840e5c3.json",
+      "bytes": 13765,
+      "mtime": "2026-09-14T05:09:40Z",
+      "campaign_sha256": "7dc364d592652c7fa9d304269e5b31bcd5edd30a44aa9925aaa37380e9a7dd7f",
+      "unit_id": "fv3-n4-b",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_1_daily",
+       "plugin": "ann"
+      }
+     },
+     {
+      "file": "70c195028bad6170b2718d526fbc4982fe24000af266f42c05f0422bd3e0a864.json",
+      "bytes": 13917,
+      "mtime": "2026-09-14T05:09:24Z",
+      "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+      "unit_id": "fv3-n4-a",
+      "generation": 3,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_1_daily",
+       "plugin": "ann",
+       "supersedes_envelope_sha256": "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f",
+       "supersedes_generation": "2"
+      }
+     },
+     {
+      "file": "adbb765d005e19f78875f2acbd77d5cbf80f47e274d6b0e6c32285c4ccc5b172.json",
+      "bytes": 13824,
+      "mtime": "2026-09-14T05:09:23Z",
+      "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+      "unit_id": "fv3-n4-a",
+      "generation": 5,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_1_daily",
+       "plugin": "ann",
+       "purpose": "configuration-class-probe"
+      }
+     },
+     {
+      "file": "f8c2e4a322e39f38fae7a51cfefabedbc80fdaa4394d812d19d712e3fd936091.json",
+      "bytes": 13786,
+      "mtime": "2026-09-14T05:09:23Z",
+      "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+      "unit_id": "fv3-n4-a",
+      "generation": 1,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_1_daily",
+       "plugin": "ann"
+      }
+     }
+    ],
+    "adjudicated": [
+     {
+      "file": "8c1662d767c71a69b7ce21cd25b2d0bf842f5a7f47960acb2ee7cf214a3099db.disposition.json",
+      "bytes": 867,
+      "mtime": "2026-09-14T05:09:24Z",
+      "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+      "unit_id": "fv3-n4-a"
+     },
+     {
+      "file": "8c1662d767c71a69b7ce21cd25b2d0bf842f5a7f47960acb2ee7cf214a3099db.failure",
+      "bytes": 224,
+      "mtime": "2026-09-14T05:09:24Z",
+      "attempts": 1,
+      "last_error": "GovernedRunError: terminal refused: http 400 invalid metric"
+     },
+     {
+      "file": "8c1662d767c71a69b7ce21cd25b2d0bf842f5a7f47960acb2ee7cf214a3099db.json",
+      "bytes": 13791,
+      "mtime": "2026-09-14T05:09:24Z",
+      "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+      "unit_id": "fv3-n4-a",
+      "generation": 4,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_1_daily",
+       "plugin": "ann"
+      }
+     },
+     {
+      "file": "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f.disposition.json",
+      "bytes": 922,
+      "mtime": "2026-09-14T05:09:24Z",
+      "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+      "unit_id": "fv3-n4-a"
+     },
+     {
+      "file": "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f.failure",
+      "bytes": 224,
+      "mtime": "2026-09-14T05:09:23Z",
+      "attempts": 3,
+      "last_error": "GovernedRunError: terminal refused: http 400 invalid metric"
+     },
+     {
+      "file": "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f.json",
+      "bytes": 13795,
+      "mtime": "2026-09-14T05:09:23Z",
+      "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+      "unit_id": "fv3-n4-a",
+      "generation": 2,
+      "status": "COMPLETED",
+      "tags": {
+       "availability_use": "OFFLINE_DAY_GRANULAR",
+       "exit_code": "0",
+       "experiment_set_key": "",
+       "phase": "phase_1_daily",
+       "plugin": "ann"
+      }
+     }
+    ]
+   }
+  }
+ ],
+ "counts": {
+  "roots_inspected": 11,
+  "roots_present": 11,
+  "envelopes_total": 97,
+  "pending_now": 0,
+  "written_in_outage_window": 0,
+  "carrying_a_terminal_digest": 46,
+  "unresolved_terminals": 18
+ },
+ "pending_now": [],
+ "written_in_outage_window": [],
+ "campaigns_referenced": [
+  "000e11ca325dd8fad0e9b2178a569c2c8f4c5b67c503fd03c8a0ab79a813eff1",
+  "05d28bf90dc06d74a5a0cde8d16d82793e88d89364423ff56ed5436a71b6f17e",
+  "11b603d7e514e6853dc89f7f23549cdb9108441ae9907a440636071498b6bbc7",
+  "1f8cbc92932c463e69a2fb4ed03f62f09fefdf02ebf30c39cfe93731945a1e3d",
+  "28227144a5d6c31b529904dcf9c0cd48c833694d3dd3f263d4908f57d6eaec11",
+  "28c4cfe10b3a3f28d518c729970888c30e8932703904399dac5499cc6f59e1ce",
+  "2dd9b541ca6f560e233165ccd259dc2a043ab088ab013ae9c344b09208c104cd",
+  "369b5c88fdac753cc62c5a13e614dc85fd0ae2e2e7e20c22fd1be49707e6cf3d",
+  "3da92a0b1e1a21a607b25e45e8f3e5534183b99cb2cbb21a6292e52d96473564",
+  "3f1c641cb6a96c66e05ef52cf914cc71a7f83ca6d0b2c3d1511b8c00dbe6e974",
+  "41516709ad87b0b55d3e42b3139186338183d3e216671d083cca9b0ce408beb9",
+  "452b0be059931a6daf61f0ae492fb66aa24d2e959ff46cc1fe3fe9adc354b342",
+  "4e7a0c819ed0824e5dbaa7847a3e4ea29231406320416ee946db1110118a7c45",
+  "54c31f3828fc5f8eb973e2e4bcd6cb71a31244b60e8ee2da01607e4a425d636f",
+  "55d17f935bc4525d961d7151799c9d7a98e8c279a370b394fee1a066575d0b24",
+  "562c448aa8dc7fb740466891189d376f28c652c9e077b5a7fcf3661507eddc67",
+  "5e7fb4db0a4b8940aa8a6fc753d678eb5d9f414add4739080c5a3a5252445f99",
+  "6d8993ab81cadf16cf859eac47e3ff6688fe5e9fee700bb10e4df0110aaab2a6",
+  "733736b795e075bffc8c1331a0ce7c910e0ecf721b91123f19990eb1e577ab66",
+  "769a498b5ec1c0cff0b1ba8551bdbcca114bd6d485cf1017fe167b9b37a2b069",
+  "7d6d70f5a5af85dd9ba5313bb8587e89da71de56ff4f6f90c66249bd15a47bf5",
+  "7dc364d592652c7fa9d304269e5b31bcd5edd30a44aa9925aaa37380e9a7dd7f",
+  "80aec5ab861e2fe5db1c109894179c5b8378f7a64ea7f729add7cedb313df94a",
+  "9cb9ab7672c153e31208803728303a6015093a9afbf735b4e48ca454e0c7f545",
+  "9f44e43829c4f53467a7b7012a33491fb674087fed91bf9dbcf098fb584bb4be",
+  "a60a7110bbce575b3ed8626489462a3d492bf55d63b81421095fb99520518ed8",
+  "aef32e8723d998793d2601e32c44143927a2066ae38ac947a4e3f050cb949b75",
+  "b6f0239f8bec9547ec764280d6fecee48ed4d8cfa0bcefbba204a9facce27c13",
+  "bd427dd2022816e8718358ac2c6fe44f2623642494cd5916f71be8dd21490b02",
+  "ca2c0f1f088a3f46e616878e0eb9222813a04ee5852b72324d157d292bdd4d1b",
+  "d1c44c5610835112f7909e1432030160d7593b805dd6d9f0a3d5da29f0de434b",
+  "d34af6b4b6a8c295bba7cd29c51ebc357a480b2ecdd744d6bfbd77c14c0c3af9",
+  "e199058b63530b9eeddc2dd1dc5e111cd3ac71f133c995f6880a9fa88bba2ff1",
+  "e46bc98f68c80e6f6cf104785626aedb3ba593b938bde2c9bcc7f9a5954b6338",
+  "e6bec2868a7ff70fc040a1b49a4dc769d3d0261e77b8d12beaf3d97daded0796",
+  "ec83b2e2ecb1cca022a00d5660483a43ac5e59daf9ec6124435c54334b6f1a9c",
+  "edf899cff9da635d3427b5273ac7887ef54ce447f26e78706a24c573ac8c5a51",
+  "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+  "f63f334a1c5fe3eca2dbe7485ae1381a004166eb160dc99b940002baa5b76afa",
+  "ff592d2a2aef09fb598d0f77e395821d52a1b5f29d650332060eb0c59cbe9a81"
+ ],
+ "cube_reconciliation": [
+  {
+   "file": "f9cb1afe68a348a85e2c92339ece8ab2f40f72ec8a240710c912dea3ca398658.json",
+   "root": "/home/harveybc/.cache/data-gov-outbox",
+   "state": "sent",
+   "campaign_sha256": "e199058b63530b9eeddc2dd1dc5e111cd3ac71f133c995f6880a9fa88bba2ff1",
+   "unit_id": "omega-probe-1",
+   "in_cube": true,
+   "cube_rows": [
+    "omega-probe-1|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "141c09715ebf52878a3cc7f1f9175c3ef75a91160dd939fe7bd3fa754aa020cf.json",
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "state": "sent",
+   "campaign_sha256": "2dd9b541ca6f560e233165ccd259dc2a043ab088ab013ae9c344b09208c104cd",
+   "unit_id": "doin-offline-replay-prod-9",
+   "in_cube": true,
+   "cube_rows": [
+    "doin-offline-replay-prod-9|FAILED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "206f77cd0393508ff6ca3982b4ecf7724c9e34246591c8f158838bd8b7c08344.json",
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "state": "sent",
+   "campaign_sha256": "e46bc98f68c80e6f6cf104785626aedb3ba593b938bde2c9bcc7f9a5954b6338",
+   "unit_id": "doin-offline-replay-prod-7",
+   "in_cube": true,
+   "cube_rows": [
+    "doin-offline-replay-prod-7|FAILED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "22fc53856535eeedab61eea344c1b0bc4c301770d007c6ace8ce7ea38e610172.json",
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "state": "sent",
+   "campaign_sha256": "d1c44c5610835112f7909e1432030160d7593b805dd6d9f0a3d5da29f0de434b",
+   "unit_id": "doin-offline-replay-prod-4",
+   "in_cube": true,
+   "cube_rows": [
+    "doin-offline-replay-prod-4|FAILED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "42cbe51a26bae8a448fd4e65ced7e2688a6af203d7a98d9e3ede7cf96eb9cedc.json",
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "state": "sent",
+   "campaign_sha256": "ff592d2a2aef09fb598d0f77e395821d52a1b5f29d650332060eb0c59cbe9a81",
+   "unit_id": "doin-offline-replay-prod-5",
+   "in_cube": true,
+   "cube_rows": [
+    "doin-offline-replay-prod-5|FAILED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "73d2bf5a049cbaf7c1d4b31a06c89fc3aab2d5abf4b2e9e7cdf38d7994a58842.json",
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "state": "sent",
+   "campaign_sha256": "e6bec2868a7ff70fc040a1b49a4dc769d3d0261e77b8d12beaf3d97daded0796",
+   "unit_id": "doin-offline-replay-successor-1",
+   "in_cube": true,
+   "cube_rows": [
+    "doin-offline-replay-successor-1|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "82bdb3b5a2c66767f818565361b2c985793797cc88da15ec9dd83951ea7245de.json",
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "state": "sent",
+   "campaign_sha256": "000e11ca325dd8fad0e9b2178a569c2c8f4c5b67c503fd03c8a0ab79a813eff1",
+   "unit_id": "doin-offline-replay-prod-6",
+   "in_cube": true,
+   "cube_rows": [
+    "doin-offline-replay-prod-6|FAILED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "89492a13df80f8dc0f38a72ce469ae0b2c978204cdf541ae6c9684414051444e.json",
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "state": "sent",
+   "campaign_sha256": "28227144a5d6c31b529904dcf9c0cd48c833694d3dd3f263d4908f57d6eaec11",
+   "unit_id": "doin-offline-replay-prod-8",
+   "in_cube": true,
+   "cube_rows": [
+    "doin-offline-replay-prod-8|FAILED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "b973f21009721c631d9034e18e0c15b4cd54c792e9dd2647a9bda5169c8c7193.json",
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "state": "sent",
+   "campaign_sha256": "5e7fb4db0a4b8940aa8a6fc753d678eb5d9f414add4739080c5a3a5252445f99",
+   "unit_id": "doin-offline-replay-prod-13",
+   "in_cube": true,
+   "cube_rows": [
+    "doin-offline-replay-prod-13|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "c46186c663531c32a0c44a41016f5a17cda9583e2fb7edf8f3c6b58504ae6cb0.json",
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "state": "sent",
+   "campaign_sha256": "bd427dd2022816e8718358ac2c6fe44f2623642494cd5916f71be8dd21490b02",
+   "unit_id": "doin-offline-replay-prod-12",
+   "in_cube": true,
+   "cube_rows": [
+    "doin-offline-replay-prod-12|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "f32aefab7525f1de00f6159fdb9df22fb1a0907979fb839de4869a857408fa54.json",
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "state": "sent",
+   "campaign_sha256": "7d6d70f5a5af85dd9ba5313bb8587e89da71de56ff4f6f90c66249bd15a47bf5",
+   "unit_id": "doin-offline-replay-prod-10",
+   "in_cube": true,
+   "cube_rows": [
+    "doin-offline-replay-prod-10|FAILED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "f67b90569f5ab12b6429142aaba5d1472271366f97de57a5605a9abec5dfc987.json",
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "state": "sent",
+   "campaign_sha256": "aef32e8723d998793d2601e32c44143927a2066ae38ac947a4e3f050cb949b75",
+   "unit_id": "recomparison",
+   "in_cube": true,
+   "cube_rows": [
+    "recomparison|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "fee2b920761d3afdde13f0ccc5eddb02a118b5b57e702ed011b446f1bd2f4ac1.json",
+   "root": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+   "state": "sent",
+   "campaign_sha256": "769a498b5ec1c0cff0b1ba8551bdbcca114bd6d485cf1017fe167b9b37a2b069",
+   "unit_id": "doin-offline-replay-prod-11",
+   "in_cube": true,
+   "cube_rows": [
+    "doin-offline-replay-prod-11|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "c955427215dd854e5756b37a7f19def2d6fa7c16975fbb3c361cb2ddae32b899.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/d2_r3_outbox",
+   "state": "sent",
+   "campaign_sha256": "733736b795e075bffc8c1331a0ce7c910e0ecf721b91123f19990eb1e577ab66",
+   "unit_id": "readjudication",
+   "in_cube": true,
+   "cube_rows": [
+    "readjudication|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "8e656a4fc67fe7adff442b4136ce480382c5c0d846639335daada82a3971eb42.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-flow-v3-deploy-20260914T045557Z/micro-outbox",
+   "state": "sent",
+   "campaign_sha256": "ca2c0f1f088a3f46e616878e0eb9222813a04ee5852b72324d157d292bdd4d1b",
+   "unit_id": "flow-v3-production-mechanics-20260914T045557Z",
+   "in_cube": true,
+   "cube_rows": [
+    "flow-v3-production-mechanics-20260914T045557Z|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "2d9df4aeafff21425e406d10b40eb8e45ad7e2a7ea9f48b8bf19124d9956dc33.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-n3-20260914T063541Z/micro-outbox",
+   "state": "sent",
+   "campaign_sha256": "05d28bf90dc06d74a5a0cde8d16d82793e88d89364423ff56ed5436a71b6f17e",
+   "unit_id": "n3-mechanics-musashi-n3-20260914T063541Z",
+   "in_cube": true,
+   "cube_rows": [
+    "n3-mechanics-musashi-n3-20260914T063541Z|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "0618db4581e395aa17b30d1d54205b79e385cdddfc0ea1477f7366dd97f72bee.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "state": "sent",
+   "campaign_sha256": "edf899cff9da635d3427b5273ac7887ef54ce447f26e78706a24c573ac8c5a51",
+   "unit_id": "a3-feature-extractor-stale-musashi-synthetic-catalog-20260914T211202Z",
+   "in_cube": true,
+   "cube_rows": [
+    "a3-feature-extractor-stale-musashi-synthetic-catalog-20260914T211202Z|REFUSED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "114a117ae893e9e0c89499bc7797bfd1a3a6aba7456d9122103adb80968cff8f.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "state": "sent",
+   "campaign_sha256": "11b603d7e514e6853dc89f7f23549cdb9108441ae9907a440636071498b6bbc7",
+   "unit_id": "a3-feature-eng-failure-musashi-synthetic-catalog-20260914T211202Z",
+   "in_cube": true,
+   "cube_rows": [
+    "a3-feature-eng-failure-musashi-synthetic-catalog-20260914T211202Z|FAILED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "23fe45f55a51aab6e1c1bbc5de3027a86bda0dbadd19cdeb2e3c4387f67e2835.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "state": "sent",
+   "campaign_sha256": "452b0be059931a6daf61f0ae492fb66aa24d2e959ff46cc1fe3fe9adc354b342",
+   "unit_id": "a3-preprocessor-success-musashi-synthetic-catalog-20260914T211202Z",
+   "in_cube": true,
+   "cube_rows": [
+    "a3-preprocessor-success-musashi-synthetic-catalog-20260914T211202Z|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "2ab01268a3f92598ac496c596d28e4317ab70c81bff27e4cb21dd38b851c5117.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "state": "sent",
+   "campaign_sha256": "4e7a0c819ed0824e5dbaa7847a3e4ea29231406320416ee946db1110118a7c45",
+   "unit_id": "a3-feature-extractor-failure-musashi-synthetic-catalog-20260914T211202Z",
+   "in_cube": true,
+   "cube_rows": [
+    "a3-feature-extractor-failure-musashi-synthetic-catalog-20260914T211202Z|FAILED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "3d1fb16c590e7594bdb398cb7b7c7805fe638e83cd07122fde5e88cc425e8145.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "state": "sent",
+   "campaign_sha256": "9cb9ab7672c153e31208803728303a6015093a9afbf735b4e48ca454e0c7f545",
+   "unit_id": "a3-preprocessor-stale-musashi-synthetic-catalog-20260914T211202Z",
+   "in_cube": true,
+   "cube_rows": [
+    "a3-preprocessor-stale-musashi-synthetic-catalog-20260914T211202Z|REFUSED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "532eedebbd8899bfc959567e86655ebb97165af789d40af372643db8ec02947b.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "state": "sent",
+   "campaign_sha256": "3da92a0b1e1a21a607b25e45e8f3e5534183b99cb2cbb21a6292e52d96473564",
+   "unit_id": "a3-feature-eng-success-musashi-synthetic-catalog-20260914T211202Z",
+   "in_cube": true,
+   "cube_rows": [
+    "a3-feature-eng-success-musashi-synthetic-catalog-20260914T211202Z|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "5f48366df965fae2accf742b36240aa8bfa80e5cd1eb44eeaa1e9798ac1c8ddd.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "state": "sent",
+   "campaign_sha256": "ec83b2e2ecb1cca022a00d5660483a43ac5e59daf9ec6124435c54334b6f1a9c",
+   "unit_id": "a3-feature-extractor-success-musashi-synthetic-catalog-20260914T211202Z",
+   "in_cube": true,
+   "cube_rows": [
+    "a3-feature-extractor-success-musashi-synthetic-catalog-20260914T211202Z|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "7bdba0a9b13560629f6b8ad0cc8b9f1dfb4509f20d00a535bfd73c2577bae20a.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "state": "sent",
+   "campaign_sha256": "f63f334a1c5fe3eca2dbe7485ae1381a004166eb160dc99b940002baa5b76afa",
+   "unit_id": "a3-predictor-success-musashi-synthetic-catalog-20260914T211202Z",
+   "in_cube": true,
+   "cube_rows": [
+    "a3-predictor-success-musashi-synthetic-catalog-20260914T211202Z|COMPLETED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "83e357d75b185c939a8ae1661827be410111b96639dafac78cd7af72ee1a1922.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "state": "sent",
+   "campaign_sha256": "80aec5ab861e2fe5db1c109894179c5b8378f7a64ea7f729add7cedb313df94a",
+   "unit_id": "a3-feature-eng-stale-musashi-synthetic-catalog-20260914T211202Z",
+   "in_cube": true,
+   "cube_rows": [
+    "a3-feature-eng-stale-musashi-synthetic-catalog-20260914T211202Z|REFUSED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "9b0394f4b02479ad79cf0414aea465f62d719b7dee7390c4c626363be08549a9.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "state": "sent",
+   "campaign_sha256": "6d8993ab81cadf16cf859eac47e3ff6688fe5e9fee700bb10e4df0110aaab2a6",
+   "unit_id": "a3-predictor-failure-musashi-synthetic-catalog-20260914T211202Z",
+   "in_cube": true,
+   "cube_rows": [
+    "a3-predictor-failure-musashi-synthetic-catalog-20260914T211202Z|FAILED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "c67aacc45ef1bb61f26c963fe6b393680a3385b0ba0cb32d8265e9cef0bc82fa.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "state": "sent",
+   "campaign_sha256": "41516709ad87b0b55d3e42b3139186338183d3e216671d083cca9b0ce408beb9",
+   "unit_id": "a3-preprocessor-failure-musashi-synthetic-catalog-20260914T211202Z",
+   "in_cube": true,
+   "cube_rows": [
+    "a3-preprocessor-failure-musashi-synthetic-catalog-20260914T211202Z|FAILED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "e60185d506fb51210e61ff961ba8c61d713e40d370a7ad4eba579753d49111ff.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-synthetic-catalog-20260914T211202Z/consumers/outbox",
+   "state": "sent",
+   "campaign_sha256": "d34af6b4b6a8c295bba7cd29c51ebc357a480b2ecdd744d6bfbd77c14c0c3af9",
+   "unit_id": "a3-predictor-stale-musashi-synthetic-catalog-20260914T211202Z",
+   "in_cube": true,
+   "cube_rows": [
+    "a3-predictor-stale-musashi-synthetic-catalog-20260914T211202Z|REFUSED|1"
+   ],
+   "query_error": null
+  },
+  {
+   "file": "6d59e97372e3409864e86a5f4026e8ca1551cf001860aa4f6a1528205a8a9c0e.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "369b5c88fdac753cc62c5a13e614dc85fd0ae2e2e7e20c22fd1be49707e6cf3d",
+   "unit_id": "fv3-toy-refused",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "81454a7d69827de9875291330c245abb8215f214659d667b7d2fc8e2433c197f.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "1f8cbc92932c463e69a2fb4ed03f62f09fefdf02ebf30c39cfe93731945a1e3d",
+   "unit_id": "fv3-toy-completed",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "995bc0aa7dadd4fd42645f0700f0ba8fd33c34bee1aec866fa44e7e7df579e8e.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "562c448aa8dc7fb740466891189d376f28c652c9e077b5a7fcf3661507eddc67",
+   "unit_id": "fv3-toy-outage",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "c35247b245e5380fc59960aca7e6103c5fe1b194f5fd183f2c883a42c00aeaf0.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p03_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "55d17f935bc4525d961d7151799c9d7a98e8c279a370b394fee1a066575d0b24",
+   "unit_id": "fv3-toy-failed",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "a45c019bae7e5fb4b687049ba2846217ecf2f02fc7c6da6a713f881ed1dcf519.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "a60a7110bbce575b3ed8626489462a3d492bf55d63b81421095fb99520518ed8",
+   "unit_id": "fv3-prep-completed",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "c775be0b046a95e1a6502e5073515436ef689d754bbcd904924e0b2a78bedaa6.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p1_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "9f44e43829c4f53467a7b7012a33491fb674087fed91bf9dbcf098fb584bb4be",
+   "unit_id": "fv3-prep-refused",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "91b193dd3ac15cfa780ecc9c33819b732fd17f42234f0e164d7f0effca269c35.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "b6f0239f8bec9547ec764280d6fecee48ed4d8cfa0bcefbba204a9facce27c13",
+   "unit_id": "fv3-feng-stale",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "c2d08bfa2991d0f8686013a9f70ff902e5173ecedc20e14418cf5536ae0af99c.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "54c31f3828fc5f8eb973e2e4bcd6cb71a31244b60e8ee2da01607e4a425d636f",
+   "unit_id": "fv3-feng-a",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "ce1d1b5bec8c7ba65a23d799b97041ffdaafe6f5ec2e9a7419758929703a1325.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "28c4cfe10b3a3f28d518c729970888c30e8932703904399dac5499cc6f59e1ce",
+   "unit_id": "fv3-feng-failed",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "ebbafe8bea41b05ffd3b61cd432b0d28ee6cc8b45a957d726f88a12a20cab2f2.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p5_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "3f1c641cb6a96c66e05ef52cf914cc71a7f83ca6d0b2c3d1511b8c00dbe6e974",
+   "unit_id": "fv3-feng-b",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "5cc29aa0e94e3ade00480ea08f852db0d5cebc2dae9e1e8d49444c5ab840e5c3.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p4_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "7dc364d592652c7fa9d304269e5b31bcd5edd30a44aa9925aaa37380e9a7dd7f",
+   "unit_id": "fv3-n4-b",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "70c195028bad6170b2718d526fbc4982fe24000af266f42c05f0422bd3e0a864.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p4_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+   "unit_id": "fv3-n4-a",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "adbb765d005e19f78875f2acbd77d5cbf80f47e274d6b0e6c32285c4ccc5b172.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p4_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+   "unit_id": "fv3-n4-a",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "f8c2e4a322e39f38fae7a51cfefabedbc80fdaa4394d812d19d712e3fd936091.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p4_work/outbox",
+   "state": "sent",
+   "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+   "unit_id": "fv3-n4-a",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "8c1662d767c71a69b7ce21cd25b2d0bf842f5a7f47960acb2ee7cf214a3099db.disposition.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p4_work/outbox",
+   "state": "adjudicated",
+   "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+   "unit_id": "fv3-n4-a",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "8c1662d767c71a69b7ce21cd25b2d0bf842f5a7f47960acb2ee7cf214a3099db.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p4_work/outbox",
+   "state": "adjudicated",
+   "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+   "unit_id": "fv3-n4-a",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f.disposition.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p4_work/outbox",
+   "state": "adjudicated",
+   "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+   "unit_id": "fv3-n4-a",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  },
+  {
+   "file": "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f.json",
+   "root": "/home/harveybc/.local/state/crispdm-data-foundation/flow_v3_deploy_2026_09_13/p4_work/outbox",
+   "state": "adjudicated",
+   "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+   "unit_id": "fv3-n4-a",
+   "in_cube": false,
+   "cube_rows": [],
+   "query_error": null
+  }
+ ]
+}
