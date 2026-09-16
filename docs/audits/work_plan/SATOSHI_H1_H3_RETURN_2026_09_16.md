@@ -74,7 +74,10 @@ analytics route, and the terms research continues separately.
 | suite | scope | result |
 |---|---|---|
 | store + migration + reconciler files | three engines (`U2_DUCKDB_PATH=1`, `U2_PG_DATABASE=<disposable>`) | **206 passed, 1 skipped** |
-| predictor `tests` + `olap/store/tests` | trading-stack, legacy dirs excluded | recorded below |
+| predictor `tests` + `olap/store/tests` | trading-stack, `--ignore=tests/unit_tests --ignore=tests/integration_tests` | **1454 passed, 5 skipped, 0 failed** in 7m10s |
+
+The five skips are the three DuckDB-dependent files under trading-stack, which has no `duckdb`;
+those same files contribute 69 of the 206 rules in the DuckDB environment.
 
 Failing-before evidence: `H_FAILING_BEFORE.txt` (17 red). No test dependency was installed in
 the live service environment.
