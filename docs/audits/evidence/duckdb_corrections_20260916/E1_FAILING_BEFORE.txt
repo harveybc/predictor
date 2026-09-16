@@ -1,0 +1,201 @@
+FFFFFFFFFFFFF                                                            [100%]
+=================================== FAILURES ===================================
+____________ test_selection_does_not_classify_by_table_name_prefix _____________
+
+    def test_selection_does_not_classify_by_table_name_prefix():
+        """`df_` is a naming convention. It says nothing about which campaign a row belongs to."""
+        source = TOOL.read_text(encoding="utf-8")
+>       assert 'startswith("df_")' not in source, (
+            "classifying by table name is the criterion the order forbids: current "
+            "data-foundation work must not be archived merely for predating gov_terminal")
+E       AssertionError: classifying by table name is the criterion the order forbids: current data-foundation work must not be archived merely for predating gov_terminal
+E       assert 'startswith("df_")' not in '#!/usr/bin/...it(main())\n'
+E         
+E         'startswith("df_")' is contained here:
+E           n["name"].startswith("df_"):
+E                       disposition, why = "LEGACY_COMPARISON_ONLY", (
+E                           "data-foundation evidence from earlier campaigns; admissible only where a "
+E                           "comparison view opts into it and states its limitations")
+E                   else:...
+E         
+E         ...Full output truncated (415 lines hidden), use '-vv' to show
+
+tests/test_olap_duckdb_migrate.py:49: AssertionError
+_____________ test_a_run_is_classified_from_its_campaign_identity ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-495/test_a_run_is_classified_from_0')
+
+    def test_a_run_is_classified_from_its_campaign_identity(tmp_path):
+        """Membership comes from the run's recorded campaign, including NON_GOVERNING ones."""
+        current = {"run_id": "d2v2_fresh_1", "module": "D2 fresh confirmation",
+                   "status": "COMPLETED", "campaign_key": "d2::fresh_confirmation",
+                   "result_class": "CONFIRMATION"}
+        historical = {"run_id": "hist_1", "module": "HISTORICAL_MIGRATION_REANALYSIS",
+                      "status": "COMPLETED", "campaign_key": "d2::historical_reanalysis",
+                      "result_class": "NON_CONFIRMATORY_HISTORICAL"}
+>       assert migrate.classify_run(current, current_campaigns={"d2::fresh_confirmation"})[0] == (
+               ^^^^^^^^^^^^^^^^^^^^
+            "INCLUDED_CURRENT")
+E       AttributeError: module 'olap_duckdb_migrate_under_test' has no attribute 'classify_run'
+
+tests/test_olap_duckdb_migrate.py:62: AttributeError
+____________ test_a_failed_current_run_is_included_with_its_status _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-495/test_a_failed_current_run_is_i0')
+
+    def test_a_failed_current_run_is_included_with_its_status(tmp_path):
+        """Selecting by outcome is what the order forbids; a failure is evidence."""
+        failed = {"run_id": "r2", "module": "D2", "status": "FAILED",
+                  "campaign_key": "d2::fresh_confirmation", "result_class": "CONFIRMATION"}
+>       disposition, rationale = migrate.classify_run(
+                                 ^^^^^^^^^^^^^^^^^^^^
+            failed, current_campaigns={"d2::fresh_confirmation"})
+E       AttributeError: module 'olap_duckdb_migrate_under_test' has no attribute 'classify_run'
+
+tests/test_olap_duckdb_migrate.py:72: AttributeError
+_____________ test_one_table_can_hold_both_current_and_legacy_rows _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-495/test_one_table_can_hold_both_c0')
+
+    def test_one_table_can_hold_both_current_and_legacy_rows(tmp_path):
+        """Row-level closure: a whole-table decision cannot express this and is therefore wrong."""
+        path = tmp_path / "src.duckdb"
+        con = duckdb.connect(str(path))
+        con.execute("CREATE TABLE df_fact_x (row_sha256 VARCHAR, run_id VARCHAR, v INTEGER)")
+        con.execute("INSERT INTO df_fact_x VALUES ('a','current',1),('b','legacy',2)")
+        con.close()
+    
+>       selected = migrate.rows_for_runs(str(path), "main", "df_fact_x", {"current"})
+                   ^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'olap_duckdb_migrate_under_test' has no attribute 'rows_for_runs'
+
+tests/test_olap_duckdb_migrate.py:86: AttributeError
+_____ test_rollback_without_dry_run_must_not_report_a_replay_it_did_not_do _____
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-495/test_rollback_without_dry_run_0')
+
+    def test_rollback_without_dry_run_must_not_report_a_replay_it_did_not_do(tmp_path):
+        """The exact defect: REPLAY_REQUIRED and exit zero, with nothing written."""
+        source = TOOL.read_text(encoding="utf-8")
+>       assert '"REPLAY_REQUIRED"' not in source or "def replay_relation" in source, (
+            "a rollback that names work it did not perform is a report, not a rollback")
+E       AssertionError: a rollback that names work it did not perform is a report, not a rollback
+E       assert ('"REPLAY_REQUIRED"' not in '#!/usr/bin/...it(main())\n'
+E         
+E         '"REPLAY_REQUIRED"' is contained here:
+E           tcome"] = "REPLAY_REQUIRED"
+E                   else:
+E                       entry["outcome"] = "IN_SYNC" if not missing else "REPLAY_REQUIRED_DRY_RUN"
+E                   report["relations"].append(entry)
+E               report["summary"] = {...
+E         
+E         ...Full output truncated (66 lines hidden), use '-vv' to show or 'def replay_relation' in '#!/usr/bin/env python3\n"""Move the OLAP cube to DuckDB: inventory, select, export, validate, catch up, roll back.\n\... = parser.parse_args(argv)\n    return args.func(args)\n\n\nif __name__ == "__main__":\n    raise SystemExit(main())\n')
+
+tests/test_olap_duckdb_migrate.py:95: AssertionError
+_________________ test_rollback_replays_parent_and_child_rows __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-495/test_rollback_replays_parent_a0')
+
+    def test_rollback_replays_parent_and_child_rows(tmp_path):
+        """A terminal without its metrics, datasets and artifacts is not a restored outcome."""
+        source = str(tmp_path / "duck.duckdb")
+        target = str(tmp_path / "dest.duckdb")
+>       migrate.build_fixture_cube(source, terminals=2, with_children=True, with_contract=True)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'olap_duckdb_migrate_under_test' has no attribute 'build_fixture_cube'
+
+tests/test_olap_duckdb_migrate.py:103: AttributeError
+__________ test_a_second_rollback_replays_nothing_and_still_succeeds ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-495/test_a_second_rollback_replays0')
+
+    def test_a_second_rollback_replays_nothing_and_still_succeeds(tmp_path):
+        source = str(tmp_path / "duck.duckdb")
+        target = str(tmp_path / "dest.duckdb")
+>       migrate.build_fixture_cube(source, terminals=2, with_children=True, with_contract=True)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'olap_duckdb_migrate_under_test' has no attribute 'build_fixture_cube'
+
+tests/test_olap_duckdb_migrate.py:120: AttributeError
+____________ test_rollback_creates_a_relation_the_destination_lacks ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-495/test_rollback_creates_a_relati0')
+
+    def test_rollback_creates_a_relation_the_destination_lacks(tmp_path):
+        """gov_availability_contract does not exist in the old schema; replay must create it."""
+        source = str(tmp_path / "duck.duckdb")
+        target = str(tmp_path / "dest.duckdb")
+>       migrate.build_fixture_cube(source, terminals=1, with_children=True, with_contract=True)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'olap_duckdb_migrate_under_test' has no attribute 'build_fixture_cube'
+
+tests/test_olap_duckdb_migrate.py:136: AttributeError
+_______ test_snapshot_refuses_to_call_itself_verified_without_a_boundary _______
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-495/test_snapshot_refuses_to_call_0')
+
+    def test_snapshot_refuses_to_call_itself_verified_without_a_boundary(tmp_path):
+        source = str(tmp_path / "live.duckdb")
+>       migrate.build_fixture_cube(source, terminals=1)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'olap_duckdb_migrate_under_test' has no attribute 'build_fixture_cube'
+
+tests/test_olap_duckdb_migrate.py:151: AttributeError
+__ test_snapshot_is_verified_when_the_owner_is_stopped_and_the_count_matches ___
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-495/test_snapshot_is_verified_when0')
+
+    def test_snapshot_is_verified_when_the_owner_is_stopped_and_the_count_matches(tmp_path):
+        source = str(tmp_path / "live.duckdb")
+>       migrate.build_fixture_cube(source, terminals=3)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'olap_duckdb_migrate_under_test' has no attribute 'build_fixture_cube'
+
+tests/test_olap_duckdb_migrate.py:163: AttributeError
+_________________ test_snapshot_fails_when_the_count_disagrees _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-495/test_snapshot_fails_when_the_c0')
+
+    def test_snapshot_fails_when_the_count_disagrees(tmp_path):
+        source = str(tmp_path / "live.duckdb")
+>       migrate.build_fixture_cube(source, terminals=3)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'olap_duckdb_migrate_under_test' has no attribute 'build_fixture_cube'
+
+tests/test_olap_duckdb_migrate.py:172: AttributeError
+_______________ test_two_uncomparable_digests_are_never_a_match ________________
+
+    def test_two_uncomparable_digests_are_never_a_match():
+        """Both sides failing the same way is not agreement."""
+>       assert migrate.digests_agree("UNCOMPARABLE: TypeError",
+               ^^^^^^^^^^^^^^^^^^^^^
+                                     "UNCOMPARABLE: TypeError") is False
+E       AttributeError: module 'olap_duckdb_migrate_under_test' has no attribute 'digests_agree'
+
+tests/test_olap_duckdb_migrate.py:182: AttributeError
+_______ test_a_partially_filled_relation_is_resumed_not_declared_present _______
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-495/test_a_partially_filled_relati0')
+
+    def test_a_partially_filled_relation_is_resumed_not_declared_present(tmp_path):
+        """An interrupted batch leaves rows behind; `ALREADY_PRESENT` would strand the rest."""
+>       assert migrate.import_state(source_rows=100, destination_rows=0) == "EMPTY"
+               ^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'olap_duckdb_migrate_under_test' has no attribute 'import_state'
+
+tests/test_olap_duckdb_migrate.py:190: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_olap_duckdb_migrate.py::test_selection_does_not_classify_by_table_name_prefix
+FAILED tests/test_olap_duckdb_migrate.py::test_a_run_is_classified_from_its_campaign_identity
+FAILED tests/test_olap_duckdb_migrate.py::test_a_failed_current_run_is_included_with_its_status
+FAILED tests/test_olap_duckdb_migrate.py::test_one_table_can_hold_both_current_and_legacy_rows
+FAILED tests/test_olap_duckdb_migrate.py::test_rollback_without_dry_run_must_not_report_a_replay_it_did_not_do
+FAILED tests/test_olap_duckdb_migrate.py::test_rollback_replays_parent_and_child_rows
+FAILED tests/test_olap_duckdb_migrate.py::test_a_second_rollback_replays_nothing_and_still_succeeds
+FAILED tests/test_olap_duckdb_migrate.py::test_rollback_creates_a_relation_the_destination_lacks
+FAILED tests/test_olap_duckdb_migrate.py::test_snapshot_refuses_to_call_itself_verified_without_a_boundary
+FAILED tests/test_olap_duckdb_migrate.py::test_snapshot_is_verified_when_the_owner_is_stopped_and_the_count_matches
+FAILED tests/test_olap_duckdb_migrate.py::test_snapshot_fails_when_the_count_disagrees
+FAILED tests/test_olap_duckdb_migrate.py::test_two_uncomparable_digests_are_never_a_match
+FAILED tests/test_olap_duckdb_migrate.py::test_a_partially_filled_relation_is_resumed_not_declared_present
+13 failed in 0.21s
