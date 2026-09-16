@@ -222,3 +222,12 @@ verdes. No equivale a preservacion de todos los campos: faltan costos, identidad
 de codigo y vinculos de disponibilidad en la conciliacion. El snapshot libera
 el bloqueo antes de copiar. Continuacion limitada:
 [H1-H3](../handoffs/MUSASHI_G1_G3_REVIEW_AND_H1_H3_2026_09_16.md).
+
+### Retorno 383fbe7: codigo verificado, discrepancia viva nueva
+
+60 pruebas focales independientes pasan; cobertura H1 y bloqueo durante copia H2
+corregidos al alcance probado. Consulta viva independiente: 55 terminales, 537
+metricas, 53 terminales coincidentes; los dos reparados contienen cuatro metricas
+sobrantes por duplicacion exacta. No se atribuye causa ni momento sin evidencia.
+Orden de conciliacion y reparacion acotada autorizada:
+[I1-I3](../handoffs/MUSASHI_H1_H3_LIVE_REVIEW_AND_I1_I3_2026_09_16.md).
