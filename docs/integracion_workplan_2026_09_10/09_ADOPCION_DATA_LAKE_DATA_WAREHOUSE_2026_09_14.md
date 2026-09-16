@@ -195,3 +195,12 @@ campana, rollback solo diagnostico, snapshot no coordinado, importacion parcial
 sin resume y ruta df_* pendiente. No se constata perdida de datos por esta
 revision; se conservan fuente y archivo. Orden de cierre:
 [E1-E6](../handoffs/MUSASHI_DUCKDB_CLOSEOUT_CORRECTIONS_2026_09_16.md).
+
+### Retorno d35bb21: cierre de recuperacion pendiente
+
+Warehouse y cargador sucesor activos, verificados por systemd. Dos pruebas
+independientes en bases temporales reproducen importacion parcial que duplica
+clave y replay que deja hijos ausentes cuando ya existe su padre. El rollback
+implementado apunta a DuckDB, no al PostgreSQL anterior; catchup CLI sigue sin
+cierre de hijos. WAL productivo intacto durante la auditoria. Continuacion
+autorizada: [F1-F5](../handoffs/MUSASHI_E1_E6_REVIEW_AND_F1_F5_2026_09_16.md).
