@@ -1,0 +1,320 @@
+FFFFFFFF..........FFFFF                                                  [100%]
+=================================== FAILURES ===================================
+____________________ test_the_untouched_fixture_reconciles _____________________
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-522/test_the_untouched_fixture_rec0/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_the_untouched_fixture_rec0')}
+
+    def test_the_untouched_fixture_reconciles(scene):
+        code, report = run(scene)
+        assert code == 0
+>       assert report["counts"]["content_matches"] == 1
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'content_matches'
+
+tests/test_incident_reconciler_contract.py:100: KeyError
+----------------------------- Captured stdout call -----------------------------
+{
+ "accepted_by_governance": 1,
+ "committed_in_cube": 1,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "status_disagreements": 0,
+ "terminals_in_cube": 1
+}
+___________________ test_a_silently_changed_metric_is_caught ___________________
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-522/test_a_silently_changed_metric0/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_a_silently_changed_metric0')}
+
+    def test_a_silently_changed_metric_is_caught(scene):
+        """999999 hashes perfectly well. The point is that it is not what was accepted."""
+        con = duckdb.connect(scene["cube"])
+        con.execute("UPDATE main.gov_terminal_metric SET value = 999999")
+        con.close()
+    
+        code, report = run(scene, "changed.json")
+    
+>       assert code != 0, "a verifier that cannot fail cannot verify"
+E       AssertionError: a verifier that cannot fail cannot verify
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:112: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "accepted_by_governance": 1,
+ "committed_in_cube": 1,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "status_disagreements": 0,
+ "terminals_in_cube": 1
+}
+__________ test_emptied_children_are_reported_as_loss_not_as_absence ___________
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-522/test_emptied_children_are_repo0/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_emptied_children_are_repo0')}
+
+    def test_emptied_children_are_reported_as_loss_not_as_absence(scene):
+        con = duckdb.connect(scene["cube"])
+        for child in ("gov_terminal_metric", "gov_terminal_dataset", "gov_terminal_artifact"):
+            con.execute(f"DELETE FROM main.{child}")
+        con.close()
+    
+        code, report = run(scene, "emptied.json")
+    
+>       assert code != 0
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:126: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "accepted_by_governance": 1,
+ "committed_in_cube": 1,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "status_disagreements": 0,
+ "terminals_in_cube": 1
+}
+____________________ test_a_changed_parent_field_is_caught _____________________
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-522/test_a_changed_parent_field_is0/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_a_changed_parent_field_is0')}
+
+    def test_a_changed_parent_field_is_caught(scene):
+        con = duckdb.connect(scene["cube"])
+        con.execute("UPDATE main.gov_terminal SET actor = 'somebody-else'")
+        con.close()
+        code, report = run(scene, "actor.json")
+>       assert code != 0
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:139: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "accepted_by_governance": 1,
+ "committed_in_cube": 1,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "status_disagreements": 0,
+ "terminals_in_cube": 1
+}
+______________________ test_a_wrong_generation_is_caught _______________________
+
+scene = {'cube': '/tmp/pytest-of-harveybc/pytest-522/test_a_wrong_generation_is_cau0/cube.duckdb', 'accounting': PosixPath('/t...62a8f3b5f8e9b641514927105804a', 'tmp': PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_a_wrong_generation_is_cau0')}
+
+    def test_a_wrong_generation_is_caught(scene):
+        con = duckdb.connect(scene["cube"])
+        con.execute("UPDATE main.gov_terminal SET generation = 7")
+        con.close()
+        code, report = run(scene, "generation.json")
+>       assert code != 0
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:148: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "accepted_by_governance": 1,
+ "committed_in_cube": 1,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "status_disagreements": 0,
+ "terminals_in_cube": 1
+}
+____________ test_a_refused_terminal_with_no_children_is_legitimate ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_a_refused_terminal_with_n0')
+
+    def test_a_refused_terminal_with_no_children_is_legitimate(tmp_path):
+        """A REFUSED unit has no deliveries or metrics BY CONSTRUCTION. That is not loss."""
+        cube = str(tmp_path / "refused.duckdb")
+        migrate.build_fixture_cube(cube, terminals=1)
+        digest = hashlib.sha256(b"terminal-0").hexdigest()
+        payload = fixture_payload(digest)
+        payload.update(status="REFUSED", metrics=[], artifacts=[], verified_datasets=[])
+        accounting = accounting_with(tmp_path / "acc.db", [{
+            "terminal_sha256": digest, "campaign_sha256": "c" * 64, "unit_id": "unit-0",
+            "generation": 1, "status": "COMPLETED", "body": payload}])
+        con = duckdb.connect(cube)
+        con.execute("UPDATE main.gov_terminal SET status = 'REFUSED'")
+        con.close()
+        out = tmp_path / "r.json"
+        code = reconcile.main(["--accounting", str(accounting), "--cube", cube,
+                               "--schema", "main", "--out", str(out)])
+        report = json.loads(out.read_text())
+>       assert report["counts"]["content_matches"] == 1
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'content_matches'
+
+tests/test_incident_reconciler_contract.py:170: KeyError
+----------------------------- Captured stdout call -----------------------------
+{
+ "accepted_by_governance": 1,
+ "committed_in_cube": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "status_disagreements": 1,
+ "terminals_in_cube": 1
+}
+___ test_a_terminal_without_a_retained_payload_is_unverifiable_not_preserved ___
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_a_terminal_without_a_reta0')
+
+    def test_a_terminal_without_a_retained_payload_is_unverifiable_not_preserved(tmp_path):
+        cube = str(tmp_path / "c.duckdb")
+        migrate.build_fixture_cube(cube, terminals=1, with_children=True)
+        digest = hashlib.sha256(b"terminal-0").hexdigest()
+        accounting = accounting_with(tmp_path / "acc.db", [{
+            "terminal_sha256": digest, "campaign_sha256": "c" * 64, "unit_id": "unit-0",
+            "generation": 1, "status": "COMPLETED", "body": {}}])      # no payload retained
+        out = tmp_path / "r.json"
+        code = reconcile.main(["--accounting", str(accounting), "--cube", cube,
+                               "--schema", "main", "--out", str(out)])
+        report = json.loads(out.read_text())
+>       assert report["counts"]["content_unverifiable"] == 1
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'content_unverifiable'
+
+tests/test_incident_reconciler_contract.py:185: KeyError
+----------------------------- Captured stdout call -----------------------------
+{
+ "accepted_by_governance": 1,
+ "committed_in_cube": 1,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "status_disagreements": 0,
+ "terminals_in_cube": 1
+}
+__________ test_an_empty_accounting_never_produces_a_blanket_no_loss ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_an_empty_accounting_never0')
+
+    def test_an_empty_accounting_never_produces_a_blanket_no_loss(tmp_path):
+        """Nothing to compare against is not evidence of preservation."""
+        cube = str(tmp_path / "c.duckdb")
+        migrate.build_fixture_cube(cube, terminals=2, with_children=True)
+        accounting = accounting_with(tmp_path / "acc.db", [])
+        out = tmp_path / "r.json"
+        code = reconcile.main(["--accounting", str(accounting), "--cube", cube,
+                               "--schema", "main", "--out", str(out)])
+        report = json.loads(out.read_text())
+>       assert code != 0
+E       assert 0 != 0
+
+tests/test_incident_reconciler_contract.py:200: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{
+ "accepted_by_governance": 0,
+ "committed_in_cube": 0,
+ "missing_from_cube": 0,
+ "replayable_from_outbox": 0,
+ "status_disagreements": 0,
+ "terminals_in_cube": 2
+}
+___________ test_a_hole_in_the_destination_is_not_a_completed_prefix ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_a_hole_in_the_destination0')
+
+    def test_a_hole_in_the_destination_is_not_a_completed_prefix(tmp_path):
+        """The reviewer's third probe: source [1,2,3], destination [1,3]. Two is missing.
+    
+        Resuming from MAX(key) jumps past the hole and reports nothing to do. The high-water mark
+        says where the destination STOPS, not that everything below it is there.
+        """
+        path = str(tmp_path / "hole.duckdb")
+        table(path, name="source", rows=(1, 2, 3))
+        table(path, name="target", rows=(1, 3))
+        con = duckdb.connect(path)
+    
+        copied = migrate.copy_relation(con, "source", "target", 3, "id", 10)
+    
+        held = sorted(row[0] for row in con.execute("SELECT id FROM target").fetchall())
+        con.close()
+>       assert held == [1, 2, 3], f"the hole was not repaired: {held}"
+E       AssertionError: the hole was not repaired: [1, 3]
+E       assert [1, 3] == [1, 2, 3]
+E         
+E         At index 1 diff: 3 != 2
+E         Right contains one more item: 3
+E         Use -v to get more diff
+
+tests/test_migration_cli_contract.py:240: AssertionError
+_______ test_a_modified_existing_row_is_refused_rather_than_resumed_past _______
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_a_modified_existing_row_i0')
+
+    def test_a_modified_existing_row_is_refused_rather_than_resumed_past(tmp_path):
+        """Same identity, different content: resuming would leave the wrong row in place."""
+        path = str(tmp_path / "modified.duckdb")
+        table(path, name="source", rows=(1, 2, 3))
+        con = duckdb.connect(path)
+        con.execute("CREATE TABLE target (id INTEGER PRIMARY KEY, v VARCHAR)")
+        con.execute("INSERT INTO target VALUES (1,'WRONG')")
+        con.close()
+    
+        con = duckdb.connect(path)
+>       with pytest.raises(RuntimeError) as refusal:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+tests/test_migration_cli_contract.py:254: Failed
+_______________ test_an_extra_row_in_the_destination_is_refused ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_an_extra_row_in_the_desti0')
+
+    def test_an_extra_row_in_the_destination_is_refused(tmp_path):
+        path = str(tmp_path / "extra.duckdb")
+        table(path, name="source", rows=(1, 2))
+        table(path, name="target", rows=(1, 2, 9))
+        con = duckdb.connect(path)
+>       with pytest.raises(RuntimeError) as refusal:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+tests/test_migration_cli_contract.py:265: Failed
+____ test_the_snapshot_path_without_a_measured_boundary_is_named_unverified ____
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_the_snapshot_path_without0')
+
+    def test_the_snapshot_path_without_a_measured_boundary_is_named_unverified(tmp_path):
+        """A caller's flag is an assertion. The name of the artefact must say what it is."""
+        source = str(tmp_path / "live.duckdb")
+        migrate.build_fixture_cube(source, terminals=1)
+        report = migrate.snapshot_database(source, str(tmp_path / "copy.duckdb"),
+                                           schema="main", expect_terminals=1,
+                                           owner_stopped=True)
+>       assert report["kind"] in ("VERIFIED_SNAPSHOT", "UNVERIFIED_COPY")
+               ^^^^^^^^^^^^^^
+E       KeyError: 'kind'
+
+tests/test_migration_cli_contract.py:278: KeyError
+__ test_a_snapshot_taken_while_a_writer_holds_the_file_is_an_unverified_copy ___
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-522/test_a_snapshot_taken_while_a_0')
+
+    def test_a_snapshot_taken_while_a_writer_holds_the_file_is_an_unverified_copy(tmp_path):
+        """Measured, not asserted: another connection holds the lock, so there is no boundary."""
+        source = str(tmp_path / "held.duckdb")
+        migrate.build_fixture_cube(source, terminals=1)
+        holder = duckdb.connect(source)          # a writer, exactly as the service would be
+        try:
+            report = migrate.snapshot_database(source, str(tmp_path / "copy2.duckdb"),
+                                               schema="main", expect_terminals=1,
+                                               owner_stopped=True)
+        finally:
+            holder.close()
+>       assert report["kind"] == "UNVERIFIED_COPY"
+               ^^^^^^^^^^^^^^
+E       KeyError: 'kind'
+
+tests/test_migration_cli_contract.py:295: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_incident_reconciler_contract.py::test_the_untouched_fixture_reconciles
+FAILED tests/test_incident_reconciler_contract.py::test_a_silently_changed_metric_is_caught
+FAILED tests/test_incident_reconciler_contract.py::test_emptied_children_are_reported_as_loss_not_as_absence
+FAILED tests/test_incident_reconciler_contract.py::test_a_changed_parent_field_is_caught
+FAILED tests/test_incident_reconciler_contract.py::test_a_wrong_generation_is_caught
+FAILED tests/test_incident_reconciler_contract.py::test_a_refused_terminal_with_no_children_is_legitimate
+FAILED tests/test_incident_reconciler_contract.py::test_a_terminal_without_a_retained_payload_is_unverifiable_not_preserved
+FAILED tests/test_incident_reconciler_contract.py::test_an_empty_accounting_never_produces_a_blanket_no_loss
+FAILED tests/test_migration_cli_contract.py::test_a_hole_in_the_destination_is_not_a_completed_prefix
+FAILED tests/test_migration_cli_contract.py::test_a_modified_existing_row_is_refused_rather_than_resumed_past
+FAILED tests/test_migration_cli_contract.py::test_an_extra_row_in_the_destination_is_refused
+FAILED tests/test_migration_cli_contract.py::test_the_snapshot_path_without_a_measured_boundary_is_named_unverified
+FAILED tests/test_migration_cli_contract.py::test_a_snapshot_taken_while_a_writer_holds_the_file_is_an_unverified_copy
+13 failed, 10 passed in 3.27s

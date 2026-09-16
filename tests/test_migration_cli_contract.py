@@ -218,3 +218,81 @@ def test_the_catchup_command_exits_nonzero_on_an_unresolved_conflict(tmp_path):
                          "--source-engine", "duckdb", "--schema", "main", "--out", str(out)])
 
     assert code == 2, "an unresolved conflict is not a completed catch-up"
+
+
+# --- G2: a resume must prove the prefix it is resuming from --------------------------------
+
+def test_a_hole_in_the_destination_is_not_a_completed_prefix(tmp_path):
+    """The reviewer's third probe: source [1,2,3], destination [1,3]. Two is missing.
+
+    Resuming from MAX(key) jumps past the hole and reports nothing to do. The high-water mark
+    says where the destination STOPS, not that everything below it is there.
+    """
+    path = str(tmp_path / "hole.duckdb")
+    table(path, name="source", rows=(1, 2, 3))
+    table(path, name="target", rows=(1, 3))
+    con = duckdb.connect(path)
+
+    copied = migrate.copy_relation(con, "source", "target", 3, "id", 10)
+
+    held = sorted(row[0] for row in con.execute("SELECT id FROM target").fetchall())
+    con.close()
+    assert held == [1, 2, 3], f"the hole was not repaired: {held}"
+    assert copied == 1
+
+
+def test_a_modified_existing_row_is_refused_rather_than_resumed_past(tmp_path):
+    """Same identity, different content: resuming would leave the wrong row in place."""
+    path = str(tmp_path / "modified.duckdb")
+    table(path, name="source", rows=(1, 2, 3))
+    con = duckdb.connect(path)
+    con.execute("CREATE TABLE target (id INTEGER PRIMARY KEY, v VARCHAR)")
+    con.execute("INSERT INTO target VALUES (1,'WRONG')")
+    con.close()
+
+    con = duckdb.connect(path)
+    with pytest.raises(RuntimeError) as refusal:
+        migrate.copy_relation(con, "source", "target", 3, "id", 10)
+    con.close()
+    assert "content" in str(refusal.value).lower()
+
+
+def test_an_extra_row_in_the_destination_is_refused(tmp_path):
+    path = str(tmp_path / "extra.duckdb")
+    table(path, name="source", rows=(1, 2))
+    table(path, name="target", rows=(1, 2, 9))
+    con = duckdb.connect(path)
+    with pytest.raises(RuntimeError) as refusal:
+        migrate.copy_relation(con, "source", "target", 2, "id", 10)
+    con.close()
+    assert "not in the source" in str(refusal.value).lower()
+
+
+def test_the_snapshot_path_without_a_measured_boundary_is_named_unverified(tmp_path):
+    """A caller's flag is an assertion. The name of the artefact must say what it is."""
+    source = str(tmp_path / "live.duckdb")
+    migrate.build_fixture_cube(source, terminals=1)
+    report = migrate.snapshot_database(source, str(tmp_path / "copy.duckdb"),
+                                       schema="main", expect_terminals=1,
+                                       owner_stopped=True)
+    assert report["kind"] in ("VERIFIED_SNAPSHOT", "UNVERIFIED_COPY")
+    assert report["boundary"]["measured"] is True, (
+        "the boundary must be MEASURED by the snapshot itself, not asserted by its caller")
+    assert report["boundary"]["method"]
+
+
+def test_a_snapshot_taken_while_a_writer_holds_the_file_is_an_unverified_copy(tmp_path):
+    """Measured, not asserted: another connection holds the lock, so there is no boundary."""
+    source = str(tmp_path / "held.duckdb")
+    migrate.build_fixture_cube(source, terminals=1)
+    holder = duckdb.connect(source)          # a writer, exactly as the service would be
+    try:
+        report = migrate.snapshot_database(source, str(tmp_path / "copy2.duckdb"),
+                                           schema="main", expect_terminals=1,
+                                           owner_stopped=True)
+    finally:
+        holder.close()
+    assert report["kind"] == "UNVERIFIED_COPY"
+    assert report["verified"] is False
+    assert report["boundary"]["measured"] is True
+    assert report["boundary"]["writer_present"] is True
