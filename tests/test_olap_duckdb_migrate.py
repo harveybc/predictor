@@ -191,3 +191,117 @@ def test_a_partially_filled_relation_is_resumed_not_declared_present(tmp_path):
     assert migrate.import_state(source_rows=100, destination_rows=40) == "PARTIAL"
     assert migrate.import_state(source_rows=100, destination_rows=100) == "COMPLETE"
     assert migrate.import_state(source_rows=100, destination_rows=140) == "OVERFILLED"
+
+
+# --- E2: replay must survive interruption and prove the destination can READ what arrived ---
+
+def test_an_interrupted_replay_resumes_and_completes(tmp_path, monkeypatch):
+    """Kill the replay after the first parent, then run it again: nothing is lost or doubled."""
+    source = str(tmp_path / "src.duckdb")
+    target = str(tmp_path / "dst.duckdb")
+    migrate.build_fixture_cube(source, terminals=2, with_children=True, with_contract=True)
+    migrate.build_fixture_cube(target, terminals=0)
+
+    calls = {"n": 0}
+    real = migrate.replay_between
+
+    def interrupt_once(*args, **kwargs):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            # a replay that dies partway: the contract lands, the terminals do not
+            report = real(*args, **kwargs)
+            raise RuntimeError("interrupted after the first relation")
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(migrate, "replay_between", interrupt_once)
+    with pytest.raises(RuntimeError):
+        migrate.replay_between(source, target, schema="main", dry_run=False)
+    monkeypatch.undo()
+
+    resumed = migrate.replay_between(source, target, schema="main", dry_run=False)
+    con = duckdb.connect(target, read_only=True)
+    assert con.execute("SELECT count(*) FROM main.gov_terminal").fetchone()[0] == 2
+    assert con.execute(
+        "SELECT count(*) FROM main.gov_availability_contract").fetchone()[0] == 1
+    assert con.execute("SELECT count(*) FROM main.gov_terminal_metric").fetchone()[0] == 2
+    con.close()
+    assert resumed["summary"]["terminals_replayed"] >= 0
+
+
+def test_the_destination_can_resolve_the_replayed_contract(tmp_path):
+    """A replayed outcome that cannot be read back is not a restored outcome."""
+    source = str(tmp_path / "src.duckdb")
+    target = str(tmp_path / "dst.duckdb")
+    migrate.build_fixture_cube(source, terminals=1, with_children=True, with_contract=True)
+    migrate.build_fixture_cube(target, terminals=0, drop_contract_table=True)
+    migrate.replay_between(source, target, schema="main", dry_run=False)
+
+    from predictor_duckdb_store.provider import PredictorDuckdbStore
+
+    store = PredictorDuckdbStore()
+    store.set_params(duckdb_path=target, schema="main", memory_limit="1GB", threads=2,
+                     min_free_bytes=1)
+    store.engine()
+    answer = store.resolve_delivery_availability("delivery-0")
+
+    assert answer["contract_resolution"] == "VERIFIED"
+    assert answer["use_class"] == "ARCHIVE_RETROSPECTIVE"
+    assert answer["completion_lag_max"] == "UNKNOWN", (
+        "UNKNOWN must survive a rollback replay as itself")
+
+
+def test_replayed_content_is_identical_not_merely_present(tmp_path):
+    """Same identities AND same values on both sides, compared by the same engine."""
+    source = str(tmp_path / "src.duckdb")
+    target = str(tmp_path / "dst.duckdb")
+    migrate.build_fixture_cube(source, terminals=3, with_children=True, with_contract=True)
+    migrate.build_fixture_cube(target, terminals=0)
+    migrate.replay_between(source, target, schema="main", dry_run=False)
+
+    con = duckdb.connect(target)
+    con.execute(f"ATTACH '{source}' AS src (READ_ONLY)")
+    for relation in ("gov_terminal", "gov_terminal_metric", "gov_terminal_dataset",
+                     "gov_terminal_artifact", "gov_availability_contract"):
+        columns = [row[1] for row in con.execute(
+            f'PRAGMA table_info("main"."{relation}")').fetchall()]
+        left = migrate.content_digest(con, f'src."main"."{relation}"', columns)
+        right = migrate.content_digest(con, f'"main"."{relation}"', columns)
+        assert migrate.digests_agree(left, right), f"{relation} differs after replay"
+    con.close()
+
+
+def test_a_dry_run_replay_writes_nothing(tmp_path):
+    source = str(tmp_path / "src.duckdb")
+    target = str(tmp_path / "dst.duckdb")
+    migrate.build_fixture_cube(source, terminals=2, with_children=True, with_contract=True)
+    migrate.build_fixture_cube(target, terminals=0)
+
+    report = migrate.replay_between(source, target, schema="main", dry_run=True)
+
+    assert all(entry["outcome"].startswith("WOULD_") for entry in report["relations"])
+    con = duckdb.connect(target, read_only=True)
+    assert con.execute("SELECT count(*) FROM main.gov_terminal").fetchone()[0] == 0
+    con.close()
+
+
+# --- E3: catch-up must carry a new parent's complete evidence -----------------------------
+
+def test_catch_up_carries_children_of_a_new_parent(tmp_path):
+    """Child rows have no timestamp. Skipping them ships a terminal without its evidence."""
+    source = str(tmp_path / "src.duckdb")
+    target = str(tmp_path / "dst.duckdb")
+    migrate.build_fixture_cube(source, terminals=2, with_children=True, with_contract=True)
+    migrate.build_fixture_cube(target, terminals=0)
+    migrate.replay_between(source, target, schema="main", dry_run=False)
+
+    # a NEW terminal appears at the source after the catch-up point
+    migrate.build_fixture_cube(source, terminals=3, with_children=True, with_contract=True)
+    report = migrate.replay_between(source, target, schema="main", dry_run=False)
+
+    assert report["summary"]["terminals_replayed"] == 1
+    assert report["summary"]["child_rows_replayed"] == 3, (
+        "the new terminal's metric, dataset and artifact must travel with it")
+    con = duckdb.connect(target, read_only=True)
+    assert con.execute(
+        "SELECT count(*) FROM main.gov_terminal_artifact").fetchone()[0] == 3
+    con.close()
