@@ -17,7 +17,8 @@ The copy disappears when the service tree and that revision are integrated.
 from .provider import PredictorOlapStore, backend
 
 __all__ = ["PredictorOlapStore", "backend", "__version__", "SOURCE_SHA256",
-           "SOURCE_REVISION", "SOURCE_PATH", "MODULE_SHA256", "PENDING_REVIEW"]
+           "SOURCE_REVISION", "SOURCE_PATH", "MODULE_SHA256", "PENDING_REVIEW",
+           "ENVELOPE_SOURCE_PATH", "ENVELOPE_SOURCE_SHA256"]
 __version__ = "0.1.0"
 
 #: The digest of the deployed query plugin this module was copied from, and the revision
@@ -26,6 +27,13 @@ __version__ = "0.1.0"
 SOURCE_SHA256 = "ded983563077a2aaac6893bf4acde0a2ce84dd41e084a0be10a0cae613f0567e"
 SOURCE_REVISION = "a7a86e906fd5d4e4057237f014f8f95d0cf6ea6a"
 SOURCE_PATH = "olap/lake/query_plugins/sql_query.py"
+
+#: The campaign-envelope loader, packaged so the DuckDB provider can consume it
+#: through a declared dependency instead of importing a checkout. It is a COPY of
+#: `olap/campaign_envelope.py`, and the parity test fails the moment they differ:
+#: two loaders would eventually disagree about what an envelope means.
+ENVELOPE_SOURCE_PATH = "olap/campaign_envelope.py"
+ENVELOPE_SOURCE_SHA256 = "f2729ef73f90fdccdc00e2fa3b9dc7e71f1c971b930714384e4b69546faa2b94"
 
 #: The digest of the module in THIS branch. It differs from SOURCE_SHA256 exactly when a
 #: candidate change is awaiting production review, and PENDING_REVIEW says which one. The

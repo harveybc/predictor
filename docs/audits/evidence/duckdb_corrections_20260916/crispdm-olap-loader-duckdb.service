@@ -1,0 +1,33 @@
+[Unit]
+Description=CRISP-DM OLAP outbox loader, DuckDB successor (CPU only, idempotent)
+Documentation=file:%h/Documents/GitHub/predictor/docs/handoffs/MUSASHI_DUCKDB_CLOSEOUT_CORRECTIONS_2026_09_16.md
+# The successor of crispdm-olap-loader.service. That one opened PostgreSQL
+# directly; this one posts each envelope to the warehouse host, which is the
+# single process that owns the DuckDB file. Workers never open the database.
+# The outbox, its states, its adjudications and the envelope documents are
+# unchanged: this is a change of destination, not of meaning.
+#
+# A crash loop must not become a busy loop, and these two directives belong to
+# [Unit] rather than [Service] - declared under [Service] systemd ignores them
+# with a warning and applies its default burst instead.
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Documents/GitHub/predictor
+# The store token, from the file the warehouse host already uses. No credential
+# is written into this unit or into the loader.
+EnvironmentFile=%h/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5057.service.env
+ExecStart=%h/anaconda3/envs/trading-stack/bin/python \
+    %h/Documents/GitHub/predictor/tools/olap_loader_duckdb.py \
+    --warehouse-url http://127.0.0.1:5057 --watch 30
+Nice=15
+Environment=CUDA_VISIBLE_DEVICES=
+MemoryMax=1G
+MemorySwapMax=0
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

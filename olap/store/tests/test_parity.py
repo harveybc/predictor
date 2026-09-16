@@ -88,3 +88,20 @@ def test_the_provider_declares_the_capabilities_it_implements():
         assert callable(getattr(store, capability)), capability
     assert store.capabilities() == CAPABILITIES
     assert store.source_identity()["distribution"] == "predictor-olap-store"
+
+
+def test_the_packaged_envelope_loader_matches_the_repository_copy():
+    """Two envelope loaders would eventually disagree about what an envelope means.
+
+    The DuckDB provider consumes this module through a declared dependency rather than by
+    importing a checkout, so it must be a copy — and a copy that has drifted is worse than no
+    copy at all, because both sides look maintained.
+    """
+    import predictor_olap_store as pkg
+
+    repository = REPO / pkg.ENVELOPE_SOURCE_PATH
+    packaged = SRC / "predictor_olap_store" / "campaign_envelope.py"
+    assert repository.is_file() and packaged.is_file()
+    assert _sha256(packaged.read_bytes()) == _sha256(repository.read_bytes()), (
+        "the packaged envelope loader has drifted from olap/campaign_envelope.py")
+    assert _sha256(repository.read_bytes()) == pkg.ENVELOPE_SOURCE_SHA256

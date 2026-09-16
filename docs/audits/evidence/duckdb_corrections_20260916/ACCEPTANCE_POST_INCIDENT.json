@@ -1,0 +1,38 @@
+{
+ "schema": "worker_delivery_probe.v2",
+ "at": "2026-09-16T09:03:40.688Z",
+ "host": "omega",
+ "gov_url": "http://127.0.0.1:5055",
+ "experiment_key": "worker-delivery-omega-1789549420",
+ "campaign_sha256": "20e9aa514d8e7872bc9d7bdf42c2540a09a2e175309e90ce8b7b51b0aee68ab7",
+ "unit_id": "omega-probe-post-incident-1",
+ "lake": "governance_smoke",
+ "resource": "synthetic_features_4h_train.csv",
+ "delivery": {
+  "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+  "source_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+  "delivery": "AS_IS",
+  "cached": true,
+  "path": "/home/harveybc/.cache/data-gov/4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027.csv",
+  "bytes": 228801
+ },
+ "bytes_on_disk_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+ "wall_seconds": 0.011,
+ "terminal": {
+  "status": 201,
+  "sha256": "c045bc0b95557fcff1f8b89d13bafaa0f0a2751ac0d9af97f5f5656f76f6936a",
+  "already_stored": false
+ },
+ "reconciliation": {
+  "accounting_only": [],
+  "campaign_sha256": "20e9aa514d8e7872bc9d7bdf42c2540a09a2e175309e90ce8b7b51b0aee68ab7",
+  "lake_only": [],
+  "missing_units": []
+ },
+ "actor_verification": {
+  "where": "data-gov governed_deliveries.actor",
+  "key_file": "/home/harveybc/.local/state/crispdm-data-foundation/satoshi-store-hosts-20260914T1215Z/predictor.key",
+  "delivery_id": "eeb49976c25f475bbd05e38fdbf7cd82"
+ },
+ "note": "the bytes were obtained through data-gov, not copied between machines"
+}

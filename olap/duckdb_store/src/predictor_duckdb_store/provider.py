@@ -27,7 +27,9 @@ from sqlalchemy import create_engine, text
 #: by these names; a DuckDB cube that offered fewer would silently change what governance can do.
 CAPABILITIES = ("describe", "storage", "discover", "schema", "query",
                 "write_metrics", "write_terminal", "terminal_digests",
-                "write_availability_contracts", "resolve_delivery_availability")
+                "write_availability_contracts", "resolve_delivery_availability",
+                # E4: the data-foundation ingestion route, owned by this process
+                "write_foundation_envelope")
 
 #: Refuse to open a database on a volume with less free space than this. An OLAP engine that
 #: runs out of disk mid-write leaves a file nobody can explain.
@@ -108,6 +110,13 @@ class PredictorDuckdbStore(_Cube):
         schema = self.params.get("schema") or "main"
         if schema != "main":
             statements.insert(0, f'CREATE SCHEMA IF NOT EXISTS "{schema}"')
+        # The data-foundation loader writes into `public`, which DuckDB does not create by
+        # itself. It is created HERE, at start-up, and not during an envelope write: issuing
+        # `CREATE SCHEMA` inside a write put it in the write-ahead log, and DuckDB then could
+        # not replay that log on reopen — measured on 2026-09-16, and it left the production
+        # cube unopenable until the log was quarantined. Start-up DDL is checkpointed before
+        # any envelope arrives, so the log never carries it.
+        statements.insert(0, 'CREATE SCHEMA IF NOT EXISTS "public"')
         return statements
 
     def _ensure_schema(self, engine):
@@ -154,6 +163,34 @@ class PredictorDuckdbStore(_Cube):
         underlying call, one name the host actually looks for.
         """
         return self.resource_schema(resource_id)
+
+    # -- data-foundation ingestion (E4) -----------------------------------------
+    def write_foundation_envelope(self, document):
+        """Load one campaign envelope into the data-foundation tables, through the owner.
+
+        E4 required the `df_*` route to exist on the new engine, not merely for the old direct
+        writer to be stopped: an empty queue at cutover says nothing about where the NEXT
+        outcome lands. Workers never open this file; they send the envelope to the service and
+        this one process writes it.
+
+        The loader itself is the repository's own `campaign_envelope`, consumed through a
+        declared dependency rather than imported from a checkout, and kept byte-identical to it
+        by a parity test. The event schemas, identities and idempotency are therefore exactly
+        the ones the PostgreSQL path used — this is a change of engine, not of meaning.
+        """
+        from predictor_olap_store import campaign_envelope as envelope
+
+        if not isinstance(document, dict):
+            raise ValueError("an envelope must be a JSON object")
+        with self._write_lock:
+            engine = self.engine()          # start-up DDL, including the `public` schema
+            envelope.ensure_envelope_tables(engine)
+            outcome = envelope.load_envelope(engine, document)
+            # Fold the write into the database file immediately. A cube whose recent work lives
+            # only in a log is a cube whose recent work depends on that log replaying.
+            with engine.begin() as conn:
+                conn.execute(text("CHECKPOINT"))
+            return outcome
 
     # -- identity --------------------------------------------------------------
     def capabilities(self):

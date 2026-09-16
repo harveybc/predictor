@@ -1,0 +1,235 @@
+{
+ "schema": "olap_duckdb_export.v2",
+ "generated_utc": "2026-09-16T08:52:52Z",
+ "destination": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb",
+ "target_schema": "main",
+ "scope": "cube",
+ "batch_rows": 200000,
+ "selection": "docs/audits/evidence/duckdb_corrections_20260916/E1_SELECTION_V2.json",
+ "relations": [
+  {
+   "relation": "df_dim_dataset",
+   "outcome": "COPIED",
+   "source_rows": 715,
+   "copied_rows": 715,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_dim_run",
+   "outcome": "COPIED",
+   "source_rows": 16,
+   "copied_rows": 16,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_dim_variable",
+   "outcome": "COPIED",
+   "source_rows": 2487,
+   "copied_rows": 2487,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_causal_test",
+   "outcome": "COPIED",
+   "source_rows": 2158,
+   "copied_rows": 2158,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_coverage",
+   "outcome": "COPIED",
+   "source_rows": 440694,
+   "copied_rows": 440694,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_coverage_v1_v2_map",
+   "outcome": "COPIED",
+   "source_rows": 633189,
+   "copied_rows": 633189,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_coverage_v2",
+   "outcome": "COPIED",
+   "source_rows": 633189,
+   "copied_rows": 633189,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_d2_decision",
+   "outcome": "COPIED",
+   "source_rows": 7182,
+   "copied_rows": 7182,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_host_receipt",
+   "outcome": "COPIED",
+   "source_rows": 54,
+   "copied_rows": 54,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_incident_attempt",
+   "outcome": "COPIED",
+   "source_rows": 4,
+   "copied_rows": 4,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_load_receipt",
+   "outcome": "COPIED",
+   "source_rows": 21,
+   "copied_rows": 21,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_naming_isolation_decision",
+   "outcome": "COPIED",
+   "source_rows": 6,
+   "copied_rows": 6,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "df_fact_snr_calibration",
+   "outcome": "COPIED",
+   "source_rows": 37980,
+   "copied_rows": 37980,
+   "pagination_key": "row_sha256",
+   "batching": "keyset"
+  },
+  {
+   "relation": "dim_campaign",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 11
+  },
+  {
+   "relation": "dim_campaign_run",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 20
+  },
+  {
+   "relation": "dim_dataset",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 2
+  },
+  {
+   "relation": "dim_dataset_split",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 3
+  },
+  {
+   "relation": "dim_experiment",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 39
+  },
+  {
+   "relation": "dim_horizon",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 6
+  },
+  {
+   "relation": "dim_metric",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 17
+  },
+  {
+   "relation": "dim_phase",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 2
+  },
+  {
+   "relation": "dim_project",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 1
+  },
+  {
+   "relation": "dim_terminal_verification",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 1
+  },
+  {
+   "relation": "dim_terminal_verification_v2",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 1
+  },
+  {
+   "relation": "fact_campaign_consumption",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 265
+  },
+  {
+   "relation": "fact_campaign_unit",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 214
+  },
+  {
+   "relation": "fact_ingestion_receipt",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 1
+  },
+  {
+   "relation": "gov_dataset",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "gov_metric",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "gov_report",
+   "outcome": "COPIED",
+   "source_rows": 0,
+   "copied_rows": 0,
+   "pagination_key": null,
+   "batching": "single_stream"
+  },
+  {
+   "relation": "gov_terminal",
+   "outcome": "OVERFILLED_REFUSED",
+   "rows_held": 54,
+   "source_rows": 52,
+   "note": "the destination holds MORE rows than the source; that is a defect, not a completion, and it is not silently accepted"
+  },
+  {
+   "relation": "gov_terminal_artifact",
+   "outcome": "ALREADY_PRESENT",
+   "rows": 97
+  },
+  {
+   "relation": "gov_terminal_dataset",
+   "outcome": "OVERFILLED_REFUSED",
+   "rows_held": 91,
+   "source_rows": 90,
+   "note": "the destination holds MORE rows than the source; that is a defect, not a completion, and it is not silently accepted"
+  },
+  {
+   "relation": "gov_terminal_metric",
+   "outcome": "OVERFILLED_REFUSED",
+   "rows_held": 531,
+   "source_rows": 529,
+   "note": "the destination holds MORE rows than the source; that is a defect, not a completion, and it is not silently accepted"
+  }
+ ]
+}

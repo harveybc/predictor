@@ -803,7 +803,30 @@ def cmd_validate(args) -> int:
                       and source_digest is None and target_digest is None)
         row["content_matches"] = both_empty or digests_agree(source_digest, target_digest)
         row["compared_as"] = "EMPTY_ON_BOTH_SIDES" if both_empty else "CONTENT_DIGEST"
-        row["outcome"] = "MATCH" if row["rows_match"] and row["content_matches"] else "MISMATCH"
+
+        # After cutover the destination legitimately LEADS the legacy source: outcomes accepted
+        # on DuckDB have no counterpart in a PostgreSQL that no longer receives writes. That is
+        # not a mismatch — but it is only acceptable when the destination is a genuine
+        # SUPERSET, which is proved by anti-joining every source row's content, not by
+        # comparing two counts and hoping.
+        if not row["content_matches"] and target_rows > source_rows:
+            projection = ", ".join(f'"{column}"' for column in entry["columns"])
+            try:
+                orphaned = con.execute(
+                    f"SELECT count(*) FROM (SELECT md5(CAST(ROW({projection}) AS VARCHAR)) h "
+                    f"FROM {source}{scope_predicate}) s WHERE s.h NOT IN "
+                    f"(SELECT md5(CAST(ROW({projection}) AS VARCHAR)) FROM {target})"
+                ).fetchone()[0]
+            except Exception as exc:
+                orphaned = f"UNCOMPARABLE: {type(exc).__name__}"
+            row["source_rows_absent_from_destination"] = orphaned
+            if orphaned == 0:
+                row["content_matches"] = True
+                row["compared_as"] = "DESTINATION_AHEAD_SUPERSET_PROVED"
+                row["destination_only_rows"] = target_rows - source_rows
+        row["outcome"] = ("MATCH" if (row["rows_match"] or row.get("compared_as")
+                                      == "DESTINATION_AHEAD_SUPERSET_PROVED")
+                          and row["content_matches"] else "MISMATCH")
         report["relations"].append(row)
         if row["outcome"] != "MATCH":
             report["mismatches"].append(row)
