@@ -1,0 +1,3 @@
+d28fa82f42b278fbb8cd54c6af0d578b1520dedb88bef9f58942ed5d1501a3c2    /home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb.wal.quarantined
+d28fa82f42b278fbb8cd54c6af0d578b1520dedb88bef9f58942ed5d1501a3c2    /home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb.wal.incident-20260916
+d0abb8f1963efc12acaa0d05eec7365faa5b9dd0360a71590e5c74fdf8f420cb    /home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb

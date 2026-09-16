@@ -1,0 +1,30 @@
+{
+ "schema": "olap_duckdb_snapshot.v2",
+ "generated_utc": "2026-09-16T10:46:39Z",
+ "source": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb",
+ "target": "/home/harveybc/.local/state/crispdm-duckdb/rehearsal/f3_snapshot.duckdb",
+ "files_copied": [
+  {
+   "file": "cube.duckdb",
+   "bytes": 164376576
+  },
+  {
+   "file": "cube.duckdb.wal",
+   "bytes": 5997
+  }
+ ],
+ "counts_in_snapshot": {
+  "gov_report": 0,
+  "gov_metric": 0,
+  "gov_dataset": 0,
+  "gov_terminal": 55,
+  "gov_terminal_metric": 533,
+  "gov_terminal_dataset": 92,
+  "gov_terminal_artifact": 97,
+  "gov_availability_contract": 0
+ },
+ "expected_terminals": 55,
+ "owner_stopped": true,
+ "verified": true,
+ "unverified_because": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": "duckdb_wal_incident_reproducer.v1",
+ "generated_utc": "2026-09-16T10:45:38Z",
+ "duckdb_version": "1.5.5",
+ "work": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/f3repro",
+ "cases": [
+  {
+   "case": "schema_at_write_then_killed",
+   "schema_at_startup": false,
+   "writer_mode": "schema_at_write",
+   "writer_exit": 9,
+   "wal_present_after_kill": true,
+   "wal_bytes": 330,
+   "reopens": true,
+   "rows_visible": 1
+  },
+  {
+   "case": "schema_at_startup_then_killed",
+   "schema_at_startup": true,
+   "writer_mode": "plain",
+   "writer_exit": 9,
+   "wal_present_after_kill": true,
+   "wal_bytes": 281,
+   "reopens": true,
+   "rows_visible": 1
+  },
+  {
+   "case": "no_schema_creation_then_killed",
+   "schema_at_startup": true,
+   "writer_mode": "plain",
+   "writer_exit": 9,
+   "wal_present_after_kill": true,
+   "wal_bytes": 282,
+   "reopens": true,
+   "rows_visible": 1
+  },
+  {
+   "case": "checkpointed_then_killed",
+   "schema_at_startup": true,
+   "writer_mode": "checkpointed",
+   "writer_exit": 9,
+   "wal_present_after_kill": false,
+   "wal_bytes": 0,
+   "reopens": true,
+   "rows_visible": 1
+  }
+ ],
+ "verdict": {
+  "reproduced_the_failure": false,
+  "mitigation_survives": true,
+  "conclusion": "NOT_REPRODUCED_ROOT_CAUSE_REMAINS_A_HYPOTHESIS"
+ },
+ "note": "The production write-ahead log was never opened, replayed or read. These are fresh disposable databases."
+}

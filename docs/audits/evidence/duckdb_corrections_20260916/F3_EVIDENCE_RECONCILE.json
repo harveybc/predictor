@@ -1,0 +1,20 @@
+{
+ "schema": "incident_evidence_reconcile.v1",
+ "generated_utc": "2026-09-16T10:46:50Z",
+ "accounting": "/home/harveybc/Documents/GitHub/data-gov/var/accounting.db",
+ "cube": "/home/harveybc/.local/state/crispdm-duckdb/rehearsal/f3_snapshot.duckdb",
+ "cube_sha256": "f13fcb29d0daea5c9a9352c236918e3dcf8f18afba3f7bf36910ca578fd97844",
+ "counts": {
+  "accepted_by_governance": 55,
+  "committed_in_cube": 55,
+  "missing_from_cube": 0,
+  "replayable_from_outbox": 0,
+  "status_disagreements": 0,
+  "terminals_in_cube": 55
+ },
+ "missing_from_cube": [],
+ "replayable_from_outbox": [],
+ "status_disagreements": [],
+ "children_present_for": 45,
+ "note": "The quarantined write-ahead log was not opened. Absence from the cube is reported as LOSS only when no outbox still holds the slot."
+}

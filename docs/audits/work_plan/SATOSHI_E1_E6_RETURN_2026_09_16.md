@@ -81,10 +81,12 @@ the log — copied twice, never deleted — and the main file opened intact: 54 
 foundation runs, 440,694 coverage rows. **Nothing governed was lost**; what the log held were
 my own test envelope writes, which are re-drainable.
 
-Root cause fixed: the schema is created at start-up, where it is checkpointed before any
-envelope arrives, and each envelope write is checkpointed. The exact failure is now a check
-that writes, closes and reopens. A governed delivery and terminal afterwards: **201**,
-reconciliation empty.
+Root cause **corrected on 2026-09-16 after F3**: I stated the cause as fact. A minimal
+disposable reproducer — schema created during the write, then the process killed before it
+could checkpoint — does **not** reproduce the failure on DuckDB 1.5.5, in any of four
+arrangements. The explanation is therefore a **hypothesis** and the start-up schema plus the
+per-write checkpoint are a **mitigation**, not a proven fix. See
+`F3_WAL_REPRODUCER.json` and the F1–F5 return.
 
 Two further portability defects, both found by running it: `JSONB` does not exist in DuckDB,
 and `rowcount` is `-1` there for `INSERT … ON CONFLICT`, so the loader reported `-1` units and
