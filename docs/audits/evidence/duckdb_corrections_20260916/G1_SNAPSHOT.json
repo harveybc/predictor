@@ -1,0 +1,42 @@
+{
+ "schema": "olap_duckdb_snapshot.v3",
+ "generated_utc": "2026-09-16T16:39:58Z",
+ "source": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb",
+ "target": "/home/harveybc/.local/state/crispdm-duckdb/rehearsal/g1_snapshot.duckdb",
+ "files_copied": [
+  {
+   "file": "cube.duckdb",
+   "bytes": 169357312
+  }
+ ],
+ "boundary": {
+  "measured": true,
+  "method": "exclusive_open_then_checkpoint",
+  "writer_present": false
+ },
+ "caller_claimed_owner_stopped": true,
+ "counts_in_snapshot": {
+  "gov_report": 0,
+  "gov_metric": 0,
+  "gov_dataset": 0,
+  "gov_terminal": 55,
+  "gov_terminal_metric": 533,
+  "gov_terminal_dataset": 92,
+  "gov_terminal_artifact": 97,
+  "gov_availability_contract": 0
+ },
+ "content_digests": {
+  "gov_report": null,
+  "gov_metric": null,
+  "gov_dataset": null,
+  "gov_terminal": "4fe3539cd97c7514f1511281f6bf2cdf",
+  "gov_terminal_metric": "6e587370cf823666c23cc1aaff3e4163",
+  "gov_terminal_dataset": "e472408f58458861e8493154235e5c9a",
+  "gov_terminal_artifact": "8dd86ce3424e962eabf8c482a46d46ce",
+  "gov_availability_contract": null
+ },
+ "expected_terminals": 55,
+ "verified": true,
+ "kind": "VERIFIED_SNAPSHOT",
+ "unverified_because": []
+}

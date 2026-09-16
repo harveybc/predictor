@@ -702,6 +702,11 @@ def pagination_key(con, source: str, columns: list[str]) -> str | None:
     return None
 
 
+def _relation_name(qualified: str) -> str:
+    """The bare table name from a possibly schema-qualified, possibly quoted reference."""
+    return qualified.split(".")[-1].strip('"')
+
+
 def copy_relation(con, source: str, target: str, total: int, key: str | None,
                   batch_rows: int, *, predicate: str = "", parameters=None) -> int:
     """Copy every row exactly once, in bounded work units.
@@ -723,23 +728,47 @@ def copy_relation(con, source: str, target: str, total: int, key: str | None,
         con.execute(f"INSERT INTO {target} SELECT * FROM {source} {predicate}", parameters)
         return con.execute(f"SELECT count(*) FROM {target}").fetchone()[0]
 
-    # RESUME from what the destination already holds. Starting at the first source row
-    # reinserted the completed prefix: on a constrained table that raises Duplicate key, and
-    # on an unconstrained one it silently doubles the rows. Measured by the reviewer on
-    # source [1,2,3] into target [1] with a batch of one.
+    # RESUME, but only from a prefix that is PROVED. `max(key)` says where the destination
+    # stops; it does not say that everything below it is there and correct. Measured by the
+    # reviewer: source [1,2,3] into destination [1,3] resumed past the hole and left 2 absent.
+    # So the destination is first reconciled against the source by identity AND by content.
+    columns = [row[1] for row in con.execute(
+        f"PRAGMA table_info({_relation_name(target)})").fetchall()]
+    left = ", ".join(f's."{column}"' for column in columns)
+    right = ", ".join(f't."{column}"' for column in columns)
+    extra = con.execute(
+        f'SELECT count(*) FROM {target} t WHERE t."{key}" NOT IN '
+        f'(SELECT "{key}" FROM {source} {predicate})', parameters).fetchone()[0]
+    if extra:
+        raise RuntimeError(
+            f"{target} holds {extra} rows whose {key} is not in the source selection; that is "
+            "not a partial copy, and resuming would leave them there")
+    modified = con.execute(
+        f'SELECT count(*) FROM {target} t JOIN {source} s ON s."{key}" = t."{key}" '
+        f'WHERE md5(CAST(ROW({left}) AS VARCHAR)) <> md5(CAST(ROW({right}) AS VARCHAR))'
+    ).fetchone()[0]
+    if modified:
+        raise RuntimeError(
+            f"{target} holds {modified} rows whose content differs from the source under the "
+            "same key; resuming would leave the wrong rows in place")
+    # Every row the destination holds is now known to be a correct source row, so what remains
+    # is exactly what it does NOT hold - holes included. Identity decides, not position.
     copied = 0
-    last = con.execute(f'SELECT max("{key}") FROM {target}').fetchone()[0]
+    last = None
     while True:
         if last is None:
-            where, values = predicate, list(parameters)
-        elif predicate:
-            where = f'{predicate} AND "{key}" > ?'
-            values = list(parameters) + [last]
+            where = predicate or "WHERE 1=1"
+            values = list(parameters)
         else:
-            where, values = f'WHERE "{key}" > ?', [last]
+            where = f'{predicate} AND s."{key}" > ?' if predicate \
+                else f'WHERE s."{key}" > ?'
+            values = list(parameters) + [last]
+        # `RETURNING` sees the inserted row, not the source alias, so the alias is confined
+        # to the SELECT and the returned column is named plainly.
         rows = con.execute(
-            f'INSERT INTO {target} SELECT * FROM {source} {where} '
-            f'ORDER BY "{key}" LIMIT {batch_rows} RETURNING "{key}"', values).fetchall()
+            f'INSERT INTO {target} SELECT * FROM (SELECT s.* FROM {source} s {where} '
+            f'AND s."{key}" NOT IN (SELECT "{key}" FROM {target}) '
+            f'ORDER BY s."{key}" LIMIT {batch_rows}) RETURNING "{key}"', values).fetchall()
         if not rows:
             break
         copied += len(rows)
@@ -1065,19 +1094,49 @@ def catchup_from_postgres(destination: str, *, schema: str = "main", since=None,
     return report
 
 
+def measure_boundary(source: str) -> dict:
+    """Is anyone else writing this database RIGHT NOW? Measured, not asserted.
+
+    DuckDB takes an exclusive lock for writing, so the question has an answer the process can
+    obtain for itself: try to open the file for writing. Success means no other writer holds
+    it, which is the boundary. Failure with a lock conflict means a writer is present and there
+    is no boundary to copy at.
+
+    The previous version took the caller's word (`owner_stopped=True`) and called the result
+    verified. Requiring a flag is not a measurement, and the reviewer was right that adding
+    another required flag would not have been a correction either.
+
+    Its limit, stated because it is real: DuckDB's lock is per PROCESS. A second connection
+    inside THIS process would not conflict, so this detects a writer in another process — which
+    is the case that matters here, since the warehouse service is a separate process — and not
+    a concurrent writer inside the caller itself.
+    """
+    import duckdb
+
+    try:
+        probe = duckdb.connect(source)          # exclusive: only succeeds if nobody writes
+        probe.execute("CHECKPOINT")             # and fold the log in while we hold it
+        probe.close()
+        return {"measured": True, "method": "exclusive_open_then_checkpoint",
+                "writer_present": False}
+    except Exception as exc:
+        return {"measured": True, "method": "exclusive_open_then_checkpoint",
+                "writer_present": True, "detail": f"{type(exc).__name__}: {str(exc)[:160]}"}
+
+
 def snapshot_database(source: str, target: str, *, schema: str = "main",
                       expect_terminals=None, owner_stopped: bool = False) -> dict:
-    """A copy of a DuckDB cube, and an honest statement of whether it is a snapshot.
+    """A copy of a DuckDB cube, and an honest name for what the copy is.
 
-    Copying `cube.duckdb` and `cube.duckdb.wal` one after another while a writer is running
-    copies two moments, not one: a transaction can land between the two reads. Checkpointing
-    the copy afterwards makes it self-consistent as a FILE and proves nothing about whether it
-    matches any instant of the source.
+    Two outcomes, and the artefact says which it is:
 
-    So verification requires BOTH: the owner is stopped, so there is a closed boundary to copy
-    at, AND the resulting count matches what the service reported before it stopped. Without an
-    expected count there is nothing to compare, and `verified` is false - it used to be
-    unconditionally true, which is the weakest possible kind of check.
+      VERIFIED_SNAPSHOT  no other writer held the file, the log was folded in BEFORE copying,
+                         and the copy's contents match what was expected;
+      UNVERIFIED_COPY    anything else. The files are still copied — an unverified copy is
+                         better than none — but it is never described as a snapshot.
+
+    `owner_stopped` is retained only as the caller's INTENT, recorded beside the measurement so
+    the two can be compared. It no longer decides anything.
     """
     import shutil
 
@@ -1085,37 +1144,55 @@ def snapshot_database(source: str, target: str, *, schema: str = "main",
 
     source_path, target_path = Path(source), Path(target)
     target_path.parent.mkdir(parents=True, exist_ok=True)
+    boundary = measure_boundary(source)
+
     copied = []
     for suffix in ("", ".wal"):
         candidate = Path(str(source_path) + suffix)
         if candidate.is_file():
             shutil.copy2(candidate, Path(str(target_path) + suffix))
             copied.append({"file": candidate.name, "bytes": candidate.stat().st_size})
-    con = duckdb.connect(str(target_path))
-    con.execute("CHECKPOINT")
-    counts = {}
-    for name in GOVERNANCE:
-        try:
-            counts[name] = con.execute(
-                f'SELECT count(*) FROM "{schema}"."{name}"').fetchone()[0]
-        except Exception:
-            counts[name] = None
-    con.close()
+
+    counts, relations = {}, {}
+    try:
+        con = duckdb.connect(str(target_path))
+        con.execute("CHECKPOINT")
+        for name in GOVERNANCE:
+            try:
+                columns = [row[1] for row in con.execute(
+                    f'PRAGMA table_info("{schema}"."{name}")').fetchall()]
+                counts[name] = con.execute(
+                    f'SELECT count(*) FROM "{schema}"."{name}"').fetchone()[0]
+                relations[name] = content_digest(con, f'"{schema}"."{name}"', columns)
+            except Exception:
+                counts[name] = None
+                relations[name] = None
+        con.close()
+        readable = True
+    except Exception as exc:
+        readable = False
+        relations["error"] = f"{type(exc).__name__}: {str(exc)[:160]}"
 
     reasons = []
-    if not owner_stopped:
-        reasons.append("no coordinated writer boundary: the owning service was running, so "
-                       "the main file and the write-ahead log were read at two different "
-                       "moments and the pair need not correspond to any single instant")
+    if boundary["writer_present"]:
+        reasons.append("a writer holds the source, so the main file and the write-ahead log "
+                       "were read at two different moments and the pair need not correspond "
+                       "to any single instant")
+    if not readable:
+        reasons.append("the copy could not be opened")
     if expect_terminals is None:
-        reasons.append("no expected terminal count to compare against, so nothing was verified")
+        reasons.append("no expected terminal count to compare against")
     elif counts.get("gov_terminal") != expect_terminals:
-        reasons.append(f"snapshot holds {counts.get('gov_terminal')} terminals, the service "
-                       f"reported {expect_terminals}")
-    return {"schema": "olap_duckdb_snapshot.v2", "generated_utc": now(),
+        reasons.append(f"the copy holds {counts.get('gov_terminal')} terminals, "
+                       f"{expect_terminals} were expected")
+
+    return {"schema": "olap_duckdb_snapshot.v3", "generated_utc": now(),
             "source": source, "target": target, "files_copied": copied,
-            "counts_in_snapshot": counts, "expected_terminals": expect_terminals,
-            "owner_stopped": owner_stopped, "verified": not reasons,
+            "boundary": boundary, "caller_claimed_owner_stopped": owner_stopped,
+            "counts_in_snapshot": counts, "content_digests": relations,
+            "expected_terminals": expect_terminals,
+            "verified": not reasons,
+            "kind": "VERIFIED_SNAPSHOT" if not reasons else "UNVERIFIED_COPY",
             "unverified_because": reasons}
 
 
@@ -1135,8 +1212,9 @@ def cmd_snapshot(args) -> int:
                              expect_terminals=args.expect_terminals,
                              owner_stopped=args.owner_stopped)
     args.out.write_text(json.dumps(body, indent=1) + "\n", encoding="utf-8")
-    print(json.dumps({"files": len(body["files_copied"]),
+    print(json.dumps({"kind": body["kind"], "files": len(body["files_copied"]),
                       "gov_terminal": body["counts_in_snapshot"].get("gov_terminal"),
+                      "writer_present": body["boundary"]["writer_present"],
                       "verified": body["verified"],
                       "unverified_because": body["unverified_because"]}, indent=1))
     return 0 if body["verified"] else 1

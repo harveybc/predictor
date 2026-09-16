@@ -281,18 +281,41 @@ def test_the_snapshot_path_without_a_measured_boundary_is_named_unverified(tmp_p
     assert report["boundary"]["method"]
 
 
-def test_a_snapshot_taken_while_a_writer_holds_the_file_is_an_unverified_copy(tmp_path):
-    """Measured, not asserted: another connection holds the lock, so there is no boundary."""
+def test_a_snapshot_taken_while_another_process_holds_the_file_is_an_unverified_copy(tmp_path):
+    """Measured, not asserted — and measured against the condition that actually occurs.
+
+    My first version of this rule opened a second connection in the SAME process and expected a
+    conflict. DuckDB's lock is per PROCESS, so it saw none: the premise was wrong, not the
+    code. The real case is the one that matters anyway — the warehouse service is a separate
+    process — so the holder here is a subprocess, and the limitation is stated in the tool.
+    """
+    import subprocess
+    import time
+
     source = str(tmp_path / "held.duckdb")
     migrate.build_fixture_cube(source, terminals=1)
-    holder = duckdb.connect(source)          # a writer, exactly as the service would be
+    holder_script = tmp_path / "holder.py"
+    holder_script.write_text(
+        "import duckdb, sys, time\n"
+        "con = duckdb.connect(sys.argv[1])\n"
+        "print('held', flush=True)\n"
+        "time.sleep(60)\n", encoding="utf-8")
+    holder = subprocess.Popen([sys.executable, str(holder_script), source],
+                              stdout=subprocess.PIPE, text=True)
     try:
+        assert holder.stdout.readline().strip() == "held"
+        time.sleep(0.3)
         report = migrate.snapshot_database(source, str(tmp_path / "copy2.duckdb"),
                                            schema="main", expect_terminals=1,
                                            owner_stopped=True)
     finally:
-        holder.close()
+        holder.kill()
+        holder.wait(timeout=30)
+
+    assert report["boundary"]["measured"] is True
+    assert report["boundary"]["writer_present"] is True, (
+        "another PROCESS holds the file, so there is no boundary to copy at")
     assert report["kind"] == "UNVERIFIED_COPY"
     assert report["verified"] is False
-    assert report["boundary"]["measured"] is True
-    assert report["boundary"]["writer_present"] is True
+    assert report["caller_claimed_owner_stopped"] is True, (
+        "the caller's claim is recorded beside the measurement that contradicts it")

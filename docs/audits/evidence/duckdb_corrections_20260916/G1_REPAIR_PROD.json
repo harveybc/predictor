@@ -1,0 +1,164 @@
+{
+ "schema": "incident_evidence_reconcile.v2",
+ "generated_utc": "2026-09-16T16:44:46Z",
+ "accounting": "/home/harveybc/Documents/GitHub/data-gov/var/accounting.db",
+ "cube": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb",
+ "expectation_source": "data-gov governed_terminals.body_json \u2014 the canonical payload as accepted, in a database the incident never touched. Expectations are NOT derived from the cube.",
+ "counts": {
+  "accepted_by_governance": 55,
+  "content_matches": 53,
+  "content_differs": 2,
+  "missing_from_cube": 0,
+  "replayable_from_outbox": 0,
+  "content_unverifiable": 0,
+  "repaired": 2,
+  "terminals_in_cube": 55,
+  "cube_rows_without_an_accepted_record": 0
+ },
+ "repaired": [
+  {
+   "terminal_sha256": "c045bc0b95557fcff1f8b89d13bafaa0f0a2751ac0d9af97f5f5656f76f6936a",
+   "campaign_sha256": "20e9aa514d8e7872bc9d7bdf42c2540a09a2e175309e90ce8b7b51b0aee68ab7",
+   "unit_id": "omega-probe-post-incident-1",
+   "generation": 1,
+   "status_in_accounting": "COMPLETED",
+   "expected_child_counts": {
+    "gov_terminal_metric": 2,
+    "gov_terminal_artifact": 0,
+    "gov_terminal_dataset": 1
+   },
+   "observed_child_counts": {
+    "gov_terminal_metric": 0,
+    "gov_terminal_artifact": 0,
+    "gov_terminal_dataset": 1
+   },
+   "differences": {
+    "children": {
+     "gov_terminal_metric": {
+      "missing": 2,
+      "extra": 0,
+      "missing_examples": [
+       "bytes_delivered | test | 0.0 | bytes | 228801.0 | None | None | None",
+       "delivery_from_cache | test | 0.0 | bool | 1.0 | None | None | None"
+      ],
+      "extra_examples": []
+     }
+    }
+   },
+   "repair": "RESTORED",
+   "rows_restored": {
+    "gov_terminal_metric": 2
+   }
+  },
+  {
+   "terminal_sha256": "daa61957c354eece4a2727de7b00db3dcc8c0c79ea38e96819136a35819f6105",
+   "campaign_sha256": "7e1b05f956689734b75929b7b481333100354d2b52732c70b18cbaa023e53cd9",
+   "unit_id": "omega-probe-duckdb-cutover-2",
+   "generation": 1,
+   "status_in_accounting": "COMPLETED",
+   "expected_child_counts": {
+    "gov_terminal_metric": 2,
+    "gov_terminal_artifact": 0,
+    "gov_terminal_dataset": 1
+   },
+   "observed_child_counts": {
+    "gov_terminal_metric": 0,
+    "gov_terminal_artifact": 0,
+    "gov_terminal_dataset": 1
+   },
+   "differences": {
+    "children": {
+     "gov_terminal_metric": {
+      "missing": 2,
+      "extra": 0,
+      "missing_examples": [
+       "bytes_delivered | test | 0.0 | bytes | 228801.0 | None | None | None",
+       "delivery_from_cache | test | 0.0 | bool | 1.0 | None | None | None"
+      ],
+      "extra_examples": []
+     }
+    }
+   },
+   "repair": "RESTORED",
+   "rows_restored": {
+    "gov_terminal_metric": 2
+   }
+  }
+ ],
+ "content_differs": [
+  {
+   "terminal_sha256": "c045bc0b95557fcff1f8b89d13bafaa0f0a2751ac0d9af97f5f5656f76f6936a",
+   "campaign_sha256": "20e9aa514d8e7872bc9d7bdf42c2540a09a2e175309e90ce8b7b51b0aee68ab7",
+   "unit_id": "omega-probe-post-incident-1",
+   "generation": 1,
+   "status_in_accounting": "COMPLETED",
+   "expected_child_counts": {
+    "gov_terminal_metric": 2,
+    "gov_terminal_artifact": 0,
+    "gov_terminal_dataset": 1
+   },
+   "observed_child_counts": {
+    "gov_terminal_metric": 0,
+    "gov_terminal_artifact": 0,
+    "gov_terminal_dataset": 1
+   },
+   "differences": {
+    "children": {
+     "gov_terminal_metric": {
+      "missing": 2,
+      "extra": 0,
+      "missing_examples": [
+       "bytes_delivered | test | 0.0 | bytes | 228801.0 | None | None | None",
+       "delivery_from_cache | test | 0.0 | bool | 1.0 | None | None | None"
+      ],
+      "extra_examples": []
+     }
+    }
+   },
+   "repair": "RESTORED",
+   "rows_restored": {
+    "gov_terminal_metric": 2
+   }
+  },
+  {
+   "terminal_sha256": "daa61957c354eece4a2727de7b00db3dcc8c0c79ea38e96819136a35819f6105",
+   "campaign_sha256": "7e1b05f956689734b75929b7b481333100354d2b52732c70b18cbaa023e53cd9",
+   "unit_id": "omega-probe-duckdb-cutover-2",
+   "generation": 1,
+   "status_in_accounting": "COMPLETED",
+   "expected_child_counts": {
+    "gov_terminal_metric": 2,
+    "gov_terminal_artifact": 0,
+    "gov_terminal_dataset": 1
+   },
+   "observed_child_counts": {
+    "gov_terminal_metric": 0,
+    "gov_terminal_artifact": 0,
+    "gov_terminal_dataset": 1
+   },
+   "differences": {
+    "children": {
+     "gov_terminal_metric": {
+      "missing": 2,
+      "extra": 0,
+      "missing_examples": [
+       "bytes_delivered | test | 0.0 | bytes | 228801.0 | None | None | None",
+       "delivery_from_cache | test | 0.0 | bool | 1.0 | None | None | None"
+      ],
+      "extra_examples": []
+     }
+    }
+   },
+   "repair": "RESTORED",
+   "rows_restored": {
+    "gov_terminal_metric": 2
+   }
+  }
+ ],
+ "missing_from_cube": [],
+ "replayable_from_outbox": [],
+ "content_unverifiable": [],
+ "cube_rows_without_an_accepted_record": [],
+ "verdict": "LOSS_OR_ALTERATION_FOUND",
+ "note": "The quarantined write-ahead log was not opened. Absence from the cube is LOSS only when no outbox holds this generation with a recoverable payload. A population with no retained expectation is UNVERIFIABLE, never preserved by inference."
+}
