@@ -1,0 +1,17 @@
+== the persisted result, queried through the service ==
+{"bytes":68,"rows":[{"campaign_key":"predictor::phase_1_ann_1575_1d_config","units":1}],"sha256":"83c6503c924c2b6f734558f52b48bd2f71441039edf1439e1a3e5c632fa1b820"}
+== idempotent retry ==
+{
+ "loaded": 1,
+ "failed": 0,
+ "retryable": 0,
+ "counts": {
+  "campaigns": 1,
+  "consumption": 0,
+  "runs": 0,
+  "skipped_existing": 1,
+  "units": 0
+ }
+}
+== outbox reconciliation ==
+{"healthy": true, "backlog_pending": 0, "failed": 16, "lag_seconds": 0.0}

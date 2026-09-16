@@ -498,3 +498,36 @@ clave y replay que deja hijos ausentes cuando ya existe su padre. El rollback
 implementado apunta a DuckDB, no al PostgreSQL anterior; catchup CLI sigue sin
 cierre de hijos. WAL productivo intacto durante la auditoria. Continuacion
 autorizada: [F1-F5](../handoffs/MUSASHI_E1_E6_REVIEW_AND_F1_F5_2026_09_16.md).
+
+## Actualizacion 2026-09-16 (Satoshi, ordenes F1-F5)
+
+Retorno: `../audits/work_plan/SATOSHI_F1_F5_RETURN_2026_09_16.md`.
+
+**Los cinco hallazgos de Musashi eran correctos.** Los reprodujo llamando a las funciones, no
+leyendo mis recibos, y los dos defectos que aisló quedan congelados como pruebas antes de
+cualquier arreglo: reanudar una tabla con clave reinsertaba el prefijo ya escrito (y sin clave
+lo duplicaba en silencio), y un padre ya presente ocultaba hijos ausentes.
+
+**F1/F2.** La copia reanuda desde la marca del destino; una relacion sin clave con filas
+dentro se **rechaza** en vez de anexar. El replay reconcilia padres compartidos, compara hijos
+por contenido y **rechaza** una identidad compartida con contenido distinto. La reversion real
+es a **PostgreSQL** y quedo ensayada sobre base desechable: el proveedor crea la tabla de
+contratos que falta, 2 terminales y 3 filas hijas restauradas, 54 terminales en destino y una
+segunda corrida sin efecto. `copy-cube` es ahora la copia DuckDB→DuckDB, con nombre propio.
+`catchup` pasa por el mismo cierre, asi que los hijos sin marca de tiempo viajan con su padre.
+Igualdad de conteo ya no declara completo, y el trabajo rechazado **sale con codigo distinto de
+cero**.
+
+**F3 — correccion importante.** Mi causa raiz del incidente **no se reproduce**: cuatro arreglos
+en bases desechables reabren todos. Pasa a **hipotesis**, y el checkpoint a **mitigacion**. Lo
+que si queda demostrado es la no-perdida, contra el registro independiente de data-gov: **55
+aceptados, 55 presentes, 0 ausentes, 0 discrepancias de estado**; los 10 sin hijos son
+exactamente los REFUSED. Los dos WAL en cuarentena son identicos byte a byte y nunca se abrieron.
+
+**F4.** Pertenencia y admisibilidad son dos preguntas y ahora dos columnas, con vistas
+ejecutables en el cubo: **73 miembros, 48 operativos, 24 cientificos actuales**. B4, T2 y M4
+vuelven a ser **miembros** con su propio alcance, citando la linea del plan maestro que lo
+decide; excluirlos por estar revisados en otra reja fue un error mio.
+
+**F5.** Cargador sucesor verificado tras las correcciones con un envelope real: cargado,
+consultado por el servicio, reintento idempotente (`skipped_existing`) y outbox conciliado.
