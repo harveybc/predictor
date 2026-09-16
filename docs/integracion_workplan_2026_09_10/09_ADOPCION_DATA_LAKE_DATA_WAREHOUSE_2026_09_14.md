@@ -186,3 +186,12 @@ se selecciona por procedencia de campana, no por resultados favorables; el
 historico se archiva sin borrarlo y queda fuera de las vistas cientificas por
 defecto. Se requieren scripts reproducibles, paridad de contenido, recuperacion,
 consumidores reales, analitica utilizable y conciliacion posterior al cambio.
+
+### Relectura del retorno 68f4e39
+
+Warehouse activo con entorno DuckDB; cargador legado detenido, verificados por
+systemd. Cierre integral NO aceptado: seleccion por tablas en vez de linaje de
+campana, rollback solo diagnostico, snapshot no coordinado, importacion parcial
+sin resume y ruta df_* pendiente. No se constata perdida de datos por esta
+revision; se conservan fuente y archivo. Orden de cierre:
+[E1-E6](../handoffs/MUSASHI_DUCKDB_CLOSEOUT_CORRECTIONS_2026_09_16.md).
