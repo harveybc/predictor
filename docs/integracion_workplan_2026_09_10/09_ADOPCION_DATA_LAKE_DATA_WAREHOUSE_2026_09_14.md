@@ -204,3 +204,12 @@ clave y replay que deja hijos ausentes cuando ya existe su padre. El rollback
 implementado apunta a DuckDB, no al PostgreSQL anterior; catchup CLI sigue sin
 cierre de hijos. WAL productivo intacto durante la auditoria. Continuacion
 autorizada: [F1-F5](../handoffs/MUSASHI_E1_E6_REVIEW_AND_F1_F5_2026_09_16.md).
+
+### Retorno e99c6ba: progreso probado y alcance del incidente
+
+Las dos reproducciones anteriores ya pasan independientemente. Warehouse y
+cargador activos. La conciliacion del incidente todavia acepta metricas alteradas
+y todos los hijos ausentes: identidad/estado no equivalen a contenido preservado.
+No se afirma perdida productiva. Resume con huecos y snapshot con frontera solo
+declarada siguen pendientes. Continuacion acotada:
+[G1-G3](../handoffs/MUSASHI_F1_F5_REVIEW_AND_G1_G3_2026_09_16.md).
