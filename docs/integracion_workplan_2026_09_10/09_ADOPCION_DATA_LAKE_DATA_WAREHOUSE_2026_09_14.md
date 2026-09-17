@@ -241,3 +241,13 @@ produccion intacta y activa. No repetir reparacion ni retirada. Siguiente trabaj
 prevenir sobreescritura de STACK.json, vigilancia acotada y preparar el siguiente
 paso cientifico ya previsto, sin nuevas autorizaciones operativas por etapa.
 [Acta y continuacion](../handoffs/MUSASHI_I1_I3_ACCEPTANCE_AND_STACK_FOLLOWUP_2026_09_16.md).
+
+### Retorno 54f2df0: R6 medido, siguiente paso D3
+
+R6 consultado independientemente: 633189 filas actuales con una ejecucion/un
+digest; historico 1073883; denominador 715. 57 pruebas focales pasan. D3 tiene
+infraestructura, pero su prueba de disponibilidad confunde lookback con latencia
+y rechaza '0s'; prefijo omite una frontera causal relevante. Se autoriza enmienda
+pre-candidatos y correccion de bateria, seguida condicionalmente por implementacion
+y mecanica CPU gobernada, sin otra pausa de autorizacion:
+[J1-J3](../handoffs/MUSASHI_R6_ACCEPTANCE_AND_D3_J1_J3_2026_09_16.md).
