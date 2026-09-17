@@ -149,6 +149,24 @@ def rehearse(args, adoption: Path) -> dict:
             "tail": (out.stdout + out.stderr)[-600:]}
 
 
+def wheel_matches_source(wheel: Path, source: Path) -> list:
+    """Every .py in the wheel must be byte-identical to the same path under the source tree
+    (src/ layout or flat): a wheel is never trusted to be what the commit says."""
+    import zipfile
+    problems = []
+    with zipfile.ZipFile(wheel) as z:
+        for name in z.namelist():
+            if not name.endswith(".py") or ".dist-info/" in name:
+                continue
+            candidates = [source / name, source / "src" / name]
+            match = next((c for c in candidates if c.is_file()), None)
+            if match is None:
+                problems.append(f"{name}: not in source")
+            elif match.read_bytes() != z.read(name):
+                problems.append(f"{name}: differs from source")
+    return problems
+
+
 def install(args, adoption: Path) -> dict:
     """Build the wheel with the test interpreter, install ONLY that wheel into the host venv:
     the production venv carries no build backend and compiles nothing."""
@@ -170,6 +188,11 @@ def install(args, adoption: Path) -> dict:
         run(["tar", "-xf", str(export / "src.tar"), "-C", str(export)], timeout=300)
         rel = Path(args.package).resolve().relative_to(Path(args.package_repo or args.package).resolve())
         source = export / rel
+        # a tracked build/ or egg-info in the export is stale packaging state: setuptools
+        # would ship it instead of the source (the 2026-09-17 warehouse adoption crash-looped
+        # on exactly that). Only the source may become the wheel.
+        for stale in list(source.glob("build")) + list(source.glob("*.egg-info")):
+            shutil.rmtree(stale, ignore_errors=True)
     built = run([str(args.test_python), "-m", "pip", "wheel", "--no-deps", "--no-cache-dir",
                  "-w", str(wheels), str(source)], timeout=900)
     (adoption / "wheel.log").write_text(built.stdout + built.stderr)
@@ -177,6 +200,10 @@ def install(args, adoption: Path) -> dict:
     if built.returncode != 0 or not wheel:
         return {"returncode": built.returncode or 1, "stage": "wheel",
                 "tail": (built.stdout + built.stderr)[-400:]}
+    mismatch = wheel_matches_source(wheel[-1], source)
+    if mismatch:
+        return {"returncode": 1, "stage": "wheel-parity", "wheel": wheel[-1].name,
+                "tail": f"wheel modules differ from the exported source: {mismatch[:10]}"}
     pip = args.venv / "bin" / "pip"
     out = run([str(pip), "install", "--no-deps", "--force-reinstall", "--no-cache-dir",
                str(wheel[-1])], timeout=900)

@@ -376,3 +376,26 @@ def test_the_real_service_names_an_induced_internal_defect_500_and_the_loader_ke
     (tmp_path / "induce-defect").unlink()
     out = loader.drain_once(root, url=url, token=token)
     assert out["loaded"] == 1
+
+
+# --- L4: a wheel is never trusted to be what the commit says -----------------------------------------
+
+def test_a_wheel_whose_module_differs_from_the_exported_source_is_refused(tmp_path):
+    """The 2026-09-17 data-warehouse adoption crash-looped: a tracked build/lib was packaged
+    instead of the source. The adoption compares every module in the wheel with the source."""
+    import zipfile
+    adopt = _load("store_package_adopt", REPO / "tools" / "store_package_adopt.py")
+    src = tmp_path / "src" / "pkg"
+    src.mkdir(parents=True)
+    (src / "mod.py").write_text("VALUE = 1\n")
+    good = tmp_path / "good.whl"
+    with zipfile.ZipFile(good, "w") as z:
+        z.writestr("pkg/mod.py", "VALUE = 1\n")
+        z.writestr("pkg-0.1.dist-info/METADATA", "Name: pkg\n")
+    assert adopt.wheel_matches_source(good, tmp_path / "src") == []
+    stale = tmp_path / "stale.whl"
+    with zipfile.ZipFile(stale, "w") as z:
+        z.writestr("pkg/mod.py", "VALUE = 0\n")
+        z.writestr("pkg/ghost.py", "")
+    problems = adopt.wheel_matches_source(stale, tmp_path / "src")
+    assert "pkg/mod.py: differs from source" in problems and "pkg/ghost.py: not in source" in problems
