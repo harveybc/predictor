@@ -285,3 +285,15 @@ ignorados por el arnes. La aproximacion t difiere de scipy en df bajo. No se ha
 medido utilidad real con ese arnes: cerrarlo antes de abrir el piloto. Limites
 observados y limpieza del build rastreado incluidos, sin pedir permiso por bloque.
 [Orden M1-M6](../handoffs/MUSASHI_D3_L1_L6_REVIEW_AND_M1_M6_2026_09_17.md).
+
+### Retorno b6facb8: recuperar metricas y acotar calibracion
+
+54 pruebas focales independientes pasan. En la contabilidad real los tres
+COMPLETED de utilreh-v4 tienen metrics vacio; sus perdidas existen localmente.
+El padre devuelve result.json en vez de contrast.json. La calibracion admite
+cero simulaciones y NaN; no liga el alcance del operador/protocolo/longitud.
+Registro de campana posterior al trabajo detectado en el entry point.
+Recuperacion aditiva, calibracion verificable, registro previo y ensayo completo;
+despues piloto descriptivo de hasta tres unidades sinteticas ya expuestas,
+sin reservas, seleccion ni confirmacion. No repetir D3 mecanico.
+[Orden N1-N5](../handoffs/MUSASHI_D3_M1_M6_REVIEW_AND_N1_N5_2026_09_17.md).
