@@ -228,6 +228,16 @@ def worker_main(job_file: Path) -> int:
     return 0 if result["status"] == "COMPLETED" else 1
 
 
+def variables_of(unit_dir: Path) -> int:
+    """How many variables a unit carries, from its own record; the budget scales with it."""
+    unit_dir = Path(unit_dir)
+    if (unit_dir / "UNIT.json").is_file():
+        return int(json.loads((unit_dir / "UNIT.json").read_text(encoding="utf-8"))["n_variables"])
+    if (unit_dir / "TOY.json").is_file():
+        return len(json.loads((unit_dir / "TOY.json").read_text(encoding="utf-8"))["variables"])
+    return 1
+
+
 # --- shard runner (one process per unit, under the isolated runner) ------------------------
 
 def run_shard(units_root: Path, out_dir: Path, *, run_id: str, host_role: str,
@@ -240,21 +250,33 @@ def run_shard(units_root: Path, out_dir: Path, *, run_id: str, host_role: str,
     unit_dirs = sorted(p for p in Path(units_root).iterdir() if p.is_dir())
     for ud in unit_dirs:
         sname = ud.name
-        adir = out_dir / "attempts" / sname / "attempt-1"
-        if (adir / "result.json").is_file():
-            prior = json.loads((adir / "result.json").read_text(encoding="utf-8"))
+        prior_dirs = sorted((out_dir / "attempts" / sname).glob("attempt-*")) \
+            if (out_dir / "attempts" / sname).is_dir() else []
+        completed_before = [p for p in prior_dirs if (p / "result.json").is_file()
+                            and json.loads((p / "result.json").read_text()).get("status")
+                            == "COMPLETED"]
+        if completed_before:
+            prior = json.loads((completed_before[-1] / "result.json").read_text(encoding="utf-8"))
             results.append({"unit": sname, "status": prior["status"], "resumed_skip": True})
             continue
-        adir.mkdir(parents=True, exist_ok=True)
+        # A killed attempt left no result: it stays on disk as evidence and the retry gets the
+        # next attempt number, never the same directory.
+        attempt = len(prior_dirs) + 1
+        adir = out_dir / "attempts" / sname / f"attempt-{attempt}"
+        adir.mkdir(parents=True, exist_ok=False)
         job = {"unit_dir": str(ud.resolve()), "attempt_dir": str(adir.resolve()),
                "run_id": run_id, "host_role": host_role, "unit_id": sname,
                "code_sha256": code, "design_sha256": design.D3_AMENDMENT_V1["design_sha256"]}
         job_file = adir / "job.json"
         job_file.write_text(json.dumps(job, indent=1), encoding="utf-8")
         argv = [sys.executable, "-B", str(Path(__file__).resolve()), "--worker", str(job_file)]
+        # The frozen budget is PER VARIABLE: a unit with 26 variables earns 26 times the wall
+        # and CPU of a univariate one. The first run gave every unit the flat figure and the
+        # three 26-variable toy units died at WALL_TIME_LIMIT; that attempt is kept as evidence.
+        scale = max(1, variables_of(ud))
         task = IR.Task(argv=argv, name=f"d3-{sname}", attempt_dir=adir,
-                       assigned_bytes=task_memory_bytes, wall_seconds=wall_seconds,
-                       cpu_seconds=cpu_seconds, mechanism=mechanism,
+                       assigned_bytes=task_memory_bytes, wall_seconds=wall_seconds * scale,
+                       cpu_seconds=int(cpu_seconds * scale), mechanism=mechanism,
                        extra_env={"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1",
                                   "MKL_NUM_THREADS": "1", "CUDA_VISIBLE_DEVICES": ""})
         task.start()
@@ -275,7 +297,7 @@ def run_shard(units_root: Path, out_dir: Path, *, run_id: str, host_role: str,
                         output_sha256=verified["output_sha256"],
                         started_at=task.outcome["started_at"], ended_at=task.outcome["ended_at"])
         (out_dir / "terminals").mkdir(exist_ok=True)
-        IR.write_terminal(out_dir / "terminals" / f"{sname}.attempt-1.json", terminal)
+        IR.write_terminal(out_dir / "terminals" / f"{sname}.attempt-{attempt}.json", terminal)
         results.append({"unit": sname, "status": status, "reason": reason})
     manifest = {"schema": "d3_shard_run.v1", "run_id": run_id, "host_role": host_role,
                 "units": results, "code_sha256s": code_sha256s(),

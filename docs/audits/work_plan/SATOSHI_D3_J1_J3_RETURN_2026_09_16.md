@@ -124,7 +124,7 @@ MATRIX_PLACEHOLDER
 |---|---|---|
 | D3 contract + operators + pipeline | trading-stack | **87 passed** |
 | migration + reconciler + watch + stack + R6 + dispatch + gate + `olap/store/tests` | three engines | **330 passed, 1 skipped** |
-| predictor `tests` + `olap/store/tests` | trading-stack, with the store environment | SUITE_PLACEHOLDER |
+| predictor `tests` + `olap/store/tests` | trading-stack, with the store environment | **1514 passed, 13 skipped**, 0 failed, in 7m28s |
 
 ## Open, with owners
 

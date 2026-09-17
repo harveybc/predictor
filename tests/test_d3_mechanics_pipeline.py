@@ -225,3 +225,50 @@ def test_the_mechanics_envelope_validates_as_mechanical(tmp_path):
     assert doc["result_class"] == "MECHANICAL" and len(doc["units"]) == 9
     assert envelope.validate_envelope(doc)
     assert doc["terminal"]["adjudication"] == "MECHANICAL_EVIDENCE_NO_ADJUDICATION"
+
+
+# --- the budget scales with the unit's variables; a killed attempt is never overwritten -----
+
+def test_the_per_unit_budget_scales_with_the_variable_count(tmp_path):
+    """Three 26-variable toy units died at WALL_TIME_LIMIT on the first run because every unit
+    got the flat per-variable figure. The scale is the unit's own variable count."""
+    assert worker.variables_of(synthetic_unit(tmp_path, "one", n=120, v=1)) == 1
+    assert worker.variables_of(synthetic_unit(tmp_path, "three", n=120, v=3)) == 3
+    toys.materialise(toy_csv(cols=5), resource="synthetic_ohlc_1h.csv",
+                     resource_contract=TOY_CONTRACT, out_dir=tmp_path / "toy",
+                     delivery={"delivery_id": "d", "sha256": "x"}, unit_id="toy-x")
+    assert worker.variables_of(tmp_path / "toy") == 5
+
+
+def test_a_retry_takes_the_next_attempt_directory(tmp_path, monkeypatch):
+    unit = synthetic_unit(tmp_path / "units", "u", n=120)
+    out = tmp_path / "out"
+    killed = out / "attempts" / "u" / "attempt-1"
+    killed.mkdir(parents=True)
+    (killed / "child.log").write_text("killed before result.json\n")
+    seen = {}
+
+    class FakeTask:
+        def __init__(self, **kw):
+            seen["attempt_dir"] = kw["attempt_dir"]
+            seen["wall"] = kw["wall_seconds"]
+            self.outcome = {"returncode": 0, "timed_out": False, "scope_result": "success",
+                            "polled_oom_kill": 0, "cgroup_memory_peak": 0,
+                            "child_maxrss_bytes": 1, "cpu_seconds": 0.1, "wall_seconds": 0.1,
+                            "result": None, "started_at": "t", "ended_at": "t"}
+
+        def start(self):
+            pass
+
+        def wait(self):
+            pass
+
+    IR = _load("df_isolated_runner")
+    monkeypatch.setattr(IR, "Task", FakeTask)
+    monkeypatch.setattr(IR, "classify", lambda *a, **k: ("UNCERTAIN", "fake", {"output_sha256": None, "rows_written": 0}))
+    monkeypatch.setattr(IR, "detect_mechanism", lambda *a, **k: "PRLIMIT_AS")
+    worker.run_shard(tmp_path / "units", out, run_id="r", host_role="COORDINATOR",
+                     task_memory_bytes=2 << 30, wall_seconds=100.0, cpu_seconds=100)
+    assert seen["attempt_dir"].name == "attempt-2"
+    assert (killed / "child.log").read_text().startswith("killed")
+    assert seen["wall"] == 100.0
