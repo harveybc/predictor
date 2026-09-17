@@ -103,13 +103,42 @@ takes `Z`, fixed and disposed):
 
 Descriptive of that fabricated series; no claim about representations.
 
-PILOT_PLACEHOLDER
+**Descriptive pilot `utilpilot-v2`** (root `utility_pilot_v2/`; `utility_pilot_v1` is a run I stopped
+mid-calibration when the instant-format defect surfaced — kept): three synthetic **development**
+units already exposed (`bumps`, `sinusoid`, `steps` — `white/snr10/none/n2048/seed11`), eligibility
+from the verified cells of `d3mech-v3` (all three operators `MECHANICALLY_ACCEPTED` on each),
+protocol sealed before running (return target, horizon 1, ridge, window 4, 4 blocks, margin 0,
+family of 9 ⇒ α/9 = 0.00556, plan: white null, 538 simulations at n = 2048, bound 0.95), runner
+ceilings kept, no slow control, no reserve. The run fell in my contrasts loop after its three
+calibrations (bank unit ids carry `__`; ids are now carried in a map) and was **resumed under the
+fixed commit explicitly** (`--resume-under-new-code`; both identities in the receipt; the three
+calibrations taken from their recorded attempts, not re-run; the contrasts campaign registered
+under the new code).
+
+| operator | calibration (538 sims) | bumps Δ | sinusoid Δ | steps Δ | decision |
+|---|---|---:|---:|---:|---|
+| `delta_run_length` | 0/538, bound **0.00555** ≤ 0.00556, 96 s CPU | −0.0028 | −0.0023 | +0.0054 | DOES_NOT_ADVANCE ×3 |
+| `cusum_causal` | 0/538, bound **0.00555**, 303 s | −0.0233 | −0.0589 | −0.1089 | DOES_NOT_ADVANCE ×3 |
+| `mad_extremes_trailing` | 1/538, bound **0.00879** > 0.00556, 104 s | −0.0248 | −0.0593 | −0.1103 | INCONCLUSIVE_UNCALIBRATED ×3 (descriptive) |
+
+Contrast cost ≈ 0.8–1.3 s CPU each; total calibration 503 s CPU. Both campaigns reconciled
+`missing_units: []`; **content check all equal** (12 units, `N4_UTILPILOT_V2_CONTENT_CHECK.json`);
+envelope DEVELOPMENT `b33bf7c7…` loaded. What this says: on these three development units the
+transformed-only branch does not beat the raw lags at horizon 1 under this probe model — a
+descriptive fact about cost and flow, **not** a claim about representations and not a selection.
 
 ## N5 — closure
 
-SUITES_PLACEHOLDER
+**Suites** (trading-stack, `crispdm-run`, candidate warehouse on the real service's path): D3 contract 40 ·
+operators 37 · pipeline 15 · matrix 1 · verify 34 · probe 17 · twin 20 · delta 3 · ingestion 14 ·
+utility harness 30 · utility run order 6 · dispatch · outbox disposition · `olap/store/tests` —
+**301 passed, 1 skipped** (the store suite's own skip), 61 s. Digests read: every receipt named
+above, the recovered files, the cube's metric rows. **Commits**: `f4b5d24` `a183430` `1522d41`
+`986be88` (N1) · `79fccf9` (N2) · `c308324` `1c125ed` `397cd96` `434cae1` `be1f170` (N3) ·
+`85246fa` (N4) · this return. Backlog, measured: terminal outbox 0 pending / 0 awaiting
+adjudication (1,579 sent, 170 adjudicated); OLAP outbox 0 pending; loader healthy.
 
 Open, with owners: the empty corrective envelope's disposition (manifest ready; next
 publication window); Metabase, index, terms: separate fronts.
 
-Ending: ENDING_PLACEHOLDER
+Ending: **`UTILITY_RESULTS_RECOVERED_CALIBRATION_SCOPED_DESCRIPTIVE_PILOT_REVIEW`**.

@@ -969,3 +969,27 @@ Recuperacion aditiva, calibracion verificable, registro previo y ensayo completo
 despues piloto descriptivo de hasta tres unidades sinteticas ya expuestas,
 sin reservas, seleccion ni confirmacion. No repetir D3 mecanico.
 [Orden N1-N5](../handoffs/MUSASHI_D3_M1_M6_REVIEW_AND_N1_N5_2026_09_17.md).
+
+
+## Actualizacion 2026-09-17 (Satoshi, ordenes N1-N5: resultados recuperados, calibracion con alcance, piloto descriptivo)
+
+Retorno: `../audits/work_plan/SATOSHI_D3_N1_N5_RETURN_2026_09_17.md`. Ending
+`UTILITY_RESULTS_RECOVERED_CALIBRATION_SCOPED_DESCRIPTIVE_PILOT_REVIEW`.
+
+**N1.** El score es el archivo verificado (bytes, esquema, identidad, finitud), nunca el resumen
+del proceso; reanudacion sin re-ejecutar; `UNAVAILABLE` en vez de cero. Las tres mediciones de
+`utilreh-v4` recuperadas desde sus archivos como terminales de generacion 2 ligados a los
+originales; contenido del cubo igual a los archivos valor a valor; sobre correctivo. Dos errores
+propios registrados (sobre vacio cargado -> disposicion pendiente; duplicados gen 2 por marcas
+de tiempo -> dispuestos). **N2.** Registro de calibracion completo (generador nulo de no efecto,
+plan sellado, intentos/validas/fallos/avances, tasa y cota Clopper-Pearson, longitud, operador,
+protocolo base, familia, cada simulacion bajo digest); el consumidor verifica alcance e identidad
+y decide solo con `upper_bound <= alpha_adjusted`; nulo con dependencia (AR(1) + target
+independiente); AR(1) puro es control positivo. **N3.** Registro de campanas antes de cualquier
+hijo, `before_run` por hijo, calibracion y mecanica en hijos aislados con terminales propios
+(instantes y costos reales), registro persistido, reanudacion sin duplicados; probado con gov de
+prueba (orden por callbacks) y en produccion (v5: 409 antes de cualquier hijo; v6: instantes
+`+00:00` rechazados, normalizados a `Z`). **N4.** Ensayo `utilreh-v7`: calibracion por operador
+(239 sims, cotas 0.01246/0.01246/0.01969), contrastes con metricas verificadas hasta DuckDB
+(contenido igual), control lento `RESOURCE_EXCEEDED`, conciliado. Piloto descriptivo
+`utilpilot-v2` sobre tres unidades sinteticas de desarrollo: calibracion por operador (538 sims; cotas 0.00555/0.00555/0.00879 frente a alfa/9 = 0.00556), 9 contrastes (6 DOES_NOT_ADVANCE, 3 descriptivos), contenido igual en el cubo (12 unidades), sobre DEVELOPMENT cargado; ~1 s CPU por contraste. Descriptivo: nada afirma mejora ni selecciona. 301 pruebas.
