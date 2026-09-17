@@ -179,7 +179,8 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
     receipt["calibration"]["campaign"] = {"key": cal_key, "campaign_sha256": cal_sha}
     records = {}
     _, done = gov.reconcile_campaign(cal_sha)
-    already = set(operators) - set((done or {}).get("missing_units") or operators)
+    missing = (done or {}).get("missing_units")
+    already = set(operators) - set(operators if missing is None else missing)
     for kind in operators:
         if kind in already and (root / "attempts" / f"calibrate__{kind}" / "outcome.json").is_file():
             out = child("calibrate", f"calibrate__{kind}", {"contrast_id": family[0], "operator": kind,
@@ -279,10 +280,27 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
     receipt["contrasts"]["campaign"] = {"key": key, "campaign_sha256": campaign_sha}
     by_unit = {u["unit"]: u for u in units}
     outcomes = {}
+    _, done = gov.reconcile_campaign(campaign_sha)
+    missing = (done or {}).get("missing_units")
+    reported = set(family) - set(family if missing is None else missing)
     for contrast_id in family:
         unit_id, variable, kind = contrast_id.split("__")[:3]
         slow = contrast_id.endswith("__slow-control")
         u = by_unit[unit_id]
+        if contrast_id in reported and (root / "attempts" / contrast_id / "outcome.json").is_file():
+            # resumed: the recorded outcome, no before_run, no second terminal
+            out = child("contrast", contrast_id, {"contrast_id": contrast_id, "unit": unit_id,
+                        "variable": variable, "operator": kind,
+                        "protocol": protocols[kind].sealed(),
+                        "series": {"values": list(map(float, u["values"]))},
+                        "eligibility": str(eligibility_paths[unit_id])},
+                        budgets["wall_seconds"], budgets["cpu_seconds"], budgets["task_memory_bytes"])
+            outcomes[contrast_id] = out
+            receipt["terminals"].append({"unit_id": contrast_id, "status": "RESUMED",
+                                         "outcome": out["outcome"], "cost": out["cost"],
+                                         "delta_mean": (out.get("score") or {}).get("delta_mean"),
+                                         "pending_after_flush": 0, "resumed": True})
+            continue
         GR._require_reconciled(gov, campaign_sha, contrast_id, before_run=True)
         trace("before_run", key=key, unit=contrast_id)
         job = {"contrast_id": contrast_id, "unit": unit_id, "variable": variable, "operator": kind,

@@ -28,10 +28,11 @@ GR = _load("governed_run")
 
 
 class StubGov:
-    def __init__(self, refuse_registration=False):
+    def __init__(self, refuse_registration=False, units=None):
         self.refuse = refuse_registration
         self.calls = []
         self.terminals = {}
+        self.units = dict(units or {})
 
     def submit_campaign(self, body):
         self.calls.append(("submit_campaign", body["campaign_key"]))
@@ -71,10 +72,18 @@ class StubOutbox:
 
 def stub_isolated(children):
     def run(job, *, attempt_dir, assigned_bytes, wall_seconds, cpu_seconds):
+        marker = Path(attempt_dir) / "outcome.json"
+        if marker.is_file():                                   # resumed: recorded, not re-run
+            recorded = json.loads(marker.read_text())
+            return {**recorded, "resumed": True}
         children.append(job["kind"])
         cost = {"cpu_seconds": 1.5, "wall_seconds": 2.0, "peak_rss_bytes": 1,
                 "cgroup_memory_peak": None, "started_at": "2026-09-17T10:00:00Z",
                 "ended_at": "2026-09-17T10:00:02Z"}
+        def record(summary):
+            Path(attempt_dir).mkdir(parents=True, exist_ok=True)
+            marker.write_text(json.dumps(summary))
+            return summary
         if job["kind"] == "calibrate":
             rec = {"schema": "df_utility_calibration.v1", "generator": "white_null", "null": True,
                    "plan": job["plan"], "n_sims": 2, "scored": 2, "failed": 0, "advances": 0,
@@ -85,7 +94,7 @@ def stub_isolated(children):
                    "window": 4, "target": "return", "model": "ridge",
                    "per_sim": [{"index": 0}, {"index": 1}], "per_sim_sha256": H.sha_obj([{"index": 0}, {"index": 1}]),
                    "harness_sha256": "h" * 64, "cost": {"cpu_seconds": 1.0}}
-            return {"outcome": "COMPLETED", "reason": "", "cost": cost, "score": rec, "output_sha256": "o" * 64}
+            return record({"outcome": "COMPLETED", "reason": "", "cost": cost, "score": rec, "output_sha256": "o" * 64})
         if job["kind"] == "mechanics":
             cells = {"schema": "d3_mechanics_cells.v1", "verified": True, "freeze_sha256": "f",
                      "design_sha256": "d", "cells": [{"unit": job["unit"], "variable": "v0",
@@ -93,11 +102,11 @@ def stub_isolated(children):
                                                       "spec_sha256": "s" * 64} for k in job["operators"]]}
             Path(attempt_dir).mkdir(parents=True, exist_ok=True)
             (Path(attempt_dir) / "cells.json").write_text(json.dumps(cells))
-            return {"outcome": "COMPLETED", "reason": "", "cost": cost, "score": cells, "output_sha256": "m" * 64}
-        return {"outcome": H.INCONCLUSIVE_UNCALIBRATED, "reason": "", "cost": cost,
-                "score": {"schema": H.CONTRAST_SCHEMA, "outcome": H.INCONCLUSIVE_UNCALIBRATED,
-                          "delta_mean": 0.25, "delta_lower": 0.1, "delta_se": 0.05, "blocks_used": 4,
-                          "loss_name": "mae"}, "output_sha256": "x" * 64}
+            return record({"outcome": "COMPLETED", "reason": "", "cost": cost, "score": cells, "output_sha256": "m" * 64})
+        return record({"outcome": H.INCONCLUSIVE_UNCALIBRATED, "reason": "", "cost": cost,
+                       "score": {"schema": H.CONTRAST_SCHEMA, "outcome": H.INCONCLUSIVE_UNCALIBRATED,
+                                 "delta_mean": 0.25, "delta_lower": 0.1, "delta_se": 0.05, "blocks_used": 4,
+                                 "loss_name": "mae"}, "output_sha256": "x" * 64})
     return run
 
 
@@ -157,9 +166,13 @@ def test_N3_a_resumed_run_registers_again_and_rebuilds_identical_terminals(tmp_p
     R.run_rehearsal(cfg_for(tmp_path), gov, lambda e, **f: None, GR=GR, outbox=StubOutbox(gov),
                     isolated=stub_isolated(children))
     first = dict(gov.terminals)
-    gov2 = StubGov()
+    # the resumed run reuses the persisted registrations: the second governance knows the same
+    # campaigns and already holds their terminals (as data-gov would)
+    gov2 = StubGov(units=gov.units)
+    gov2.terminals = dict(first)
     R.run_rehearsal(cfg_for(tmp_path), gov2, lambda e, **f: None, GR=GR, outbox=StubOutbox(gov2),
                     isolated=stub_isolated(children))
+    assert not [c for c in gov2.calls if c[0] == "submit_campaign"]   # nothing re-registered
     assert first == gov2.terminals                     # the same bytes, no duplicate identity
 
 

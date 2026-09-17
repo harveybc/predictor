@@ -1,4 +1,4 @@
-# 12 — Protocolo del experimento de utilidad de representaciones por variable (v2 tras M2–M4; arnés causal por construcción; NO ejecutado sobre datos del proyecto)
+# 12 — Protocolo del experimento de utilidad de representaciones por variable (v3 tras N1–N4; arnés causal, calibración verificable, gobernanza antes del trabajo; piloto descriptivo autorizado)
 
 Estado: **protocolo v2 (`df_utility_protocol.v2`) y arnés causal por construcción, probado con
 verdad fabricada y ensayado de punta a punta bajo data‑gov (`utilreh-v4`); ninguna medición sobre
@@ -6,6 +6,36 @@ datos del proyecto; ninguna reserva puntuada; ninguna autorización de ejecució
 del 2026‑09‑17 tras la revisión M2–M4 (fuga de etiqueta futura, tiempo de emisión ignorado,
 intervalo casero, presupuesto autodeclarado). Arnés: `tools/df_utility_harness.py`; entrada
 gobernada: `tools/df_utility_run.py`; reglas: `tests/test_df_utility_harness.py` (20, R1–R10).
+
+## 0a. Lo que cambió en v3 (N1–N4) y por qué
+
+* **El score es el archivo verificado**, nunca el resumen del proceso: el padre relee el archivo
+  que el hijo nombró y el runner re‑hasheó, coteja bytes, esquema, identidad de contraste y de
+  protocolo y valores finitos; ausente/alterado/discordante ⇒ `SCORE_UNVERIFIED`, sin ceros
+  fabricados. Un intento completado se reanuda desde su `outcome.json`, nunca se re‑ejecuta.
+  (`utilreh-v4` reportó `metrics: []` por leer el resumen; sus tres mediciones se recuperaron
+  desde los archivos como terminales de **generación 2** ligados a los originales — `RECOVERY.json`.)
+* **Registro de calibración completo y verificable** (`df_utility_calibration.v1`): generador
+  (**nulo de no efecto**; `ar1_null` es diagnóstico estructurado y se rechaza como nulo), plan
+  sellado (`calibration_plan` en el protocolo: generador, `n_sims`, `n`, confianza de la cota),
+  intentos/válidas/fallidas/avances, tasa, **cota superior Clopper–Pearson** a la confianza
+  predeclarada, `alpha_adjusted`, longitud, operador (kind/spec/params), identidad base del
+  protocolo, familia, margen/bloques/ventana, cada simulación con semilla y desenlace bajo digest,
+  digest del arnés, coste. El consumidor verifica identidad y alcance (operador, protocolo,
+  longitud, familia, multiplicidad) y decide solo si `upper_bound ≤ alpha_adjusted`; si no, el
+  resultado es descriptivo (`INCONCLUSIVE_UNCALIBRATED`). Cero simulaciones, tasas no finitas,
+  generador desconocido, denominador incompleto o digest roto ⇒ el protocolo no se sella.
+  `sims_required_for_zero(alpha, c)` da el tamaño mínimo (0.0125 a 0.95 ⇒ 239).
+* **Nulo con dependencia relevante**: `ar1_features_independent_target` (features AR(1),
+  etiqueta de una serie independiente) además del blanco intercambiable; controles positivos
+  aparte.
+* **Gobernanza antes del trabajo**: campaña de calibración registrada antes de cualquier hijo;
+  `before_run` antes de cada hijo; calibración y mecánica preparatoria en hijos aislados con los
+  mismos techos y con terminales propios (coste e instantes reales); registro persistido
+  (`CAMPAIGNS.json`); una raíz congelada bajo otro `code_identity` no se reanuda.
+* **Piloto descriptivo** (N4): hasta tres unidades sintéticas de desarrollo ya expuestas, con
+  elegibilidad desde las celdas verificadas de `d3mech-v3`, protocolo sellado, sin reserva; sirve
+  para medir coste y flujo, no para elegir representaciones.
 
 ## 0bis. Lo que cambió en v2 y por qué
 
