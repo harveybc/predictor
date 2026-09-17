@@ -225,7 +225,7 @@ def main(argv=None) -> int:
                 "lake_only": body.get("lake_only")}
 
     envelope = campaign.build_mechanics_envelope(
-        campaign_key="d3-mechanics-v1", run_id=args.run_id, code_identity=code_identity,
+        campaign_key=f"d3-mechanics-{args.run_id}", run_id=args.run_id, code_identity=code_identity,
         frozen=frozen, units=units, wall_seconds=time.monotonic() - started)
     emitted = OB.emit(envelope, kind="envelope")
     receipt["envelope"] = {"envelope_sha256": envelope["envelope_sha256"], **emitted}

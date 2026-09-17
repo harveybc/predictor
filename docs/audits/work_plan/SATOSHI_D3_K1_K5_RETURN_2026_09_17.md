@@ -138,7 +138,101 @@ evidence is verifiable at row level. The whole predeclared scope is re-measured 
 freeze: **504 bank units + 7 toys × 9 operators × 12 tests**, ~3 h wall on two workers; v1
 stays as it is.
 
-K5_PLACEHOLDER
+**Run `d3mech-v2`** (root `~/.local/state/crispdm-data-foundation/d3_mechanics_v2/`): freeze
+`e9154ad5…` under design `f198340c…` (07B), cost pilot sealed in the freeze; toys delivered under
+**seven** DATASETS campaigns (one per resource and unit, `VERIFIED_TRANSFER`); 43 shards on
+WORKER_A (cap 6) and WORKER_B (cap 2), coordinator excluded (owner's GPU process), both workers
+preflighted at `b1b4298`.
+
+Attempt 1: **43/43 shards FAILED (exit 1) within seconds — my defect**: v1's run inputs
+(`FREEZE.json`, `JOBS.json`, `shards/`, `toys/`) had been synced to the workers by hand and v2's
+were not; `dispatch/` is kept as that evidence. Attempt 2 (`dispatch.attempt-2/`) after the
+sync: **43/43 COMPLETED**; collect **511/511 verified, 0 mismatches**, 83,070 rows, 2.88 h wall.
+
+**Verified successor matrix** (`MATRIX.verified.json`, sealed by K1's verifier — VERIFIED, 0
+refusals):
+
+Run `d3mech-v2` — **VERIFIED** (0 refusals) over receipt `COLLECT.json`: population 511 units × 710 variables × 9 operators × 12 tests; 511 completed, 0 failed (recorded), 0 missing; 83,070 rows re-read and bound.
+
+| operator | group | units × vars | verdicts | causal tests failed | restart | availability | probe onset | cost s/1k (median, max) |
+|---|---|---|---:|---|---|---|---|---|
+| `butterworth_causal` | time_frequency | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0059, 0.0078 |
+| `cusum_causal` | detectors | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0063, 0.0122 |
+| `delta_run_length` | quantization_compression | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0005, 0.0011 |
+| `mad_extremes_trailing` | detectors | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0005, 0.002 |
+| `sax_paa_trailing` | quantization_compression | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0005, 0.002 |
+| `stft_trailing` | time_frequency | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 1.0 697 | 0.0005, 0.002 |
+| `uniform_decile_quantizer` | quantization_compression | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0005, 0.002 |
+| `variance_regime_trailing` | detectors | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0005, 0.002 |
+| `wavelet_trailing` | time_frequency | 511 × 710 | INCONCLUSIVE 19 / MECHANICALLY_ACCEPTED 683 / MECHANICALLY_REFUSED 8 | non_causal_twin 5, warm_up_edge 3 | INSUFFICIENT_TEST 7 / PASSED 703 | INSUFFICIENT_TEST 3 / PASSED 707 | 0.0 697 | 0.001, 0.002 |
+
+**Delta v1 → v2** (`DELTA_v1_v2.final.json`, every movement attributed; the first `DELTA_v1_v2.json`
+mislabelled the changed design digest as a population change and is kept):
+
+Delta `d3mech-v1` → `d3mech-v2` (design changed: True, population changed: False, all attributed: **True**)
+
+| operator | verdict movements | test movements | causes |
+|---|---|---|---|
+| `butterworth_causal` | INCONCLUSIVE 0→13; MECHANICALLY_ACCEPTED 710→697 | response_probe: PASSED 710→697, UNIDENTIFIED 0→13 | 07B: excitation from the training fit and the declared resolution; three facts apart; abstention only by declaration; declaration changed: response_probe.scale = TRAIN_FIT (v3) |
+| `cusum_causal` | INCONCLUSIVE 0→13; MECHANICALLY_ACCEPTED 710→697 | response_probe: PASSED 710→697, UNIDENTIFIED 0→13 | 07B: excitation from the training fit and the declared resolution; three facts apart; abstention only by declaration; declaration changed: response_probe.scale = TRAIN_FIT (v3) |
+| `delta_run_length` | INCONCLUSIVE 0→13; MECHANICALLY_ACCEPTED 710→697 | response_probe: PASSED 710→697, UNIDENTIFIED 0→13 | 07B: excitation from the training fit and the declared resolution; three facts apart; abstention only by declaration; declaration changed: response_probe.scale = TRAIN_FIT (v3) |
+| `mad_extremes_trailing` | INCONCLUSIVE 0→13; MECHANICALLY_ACCEPTED 710→697 | response_probe: PASSED 710→697, UNIDENTIFIED 0→13 | 07B: excitation from the training fit and the declared resolution; three facts apart; abstention only by declaration; declaration changed: response_probe.scale = TRAIN_FIT (v3) |
+| `sax_paa_trailing` | INCONCLUSIVE 0→13; MECHANICALLY_ACCEPTED 704→697; MECHANICALLY_REFUSED 6→0 | response_probe: FAILED 6→0, PASSED 704→697, UNIDENTIFIED 0→13 | 07B: excitation from the training fit and the declared resolution; three facts apart; abstention only by declaration; declaration changed: response_probe.scale = TRAIN_FIT (v3) |
+| `stft_trailing` | INCONCLUSIVE 0→13; MECHANICALLY_ACCEPTED 710→697 | response_probe: PASSED 710→697, UNIDENTIFIED 0→13 | 07B: excitation from the training fit and the declared resolution; three facts apart; abstention only by declaration; declaration changed: response_probe.scale = TRAIN_FIT (v3) |
+| `uniform_decile_quantizer` | INCONCLUSIVE 0→13; MECHANICALLY_ACCEPTED 647→697; MECHANICALLY_REFUSED 63→0 | response_probe: FAILED 63→0, PASSED 647→697, UNIDENTIFIED 0→13 | 07B: excitation from the training fit and the declared resolution; three facts apart; abstention only by declaration; declaration changed: response_probe.scale = TRAIN_FIT (v3) |
+| `variance_regime_trailing` | INCONCLUSIVE 0→13; MECHANICALLY_ACCEPTED 710→697 | response_probe: PASSED 710→697, UNIDENTIFIED 0→13 | 07B: excitation from the training fit and the declared resolution; three facts apart; abstention only by declaration; declaration changed: response_probe.scale = TRAIN_FIT (v3) |
+| `wavelet_trailing` | INCONCLUSIVE 6→19; MECHANICALLY_ACCEPTED 696→683 | non_causal_twin: FAILED 8→5, INSUFFICIENT_TEST 0→3; response_probe: PASSED 710→697, UNIDENTIFIED 0→13 | 07B: a twin without observable comparisons is INSUFFICIENT_TEST, never a wrong twin; 07B: excitation from the training fit and the declared resolution; three facts apart; abstention only by declaration; declaration changed: response_probe.scale = TRAIN_FIT (v3) |
+
+Reading the delta, without tuning anything after the fact:
+
+1. **13 `INCONCLUSIVE` on every operator** are the same 13 variables: the units whose training
+   prefix is constant (`null__null__snrnan__*` and the `snrinf` members of `bumps`, `impulses`,
+   `motif`) — `UNIDENTIFIED` by the amendment's rule ("constant training fit: no excitation is
+   identifiable on a degenerate domain"), which costs the verdict as designed. v1 had passed them
+   with the fixture-scale step; v2 does not pretend to have measured an onset there.
+2. **The quantizer's 63 and SAX's 6 refusals are gone**: on their own fitted domains both show
+   onset 0 (K2's rules reproduce it at five scales). A real delay would still fail — J2's shifted
+   control and a deliberately delayed quantizer fail under the same probe.
+3. **Wavelet under MCAR 10 %** (9 units, 15 variables): 3 twin outcomes became
+   `INSUFFICIENT_TEST` (no comparison at all); **5 remain `FAILED`** with a new, specific
+   reason: "compared 160–348 times and never failed causality". Those comparisons are real but
+   **not sensitive**: with ~0.5 % coverage no compared output had its support straddling a cut,
+   so the centred twin could not show its non-causality, and the rule counted non-sensitive
+   comparisons as evidence. The operator is *refused* on those 5 variables (conservative, not an
+   acceptance), and the finding is recorded for the next amendment: a comparison counts as
+   evidence about a twin only when the twin's declared support crosses the cut; zero sensitive
+   comparisons is `INSUFFICIENT_TEST`. Not patched after the run.
+4. Restart, availability, cost, fit scope, fresh state, raw branch: unchanged; STFT declares 1 and
+   measures 1 on all 697 identifiable variables.
+
+**Governance.** 504 SYNTHETIC terminals (`d3mech-v2-synthetic`, `755a09bd…`) and 7 toy terminals
+under their own campaigns, all generation 1, all accepted at the first flush, reconciled
+`missing_units: []` everywhere, terminal outbox 0 pending. Envelope `13950460…` loaded by the
+running loader (6,390 units, 551 consumption rows, `dim_campaign_run` `d3mech-v2` at `a83f9a9`).
+One naming defect, mine: the report emits every run's envelope under the fixed
+`campaign_key d3-mechanics-v1`; v2's rows are distinguished by `run_id`, design digest and
+envelope digest, not by key. Fixed for future runs (`d3-mechanics-<run_id>`); not re-emitted.
+
+**Content reconciliation against the independent accounting** (`docs/audits/evidence/d3_k5_20260917/K5_CONTENT_RECONCILE.json`,
+`incident_evidence_reconcile.py --service-url`, expectations from data-gov's own accounting):
+**NO_LOSS_FOR_THE_COMPARED_POPULATION** — 1,077 terminals, 0 missing from the cube, 0 cube rows
+without an accepted record, 23,723 metric rows with predicate = scan, 0 surplus.
+
+**Suites** (trading-stack, `crispdm-run`): D3 contract 40 + operators 37 + pipeline 15 + matrix 1
++ verify 15 + probe amendment 17 + twin coverage 9 + delta 3 + ingestion diagnostics 10 (two on
+the real service) + dispatch + outbox disposition + `olap/store/tests` — **232 passed, 1 skipped**
+(the store suite's own skip), 26.8 s. Exclusions: none; the real-service rules skip only when the
+store-hosts interpreter is absent (it was present).
+
+**Commits**: `903c628` K1 · `b4e20af` K2–K3 · `1af7117` K4 · `c0c3be1` adoption · `b1b4298`
+toys per resource · `f33af29` utility prep · `9e2df86`/`a83f9a9` delta · this return. Workers
+synced to the final commit.
+
+**Backlog**: not "zero" by absence of HTTP errors — measured: terminal outbox 0 pending /
+0 awaiting adjudication; OLAP outbox 0 pending, dead letters all adjudicated,
+`attention_required: false`; loader heartbeat healthy.
+
+Ending: **`D3_SUCCESSOR_MECHANICS_AND_MATRIX_READY_FOR_EXTERNAL_REVIEW`**.
 
 ## Prepared, not executed
 

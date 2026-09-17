@@ -836,3 +836,38 @@ del gemelo y diagnosticos de ingesta; despues mecanica sucesora CPU gobernada.
 Conservar v1, intentos y rechazos. Sin utilidad cientifica ni promocion financiera.
 Orden completa, sin pausas de autorizacion entre bloques:
 [K1-K5](../handoffs/MUSASHI_D3_J1_J3_REVIEW_AND_K1_K5_2026_09_16.md).
+
+
+## Actualizacion 2026-09-17 (Satoshi, ordenes K1-K5: D3 sucesora)
+
+Retorno: `../audits/work_plan/SATOSHI_D3_K1_K5_RETURN_2026_09_17.md`. Ending
+`D3_SUCCESSOR_MECHANICS_AND_MATRIX_READY_FOR_EXTERNAL_REVIEW`.
+
+**K1.** Matriz verificada separada del resumen: poblacion esperada desde el manifiesto congelado,
+intentos desde el ledger, digests re-leidos contra sus terminales, filas ligadas a diseno/spec/
+codigo/contrato, cobertura exacta por unidad x variable x operador x test, veredicto recalculado.
+15 reglas (los dos contraejemplos de Musashi incluidos). v1 re-agregada desde sus bytes:
+VERIFIED, 0 rechazos, sin diferencia.
+
+**K2-K3.** Enmienda 07B sellada antes de medir: sonda desde el ajuste de entrenamiento y la
+resolucion declarada por cada operador; tres hechos aparte; abstencion solo por declaracion y
+cuesta el veredicto; el control retardado sigue fallando; gemelo sin comparaciones =
+INSUFFICIENT_TEST; cobertura aparte. 26 reglas; parametros sin tocar.
+
+**K4.** Validacion en frontera (400 tipado), sidecar de reintento con estado/clase/razon,
+atencion tras 3x5xx; 10 reglas con stand-in y con el warehouse real efimero. Paquete
+`predictor-olap-store` 0.1.1 **adoptado** en produccion por el procedimiento (respaldo, ensayo,
+rueda, reinicio, comprobacion); el sobre malformado responde 400 en produccion. Error propio
+registrado: la primera post-comprobacion cargo un sobre DEVELOPMENT (`475b93fb…`) de la era
+Postgres en el cubo; sonda corregida; nada borrado; disposicion para Musashi.
+
+**K5.** Corrida `d3mech-v2` completa (511/511 verificadas, 2.88 h): intento 1 fallido por no
+sincronizar las entradas a los workers (defecto propio, conservado); intento 2 completo. Matriz
+sucesora VERIFIED; delta v1→v2 todo atribuido: los 63+6 rechazos de cuantizador/SAX desaparecen
+(inicio 0 en su dominio ajustado); 13 variables de train constante quedan INCONCLUSIVE por
+declaracion; wavelet bajo MCAR: 3 gemelos INSUFFICIENT y 5 FAILED por comparaciones **no
+sensibles** (hallazgo para la siguiente enmienda: solo cuenta una comparacion cuyo soporte cruza
+el corte). 511 terminales gen. 1 conciliados, sobre cargado, conciliacion por contenido contra la
+contabilidad: NO_LOSS (1,077 terminales). 232 pruebas. Experimento de utilidad preparado sin
+ejecutar (doc 12). Defecto de nombre: el sobre v2 lleva `campaign_key d3-mechanics-v1`;
+corregido para futuras corridas.
