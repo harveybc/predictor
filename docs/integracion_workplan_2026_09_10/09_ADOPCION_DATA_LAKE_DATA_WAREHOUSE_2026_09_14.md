@@ -957,3 +957,15 @@ __pycache__ fuera del indice en data-warehouse (43edc44), build limpio desde com
 probado con entry point real, sin reinicio de produccion; cronologia de los 22 reinicios
 conservada; seleccion mecanica estricta por identidad (el sobre accidental queda fuera; la vista
 `gov_mechanical_evidence` se documenta como historial operativo amplio). 287 pruebas.
+
+### Retorno b6facb8: recuperar metricas y acotar calibracion
+
+54 pruebas focales independientes pasan. En la contabilidad real los tres
+COMPLETED de utilreh-v4 tienen metrics vacio; sus perdidas existen localmente.
+El padre devuelve result.json en vez de contrast.json. La calibracion admite
+cero simulaciones y NaN; no liga el alcance del operador/protocolo/longitud.
+Registro de campana posterior al trabajo detectado en el entry point.
+Recuperacion aditiva, calibracion verificable, registro previo y ensayo completo;
+despues piloto descriptivo de hasta tres unidades sinteticas ya expuestas,
+sin reservas, seleccion ni confirmacion. No repetir D3 mecanico.
+[Orden N1-N5](../handoffs/MUSASHI_D3_M1_M6_REVIEW_AND_N1_N5_2026_09_17.md).
