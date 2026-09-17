@@ -44,15 +44,27 @@ FAMILY = ("fab/v0/mad_extremes_trailing/transformed", "fab/v0/mad_extremes_trail
 
 def proto(**over):
     base = dict(target="return", horizon=1, model="ridge", window=4, n_blocks=4, margin=0.0,
-                seed=7, family=FAMILY, min_rows_per_block=30)
+                seed=7, family=FAMILY, min_rows_per_block=30, calibration_plan=dict(FIXTURE_PLAN))
     base.update(over)
     return H.Protocol(**base)
 
 
-def calibrated(p=None, rate=0.0):
+#: fixture plan: the exchangeable null, a LOW bound confidence so 14 simulations can support a
+#: decision in a test; a real freeze predeclares 0.95 and the simulations it implies
+FIXTURE_PLAN = {"generator": "white_null", "n": 2400, "bound_confidence": 0.5,
+                "n_sims": H.sims_required_for_zero(0.05 / 3, 0.5)}       # 42 for this family
+_RECORDS = {}
+
+
+def calibrated(p=None, operator=None):
+    """A protocol carrying a real calibration record for `operator` (default MAD), computed
+    once per operator and reused; the record is bound to the fixture protocol's base."""
     p = p or proto()
-    return p.with_calibration({"generator": "ar1_null", "n_sims": 40, "seed": 1,
-                               "false_advance_rate": rate, "alpha_adjusted": p.alpha_adjusted})
+    operator = operator or MAD
+    key = (operator.KIND, p.base_sha256())
+    if key not in _RECORDS:
+        _RECORDS[key] = H.calibrate(p, operator, plan=FIXTURE_PLAN, seed=11)
+    return p.with_calibration(_RECORDS[key])
 
 
 def record_for(*operators, unit="fab", variable="v0", verdict="MECHANICALLY_ACCEPTED"):
@@ -132,9 +144,9 @@ def test_R3_an_output_emitted_after_the_decision_is_used_only_at_a_later_row():
 
 
 def test_R4_repeated_values_with_distinct_ids_are_distinct_rows():
-    x = np.tile(np.array([1.0, 2.0, 3.0, 4.0]), 300)
-    s = H.series(x, ids=np.arange(1200) * 10)
-    p = calibrated()
+    x = np.tile(np.array([1.0, 2.0, 3.0, 4.0]), 600)
+    s = H.series(x, ids=np.arange(2400) * 10)
+    p = calibrated(operator=DELTA)
     out = H.contrast(s, DELTA, p, contrast_id=FAMILY[2], eligibility=record_for(DELTA),
                      unit="fab", variable="v0")
     assert out["outcome"] in (H.ADVANCES, H.DOES_NOT_ADVANCE)
@@ -256,27 +268,94 @@ def test_R8_the_t_quantile_is_scipys_and_low_df_tails_are_wide():
     assert t3 == pytest.approx(float(student_t.ppf(1 - 0.05 / 6, 3)))
 
 
-def test_R8_without_a_calibration_record_the_result_is_descriptive_never_advances():
+def test_R8_without_a_supporting_record_the_result_is_descriptive_never_a_decision():
     s = H.series(fabricated(truth="extreme"))
     out = H.contrast(s, MAD, proto(), contrast_id=FAMILY[0], eligibility=record_for(MAD),
                      unit="fab", variable="v0")
     assert out["outcome"] == H.INCONCLUSIVE_UNCALIBRATED and "delta_mean" in out
-    bad = calibrated(rate=0.5)
-    out = H.contrast(s, MAD, bad, contrast_id=FAMILY[0], eligibility=record_for(MAD), unit="fab", variable="v0")
+    assert "no calibration record" in out["why"]
+
+
+def test_N2_a_record_with_zero_simulations_nan_rate_or_unknown_generator_is_refused():
+    rec = calibrated().calibration
+    for bad in ({"n_sims": 0, "scored": 0, "failed": 0, "per_sim": []},
+                {"false_advance_rate": float("nan")},
+                {"false_advance_rate": float("inf")},
+                {"false_advance_rate": -0.1},
+                {"upper_bound": float("nan")},
+                {"generator": "not-a-measured-null"},
+                {"generator": "ar1_null", "null": False},
+                {"scored": 0, "failed": rec["n_sims"]},
+                {"failed": 3},
+                {"per_sim_sha256": "0" * 64}):
+        with pytest.raises(H.ProtocolRefusal):
+            proto().with_calibration({**rec, **bad})
+
+
+def test_N2_a_record_transferred_to_another_operator_protocol_length_or_family_does_not_decide():
+    s = H.series(fabricated(truth="extreme"))
+    p = calibrated()                                    # MAD's record
+    out = H.contrast(s, DELTA, p, contrast_id=FAMILY[2], eligibility=record_for(DELTA),
+                     unit="fab", variable="v0")
+    assert out["outcome"] == H.INCONCLUSIVE_UNCALIBRATED and "another operator" in out["why"]
+    other = H.Protocol(**{**p.__dict__, "margin": 0.01})          # another protocol, same record
+    out = H.contrast(s, MAD, other, contrast_id=FAMILY[0], eligibility=record_for(MAD),
+                     unit="fab", variable="v0")
+    assert out["outcome"] == H.INCONCLUSIVE_UNCALIBRATED and "another protocol" in out["why"]
+    short = H.series(fabricated(n=1800, truth="extreme"))
+    out = H.contrast(short, MAD, p, contrast_id=FAMILY[0], eligibility=record_for(MAD),
+                     unit="fab", variable="v0")
+    assert out["outcome"] == H.INCONCLUSIVE_UNCALIBRATED and "length" in out["why"]
+    moved = H.Protocol(**{**p.__dict__, "family": FAMILY[:2]})
+    out = H.contrast(s, MAD, moved, contrast_id=FAMILY[0], eligibility=record_for(MAD),
+                     unit="fab", variable="v0")
     assert out["outcome"] == H.INCONCLUSIVE_UNCALIBRATED
 
 
-def test_R8_calibration_measures_the_false_advance_rate_under_the_exchangeable_null():
-    rec = H.calibrate(proto(n_blocks=3, min_rows_per_block=20), DELTA, n_sims=12, seed=5, n=700)
-    assert rec["generator"] == "white_null" and rec["scored"] == 12
-    assert 0.0 <= rec["false_advance_rate"] <= 0.5
-    p = proto().with_calibration(rec)
-    assert p.calibration["false_advance_rate"] == rec["false_advance_rate"]
-    structured = H.calibrate(proto(n_blocks=3, min_rows_per_block=20), DELTA, n_sims=6, seed=5,
-                             n=700, generator="ar1_null")
-    assert structured["generator"] == "ar1_null"       # a dependent, structured diagnostic
-    with pytest.raises(ValueError, match="unknown generator"):
-        H.calibrate(proto(), DELTA, n_sims=1, seed=1, generator="nope")
+def test_N2_the_decision_is_gated_on_the_upper_bound_not_the_point_estimate():
+    rec = dict(calibrated().calibration)
+    assert rec["advances"] == 0 and rec["false_advance_rate"] == 0.0
+    assert rec["upper_bound"] == pytest.approx(H.clopper_pearson_upper(0, rec["scored"], 0.5))
+    assert rec["upper_bound"] <= proto().alpha_adjusted            # the fixture plan supports it
+    strict = {**rec, "bound_confidence": 0.95,
+              "upper_bound": H.clopper_pearson_upper(0, rec["scored"], 0.95)}
+    p = proto().with_calibration(strict)
+    assert strict["upper_bound"] > p.alpha_adjusted
+    s = H.series(fabricated(truth="extreme"))
+    out = H.contrast(s, MAD, p, contrast_id=FAMILY[0], eligibility=record_for(MAD),
+                     unit="fab", variable="v0")
+    assert out["outcome"] == H.INCONCLUSIVE_UNCALIBRATED and "upper bound" in out["why"]
+    assert H.sims_required_for_zero(0.05 / 4, 0.95) == 239
+
+
+def test_N2_every_simulation_is_kept_and_the_rate_can_be_recounted():
+    rec = calibrated().calibration
+    assert len(rec["per_sim"]) == rec["n_sims"] == rec["scored"] + rec["failed"]
+    recount = sum(1 for x in rec["per_sim"] if x["outcome"] == "ADVANCES")
+    assert recount == rec["advances"]
+    assert rec["operator"]["kind"] == "mad_extremes_trailing" and rec["n"] == 2400
+    assert rec["protocol_base_sha256"] == proto().base_sha256()
+    assert rec["harness_sha256"] and rec["cost"]["cpu_seconds"] > 0
+
+
+def test_N2_the_dependent_null_with_an_independent_target_is_a_null_and_ar1_is_not():
+    assert H.GENERATORS["ar1_features_independent_target"]["null"] is True
+    assert H.GENERATORS["ar1_null"]["null"] is False
+    rec = H.calibrate(proto(), DELTA, generator="ar1_features_independent_target", n_sims=4,
+                      seed=2, n=900, bound_confidence=0.5)
+    assert rec["null"] is True and rec["scored"] + rec["failed"] == 4
+    with pytest.raises(H.ProtocolRefusal, match="null of no effect"):
+        proto(calibration_plan={"generator": "ar1_null", "n_sims": 5, "n": 900,
+                                "bound_confidence": 0.95})
+
+
+def test_N2_protocol_numeric_domains_are_validated():
+    for bad in (dict(margin=float("nan")), dict(margin=float("inf")), dict(margin=-1.0),
+                dict(alpha=float("nan")), dict(ridge_lambda=-1.0), dict(seed=1.5),
+                dict(calibration_plan={"generator": "white_null", "n_sims": 0, "n": 100,
+                                       "bound_confidence": 0.95})):
+        with pytest.raises(H.ProtocolRefusal):
+            proto(**bad)
 
 
 def test_R8_a_short_block_makes_the_whole_contrast_insufficient():

@@ -102,9 +102,10 @@ class Protocol:
     branches: tuple = ("raw", "transformed")
     blocks_policy: str = "all_or_insufficient"
     inference: str = "block_t"
-    calibration: dict | None = None  # {"generator", "n_sims", "seed", "false_advance_rate"}
+    calibration: dict | None = None  # the full record `calibrate` returns, validated below
+    calibration_plan: dict | None = None  # {"generator", "n_sims", "n", "bound_confidence"}
     prefix_checks: int = 8           # decision rows re-transformed from a cut series
-    schema: str = "df_utility_protocol.v2"
+    schema: str = "df_utility_protocol.v3"
 
     def __post_init__(self):
         problems = []
@@ -118,10 +119,36 @@ class Protocol:
             v = getattr(self, name)
             if not isinstance(v, int) or isinstance(v, bool) or v < lo:
                 problems.append(f"{name} must be an integer >= {lo}, got {v!r}")
-        if not (0 < self.alpha < 1):
-            problems.append("alpha must be in (0, 1)")
-        if not isinstance(self.margin, (int, float)) or self.margin < 0:
-            problems.append("margin must be a non-negative number")
+        import math
+        if not isinstance(self.alpha, (int, float)) or isinstance(self.alpha, bool) \
+                or not math.isfinite(self.alpha) or not (0 < self.alpha < 1):
+            problems.append("alpha must be a finite number in (0, 1)")
+        if not isinstance(self.margin, (int, float)) or isinstance(self.margin, bool) \
+                or not math.isfinite(self.margin) or self.margin < 0:
+            problems.append("margin must be a finite non-negative number")
+        for name in ("ridge_lambda",):
+            v = getattr(self, name)
+            if not isinstance(v, (int, float)) or isinstance(v, bool) or not math.isfinite(v) or v < 0:
+                problems.append(f"{name} must be a finite non-negative number")
+        if not isinstance(self.seed, int) or isinstance(self.seed, bool):
+            problems.append("seed must be an integer")
+        if not isinstance(self.logistic_steps, int) or self.logistic_steps < 1:
+            problems.append("logistic_steps must be a positive integer")
+        if self.calibration_plan is not None:
+            plan = self.calibration_plan
+            need = {"generator", "n_sims", "n", "bound_confidence"}
+            if not isinstance(plan, dict) or set(plan) != need:
+                problems.append(f"calibration_plan must carry exactly {sorted(need)}")
+            else:
+                if plan["generator"] not in GENERATORS or not GENERATORS[plan["generator"]]["null"]:
+                    problems.append("calibration_plan.generator must be a null of no effect")
+                if not isinstance(plan["n_sims"], int) or plan["n_sims"] < 1:
+                    problems.append("calibration_plan.n_sims must be a positive integer")
+                if not isinstance(plan["n"], int) or plan["n"] < 1:
+                    problems.append("calibration_plan.n must be a positive integer")
+                c = plan["bound_confidence"]
+                if not isinstance(c, (int, float)) or not math.isfinite(c) or not (0 < c < 1):
+                    problems.append("calibration_plan.bound_confidence must be in (0, 1)")
         if not self.branches or any(b not in BRANCHES for b in self.branches) \
                 or len(set(self.branches)) != len(self.branches):
             problems.append(f"branches must be distinct members of {BRANCHES}")
@@ -136,9 +163,7 @@ class Protocol:
         if self.inference != "block_t":
             problems.append("inference must be 'block_t'")
         if self.calibration is not None:
-            need = {"generator", "n_sims", "seed", "false_advance_rate", "alpha_adjusted"}
-            if not isinstance(self.calibration, dict) or set(self.calibration) != need:
-                problems.append(f"calibration must carry exactly {sorted(need)}")
+            problems += calibration_record_problems(self.calibration)
         if problems:
             raise ProtocolRefusal("; ".join(problems))
 
@@ -157,14 +182,70 @@ class Protocol:
         doc["protocol_sha256"] = sha_obj(doc)
         return doc
 
+    def base_sha256(self) -> str:
+        """The protocol's identity WITHOUT its calibration record: what a record is bound to."""
+        doc = {k: (list(v) if isinstance(v, tuple) else v) for k, v in self.__dict__.items()
+               if k != "calibration"}
+        return sha_obj(doc)
+
     def with_calibration(self, record: dict) -> "Protocol":
-        keep = ("generator", "n_sims", "seed", "false_advance_rate", "alpha_adjusted")
-        return Protocol(**{**self.__dict__, "calibration": {k: record[k] for k in keep}})
+        """The full record, nothing dropped: a consumer must be able to recount its rate."""
+        return Protocol(**{**self.__dict__, "calibration": dict(record)})
+
+
+CALIBRATION_KEYS = ("schema", "generator", "null", "plan", "n_sims", "scored", "failed", "advances",
+                    "false_advance_rate", "upper_bound", "bound_confidence", "alpha_adjusted",
+                    "seed", "n", "operator", "protocol_base_sha256", "family", "margin", "n_blocks",
+                    "window", "target", "model", "per_sim", "per_sim_sha256", "harness_sha256",
+                    "cost")
+
+
+def calibration_record_problems(rec) -> list:
+    """Everything a calibration record must carry to be consumed; a missing or non-finite
+    element makes the record unusable (N2)."""
+    import math
+    problems = []
+    if not isinstance(rec, dict) or set(rec) != set(CALIBRATION_KEYS):
+        return [f"calibration must carry exactly {list(CALIBRATION_KEYS)}"]
+    if rec["schema"] != "df_utility_calibration.v1":
+        problems.append("calibration schema")
+    if rec["generator"] not in GENERATORS:
+        problems.append(f"unknown generator {rec['generator']!r}")
+    elif not GENERATORS[rec["generator"]]["null"] or rec["null"] is not True:
+        problems.append("a calibration generator must be a null of no effect")
+    for name in ("n_sims", "scored", "failed", "advances", "n", "n_blocks", "window"):
+        v = rec[name]
+        if not isinstance(v, int) or isinstance(v, bool) or v < 0:
+            problems.append(f"{name} must be a non-negative integer")
+    if isinstance(rec["n_sims"], int) and rec["n_sims"] < 1:
+        problems.append("zero simulations calibrate nothing")
+    if all(isinstance(rec[k], int) for k in ("n_sims", "scored", "failed")) \
+            and rec["scored"] + rec["failed"] != rec["n_sims"]:
+        problems.append("scored + failed must equal n_sims (no simulation vanishes)")
+    if isinstance(rec["scored"], int) and rec["scored"] < 1:
+        problems.append("no scored simulation: the rate has no denominator")
+    for name in ("false_advance_rate", "upper_bound", "bound_confidence", "alpha_adjusted", "margin"):
+        v = rec[name]
+        if not isinstance(v, (int, float)) or isinstance(v, bool) or not math.isfinite(v) \
+                or v < 0 or (name != "margin" and v > 1):
+            problems.append(f"{name} must be a finite number in [0, 1]")
+    if isinstance(rec["advances"], int) and isinstance(rec["scored"], int) and rec["scored"] \
+            and isinstance(rec["false_advance_rate"], (int, float)) \
+            and abs(rec["false_advance_rate"] - rec["advances"] / rec["scored"]) > 1e-12:
+        problems.append("false_advance_rate is not advances / scored")
+    if not isinstance(rec["per_sim"], list) or len(rec["per_sim"]) != rec.get("n_sims"):
+        problems.append("per_sim must list every simulation")
+    elif sha_obj(rec["per_sim"]) != rec["per_sim_sha256"]:
+        problems.append("per_sim digest does not seal the simulations")
+    if not isinstance(rec["operator"], dict) or set(rec["operator"]) != {"kind", "spec_sha256", "params"}:
+        problems.append("operator identity must carry kind, spec_sha256 and params")
+    return problems
 
 
 # --- the observation contract -----------------------------------------------------------------------
 
-def series(values, *, ids=None, timestamps=None, available_at=None, period_seconds=1) -> dict:
+def series(values, *, ids=None, timestamps=None, available_at=None, period_seconds=1,
+           target_values=None) -> dict:
     """A series with observation identity: ids strictly increasing, timestamps non-decreasing,
     available_at >= timestamp. Gaps are kept as NaN; nothing is imputed."""
     v = np.asarray(values, dtype=float)
@@ -180,8 +261,14 @@ def series(values, *, ids=None, timestamps=None, available_at=None, period_secon
         raise ValueError("timestamps must not go backwards")
     if (av < ts).any():
         raise ValueError("an observation cannot be available before its timestamp")
-    return {"values": v, "ids": ids, "timestamps": ts, "available_at": av,
-            "period_seconds": float(period_seconds)}
+    out = {"values": v, "ids": ids, "timestamps": ts, "available_at": av,
+           "period_seconds": float(period_seconds)}
+    if target_values is not None:
+        tv = np.asarray(target_values, dtype=float)
+        if tv.size != n:
+            raise ValueError("target_values must have the series' length")
+        out["target_values"] = tv                  # the label's source when it is not x
+    return out
 
 
 def _as_operator_input(s: dict, upto: int | None = None) -> dict:
@@ -253,7 +340,7 @@ def prefix_consistent(operator, s: dict, state, rep: dict, rows, decision) -> tu
 # --- labels and features by identity ------------------------------------------------------------------
 
 def label(s: dict, protocol: Protocol) -> np.ndarray:
-    x = s["values"]
+    x = s["target_values"] if "target_values" in s else s["values"]
     n = x.size
     h = protocol.horizon
     out = np.full(n, np.nan)
@@ -457,12 +544,11 @@ def contrast(s: dict, operator, protocol: Protocol, *, contrast_id: str, eligibi
             "cost": cost, "protocol_sha256": protocol.sealed()["protocol_sha256"],
             "note": "a difference of predictive losses of the probe model; not information, "
                     "not mutual information, not trading utility"}
-    cal = protocol.calibration
-    if cal is None or cal["false_advance_rate"] > protocol.alpha_adjusted \
-            or cal["alpha_adjusted"] != protocol.alpha_adjusted:
+    supported, why = calibration_supports(protocol, operator, n) if operator is not None \
+        else (False, "no operator to calibrate against")
+    if not supported:
         return {**base, "outcome": INCONCLUSIVE_UNCALIBRATED,
-                "why": "no calibration record supports this interval as confirmatory; the "
-                       "delta is descriptive"}
+                "why": f"{why}; the delta is descriptive, not a decision"}
     return {**base, "outcome": ADVANCES if lower > protocol.margin else DOES_NOT_ADVANCE}
 
 
@@ -476,45 +562,138 @@ def _ar1_null(n: int, rng, phi: float = 0.6) -> np.ndarray:
     return np.cumsum(x)
 
 
-GENERATORS = {"ar1_null": "AR(1) increments (phi 0.6), cumulated: dependent, structured",
-              "white_null": "independent N(0,1) increments, cumulated: the exchangeable null"}
+GENERATORS = {
+    "white_null": {"null": True, "what": "independent N(0,1) increments, cumulated: the "
+                                          "exchangeable null (dependent levels, no effect)"},
+    "ar1_features_independent_target": {
+        "null": True, "what": "features from AR(1) (phi 0.6) increments cumulated — dependent, "
+                              "structured — with the label taken from an INDEPENDENT white "
+                              "series: dependence with no effect"},
+    "ar1_null": {"null": False, "what": "AR(1) increments cumulated, label from the same series: "
+                                        "structured, a POSITIVE-CONTROL-like diagnostic, not a "
+                                        "null of no effect"},
+}
 
 
 def _white_null(n: int, rng, phi: float = 0.0) -> np.ndarray:
     return np.cumsum(rng.normal(0, 1.0, n))
 
 
-def calibrate(protocol: Protocol, operator, *, n_sims: int, seed: int, n: int = 1500,
-              generator: str = "white_null", eligibility: dict | None = None) -> dict:
-    """The rate at which a contrast under this protocol says ADVANCES under a null. The
-    exchangeable null (`white_null`) is the one that supports the interval: under it neither
-    branch carries anything, so every ADVANCES is false. `ar1_null` is dependent AND
-    structured — a diagnostic of what dependence does, not a null of no effect. Diagnostic
-    seeds only; the record is sealed into the protocol before any real contrast."""
+def _make_series(generator: str, n: int, rng) -> dict:
+    if generator == "white_null":
+        return series(_white_null(n, rng))
+    if generator == "ar1_null":
+        return series(_ar1_null(n, rng))
+    if generator == "ar1_features_independent_target":
+        return series(_ar1_null(n, rng), target_values=np.cumsum(rng.normal(0, 1.0, n)))
+    raise ValueError(f"unknown generator {generator!r}")
+
+
+def clopper_pearson_upper(k: int, n: int, confidence: float) -> float:
+    from scipy.stats import beta
+    if n <= 0:
+        return float("nan")
+    return 1.0 if k >= n else float(beta.ppf(confidence, k + 1, n - k))
+
+
+def sims_required_for_zero(alpha: float, confidence: float) -> int:
+    """The smallest n such that 0 advances in n gives an upper bound <= alpha."""
+    import math
+    return int(math.ceil(math.log(1 - confidence) / math.log(1 - alpha)))
+
+
+def calibrate(protocol: Protocol, operator, *, plan: dict | None = None, seed: int | None = None,
+              n_sims: int | None = None, n: int | None = None, generator: str | None = None,
+              bound_confidence: float | None = None) -> dict:
+    """The false-advance rate of THIS protocol with THIS operator at THIS length under a null of
+    no effect, from the sealed plan (`protocol.calibration_plan`) or explicit arguments for
+    diagnostics. Every simulation is kept (index, seed, outcome, delta); the rate is
+    advances / scored with failed simulations counted apart; the Clopper–Pearson upper bound at
+    the plan's confidence is what a decision is gated on, not the point estimate. A structured
+    generator (`ar1_null`) is a diagnostic and is refused as a calibration null."""
+    plan = plan or protocol.calibration_plan or {}
+    generator = generator or plan.get("generator")
+    n_sims = n_sims if n_sims is not None else plan.get("n_sims")
+    n = n if n is not None else plan.get("n")
+    bound_confidence = bound_confidence if bound_confidence is not None else plan.get("bound_confidence", 0.95)
     if generator not in GENERATORS:
         raise ValueError(f"unknown generator {generator!r}")
+    if not isinstance(n_sims, int) or n_sims < 1 or not isinstance(n, int) or n < 1:
+        raise ValueError("n_sims and n must be positive integers, declared before running")
+    seed = seed if seed is not None else protocol.seed + 1000
     rng = np.random.default_rng(seed)
-    proto = protocol.with_calibration({"generator": generator, "n_sims": n_sims, "seed": seed,
-                                       "false_advance_rate": 0.0,
-                                       "alpha_adjusted": protocol.alpha_adjusted})
-    fake = {"freeze_sha256": "calibration", "design_sha256": "calibration", "cells": {}}
     contract = _load("df_d3_contract")
-    fake["cells"][("cal", "v0", operator.KIND)] = {
-        "verdict": "MECHANICALLY_ACCEPTED", "spec_sha256": contract.spec_sha256(operator.describe())}
-    advances = 0
-    scored = 0
-    make = _ar1_null if generator == "ar1_null" else _white_null
+    spec_sha = contract.spec_sha256(operator.describe())
+    fake = {"freeze_sha256": "calibration", "design_sha256": "calibration",
+            "cells": {("cal", "v0", operator.KIND): {"verdict": "MECHANICALLY_ACCEPTED",
+                                                    "spec_sha256": spec_sha}}}
+    # the protocol under calibration: no record, no gate — outcomes are read from the interval
+    proto = Protocol(**{**protocol.__dict__, "calibration": None})
+    t0 = time.process_time()
+    per_sim, advances, scored, failed = [], 0, 0, 0
     for k in range(n_sims):
-        s = series(make(n, rng))
+        sim_seed = int(rng.integers(0, 2 ** 31 - 1))
+        s = _make_series(generator, n, np.random.default_rng(sim_seed))
         out = contrast(s, operator, proto, contrast_id=proto.family[0], eligibility=fake,
                        unit="cal", variable="v0")
-        if out["outcome"] in (ADVANCES, DOES_NOT_ADVANCE):
+        if "delta_lower" in out:
             scored += 1
-            advances += int(out["outcome"] == ADVANCES)
+            advanced = out["delta_lower"] > proto.margin
+            advances += int(advanced)
+            per_sim.append({"index": k, "seed": sim_seed, "outcome": "ADVANCES" if advanced
+                            else "DOES_NOT_ADVANCE", "delta_mean": out["delta_mean"],
+                            "delta_lower": out["delta_lower"]})
+        else:
+            failed += 1
+            per_sim.append({"index": k, "seed": sim_seed, "outcome": out["outcome"],
+                            "why": out.get("why")})
     rate = advances / scored if scored else float("nan")
-    return {"generator": generator, "n_sims": n_sims, "seed": seed,
-            "false_advance_rate": rate, "alpha_adjusted": protocol.alpha_adjusted,
-            "scored": scored, "advances": advances}
+    return {"schema": "df_utility_calibration.v1", "generator": generator,
+            "null": bool(GENERATORS[generator]["null"]),
+            "plan": {"generator": generator, "n_sims": n_sims, "n": n,
+                     "bound_confidence": bound_confidence},
+            "n_sims": n_sims, "scored": scored, "failed": failed, "advances": advances,
+            "false_advance_rate": rate,
+            "upper_bound": clopper_pearson_upper(advances, scored, bound_confidence) if scored else float("nan"),
+            "bound_confidence": bound_confidence, "alpha_adjusted": protocol.alpha_adjusted,
+            "seed": seed, "n": n,
+            "operator": {"kind": operator.KIND, "spec_sha256": spec_sha,
+                         "params": dict(operator.params)},
+            "protocol_base_sha256": protocol.base_sha256(), "family": list(protocol.family),
+            "margin": protocol.margin, "n_blocks": protocol.n_blocks, "window": protocol.window,
+            "target": protocol.target, "model": protocol.model,
+            "per_sim": per_sim, "per_sim_sha256": sha_obj(per_sim),
+            "harness_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            "cost": {"cpu_seconds": round(time.process_time() - t0, 3)}}
+
+
+def calibration_supports(protocol: Protocol, operator, n: int) -> tuple:
+    """Does the sealed record support a decision for THIS contrast? Scope and identity are
+    checked, then the upper bound against alpha_adjusted."""
+    rec = protocol.calibration
+    if rec is None:
+        return False, "no calibration record"
+    problems = calibration_record_problems(rec)
+    if problems:
+        return False, "calibration record unusable: " + "; ".join(problems)
+    contract = _load("df_d3_contract")
+    spec_sha = contract.spec_sha256(operator.describe())
+    if rec["operator"]["kind"] != operator.KIND or rec["operator"]["spec_sha256"] != spec_sha \
+            or rec["operator"]["params"] != dict(operator.params):
+        return False, "calibrated for another operator declaration"
+    if rec["protocol_base_sha256"] != protocol.base_sha256():
+        return False, "calibrated for another protocol"
+    if list(rec["family"]) != list(protocol.family):
+        return False, "calibrated for another contrast family"
+    if rec["n"] != int(n):
+        return False, f"calibrated at length {rec['n']}, this series has {n}"
+    if rec["alpha_adjusted"] != protocol.alpha_adjusted:
+        return False, "calibrated for another multiplicity"
+    if rec["upper_bound"] > protocol.alpha_adjusted:
+        return False, (f"upper bound {rec['upper_bound']:.4f} exceeds alpha_adjusted "
+                       f"{protocol.alpha_adjusted:.4f} ({rec['advances']}/{rec['scored']} at "
+                       f"{rec['bound_confidence']:.0%})")
+    return True, None
 
 
 # --- observed budgets: one contrast in an isolated child -----------------------------------------------
