@@ -297,3 +297,13 @@ Recuperacion aditiva, calibracion verificable, registro previo y ensayo completo
 despues piloto descriptivo de hasta tres unidades sinteticas ya expuestas,
 sin reservas, seleccion ni confirmacion. No repetir D3 mecanico.
 [Orden N1-N5](../handoffs/MUSASHI_D3_M1_M6_REVIEW_AND_N1_N5_2026_09_17.md).
+
+### Retorno 9880f45: recuperacion confirmada, cota y resume pendientes
+
+68 pruebas focales independientes pasan. Contabilidad leida: las tres recuperaciones
+gen-2 contienen doce metricas, con deltas iguales a los archivos. Dos casos nuevos:
+poner cota MAD a cero concede apoyo sin cambiar per_sim; resume con score ausente
+conserva ADVANCES junto a SCORE_UNVERIFIED. Corregir, reverificar las simulaciones
+conservadas y cerrar descriptivamente el piloto sin repetir campanas. Preparar
+el siguiente diseno por variable, sin ejecutar reserva o ampliar poblacion ahora.
+[Orden O1-O4](../handoffs/MUSASHI_D3_N1_N5_REVIEW_AND_O1_O4_2026_09_17.md).
