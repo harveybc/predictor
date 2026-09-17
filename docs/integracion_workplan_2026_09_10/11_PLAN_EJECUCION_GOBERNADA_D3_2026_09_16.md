@@ -1,7 +1,10 @@
 # D3 — plan de ejecución gobernada (preparación, sin ejecutar)
 
-Fecha: 2026-09-16. Estado: **PREPARACIÓN**. No ejecuta D3, no implementa ninguno de los
-nueve operadores, no selecciona variables, no toca el diseño sellado y no lanza campaña.
+Fecha: 2026-09-16. Estado: **SUPERSEDIDO EN PARTE POR J1–J3** — la enmienda temporal
+(`07A_ENMIENDA_TEMPORAL_D3_2026_09_16.md`) prevalece sobre el §1 y el §3 del diseño 07 y sobre
+lo que este plan decía de la batería v1; los nueve operadores están implementados y la
+mecánica gobernada corre como `d3mech-v1` (ver el retorno J1–J3). Sigue sin haber selección por
+utilidad ni entrenamiento.
 
 Orden: bloque 3 de `../handoffs/MUSASHI_I1_I3_ACCEPTANCE_AND_STACK_FOLLOWUP_2026_09_16.md`
 — *"Inventory the next unfinished preprocessing/feature-engineering step from committed

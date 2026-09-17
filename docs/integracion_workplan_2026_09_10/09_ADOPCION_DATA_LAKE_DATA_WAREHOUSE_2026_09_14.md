@@ -781,3 +781,28 @@ y rechaza '0s'; prefijo omite una frontera causal relevante. Se autoriza enmiend
 pre-candidatos y correccion de bateria, seguida condicionalmente por implementacion
 y mecanica CPU gobernada, sin otra pausa de autorizacion:
 [J1-J3](../handoffs/MUSASHI_R6_ACCEPTANCE_AND_D3_J1_J3_2026_09_16.md).
+
+## Actualizacion 2026-09-16 (Satoshi, ordenes J1-J3: D3)
+
+Retorno: `../audits/work_plan/SATOSHI_D3_J1_J3_RETURN_2026_09_16.md`.
+
+**J1.** Enmienda superseding al diseno 07 (`07A_ENMIENDA_TEMPORAL_D3_2026_09_16.md`, sellada
+como datos en `tools/df_d3_design.py`), con los bytes originales intactos y citados por digest.
+Cuatro instantes separados por salida; emision >= ultima disponibilidad consumida; duraciones
+con el parser del productor y a muestras solo por division exacta; prefijo sin exencion por
+lookback; gemelo obligatorio o `NOT_APPLICABLE` con razon; inicio de impulso != retardo de
+grupo; soporte wavelet derivado de la biblioteca; filtros recursivos con estado.
+
+**J2.** Contrato v2 y bateria v2 probados contra los objetos reales: los cuatro hallazgos del
+revisor como negativos, dos controles positivos, duraciones fraccionarias, llegadas tardias,
+marcas ausentes, `'0s'` real, ventanas, normalizacion, reinicio, futuro cambiado. **40 reglas**.
+
+**J3.** Los nueve operadores del §2 con sus siete gemelos, sobre numpy/scipy/pywt con versiones
+registradas; los nueve *review-ready*; cada gemelo falla solo. Declaraciones **medidas**: la STFT
+de Hann no ve `x[t]` y declara inicio 1. **37 reglas.** Mecanica gobernada: trabajador de
+unidad con el protocolo hijo de D2, toys entregados por gobernanza (`VERIFIED_TRANSFER`),
+congelamiento sellado de poblacion y presupuestos con piloto de coste, despacho `NON_GOVERNING`
+a WORKER_A/B (coordinador excluido por su proceso de GPU), recoleccion con verificacion de
+digest, dos campanas data-gov (SYNTHETIC + DATASETS) y un sobre `MECHANICAL`. **10 reglas.**
+Dos defectos del despacho encontrados y corregidos en el primer intento (raiz nueva bajo reja;
+rutas sin `~/`), ambos congelados como reglas.
