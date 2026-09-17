@@ -202,10 +202,13 @@ def build_jobs(root: Path, frozen: dict, shards: dict, *, run_id: str, python_re
                      "gpu_bytes": 0, "cpus": 1, "wall": wall,
                      "roles": ["WORKER_A", "WORKER_B", "COORDINATOR"], "gpu_index": None,
                      "split": None,
-                     "argv": ["env", "-u", "PYTHONPATH", python_rel, "-B",
+                     # Every host path is written home-relative with the `~/` the launch
+                     # script expands to "$HOME"; a bare relative path resolved against the
+                     # worktree and the interpreter was "not found" (exit 127, first dispatch).
+                     "argv": ["env", "-u", "PYTHONPATH", _home(python_rel), "-B",
                               "tools/df_d3_unit_worker.py",
                               "--units-root", redact(shard["path"]),
-                              "--out", f"{out_rel}/{{role}}/{shard['name']}",
+                              "--out", f"{_home(out_rel)}/{{role}}/{shard['name']}",
                               "--run-id", run_id, "--host-role", "{role}",
                               "--task-memory", str(budget["task_memory_bytes"]),
                               "--wall-seconds", str(budget["per_unit_wall_seconds"]),
@@ -214,6 +217,16 @@ def build_jobs(root: Path, frozen: dict, shards: dict, *, run_id: str, python_re
     write_once(path, {"schema": "d3_mechanics_jobs.v1", "run_id": run_id,
                       "freeze_sha256": frozen["freeze_sha256"], "jobs": jobs})
     return path
+
+
+def _home(rel: str) -> str:
+    """`~/<rel>` for a home-relative path, as the dispatcher's launch script expects."""
+    rel = str(rel)
+    if rel.startswith("~/") or rel.startswith("/"):
+        return rel
+    if rel.startswith("./"):
+        rel = rel[2:]
+    return "~/" + rel
 
 
 def _variables_of(unit_dir: Path) -> int:

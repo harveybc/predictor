@@ -187,6 +187,13 @@ def test_shards_and_jobs_follow_the_dispatch_precedent(tmp_path):
     assert "{role}" in " ".join(jobs[0]["argv"])
     assert jobs[0]["wall"] == int(100.0 * 2) + 120
     assert "/home/" not in json.dumps(jobs)
+    # exit 127 on the first real dispatch: the launch script expands "~/" to "$HOME" and
+    # nothing else, so every host path must carry it
+    argv = jobs[0]["argv"]
+    assert argv[3].startswith("~/anaconda3/")
+    assert argv[argv.index("--out") + 1].startswith("~/.local/state/")
+    units_root = argv[argv.index("--units-root") + 1]
+    assert units_root.startswith("~/") or units_root.startswith("/")
 
 
 # --- terminals and the envelope -------------------------------------------------------------
