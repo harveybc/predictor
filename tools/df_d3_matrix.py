@@ -238,6 +238,7 @@ def verify(root: Path, receipt_name: str = "COLLECT.json", *, report_name: str =
         refusals.append({"kind": kind, **where})
 
     check_freeze(root, frozen, report_name, refuse)
+    CELLS.clear()
     expected = expected_population(root, frozen, refuse)
     assigned = assignment(root, dispatch_names)
     book = ledger(root)
@@ -386,6 +387,7 @@ def verify(root: Path, receipt_name: str = "COLLECT.json", *, report_name: str =
                       "failed": len(failed_units), "missing": sorted(set(missing))},
             "failed_units": failed_units, "rows": rows_total,
             "inherits": frozen.get("inherits"),
+            "cells": list(CELLS),
             "transport_copies": transport_copies,
             "refusals": refusals, "operators": operators}
 
@@ -503,6 +505,7 @@ def _compose(root: Path, frozen: dict, inherits: dict, expected: dict, per_op, m
     src_root = Path(inherits["source_root"]).expanduser()
     src_receipt = inherits.get("source_receipt", "COLLECT.json")
     source = verify(src_root, src_receipt)
+    CELLS.clear()                     # the source's own cells are not this run's cells
     if source.get("verified") is not True:
         refuse("INHERITED_SOURCE_UNVERIFIED", source=str(src_root),
                refusals=[r["kind"] for r in source["refusals"]][:10])
@@ -585,7 +588,8 @@ def _compose(root: Path, frozen: dict, inherits: dict, expected: dict, per_op, m
                    where="composite")
             continue
         outcome = recompute_verdict({t: take[t]["outcome"] for t in TESTS})
-        composite_verdict = {"unit_id": unit, "operator_group": take[TESTS[0]].get("operator_group"),
+        composite_verdict = {"unit_id": unit, "variable": variable,
+                             "operator_group": take[TESTS[0]].get("operator_group"),
                              "outcome": outcome, "detail": "", "composed": True,
                              "sources": {t: ("measured" if t in measured and op in measured_ops
                                              else inherits["source_run_id"] or "source")
@@ -625,7 +629,16 @@ def _source_cells(src_root: Path, receipt_name: str, src_frozen: dict) -> dict:
     return cells
 
 
+#: per-cell verdicts of the last verify() call, for the utility harness's eligibility record
+CELLS = []
+
+
 def _count(per_op, kind, tests, verdict, bank):
+    CELLS.append({"unit": verdict["unit_id"], "variable": verdict.get("variable")
+                  or next((r.get("variable") for r in tests.values() if isinstance(r, dict)), None),
+                  "operator": kind, "verdict": verdict["outcome"],
+                  "spec_sha256": next((r.get("spec_sha256") for r in tests.values()
+                                       if isinstance(r, dict) and r.get("spec_sha256")), None)})
     op = per_op[kind]
     op["group"] = verdict.get("operator_group")
     op["units"].add(verdict["unit_id"])
@@ -774,7 +787,15 @@ def main(argv=None) -> int:
     out = args.out or args.root / f"{stem}.json"
     if out.exists():
         raise SystemExit(f"REFUSED: {out} exists; a matrix is never written over")
+    cells = m.pop("cells", None)
     out.write_text(json.dumps(m, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    if args.verify and cells is not None:
+        cells_path = out.with_name(out.stem + ".cells.json")
+        cells_path.write_text(json.dumps({"schema": "d3_mechanics_cells.v1", "run_id": m["run_id"],
+                                          "freeze_sha256": m["freeze_sha256"],
+                                          "design_sha256": m["population"]["design_sha256"],
+                                          "verified": m["verified"], "cells": cells},
+                                         indent=0, sort_keys=True) + "\n", encoding="utf-8")
     md = markdown(m)
     (args.markdown or args.root / f"{stem}.md").write_text(md, encoding="utf-8")
     print(md)
