@@ -825,3 +825,14 @@ regla del servidor: forma mia, servidor correcto; 14 sobres cerrados `INVALID_EN
 sobre `MECHANICAL` cargado en DuckDB (6,390 unidades, 551 consumos). Dos hallazgos para el
 dueno del store: un documento ilegible responde 503 en vez de 400; el loader descarta el cuerpo
 de la respuesta reintentable. Todo `NON_GOVERNING`; sin seleccion por utilidad.
+
+### Retorno 8364714: mecanica presentada, matriz aun no verificada
+
+93 pruebas D3 focales ejecutadas independientemente pasan. Dos reproducciones
+aisladas prueban que el reductor acepta un veredicto sin las doce pruebas y omite
+un archivo ausente sin rechazo. No implica alteracion de la campana real.
+Corregir verificacion de matriz, sonda escalada por entrenamiento, insuficiencia
+del gemelo y diagnosticos de ingesta; despues mecanica sucesora CPU gobernada.
+Conservar v1, intentos y rechazos. Sin utilidad cientifica ni promocion financiera.
+Orden completa, sin pausas de autorizacion entre bloques:
+[K1-K5](../handoffs/MUSASHI_D3_J1_J3_REVIEW_AND_K1_K5_2026_09_16.md).
