@@ -50,6 +50,13 @@ def test_probe_movements_under_the_amendment_are_attributed_and_others_are_not()
                                             "PASSED": {"before": 2, "after": 1, "delta": -1}}}]
 
 
+def test_a_changed_design_digest_alone_is_not_a_population_change():
+    m = matrix("v1", "f1", {"MECHANICALLY_ACCEPTED": 2}, {"response_probe": {"PASSED": 2}})
+    n = dict(m, run_id="v2", population=dict(m["population"], design_sha256="y"))
+    d = delta.delta(m, n, freeze("d1", "s1"), freeze("d2", "s1"))
+    assert d["population_changed"] is False and d["design_changed"] is True
+
+
 def test_no_movement_is_all_attributed_and_an_unverified_matrix_is_refused():
     m = matrix("v1", "f1", {"MECHANICALLY_ACCEPTED": 2}, {"response_probe": {"PASSED": 2}})
     d = delta.delta(m, dict(m, run_id="v2"), freeze("d1", "s1"), freeze("d1", "s1"))

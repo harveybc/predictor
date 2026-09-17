@@ -39,7 +39,8 @@ def delta(before: dict, after: dict, before_freeze: dict, after_freeze: dict) ->
     specs_before = {op["kind"]: op["spec_sha256"] for op in before_freeze["operators"]}
     specs_after = {op["kind"]: op["spec_sha256"] for op in after_freeze["operators"]}
     design_changed = before_freeze["design_sha256"] != after_freeze["design_sha256"]
-    population_changed = before["population"] != after["population"]
+    strip = lambda pop: {k: v for k, v in pop.items() if k != "design_sha256"}
+    population_changed = strip(before["population"]) != strip(after["population"])
     out = {"schema": "d3_mechanics_matrix_delta.v1",
            "before": {"run_id": before["run_id"], "freeze_sha256": before["freeze_sha256"],
                       "design_sha256": before_freeze["design_sha256"]},
