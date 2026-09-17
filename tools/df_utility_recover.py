@@ -132,7 +132,8 @@ def main(argv=None) -> int:
     scores, refusals = recover_scores(root, report)
     originals = {r["unit_id"]: r for r in cube_query(
         args.warehouse_url, token,
-        f"SELECT unit_id, terminal_sha256, generation, status FROM \"main\".\"gov_terminal\" "
+        f"SELECT unit_id, terminal_sha256, generation, status, started_at, finished_at "
+        f"FROM \"main\".\"gov_terminal\" "
         f"WHERE campaign_key = '{campaign_key}' AND generation = 1 LIMIT 100")}
     receipt = {"schema": "df_utility_recovery.v1", "run_id": run_id, "started_at": now_iso(),
                "source_report": "REPORT.json", "campaign": report["campaign"],
@@ -157,8 +158,10 @@ def main(argv=None) -> int:
             continue
         cost = original_cost.get(unit_id, {})
         terminal = {"schema": "governed_terminal.v1", "generation": 2, "status": original["status"],
-                    "reason": None, "started_at": cost.get("started_at") or now_iso(),
-                    "finished_at": cost.get("ended_at") or now_iso(),
+                    # deterministic: the original terminal's own instants, so a re-run builds
+                    # the same generation-2 bytes (a differing duplicate is a 409 conflict)
+                    "reason": None, "started_at": cost.get("started_at") or original["started_at"],
+                    "finished_at": cost.get("ended_at") or original["finished_at"],
                     "costs": {"wall_seconds": max(0.0, float(cost.get("wall_seconds") or 0)),
                               "cpu_seconds": max(0.0, float(cost.get("cpu_seconds") or 0))},
                     "deliveries": [], "artifacts": [], "metrics": metrics_of(score),
