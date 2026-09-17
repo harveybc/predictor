@@ -212,12 +212,12 @@ def install(args, adoption: Path) -> dict:
             "wheel_sha256": sha_file(wheel[-1]), "tail": (out.stdout + out.stderr)[-400:]}
 
 
-def restart(args) -> dict:
+def restart(args, token: str = "") -> dict:
     out = run(["systemctl", "--user", "restart", args.unit], timeout=120)
     deadline = time.monotonic() + 90
     healthy = None
     while time.monotonic() < deadline:
-        status, _ = http(f"{args.url}/healthz", "")
+        status, _ = http(f"{args.url}/healthz", token)
         if status is not None:                    # any HTTP answer: the process is up
             healthy = status
             break
@@ -334,7 +334,7 @@ def main(argv=None) -> int:
     if args.adopt and receipt["rehearsal"]["passed"]:
         receipt["install"] = install(args, adoption)
         if receipt["install"]["returncode"] == 0:
-            receipt["restart"] = restart(args)
+            receipt["restart"] = restart(args, token)
             receipt["postcheck"] = postcheck(args, token, receipt["before"])
             outcome = "ADOPTED" if receipt["postcheck"]["ok"] and receipt["restart"]["healthz"] \
                 else "ADOPTED_POSTCHECK_FAILED"
@@ -344,7 +344,7 @@ def main(argv=None) -> int:
     receipt["finished_at"] = now_iso()
     (adoption / "RECEIPT.json").write_text(json.dumps(receipt, indent=1, sort_keys=True) + "\n")
     print(json.dumps({"outcome": outcome, "before_version": receipt["before"]["package"].get("version"),
-                      "candidate_envelope_sha256": receipt["candidate"]["envelope_sha256"][:16],
+                      "candidate_envelope_sha256": (receipt["candidate"].get("envelope_sha256") or "")[:16],
                       "rehearsal": receipt["rehearsal"]["passed"],
                       "postcheck": receipt.get("postcheck", {}).get("ok"),
                       "adoption_dir": str(adoption)}, indent=1))
