@@ -471,3 +471,34 @@ def test_a_changed_estimate_is_a_new_identity_and_runs_again(tmp_path):
 def test_dry_run_plan_starts_nothing():
     rows = PL.plan([job("p1", 8), job("p2", 8), job("p3", 1, 2)], F.inventory())
     assert [r["decision"] for r in rows] == ["PLACED", "WAIT", "UNPLACEABLE"] and rows[0]["role"] == "WORKER_A"
+
+
+# --- a fresh root sealed by the Flow v3 gate ------------------------------------------------
+
+def test_a_root_holding_only_the_sealed_gate_is_a_fresh_root(tmp_path):
+    """The gate seals the root BEFORE the dispatcher prepares it, so a fresh dispatch used to
+    refuse itself: "dispatch exists; a dispatch root is write-once". Measured on the first
+    D3 dispatch. The gate file is the dispatcher's own, not a prior dispatch."""
+    import flow_v3_gate as G3
+
+    root = tmp_path / "dispatch"
+    G3.require_governed_dispatch("NON_GOVERNING", None, root=root, jobs_sha256="0" * 64,
+                                 non_governing_reason="mechanics")
+    assert (root / G3.GATE_FILE).is_file()
+    clock = Clock()
+    hosts = FakeHosts(clock)
+    d = D.Dispatcher(root, [job("j1")], inventory_fn=lambda: F.inventory(), backend=hosts,
+                     clock=clock, sleep=clock.sleep, poll_seconds=5, max_inventory_age_seconds=2)
+    d._prepare_root()
+    assert (root / "DISPATCH_MANIFEST.json").is_file()
+
+
+def test_a_root_with_a_prior_manifest_is_still_refused_without_resume(tmp_path):
+    root = tmp_path / "dispatch"
+    root.mkdir()
+    (root / "DISPATCH_MANIFEST.json").write_text("{}")
+    clock = Clock()
+    d = D.Dispatcher(root, [job("j1")], inventory_fn=lambda: F.inventory(), backend=FakeHosts(clock),
+                     clock=clock, sleep=clock.sleep, poll_seconds=5, max_inventory_age_seconds=2)
+    with pytest.raises(SystemExit, match="write-once"):
+        d._prepare_root()

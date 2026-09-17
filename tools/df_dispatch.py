@@ -317,14 +317,20 @@ class Dispatcher:
 
     # ---------------------------------------------------------------- files
     def _prepare_root(self):
-        if self.root.exists():
+        # The Flow v3 gate seals the root before the dispatcher prepares it. A root whose only
+        # entries are the gate's own files is this dispatch's fresh root, not a prior one:
+        # refusing it refused every first dispatch under a sealed gate (measured on D3).
+        gate_only = {"DISPATCH_GATE.json", "DISPATCH_REFUSAL.json"}
+        fresh_under_gate = self.root.exists() and self.root.is_dir() and \
+            set(p.name for p in self.root.iterdir()) <= gate_only
+        if self.root.exists() and not fresh_under_gate:
             if not self.resume:
                 raise SystemExit(f"REFUSED: {self.root.name} exists; a dispatch root is write-once (use --resume)")
             if (self.root / "DISPATCH_RECEIPT.json").exists():
                 raise SystemExit(f"REFUSED: {self.root.name} is sealed by its final receipt")
             return
         for d in ("inventories", "receipts"):
-            (self.root / d).mkdir(parents=True)
+            (self.root / d).mkdir(parents=True, exist_ok=fresh_under_gate)
         code = {n: hashlib.sha256((HERE / f"{n}.py").read_bytes()).hexdigest()
                 for n in ("df_dispatch", "df_placement", "df_host_capacity")}
         write_once(self.root / "DISPATCH_MANIFEST.json",
