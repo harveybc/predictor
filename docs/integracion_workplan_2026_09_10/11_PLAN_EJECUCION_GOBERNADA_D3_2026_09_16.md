@@ -36,17 +36,24 @@ los tres recursos toy contratados, no contra los resultados de D2.
 |---|---|---|
 | **R2** adjudicador reparado | `PRESENT` | `tools/df_d2_adjudicate.py` en el checkout |
 | **N3** micro-run productivo reconciliado | `PRESENT` | acta `MUSASHI_FLOW_V3_PRODUCTION_RESTART_COMPLETED_2026_09_14.md` |
-| **R6** vista de cobertura vigente | **`NOT_APPLIED` — bloquea** | `df_coverage_current` y `df_coverage_history` **no existen** en el cubo |
+| **R6** vista de cobertura vigente | `NOT_APPLIED` al sondear → **`PRESENT` tras aplicarlo** | ver §2.1 |
 
-El bloqueo es concreto, no formal. `df_fact_coverage` tiene **440.694 filas**, y contiene
+El bloqueo era concreto, no formal. `df_fact_coverage` tiene **440.694 filas**, y contiene
 **una** `run_id` con **dos** digests de código; `df_fact_coverage_v2` tiene **633.189**. Sin
-vista de selección, cualquier cifra de cobertura leída hoy no puede decir qué ejecución y qué
-digest contó, y el diseño exige cobertura vigente *para toda medición que fundamente
-decisiones*. Medir D3 antes de aplicar R6 produciría números que no se pueden atribuir.
+vista de selección, una cifra de cobertura no podía decir qué ejecución y qué digest contó, y
+el diseño exige cobertura vigente *para toda medición que fundamente decisiones*. Medir D3 sin
+R6 habría producido números que nadie puede atribuir.
 
-**R6 se aplica por la ruta de adopción** (configuración + ventana deliberada), como ya ordenó
-el work plan; nunca por edición directa del cubo. No se aplica en este bloque: la orden pide
-preparar D3, y aplicar vistas a producción es una operación con su propia autorización.
+### 2.1 R6, aplicado el 2026-09-16
+
+Se aplicó por la ruta de adopción —ensayo sobre copia, ventana coordinada, recibo— y **no** por
+edición directa del cubo. `df_coverage_current` 633.189 = la matriz seleccionada, con **una**
+ejecución y **un** digest; `df_coverage_history` 1.073.883 = 440.694 + 633.189; las tablas de
+hechos **sin cambiar una fila**; denominador 715 datasets; WAL en 0.
+
+Reprobado después: **`ready_to_measure: true`, nada bloqueando.** D3 ya no tiene prerrequisito
+pendiente. Lo que falta antes de ejecutarlo es la revisión del contrato y la batería, y luego
+implementar los nueve operadores.
 
 ## 3. Contratos de datos
 
@@ -118,15 +125,14 @@ que no me corresponde tomar sobre un diseño sellado.
 
 ## 6. Lo que este bloque no hizo, a propósito
 
-No implementó ninguno de los nueve operadores; no ejecutó D3; no aplicó R6 a producción; no
-cambió el diseño sellado; no inventó aceptación científica; no lanzó campaña de entrenamiento;
-y no promovió nada. Los operadores de `tests/test_d3_contract_and_acceptance.py` son fixtures
+No implementó ninguno de los nueve operadores; no ejecutó D3; no cambió el diseño sellado; no
+inventó aceptación científica; no lanzó campaña de entrenamiento; y no promovió nada. R6 sí se
+aplicó (§2.1), por ser el bloqueo medido y por la ruta de adopción. Los operadores de `tests/test_d3_contract_and_acceptance.py` son fixtures
 del arnés, no candidatos.
 
 ## 7. Siguiente paso, y de quién es
 
-1. **R6 por la ruta de adopción** — aplicar las vistas de selección de cobertura. Es el único
-   bloqueo medido de D3. Requiere su propia autorización operativa.
+1. ~~R6 por la ruta de adopción~~ — **hecho el 2026-09-16**; ver §2.1.
 2. Revisión de este contrato y esta batería antes de implementar operador alguno: si la
    batería cambia después de que existan candidatos, los resultados no son comparables.
 3. Con R6 aplicado y la batería aceptada, implementar los nueve operadores del §2 del diseño

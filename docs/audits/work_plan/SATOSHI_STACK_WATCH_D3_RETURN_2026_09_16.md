@@ -75,6 +75,10 @@ the cost, the cube byte-identical after being watched, and the token never an ar
 
 ## 3 — D3, prepared and not executed
 
+**D3 is now unblocked.** With R6 applied (below), `df_d3_prerequisites.py` reports
+`ready_to_measure: true`. What remains before D3 runs is review of the contract and battery,
+then implementing the nine operators — neither of which this block was asked to do.
+
 **The step.** The binding sequence is `D0 -> D1 -> D2 -> D3 -> ...`. D2 has candidate evidence
 awaiting review; the next **unexecuted** step is **D3** — quantization/compression, entropy,
 time-frequency and detectors (STEP 04-07), all of which the status table lists as written but
@@ -88,7 +92,7 @@ not common and without evidence. Its design is sealed in
 |---|---|---|
 | R2 repaired adjudicator | `PRESENT` | `tools/df_d2_adjudicate.py` |
 | N3 productive micro-run | `PRESENT` | the reviewer's restart act |
-| **R6 current coverage view** | **`NOT_APPLIED` — blocking** | `df_coverage_current` and `df_coverage_history` do not exist in the cube |
+| **R6 current coverage view** | `NOT_APPLIED` when probed, **`PRESENT` after it was applied** | see below |
 
 The block is concrete. `df_fact_coverage` holds **440,694 rows**, comprising **one** `run_id`
 and **two** code digests; `df_fact_coverage_v2` holds **633,189**. With no selection view, a
@@ -96,8 +100,39 @@ coverage figure read today cannot say which run and which code digest it counted
 design requires a current coverage view *for every measurement that grounds a decision*.
 Measuring D3 before R6 is applied would produce numbers nobody can attribute.
 
-R6 is applied through the adoption route, never by editing the cube, and that is an operation
-with its own authorisation. It was not done here.
+### R6, applied
+
+It was the only measured block, so it was removed rather than reported. `tools/df_r6_apply.py`
+runs the shipped SQL verbatim, translating the two PostgreSQL spellings the cube's engine does
+not share and **naming both in the receipt**, because a silent translation is a change nobody
+reviewed. It rehearses on a copy of the very file it is about to change and refuses to touch
+the original unless the rehearsal comes out right, on content rather than exit codes.
+
+One real defect in the shipped SQL, found by running it: the selection's own reason reads
+`(9 states + applicability); supersedes v1 c140`, and a naive split on `;` cut the statement in
+half — the parser then complained about an unterminated string rather than about the split.
+The splitter now respects quotes, and both that and a `--` inside quotes are rules.
+
+Applied in a coordinated window of well under a minute, `NRestarts=0`:
+
+| relation | rows |
+|---|---|
+| `df_fact_coverage` | 440,694 — **unchanged** |
+| `df_fact_coverage_v2` | 633,189 — **unchanged** |
+| `df_coverage_current` | **633,189** — exactly the selected matrix |
+| `df_coverage_history` | **1,073,883** = 440,694 + 633,189, every version kept |
+| `df_coverage_version_selection` | 1, with an explicit reason |
+| `df_coverage_current_denominator` | 715 datasets |
+
+Read back through the running service: `df_coverage_current` carries **one** run id and **one**
+code digest, which is the whole point — a coverage figure can now say what it counted. Nothing
+was deleted or deduplicated; zero bytes of log left beside the cube. Receipts `R6_REHEARSAL.json`
+and `R6_APPLIED.json`; **17 rules** in `tests/test_r6_coverage_selection.py`, including that a
+rehearsal which does not come out right never touches the cube.
+
+Re-probed afterwards: **`ready_to_measure: true`, nothing blocking.** Reconciled after the
+write through the active service: 55 accepted, 55 matching, 0 differing, and filter and scan
+agreeing on every child relation. The watch ran again: no alert, 16 queries, 0.063 s.
 
 **Contracts and tests prepared:**
 
@@ -132,8 +167,8 @@ Test 2 catches it and the pair does its job. Recorded, **not corrected**: wideni
 
 | suite | scope | result |
 |---|---|---|
-| migration + reconciler + watch + stack + D3 + `olap/store/tests` | three engines (`U2_DUCKDB_PATH=1`, `U2_PG_DATABASE=<disposable>`) | **327 passed, 1 skipped** |
-| predictor `tests` + `olap/store/tests` | trading-stack, with the store environment | **1465 passed, 12 skipped**, 0 failed, in 7m29s |
+| migration + reconciler + watch + stack + D3 + R6 + `olap/store/tests` | three engines (`U2_DUCKDB_PATH=1`, `U2_PG_DATABASE=<disposable>`) | **344 passed, 1 skipped** |
+| predictor `tests` + `olap/store/tests` | trading-stack, with the store environment | **1465 passed, 13 skipped**, 0 failed, in 7m30s |
 
 The disposable PostgreSQL database was dropped. `K_FAILING_BEFORE.txt` records 18 red for
 block 1; it notes its own scope, since `git stash` restores tracked files only and the D3
@@ -143,7 +178,6 @@ modules are new — their "before" is that they did not exist, which is not evid
 
 | item | owner |
 |---|---|
-| **R6 through the adoption route** — the only measured block on D3 | owner; needs operational authorisation |
 | review of the D3 contract and battery before any operator exists, so results stay comparable | Musashi |
 | what made `gov_terminal_metric_sha_idx` lose four entries — four mechanisms reproduced and excluded | Satoshi; unknown, not named |
 | Metabase driver decision, historical terms research | Satoshi; nonblocking |

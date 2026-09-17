@@ -1,0 +1,82 @@
+{
+ "schema": "df_r6_apply.v1",
+ "generated_utc": "2026-09-17T01:11:20Z",
+ "cube": "/home/harveybc/.local/state/crispdm-duckdb/prod/cube.duckdb",
+ "sql": "docs/audits/evidence/repro_runs/d2_support_r1/R6_COVERAGE_VIEWS.sql",
+ "translations": [
+  {
+   "postgres": "TIMESTAMPTZ",
+   "engine": "TIMESTAMP WITH TIME ZONE"
+  },
+  {
+   "postgres": "::TEXT",
+   "engine": "::VARCHAR"
+  }
+ ],
+ "rehearsal": {
+  "applied_statements": [
+   "CREATE TABLE IF NOT EXISTS df_coverage_version_selection (",
+   "INSERT INTO df_coverage_version_selection (table_name, run_id, code_sha256, reason)",
+   "CREATE OR REPLACE VIEW df_coverage_current AS",
+   "CREATE OR REPLACE VIEW df_coverage_history AS",
+   "CREATE OR REPLACE VIEW df_coverage_current_denominator AS"
+  ],
+  "selection": {
+   "table_name": "df_fact_coverage_v2",
+   "run_id": "c170_17e79fa33a11f298c70180ec",
+   "code_sha256": "b4c9157c206dc914953c0ca52d6ae60fa79780d38aaef318ba2eb3cf1d53cb86",
+   "reason": "C170 coverage v2 (9 states + applicability); supersedes v1 c140, which carries two code digests under one run id"
+  },
+  "fact_rows_before": {
+   "df_fact_coverage": 440694,
+   "df_fact_coverage_v2": 633189
+  },
+  "fact_rows_after": {
+   "df_fact_coverage": 440694,
+   "df_fact_coverage_v2": 633189
+  },
+  "relation_rows": {
+   "df_coverage_version_selection": 1,
+   "df_coverage_current": 633189,
+   "df_coverage_history": 1073883,
+   "df_coverage_current_denominator": 715
+  },
+  "expected_current_rows": 633189,
+  "write_ahead_log_bytes_after_checkpoint": 0
+ },
+ "rehearsal_refused_because": [],
+ "applied": {
+  "applied_statements": [
+   "CREATE TABLE IF NOT EXISTS df_coverage_version_selection (",
+   "INSERT INTO df_coverage_version_selection (table_name, run_id, code_sha256, reason)",
+   "CREATE OR REPLACE VIEW df_coverage_current AS",
+   "CREATE OR REPLACE VIEW df_coverage_history AS",
+   "CREATE OR REPLACE VIEW df_coverage_current_denominator AS"
+  ],
+  "selection": {
+   "table_name": "df_fact_coverage_v2",
+   "run_id": "c170_17e79fa33a11f298c70180ec",
+   "code_sha256": "b4c9157c206dc914953c0ca52d6ae60fa79780d38aaef318ba2eb3cf1d53cb86",
+   "reason": "C170 coverage v2 (9 states + applicability); supersedes v1 c140, which carries two code digests under one run id"
+  },
+  "fact_rows_before": {
+   "df_fact_coverage": 440694,
+   "df_fact_coverage_v2": 633189
+  },
+  "fact_rows_after": {
+   "df_fact_coverage": 440694,
+   "df_fact_coverage_v2": 633189
+  },
+  "relation_rows": {
+   "df_coverage_version_selection": 1,
+   "df_coverage_current": 633189,
+   "df_coverage_history": 1073883,
+   "df_coverage_current_denominator": 715
+  },
+  "expected_current_rows": 633189,
+  "write_ahead_log_bytes_after_checkpoint": 0
+ },
+ "applied_refused_because": [],
+ "note": "R6 selects a coverage version and keeps every other one. Nothing is deleted or deduplicated, and the selection carries an explicit reason rather than being an implicit default.",
+ "outcome": "APPLIED"
+}

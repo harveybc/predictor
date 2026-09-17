@@ -743,3 +743,31 @@ prueba 1 **pasa** y prueba 2 **falla**. Se registra para el revisor; no se corri
 sellado.
 
 **327 pasan, 1 se salta** sobre tres motores.
+
+### R6 aplicado 2026-09-16: la cobertura ya es atribuible
+
+Era el unico bloqueo medido de D3, asi que se quito en vez de reportarse.
+`tools/df_r6_apply.py` corre el SQL de R6 **verbatim**, traduce las dos formas de PostgreSQL que
+el motor del cubo no comparte y **nombra ambas en el recibo** —una traduccion silenciosa es un
+cambio que nadie reviso—, ensaya sobre una copia del propio archivo y **rehusa tocar el original**
+si el ensayo no cuadra por contenido.
+
+Defecto real del SQL, encontrado al ejecutarlo: el texto de la seleccion dice
+`(9 states + applicability); supersedes v1 c140`, y una division ingenua por `;` partia la
+sentencia en dos. El separador respeta comillas, y eso —y un `--` entre comillas— son reglas.
+
+Ventana coordinada de bastante menos de un minuto, `NRestarts=0`:
+
+| relacion | filas |
+|---|---|
+| `df_fact_coverage` | 440.694 — **sin cambios** |
+| `df_fact_coverage_v2` | 633.189 — **sin cambios** |
+| `df_coverage_current` | **633.189** — exactamente la matriz seleccionada |
+| `df_coverage_history` | **1.073.883** = 440.694 + 633.189 |
+| `df_coverage_version_selection` | 1, con razon explicita |
+| `df_coverage_current_denominator` | 715 datasets |
+
+Leido por el servicio activo: la vista actual lleva **una** ejecucion y **un** digest de codigo.
+Nada borrado ni deduplicado; WAL en 0. Reprobados los prerrequisitos: **`ready_to_measure: true`**.
+Conciliado tras la escritura por el servicio: 55/55, filtro y barrido de acuerdo. **17 reglas**
+nuevas; **344 pasan, 1 se salta** sobre tres motores.
