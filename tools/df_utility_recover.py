@@ -204,7 +204,7 @@ def main(argv=None) -> int:
         units.append({"candidate_key": unit_id.split("__")[2], "cell_key": unit_id,
                       "metric_name": "utility.delta_mean", "metric_value": float(score["delta_mean"]),
                       "terminal_state": "COMPLETE", "uncertainty_kind": "BLOCK_T_LOWER",
-                      "uncertainty_low": str(score["delta_lower"]), "uncertainty_high": "UNAVAILABLE"})
+                      "uncertainty_low": float(score["delta_lower"]), "uncertainty_high": "UNAVAILABLE"})
     for entry in refusals:
         units.append({"candidate_key": entry["unit_id"].split("__")[2], "cell_key": entry["unit_id"],
                       "metric_name": "outcome", "metric_value": "UNAVAILABLE",

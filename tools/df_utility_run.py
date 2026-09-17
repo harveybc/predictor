@@ -236,7 +236,7 @@ def main(argv=None) -> int:
                       "terminal_state": "COMPLETE" if out["outcome"] in (
                           H.ADVANCES, H.DOES_NOT_ADVANCE, H.INCONCLUSIVE_UNCALIBRATED)
                       else str(out["outcome"]), "uncertainty_kind": "BLOCK_T_LOWER",
-                      "uncertainty_low": str(score.get("delta_lower", "UNAVAILABLE")),
+                      "uncertainty_low": float(score["delta_lower"]) if isinstance(score.get("delta_lower"), (int, float)) else "UNAVAILABLE",
                       "uncertainty_high": "UNAVAILABLE"})
     envelope = CE.build_envelope(
         campaign_key=f"utility-rehearsal-{args.run_id}", producer="predictor",
