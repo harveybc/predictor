@@ -56,6 +56,7 @@ def _load(name: str):
     return module
 
 
+contract = _load("df_d3_contract")
 design = _load("df_d3_design")
 ops = _load("df_d3_operators")
 worker = _load("df_d3_unit_worker")
@@ -415,6 +416,27 @@ def unit_terminal(rows: list, *, status: str, reason, wall: float, cpu: float,
                      "externally_reviewed": "false"}}
 
 
+#: What a mechanical run says about everything it consumed: evidence, never eligibility.
+MECHANICAL_ELIGIBILITY = "MECHANICAL_EVIDENCE_NON_GOVERNING"
+
+
+def mechanics_consumption(units: list) -> dict:
+    """`data_consumed` as the envelope loader stores it: every item is {id, digest,
+    eligibility_state}. The first d3mech-v1 envelope carried bare strings and the store
+    fell over on `item.get` (answered as 503); that envelope is kept as FAILED evidence."""
+    datasets, variables = {}, set()
+    for u in units:
+        digest = u["rows"][0]["contract_sha256"] if u.get("rows") else "UNAVAILABLE"
+        datasets[u["unit_id"]] = digest
+        variables.update(row["variable"] for row in u.get("verdict_rows", []))
+    item = lambda id_, digest: {"id": id_, "digest": digest,
+                                "eligibility_state": MECHANICAL_ELIGIBILITY}
+    return {"datasets": [item(k, datasets[k]) for k in sorted(datasets)],
+            "variables": [item(v, "UNAVAILABLE") for v in sorted(variables)],
+            "operators": [item(op.KIND, contract.spec_sha256(op.describe()))
+                          for op in ops.bank()]}
+
+
 def build_mechanics_envelope(*, campaign_key: str, run_id: str, code_identity: dict,
                              frozen: dict, units: list, wall_seconds: float) -> dict:
     CE = _load_olap_envelope()
@@ -433,10 +455,7 @@ def build_mechanics_envelope(*, campaign_key: str, run_id: str, code_identity: d
         identity={"run_id": run_id, "code_identity": code_identity["value"],
                   "design_sha256": design.D3_AMENDMENT_V1["design_sha256"],
                   "record_sha256": frozen["freeze_sha256"]},
-        data_consumed={"datasets": sorted({u["unit_id"] for u in units}),
-                       "variables": sorted({row["variable"] for u in units
-                                            for row in u["verdict_rows"]}),
-                       "operators": [op.KIND for op in ops.bank()]},
+        data_consumed=mechanics_consumption(units),
         partitions={"exposure": "MECHANICAL_NO_SCIENTIFIC_EXPOSURE",
                     "splits": {"train": "fit prefix only", "evaluated": "whole unit"}},
         budget={"device": "cpu", "wall_seconds": float(wall_seconds), "cost_units": len(units),

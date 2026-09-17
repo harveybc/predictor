@@ -318,3 +318,21 @@ def test_a_multivariate_unit_terminal_has_one_metric_identity_per_operator():
     verdict = next(m for m in t["metrics"] if m["metric"] == "d3.verdict.op")
     assert verdict["value"] == pytest.approx(2 / 3) and verdict["min_value"] == 0.0
     assert next(m for m in t["metrics"] if m["metric"] == "d3.variables")["value"] == 3.0
+
+
+def test_the_envelope_consumption_items_are_what_the_loader_stores():
+    """The first d3mech-v1 envelope carried bare strings under data_consumed; the store's
+    loader calls item.get(...) and fell over. Every item is {id, digest, eligibility_state}."""
+    campaign = _load("df_d3_campaign")
+    units = [{"unit_id": "u1", "status": "COMPLETED",
+              "rows": [{"contract_sha256": "c" * 64, "variable": "v0", "test": "verdict"}],
+              "verdict_rows": [{"variable": "v0"}, {"variable": "v1"}]}]
+    consumed = campaign.mechanics_consumption(units)
+    assert set(consumed) == {"datasets", "variables", "operators"}
+    for kind, items in consumed.items():
+        assert items and all(set(i) == {"id", "digest", "eligibility_state"} for i in items)
+    assert consumed["datasets"] == [{"id": "u1", "digest": "c" * 64,
+                                     "eligibility_state": campaign.MECHANICAL_ELIGIBILITY}]
+    assert [i["id"] for i in consumed["variables"]] == ["v0", "v1"]
+    assert len(consumed["operators"]) == 9
+    assert all(len(i["digest"]) == 64 for i in consumed["operators"])
