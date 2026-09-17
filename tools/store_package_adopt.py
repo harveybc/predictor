@@ -139,7 +139,9 @@ def rehearse(args, adoption: Path) -> dict:
     log = adoption / "rehearsal.log"
     out = run([str(args.test_python), "-m", "pytest", "-q", "-p", "no:cacheprovider",
                str(REPO / "tests" / "test_olap_ingest_diagnostics.py"), "-k", "real_service"],
-              cwd=str(REPO), env=dict(os.environ, STORE_HOSTS_PYTHON=str(args.venv / "bin" / "python")),
+              cwd=str(REPO), env=dict(os.environ, STORE_HOSTS_PYTHON=str(args.venv / "bin" / "python"),
+                                      K4_EXTRA_PYTHONPATH=os.pathsep.join(
+                                          str(Path(p).resolve()) for p in args.candidate_pythonpath)),
               timeout=900)
     log.write_text(out.stdout + out.stderr)
     passed = out.returncode == 0 and "passed" in out.stdout and "skipped" not in out.stdout.split("\n")[-2]
@@ -152,8 +154,24 @@ def install(args, adoption: Path) -> dict:
     the production venv carries no build backend and compiles nothing."""
     wheels = adoption / "wheel"
     wheels.mkdir(exist_ok=True)
+    source = args.package
+    if args.package_ref:
+        # the wheel is built from the named commit exported clean, never from a working tree
+        # that may carry someone's uncommitted change
+        export = adoption / "export"
+        export.mkdir(exist_ok=True)
+        archived = subprocess.run(["git", "-C", str(args.package_repo or args.package), "archive",
+                                   "--format=tar", args.package_ref], capture_output=True,
+                                  timeout=300)
+        if archived.returncode != 0:
+            return {"returncode": archived.returncode, "stage": "export",
+                    "tail": archived.stderr.decode(errors="replace")[-400:]}
+        (export / "src.tar").write_bytes(archived.stdout)
+        run(["tar", "-xf", str(export / "src.tar"), "-C", str(export)], timeout=300)
+        rel = Path(args.package).resolve().relative_to(Path(args.package_repo or args.package).resolve())
+        source = export / rel
     built = run([str(args.test_python), "-m", "pip", "wheel", "--no-deps", "--no-cache-dir",
-                 "-w", str(wheels), str(args.package)], timeout=900)
+                 "-w", str(wheels), str(source)], timeout=900)
     (adoption / "wheel.log").write_text(built.stdout + built.stderr)
     wheel = sorted(wheels.glob("*.whl"))
     if built.returncode != 0 or not wheel:
@@ -181,6 +199,46 @@ def restart(args) -> dict:
             "service": service_state(args.unit)}
 
 
+def idempotency_probe(url: str, token: str, *, schema: str, outbox: Path) -> dict:
+    """Post ONE envelope the cube already holds, chosen by identity (its envelope_sha256 is in
+    fact_campaign_unit), and compare content: the store must skip every unit and open no run.
+    With no held envelope in loaded/, nothing is posted — an old file is never a substitute.
+    (The first adoption's probe posted the last loaded/ file by name and loaded a foreign
+    DEVELOPMENT envelope; that receipt stands.)"""
+    _, held = query(url, token, f'SELECT DISTINCT envelope_sha256 FROM "{schema}"'
+                                '."fact_campaign_unit" LIMIT 5000')
+    held = {r["envelope_sha256"] for r in (held or [])}
+    known = None
+    for path in sorted(outbox.joinpath("loaded").glob("envelope-*.json")):
+        doc = json.loads(path.read_text())["document"]
+        if doc.get("envelope_sha256") in held:
+            known = doc
+            break
+    if known is None:
+        return {"skipped": "no loaded envelope is held by this cube; nothing posted", "ok": True}
+    _, runs_before = query(url, token, f'SELECT count(*) AS n FROM "{schema}"."dim_campaign_run" LIMIT 1')
+    _, units_before = query(url, token, f'SELECT count(*) AS n FROM "{schema}"."fact_campaign_unit" '
+                                        f"WHERE envelope_sha256 = '{known['envelope_sha256']}' LIMIT 1")
+    status, body = http(f"{url}/api/v2/foundation-envelopes", token, method="POST",
+                        body={"document": known})
+    _, runs_after = query(url, token, f'SELECT count(*) AS n FROM "{schema}"."dim_campaign_run" LIMIT 1')
+    _, units_after = query(url, token, f'SELECT count(*) AS n FROM "{schema}"."fact_campaign_unit" '
+                                       f"WHERE envelope_sha256 = '{known['envelope_sha256']}' LIMIT 1")
+    same_content = (units_before and units_after and units_before[0]["n"] == units_after[0]["n"]
+                    == len(known.get("units", [])))
+    return {"envelope_sha256": known["envelope_sha256"], "status": status,
+            "answer": {k: v for k, v in (body or {}).items() if isinstance(v, int)},
+            "runs_before": runs_before[0]["n"] if runs_before else None,
+            "runs_after": runs_after[0]["n"] if runs_after else None,
+            "content_matches": bool(same_content),
+            # the store reports the campaign it touched even when it wrote nothing; what
+            # proves idempotency is measured: no new run, no new unit, every unit skipped
+            "ok": status == 201 and (body or {}).get("units", 0) == 0
+            and (body or {}).get("runs", 0) == 0
+            and (body or {}).get("skipped_existing", 0) == len(known.get("units", []))
+            and runs_before == runs_after and bool(same_content)}
+
+
 def postcheck(args, token: str, before: dict) -> dict:
     """Writes nothing new: the malformed document must be a 400; a document the cube already
     holds must be a 201 with everything skipped; table counts unchanged."""
@@ -195,28 +253,8 @@ def postcheck(args, token: str, before: dict) -> dict:
                         body={"document": malformed})
     checks["malformed_is_400"] = {"status": status, "error": str(body.get("error", ""))[:200],
                                   "ok": status == 400}
-    # idempotency is checked ONLY with an envelope this cube already holds: the first adoption
-    # post-check took the last file of loaded/ by name, which was a Postgres-era envelope this
-    # DuckDB cube had never seen, and loaded it (recorded in that receipt). Never again.
-    _, held = query(args.url, token, f'SELECT envelope_sha256 FROM "{args.schema}"'
-                                     '."dim_campaign_run" LIMIT 5000')
-    held = {r["envelope_sha256"] for r in (held or [])}
-    known = None
-    for path in sorted(Path(args.outbox).expanduser().joinpath("loaded").glob("envelope-*.json")):
-        doc = json.loads(path.read_text())["document"]
-        if doc.get("envelope_sha256") in held:
-            known = doc
-            break
-    if known is not None:
-        status, body = http(f"{args.url}/api/v2/foundation-envelopes", token, method="POST",
-                            body={"document": known})
-        checks["known_envelope_is_idempotent"] = {
-            "envelope_sha256": known["envelope_sha256"], "status": status,
-            "answer": {k: v for k, v in body.items() if isinstance(v, int)},
-            "ok": status == 201 and body.get("units", 0) == 0 and body.get("campaigns", 0) == 0}
-    else:
-        checks["known_envelope_is_idempotent"] = {"skipped": "no loaded envelope is held by "
-                                                             "this cube; nothing posted"}
+    checks["known_envelope_is_idempotent"] = idempotency_probe(
+        args.url, token, schema=args.schema, outbox=Path(args.outbox).expanduser())
     after = inventory(args, token)
     checks["table_counts_unchanged"] = {"before": before["table_counts"],
                                         "after": after["table_counts"],
@@ -233,6 +271,10 @@ def main(argv=None) -> int:
     parser.add_argument("--venv", type=Path, default=Path.home() / ".venvs/store-hosts-duckdb-prod")
     parser.add_argument("--package", type=Path, default=REPO / "olap" / "store")
     parser.add_argument("--dist", default="predictor-olap-store")
+    parser.add_argument("--package-repo", type=Path, help="git repository holding --package")
+    parser.add_argument("--package-ref", help="commit to export and build (never the tree)")
+    parser.add_argument("--candidate-pythonpath", action="append", default=[],
+                        help="paths put ahead of site-packages for the rehearsal service")
     parser.add_argument("--unit", default="crispdm-data-warehouse-olap.service")
     parser.add_argument("--url", default="http://127.0.0.1:5057")
     parser.add_argument("--schema", default="public")
@@ -253,10 +295,11 @@ def main(argv=None) -> int:
     adoption.mkdir(parents=True, exist_ok=False)
     receipt = {"schema": "store_package_adoption.v1", "started_at": now_iso(),
                "mode": "adopt" if args.adopt else "rehearse", "dist": args.dist,
-               "candidate": {"path": str(args.package),
-                             "envelope_sha256": sha_file(args.package / "src" /
-                                                         "predictor_olap_store" /
-                                                         "campaign_envelope.py")}}
+               "candidate": {"path": str(args.package), "ref": args.package_ref,
+                             "candidate_pythonpath": [str(p) for p in args.candidate_pythonpath]}}
+    envelope_copy = args.package / "src" / "predictor_olap_store" / "campaign_envelope.py"
+    if envelope_copy.is_file():
+        receipt["candidate"]["envelope_sha256"] = sha_file(envelope_copy)
     receipt["before"] = inventory(args, token)
     receipt["backup"] = backup(args, adoption, receipt["before"])
     receipt["rehearsal"] = rehearse(args, adoption)

@@ -1,0 +1,27 @@
+{
+ "schema": "olap_selection_manifest.v1",
+ "declared_utc": "2026-09-17",
+ "declared_by": "Satoshi, order L3 (MUSASHI_D3_K1_K5_REVIEW_AND_L1_L6_2026_09_17.md)",
+ "runs": [
+  {
+   "run_id": "475b93fb9479e2d78beb95071547c14fb524489c58d3c02e7cdb22596c8cb216",
+   "kind": "foundation_envelope",
+   "campaign_key": "predictor::governed_config",
+   "disposition": "ACCIDENTAL_OPERATIONAL_INGESTION",
+   "admissibility": "NOT_ADMISSIBLE_SCIENTIFIC",
+   "status": "RETAINED_AS_LOADED",
+   "rationale": "Loaded into the production DuckDB cube on 2026-09-17 by the first post-check of the predictor-olap-store 0.1.1 adoption (satoshi-store-adoption-20260917T053759Z-adopt2), which posted the last loaded/ file by name: a Postgres-era DEVELOPMENT route smoke (identity.run_id is a scratchpad path). Kept with its history; not promoted; provenance unchanged. envelope_sha256 rederived from the retained bytes and equal to the cube's. Children: dim_campaign_run 1, fact_campaign_unit 1 (run_wall_seconds), consumption 0.",
+   "admissibility_reason": "accidental operational ingestion of a DEVELOPMENT envelope; not part of any current study; DEVELOPMENT alone does not make rows admissible"
+  },
+  {
+   "run_id": "d3mech-v2",
+   "kind": "foundation_envelope",
+   "campaign_key": "d3-mechanics-v1",
+   "disposition": "CORRECTIVE_RELATION",
+   "admissibility": "MECHANICAL_OPERATIONAL",
+   "status": "RETAINED_AS_LOADED",
+   "rationale": "The successor run d3mech-v2's envelope 13950460d6bdfbdb9e89fdb17324a8f9e8751a101cec9fe7226f735bc13dd5e2 was emitted under the fixed campaign_key d3-mechanics-v1 (report defect, fixed for later runs as d3-mechanics-<run_id>). Its logical campaign is d3-mechanics-d3mech-v2. Select v1, v2 or the current run by (run_id, design_sha256, envelope_sha256) in dim_campaign_run / fact_campaign_unit, never by campaign_key prefix. Nothing re-emitted.",
+   "admissibility_reason": "NON_GOVERNING mechanical evidence (07B); no scientific claim"
+  }
+ ]
+}

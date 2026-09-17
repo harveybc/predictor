@@ -201,6 +201,16 @@ def test_recovery_loads_takes_the_diagnosis_to_receipts_and_a_second_drain_posts
 
 # --- the real service on a disposable cube --------------------------------------------------------
 
+def candidate_pythonpath() -> str:
+    """The packaged loader from this checkout ahead of site-packages, plus any candidate the
+    adoption rehearsal names (K4_EXTRA_PYTHONPATH, e.g. the data-warehouse commit)."""
+    parts = [str(REPO / "olap" / "store" / "src")]
+    extra = os.environ.get("K4_EXTRA_PYTHONPATH")
+    if extra:
+        parts = [p for p in extra.split(os.pathsep) if p] + parts
+    return os.pathsep.join(parts)
+
+
 def _free_port():
     s = socket.socket()
     s.bind(("127.0.0.1", 0))
@@ -225,7 +235,8 @@ def warehouse(tmp_path):
     (tmp_path / "warehouse.json").write_text(json.dumps(config))
     token = "k4-disposable-token"
     env = dict(os.environ, DATA_GOV_LAKE_TOKEN=token, PYTHONUNBUFFERED="1",
-               PYTHONPATH=str(REPO / "olap" / "store" / "src"))
+               PYTHONPATH=candidate_pythonpath(),
+               DW_INDUCE_INTERNAL_DEFECT=str(tmp_path / "induce-defect"))
     for name in ("PGDATABASE", "PGUSER", "PGPASSWORD", "PGHOST", "PGPORT"):
         env.pop(name, None)
     log = (tmp_path / "warehouse.log").open("w")
@@ -279,7 +290,7 @@ def test_the_real_service_and_loader_permanent_recovery_and_no_duplicate(tmp_pat
     assert ob.retrying(root)[0]["class"] == ob.RETRY_TRANSPORT
     # 3. recovery: the same service, the same cube; the second drain duplicates nothing
     env = dict(os.environ, DATA_GOV_LAKE_TOKEN=token, PYTHONUNBUFFERED="1",
-               PYTHONPATH=str(REPO / "olap" / "store" / "src"))
+               PYTHONPATH=candidate_pythonpath())
     proc2 = subprocess.Popen([str(HOSTS_PYTHON), "-m", "data_warehouse_service.main",
                               "--load_config", str(tmp_path / "warehouse.json")],
                              cwd=str(tmp_path), env=env, stdout=subprocess.DEVNULL,
@@ -302,3 +313,66 @@ def test_the_real_service_and_loader_permanent_recovery_and_no_duplicate(tmp_pat
     finally:
         if proc2.poll() is None:
             os.killpg(os.getpgid(proc2.pid), 9)
+
+
+# --- L3: selection by identity never mixes populations; the probe introduces no run ---------------
+
+def test_selecting_by_identity_does_not_mix_runs_that_share_a_campaign_key(tmp_path, warehouse):
+    url, token, _ = warehouse
+    sel = _load("df_d3_cube_select", REPO / "tools" / "df_d3_cube_select.py")
+    a = envelope(key="d3-mechanics-shared")
+    b = envelope(key="d3-mechanics-shared")
+    b["identity"] = dict(b["identity"], run_id="k4-second", design_sha256="2" * 64)
+    b["units"] = [dict(b["units"][0], cell_key="u2/v0/op")]
+    b = CE.build_envelope(**{k: b[k] for k in ("campaign_key", "producer", "result_class",
+                                               "identity", "data_consumed", "partitions",
+                                               "budget", "terminal", "artifacts", "units")})
+    for doc in (a, b):
+        status, answer = loader.post_envelope(url, token, doc)
+        assert status == 201, answer
+    first = sel.select(url, token, schema="public", run_id="k4")
+    second = sel.select(url, token, schema="public", run_id="k4-second")
+    assert first["identity"]["campaign_key_as_stored"] == second["identity"]["campaign_key_as_stored"]
+    assert sel.disjoint(first, second) and first["cells"] != second["cells"]
+    assert first["unit_rows"] == 1 and second["unit_rows"] == 1
+    # the key alone mixes them: two envelopes under one key
+    rows = sel.query(url, token, 'SELECT count(DISTINCT envelope_sha256) AS n FROM "public".'
+                                 '"fact_campaign_unit" WHERE campaign_key = \'d3-mechanics-shared\' LIMIT 1')
+    assert rows[0]["n"] == 2
+
+
+def test_the_idempotency_probe_posts_only_a_held_envelope_and_opens_no_run(tmp_path, warehouse):
+    url, token, _ = warehouse
+    adopt = _load("store_package_adopt", REPO / "tools" / "store_package_adopt.py")
+    root = tmp_path / "outbox"
+    ob.emit(envelope(key="k4-held"), kind="envelope", root=root)
+    ob.emit(envelope(key="k4-never-loaded"), kind="envelope", root=root)
+    # nothing held yet: the probe posts nothing
+    assert adopt.idempotency_probe(url, token, schema="public", outbox=root)["skipped"]
+    held = [p for p in ob.pending_entries(root) if "k4-held" in json.loads(p.read_text())["document"]["campaign_key"]][0]
+    status, _ = loader.post_envelope(url, token, json.loads(held.read_text())["document"])
+    assert status == 201
+    ob.mark(held, ob.LOADED, root=root)
+    out = adopt.idempotency_probe(url, token, schema="public", outbox=root)
+    assert out["ok"] is True and out["runs_before"] == out["runs_after"], out
+    assert out["envelope_sha256"] == json.loads((root / "loaded" / held.name).read_text())["document"]["envelope_sha256"]
+    assert out["content_matches"] is True and out["answer"].get("runs", 0) == 0
+
+
+def test_the_real_service_names_an_induced_internal_defect_500_and_the_loader_keeps_the_entry(tmp_path, warehouse):
+    """Only with the data-warehouse candidate on the path (K4_EXTRA_PYTHONPATH): the hook
+    DW_INDUCE_INTERNAL_DEFECT makes the envelope writer raise once the marker file exists."""
+    if not os.environ.get("K4_EXTRA_PYTHONPATH"):
+        pytest.skip("data-warehouse candidate not on the rehearsal path")
+    url, token, _ = warehouse
+    (tmp_path / "induce-defect").write_text("1")
+    status, answer = loader.post_envelope(url, token, envelope(key="k4-defect"))
+    assert status == 500 and answer.get("class") == "INTERNAL_DEFECT", answer
+    root = tmp_path / "outbox2"
+    ob.emit(envelope(key="k4-defect"), kind="envelope", root=root)
+    out = loader.drain_once(root, url=url, token=token)
+    assert out["retryable"] == 1
+    assert ob.retrying(root)[0]["class"] == ob.RETRY_SERVER_ERROR
+    (tmp_path / "induce-defect").unlink()
+    out = loader.drain_once(root, url=url, token=token)
+    assert out["loaded"] == 1
