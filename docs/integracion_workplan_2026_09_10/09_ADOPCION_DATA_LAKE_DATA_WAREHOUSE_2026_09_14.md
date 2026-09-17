@@ -806,3 +806,22 @@ a WORKER_A/B (coordinador excluido por su proceso de GPU), recoleccion con verif
 digest, dos campanas data-gov (SYNTHETIC + DATASETS) y un sobre `MECHANICAL`. **10 reglas.**
 Dos defectos del despacho encontrados y corregidos en el primer intento (raiz nueva bajo reja;
 rutas sin `~/`), ambos congelados como reglas.
+
+**Corrida `d3mech-v1` (2026-09-17).** 504 unidades del banco + 7 toys, 43 shards en dos
+workers: **511/511 verificadas**, 0 discrepancias, 83,070 filas, 2.91 h de wall. Tres unidades
+toy de 26 variables murieron por `WALL_TIME_LIMIT` en el primer intento (presupuesto por variable
+entregado plano al hijo: defecto mio); corregido, congelado y reintentadas como intento 2
+versionado (133 s cada una). Matriz (`tools/df_d3_matrix.py`): seis operadores
+`MECHANICALLY_ACCEPTED` en las 710 variables; `stft` declara y mide inicio 1; el cuantizador de
+deciles rechazado en 63 variables y SAX en 6 por una sonda escalon **sin escalar al dominio
+ajustado** (artefacto del fixture; propuesta: amplitud relativa a la resolucion del operador y
+`UNIDENTIFIED` cuando el escalon no mueve nada en *p*); `wavelet` (soporte 50, cualquier NaN
+→ no disponible) inaplicable bajo MCAR 10 % (14 de 15 variables) y un hueco de la bateria:
+un gemelo que no emite nada contaba como "paso" (propuesta: `INSUFFICIENT_TEST`). Nada se
+reajusto tras la corrida. Gobernanza: 504 terminales SYNTHETIC (444 gen. 1 + 60 gen. 2 tras
+rechazo por identidad de metrica duplicada, corregida y superseded por el outbox), 7 campanas
+DATASETS de un recurso y una unidad (la campana de siete recursos no puede completarse por
+regla del servidor: forma mia, servidor correcto; 14 sobres cerrados `INVALID_ENVELOPE`), un
+sobre `MECHANICAL` cargado en DuckDB (6,390 unidades, 551 consumos). Dos hallazgos para el
+dueno del store: un documento ilegible responde 503 en vez de 400; el loader descarta el cuerpo
+de la respuesta reintentable. Todo `NON_GOVERNING`; sin seleccion por utilidad.

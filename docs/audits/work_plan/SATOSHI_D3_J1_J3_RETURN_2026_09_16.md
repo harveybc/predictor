@@ -194,13 +194,56 @@ Everything else: 6 of 9 operators `MECHANICALLY_ACCEPTED` on all 710 variables, 
 causal test PASSED, restart PASSED, availability PASSED and cost within declaration
 (costliest Butterworth/CUSUM at ~0.006 s per 1,000 samples median).
 
-**Reconciled terminals.** RECONCILE_PLACEHOLDER
+**Reconciled terminals.** Every outcome is in data-gov and in DuckDB, and the road there found three defects of
+mine and two of the store, each kept as evidence rather than cleaned up:
+
+| campaign | key | terminals in the cube |
+|---|---|---|
+| bank units, SYNTHETIC | `d3mech-v1-synthetic` (`1bc521ac…`) | **504** COMPLETED: 444 generation 1 + 60 generation 2 |
+| toys, DATASETS, one per resource | `d3mech-v1-toy-<resource>` (7 campaigns) | **7** COMPLETED, generation 1, each with its own confirmed delivery |
+| toys, DATASETS, original | `d3mech-v1-toys` (`60aafa35…`) | 0 — registered, 7 deliveries confirmed, no unit could complete (below) |
+
+Reconciliation by the service: `missing_units: []`, `accounting_only: []`, `lake_only: []` on
+all eight live campaigns. Terminal outbox after the run: 523 sent, 0 recoverable, 0 awaiting
+adjudication, 74 adjudicated. Envelope `382d8956…` (MECHANICAL, `d3-mechanics-v1`) loaded by
+the running loader: `fact_campaign_unit` 6,390 rows, `fact_campaign_consumption` 511 datasets +
+31 variables + 9 operators, `dim_campaign`/`dim_campaign_run` at `d173fee`. Receipts:
+`REPORT.json`, `REPORT.supersede-1.json`, `TOYS.recampaign-1.json`, all write-once.
+
+1. **Metric identity (mine).** The terminal declared `d3.verdict.<op>` once per variable; the
+   server refused the 67 multivariate units as `duplicate metric identity`. The terminal now
+   carries mean/std/min/max over variables plus `d3.variables`; the per-variable rows stay in
+   the mechanics fact. The 60 bank units were re-sent as **generation 2** through
+   `TerminalOutbox.supersede` (same outcome, same deliveries; the refused envelope moved
+   unchanged to `adjudicated/` with a `SUPERSEDED` disposition naming the accepted successor).
+2. **Campaign shape (mine).** data-gov requires a COMPLETED terminal of a DATASETS campaign to
+   cover every dataset the campaign declares, and binds a delivery to (campaign, actor, unit).
+   One campaign declaring seven resources with one unit per resource can never complete (422
+   `completed terminal lacks verified campaign data`). The server is right. Each toy is now its
+   own campaign with its own re-delivered, re-confirmed bytes — refused if they had differed from
+   the `source_sha256` the unit was computed on; they did not — and the 14 refused envelopes
+   (generations 1 and 2) are closed `INVALID_ENVELOPE` with that reason.
+3. **Envelope consumption items (mine).** `data_consumed.*` carried bare strings; the store's
+   loader calls `item.get(...)`. Now `{id, digest, eligibility_state}` with the unit contract
+   digests and the operator spec digests. The malformed envelope is in the OLAP outbox `failed/`
+   with its reason; the cube holds exactly one envelope for the campaign.
+4. **Store: a malformed document answers 503 (store's).** `write_foundation_envelope` maps
+   every non-`ValueError` exception to `503 database error`, so an `AttributeError` on the
+   document looked like an unavailable database and the loader retried it every cycle for
+   ever. A document the store cannot read is a 400. For the store owner.
+5. **Loader: the retryable answer's body is dropped (store's/mine).** `olap_loader_duckdb`
+   counts a non-201/400 answer as retryable and records nothing of what the store said; the
+   diagnosis needed a manual POST. The body belongs in the heartbeat or a sidecar. Nonblocking.
+
+The original `d3mech-v1-toys` campaign, its seven confirmed deliveries and its refusals are
+left as they are: the mechanics rows were computed on those delivered bytes, and the
+per-resource campaigns confirmed the same bytes again.
 
 ## Suites
 
 | suite | scope | result |
 |---|---|---|
-| D3 contract + operators + pipeline | trading-stack | **87 passed** |
+| D3 contract + operators + pipeline + matrix | trading-stack | **94 passed** (40 + 37 + 16 + 1); with dispatch + outbox disposition **119 passed** |
 | migration + reconciler + watch + stack + R6 + dispatch + gate + `olap/store/tests` | three engines | **330 passed, 1 skipped** |
 | predictor `tests` + `olap/store/tests` | trading-stack, with the store environment | **1514 passed, 13 skipped**, 0 failed, in 7m28s |
 
