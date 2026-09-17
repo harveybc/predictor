@@ -473,13 +473,25 @@ def _ar1_null(n: int, rng, phi: float = 0.6) -> np.ndarray:
     return np.cumsum(x)
 
 
+GENERATORS = {"ar1_null": "AR(1) increments (phi 0.6), cumulated: dependent, structured",
+              "white_null": "independent N(0,1) increments, cumulated: the exchangeable null"}
+
+
+def _white_null(n: int, rng, phi: float = 0.0) -> np.ndarray:
+    return np.cumsum(rng.normal(0, 1.0, n))
+
+
 def calibrate(protocol: Protocol, operator, *, n_sims: int, seed: int, n: int = 1500,
-              eligibility: dict | None = None) -> dict:
-    """The rate at which a contrast under this protocol says ADVANCES when the target carries
-    nothing beyond a dependent (AR(1)-increment) null. Diagnostic seeds only; the record is
-    sealed into the protocol before any real contrast."""
+              generator: str = "white_null", eligibility: dict | None = None) -> dict:
+    """The rate at which a contrast under this protocol says ADVANCES under a null. The
+    exchangeable null (`white_null`) is the one that supports the interval: under it neither
+    branch carries anything, so every ADVANCES is false. `ar1_null` is dependent AND
+    structured — a diagnostic of what dependence does, not a null of no effect. Diagnostic
+    seeds only; the record is sealed into the protocol before any real contrast."""
+    if generator not in GENERATORS:
+        raise ValueError(f"unknown generator {generator!r}")
     rng = np.random.default_rng(seed)
-    proto = protocol.with_calibration({"generator": "ar1_null", "n_sims": n_sims, "seed": seed,
+    proto = protocol.with_calibration({"generator": generator, "n_sims": n_sims, "seed": seed,
                                        "false_advance_rate": 0.0,
                                        "alpha_adjusted": protocol.alpha_adjusted})
     fake = {"freeze_sha256": "calibration", "design_sha256": "calibration", "cells": {}}
@@ -488,17 +500,18 @@ def calibrate(protocol: Protocol, operator, *, n_sims: int, seed: int, n: int = 
         "verdict": "MECHANICALLY_ACCEPTED", "spec_sha256": contract.spec_sha256(operator.describe())}
     advances = 0
     scored = 0
+    make = _ar1_null if generator == "ar1_null" else _white_null
     for k in range(n_sims):
-        s = series(_ar1_null(n, rng))
+        s = series(make(n, rng))
         out = contrast(s, operator, proto, contrast_id=proto.family[0], eligibility=fake,
                        unit="cal", variable="v0")
         if out["outcome"] in (ADVANCES, DOES_NOT_ADVANCE):
             scored += 1
             advances += int(out["outcome"] == ADVANCES)
     rate = advances / scored if scored else float("nan")
-    return {"generator": "ar1_null", "n_sims": n_sims, "seed": seed,
+    return {"generator": generator, "n_sims": n_sims, "seed": seed,
             "false_advance_rate": rate, "alpha_adjusted": protocol.alpha_adjusted,
-            "scored": scored}
+            "scored": scored, "advances": advances}
 
 
 # --- observed budgets: one contrast in an isolated child -----------------------------------------------

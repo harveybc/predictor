@@ -266,12 +266,17 @@ def test_R8_without_a_calibration_record_the_result_is_descriptive_never_advance
     assert out["outcome"] == H.INCONCLUSIVE_UNCALIBRATED
 
 
-def test_R8_calibration_measures_the_false_advance_rate_under_a_dependent_null():
+def test_R8_calibration_measures_the_false_advance_rate_under_the_exchangeable_null():
     rec = H.calibrate(proto(n_blocks=3, min_rows_per_block=20), DELTA, n_sims=12, seed=5, n=700)
-    assert rec["generator"] == "ar1_null" and rec["scored"] == 12
+    assert rec["generator"] == "white_null" and rec["scored"] == 12
     assert 0.0 <= rec["false_advance_rate"] <= 0.5
     p = proto().with_calibration(rec)
     assert p.calibration["false_advance_rate"] == rec["false_advance_rate"]
+    structured = H.calibrate(proto(n_blocks=3, min_rows_per_block=20), DELTA, n_sims=6, seed=5,
+                             n=700, generator="ar1_null")
+    assert structured["generator"] == "ar1_null"       # a dependent, structured diagnostic
+    with pytest.raises(ValueError, match="unknown generator"):
+        H.calibrate(proto(), DELTA, n_sims=1, seed=1, generator="nope")
 
 
 def test_R8_a_short_block_makes_the_whole_contrast_insufficient():
