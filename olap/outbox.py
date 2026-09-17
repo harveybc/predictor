@@ -147,6 +147,8 @@ def mark(path: Path, state: str, *, reason: str = "",
     r = ensure_outbox(root)
     path = Path(path)
     target = r / state / path.name
+    if path.parent.name == PENDING:
+        clear_retry(path)
     if target.exists():
         path.unlink(missing_ok=True)
         return target
@@ -160,13 +162,76 @@ def mark(path: Path, state: str, *, reason: str = "",
 SIDECAR_SUFFIX = ".adjudication.json"
 
 
+#: the loader's retry diagnosis beside a pending entry (K4).
+RETRY_SUFFIX = ".retry.json"
+#: retryable classes the loader records; a permanent refusal is a state, not a class.
+RETRY_TRANSPORT = "RETRYABLE_TRANSPORT"
+RETRY_SERVER_ERROR = "RETRYABLE_SERVER_ERROR"
+RETRY_AUTH = "RETRYABLE_AUTH"
+#: past this many attempts with a server-error class the health line asks for attention:
+#: a store that answers 5xx to the same bytes every cycle is a defect, not an outage.
+RETRY_ATTENTION_ATTEMPTS = 3
+
+
 def _entries(d: Path) -> list[Path]:
     """The entries in a state directory, excluding sidecars. An
     adjudication is a note ABOUT an envelope, never another envelope,
     and counting it as one would inflate the dead-letter count the
     moment someone ruled on it."""
     return sorted(p for p in d.glob("*.json")
-                  if not p.name.endswith(SIDECAR_SUFFIX))
+                  if not p.name.endswith(SIDECAR_SUFFIX)
+                  and not p.name.endswith(RETRY_SUFFIX))
+
+
+def _redact(text: str, limit: int = 400) -> str:
+    """A bounded diagnosis without secrets: bearer tokens and
+    long hex/base64 runs are masked before anything is written."""
+    import re
+    text = re.sub(r"(?i)bearer\s+\S+", "Bearer <redacted>", text)
+    text = re.sub(r"[A-Za-z0-9+/_-]{40,}", "<redacted>", text)
+    return text[:limit]
+
+
+def retry_path(entry: Path) -> Path:
+    return entry.with_name(entry.name[:-5] + RETRY_SUFFIX)
+
+
+def record_retry(entry: Path, *, status, klass: str, reason: str,
+                 now: float | None = None) -> dict:
+    """What the store answered to a pending entry that stays
+    pending: HTTP status, class, bounded reason, attempts, first and
+    last seen. The entry's bytes are untouched."""
+    now = now if now is not None else time.time()
+    path = retry_path(Path(entry))
+    doc = {"schema": "crispdm.olap_outbox_retry.v1", "attempts": 0,
+           "first_seen_epoch": round(now, 3)}
+    if path.is_file():
+        doc = json.loads(path.read_text())
+    doc.update(attempts=int(doc.get("attempts", 0)) + 1,
+               last_seen_epoch=round(now, 3), last_status=status,
+               **{"class": klass}, reason=_redact(str(reason)))
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(json.dumps(doc, sort_keys=True, indent=1))
+    os.replace(tmp, path)
+    return doc
+
+
+def clear_retry(entry: Path) -> None:
+    """An entry that left pending/ takes its diagnosis with it."""
+    path = retry_path(Path(entry))
+    if path.is_file():
+        target = Path(entry).parent.parent / "receipts" / path.name
+        os.replace(path, target)
+
+
+def retrying(root: str | Path | None = None) -> list[dict]:
+    r = ensure_outbox(root)
+    out = []
+    for path in sorted((r / PENDING).glob(f"*{RETRY_SUFFIX}")):
+        doc = json.loads(path.read_text())
+        doc["entry"] = path.name[:-len(RETRY_SUFFIX)] + ".json"
+        out.append(doc)
+    return out
 
 
 def counts(root: str | Path | None = None) -> dict:
@@ -322,6 +387,9 @@ def health(root: str | Path | None = None, *, now: float | None = None,
     backlog_overdue = lag > max_backlog_lag_s
 
     dl = dead_letters(root)
+    retries = retrying(root)
+    stuck = [d for d in retries if d.get("class") == RETRY_SERVER_ERROR
+             and int(d.get("attempts", 0)) >= RETRY_ATTENTION_ATTEMPTS]
     unadjudicated = [d for d in dl if d["state"] == UNADJUDICATED]
 
     return {
@@ -338,7 +406,9 @@ def health(root: str | Path | None = None, *, now: float | None = None,
         # The service question, and ONLY the service question.
         "healthy": bool(process_fresh and not backlog_overdue),
         # The separate, human-facing question.
-        "attention_required": bool(unadjudicated),
+        "retrying": len(retries),
+        "retrying_server_error": len(stuck),
+        "attention_required": bool(unadjudicated) or bool(stuck),
     }
 
 

@@ -73,19 +73,27 @@ def drain_once(root=None, *, url: str, token: str) -> dict:
             result["failed"] += 1
             continue
         status, answer = post_envelope(url, token, body.get("document", {}))
+        error = str((answer or {}).get("error", ""))
         if status == 201:
             ob.mark(path, ob.LOADED, root=root)
             result["loaded"] += 1
             for key, value in (answer or {}).items():
                 if isinstance(value, int):
                     result["counts"][key] = result["counts"].get(key, 0) + value
-        elif status == 400:
-            # the store looked at these bytes and refused them: a PERMANENT verdict
+        elif status in (400, 422):
+            # the store looked at these bytes and refused them: a PERMANENT verdict, typed
             ob.mark(path, ob.FAILED, root=root,
-                    reason=str(answer.get("error", "refused"))[:400])
+                    reason=f"http {status}: {error or 'refused'}"[:400])
             result["failed"] += 1
         else:
-            # transport, auth or the owner being down: keep the evidence, try again later
+            # kept pending with its diagnosis beside it: what was answered, how often.
+            # None is transport (the owner unreachable); 401/403 is this process's
+            # credential; 5xx is the store's own error — the same bytes answered 5xx
+            # every cycle is a defect the health line must show, never a client error.
+            klass = (ob.RETRY_TRANSPORT if status is None else
+                     ob.RETRY_AUTH if status in (401, 403) else ob.RETRY_SERVER_ERROR)
+            ob.record_retry(path, status=status, klass=klass,
+                            reason=error or f"http {status}")
             result["retryable"] += 1
     ob.heartbeat(root)
     return result

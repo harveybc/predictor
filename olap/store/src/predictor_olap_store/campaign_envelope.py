@@ -348,6 +348,39 @@ def validate_envelope(doc: dict) -> dict:
         raise EnvelopeRefusal(
             f"data_consumed declares undeclared kinds "
             f"{extra_dc}")
+    # K4: the loader stores every consumed item as
+    # (id, digest, eligibility_state); a bare string here
+    # once reached the store and fell over inside it as a
+    # 503. Known-invalid input is refused at the boundary.
+    for kind, items in doc["data_consumed"].items():
+        if not isinstance(items, list):
+            raise EnvelopeRefusal(
+                f"data_consumed.{kind} must be a list")
+        for i, item in enumerate(items):
+            if not isinstance(item, dict) or set(item) != {
+                    "id", "digest", "eligibility_state"}:
+                raise EnvelopeRefusal(
+                    f"data_consumed.{kind}[{i}] must be an "
+                    "object with exactly id, digest and "
+                    "eligibility_state")
+            if not all(isinstance(item[k], str) and item[k]
+                       for k in item):
+                raise EnvelopeRefusal(
+                    f"data_consumed.{kind}[{i}] fields must "
+                    "be non-empty strings")
+    units = doc.get("units", [])
+    if not isinstance(units, list):
+        raise EnvelopeRefusal("units must be a list")
+    for i, unit in enumerate(units):
+        if not isinstance(unit, dict):
+            raise EnvelopeRefusal(
+                f"units[{i}] must be an object")
+        gaps = [k for k in ("candidate_key", "cell_key",
+                            "metric_name", "terminal_state")
+                if k not in unit]
+        if gaps:
+            raise EnvelopeRefusal(
+                f"units[{i}] is missing {gaps}")
     for k, v in _walk(doc):
         if v is None:
             raise EnvelopeRefusal(

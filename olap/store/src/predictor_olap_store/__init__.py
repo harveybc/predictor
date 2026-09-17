@@ -19,7 +19,7 @@ from .provider import PredictorOlapStore, backend
 __all__ = ["PredictorOlapStore", "backend", "__version__", "SOURCE_SHA256",
            "SOURCE_REVISION", "SOURCE_PATH", "MODULE_SHA256", "PENDING_REVIEW",
            "ENVELOPE_SOURCE_PATH", "ENVELOPE_SOURCE_SHA256"]
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 #: The digest of the deployed query plugin this module was copied from, and the revision
 #: that holds it. Both are checked by the package's tests. These describe PRODUCTION and are
@@ -33,7 +33,7 @@ SOURCE_PATH = "olap/lake/query_plugins/sql_query.py"
 #: `olap/campaign_envelope.py`, and the parity test fails the moment they differ:
 #: two loaders would eventually disagree about what an envelope means.
 ENVELOPE_SOURCE_PATH = "olap/campaign_envelope.py"
-ENVELOPE_SOURCE_SHA256 = "f2729ef73f90fdccdc00e2fa3b9dc7e71f1c971b930714384e4b69546faa2b94"
+ENVELOPE_SOURCE_SHA256 = "9de665ca2ab3dbcad2b67eaea47818b61f5b8eb80bce6e268b3730004d0ec5d4"
 
 #: The digest of the module in THIS branch. It differs from SOURCE_SHA256 exactly when a
 #: candidate change is awaiting production review, and PENDING_REVIEW says which one. The
