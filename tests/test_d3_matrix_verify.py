@@ -432,3 +432,88 @@ def test_a_terminal_under_a_shard_the_unit_does_not_belong_to_is_unassigned(tmp_
     fx.complete("u", role="A", shard="elsewhere")
     out = verify(fx)
     assert "UNASSIGNED_LOCATION" in refusal_kinds(out)
+
+
+# --- L2 §5: a composite replay inherits by digest and is judged from the union -----------------------
+
+def composite_pair(tmp_path, *, measured_outcome="PASSED", drop_measured=False,
+                   break_source=False):
+    """A source run (all 12 tests) and a child run that measured only non_causal_twin for
+    op_a, inheriting the rest from the source by digest."""
+    src = Fixture(tmp_path / "src", [("u", 1)])
+    src.complete("u")
+    src.seal()
+    child = Fixture(tmp_path / "child", [("u", 1)])
+    inherits = {"source_root": str(tmp_path / "src"), "source_run_id": "r",
+                "source_freeze_sha256": src.freeze["freeze_sha256"],
+                "source_design_sha256": DESIGN, "source_receipt": "COLLECT.json",
+                "inherited_tests": [t for t in design.REQUIRED_TESTS if t != "non_causal_twin"],
+                "measured_tests": ["non_causal_twin"], "measured_operators": ["op_a"],
+                "justification": "fixture"}
+    child.freeze["inherits"] = inherits
+    child.reseal_freeze()
+    config = {"schema": "d3_mechanics_execution.v1", "run_id": "r",
+              "freeze_sha256": child.freeze["freeze_sha256"], "design_sha256": DESIGN}
+    (tmp_path / "child" / "REPORT.json").write_text(json.dumps(
+        {"schema": "d3_mechanics_report.v1", "run_id": "r",
+         "config_sha256": hashlib.sha256(json.dumps(config, sort_keys=True,
+                                                    separators=(",", ":")).encode()).hexdigest(),
+         "synthetic_spec": {"freeze_sha256": child.freeze["freeze_sha256"],
+                            "design_sha256": DESIGN, "units": 1},
+         "campaigns": {"synthetic": {"campaign_sha256": "c" * 64, "units": 1}}}))
+    rows = []
+    if not drop_measured:
+        base = [r for r in rows_for("u", ["v0"]) if r["operator_kind"] == "op_a"][0]
+        rows.append(dict(base, test="non_causal_twin", outcome=measured_outcome))
+        verdict = ("MECHANICALLY_ACCEPTED" if measured_outcome == "PASSED" else
+                   "MECHANICALLY_REFUSED" if measured_outcome == "FAILED" else "INCONCLUSIVE")
+        rows.append(dict(base, test="verdict", outcome=verdict,
+                         value=1.0 if verdict == "MECHANICALLY_ACCEPTED" else 0.0,
+                         detail=json.dumps({"failed": [], "scoped": [], "undecided": [],
+                                            "scope": ["non_causal_twin"]})))
+    child.complete("u", rows)
+    if break_source:
+        (tmp_path / "src" / "collected" / "A" / "s" / "attempts" / "u" / "attempt-1"
+         / "rows.jsonl").write_text("{}\n")
+    return src, child
+
+
+def test_a_composite_replay_joins_measured_and_inherited_tests_and_recomputes_the_verdict(tmp_path):
+    src, child = composite_pair(tmp_path, measured_outcome="INSUFFICIENT_TEST")
+    out = verify(child)
+    assert out["verified"] is True, out["refusals"]
+    assert out["inherits"]["measured_tests"] == ["non_causal_twin"]
+    a, b = out["operators"]["op_a"], out["operators"]["op_b"]
+    assert a["verdicts"] == {"INCONCLUSIVE": 1}            # measured twin undecided
+    assert a["tests"]["non_causal_twin"] == {"INSUFFICIENT_TEST": 1}
+    assert a["tests"]["prefix_all_available"] == {"PASSED": 1}   # inherited from the source
+    assert b["verdicts"] == {"MECHANICALLY_ACCEPTED": 1}   # not measured: all from the source
+
+
+def test_a_composite_replay_refuses_when_the_source_no_longer_verifies(tmp_path):
+    src, child = composite_pair(tmp_path, break_source=True)
+    out = verify(child)
+    assert out["verified"] is False
+    assert "INHERITED_SOURCE_UNVERIFIED" in refusal_kinds(out)
+
+
+def test_a_composite_replay_refuses_a_measured_cell_that_is_missing(tmp_path):
+    src, child = composite_pair(tmp_path, drop_measured=True)
+    out = verify(child)
+    assert out["verified"] is False
+    assert "MISSING_CELL" in refusal_kinds(out)
+
+
+def test_a_composite_replay_refuses_a_source_whose_freeze_is_not_the_declared_one(tmp_path):
+    src, child = composite_pair(tmp_path)
+    child.freeze["inherits"]["source_freeze_sha256"] = "9" * 64
+    child.reseal_freeze()
+    rec = json.loads((tmp_path / "child" / "REPORT.json").read_text())
+    config = {"schema": "d3_mechanics_execution.v1", "run_id": "r",
+              "freeze_sha256": child.freeze["freeze_sha256"], "design_sha256": DESIGN}
+    rec["config_sha256"] = hashlib.sha256(json.dumps(config, sort_keys=True,
+                                                     separators=(",", ":")).encode()).hexdigest()
+    rec["synthetic_spec"]["freeze_sha256"] = child.freeze["freeze_sha256"]
+    (tmp_path / "child" / "REPORT.json").write_text(json.dumps(rec))
+    out = verify(child)
+    assert "INHERITED_SOURCE_MISMATCH" in refusal_kinds(out)

@@ -48,7 +48,8 @@ def test_the_successor_amendment_is_sealed_before_any_measurement():
     doc = design.D3_PROBE_AMENDMENT_V1
     assert design.validate_probe_amendment(doc) == []
     assert doc["supersedes_amendment"]["design_sha256"] == design.D3_AMENDMENT_V1["design_sha256"]
-    assert design.D3_DESIGN_CURRENT is doc
+    current = design.D3_DESIGN_CURRENT
+    assert current is doc or current["supersedes_amendment"]["design_sha256"] == doc["design_sha256"]
     assert doc["design_sha256"] != design.D3_AMENDMENT_V1["design_sha256"]
     assert "amplitudes searched until a pass" in doc["probe_construction"]["never"]
 

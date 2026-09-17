@@ -122,9 +122,27 @@ def select_bank_units(bank_root: Path, *, lengths=(512, 2048), missingness=("non
     return chosen
 
 
+def inheritance(inherit_from: Path, measure_tests: list, measure_operators: list) -> dict:
+    """What a composite replay inherits and what it measures (07C §5): the source run's
+    identity by digest and the tests/operators split, verifiable row by row."""
+    src = Path(inherit_from)
+    frozen = json.loads((src / "FREEZE.json").read_text(encoding="utf-8"))
+    measured = [t for t in design.REQUIRED_TESTS if t in set(measure_tests)]
+    inherited = [t for t in design.REQUIRED_TESTS if t not in set(measured)]
+    return {"source_root": redact(str(src)), "source_run_id": None,
+            "source_freeze_sha256": frozen["freeze_sha256"],
+            "source_design_sha256": frozen["design_sha256"],
+            "source_receipt": "COLLECT.json",
+            "inherited_tests": inherited, "measured_tests": measured,
+            "measured_operators": sorted(measure_operators),
+            "justification": "only the measured tests' callable changed under the current "
+                             "amendment; every other test's rows are the source run's bytes, "
+                             "re-verified and bound to the source freeze by digest"}
+
+
 def freeze(root: Path, *, bank_root: Path, pilot_units: list, per_unit_wall: float,
            per_unit_cpu: int, task_memory_bytes: int, role_caps: dict, per_family_limit=None,
-           toys: bool = True) -> dict:
+           toys: bool = True, inherits: dict = None) -> dict:
     """The sealed population and budgets, with the pilot that justifies them."""
     pilot = worker.pilot(pilot_units)
     over = [k for k, v in pilot["operators"].items() if not v["within_declaration"]]
@@ -156,6 +174,7 @@ def freeze(root: Path, *, bank_root: Path, pilot_units: list, per_unit_wall: flo
            "readiness": {"INFRASTRUCTURE_PRESENT": True,
                          "TEMPORAL_BATTERY_ACCEPTED": "measured per unit by the run",
                          "SCIENTIFIC_UTILITY": "not claimed"},
+           "inherits": inherits,
            "freeze_sha256": ""}
     body = {k: v for k, v in doc.items() if k != "freeze_sha256"}
     doc["freeze_sha256"] = sha_obj(body)
@@ -191,6 +210,7 @@ def build_jobs(root: Path, frozen: dict, shards: dict, *, run_id: str, python_re
                out_rel: str) -> Path:
     """The dispatcher's jobs file. Paths are home-relative on every host (`$HOME` at launch)
     and `{role}` is bound by the dispatcher."""
+    inherits = frozen.get("inherits")
     budget = frozen["budget"]
     jobs = []
     for shard in shards["shards"]:
@@ -214,7 +234,9 @@ def build_jobs(root: Path, frozen: dict, shards: dict, *, run_id: str, python_re
                               "--run-id", run_id, "--host-role", "{role}",
                               "--task-memory", str(budget["task_memory_bytes"]),
                               "--wall-seconds", str(budget["per_unit_wall_seconds"]),
-                              "--cpu-seconds", str(budget["per_unit_cpu_seconds"])]})
+                              "--cpu-seconds", str(budget["per_unit_cpu_seconds"])]
+                     + (["--tests", *inherits["measured_tests"]] if inherits else [])
+                     + (["--operators", *inherits["measured_operators"]] if inherits else [])})
     path = root / "JOBS.json"
     write_once(path, {"schema": "d3_mechanics_jobs.v1", "run_id": run_id,
                       "freeze_sha256": frozen["freeze_sha256"], "jobs": jobs})
@@ -500,6 +522,9 @@ def main(argv=None) -> int:
     f.add_argument("--role-cap", action="append", default=[])
     f.add_argument("--per-family-limit", type=int)
     f.add_argument("--no-toys", action="store_true")
+    f.add_argument("--inherit-from", type=Path, help="composite replay: the source run root")
+    f.add_argument("--measure-tests", nargs="+", default=[])
+    f.add_argument("--measure-operators", nargs="+", default=[])
     s = sub.add_parser("shards")
     s.add_argument("--root", type=Path, required=True)
     s.add_argument("--toy-units", type=Path)
@@ -538,7 +563,9 @@ def main(argv=None) -> int:
         doc = freeze(args.root, bank_root=args.bank_root, pilot_units=args.pilot_unit,
                      per_unit_wall=args.per_unit_wall, per_unit_cpu=args.per_unit_cpu,
                      task_memory_bytes=args.task_memory, role_caps=caps,
-                     per_family_limit=args.per_family_limit, toys=not args.no_toys)
+                     per_family_limit=args.per_family_limit, toys=not args.no_toys,
+                     inherits=(inheritance(args.inherit_from, args.measure_tests,
+                                           args.measure_operators) if args.inherit_from else None))
         print(json.dumps({"freeze_sha256": doc["freeze_sha256"], "units": doc["bank"]["count"],
                           "toys": len(doc["toys"])}, indent=1))
         return 0

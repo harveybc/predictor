@@ -673,26 +673,32 @@ def check_raw_branch(operator, train, x) -> dict:
 # --- the battery ----------------------------------------------------------------------------
 
 def run_battery(operator, x, *, train=None, twin=None, resource_contract=None,
-                inapplicable_family="unknown_family") -> dict:
+                inapplicable_family="unknown_family", tests=None) -> dict:
+    """The twelve tests, or the declared subset `tests` for a composite replay (L2): the
+    report then carries `scope` and its verdict speaks for that subset only."""
     x = contract.validate_input(x)
     spec = contract.validate_spec(operator.describe())
     train = train if train is not None else prefix(x, max(1, len(x["values"]) * 6 // 10))
     contract.validate_input(train, name="train")
-    results = {
-        "prefix_all_available": check_prefix_all_available(operator, train, x),
-        "future_perturbation": check_future_perturbation(operator, train, x),
-        "warm_up_edge": check_warm_up_edge(operator, train, x),
-        "fit_scope_train_only": check_fit_scope_train_only(operator, train, x),
-        "fresh_state_per_branch": check_fresh_state_per_branch(operator, train, x),
-        "chunk_restart": check_chunk_restart(operator, train, x),
-        "response_probe": check_response_probe(operator, train, x),
-        "non_causal_twin": check_non_causal_twin(operator, twin, train, x),
-        "availability_emission": check_availability_emission(operator, train, x,
+    scope = list(TESTS) if tests is None else [t for t in TESTS if t in set(tests)]
+    if tests is not None and set(tests) - set(TESTS):
+        raise ValueError(f"unknown tests {sorted(set(tests) - set(TESTS))}")
+    checks = {
+        "prefix_all_available": lambda: check_prefix_all_available(operator, train, x),
+        "future_perturbation": lambda: check_future_perturbation(operator, train, x),
+        "warm_up_edge": lambda: check_warm_up_edge(operator, train, x),
+        "fit_scope_train_only": lambda: check_fit_scope_train_only(operator, train, x),
+        "fresh_state_per_branch": lambda: check_fresh_state_per_branch(operator, train, x),
+        "chunk_restart": lambda: check_chunk_restart(operator, train, x),
+        "response_probe": lambda: check_response_probe(operator, train, x),
+        "non_causal_twin": lambda: check_non_causal_twin(operator, twin, train, x),
+        "availability_emission": lambda: check_availability_emission(operator, train, x,
                                                              resource_contract),
-        "cost_pilot": check_cost_pilot(operator, train, x),
-        "applicability": check_applicability(operator, train, x, inapplicable_family),
-        "raw_branch": check_raw_branch(operator, train, x),
+        "cost_pilot": lambda: check_cost_pilot(operator, train, x),
+        "applicability": lambda: check_applicability(operator, train, x, inapplicable_family),
+        "raw_branch": lambda: check_raw_branch(operator, train, x),
     }
+    results = {t: checks[t]() for t in scope}
     whole = _run(operator, x, _fit(operator, train))
     coverage = {"n": len(x["values"]), "emitted": sum(1 for a in whole["available"] if a),
                 "inputs_available": sum(1 for v in x["values"]
@@ -708,7 +714,7 @@ def run_battery(operator, x, *, train=None, twin=None, resource_contract=None,
             "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"],
             "kind": spec["kind"], "spec_sha256": contract.spec_sha256(spec),
             "samples": len(x["values"]), "results": results,
-            "required_tests": list(TESTS), "failed": failed, "scoped": scoped,
+            "required_tests": list(TESTS), "scope": scope, "failed": failed, "scoped": scoped,
             "undecided": undecided,
             "coverage": coverage,
             "review_ready": verdict == "MECHANICALLY_ACCEPTED",

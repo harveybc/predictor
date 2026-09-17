@@ -148,14 +148,18 @@ def rows_for(job: dict, unit: dict) -> list:
     for vi, variable in enumerate(unit["variables"]):
         x = unit["inputs"][vi]
         train = battery.prefix(x, max(2, min(unit["train_end"], unit["n_samples"] - 1)))
+        only_ops = set(job.get("operators") or [])
+        tests = job.get("tests") or None
         for op in ops.bank():
+            if only_ops and op.KIND not in only_ops:
+                continue
             spec_sha = contract.spec_sha256(op.describe())
             base = _base(job, unit, variable, op, spec_sha)
             started = time.process_time()
             try:
                 report = battery.run_battery(op, x, train=train, twin=ops.twin_of(op),
                                              resource_contract=unit["resource_contract"],
-                                             inapplicable_family="__undeclared__")
+                                             inapplicable_family="__undeclared__", tests=tests)
             except contract.SpecRefusal as exc:
                 rows.append(dict(base, test="battery", outcome="REFUSED",
                                  detail=str(exc)[:300], value=None,
@@ -181,7 +185,8 @@ def rows_for(job: dict, unit: dict) -> list:
                              value=1.0 if report["review_ready"] else 0.0,
                              detail=json.dumps({"failed": report["failed"],
                                                 "scoped": report["scoped"],
-                                                "undecided": report["undecided"]}),
+                                                "undecided": report["undecided"],
+                                                "scope": report["scope"]}),
                              cpu_seconds=round(time.process_time() - started, 4)))
     return rows
 
@@ -240,7 +245,8 @@ def variables_of(unit_dir: Path) -> int:
 
 # --- shard runner (one process per unit, under the isolated runner) ------------------------
 
-def run_shard(units_root: Path, out_dir: Path, *, run_id: str, host_role: str,
+def run_shard(units_root: Path, out_dir: Path, *, run_id: str, host_role: str, tests=None,
+              operators=None,
               task_memory_bytes: int, wall_seconds: float, cpu_seconds: int) -> dict:
     IR = _load("df_isolated_runner")
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -266,7 +272,9 @@ def run_shard(units_root: Path, out_dir: Path, *, run_id: str, host_role: str,
         adir.mkdir(parents=True, exist_ok=False)
         job = {"unit_dir": str(ud.resolve()), "attempt_dir": str(adir.resolve()),
                "run_id": run_id, "host_role": host_role, "unit_id": sname,
-               "code_sha256": code, "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"]}
+               "code_sha256": code, "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"],
+               "tests": list(tests) if tests else None,
+               "operators": list(operators) if operators else None}
         job_file = adir / "job.json"
         job_file.write_text(json.dumps(job, indent=1), encoding="utf-8")
         argv = [sys.executable, "-B", str(Path(__file__).resolve()), "--worker", str(job_file)]
@@ -344,6 +352,8 @@ def main(argv=None) -> int:
     parser.add_argument("--task-memory", type=int, default=2 << 30)
     parser.add_argument("--wall-seconds", type=float, default=1800.0)
     parser.add_argument("--cpu-seconds", type=int, default=1800)
+    parser.add_argument("--tests", nargs="+", help="measure only these tests (composite replay)")
+    parser.add_argument("--operators", nargs="+", help="measure only these operators")
     args = parser.parse_args(argv)
     if args.worker:
         return worker_main(args.worker)
@@ -354,7 +364,7 @@ def main(argv=None) -> int:
         parser.error("--units-root, --out and --run-id are required to run a shard")
     manifest = run_shard(args.units_root, args.out, run_id=args.run_id,
                          host_role=args.host_role, task_memory_bytes=args.task_memory,
-                         wall_seconds=args.wall_seconds, cpu_seconds=args.cpu_seconds)
+                         wall_seconds=args.wall_seconds, cpu_seconds=args.cpu_seconds, tests=args.tests, operators=args.operators)
     statuses = [u["status"] for u in manifest["units"]]
     print(json.dumps({"run_id": args.run_id, "units": len(statuses),
                       "by_status": {s: statuses.count(s) for s in sorted(set(statuses))}}))

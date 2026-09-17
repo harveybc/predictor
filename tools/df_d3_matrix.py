@@ -263,6 +263,10 @@ def verify(root: Path, receipt_name: str = "COLLECT.json", *, report_name: str =
                                   "banks": Counter(), "probe_lags": Counter(),
                                   "refusals": Counter(), "group": None})
     rows_total = 0
+    measured_cells = {}
+    if frozen.get("inherits"):
+        expected["operators_measured"] = {k: v for k, v in expected["operators"].items()
+                                          if k in set(frozen["inherits"]["measured_operators"])}
     for unit, spec in expected["units"].items():
         attempts = book.get(unit, {})
         if not attempts:
@@ -346,10 +350,17 @@ def verify(root: Path, receipt_name: str = "COLLECT.json", *, report_name: str =
             continue
         rows = [json.loads(line) for line in body.splitlines()]
         rows_total += len(rows)
-        ok = _check_rows(unit, spec, rows, expected, receipt["run_id"], refuse, per_op)
+        inherits = frozen.get("inherits")
+        ok = _check_rows(unit, spec, rows, expected, receipt["run_id"], refuse, per_op,
+                         tests_expected=(inherits["measured_tests"] if inherits else None),
+                         verdict_mode=("scoped" if inherits else "recorded"),
+                         cells_out=(measured_cells if inherits else None))
         if ok:
             completed.append(unit)
 
+    inherits = frozen.get("inherits")
+    if inherits:
+        _compose(root, frozen, inherits, expected, per_op, measured_cells, refuse)
     verified = not refusals
     operators = {}
     for kind in sorted(per_op):
@@ -374,14 +385,22 @@ def verify(root: Path, receipt_name: str = "COLLECT.json", *, report_name: str =
             "units": {"expected": len(expected["units"]), "completed": len(completed),
                       "failed": len(failed_units), "missing": sorted(set(missing))},
             "failed_units": failed_units, "rows": rows_total,
+            "inherits": frozen.get("inherits"),
             "transport_copies": transport_copies,
             "refusals": refusals, "operators": operators}
 
 
-def _check_rows(unit, spec, rows, expected, run_id, refuse, per_op) -> bool:
-    """Identity, uniqueness, coverage and verdict recomputation for one unit's rows."""
+def _check_rows(unit, spec, rows, expected, run_id, refuse, per_op, *, tests_expected=None,
+                verdict_mode="recorded", cells_out=None) -> bool:
+    """Identity, uniqueness, coverage and verdict recomputation for one unit's rows.
+
+    `tests_expected` limits which tests must be present (a composite replay measures a
+    subset); `verdict_mode` "recorded" demands the recorded verdict agree with the tests,
+    "scoped" demands it agree with the measured subset and counts nothing, "none" collects the
+    cells into `cells_out` for the composite to judge."""
     clean = True
     variables = spec["variables"]
+    required = tuple(tests_expected) if tests_expected is not None else TESTS
     cells = defaultdict(dict)          # (variable, operator) -> test -> row
     seen = Counter()
     for r in rows:
@@ -425,13 +444,16 @@ def _check_rows(unit, spec, rows, expected, run_id, refuse, per_op) -> bool:
             clean = False
             continue
         cells[(r["variable"], r["operator_kind"])][r["test"]] = r
+    operators_expected = expected.get("operators_measured") or expected["operators"]
     if variables is not None:
         for v in variables:
-            for op in expected["operators"]:
+            for op in operators_expected:
                 if (v, op) not in cells:
                     refuse("MISSING_CELL", unit=unit, variable=v, operator=op)
                     clean = False
     for (variable, op), tests in cells.items():
+        if cells_out is not None:
+            cells_out[(unit, variable, op)] = tests
         verdict = tests.get("verdict")
         if verdict is None:
             refuse("MISSING_VERDICT", unit=unit, variable=variable, operator=op)
@@ -443,23 +465,118 @@ def _check_rows(unit, spec, rows, expected, run_id, refuse, per_op) -> bool:
                 refuse("VERDICT_CONTRADICTION", unit=unit, variable=variable, operator=op,
                        recorded=verdict["outcome"], recomputed="REFUSED")
                 clean = False
-            else:
+            elif verdict_mode == "recorded":
                 _count(per_op, op, tests, verdict, spec["bank"])
             continue
-        absent = [t for t in TESTS if t not in tests]
-        if absent:
-            refuse("MISSING_TESTS", unit=unit, variable=variable, operator=op, tests=absent)
+        absent = [t for t in required if t not in tests]
+        unexpected = [t for t in TESTS if t in tests and t not in required]
+        if absent or unexpected:
+            refuse("MISSING_TESTS" if absent else "UNEXPECTED_TEST", unit=unit,
+                   variable=variable, operator=op, tests=absent or unexpected)
             clean = False
             continue
-        recomputed = recompute_verdict({t: tests[t]["outcome"] for t in TESTS})
+        recomputed = recompute_verdict({t: tests[t]["outcome"] for t in required})
         expected_value = 1.0 if recomputed == "MECHANICALLY_ACCEPTED" else 0.0
         if verdict["outcome"] != recomputed or float(verdict.get("value") or 0.0) != expected_value:
             refuse("VERDICT_CONTRADICTION", unit=unit, variable=variable, operator=op,
                    recorded=verdict["outcome"], recomputed=recomputed)
             clean = False
             continue
-        _count(per_op, op, tests, verdict, spec["bank"])
+        if verdict_mode == "scoped":
+            scope = json.loads(verdict.get("detail") or "{}").get("scope")
+            if scope is not None and set(scope) != set(required):
+                refuse("VERDICT_CONTRADICTION", unit=unit, variable=variable, operator=op,
+                       recorded_scope=scope, required=list(required))
+                clean = False
+                continue
+        if verdict_mode == "recorded":
+            _count(per_op, op, tests, verdict, spec["bank"])
     return clean
+
+
+def _compose(root: Path, frozen: dict, inherits: dict, expected: dict, per_op, measured_cells,
+             refuse) -> None:
+    """A composite replay (07C §5): the source run is re-verified from its own bytes; its rows
+    for the inherited tests and this run's rows for the measured tests are joined per cell,
+    each bound to its own freeze, and the verdict is recomputed from the union. Operators not
+    measured here take every test from the source."""
+    src_root = Path(inherits["source_root"]).expanduser()
+    src_receipt = inherits.get("source_receipt", "COLLECT.json")
+    source = verify(src_root, src_receipt)
+    if source.get("verified") is not True:
+        refuse("INHERITED_SOURCE_UNVERIFIED", source=str(src_root),
+               refusals=[r["kind"] for r in source["refusals"]][:10])
+        return
+    src_frozen = json.loads((src_root / "FREEZE.json").read_text(encoding="utf-8"))
+    if src_frozen["freeze_sha256"] != inherits["source_freeze_sha256"] \
+            or src_frozen["design_sha256"] != inherits["source_design_sha256"]:
+        refuse("INHERITED_SOURCE_MISMATCH", declared=inherits["source_freeze_sha256"],
+               found=src_frozen["freeze_sha256"])
+        return
+    if set(src_frozen["operators"][i]["kind"] for i in range(len(src_frozen["operators"]))) \
+            != set(frozen["operators"][i]["kind"] for i in range(len(frozen["operators"]))):
+        refuse("INHERITED_SOURCE_MISMATCH", what="operators differ")
+        return
+    inherited = set(inherits["inherited_tests"])
+    measured = set(inherits["measured_tests"])
+    measured_ops = set(inherits["measured_operators"])
+    source_cells = _source_cells(src_root, src_receipt, src_frozen)
+    for (unit, variable, op), src_tests in source_cells.items():
+        if unit not in expected["units"]:
+            refuse("INHERITED_SOURCE_MISMATCH", unit=unit, why="not in this population")
+            continue
+        take = {t: r for t, r in src_tests.items() if t in inherited or op not in measured_ops}
+        if op in measured_ops:
+            mine = measured_cells.get((unit, variable, op))
+            if mine is None:
+                refuse("MISSING_CELL", unit=unit, variable=variable, operator=op,
+                       why="measured cell absent from this run")
+                continue
+            for t in measured:
+                if t not in mine:
+                    refuse("MISSING_TESTS", unit=unit, variable=variable, operator=op, tests=[t])
+                    break
+                take[t] = mine[t]
+        if "battery" in src_tests and op not in measured_ops:
+            verdict = src_tests["verdict"]
+            _count(per_op, op, {"battery": src_tests["battery"], "verdict": verdict}, verdict,
+                   expected["units"][unit]["bank"])
+            continue
+        absent = [t for t in TESTS if t not in take]
+        if absent:
+            refuse("MISSING_TESTS", unit=unit, variable=variable, operator=op, tests=absent,
+                   where="composite")
+            continue
+        outcome = recompute_verdict({t: take[t]["outcome"] for t in TESTS})
+        composite_verdict = {"unit_id": unit, "operator_group": take[TESTS[0]].get("operator_group"),
+                             "outcome": outcome, "detail": "", "composed": True,
+                             "sources": {t: ("measured" if t in measured and op in measured_ops
+                                             else inherits["source_run_id"] or "source")
+                                         for t in TESTS}}
+        _count(per_op, op, take, composite_verdict, expected["units"][unit]["bank"])
+    for (unit, variable, op) in measured_cells:
+        if (unit, variable, op) not in source_cells:
+            refuse("UNEXPECTED_UNIT", unit=unit, where="measured cell has no source cell",
+                   variable=variable, operator=op)
+
+
+def _source_cells(src_root: Path, receipt_name: str, src_frozen: dict) -> dict:
+    """The source run's verified rows, re-read from the attempt its receipt names, keyed by
+    cell. verify() has just re-hashed those very files; this reads them again by the same
+    receipt/ledger path so nothing is taken from memory."""
+    receipt = json.loads((src_root / receipt_name).read_text(encoding="utf-8"))
+    cells = defaultdict(dict)
+    for entry in receipt["units"]:
+        if entry.get("status") != "COMPLETED":
+            continue
+        path = (src_root / "collected" / entry["role"] / entry["shard"] / "attempts"
+                / entry["unit"] / f"attempt-{entry.get('attempt', 1)}" / "rows.jsonl")
+        for line in path.read_text(encoding="utf-8").splitlines():
+            r = json.loads(line)
+            if r.get("design_sha256") != src_frozen["design_sha256"]:
+                continue
+            cells[(r["unit_id"], r["variable"], r["operator_kind"])][r["test"]] = r
+    return cells
 
 
 def _count(per_op, kind, tests, verdict, bank):

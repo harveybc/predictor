@@ -76,6 +76,9 @@ class TrailingMean:
     def probe_resolution(self, state, *, baseline, scale, sigma):
         return {"amplitude": float(scale), "reason": "a mean moves for any excitation"}
 
+    def reach_right(self, n):
+        return 0
+
     def fit(self, train):
         return {}
 
@@ -105,6 +108,9 @@ class TrailingMean:
 
 class CentredMean(TrailingMean):
     """The design's deliberate non-causal twin: the same window, centred."""
+
+    def reach_right(self, n):
+        return 4                                  # the centred window reaches 4 samples ahead
 
     def __init__(self):
         super().__init__(base_spec(kind="centred_mean", warm_up_samples=4,
@@ -310,7 +316,7 @@ def test_a_causal_zero_lag_operator_with_its_twin_is_review_ready():
     assert report["failed"] == [], report["results"]
     assert report["undecided"] == []
     assert report["review_ready"] is True
-    assert report["results"]["non_causal_twin"]["twin_prefix_passed"] is False
+    assert report["results"]["non_causal_twin"]["twin_detections"] > 0
 
 
 def test_a_delayed_output_operator_is_valid_and_compared_only_after_emission():
