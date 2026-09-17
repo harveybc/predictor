@@ -131,7 +131,7 @@ def test_rows_carry_the_identities_a_row_needs_to_be_traced(tmp_path):
     verdicts = [r for r in rows if r["test"] == "verdict"]
     assert len(verdicts) == 9
     for r in rows:
-        assert r["design_sha256"] == design.D3_AMENDMENT_V1["design_sha256"]
+        assert r["design_sha256"] == design.D3_DESIGN_CURRENT["design_sha256"]
         assert len(r["spec_sha256"]) == 64 and r["result_class"] == "MECHANICAL"
         assert r["classification"] == "NON_GOVERNING"
     tests = {r["test"] for r in rows} - {"verdict"}

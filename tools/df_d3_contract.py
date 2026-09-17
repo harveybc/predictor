@@ -23,7 +23,7 @@ import hashlib
 import json
 import math
 
-SPEC_SCHEMA = "d3_operator_spec.v2"
+SPEC_SCHEMA = "d3_operator_spec.v3"
 
 NOT_AVAILABLE = "NOT_AVAILABLE"
 NOT_APPLICABLE = "NOT_APPLICABLE"
@@ -45,7 +45,7 @@ SPEC_FIELDS = {
     "warm_up_samples": (int,),
     "delay_samples": (int,),                 # emission delay beyond input availability
     "output_availability": (str,),           # "t + delay_samples", stated for a reader
-    "response_probe": (dict,),               # {"kind", "expected_onset_samples"}
+    "response_probe": (dict,),               # {"kind", "expected_onset_samples", "scale"}
     "non_causal_twin": (dict,),              # {"kind"} or {"not_applicable", "reason"}
     "support": (dict,),                      # {"kind", "samples", "derivation", "boundary_mode"}
     "cost_cpu_seconds_per_1000": (float, int),
@@ -93,7 +93,8 @@ def validate_spec(spec) -> dict:
             _refuse(f"{name!r} must be {'/'.join(t.__name__ for t in types)}, "
                     f"got {type(value).__name__}")
     if spec["schema"] != SPEC_SCHEMA:
-        _refuse(f"schema must be {SPEC_SCHEMA!r}; v1 declarations conflated the instants")
+        _refuse(f"schema must be {SPEC_SCHEMA!r}; v1 conflated the instants, v2 left the "
+                "probe's scale to the fixture")
     if not spec["kind"]:
         _refuse("'kind' must name the operator")
     if spec["fit_scope"] not in FIT_SCOPES:
@@ -128,9 +129,17 @@ def validate_spec(spec) -> dict:
     return spec
 
 
+PROBE_SCALE = "TRAIN_FIT"
+
+
 def _validate_probe(probe: dict) -> None:
-    if set(probe) != {"kind", "expected_onset_samples"}:
-        _refuse("'response_probe' must declare exactly 'kind' and 'expected_onset_samples'")
+    if set(probe) != {"kind", "expected_onset_samples", "scale"}:
+        _refuse("'response_probe' must declare exactly 'kind', 'expected_onset_samples' and "
+                "'scale'; v2 declarations left the excitation's scale to the fixture")
+    if probe["scale"] != PROBE_SCALE:
+        _refuse(f"'response_probe.scale' must be {PROBE_SCALE!r}: the excitation is built from "
+                "the training fit and the operator's declared resolution, never from the "
+                "fixture")
     if probe["kind"] not in PROBE_KINDS:
         _refuse(f"'response_probe.kind' must be one of {list(PROBE_KINDS)}")
     onset = probe["expected_onset_samples"]

@@ -367,54 +367,95 @@ def check_chunk_restart(operator, train, x) -> dict:
             "detail": None if bad is None else f"resume from the checkpoint differs at {bad}"}
 
 
-def _probe_series(kind: str, length: int, position: int) -> tuple:
+def _probe_series(kind: str, length: int, position: int, *, baseline: float, sigma: float,
+                  amplitude: float, gain: float) -> tuple:
+    """Quiet and excited branches over the SAME seeded noise, on the training fit's scale."""
     rng = _seeded(CUT_SEED + 3)
-    quiet = [rng.gauss(0.0, 1.0) for _ in range(length)]
+    quiet = [baseline + sigma * rng.gauss(0.0, 1.0) for _ in range(length)]
     hit = list(quiet)
     if kind == "impulse":
-        hit[position] += 25.0
-    elif kind == "step":
+        hit[position] += amplitude
+    elif kind in ("step", "level_shift"):
         for i in range(position, length):
-            hit[i] += 25.0
-    elif kind == "level_shift":
-        for i in range(position, length):
-            hit[i] += 12.0
+            hit[i] += amplitude
     elif kind == "variance_shift":
         for i in range(position, length):
-            hit[i] = quiet[i] * 8.0
+            hit[i] = baseline + (quiet[i] - baseline) * gain
     return quiet, hit
 
 
+def _unidentified(probe, reason, **facts):
+    return {"passed": None, "outcome": "UNIDENTIFIED", "probe": probe["kind"],
+            "identifiable": False, "first_change_observed": None, "matches_declared": None,
+            "declared": probe["expected_onset_samples"], "detail": reason, **facts}
+
+
 def check_response_probe(operator, train, x, *, length: int = 256) -> dict:
-    """§6: the declared probe shows the declared onset. Onset is not group delay."""
+    """§6 as amended (K2): the excitation is built from the training fit and the operator's
+    declared resolution; three facts are recorded apart — whether the excitation is
+    identifiable (declared), the first change observed (measured), and whether it matches the
+    declared onset. A declared-identifiable excitation that moves nothing FAILS; a first change
+    later than declared FAILS; only a declared UNIDENTIFIED abstains, and it costs the verdict."""
     spec = operator.describe()
     probe = spec["response_probe"]
     if probe["kind"] == "none" or probe["expected_onset_samples"] == contract.UNIDENTIFIED:
-        return {"passed": None, "outcome": "UNIDENTIFIED", "probe": probe["kind"],
-                "detail": "the operator declares that no probe identifies its response onset; "
-                          "recorded as such, not as zero"}
+        return _unidentified(probe, "the operator declares that no probe identifies its "
+                                    "response onset; recorded as such, not as zero")
+    finite = sorted(v for v in train["values"] if isinstance(v, (int, float))
+                    and not (isinstance(v, float) and math.isnan(v)))
+    if len(finite) < 2:
+        return _unidentified(probe, "the training fit has fewer than two finite samples")
+    baseline = finite[int(0.10 * (len(finite) - 1))]
+    scale = finite[int(0.90 * (len(finite) - 1))] - baseline
+    if not scale > 0:
+        return _unidentified(probe, "constant training fit: no excitation is identifiable on a "
+                                    "degenerate domain", baseline=baseline, scale=scale)
+    state = _fit(operator, train)
+    resolution = operator.probe_resolution(state, baseline=baseline, scale=scale,
+                                           sigma=0.01 * scale)
+    excitation = {"kind": probe["kind"], "baseline": baseline, "scale": scale,
+                  "sigma": 0.01 * scale, "amplitude": resolution.get("amplitude"),
+                  "gain": resolution.get("amplitude") if resolution.get("gain") else None,
+                  "reason": resolution.get("reason")}
+    if resolution.get("amplitude") == contract.UNIDENTIFIED:
+        return _unidentified(probe, f"no identifiable excitation from the fit: "
+                                    f"{resolution.get('reason')}", excitation=excitation)
+    amplitude = float(resolution["amplitude"])
+    if not amplitude > 0:
+        return {"passed": False, "outcome": "FAILED", "probe": probe["kind"],
+                "identifiable": False, "first_change_observed": None, "matches_declared": None,
+                "declared": probe["expected_onset_samples"], "excitation": excitation,
+                "detail": "the operator declared a non-positive resolution"}
     position = length // 2
-    quiet, hit = _probe_series(probe["kind"], length, position)
+    quiet, hit = _probe_series(probe["kind"], length, position, baseline=baseline,
+                               sigma=0.01 * scale, amplitude=amplitude,
+                               gain=amplitude if resolution.get("gain") else 1.0)
     base = _run(operator, make_input(quiet), _fit(operator, train))
     moved = _run(operator, make_input(hit), _fit(operator, train))
-    first = next((i for i in range(length)
+    first = next((i for i in range(position, length)
                   if base["available"][i] and moved["available"][i]
                   and not _same_value(base["values"][i], moved["values"][i])), None)
+    facts = {"probe": probe["kind"], "identifiable": True, "excitation": excitation,
+             "declared": probe["expected_onset_samples"],
+             "emitted_after_impact": sum(1 for i in range(position, length)
+                                         if base["available"][i] and moved["available"][i])}
     if first is None:
-        return {"passed": False, "probe": probe["kind"], "declared": probe["expected_onset_samples"],
-                "detail": "the declared probe moved no available output: the onset cannot be "
-                          "measured, so the declaration cannot be checked"}
+        return {"passed": False, "outcome": "FAILED", "first_change_observed": None,
+                "matches_declared": False,
+                "detail": "the operator declared this excitation identifiable and no available "
+                          "output moved: the declaration is contradicted, not abstained", **facts}
     observed = first - position
     ok = observed == probe["expected_onset_samples"]
-    return {"passed": ok, "probe": probe["kind"], "declared": probe["expected_onset_samples"],
-            "observed": observed,
+    return {"passed": ok, "outcome": "PASSED" if ok else "FAILED", "observed": observed,
+            "first_change_observed": observed, "matches_declared": ok,
             "detail": None if ok else
             f"the {probe['kind']} first moved the output {observed} samples after it arrived; "
-            f"the operator declares {probe['expected_onset_samples']}"}
+            f"the operator declares {probe['expected_onset_samples']}", **facts}
 
 
 def check_non_causal_twin(operator, twin, train, x) -> dict:
-    """§5: the twin MUST fail prefix or future perturbation; NOT_APPLICABLE only with a reason."""
+    """§5 as amended (K3): the twin MUST demonstrate a causality failure; a twin without any
+    observable comparison is INSUFFICIENT_TEST, never a detection and never a pass."""
     declared = operator.describe()["non_causal_twin"]
     if declared.get("not_applicable") is True:
         return {"passed": None, "scoped": True, "outcome": "NOT_APPLICABLE",
@@ -432,14 +473,25 @@ def check_non_causal_twin(operator, twin, train, x) -> dict:
     if twin_spec.get("non_causal_control_of") != operator.describe()["kind"]:
         return {"passed": False, "scoped": False,
                 "detail": "the twin does not name the operator it is the deliberate twin of"}
+    whole = _run(twin, x, _fit(twin, train))
+    emissions = sum(1 for a in whole["available"] if a)
     p = check_prefix_all_available(twin, train, x)
     f = check_future_perturbation(twin, train, x)
-    failed = p["passed"] is False or f["passed"] is False
-    return {"passed": failed, "scoped": False, "promoted": False,
-            "twin_prefix_passed": p["passed"], "twin_future_passed": f["passed"],
-            "detail": None if failed else
-            "the declared twin passed the causality tests: either it is not the twin it claims "
-            "to be or the tests are not measuring causality"}
+    comparisons = int(p.get("compared") or 0) + int(f.get("compared") or 0)
+    facts = {"scoped": False, "promoted": False, "twin_emissions": emissions,
+             "twin_comparisons": comparisons, "twin_prefix_passed": p["passed"],
+             "twin_future_passed": f["passed"]}
+    if p["passed"] is False or f["passed"] is False:
+        return {"passed": True, "outcome": "PASSED", "detail": None, **facts}
+    if comparisons == 0:
+        return {"passed": None, "outcome": "INSUFFICIENT_TEST",
+                "detail": f"the twin emitted {emissions} outputs and no comparison was "
+                          "observable at any cut: nothing was detected and nothing was shown; "
+                          "absence of evidence is not evidence", **facts}
+    return {"passed": False, "outcome": "FAILED",
+            "detail": f"the declared twin was compared {comparisons} times and never failed "
+                      "causality: either it is not the twin it claims to be or the tests are "
+                      "not measuring causality", **facts}
 
 
 def parse_duration_seconds(text):
@@ -593,6 +645,10 @@ def run_battery(operator, x, *, train=None, twin=None, resource_contract=None,
         "applicability": check_applicability(operator, train, x, inapplicable_family),
         "raw_branch": check_raw_branch(operator, train, x),
     }
+    whole = _run(operator, x, _fit(operator, train))
+    coverage = {"n": len(x["values"]), "emitted": sum(1 for a in whole["available"] if a),
+                "inputs_available": sum(1 for v in x["values"]
+                                        if not (isinstance(v, float) and math.isnan(v)))}
     failed = sorted(k for k, r in results.items() if r["passed"] is False)
     scoped = sorted(k for k, r in results.items()
                     if r["passed"] is None and r.get("scoped") and k in SCOPEABLE)
@@ -601,11 +657,12 @@ def run_battery(operator, x, *, train=None, twin=None, resource_contract=None,
     verdict = ("MECHANICALLY_REFUSED" if failed else
                "INCONCLUSIVE" if undecided else "MECHANICALLY_ACCEPTED")
     return {"schema": "df_d3_acceptance.v2", "generated_utc": now(),
-            "design_sha256": design.D3_AMENDMENT_V1["design_sha256"],
+            "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"],
             "kind": spec["kind"], "spec_sha256": contract.spec_sha256(spec),
             "samples": len(x["values"]), "results": results,
             "required_tests": list(TESTS), "failed": failed, "scoped": scoped,
             "undecided": undecided,
+            "coverage": coverage,
             "review_ready": verdict == "MECHANICALLY_ACCEPTED",
             "verdict": verdict,
             "note": ("Mechanical acceptance only: what the operator declares about itself is "
@@ -621,7 +678,7 @@ def main(argv=None) -> int:
     if args.list_tests:
         print(json.dumps({"schema": "df_d3_acceptance.v2", "tests": list(TESTS),
                           "scopeable": list(SCOPEABLE),
-                          "design_sha256": design.D3_AMENDMENT_V1["design_sha256"]}, indent=1))
+                          "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"]}, indent=1))
         return 0
     parser.error("this module is a battery; import it and call run_battery(operator, x)")
     return 2

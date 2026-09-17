@@ -170,6 +170,15 @@ class Operator:
     def probe(self) -> dict:
         raise NotImplementedError
 
+    def probe_resolution(self, state, *, baseline: float, scale: float, sigma: float) -> dict:
+        """The smallest excitation, in input units at `baseline`, this operator guarantees moves
+        its impact-sample output — from its training fit only (K2). The quiet branch carries
+        noise of `sigma` (3 sd band); a fitted codec must clear the first edge ABOVE that band.
+        A linear or unbounded response moves for any excitation of the fitted scale;
+        UNIDENTIFIED with a reason when nothing is guaranteed."""
+        return {"amplitude": float(scale),
+                "reason": "the response moves for any excitation of the fitted scale"}
+
     def twin(self) -> dict:
         raise NotImplementedError
 
@@ -233,7 +242,7 @@ class UniformDecileQuantizer(Operator):
         return 8 * (int(self.params["levels"]) + 1)
 
     def probe(self):
-        return {"kind": "step", "expected_onset_samples": 0}
+        return {"kind": "step", "expected_onset_samples": 0, "scale": contract.PROBE_SCALE}
 
     def twin(self):
         return _na_twin("a stateless pointwise codec has no window to centre")
@@ -249,6 +258,19 @@ class UniformDecileQuantizer(Operator):
         k = int(self.params["levels"])
         qs = np.quantile(np.asarray(finite, dtype=np.float64), np.linspace(0, 1, k + 1))
         return {"edges": [float(q) for q in qs[1:-1]]}
+
+    def probe_resolution(self, state, *, baseline, scale, sigma):
+        # a step moves the level at the impact sample iff it crosses an edge the quiet sample
+        # has not crossed: the first edge above the noise band (baseline + 3 sigma), cleared by
+        # another 3 sigma; the baseline of a decile codec fitted on the same train IS an edge
+        ceiling = baseline + 3.0 * sigma
+        above = [e for e in state["edges"] if e > ceiling]
+        if not above:
+            return {"amplitude": contract.UNIDENTIFIED,
+                    "reason": "saturation: no fitted edge lies above the baseline's noise band"}
+        return {"amplitude": (above[0] - baseline) + 3.0 * sigma,
+                "reason": f"first fitted edge above the noise band at {above[0] - baseline:.6g} "
+                          "over the baseline"}
 
     def transform(self, x, state):
         edges = np.asarray(state["edges"], dtype=np.float64)
@@ -279,7 +301,7 @@ class SaxPaaTrailing(Operator):
         return 16 + 8 * (int(self.params["alphabet"]) - 1)
 
     def probe(self):
-        return {"kind": "step", "expected_onset_samples": 0}
+        return {"kind": "step", "expected_onset_samples": 0, "scale": contract.PROBE_SCALE}
 
     def twin(self):
         return {"kind": "sax_paa_centred"}
@@ -297,6 +319,22 @@ class SaxPaaTrailing(Operator):
         if a not in _SAX_BREAKPOINTS:
             raise contract.SpecRefusal(f"alphabet {a} has no declared breakpoints")
         return {"mean": float(finite.mean()), "sd": sd, "breakpoints": list(_SAX_BREAKPOINTS[a])}
+
+    def probe_resolution(self, state, *, baseline, scale, sigma):
+        # the impact window holds s-1 quiet samples and one excited sample: its PAA rises by
+        # amplitude/s; the symbol moves iff that crosses a breakpoint above the quiet window's
+        # own z band (noise of the window mean is sigma/sqrt(s); 3 sd cleared on both sides)
+        seg = int(self.params["segment"])
+        band = 3.0 * sigma / (seg ** 0.5)
+        z_ceiling = (baseline + band - state["mean"]) / state["sd"]
+        above = [b for b in state["breakpoints"] if b > z_ceiling]
+        if not above:
+            return {"amplitude": contract.UNIDENTIFIED,
+                    "reason": "saturation: the baseline's PAA symbol is already the top one"}
+        rise = above[0] * state["sd"] + state["mean"] - baseline + 2.0 * band
+        return {"amplitude": seg * rise,
+                "reason": f"first breakpoint above the quiet window's z band at {above[0]}, over "
+                          f"a segment of {seg}"}
 
     def _segment(self, values, i):
         s = int(self.params["segment"])
@@ -356,7 +394,7 @@ class DeltaRunLength(Operator):
         return 1
 
     def probe(self):
-        return {"kind": "impulse", "expected_onset_samples": 0}
+        return {"kind": "impulse", "expected_onset_samples": 0, "scale": contract.PROBE_SCALE}
 
     def twin(self):
         return _na_twin("delta of one sample and its run length have no window to centre; "
@@ -409,7 +447,7 @@ class StftTrailing(Operator):
         return int(self.params["w"]) - 1
 
     def probe(self):
-        return {"kind": "impulse", "expected_onset_samples": 1}
+        return {"kind": "impulse", "expected_onset_samples": 1, "scale": contract.PROBE_SCALE}
 
     def twin(self):
         return {"kind": "stft_centred"}
@@ -483,7 +521,7 @@ class WaveletTrailing(Operator):
         return self._support() - 1
 
     def probe(self):
-        return {"kind": "impulse", "expected_onset_samples": 0}
+        return {"kind": "impulse", "expected_onset_samples": 0, "scale": contract.PROBE_SCALE}
 
     def twin(self):
         return {"kind": "wavelet_centred"}
@@ -573,7 +611,7 @@ class ButterworthCausal(Operator):
         return 0
 
     def probe(self):
-        return {"kind": "impulse", "expected_onset_samples": 0}
+        return {"kind": "impulse", "expected_onset_samples": 0, "scale": contract.PROBE_SCALE}
 
     def twin(self):
         return {"kind": "butterworth_filtfilt"}
@@ -682,7 +720,7 @@ class CusumCausal(Operator):
         return 32
 
     def probe(self):
-        return {"kind": "level_shift", "expected_onset_samples": 0}
+        return {"kind": "level_shift", "expected_onset_samples": 0, "scale": contract.PROBE_SCALE}
 
     def twin(self):
         return {"kind": "cusum_lookahead"}
@@ -698,6 +736,13 @@ class CusumCausal(Operator):
         sd = float(finite.std()) or 1.0
         return {"mean": float(finite.mean()), "k": float(self.params["k_sd"]) * sd,
                 "h": float(self.params["h_sd"]) * sd, "s_pos": 0.0, "s_neg": 0.0}
+
+    def probe_resolution(self, state, *, baseline, scale, sigma):
+        # the statistic at the impact sample changes iff the excited increment differs from
+        # the quiet one after clamping: reaching above mean + k guarantees S+ moves
+        need = (state["mean"] + state["k"]) - baseline
+        return {"amplitude": max(need, 0.0) + 3.0 * sigma + 0.05 * scale,
+                "reason": f"reach mean + k from the baseline ({need:.6g}) plus margin"}
 
     def transform(self, x, state):
         s_pos, s_neg = float(state["s_pos"]), float(state["s_neg"])
@@ -773,7 +818,7 @@ class MadExtremesTrailing(Operator):
         return 16
 
     def probe(self):
-        return {"kind": "impulse", "expected_onset_samples": 0}
+        return {"kind": "impulse", "expected_onset_samples": 0, "scale": contract.PROBE_SCALE}
 
     def twin(self):
         return {"kind": "mad_extremes_centred"}
@@ -847,7 +892,12 @@ class VarianceRegimeTrailing(Operator):
         return int(self.params["w"]) - 1
 
     def probe(self):
-        return {"kind": "variance_shift", "expected_onset_samples": 0}
+        return {"kind": "variance_shift", "expected_onset_samples": 0, "scale": contract.PROBE_SCALE}
+
+    def probe_resolution(self, state, *, baseline, scale, sigma):
+        return {"amplitude": 8.0, "gain": True,
+                "reason": "a variance shift is a gain on the quiet deviations; 8x moves the "
+                          "trailing variance at the impact sample"}
 
     def twin(self):
         return {"kind": "variance_regime_centred"}

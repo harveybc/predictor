@@ -83,7 +83,7 @@ def synthetic_spec(frozen: dict) -> dict:
             "bank": "SYNTHETIC_D2_C128_V1",
             "bank_manifest_sha256": hashlib.sha256(manifest.read_bytes()).hexdigest()
             if manifest.is_file() else "UNAVAILABLE",
-            "design_sha256": design.D3_AMENDMENT_V1["design_sha256"],
+            "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"],
             "supersedes_design_sha256": design.ORIGINAL_SHA256,
             "freeze_sha256": frozen["freeze_sha256"],
             "code_sha256s": frozen["code_sha256s"],
@@ -157,7 +157,7 @@ def main(argv=None) -> int:
     config_sha = sha_text(json.dumps({"schema": "d3_mechanics_execution.v1",
                                       "run_id": args.run_id,
                                       "freeze_sha256": frozen["freeze_sha256"],
-                                      "design_sha256": design.D3_AMENDMENT_V1["design_sha256"]},
+                                      "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"]},
                                      sort_keys=True, separators=(",", ":")))
     gov = GR.GovHttp(args.gov_url, GR.load_api_key(args.api_key_file), args.run_id)
     outbox = GR.TerminalOutbox(Path(os.path.expanduser(args.outbox_dir)).resolve())

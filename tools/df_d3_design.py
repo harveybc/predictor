@@ -139,6 +139,72 @@ def build_amendment() -> dict:
 D3_AMENDMENT_V1 = build_amendment()
 
 
+def build_probe_amendment() -> dict:
+    """K2/K3 successor amendment: the probe is built from the training fit and the operator's
+    declared resolution, three facts are recorded apart (identifiable excitation, first change
+    observed, agreement with the declared onset), a twin without observable comparisons is
+    INSUFFICIENT_TEST, and emission coverage is reported apart from causality. Sealed before
+    any measurement with it; every row of a run under it carries this digest."""
+    doc = {
+        "schema": "d3_probe_amendment.v1",
+        "supersedes_amendment": {"schema": D3_AMENDMENT_V1["schema"],
+                                 "design_sha256": D3_AMENDMENT_V1["design_sha256"]},
+        "original_design": dict(D3_AMENDMENT_V1["supersedes"]),
+        "probe_construction": {
+            "baseline": "train quantile 0.10 over finite values",
+            "scale": "train quantile 0.90 minus the baseline; zero scale is UNIDENTIFIED",
+            "noise": "baseline + 0.01 * scale * N(0,1), seeded, identical in both branches",
+            "amplitude": "the operator's declared probe_resolution(state, baseline, scale, sigma): "
+                         "the smallest excitation it guarantees moves the impact-sample output, "
+                         "from its training fit only; UNIDENTIFIED with a reason otherwise",
+            "never": ["validation or test data", "amplitudes searched until a pass",
+                      "operator thresholds or parameters changed to pass"],
+            "cases_defined": ["constant training fit", "extreme ranges", "saturation",
+                              "known-domain quantizer at several scales",
+                              "a deliberately delayed operator", "STFT declaring onset 1"]},
+        "probe_facts": {
+            "identifiable": "declared by the operator from its fit; false is UNIDENTIFIED",
+            "first_change_observed": "the first available output after the impact whose value "
+                                     "differs between the quiet and the excited branch",
+            "matches_declared": "first change minus impact equals expected_onset_samples"},
+        "probe_policy": {
+            "declared_identifiable_but_nothing_moved": "FAILED (the declaration is contradicted)",
+            "first_change_differs_from_declared": "FAILED (a real delay never becomes a pass)",
+            "unidentified": "undecided; the verdict is INCONCLUSIVE, never ACCEPTED"},
+        "twin_policy": {
+            "detection": "a demonstrated causality failure of the twin",
+            "no_observable_comparison": "INSUFFICIENT_TEST; absence of evidence is not evidence",
+            "recorded": ["twin_emissions", "twin_comparisons"],
+            "complete_data_control": "a centred twin over complete data must be detected"},
+        "coverage": "available outputs over samples, reported apart from causality and from "
+                    "inapplicability by missingness; no future interpolation; support unchanged",
+        "spec_schema": "d3_operator_spec.v3",
+        "unchanged": ["the twelve required tests", "the nine operators and their parameters",
+                      "cut menu, lengths, missingness regimes", "NON_GOVERNING classification"],
+        "design_sha256": "",
+    }
+    body = {k: v for k, v in doc.items() if k != "design_sha256"}
+    doc["design_sha256"] = sha_obj(body)
+    return doc
+
+
+D3_PROBE_AMENDMENT_V1 = build_probe_amendment()
+#: The amendment a run measures under today; rows carry its digest.
+D3_DESIGN_CURRENT = D3_PROBE_AMENDMENT_V1
+
+
+def validate_probe_amendment(doc: dict) -> list:
+    """The successor amendment is sealed and names the amendment it supersedes."""
+    problems = []
+    body = {k: v for k, v in doc.items() if k != "design_sha256"}
+    if sha_obj(body) != doc.get("design_sha256"):
+        problems.append("design_sha256 does not seal the document")
+    if doc.get("supersedes_amendment", {}).get("design_sha256") != D3_AMENDMENT_V1["design_sha256"]:
+        problems.append("the successor does not name the amendment it supersedes")
+    problems += validate_amendment(D3_AMENDMENT_V1)
+    return problems
+
+
 def validate_amendment(doc: dict) -> list:
     problems = []
     if not isinstance(doc, dict) or doc.get("schema") != SCHEMA:

@@ -132,7 +132,7 @@ def load_unit(unit_dir: Path) -> dict:
 
 def _base(job: dict, unit: dict, variable: str, op, spec_sha: str) -> dict:
     return {"schema": ROW_SCHEMA, "run_id": job["run_id"], "host_role": job["host_role"],
-            "design_sha256": design.D3_AMENDMENT_V1["design_sha256"],
+            "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"],
             "bank": unit["bank"], "unit_id": unit["unit_id"], "family": unit["family"],
             "dataset_id": unit["dataset_id"], "contract_sha256": unit["contract_sha256"],
             "variable": variable, "operator_kind": op.KIND, "operator_group": op.GROUP,
@@ -266,7 +266,7 @@ def run_shard(units_root: Path, out_dir: Path, *, run_id: str, host_role: str,
         adir.mkdir(parents=True, exist_ok=False)
         job = {"unit_dir": str(ud.resolve()), "attempt_dir": str(adir.resolve()),
                "run_id": run_id, "host_role": host_role, "unit_id": sname,
-               "code_sha256": code, "design_sha256": design.D3_AMENDMENT_V1["design_sha256"]}
+               "code_sha256": code, "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"]}
         job_file = adir / "job.json"
         job_file.write_text(json.dumps(job, indent=1), encoding="utf-8")
         argv = [sys.executable, "-B", str(Path(__file__).resolve()), "--worker", str(job_file)]
@@ -301,7 +301,7 @@ def run_shard(units_root: Path, out_dir: Path, *, run_id: str, host_role: str,
         results.append({"unit": sname, "status": status, "reason": reason})
     manifest = {"schema": "d3_shard_run.v1", "run_id": run_id, "host_role": host_role,
                 "units": results, "code_sha256s": code_sha256s(),
-                "design_sha256": design.D3_AMENDMENT_V1["design_sha256"],
+                "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"],
                 "finished_utc": now_iso()}
     (out_dir / "RUN_MANIFEST.json").write_text(json.dumps(manifest, indent=1) + "\n",
                                                encoding="utf-8")

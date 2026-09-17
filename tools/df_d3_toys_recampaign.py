@@ -75,7 +75,7 @@ def main(argv=None) -> int:
     code_identity = GR.strict_code_identity(REPO)
     config_sha = campaign.sha_obj({"schema": "d3_mechanics_execution.v1", "run_id": args.run_id,
                                    "freeze_sha256": frozen["freeze_sha256"],
-                                   "design_sha256": design.D3_AMENDMENT_V1["design_sha256"]})
+                                   "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"]})
     units = {u["unit_id"]: u for u in report.collected_units(args.root, args.collect)
              if u["bank"] == "TOY"}
     outbox = GR.TerminalOutbox(Path(os.path.expanduser(args.outbox_dir)).resolve())

@@ -53,7 +53,7 @@ def base_spec(**overrides) -> dict:
             "params": {"window": 8}, "bytes_state": 0, "fit_scope": "NONE",
             "lookback_samples": 7, "warm_up_samples": 7, "delay_samples": 0,
             "output_availability": "t",
-            "response_probe": {"kind": "impulse", "expected_onset_samples": 0},
+            "response_probe": {"kind": "impulse", "expected_onset_samples": 0, "scale": contract.PROBE_SCALE},
             "non_causal_twin": {"kind": "centred_mean"},
             "support": {"kind": "FINITE", "samples": 8, "derivation": "window of 8 samples",
                         "boundary_mode": None},
@@ -72,6 +72,9 @@ class TrailingMean:
 
     def describe(self):
         return dict(self._spec)
+
+    def probe_resolution(self, state, *, baseline, scale, sigma):
+        return {"amplitude": float(scale), "reason": "a mean moves for any excitation"}
 
     def fit(self, train):
         return {}
@@ -135,7 +138,7 @@ class DelayedMean(TrailingMean):
         super().__init__(base_spec(kind="delayed_mean", delay_samples=2,
                                    output_availability="t + 2",
                                    response_probe={"kind": "impulse",
-                                                   "expected_onset_samples": 0},
+                                                   "expected_onset_samples": 0, "scale": contract.PROBE_SCALE},
                                    non_causal_twin={"not_applicable": True,
                                                     "reason": "control fixture"}))
 
@@ -545,13 +548,13 @@ def test_an_undeclared_onset_is_measured_against_the_probe():
 
 def test_an_unidentified_response_is_recorded_never_fabricated():
     op = TrailingMean(base_spec(response_probe={"kind": "impulse",
-                                                "expected_onset_samples": "UNIDENTIFIED"}))
+                                                "expected_onset_samples": "UNIDENTIFIED", "scale": contract.PROBE_SCALE}))
     x = x_of()
     outcome = battery.check_response_probe(op, battery.prefix(x, 180), x)
     assert outcome["passed"] is None and outcome["outcome"] == "UNIDENTIFIED"
     with pytest.raises(contract.SpecRefusal, match="never a fabricated zero"):
         contract.validate_spec(base_spec(response_probe={"kind": "impulse",
-                                                         "expected_onset_samples": -1}))
+                                                         "expected_onset_samples": -1, "scale": contract.PROBE_SCALE}))
 
 
 # --- filter support ---------------------------------------------------------------------------
@@ -598,7 +601,7 @@ def test_an_undecided_required_test_is_never_review_ready():
 
 def test_the_report_carries_the_amendment_digest():
     report = run(TrailingMean(), twin=CentredMean(), resource_contract=CONTRACT_0S)
-    assert report["design_sha256"] == design.D3_AMENDMENT_V1["design_sha256"]
+    assert report["design_sha256"] == design.D3_DESIGN_CURRENT["design_sha256"]
 
 
 def test_the_battery_scores_nothing_and_writes_nowhere():

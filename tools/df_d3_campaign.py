@@ -132,7 +132,7 @@ def freeze(root: Path, *, bank_root: Path, pilot_units: list, per_unit_wall: flo
         raise SystemExit(f"REFUSED: the cost pilot exceeds the declaration for {over}")
     units = select_bank_units(bank_root, per_family_limit=per_family_limit)
     doc = {"schema": "d3_mechanics_freeze.v1", "frozen_utc": now_iso(),
-           "design_sha256": design.D3_AMENDMENT_V1["design_sha256"],
+           "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"],
            "code_sha256s": worker.code_sha256s(),
            "operators": [{"kind": op.KIND, "params": op.params,
                           "spec_sha256": _load("df_d3_contract").spec_sha256(op.describe()),
@@ -410,7 +410,7 @@ def unit_terminal(rows: list, *, status: str, reason, wall: float, cpu: float,
             "metrics": metrics if status == "COMPLETED" else [],
             "tags": {"purpose": "D3_MECHANICS", "grants": "NONE", "classification": "NON_GOVERNING",
                      "result_class": "MECHANICAL", "bank": bank, "unit_id": unit_id,
-                     "run_id": run_id, "design_sha256": design.D3_AMENDMENT_V1["design_sha256"],
+                     "run_id": run_id, "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"],
                      "readiness": "INFRASTRUCTURE_PRESENT;TEMPORAL_BATTERY_MEASURED;"
                                   "SCIENTIFIC_UTILITY_NOT_CLAIMED",
                      "externally_reviewed": "false"}}
@@ -453,7 +453,7 @@ def build_mechanics_envelope(*, campaign_key: str, run_id: str, code_identity: d
     return CE.build_envelope(
         campaign_key=campaign_key, producer="predictor", result_class="MECHANICAL",
         identity={"run_id": run_id, "code_identity": code_identity["value"],
-                  "design_sha256": design.D3_AMENDMENT_V1["design_sha256"],
+                  "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"],
                   "record_sha256": frozen["freeze_sha256"]},
         data_consumed=mechanics_consumption(units),
         partitions={"exposure": "MECHANICAL_NO_SCIENTIFIC_EXPOSURE",
@@ -549,7 +549,7 @@ def main(argv=None) -> int:
         code_identity = GR.strict_code_identity(REPO)
         config_sha = sha_obj({"schema": "d3_mechanics_execution.v1", "run_id": args.run_id,
                               "freeze_sha256": frozen["freeze_sha256"],
-                              "design_sha256": design.D3_AMENDMENT_V1["design_sha256"]})
+                              "design_sha256": design.D3_DESIGN_CURRENT["design_sha256"]})
         doc = deliver_toys(args.root, gov_url=args.gov_url, api_key_file=args.api_key_file,
                            lake=args.lake, lake_config=args.lake_config,
                            metrics_lake=args.metrics_lake, project=args.project,
