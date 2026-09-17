@@ -31,6 +31,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import re
 import os
 import shlex
 import subprocess
@@ -317,8 +318,15 @@ printf "HEAD=%s dirty=%s\\n" "$(git -C "$W" rev-parse HEAD)" "$(git -C "$W" stat
 
 # --- collect --------------------------------------------------------------------------------
 
-def collect(root: Path, out_rel: str, roles_map: dict, *, run_id: str) -> dict:
-    """rsync each worker's outputs back and verify every terminal's output digest."""
+def collect(root: Path, out_rel: str, roles_map: dict, *, run_id: str,
+            receipt: str = "COLLECT.json") -> dict:
+    """rsync each worker's outputs back and verify every terminal's output digest.
+
+    A unit may carry several attempts (a killed attempt stays on disk; the retry takes the
+    next number). The receipt records the HIGHEST attempt of each unit and names it, so the
+    rows it points at are the ones it verified. Receipts are write-once; a later collect
+    takes its own name.
+    """
     collected_root = root / "collected"
     collected_root.mkdir(parents=True, exist_ok=True)
     report = {"roles": {}, "units": [], "verified": 0, "mismatched": 0}
@@ -333,21 +341,30 @@ def collect(root: Path, out_rel: str, roles_map: dict, *, run_id: str) -> dict:
         report["roles"][role] = {"returncode": run.returncode,
                                  "error": redact((run.stderr or "").replace(alias or "", "<alias>")
                                                  [-200:])}
+    latest = {}
     for terminal_path in sorted(collected_root.glob("*/*/terminals/*.json")):
+        m = re.fullmatch(r"(.+)\.attempt-(\d+)\.json", terminal_path.name)
+        if not m:
+            continue
+        key = (terminal_path.parts[-4], terminal_path.parts[-3], m.group(1))
+        if key not in latest or int(m.group(2)) > latest[key][0]:
+            latest[key] = (int(m.group(2)), terminal_path)
+    for (role, shard, _), (attempt, terminal_path) in sorted(latest.items()):
         terminal = json.loads(terminal_path.read_text(encoding="utf-8"))
-        role, shard = terminal_path.parts[-4], terminal_path.parts[-3]
         unit = terminal["dataset_id"]
-        entry = {"role": role, "shard": shard, "unit": unit, "status": terminal["status"],
+        entry = {"role": role, "shard": shard, "unit": unit, "attempt": attempt,
+                 "status": terminal["status"],
                  "rows": terminal["rows_written"], "wall_seconds": terminal["wall_seconds"],
                  "cpu_seconds": terminal["cpu_seconds"]}
         if terminal["status"] == "COMPLETED":
-            rows = terminal_path.parents[1] / "attempts" / unit / "attempt-1" / "rows.jsonl"
+            rows = (terminal_path.parents[1] / "attempts" / unit / f"attempt-{attempt}"
+                    / "rows.jsonl")
             ok = rows.is_file() and sha_file(rows) == terminal["output_sha256"] \
                 and sum(1 for _ in rows.open("rb")) == terminal["rows_written"]
             entry["output_verified"] = ok
             report["verified" if ok else "mismatched"] += 1
         report["units"].append(entry)
-    write_once(root / "COLLECT.json", {"schema": "d3_mechanics_collect.v1", "run_id": run_id,
+    write_once(root / receipt, {"schema": "d3_mechanics_collect.v1", "run_id": run_id,
                                        **report})
     return report
 
@@ -470,6 +487,8 @@ def main(argv=None) -> int:
     c.add_argument("--out-rel", required=True)
     c.add_argument("--run-id", required=True)
     c.add_argument("--roles", type=Path, default=Path.home() / ".config/crispdm/host_roles.json")
+    c.add_argument("--receipt", default="COLLECT.json",
+                   help="receipt file name under --root; write-once, so a re-collect names its own")
     args = parser.parse_args(argv)
 
     if args.cmd == "freeze":
@@ -515,7 +534,7 @@ def main(argv=None) -> int:
         return 0 if all(v["synced"] for v in out.values()) else 1
     if args.cmd == "collect":
         roles = json.loads(args.roles.read_text(encoding="utf-8"))
-        report = collect(args.root, args.out_rel, roles, run_id=args.run_id)
+        report = collect(args.root, args.out_rel, roles, run_id=args.run_id, receipt=args.receipt)
         print(json.dumps({"verified": report["verified"], "mismatched": report["mismatched"],
                           "units": len(report["units"])}, indent=1))
         return 0 if not report["mismatched"] else 1

@@ -58,14 +58,14 @@ def sha_text(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
-def collected_units(root: Path) -> list:
-    """Every unit the collect step verified, with its rows loaded."""
+def collected_units(root: Path, receipt: str = "COLLECT.json") -> list:
+    """Every unit the collect step verified, with the rows of the attempt it verified."""
     units = []
-    collect = json.loads((root / "COLLECT.json").read_text(encoding="utf-8"))
+    collect = json.loads((root / receipt).read_text(encoding="utf-8"))
     for entry in collect["units"]:
         unit = dict(entry)
         rows_path = (root / "collected" / entry["role"] / entry["shard"] / "attempts"
-                     / entry["unit"] / "attempt-1" / "rows.jsonl")
+                     / entry["unit"] / f"attempt-{entry.get('attempt', 1)}" / "rows.jsonl")
         unit["rows"] = ([json.loads(line) for line in rows_path.open(encoding="utf-8")]
                         if entry["status"] == "COMPLETED" and entry.get("output_verified")
                         else [])
@@ -139,6 +139,8 @@ def main(argv=None) -> int:
     parser.add_argument("--metrics-lake", default="olap_cube")
     parser.add_argument("--project", default="predictor")
     parser.add_argument("--outbox-dir", default=GR.DEFAULT_OUTBOX)
+    parser.add_argument("--collect", default="COLLECT.json",
+                        help="the collect receipt (under --root) whose verified rows are reported")
     parser.add_argument("--toy-campaign-sha256",
                         help="the DATASETS campaign the toys were delivered under (already "
                              "registered by the toys step); its terminals are reported here")
@@ -146,7 +148,7 @@ def main(argv=None) -> int:
 
     root = args.root
     frozen = json.loads((root / "FREEZE.json").read_text(encoding="utf-8"))
-    units = collected_units(root)
+    units = collected_units(root, args.collect)
     synthetic_units = [u for u in units if u["bank"] == "SYNTHETIC"]
     toy_units = [u for u in units if u["bank"] == "TOY"]
     code_identity = GR.strict_code_identity(REPO)

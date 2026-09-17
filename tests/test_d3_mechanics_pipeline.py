@@ -272,3 +272,32 @@ def test_a_retry_takes_the_next_attempt_directory(tmp_path, monkeypatch):
     assert seen["attempt_dir"].name == "attempt-2"
     assert (killed / "child.log").read_text().startswith("killed")
     assert seen["wall"] == 100.0
+
+
+def test_collect_records_the_highest_attempt_of_each_unit(tmp_path, monkeypatch):
+    """attempt-1 was killed (RESOURCE_EXCEEDED, no rows); attempt-2 completed. The receipt
+    names attempt 2 and verifies ITS rows; a receipt name is write-once."""
+    import hashlib
+    campaign = _load("df_d3_campaign")
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: home))
+    out = home / "out" / "COORDINATOR" / "shard_00"
+    (out / "terminals").mkdir(parents=True)
+    a2 = out / "attempts" / "u" / "attempt-2"
+    a2.mkdir(parents=True)
+    (out / "attempts" / "u" / "attempt-1").mkdir()
+    (a2 / "rows.jsonl").write_text('{"test": "verdict"}\n')
+    sha = hashlib.sha256((a2 / "rows.jsonl").read_bytes()).hexdigest()
+    base = {"dataset_id": "u", "wall_seconds": 1.0, "cpu_seconds": 1.0}
+    (out / "terminals" / "u.attempt-1.json").write_text(json.dumps(
+        dict(base, status="RESOURCE_EXCEEDED", rows_written=0, output_sha256=None)))
+    (out / "terminals" / "u.attempt-2.json").write_text(json.dumps(
+        dict(base, status="COMPLETED", rows_written=1, output_sha256=sha)))
+    root = tmp_path / "root"
+    root.mkdir()
+    rep = campaign.collect(root, "out", {"COORDINATOR": {}}, run_id="r", receipt="C.json")
+    assert [(u["unit"], u["attempt"], u["status"], u.get("output_verified"))
+            for u in rep["units"]] == [("u", 2, "COMPLETED", True)]
+    assert rep["verified"] == 1 and rep["mismatched"] == 0
+    with pytest.raises(SystemExit):
+        campaign.collect(root, "out", {"COORDINATOR": {}}, run_id="r", receipt="C.json")

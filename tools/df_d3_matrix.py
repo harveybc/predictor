@@ -38,8 +38,8 @@ def verified_row_files(root: Path, collect: dict) -> list:
     return files
 
 
-def aggregate(root: Path) -> dict:
-    collect = json.loads((root / "COLLECT.json").read_text(encoding="utf-8"))
+def aggregate(root: Path, receipt: str = "COLLECT.json") -> dict:
+    collect = json.loads((root / receipt).read_text(encoding="utf-8"))
     per_op = defaultdict(lambda: {"verdicts": Counter(), "tests": defaultdict(Counter),
                                   "cost": [], "units": set(), "variables": 0,
                                   "banks": Counter(), "families": Counter(),
@@ -122,8 +122,9 @@ def main(argv=None) -> int:
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--markdown", type=Path)
+    parser.add_argument("--collect", default="COLLECT.json")
     args = parser.parse_args(argv)
-    m = aggregate(args.root)
+    m = aggregate(args.root, args.collect)
     text = json.dumps(m, indent=1, sort_keys=True) + "\n"
     (args.out or args.root / "MATRIX.json").write_text(text, encoding="utf-8")
     md = markdown(m)
