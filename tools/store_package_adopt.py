@@ -336,7 +336,8 @@ def main(argv=None) -> int:
         if receipt["install"]["returncode"] == 0:
             receipt["restart"] = restart(args, token)
             receipt["postcheck"] = postcheck(args, token, receipt["before"])
-            outcome = "ADOPTED" if receipt["postcheck"]["ok"] and receipt["restart"]["healthz"] \
+            active = receipt["restart"].get("service", {}).get("ActiveState") == "active"
+            outcome = "ADOPTED" if receipt["postcheck"]["ok"] and active \
                 else "ADOPTED_POSTCHECK_FAILED"
         else:
             outcome = "INSTALL_FAILED"
