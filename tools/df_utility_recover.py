@@ -63,8 +63,11 @@ def cube_query(url: str, token: str, sql: str) -> list:
 
 
 def recover_scores(root: Path, report: dict) -> tuple:
-    """(unit -> verified contrast result, refusals) from the preserved files."""
+    """(unit -> verified contrast result, refusals) from the preserved files. The protocol
+    identity every file must carry is the freeze's, never left blank."""
     scores, refusals = {}, []
+    frozen = json.loads((root / "FREEZE.json").read_text())
+    protocol_sha = frozen["protocol"]["protocol_sha256"]
     for unit_id, out in report["outcomes"].items():
         adir = root / "attempts" / unit_id
         result_path = adir / "result.json"
@@ -73,13 +76,13 @@ def recover_scores(root: Path, report: dict) -> tuple:
                              "outcome": out.get("outcome")})
             continue
         result = json.loads(result_path.read_text())
-        job = {"contrast_id": unit_id,
-               "protocol": {"protocol_sha256": (out.get("score") or {}).get("protocol_sha256")}}
         # the runner's own re-hash was not persisted by that version; the digest the child
-        # declared is checked against the bytes now, and said so in the receipt
-        # utilreh-v4's files predate the schema field; every other check applies
+        # declared is checked against the bytes now, and said so in the receipt.
+        # utilreh-v4's files predate the schema field; every other check applies, including
+        # the protocol identity against the freeze
         score, refusal = H.verified_score(adir, result, {"output_sha256": result.get("output_sha256")},
-                                          {"contrast_id": unit_id, "protocol": {}},
+                                          {"contrast_id": unit_id,
+                                           "protocol": {"protocol_sha256": protocol_sha}},
                                           allow_legacy_schema=True)
         if refusal:
             refusals.append({"unit_id": unit_id, **refusal})
