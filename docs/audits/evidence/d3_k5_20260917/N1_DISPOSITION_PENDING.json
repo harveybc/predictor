@@ -1,0 +1,17 @@
+{
+ "schema": "olap_selection_manifest.v1",
+ "declared_utc": "2026-09-17",
+ "declared_by": "Satoshi, order N1 (MUSASHI_D3_M1_M6_REVIEW_AND_N1_N5_2026_09_17.md)",
+ "runs": [
+  {
+   "run_id": "2e68209e28ba07ea18edfc51fff92f930b6ff7027f06f3a42b1e2b9b5efc6ab8",
+   "kind": "foundation_envelope",
+   "campaign_key": "utility-rehearsal-utilreh-v4-recovery",
+   "disposition": "ACCIDENTAL_OPERATIONAL_INGESTION",
+   "admissibility": "NOT_ADMISSIBLE_SCIENTIFIC",
+   "status": "RETAINED_AS_LOADED",
+   "rationale": "Emitted by the first attempt of df_utility_recover on 2026-09-17 with ZERO recovered contrasts (the legacy contrast.json files lacked the schema field and were refused); the loader took it before it could be closed (outbox entry 9863420429497f5d...). Four units with metric_value UNAVAILABLE; no measurement in it. The real corrective envelope is utility-rehearsal-utilreh-v4-recovery-2 (57e5f959...). Kept with its history; not promoted.",
+   "admissibility_reason": "an empty corrective envelope; not evidence of anything; superseded by the recovery-2 envelope"
+  }
+ ]
+}

@@ -459,3 +459,17 @@ def test_N1_a_missing_altered_or_discordant_output_is_a_typed_refusal_with_no_sc
     d2 = __import__("hashlib").sha256(nan_body).hexdigest()
     score, refusal = H.verified_score(tmp_path, dict(result, output_sha256=d2), {"output_sha256": d2}, job)
     assert score is None and "not finite" in refusal["why"]
+
+
+@pytest.mark.skipif(not Path("/usr/bin/systemd-run").exists(), reason="no systemd user scope")
+def test_N3_a_preparatory_calibration_child_completes_with_its_record_as_the_verified_output(tmp_path):
+    """The rehearsal v5 fell on this: a calibration record carries no 'outcome'."""
+    p = proto()
+    job = {"kind": "calibrate", "contrast_id": FAMILY[0], "operator": DELTA.KIND,
+           "protocol": p.sealed(), "plan": {"generator": "white_null", "n_sims": 2, "n": 300,
+                                            "bound_confidence": 0.5}, "seed": 5}
+    out = H.run_isolated(job, attempt_dir=tmp_path / "cal", assigned_bytes=1 << 30,
+                         wall_seconds=300.0, cpu_seconds=300)
+    assert out["outcome"] == "COMPLETED" and out["score"]["schema"] == "df_utility_calibration.v1"
+    assert out["score"]["n_sims"] == 2 and out["output_sha256"]
+    assert (tmp_path / "cal" / "outcome.json").is_file()

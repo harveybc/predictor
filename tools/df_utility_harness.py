@@ -785,7 +785,8 @@ def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seco
                    "reason": reason, "cost": cost, "score": None, "output_sha256": None}
     else:
         score, refusal = verified_score(attempt_dir, result, verified, job)
-        summary = {"outcome": score["outcome"] if score else SCORE_UNVERIFIED, "reason": reason,
+        summary = {"outcome": (score.get("outcome", "COMPLETED") if score else SCORE_UNVERIFIED),
+                   "reason": reason,
                    "cost": cost, "score": score, "output_sha256": verified.get("output_sha256"),
                    **({"refusal": refusal} if refusal else {})}
     prior.write_text(json.dumps({"status": status, "verified": verified,
