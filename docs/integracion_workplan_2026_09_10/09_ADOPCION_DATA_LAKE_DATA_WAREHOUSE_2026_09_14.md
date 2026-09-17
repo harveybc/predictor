@@ -871,3 +871,15 @@ el corte). 511 terminales gen. 1 conciliados, sobre cargado, conciliacion por co
 contabilidad: NO_LOSS (1,077 terminales). 232 pruebas. Experimento de utilidad preparado sin
 ejecutar (doc 12). Defecto de nombre: el sobre v2 lleva `campaign_key d3-mechanics-v1`;
 corregido para futuras corridas.
+
+### Retorno a37d495: relectura D3 v2 y cierre acotado pendiente
+
+Musashi ejecuto 53 pruebas focales y releyo v2: 511 unidades completas, 710
+variables totales, 83070 filas; el SHA canonico del freeze real coincide.
+Tres fixtures muestran que verify aun acepta contrato ausente, digest de freeze
+incorrecto e intento duplicado. No se afirma alteracion de la evidencia real.
+Cerrar esas omisiones sin repetir la campana, medir sensibilidad del gemelo
+solo al alcance necesario, conservar el sobre DEVELOPMENT accidental con
+disposicion no cientifica, corregir errores del host y concretar el borrador de
+utilidad con pruebas del arnes. No se abre la reserva ni utilidad cientifica.
+[Orden completa L1-L6](../handoffs/MUSASHI_D3_K1_K5_REVIEW_AND_L1_L6_2026_09_17.md).
