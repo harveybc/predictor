@@ -59,9 +59,62 @@ def sha_file(path: Path) -> str:
 
 # --- the frozen population ------------------------------------------------------------------
 
-def expected_population(root: Path, frozen: dict) -> dict:
+KNOWN_STATUSES = ("COMPLETED", "FAILED", "RESOURCE_EXCEEDED", "INCONCLUSIVE", "REFUSED",
+                  "QUARANTINED")
+FREEZE_SCHEMA = "d3_mechanics_freeze.v1"
+
+
+def sha_obj(obj) -> str:
+    return hashlib.sha256(json.dumps(obj, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def check_freeze(root: Path, frozen: dict, report_name: str, refuse) -> None:
+    """The freeze is the identity the run measured under: its digest must seal its body, its
+    schema and cardinalities must hold, and it must be the freeze the campaign was registered
+    with — the report conserved that record (`config_sha256` over run/freeze/design, and the
+    synthetic spec's freeze digest). A self-digest alone proves nothing (L1)."""
+    body = {k: v for k, v in frozen.items() if k != "freeze_sha256"}
+    if sha_obj(body) != frozen.get("freeze_sha256"):
+        refuse("FREEZE_IDENTITY", declared=frozen.get("freeze_sha256"), recomputed=sha_obj(body))
+    if frozen.get("schema") != FREEZE_SCHEMA:
+        refuse("FREEZE_SCHEMA", schema=frozen.get("schema"))
+    bank = frozen.get("bank") or {}
+    units = bank.get("units")
+    if not isinstance(units, list) or not units:
+        refuse("FREEZE_CARDINALITY", what="bank.units missing or empty")
+    elif bank.get("count") != len(units):
+        refuse("FREEZE_CARDINALITY", what="bank.count", declared=bank.get("count"),
+               listed=len(units))
+    if len({u.get("unit_id") for u in units or []}) != len(units or []):
+        refuse("FREEZE_CARDINALITY", what="bank.units not unique")
+    if not frozen.get("operators"):
+        refuse("FREEZE_CARDINALITY", what="operators missing")
+    if not frozen.get("code_sha256s"):
+        refuse("FREEZE_CARDINALITY", what="code_sha256s missing")
+    if not frozen.get("design_sha256"):
+        refuse("FREEZE_CARDINALITY", what="design_sha256 missing")
+    record = root / report_name
+    if not record.is_file():
+        refuse("CAMPAIGN_RECORD_MISSING", path=str(record))
+        return
+    report = json.loads(record.read_text(encoding="utf-8"))
+    spec = report.get("synthetic_spec") or {}
+    expected_config = sha_obj({"schema": "d3_mechanics_execution.v1",
+                               "run_id": report.get("run_id"),
+                               "freeze_sha256": frozen.get("freeze_sha256"),
+                               "design_sha256": frozen.get("design_sha256")})
+    if spec.get("freeze_sha256") != frozen.get("freeze_sha256") \
+            or spec.get("design_sha256") != frozen.get("design_sha256") \
+            or report.get("config_sha256") != expected_config:
+        refuse("CAMPAIGN_RECORD_MISMATCH", record_freeze=spec.get("freeze_sha256"),
+               freeze=frozen.get("freeze_sha256"), record_config=report.get("config_sha256"),
+               recomputed_config=expected_config)
+
+
+def expected_population(root: Path, frozen: dict, refuse) -> dict:
     """Units -> {variables: [names], contract_sha256, bank} from FREEZE.json, the bank's own
-    unit records and the toys' delivery record. Nothing is inferred from the collected rows."""
+    unit records and the toys' delivery records. Every binding is REQUIRED: a missing unit
+    record or toy record is a refusal, never an omitted check (L1)."""
     units = {}
     for rec in frozen["bank"]["units"]:
         unit_dir = Path(rec.get("path") or (Path(frozen["bank"]["root"]).expanduser()
@@ -70,16 +123,37 @@ def expected_population(root: Path, frozen: dict) -> dict:
         if (unit_dir / "UNIT.json").is_file():
             unit = json.loads((unit_dir / "UNIT.json").read_text(encoding="utf-8"))
             contract = unit.get("digests", {}).get("observed_signal")
+            if unit.get("unit_id") not in (None, rec["unit_id"]):
+                refuse("ID_DISCORDANT", unit=rec["unit_id"], record=unit.get("unit_id"),
+                       where="UNIT.json")
+        if not contract:
+            refuse("CONTRACT_UNBOUND", unit=rec["unit_id"], path=str(unit_dir / "UNIT.json"))
         units[rec["unit_id"]] = {"variables": [f"v{i}" for i in range(int(rec["n_variables"]))],
                                  "contract_sha256": contract, "bank": "SYNTHETIC"}
+    declared_toys = frozen.get("toys") or []
     toys_doc = root / "TOYS.json"
-    if toys_doc.is_file():
-        for toy in json.loads(toys_doc.read_text(encoding="utf-8"))["units"]:
+    if declared_toys and not toys_doc.is_file():
+        refuse("TOYS_UNBOUND", why="the freeze declares toys and TOYS.json is absent",
+               declared=len(declared_toys))
+    elif toys_doc.is_file():
+        toys = json.loads(toys_doc.read_text(encoding="utf-8"))["units"]
+        if len(toys) != len(declared_toys):
+            refuse("TOYS_UNBOUND", why="TOYS.json does not list the declared toys",
+                   declared=len(declared_toys), listed=len(toys))
+        for toy in toys:
             rec_path = root / "toys" / toy["unit_id"] / "TOY.json"
-            variables, contract = None, toy.get("contract_sha256")
+            variables, contract = None, None
             if rec_path.is_file():
                 rec = json.loads(rec_path.read_text(encoding="utf-8"))
-                variables, contract = list(rec["variables"]), rec["contract_sha256"]
+                variables, contract = list(rec.get("variables") or []), rec.get("contract_sha256")
+                if rec.get("unit_id") != toy["unit_id"]:
+                    refuse("ID_DISCORDANT", unit=toy["unit_id"], record=rec.get("unit_id"),
+                           where="TOY.json")
+                if toy.get("contract_sha256") not in (None, contract):
+                    refuse("CONTRACT_UNBOUND", unit=toy["unit_id"],
+                           why="TOYS.json and TOY.json disagree on the contract digest")
+            if not variables or not contract:
+                refuse("TOYS_UNBOUND", unit=toy["unit_id"], path=str(rec_path))
             units[toy["unit_id"]] = {"variables": variables, "contract_sha256": contract,
                                      "bank": "TOY"}
     operators = {op["kind"]: op["spec_sha256"] for op in frozen["operators"]}
@@ -88,19 +162,57 @@ def expected_population(root: Path, frozen: dict) -> dict:
             "code_sha256s": set(frozen.get("code_sha256s", {}).values())}
 
 
+def assignment(root: Path, dispatch_names) -> dict:
+    """unit -> shard from the shards' member lists; shard -> roles from the dispatch receipts.
+    A terminal is expected only under its unit's shard and a role that shard was launched on."""
+    unit_shard, shard_roles = {}, defaultdict(set)
+    for members in sorted((root / "shards").glob("*/MEMBERS.txt")) \
+            if (root / "shards").is_dir() else []:
+        shard = members.parent.name
+        for line in members.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                unit_shard.setdefault(line.strip(), set()).add(shard)
+    for name in dispatch_names:
+        receipt = root / name / "DISPATCH_RECEIPT.json"
+        if not receipt.is_file():
+            continue
+        for job_id, job in json.loads(receipt.read_text(encoding="utf-8")).get("jobs", {}).items():
+            shard = job_id.rsplit("-", 1)[-1]
+            for candidate in (shard, job_id.split("-", 1)[-1]):
+                shard_roles[candidate].add(job.get("role"))
+    return {"unit_shard": unit_shard, "shard_roles": shard_roles}
+
+
 # --- the ledger -----------------------------------------------------------------------------
 
 def ledger(root: Path) -> dict:
-    """unit -> sorted [(attempt, terminal_path, terminal)] from every collected terminal."""
-    out = defaultdict(list)
+    """unit -> attempt -> [(terminal_path, terminal, role, shard)] from every collected
+    terminal, every location kept: the verifier decides, never the sort order."""
+    out = defaultdict(lambda: defaultdict(list))
     for path in sorted((root / "collected").glob("*/*/terminals/*.json")) \
             if (root / "collected").is_dir() else []:
         m = _TERMINAL.fullmatch(path.name)
         if not m:
             continue
         terminal = json.loads(path.read_text(encoding="utf-8"))
-        out[m.group(1)].append((int(m.group(2)), path, terminal))
-    return {unit: sorted(items, key=lambda t: t[0]) for unit, items in out.items()}
+        out[m.group(1)][int(m.group(2))].append((path, terminal, path.parts[-4], path.parts[-3]))
+    return out
+
+
+def _same_record(a: Path, b: Path) -> bool:
+    """Two terminal files are the same record when the terminal bytes AND the rows they
+    name are identical: a transport copy, not a new attempt."""
+    if a.read_bytes() != b.read_bytes():
+        return False
+    terminal = json.loads(a.read_text(encoding="utf-8"))
+    unit = terminal.get("dataset_id")
+    m = _TERMINAL.fullmatch(a.name)
+    attempt = m.group(2) if m else "1"
+    ra = a.parents[1] / "attempts" / unit / f"attempt-{attempt}" / "rows.jsonl"
+    rb = b.parents[1] / "attempts" / unit / f"attempt-{attempt}" / "rows.jsonl"
+    if ra.is_file() != rb.is_file():
+        return False
+    return (not ra.is_file()) or ra.read_bytes() == rb.read_bytes()
 
 
 def recompute_verdict(outcomes: dict) -> str:
@@ -115,16 +227,21 @@ def recompute_verdict(outcomes: dict) -> str:
 
 # --- verification ---------------------------------------------------------------------------
 
-def verify(root: Path, receipt_name: str = "COLLECT.json") -> dict:
+def verify(root: Path, receipt_name: str = "COLLECT.json", *, report_name: str = "REPORT.json",
+           dispatch_names=("dispatch", "dispatch.attempt-2", "dispatch.retry-1")) -> dict:
     root = Path(root)
     frozen = json.loads((root / "FREEZE.json").read_text(encoding="utf-8"))
     receipt = json.loads((root / receipt_name).read_text(encoding="utf-8"))
-    expected = expected_population(root, frozen)
-    book = ledger(root)
     refusals = []
 
     def refuse(kind, **where):
         refusals.append({"kind": kind, **where})
+
+    check_freeze(root, frozen, report_name, refuse)
+    expected = expected_population(root, frozen, refuse)
+    assigned = assignment(root, dispatch_names)
+    book = ledger(root)
+    transport_copies = []
 
     # 1. the receipt against the population and the ledger
     seen_receipt = Counter(u["unit"] for u in receipt["units"])
@@ -147,12 +264,61 @@ def verify(root: Path, receipt_name: str = "COLLECT.json") -> dict:
                                   "refusals": Counter(), "group": None})
     rows_total = 0
     for unit, spec in expected["units"].items():
-        attempts = book.get(unit, [])
+        attempts = book.get(unit, {})
         if not attempts:
             missing.append(unit)
             refuse("MISSING_UNIT", unit=unit)
             continue
-        attempt, tpath, terminal = attempts[-1]
+        # every location of every attempt is judged: assignment, identity, duplicates
+        resolved = {}
+        for attempt_no, locations in sorted(attempts.items()):
+            keep = None
+            for tpath, terminal, role, shard in locations:
+                if terminal.get("dataset_id") != unit:
+                    refuse("ID_DISCORDANT", unit=unit, attempt=attempt_no,
+                           terminal_dataset_id=terminal.get("dataset_id"))
+                    continue
+                if terminal.get("status") not in KNOWN_STATUSES:
+                    refuse("UNKNOWN_STATUS", unit=unit, attempt=attempt_no,
+                           status=terminal.get("status"))
+                    continue
+                if terminal.get("run_id") not in (None, receipt["run_id"]):
+                    refuse("ROW_IDENTITY", unit=unit, attempt=attempt_no, where="terminal run_id")
+                    continue
+                in_shard = shard in assigned["unit_shard"].get(unit, set())
+                on_role = role in assigned["shard_roles"].get(shard, set())
+                if not (in_shard and on_role):
+                    same = next((k for k in locations if k is not (tpath, terminal, role, shard)
+                                 and _same_record(k[0], tpath)), None)
+                    if same is not None and same[3] in assigned["unit_shard"].get(unit, set()):
+                        transport_copies.append({"unit": unit, "attempt": attempt_no,
+                                                 "role": role, "shard": shard,
+                                                 "identical_to": {"role": same[2],
+                                                                  "shard": same[3]}})
+                    refuse("UNASSIGNED_LOCATION", unit=unit, attempt=attempt_no, role=role,
+                           shard=shard)
+                    continue
+                if keep is not None:
+                    if _same_record(keep[0], tpath):
+                        transport_copies.append({"unit": unit, "attempt": attempt_no,
+                                                 "role": role, "shard": shard,
+                                                 "identical_to": {"role": keep[2],
+                                                                  "shard": keep[3]}})
+                    else:
+                        refuse("CONTRADICTORY_ATTEMPT", unit=unit, attempt=attempt_no,
+                               locations=[(keep[2], keep[3]), (role, shard)])
+                        keep = None
+                        break
+                    continue
+                keep = (tpath, terminal, role, shard)
+            if keep is not None:
+                resolved[attempt_no] = keep
+        if not resolved:
+            missing.append(unit)
+            refuse("MISSING_UNIT", unit=unit, why="no assigned, consistent attempt")
+            continue
+        attempt = max(resolved)
+        tpath, terminal, _, _ = resolved[attempt]
         entry = by_receipt.get(unit)
         if entry is None:
             refuse("LEDGER_DISAGREES", unit=unit, why="in the ledger, not in the receipt")
@@ -208,7 +374,8 @@ def verify(root: Path, receipt_name: str = "COLLECT.json") -> dict:
             "units": {"expected": len(expected["units"]), "completed": len(completed),
                       "failed": len(failed_units), "missing": sorted(set(missing))},
             "failed_units": failed_units, "rows": rows_total,
-            "refusals": refusals, "operators": operators if verified else operators}
+            "transport_copies": transport_copies,
+            "refusals": refusals, "operators": operators}
 
 
 def _check_rows(unit, spec, rows, expected, run_id, refuse, per_op) -> bool:
@@ -426,13 +593,20 @@ def main(argv=None) -> int:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--collect", default="COLLECT.json")
+    parser.add_argument("--report", default="REPORT.json",
+                        help="the campaign record the report conserved (identity cross-check)")
+    parser.add_argument("--dispatch", action="append", default=None,
+                        help="dispatch root names whose receipts assign shards to roles")
     parser.add_argument("--verify", action="store_true",
                         help="seal the verified matrix from the frozen population (K1); "
                              "without it, the exploratory summary")
     parser.add_argument("--out", type=Path)
     parser.add_argument("--markdown", type=Path)
     args = parser.parse_args(argv)
-    m = verify(args.root, args.collect) if args.verify else aggregate(args.root, args.collect)
+    m = (verify(args.root, args.collect, report_name=args.report,
+                dispatch_names=tuple(args.dispatch) if args.dispatch
+                else ("dispatch", "dispatch.attempt-2", "dispatch.retry-1"))
+         if args.verify else aggregate(args.root, args.collect))
     stem = "MATRIX.verified" if args.verify else "MATRIX.summary"
     out = args.out or args.root / f"{stem}.json"
     if out.exists():

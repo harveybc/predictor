@@ -79,15 +79,44 @@ class Fixture:
             (d / "UNIT.json").write_text(json.dumps(
                 {"unit_id": unit, "n_variables": n, "digests": {"observed_signal": "c" * 64}}))
         freeze = {"schema": "d3_mechanics_freeze.v1", "design_sha256": DESIGN,
-                  "freeze_sha256": "f" * 64, "operators": OPS,
+                  "freeze_sha256": "", "operators": OPS,
                   "code_sha256s": {"df_d3_unit_worker": WORKER_SHA},
                   "bank": {"root": str(bank), "count": len(units),
                            "units": [{"unit_id": u, "n_variables": n, "family": "f",
                                       "path": str(bank / u)} for u, n in units]},
                   "toys": []}
+        body = {k: v for k, v in freeze.items() if k != "freeze_sha256"}
+        freeze["freeze_sha256"] = hashlib.sha256(json.dumps(
+            body, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        self.freeze = freeze
         (root / "FREEZE.json").write_text(json.dumps(freeze))
+        # the run's shards and dispatch: every unit belongs to shard "s", launched on role "A"
+        (root / "shards" / "s").mkdir(parents=True)
+        (root / "shards" / "s" / "MEMBERS.txt").write_text("".join(u + "\n" for u, _ in units))
+        (root / "dispatch").mkdir()
+        (root / "dispatch" / "DISPATCH_RECEIPT.json").write_text(json.dumps(
+            {"schema": "df_dispatch_receipt.v1", "final": True,
+             "jobs": {"r-s": {"attempt": 1, "role": "A", "status": "COMPLETED", "reason": ""}}}))
+        # the campaign record the report conserved: the freeze and design it was registered with
+        config = {"schema": "d3_mechanics_execution.v1", "run_id": "r",
+                  "freeze_sha256": freeze["freeze_sha256"], "design_sha256": DESIGN}
+        (root / "REPORT.json").write_text(json.dumps(
+            {"schema": "d3_mechanics_report.v1", "run_id": "r",
+             "config_sha256": hashlib.sha256(json.dumps(
+                 config, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+             "synthetic_spec": {"freeze_sha256": freeze["freeze_sha256"],
+                                "design_sha256": DESIGN, "units": len(units)},
+             "campaigns": {"synthetic": {"campaign_sha256": "c" * 64, "units": len(units)}}}))
         self.receipt = {"schema": "d3_mechanics_collect.v1", "run_id": "r", "mismatched": 0,
                         "verified": 0, "units": []}
+
+    def reseal_freeze(self):
+        """Rewrite FREEZE.json with a canonical digest after a change (the reproducer's step);
+        the campaign record still names the ORIGINAL freeze."""
+        body = {k: v for k, v in self.freeze.items() if k != "freeze_sha256"}
+        self.freeze["freeze_sha256"] = hashlib.sha256(json.dumps(
+            body, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        (self.root / "FREEZE.json").write_text(json.dumps(self.freeze))
 
     def complete(self, unit, rows=None, *, attempt=1, role="A", shard="s", receipt=True):
         rows = rows if rows is not None else rows_for(
@@ -290,3 +319,116 @@ def test_the_exploratory_summary_says_it_is_not_a_verification(tmp_path):
     summary = matrix.aggregate(fx.root)
     assert summary["verified"] is False and summary["schema"] == "d3_mechanics_summary.v1"
     assert "not a verification" in summary["note"]
+
+
+# --- L1: the reviewer's three omissions, frozen before the fix ------------------------------------
+
+def test_a_missing_unit_contract_is_a_refusal_not_an_omitted_binding(tmp_path):
+    fx = Fixture(tmp_path, [("u", 1)])
+    fx.complete("u")
+    (tmp_path / "bank" / "u" / "UNIT.json").unlink()
+    out = verify(fx)
+    assert out["verified"] is False and "CONTRACT_UNBOUND" in refusal_kinds(out)
+
+
+def test_declared_toys_without_their_records_are_a_refusal(tmp_path):
+    fx = Fixture(tmp_path, [("u", 1)])
+    fx.complete("u")
+    fx.freeze["toys"] = [{"resource": "synthetic_ohlc_1h.csv", "role": "input_file"}]
+    fx.reseal_freeze()
+    out = verify(fx)
+    assert out["verified"] is False and "TOYS_UNBOUND" in refusal_kinds(out)
+
+
+def test_a_freeze_whose_digest_does_not_seal_its_body_is_refused(tmp_path):
+    fx = Fixture(tmp_path, [("u", 1)])
+    fx.complete("u")
+    frozen = json.loads((tmp_path / "FREEZE.json").read_text())
+    frozen["freeze_sha256"] = "0" * 64
+    (tmp_path / "FREEZE.json").write_text(json.dumps(frozen))
+    out = verify(fx)
+    assert out["verified"] is False and "FREEZE_IDENTITY" in refusal_kinds(out)
+
+
+def test_a_resealed_freeze_that_is_not_the_one_the_campaign_was_registered_with_is_refused(tmp_path):
+    """A self-digest alone does not prove this is the design that governed the run."""
+    fx = Fixture(tmp_path, [("u", 1)])
+    fx.complete("u")
+    fx.freeze["bank"]["units"][0]["family"] = "edited"
+    fx.reseal_freeze()
+    out = verify(fx)
+    assert out["verified"] is False and "CAMPAIGN_RECORD_MISMATCH" in refusal_kinds(out)
+
+
+def test_a_missing_campaign_record_is_a_refusal(tmp_path):
+    fx = Fixture(tmp_path, [("u", 1)])
+    fx.complete("u")
+    (tmp_path / "REPORT.json").unlink()
+    out = verify(fx)
+    assert "CAMPAIGN_RECORD_MISSING" in refusal_kinds(out)
+
+
+def test_freeze_cardinalities_are_validated(tmp_path):
+    fx = Fixture(tmp_path, [("u", 1)])
+    fx.complete("u")
+    fx.freeze["bank"]["count"] = 7
+    fx.reseal_freeze()
+    (tmp_path / "REPORT.json").write_text(json.dumps(dict(
+        json.loads((tmp_path / "REPORT.json").read_text()),
+        synthetic_spec={"freeze_sha256": fx.freeze["freeze_sha256"], "design_sha256": DESIGN})))
+    out = verify(fx)
+    assert "FREEZE_CARDINALITY" in refusal_kinds(out)
+
+
+def test_an_identical_copy_under_an_unassigned_location_is_a_transport_copy_never_counted_twice(tmp_path):
+    fx = Fixture(tmp_path, [("u", 1)])
+    fx.complete("u")
+    import shutil
+    shutil.copytree(tmp_path / "collected" / "A" / "s", tmp_path / "collected" / "B" / "s")
+    out = verify(fx)
+    assert out["verified"] is False
+    assert "UNASSIGNED_LOCATION" in refusal_kinds(out)
+    assert out["transport_copies"] == [{"unit": "u", "attempt": 1, "role": "B", "shard": "s",
+                                        "identical_to": {"role": "A", "shard": "s"}}]
+    assert out["units"]["completed"] <= 1 and out["rows"] == 2 * 13
+
+
+def test_a_contradictory_duplicate_attempt_is_refused_never_resolved_by_path_order(tmp_path):
+    fx = Fixture(tmp_path, [("u", 1)])
+    fx.complete("u")
+    other = rows_for("u", ["v0"], outcomes={"future_perturbation": "FAILED"},
+                     verdict="MECHANICALLY_REFUSED")
+    # the same unit and attempt, under the shard's own role but as a second, different record
+    fx.receipt["units"] = []
+    fx.complete("u", other, role="A", shard="s2", receipt=True)
+    (tmp_path / "shards" / "s2").mkdir()
+    (tmp_path / "shards" / "s2" / "MEMBERS.txt").write_text("u\n")
+    receipt = json.loads((tmp_path / "dispatch" / "DISPATCH_RECEIPT.json").read_text())
+    receipt["jobs"]["r-s2"] = {"attempt": 1, "role": "A", "status": "COMPLETED", "reason": ""}
+    (tmp_path / "dispatch" / "DISPATCH_RECEIPT.json").write_text(json.dumps(receipt))
+    out = verify(fx)
+    assert out["verified"] is False
+    assert "CONTRADICTORY_ATTEMPT" in refusal_kinds(out)
+
+
+def test_an_unknown_terminal_status_and_a_discordant_id_are_refused(tmp_path):
+    fx = Fixture(tmp_path, [("u1", 1), ("u2", 1)])
+    fx.complete("u1")
+    fx.fail("u2", status="MAYBE")
+    out = verify(fx)
+    assert "UNKNOWN_STATUS" in refusal_kinds(out)
+    fx2 = Fixture(tmp_path / "b", [("u", 1)])
+    fx2.complete("u")
+    tpath = tmp_path / "b" / "collected" / "A" / "s" / "terminals" / "u.attempt-1.json"
+    t = json.loads(tpath.read_text())
+    t["dataset_id"] = "someone_else"
+    tpath.write_text(json.dumps(t))
+    out = verify(fx2)
+    assert "ID_DISCORDANT" in refusal_kinds(out)
+
+
+def test_a_terminal_under_a_shard_the_unit_does_not_belong_to_is_unassigned(tmp_path):
+    fx = Fixture(tmp_path, [("u", 1)])
+    fx.complete("u", role="A", shard="elsewhere")
+    out = verify(fx)
+    assert "UNASSIGNED_LOCATION" in refusal_kinds(out)
