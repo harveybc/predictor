@@ -133,8 +133,9 @@ def main(argv=None) -> int:
     eligibility = H.eligibility_record(root / "ELIGIBILITY.cells.json")
 
     # 2. protocol + calibration + family (the slow control is a member, declared as such)
-    family = tuple(f"{UNIT}/{VARIABLE}/{kind}/transformed" for kind in OPERATORS) \
-        + (f"{UNIT}/{VARIABLE}/mad_extremes_trailing/transformed/slow-control",)
+    # contrast ids double as governed unit ids: no separator data-gov refuses
+    family = tuple(f"{UNIT}__{VARIABLE}__{kind}__transformed" for kind in OPERATORS) \
+        + (f"{UNIT}__{VARIABLE}__mad_extremes_trailing__transformed__slow-control",)
     base = H.Protocol(target="return", horizon=1, model="ridge", window=4, n_blocks=4,
                       margin=0.0, seed=args.seed, family=family, min_rows_per_block=30)
     calibration = H.calibrate(base, ops.build("delta_run_length"), n_sims=args.calibration_sims,
@@ -159,14 +160,14 @@ def main(argv=None) -> int:
     # 3. contrasts, each in an isolated child
     outcomes = {}
     for contrast_id in family:
-        kind = contrast_id.split("/")[2]
-        slow = contrast_id.endswith("/slow-control")
+        kind = contrast_id.split("__")[2]
+        slow = contrast_id.endswith("__slow-control")
         job = {"contrast_id": contrast_id, "unit": UNIT, "variable": VARIABLE, "operator": kind,
                "protocol": protocol.sealed(), "series": {"values": x.tolist()},
                "eligibility": str(root / "ELIGIBILITY.cells.json")}
         if slow:
             job["slow_seconds"] = args.slow_seconds
-        out = H.run_isolated(job, attempt_dir=root / "attempts" / contrast_id.replace("/", "__"),
+        out = H.run_isolated(job, attempt_dir=root / "attempts" / contrast_id,
                              assigned_bytes=args.task_memory,
                              wall_seconds=args.slow_wall_seconds if slow else args.wall_seconds,
                              cpu_seconds=args.cpu_seconds)
@@ -222,7 +223,7 @@ def main(argv=None) -> int:
     units = []
     for contrast_id, out in outcomes.items():
         score = out.get("score") or {}
-        units.append({"candidate_key": contrast_id.split("/")[2], "cell_key": contrast_id,
+        units.append({"candidate_key": contrast_id.split("__")[2], "cell_key": contrast_id,
                       "metric_name": "utility.delta_mean" if "delta_mean" in score else "outcome",
                       "metric_value": float(score.get("delta_mean", 0.0)),
                       "terminal_state": "COMPLETE" if out["outcome"] in (H.ADVANCES, H.DOES_NOT_ADVANCE)
