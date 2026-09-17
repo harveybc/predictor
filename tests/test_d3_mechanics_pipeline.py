@@ -301,3 +301,20 @@ def test_collect_records_the_highest_attempt_of_each_unit(tmp_path, monkeypatch)
     assert rep["verified"] == 1 and rep["mismatched"] == 0
     with pytest.raises(SystemExit):
         campaign.collect(root, "out", {"COORDINATOR": {}}, run_id="r", receipt="C.json")
+
+
+def test_a_multivariate_unit_terminal_has_one_metric_identity_per_operator():
+    """The server refused d3mech-v1's 67 multivariate terminals: one d3.verdict.<op> per
+    variable is a duplicate identity. The terminal aggregates over variables."""
+    campaign = _load("df_d3_campaign")
+    rows = [{"test": "verdict", "operator_kind": "op", "variable": v, "value": val}
+            for v, val in (("v0", 1.0), ("v1", 0.0), ("v2", 1.0))]
+    rows += [{"test": "prefix_all_available", "operator_kind": "op", "variable": v,
+              "outcome": "PASSED", "value": None} for v in ("v0", "v1", "v2")]
+    t = campaign.unit_terminal(rows, status="COMPLETED", reason=None, wall=1.0, cpu=1.0,
+                               deliveries=[], bank="SYNTHETIC", unit_id="u", run_id="r")
+    ids = [(m["metric"], m["split"], m["horizon"], m["unit"]) for m in t["metrics"]]
+    assert len(ids) == len(set(ids))
+    verdict = next(m for m in t["metrics"] if m["metric"] == "d3.verdict.op")
+    assert verdict["value"] == pytest.approx(2 / 3) and verdict["min_value"] == 0.0
+    assert next(m for m in t["metrics"] if m["metric"] == "d3.variables")["value"] == 3.0

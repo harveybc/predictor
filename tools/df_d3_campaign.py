@@ -375,9 +375,22 @@ def unit_terminal(rows: list, *, status: str, reason, wall: float, cpu: float,
                   deliveries: list, bank: str, unit_id: str, run_id: str) -> dict:
     verdicts = [r for r in rows if r["test"] == "verdict"]
     metrics = []
+    # One metric identity (metric, split, horizon, unit) per operator: a multivariate unit
+    # has a verdict per variable, so the terminal carries the aggregate over variables and
+    # the per-variable rows stay in the mechanics fact. The server refused one identity
+    # per variable as a duplicate (d3mech-v1, 67 units) and that refusal is kept as evidence.
+    by_op = {}
     for v in verdicts:
-        metrics.append({"metric": f"d3.verdict.{v['operator_kind']}", "split": None,
-                        "horizon": None, "unit": "review_ready", "value": float(v["value"]),
+        by_op.setdefault(v["operator_kind"], []).append(float(v["value"]))
+    for kind, values in sorted(by_op.items()):
+        mean = sum(values) / len(values)
+        std = (sum((x - mean) ** 2 for x in values) / len(values)) ** 0.5
+        metrics.append({"metric": f"d3.verdict.{kind}", "split": None, "horizon": None,
+                        "unit": "review_ready_over_variables", "value": mean,
+                        "std_dev": std, "min_value": min(values), "max_value": max(values)})
+    if verdicts:
+        metrics.append({"metric": "d3.variables", "split": None, "horizon": None,
+                        "unit": "count", "value": float(len({r["variable"] for r in verdicts})),
                         "std_dev": None, "min_value": None, "max_value": None})
     by_test = {}
     for r in rows:

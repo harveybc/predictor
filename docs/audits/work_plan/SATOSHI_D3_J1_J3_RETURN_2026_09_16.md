@@ -87,7 +87,7 @@ two stateful operators; a missing value yields an unavailable output for every o
 | `tools/df_d3_campaign.py` | `freeze` (population + budgets + cost pilot, sealed), `toys`, `shards` + jobs, `sync` (clean detached worktree per worker), `collect` (rsync + digest verification), the MECHANICAL envelope |
 | `tools/df_d3_report.py` | two data-gov campaigns under one run id — SYNTHETIC for bank units, DATASETS for toys — terminals through the durable outbox and reconciled one by one; one MECHANICAL envelope to the OLAP outbox for the running loader |
 
-`tests/test_d3_mechanics_pipeline.py` — **10 rules** on a throwaway bank: unit loading under
+`tests/test_d3_mechanics_pipeline.py` — **13 rules** (+ `test_d3_matrix.py`, 1) on a throwaway bank: unit loading under
 both semantics, row identities, deterministic population selection, write-once freeze, shards
 and jobs after the D2 precedent, terminal metric identities unique, the envelope valid as
 `MECHANICAL`.
@@ -116,7 +116,85 @@ Two defects found by the first dispatch, each frozen as a rule and fixed before 
 
 ### Matrix outcome
 
-MATRIX_PLACEHOLDER
+**Dispatch.** 43 shards: WORKER_A 444 units, WORKER_B 67. 42 shards `COMPLETED` on the first
+attempt; shard_42 `FAILED` because its three 26-variable toy feature units hit `WALL_TIME_LIMIT`.
+Cause, mine: the frozen budget is 120 s **per variable**, and I scaled the shard wall by variables
+but handed every child the flat figure. Fixed in `d2bbf79` (the runner multiplies wall and CPU by
+the unit's own variable count; a retry takes the next attempt number; the killed attempt stays on
+disk), frozen as two rules, workers re-synced and re-preflighted, and the three units re-run as a
+versioned retry (`JOBS.retry-1.json`, `dispatch.retry-1/`, `COLLECT.retry-1.json`) on the same
+worker: each took 133 s, so the flat budget had been short by 13 s. The first receipt is kept as
+`COLLECT.attempt-1.json` (508 verified, 3 `RESOURCE_EXCEEDED`). Collect on the coordinator
+returns rsync 23 — it ran nothing (cap 0) — and is recorded as such.
+
+**Population and cost.** 511 units verified of 511 (digest and row count re-checked by the
+collector), 0 mismatches, 83,070 rows, 2.91 h wall / 2.89 h CPU over the two workers. 486
+units without missingness, 9 `blocks`, 9 `mcar` (15 variables), 7 toys (33 variables).
+
+**Matrix** (`MATRIX.json` / `MATRIX.md` under the run root, from `tools/df_d3_matrix.py`; every
+figure is a count of what the battery said):
+
+Run `d3mech-v1`: **511** units verified of 511 collected, 0 digest mismatches, 83,070 rows.
+
+| operator | group | units × vars | verdicts | causal tests failed | restart | availability | probe onset | cost s/1k (median, max) |
+|---|---|---|---:|---|---|---|---|---|
+| `butterworth_causal` | time_frequency | 511 × 710 | MECHANICALLY_ACCEPTED 710 | none | PASSED 710 | PASSED 710 | 0.0 710 | 0.0059, 0.0098 |
+| `cusum_causal` | detectors | 511 × 710 | MECHANICALLY_ACCEPTED 710 | none | PASSED 710 | PASSED 710 | 0.0 710 | 0.0063, 0.0088 |
+| `delta_run_length` | quantization_compression | 511 × 710 | MECHANICALLY_ACCEPTED 710 | none | PASSED 710 | PASSED 710 | 0.0 710 | 0.0005, 0.002 |
+| `mad_extremes_trailing` | detectors | 511 × 710 | MECHANICALLY_ACCEPTED 710 | none | PASSED 710 | PASSED 710 | 0.0 710 | 0.0005, 0.002 |
+| `sax_paa_trailing` | quantization_compression | 511 × 710 | MECHANICALLY_ACCEPTED 704 / MECHANICALLY_REFUSED 6 | none | PASSED 710 | PASSED 710 | 0.0 704 / 1.0 1 | 0.0005, 0.002 |
+| `stft_trailing` | time_frequency | 511 × 710 | MECHANICALLY_ACCEPTED 710 | none | PASSED 710 | PASSED 710 | 1.0 710 | 0.0005, 0.002 |
+| `uniform_decile_quantizer` | quantization_compression | 511 × 710 | MECHANICALLY_ACCEPTED 647 / MECHANICALLY_REFUSED 63 | none | PASSED 710 | PASSED 710 | 0.0 647 / 1.0 58 | 0.0005, 0.002 |
+| `variance_regime_trailing` | detectors | 511 × 710 | MECHANICALLY_ACCEPTED 710 | none | PASSED 710 | PASSED 710 | 0.0 710 | 0.0005, 0.002 |
+| `wavelet_trailing` | time_frequency | 511 × 710 | INCONCLUSIVE 6 / MECHANICALLY_ACCEPTED 696 / MECHANICALLY_REFUSED 8 | non_causal_twin 8, warm_up_edge 3 | INSUFFICIENT_TEST 7 / PASSED 703 | INSUFFICIENT_TEST 3 / PASSED 707 | 0.0 710 | 0.0011, 0.002 |
+
+**Declared vs measured availability.** Bank units are `SAMPLE_INDEX` with a real `'0s'` lag.
+The toys carry the lake's `WINDOW_START` + `completion_lag_max 4h` (or `1h`) under
+`frequency 4h` (`1h`): the lag divides exactly into **one sample**, and all nine operators
+emitted no output before `available_at` on any of the 33 toy variables (`availability_emission`
+PASSED on 900/1800 outputs per variable). Nothing was truncated; no `FRACTIONAL_SAMPLE_OFFSET`
+arose because the toys' contracts divide exactly.
+
+**Restart evidence.** `chunk_restart` PASSED on 6,383 of 6,390 operator × variable cases (re-read
+lookback for the windowed operators, checkpoint for Butterworth's `zi` and CUSUM's statistic);
+the 7 `INSUFFICIENT_TEST` are wavelet cases with no available output after the restart point,
+below.
+
+**What was refused or inconclusive, and why — recorded, not tuned:**
+
+1. `uniform_decile_quantizer` refused on **63** variables and `sax_paa_trailing` on **6**, all by
+   `response_probe`: 58 + 1 "moved one sample after the step; declares 0", 5 + 5 "the step moved
+   no available output". Both codecs are memoryless in time — output *t* consumes only the
+   trailing window ending at *t* — so an onset of 1 is not a temporal property they can have. The
+   battery's step probe is **+25 on N(0,1) noise, unscaled to the operator's fitted domain**: a
+   quantizer whose deciles were fitted on a unit in the thousands (`trend_linear`, `bumps`,
+   `impulses`, the OHLC toy) has bins wider than 25, so the step crosses no bin edge at *p* and
+   crosses one at *p+1* by the luck of the noise, or crosses none at all. This is a **fixture-scale
+   artefact of the probe**, the same class as the reviewer's finding on probes: the honest outcome
+   is `UNIDENTIFIED` (onset not measurable at this amplitude), not a fabricated 0 and not a
+   measured 1. I did not change the battery after the run; the refusals stand as recorded and the
+   rule proposed for the next amendment is: a probe amplitude is declared **relative to the
+   operator's resolution** (for a fitted codec, at least one bin width beyond the train range), and
+   a step that moves nothing at *p* yields `UNIDENTIFIED`, never a failed onset.
+2. `wavelet_trailing` (db4, L=3, support **50**, any-NaN → unavailable) on the 9 `mcar` units
+   (15 variables): 8 refused, 6 inconclusive, 1 accepted. Under 10 % MCAR the chance that a
+   50-sample window is complete is 0.9⁵⁰ ≈ 0.5 %, so the operator emits almost nothing:
+   `warm_up_edge` FAILED 3 ("a warm-up that never ends is not a warm-up"), `prefix`, `restart`,
+   `fit_scope` and `availability` `INSUFFICIENT_TEST`. That is a true mechanical inapplicability
+   of this operator, as declared, under that missingness — recorded. Beside it, one **battery
+   gap** found by the run: `non_causal_twin` FAILED 8 with "the declared twin passed the
+   causality tests" — the centred twin also emitted nothing, its causality tests were
+   `INSUFFICIENT_TEST`, and the battery read a vacuous pass as a pass. A twin with no output must
+   be `INSUFFICIENT_TEST`, not evidence of a wrong twin. Proposed for the next amendment; not
+   patched after the fact.
+3. `stft_trailing` declares onset **1** and measured **1** on all 710 variables (Hann newest
+   weight zero, J3 above). Declared, measured, consistent.
+
+Everything else: 6 of 9 operators `MECHANICALLY_ACCEPTED` on all 710 variables, with every
+causal test PASSED, restart PASSED, availability PASSED and cost within declaration
+(costliest Butterworth/CUSUM at ~0.006 s per 1,000 samples median).
+
+**Reconciled terminals.** RECONCILE_PLACEHOLDER
 
 ## Suites
 
