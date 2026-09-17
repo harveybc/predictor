@@ -170,6 +170,10 @@ class Operator:
     def probe(self) -> dict:
         raise NotImplementedError
 
+    def reach_right(self, n: int) -> int:
+        """How many samples AFTER i output i consumes (L2). A causal operator: 0."""
+        return 0
+
     def probe_resolution(self, state, *, baseline: float, scale: float, sigma: float) -> dict:
         """The smallest excitation, in input units at `baseline`, this operator guarantees moves
         its impact-sample output — from its training fit only (K2). The quiet branch carries
@@ -374,6 +378,10 @@ class SaxPaaCentred(SaxPaaTrailing):
                 "derivation": "centred segment; the future half is the leak",
                 "boundary_mode": None}
 
+    def reach_right(self, n):
+        seg = int(self.params["segment"])
+        return seg - seg // 2 - 1
+
     def describe(self):
         return dict(super().describe(), non_causal_control_of="sax_paa_trailing")
 
@@ -488,6 +496,10 @@ class StftCentred(StftTrailing):
         return {"kind": "FINITE", "samples": int(self.params["w"]) // 2 + 1,
                 "derivation": "centred window; the future half is the leak", "boundary_mode": None}
 
+    def reach_right(self, n):
+        w = int(self.params["w"])
+        return w - w // 2 - 1
+
     def describe(self):
         return dict(super().describe(), non_causal_control_of="stft_trailing")
 
@@ -580,6 +592,10 @@ class WaveletCentred(WaveletTrailing):
         base = super().support()
         return dict(base, samples=self._support() // 2 + 1,
                     derivation=base["derivation"] + "; centred, the future half is the leak")
+
+    def reach_right(self, n):
+        w = self._support()
+        return w - w // 2 - 1
 
     def describe(self):
         return dict(super().describe(), non_causal_control_of="wavelet_trailing")
@@ -674,6 +690,9 @@ class ButterworthFiltfilt(ButterworthCausal):
 
     def twin(self):
         return _na_twin("it is itself a twin")
+
+    def reach_right(self, n):
+        return int(n)                      # zero-phase over the whole series
 
     def describe(self):
         return dict(super().describe(), non_causal_control_of="butterworth_causal")
@@ -775,6 +794,9 @@ class CusumLookahead(CusumCausal):
     def twin(self):
         return _na_twin("it is itself a twin")
 
+    def reach_right(self, n):
+        return int(self.params["ahead"])
+
     def describe(self):
         return dict(super().describe(), non_causal_control_of="cusum_causal")
 
@@ -864,6 +886,10 @@ class MadExtremesCentred(MadExtremesTrailing):
         return {"kind": "FINITE", "samples": int(self.params["w"]) // 2 + 1,
                 "derivation": "centred window; the future half is the leak", "boundary_mode": None}
 
+    def reach_right(self, n):
+        w = int(self.params["w"])
+        return w - w // 2 - 1
+
     def describe(self):
         return dict(super().describe(), non_causal_control_of="mad_extremes_trailing")
 
@@ -927,6 +953,10 @@ class VarianceRegimeCentred(VarianceRegimeTrailing):
     def support(self):
         return {"kind": "FINITE", "samples": int(self.params["w"]) // 2 + 1,
                 "derivation": "centred window; the future half is the leak", "boundary_mode": None}
+
+    def reach_right(self, n):
+        w = int(self.params["w"])
+        return w - w // 2 - 1
 
     def describe(self):
         return dict(super().describe(), non_causal_control_of="variance_regime_trailing")

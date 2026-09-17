@@ -189,8 +189,57 @@ def build_probe_amendment() -> dict:
 
 
 D3_PROBE_AMENDMENT_V1 = build_probe_amendment()
+
+
+def build_twin_sensitivity_amendment() -> dict:
+    """L2 successor amendment: a twin comparison is SENSITIVE only when the twin's declared
+    right reach crosses the cut (prefix) or reaches a perturbed position (future perturbation);
+    zero sensitive comparisons is INSUFFICIENT_TEST; an observed violation is always a
+    detection, sensitive or not; sensitive comparisons that never move are the declaration's
+    failure. The candidate's own causal tests are untouched. Sealed before any measurement."""
+    doc = {
+        "schema": "d3_twin_sensitivity_amendment.v1",
+        "supersedes_amendment": {"schema": D3_PROBE_AMENDMENT_V1["schema"],
+                                 "design_sha256": D3_PROBE_AMENDMENT_V1["design_sha256"]},
+        "original_design": dict(D3_AMENDMENT_V1["supersedes"]),
+        "twin_reach": "each twin declares reach_right: how many samples after i its output i "
+                      "consumes (centred window: w - w//2 - 1; zero-phase filter: the whole "
+                      "series; lookahead statistic: its declared lookahead)",
+        "sensitive_comparison": {
+            "prefix": "output i compared at cut c is sensitive iff i + reach_right > c",
+            "future_perturbation": "output i at cut c is sensitive iff i + reach_right > c "
+                                   "(the perturbation replaces every sample after c)",
+            "necessary_not_sufficient": "geometric crossing is required; a zero coefficient, "
+                                        "saturation or missing data can still leave no effect"},
+        "policy": {
+            "any_observed_violation": "PASSED (detection); never discarded by a support "
+                                      "declaration of the same operator",
+            "zero_sensitive_no_violation": "INSUFFICIENT_TEST (undecided; verdict INCONCLUSIVE)",
+            "sensitive_without_violation": "FAILED (the twin declared non-causal shows no "
+                                           "effect where it must: the declaration is wrong)"},
+        "recorded": ["twin_emissions", "twin_comparisons", "twin_sensitive_comparisons",
+                     "twin_detections", "twin_nearest_output_to_cut"],
+        "candidate_tests": "prefix_all_available and future_perturbation of the candidate are "
+                           "NOT restricted to the twin's sensitivity mask",
+        "controls": ["known centre", "future impulse just after the cut", "extreme zero weights",
+                     "missingness", "edges", "restart", "deliberately non-causal controls "
+                     "failing by value, by availability mask and by emission time"],
+        "unchanged": ["support 50", "imputation: none", "thresholds and parameters",
+                      "the complete-data control", "the three warm-up refusals",
+                      "the twelve required tests", "NON_GOVERNING"],
+        "replay_scope": "non_causal_twin for the operators that declare a twin, over the whole "
+                        "frozen population; the other eleven tests inherit the successor run's "
+                        "rows by digest, verifiably",
+        "design_sha256": "",
+    }
+    body = {k: v for k, v in doc.items() if k != "design_sha256"}
+    doc["design_sha256"] = sha_obj(body)
+    return doc
+
+
+D3_TWIN_SENSITIVITY_AMENDMENT_V1 = build_twin_sensitivity_amendment()
 #: The amendment a run measures under today; rows carry its digest.
-D3_DESIGN_CURRENT = D3_PROBE_AMENDMENT_V1
+D3_DESIGN_CURRENT = D3_TWIN_SENSITIVITY_AMENDMENT_V1
 
 
 def validate_probe_amendment(doc: dict) -> list:
@@ -202,6 +251,17 @@ def validate_probe_amendment(doc: dict) -> list:
     if doc.get("supersedes_amendment", {}).get("design_sha256") != D3_AMENDMENT_V1["design_sha256"]:
         problems.append("the successor does not name the amendment it supersedes")
     problems += validate_amendment(D3_AMENDMENT_V1)
+    return problems
+
+
+def validate_twin_sensitivity_amendment(doc: dict) -> list:
+    problems = []
+    body = {k: v for k, v in doc.items() if k != "design_sha256"}
+    if sha_obj(body) != doc.get("design_sha256"):
+        problems.append("design_sha256 does not seal the document")
+    if doc.get("supersedes_amendment", {}).get("design_sha256") != D3_PROBE_AMENDMENT_V1["design_sha256"]:
+        problems.append("the successor does not name the amendment it supersedes")
+    problems += validate_probe_amendment(D3_PROBE_AMENDMENT_V1)
     return problems
 
 

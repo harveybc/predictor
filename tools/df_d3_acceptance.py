@@ -453,9 +453,56 @@ def check_response_probe(operator, train, x, *, length: int = 256) -> dict:
             f"the operator declares {probe['expected_onset_samples']}", **facts}
 
 
+def _twin_causality(twin, train, x, reach: int) -> dict:
+    """The twin's prefix and future-perturbation comparisons with their sensitivity (L2):
+    a comparison of output i at cut c is sensitive iff i + reach > c. Every comparison that
+    moves value, mask or emission is a detection, sensitive or not."""
+    spec = twin.describe()
+    n = len(x["values"])
+    whole = _run(twin, x, _fit(twin, train))
+    emissions = sum(1 for a in whole["available"] if a)
+    comparisons = sensitive = detections = 0
+    nearest = None
+    first_detection = None
+    for c in cut_menu(spec, n):
+        part = _run(twin, prefix(x, c + 1), _fit(twin, train))
+        for i in range(c + 1):
+            if not whole["available"][i] or whole["emitted_at"][i] > x["available_at"][c]:
+                continue
+            comparisons += 1
+            nearest = c - i if nearest is None else min(nearest, c - i)
+            is_sensitive = i + reach > c
+            sensitive += int(is_sensitive)
+            if not _same_row(_triple(whole, i), _triple(part, i)):
+                detections += 1
+                first_detection = first_detection or {"test": "prefix", "cut": c, "index": i,
+                                                      "sensitive": is_sensitive}
+    for c in [c for c in perturbation_cuts(spec, n) if c < n - 1]:
+        for kind in FUTURE_PERTURBATIONS:
+            altered = with_values(x, list(x["values"][:c + 1]) + _perturb(kind, x, c, CUT_SEED))
+            other = _run(twin, altered, _fit(twin, train))
+            for i in range(c + 1):
+                if not whole["available"][i]:
+                    continue
+                comparisons += 1
+                nearest = c - i if nearest is None else min(nearest, c - i)
+                is_sensitive = i + reach > c
+                sensitive += int(is_sensitive)
+                if not _same_row(_triple(whole, i), _triple(other, i)):
+                    detections += 1
+                    first_detection = first_detection or {"test": "future_perturbation",
+                                                          "cut": c, "suffix": kind, "index": i,
+                                                          "sensitive": is_sensitive}
+    return {"twin_emissions": emissions, "twin_comparisons": comparisons,
+            "twin_sensitive_comparisons": sensitive, "twin_detections": detections,
+            "twin_nearest_output_to_cut": nearest, "twin_reach_right": reach,
+            "first_detection": first_detection}
+
+
 def check_non_causal_twin(operator, twin, train, x) -> dict:
-    """§5 as amended (K3): the twin MUST demonstrate a causality failure; a twin without any
-    observable comparison is INSUFFICIENT_TEST, never a detection and never a pass."""
+    """§5 as amended (K3, L2): an observed violation of the twin is the detection; with no
+    violation, zero SENSITIVE comparisons is INSUFFICIENT_TEST and sensitive comparisons that
+    never moved are the declaration's failure."""
     declared = operator.describe()["non_causal_twin"]
     if declared.get("not_applicable") is True:
         return {"passed": None, "scoped": True, "outcome": "NOT_APPLICABLE",
@@ -473,25 +520,26 @@ def check_non_causal_twin(operator, twin, train, x) -> dict:
     if twin_spec.get("non_causal_control_of") != operator.describe()["kind"]:
         return {"passed": False, "scoped": False,
                 "detail": "the twin does not name the operator it is the deliberate twin of"}
-    whole = _run(twin, x, _fit(twin, train))
-    emissions = sum(1 for a in whole["available"] if a)
-    p = check_prefix_all_available(twin, train, x)
-    f = check_future_perturbation(twin, train, x)
-    comparisons = int(p.get("compared") or 0) + int(f.get("compared") or 0)
-    facts = {"scoped": False, "promoted": False, "twin_emissions": emissions,
-             "twin_comparisons": comparisons, "twin_prefix_passed": p["passed"],
-             "twin_future_passed": f["passed"]}
-    if p["passed"] is False or f["passed"] is False:
+    reach = int(twin.reach_right(len(x["values"])))
+    if reach <= 0:
+        return {"passed": False, "scoped": False,
+                "detail": "the twin declares no right reach: a control that consumes nothing "
+                          "after i cannot demonstrate non-causality"}
+    facts = dict(_twin_causality(twin, train, x, reach), scoped=False, promoted=False)
+    if facts["twin_detections"] > 0:
         return {"passed": True, "outcome": "PASSED", "detail": None, **facts}
-    if comparisons == 0:
+    if facts["twin_sensitive_comparisons"] == 0:
         return {"passed": None, "outcome": "INSUFFICIENT_TEST",
-                "detail": f"the twin emitted {emissions} outputs and no comparison was "
-                          "observable at any cut: nothing was detected and nothing was shown; "
-                          "absence of evidence is not evidence", **facts}
+                "detail": f"the twin emitted {facts['twin_emissions']} outputs and none of the "
+                          f"{facts['twin_comparisons']} comparisons was sensitive (nearest "
+                          f"output to a cut {facts['twin_nearest_output_to_cut']} samples, reach "
+                          f"{reach}): nothing was tested; absence of evidence is not evidence",
+                **facts}
     return {"passed": False, "outcome": "FAILED",
-            "detail": f"the declared twin was compared {comparisons} times and never failed "
-                      "causality: either it is not the twin it claims to be or the tests are "
-                      "not measuring causality", **facts}
+            "detail": f"{facts['twin_sensitive_comparisons']} sensitive comparisons and no "
+                      "violation: the declared twin shows no effect where its reach crosses the "
+                      "cut (zero coefficient, saturation, or not the twin it claims to be)",
+            **facts}
 
 
 def parse_duration_seconds(text):
