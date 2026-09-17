@@ -771,3 +771,13 @@ Leido por el servicio activo: la vista actual lleva **una** ejecucion y **un** d
 Nada borrado ni deduplicado; WAL en 0. Reprobados los prerrequisitos: **`ready_to_measure: true`**.
 Conciliado tras la escritura por el servicio: 55/55, filtro y barrido de acuerdo. **17 reglas**
 nuevas; **344 pasan, 1 se salta** sobre tres motores.
+
+### Retorno 54f2df0: R6 medido, siguiente paso D3
+
+R6 consultado independientemente: 633189 filas actuales con una ejecucion/un
+digest; historico 1073883; denominador 715. 57 pruebas focales pasan. D3 tiene
+infraestructura, pero su prueba de disponibilidad confunde lookback con latencia
+y rechaza '0s'; prefijo omite una frontera causal relevante. Se autoriza enmienda
+pre-candidatos y correccion de bateria, seguida condicionalmente por implementacion
+y mecanica CPU gobernada, sin otra pausa de autorizacion:
+[J1-J3](../handoffs/MUSASHI_R6_ACCEPTANCE_AND_D3_J1_J3_2026_09_16.md).
