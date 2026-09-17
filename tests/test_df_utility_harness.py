@@ -335,3 +335,48 @@ def test_R10_the_reserve_is_adjudicated_once_per_identity_and_protocol(tmp_path)
     with pytest.raises(SystemExit, match="identified by"):
         H.adjudicate_holdout({}, p, lambda: None, state_dir=tmp_path)
     assert calls == [1, 3]
+
+
+# --- N1: the score is the verified output file, never the process summary ---------------------------
+
+@pytest.mark.skipif(not Path("/usr/bin/systemd-run").exists(), reason="no systemd user scope")
+def test_N1_the_parents_score_is_the_verified_output_file_and_a_resume_never_reruns(tmp_path):
+    s = H.series(fabricated())
+    out = H.run_isolated(_job(s, calibrated()), attempt_dir=tmp_path / "ok",
+                         assigned_bytes=1 << 30, wall_seconds=300.0, cpu_seconds=300)
+    on_disk = json.loads((tmp_path / "ok" / "contrast.json").read_text())
+    assert out["score"]["delta_mean"] == on_disk["delta_mean"] != 0.0
+    assert out["score"]["schema"] == H.CONTRAST_SCHEMA and out["outcome"] == on_disk["outcome"]
+    summary = json.loads((tmp_path / "ok" / "result.json").read_text())
+    assert "delta_mean" not in summary                     # the summary never carried it
+    again = H.run_isolated(_job(s, calibrated()), attempt_dir=tmp_path / "ok",
+                           assigned_bytes=1 << 30, wall_seconds=300.0, cpu_seconds=300)
+    assert again["resumed"] is True and again["score"]["delta_mean"] == on_disk["delta_mean"]
+    assert again["cost"] == out["cost"]                    # the recorded outcome, not a rerun
+
+
+def test_N1_a_missing_altered_or_discordant_output_is_a_typed_refusal_with_no_score(tmp_path):
+    job = {"contrast_id": "c", "protocol": {"protocol_sha256": "p" * 64}}
+    body = json.dumps({"schema": H.CONTRAST_SCHEMA, "contrast_id": "c", "protocol_sha256": "p" * 64,
+                       "outcome": H.DOES_NOT_ADVANCE, "delta_mean": 0.1, "delta_se": 0.01,
+                       "delta_lower": 0.05}).encode()
+    digest = __import__("hashlib").sha256(body).hexdigest()
+    result = {"output_file": "contrast.json", "output_sha256": digest, "outcome": H.DOES_NOT_ADVANCE}
+    (tmp_path / "contrast.json").write_bytes(body)
+    score, refusal = H.verified_score(tmp_path, result, {"output_sha256": digest}, job)
+    assert refusal is None and score["delta_mean"] == 0.1
+    (tmp_path / "contrast.json").write_bytes(body.replace(b"0.1", b"0.9"))
+    score, refusal = H.verified_score(tmp_path, result, {"output_sha256": digest}, job)
+    assert score is None and refusal["outcome"] == H.SCORE_UNVERIFIED and "bytes" in refusal["why"]
+    (tmp_path / "contrast.json").unlink()
+    score, refusal = H.verified_score(tmp_path, result, {"output_sha256": digest}, job)
+    assert score is None and "absent" in refusal["why"]
+    (tmp_path / "contrast.json").write_bytes(body)
+    score, refusal = H.verified_score(tmp_path, result, {"output_sha256": digest},
+                                      {"contrast_id": "other", "protocol": {"protocol_sha256": "p" * 64}})
+    assert score is None and "identity" in refusal["why"]
+    nan_body = body.replace(b"0.1", b"NaN")
+    (tmp_path / "contrast.json").write_bytes(nan_body)
+    d2 = __import__("hashlib").sha256(nan_body).hexdigest()
+    score, refusal = H.verified_score(tmp_path, dict(result, output_sha256=d2), {"output_sha256": d2}, job)
+    assert score is None and "not finite" in refusal["why"]

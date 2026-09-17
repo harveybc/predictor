@@ -58,6 +58,8 @@ ADVANCES = "ADVANCES"
 DOES_NOT_ADVANCE = "DOES_NOT_ADVANCE"
 INCONCLUSIVE_UNCALIBRATED = "INCONCLUSIVE_UNCALIBRATED"
 REFUSED = "REFUSED"
+SCORE_UNVERIFIED = "SCORE_UNVERIFIED"
+CONTRAST_SCHEMA = "df_utility_contrast.v1"
 TARGETS = {"direction": "logistic", "return": "ridge"}
 BRANCHES = ("raw", "transformed", "augmented")
 HOLDOUT_STATE = Path("~/.local/state/crispdm-data-foundation/utility_holdout").expanduser()
@@ -445,7 +447,8 @@ def contrast(s: dict, operator, protocol: Protocol, *, contrast_id: str, eligibi
     mean, se, t_crit, lower = t_interval_lower(np.asarray(deltas), protocol.alpha_adjusted)
     cost = {"cpu_seconds": round(time.process_time() - t0, 3),
             "wall_seconds": round(time.monotonic() - w0, 3)}
-    base = {"contrast_id": contrast_id, "branch_a": branch_a, "branch_b": branch_b,
+    base = {"schema": CONTRAST_SCHEMA, "contrast_id": contrast_id, "branch_a": branch_a,
+            "branch_b": branch_b,
             "representation": rep_meta,
             "loss_name": "log_loss" if protocol.target == "direction" else "mae",
             "delta_mean": mean, "delta_se": se, "delta_lower": lower, "t_crit": t_crit,
@@ -516,13 +519,65 @@ def calibrate(protocol: Protocol, operator, *, n_sims: int, seed: int, n: int = 
 
 # --- observed budgets: one contrast in an isolated child -----------------------------------------------
 
+def verified_score(attempt_dir: Path, result: dict, verified: dict, job: dict) -> tuple:
+    """The scientific result is the file the child named and the runner re-hashed — never the
+    process summary (N1). Missing, altered, discordant or non-finite: a typed refusal, no
+    fabricated zero."""
+    name = (result or {}).get("output_file")
+    if not name:
+        return None, {"outcome": SCORE_UNVERIFIED, "why": "the child named no output file"}
+    path = Path(attempt_dir) / name
+    if not path.is_file():
+        return None, {"outcome": SCORE_UNVERIFIED, "why": f"{name} is absent"}
+    body = path.read_bytes()
+    digest = hashlib.sha256(body).hexdigest()
+    if digest != result.get("output_sha256") or digest != (verified or {}).get("output_sha256"):
+        return None, {"outcome": SCORE_UNVERIFIED, "why": "the output's bytes are not the ones "
+                                                           "the child declared and the runner verified",
+                      "declared": result.get("output_sha256"),
+                      "verified": (verified or {}).get("output_sha256"), "found": digest}
+    try:
+        score = json.loads(body)
+    except ValueError:
+        return None, {"outcome": SCORE_UNVERIFIED, "why": "the output is not JSON"}
+    if score.get("schema") != CONTRAST_SCHEMA and score.get("outcome") not in (
+            REFUSED, INSUFFICIENT_ROWS):
+        return None, {"outcome": SCORE_UNVERIFIED, "why": f"schema {score.get('schema')!r}"}
+    if score.get("contrast_id", job.get("contrast_id")) != job.get("contrast_id"):
+        return None, {"outcome": SCORE_UNVERIFIED, "why": "contrast identity differs"}
+    expected_proto = (job.get("protocol") or {}).get("protocol_sha256")
+    if "protocol_sha256" in score and score["protocol_sha256"] != expected_proto:
+        return None, {"outcome": SCORE_UNVERIFIED, "why": "protocol identity differs"}
+    for key in ("delta_mean", "delta_se", "delta_lower"):
+        if key in score and not (isinstance(score[key], (int, float))
+                                 and np.isfinite(score[key])):
+            return None, {"outcome": SCORE_UNVERIFIED, "why": f"{key} is not finite"}
+    if score.get("outcome") != (result or {}).get("outcome"):
+        return None, {"outcome": SCORE_UNVERIFIED, "why": "the summary's outcome is not the file's"}
+    return score, None
+
+
 def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seconds: float,
-                 cpu_seconds: float) -> dict:
+                 cpu_seconds: float, before_run=None) -> dict:
     """The contrast in a child process under df_isolated_runner: ceilings enforced during the
-    work, cost measured, RESOURCE_EXCEEDED with no partial score when a ceiling is hit."""
+    work, cost measured, RESOURCE_EXCEEDED with no partial score when a ceiling is hit. The
+    score is the verified output file (N1). `before_run`, when given, is called just before
+    the child starts (governance's before_run) and may refuse by raising."""
     IR = _load("df_isolated_runner")
     attempt_dir = Path(attempt_dir)
     attempt_dir.mkdir(parents=True, exist_ok=True)
+    prior = attempt_dir / "outcome.json"
+    if prior.is_file():
+        # a completed attempt is never re-run: the recorded outcome is re-verified and returned
+        recorded = json.loads(prior.read_text())
+        result = json.loads((attempt_dir / "result.json").read_text()) \
+            if (attempt_dir / "result.json").is_file() else None
+        score, refusal = verified_score(attempt_dir, result, recorded.get("verified"), job) \
+            if recorded.get("status") == "COMPLETED" else (None, None)
+        return {**recorded["summary"], "score": score, "resumed": True,
+                **({"refusal": refusal} if refusal else {})}
+    if before_run is not None:
+        before_run(job)
     job_file = attempt_dir / "job.json"
     job_file.write_text(json.dumps({**job, "attempt_dir": str(attempt_dir)}, default=_jsonable))
     task = IR.Task(argv=[sys.executable, "-B", str(Path(__file__).resolve()), "--worker",
@@ -539,12 +594,20 @@ def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seco
     cost = {"cpu_seconds": task.outcome.get("cpu_seconds"),
             "wall_seconds": task.outcome.get("wall_seconds"),
             "peak_rss_bytes": task.outcome.get("child_maxrss_bytes"),
-            "cgroup_memory_peak": task.outcome.get("cgroup_memory_peak")}
+            "cgroup_memory_peak": task.outcome.get("cgroup_memory_peak"),
+            "started_at": task.outcome.get("started_at"), "ended_at": task.outcome.get("ended_at")}
     if status != "COMPLETED":
-        return {"outcome": RESOURCE_EXCEEDED if status == "RESOURCE_EXCEEDED" else "UNCERTAIN",
-                "reason": reason, "cost": cost, "score": None}
-    return {"outcome": (result or {}).get("outcome", "UNCERTAIN"), "reason": reason,
-            "cost": cost, "score": result, "output_sha256": verified.get("output_sha256")}
+        summary = {"outcome": RESOURCE_EXCEEDED if status == "RESOURCE_EXCEEDED" else "UNCERTAIN",
+                   "reason": reason, "cost": cost, "score": None, "output_sha256": None}
+    else:
+        score, refusal = verified_score(attempt_dir, result, verified, job)
+        summary = {"outcome": score["outcome"] if score else SCORE_UNVERIFIED, "reason": reason,
+                   "cost": cost, "score": score, "output_sha256": verified.get("output_sha256"),
+                   **({"refusal": refusal} if refusal else {})}
+    prior.write_text(json.dumps({"status": status, "verified": verified,
+                                 "summary": {k: v for k, v in summary.items() if k != "score"}},
+                                default=_jsonable))
+    return summary
 
 
 def _jsonable(o):

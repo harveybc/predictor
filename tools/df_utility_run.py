@@ -228,10 +228,13 @@ def main(argv=None) -> int:
     units = []
     for contrast_id, out in outcomes.items():
         score = out.get("score") or {}
+        has_delta = isinstance(score.get("delta_mean"), (int, float))
         units.append({"candidate_key": contrast_id.split("__")[2], "cell_key": contrast_id,
-                      "metric_name": "utility.delta_mean" if "delta_mean" in score else "outcome",
-                      "metric_value": float(score.get("delta_mean", 0.0)),
-                      "terminal_state": "COMPLETE" if out["outcome"] in (H.ADVANCES, H.DOES_NOT_ADVANCE)
+                      "metric_name": "utility.delta_mean" if has_delta else "outcome",
+                      # an absent measurement is UNAVAILABLE (stored as null), never a zero
+                      "metric_value": float(score["delta_mean"]) if has_delta else "UNAVAILABLE",
+                      "terminal_state": "COMPLETE" if out["outcome"] in (
+                          H.ADVANCES, H.DOES_NOT_ADVANCE, H.INCONCLUSIVE_UNCALIBRATED)
                       else str(out["outcome"]), "uncertainty_kind": "BLOCK_T_LOWER",
                       "uncertainty_low": str(score.get("delta_lower", "UNAVAILABLE")),
                       "uncertainty_high": "UNAVAILABLE"})
