@@ -189,24 +189,40 @@ def main(argv=None) -> int:
                                                   "accounting_only": body.get("accounting_only"),
                                                   "lake_only": body.get("lake_only")}
 
-    if toy_units and args.toy_campaign_sha256:
+    if toy_units:
         toys_root = root / "toys"
-        deliveries = {}
+        toys_doc = json.loads((root / "TOYS.json").read_text(encoding="utf-8")) \
+            if (root / "TOYS.json").is_file() else {"units": []}
+        per_unit = {t["unit_id"]: t for t in toys_doc["units"]}
+        deliveries, campaigns = {}, {}
         for unit in toy_units:
             rec_path = toys_root / unit["unit_id"] / "TOY.json"
             if rec_path.is_file():
                 rec = json.loads(rec_path.read_text(encoding="utf-8"))
                 deliveries[unit["unit_id"]] = [rec["delivery"]["delivery_id"]]
-        receipt["campaigns"]["toys"] = {"campaign_sha256": args.toy_campaign_sha256,
-                                        "units": len(toy_units)}
-        receipt["terminals"]["toys"] = report_terminals(
-            gov, GR, outbox, campaign_sha256=args.toy_campaign_sha256, units=toy_units,
-            run_id=args.run_id, deliveries_of=lambda u: deliveries.get(u["unit_id"], []))
-        status, body = gov.reconcile_campaign(args.toy_campaign_sha256)
-        receipt["reconciliation"]["toys"] = {"http": status,
-                                             "missing_units": body.get("missing_units"),
-                                             "accounting_only": body.get("accounting_only"),
-                                             "lake_only": body.get("lake_only")}
+            toy = per_unit.get(unit["unit_id"], {})
+            campaigns[unit["unit_id"]] = toy.get("campaign_sha256") or args.toy_campaign_sha256
+        receipt["campaigns"]["toys"] = {
+            "shape": toys_doc.get("campaign_shape", "one campaign for all resources"),
+            "units": len(toy_units),
+            "campaigns": {u: campaigns[u] for u in sorted(campaigns)}}
+        receipt["terminals"]["toys"] = []
+        receipt["reconciliation"]["toys"] = {}
+        for unit in toy_units:
+            sha = campaigns[unit["unit_id"]]
+            if not sha:
+                receipt["terminals"]["toys"].append({"unit_id": unit["unit_id"],
+                                                     "status": "NOT_REPORTED",
+                                                     "reason": "no campaign for this unit"})
+                continue
+            receipt["terminals"]["toys"] += report_terminals(
+                gov, GR, outbox, campaign_sha256=sha, units=[unit], run_id=args.run_id,
+                deliveries_of=lambda u: deliveries.get(u["unit_id"], []))
+            status, body = gov.reconcile_campaign(sha)
+            receipt["reconciliation"]["toys"][unit["unit_id"]] = {
+                "http": status, "missing_units": body.get("missing_units"),
+                "accounting_only": body.get("accounting_only"),
+                "lake_only": body.get("lake_only")}
 
     envelope = campaign.build_mechanics_envelope(
         campaign_key="d3-mechanics-v1", run_id=args.run_id, code_identity=code_identity,
@@ -217,7 +233,7 @@ def main(argv=None) -> int:
     campaign.write_once(root / "REPORT.json", receipt)
     print(json.dumps({"campaigns": receipt["campaigns"], "reconciliation": receipt["reconciliation"],
                       "envelope": receipt["envelope"]}, indent=1))
-    pending = any(t["pending_after_flush"] for group in receipt["terminals"].values()
+    pending = any(t.get("pending_after_flush") for group in receipt["terminals"].values()
                   for t in group)
     return 0 if not pending else 1
 

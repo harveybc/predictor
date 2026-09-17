@@ -249,44 +249,51 @@ def toy_unit_id(resource: str) -> str:
 def deliver_toys(root: Path, *, gov_url: str, api_key_file: str, lake: str, lake_config: Path,
                  metrics_lake: str, project: str, run_id: str, code_identity: dict,
                  config_sha256: str) -> dict:
-    """Register the DATASETS campaign declaring every toy (lake, resource, role), deliver and
-    confirm each resource under its own unit, and materialise it as a D3 unit."""
+    """One DATASETS campaign PER toy resource, each declaring that one resource and that one
+    unit; deliver and confirm the resource under it and materialise it as a D3 unit.
+
+    data-gov binds a delivery to (campaign, actor, unit) and completes a DATASETS terminal only
+    when it covers every dataset the campaign declares: d3mech-v1 declared all seven resources
+    under one campaign and no per-resource unit could complete (422); those seven were
+    re-reported under per-resource campaigns after the fact. From v2 the shape is right from
+    the start."""
     GR = _load("governed_run")
     TOY = _load("df_d3_toy_resources")
     host = json.loads(Path(lake_config).read_text(encoding="utf-8"))
     contracts = host["backend"]["settings"]["resource_contracts"]
-    units = [toy_unit_id(r) for r, _ in TOY_RESOURCES]
-    datasets = [{"lake": lake, "resource": r, "role": role, "from": None, "to": None}
-                for r, role in TOY_RESOURCES]
-    key = f"{run_id}-toys"
-    gov = GR.GovHttp(gov_url, GR.load_api_key(api_key_file), key)
-    status, receipt = gov.submit_campaign({
-        "schema": "governed_campaign.v1", "campaign_key": key, "classification": "NON_GOVERNING",
-        "project": project, "code_identity": code_identity, "config_sha256": config_sha256,
-        "input_mode": "DATASETS", "synthetic_spec_sha256": None, "units": units,
-        "datasets": datasets, "terminal_lake": metrics_lake})
-    if status not in (200, 201):
-        raise SystemExit(f"REFUSED: toy campaign refused: http {status} "
-                         f"{receipt.get('error', '')}".strip())
-    campaign_sha256 = receipt["campaign_sha256"]
     toys_root = root / "toys"
     cache = Path(GR.DEFAULT_CACHE).expanduser() / run_id
     delivered = []
     for resource, role in TOY_RESOURCES:
         unit_id = toy_unit_id(resource)
+        key = f"{run_id}-toy-{Path(resource).stem}"
+        gov = GR.GovHttp(gov_url, GR.load_api_key(api_key_file), key)
+        status, receipt = gov.submit_campaign({
+            "schema": "governed_campaign.v1", "campaign_key": key,
+            "classification": "NON_GOVERNING", "project": project,
+            "code_identity": code_identity, "config_sha256": config_sha256,
+            "input_mode": "DATASETS", "synthetic_spec_sha256": None, "units": [unit_id],
+            "datasets": [{"lake": lake, "resource": resource, "role": role,
+                          "from": None, "to": None}],
+            "terminal_lake": metrics_lake})
+        if status not in (200, 201):
+            raise SystemExit(f"REFUSED: toy campaign {key} refused: http {status} "
+                             f"{receipt.get('error', '')}".strip())
+        campaign_sha256 = receipt["campaign_sha256"]
         record = TOY.deliver_and_materialise(
             gov, campaign_sha256=campaign_sha256, unit_id=unit_id, lake=lake, resource=resource,
             role=role, cache_dir=cache, resource_contract=contracts[resource],
             out_dir=toys_root / unit_id)
         delivered.append({"unit_id": unit_id, "resource": resource, "role": role,
+                          "campaign_key": key, "campaign_sha256": campaign_sha256,
                           "delivery_id": record["delivery"]["delivery_id"],
                           "verification_state": record["delivery"]["verification_state"],
                           "n_samples": record["n_samples"],
                           "variables": len(record["variables"]),
                           "contract_sha256": record["contract_sha256"]})
-    doc = {"schema": "d3_toys_delivery.v1", "run_id": run_id, "campaign_key": key,
-           "campaign_sha256": campaign_sha256, "lake": lake, "units": delivered,
-           "delivered_utc": now_iso()}
+    doc = {"schema": "d3_toys_delivery.v2", "run_id": run_id, "lake": lake,
+           "campaign_shape": "one DATASETS campaign per resource and unit",
+           "units": delivered, "delivered_utc": now_iso()}
     write_once(root / "TOYS.json", doc)
     return doc
 
@@ -555,8 +562,8 @@ def main(argv=None) -> int:
                            metrics_lake=args.metrics_lake, project=args.project,
                            run_id=args.run_id, code_identity=code_identity,
                            config_sha256=config_sha)
-        print(json.dumps({"campaign_sha256": doc["campaign_sha256"],
-                          "units": [(u["unit_id"], u["verification_state"]) for u in doc["units"]]},
+        print(json.dumps({"units": [(u["unit_id"], u["campaign_sha256"][:12],
+                                     u["verification_state"]) for u in doc["units"]]},
                          indent=1))
         return 0
     if args.cmd == "sync":
