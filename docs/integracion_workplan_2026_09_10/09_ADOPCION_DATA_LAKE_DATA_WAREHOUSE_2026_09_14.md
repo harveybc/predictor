@@ -924,3 +924,14 @@ elegibilidad por celda; ventanas por identidad de observacion; purga = horizonte
 ventana; pareado sobre las mismas filas; capacidad declarada; unidad estadistica = bloque;
 Bonferroni sobre la familia predeclarada; reserva de uso unico) y arnes con 11 reglas de verdad
 fabricada. No ejecutado; no abre el experimento.
+
+### Retorno ea555f5: composicion D3 y arnes de utilidad revisados
+
+Relectura independiente v3: 511 completas, 710 variables, 9940 filas medidas,
+cero rechazos. Bateria 72p/1s y repeticion de diagnosticos con candidato 14p,
+sin sumar conteos solapados. Se reprodujeron herencia aceptada tras cambiar un
+operador no remedido, etiqueta futura aceptada como feature y tiempos de emision
+ignorados por el arnes. La aproximacion t difiere de scipy en df bajo. No se ha
+medido utilidad real con ese arnes: cerrarlo antes de abrir el piloto. Limites
+observados y limpieza del build rastreado incluidos, sin pedir permiso por bloque.
+[Orden M1-M6](../handoffs/MUSASHI_D3_L1_L6_REVIEW_AND_M1_M6_2026_09_17.md).
