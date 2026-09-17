@@ -1,259 +1,539 @@
 #!/usr/bin/env python3
-"""The ten D3 acceptance tests, executable against any operator that carries the contract.
+"""The D3 acceptance battery, v2: the required-test matrix of the sealed amendment.
 
-Block 3 of `docs/handoffs/MUSASHI_I1_I3_ACCEPTANCE_AND_STACK_FOLLOWUP_2026_09_16.md`. The tests
-are §3 of the sealed design
-`docs/integracion_workplan_2026_09_10/07_DISENO_D3_CUANTIZACION_TIEMPO_FRECUENCIA_DETECTORES_2026_09_14.md`,
-transcribed and made runnable. They are **mechanical**: causality, edges, restart, delay,
-availability, cost, applicability and the raw branch. Not one of them scores an operator, and
-passing them is not evidence that an operator is useful — only that what it declares about
-itself is true.
+Amended under J1/J2 (`df_d3_design.D3_AMENDMENT_V1`). Twelve mandatory tests; review-ready
+means all of them ran and passed, and a scoped one (`non_causal_twin` marked NOT_APPLICABLE
+with a design reason) is reported as scoped, never silently accepted.
 
-    1  prefix                 transform(X[:n]) agrees with transform(X) on the settled prefix
-    2  altered suffix         changing the future does not change the past
-    3  edge / warm-up         the first warm_up_samples outputs are NOT_AVAILABLE, not 0
-    4  chunk / restart        two chunks with a checkpoint reproduce one pass
-    5  measured delay         a unit impulse shows the delay the operator declared
-    6  non-causal control     the declared control FAILS 1-2; recorded, never promoted
-    7  availability           no output before `label + completion_lag_max` of the resource
-    8  cost                   a single-thread pilot stays within the declared budget
-    9  applicability          an inapplicable family yields NOT_APPLICABLE, not a number
-   10  raw branch             the output preserves `*_raw`
+    prefix_all_available    every output available at the cut: value, mask, emitted_at; no
+                            lookback exemption; empty population is INSUFFICIENT_TEST
+    future_perturbation     the future replaced by nine adversarial suffixes; the past is
+                            unchanged
+    warm_up_edge            the first warm_up_samples outputs are unavailable, not 0
+    fit_scope_train_only    refit on the train prefix with a different evaluated future;
+                            outputs before the cut are unchanged
+    fresh_state_per_branch  a transform does not mutate the state it was given
+    chunk_restart           two chunks with re-read lookback or a checkpoint reproduce one pass
+    response_probe          the declared probe shows the declared onset, or UNIDENTIFIED with
+                            a reason; never a fabricated zero
+    non_causal_twin         the declared twin FAILS prefix/future; NOT_APPLICABLE only with a
+                            reason; absence is a refusal
+    availability_emission   emitted_at >= the latest availability of consumed inputs, with the
+                            resource's durations parsed as the producer parses them
+    cost_pilot              single-thread CPU within the declaration and under 2 GiB
+    applicability           an undeclared family yields NOT_APPLICABLE, not a number
+    raw_branch              the raw branch survives, unchanged
 
-An operator is a small object with three methods, as the design's §1 requires:
+An operator is an object with `describe()`, `fit(train)`, `transform(x, state)`, optionally
+`checkpoint()`/`resume(blob)` and `apply_to_family(family, x, state)`. `x` and `train` are
+inputs of `df_d3_contract.validate_input`. Every test branch fits its own state.
 
-    describe() -> spec          the declaration, validated by `df_d3_contract`
-    fit(train_prefix) -> state  fitted on a TRAIN PREFIX only, or on nothing
-    transform(x, state) -> {"values": [...], "available": [...], "raw": [...]}
-
-`transform` is called with a plain sequence and must be a pure function of it and the state.
-
-Nothing here writes to a store, opens a database or starts a governed run. It is a battery,
-not a campaign.
+Nothing here writes to a store, opens a database or starts a governed run.
 """
 
 from __future__ import annotations
 
 import argparse
+import copy
 import importlib.util
 import json
+import math
 import resource
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-_spec = importlib.util.spec_from_file_location("df_d3_contract", HERE / "df_d3_contract.py")
-contract = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(contract)
 
-#: The design's memory ceiling for one operator process.
-MEMORY_CEILING_BYTES = 2 * 1024 ** 3
 
-TESTS = ("prefix", "altered_suffix", "warm_up_edge", "chunk_restart", "measured_delay",
-         "non_causal_control", "availability", "cost", "applicability", "raw_branch")
+def _load(name: str):
+    """One module object per name, shared with whoever loaded it first: a refusal raised by
+    the contract must be the same class the caller catches."""
+    import sys
+
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(name, HERE / f"{name}.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+contract = _load("df_d3_contract")
+design = _load("df_d3_design")
+
+MEMORY_CEILING_BYTES = design.D3_AMENDMENT_V1["memory_ceiling_bytes"]
+TESTS = tuple(design.REQUIRED_TESTS)
+SCOPEABLE = tuple(design.SCOPEABLE_TESTS)
+FUTURE_PERTURBATIONS = tuple(design.FUTURE_PERTURBATIONS)
+RANDOM_CUTS = design.CUT_MENU["random"]["count"]
+CUT_SEED = design.CUT_MENU["random"]["seed"]
 
 
 def now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
-def _settled(spec: dict, n: int) -> int:
-    """How far into an output of `n` samples the values can no longer change.
+# --- inputs ---------------------------------------------------------------------------------
 
-    Beyond `n - lookback - delay` an output may still be waiting for samples the shorter call
-    has not seen, so comparing there would measure the truncation rather than the operator.
-    """
-    return max(0, n - spec["lookback_samples"] - spec["delay_samples"])
-
-
-def _values(output) -> list:
-    return list(output["values"])
-
-
-def _available(output) -> list:
-    return [bool(flag) for flag in output["available"]]
+def make_input(values, *, timestamps=None, available_at=None, period_seconds=None) -> dict:
+    """An input under SAMPLE_INDEX semantics unless timestamps are given."""
+    n = len(values)
+    if timestamps is None:
+        timestamps = list(range(n))
+        period_seconds = 1 if period_seconds is None else period_seconds
+    if available_at is None:
+        available_at = list(timestamps)
+    return contract.validate_input({"values": list(values), "timestamps": list(timestamps),
+                                    "available_at": list(available_at),
+                                    "period_seconds": period_seconds})
 
 
-def _masked(output) -> list:
-    """Values with the unavailable ones replaced by the sentinel, which is what is compared."""
-    return [value if flag else contract.NOT_AVAILABLE
-            for value, flag in zip(_values(output), _available(output))]
+def prefix(x: dict, n: int) -> dict:
+    return {"values": x["values"][:n], "timestamps": x["timestamps"][:n],
+            "available_at": x["available_at"][:n], "period_seconds": x.get("period_seconds")}
 
 
-def _run(operator, x, state):
-    output = operator.transform(list(x), state)
-    return contract.validate_output(output, spec=operator.describe(), samples=len(x))
+def with_values(x: dict, values) -> dict:
+    return {"values": list(values), "timestamps": list(x["timestamps"]),
+            "available_at": list(x["available_at"]), "period_seconds": x.get("period_seconds")}
 
 
-def check_prefix(operator, state, signal) -> dict:
-    """Test 1. Bit for bit on the settled prefix, not approximately."""
+def _seeded(seed: int):
+    import random
+
+    return random.Random(seed)
+
+
+def cut_menu(spec: dict, n: int, *, seed: int = CUT_SEED) -> list:
+    """The sealed menu of §4: predetermined, seeded, never chosen after a result."""
+    marks = set()
+    j = 0
+    while 2 ** j <= n:
+        marks.update({2 ** j - 1, 2 ** j, 2 ** j + 1})
+        j += 1
+    w = spec["warm_up_samples"]
+    marks.update({w - 1, w, w + 1})
+    window = spec["params"].get("window") or spec["params"].get("segment") \
+        or spec["params"].get("w")
+    if isinstance(window, int) and window > 0:
+        marks.update({k * window for k in (1, 2, 3)})
+    marks.update({0, n - 2, n - 1})
+    rng = _seeded(seed)
+    marks.update(rng.randrange(0, n) for _ in range(RANDOM_CUTS))
+    return sorted(m for m in marks if 0 <= m < n)
+
+
+def perturbation_cuts(spec: dict, n: int, *, seed: int = CUT_SEED + 1) -> list:
+    """The cuts the nine adversarial suffixes are applied at: the edges, the warm-up boundary
+    and the seeded random draw of the menu. The D2 battery applied its suffixes at a seeded
+    subset on long series too (`declared_cuts`, SUFFIX_ADVERSARIAL); the full power-of-two
+    ladder stays with the prefix test, where every cut costs one transform rather than nine."""
+    w = spec["warm_up_samples"]
+    marks = {0, w - 1, w, w + 1, n - 2, n - 1}
+    rng = _seeded(seed)
+    marks.update(rng.randrange(0, n) for _ in range(RANDOM_CUTS))
+    return sorted(m for m in marks if 0 <= m < n)
+
+
+# --- outputs --------------------------------------------------------------------------------
+
+def _run(operator, x: dict, state):
+    output = operator.transform(x, state)
+    return contract.validate_output(output, spec=operator.describe(), x=x)
+
+
+def _triple(output, i):
+    return (output["values"][i] if output["available"][i] else contract.NOT_AVAILABLE,
+            bool(output["available"][i]),
+            output["emitted_at"][i] if output["available"][i] else None)
+
+
+def _same_value(a, b) -> bool:
+    if isinstance(a, float) and isinstance(b, float) and math.isnan(a) and math.isnan(b):
+        return True
+    return a == b
+
+
+def _same_row(p, q) -> bool:
+    return _same_value(p[0], q[0]) and p[1] == q[1] and p[2] == q[2]
+
+
+def _fit(operator, train: dict):
+    return operator.fit(copy.deepcopy(train))
+
+
+# --- the twelve tests -----------------------------------------------------------------------
+
+def check_prefix_all_available(operator, train, x) -> dict:
+    """§3: every output available at the cut, with value, mask and emission, at every cut."""
     spec = operator.describe()
-    whole = _masked(_run(operator, signal, state))
-    n = len(signal) // 2
-    part = _masked(_run(operator, signal[:n], state))
-    edge = _settled(spec, n)
-    ok = part[:edge] == whole[:edge]
-    return {"passed": ok, "compared_samples": edge,
+    whole = _run(operator, x, _fit(operator, train))
+    compared, failures = 0, []
+    for c in cut_menu(spec, len(x["values"])):
+        part = _run(operator, prefix(x, c + 1), _fit(operator, train))
+        for i in range(c + 1):
+            # A delayed representation is compared only once it has been emitted for both
+            # runs; an output the full run has not emitted by the cut is not yet a fact.
+            if not whole["available"][i]:
+                continue
+            if whole["emitted_at"][i] > x["available_at"][c]:
+                continue
+            compared += 1
+            if not _same_row(_triple(whole, i), _triple(part, i)):
+                failures.append({"cut": c, "index": i, "full": _triple(whole, i),
+                                 "prefix": _triple(part, i)})
+                break
+    if compared == 0:
+        return {"passed": None, "outcome": "INSUFFICIENT_TEST", "compared": 0,
+                "detail": "no output was available at any cut, so nothing was tested"}
+    ok = not failures
+    return {"passed": ok, "compared": compared, "failures": failures[:5],
             "detail": None if ok else
-            f"the first {edge} outputs differ between a call on {n} samples and one on "
-            f"{len(signal)}: the operator is reading past its own lookback"}
+            f"{len(failures)} cuts changed an output that was already available: the operator "
+            "reads past the cut"}
 
 
-def check_altered_suffix(operator, state, signal) -> dict:
-    """Test 2. Changing the future must not change the past."""
+def _perturb(kind: str, x: dict, c: int, seed: int) -> list:
+    tail = list(x["values"][c + 1:])
+    m = len(tail)
+    rng = _seeded(seed + c)
+    if kind == "zeros":
+        return [0.0] * m
+    if kind == "large_constant":
+        return [1e6] * m
+    if kind == "other_seed_noise":
+        return [rng.gauss(0.0, 5.0) for _ in range(m)]
+    if kind == "reversed":
+        return list(reversed(x["values"]))[c + 1:]
+    if kind == "nan_blocks":
+        return [float("nan") if (i // 3) % 2 == 0 else v for i, v in enumerate(tail)]
+    if kind == "impulse_at_t_plus_1":
+        return [(tail[0] + 1e3 if m else 0.0)] + tail[1:]
+    if kind == "step":
+        return [v + 50.0 for v in tail]
+    if kind == "chirp":
+        return [10.0 * math.sin(2 * math.pi * (0.01 + 0.2 * i / max(m, 1)) * i)
+                for i in range(m)]
+    if kind == "regime_change":
+        return [v * 10.0 + 100.0 for v in tail]
+    raise ValueError(kind)
+
+
+def check_future_perturbation(operator, train, x) -> dict:
+    """§4: the future replaced by every adversarial suffix; outputs <= cut do not move."""
     spec = operator.describe()
-    t = len(signal) // 2
-    altered = list(signal[:t + 1]) + [value * -7.0 - 13.0 for value in signal[t + 1:]]
-    before = _masked(_run(operator, signal, state))
-    after = _masked(_run(operator, altered, state))
-    edge = max(0, t + 1 - spec["delay_samples"])
-    ok = before[:edge] == after[:edge]
-    changed = [index for index in range(edge) if before[index] != after[index]]
-    return {"passed": ok, "compared_samples": edge,
+    base = _run(operator, x, _fit(operator, train))
+    n = len(x["values"])
+    cuts = [c for c in perturbation_cuts(spec, n) if c < n - 1]
+    compared, failures = 0, []
+    for c in cuts:
+        for kind in FUTURE_PERTURBATIONS:
+            altered = with_values(x, list(x["values"][:c + 1]) + _perturb(kind, x, c, CUT_SEED))
+            other = _run(operator, altered, _fit(operator, train))
+            for i in range(c + 1):
+                if not base["available"][i]:
+                    continue
+                compared += 1
+                if not _same_row(_triple(base, i), _triple(other, i)):
+                    failures.append({"cut": c, "suffix": kind, "index": i})
+                    break
+    if compared == 0:
+        return {"passed": None, "outcome": "INSUFFICIENT_TEST", "compared": 0,
+                "detail": "no available output preceded any cut"}
+    ok = not failures
+    return {"passed": ok, "compared": compared, "failures": failures[:5],
             "detail": None if ok else
-            f"{len(changed)} outputs in [0, {edge}) moved when only X[{t + 1}:] changed; "
-            f"first at index {changed[0]}"}
+            f"{len(failures)} (cut, suffix) pairs moved an output at or before the cut"}
 
 
-def check_warm_up_edge(operator, state, signal) -> dict:
-    """Test 3. The warm-up is unavailable, not zero."""
+def check_warm_up_edge(operator, train, x) -> dict:
     spec = operator.describe()
-    output = _run(operator, signal, state)
+    output = _run(operator, x, _fit(operator, train))
     warm = spec["warm_up_samples"]
-    available = _available(output)
-    early_available = [index for index in range(min(warm, len(available)))
-                       if available[index]]
+    available = [bool(f) for f in output["available"]]
+    early = [i for i in range(min(warm, len(available))) if available[i]]
     later = available[warm:]
-    ok = not early_available and (not later or any(later))
+    ok = not early and (not later or any(later))
     return {"passed": ok, "warm_up_samples": warm,
             "detail": None if ok else
-            (f"outputs {early_available[:5]} are marked available inside the declared warm-up"
-             if early_available else
-             "no output is ever available: a warm-up that never ends is not a warm-up")}
+            (f"outputs {early[:5]} are marked available inside the declared warm-up" if early
+             else "no output is ever available: a warm-up that never ends is not a warm-up")}
 
 
-def check_chunk_restart(operator, state, signal) -> dict:
-    """Test 4. Two chunks with a checkpoint reproduce one pass."""
-    spec = operator.describe()
-    whole = _masked(_run(operator, signal, state))
-    cut = len(signal) // 2
-    if spec["chunk_restart"] == "IDEMPOTENT":
-        # No carried state, so a restart re-reads its own lookback and nothing else. The claim
-        # under test is about the SECOND chunk: fed the samples it declares it needs, it must
-        # produce exactly what one pass produced for those samples.
-        back = min(cut, spec["lookback_samples"] + spec["delay_samples"])
-        tail = _masked(_run(operator, signal[cut - back:], state))
-        rebuilt = tail[back:]
-        expected = whole[cut:]
-        ok = rebuilt == expected
-        differing = [index for index in range(min(len(rebuilt), len(expected)))
-                     if rebuilt[index] != expected[index]]
-        return {"passed": ok, "mode": "IDEMPOTENT", "compared_samples": len(expected),
-                "restart_lookback": back,
-                "detail": None if ok else
-                (f"restarting at sample {cut} with {back} samples of lookback reproduced "
-                 f"{len(differing)} outputs differently; first at {cut + differing[0]}"
-                 if differing else
-                 "the restarted chunk produced a different number of outputs")}
-    if not hasattr(operator, "checkpoint") or not hasattr(operator, "resume"):
-        return {"passed": False, "mode": spec["chunk_restart"],
-                "detail": "the operator declares STATEFUL_WITH_CHECKPOINT and offers no "
-                          "checkpoint()/resume(): the declaration cannot be exercised"}
-    head_output = _run(operator, signal[:cut], state)
-    saved = operator.checkpoint()
-    resumed = operator.resume(saved)
-    tail_output = contract.validate_output(
-        operator.transform(list(signal[cut:]), resumed), spec=spec,
-        samples=len(signal) - cut)
-    rebuilt = _masked(head_output) + _masked(tail_output)
-    ok = rebuilt == whole
-    return {"passed": ok, "mode": spec["chunk_restart"], "compared_samples": len(whole),
-            "detail": None if ok else
-            "resuming from the checkpoint did not reproduce a single pass"}
+def check_fit_scope_train_only(operator, train, x) -> dict:
+    """§4: refit on the same train prefix, evaluate a different future; the past is unchanged.
 
-
-def check_measured_delay(operator, state, length: int = 256) -> dict:
-    """Test 5. A unit impulse shows the declared delay, or the declaration is wrong."""
-    spec = operator.describe()
-    quiet = [0.0] * length
-    position = length // 2
-    impulse = list(quiet)
-    impulse[position] = 1.0
-    base = _run(operator, quiet, state)
-    hit = _run(operator, impulse, state)
-    moved = [index for index in range(length)
-             if _available(hit)[index] and _available(base)[index]
-             and _values(hit)[index] != _values(base)[index]]
-    if not moved:
-        return {"passed": False, "declared": spec["delay_samples"],
-                "detail": "an impulse moved no available output at all: the delay cannot be "
-                          "measured, so it cannot be declared"}
-    observed = moved[0] - position
-    ok = observed == spec["delay_samples"]
-    return {"passed": ok, "declared": spec["delay_samples"], "observed": observed,
-            "detail": None if ok else
-            f"the impulse first moved the output {observed} samples after it arrived, and the "
-            f"operator declares {spec['delay_samples']}"}
-
-
-def check_non_causal_control(control, control_state, signal) -> dict:
-    """Test 6. The declared control MUST fail 1-2. A control that passes is not a control."""
-    if control is None:
-        return {"passed": None, "detail": "no non-causal control was declared for this operator"}
-    spec = control.describe()
-    if not spec.get("non_causal_control_of"):
-        return {"passed": False,
-                "detail": "a control must name the operator it is the deliberate twin of"}
-    prefix = check_prefix(control, control_state, signal)
-    suffix = check_altered_suffix(control, control_state, signal)
-    failed = not prefix["passed"] or not suffix["passed"]
-    return {"passed": failed, "promoted": False,
-            "control_prefix_passed": prefix["passed"],
-            "control_altered_suffix_passed": suffix["passed"],
-            "detail": None if failed else
-            "the declared non-causal control passed the causality tests, so either it is not "
-            "the control it claims to be or the tests are not measuring causality"}
-
-
-def check_availability(operator, resource_contract) -> dict:
-    """Test 7. No output before `label + completion_lag_max` of the resource it reads.
-
-    The lake's availability contract is the authority, and `UNKNOWN` is not zero: an archive
-    that cannot say when a bar is complete does not thereby say it is complete immediately.
+    The fit only ever sees `train`, which is strictly before the evaluated future. If any
+    output before the train boundary moves when the future changes, the operator's fit or
+    transform reached past the boundary.
     """
     spec = operator.describe()
-    if not isinstance(resource_contract, dict):
-        return {"passed": None, "detail": "no resource availability contract was supplied"}
-    lag = resource_contract.get("completion_lag_max")
-    if lag in (None, "", "UNKNOWN"):
-        return {"passed": None, "lag": lag,
-                "detail": "the resource declares an UNKNOWN completion lag, so no output "
-                          "timing can be certified against it; the operator is not refused, "
-                          "the claim is"}
+    boundary = len(train["values"])
+    n = len(x["values"])
+    if boundary >= n:
+        return {"passed": None, "outcome": "INSUFFICIENT_TEST",
+                "detail": "the train prefix covers the whole series; no evaluated future exists"}
+    base = _run(operator, x, _fit(operator, train))
+    altered = with_values(x, list(x["values"][:boundary])
+                          + _perturb("regime_change", x, boundary - 1, CUT_SEED + 11))
+    other = _run(operator, altered, _fit(operator, train))
+    compared = 0
+    for i in range(boundary):
+        if not base["available"][i]:
+            continue
+        compared += 1
+        if not _same_row(_triple(base, i), _triple(other, i)):
+            return {"passed": False, "boundary": boundary, "index": i,
+                    "detail": "an output before the train boundary moved when only the "
+                              "evaluated future changed"}
+    if compared == 0:
+        return {"passed": None, "outcome": "INSUFFICIENT_TEST", "boundary": boundary,
+                "detail": "no available output lies before the train boundary"}
+    if spec["fit_scope"] == "TRAIN_PREFIX_ONLY":
+        a = contract.state_sha256(_state_facts(_fit(operator, train)))
+        b = contract.state_sha256(_state_facts(_fit(operator, train)))
+        if a != b:
+            return {"passed": False, "boundary": boundary,
+                    "detail": "fitting the same train prefix twice gave two different states"}
+    return {"passed": True, "boundary": boundary, "compared": compared}
+
+
+def _state_facts(state):
     try:
-        required = int(lag)
-    except (TypeError, ValueError):
-        return {"passed": False, "lag": lag,
-                "detail": f"completion_lag_max {lag!r} is not a sample count"}
-    total = spec["delay_samples"] + spec["warm_up_samples"]
-    ok = spec["delay_samples"] >= 0 and total >= required if required else True
-    ok = spec["delay_samples"] + spec["lookback_samples"] >= required
-    return {"passed": ok, "lag": required,
-            "operator_delay_plus_lookback": spec["delay_samples"] + spec["lookback_samples"],
+        json.dumps(state, sort_keys=True)
+        return state
+    except TypeError:
+        return repr(state)
+
+
+def check_fresh_state_per_branch(operator, train, x) -> dict:
+    """§4: a transform must not mutate the state it was handed."""
+    state = _fit(operator, train)
+    before = contract.state_sha256(_state_facts(copy.deepcopy(state)))
+    first = _run(operator, x, state)
+    after = contract.state_sha256(_state_facts(copy.deepcopy(state)))
+    second = _run(operator, x, state)
+    same = all(_same_row(_triple(first, i), _triple(second, i)) for i in range(len(x["values"])))
+    ok = before == after and same
+    return {"passed": ok,
             "detail": None if ok else
-            f"the resource is complete only at t + {required} and the operator claims an "
-            f"output at t + {spec['delay_samples']} with {spec['lookback_samples']} samples "
-            "of lookback: it would read a bar that does not exist yet"}
+            ("the state changed after a transform" if before != after else
+             "two transforms with the same state gave different outputs")}
 
 
-def check_cost(operator, state, signal) -> dict:
-    """Test 8. A single-thread pilot within the declared budget, and under the memory ceiling."""
+def check_chunk_restart(operator, train, x) -> dict:
+    """§4, separately from the fit: a restart reproduces one pass."""
     spec = operator.describe()
+    whole = _run(operator, x, _fit(operator, train))
+    n = len(x["values"])
+    cut = n // 2
+    if spec["chunk_restart"] == "IDEMPOTENT":
+        back = min(cut, spec["lookback_samples"] + spec["delay_samples"])
+        tail_x = {"values": x["values"][cut - back:], "timestamps": x["timestamps"][cut - back:],
+                  "available_at": x["available_at"][cut - back:],
+                  "period_seconds": x.get("period_seconds")}
+        tail = _run(operator, tail_x, _fit(operator, train))
+        compared, bad = 0, None
+        for i in range(cut, n):
+            if not whole["available"][i]:
+                continue
+            compared += 1
+            if not _same_row(_triple(whole, i), _triple(tail, i - cut + back)):
+                bad = i
+                break
+        if compared == 0:
+            return {"passed": None, "outcome": "INSUFFICIENT_TEST", "mode": "IDEMPOTENT",
+                    "detail": "no available output after the restart point"}
+        return {"passed": bad is None, "mode": "IDEMPOTENT", "compared": compared,
+                "restart_lookback": back,
+                "detail": None if bad is None else
+                f"restarting at {cut} with {back} samples of lookback differs at {bad}"}
+    if not hasattr(operator, "checkpoint") or not hasattr(operator, "resume"):
+        return {"passed": False, "mode": spec["chunk_restart"],
+                "detail": "STATEFUL_WITH_CHECKPOINT declared with no checkpoint()/resume()"}
+    state = _fit(operator, train)
+    head = _run(operator, prefix(x, cut), state)
+    blob = operator.checkpoint()
+    resumed = operator.resume(blob)
+    tail_x = {"values": x["values"][cut:], "timestamps": x["timestamps"][cut:],
+              "available_at": x["available_at"][cut:], "period_seconds": x.get("period_seconds")}
+    tail = contract.validate_output(operator.transform(tail_x, resumed), spec=spec, x=tail_x)
+    rebuilt = [_triple(head, i) for i in range(cut)] + [_triple(tail, i) for i in range(n - cut)]
+    bad = next((i for i in range(n) if whole["available"][i]
+                and not _same_row(_triple(whole, i), rebuilt[i])), None)
+    return {"passed": bad is None, "mode": spec["chunk_restart"],
+            "detail": None if bad is None else f"resume from the checkpoint differs at {bad}"}
+
+
+def _probe_series(kind: str, length: int, position: int) -> tuple:
+    rng = _seeded(CUT_SEED + 3)
+    quiet = [rng.gauss(0.0, 1.0) for _ in range(length)]
+    hit = list(quiet)
+    if kind == "impulse":
+        hit[position] += 25.0
+    elif kind == "step":
+        for i in range(position, length):
+            hit[i] += 25.0
+    elif kind == "level_shift":
+        for i in range(position, length):
+            hit[i] += 12.0
+    elif kind == "variance_shift":
+        for i in range(position, length):
+            hit[i] = quiet[i] * 8.0
+    return quiet, hit
+
+
+def check_response_probe(operator, train, x, *, length: int = 256) -> dict:
+    """§6: the declared probe shows the declared onset. Onset is not group delay."""
+    spec = operator.describe()
+    probe = spec["response_probe"]
+    if probe["kind"] == "none" or probe["expected_onset_samples"] == contract.UNIDENTIFIED:
+        return {"passed": None, "outcome": "UNIDENTIFIED", "probe": probe["kind"],
+                "detail": "the operator declares that no probe identifies its response onset; "
+                          "recorded as such, not as zero"}
+    position = length // 2
+    quiet, hit = _probe_series(probe["kind"], length, position)
+    base = _run(operator, make_input(quiet), _fit(operator, train))
+    moved = _run(operator, make_input(hit), _fit(operator, train))
+    first = next((i for i in range(length)
+                  if base["available"][i] and moved["available"][i]
+                  and not _same_value(base["values"][i], moved["values"][i])), None)
+    if first is None:
+        return {"passed": False, "probe": probe["kind"], "declared": probe["expected_onset_samples"],
+                "detail": "the declared probe moved no available output: the onset cannot be "
+                          "measured, so the declaration cannot be checked"}
+    observed = first - position
+    ok = observed == probe["expected_onset_samples"]
+    return {"passed": ok, "probe": probe["kind"], "declared": probe["expected_onset_samples"],
+            "observed": observed,
+            "detail": None if ok else
+            f"the {probe['kind']} first moved the output {observed} samples after it arrived; "
+            f"the operator declares {probe['expected_onset_samples']}"}
+
+
+def check_non_causal_twin(operator, twin, train, x) -> dict:
+    """§5: the twin MUST fail prefix or future perturbation; NOT_APPLICABLE only with a reason."""
+    declared = operator.describe()["non_causal_twin"]
+    if declared.get("not_applicable") is True:
+        return {"passed": None, "scoped": True, "outcome": "NOT_APPLICABLE",
+                "reason": declared["reason"],
+                "detail": "no twin by design; the independent temporal tests still apply"}
+    if twin is None:
+        return {"passed": False, "scoped": False,
+                "detail": f"the operator declares twin {declared['kind']!r} and none was "
+                          "supplied to the battery: absence is not a pass"}
+    twin_spec = twin.describe()
+    if twin_spec["kind"] != declared["kind"]:
+        return {"passed": False, "scoped": False,
+                "detail": f"the supplied twin is {twin_spec['kind']!r}, the declaration names "
+                          f"{declared['kind']!r}"}
+    if twin_spec.get("non_causal_control_of") != operator.describe()["kind"]:
+        return {"passed": False, "scoped": False,
+                "detail": "the twin does not name the operator it is the deliberate twin of"}
+    p = check_prefix_all_available(twin, train, x)
+    f = check_future_perturbation(twin, train, x)
+    failed = p["passed"] is False or f["passed"] is False
+    return {"passed": failed, "scoped": False, "promoted": False,
+            "twin_prefix_passed": p["passed"], "twin_future_passed": f["passed"],
+            "detail": None if failed else
+            "the declared twin passed the causality tests: either it is not the twin it claims "
+            "to be or the tests are not measuring causality"}
+
+
+def parse_duration_seconds(text):
+    """The producer's own parser. Returns None for UNKNOWN/None, never zero."""
+    if text in (None, "", "UNKNOWN"):
+        return None
+    import pandas as pd
+
+    delta = pd.Timedelta(str(text))
+    if pd.isna(delta) or delta < pd.Timedelta(0):
+        raise ValueError(f"invalid completion lag {text!r}")
+    return float(delta.total_seconds())
+
+
+def duration_to_samples(seconds: float, period_seconds):
+    """Exact division only. A fractional offset is refused, never truncated."""
+    if period_seconds is None:
+        raise ValueError("no sampling contract: a duration cannot become a sample count")
+    ratio = seconds / float(period_seconds)
+    if abs(ratio - round(ratio)) > 1e-9:
+        raise ValueError(f"FRACTIONAL_SAMPLE_OFFSET: {seconds}s is {ratio} periods")
+    return int(round(ratio))
+
+
+def check_availability_emission(operator, train, x, resource_contract) -> dict:
+    """§1-§2: emitted_at >= the latest availability of consumed inputs; durations as the
+    producer parses them; UNKNOWN is undecided; a fractional offset is refused."""
+    spec = operator.describe()
+    if not isinstance(resource_contract, dict):
+        return {"passed": None, "outcome": "INSUFFICIENT_TEST",
+                "detail": "no resource availability contract was supplied"}
+    block = resource_contract.get("availability") or resource_contract
+    lag_text = block.get("completion_lag_max")
+    try:
+        lag = parse_duration_seconds(lag_text)
+    except ValueError as exc:
+        return {"passed": False, "lag": lag_text, "detail": str(exc)}
+    if lag is None:
+        return {"passed": None, "outcome": "UNKNOWN", "lag": lag_text,
+                "detail": "the resource declares an UNKNOWN completion lag, so no emission "
+                          "time can be certified; the claim is undecided, not the operator"}
+    period = x.get("period_seconds")
+    frequency = resource_contract.get("frequency")
+    if period is None and frequency:
+        try:
+            period = parse_duration_seconds(frequency)
+        except ValueError as exc:
+            return {"passed": False, "detail": f"frequency {frequency!r}: {exc}"}
+    lag_samples = None
+    if period is not None:
+        try:
+            lag_samples = duration_to_samples(lag, period)
+        except ValueError as exc:
+            return {"passed": False, "lag": lag_text, "period_seconds": period,
+                    "detail": str(exc)}
+    # The input the battery hands the operator carries BOTH availabilities, and the later
+    # one wins: the contract's nominal lag never erases a late arrival the snapshot recorded,
+    # and a recorded arrival never claims to precede what the contract says is complete.
+    shifted = {"values": x["values"], "timestamps": x["timestamps"],
+               "available_at": [max(a, t + lag) for a, t in
+                                zip(x["available_at"], x["timestamps"])],
+               "period_seconds": period}
+    output = _run(operator, shifted, _fit(operator, train))
+    lower = contract.emission_times(shifted, lookback=spec["lookback_samples"],
+                                    delay=spec["delay_samples"]) if period is not None or \
+        not spec["delay_samples"] else None
+    violations, checked = [], 0
+    for i in range(len(x["values"])):
+        if not output["available"][i]:
+            continue
+        checked += 1
+        emitted = output["emitted_at"][i]
+        if emitted < shifted["available_at"][i]:
+            violations.append({"index": i, "emitted_at": emitted,
+                               "available_at": shifted["available_at"][i]})
+        elif lower is not None and emitted < lower[i]:
+            violations.append({"index": i, "emitted_at": emitted, "consumed_until": lower[i]})
+    if checked == 0:
+        return {"passed": None, "outcome": "INSUFFICIENT_TEST",
+                "detail": "no output was available under the resource's availability"}
+    ok = not violations
+    return {"passed": ok, "lag_seconds": lag, "lag_samples": lag_samples,
+            "period_seconds": period, "checked": checked, "violations": violations[:5],
+            "detail": None if ok else
+            f"{len(violations)} outputs were emitted before an input they consume was available"}
+
+
+def check_cost_pilot(operator, train, x) -> dict:
+    spec = operator.describe()
+    state = _fit(operator, train)
     started = time.process_time()
-    _run(operator, signal, state)
+    _run(operator, x, state)
     seconds = time.process_time() - started
-    per_thousand = seconds * 1000.0 / max(1, len(signal))
+    per_thousand = seconds * 1000.0 / max(1, len(x["values"]))
     peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
     within_budget = per_thousand <= float(spec["cost_cpu_seconds_per_1000"])
     within_memory = peak <= MEMORY_CEILING_BYTES
@@ -262,71 +542,75 @@ def check_cost(operator, state, signal) -> dict:
             "measured_cpu_seconds_per_1000": round(per_thousand, 6),
             "peak_rss_bytes": peak, "memory_ceiling_bytes": MEMORY_CEILING_BYTES,
             "detail": None if within_budget and within_memory else
-            ("the pilot cost more than the operator declares"
-             if not within_budget else "the pilot exceeded the memory ceiling")}
+            ("the pilot cost more than the operator declares" if not within_budget
+             else "the pilot exceeded the memory ceiling")}
 
 
-def check_applicability(operator, state, signal, family: str) -> dict:
-    """Test 9. An inapplicable family yields NOT_APPLICABLE, not a number."""
+def check_applicability(operator, train, x, family: str) -> dict:
     spec = operator.describe()
     if family in spec["applicability"]:
-        return {"passed": None, "family": family,
-                "detail": "the operator declares itself applicable to this family, so there "
-                          "is nothing to refuse"}
+        return {"passed": None, "outcome": "INSUFFICIENT_TEST", "family": family,
+                "detail": "the operator declares itself applicable to this family"}
     if not hasattr(operator, "apply_to_family"):
         return {"passed": False, "family": family,
                 "detail": "the operator offers no way to be asked about a family, so it "
                           "cannot refuse one"}
-    answer = operator.apply_to_family(family, list(signal), state)
+    answer = operator.apply_to_family(family, x, _fit(operator, train))
     ok = answer == contract.NOT_APPLICABLE
-    return {"passed": ok, "family": family, "answer": answer if ok else repr(answer)[:120],
+    return {"passed": ok, "family": family,
             "detail": None if ok else
-            "an operator asked for a family it does not declare must answer NOT_APPLICABLE; "
-            "returning a number is an undeclared extrapolation"}
+            "an operator asked for a family it does not declare must answer NOT_APPLICABLE"}
 
 
-def check_raw_branch(operator, state, signal) -> dict:
-    """Test 10. The raw branch survives the transformation, unchanged."""
-    output = _run(operator, signal, state)
-    raw = list(output["raw"])
-    ok = raw == list(signal)
+def check_raw_branch(operator, train, x) -> dict:
+    output = _run(operator, x, _fit(operator, train))
+    ok = all(_same_value(a, b) for a, b in zip(output["raw"], x["values"])) \
+        and len(output["raw"]) == len(x["values"])
     return {"passed": ok, "detail": None if ok else
-            "the preserved raw branch is not the input: a transformation may add a branch, "
-            "never replace the original"}
+            "the preserved raw branch is not the input"}
 
 
-def run_battery(operator, signal, *, train_prefix=None, control=None,
-                resource_contract=None, inapplicable_family="unknown_family") -> dict:
-    """Every test, against one operator, with its verdict stated rather than inferred."""
+# --- the battery ----------------------------------------------------------------------------
+
+def run_battery(operator, x, *, train=None, twin=None, resource_contract=None,
+                inapplicable_family="unknown_family") -> dict:
+    x = contract.validate_input(x)
     spec = contract.validate_spec(operator.describe())
-    prefix = list(train_prefix if train_prefix is not None else signal[:len(signal) // 2])
-    state = operator.fit(prefix)
-    control_state = control.fit(prefix) if control is not None else None
+    train = train if train is not None else prefix(x, max(1, len(x["values"]) * 6 // 10))
+    contract.validate_input(train, name="train")
     results = {
-        "prefix": check_prefix(operator, state, signal),
-        "altered_suffix": check_altered_suffix(operator, state, signal),
-        "warm_up_edge": check_warm_up_edge(operator, state, signal),
-        "chunk_restart": check_chunk_restart(operator, state, signal),
-        "measured_delay": check_measured_delay(operator, state),
-        "non_causal_control": check_non_causal_control(control, control_state, signal),
-        "availability": check_availability(operator, resource_contract),
-        "cost": check_cost(operator, state, signal),
-        "applicability": check_applicability(operator, state, signal, inapplicable_family),
-        "raw_branch": check_raw_branch(operator, state, signal),
+        "prefix_all_available": check_prefix_all_available(operator, train, x),
+        "future_perturbation": check_future_perturbation(operator, train, x),
+        "warm_up_edge": check_warm_up_edge(operator, train, x),
+        "fit_scope_train_only": check_fit_scope_train_only(operator, train, x),
+        "fresh_state_per_branch": check_fresh_state_per_branch(operator, train, x),
+        "chunk_restart": check_chunk_restart(operator, train, x),
+        "response_probe": check_response_probe(operator, train, x),
+        "non_causal_twin": check_non_causal_twin(operator, twin, train, x),
+        "availability_emission": check_availability_emission(operator, train, x,
+                                                             resource_contract),
+        "cost_pilot": check_cost_pilot(operator, train, x),
+        "applicability": check_applicability(operator, train, x, inapplicable_family),
+        "raw_branch": check_raw_branch(operator, train, x),
     }
-    failed = sorted(name for name, outcome in results.items() if outcome["passed"] is False)
-    undecided = sorted(name for name, outcome in results.items() if outcome["passed"] is None)
-    return {"schema": "df_d3_acceptance.v1", "generated_utc": now(),
+    failed = sorted(k for k, r in results.items() if r["passed"] is False)
+    scoped = sorted(k for k, r in results.items()
+                    if r["passed"] is None and r.get("scoped") and k in SCOPEABLE)
+    undecided = sorted(k for k, r in results.items()
+                       if r["passed"] is None and k not in scoped)
+    verdict = ("MECHANICALLY_REFUSED" if failed else
+               "INCONCLUSIVE" if undecided else "MECHANICALLY_ACCEPTED")
+    return {"schema": "df_d3_acceptance.v2", "generated_utc": now(),
+            "design_sha256": design.D3_AMENDMENT_V1["design_sha256"],
             "kind": spec["kind"], "spec_sha256": contract.spec_sha256(spec),
-            "state_sha256": contract.state_sha256(state),
-            "samples": len(signal), "results": results,
-            "failed": failed, "undecided": undecided,
-            "verdict": ("MECHANICALLY_ACCEPTED" if not failed and not undecided else
-                        "MECHANICALLY_REFUSED" if failed else "INCONCLUSIVE"),
-            "note": ("Mechanical acceptance only: causality, edges, restart, delay, "
-                     "availability, cost, applicability and the raw branch. It says the "
-                     "operator's declaration about itself is true. It says nothing about "
-                     "whether the operator is useful, and it selects nothing.")}
+            "samples": len(x["values"]), "results": results,
+            "required_tests": list(TESTS), "failed": failed, "scoped": scoped,
+            "undecided": undecided,
+            "review_ready": verdict == "MECHANICALLY_ACCEPTED",
+            "verdict": verdict,
+            "note": ("Mechanical acceptance only: what the operator declares about itself is "
+                     "true. It says nothing about utility and selects nothing. A scoped test is "
+                     "reported as scoped; an undecided one makes the verdict INCONCLUSIVE.")}
 
 
 def main(argv=None) -> int:
@@ -335,10 +619,11 @@ def main(argv=None) -> int:
     parser.add_argument("--list-tests", action="store_true")
     args = parser.parse_args(argv)
     if args.list_tests:
-        print(json.dumps({"schema": "df_d3_acceptance.v1", "tests": list(TESTS),
-                          "memory_ceiling_bytes": MEMORY_CEILING_BYTES}, indent=1))
+        print(json.dumps({"schema": "df_d3_acceptance.v2", "tests": list(TESTS),
+                          "scopeable": list(SCOPEABLE),
+                          "design_sha256": design.D3_AMENDMENT_V1["design_sha256"]}, indent=1))
         return 0
-    parser.error("this module is a battery; import it and call run_battery(operator, signal)")
+    parser.error("this module is a battery; import it and call run_battery(operator, x)")
     return 2
 
 

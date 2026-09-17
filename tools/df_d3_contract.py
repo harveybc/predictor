@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""The D3 operator contract: what an operator must declare before it may be measured.
+"""The D3 operator contract, v2: what an operator must declare before it may be measured.
 
-Block 3 of `docs/handoffs/MUSASHI_I1_I3_ACCEPTANCE_AND_STACK_FOLLOWUP_2026_09_16.md` asks for
-the next preprocessing step's **data contracts, tests and governed execution plan** — not for
-its execution and not for a new design. The design is sealed in
-`docs/integracion_workplan_2026_09_10/07_DISENO_D3_CUANTIZACION_TIEMPO_FRECUENCIA_DETECTORES_2026_09_14.md`
-and is transcribed here, not extended: the mandatory specification fields of its §1, and
-nothing invented beside them.
+Amended under J1 (`docs/integracion_workplan_2026_09_10/07A_ENMIENDA_TEMPORAL_D3_2026_09_16.md`,
+sealed in `df_d3_design.D3_AMENDMENT_V1`). The first version conflated three different
+instants into "delay" and let a declaration pass with no non-causal twin and no probe. Four
+instants are now separate and each has its own field:
 
-What this module is for: an operator that cannot state its own lookback, delay, warm-up,
-availability and cost cannot be checked for causality, and an operator that is merely *believed*
-causal is how a leak enters a data foundation. So the declaration comes first, and the battery
-in `df_d3_acceptance.py` measures the declaration against the operator's behaviour.
+    event index            t                    the sample the output is FOR
+    input availability     available_at[t]      the resource contract's label + completion lag
+    output emission        emitted_at[t]        >= the latest availability of what it consumed,
+                                                plus the declared emission delay
+    signal response        response_probe       measured with a predeclared probe; NOT a
+                                                statement about availability
 
 Nothing here scores, selects or promotes anything. A complete diagnosis with abstention is a
 valid outcome, and the raw branch is never removed.
@@ -23,34 +23,36 @@ import hashlib
 import json
 import math
 
-#: An output that does not exist yet. It is NOT zero, and it is not a number: a warm-up written
-#: as 0.0 is a fabricated observation, which is the failure mode acceptance test 3 exists for.
+SPEC_SCHEMA = "d3_operator_spec.v2"
+
 NOT_AVAILABLE = "NOT_AVAILABLE"
-#: An operator asked for a family it does not declare itself applicable to. Also not a number.
 NOT_APPLICABLE = "NOT_APPLICABLE"
+UNIDENTIFIED = "UNIDENTIFIED"
 
 FIT_SCOPES = ("NONE", "TRAIN_PREFIX_ONLY")
 CHUNK_RESTARTS = ("IDEMPOTENT", "STATEFUL_WITH_CHECKPOINT")
+PROBE_KINDS = ("impulse", "step", "level_shift", "variance_shift", "none")
+SUPPORT_KINDS = ("FINITE", "RECURSIVE", "POINTWISE")
 
-#: The specification fields §1 of the design makes mandatory, with their admissible types.
-#: `params` and `bytes_state` describe the fitted state; the rest describe behaviour that the
-#: acceptance battery then measures.
+#: Mandatory fields and their admissible types. `bool` is never an admissible number.
 SPEC_FIELDS = {
+    "schema": (str,),
     "kind": (str,),
     "params": (dict,),
     "bytes_state": (int,),
     "fit_scope": (str,),
     "lookback_samples": (int,),
-    "output_availability": (str,),
     "warm_up_samples": (int,),
-    "delay_samples": (int,),
+    "delay_samples": (int,),                 # emission delay beyond input availability
+    "output_availability": (str,),           # "t + delay_samples", stated for a reader
+    "response_probe": (dict,),               # {"kind", "expected_onset_samples"}
+    "non_causal_twin": (dict,),              # {"kind"} or {"not_applicable", "reason"}
+    "support": (dict,),                      # {"kind", "samples", "derivation", "boundary_mode"}
     "cost_cpu_seconds_per_1000": (float, int),
     "applicability": (list,),
     "chunk_restart": (str,),
 }
-#: Optional, and meaningful only for a control: the spec it is the deliberate non-causal twin
-#: of. A control is recorded and never promoted, so it has to be able to say what it is.
-OPTIONAL_FIELDS = {"non_causal_control_of": (str,), "notes": (str,)}
+OPTIONAL_FIELDS = {"non_causal_control_of": (str,), "notes": (str,), "library_versions": (dict,)}
 
 
 class SpecRefusal(Exception):
@@ -59,6 +61,18 @@ class SpecRefusal(Exception):
 
 def _refuse(message: str):
     raise SpecRefusal(message)
+
+
+def availability_delay(text):
+    """`t` -> 0, `t + N` -> N. Anything else is not an availability statement."""
+    if not isinstance(text, str):
+        return None
+    cleaned = text.replace(" ", "")
+    if cleaned == "t":
+        return 0
+    if cleaned.startswith("t+") and cleaned[2:].isdigit():
+        return int(cleaned[2:])
+    return None
 
 
 def validate_spec(spec) -> dict:
@@ -78,6 +92,8 @@ def validate_spec(spec) -> dict:
         if isinstance(value, bool) or not isinstance(value, types):
             _refuse(f"{name!r} must be {'/'.join(t.__name__ for t in types)}, "
                     f"got {type(value).__name__}")
+    if spec["schema"] != SPEC_SCHEMA:
+        _refuse(f"schema must be {SPEC_SCHEMA!r}; v1 declarations conflated the instants")
     if not spec["kind"]:
         _refuse("'kind' must name the operator")
     if spec["fit_scope"] not in FIT_SCOPES:
@@ -96,32 +112,68 @@ def validate_spec(spec) -> dict:
                 "declares itself applicable to nothing cannot be measured")
     if any(not isinstance(item, str) or not item for item in spec["applicability"]):
         _refuse("'applicability' must be a list of non-empty names")
-    availability = spec["output_availability"]
-    delay = availability_delay(availability)
+    delay = availability_delay(spec["output_availability"])
     if delay is None:
         _refuse("'output_availability' must read 't' or 't + N': it says WHEN the output for "
-                f"sample t is complete, and {availability!r} does not")
+                f"sample t is emitted, and {spec['output_availability']!r} does not")
     if delay != spec["delay_samples"]:
-        # A disagreement here is precisely a silent claim of zero delay. Acceptance test 5
-        # then measures the number against an impulse, so the declaration cannot be both
-        # self-consistent and wrong for free.
         _refuse(f"'output_availability' says t + {delay} and 'delay_samples' says "
-                f"{spec['delay_samples']}: an operator may not declare two different delays")
+                f"{spec['delay_samples']}: an operator may not declare two different emission "
+                "delays")
     if spec["fit_scope"] == "NONE" and spec["bytes_state"] != 0:
         _refuse("an operator that fits nothing cannot carry fitted state")
+    _validate_probe(spec["response_probe"])
+    _validate_twin(spec["non_causal_twin"], spec["kind"])
+    _validate_support(spec["support"], spec["lookback_samples"])
     return spec
 
 
-def availability_delay(text):
-    """`t` -> 0, `t + N` -> N. Anything else is not an availability statement."""
-    if not isinstance(text, str):
-        return None
-    cleaned = text.replace(" ", "")
-    if cleaned == "t":
-        return 0
-    if cleaned.startswith("t+") and cleaned[2:].isdigit():
-        return int(cleaned[2:])
-    return None
+def _validate_probe(probe: dict) -> None:
+    if set(probe) != {"kind", "expected_onset_samples"}:
+        _refuse("'response_probe' must declare exactly 'kind' and 'expected_onset_samples'")
+    if probe["kind"] not in PROBE_KINDS:
+        _refuse(f"'response_probe.kind' must be one of {list(PROBE_KINDS)}")
+    onset = probe["expected_onset_samples"]
+    if onset == UNIDENTIFIED:
+        return
+    if isinstance(onset, bool) or not isinstance(onset, int) or onset < 0:
+        _refuse("'response_probe.expected_onset_samples' is a non-negative integer or "
+                f"{UNIDENTIFIED!r}; a response the probe cannot identify is never a fabricated "
+                "zero")
+    if probe["kind"] == "none":
+        _refuse("a probe of kind 'none' cannot expect an onset; declare UNIDENTIFIED")
+
+
+def _validate_twin(twin: dict, kind: str) -> None:
+    if twin.get("not_applicable") is True:
+        if set(twin) != {"not_applicable", "reason"} or not str(twin.get("reason", "")).strip():
+            _refuse("a NOT_APPLICABLE twin needs a design reason; absence is not a pass")
+        return
+    if set(twin) != {"kind"} or not isinstance(twin["kind"], str) or not twin["kind"]:
+        _refuse("'non_causal_twin' names the twin's kind, or is {'not_applicable': true, "
+                "'reason': ...}")
+    if twin["kind"] == kind:
+        _refuse("an operator cannot be its own non-causal twin")
+
+
+def _validate_support(support: dict, lookback: int) -> None:
+    if set(support) != {"kind", "samples", "derivation", "boundary_mode"}:
+        _refuse("'support' must declare kind, samples, derivation and boundary_mode")
+    if support["kind"] not in SUPPORT_KINDS:
+        _refuse(f"'support.kind' must be one of {list(SUPPORT_KINDS)}")
+    samples = support["samples"]
+    if support["kind"] == "RECURSIVE":
+        if samples is not None:
+            _refuse("a RECURSIVE support has no finite sample count; its state is a dependency, "
+                    "not a memory of order p")
+    else:
+        if isinstance(samples, bool) or not isinstance(samples, int) or samples < 0:
+            _refuse("a FINITE or POINTWISE support declares a non-negative sample count")
+        if samples > lookback + 1:
+            _refuse(f"support of {samples} samples exceeds lookback {lookback} + 1: the operator "
+                    "reads more past than it declares")
+    if not isinstance(support["derivation"], str) or not support["derivation"].strip():
+        _refuse("'support.derivation' says how the support was derived (library, mode, level)")
 
 
 def canonical(obj) -> str:
@@ -129,38 +181,93 @@ def canonical(obj) -> str:
 
 
 def spec_sha256(spec: dict) -> str:
-    """The identity of a declaration. The design requires every output to carry it."""
     return hashlib.sha256(canonical(validate_spec(spec)).encode("ascii")).hexdigest()
 
 
 def state_sha256(state) -> str:
-    """The identity of the fitted state, so a result can name the state that produced it."""
     if isinstance(state, (bytes, bytearray)):
         return hashlib.sha256(bytes(state)).hexdigest()
     return hashlib.sha256(canonical(state).encode("ascii")).hexdigest()
 
 
-def validate_output(output, *, spec: dict, samples: int) -> dict:
-    """An operator's output: values, an availability mask, and the raw branch it preserved.
+# --- inputs and outputs -------------------------------------------------------------------
 
-    The raw branch is part of the contract rather than a convention, because the design says a
-    transformation never replaces the original before it has shown utility — and a rule that
-    lives only in prose is one nobody can fail.
+def validate_input(x, *, name: str = "input") -> dict:
+    """An operator input: values, timestamps and availability, all the same length.
+
+    Timestamps and availability are integer seconds (or sample indices under SAMPLE_INDEX);
+    `period_seconds` is the declared sampling contract or None when there is none, in which
+    case no duration is ever converted to samples.
     """
+    if not isinstance(x, dict):
+        _refuse(f"{name} must be an object with values, timestamps, available_at")
+    for key in ("values", "timestamps", "available_at"):
+        if key not in x:
+            _refuse(f"{name} does not carry {key!r}")
+    n = len(x["values"])
+    if len(x["timestamps"]) != n or len(x["available_at"]) != n:
+        _refuse(f"{name}: values, timestamps and available_at must have the same length")
+    period = x.get("period_seconds")
+    if period is not None and (isinstance(period, bool) or not isinstance(period, (int, float))
+                               or period <= 0):
+        _refuse(f"{name}: period_seconds is a positive number or None")
+    for i in range(n):
+        if x["available_at"][i] < x["timestamps"][i]:
+            _refuse(f"{name}: row {i} is available before its own timestamp")
+    return x
+
+
+def validate_output(output, *, spec: dict, x: dict) -> dict:
+    """values, an availability mask, emission times and the raw branch, all of length n.
+
+    An available output inside the declared warm-up is a fabricated observation. An available
+    output emitted before the input it is for was available is a leak by the clock rather
+    than by the index, and is refused here before any test runs.
+    """
+    n = len(x["values"])
     if not isinstance(output, dict):
-        _refuse("an output must be an object with 'values', 'available' and 'raw'")
-    for key in ("values", "available", "raw"):
+        _refuse("an output must be an object with values, available, emitted_at and raw")
+    for key in ("values", "available", "emitted_at", "raw"):
         if key not in output:
             _refuse(f"the output does not carry {key!r}")
-    lengths = {key: len(output[key]) for key in ("values", "available", "raw")}
-    if len(set(lengths.values())) != 1 or lengths["values"] != samples:
-        _refuse(f"values, available and raw must all have {samples} entries, got {lengths}")
-    if any(bool(flag) for flag in list(output["available"])[:spec["warm_up_samples"]]):
+    lengths = {key: len(output[key]) for key in ("values", "available", "emitted_at", "raw")}
+    if len(set(lengths.values())) != 1 or lengths["values"] != n:
+        _refuse(f"values, available, emitted_at and raw must all have {n} entries, got {lengths}")
+    available = [bool(flag) for flag in output["available"]]
+    if any(available[:spec["warm_up_samples"]]):
         _refuse(f"the first {spec['warm_up_samples']} outputs are declared warm-up and must "
                 "be unavailable; an available warm-up output is a fabricated observation")
+    for i in range(n):
+        if available[i]:
+            emitted = output["emitted_at"][i]
+            if emitted is None or (isinstance(emitted, str)):
+                _refuse(f"output {i} is available but carries no emission time")
+            if emitted < x["available_at"][i]:
+                _refuse(f"output {i} is emitted at {emitted}, before its own input was "
+                        f"available at {x['available_at'][i]}")
     return output
 
 
-__all__ = ["NOT_AVAILABLE", "NOT_APPLICABLE", "SpecRefusal", "SPEC_FIELDS", "FIT_SCOPES",
-           "CHUNK_RESTARTS", "OPTIONAL_FIELDS", "validate_spec", "availability_delay",
-           "spec_sha256", "state_sha256", "validate_output", "canonical"]
+def emission_times(x: dict, *, lookback: int, delay: int) -> list:
+    """The earliest honest emission time of each output: the latest availability of the inputs
+    in its declared window, plus the declared emission delay in whole periods.
+
+    Shared by operators so none of them invents its own clock. With no sampling contract the
+    delay cannot be turned into seconds, and a positive delay is then refused rather than
+    guessed.
+    """
+    period = x.get("period_seconds")
+    if delay and period is None:
+        _refuse("an emission delay in samples needs a declared sampling period to become a time")
+    out = []
+    for t in range(len(x["values"])):
+        start = max(0, t - lookback)
+        latest = max(x["available_at"][start:t + 1])
+        out.append(latest + (delay * period if delay else 0))
+    return out
+
+
+__all__ = ["SPEC_SCHEMA", "NOT_AVAILABLE", "NOT_APPLICABLE", "UNIDENTIFIED", "SpecRefusal",
+           "SPEC_FIELDS", "OPTIONAL_FIELDS", "FIT_SCOPES", "CHUNK_RESTARTS", "PROBE_KINDS",
+           "SUPPORT_KINDS", "validate_spec", "availability_delay", "spec_sha256",
+           "state_sha256", "validate_input", "validate_output", "emission_times", "canonical"]
