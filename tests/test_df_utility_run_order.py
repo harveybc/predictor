@@ -186,3 +186,12 @@ def test_N3_a_root_frozen_under_another_code_identity_is_not_resumed(tmp_path):
         R.run_rehearsal(other, StubGov(), lambda e, **f: None, GR=GR, outbox=StubOutbox(gov),
                         isolated=stub_isolated(children))
     assert (tmp_path / "run" / "CAMPAIGNS.json").is_file()
+
+
+def test_N3_terminal_instants_are_the_childrens_in_data_govs_form():
+    """utilreh-v6: data-gov refused every terminal as 'invalid started_at' because the runner
+    records +00:00 while the service takes Z."""
+    t = R._terminal(status="COMPLETED", reason=None, cost={}, metrics=[], tags={},
+                    started="2026-09-17T15:05:50+00:00", finished="2026-09-17T15:07:35+00:00")
+    assert t["started_at"] == "2026-09-17T15:05:50Z" and t["finished_at"] == "2026-09-17T15:07:35Z"
+    assert R._z("2026-09-17T15:05:50Z") == "2026-09-17T15:05:50Z"

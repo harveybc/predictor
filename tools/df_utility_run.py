@@ -89,9 +89,15 @@ class Refusal(SystemExit):
     pass
 
 
+def _z(instant) -> str:
+    """data-gov's instant form: ISO-8601 UTC with a Z; the runner records +00:00."""
+    text = str(instant or now_iso())
+    return text[:-6] + "Z" if text.endswith("+00:00") else text
+
+
 def _terminal(*, status, reason, cost, metrics, tags, started, finished) -> dict:
     return {"schema": "governed_terminal.v1", "generation": 1, "status": status,
-            "reason": reason, "started_at": started, "finished_at": finished,
+            "reason": reason, "started_at": _z(started), "finished_at": _z(finished),
             "costs": {"wall_seconds": max(0.0, float(cost.get("wall_seconds") or 0)),
                       "cpu_seconds": max(0.0, float(cost.get("cpu_seconds") or 0))},
             "deliveries": [], "artifacts": [], "metrics": metrics, "tags": tags}
