@@ -77,8 +77,10 @@ def recover_scores(root: Path, report: dict) -> tuple:
                "protocol": {"protocol_sha256": (out.get("score") or {}).get("protocol_sha256")}}
         # the runner's own re-hash was not persisted by that version; the digest the child
         # declared is checked against the bytes now, and said so in the receipt
+        # utilreh-v4's files predate the schema field; every other check applies
         score, refusal = H.verified_score(adir, result, {"output_sha256": result.get("output_sha256")},
-                                          {"contrast_id": unit_id, "protocol": {}})
+                                          {"contrast_id": unit_id, "protocol": {}},
+                                          allow_legacy_schema=True)
         if refusal:
             refusals.append({"unit_id": unit_id, **refusal})
             continue
@@ -109,6 +111,9 @@ def main(argv=None) -> int:
     parser.add_argument("--api-key-file", required=True)
     parser.add_argument("--outbox-dir", default=GR.DEFAULT_OUTBOX)
     parser.add_argument("--receipt", default="RECOVERY.json")
+    parser.add_argument("--envelope-key-suffix", default="recovery",
+                        help="the corrective envelope's campaign key suffix (a key already "
+                             "holding another identity in the cube cannot be reused)")
     args = parser.parse_args(argv)
     token = os.environ.get(args.token_env, "")
     if not token:
@@ -133,11 +138,16 @@ def main(argv=None) -> int:
                "additive recovery from preserved verified outputs; no new measurement; the "
                "generation-1 terminals and the original envelope stay as history; nothing is "
                "promoted scientifically"}
+    if not scores:
+        raise SystemExit(f"REFUSED: nothing recovered ({len(refusals)} refusals); no terminal, "
+                         "no envelope, no receipt is written for an empty recovery")
     gov = GR.GovHttp(args.gov_url, GR.load_api_key(args.api_key_file), run_id)
     outbox = GR.TerminalOutbox(Path(os.path.expanduser(args.outbox_dir)).resolve())
     original_cost = {t["unit_id"]: t.get("cost") or {} for t in report["terminals"]}
     for unit_id, rec in scores.items():
         score = rec["score"]
+        if "schema" not in score:
+            rec["verification"] += ";LEGACY_FILE_WITHOUT_SCHEMA_FIELD"
         original = originals.get(unit_id)
         if original is None:
             refusals.append({"unit_id": unit_id, "why": "no generation-1 terminal in the cube"})
@@ -201,7 +211,7 @@ def main(argv=None) -> int:
     receipt_sha = hashlib.sha256(json.dumps({k: v for k, v in receipt.items() if k != "envelope"},
                                             sort_keys=True, default=str).encode()).hexdigest()
     envelope = CE.build_envelope(
-        campaign_key=f"utility-rehearsal-{run_id}-recovery", producer="predictor",
+        campaign_key=f"utility-rehearsal-{run_id}-{args.envelope_key_suffix}", producer="predictor",
         result_class="DEVELOPMENT",
         identity={"run_id": run_id, "code_identity": code_identity["value"],
                   "design_sha256": frozen["protocol"]["protocol_sha256"],

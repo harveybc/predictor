@@ -519,7 +519,8 @@ def calibrate(protocol: Protocol, operator, *, n_sims: int, seed: int, n: int = 
 
 # --- observed budgets: one contrast in an isolated child -----------------------------------------------
 
-def verified_score(attempt_dir: Path, result: dict, verified: dict, job: dict) -> tuple:
+def verified_score(attempt_dir: Path, result: dict, verified: dict, job: dict, *,
+                   allow_legacy_schema: bool = False) -> tuple:
     """The scientific result is the file the child named and the runner re-hashed — never the
     process summary (N1). Missing, altered, discordant or non-finite: a typed refusal, no
     fabricated zero."""
@@ -540,7 +541,8 @@ def verified_score(attempt_dir: Path, result: dict, verified: dict, job: dict) -
         score = json.loads(body)
     except ValueError:
         return None, {"outcome": SCORE_UNVERIFIED, "why": "the output is not JSON"}
-    if score.get("schema") != CONTRAST_SCHEMA and score.get("outcome") not in (
+    legacy = allow_legacy_schema and "schema" not in score and "delta_mean" in score
+    if not legacy and score.get("schema") != CONTRAST_SCHEMA and score.get("outcome") not in (
             REFUSED, INSUFFICIENT_ROWS):
         return None, {"outcome": SCORE_UNVERIFIED, "why": f"schema {score.get('schema')!r}"}
     if score.get("contrast_id", job.get("contrast_id")) != job.get("contrast_id"):
