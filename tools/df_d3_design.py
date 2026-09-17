@@ -230,6 +230,14 @@ def build_twin_sensitivity_amendment() -> dict:
         "replay_scope": "non_causal_twin for the operators that declare a twin, over the whole "
                         "frozen population; the other eleven tests inherit the successor run's "
                         "rows by digest, verifiably",
+        "inheritance_equivalence": {
+            "operator": "same kind, same params, same spec_sha256; the fields an inherited "
+                        "declaration may differ in are listed here and nowhere else",
+            "allowed_spec_diff": [],
+            "population": "same units, same variables, same data contract digests (bank: "
+                          "observed_signal digest; toys: delivered source bytes digest)",
+            "partition": "inherited and measured tests are disjoint and together the twelve",
+            "code": "an inherited row carries the SOURCE freeze's design and code digests"},
         "design_sha256": "",
     }
     body = {k: v for k, v in doc.items() if k != "design_sha256"}

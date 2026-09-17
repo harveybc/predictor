@@ -517,3 +517,90 @@ def test_a_composite_replay_refuses_a_source_whose_freeze_is_not_the_declared_on
     (tmp_path / "child" / "REPORT.json").write_text(json.dumps(rec))
     out = verify(child)
     assert "INHERITED_SOURCE_MISMATCH" in refusal_kinds(out)
+
+
+# --- M1: inheritance needs equivalence, not a kind match -----------------------------------------------
+
+def _reseal_child(tmp_path, child):
+    child.reseal_freeze()
+    rec = json.loads((tmp_path / "child" / "REPORT.json").read_text())
+    config = {"schema": "d3_mechanics_execution.v1", "run_id": "r",
+              "freeze_sha256": child.freeze["freeze_sha256"], "design_sha256": DESIGN}
+    rec["config_sha256"] = hashlib.sha256(json.dumps(config, sort_keys=True,
+                                                     separators=(",", ":")).encode()).hexdigest()
+    rec["synthetic_spec"]["freeze_sha256"] = child.freeze["freeze_sha256"]
+    (tmp_path / "child" / "REPORT.json").write_text(json.dumps(rec))
+
+
+def test_a_changed_parameter_of_an_unmeasured_operator_refuses_inheritance(tmp_path):
+    """The reviewer's case: op_b was not re-measured; its params and spec changed; the source's
+    tests were measured on another declaration and cannot be inherited."""
+    import copy
+    src, child = composite_pair(tmp_path)
+    child.freeze["operators"] = copy.deepcopy(child.freeze["operators"])
+    child.freeze["operators"][1]["params"] = {"window": 999}
+    child.freeze["operators"][1]["spec_sha256"] = "9" * 64
+    _reseal_child(tmp_path, child)
+    out = verify(child)
+    assert out["verified"] is False
+    assert "INHERITED_OPERATOR_CHANGED" in refusal_kinds(out)
+    assert out["operators"].get("op_b", {}).get("verdicts", {}) in ({}, {"MECHANICALLY_ACCEPTED": 1}) \
+        and out["verified"] is False
+
+
+def test_a_changed_spec_alone_refuses_inheritance_unless_the_amendment_allows_the_diff(tmp_path):
+    import copy
+    src, child = composite_pair(tmp_path)
+    child.freeze["operators"] = copy.deepcopy(child.freeze["operators"])
+    child.freeze["operators"][0]["spec_sha256"] = "8" * 64      # the measured op too
+    _reseal_child(tmp_path, child)
+    out = verify(child)
+    assert "INHERITED_OPERATOR_CHANGED" in refusal_kinds(out)
+    assert design.D3_DESIGN_CURRENT["inheritance_equivalence"]["allowed_spec_diff"] == []
+
+
+def test_a_changed_variable_count_refuses_inheritance(tmp_path):
+    src, child = composite_pair(tmp_path)
+    child.freeze["bank"]["units"][0]["n_variables"] = 2
+    (tmp_path / "child" / "bank" / "u" / "UNIT.json").write_text(json.dumps(
+        {"unit_id": "u", "n_variables": 2, "digests": {"observed_signal": "c" * 64}}))
+    _reseal_child(tmp_path, child)
+    out = verify(child)
+    assert "INHERITED_POPULATION_MISMATCH" in refusal_kinds(out)
+
+
+def test_a_changed_data_contract_refuses_inheritance(tmp_path):
+    src, child = composite_pair(tmp_path)
+    (tmp_path / "child" / "bank" / "u" / "UNIT.json").write_text(json.dumps(
+        {"unit_id": "u", "n_variables": 1, "digests": {"observed_signal": "d" * 64}}))
+    out = verify(child)
+    assert "INHERITED_POPULATION_MISMATCH" in refusal_kinds(out)
+
+
+def test_a_partition_that_is_not_disjoint_or_complete_refuses(tmp_path):
+    src, child = composite_pair(tmp_path)
+    child.freeze["inherits"]["inherited_tests"] = child.freeze["inherits"]["inherited_tests"] + ["non_causal_twin"]
+    _reseal_child(tmp_path, child)
+    assert "INHERITANCE_PARTITION" in refusal_kinds(verify(child))
+    src, child = composite_pair(tmp_path / "b")
+    child.freeze["inherits"]["inherited_tests"] = child.freeze["inherits"]["inherited_tests"][:-1]
+    _reseal_child(tmp_path / "b", child)
+    assert "INHERITANCE_PARTITION" in refusal_kinds(verify(child))
+
+
+def test_a_source_row_not_bound_to_the_source_freeze_is_not_inherited(tmp_path):
+    src, child = composite_pair(tmp_path)
+    path = tmp_path / "src" / "collected" / "A" / "s" / "attempts" / "u" / "attempt-1" / "rows.jsonl"
+    rows = [json.loads(l) for l in path.read_text().splitlines()]
+    for r in rows:
+        if r["operator_kind"] == "op_b":
+            r["code_sha256"] = "z" * 64
+    body = "".join(json.dumps(r, sort_keys=True) + "\n" for r in rows).encode()
+    path.write_bytes(body)
+    tpath = tmp_path / "src" / "collected" / "A" / "s" / "terminals" / "u.attempt-1.json"
+    t = json.loads(tpath.read_text())
+    t["output_sha256"] = hashlib.sha256(body).hexdigest()
+    tpath.write_text(json.dumps(t))
+    out = verify(child)
+    assert out["verified"] is False
+    assert "INHERITED_SOURCE_UNVERIFIED" in refusal_kinds(out)   # the source itself no longer verifies

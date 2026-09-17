@@ -513,13 +513,50 @@ def _compose(root: Path, frozen: dict, inherits: dict, expected: dict, per_op, m
         refuse("INHERITED_SOURCE_MISMATCH", declared=inherits["source_freeze_sha256"],
                found=src_frozen["freeze_sha256"])
         return
-    if set(src_frozen["operators"][i]["kind"] for i in range(len(src_frozen["operators"]))) \
-            != set(frozen["operators"][i]["kind"] for i in range(len(frozen["operators"]))):
-        refuse("INHERITED_SOURCE_MISMATCH", what="operators differ")
-        return
     inherited = set(inherits["inherited_tests"])
     measured = set(inherits["measured_tests"])
     measured_ops = set(inherits["measured_operators"])
+    # partition: disjoint, and together the twelve
+    if inherited & measured or (inherited | measured) != set(TESTS):
+        refuse("INHERITANCE_PARTITION", inherited=sorted(inherited), measured=sorted(measured))
+        return
+    # operator equivalence: a kind match is nothing; params and the declaration digest must be
+    # equal, save for the finite diff the governing amendment allows (07C: none)
+    allowed = set((design.D3_DESIGN_CURRENT.get("inheritance_equivalence") or {})
+                  .get("allowed_spec_diff", []))
+    src_ops = {o["kind"]: o for o in src_frozen["operators"]}
+    my_ops = {o["kind"]: o for o in frozen["operators"]}
+    if set(src_ops) != set(my_ops):
+        refuse("INHERITED_SOURCE_MISMATCH", what="operators differ")
+        return
+    for kind, mine in my_ops.items():
+        src = src_ops[kind]
+        params_equal = json.dumps(src.get("params"), sort_keys=True) == \
+            json.dumps(mine.get("params"), sort_keys=True)
+        spec_equal = src.get("spec_sha256") == mine.get("spec_sha256")
+        if not params_equal or (not spec_equal and not allowed):
+            refuse("INHERITED_OPERATOR_CHANGED", operator=kind, params_equal=params_equal,
+                   spec_equal=spec_equal, source_spec=src.get("spec_sha256"),
+                   spec=mine.get("spec_sha256"),
+                   why="inherited tests were measured on another declaration")
+    # population identity: the source's units, variables and data contracts must be this run's
+    src_expected = expected_population(src_root, src_frozen, lambda *a, **k: None)
+    src_units = src_expected["units"]
+    if set(src_units) != set(expected["units"]):
+        refuse("INHERITED_POPULATION_MISMATCH", what="units",
+               only_source=sorted(set(src_units) - set(expected["units"]))[:5],
+               only_here=sorted(set(expected["units"]) - set(src_units))[:5])
+    for unit, spec in expected["units"].items():
+        src_spec = src_units.get(unit)
+        if src_spec is None:
+            continue
+        if (src_spec["variables"] or []) != (spec["variables"] or []):
+            refuse("INHERITED_POPULATION_MISMATCH", what="variables", unit=unit)
+            continue
+        if spec["bank"] == "SYNTHETIC" and src_spec["contract_sha256"] != spec["contract_sha256"]:
+            refuse("INHERITED_POPULATION_MISMATCH", what="contract", unit=unit)
+        if spec["bank"] == "TOY" and _toy_bytes(src_root, unit) != _toy_bytes(root, unit):
+            refuse("INHERITED_POPULATION_MISMATCH", what="toy bytes", unit=unit)
     source_cells = _source_cells(src_root, src_receipt, src_frozen)
     for (unit, variable, op), src_tests in source_cells.items():
         if unit not in expected["units"]:
@@ -560,6 +597,14 @@ def _compose(root: Path, frozen: dict, inherits: dict, expected: dict, per_op, m
                    variable=variable, operator=op)
 
 
+def _toy_bytes(root: Path, unit: str):
+    """The digest of the bytes a toy unit was computed on (delivery-independent)."""
+    rec = root / "toys" / unit / "TOY.json"
+    if not rec.is_file():
+        return None
+    return json.loads(rec.read_text(encoding="utf-8")).get("source_sha256")
+
+
 def _source_cells(src_root: Path, receipt_name: str, src_frozen: dict) -> dict:
     """The source run's verified rows, re-read from the attempt its receipt names, keyed by
     cell. verify() has just re-hashed those very files; this reads them again by the same
@@ -573,8 +618,9 @@ def _source_cells(src_root: Path, receipt_name: str, src_frozen: dict) -> dict:
                 / entry["unit"] / f"attempt-{entry.get('attempt', 1)}" / "rows.jsonl")
         for line in path.read_text(encoding="utf-8").splitlines():
             r = json.loads(line)
-            if r.get("design_sha256") != src_frozen["design_sha256"]:
-                continue
+            if r.get("design_sha256") != src_frozen["design_sha256"] \
+                    or r.get("code_sha256") not in set(src_frozen.get("code_sha256s", {}).values()):
+                continue                     # a row not bound to the source freeze is not inherited
             cells[(r["unit_id"], r["variable"], r["operator_kind"])][r["test"]] = r
     return cells
 
