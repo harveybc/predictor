@@ -161,3 +161,15 @@ def test_N3_a_resumed_run_registers_again_and_rebuilds_identical_terminals(tmp_p
     R.run_rehearsal(cfg_for(tmp_path), gov2, lambda e, **f: None, GR=GR, outbox=StubOutbox(gov2),
                     isolated=stub_isolated(children))
     assert first == gov2.terminals                     # the same bytes, no duplicate identity
+
+
+def test_N3_a_root_frozen_under_another_code_identity_is_not_resumed(tmp_path):
+    gov = StubGov()
+    children = []
+    R.run_rehearsal(cfg_for(tmp_path), gov, lambda e, **f: None, GR=GR, outbox=StubOutbox(gov),
+                    isolated=stub_isolated(children))
+    other = dict(cfg_for(tmp_path), code_identity={"kind": "git_commit", "value": "1" * 40})
+    with pytest.raises(SystemExit, match="another code identity"):
+        R.run_rehearsal(other, StubGov(), lambda e, **f: None, GR=GR, outbox=StubOutbox(gov),
+                        isolated=stub_isolated(children))
+    assert (tmp_path / "run" / "CAMPAIGNS.json").is_file()

@@ -139,8 +139,29 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
     pre["freeze_sha256"] = campaign.sha_obj({k: v for k, v in pre.items() if k != "freeze_sha256"})
     if (root / "FREEZE.pre.json").is_file():
         pre = json.loads((root / "FREEZE.pre.json").read_text())      # resume: the sealed one
+        if pre.get("code_identity") != code_identity:
+            raise Refusal("REFUSED: this root was frozen under another code identity "
+                          f"({(pre.get('code_identity') or {}).get('value', '?')[:12]}); a run "
+                          "resumes under the same code or starts as a new run")
     else:
         campaign.write_once(root / "FREEZE.pre.json", pre)
+    registrations_path = root / "CAMPAIGNS.json"
+    registrations = json.loads(registrations_path.read_text()) if registrations_path.is_file() else {}
+
+    def register(key, body):
+        """Register once; a resume reuses the persisted registration instead of re-posting."""
+        if key in registrations:
+            trace("register", key=key, http="resumed")
+            return registrations[key]["campaign_sha256"]
+        status, reg = gov.submit_campaign(body)
+        trace("register", key=key, http=status)
+        if status not in (200, 201):
+            raise Refusal(f"REFUSED: campaign {key} refused: http {status} "
+                          f"{(reg or {}).get('error', '')}; no child was started")
+        registrations[key] = {"campaign_sha256": reg["campaign_sha256"], "http": status,
+                              "at": now_iso()}
+        registrations_path.write_text(json.dumps(registrations, indent=1))
+        return reg["campaign_sha256"]
     trace("freeze-pre", sha256=pre["freeze_sha256"])
     receipt = {"schema": "df_utility_rehearsal_report.v2", "run_id": run_id,
                "purpose": cfg["purpose"], "freeze_pre_sha256": pre["freeze_sha256"],
@@ -149,20 +170,29 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
 
     # --- calibration campaign: registered before any child -------------------------------------
     cal_key = f"{run_id}-utility-calibration"
-    status, reg = gov.submit_campaign({
+    cal_sha = register(cal_key, {
         "schema": "governed_campaign.v1", "campaign_key": cal_key, "classification": "NON_GOVERNING",
         "project": cfg.get("project", "predictor"), "code_identity": code_identity,
         "config_sha256": pre["freeze_sha256"], "input_mode": "SYNTHETIC",
         "synthetic_spec_sha256": campaign.sha_obj(plan), "units": operators, "datasets": [],
         "terminal_lake": cfg.get("metrics_lake", "olap_cube")})
-    trace("register", key=cal_key, http=status)
-    if status not in (200, 201):
-        raise Refusal(f"REFUSED: calibration campaign refused: http {status} "
-                      f"{(reg or {}).get('error', '')}; no child was started")
-    cal_sha = reg["campaign_sha256"]
     receipt["calibration"]["campaign"] = {"key": cal_key, "campaign_sha256": cal_sha}
     records = {}
+    _, done = gov.reconcile_campaign(cal_sha)
+    already = set(operators) - set((done or {}).get("missing_units") or operators)
     for kind in operators:
+        if kind in already and (root / "attempts" / f"calibrate__{kind}" / "outcome.json").is_file():
+            out = child("calibrate", f"calibrate__{kind}", {"contrast_id": family[0], "operator": kind,
+                        "protocol": base.sealed(), "plan": plan, "seed": base.seed + 1000 + operators.index(kind)},
+                        budgets["calibration_wall_seconds"], budgets["calibration_cpu_seconds"],
+                        budgets["task_memory_bytes"])           # resumed: recorded, not re-run
+            if out.get("score"):
+                records[kind] = out["score"]
+            receipt["calibration"][kind] = {"outcome": out["outcome"], "cost": out["cost"],
+                                            "record_sha256": out.get("output_sha256"),
+                                            "upper_bound": (out.get("score") or {}).get("upper_bound"),
+                                            "pending_after_flush": 0, "resumed": True}
+            continue
         GR._require_reconciled(gov, cal_sha, kind, before_run=True)
         trace("before_run", key=cal_key, unit=kind)
         out = child("calibrate", f"calibrate__{kind}",
@@ -240,16 +270,12 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
 
     # --- contrasts campaign: registered before any contrast child ---------------------------------
     key = f"{run_id}-utility-contrasts"
-    status, reg = gov.submit_campaign({
+    campaign_sha = register(key, {
         "schema": "governed_campaign.v1", "campaign_key": key, "classification": "NON_GOVERNING",
         "project": cfg.get("project", "predictor"), "code_identity": code_identity,
         "config_sha256": frozen["freeze_sha256"], "input_mode": "SYNTHETIC",
         "synthetic_spec_sha256": pre["freeze_sha256"], "units": list(family), "datasets": [],
         "terminal_lake": cfg.get("metrics_lake", "olap_cube")})
-    trace("register", key=key, http=status)
-    if status not in (200, 201):
-        raise Refusal(f"REFUSED: contrasts campaign refused: http {status}; no contrast started")
-    campaign_sha = reg["campaign_sha256"]
     receipt["contrasts"]["campaign"] = {"key": key, "campaign_sha256": campaign_sha}
     by_unit = {u["unit"]: u for u in units}
     outcomes = {}
