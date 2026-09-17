@@ -721,9 +721,12 @@ def verified_score(attempt_dir: Path, result: dict, verified: dict, job: dict, *
     except ValueError:
         return None, {"outcome": SCORE_UNVERIFIED, "why": "the output is not JSON"}
     legacy = allow_legacy_schema and "schema" not in score and "delta_mean" in score
-    if not legacy and score.get("schema") != CONTRAST_SCHEMA and score.get("outcome") not in (
-            REFUSED, INSUFFICIENT_ROWS):
+    preparatory = score.get("schema") in ("df_utility_calibration.v1", "d3_mechanics_cells.v1")
+    if not legacy and not preparatory and score.get("schema") != CONTRAST_SCHEMA \
+            and score.get("outcome") not in (REFUSED, INSUFFICIENT_ROWS):
         return None, {"outcome": SCORE_UNVERIFIED, "why": f"schema {score.get('schema')!r}"}
+    if preparatory:
+        return score, None
     if score.get("contrast_id", job.get("contrast_id")) != job.get("contrast_id"):
         return None, {"outcome": SCORE_UNVERIFIED, "why": "contrast identity differs"}
     expected_proto = (job.get("protocol") or {}).get("protocol_sha256")
@@ -791,6 +794,18 @@ def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seco
     return summary
 
 
+def _finish(adir: Path, name: str, doc: dict, outcome) -> int:
+    body = json.dumps(doc, sort_keys=True, default=_jsonable).encode()
+    (adir / name).write_bytes(body)
+    result = {"status": "COMPLETED", "reason": "", "output_file": name,
+              "output_sha256": hashlib.sha256(body).hexdigest(), "rows_written": 1,
+              "outcome": outcome if outcome is not None else "COMPLETED"}
+    tmp = adir / "result.json.tmp"
+    tmp.write_text(json.dumps(result))
+    os.replace(tmp, adir / "result.json")
+    return 0
+
+
 def _jsonable(o):
     if isinstance(o, np.ndarray):
         return o.tolist()
@@ -812,11 +827,36 @@ def worker_main(job_file: Path) -> int:
     proto = Protocol(**{k: (tuple(v) if isinstance(v, list) else v)
                         for k, v in job["protocol"].items()
                         if k not in ("protocol_sha256", "comparisons", "alpha_adjusted")})
+    operator = ops.build(job["operator"]) if job.get("operator") else None
+    kind = job.get("kind", "contrast")
+    if kind == "calibrate":
+        # preparatory work under the same ceilings: the record is the child's output
+        record = calibrate(proto, operator, plan=job["plan"], seed=job.get("seed"))
+        return _finish(adir, "calibration.json", record, record.get("upper_bound"))
+    if kind == "mechanics":
+        battery = _load("df_d3_acceptance")
+        contract = _load("df_d3_contract")
+        s = series(job["series"]["values"])
+        xin = _as_operator_input(s)
+        train = battery.prefix(xin, max(2, s["values"].size // 2))
+        cells = []
+        for k in job["operators"]:
+            op = ops.build(k)
+            report = battery.run_battery(op, xin, train=train, twin=ops.twin_of(op),
+                                         resource_contract=job.get("resource_contract"))
+            cells.append({"unit": job["unit"], "variable": job["variable"], "operator": k,
+                          "verdict": report["verdict"],
+                          "spec_sha256": contract.spec_sha256(op.describe()),
+                          "failed": report["failed"], "undecided": report["undecided"]})
+        record = {"schema": "d3_mechanics_cells.v1", "run_id": job.get("run_id", "rehearsal"),
+                  "verified": True, "freeze_sha256": job.get("freeze_sha256", "rehearsal-mechanics"),
+                  "design_sha256": _load("df_d3_design").D3_DESIGN_CURRENT["design_sha256"],
+                  "cells": cells}
+        return _finish(adir, "cells.json", record, None)
     s = series(job["series"]["values"], ids=job["series"].get("ids"),
                timestamps=job["series"].get("timestamps"),
                available_at=job["series"].get("available_at"),
                period_seconds=job["series"].get("period_seconds", 1))
-    operator = ops.build(job["operator"]) if job.get("operator") else None
     record = eligibility_record(Path(job["eligibility"])) if job.get("eligibility") else \
         {"freeze_sha256": job["eligibility_inline"]["freeze_sha256"],
          "design_sha256": job["eligibility_inline"]["design_sha256"],
