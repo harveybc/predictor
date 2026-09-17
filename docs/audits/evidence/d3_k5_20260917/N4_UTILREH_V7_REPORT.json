@@ -1,0 +1,216 @@
+{
+ "calibration": {
+  "campaign": {
+   "campaign_sha256": "50e99416118e925d63c1b44e6511ef18e081eeeefbfb9a55f092bbdde3640030",
+   "key": "utilreh-v7-utility-calibration"
+  },
+  "cusum_causal": {
+   "cost": {
+    "cgroup_memory_peak": 67538944,
+    "cpu_seconds": 175.422,
+    "ended_at": "2026-09-17T15:13:31+00:00",
+    "peak_rss_bytes": 108650496,
+    "started_at": "2026-09-17T15:10:36+00:00",
+    "wall_seconds": 175.474
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "record_sha256": "d14f804dca20a362c9059ff1e0bef26a8c490727c9df552da0f3e7638c72e331",
+   "upper_bound": 0.019694018564761863
+  },
+  "delta_run_length": {
+   "cost": {
+    "cgroup_memory_peak": 68251648,
+    "cpu_seconds": 50.514,
+    "ended_at": "2026-09-17T15:10:36+00:00",
+    "peak_rss_bytes": 108408832,
+    "started_at": "2026-09-17T15:09:45+00:00",
+    "wall_seconds": 50.686
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "record_sha256": "8d3a1fc4518fb415ecc8e8bff0b3a22b83154c115a245a2dfaf7bc868bebaaad",
+   "upper_bound": 0.012456215701070032
+  },
+  "mad_extremes_trailing": {
+   "cost": {
+    "cgroup_memory_peak": 68452352,
+    "cpu_seconds": 54.415,
+    "ended_at": "2026-09-17T15:09:45+00:00",
+    "peak_rss_bytes": 109465600,
+    "started_at": "2026-09-17T15:08:51+00:00",
+    "wall_seconds": 54.489
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "record_sha256": "eebee9adc347875d2e107790dd41873a877d9ba1a6a4d81e5fe8bac4ac74f29c",
+   "upper_bound": 0.012456215701070032
+  }
+ },
+ "contrasts": {
+  "campaign": {
+   "campaign_sha256": "8d19f55e0ad57e890621e9b0be3522594632bdad50dc608c311dacea50be2a7c",
+   "key": "utilreh-v7-utility-contrasts"
+  },
+  "outcomes": {
+   "fab__v0__cusum_causal__transformed": {
+    "cost": {
+     "cgroup_memory_peak": 66486272,
+     "cpu_seconds": 1.395,
+     "ended_at": "2026-09-17T15:13:48+00:00",
+     "peak_rss_bytes": 107810816,
+     "started_at": "2026-09-17T15:13:46+00:00",
+     "wall_seconds": 1.613
+    },
+    "outcome": "INCONCLUSIVE_UNCALIBRATED",
+    "output_sha256": "796342cc2aeb90107d7e4eee6bfb9ce7248419a6334d7e0e630bf6345e56d562",
+    "reason": ""
+   },
+   "fab__v0__delta_run_length__transformed": {
+    "cost": {
+     "cgroup_memory_peak": 67203072,
+     "cpu_seconds": 0.867,
+     "ended_at": "2026-09-17T15:13:46+00:00",
+     "peak_rss_bytes": 107626496,
+     "started_at": "2026-09-17T15:13:45+00:00",
+     "wall_seconds": 1.012
+    },
+    "outcome": "DOES_NOT_ADVANCE",
+    "output_sha256": "e34bf34cd17b2a63fab1cf00dcb2b1f1e85a6ada527517bf42526deb41a33b65",
+    "reason": ""
+   },
+   "fab__v0__mad_extremes_trailing__transformed": {
+    "cost": {
+     "cgroup_memory_peak": 67018752,
+     "cpu_seconds": 0.858,
+     "ended_at": "2026-09-17T15:13:45+00:00",
+     "peak_rss_bytes": 107880448,
+     "started_at": "2026-09-17T15:13:44+00:00",
+     "wall_seconds": 1.013
+    },
+    "outcome": "DOES_NOT_ADVANCE",
+    "output_sha256": "5ef82115ea178cc83fbd58b6307bf0f3c92d0fab0ebcf91c1881b30c838148c0",
+    "reason": ""
+   },
+   "fab__v0__mad_extremes_trailing__transformed__slow-control": {
+    "cost": {
+     "cgroup_memory_peak": 20791296,
+     "cpu_seconds": 5.993,
+     "ended_at": "2026-09-17T15:13:54+00:00",
+     "peak_rss_bytes": 40861696,
+     "started_at": "2026-09-17T15:13:48+00:00",
+     "wall_seconds": 6.024
+    },
+    "outcome": "RESOURCE_EXCEEDED",
+    "output_sha256": null,
+    "reason": "WALL_TIME_LIMIT; no heartbeat"
+   }
+  }
+ },
+ "envelope": {
+  "digest": "3fae70a7b25395015dbe890c9f010fff98f1522d9ae94bf584b7fc05e4df8a2c",
+  "envelope_sha256": "2c1b7d3194f6a122c97732a49e2240f4af7589d93328db8dbc6d9a0522dbed74",
+  "outbox_entry": "envelope-3fae70a7b25395015dbe890c9f010fff98f1522d9ae94bf584b7fc05e4df8a2c.json",
+  "state": "pending",
+  "written": true
+ },
+ "finished_utc": "2026-09-17T15:13:54Z",
+ "freeze_pre_sha256": "b71d2be22ca059541c8b914e04c903036c288b8b0594ef8feec3a2d79a0fdb25",
+ "mechanics": {
+  "fab": {
+   "cells_sha256": "c62e05d48cd86b1ef3c87dc889a67279d4dc101ca1dc039ca4f0c54707e0d01c",
+   "cost": {
+    "cgroup_memory_peak": 59981824,
+    "cpu_seconds": 12.493,
+    "ended_at": "2026-09-17T15:13:44+00:00",
+    "peak_rss_bytes": 116727808,
+    "started_at": "2026-09-17T15:13:32+00:00",
+    "wall_seconds": 12.63
+   },
+   "verdicts": {
+    "cusum_causal": "MECHANICALLY_ACCEPTED",
+    "delta_run_length": "MECHANICALLY_ACCEPTED",
+    "mad_extremes_trailing": "MECHANICALLY_ACCEPTED"
+   }
+  }
+ },
+ "purpose": "UTILITY_HARNESS_REHEARSAL",
+ "reconciliation": {
+  "calibration": {
+   "accounting_only": [],
+   "http": 200,
+   "lake_only": [],
+   "missing_units": []
+  },
+  "contrasts": {
+   "accounting_only": [],
+   "http": 200,
+   "lake_only": [],
+   "missing_units": []
+  }
+ },
+ "run_id": "utilreh-v7",
+ "schema": "df_utility_rehearsal_report.v2",
+ "terminals": [
+  {
+   "cost": {
+    "cgroup_memory_peak": 67018752,
+    "cpu_seconds": 0.858,
+    "ended_at": "2026-09-17T15:13:45+00:00",
+    "peak_rss_bytes": 107880448,
+    "started_at": "2026-09-17T15:13:44+00:00",
+    "wall_seconds": 1.013
+   },
+   "delta_mean": -0.18871307727173697,
+   "outcome": "DOES_NOT_ADVANCE",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "fab__v0__mad_extremes_trailing__transformed"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 67203072,
+    "cpu_seconds": 0.867,
+    "ended_at": "2026-09-17T15:13:46+00:00",
+    "peak_rss_bytes": 107626496,
+    "started_at": "2026-09-17T15:13:45+00:00",
+    "wall_seconds": 1.012
+   },
+   "delta_mean": 0.019637893298198927,
+   "outcome": "DOES_NOT_ADVANCE",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "fab__v0__delta_run_length__transformed"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 66486272,
+    "cpu_seconds": 1.395,
+    "ended_at": "2026-09-17T15:13:48+00:00",
+    "peak_rss_bytes": 107810816,
+    "started_at": "2026-09-17T15:13:46+00:00",
+    "wall_seconds": 1.613
+   },
+   "delta_mean": -0.18881876086493116,
+   "outcome": "INCONCLUSIVE_UNCALIBRATED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "fab__v0__cusum_causal__transformed"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 20791296,
+    "cpu_seconds": 5.993,
+    "ended_at": "2026-09-17T15:13:54+00:00",
+    "peak_rss_bytes": 40861696,
+    "started_at": "2026-09-17T15:13:48+00:00",
+    "wall_seconds": 6.024
+   },
+   "delta_mean": null,
+   "outcome": "RESOURCE_EXCEEDED",
+   "pending_after_flush": 0,
+   "status": "FAILED",
+   "unit_id": "fab__v0__mad_extremes_trailing__transformed__slow-control"
+  }
+ ]
+}

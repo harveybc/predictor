@@ -86,7 +86,22 @@ regression added; attempt 2 under the fixed commit re-posted the campaign and da
 
 ## N4 — governed rehearsal and descriptive pilot
 
-V6_PLACEHOLDER
+**Rehearsal `utilreh-v7`** (root `utility_rehearsal_v7/`, code `be1f170`; v5 and v6 kept as evidence — v5:
+parent crash after the calibration child + 409 on a cross-commit resume; v6: whole chain in order,
+every terminal refused `invalid started_at` because the runner records `+00:00` and data-gov
+takes `Z`, fixed and disposed):
+
+| step | outcome |
+|---|---|
+| calibration campaign `utilreh-v7-utility-calibration` | registered before any child; 3 isolated calibration children, 239 simulations each on the exchangeable null at n = 2400: `mad_extremes` 0/239, upper bound **0.01246** ≤ 0.0125 (54.4 s CPU); `delta_run_length` 0/239, 0.01246 (50.5 s); `cusum` 1/239, **0.01969** > 0.0125 (175.4 s) — decides nothing; terminals with the children's instants and costs, reconciled `[]` |
+| mechanics (eligibility) | isolated child; all three `MECHANICALLY_ACCEPTED` on the fabricated series |
+| contrasts campaign `utilreh-v7-utility-contrasts` | registered before any contrast; `before_run` before each child |
+| contrasts | `mad_extremes` **DOES_NOT_ADVANCE** (Δ = −0.1887), `delta_run_length` **DOES_NOT_ADVANCE** (Δ = +0.0196), `cusum` **INCONCLUSIVE_UNCALIBRATED** (Δ = −0.1888, descriptive — its own record's bound exceeds α/4), slow control **RESOURCE_EXCEEDED** (`WALL_TIME_LIMIT`, 6.0 s, no partial score) |
+| reconciliation | both campaigns `missing_units: []`, 0 pending |
+| content (`N4_UTILREH_V7_CONTENT_CHECK.json`) | **all equal**: every calibration and contrast metric the cube holds equals the verified file, value by value |
+| envelope | DEVELOPMENT `2c1b7d31…`, loaded |
+
+Descriptive of that fabricated series; no claim about representations.
 
 PILOT_PLACEHOLDER
 

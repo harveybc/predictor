@@ -186,6 +186,27 @@ def test_N3_a_root_frozen_under_another_code_identity_is_not_resumed(tmp_path):
         R.run_rehearsal(other, StubGov(), lambda e, **f: None, GR=GR, outbox=StubOutbox(gov),
                         isolated=stub_isolated(children))
     assert (tmp_path / "run" / "CAMPAIGNS.json").is_file()
+    # asked to, it resumes and records both identities
+    trace = []
+    gov2 = StubGov(units=gov.units)
+    gov2.terminals = dict(gov.terminals)
+    receipt, *_ = R.run_rehearsal(dict(other, resume_under_new_code=True), gov2,
+                                  lambda e, **f: trace.append(e), GR=GR, outbox=StubOutbox(gov2),
+                                  isolated=stub_isolated(children))
+    assert receipt["resumed_under_new_code"] is True and "resume-under-new-code" in trace
+    assert receipt["code_identity_frozen"]["value"] != receipt["code_identity_now"]["value"]
+
+
+def test_N4_contrast_ids_of_bank_units_with_the_separator_inside_are_never_re_parsed(tmp_path):
+    cfg = cfg_for(tmp_path)
+    cfg["units"] = [{"unit": "bumps__white__snr10__none__n2048__v1__seed11", "variable": "v0",
+                     "values": [float(i % 7) for i in range(60)]}]
+    gov = StubGov()
+    receipt, outcomes, *_ = R.run_rehearsal(cfg, gov, lambda e, **f: None, GR=GR,
+                                            outbox=StubOutbox(gov), isolated=stub_isolated([]))
+    cid = next(iter(outcomes))
+    assert cid.startswith("bumps__white__snr10__none__n2048__v1__seed11__v0__delta_run_length")
+    assert outcomes[cid]["operator"] == "delta_run_length"
 
 
 def test_N3_terminal_instants_are_the_childrens_in_data_govs_form():

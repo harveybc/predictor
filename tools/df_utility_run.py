@@ -128,11 +128,16 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
         trace("child-done", kind=kind, name=name, outcome=out.get("outcome"))
         return out
 
-    family = tuple(f"{u['unit']}__{u['variable']}__{k}__transformed"
-                   for u in units for k in operators)
+    # contrast ids are governed unit ids; their parts are carried in a map, never re-parsed
+    # (bank unit ids contain the separator themselves)
+    members = {}
+    for u in units:
+        for k in operators:
+            members[f"{u['unit']}__{u['variable']}__{k}__transformed"] = (u["unit"], u["variable"], k, False)
     if cfg.get("slow_control"):
-        family = family + (f"{units[0]['unit']}__{units[0]['variable']}__{operators[0]}"
-                           f"__transformed__slow-control",)
+        members[f"{units[0]['unit']}__{units[0]['variable']}__{operators[0]}__transformed__slow-control"] = \
+            (units[0]["unit"], units[0]["variable"], operators[0], True)
+    family = tuple(members)
     base = H.Protocol(**cfg["protocol"], family=family, calibration_plan=dict(plan))
     pre = {"schema": "df_utility_freeze_pre.v1", "run_id": run_id, "frozen_utc": now_iso(),
            "protocol_base": base.sealed(), "protocol_base_sha256": base.base_sha256(),
@@ -146,9 +151,12 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
     if (root / "FREEZE.pre.json").is_file():
         pre = json.loads((root / "FREEZE.pre.json").read_text())      # resume: the sealed one
         if pre.get("code_identity") != code_identity:
-            raise Refusal("REFUSED: this root was frozen under another code identity "
-                          f"({(pre.get('code_identity') or {}).get('value', '?')[:12]}); a run "
-                          "resumes under the same code or starts as a new run")
+            if not cfg.get("resume_under_new_code"):
+                raise Refusal("REFUSED: this root was frozen under another code identity "
+                              f"({(pre.get('code_identity') or {}).get('value', '?')[:12]}); a run "
+                              "resumes under the same code, or under a new one only when asked "
+                              "to and recorded")
+            trace("resume-under-new-code", frozen=pre.get("code_identity"), now=code_identity)
     else:
         campaign.write_once(root / "FREEZE.pre.json", pre)
     registrations_path = root / "CAMPAIGNS.json"
@@ -171,6 +179,8 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
     trace("freeze-pre", sha256=pre["freeze_sha256"])
     receipt = {"schema": "df_utility_rehearsal_report.v2", "run_id": run_id,
                "purpose": cfg["purpose"], "freeze_pre_sha256": pre["freeze_sha256"],
+               "code_identity_frozen": pre.get("code_identity"), "code_identity_now": code_identity,
+               "resumed_under_new_code": pre.get("code_identity") != code_identity,
                "calibration": {}, "mechanics": {}, "contrasts": {}, "terminals": [],
                "reconciliation": {}, "envelope": None}
 
@@ -290,8 +300,7 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
     missing = (done or {}).get("missing_units")
     reported = set(family) - set(family if missing is None else missing)
     for contrast_id in family:
-        unit_id, variable, kind = contrast_id.split("__")[:3]
-        slow = contrast_id.endswith("__slow-control")
+        unit_id, variable, kind, slow = members[contrast_id]
         u = by_unit[unit_id]
         if contrast_id in reported and (root / "attempts" / contrast_id / "outcome.json").is_file():
             # resumed: the recorded outcome, no before_run, no second terminal
@@ -318,6 +327,7 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
         out = child("contrast", contrast_id, job,
                     budgets["slow_control"]["wall_seconds"] if slow else budgets["wall_seconds"],
                     budgets["cpu_seconds"], budgets["task_memory_bytes"])
+        out["operator"] = kind
         outcomes[contrast_id] = out
         score = out.get("score") or {}
         cost = out["cost"]
@@ -364,7 +374,9 @@ def emit_envelope(cfg, outcomes, frozen, pre, OB, CE) -> dict:
     for contrast_id, out in outcomes.items():
         score = out.get("score") or {}
         has = isinstance(score.get("delta_mean"), (int, float))
-        units.append({"candidate_key": contrast_id.split("__")[2], "cell_key": contrast_id,
+        units.append({"candidate_key": out.get("operator") or contrast_id.rsplit("__", 2)[-2]
+                      if not contrast_id.endswith("__slow-control") else contrast_id.rsplit("__", 3)[-3],
+                      "cell_key": contrast_id,
                       "metric_name": "utility.delta_mean" if has else "outcome",
                       "metric_value": float(score["delta_mean"]) if has else "UNAVAILABLE",
                       "terminal_state": "COMPLETE" if out["outcome"] in (
@@ -423,6 +435,8 @@ def main(argv=None) -> int:
     parser.add_argument("--pilot-cells", type=Path, help="the verified matrix's cells record")
     parser.add_argument("--margin", type=float, default=0.0)
     parser.add_argument("--n-blocks", type=int, default=4)
+    parser.add_argument("--resume-under-new-code", action="store_true",
+                        help="resume a root frozen under another commit; both identities are recorded")
     args = parser.parse_args(argv)
     code_identity = GR.strict_code_identity(REPO)
     pilot = bool(args.pilot_unit)
@@ -454,7 +468,7 @@ def main(argv=None) -> int:
     cfg = {"root": str(args.root), "run_id": args.run_id, "code_identity": code_identity,
            "units": units, "operators": list(args.operators), "purpose": purpose,
            "eligibility_state": eligibility_state, "exposure": exposure,
-           "slow_control": not pilot,
+           "slow_control": not pilot, "resume_under_new_code": args.resume_under_new_code,
            "plan": {"generator": "white_null", "n_sims": int(n_sims), "n": int(n_len),
                     "bound_confidence": args.bound_confidence},
            "protocol": {"target": "return", "horizon": 1, "model": "ridge", "window": 4,
