@@ -1,4 +1,5 @@
-"""The D3 matrix aggregator counts what the battery said, per operator, and nothing else."""
+"""The exploratory D3 summary counts what it reads, says it is not a verification, and never
+repeats the receipt's counts as if it had checked them (K1 separates it from `verify`)."""
 import importlib.util
 import json
 import sys
@@ -34,7 +35,7 @@ def _write(root, role, shard, unit, rows, verified=True):
             "status": "COMPLETED", "rows": len(rows)}
 
 
-def test_only_verified_units_count_and_refusals_are_kept(tmp_path):
+def test_the_summary_counts_what_it_reads_and_refusals_are_kept(tmp_path):
     ok = _write(tmp_path, "WORKER_A", "shard_00", "u1", [
         _row("u1", "op", "prefix_all_available", "PASSED"),
         _row("u1", "op", "cost_pilot", "PASSED", 0.01),
@@ -46,14 +47,15 @@ def test_only_verified_units_count_and_refusals_are_kept(tmp_path):
         _row("u2", "op", "verdict", "MECHANICALLY_REFUSED", 0.0, "probe")])
     unverified = _write(tmp_path, "WORKER_B", "shard_01", "u3", [
         _row("u3", "op", "verdict", "MECHANICALLY_ACCEPTED", 1.0)], verified=False)
+    unverified["status"] = "RESOURCE_EXCEEDED"
     (tmp_path / "COLLECT.json").write_text(json.dumps(
         {"run_id": "r", "mismatched": 1, "units": [ok, refused, unverified]}))
     m = matrix.aggregate(tmp_path)
-    assert m["units_verified"] == 2 and m["units_collected"] == 3
+    assert m["verified"] is False and m["units_read"] == 2 and m["units_in_receipt"] == 3
     op = m["operators"]["op"]
     assert op["verdicts"] == {"MECHANICALLY_ACCEPTED": 1, "MECHANICALLY_REFUSED": 1}
     assert op["tests"]["response_probe"] == {"PASSED": 1, "FAILED": 1}
     assert op["cost_cpu_s_per_1000"] == {"n": 2, "median": 0.02, "max": 0.03}
     assert op["response_probe_lags"] == {"0.0": 1, "1.0": 1}
     md = matrix.markdown(m)
-    assert "MECHANICALLY_REFUSED 1" in md and "**2** units verified of 3" in md
+    assert "MECHANICALLY_REFUSED 1" in md and "not a verification" in md
