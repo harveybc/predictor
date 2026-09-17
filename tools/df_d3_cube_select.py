@@ -104,3 +104,25 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+# --- result class, disposition and admissibility are three columns, never one (L3/M5) -------------
+
+def mechanical_strict_sql(schema_envelopes: str = "public", schema_gov: str = "main") -> str:
+    """MECHANICAL runs that carry no disposition excluding them: `gov_mechanical_evidence` is
+    the broad OPERATIONAL HISTORY (everything not CURRENT_SCIENTIFIC, including accidental
+    DEVELOPMENT ingestions); this is the strict selection of mechanical evidence by identity."""
+    return (f'SELECT r.campaign_key, r.run_id, r.result_class, r.design_sha256, '
+            f'd.disposition, d.admissibility '
+            f'FROM "{schema_envelopes}"."dim_campaign_run" AS r '
+            f'LEFT JOIN "{schema_gov}"."gov_campaign_disposition" AS d '
+            f"ON d.kind = 'foundation_envelope' AND (d.run_id = r.run_id) "
+            f"WHERE r.result_class = 'MECHANICAL' "
+            f"AND (d.admissibility IS NULL OR d.admissibility NOT LIKE 'NOT_ADMISSIBLE%') "
+            f'ORDER BY r.run_id LIMIT 1000')
+
+
+def operational_history_sql(schema_gov: str = "main") -> str:
+    """The broad view, named for what it is."""
+    return (f'SELECT run_id, kind, campaign_key, admissibility, admissibility_reason '
+            f'FROM "{schema_gov}"."gov_mechanical_evidence" ORDER BY run_id LIMIT 1000')

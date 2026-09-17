@@ -1,0 +1,73 @@
+2026-09-17T02:51:41-05:00  systemd[2252]: Stopped crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:51:41-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:51:41-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:51:46-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 1.
+2026-09-17T02:51:46-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:51:47-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:51:52-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 2.
+2026-09-17T02:51:52-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:51:52-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:51:57-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 3.
+2026-09-17T02:51:57-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:51:58-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:52:03-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 4.
+2026-09-17T02:52:03-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:52:03-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:52:08-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 5.
+2026-09-17T02:52:08-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:52:09-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:52:14-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 6.
+2026-09-17T02:52:14-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:52:14-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:52:19-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 7.
+2026-09-17T02:52:19-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:52:20-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:52:25-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 8.
+2026-09-17T02:52:25-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:52:25-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:52:30-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 9.
+2026-09-17T02:52:30-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:52:31-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:52:36-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 10.
+2026-09-17T02:52:36-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:52:36-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:52:41-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 11.
+2026-09-17T02:52:41-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:52:42-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:52:47-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 12.
+2026-09-17T02:52:47-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:52:47-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:52:52-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 13.
+2026-09-17T02:52:52-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:52:53-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:52:58-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 14.
+2026-09-17T02:52:58-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:52:58-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:53:03-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 15.
+2026-09-17T02:53:03-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:53:04-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:53:09-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 16.
+2026-09-17T02:53:09-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:53:09-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:53:14-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 17.
+2026-09-17T02:53:14-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:53:15-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:53:20-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 18.
+2026-09-17T02:53:20-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:53:20-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:53:25-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 19.
+2026-09-17T02:53:25-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:53:25-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:53:31-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 20.
+2026-09-17T02:53:31-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:53:31-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:53:36-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 21.
+2026-09-17T02:53:36-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:53:36-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:53:42-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Scheduled restart job, restart counter is at 22.
+2026-09-17T02:53:42-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:53:42-05:00  systemd[2252]: crispdm-data-warehouse-olap.service: Failed with result 'exit-code'.
+2026-09-17T02:53:42-05:00  systemd[2252]: Stopped crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:53:42-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:55:02-05:00  systemd[2252]: Stopped crispdm-data-warehouse-olap.service - Governed store service (5057).
+2026-09-17T02:55:02-05:00  systemd[2252]: Started crispdm-data-warehouse-olap.service - Governed store service (5057).

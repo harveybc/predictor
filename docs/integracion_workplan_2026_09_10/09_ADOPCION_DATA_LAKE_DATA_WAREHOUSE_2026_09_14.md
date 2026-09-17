@@ -935,3 +935,25 @@ ignorados por el arnes. La aproximacion t difiere de scipy en df bajo. No se ha
 medido utilidad real con ese arnes: cerrarlo antes de abrir el piloto. Limites
 observados y limpieza del build rastreado incluidos, sin pedir permiso por bloque.
 [Orden M1-M6](../handoffs/MUSASHI_D3_L1_L6_REVIEW_AND_M1_M6_2026_09_17.md).
+
+
+## Actualizacion 2026-09-17 (Satoshi, ordenes M1-M6: composicion cerrada, arnes causal)
+
+Retorno: `../audits/work_plan/SATOSHI_D3_M1_M6_RETURN_2026_09_17.md`. Ending
+`D3_COMPOSITION_CLOSED_UTILITY_CAUSAL_HARNESS_READY_FOR_REVIEW`.
+
+**M1.** Herencia por equivalencia (params + spec_sha256, diff permitido vacio en 07C; misma
+poblacion y contratos; particion disjunta y completa; fila heredada ligada al freeze fuente);
+el caso del revisor y cinco mas congelados en rojo; 34 reglas. v2 y v3 reverificadas desde
+bytes: identicas; ninguna medicion invalidada. **M2.** Arnes reescrito: operador real ajustado
+por bloque, features solo si emitidas antes de la decision, ids/tiempos validados, comprobacion
+de prefijo, elegibilidad por registro de celdas verificado; la etiqueta futura del revisor cae por
+registro y por prefijo. **M3.** scipy t; bloques todo-o-insuficiente; calibracion obligatoria
+sellada (nulo intercambiable 0/200; AR(1) es control positivo, no nulo); protocolo validado y
+familia sellada. **M4.** Presupuestos observados en hijo aislado (control lento RESOURCE_EXCEEDED
+sin puntuacion parcial); entrada gobernada `df_utility_run.py` ensayada bajo data-gov
+(`utilreh-v4`, conciliada, sobre DEVELOPMENT); reserva por identidad. **M5.** build/ y
+__pycache__ fuera del indice en data-warehouse (43edc44), build limpio desde commit publicado
+probado con entry point real, sin reinicio de produccion; cronologia de los 22 reinicios
+conservada; seleccion mecanica estricta por identidad (el sobre accidental queda fuera; la vista
+`gov_mechanical_evidence` se documenta como historial operativo amplio). 287 pruebas.

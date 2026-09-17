@@ -1,0 +1,30 @@
+{
+ "strict": [
+  {
+   "admissibility": null,
+   "campaign_key": "d3-mechanics-v1",
+   "design_sha256": "16e4287c4e8d1ce34392d8108323399ef217befbc946b1517856b207b9f22c52",
+   "disposition": null,
+   "result_class": "MECHANICAL",
+   "run_id": "d3mech-v1"
+  },
+  {
+   "admissibility": "MECHANICAL_OPERATIONAL",
+   "campaign_key": "d3-mechanics-v1",
+   "design_sha256": "f198340c80ddeabc43b07ba4aea59a452147538ab2184e7f0df11a060ff8583d",
+   "disposition": "CORRECTIVE_RELATION",
+   "result_class": "MECHANICAL",
+   "run_id": "d3mech-v2"
+  },
+  {
+   "admissibility": null,
+   "campaign_key": "d3-mechanics-d3mech-v3",
+   "design_sha256": "5ffe25f922bd2f39fcfdbca1288ad171655da8e6274253e30740ea3d6bca27a2",
+   "disposition": null,
+   "result_class": "MECHANICAL",
+   "run_id": "d3mech-v3"
+  }
+ ],
+ "history_rows": 51,
+ "history_has_accidental": true
+}
