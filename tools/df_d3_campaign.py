@@ -129,7 +129,10 @@ def inheritance(inherit_from: Path, measure_tests: list, measure_operators: list
     frozen = json.loads((src / "FREEZE.json").read_text(encoding="utf-8"))
     measured = [t for t in design.REQUIRED_TESTS if t in set(measure_tests)]
     inherited = [t for t in design.REQUIRED_TESTS if t not in set(measured)]
-    return {"source_root": redact(str(src)), "source_run_id": None,
+    report = src / "REPORT.json"
+    source_run_id = (json.loads(report.read_text(encoding="utf-8")).get("run_id")
+                     if report.is_file() else None)
+    return {"source_root": redact(str(src)), "source_run_id": source_run_id,
             "source_freeze_sha256": frozen["freeze_sha256"],
             "source_design_sha256": frozen["design_sha256"],
             "source_receipt": "COLLECT.json",
