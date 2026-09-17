@@ -274,3 +274,14 @@ solo al alcance necesario, conservar el sobre DEVELOPMENT accidental con
 disposicion no cientifica, corregir errores del host y concretar el borrador de
 utilidad con pruebas del arnes. No se abre la reserva ni utilidad cientifica.
 [Orden completa L1-L6](../handoffs/MUSASHI_D3_K1_K5_REVIEW_AND_L1_L6_2026_09_17.md).
+
+### Retorno ea555f5: composicion D3 y arnes de utilidad revisados
+
+Relectura independiente v3: 511 completas, 710 variables, 9940 filas medidas,
+cero rechazos. Bateria 72p/1s y repeticion de diagnosticos con candidato 14p,
+sin sumar conteos solapados. Se reprodujeron herencia aceptada tras cambiar un
+operador no remedido, etiqueta futura aceptada como feature y tiempos de emision
+ignorados por el arnes. La aproximacion t difiere de scipy en df bajo. No se ha
+medido utilidad real con ese arnes: cerrarlo antes de abrir el piloto. Limites
+observados y limpieza del build rastreado incluidos, sin pedir permiso por bloque.
+[Orden M1-M6](../handoffs/MUSASHI_D3_L1_L6_REVIEW_AND_M1_M6_2026_09_17.md).
