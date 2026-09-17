@@ -52,6 +52,10 @@ contract = _load("df_d3_contract")
 campaign = _load("df_d3_campaign")
 
 OPERATORS = ("mad_extremes_trailing", "delta_run_length", "cusum_causal")
+#: the fabricated series is SAMPLE_INDEX with immediate availability, as the bank units are
+SAMPLE_CONTRACT = {"frequency": "1s", "availability": {
+    "label": "WINDOW_START", "completion_lag_max": "0s",
+    "timezone_evidence": "PRODUCER_STATEMENT", "use_class": "LIVE_EQUIVALENT"}}
 UNIT, VARIABLE = "fab", "v0"
 
 
@@ -87,7 +91,8 @@ def mechanics(x: np.ndarray) -> dict:
     cells = []
     for kind in OPERATORS:
         op = ops.build(kind)
-        report = battery.run_battery(op, xin, train=train, twin=ops.twin_of(op))
+        report = battery.run_battery(op, xin, train=train, twin=ops.twin_of(op),
+                                     resource_contract=SAMPLE_CONTRACT)
         cells.append({"unit": UNIT, "variable": VARIABLE, "operator": kind,
                       "verdict": report["verdict"],
                       "spec_sha256": contract.spec_sha256(op.describe()),
