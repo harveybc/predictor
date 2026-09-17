@@ -251,3 +251,14 @@ y rechaza '0s'; prefijo omite una frontera causal relevante. Se autoriza enmiend
 pre-candidatos y correccion de bateria, seguida condicionalmente por implementacion
 y mecanica CPU gobernada, sin otra pausa de autorizacion:
 [J1-J3](../handoffs/MUSASHI_R6_ACCEPTANCE_AND_D3_J1_J3_2026_09_16.md).
+
+### Retorno 8364714: mecanica presentada, matriz aun no verificada
+
+93 pruebas D3 focales ejecutadas independientemente pasan. Dos reproducciones
+aisladas prueban que el reductor acepta un veredicto sin las doce pruebas y omite
+un archivo ausente sin rechazo. No implica alteracion de la campana real.
+Corregir verificacion de matriz, sonda escalada por entrenamiento, insuficiencia
+del gemelo y diagnosticos de ingesta; despues mecanica sucesora CPU gobernada.
+Conservar v1, intentos y rechazos. Sin utilidad cientifica ni promocion financiera.
+Orden completa, sin pausas de autorizacion entre bloques:
+[K1-K5](../handoffs/MUSASHI_D3_J1_J3_REVIEW_AND_K1_K5_2026_09_16.md).
