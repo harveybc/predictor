@@ -883,3 +883,44 @@ solo al alcance necesario, conservar el sobre DEVELOPMENT accidental con
 disposicion no cientifica, corregir errores del host y concretar el borrador de
 utilidad con pruebas del arnes. No se abre la reserva ni utilidad cientifica.
 [Orden completa L1-L6](../handoffs/MUSASHI_D3_K1_K5_REVIEW_AND_L1_L6_2026_09_17.md).
+
+
+## Actualizacion 2026-09-17 (Satoshi, ordenes L1-L6: cierre del verificador y diseno de utilidad)
+
+Retorno: `../audits/work_plan/SATOSHI_D3_L1_L6_RETURN_2026_09_17.md`. Ending
+`D3_MECHANICS_VERIFIER_CLOSED_AND_UTILITY_DESIGN_READY_FOR_REVIEW`.
+
+**L1.** Las tres omisiones del revisor congeladas y cerradas: contrato y toys obligatorios,
+freeze recalculado + esquema + cardinalidades + cotejo con el registro de campana conservado,
+asignacion unidad/shard/rol contra el despacho, copia de transporte identica vs intento
+contradictorio por regla explicita, estados desconocidos e ids discordantes rechazados. 28
+reglas. v1 y v2 reverificadas desde sus bytes: identicas, sin copias de transporte.
+
+**L2.** Hipotesis demostrada por unidad (diagnostico): los 5 FAILED de wavelet bajo MCAR tenian
+0 comparaciones sensibles. Enmienda 07C sellada antes de medir: alcance declarado por gemelo,
+comparacion sensible = alcance cruza el corte (necesario, no suficiente), cualquier infraccion
+observada es deteccion, 0 sensibles = INSUFFICIENT_TEST, sensibles sin efecto = declaracion
+fallida; pruebas causales del candidato intactas; controles por mascara y por emision. Replay
+compuesto `d3mech-v3`: solo `non_causal_twin` en los 7 operadores con gemelo sobre toda la
+poblacion; las 11 pruebas restantes heredadas de v2 por digest y verificadas por celda
+(4 reglas). Resultado: VERIFIED; delta v2->v3 todo atribuido: 5 FAILED -> INSUFFICIENT_TEST;
+511 terminales gen 1 conciliados; sobre cargado; NO_LOSS sobre 1,588 terminales.
+
+**L3.** Disposiciones publicadas por el procedimiento (stop/publish/start): sobre accidental
+`475b93fb` = ACCIDENTAL_OPERATIONAL_INGESTION, no admisible cientificamente, digest rederivado,
+hijos verificados, fuera de `gov_scientific_evidence`; relacion correctiva para el sobre v2 bajo
+`d3-mechanics-v1`. Seleccion por identidad (`df_d3_cube_select`) y sonda de idempotencia que no
+introduce runs, ambas probadas con el warehouse real efimero.
+
+**L4.** En `data-warehouse`: 400/422 entrada tipada, 503 solo indisponibilidad real, 500 defecto
+interno nombrado y JSON con clase; SQL invalido ya no es HTML 500; gancho apagado por defecto
+para inducir defectos en stacks desechables; 8 reglas. Adoptado por el procedimiento: el primer
+intento puso el warehouse en bucle de reinicio (build/ rastreado en git empaqueto un backends.py
+rancio), restaurado al instante desde el respaldo; el adoptador ahora exporta el commit limpio
+y exige paridad byte a byte rueda/fuente; segunda y tercera adopcion verdes.
+
+**L5.** Doc 12 reescrito como protocolo (perdida del modelo de prueba, nunca informacion;
+elegibilidad por celda; ventanas por identidad de observacion; purga = horizonte + alcance +
+ventana; pareado sobre las mismas filas; capacidad declarada; unidad estadistica = bloque;
+Bonferroni sobre la familia predeclarada; reserva de uso unico) y arnes con 11 reglas de verdad
+fabricada. No ejecutado; no abre el experimento.

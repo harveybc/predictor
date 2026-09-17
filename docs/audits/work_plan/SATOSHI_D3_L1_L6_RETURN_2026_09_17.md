@@ -67,7 +67,51 @@ source freeze or a missing measured cell refuses (`INHERITED_SOURCE_UNVERIFIED/_
 4 composite rules). The two twin-less operators take all twelve tests from the source. No
 operator was repeated for convenience.
 
-V3_PLACEHOLDER
+**Run `d3mech-v3`** (root `~/.local/state/crispdm-data-foundation/d3_mechanics_v3/`): freeze
+`67f2961a…` under design 07C `5ffe25f9…`, `inherits` from `d3mech-v2` (freeze `e9154ad5…`,
+design `f198340c…`, 11 tests) and measures `non_causal_twin` on 7 operators; toys re-delivered
+under seven campaigns; inputs synced to both workers before dispatch (the K5 lesson); 43 shards
+COMPLETED on WORKER_A (6) and WORKER_B (2), coordinator excluded; collect 511/511 verified, 0
+mismatches, 9,940 measured rows. Pilot: the freeze's own cost pilot (twin test only).
+
+The composite verifier first refused with `CAMPAIGN_RECORD_MISSING` — the report had not run yet,
+and the verifier will not seal without the conserved campaign record; after the governed report,
+sealed as `MATRIX.verified.sealed.json` (the first, unsealed file is kept beside it):
+
+Run `d3mech-v3` — **VERIFIED** (0 refusals) over receipt `COLLECT.json`: population 511 units × 710 variables × 9 operators × 12 tests; 511 completed, 0 failed (recorded), 0 missing; 9,940 rows re-read and bound.
+
+| operator | group | units × vars | verdicts | causal tests failed | restart | availability | probe onset | cost s/1k (median, max) |
+|---|---|---|---:|---|---|---|---|---|
+| `butterworth_causal` | time_frequency | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0059, 0.0078 |
+| `cusum_causal` | detectors | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0063, 0.0122 |
+| `delta_run_length` | quantization_compression | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0005, 0.0011 |
+| `mad_extremes_trailing` | detectors | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0005, 0.002 |
+| `sax_paa_trailing` | quantization_compression | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0005, 0.002 |
+| `stft_trailing` | time_frequency | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 1.0 697 | 0.0005, 0.002 |
+| `uniform_decile_quantizer` | quantization_compression | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0005, 0.002 |
+| `variance_regime_trailing` | detectors | 511 × 710 | INCONCLUSIVE 13 / MECHANICALLY_ACCEPTED 697 | none | PASSED 710 | PASSED 710 | 0.0 697 | 0.0005, 0.002 |
+| `wavelet_trailing` | time_frequency | 511 × 710 | INCONCLUSIVE 24 / MECHANICALLY_ACCEPTED 683 / MECHANICALLY_REFUSED 3 | warm_up_edge 3 | INSUFFICIENT_TEST 7 / PASSED 703 | INSUFFICIENT_TEST 3 / PASSED 707 | 0.0 697 | 0.001, 0.002 |
+
+**Delta v2 → v3** (`DELTA_v2_v3.json`, all attributed):
+
+Delta `d3mech-v2` → `d3mech-v3` (design changed: True, population changed: False, all attributed: **True**)
+
+| operator | verdict movements | test movements | causes |
+|---|---|---|---|
+| `wavelet_trailing` | INCONCLUSIVE 19→24; MECHANICALLY_REFUSED 8→3 | non_causal_twin: FAILED 5→0, INSUFFICIENT_TEST 3→8 | 07B: a twin without observable comparisons is INSUFFICIENT_TEST, never a wrong twin |
+
+Exactly what the diagnostic said: the five `FAILED` twin outcomes are `INSUFFICIENT_TEST`, no
+detection was lost (the `PASSED` cases keep their detections, now recorded with sensitive
+counts), wavelet under MCAR ends at 24 `INCONCLUSIVE` and 3 `MECHANICALLY_REFUSED` — the three
+warm-up refusals, kept apart. No other operator moved; nothing was tuned.
+
+**Governance.** 504 SYNTHETIC terminals (`d3mech-v3-synthetic`, `dc7f741a…`) and 7 toy terminals
+under their own campaigns, generation 1, all accepted at the first flush, reconciled
+`missing_units: []`; envelope `90500297…` loaded (4,970 measured cells, 551 consumption rows;
+campaign key now `d3-mechanics-d3mech-v3`). Content reconciliation against the independent
+accounting (`docs/audits/evidence/d3_k5_20260917/L6_CONTENT_RECONCILE.json`):
+**NO_LOSS_FOR_THE_COMPARED_POPULATION** — 1,588 terminals, 0 missing, 0 cube rows without an
+accepted record.
 
 ## L3 — dispositions and campaign names
 
@@ -148,7 +192,12 @@ scored; this order opens nothing.**
 
 ## L6 — closure
 
-SUITES_PLACEHOLDER
+**Suites** (trading-stack, `crispdm-run`, with the data-warehouse candidate on the real
+service's path): D3 contract 40 · operators 37 · pipeline 15 · matrix 1 · verify 28 · probe
+amendment 17 · twin coverage 20 · delta 3 · ingestion diagnostics 14 · utility harness 11 ·
+dispatch · outbox disposition · `olap/store/tests` — **272 passed, 1 skipped** (the store suite's
+own skip), 34.1 s; `data-warehouse` tests: **37 passed**. Exclusions: none. Digests read: every
+freeze, receipt and terminal named above, re-hashed by the verifier.
 
 **Commits (predictor, `satoshi/r1-r6-20260914`)**: `fa732d8` L1 · `1fd903b` L2 amendment ·
 `8840d54` composite replay · `bc50256` L3–L4 · `c424059` adoption hardening · `acee660`
@@ -162,4 +211,4 @@ Open, with owners: `build/` tracked in `data-warehouse` (the packaging trap; its
 untrack); the accidental envelope's disposition is recorded and awaits Musashi's ruling on
 anything further; index-loss root cause, Metabase, terms: separate fronts, unchanged.
 
-Ending: ENDING_PLACEHOLDER
+Ending: **`D3_MECHANICS_VERIFIER_CLOSED_AND_UTILITY_DESIGN_READY_FOR_REVIEW`**.

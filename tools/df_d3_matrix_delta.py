@@ -21,8 +21,9 @@ from pathlib import Path
 #: tests whose rule the successor amendment (07B) changed, and what it changed
 AMENDED_TESTS = {"response_probe": "07B: excitation from the training fit and the declared "
                                    "resolution; three facts apart; abstention only by declaration",
-                 "non_causal_twin": "07B: a twin without observable comparisons is "
-                                    "INSUFFICIENT_TEST, never a wrong twin"}
+                 "non_causal_twin": "07B/07C: a twin without observable comparisons is "
+                                    "INSUFFICIENT_TEST; 07C counts only comparisons whose "
+                                    "reach crosses the cut as sensitive"}
 
 
 def _counts_delta(before: dict, after: dict) -> dict:
