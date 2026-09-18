@@ -200,9 +200,98 @@ CALIBRATION_KEYS = ("schema", "generator", "null", "plan", "n_sims", "scored", "
                     "cost")
 
 
+#: O1 — the failure policy, declared before use: a simulation that fails under the null
+#: (insufficient rows, refusal) is not dropped from the denominator; for the decision it is
+#: counted AS an advance (worst case), so selective failures can only make the bound larger.
+FAILURE_POLICY = "WORST_CASE_FAILED_COUNTED_AS_ADVANCES"
+SIM_SCORED_KEYS = {"index", "seed", "outcome", "delta_mean", "delta_lower"}
+SIM_FAILED_KEYS = {"index", "seed", "outcome", "why"}
+SIM_FAILED_OUTCOMES = {INSUFFICIENT_ROWS, REFUSED}
+
+
+def derive_calibration(rec) -> dict:
+    """Everything a decision needs, DERIVED from the per-simulation records — never read from
+    the summary (O1). Returns counts, rate, the Clopper–Pearson bound over scored, the decision
+    bound under FAILURE_POLICY, and the list of problems found while validating each simulation
+    and comparing the record's summaries with the derived values."""
+    import math
+    problems = []
+    sims = rec.get("per_sim")
+    n_sims = rec.get("n_sims")
+    margin = rec.get("margin")
+    if not isinstance(sims, list):
+        return {"problems": ["per_sim must be a list"], "scored": 0, "failed": 0, "advances": 0,
+                "false_advance_rate": float("nan"), "upper_bound": float("nan"),
+                "decision_bound": float("nan"), "failure_policy": FAILURE_POLICY}
+    if not isinstance(n_sims, int) or isinstance(n_sims, bool) or len(sims) != n_sims:
+        problems.append("per_sim must list every simulation (partial denominator)")
+    indices, seeds = [], []
+    scored = failed = advances = 0
+    margin_ok = isinstance(margin, (int, float)) and not isinstance(margin, bool) and math.isfinite(margin)
+    for k, x in enumerate(sims):
+        if not isinstance(x, dict) or "outcome" not in x or "index" not in x or "seed" not in x:
+            problems.append(f"simulation {k}: not a record with index, seed and outcome")
+            continue
+        indices.append(x["index"])
+        seeds.append(x["seed"])
+        if not isinstance(x["index"], int) or isinstance(x["index"], bool) or x["index"] != k:
+            problems.append(f"simulation {k}: index {x['index']!r} is not the expected {k}")
+        if not isinstance(x["seed"], int) or isinstance(x["seed"], bool) or x["seed"] < 0:
+            problems.append(f"simulation {k}: seed is not a non-negative integer")
+        out = x["outcome"]
+        if out in (ADVANCES, DOES_NOT_ADVANCE):
+            if set(x) != SIM_SCORED_KEYS:
+                problems.append(f"simulation {k}: a scored simulation carries exactly {sorted(SIM_SCORED_KEYS)}")
+                continue
+            finite = all(isinstance(x[key], (int, float)) and not isinstance(x[key], bool)
+                         and math.isfinite(x[key]) for key in ("delta_mean", "delta_lower"))
+            if not finite:
+                problems.append(f"simulation {k}: delta is not finite")
+                continue
+            scored += 1
+            if margin_ok:
+                advanced = x["delta_lower"] > margin
+                if advanced != (out == ADVANCES):
+                    problems.append(f"simulation {k}: outcome {out} is not consistent with "
+                                    f"delta_lower {x['delta_lower']!r} and margin {margin!r}")
+                advances += int(out == ADVANCES)
+        elif out in SIM_FAILED_OUTCOMES:
+            if set(x) != SIM_FAILED_KEYS:
+                problems.append(f"simulation {k}: a failed simulation carries exactly {sorted(SIM_FAILED_KEYS)}")
+            failed += 1
+        else:
+            problems.append(f"simulation {k}: unknown outcome {out!r}")
+    if len(set(indices)) != len(indices):
+        problems.append("duplicate simulation index")
+    if len(set(seeds)) != len(seeds):
+        problems.append("duplicate simulation seed")
+    conf = rec.get("bound_confidence")
+    conf_ok = isinstance(conf, (int, float)) and not isinstance(conf, bool) and 0 < conf < 1
+    rate = advances / scored if scored else float("nan")
+    upper = clopper_pearson_upper(advances, scored, conf) if scored and conf_ok else float("nan")
+    total = scored + failed
+    decision = clopper_pearson_upper(advances + failed, total, conf) if total and conf_ok else float("nan")
+    derived = {"scored": scored, "failed": failed, "advances": advances, "false_advance_rate": rate,
+               "upper_bound": upper, "decision_bound": decision, "failure_policy": FAILURE_POLICY,
+               "n_sims": len(sims)}
+    for name in ("scored", "failed", "advances"):
+        if rec.get(name) != derived[name]:
+            problems.append(f"{name} {rec.get(name)!r} is not the derived {derived[name]} "
+                            f"(recounted from per_sim)")
+    for name in ("false_advance_rate", "upper_bound"):
+        v = rec.get(name)
+        d = derived[name]
+        if not (isinstance(v, (int, float)) and not isinstance(v, bool)
+                and (math.isnan(d) and math.isnan(v) or abs(float(v) - d) <= 1e-12)):
+            problems.append(f"{name} {v!r} is not the derived {d!r}")
+    derived["problems"] = problems
+    return derived
+
+
 def calibration_record_problems(rec) -> list:
     """Everything a calibration record must carry to be consumed; a missing or non-finite
-    element makes the record unusable (N2)."""
+    element makes the record unusable (N2). Counts, rate and bound are re-derived from the
+    simulations and compared with the summaries (O1)."""
     import math
     problems = []
     if not isinstance(rec, dict) or set(rec) != set(CALIBRATION_KEYS):
@@ -229,16 +318,23 @@ def calibration_record_problems(rec) -> list:
         if not isinstance(v, (int, float)) or isinstance(v, bool) or not math.isfinite(v) \
                 or v < 0 or (name != "margin" and v > 1):
             problems.append(f"{name} must be a finite number in [0, 1]")
-    if isinstance(rec["advances"], int) and isinstance(rec["scored"], int) and rec["scored"] \
-            and isinstance(rec["false_advance_rate"], (int, float)) \
-            and abs(rec["false_advance_rate"] - rec["advances"] / rec["scored"]) > 1e-12:
-        problems.append("false_advance_rate is not advances / scored")
+    plan = rec["plan"]
+    need = {"generator", "n_sims", "n", "bound_confidence"}
+    if not isinstance(plan, dict) or set(plan) != need:
+        problems.append(f"plan must carry exactly {sorted(need)}")
+    else:
+        for name in ("generator", "n_sims", "n", "bound_confidence"):
+            if plan[name] != rec[name]:
+                problems.append(f"{name} {rec[name]!r} disagrees with the sealed plan {plan[name]!r}")
     if not isinstance(rec["per_sim"], list) or len(rec["per_sim"]) != rec.get("n_sims"):
         problems.append("per_sim must list every simulation")
     elif sha_obj(rec["per_sim"]) != rec["per_sim_sha256"]:
         problems.append("per_sim digest does not seal the simulations")
     if not isinstance(rec["operator"], dict) or set(rec["operator"]) != {"kind", "spec_sha256", "params"}:
         problems.append("operator identity must carry kind, spec_sha256 and params")
+    if not isinstance(rec["harness_sha256"], str) or len(rec["harness_sha256"]) != 64:
+        problems.append("harness_sha256 must name the code that calibrated")
+    problems += derive_calibration(rec)["problems"]
     return problems
 
 
@@ -667,10 +763,20 @@ def calibrate(protocol: Protocol, operator, *, plan: dict | None = None, seed: i
             "cost": {"cpu_seconds": round(time.process_time() - t0, 3)}}
 
 
-def calibration_supports(protocol: Protocol, operator, n: int) -> tuple:
+def harness_sha256() -> str:
+    return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+
+def calibration_supports(protocol: Protocol, operator, n: int, *, record: dict | None = None,
+                         harness_sha256: str | None = None) -> tuple:
     """Does the sealed record support a decision for THIS contrast? Scope and identity are
-    checked, then the upper bound against alpha_adjusted."""
-    rec = protocol.calibration
+    checked (operator declaration, protocol base, family, length, multiplicity, the sealed
+    plan, margin, blocks, window, target/model and the harness code that applied), then the
+    DERIVED decision bound — recounted from the simulations under FAILURE_POLICY, never the
+    bound the record states — against alpha_adjusted (O1). `record` overrides the protocol's
+    own record (a verifier re-checking a stored one); `harness_sha256` names the code that
+    applied to the run being verified (default: this file)."""
+    rec = record if record is not None else protocol.calibration
     if rec is None:
         return False, "no calibration record"
     problems = calibration_record_problems(rec)
@@ -689,10 +795,23 @@ def calibration_supports(protocol: Protocol, operator, n: int) -> tuple:
         return False, f"calibrated at length {rec['n']}, this series has {n}"
     if rec["alpha_adjusted"] != protocol.alpha_adjusted:
         return False, "calibrated for another multiplicity"
-    if rec["upper_bound"] > protocol.alpha_adjusted:
-        return False, (f"upper bound {rec['upper_bound']:.4f} exceeds alpha_adjusted "
-                       f"{protocol.alpha_adjusted:.4f} ({rec['advances']}/{rec['scored']} at "
-                       f"{rec['bound_confidence']:.0%})")
+    if protocol.calibration_plan is None or dict(rec["plan"]) != dict(protocol.calibration_plan):
+        return False, "calibrated under another plan (generator, simulations, length or confidence)"
+    for name in ("margin", "n_blocks", "window", "target", "model"):
+        if rec[name] != getattr(protocol, name):
+            return False, f"calibrated for another {name}"
+    expected_code = harness_sha256 or globals()["harness_sha256"]()
+    if rec["harness_sha256"] != expected_code:
+        return False, "calibrated under another harness code"
+    derived = derive_calibration(rec)
+    if derived["problems"]:
+        return False, "calibration record unusable: " + "; ".join(derived["problems"])
+    if derived["decision_bound"] > protocol.alpha_adjusted:
+        why = (f"derived upper bound {derived['decision_bound']:.4f} exceeds alpha_adjusted "
+               f"{protocol.alpha_adjusted:.4f} ({derived['advances']}/{derived['scored']}"
+               f"{' + ' + str(derived['failed']) + ' failed counted as advances (worst case)' if derived['failed'] else ''}"
+               f" at {rec['bound_confidence']:.0%})")
+        return False, why
     return True, None
 
 
@@ -726,6 +845,25 @@ def verified_score(attempt_dir: Path, result: dict, verified: dict, job: dict, *
             and score.get("outcome") not in (REFUSED, INSUFFICIENT_ROWS):
         return None, {"outcome": SCORE_UNVERIFIED, "why": f"schema {score.get('schema')!r}"}
     if preparatory:
+        if score.get("schema") == "df_utility_calibration.v1":
+            problems = calibration_record_problems(score)
+            if problems:
+                return None, {"outcome": SCORE_UNVERIFIED, "why": "calibration record unusable "
+                              "(bound or counts not derived from its simulations): " + "; ".join(problems)}
+            if job.get("operator") and score["operator"]["kind"] != job["operator"]:
+                return None, {"outcome": SCORE_UNVERIFIED, "why": "calibration is for another operator"}
+            base = (job.get("protocol") or {})
+            if base and "protocol_sha256" in base:
+                try:
+                    expected_base = Protocol(**{k: (tuple(v) if isinstance(v, list) else v)
+                                                for k, v in base.items()
+                                                if k not in ("protocol_sha256", "comparisons", "alpha_adjusted")}).base_sha256()
+                except (ProtocolRefusal, TypeError):
+                    expected_base = None
+                if expected_base and score["protocol_base_sha256"] != expected_base:
+                    return None, {"outcome": SCORE_UNVERIFIED, "why": "calibration is for another protocol"}
+            if job.get("plan") and dict(score["plan"]) != dict(job["plan"]):
+                return None, {"outcome": SCORE_UNVERIFIED, "why": "calibration is for another plan"}
         return score, None
     if score.get("contrast_id", job.get("contrast_id")) != job.get("contrast_id"):
         return None, {"outcome": SCORE_UNVERIFIED, "why": "contrast identity differs"}
@@ -741,6 +879,25 @@ def verified_score(attempt_dir: Path, result: dict, verified: dict, job: dict, *
     return score, None
 
 
+def _job_binding_refusal(attempt_dir: Path, job: dict):
+    """A resumed attempt is the attempt of THE job it recorded (O2): the job the caller brings
+    must equal the one written before the child started, or nothing is reused."""
+    path = Path(attempt_dir) / "job.json"
+    if not path.is_file():
+        return {"outcome": SCORE_UNVERIFIED, "why": "the attempt records no job to bind to"}
+    try:
+        recorded = json.loads(path.read_text())
+    except ValueError:
+        return {"outcome": SCORE_UNVERIFIED, "why": "the attempt's recorded job is not JSON"}
+    recorded.pop("attempt_dir", None)
+    current = json.loads(json.dumps({k: v for k, v in job.items() if k != "attempt_dir"}, default=_jsonable))
+    if recorded != current:
+        differing = sorted(k for k in set(recorded) | set(current) if recorded.get(k) != current.get(k))
+        return {"outcome": SCORE_UNVERIFIED, "why": f"the job differs from the recorded attempt's job "
+                                                     f"({', '.join(differing)}); nothing is reused"}
+    return None
+
+
 def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seconds: float,
                  cpu_seconds: float, before_run=None) -> dict:
     """The contrast in a child process under df_isolated_runner: ceilings enforced during the
@@ -752,14 +909,22 @@ def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seco
     attempt_dir.mkdir(parents=True, exist_ok=True)
     prior = attempt_dir / "outcome.json"
     if prior.is_file():
-        # a completed attempt is never re-run: the recorded outcome is re-verified and returned
+        # a completed attempt is never re-run: the recorded outcome is re-verified and returned.
+        # O2: one truthful outcome — when the evidence no longer verifies, or the attempt was
+        # made for another job, the outcome IS SCORE_UNVERIFIED; the old summary is history.
         recorded = json.loads(prior.read_text())
-        result = json.loads((attempt_dir / "result.json").read_text()) \
-            if (attempt_dir / "result.json").is_file() else None
-        score, refusal = verified_score(attempt_dir, result, recorded.get("verified"), job) \
-            if recorded.get("status") == "COMPLETED" else (None, None)
-        return {**recorded["summary"], "score": score, "resumed": True,
-                **({"refusal": refusal} if refusal else {})}
+        history = dict(recorded.get("summary") or {})
+        refusal = _job_binding_refusal(attempt_dir, job)
+        score = None
+        if refusal is None and recorded.get("status") == "COMPLETED":
+            result = json.loads((attempt_dir / "result.json").read_text()) \
+                if (attempt_dir / "result.json").is_file() else None
+            score, refusal = verified_score(attempt_dir, result, recorded.get("verified"), job)
+        if refusal is not None:
+            return {"outcome": SCORE_UNVERIFIED, "reason": refusal["why"], "cost": history.get("cost", {}),
+                    "score": None, "output_sha256": None, "resumed": True, "refusal": refusal,
+                    "history": history}
+        return {**history, "score": score, "resumed": True}
     if before_run is not None:
         before_run(job)
     job_file = attempt_dir / "job.json"

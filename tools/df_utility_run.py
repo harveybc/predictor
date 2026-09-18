@@ -369,7 +369,9 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
     return receipt, outcomes, frozen, pre, campaign_sha
 
 
-def emit_envelope(cfg, outcomes, frozen, pre, OB, CE) -> dict:
+def envelope_items(cfg, outcomes) -> list:
+    """One item per contrast: a measurement only from a verified score; any other outcome is
+    carried by name with UNAVAILABLE values (never COMPLETE from a summary, O2)."""
     units = []
     for contrast_id, out in outcomes.items():
         score = out.get("score") or {}
@@ -379,11 +381,16 @@ def emit_envelope(cfg, outcomes, frozen, pre, OB, CE) -> dict:
                       "cell_key": contrast_id,
                       "metric_name": "utility.delta_mean" if has else "outcome",
                       "metric_value": float(score["delta_mean"]) if has else "UNAVAILABLE",
-                      "terminal_state": "COMPLETE" if out["outcome"] in (
+                      "terminal_state": "COMPLETE" if has and out["outcome"] in (
                           H.ADVANCES, H.DOES_NOT_ADVANCE, H.INCONCLUSIVE_UNCALIBRATED)
                       else str(out["outcome"]), "uncertainty_kind": "BLOCK_T_LOWER",
                       "uncertainty_low": float(score["delta_lower"]) if has else "UNAVAILABLE",
                       "uncertainty_high": "UNAVAILABLE"})
+    return units
+
+
+def emit_envelope(cfg, outcomes, frozen, pre, OB, CE) -> dict:
+    units = envelope_items(cfg, outcomes)
     envelope = CE.build_envelope(
         campaign_key=f"utility-{cfg['purpose'].lower()}-{cfg['run_id']}", producer="predictor",
         result_class="DEVELOPMENT",

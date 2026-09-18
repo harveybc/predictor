@@ -85,14 +85,19 @@ def stub_isolated(children):
             marker.write_text(json.dumps(summary))
             return summary
         if job["kind"] == "calibrate":
+            plan = job["plan"]
+            sims = [{"index": i, "seed": 100 + i, "outcome": "DOES_NOT_ADVANCE", "delta_mean": 0.0,
+                     "delta_lower": -0.1} for i in range(plan["n_sims"])]
             rec = {"schema": "df_utility_calibration.v1", "generator": "white_null", "null": True,
-                   "plan": job["plan"], "n_sims": 2, "scored": 2, "failed": 0, "advances": 0,
-                   "false_advance_rate": 0.0, "upper_bound": 0.5, "bound_confidence": 0.5,
-                   "alpha_adjusted": 0.05 / 4, "seed": 1, "n": 40,
+                   "plan": dict(plan), "n_sims": plan["n_sims"], "scored": plan["n_sims"], "failed": 0,
+                   "advances": 0, "false_advance_rate": 0.0,
+                   "upper_bound": H.clopper_pearson_upper(0, plan["n_sims"], plan["bound_confidence"]),
+                   "bound_confidence": plan["bound_confidence"],
+                   "alpha_adjusted": 0.05 / 4, "seed": 1, "n": plan["n"],
                    "operator": {"kind": job["operator"], "spec_sha256": "s" * 64, "params": {}},
                    "protocol_base_sha256": "b" * 64, "family": [], "margin": 0.0, "n_blocks": 4,
                    "window": 4, "target": "return", "model": "ridge",
-                   "per_sim": [{"index": 0}, {"index": 1}], "per_sim_sha256": H.sha_obj([{"index": 0}, {"index": 1}]),
+                   "per_sim": sims, "per_sim_sha256": H.sha_obj(sims),
                    "harness_sha256": "h" * 64, "cost": {"cpu_seconds": 1.0}}
             return record({"outcome": "COMPLETED", "reason": "", "cost": cost, "score": rec, "output_sha256": "o" * 64})
         if job["kind"] == "mechanics":
@@ -216,3 +221,46 @@ def test_N3_terminal_instants_are_the_childrens_in_data_govs_form():
                     started="2026-09-17T15:05:50+00:00", finished="2026-09-17T15:07:35+00:00")
     assert t["started_at"] == "2026-09-17T15:05:50Z" and t["finished_at"] == "2026-09-17T15:07:35Z"
     assert R._z("2026-09-17T15:05:50Z") == "2026-09-17T15:05:50Z"
+
+
+def _resume_aware(stub, jobs):
+    """The real runner when an attempt already exists (it never starts a child then); the stub
+    otherwise, recording the job the entry point built for each attempt."""
+    def run(job, *, attempt_dir, **kw):
+        if (Path(attempt_dir) / "outcome.json").is_file() and (Path(attempt_dir) / "job.json").is_file():
+            return H.run_isolated(job, attempt_dir=attempt_dir, assigned_bytes=1, wall_seconds=1, cpu_seconds=1)
+        jobs[Path(attempt_dir).name] = job
+        return stub(job, attempt_dir=attempt_dir, **kw)
+    return run
+
+
+def test_O2_the_entry_point_resumed_over_an_attempt_whose_evidence_is_gone_publishes_no_success(tmp_path):
+    gov = StubGov()
+    jobs = {}
+    R.run_rehearsal(cfg_for(tmp_path), gov, lambda e, **f: None, GR=GR, outbox=StubOutbox(gov),
+                    isolated=_resume_aware(stub_isolated([]), jobs))
+    cid = "fab__v0__delta_run_length__transformed"
+    attempt = tmp_path / "run" / "attempts" / cid
+    # the attempt as the real runner records it: COMPLETED, ADVANCES in the summary — and the
+    # evidence file gone
+    (attempt / "job.json").write_text(json.dumps({**jobs[cid], "attempt_dir": str(attempt)}))
+    (attempt / "result.json").write_text(json.dumps({"status": "COMPLETED", "reason": "",
+                                                     "output_file": "contrast.json",
+                                                     "output_sha256": "a" * 64, "outcome": H.ADVANCES}))
+    (attempt / "outcome.json").write_text(json.dumps({"status": "COMPLETED", "verified": {"output_sha256": "a" * 64},
+                                                      "summary": {"outcome": H.ADVANCES, "reason": "",
+                                                                  "cost": {"cpu_seconds": 1.0}}}))
+    gov2 = StubGov(units=gov.units)
+    gov2.terminals = dict(gov.terminals)
+    receipt, outcomes, frozen, pre, sha = R.run_rehearsal(
+        cfg_for(tmp_path), gov2, lambda e, **f: None, GR=GR, outbox=StubOutbox(gov2),
+        isolated=_resume_aware(stub_isolated([]), jobs))
+    out = outcomes[cid]
+    assert out["outcome"] == H.SCORE_UNVERIFIED and out["score"] is None and out["resumed"]
+    entry = [t for t in receipt["terminals"] if t["unit_id"] == cid][0]
+    assert entry["outcome"] == H.SCORE_UNVERIFIED and entry["delta_mean"] is None
+    assert not [c for c in gov2.calls if c[0] == "terminal"]        # no second terminal
+    env = R.envelope_items(cfg_for(tmp_path), outcomes)
+    item = [i for i in env if i["cell_key"] == cid][0]
+    assert item["terminal_state"] == H.SCORE_UNVERIFIED and item["metric_value"] == "UNAVAILABLE"
+    assert H.ADVANCES not in json.dumps(item)

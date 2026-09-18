@@ -317,9 +317,13 @@ def test_N2_the_decision_is_gated_on_the_upper_bound_not_the_point_estimate():
     assert rec["advances"] == 0 and rec["false_advance_rate"] == 0.0
     assert rec["upper_bound"] == pytest.approx(H.clopper_pearson_upper(0, rec["scored"], 0.5))
     assert rec["upper_bound"] <= proto().alpha_adjusted            # the fixture plan supports it
-    strict = {**rec, "bound_confidence": 0.95,
-              "upper_bound": H.clopper_pearson_upper(0, rec["scored"], 0.95)}
-    p = proto().with_calibration(strict)
+    # the same simulations under a plan sealed at 95%: the point estimate is still 0, the
+    # derived bound is not — no decision (O1: the bound is derived, the plan is the protocol's)
+    p95 = proto(calibration_plan={**FIXTURE_PLAN, "bound_confidence": 0.95})
+    strict = {**rec, "bound_confidence": 0.95, "plan": {**rec["plan"], "bound_confidence": 0.95},
+              "upper_bound": H.clopper_pearson_upper(0, rec["scored"], 0.95),
+              "protocol_base_sha256": p95.base_sha256()}
+    p = p95.with_calibration(strict)
     assert strict["upper_bound"] > p.alpha_adjusted
     s = H.series(fabricated(truth="extreme"))
     out = H.contrast(s, MAD, p, contrast_id=FAMILY[0], eligibility=record_for(MAD),
@@ -473,3 +477,208 @@ def test_N3_a_preparatory_calibration_child_completes_with_its_record_as_the_ver
     assert out["outcome"] == "COMPLETED" and out["score"]["schema"] == "df_utility_calibration.v1"
     assert out["score"]["n_sims"] == 2 and out["output_sha256"]
     assert (tmp_path / "cal" / "outcome.json").is_file()
+
+
+# --- O1: the bound is re-derived from the simulations, never read ------------------------------------
+
+def _resealed(rec, **over):
+    """A record with overrides and its per_sim digest recomputed (the tamper an insider could do)."""
+    out = {**rec, **over}
+    out["per_sim_sha256"] = H.sha_obj(out["per_sim"])
+    return out
+
+
+def test_O1_a_provided_bound_is_never_used_the_bound_is_rederived_from_the_simulations():
+    p = calibrated()
+    rec = dict(p.calibration)
+    d = H.derive_calibration(rec)
+    assert d["problems"] == [] and d["advances"] == rec["advances"] and d["scored"] == rec["scored"]
+    assert d["upper_bound"] == pytest.approx(rec["upper_bound"])
+    for bad in ({"upper_bound": 0.0}, {"upper_bound": rec["upper_bound"] / 2},
+                {"advances": 0, "false_advance_rate": 0.0} if rec["advances"] else
+                {"advances": 1, "false_advance_rate": 1 / rec["scored"]}):
+        tampered = {**rec, **bad}
+        assert H.derive_calibration(tampered)["problems"]
+        with pytest.raises(H.ProtocolRefusal):
+            proto().with_calibration(tampered)
+        assert H.calibration_supports(H.Protocol(**{**p.__dict__, "calibration": None}), MAD, 2400,
+                                      record=tampered)[0] is False
+
+
+def test_O1_counts_changed_with_per_sim_intact_are_refused_even_with_a_valid_digest():
+    rec = dict(calibrated().calibration)
+    one_advance = [dict(x, outcome="ADVANCES", delta_lower=0.5, delta_mean=0.6) if i == 0 else x
+                   for i, x in enumerate(rec["per_sim"])]
+    honest = _resealed(rec, per_sim=one_advance, advances=1, false_advance_rate=1 / rec["scored"],
+                       upper_bound=H.clopper_pearson_upper(1, rec["scored"], rec["bound_confidence"]))
+    assert H.calibration_record_problems(honest) == []
+    hidden = _resealed(honest, advances=0, false_advance_rate=0.0,
+                       upper_bound=H.clopper_pearson_upper(0, rec["scored"], rec["bound_confidence"]))
+    problems = H.calibration_record_problems(hidden)
+    assert problems and any("advances" in x for x in problems)
+
+
+def test_O1_every_simulation_is_validated_label_delta_indices_seeds_and_finiteness():
+    rec = dict(calibrated().calibration)
+    sims = rec["per_sim"]
+
+    def with_sim(i, **over):
+        return _resealed(rec, per_sim=[dict(x, **over) if k == i else x for k, x in enumerate(sims)])
+
+    label_vs_delta = with_sim(0, outcome="ADVANCES")           # delta_lower <= margin, says ADVANCES
+    assert any("consistent" in x for x in H.calibration_record_problems(label_vs_delta))
+    label_vs_delta2 = with_sim(0, delta_lower=0.7)              # delta_lower > margin, says DOES_NOT
+    assert any("consistent" in x for x in H.calibration_record_problems(label_vs_delta2))
+    dup_index = with_sim(1, index=0)
+    assert any("index" in x for x in H.calibration_record_problems(dup_index))
+    dup_seed = with_sim(1, seed=sims[0]["seed"])
+    assert any("seed" in x for x in H.calibration_record_problems(dup_seed))
+    nan_delta = with_sim(2, delta_lower=float("nan"))
+    assert any("finite" in x for x in H.calibration_record_problems(nan_delta))
+    unknown_label = with_sim(2, outcome="MAYBE")
+    assert any("outcome" in x for x in H.calibration_record_problems(unknown_label))
+    missing_field = _resealed(rec, per_sim=[{k: v for k, v in x.items() if k != "seed"} if i == 3 else x
+                                           for i, x in enumerate(sims)])
+    assert H.calibration_record_problems(missing_field)
+    short = _resealed(rec, per_sim=sims[:-1])                   # partial denominator
+    assert H.calibration_record_problems(short)
+
+
+def test_O1_a_plan_or_confidence_discordant_with_the_protocol_does_not_decide():
+    p = calibrated()
+    rec = dict(p.calibration)
+    other_conf = {**rec, "bound_confidence": 0.3, "plan": {**rec["plan"], "bound_confidence": 0.3},
+                  "upper_bound": H.clopper_pearson_upper(rec["advances"], rec["scored"], 0.3)}
+    bare = H.Protocol(**{**p.__dict__, "calibration": None})
+    ok, why = H.calibration_supports(bare, MAD, 2400, record=other_conf)
+    assert ok is False and "plan" in why
+    inner = {**rec, "bound_confidence": 0.3}                    # record disagrees with its own plan
+    assert any("plan" in x for x in H.calibration_record_problems(inner))
+    other_margin = {**rec, "margin": 0.01}
+    ok, why = H.calibration_supports(bare, MAD, 2400, record=other_margin)
+    assert ok is False
+    assert H.calibration_supports(bare, MAD, 2400, record=rec)[0] is True
+
+
+def test_O1_the_failure_policy_is_declared_and_failed_simulations_count_against_the_operator():
+    rec = dict(calibrated().calibration)
+    assert H.FAILURE_POLICY == "WORST_CASE_FAILED_COUNTED_AS_ADVANCES"
+    failed_one = _resealed(rec, per_sim=[{"index": x["index"], "seed": x["seed"],
+                                          "outcome": H.INSUFFICIENT_ROWS, "why": "short block"}
+                                         if i == 0 else x for i, x in enumerate(rec["per_sim"])],
+                           scored=rec["scored"] - 1, failed=1,
+                           false_advance_rate=rec["advances"] / (rec["scored"] - 1),
+                           upper_bound=H.clopper_pearson_upper(rec["advances"], rec["scored"] - 1,
+                                                               rec["bound_confidence"]))
+    assert H.calibration_record_problems(failed_one) == []
+    d = H.derive_calibration(failed_one)
+    assert d["failed"] == 1 and d["failure_policy"] == H.FAILURE_POLICY
+    assert d["decision_bound"] == pytest.approx(
+        H.clopper_pearson_upper(rec["advances"] + 1, rec["n_sims"], rec["bound_confidence"]))
+    assert d["decision_bound"] > d["upper_bound"]
+    p = proto()
+    ok, why = H.calibration_supports(p, MAD, 2400, record=failed_one)
+    assert ok is False and "worst case" in why
+
+
+def test_O1_a_record_from_another_harness_code_does_not_decide():
+    p = calibrated()
+    rec = {**p.calibration, "harness_sha256": "e" * 64}
+    bare = H.Protocol(**{**p.__dict__, "calibration": None})
+    ok, why = H.calibration_supports(bare, MAD, 2400, record=rec)
+    assert ok is False and "harness" in why
+    ok, why = H.calibration_supports(bare, MAD, 2400, record=rec, harness_sha256="e" * 64)
+    assert ok is True                                          # the code that applied, declared
+
+
+# --- O2: a resumed attempt has a single truthful outcome -------------------------------------------
+
+def _attempt(path, body, *, summary_outcome, job, digest=None):
+    import hashlib
+    path.mkdir(parents=True, exist_ok=True)
+    digest = digest or hashlib.sha256(body).hexdigest()
+    (path / "contrast.json").write_bytes(body)
+    (path / "job.json").write_text(json.dumps({**job, "attempt_dir": str(path)}))
+    (path / "result.json").write_text(json.dumps({"status": "COMPLETED", "reason": "",
+                                                  "output_file": "contrast.json",
+                                                  "output_sha256": digest, "outcome": summary_outcome}))
+    (path / "outcome.json").write_text(json.dumps({"status": "COMPLETED",
+                                                   "verified": {"output_sha256": digest},
+                                                   "summary": {"outcome": summary_outcome, "reason": "",
+                                                               "cost": {"cpu_seconds": 1.0},
+                                                               "output_sha256": digest}}))
+
+
+def test_O2_a_resumed_attempt_whose_evidence_fails_verification_reports_only_SCORE_UNVERIFIED(tmp_path):
+    job = {"contrast_id": "c", "protocol": {"protocol_sha256": "p" * 64}, "kind": "contrast"}
+    body = json.dumps({"schema": H.CONTRAST_SCHEMA, "contrast_id": "c", "protocol_sha256": "p" * 64,
+                       "outcome": H.ADVANCES, "delta_mean": 0.3, "delta_se": 0.01,
+                       "delta_lower": 0.2}).encode()
+    run = lambda d, j=job: H.run_isolated(j, attempt_dir=d, assigned_bytes=1 << 20,
+                                          wall_seconds=1, cpu_seconds=1)
+    _attempt(tmp_path / "good", body, summary_outcome=H.ADVANCES, job=job)
+    out = run(tmp_path / "good")
+    assert out["outcome"] == H.ADVANCES and out["score"]["delta_mean"] == 0.3 and out["resumed"]
+    cases = {}
+    _attempt(tmp_path / "absent", body, summary_outcome=H.ADVANCES, job=job)
+    (tmp_path / "absent" / "contrast.json").unlink()
+    cases["absent"] = run(tmp_path / "absent")
+    _attempt(tmp_path / "bytes", body, summary_outcome=H.ADVANCES, job=job)
+    (tmp_path / "bytes" / "contrast.json").write_bytes(body.replace(b"0.3", b"0.9"))
+    cases["bytes"] = run(tmp_path / "bytes")
+    _attempt(tmp_path / "id", body, summary_outcome=H.ADVANCES, job=job)
+    cases["id"] = run(tmp_path / "id", dict(job, contrast_id="other"))
+    _attempt(tmp_path / "proto", body, summary_outcome=H.ADVANCES, job=job)
+    cases["proto"] = run(tmp_path / "proto", dict(job, protocol={"protocol_sha256": "q" * 64}))
+    garbage = b"{not json"
+    _attempt(tmp_path / "parse", garbage, summary_outcome=H.ADVANCES, job=job)
+    cases["parse"] = run(tmp_path / "parse")
+    for name, out in cases.items():
+        assert out["outcome"] == H.SCORE_UNVERIFIED, name
+        assert out["score"] is None and out["resumed"] is True, name
+        assert out["refusal"]["outcome"] == H.SCORE_UNVERIFIED and out["refusal"]["why"], name
+        assert out["history"]["outcome"] == H.ADVANCES, name      # kept as history only
+        assert "delta_mean" not in json.dumps({k: v for k, v in out.items() if k != "history"})
+
+
+def test_O2_a_resumed_attempt_is_bound_to_the_recorded_job(tmp_path):
+    job = {"contrast_id": "c", "protocol": {"protocol_sha256": "p" * 64}, "kind": "contrast",
+           "operator": "mad_extremes_trailing", "unit": "u", "variable": "v0"}
+    body = json.dumps({"schema": H.CONTRAST_SCHEMA, "contrast_id": "c", "protocol_sha256": "p" * 64,
+                       "outcome": H.DOES_NOT_ADVANCE, "delta_mean": -0.1, "delta_se": 0.01,
+                       "delta_lower": -0.2}).encode()
+    _attempt(tmp_path / "a", body, summary_outcome=H.DOES_NOT_ADVANCE, job=job)
+    same = H.run_isolated(dict(job), attempt_dir=tmp_path / "a", assigned_bytes=1, wall_seconds=1, cpu_seconds=1)
+    assert same["outcome"] == H.DOES_NOT_ADVANCE
+    changed = H.run_isolated(dict(job, operator="cusum_causal"), attempt_dir=tmp_path / "a",
+                             assigned_bytes=1, wall_seconds=1, cpu_seconds=1)
+    assert changed["outcome"] == H.SCORE_UNVERIFIED and "job" in changed["refusal"]["why"]
+    (tmp_path / "a" / "job.json").unlink()
+    unbound = H.run_isolated(dict(job), attempt_dir=tmp_path / "a", assigned_bytes=1, wall_seconds=1, cpu_seconds=1)
+    assert unbound["outcome"] == H.SCORE_UNVERIFIED and "job" in unbound["refusal"]["why"]
+
+
+def test_O2_a_resumed_preparatory_record_is_revalidated_against_the_job(tmp_path):
+    p = proto()
+    rec = calibrated(p).calibration
+    body = json.dumps(rec, sort_keys=True).encode()
+    job = {"kind": "calibrate", "contrast_id": FAMILY[0], "operator": MAD.KIND, "protocol": p.sealed(),
+           "plan": rec["plan"], "seed": rec["seed"]}
+    d = tmp_path / "cal"
+    _attempt(d, body, summary_outcome="COMPLETED", job=job)
+    (d / "calibration.json").write_bytes(body)
+    (d / "result.json").write_text(json.dumps({"status": "COMPLETED", "reason": "", "output_file": "calibration.json",
+                                               "output_sha256": __import__("hashlib").sha256(body).hexdigest()}))
+    ok = H.run_isolated(dict(job), attempt_dir=d, assigned_bytes=1, wall_seconds=1, cpu_seconds=1)
+    assert ok["outcome"] == "COMPLETED" and ok["score"]["upper_bound"] == rec["upper_bound"]
+    other = H.run_isolated(dict(job, operator=DELTA.KIND), attempt_dir=d, assigned_bytes=1, wall_seconds=1, cpu_seconds=1)
+    assert other["outcome"] == H.SCORE_UNVERIFIED and other["score"] is None
+    tampered = {**rec, "upper_bound": 0.0}
+    tb = json.dumps(tampered, sort_keys=True).encode()
+    d2 = tmp_path / "cal2"
+    _attempt(d2, tb, summary_outcome="COMPLETED", job=job)
+    (d2 / "calibration.json").write_bytes(tb)
+    (d2 / "result.json").write_text(json.dumps({"status": "COMPLETED", "reason": "", "output_file": "calibration.json",
+                                                "output_sha256": __import__("hashlib").sha256(tb).hexdigest()}))
+    bad = H.run_isolated(dict(job), attempt_dir=d2, assigned_bytes=1, wall_seconds=1, cpu_seconds=1)
+    assert bad["outcome"] == H.SCORE_UNVERIFIED and bad["score"] is None and "bound" in bad["refusal"]["why"]
