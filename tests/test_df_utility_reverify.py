@@ -147,3 +147,67 @@ def test_O2_a_run_resumed_under_another_commit_reports_the_limited_diff(tmp_path
     rd = r["resume_diff"]
     assert rd["files_changed"] == ["docs/x.md", "tools/df_utility_run.py"]
     assert rd["scientific_code_unchanged"] is True and rd["harness_unchanged"] is True
+
+
+def build_root_hyp(tmp_path, monkeypatch):
+    """A family root as the P3 runner writes it: protocols keyed operator__hypothesis, calibration
+    attempts named by the key, jobs carrying protocol_key and the branch pair."""
+    fam = ("fab__v0__mad_extremes_trailing__transformed", "fab__v0__mad_extremes_trailing__augmented")
+    plan = {"generator": "white_null", "n": 900, "bound_confidence": 0.5,
+            "n_sims": H.sims_required_for_zero(0.05 / 2, 0.5)}
+    base = H.Protocol(target="return", horizon=1, model="ridge", window=4, n_blocks=4, margin=0.0, seed=7,
+                      family=fam, min_rows_per_block=30, calibration_plan=dict(plan),
+                      branches=("raw", "transformed", "augmented", "raw_wide"))
+    s = H.series(_series())
+    elig = {"freeze_sha256": "f" * 64, "design_sha256": "d" * 64,
+            "cells": {("fab", "v0", MAD.KIND): {"verdict": "MECHANICALLY_ACCEPTED",
+                                               "spec_sha256": contract.spec_sha256(MAD.describe())}}}
+    root = tmp_path / "run"
+    root.mkdir()
+    protocols, jobs = {}, {}
+    for cid, hyp, pair in ((fam[0], "H_T", ("raw", "transformed")), (fam[1], "H_A", ("raw_wide", "augmented"))):
+        key = f"{MAD.KIND}__{hyp}"
+        rec = H.calibrate(base, MAD, plan=plan, seed=11, branch_a=pair[0], branch_b=pair[1])
+        p = base.with_calibration(rec)
+        protocols[key] = p.sealed()
+        cal_job = {"kind": "calibrate", "contrast_id": fam[0], "operator": MAD.KIND, "protocol": base.sealed(),
+                   "plan": plan, "seed": 11, "protocol_key": key, "hypothesis": hyp, "branch_a": pair[0], "branch_b": pair[1]}
+        _attempt(root / "attempts" / f"calibrate__{key}", json.dumps(rec, sort_keys=True, default=str).encode(),
+                 "calibration.json", cal_job)
+        out = H.contrast(s, MAD, p, contrast_id=cid, eligibility=elig, unit="fab", variable="v0",
+                         branch_a=pair[0], branch_b=pair[1])
+        assert "delta_lower" in out
+        con_job = {"kind": "contrast", "contrast_id": cid, "unit": "fab", "variable": "v0", "operator": MAD.KIND,
+                   "protocol": p.sealed(), "series": {"values": [float(v) for v in s["values"]]}, "eligibility": "x",
+                   "protocol_key": key, "hypothesis": hyp, "branch_a": pair[0], "branch_b": pair[1]}
+        _attempt(root / "attempts" / cid, json.dumps(out, sort_keys=True, default=H._jsonable).encode(),
+                 "contrast.json", con_job, {"outcome": out["outcome"]})
+        jobs[cid] = out
+    (root / "FREEZE.pre.json").write_text(json.dumps({"plan": plan, "units": [{"unit": "fab", "variable": "v0"}]}))
+    (root / "FREEZE.json").write_text(json.dumps({"run_id": "t", "code_identity": {"kind": "git_commit", "value": "0" * 40},
+                                                  "protocols": protocols}))
+    (root / "REPORT.json").write_text(json.dumps({"run_id": "t", "contrasts": {"outcomes": {k: {"outcome": v["outcome"]} for k, v in jobs.items()}},
+                                                  "reconciliation": {"contrasts": {"missing_units": []}, "calibration": {"missing_units": []}}}))
+    monkeypatch.setattr(RV, "file_at", lambda repo, commit, path: (HERE / Path(path).name).read_bytes())
+    return root, jobs
+
+
+def test_P1_P4_hypothesis_keyed_contracts_are_verified_with_their_own_pair_and_record(tmp_path, monkeypatch):
+    root, outs = build_root_hyp(tmp_path, monkeypatch)
+    r = RV.reverify(root, tmp_path)
+    assert r["all_verified"] is True and r["decision_delta"] == []
+    assert sorted(r["calibrations"]) == [f"{MAD.KIND}__H_A", f"{MAD.KIND}__H_T"]
+    assert r["calibrations"][f"{MAD.KIND}__H_A"]["pair"] == ["raw_wide", "augmented"]
+    assert r["calibrations"][f"{MAD.KIND}__H_A"]["supports"]["decision"] is True
+    rows = {t["hypothesis"]: t for t in r["table"]}
+    assert rows["H_A"]["branch_a"] == "raw_wide" and rows["H_T"]["branch_b"] == "transformed"
+    assert rows["H_A"]["reverified_outcome"] == outs["fab__v0__mad_extremes_trailing__augmented"]["outcome"]
+    # the H_T record put under the H_A key is refused: the pair is bound
+    a = root / "attempts" / f"calibrate__{MAD.KIND}__H_A"
+    t = root / "attempts" / f"calibrate__{MAD.KIND}__H_T"
+    for name in ("calibration.json", "result.json", "outcome.json"):
+        (a / name).write_bytes((t / name).read_bytes())
+    r2 = RV.reverify(root, tmp_path)
+    assert any("branch pair" in x for x in r2["calibrations"][f"{MAD.KIND}__H_A"]["problems"])
+    assert r2["contrasts"]["fab__v0__mad_extremes_trailing__augmented"]["reverified_outcome"] == H.INCONCLUSIVE_UNCALIBRATED
+    assert "| H_A | raw_wide | augmented |" in RV.markdown(r)

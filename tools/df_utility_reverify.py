@@ -135,8 +135,19 @@ def reverify(root: Path, repo: Path) -> dict:
     # --- calibrations -------------------------------------------------------------------------
     records = {}
     for attempt in sorted((root / "attempts").glob("calibrate__*")):
-        kind = attempt.name.split("__", 1)[1]
-        entry = {"attempt": attempt.name, "problems": [], "derived": None, "supports": None}
+        key = attempt.name.split("__", 1)[1]                    # operator, or operator__hypothesis
+        job0, _ = recorded_job(attempt)
+        kind = (job0 or {}).get("operator") or key
+        key = (job0 or {}).get("protocol_key") or key
+        pair = ((job0 or {}).get("branch_a", "raw"), (job0 or {}).get("branch_b", "transformed"))
+        entry = {"attempt": attempt.name, "operator": kind, "protocol_key": key,
+                 "hypothesis": (job0 or {}).get("hypothesis"), "pair": list(pair),
+                 "problems": [], "derived": None, "supports": None}
+        if key not in bare:
+            entry["problems"].append(f"no frozen protocol for {key}")
+            out["all_verified"] = False
+            out["calibrations"][key] = entry
+            continue
         doc, digest, problems = verified_bytes(attempt)
         entry["problems"] += problems
         job, jp = recorded_job(attempt)
@@ -151,10 +162,12 @@ def reverify(root: Path, repo: Path) -> dict:
                 job_base = protocol_from(base_doc).base_sha256()
             except Exception as e:  # noqa: BLE001
                 job_base, entry["problems"] = None, entry["problems"] + [f"recorded protocol unsealable: {e}"]
-            if job_base and job_base != bare[kind].base_sha256():
+            if job_base and job_base != bare[key].base_sha256():
                 entry["problems"].append("recorded job's protocol base is not the freeze's")
-            if doc.get("protocol_base_sha256") != bare[kind].base_sha256():
+            if doc.get("protocol_base_sha256") != bare[key].base_sha256():
                 entry["problems"].append("record's protocol base is not the freeze's")
+            if H.record_pair(doc) != pair:
+                entry["problems"].append("record's branch pair is not the recorded job's")
             if dict(job.get("plan") or {}) != dict(pre.get("plan") or {}):
                 entry["problems"].append("recorded job's plan is not the sealed plan")
             derived = H.derive_calibration(doc)
@@ -164,15 +177,15 @@ def reverify(root: Path, repo: Path) -> dict:
             entry["stated"] = {k: doc.get(k) for k in ("scored", "failed", "advances", "false_advance_rate",
                                                        "upper_bound", "bound_confidence", "alpha_adjusted",
                                                        "generator", "n_sims", "n", "harness_sha256")}
-            ok, why = H.calibration_supports(bare[kind], ops.build(kind), doc["n"], record=doc,
-                                             harness_sha256=applicable)
+            ok, why = H.calibration_supports(bare[key], ops.build(kind), doc["n"], record=doc,
+                                             harness_sha256=applicable, branch_a=pair[0], branch_b=pair[1])
             entry["supports"] = {"decision": ok, "why": why, "under_harness": applicable}
             entry["record_sha256"] = digest
             if not entry["problems"] and not entry["record_problems"]:
-                records[kind] = doc
+                records[key] = doc
         if entry["problems"]:
             out["all_verified"] = False
-        out["calibrations"][kind] = entry
+        out["calibrations"][key] = entry
     # --- contrasts --------------------------------------------------------------------------------
     for attempt in sorted(p for p in (root / "attempts").iterdir()
                           if not p.name.startswith(("calibrate__", "mechanics__"))):
@@ -182,6 +195,10 @@ def reverify(root: Path, repo: Path) -> dict:
         job, jp = recorded_job(attempt)
         entry["problems"] += jp
         kind = (job or {}).get("operator")
+        key = (job or {}).get("protocol_key") or kind
+        pair = ((job or {}).get("branch_a", "raw"), (job or {}).get("branch_b", "transformed"))
+        entry.update({"operator": kind, "protocol_key": key, "hypothesis": (job or {}).get("hypothesis"),
+                      "pair": list(pair)})
         if doc is not None and doc.get("not_completed"):
             entry["original_outcome"] = entry["reverified_outcome"] = doc.get("outcome")
             entry["carried"] = f"attempt ended {doc.get('outcome')}: {doc.get('reason')}"
@@ -190,19 +207,21 @@ def reverify(root: Path, repo: Path) -> dict:
             if doc.get("contrast_id") not in (None, attempt.name) or job.get("contrast_id") != attempt.name:
                 entry["problems"].append("contrast identity differs from the attempt")
             sealed = (job.get("protocol") or {}).get("protocol_sha256")
-            if kind not in protocols or sealed != protocols[kind]["protocol_sha256"]:
-                entry["problems"].append("recorded job's protocol is not the frozen one for this operator")
+            if key not in protocols or sealed != protocols[key]["protocol_sha256"]:
+                entry["problems"].append("recorded job's protocol is not the frozen one for this contract")
+            if (doc.get("branch_a", "raw"), doc.get("branch_b", "transformed")) != pair:
+                entry["problems"].append("file's branch pair is not the recorded job's")
             if "protocol_sha256" in doc and doc["protocol_sha256"] != sealed:
                 entry["problems"].append("file's protocol identity is not the job's")
             n = len((job.get("series") or {}).get("values") or [])
             if "delta_lower" in doc and not entry["problems"]:
-                rec = records.get(kind)
+                rec = records.get(key)
                 if rec is None:
-                    ok, why = False, "no verified calibration record for this operator"
+                    ok, why = False, "no verified calibration record for this contract"
                 else:
-                    ok, why = H.calibration_supports(bare[kind], ops.build(kind), n, record=rec,
-                                                     harness_sha256=applicable)
-                margin = bare[kind].margin
+                    ok, why = H.calibration_supports(bare[key], ops.build(kind), n, record=rec,
+                                                     harness_sha256=applicable, branch_a=pair[0], branch_b=pair[1])
+                margin = bare[key].margin
                 entry["reverified_outcome"] = (H.ADVANCES if doc["delta_lower"] > margin else H.DOES_NOT_ADVANCE) \
                     if ok else H.INCONCLUSIVE_UNCALIBRATED
                 entry["support"] = {"decision": ok, "why": why}
@@ -211,7 +230,8 @@ def reverify(root: Path, repo: Path) -> dict:
                 cov = doc.get("coverage") or {}
                 entry_table = {
                     "contrast": attempt.name, "unit": job.get("unit"), "variable": job.get("variable"),
-                    "operator": kind, "loss": doc.get("loss_name"),
+                    "operator": kind, "hypothesis": job.get("hypothesis"), "branch_a": pair[0], "branch_b": pair[1],
+                    "loss": doc.get("loss_name"),
                     "loss_raw_mean": sum(losses_a) / len(losses_a) if losses_a else None,
                     "loss_transformed_mean": sum(losses_b) / len(losses_b) if losses_b else None,
                     "delta_mean": doc["delta_mean"], "delta_lower": doc["delta_lower"], "delta_se": doc["delta_se"],
@@ -223,7 +243,7 @@ def reverify(root: Path, repo: Path) -> dict:
                     "purge": doc.get("purge"), "cpu_seconds": (doc.get("cost") or {}).get("cpu_seconds"),
                     "null_scope": ({"generator": rec["generator"], "n_sims": rec["n_sims"], "n": rec["n"],
                                     "bound_confidence": rec["bound_confidence"],
-                                    "derived_decision_bound": out["calibrations"][kind]["derived"]["decision_bound"],
+                                    "derived_decision_bound": out["calibrations"][key]["derived"]["decision_bound"],
                                     "failed": rec["failed"]} if rec else None),
                     "original_outcome": doc.get("outcome"), "reverified_outcome": entry["reverified_outcome"]}
                 out["table"].append(entry_table)
@@ -245,23 +265,23 @@ def markdown(out: dict) -> str:
              f"Frozen commit `{(out['code_identity_frozen'] or '')[:7]}`, resumed `{(out['code_identity_resumed'] or '')[:7]}`; "
              f"harness that applied `{(out['harness_sha256_at_frozen_commit'] or '')[:12]}…`; failure policy `{out['failure_policy']}`.", "",
              "## Calibrations (derived from every simulation)", "",
-             "| operator | stated advances/scored (+failed) | derived | stated bound | derived bound | decision bound | supports | why |",
-             "|---|---|---|---:|---:|---:|---|---|"]
+             "| contract | pair | stated advances/scored (+failed) | derived | stated bound | derived bound | decision bound | supports | why |",
+             "|---|---|---|---|---:|---:|---:|---|---|"]
     for k, e in out["calibrations"].items():
         d, s = e.get("derived") or {}, e.get("stated") or {}
         sup = e.get("supports") or {}
-        lines.append(f"| `{k}` | {s.get('advances')}/{s.get('scored')} (+{s.get('failed')}) | "
+        lines.append(f"| `{k}` | {'/'.join(e.get('pair') or [])} | {s.get('advances')}/{s.get('scored')} (+{s.get('failed')}) | "
                      f"{d.get('advances')}/{d.get('scored')} (+{d.get('failed')}) | {s.get('upper_bound', float('nan')):.5f} | "
                      f"{d.get('upper_bound', float('nan')):.5f} | {d.get('decision_bound', float('nan')):.5f} | "
                      f"{'YES' if sup.get('decision') else 'NO'} | {sup.get('why') or '; '.join(e['problems']) or '—'} |")
     lines += ["", "## Contrasts", "",
-              "| unit | variable | operator | loss | raw | transformed | Δ (raw−transf.) | lower (1−α/m) | blocks | paired rows | train/val rows | cpu s | null scope | original | re-verified |",
-              "|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---:|---|---|---|"]
+              "| unit | variable | operator | hyp | A | B | loss | loss A | loss B | Δ (A−B) | lower (1−α/m) | blocks | paired rows | train/val rows | cpu s | null scope | original | re-verified |",
+              "|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|---:|---|---|---|"]
     for t in out["table"]:
         ns = t["null_scope"] or {}
         scope = (f"{ns.get('generator')} ×{ns.get('n_sims')} @n={ns.get('n')}, bound {ns.get('derived_decision_bound', float('nan')):.5f}"
                  if ns else "none")
-        lines.append(f"| `{t['unit']}` | {t['variable']} | `{t['operator']}` | {t['loss']} | {t['loss_raw_mean']:.5f} | "
+        lines.append(f"| `{t['unit']}` | {t['variable']} | `{t['operator']}` | {t.get('hypothesis') or '—'} | {t.get('branch_a')} | {t.get('branch_b')} | {t['loss']} | {t['loss_raw_mean']:.5f} | "
                      f"{t['loss_transformed_mean']:.5f} | {t['delta_mean']:+.5f} | {t['delta_lower']:+.5f} | {t['blocks_used']} | "
                      f"{t['rows_paired']}/{t['n']} | {t['train_rows']}/{t['validation_rows']} | {t['cpu_seconds']} | {scope} | "
                      f"{t['original_outcome']} | {t['reverified_outcome']} |")
