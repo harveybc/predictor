@@ -301,7 +301,7 @@ def test_N2_a_record_transferred_to_another_operator_protocol_length_or_family_d
     other = H.Protocol(**{**p.__dict__, "margin": 0.01})          # another protocol, same record
     out = H.contrast(s, MAD, other, contrast_id=FAMILY[0], eligibility=record_for(MAD),
                      unit="fab", variable="v0")
-    assert out["outcome"] == H.INCONCLUSIVE_UNCALIBRATED and "another protocol" in out["why"]
+    assert out["outcome"] == H.INCONCLUSIVE_UNCALIBRATED and ("another protocol" in out["why"] or "another computation (margin)" in out["why"])
     short = H.series(fabricated(n=1800, truth="extreme"))
     out = H.contrast(short, MAD, p, contrast_id=FAMILY[0], eligibility=record_for(MAD),
                      unit="fab", variable="v0")
@@ -320,9 +320,9 @@ def test_N2_the_decision_is_gated_on_the_upper_bound_not_the_point_estimate():
     # the same simulations under a plan sealed at 95%: the point estimate is still 0, the
     # derived bound is not — no decision (O1: the bound is derived, the plan is the protocol's)
     p95 = proto(calibration_plan={**FIXTURE_PLAN, "bound_confidence": 0.95})
-    strict = {**rec, "bound_confidence": 0.95, "plan": {**rec["plan"], "bound_confidence": 0.95},
-              "upper_bound": H.clopper_pearson_upper(0, rec["scored"], 0.95),
-              "protocol_base_sha256": p95.base_sha256()}
+    strict = H.rekeyed({**rec, "bound_confidence": 0.95, "plan": {**rec["plan"], "bound_confidence": 0.95},
+                        "upper_bound": H.clopper_pearson_upper(0, rec["scored"], 0.95),
+                        "protocol_base_sha256": p95.base_sha256()})
     p = p95.with_calibration(strict)
     assert strict["upper_bound"] > p.alpha_adjusted
     s = H.series(fabricated(truth="extreme"))
@@ -474,7 +474,7 @@ def test_N3_a_preparatory_calibration_child_completes_with_its_record_as_the_ver
                                             "bound_confidence": 0.5}, "seed": 5}
     out = H.run_isolated(job, attempt_dir=tmp_path / "cal", assigned_bytes=1 << 30,
                          wall_seconds=300.0, cpu_seconds=300)
-    assert out["outcome"] == "COMPLETED" and out["score"]["schema"] == "df_utility_calibration.v2"
+    assert out["outcome"] == "COMPLETED" and out["score"]["schema"] == "df_utility_calibration.v3"
     assert out["score"]["n_sims"] == 2 and out["output_sha256"]
     assert (tmp_path / "cal" / "outcome.json").is_file()
 
@@ -547,16 +547,16 @@ def test_O1_every_simulation_is_validated_label_delta_indices_seeds_and_finitene
 def test_O1_a_plan_or_confidence_discordant_with_the_protocol_does_not_decide():
     p = calibrated()
     rec = dict(p.calibration)
-    other_conf = {**rec, "bound_confidence": 0.3, "plan": {**rec["plan"], "bound_confidence": 0.3},
-                  "upper_bound": H.clopper_pearson_upper(rec["advances"], rec["scored"], 0.3)}
+    other_conf = H.rekeyed({**rec, "bound_confidence": 0.3, "plan": {**rec["plan"], "bound_confidence": 0.3},
+                            "upper_bound": H.clopper_pearson_upper(rec["advances"], rec["scored"], 0.3)})
     bare = H.Protocol(**{**p.__dict__, "calibration": None})
     ok, why = H.calibration_supports(bare, MAD, 2400, record=other_conf)
-    assert ok is False and "plan" in why
+    assert ok is False and ("plan" in why or "bound_confidence" in why)
     inner = {**rec, "bound_confidence": 0.3}                    # record disagrees with its own plan
     assert any("plan" in x for x in H.calibration_record_problems(inner))
-    other_margin = {**rec, "margin": 0.01}
+    other_margin = H.rekeyed({**rec, "margin": 0.01})
     ok, why = H.calibration_supports(bare, MAD, 2400, record=other_margin)
-    assert ok is False
+    assert ok is False and "margin" in why
     assert H.calibration_supports(bare, MAD, 2400, record=rec)[0] is True
 
 
@@ -583,7 +583,7 @@ def test_O1_the_failure_policy_is_declared_and_failed_simulations_count_against_
 
 def test_O1_a_record_from_another_harness_code_does_not_decide():
     p = calibrated()
-    rec = {**p.calibration, "harness_sha256": "e" * 64}
+    rec = H.rekeyed({**p.calibration, "harness_sha256": "e" * 64})
     bare = H.Protocol(**{**p.__dict__, "calibration": None})
     ok, why = H.calibration_supports(bare, MAD, 2400, record=rec)
     assert ok is False and "harness" in why
@@ -707,7 +707,7 @@ def test_P1_H_A_is_calibrated_and_scored_with_raw_wide_vs_augmented_by_the_same_
     rec, seen = _spy_pairs(monkeypatch, H.calibrate, p, MAD, plan=plan, seed=5,
                            branch_a="raw_wide", branch_b="augmented")
     assert seen == [("raw_wide", "augmented")] * 2
-    assert rec["schema"] == "df_utility_calibration.v2"
+    assert rec["schema"] == "df_utility_calibration.v3"
     assert rec["branch_a"] == "raw_wide" and rec["branch_b"] == "augmented"
     assert rec["widths"] == {"a": 8, "b": 8} and rec["rows_policy"] == H.ROWS_POLICY
     rec_t, seen_t = _spy_pairs(monkeypatch, H.calibrate, p, MAD, plan=plan, seed=5)
@@ -738,7 +738,8 @@ def test_P1_records_of_the_two_pairs_do_not_transfer_and_the_pair_is_bound_to_th
                 {"branch_b": "transformed"}):
         assert H.calibration_record_problems({**rec_a, **bad})
     # a v1 record (the pilot's) is the raw/transformed pair by construction
-    v1 = {k: v for k, v in rec_t.items() if k not in ("branch_a", "branch_b", "widths", "rows_policy")}
+    v1 = {k: v for k, v in rec_t.items() if k not in ("branch_a", "branch_b", "widths", "rows_policy",
+                                                        "computation", "computation_sha256", "numeric_dependencies")}
     v1["schema"] = "df_utility_calibration.v1"
     assert H.calibration_record_problems(v1) == []
     assert H.calibration_supports(bare, MAD, 600, record=v1)[0] in (True, False)

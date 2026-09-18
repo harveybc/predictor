@@ -197,6 +197,58 @@ class Protocol:
 #: policy; a v1 record (the pilot's) is the raw/transformed pair by construction.
 ROWS_POLICY = "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT"
 CALIBRATION_PAIR_KEYS = ("branch_a", "branch_b", "widths", "rows_policy")
+#: Q2 — v3 adds the canonical key of the scientific COMPUTATION (no family/unit labels), the
+#: numeric dependencies, and the source (measured here, or a verified shared record)
+CALIBRATION_COMPUTATION_KEYS = ("computation", "computation_sha256", "numeric_dependencies")
+GENERATOR_PARAMS = {"white_null": {"phi": 0.0}, "ar1_features_independent_target": {"phi": 0.6},
+                    "ar1_null": {"phi": 0.6}}
+
+
+def numeric_dependencies() -> dict:
+    import scipy
+    return {"python": sys.version.split()[0], "numpy": np.__version__, "scipy": scipy.__version__}
+
+
+def computation_key(protocol: Protocol, operator, plan: dict, *, branch_a: str, branch_b: str, seed: int,
+                    harness: str | None = None) -> dict:
+    """The canonical key of ONE calibration computation: everything the simulations depend on,
+    nothing they do not. Family ids and unit names are administrative labels and are absent;
+    alpha enters through alpha_adjusted (the effective threshold), the multiplicity only through
+    it. Two families that differ only in labels share a key; any scientific difference breaks it."""
+    contract = _load("df_d3_contract")
+    return {"schema": "df_utility_calibration_computation.v1",
+            "harness_sha256": harness or harness_sha256(), "numeric_dependencies": numeric_dependencies(),
+            "generator": plan["generator"], "generator_params": dict(GENERATOR_PARAMS.get(plan["generator"], {})),
+            "seed": int(seed), "n": int(plan["n"]), "n_sims": int(plan["n_sims"]),
+            "bound_confidence": float(plan["bound_confidence"]),
+            "operator": {"kind": operator.KIND, "spec_sha256": contract.spec_sha256(operator.describe()),
+                         "params": dict(operator.params)},
+            "branch_a": branch_a, "branch_b": branch_b,
+            "widths": {"a": branch_width(branch_a, protocol.window), "b": branch_width(branch_b, protocol.window)},
+            "target": protocol.target, "horizon": protocol.horizon, "model": protocol.model,
+            "window": protocol.window, "n_blocks": protocol.n_blocks, "min_rows_per_block": protocol.min_rows_per_block,
+            "ridge_lambda": protocol.ridge_lambda, "logistic_steps": protocol.logistic_steps,
+            "prefix_checks": protocol.prefix_checks, "blocks_policy": protocol.blocks_policy,
+            "inference": protocol.inference, "margin": protocol.margin, "alpha_adjusted": protocol.alpha_adjusted,
+            "failure_policy": FAILURE_POLICY, "rows_policy": ROWS_POLICY}
+
+
+def computation_sha256(key: dict) -> str:
+    return sha_obj(key)
+
+
+def rekeyed(rec: dict) -> dict:
+    """A v3 record whose computation key is rebuilt from its own fields (for a record edited
+    on purpose in a test or a migration; the digest then seals the edited key)."""
+    if "computation" not in rec:
+        return dict(rec)
+    key = dict(rec["computation"])
+    for name in ("generator", "seed", "n", "n_sims", "bound_confidence", "operator", "branch_a", "branch_b", "widths",
+                 "target", "model", "window", "n_blocks", "margin", "alpha_adjusted", "rows_policy", "harness_sha256",
+                 "numeric_dependencies"):
+        key[name] = rec[name]
+    return {**rec, "computation": key, "computation_sha256": computation_sha256(key)}
+
 CALIBRATION_KEYS = ("schema", "generator", "null", "plan", "n_sims", "scored", "failed", "advances",
                     "false_advance_rate", "upper_bound", "bound_confidence", "alpha_adjusted",
                     "seed", "n", "operator", "protocol_base_sha256", "family", "margin", "n_blocks",
@@ -298,12 +350,31 @@ def calibration_record_problems(rec) -> list:
     simulations and compared with the summaries (O1)."""
     import math
     problems = []
-    if not isinstance(rec, dict) or set(rec) not in (set(CALIBRATION_KEYS),
-                                                     set(CALIBRATION_KEYS) | set(CALIBRATION_PAIR_KEYS)):
-        return [f"calibration must carry exactly {list(CALIBRATION_KEYS)} (+ {list(CALIBRATION_PAIR_KEYS)} in v2)"]
-    v2 = set(rec) == set(CALIBRATION_KEYS) | set(CALIBRATION_PAIR_KEYS)
-    if rec["schema"] != ("df_utility_calibration.v2" if v2 else "df_utility_calibration.v1"):
+    k1, k2 = set(CALIBRATION_KEYS), set(CALIBRATION_KEYS) | set(CALIBRATION_PAIR_KEYS)
+    k3 = k2 | set(CALIBRATION_COMPUTATION_KEYS)
+    if not isinstance(rec, dict) or set(rec) not in (k1, k2, k3):
+        return [f"calibration must carry exactly {list(CALIBRATION_KEYS)} (+ {list(CALIBRATION_PAIR_KEYS)} in v2, "
+                f"+ {list(CALIBRATION_COMPUTATION_KEYS)} in v3)"]
+    v2 = set(rec) in (k2, k3)
+    v3 = set(rec) == k3
+    expected_schema = "df_utility_calibration.v3" if v3 else "df_utility_calibration.v2" if v2 else "df_utility_calibration.v1"
+    if rec["schema"] != expected_schema:
         problems.append("calibration schema does not match its keys")
+    if v3:
+        key = rec["computation"]
+        if not isinstance(key, dict) or computation_sha256(key) != rec["computation_sha256"]:
+            problems.append("computation key digest does not seal the key")
+        else:
+            checks = {"generator": rec["generator"], "seed": rec["seed"], "n": rec["n"], "n_sims": rec["n_sims"],
+                      "bound_confidence": rec["bound_confidence"], "operator": rec["operator"],
+                      "branch_a": rec["branch_a"], "branch_b": rec["branch_b"], "widths": rec["widths"],
+                      "target": rec["target"], "model": rec["model"], "window": rec["window"], "n_blocks": rec["n_blocks"],
+                      "margin": rec["margin"], "alpha_adjusted": rec["alpha_adjusted"], "rows_policy": rec["rows_policy"],
+                      "harness_sha256": rec["harness_sha256"], "numeric_dependencies": rec["numeric_dependencies"],
+                      "failure_policy": FAILURE_POLICY}
+            for name, v in checks.items():
+                if key.get(name) != v:
+                    problems.append(f"computation key {name} disagrees with the record")
     if v2:
         a, b = rec["branch_a"], rec["branch_b"]
         if a not in BRANCHES or b not in BRANCHES or a == b:
@@ -804,8 +875,14 @@ def calibrate(protocol: Protocol, operator, *, plan: dict | None = None, seed: i
             per_sim.append({"index": k, "seed": sim_seed, "outcome": out["outcome"],
                             "why": out.get("why")})
     rate = advances / scored if scored else float("nan")
-    return {"schema": "df_utility_calibration.v2", "generator": generator,
+    this_harness = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    key = computation_key(protocol, operator, {"generator": generator, "n_sims": n_sims, "n": n,
+                                               "bound_confidence": bound_confidence},
+                          branch_a=branch_a, branch_b=branch_b, seed=seed, harness=this_harness)
+    return {"schema": "df_utility_calibration.v3", "generator": generator,
             "null": bool(GENERATORS[generator]["null"]),
+            "computation": key, "computation_sha256": computation_sha256(key),
+            "numeric_dependencies": key["numeric_dependencies"],
             "branch_a": branch_a, "branch_b": branch_b,
             "widths": {"a": branch_width(branch_a, protocol.window), "b": branch_width(branch_b, protocol.window)},
             "rows_policy": ROWS_POLICY,
@@ -822,7 +899,7 @@ def calibrate(protocol: Protocol, operator, *, plan: dict | None = None, seed: i
             "margin": protocol.margin, "n_blocks": protocol.n_blocks, "window": protocol.window,
             "target": protocol.target, "model": protocol.model,
             "per_sim": per_sim, "per_sim_sha256": sha_obj(per_sim),
-            "harness_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            "harness_sha256": this_harness,
             "cost": {"cpu_seconds": round(time.process_time() - t0, 3)}}
 
 
@@ -855,13 +932,22 @@ def calibration_supports(protocol: Protocol, operator, n: int, *, record: dict |
     if rec["operator"]["kind"] != operator.KIND or rec["operator"]["spec_sha256"] != spec_sha \
             or rec["operator"]["params"] != dict(operator.params):
         return False, "calibrated for another operator declaration"
-    if rec["protocol_base_sha256"] != protocol.base_sha256():
-        return False, "calibrated for another protocol"
-    if list(rec["family"]) != list(protocol.family):
-        return False, "calibrated for another contrast family"
     if record_pair(rec) != (branch_a, branch_b):
         return False, (f"calibrated for another branch pair {record_pair(rec)}, this contrast is "
                        f"({branch_a}, {branch_b})")
+    if "computation" in rec:
+        # v3: the scientific computation must be THIS contrast's; family/unit labels do not count
+        expected = computation_key(protocol, operator, rec["plan"], branch_a=branch_a, branch_b=branch_b,
+                                   seed=rec["seed"], harness=harness_sha256 or globals()["harness_sha256"]())
+        expected["numeric_dependencies"] = rec["computation"].get("numeric_dependencies")
+        if computation_sha256(expected) != rec["computation_sha256"]:
+            differing = sorted(k for k in set(expected) | set(rec["computation"]) if expected.get(k) != rec["computation"].get(k))
+            return False, f"calibrated for another computation ({', '.join(differing)})"
+    else:
+        if rec["protocol_base_sha256"] != protocol.base_sha256():
+            return False, "calibrated for another protocol"
+        if list(rec["family"]) != list(protocol.family):
+            return False, "calibrated for another contrast family"
     if rec["n"] != int(n):
         return False, f"calibrated at length {rec['n']}, this series has {n}"
     if rec["alpha_adjusted"] != protocol.alpha_adjusted:
@@ -912,12 +998,12 @@ def verified_score(attempt_dir: Path, result: dict, verified: dict, job: dict, *
         return None, {"outcome": SCORE_UNVERIFIED, "why": "the output is not JSON"}
     legacy = allow_legacy_schema and "schema" not in score and "delta_mean" in score
     preparatory = score.get("schema") in ("df_utility_calibration.v1", "df_utility_calibration.v2",
-                                          "d3_mechanics_cells.v1")
+                                          "df_utility_calibration.v3", "d3_mechanics_cells.v1")
     if not legacy and not preparatory and score.get("schema") != CONTRAST_SCHEMA \
             and score.get("outcome") not in (REFUSED, INSUFFICIENT_ROWS):
         return None, {"outcome": SCORE_UNVERIFIED, "why": f"schema {score.get('schema')!r}"}
     if preparatory:
-        if score.get("schema") in ("df_utility_calibration.v1", "df_utility_calibration.v2"):
+        if score.get("schema") in ("df_utility_calibration.v1", "df_utility_calibration.v2", "df_utility_calibration.v3"):
             problems = calibration_record_problems(score)
             if job.get("branch_a") or job.get("branch_b"):
                 if record_pair(score) != (job.get("branch_a", "raw"), job.get("branch_b", "transformed")):
@@ -930,12 +1016,22 @@ def verified_score(attempt_dir: Path, result: dict, verified: dict, job: dict, *
             base = (job.get("protocol") or {})
             if base and "protocol_sha256" in base:
                 try:
-                    expected_base = Protocol(**{k: (tuple(v) if isinstance(v, list) else v)
-                                                for k, v in base.items()
-                                                if k not in ("protocol_sha256", "comparisons", "alpha_adjusted")}).base_sha256()
+                    proto_job = Protocol(**{k: (tuple(v) if isinstance(v, list) else v)
+                                            for k, v in base.items()
+                                            if k not in ("protocol_sha256", "comparisons", "alpha_adjusted")})
                 except (ProtocolRefusal, TypeError):
-                    expected_base = None
-                if expected_base and score["protocol_base_sha256"] != expected_base:
+                    proto_job = None
+                if proto_job is not None and "computation" in score:
+                    # v3: the job's computation (labels apart) must be the record's; the harness
+                    # that applies is judged at support time, not here
+                    ops = _load("df_d3_operators")
+                    expected = computation_key(proto_job, ops.build(job["operator"]), job.get("plan") or score["plan"],
+                                               branch_a=job.get("branch_a", "raw"), branch_b=job.get("branch_b", "transformed"),
+                                               seed=job.get("seed", score["seed"]), harness=score["computation"].get("harness_sha256"))
+                    expected["numeric_dependencies"] = score["computation"].get("numeric_dependencies")
+                    if computation_sha256(expected) != score.get("computation_sha256"):
+                        return None, {"outcome": SCORE_UNVERIFIED, "why": "calibration is for another computation"}
+                elif proto_job is not None and score["protocol_base_sha256"] != proto_job.base_sha256():
                     return None, {"outcome": SCORE_UNVERIFIED, "why": "calibration is for another protocol"}
             if job.get("plan") and dict(score["plan"]) != dict(job["plan"]):
                 return None, {"outcome": SCORE_UNVERIFIED, "why": "calibration is for another plan"}
@@ -1035,12 +1131,12 @@ def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seco
     return summary
 
 
-def _finish(adir: Path, name: str, doc: dict, outcome) -> int:
-    body = json.dumps(doc, sort_keys=True, default=_jsonable).encode()
+def _finish(adir: Path, name: str, doc: dict, outcome, extra: dict | None = None, body: bytes | None = None) -> int:
+    body = body if body is not None else json.dumps(doc, sort_keys=True, default=_jsonable).encode()
     (adir / name).write_bytes(body)
     result = {"status": "COMPLETED", "reason": "", "output_file": name,
               "output_sha256": hashlib.sha256(body).hexdigest(), "rows_written": 1,
-              "outcome": outcome if outcome is not None else "COMPLETED"}
+              "outcome": outcome if outcome is not None else "COMPLETED", **(extra or {})}
     tmp = adir / "result.json.tmp"
     tmp.write_text(json.dumps(result))
     os.replace(tmp, adir / "result.json")
@@ -1071,10 +1167,40 @@ def worker_main(job_file: Path) -> int:
     operator = ops.build(job["operator"]) if job.get("operator") else None
     kind = job.get("kind", "contrast")
     if kind == "calibrate":
-        # preparatory work under the same ceilings: the record is the child's output
-        record = calibrate(proto, operator, plan=job["plan"], seed=job.get("seed"),
-                           branch_a=job.get("branch_a", "raw"), branch_b=job.get("branch_b", "transformed"))
-        return _finish(adir, "calibration.json", record, record.get("upper_bound"))
+        # preparatory work under the same ceilings: the record is the child's output. With a
+        # cache directory (Q2), a verified shared record of the SAME computation is reused byte
+        # for byte and the source is declared; otherwise the simulations run here and the record
+        # is offered to the cache.
+        pair = (job.get("branch_a", "raw"), job.get("branch_b", "transformed"))
+        seed = job.get("seed") if job.get("seed") is not None else proto.seed + 1000
+        source = {"kind": "MEASURED_HERE"}
+        cache = None
+        if job.get("cache_dir"):
+            CC = _load("df_utility_calibration_cache")
+            cache = CC.CalibrationCache(Path(job["cache_dir"]))
+            key = computation_key(proto, operator, job["plan"], branch_a=pair[0], branch_b=pair[1], seed=seed)
+            t0 = time.process_time()
+            body, why = cache.lookup(key)
+            if body is not None:
+                cache.note_consumer(computation_sha256(key), consumer={"attempt_dir": str(adir), "contrast_id": job.get("contrast_id"),
+                                                                     "protocol_key": job.get("protocol_key")},
+                                    kind="HIT", verification_seconds=round(time.process_time() - t0, 3))
+                (adir / "calibration.json").write_bytes(body)
+                record = json.loads(body)
+                source = {"kind": "CACHE_HIT", "computation_sha256": computation_sha256(key),
+                          "producer": why, "verification_seconds": round(time.process_time() - t0, 3),
+                          "simulations_run_here": 0}
+                return _finish(adir, "calibration.json", record, record.get("upper_bound"), extra={"calibration_source": source},
+                               body=body)
+            source = {"kind": "MISS_PRODUCED", "computation_sha256": computation_sha256(key), "why_miss": why}
+        record = calibrate(proto, operator, plan=job["plan"], seed=seed, branch_a=pair[0], branch_b=pair[1])
+        body = json.dumps(record, sort_keys=True, default=_jsonable).encode()
+        if cache is not None:
+            stored = cache.store(record["computation_sha256"], body,
+                                 producer={"attempt_dir": str(adir), "contrast_id": job.get("contrast_id"),
+                                           "protocol_key": job.get("protocol_key"), "cost_cpu_seconds": record["cost"]["cpu_seconds"]})
+            source["stored"] = stored
+        return _finish(adir, "calibration.json", record, record.get("upper_bound"), extra={"calibration_source": source}, body=body)
     if kind == "mechanics":
         battery = _load("df_d3_acceptance")
         contract = _load("df_d3_contract")

@@ -103,6 +103,15 @@ def _terminal(*, status, reason, cost, metrics, tags, started, finished) -> dict
             "deliveries": [], "artifacts": [], "metrics": metrics, "tags": tags}
 
 
+def _calibration_source(attempt_dir) -> dict:
+    """What the child declared about where its record came from (Q2): measured here, a
+    verified shared record (cache hit), or a miss it produced and offered."""
+    path = Path(attempt_dir) / "result.json"
+    if not path.is_file():
+        return {"kind": "UNKNOWN"}
+    return json.loads(path.read_text()).get("calibration_source") or {"kind": "MEASURED_HERE"}
+
+
 def _metric(name, value, unit, split="development", horizon=1):
     return {"metric": name, "split": split, "horizon": horizon, "unit": unit,
             "value": float(value), "std_dev": None, "min_value": None, "max_value": None}
@@ -224,6 +233,8 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
         if not explicit:                                        # the historical job, byte-identical
             cal_job = {"contrast_id": family[0], "operator": kind, "protocol": base.sealed(),
                        "plan": plan, "seed": base.seed + 1000 + idx}
+        if cfg.get("calibration_cache_dir"):
+            cal_job["cache_dir"] = str(cfg["calibration_cache_dir"])
         if key_c in already and (root / "attempts" / f"calibrate__{key_c}" / "outcome.json").is_file():
             out = child("calibrate", f"calibrate__{key_c}", cal_job,
                         budgets["calibration_wall_seconds"], budgets["calibration_cpu_seconds"],
@@ -260,9 +271,11 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
                                  started=cost.get("started_at") or now_iso(),
                                  finished=cost.get("ended_at") or now_iso(),
                                  tags={**tags, "generator": rec["generator"], "n_sims": str(rec["n_sims"])})
+        source = _calibration_source(root / "attempts" / f"calibrate__{key_c}")
+        terminal["tags"]["calibration_source"] = source.get("kind", "MEASURED_HERE")
         outbox.put({"campaign_sha256": cal_sha, "unit_id": key_c, "terminal": terminal})
         flushed = GR._send_pending(gov, outbox)
-        receipt["calibration"][key_c] = {"outcome": out["outcome"], "cost": cost,
+        receipt["calibration"][key_c] = {"outcome": out["outcome"], "cost": cost, "source": source,
                                         "record_sha256": out.get("output_sha256"),
                                         "upper_bound": (rec or {}).get("upper_bound"),
                                         "pending_after_flush": flushed["pending"]}
@@ -481,6 +494,9 @@ def main(argv=None) -> int:
     parser.add_argument("--n-blocks", type=int, default=4)
     parser.add_argument("--resume-under-new-code", action="store_true",
                         help="resume a root frozen under another commit; both identities are recorded")
+    parser.add_argument("--calibration-cache-dir", default=None,
+                        help="Q2: reuse verified records of the same scientific computation")
+    parser.add_argument("--unit-name", default=UNIT, help="rehearsal unit label (administrative)")
     args = parser.parse_args(argv)
     code_identity = GR.strict_code_identity(REPO)
     pilot = bool(args.pilot_unit)
@@ -499,7 +515,7 @@ def main(argv=None) -> int:
         purpose, eligibility_state, exposure = ("UTILITY_DESCRIPTIVE_PILOT", "DEVELOPMENT_SYNTHETIC",
                                                 "DEVELOPMENT_PILOT_NO_RESERVE")
     else:
-        units = [{"unit": UNIT, "variable": VARIABLE, "values": fabricated(args.n, args.seed).tolist()}]
+        units = [{"unit": args.unit_name, "variable": VARIABLE, "values": fabricated(args.n, args.seed).tolist()}]
         purpose, eligibility_state, exposure = ("UTILITY_HARNESS_REHEARSAL", "FABRICATED_REHEARSAL",
                                                 "DEVELOPMENT_REHEARSAL_NO_RESERVE")
     lengths = {len(u["values"]) for u in units}
@@ -513,6 +529,7 @@ def main(argv=None) -> int:
            "units": units, "operators": list(args.operators), "purpose": purpose,
            "eligibility_state": eligibility_state, "exposure": exposure,
            "slow_control": not pilot, "resume_under_new_code": args.resume_under_new_code,
+           "calibration_cache_dir": args.calibration_cache_dir,
            "plan": {"generator": "white_null", "n_sims": int(n_sims), "n": int(n_len),
                     "bound_confidence": args.bound_confidence},
            "protocol": {"target": "return", "horizon": 1, "model": "ridge", "window": 4,
