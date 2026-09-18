@@ -1,0 +1,9 @@
+# PRE (0352328, reviewer's reproducer)
+{"operator_behavior_changed": true, "same_key": true, "stale_cache_hit": true}
+MISSING_RECORD_LOOKUP (None, 'absent')
+RECOVERY_EXCEPTION OSError errno 39
+
+# POST (reproducer unchanged, code after R1-R2)
+{"operator_behavior_changed": true, "same_key": false, "stale_cache_hit": false}
+MISSING_RECORD_LOOKUP (None, 'incomplete entry (record absent)')
+RECOVERY {'status': 'RECOVERED_INCOMPLETE_ENTRY', 'record_sha256': '6835410404badc70a124b5f82ae26aad73a2e2a80aff52dea8503adb0d20a6f1', 'quarantined': '/tmp/tmp_y8l6xf3/quarantine/174c0a3fa4c6094338776535eeaffd9ddc685a31b294aa727d7cf3b13ff6f9d6.1789752486551972842.688308'}

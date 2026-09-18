@@ -122,7 +122,7 @@ def test_Q2_lookup_hits_only_a_verified_identical_computation(tmp_path):
     (d / "META.json").write_text(json.dumps(meta))
     assert "verifier" in cache.lookup(key)[1]
     (d / "record.json").unlink()
-    assert cache.lookup(key) == (None, "absent")
+    assert cache.lookup(key)[0] is None and "incomplete" in cache.lookup(key)[1]      # typed (R2)
 
 
 def test_Q2_a_different_record_for_the_same_key_is_quarantined_and_stores_are_idempotent(tmp_path):
@@ -133,7 +133,7 @@ def test_Q2_a_different_record_for_the_same_key_is_quarantined_and_stores_are_id
     assert again["status"] == "DUPLICATE_PRODUCER"
     other = json.dumps({**rec, "cost": {"cpu_seconds": 9.0}}, sort_keys=True, default=H._jsonable).encode()
     q = cache.store(rec["computation_sha256"], other, producer={"attempt_dir": "c"})
-    assert q["status"] == "QUARANTINED_DIFFERENT_RECORD"
+    assert q["status"] == "DUPLICATE_PRODUCER" and q["scientifically_equal"] is True   # cost is not a scientific disagreement (R2)
     assert cache.lookup(rec["computation"])[0] == body                   # the first is still served
     with pytest.raises(ValueError):
         cache.store("0" * 64, body, producer={})
@@ -157,8 +157,8 @@ def test_Q2_concurrent_producers_store_once_and_accounting_keeps_roles_apart(tmp
     st = cache.status()
     assert st["unique_computations"] == 1 and st["simulations_unique"] == PLAN["n_sims"]
     assert st["hits"] == 3 and st["entries"][0]["reads"] == 3
-    assert st["saved_cpu_seconds"] == pytest.approx(3 * rec["cost"]["cpu_seconds"], abs=1e-6)
-    assert st["verification_seconds_total"] == pytest.approx(0.03)
+    assert st["avoided_cpu_seconds_projected"] == pytest.approx(3 * rec["cost"]["cpu_seconds"], abs=1e-6)
+    assert st["verification_seconds_measured"] == pytest.approx(0.03)
 
 
 @pytest.mark.skipif(not Path("/usr/bin/systemd-run").exists(), reason="no systemd user scope")
@@ -184,3 +184,168 @@ def test_Q2_the_real_child_misses_then_hits_with_zero_new_simulations_and_identi
         assert "computation" not in (H.calibration_supports(_proto(family), MAD, 400, record=rec, branch_a="raw", branch_b="transformed")[1] or "")
     st = CC.CalibrationCache(cache_dir).status()
     assert st["unique_computations"] == 1 and st["hits"] == 1
+
+
+# --- R1: reuse is bound to the executing scientific code ----------------------------------------------
+
+def test_R1_changing_the_operators_behaviour_without_its_declaration_changes_the_key_and_never_hits(tmp_path, monkeypatch):
+    cache = CC.CalibrationCache(tmp_path / "cache")
+    rec, body = _record()
+    cache.store(rec["computation_sha256"], body, producer={"fixture": True})
+    key_before = H.computation_key(_proto(A), MAD, PLAN, branch_a="raw", branch_b="transformed", seed=1007)
+    assert key_before["code_identity"]["operator_code_sha256"] and key_before["code_identity"]["operator_module_sha256"]
+    assert key_before["code_identity"]["scope"]["numeric_portability"] == "SAME_ENVIRONMENT_ONLY"
+    original = type(MAD).transform
+
+    def changed(self, x, state):
+        return original(self, x, state)                       # same declaration, other implementation
+    monkeypatch.setattr(type(MAD), "transform", changed)
+    key_after = H.computation_key(_proto(A), MAD, PLAN, branch_a="raw", branch_b="transformed", seed=1007)
+    assert MAD.describe() == MAD.describe() and key_after != key_before
+    assert key_after["code_identity"]["operator_code_sha256"] != key_before["code_identity"]["operator_code_sha256"]
+    assert cache.lookup(key_after)[0] is None
+    monkeypatch.setattr(type(MAD), "transform", original)
+    assert H.computation_key(_proto(A), MAD, PLAN, branch_a="raw", branch_b="transformed", seed=1007) == key_before
+    # labels never enter: another campaign, same code → the same key
+    assert H.computation_key(_proto(B), MAD, PLAN, branch_a="raw", branch_b="transformed", seed=1007) == key_before
+
+
+def test_R1_a_helper_or_module_change_in_a_fresh_process_breaks_the_key_and_unchanged_code_keeps_it(tmp_path):
+    import shutil, subprocess, sys as _sys
+    src = HERE.parent / "tools"
+    script = '''
+import sys, json
+sys.path.insert(0, sys.argv[1])
+import importlib.util
+def load(name):
+    spec = importlib.util.spec_from_file_location(name, sys.argv[1] + "/" + name + ".py"); m = importlib.util.module_from_spec(spec)
+    sys.modules[name] = m; spec.loader.exec_module(m); return m
+H = load("df_utility_harness"); ops = load("df_d3_operators")
+p = H.Protocol(target="return", horizon=1, model="ridge", window=4, n_blocks=4, margin=0.0, seed=7, family=("u__v0__x__transformed",), min_rows_per_block=30,
+               calibration_plan={"generator": "white_null", "n": 400, "bound_confidence": 0.5, "n_sims": 3}, branches=("raw", "transformed", "augmented", "raw_wide"))
+k = H.computation_key(p, ops.build("mad_extremes_trailing"), p.calibration_plan, branch_a="raw", branch_b="transformed", seed=1007)
+print(json.dumps({"sha": H.computation_sha256(k), "code": k["code_identity"]}))
+'''
+    def key_in(copy_dir):
+        out = subprocess.run([_sys.executable, "-c", script, str(copy_dir)], capture_output=True, text=True, check=True)
+        return json.loads(out.stdout.strip().splitlines()[-1])
+    same = tmp_path / "same"
+    shutil.copytree(src, same)
+    changed = tmp_path / "changed"
+    shutil.copytree(src, changed)
+    text = (changed / "df_d3_operators.py").read_text()
+    marker = "def transform(self, x, state):"
+    i = text.index(marker, text.index('KIND = "mad_extremes_trailing"'))
+    (changed / "df_d3_operators.py").write_text(text[:i] + "def transform(self, x, state):\n        _unused = 1  # behavioural edit marker\n" + text[i + len(marker):])
+    helper = tmp_path / "helper"
+    shutil.copytree(src, helper)
+    (helper / "df_d3_contract.py").write_text((helper / "df_d3_contract.py").read_text() + "\n# helper edited\n")
+    live, copy = key_in(src), key_in(same)
+    assert live["sha"] == copy["sha"]                                   # same code elsewhere: same key
+    assert key_in(changed)["sha"] != live["sha"]                        # operator implementation edited
+    assert key_in(helper)["sha"] != live["sha"]                         # a helper module edited
+    assert set(live["code"]) >= {"operator_code_sha256", "operator_module_sha256", "helper_modules_sha256", "harness_sha256", "scope"}
+
+
+def test_R1_legacy_records_keep_their_status_and_never_hit_a_code_bound_key(tmp_path):
+    cache = CC.CalibrationCache(tmp_path / "cache")
+    rec, body = _record()
+    legacy = {k: v for k, v in rec.items()}
+    legacy["computation"] = {k: v for k, v in rec["computation"].items() if k != "code_identity"}
+    legacy["computation"]["schema"] = "df_utility_calibration_computation.v1"
+    legacy["computation_sha256"] = H.computation_sha256(legacy["computation"])
+    legacy["schema"] = "df_utility_calibration.v3"
+    legacy_body = json.dumps(legacy, sort_keys=True, default=H._jsonable).encode()
+    assert H.calibration_record_problems(legacy) == []                  # still a valid historical record
+    cache.store(legacy["computation_sha256"], legacy_body, producer={"legacy": True})
+    assert cache.lookup(rec["computation"])[0] is None                  # the code-bound key never finds it
+    assert rec["schema"] == "df_utility_calibration.v4" and rec["computation"]["schema"] == "df_utility_calibration_computation.v2"
+
+
+# --- R2: recovery of a cache miss end to end ------------------------------------------------------------
+
+def _entry(cache, rec, body):
+    cache.store(rec["computation_sha256"], body, producer={"fixture": True})
+    return cache.root / rec["computation_sha256"]
+
+
+def test_R2_an_incomplete_entry_is_quarantined_typed_and_a_valid_replacement_becomes_usable(tmp_path):
+    cache = CC.CalibrationCache(tmp_path / "cache")
+    rec, body = _record()
+    for damage in ("record", "meta", "malformed", "interrupted"):
+        d = _entry(cache, rec, body)
+        if damage == "record":
+            (d / "record.json").unlink()
+        elif damage == "meta":
+            (d / "META.json").unlink()
+        elif damage == "malformed":
+            (d / "record.json").write_bytes(b"{not json")
+        else:
+            (d / "record.json").unlink()
+            (d / "META.json").unlink()
+            (d / "record.json.partial").write_bytes(body[:10])
+        found, why = cache.lookup(rec["computation"])
+        assert found is None and ("incomplete" in why or "corrupt" in why or "absent" in why), (damage, why)
+        result = cache.store(rec["computation_sha256"], body, producer={"recovery": damage})
+        assert result["status"] in ("STORED", "RECOVERED_INCOMPLETE_ENTRY"), result
+        assert cache.lookup(rec["computation"])[0] == body
+        quarantined = list((cache.root / "quarantine").glob(f"{rec['computation_sha256']}*"))
+        assert quarantined, damage                                      # the incomplete entry is preserved apart
+        import shutil
+        shutil.rmtree(d)
+
+
+def test_R2_scientific_equality_is_separated_from_cost_and_provenance_and_conflicts_get_a_disposition(tmp_path):
+    cache = CC.CalibrationCache(tmp_path / "cache")
+    rec, body = _record()
+    cache.store(rec["computation_sha256"], body, producer={"p": 1})
+    other_cost = json.dumps({**rec, "cost": {"cpu_seconds": 99.0}}, sort_keys=True, default=H._jsonable).encode()
+    r = cache.store(rec["computation_sha256"], other_cost, producer={"p": 2})
+    assert r["status"] == "DUPLICATE_PRODUCER" and r["scientifically_equal"] is True
+    sims = [dict(x, outcome="ADVANCES", delta_lower=0.5, delta_mean=0.6) if i == 0 else x for i, x in enumerate(rec["per_sim"])]
+    conflicting = {**rec, "per_sim": sims, "per_sim_sha256": H.sha_obj(sims), "advances": 1,
+                   "false_advance_rate": 1 / rec["scored"],
+                   "upper_bound": H.clopper_pearson_upper(1, rec["scored"], rec["bound_confidence"])}
+    assert H.calibration_record_problems(conflicting) == []
+    r = cache.store(rec["computation_sha256"], json.dumps(conflicting, sort_keys=True, default=H._jsonable).encode(), producer={"p": 3})
+    assert r["status"] == "CONFLICT_RECORDED"
+    found, why = cache.lookup(rec["computation"])
+    assert found is None and "conflict" in why                          # nothing served until a disposition
+    disp = json.loads((cache.root / rec["computation_sha256"] / "CONFLICT.json").read_text())
+    assert disp["disposition"] == "PENDING" and len(disp["records"]) == 2
+
+
+def test_R2_consumer_accounting_is_idempotent_by_attempt_and_keeps_measured_apart_from_projected(tmp_path):
+    cache = CC.CalibrationCache(tmp_path / "cache")
+    rec, body = _record()
+    cache.store(rec["computation_sha256"], body, producer={"attempt_dir": "p"})
+    for _ in range(3):
+        cache.note_consumer(rec["computation_sha256"], consumer={"attempt_dir": "c1"}, kind="HIT", verification_seconds=0.2)
+    cache.note_consumer(rec["computation_sha256"], consumer={"attempt_dir": "c2"}, kind="HIT", verification_seconds=0.1)
+    st = cache.status()
+    e = st["entries"][0]
+    assert e["hits"] == 2 and e["reads"] == 2
+    assert st["avoided_cpu_seconds_projected"] == pytest.approx(2 * rec["cost"]["cpu_seconds"], abs=1e-6)
+    assert st["verification_seconds_measured"] == pytest.approx(0.3)
+    assert "saved_cpu_seconds" not in st
+
+
+@pytest.mark.skipif(not Path("/usr/bin/systemd-run").exists(), reason="no systemd user scope")
+def test_R2_the_real_child_recovers_an_incomplete_entry_and_then_hits(tmp_path):
+    cache_dir = tmp_path / "cache"
+    cache = CC.CalibrationCache(cache_dir)
+    rec, body = _record()
+    d = _entry(cache, rec, body)
+    (d / "record.json").unlink()                                        # the incomplete entry the reviewer found
+    p = _proto(A)
+    job = {"kind": "calibrate", "contrast_id": A[0], "operator": MAD.KIND, "protocol": p.sealed(), "plan": PLAN, "seed": 1007,
+           "protocol_key": "mad__H_T", "branch_a": "raw", "branch_b": "transformed", "cache_dir": str(cache_dir)}
+    out = H.run_isolated(job, attempt_dir=tmp_path / "r0", assigned_bytes=1 << 30, wall_seconds=300.0, cpu_seconds=300)
+    assert out["outcome"] == "COMPLETED", out
+    r0 = json.loads((tmp_path / "r0" / "result.json").read_text())["calibration_source"]
+    assert r0["kind"] == "MISS_PRODUCED" and "incomplete" in r0["why_miss"] and r0["stored"]["status"] == "RECOVERED_INCOMPLETE_ENTRY"
+    out = H.run_isolated(job, attempt_dir=tmp_path / "r1", assigned_bytes=1 << 30, wall_seconds=300.0, cpu_seconds=300)
+    r1 = json.loads((tmp_path / "r1" / "result.json").read_text())["calibration_source"]
+    assert r1["kind"] == "CACHE_HIT" and (tmp_path / "r1" / "calibration.json").read_bytes() == (tmp_path / "r0" / "calibration.json").read_bytes()
+    st = cache.status()
+    assert st["unique_computations"] == 1 and st["hits"] == 1 and st["entries"][0]["quarantined_incomplete"] == 1

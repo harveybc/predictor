@@ -209,6 +209,61 @@ def numeric_dependencies() -> dict:
     return {"python": sys.version.split()[0], "numpy": np.__version__, "scipy": scipy.__version__}
 
 
+SCIENTIFIC_HELPER_MODULES = ("df_d3_contract", "df_d3_operators")
+
+
+def _normalised_code(code) -> tuple:
+    """A code object without its file name and line numbers: bytecode, constants (nested code
+    normalised recursively), names, variables, arity and flags — what executes, wherever the
+    file lives."""
+    consts = tuple(_normalised_code(c) if hasattr(c, "co_code") else repr(c) for c in code.co_consts)
+    return (code.co_code, consts, code.co_names, code.co_varnames, code.co_freevars, code.co_cellvars,
+            code.co_argcount, code.co_posonlyargcount, code.co_kwonlyargcount, code.co_flags)
+
+
+def _code_objects_sha256(cls) -> str:
+    """Digest of the executing code of every function defined on the operator's class hierarchy
+    (bytecode, constants, names, and the code of nested functions), object excluded, independent
+    of file location. A method replaced in memory or edited on disk changes it; a declaration
+    left unchanged does not hide it."""
+    h = hashlib.sha256()
+    for klass in [k for k in cls.__mro__ if k is not object]:
+        h.update(klass.__name__.encode())
+        for name, member in sorted(vars(klass).items()):
+            fn = getattr(member, "__func__", member) if isinstance(member, (staticmethod, classmethod)) else member
+            code = getattr(fn, "__code__", None)
+            if code is None:
+                continue
+            h.update(name.encode())
+            h.update(repr(_normalised_code(code)).encode())
+    return h.hexdigest()
+
+
+def scientific_code_identity(operator, harness: str | None = None) -> dict:
+    """The local scientific code a calibration actually executes: the operator's implementation
+    (code objects of its class hierarchy), the module files that define it and the helpers it
+    inherits (contract, operators), the harness, and the numeric environment. Administrative
+    labels are absent; the numeric scope is declared honestly (version strings do not prove
+    cross-CPU bit identity)."""
+    import inspect
+    module_file = Path(inspect.getfile(type(operator))).resolve()
+    helpers = {}
+    for name in SCIENTIFIC_HELPER_MODULES:
+        path = HERE / f"{name}.py"
+        helpers[name] = hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
+    return {"schema": "df_utility_scientific_code.v1",
+            "operator_class": type(operator).__name__,
+            "operator_code_sha256": _code_objects_sha256(type(operator)),
+            "operator_module": module_file.name,
+            "operator_module_sha256": hashlib.sha256(module_file.read_bytes()).hexdigest(),
+            "helper_modules_sha256": helpers,
+            "harness_sha256": harness or harness_sha256(),
+            "numeric_dependencies": numeric_dependencies(),
+            "scope": {"numeric_portability": "SAME_ENVIRONMENT_ONLY",
+                      "note": "version strings identify the environment that computed; they do not "
+                              "demonstrate bit identity across CPUs or BLAS builds"}}
+
+
 def computation_key(protocol: Protocol, operator, plan: dict, *, branch_a: str, branch_b: str, seed: int,
                     harness: str | None = None) -> dict:
     """The canonical key of ONE calibration computation: everything the simulations depend on,
@@ -216,8 +271,9 @@ def computation_key(protocol: Protocol, operator, plan: dict, *, branch_a: str, 
     alpha enters through alpha_adjusted (the effective threshold), the multiplicity only through
     it. Two families that differ only in labels share a key; any scientific difference breaks it."""
     contract = _load("df_d3_contract")
-    return {"schema": "df_utility_calibration_computation.v1",
+    return {"schema": "df_utility_calibration_computation.v2",
             "harness_sha256": harness or harness_sha256(), "numeric_dependencies": numeric_dependencies(),
+            "code_identity": scientific_code_identity(operator, harness=harness),
             "generator": plan["generator"], "generator_params": dict(GENERATOR_PARAMS.get(plan["generator"], {})),
             "seed": int(seed), "n": int(plan["n"]), "n_sims": int(plan["n_sims"]),
             "bound_confidence": float(plan["bound_confidence"]),
@@ -237,6 +293,19 @@ def computation_sha256(key: dict) -> str:
     return sha_obj(key)
 
 
+def _as_legacy_key(expected: dict, recorded: dict) -> dict:
+    """When the record's key predates code binding (computation v1), compare on its own terms —
+    the code identity is dropped from the expectation and its schema kept — so a historical
+    record still binds to its contract while never gaining the code-bound guarantee."""
+    if "code_identity" not in recorded:
+        return {**{k: v for k, v in expected.items() if k != "code_identity"}, "schema": recorded.get("schema")}
+    if recorded.get("code_identity", {}).get("harness_sha256") and expected.get("code_identity"):
+        expected = {**expected, "code_identity": {**expected["code_identity"],
+                                                  "harness_sha256": recorded["code_identity"].get("harness_sha256"),
+                                                  "numeric_dependencies": recorded["code_identity"].get("numeric_dependencies")}}
+    return expected
+
+
 def rekeyed(rec: dict) -> dict:
     """A v3 record whose computation key is rebuilt from its own fields (for a record edited
     on purpose in a test or a migration; the digest then seals the edited key)."""
@@ -247,6 +316,9 @@ def rekeyed(rec: dict) -> dict:
                  "target", "model", "window", "n_blocks", "margin", "alpha_adjusted", "rows_policy", "harness_sha256",
                  "numeric_dependencies"):
         key[name] = rec[name]
+    if "code_identity" in key:
+        key["code_identity"] = {**key["code_identity"], "harness_sha256": rec["harness_sha256"],
+                                "numeric_dependencies": rec["numeric_dependencies"]}
     return {**rec, "computation": key, "computation_sha256": computation_sha256(key)}
 
 CALIBRATION_KEYS = ("schema", "generator", "null", "plan", "n_sims", "scored", "failed", "advances",
@@ -357,7 +429,9 @@ def calibration_record_problems(rec) -> list:
                 f"+ {list(CALIBRATION_COMPUTATION_KEYS)} in v3)"]
     v2 = set(rec) in (k2, k3)
     v3 = set(rec) == k3
-    expected_schema = "df_utility_calibration.v3" if v3 else "df_utility_calibration.v2" if v2 else "df_utility_calibration.v1"
+    code_bound = v3 and isinstance(rec.get("computation"), dict) and "code_identity" in rec["computation"]
+    expected_schema = "df_utility_calibration.v4" if code_bound else "df_utility_calibration.v3" if v3 \
+        else "df_utility_calibration.v2" if v2 else "df_utility_calibration.v1"
     if rec["schema"] != expected_schema:
         problems.append("calibration schema does not match its keys")
     if v3:
@@ -879,7 +953,7 @@ def calibrate(protocol: Protocol, operator, *, plan: dict | None = None, seed: i
     key = computation_key(protocol, operator, {"generator": generator, "n_sims": n_sims, "n": n,
                                                "bound_confidence": bound_confidence},
                           branch_a=branch_a, branch_b=branch_b, seed=seed, harness=this_harness)
-    return {"schema": "df_utility_calibration.v3", "generator": generator,
+    return {"schema": "df_utility_calibration.v4", "generator": generator,
             "null": bool(GENERATORS[generator]["null"]),
             "computation": key, "computation_sha256": computation_sha256(key),
             "numeric_dependencies": key["numeric_dependencies"],
@@ -936,10 +1010,13 @@ def calibration_supports(protocol: Protocol, operator, n: int, *, record: dict |
         return False, (f"calibrated for another branch pair {record_pair(rec)}, this contrast is "
                        f"({branch_a}, {branch_b})")
     if "computation" in rec:
-        # v3: the scientific computation must be THIS contrast's; family/unit labels do not count
+        # v3/v4: the scientific computation must be THIS contrast's; family/unit labels do not
+        # count. A legacy v3 record (no code identity) keeps its historical status: it is compared
+        # on its own fields and never acquires the code-bound guarantee.
         expected = computation_key(protocol, operator, rec["plan"], branch_a=branch_a, branch_b=branch_b,
                                    seed=rec["seed"], harness=harness_sha256 or globals()["harness_sha256"]())
         expected["numeric_dependencies"] = rec["computation"].get("numeric_dependencies")
+        expected = _as_legacy_key(expected, rec["computation"])
         if computation_sha256(expected) != rec["computation_sha256"]:
             differing = sorted(k for k in set(expected) | set(rec["computation"]) if expected.get(k) != rec["computation"].get(k))
             return False, f"calibrated for another computation ({', '.join(differing)})"
@@ -998,12 +1075,13 @@ def verified_score(attempt_dir: Path, result: dict, verified: dict, job: dict, *
         return None, {"outcome": SCORE_UNVERIFIED, "why": "the output is not JSON"}
     legacy = allow_legacy_schema and "schema" not in score and "delta_mean" in score
     preparatory = score.get("schema") in ("df_utility_calibration.v1", "df_utility_calibration.v2",
-                                          "df_utility_calibration.v3", "d3_mechanics_cells.v1")
+                                          "df_utility_calibration.v3", "df_utility_calibration.v4",
+                                          "d3_mechanics_cells.v1")
     if not legacy and not preparatory and score.get("schema") != CONTRAST_SCHEMA \
             and score.get("outcome") not in (REFUSED, INSUFFICIENT_ROWS):
         return None, {"outcome": SCORE_UNVERIFIED, "why": f"schema {score.get('schema')!r}"}
     if preparatory:
-        if score.get("schema") in ("df_utility_calibration.v1", "df_utility_calibration.v2", "df_utility_calibration.v3"):
+        if str(score.get("schema", "")).startswith("df_utility_calibration.v"):
             problems = calibration_record_problems(score)
             if job.get("branch_a") or job.get("branch_b"):
                 if record_pair(score) != (job.get("branch_a", "raw"), job.get("branch_b", "transformed")):
@@ -1029,6 +1107,7 @@ def verified_score(attempt_dir: Path, result: dict, verified: dict, job: dict, *
                                                branch_a=job.get("branch_a", "raw"), branch_b=job.get("branch_b", "transformed"),
                                                seed=job.get("seed", score["seed"]), harness=score["computation"].get("harness_sha256"))
                     expected["numeric_dependencies"] = score["computation"].get("numeric_dependencies")
+                    expected = _as_legacy_key(expected, score["computation"])
                     if computation_sha256(expected) != score.get("computation_sha256"):
                         return None, {"outcome": SCORE_UNVERIFIED, "why": "calibration is for another computation"}
                 elif proto_job is not None and score["protocol_base_sha256"] != proto_job.base_sha256():

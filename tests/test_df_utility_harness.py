@@ -474,7 +474,7 @@ def test_N3_a_preparatory_calibration_child_completes_with_its_record_as_the_ver
                                             "bound_confidence": 0.5}, "seed": 5}
     out = H.run_isolated(job, attempt_dir=tmp_path / "cal", assigned_bytes=1 << 30,
                          wall_seconds=300.0, cpu_seconds=300)
-    assert out["outcome"] == "COMPLETED" and out["score"]["schema"] == "df_utility_calibration.v3"
+    assert out["outcome"] == "COMPLETED" and out["score"]["schema"] == "df_utility_calibration.v4"
     assert out["score"]["n_sims"] == 2 and out["output_sha256"]
     assert (tmp_path / "cal" / "outcome.json").is_file()
 
@@ -707,7 +707,7 @@ def test_P1_H_A_is_calibrated_and_scored_with_raw_wide_vs_augmented_by_the_same_
     rec, seen = _spy_pairs(monkeypatch, H.calibrate, p, MAD, plan=plan, seed=5,
                            branch_a="raw_wide", branch_b="augmented")
     assert seen == [("raw_wide", "augmented")] * 2
-    assert rec["schema"] == "df_utility_calibration.v3"
+    assert rec["schema"] == "df_utility_calibration.v4"
     assert rec["branch_a"] == "raw_wide" and rec["branch_b"] == "augmented"
     assert rec["widths"] == {"a": 8, "b": 8} and rec["rows_policy"] == H.ROWS_POLICY
     rec_t, seen_t = _spy_pairs(monkeypatch, H.calibrate, p, MAD, plan=plan, seed=5)
