@@ -72,7 +72,7 @@ def verify_cell(attempt: Path) -> dict:
         return entry
     arr = np.load(arrays)
     recomputed = {}
-    for part in ("train", "validation", "test"):
+    for part in [x for x in ("train", "validation", "test") if x in rec["losses"]]:   # a pilot has no test (T2)
         y, p, b = arr[f"{part}_y"], arr[f"{part}_pred"], arr[f"{part}_baseline"]
         rows = arr[f"{part}_rows"]
         recomputed[part] = {"model": M.mae(p, y), "baseline": M.mae(b, y), "rows": int(y.size),

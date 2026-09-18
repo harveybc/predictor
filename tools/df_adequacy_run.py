@@ -73,7 +73,7 @@ def verified_cell(attempt_dir: Path, result: dict, verified: dict) -> tuple:
         return None, {"outcome": SCORE_UNVERIFIED, "why": "arrays absent or altered"}
     arr = np.load(arrays_path)
     recomputed = {}
-    for part in ("train", "validation", "test"):
+    for part in [x for x in ("train", "validation", "test") if x in rec["losses"]]:   # a pilot has no test (T2)
         y, p, b = arr[f"{part}_y"], arr[f"{part}_pred"], arr[f"{part}_baseline"]
         recomputed[part] = {"model": M.mae(p, y), "baseline": M.mae(b, y)}
         for k in ("model", "baseline"):

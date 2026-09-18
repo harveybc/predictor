@@ -332,3 +332,26 @@ def test_T2_diagnosis_records_stop_reason_checkpoint_and_parity_and_never_fails_
     assert d["class"] != M.OPT_FAIL and "NO_EARLY_PROGRESS" in d["flags"]
     assert M.diagnose({**flat, "updates": 0, "weight_change_norm": 0.0}, 1.0)["class"] == M.OPT_FAIL
     assert rec["diagnosis"]["note"].startswith("heuristic")
+
+
+@pytest.mark.skipif(not Path("/usr/bin/systemd-run").exists(), reason="no systemd user scope")
+def test_T3_a_cost_pilot_through_the_isolated_child_is_verified_without_any_test_array(tmp_path):
+    bank = _fake_bank(tmp_path)
+    cell = {"cell_id": "pilot__lstm__W4", "unit": UNIT, "task": "observed_increment", "model": "lstm", "window": 4, "train_length": 256, "seed": 1}
+    design = {"horizon": 1, "training": D.TRAINING, "design_sha256": "d" * 64}
+    job = RUN._job(design, cell, bank, "t", max_updates_override=8, role="COST_PILOT")
+    out = RUN.run_isolated(job, attempt_dir=tmp_path / "p", assigned_bytes=2 << 30, wall_seconds=300.0, cpu_seconds=300)
+    assert out["outcome"] in (M.FITTED, M.UNDERFIT, M.OVERFIT), out
+    rec = out["score"]
+    assert "test" not in rec["losses"] and rec["exposure"] == "NO_TEST_ACCESS" and rec["cost"]["fit_seconds"] > 0
+    assert not any(k.startswith("test_") for k in np.load(tmp_path / "p" / "arrays.npz").files)
+    (tmp_path / "p" / "REPORT.json").write_text(json.dumps({"run_id": "t", "design_sha256": "d" * 64, "cells": {}, "cost_pilot": {}}))
+    import shutil
+    shutil.move(str(tmp_path / "p"), str(tmp_path / "root_attempt"))
+    root = tmp_path / "root"
+    (root / "attempts").mkdir(parents=True)
+    shutil.move(str(tmp_path / "root_attempt"), str(root / "attempts" / "pilot__lstm__W4"))
+    (root / "REPORT.json").write_text(json.dumps({"run_id": "t", "design_sha256": "d" * 64, "cells": {}, "cost_pilot": {}}))
+    V = _load("df_adequacy_verify")
+    v = V.verify(root, None, None)
+    assert v["all_verified"] is True and "test" not in v["cells"]["pilot__lstm__W4"]["recomputed"]
