@@ -372,3 +372,13 @@ modelo, ajuste, causalidad, estadistica y negocio. Musashi revisa esos aspectos,
 no solo codigo y conciliacion. Satoshi continua S1-S4; el piloto puede investigar
 lo no probado pero no autoriza seleccion posterior por el solo hecho de terminar.
 [Addendum operativo y responsabilidades](../handoffs/MUSASHI_ML_REVIEW_REQUIRED_BEFORE_CAMPAIGNS_2026_09_18.md).
+
+### Revision S1-S4: corregir comparacion antes del factorial
+
+12 pruebas focales pasan, pero la revision independiente reproduce oraculo de ruido
+incorrecto y cambio de fechas al variar W; la CNN tambien cambia profundidad.
+El piloto ya puntuo el test: no llamarlo intacto. Preservar evidencia historica.
+T1-T4 corrige oraculo, filas comparables y exposicion; prefiere factorial completo
+216 celdas sobre opcion B que pierde curvas neuronales. Nuevo techo 14400 s CPU,
+piloto corregido y 25% holgura requeridos; ejecucion gobernada y condicionada a pruebas.
+[Dictamen y orden T1-T4](../handoffs/MUSASHI_ADEQUACY_S_REVIEW_AND_T1_T4_2026_09_18.md).
