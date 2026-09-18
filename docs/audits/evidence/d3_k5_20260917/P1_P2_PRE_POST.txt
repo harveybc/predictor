@@ -1,0 +1,10 @@
+# PRE (d402532, reviewer's reproducer, Musashi's run)
+CHILD_MARGIN_CHANGED_ACCEPTED
+CALIBRATED_BRANCHES [['raw', 'transformed']]  (protocol declared raw_wide/augmented too; calibrate() had no pair)
+
+# POST (reproducer unchanged, code after P1-P2)
+df_utility_next_design.DesignRefusal: family bumps__s12/v0: protocol digest does not seal the protocol; family bumps__s12/v0: protocol base digest differs; family bumps__s12/v0: protocol margin 99.0 is not the inherited 0.0
+
+# POST (calibration probe with the pair the design declares for H_A)
+CALIBRATED_BRANCHES [['raw_wide', 'augmented']] record pair ('raw_wide', 'augmented') widths {'a': 8, 'b': 8}
+TRANSFER_TO_H_T (False, "calibrated for another branch pair ('raw_wide', 'augmented'), this contrast is (raw, transformed)")

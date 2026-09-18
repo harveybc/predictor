@@ -1,0 +1,1470 @@
+{
+ "branches": [
+  "raw",
+  "transformed",
+  "augmented",
+  "raw_wide"
+ ],
+ "calibration_contracts_total": 36,
+ "calibration_policy": "one calibration contract per (family, operator, hypothesis): 36 contracts; a record never transfers across pairs, operators, protocols, lengths or harness code; generator, margin, confidence and plan are predeclared and no unfavourable bound licenses more simulations",
+ "capacity_control": {
+  "augmented": "raw_wide"
+ },
+ "cells_record": "/home/harveybc/.local/state/crispdm-data-foundation/d3_mechanics_v3/MATRIX.verified.v5.cells.json",
+ "design_sha256": "55ef8321536e8430b236da9b816e91e31053a77c23afecd0b5b83dd8da499ecf",
+ "eligibility_state": "SYNTHETIC_DEVELOPMENT",
+ "execution": "NONE \u2014 design only; a governed run needs its own order",
+ "families": [
+  {
+   "alpha_adjusted": 0.008333333333333333,
+   "calibration_contracts": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "mad_extremes_trailing",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "mad_extremes_trailing",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "delta_run_length",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "delta_run_length",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "cusum_causal",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "cusum_causal",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    }
+   ],
+   "calibration_plan": {
+    "bound_confidence": 0.95,
+    "generator": "white_null",
+    "n": 2048,
+    "n_sims": 358
+   },
+   "comparisons": 6,
+   "eligibility": {
+    "cells_sha256": "fc532fb40219e432e0e637d73cbb082c9da30cb344d6711200633938a4c7f6ad",
+    "design_sha256": "5ffe25f922bd2f39fcfdbca1288ad171655da8e6274253e30740ea3d6bca27a2",
+    "freeze_sha256": "67f2961a4c46f22840b659b7b313345d4e08d88233c81a5b3851779ee568f97b",
+    "operators": {
+     "cusum_causal": {
+      "eligible": true,
+      "spec_sha256": "4696aa916106d89080c04bc73c57390fff6a3803af09406178e5fab2868dd4ed",
+      "why": null
+     },
+     "delta_run_length": {
+      "eligible": true,
+      "spec_sha256": "e535c55020d9ee4d457b3ae102e7099dfc8451c5f2ccc58ff0e2fb27c2140494",
+      "why": null
+     },
+     "mad_extremes_trailing": {
+      "eligible": true,
+      "spec_sha256": "60934c29692536d89434f4537fc0287bfc5395075078c2ebb3495d8b09c14b3a",
+      "why": null
+     }
+    }
+   },
+   "members": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed",
+     "hypothesis": "H_T",
+     "operator": "mad_extremes_trailing",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented",
+     "hypothesis": "H_A",
+     "operator": "mad_extremes_trailing",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed",
+     "hypothesis": "H_T",
+     "operator": "delta_run_length",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented",
+     "hypothesis": "H_A",
+     "operator": "delta_run_length",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed",
+     "hypothesis": "H_T",
+     "operator": "cusum_causal",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented",
+     "hypothesis": "H_A",
+     "operator": "cusum_causal",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    }
+   ],
+   "n": 2048,
+   "protocol": {
+    "alpha": 0.05,
+    "alpha_adjusted": 0.008333333333333333,
+    "blocks_policy": "all_or_insufficient",
+    "branches": [
+     "raw",
+     "transformed",
+     "augmented",
+     "raw_wide"
+    ],
+    "calibration": null,
+    "calibration_plan": {
+     "bound_confidence": 0.95,
+     "generator": "white_null",
+     "n": 2048,
+     "n_sims": 358
+    },
+    "comparisons": 6,
+    "family": [
+     "bumps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed",
+     "bumps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented",
+     "bumps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed",
+     "bumps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented",
+     "bumps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed",
+     "bumps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented"
+    ],
+    "horizon": 1,
+    "inference": "block_t",
+    "logistic_steps": 200,
+    "margin": 0.0,
+    "min_rows_per_block": 30,
+    "model": "ridge",
+    "n_blocks": 4,
+    "prefix_checks": 8,
+    "protocol_sha256": "c5c33ab32bf349bce32635564e0f6ddcf8df40ec320600f9b73b6f65fbbb55b3",
+    "ridge_lambda": 1.0,
+    "schema": "df_utility_protocol.v3",
+    "seed": 3,
+    "target": "return",
+    "window": 4
+   },
+   "protocol_base_sha256": "dc92268adda5a8f8422fa1bc74e022c809f7c954950c7864f681585bd46c4917",
+   "replica_of": null,
+   "resource": {
+    "data_sha256": "cb583cd729ff02eca66357b1e9b14a97b78c9050d88b3e13bd7749d586c294d5",
+    "generator": "df_synthetic_bank.c128.v1",
+    "n": 2048,
+    "regime": {
+     "family": "bumps",
+     "length": 2048,
+     "missingness": "none",
+     "n_variables": 1,
+     "perturbation": "white",
+     "snr_db": "10"
+    },
+    "seed": 12,
+    "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+    "variables": [
+     "v0"
+    ]
+   },
+   "role": "selection",
+   "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+   "variable": "v0"
+  },
+  {
+   "alpha_adjusted": 0.008333333333333333,
+   "calibration_contracts": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "mad_extremes_trailing",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "mad_extremes_trailing",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "delta_run_length",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "delta_run_length",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "cusum_causal",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "cusum_causal",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    }
+   ],
+   "calibration_plan": {
+    "bound_confidence": 0.95,
+    "generator": "white_null",
+    "n": 2048,
+    "n_sims": 358
+   },
+   "comparisons": 6,
+   "eligibility": {
+    "cells_sha256": "fc532fb40219e432e0e637d73cbb082c9da30cb344d6711200633938a4c7f6ad",
+    "design_sha256": "5ffe25f922bd2f39fcfdbca1288ad171655da8e6274253e30740ea3d6bca27a2",
+    "freeze_sha256": "67f2961a4c46f22840b659b7b313345d4e08d88233c81a5b3851779ee568f97b",
+    "operators": {
+     "cusum_causal": {
+      "eligible": true,
+      "spec_sha256": "4696aa916106d89080c04bc73c57390fff6a3803af09406178e5fab2868dd4ed",
+      "why": null
+     },
+     "delta_run_length": {
+      "eligible": true,
+      "spec_sha256": "e535c55020d9ee4d457b3ae102e7099dfc8451c5f2ccc58ff0e2fb27c2140494",
+      "why": null
+     },
+     "mad_extremes_trailing": {
+      "eligible": true,
+      "spec_sha256": "60934c29692536d89434f4537fc0287bfc5395075078c2ebb3495d8b09c14b3a",
+      "why": null
+     }
+    }
+   },
+   "members": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed",
+     "hypothesis": "H_T",
+     "operator": "mad_extremes_trailing",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented",
+     "hypothesis": "H_A",
+     "operator": "mad_extremes_trailing",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed",
+     "hypothesis": "H_T",
+     "operator": "delta_run_length",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented",
+     "hypothesis": "H_A",
+     "operator": "delta_run_length",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed",
+     "hypothesis": "H_T",
+     "operator": "cusum_causal",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented",
+     "hypothesis": "H_A",
+     "operator": "cusum_causal",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    }
+   ],
+   "n": 2048,
+   "protocol": {
+    "alpha": 0.05,
+    "alpha_adjusted": 0.008333333333333333,
+    "blocks_policy": "all_or_insufficient",
+    "branches": [
+     "raw",
+     "transformed",
+     "augmented",
+     "raw_wide"
+    ],
+    "calibration": null,
+    "calibration_plan": {
+     "bound_confidence": 0.95,
+     "generator": "white_null",
+     "n": 2048,
+     "n_sims": 358
+    },
+    "comparisons": 6,
+    "family": [
+     "bumps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed",
+     "bumps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented",
+     "bumps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed",
+     "bumps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented",
+     "bumps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed",
+     "bumps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented"
+    ],
+    "horizon": 1,
+    "inference": "block_t",
+    "logistic_steps": 200,
+    "margin": 0.0,
+    "min_rows_per_block": 30,
+    "model": "ridge",
+    "n_blocks": 4,
+    "prefix_checks": 8,
+    "protocol_sha256": "f2adceefd9bd536f538ef7d8bb8c9e9ed4965a891b5c687685b07ac89ea6edd2",
+    "ridge_lambda": 1.0,
+    "schema": "df_utility_protocol.v3",
+    "seed": 3,
+    "target": "return",
+    "window": 4
+   },
+   "protocol_base_sha256": "aa011d4c5e8c4faf81ddbabd351bf612ec3f5e7cb777fafba5db63874461a435",
+   "replica_of": "bumps__white__snr10__none__n2048__v1__seed12",
+   "resource": {
+    "data_sha256": "570145f8e4a2cdcc4d517907bb7503ea1473c22a57de0f6f905852eebc13c814",
+    "generator": "df_synthetic_bank.c128.v1",
+    "n": 2048,
+    "regime": {
+     "family": "bumps",
+     "length": 2048,
+     "missingness": "none",
+     "n_variables": 1,
+     "perturbation": "white",
+     "snr_db": "10"
+    },
+    "seed": 13,
+    "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+    "variables": [
+     "v0"
+    ]
+   },
+   "role": "replication",
+   "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+   "variable": "v0"
+  },
+  {
+   "alpha_adjusted": 0.008333333333333333,
+   "calibration_contracts": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "mad_extremes_trailing",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "mad_extremes_trailing",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "delta_run_length",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "delta_run_length",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "cusum_causal",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "cusum_causal",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    }
+   ],
+   "calibration_plan": {
+    "bound_confidence": 0.95,
+    "generator": "white_null",
+    "n": 2048,
+    "n_sims": 358
+   },
+   "comparisons": 6,
+   "eligibility": {
+    "cells_sha256": "fc532fb40219e432e0e637d73cbb082c9da30cb344d6711200633938a4c7f6ad",
+    "design_sha256": "5ffe25f922bd2f39fcfdbca1288ad171655da8e6274253e30740ea3d6bca27a2",
+    "freeze_sha256": "67f2961a4c46f22840b659b7b313345d4e08d88233c81a5b3851779ee568f97b",
+    "operators": {
+     "cusum_causal": {
+      "eligible": true,
+      "spec_sha256": "4696aa916106d89080c04bc73c57390fff6a3803af09406178e5fab2868dd4ed",
+      "why": null
+     },
+     "delta_run_length": {
+      "eligible": true,
+      "spec_sha256": "e535c55020d9ee4d457b3ae102e7099dfc8451c5f2ccc58ff0e2fb27c2140494",
+      "why": null
+     },
+     "mad_extremes_trailing": {
+      "eligible": true,
+      "spec_sha256": "60934c29692536d89434f4537fc0287bfc5395075078c2ebb3495d8b09c14b3a",
+      "why": null
+     }
+    }
+   },
+   "members": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed",
+     "hypothesis": "H_T",
+     "operator": "mad_extremes_trailing",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented",
+     "hypothesis": "H_A",
+     "operator": "mad_extremes_trailing",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed",
+     "hypothesis": "H_T",
+     "operator": "delta_run_length",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented",
+     "hypothesis": "H_A",
+     "operator": "delta_run_length",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed",
+     "hypothesis": "H_T",
+     "operator": "cusum_causal",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented",
+     "hypothesis": "H_A",
+     "operator": "cusum_causal",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    }
+   ],
+   "n": 2048,
+   "protocol": {
+    "alpha": 0.05,
+    "alpha_adjusted": 0.008333333333333333,
+    "blocks_policy": "all_or_insufficient",
+    "branches": [
+     "raw",
+     "transformed",
+     "augmented",
+     "raw_wide"
+    ],
+    "calibration": null,
+    "calibration_plan": {
+     "bound_confidence": 0.95,
+     "generator": "white_null",
+     "n": 2048,
+     "n_sims": 358
+    },
+    "comparisons": 6,
+    "family": [
+     "sinusoid__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed",
+     "sinusoid__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented",
+     "sinusoid__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed",
+     "sinusoid__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented",
+     "sinusoid__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed",
+     "sinusoid__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented"
+    ],
+    "horizon": 1,
+    "inference": "block_t",
+    "logistic_steps": 200,
+    "margin": 0.0,
+    "min_rows_per_block": 30,
+    "model": "ridge",
+    "n_blocks": 4,
+    "prefix_checks": 8,
+    "protocol_sha256": "7984ffa5f455db73da38910645dbf0bedd92a4c3801f717d7a4be15a137cd5ef",
+    "ridge_lambda": 1.0,
+    "schema": "df_utility_protocol.v3",
+    "seed": 3,
+    "target": "return",
+    "window": 4
+   },
+   "protocol_base_sha256": "af2bd9e766def40f366321f0a109096e7af04cacf466bebc0cf5cad2447852e7",
+   "replica_of": null,
+   "resource": {
+    "data_sha256": "4a012a4f61ea8b9ae258fc2d36b8c2faf1d344cb9debd73559a98156685e70ec",
+    "generator": "df_synthetic_bank.c128.v1",
+    "n": 2048,
+    "regime": {
+     "family": "sinusoid",
+     "length": 2048,
+     "missingness": "none",
+     "n_variables": 1,
+     "perturbation": "white",
+     "snr_db": "10"
+    },
+    "seed": 12,
+    "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+    "variables": [
+     "v0"
+    ]
+   },
+   "role": "selection",
+   "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+   "variable": "v0"
+  },
+  {
+   "alpha_adjusted": 0.008333333333333333,
+   "calibration_contracts": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "mad_extremes_trailing",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "mad_extremes_trailing",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "delta_run_length",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "delta_run_length",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "cusum_causal",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "cusum_causal",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    }
+   ],
+   "calibration_plan": {
+    "bound_confidence": 0.95,
+    "generator": "white_null",
+    "n": 2048,
+    "n_sims": 358
+   },
+   "comparisons": 6,
+   "eligibility": {
+    "cells_sha256": "fc532fb40219e432e0e637d73cbb082c9da30cb344d6711200633938a4c7f6ad",
+    "design_sha256": "5ffe25f922bd2f39fcfdbca1288ad171655da8e6274253e30740ea3d6bca27a2",
+    "freeze_sha256": "67f2961a4c46f22840b659b7b313345d4e08d88233c81a5b3851779ee568f97b",
+    "operators": {
+     "cusum_causal": {
+      "eligible": true,
+      "spec_sha256": "4696aa916106d89080c04bc73c57390fff6a3803af09406178e5fab2868dd4ed",
+      "why": null
+     },
+     "delta_run_length": {
+      "eligible": true,
+      "spec_sha256": "e535c55020d9ee4d457b3ae102e7099dfc8451c5f2ccc58ff0e2fb27c2140494",
+      "why": null
+     },
+     "mad_extremes_trailing": {
+      "eligible": true,
+      "spec_sha256": "60934c29692536d89434f4537fc0287bfc5395075078c2ebb3495d8b09c14b3a",
+      "why": null
+     }
+    }
+   },
+   "members": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed",
+     "hypothesis": "H_T",
+     "operator": "mad_extremes_trailing",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented",
+     "hypothesis": "H_A",
+     "operator": "mad_extremes_trailing",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed",
+     "hypothesis": "H_T",
+     "operator": "delta_run_length",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented",
+     "hypothesis": "H_A",
+     "operator": "delta_run_length",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed",
+     "hypothesis": "H_T",
+     "operator": "cusum_causal",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented",
+     "hypothesis": "H_A",
+     "operator": "cusum_causal",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    }
+   ],
+   "n": 2048,
+   "protocol": {
+    "alpha": 0.05,
+    "alpha_adjusted": 0.008333333333333333,
+    "blocks_policy": "all_or_insufficient",
+    "branches": [
+     "raw",
+     "transformed",
+     "augmented",
+     "raw_wide"
+    ],
+    "calibration": null,
+    "calibration_plan": {
+     "bound_confidence": 0.95,
+     "generator": "white_null",
+     "n": 2048,
+     "n_sims": 358
+    },
+    "comparisons": 6,
+    "family": [
+     "sinusoid__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed",
+     "sinusoid__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented",
+     "sinusoid__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed",
+     "sinusoid__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented",
+     "sinusoid__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed",
+     "sinusoid__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented"
+    ],
+    "horizon": 1,
+    "inference": "block_t",
+    "logistic_steps": 200,
+    "margin": 0.0,
+    "min_rows_per_block": 30,
+    "model": "ridge",
+    "n_blocks": 4,
+    "prefix_checks": 8,
+    "protocol_sha256": "fc562e7b03480f38f817479845ca87f3b15522255b28b62dfda7790f5935f298",
+    "ridge_lambda": 1.0,
+    "schema": "df_utility_protocol.v3",
+    "seed": 3,
+    "target": "return",
+    "window": 4
+   },
+   "protocol_base_sha256": "cb55c8c56ebdae65a886c0b37a9c43d5b2055b9d47d355212d17372911703201",
+   "replica_of": "sinusoid__white__snr10__none__n2048__v1__seed12",
+   "resource": {
+    "data_sha256": "99295bcf1eb0f068c3ab13be0d595b49fae7e08525d86a13b4db973b0a918fed",
+    "generator": "df_synthetic_bank.c128.v1",
+    "n": 2048,
+    "regime": {
+     "family": "sinusoid",
+     "length": 2048,
+     "missingness": "none",
+     "n_variables": 1,
+     "perturbation": "white",
+     "snr_db": "10"
+    },
+    "seed": 13,
+    "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+    "variables": [
+     "v0"
+    ]
+   },
+   "role": "replication",
+   "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+   "variable": "v0"
+  },
+  {
+   "alpha_adjusted": 0.008333333333333333,
+   "calibration_contracts": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "mad_extremes_trailing",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "mad_extremes_trailing",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "delta_run_length",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "delta_run_length",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "cusum_causal",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "cusum_causal",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    }
+   ],
+   "calibration_plan": {
+    "bound_confidence": 0.95,
+    "generator": "white_null",
+    "n": 2048,
+    "n_sims": 358
+   },
+   "comparisons": 6,
+   "eligibility": {
+    "cells_sha256": "fc532fb40219e432e0e637d73cbb082c9da30cb344d6711200633938a4c7f6ad",
+    "design_sha256": "5ffe25f922bd2f39fcfdbca1288ad171655da8e6274253e30740ea3d6bca27a2",
+    "freeze_sha256": "67f2961a4c46f22840b659b7b313345d4e08d88233c81a5b3851779ee568f97b",
+    "operators": {
+     "cusum_causal": {
+      "eligible": true,
+      "spec_sha256": "4696aa916106d89080c04bc73c57390fff6a3803af09406178e5fab2868dd4ed",
+      "why": null
+     },
+     "delta_run_length": {
+      "eligible": true,
+      "spec_sha256": "e535c55020d9ee4d457b3ae102e7099dfc8451c5f2ccc58ff0e2fb27c2140494",
+      "why": null
+     },
+     "mad_extremes_trailing": {
+      "eligible": true,
+      "spec_sha256": "60934c29692536d89434f4537fc0287bfc5395075078c2ebb3495d8b09c14b3a",
+      "why": null
+     }
+    }
+   },
+   "members": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed",
+     "hypothesis": "H_T",
+     "operator": "mad_extremes_trailing",
+     "unit": "steps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented",
+     "hypothesis": "H_A",
+     "operator": "mad_extremes_trailing",
+     "unit": "steps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed",
+     "hypothesis": "H_T",
+     "operator": "delta_run_length",
+     "unit": "steps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented",
+     "hypothesis": "H_A",
+     "operator": "delta_run_length",
+     "unit": "steps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed",
+     "hypothesis": "H_T",
+     "operator": "cusum_causal",
+     "unit": "steps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented",
+     "hypothesis": "H_A",
+     "operator": "cusum_causal",
+     "unit": "steps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    }
+   ],
+   "n": 2048,
+   "protocol": {
+    "alpha": 0.05,
+    "alpha_adjusted": 0.008333333333333333,
+    "blocks_policy": "all_or_insufficient",
+    "branches": [
+     "raw",
+     "transformed",
+     "augmented",
+     "raw_wide"
+    ],
+    "calibration": null,
+    "calibration_plan": {
+     "bound_confidence": 0.95,
+     "generator": "white_null",
+     "n": 2048,
+     "n_sims": 358
+    },
+    "comparisons": 6,
+    "family": [
+     "steps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed",
+     "steps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented",
+     "steps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed",
+     "steps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented",
+     "steps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed",
+     "steps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented"
+    ],
+    "horizon": 1,
+    "inference": "block_t",
+    "logistic_steps": 200,
+    "margin": 0.0,
+    "min_rows_per_block": 30,
+    "model": "ridge",
+    "n_blocks": 4,
+    "prefix_checks": 8,
+    "protocol_sha256": "430e8c84c9e399564a4d8c9f7d0a6e9b320cb2a12876a73969800b60fd1448df",
+    "ridge_lambda": 1.0,
+    "schema": "df_utility_protocol.v3",
+    "seed": 3,
+    "target": "return",
+    "window": 4
+   },
+   "protocol_base_sha256": "05994d11560cce9218cafaa3041fe7a8cc61e7018c2820d60f062f8c6ce0f94e",
+   "replica_of": null,
+   "resource": {
+    "data_sha256": "0c9710adc186e69912702363065f3a8ff7beb9da543863fe5656878577147339",
+    "generator": "df_synthetic_bank.c128.v1",
+    "n": 2048,
+    "regime": {
+     "family": "steps",
+     "length": 2048,
+     "missingness": "none",
+     "n_variables": 1,
+     "perturbation": "white",
+     "snr_db": "10"
+    },
+    "seed": 12,
+    "unit": "steps__white__snr10__none__n2048__v1__seed12",
+    "variables": [
+     "v0"
+    ]
+   },
+   "role": "selection",
+   "unit": "steps__white__snr10__none__n2048__v1__seed12",
+   "variable": "v0"
+  },
+  {
+   "alpha_adjusted": 0.008333333333333333,
+   "calibration_contracts": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "mad_extremes_trailing",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "mad_extremes_trailing",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "delta_run_length",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "delta_run_length",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "hypothesis": "H_T",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "cusum_causal",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 4,
+      "b": 4
+     }
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "hypothesis": "H_A",
+     "n": 2048,
+     "n_sims": 358,
+     "operator": "cusum_causal",
+     "rows_policy": "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT",
+     "widths": {
+      "a": 8,
+      "b": 8
+     }
+    }
+   ],
+   "calibration_plan": {
+    "bound_confidence": 0.95,
+    "generator": "white_null",
+    "n": 2048,
+    "n_sims": 358
+   },
+   "comparisons": 6,
+   "eligibility": {
+    "cells_sha256": "fc532fb40219e432e0e637d73cbb082c9da30cb344d6711200633938a4c7f6ad",
+    "design_sha256": "5ffe25f922bd2f39fcfdbca1288ad171655da8e6274253e30740ea3d6bca27a2",
+    "freeze_sha256": "67f2961a4c46f22840b659b7b313345d4e08d88233c81a5b3851779ee568f97b",
+    "operators": {
+     "cusum_causal": {
+      "eligible": true,
+      "spec_sha256": "4696aa916106d89080c04bc73c57390fff6a3803af09406178e5fab2868dd4ed",
+      "why": null
+     },
+     "delta_run_length": {
+      "eligible": true,
+      "spec_sha256": "e535c55020d9ee4d457b3ae102e7099dfc8451c5f2ccc58ff0e2fb27c2140494",
+      "why": null
+     },
+     "mad_extremes_trailing": {
+      "eligible": true,
+      "spec_sha256": "60934c29692536d89434f4537fc0287bfc5395075078c2ebb3495d8b09c14b3a",
+      "why": null
+     }
+    }
+   },
+   "members": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed",
+     "hypothesis": "H_T",
+     "operator": "mad_extremes_trailing",
+     "unit": "steps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented",
+     "hypothesis": "H_A",
+     "operator": "mad_extremes_trailing",
+     "unit": "steps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed",
+     "hypothesis": "H_T",
+     "operator": "delta_run_length",
+     "unit": "steps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented",
+     "hypothesis": "H_A",
+     "operator": "delta_run_length",
+     "unit": "steps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed",
+     "hypothesis": "H_T",
+     "operator": "cusum_causal",
+     "unit": "steps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented",
+     "hypothesis": "H_A",
+     "operator": "cusum_causal",
+     "unit": "steps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    }
+   ],
+   "n": 2048,
+   "protocol": {
+    "alpha": 0.05,
+    "alpha_adjusted": 0.008333333333333333,
+    "blocks_policy": "all_or_insufficient",
+    "branches": [
+     "raw",
+     "transformed",
+     "augmented",
+     "raw_wide"
+    ],
+    "calibration": null,
+    "calibration_plan": {
+     "bound_confidence": 0.95,
+     "generator": "white_null",
+     "n": 2048,
+     "n_sims": 358
+    },
+    "comparisons": 6,
+    "family": [
+     "steps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed",
+     "steps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented",
+     "steps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed",
+     "steps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented",
+     "steps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed",
+     "steps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented"
+    ],
+    "horizon": 1,
+    "inference": "block_t",
+    "logistic_steps": 200,
+    "margin": 0.0,
+    "min_rows_per_block": 30,
+    "model": "ridge",
+    "n_blocks": 4,
+    "prefix_checks": 8,
+    "protocol_sha256": "d9265f7b687a89e5724de81089c55fcf262b3c56200a2f05f9cfb249c62b7a64",
+    "ridge_lambda": 1.0,
+    "schema": "df_utility_protocol.v3",
+    "seed": 3,
+    "target": "return",
+    "window": 4
+   },
+   "protocol_base_sha256": "f7aac524e533077d77710034966c14c3579ec64b1b0e1fd3e8836a4c037d5575",
+   "replica_of": "steps__white__snr10__none__n2048__v1__seed12",
+   "resource": {
+    "data_sha256": "d8db6e383abe5eb6dedb9b452c8262ddeb30fe0dc76ceee6e16a0aceecff4e9b",
+    "generator": "df_synthetic_bank.c128.v1",
+    "n": 2048,
+    "regime": {
+     "family": "steps",
+     "length": 2048,
+     "missingness": "none",
+     "n_variables": 1,
+     "perturbation": "white",
+     "snr_db": "10"
+    },
+    "seed": 13,
+    "unit": "steps__white__snr10__none__n2048__v1__seed13",
+    "variables": [
+     "v0"
+    ]
+   },
+   "role": "replication",
+   "unit": "steps__white__snr10__none__n2048__v1__seed13",
+   "variable": "v0"
+  }
+ ],
+ "hypotheses": {
+  "H_A": {
+   "branch_a": "raw_wide",
+   "branch_b": "augmented",
+   "question": "does raw+representation improve on raw lags of the same total width? (capacity control equalises the number of inputs only \u2014 not information, effective range, history or model difficulty)"
+  },
+  "H_T": {
+   "branch_a": "raw",
+   "branch_b": "transformed",
+   "question": "does the representation alone IMPROVE on raw lags of width `window` (superiority at the sealed margin; not non-inferiority, not equivalence)?"
+  }
+ },
+ "inherited_from_sha256": "4181a9c4350c5a701205e047946f3883d57d25784bfc6668366b32210b978062",
+ "inherited_protocol_base": {
+  "alpha": 0.05,
+  "horizon": 1,
+  "margin": 0.0,
+  "min_rows_per_block": 30,
+  "model": "ridge",
+  "n_blocks": 4,
+  "ridge_lambda": 1.0,
+  "target": "return",
+  "window": 4
+ },
+ "multiplicity_policy": "alpha / |family| per (unit, variable); contrasts of one family are correlated (same series) and are never treated as independent experiments; this is NOT a global control over the campaign's discoveries; replicates are counted per explicit map, never pooled",
+ "operators": [
+  "mad_extremes_trailing",
+  "delta_run_length",
+  "cusum_causal"
+ ],
+ "pilot_units": [
+  "bumps__white__snr10__none__n2048__v1__seed11",
+  "sinusoid__white__snr10__none__n2048__v1__seed11",
+  "steps__white__snr10__none__n2048__v1__seed11"
+ ],
+ "predecessor_design_sha256": "386fe0338d076499ab77906d9c504598e8657973850759dccae5878532bf677c",
+ "replication_map": {
+  "bumps__white__snr10__none__n2048__v1__seed12": "bumps__white__snr10__none__n2048__v1__seed13",
+  "sinusoid__white__snr10__none__n2048__v1__seed12": "sinusoid__white__snr10__none__n2048__v1__seed13",
+  "steps__white__snr10__none__n2048__v1__seed12": "steps__white__snr10__none__n2048__v1__seed13"
+ },
+ "replication_rule": {
+  "rule": "an (operator, hypothesis) on a variable is PROPOSED FOR REVIEW only if it ADVANCES in the selection family AND in its mapped replica (same generator family, perturbation, SNR, missingness, variable; different seed and data digest); nothing is confirmed, publicly eligible or licensed by this design"
+ },
+ "schema": "df_utility_dev_design.v2",
+ "stage": "DEVELOPMENT_SELECTION",
+ "stages_out_of_scope": [
+  "FLOW_DIAGNOSTIC",
+  "PUBLIC_CONFIRMATION",
+  "FINANCIAL_REVALIDATION"
+ ],
+ "thresholds_policy": "target, horizon, model, window, blocks, margin, alpha, ridge lambda and min rows are inherited from the sealed pilot protocol and checked on every family protocol; none is chosen from results seen",
+ "variable": "v0"
+}
