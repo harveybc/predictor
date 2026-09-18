@@ -38,7 +38,7 @@ class StubGov:
         self.calls.append(("submit_campaign", body["campaign_key"]))
         if self.refuse:
             return 403, {"error": "refused by the stub"}
-        sha = "c" * 60 + body["campaign_key"][-4:]
+        sha = __import__("hashlib").sha256(body["campaign_key"].encode()).hexdigest()   # one per key
         self.units = getattr(self, "units", {})
         self.units[sha] = list(body["units"])
         return 201, {"campaign_sha256": sha}
@@ -264,3 +264,34 @@ def test_O2_the_entry_point_resumed_over_an_attempt_whose_evidence_is_gone_publi
     item = [i for i in env if i["cell_key"] == cid][0]
     assert item["terminal_state"] == H.SCORE_UNVERIFIED and item["metric_value"] == "UNAVAILABLE"
     assert H.ADVANCES not in json.dumps(item)
+
+
+def test_P1_P3_hypotheses_give_each_operator_pair_its_own_calibration_unit_protocol_and_jobs(tmp_path):
+    cfg = cfg_for(tmp_path)
+    cfg["hypotheses"] = {"H_T": {"branch_a": "raw", "branch_b": "transformed"},
+                         "H_A": {"branch_a": "raw_wide", "branch_b": "augmented"}}
+    cfg["protocol"]["branches"] = ["raw", "transformed", "augmented", "raw_wide"]
+    cfg["expected_family"] = ["fab__v0__delta_run_length__transformed", "fab__v0__delta_run_length__augmented"]
+    gov = StubGov()
+    jobs = {}
+    trace = []
+    receipt, outcomes, frozen, pre, sha = R.run_rehearsal(
+        cfg, gov, lambda e, **f: trace.append((e, f)), GR=GR, outbox=StubOutbox(gov),
+        isolated=_resume_aware(stub_isolated([]), jobs))
+    assert sorted(receipt["calibration"]) == ["campaign", "delta_run_length__H_A", "delta_run_length__H_T"]
+    assert jobs["calibrate__delta_run_length__H_A"]["branch_a"] == "raw_wide"
+    assert jobs["calibrate__delta_run_length__H_A"]["branch_b"] == "augmented"
+    assert jobs["calibrate__delta_run_length__H_T"]["branch_b"] == "transformed"
+    assert sorted(frozen["protocols"]) == ["delta_run_length__H_A", "delta_run_length__H_T"]
+    ja = jobs["fab__v0__delta_run_length__augmented"]
+    assert (ja["branch_a"], ja["branch_b"], ja["protocol_key"], ja["hypothesis"]) == ("raw_wide", "augmented", "delta_run_length__H_A", "H_A")
+    assert ja["protocol"]["protocol_sha256"] == frozen["protocols"]["delta_run_length__H_A"]["protocol_sha256"]
+    assert outcomes["fab__v0__delta_run_length__augmented"]["hypothesis"] == "H_A"
+    assert pre["calibration_contracts"][1] == {"operator": "delta_run_length", "hypothesis": "H_A",
+                                               "protocol_key": "delta_run_length__H_A",
+                                               "branch_a": "raw_wide", "branch_b": "augmented"}
+    t = gov.terminals[(sha, "fab__v0__delta_run_length__augmented")]
+    assert t["tags"]["hypothesis"] == "H_A" and t["tags"]["branch_a"] == "raw_wide"
+    with pytest.raises(SystemExit, match="sealed design's family"):
+        R.run_rehearsal(dict(cfg, root=str(tmp_path / "other"), expected_family=["x"]), StubGov(),
+                        lambda e, **f: None, GR=GR, outbox=StubOutbox(gov), isolated=stub_isolated([]))

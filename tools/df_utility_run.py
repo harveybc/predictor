@@ -130,18 +130,35 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
 
     # contrast ids are governed unit ids; their parts are carried in a map, never re-parsed
     # (bank unit ids contain the separator themselves)
+    # hypotheses: each (operator, hypothesis) has its own branch pair, its own calibration
+    # contract and its own sealed protocol (P1); without a declaration, the historical single
+    # pair raw/transformed keyed by the operator alone
+    hypotheses = cfg.get("hypotheses")
+    explicit = hypotheses is not None
+    hypotheses = hypotheses or {"H_T": {"branch_a": "raw", "branch_b": "transformed"}}
+    contracts = [(k, h) for k in operators for h in hypotheses]
+    pkey = {(k, h): (f"{k}__{h}" if explicit else k) for k, h in contracts}
     members = {}
     for u in units:
-        for k in operators:
-            members[f"{u['unit']}__{u['variable']}__{k}__transformed"] = (u["unit"], u["variable"], k, False)
+        for k, h in contracts:
+            pair = hypotheses[h]
+            members[f"{u['unit']}__{u['variable']}__{k}__{pair['branch_b']}"] = \
+                (u["unit"], u["variable"], k, False, h, pair["branch_a"], pair["branch_b"])
     if cfg.get("slow_control"):
-        members[f"{units[0]['unit']}__{units[0]['variable']}__{operators[0]}__transformed__slow-control"] = \
-            (units[0]["unit"], units[0]["variable"], operators[0], True)
+        k0, h0 = contracts[0]
+        pair = hypotheses[h0]
+        members[f"{units[0]['unit']}__{units[0]['variable']}__{k0}__{pair['branch_b']}__slow-control"] = \
+            (units[0]["unit"], units[0]["variable"], k0, True, h0, pair["branch_a"], pair["branch_b"])
     family = tuple(members)
+    if cfg.get("expected_family") is not None and list(cfg["expected_family"]) != list(family):
+        raise Refusal("REFUSED: the run's family is not the sealed design's family")
     base = H.Protocol(**cfg["protocol"], family=family, calibration_plan=dict(plan))
     pre = {"schema": "df_utility_freeze_pre.v1", "run_id": run_id, "frozen_utc": now_iso(),
            "protocol_base": base.sealed(), "protocol_base_sha256": base.base_sha256(),
            "plan": plan, "operators": operators,
+           "hypotheses": hypotheses if explicit else None,
+           "calibration_contracts": [{"operator": k, "hypothesis": h, "protocol_key": pkey[(k, h)],
+                                      **hypotheses[h]} for k, h in contracts],
            "units": [{"unit": u["unit"], "variable": u["variable"],
                       "data_sha256": sha_bytes(np.asarray(u["values"], dtype=float).tobytes()),
                       "n": len(u["values"])} for u in units],
@@ -190,44 +207,51 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
         "schema": "governed_campaign.v1", "campaign_key": cal_key, "classification": "NON_GOVERNING",
         "project": cfg.get("project", "predictor"), "code_identity": code_identity,
         "config_sha256": pre["freeze_sha256"], "input_mode": "SYNTHETIC",
-        "synthetic_spec_sha256": campaign.sha_obj(plan), "units": operators, "datasets": [],
+        "synthetic_spec_sha256": campaign.sha_obj(plan), "units": [pkey[c] for c in contracts], "datasets": [],
         "terminal_lake": cfg.get("metrics_lake", "olap_cube")})
     receipt["calibration"]["campaign"] = {"key": cal_key, "campaign_sha256": cal_sha}
     records = {}
     _, done = gov.reconcile_campaign(cal_sha)
     missing = (done or {}).get("missing_units")
-    already = set(operators) - set(operators if missing is None else missing)
-    for kind in operators:
-        if kind in already and (root / "attempts" / f"calibrate__{kind}" / "outcome.json").is_file():
-            out = child("calibrate", f"calibrate__{kind}", {"contrast_id": family[0], "operator": kind,
-                        "protocol": base.sealed(), "plan": plan, "seed": base.seed + 1000 + operators.index(kind)},
+    cal_units = [pkey[c] for c in contracts]
+    already = set(cal_units) - set(cal_units if missing is None else missing)
+    for idx, (kind, hyp) in enumerate(contracts):
+        key_c = pkey[(kind, hyp)]
+        pair = hypotheses[hyp]
+        cal_job = {"contrast_id": family[0], "operator": kind, "protocol": base.sealed(), "plan": plan,
+                   "seed": base.seed + 1000 + idx, "protocol_key": key_c, "hypothesis": hyp,
+                   "branch_a": pair["branch_a"], "branch_b": pair["branch_b"]}
+        if not explicit:                                        # the historical job, byte-identical
+            cal_job = {"contrast_id": family[0], "operator": kind, "protocol": base.sealed(),
+                       "plan": plan, "seed": base.seed + 1000 + idx}
+        if key_c in already and (root / "attempts" / f"calibrate__{key_c}" / "outcome.json").is_file():
+            out = child("calibrate", f"calibrate__{key_c}", cal_job,
                         budgets["calibration_wall_seconds"], budgets["calibration_cpu_seconds"],
                         budgets["task_memory_bytes"])           # resumed: recorded, not re-run
             if out.get("score"):
-                records[kind] = out["score"]
-            receipt["calibration"][kind] = {"outcome": out["outcome"], "cost": out["cost"],
-                                            "record_sha256": out.get("output_sha256"),
-                                            "upper_bound": (out.get("score") or {}).get("upper_bound"),
-                                            "pending_after_flush": 0, "resumed": True}
+                records[key_c] = out["score"]
+            receipt["calibration"][key_c] = {"outcome": out["outcome"], "cost": out["cost"],
+                                             "record_sha256": out.get("output_sha256"),
+                                             "upper_bound": (out.get("score") or {}).get("upper_bound"),
+                                             "pending_after_flush": 0, "resumed": True}
             continue
-        GR._require_reconciled(gov, cal_sha, kind, before_run=True)
-        trace("before_run", key=cal_key, unit=kind)
-        out = child("calibrate", f"calibrate__{kind}",
-                    {"contrast_id": family[0], "operator": kind, "protocol": base.sealed(),
-                     "plan": plan, "seed": base.seed + 1000 + operators.index(kind)},
+        GR._require_reconciled(gov, cal_sha, key_c, before_run=True)
+        trace("before_run", key=cal_key, unit=key_c)
+        out = child("calibrate", f"calibrate__{key_c}", cal_job,
                     budgets["calibration_wall_seconds"], budgets["calibration_cpu_seconds"],
                     budgets["task_memory_bytes"])
         cost = out["cost"]
         rec = out.get("score")
         tags = {"purpose": "UTILITY_CALIBRATION", "grants": "NONE", "classification": "NON_GOVERNING",
-                "operator": kind, "protocol_base_sha256": base.base_sha256(),
+                "operator": kind, "hypothesis": hyp, "branch_a": pair["branch_a"], "branch_b": pair["branch_b"],
+                "protocol_base_sha256": base.base_sha256(),
                 "record_sha256": out.get("output_sha256") or ""}
         if out["outcome"] == H.RESOURCE_EXCEEDED or rec is None:
             terminal = _terminal(status="FAILED", reason=f"{out['outcome']}: {out.get('reason') or ''}"[:300],
                                  cost=cost, metrics=[], started=cost.get("started_at") or now_iso(),
                                  finished=cost.get("ended_at") or now_iso(), tags=tags)
         else:
-            records[kind] = rec
+            records[key_c] = rec
             terminal = _terminal(status="COMPLETED", reason=None, cost=cost,
                                  metrics=[_metric("calibration.false_advance_rate", rec["false_advance_rate"], "rate"),
                                           _metric("calibration.upper_bound", rec["upper_bound"], "rate"),
@@ -236,9 +260,9 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
                                  started=cost.get("started_at") or now_iso(),
                                  finished=cost.get("ended_at") or now_iso(),
                                  tags={**tags, "generator": rec["generator"], "n_sims": str(rec["n_sims"])})
-        outbox.put({"campaign_sha256": cal_sha, "unit_id": kind, "terminal": terminal})
+        outbox.put({"campaign_sha256": cal_sha, "unit_id": key_c, "terminal": terminal})
         flushed = GR._send_pending(gov, outbox)
-        receipt["calibration"][kind] = {"outcome": out["outcome"], "cost": cost,
+        receipt["calibration"][key_c] = {"outcome": out["outcome"], "cost": cost,
                                         "record_sha256": out.get("output_sha256"),
                                         "upper_bound": (rec or {}).get("upper_bound"),
                                         "pending_after_flush": flushed["pending"]}
@@ -246,6 +270,9 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
     receipt["reconciliation"]["calibration"] = {"http": rstatus, "missing_units": rbody.get("missing_units"),
                                                 "accounting_only": rbody.get("accounting_only"),
                                                 "lake_only": rbody.get("lake_only")}
+    if cfg.get("contrasts", True) is False:                  # a calibration-only run (cost pilot)
+        receipt["finished_utc"] = now_iso()
+        return receipt, {}, None, pre, cal_sha
 
     # --- eligibility: mechanics in an isolated child (rehearsal) or the verified cells (pilot) ---
     eligibility_paths = {}
@@ -269,8 +296,8 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
                                            "verdicts": {c["operator"]: c["verdict"] for c in out["score"]["cells"]}}
 
     # --- seal per operator ---------------------------------------------------------------------------
-    protocols = {kind: base.with_calibration(records[kind]) if kind in records else base
-                 for kind in operators}
+    protocols = {pkey[c]: base.with_calibration(records[pkey[c]]) if pkey[c] in records else base
+                 for c in contracts}
     frozen = {"schema": "df_utility_freeze.v2", "run_id": run_id, "frozen_utc": now_iso(),
               "freeze_pre_sha256": pre["freeze_sha256"],
               "protocols": {k: p.sealed() for k, p in protocols.items()},
@@ -300,16 +327,21 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
     missing = (done or {}).get("missing_units")
     reported = set(family) - set(family if missing is None else missing)
     for contrast_id in family:
-        unit_id, variable, kind, slow = members[contrast_id]
+        unit_id, variable, kind, slow, hyp, branch_a, branch_b = members[contrast_id]
+        key_c = pkey[(kind, hyp)]
         u = by_unit[unit_id]
+        job = {"contrast_id": contrast_id, "unit": unit_id, "variable": variable, "operator": kind,
+               "protocol": protocols[key_c].sealed(),
+               "series": {"values": list(map(float, u["values"]))},
+               "eligibility": str(eligibility_paths[unit_id])}
+        if explicit:
+            job.update({"protocol_key": key_c, "hypothesis": hyp, "branch_a": branch_a, "branch_b": branch_b})
         if contrast_id in reported and (root / "attempts" / contrast_id / "outcome.json").is_file():
             # resumed: the recorded outcome, no before_run, no second terminal
-            out = child("contrast", contrast_id, {"contrast_id": contrast_id, "unit": unit_id,
-                        "variable": variable, "operator": kind,
-                        "protocol": protocols[kind].sealed(),
-                        "series": {"values": list(map(float, u["values"]))},
-                        "eligibility": str(eligibility_paths[unit_id])},
+            out = child("contrast", contrast_id, job,
                         budgets["wall_seconds"], budgets["cpu_seconds"], budgets["task_memory_bytes"])
+            out["operator"] = kind
+            out["hypothesis"] = hyp
             outcomes[contrast_id] = out
             receipt["terminals"].append({"unit_id": contrast_id, "status": "RESUMED",
                                          "outcome": out["outcome"], "cost": out["cost"],
@@ -318,16 +350,13 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
             continue
         GR._require_reconciled(gov, campaign_sha, contrast_id, before_run=True)
         trace("before_run", key=key, unit=contrast_id)
-        job = {"contrast_id": contrast_id, "unit": unit_id, "variable": variable, "operator": kind,
-               "protocol": protocols[kind].sealed(),
-               "series": {"values": list(map(float, u["values"]))},
-               "eligibility": str(eligibility_paths[unit_id])}
         if slow:
             job["slow_seconds"] = budgets["slow_control"]["slow_seconds"]
         out = child("contrast", contrast_id, job,
                     budgets["slow_control"]["wall_seconds"] if slow else budgets["wall_seconds"],
                     budgets["cpu_seconds"], budgets["task_memory_bytes"])
         out["operator"] = kind
+        out["hypothesis"] = hyp
         outcomes[contrast_id] = out
         score = out.get("score") or {}
         cost = out["cost"]
@@ -349,10 +378,11 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
                              finished=cost.get("ended_at") or now_iso(),
                              tags={"purpose": cfg["purpose"], "grants": "NONE",
                                    "classification": "NON_GOVERNING", "outcome": str(out["outcome"]),
-                                   "protocol_sha256": protocols[kind].sealed()["protocol_sha256"],
+                                   "protocol_sha256": protocols[key_c].sealed()["protocol_sha256"],
                                    "freeze_sha256": frozen["freeze_sha256"],
                                    "output_sha256": out.get("output_sha256") or "",
-                                   "calibrated": str(kind in records)})
+                                   "hypothesis": hyp, "branch_a": branch_a, "branch_b": branch_b,
+                                   "calibrated": str(key_c in records)})
         outbox.put({"campaign_sha256": campaign_sha, "unit_id": contrast_id, "terminal": terminal})
         flushed = GR._send_pending(gov, outbox)
         receipt["terminals"].append({"unit_id": contrast_id, "status": status_t,
@@ -367,6 +397,13 @@ def run_rehearsal(cfg: dict, gov, trace, *, GR, outbox, isolated=None) -> tuple:
                                         for k, v in outcomes.items()}
     receipt["finished_utc"] = now_iso()
     return receipt, outcomes, frozen, pre, campaign_sha
+
+
+def run_calibrations_only(cfg, gov, trace, *, GR, outbox, isolated=None) -> dict:
+    """The governed calibration campaign alone (freeze-pre, registration, before_run per
+    contract, isolated children, terminals, reconciliation): the cost pilot of P3."""
+    receipt, *_ = run_rehearsal({**cfg, "contrasts": False}, gov, trace, GR=GR, outbox=outbox, isolated=isolated)
+    return receipt
 
 
 def envelope_items(cfg, outcomes) -> list:
