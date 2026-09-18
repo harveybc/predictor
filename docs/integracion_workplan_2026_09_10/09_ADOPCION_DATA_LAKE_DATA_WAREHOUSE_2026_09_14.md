@@ -382,3 +382,12 @@ T1-T4 corrige oraculo, filas comparables y exposicion; prefiere factorial comple
 216 celdas sobre opcion B que pierde curvas neuronales. Nuevo techo 14400 s CPU,
 piloto corregido y 25% holgura requeridos; ejecucion gobernada y condicionada a pruebas.
 [Dictamen y orden T1-T4](../handoffs/MUSASHI_ADEQUACY_S_REVIEW_AND_T1_T4_2026_09_18.md).
+
+### Ultima direccion: requisitos antes del periodo
+
+SUPERSEDED_PENDING_REDESIGN: retirada la autorizacion de ampliar al factorial de
+216 celdas heredando periodos sorteados. Mantener correcciones T1/T2 y evidencia.
+Primero inventario del negocio/configs y escalas observadas en entrenamiento;
+diagnostico minimo separado, P16 solo como convencion explicita de prueba, no mercado.
+No nuevas campanas hasta revisar requisitos/contexto/objetivo y presupuesto.
+[Orden prioritaria](../handoffs/MUSASHI_REQUIREMENTS_FIRST_PERIOD_REDESIGN_2026_09_18.md).

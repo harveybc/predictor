@@ -1,5 +1,9 @@
 # Adequacy S1-S4 review and T1-T4 continuation
 
+**SUPERSEDED for T3 campaign launch by the latest owner direction:**
+[Requirements-first period redesign](MUSASHI_REQUIREMENTS_FIRST_PERIOD_REDESIGN_2026_09_18.md).
+Retain T1/T2 fixes and evidence; do not launch the inherited 216-cell factorial.
+
 Reviewed: predictor `bfe2545`, S1-S4 return, design/models/runner and recorded pilot verification.
 Scope: descriptive model/context adequacy, not representation selection or trading.
 
