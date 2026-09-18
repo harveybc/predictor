@@ -1041,3 +1041,33 @@ Los seis operadores restantes quedan en diseno, sin GPU/finanzas/reserva.
 [Orden R1-R4 de utilidad](../handoffs/MUSASHI_UTILITY_Q1_Q4_REVIEW_AND_R1_R4_2026_09_18.md).
 
 **2026-09-18 · R1–R4 (Satoshi, sobre la revisión de Q1–Q4).** R1: la clave de computación liga el código científico ejecutado (objetos de código del operador independientes de la ruta, módulos definidor y auxiliares, arnés, entorno numérico con alcance de portabilidad declarado); registros v4; los registros históricos conservan su estatus sin adquirir garantías. R2: recuperación tipada del caché (entrada incompleta en cuarentena y reemplazo utilizable; conflicto científico con disposición pendiente; duplicados juzgados científicamente; contabilidad idempotente por intento; verificación medida aparte de cómputo evitado proyectado); demostración gobernada `utilcache-v2a/b` (miss → entrada dañada → recuperación + hits, contenido igual en el cubo). R3: validación gobernada del instrumento `utilinst-v1` con diseño sellado antes de medir (n=2048, 12 semillas nuevas, α/2 al 95 % → 119 simulaciones): H_T 10/12, nulo 12/12, pérdida 12/12, fuga 12/12; H_A INCONCLUSIVE por calibración (1/119 → cota 0,039 > 0,025), deltas positivos descriptivos; 203 s CPU; resultado del instrumento **INCONCLUSIVE**; diseño ejecutable de los 6 operadores restantes sellado (`366880…`, 12 computaciones bajo caché), no lanzado. R4: recierre de `utildev-v1` desde bytes conservados (CLOSE.3: TOTAL, 0 propuestas; registros v2 verificados en sus propios términos), verificación por contenido de las nuevas corridas, 12C actualizado. Retorno `SATOSHI_UTILITY_R1_R4_RETURN_2026_09_18.md`. Salida `UTILITY_CODE_BOUND_REUSE_AND_INSTRUMENT_SUCCESSOR_REVIEW`.
+### R1-R4: instrumento inconcluso; adecuacion al negocio pendiente
+
+El retorno 500f3c6 sigue en D3, validacion del instrumento de utilidad: H_T 10/12,
+H_A inconcluso por calibracion. No es validacion de trading semanal ni finalizacion
+de los trece pasos. No aumentar simulaciones hasta lograr un pase: justificar
+precision/potencia y regla de parada antes del sucesor. Disenar en paralelo el
+protocolo de negocio con suficientes semanas/regimenes, curvas de aprendizaje,
+modelos representativos, disponibilidad real, validacion semanal y costos netos.
+Ridge queda como comparador, no juez unico de representaciones para trading.
+[Requisitos obligatorios y estado](../handoffs/MUSASHI_UTILITY_STATUS_AND_WEEKLY_TRADING_REQUIREMENTS_2026_09_18.md).
+
+### Adecuacion de contexto/modelo antes de ampliar representaciones
+
+Auditoria de metadata: sinusoides de periodos 41.438459 y 78.154908; ridge recibe
+4 valores crudos (8 en raw_wide), no dos periodos. Objetivo: incremento observado
+con ruido, no onda limpia. No inferir incapacidad predictiva de un delta relativo.
+S1-S4 ordena pruebas primero y piloto gobernado de contexto/modelo/objetivo con
+ridge, Conv1D causal y LSTM, curvas y costos observados; sin transferir calibracion
+entre modelos. Mantener diseno RL y reentrenamiento semanal como trabajo requerido.
+[Orden de adecuacion S1-S4](../handoffs/MUSASHI_CONTEXT_MODEL_ADEQUACY_AND_S1_S4_2026_09_18.md).
+
+### Revision ML obligatoria: no reinicio global
+
+Conservar resultados anteriores en su alcance diagnostico. No hay evidencia para
+invalidarlos todos ni para usarlos como validacion de trading. La siguiente campana
+incluye tabla requisito/prueba/evidencia/estado de contexto, objetivo, ruido, muestras,
+modelo, ajuste, causalidad, estadistica y negocio. Musashi revisa esos aspectos,
+no solo codigo y conciliacion. Satoshi continua S1-S4; el piloto puede investigar
+lo no probado pero no autoriza seleccion posterior por el solo hecho de terminar.
+[Addendum operativo y responsabilidades](../handoffs/MUSASHI_ML_REVIEW_REQUIRED_BEFORE_CAMPAIGNS_2026_09_18.md).
