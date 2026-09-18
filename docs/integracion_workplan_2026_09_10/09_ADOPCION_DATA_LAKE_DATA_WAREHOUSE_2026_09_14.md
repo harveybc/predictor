@@ -307,3 +307,13 @@ conserva ADVANCES junto a SCORE_UNVERIFIED. Corregir, reverificar las simulacion
 conservadas y cerrar descriptivamente el piloto sin repetir campanas. Preparar
 el siguiente diseno por variable, sin ejecutar reserva o ampliar poblacion ahora.
 [Orden O1-O4](../handoffs/MUSASHI_D3_N1_N5_REVIEW_AND_O1_O4_2026_09_17.md).
+
+### Retorno d402532: 12A requiere coherencia de ambos contrastes
+
+53 pruebas focales pasan. La calibracion actual solo llama raw/transformed;
+H_A requiere raw_wide/augmented. El validador acepta margen interno cambiado
+con digest exterior reparado. La purga debe incluir ocho lags de raw_wide.
+Corregir y sellar sucesor, sin repetir D3 ni el piloto; autorizacion condicional
+para 36 contrastes de desarrollo y sus calibraciones/replicas, techo cuatro
+horas CPU agregadas y limites existentes, sin reserva/finanzas/GPU.
+[Orden P1-P4](../handoffs/MUSASHI_UTILITY_O1_O4_REVIEW_AND_P1_P4_2026_09_17.md).
