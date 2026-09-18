@@ -1,0 +1,227 @@
+{
+ "all_verified": true,
+ "cells": {
+  "pilot__causal_conv1d": {
+   "attempt": "pilot__causal_conv1d",
+   "problems": [],
+   "recomputed": {
+    "test": {
+     "baseline": 0.3737910726409996,
+     "first_row": 1664,
+     "last_row": 2046,
+     "model": 0.35497017982477846,
+     "rows": 383
+    },
+    "train": {
+     "baseline": 0.3920720737000572,
+     "first_row": 286,
+     "last_row": 1053,
+     "model": 0.3750358064439547,
+     "rows": 768
+    },
+    "validation": {
+     "baseline": 0.34499480177418135,
+     "first_row": 1311,
+     "last_row": 1406,
+     "model": 0.32089745224019817,
+     "rows": 96
+    }
+   },
+   "record": {
+    "cell_id": "pilot__causal_conv1d",
+    "consumed_span_over_P": 6.153703737689665,
+    "diagnosis": {
+     "class": "UNDERFIT",
+     "why": "final training MAE 0.750 is within 10 % of the baseline's 0.801"
+    },
+    "effective_support": 256,
+    "losses_test": {
+     "baseline": 0.3737910726409996,
+     "model": 0.35497017982477846,
+     "oracle": 0.35402811143983437,
+     "rows": 383
+    },
+    "model": "causal_conv1d",
+    "parameters": 5569,
+    "receptive_field": 511,
+    "seed": 1,
+    "skill_test": 0.05035137057512684,
+    "task": "observed_increment",
+    "train_length": 768,
+    "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+    "updates": 168,
+    "window": 256
+   }
+  },
+  "pilot__lstm": {
+   "attempt": "pilot__lstm",
+   "problems": [],
+   "recomputed": {
+    "test": {
+     "baseline": 0.3737910726409996,
+     "first_row": 1664,
+     "last_row": 2046,
+     "model": 0.34461614928436823,
+     "rows": 383
+    },
+    "train": {
+     "baseline": 0.3920720737000572,
+     "first_row": 286,
+     "last_row": 1053,
+     "model": 0.3606620567079599,
+     "rows": 768
+    },
+    "validation": {
+     "baseline": 0.34499480177418135,
+     "first_row": 1311,
+     "last_row": 1406,
+     "model": 0.30609814714009226,
+     "rows": 96
+    }
+   },
+   "record": {
+    "cell_id": "pilot__lstm",
+    "consumed_span_over_P": 6.153703737689665,
+    "diagnosis": {
+     "class": "UNDERFIT",
+     "why": "final training MAE 0.741 is within 10 % of the baseline's 0.801"
+    },
+    "effective_support": 256,
+    "losses_test": {
+     "baseline": 0.3737910726409996,
+     "model": 0.34461614928436823,
+     "oracle": 0.35402811143983437,
+     "rows": 383
+    },
+    "model": "lstm",
+    "parameters": 4385,
+    "receptive_field": 256,
+    "seed": 1,
+    "skill_test": 0.0780514182709009,
+    "task": "observed_increment",
+    "train_length": 768,
+    "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+    "updates": 192,
+    "window": 256
+   }
+  },
+  "pilot__ridge": {
+   "attempt": "pilot__ridge",
+   "problems": [],
+   "recomputed": {
+    "test": {
+     "baseline": 0.3737910726409996,
+     "first_row": 1664,
+     "last_row": 2046,
+     "model": 0.3435904458650937,
+     "rows": 383
+    },
+    "train": {
+     "baseline": 0.3920720737000572,
+     "first_row": 286,
+     "last_row": 1053,
+     "model": 0.21529172170928965,
+     "rows": 768
+    },
+    "validation": {
+     "baseline": 0.34499480177418135,
+     "first_row": 1311,
+     "last_row": 1406,
+     "model": 0.30324924304485773,
+     "rows": 96
+    }
+   },
+   "record": {
+    "cell_id": "pilot__ridge",
+    "consumed_span_over_P": 6.153703737689665,
+    "diagnosis": {
+     "class": "FITTED",
+     "why": "training loss fell below the baseline and validation did not diverge"
+    },
+    "effective_support": 256,
+    "losses_test": {
+     "baseline": 0.3737910726409996,
+     "model": 0.3435904458650937,
+     "oracle": 0.35402811143983437,
+     "rows": 383
+    },
+    "model": "ridge",
+    "parameters": 257,
+    "receptive_field": 256,
+    "seed": 1,
+    "skill_test": 0.08079547369209517,
+    "task": "observed_increment",
+    "train_length": 768,
+    "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+    "updates": 1,
+    "window": 256
+   }
+  }
+ },
+ "design_sha256": "8a277881d20ec0ecfec18ac25af22aed5f5b366c751a0c13b424f6debabffc56",
+ "live_query": true,
+ "parent_equal": true,
+ "run_id": "adequacy-v1",
+ "schema": "df_adequacy_verify.v1",
+ "stopped": "PROJECTION_EXCEEDS_CAP_NOT_LAUNCHED",
+ "warehouse": {
+  "all_equal": true,
+  "covered": 3,
+  "units": {
+   "pilot__causal_conv1d": {
+    "cube": {
+     "adequacy.mae_baseline_test": 0.3737910726409996,
+     "adequacy.mae_oracle_test": 0.35402811143983437,
+     "adequacy.mae_test": 0.35497017982477846,
+     "adequacy.rows_test": 383.0,
+     "adequacy.skill_test": 0.05035137057512684,
+     "adequacy.updates": 168.0
+    },
+    "equal": true,
+    "expected": {
+     "adequacy.mae_baseline_test": 0.3737910726409996,
+     "adequacy.mae_test": 0.35497017982477846,
+     "adequacy.rows_test": 383.0,
+     "adequacy.skill_test": 0.05035137057512684,
+     "adequacy.updates": 168.0
+    }
+   },
+   "pilot__lstm": {
+    "cube": {
+     "adequacy.mae_baseline_test": 0.3737910726409996,
+     "adequacy.mae_oracle_test": 0.35402811143983437,
+     "adequacy.mae_test": 0.34461614928436823,
+     "adequacy.rows_test": 383.0,
+     "adequacy.skill_test": 0.0780514182709009,
+     "adequacy.updates": 192.0
+    },
+    "equal": true,
+    "expected": {
+     "adequacy.mae_baseline_test": 0.3737910726409996,
+     "adequacy.mae_test": 0.34461614928436823,
+     "adequacy.rows_test": 383.0,
+     "adequacy.skill_test": 0.0780514182709009,
+     "adequacy.updates": 192.0
+    }
+   },
+   "pilot__ridge": {
+    "cube": {
+     "adequacy.mae_baseline_test": 0.3737910726409996,
+     "adequacy.mae_oracle_test": 0.35402811143983437,
+     "adequacy.mae_test": 0.3435904458650937,
+     "adequacy.rows_test": 383.0,
+     "adequacy.skill_test": 0.08079547369209517,
+     "adequacy.updates": 1.0
+    },
+    "equal": true,
+    "expected": {
+     "adequacy.mae_baseline_test": 0.3737910726409996,
+     "adequacy.mae_test": 0.3435904458650937,
+     "adequacy.rows_test": 383.0,
+     "adequacy.skill_test": 0.08079547369209517,
+     "adequacy.updates": 1.0
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,532 @@
+{
+ "boundaries": {
+  "W128__L256": {
+   "consumed_first_row": 927,
+   "purge": 129,
+   "test": [
+    1664,
+    2048
+   ],
+   "train": [
+    1054,
+    1310
+   ],
+   "validation": [
+    1439,
+    1535
+   ]
+  },
+  "W128__L512": {
+   "consumed_first_row": 671,
+   "purge": 129,
+   "test": [
+    1664,
+    2048
+   ],
+   "train": [
+    798,
+    1310
+   ],
+   "validation": [
+    1439,
+    1535
+   ]
+  },
+  "W128__L768": {
+   "consumed_first_row": 415,
+   "purge": 129,
+   "test": [
+    1664,
+    2048
+   ],
+   "train": [
+    542,
+    1310
+   ],
+   "validation": [
+    1439,
+    1535
+   ]
+  },
+  "W256__L256": {
+   "consumed_first_row": 543,
+   "purge": 257,
+   "test": [
+    1664,
+    2048
+   ],
+   "train": [
+    798,
+    1054
+   ],
+   "validation": [
+    1311,
+    1407
+   ]
+  },
+  "W256__L512": {
+   "consumed_first_row": 287,
+   "purge": 257,
+   "test": [
+    1664,
+    2048
+   ],
+   "train": [
+    542,
+    1054
+   ],
+   "validation": [
+    1311,
+    1407
+   ]
+  },
+  "W256__L768": {
+   "consumed_first_row": 31,
+   "purge": 257,
+   "test": [
+    1664,
+    2048
+   ],
+   "train": [
+    286,
+    1054
+   ],
+   "validation": [
+    1311,
+    1407
+   ]
+  },
+  "W4__L256": {
+   "consumed_first_row": 1299,
+   "purge": 5,
+   "test": [
+    1664,
+    2048
+   ],
+   "train": [
+    1302,
+    1558
+   ],
+   "validation": [
+    1563,
+    1659
+   ]
+  },
+  "W4__L512": {
+   "consumed_first_row": 1043,
+   "purge": 5,
+   "test": [
+    1664,
+    2048
+   ],
+   "train": [
+    1046,
+    1558
+   ],
+   "validation": [
+    1563,
+    1659
+   ]
+  },
+  "W4__L768": {
+   "consumed_first_row": 787,
+   "purge": 5,
+   "test": [
+    1664,
+    2048
+   ],
+   "train": [
+    790,
+    1558
+   ],
+   "validation": [
+    1563,
+    1659
+   ]
+  },
+  "W8__L256": {
+   "consumed_first_row": 1287,
+   "purge": 9,
+   "test": [
+    1664,
+    2048
+   ],
+   "train": [
+    1294,
+    1550
+   ],
+   "validation": [
+    1559,
+    1655
+   ]
+  },
+  "W8__L512": {
+   "consumed_first_row": 1031,
+   "purge": 9,
+   "test": [
+    1664,
+    2048
+   ],
+   "train": [
+    1038,
+    1550
+   ],
+   "validation": [
+    1559,
+    1655
+   ]
+  },
+  "W8__L768": {
+   "consumed_first_row": 775,
+   "purge": 9,
+   "test": [
+    1664,
+    2048
+   ],
+   "train": [
+    782,
+    1550
+   ],
+   "validation": [
+    1559,
+    1655
+   ]
+  }
+ },
+ "budget": {
+  "aggregate_cpu_seconds": 7200.0,
+  "cost_pilot": "one child per model at W=256, L=768, max_updates 200, to measure seconds per update and per cell",
+  "counts": "cost pilot + every child + failures",
+  "gpu": "none"
+ },
+ "cells_total": 216,
+ "classification": "NON_GOVERNING",
+ "context_coverage": {
+  "seed12__W128": {
+   "W": 128,
+   "W_over_P": 3.0889179546050083,
+   "consumed_span_over_P": 3.0647857830846568,
+   "conv_dilations": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64
+   ],
+   "conv_receptive_field": 255,
+   "covers_two_periods": true
+  },
+  "seed12__W256": {
+   "W": 256,
+   "W_over_P": 6.177835909210017,
+   "consumed_span_over_P": 6.153703737689665,
+   "conv_dilations": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128
+   ],
+   "conv_receptive_field": 511,
+   "covers_two_periods": true
+  },
+  "seed12__W4": {
+   "W": 4,
+   "W_over_P": 0.09652868608140651,
+   "consumed_span_over_P": 0.07239651456105488,
+   "conv_dilations": [
+    1,
+    2
+   ],
+   "conv_receptive_field": 7,
+   "covers_two_periods": false
+  },
+  "seed12__W8": {
+   "W": 8,
+   "W_over_P": 0.19305737216281302,
+   "consumed_span_over_P": 0.1689252006424614,
+   "conv_dilations": [
+    1,
+    2,
+    4
+   ],
+   "conv_receptive_field": 15,
+   "covers_two_periods": false
+  },
+  "seed13__W128": {
+   "W": 128,
+   "W_over_P": 1.6377730196898008,
+   "consumed_span_over_P": 1.6249779179734742,
+   "conv_dilations": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64
+   ],
+   "conv_receptive_field": 255,
+   "covers_two_periods": false
+  },
+  "seed13__W256": {
+   "W": 256,
+   "W_over_P": 3.2755460393796016,
+   "consumed_span_over_P": 3.262750937663275,
+   "conv_dilations": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128
+   ],
+   "conv_receptive_field": 511,
+   "covers_two_periods": true
+  },
+  "seed13__W4": {
+   "W": 4,
+   "W_over_P": 0.051180406865306276,
+   "consumed_span_over_P": 0.038385305148979705,
+   "conv_dilations": [
+    1,
+    2
+   ],
+   "conv_receptive_field": 7,
+   "covers_two_periods": false
+  },
+  "seed13__W8": {
+   "W": 8,
+   "W_over_P": 0.10236081373061255,
+   "consumed_span_over_P": 0.08956571201428598,
+   "conv_dilations": [
+    1,
+    2,
+    4
+   ],
+   "conv_receptive_field": 15,
+   "covers_two_periods": false
+  }
+ },
+ "contexts": [
+  4,
+  8,
+  128,
+  256
+ ],
+ "criteria": {
+  "context_need": "the smallest W (by learning curve over W) at which the criterion is met; reported with W/P and the actual consumed span (W-1)/P and the effective receptive field",
+  "data_sufficiency": "learning curve over training length: SATURATED when the best two lengths differ by < 5 % of MAE_baseline, UNSATURATED otherwise; declared honestly, never assumed",
+  "diagnostics": "each cell is classified FITTED / UNDERFIT / OVERFIT / OPTIMIZATION_FAILURE from its curves and observed updates (rules in df_adequacy_models.diagnose)",
+  "raw_task_adequacy": "skill = 1 - MAE_model / MAE_baseline on the final test; a clean task is ADEQUATE when skill >= 0.5 at some context, INADEQUATE when no context reaches 0.1; observed_increment is judged against the oracle floor: ADEQUATE when MAE_model <= 1.1 * MAE_oracle at some context",
+  "stopping": "fixed factorial; no cell is added, repeated or re-seeded after seeing results; incomplete cells are reported"
+ },
+ "design_sha256": "8a277881d20ec0ecfec18ac25af22aed5f5b366c751a0c13b424f6debabffc56",
+ "execution": "NONE here; df_adequacy_run executes it governed under the budget",
+ "horizon": 1,
+ "horizon_semantics": "one-step direct; one-period and multi-period tasks are a separate staged proposal",
+ "models": {
+  "causal_conv1d": {
+   "activation": "relu",
+   "dilations": "1,2,4,... until the receptive field covers W",
+   "family": "tcn",
+   "filters": 16,
+   "head": "last position -> Dense(1)",
+   "kernel": 3,
+   "note": "explicit multilayer causal Conv1D; receptive field computed from kernel/dilation and recorded",
+   "state": "none"
+  },
+  "lstm": {
+   "family": "recurrent",
+   "head": "Dense(1) on the final state",
+   "note": "state never carries across windows, so validation/test never leak into training state",
+   "state_policy": "RESET_PER_WINDOW",
+   "units": 32
+  },
+  "ridge": {
+   "family": "linear",
+   "inputs": "W standardised lags",
+   "lambda": 1.0,
+   "note": "closed form on train-only standardised features; the historical probe, kept as baseline",
+   "state": "none"
+  }
+ },
+ "n": 2048,
+ "preserved": "utildev-v1 (18 non-advances, 18 inconclusive) and utilinst-v1 stay at their original scope",
+ "purpose": "DEVELOPMENT_ADEQUACY_PILOT",
+ "questions": {
+  "a_raw_task": "can the learner predict the raw task?",
+  "b_context": "how much history does it need?",
+  "c_representation": "NOT in this pilot",
+  "d_transfer": "NOT in this pilot"
+ },
+ "review_table": [
+  {
+   "evidence": "tasks and criteria sealed in this design; utildev-v1 kept at its original scope",
+   "executable_check": "distinct questions: raw skill (this pilot), representation utility (utildev-v1, relative), denoising, forecasting/RL/policy utility (not tested); decision supported: whether ridge/W=4 was an adequate probe and what context/model the raw task needs",
+   "next_action": "measure in S3; Musashi reviews",
+   "owner": "Satoshi",
+   "requirement": "question_estimand",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests: label identity, recurrence oracle, noise-only control; per-cell oracle floor",
+   "executable_check": "clean vs observed targets with exact row/horizon identity, irreducible future noise, meaningful baseline and a truth-derived oracle per task",
+   "next_action": "measure in S3; Musashi reviews",
+   "owner": "Satoshi",
+   "requirement": "target_noise",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "per cell: W, (W-1)/P, RF, state policy; every model of a cell reads the same rows and labels",
+   "executable_check": "time span, periods, lookback, emission time, receptive field/state, equal information across arms",
+   "next_action": "measure in S3; Musashi reviews",
+   "owner": "Satoshi",
+   "requirement": "context_support",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "learning curves over L in {256, 512, 768} and W (1024 needs a longer series: staged proposal); two independent units; regimes: one SNR, one perturbation (limited)",
+   "executable_check": "usable training/evaluation rows after purge, independent series, regime coverage, learning curves",
+   "next_action": "measure in S3; Musashi reviews",
+   "owner": "Satoshi",
+   "requirement": "data_sufficiency",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "per cell: layers, parameters, RF, observed updates, curves, diagnosis; tests: updates observed, reload parity",
+   "executable_check": "actual graph, optimizer updates, train/validation curves, capacity and context ablations, underfit vs overfit vs optimisation failure",
+   "next_action": "measure in S3; Musashi reviews",
+   "owner": "Satoshi",
+   "requirement": "model_adequacy",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests: train-only scaling, forward held-out, future perturbation, restart parity; purge = W + h between splits",
+   "executable_check": "train-only fitting and scaling, chronological nested validation, label-overlap purge, prefix/future/missingness/restart tests on the deployed path",
+   "next_action": "measure in S3; Musashi reviews",
+   "owner": "Satoshi",
+   "requirement": "temporal_validity",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "same rows/labels per cell across models; contexts vary span explicitly; no tuning allowance",
+   "executable_check": "raw skill first; matched decision times and targets; information span vs input width, capacity, compute and tuning allowance",
+   "next_action": "measure in S3; Musashi reviews",
+   "owner": "Satoshi",
+   "requirement": "comparison_fairness",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "skill with block-wise dispersion over the test; fixed factorial; no calibration transferred from ridge/W=4",
+   "executable_check": "practical effect, uncertainty, multiplicity, replication, calibration scope, predefined stopping",
+   "next_action": "measure in S3; Musashi reviews",
+   "owner": "Satoshi",
+   "requirement": "statistics",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "not part of this pilot; protocol designed in 12E (S4)",
+   "executable_check": "forecasting and RL tracked separately; weekly cutoff, release, costs, next-week evaluation",
+   "next_action": "measure in S3; Musashi reviews",
+   "owner": "Satoshi",
+   "requirement": "business_transfer",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "df_adequacy_verify recomputes every loss from arrays and compares with terminal/warehouse content",
+   "executable_check": "losses recomputed from predictions and labels, rows linked to governed inputs, content reconciled, negative tests per guarantee, fresh vs retained queries labelled",
+   "next_action": "measure in S3; Musashi reviews",
+   "owner": "Satoshi",
+   "requirement": "independent_evidence",
+   "status": "NOT_TESTED"
+  }
+ ],
+ "schema": "df_adequacy_design.v1",
+ "seeds": [
+  1
+ ],
+ "tasks": {
+  "clean_increment": {
+   "baseline": "zero change",
+   "denominator": "MAE of the zero-change baseline on the same test rows",
+   "input": "clean",
+   "label": "clean[t+1] - clean[t]",
+   "loss": "MAE",
+   "oracle": "recurrence increment: (2cos(2pi/P)-1)*clean[t] - clean[t-1] (diagnostic; truth-derived)"
+  },
+  "clean_next_level": {
+   "baseline": "persistence: clean[t]",
+   "denominator": "MAE of the persistence baseline on the same test rows",
+   "input": "clean",
+   "label": "clean[t+1]",
+   "loss": "MAE",
+   "oracle": "analytic recurrence with the KNOWN period: 2cos(2pi/P)*clean[t] - clean[t-1] (diagnostic; truth-derived)"
+  },
+  "observed_increment": {
+   "baseline": "zero change",
+   "denominator": "MAE of the zero-change baseline on the same test rows",
+   "input": "observed",
+   "label": "observed[t+1] - observed[t]",
+   "limitation": "the future noise sample is independent of the past: zero error is impossible; adequacy is judged against the oracle floor, never against zero",
+   "loss": "MAE",
+   "oracle": "clean recurrence increment evaluated against the OBSERVED label: its error is the irreducible future-noise floor plus the noise already in the last observation (diagnostic)"
+  }
+ },
+ "train_lengths": [
+  256,
+  512,
+  768
+ ],
+ "training": {
+  "batch": 64,
+  "early_stopping": {
+   "monitor": "inner validation MAE",
+   "patience": 10,
+   "restore_best": true
+  },
+  "learning_rate": 0.001,
+  "max_epochs": 200,
+  "max_updates": 3000,
+  "optimizer": "adam",
+  "scaling": "input and label standardised with TRAIN-ONLY mean and sd per cell",
+  "tuning_allowance": "NONE: no hyperparameter is changed after seeing a result"
+ },
+ "unit_metadata": {
+  "sinusoid__white__snr10__none__n2048__v1__seed12": {
+   "amplitude": 1.466927812381564,
+   "digests": {
+    "clean": "8c1fdc212e60ff9d74980d73447bd1e81ec95d2696f8e6a4d6367fbd668d4b58",
+    "observed": "4a012a4f61ea8b9ae258fc2d36b8c2faf1d344cb9debd73559a98156685e70ec"
+   },
+   "n": 2048,
+   "noise_sd": 0.3282593344514585,
+   "period": 41.43845899473489,
+   "phase": 1.812684216690074,
+   "unit": "sinusoid__white__snr10__none__n2048__v1__seed12"
+  },
+  "sinusoid__white__snr10__none__n2048__v1__seed13": {
+   "amplitude": 0.8677141518064619,
+   "digests": {
+    "clean": "101c3e8827f7330b9c065fec18283415cd285d97e94247725b3009b1d88bdd52",
+    "observed": "99295bcf1eb0f068c3ab13be0d595b49fae7e08525d86a13b4db973b0a918fed"
+   },
+   "n": 2048,
+   "noise_sd": 0.19354850651284816,
+   "period": 78.15490819615748,
+   "phase": 3.059895618193116,
+   "unit": "sinusoid__white__snr10__none__n2048__v1__seed13"
+  }
+ },
+ "units": [
+  "sinusoid__white__snr10__none__n2048__v1__seed12",
+  "sinusoid__white__snr10__none__n2048__v1__seed13"
+ ]
+}

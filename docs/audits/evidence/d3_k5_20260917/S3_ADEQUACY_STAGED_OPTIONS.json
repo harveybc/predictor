@@ -1,0 +1,53 @@
+{
+ "schema": "df_adequacy_staged_options.v1",
+ "cap_seconds": 7200.0,
+ "full_need": 10537.513857142856,
+ "per_model_cell_seconds": {
+  "causal_conv1d": {
+   "cells": 72,
+   "min": 24.9,
+   "max": 265.4,
+   "sum": 6514
+  },
+  "lstm": {
+   "cells": 72,
+   "min": 16.1,
+   "max": 159.9,
+   "sum": 3982
+  },
+  "ridge": {
+   "cells": 72,
+   "min": 0.1,
+   "max": 0.1,
+   "sum": 10
+  }
+ },
+ "options": {
+  "A_full_factorial": {
+   "cells": 216,
+   "projected_cpu_seconds": 10538,
+   "fits_7200": false
+  },
+  "B_ridge_full_plus_nn_L768": {
+   "cells": 120,
+   "projected_cpu_seconds": 5217,
+   "fits_7200": true
+  },
+  "C_ridge_full_plus_nn_W4_W256_L768": {
+   "cells": 96,
+   "projected_cpu_seconds": 3258,
+   "fits_7200": true
+  },
+  "D_ridge_full_plus_nn_seed12_L768": {
+   "cells": 96,
+   "projected_cpu_seconds": 2629,
+   "fits_7200": true
+  },
+  "E_ridge_full_plus_nn_observed_L768": {
+   "cells": 88,
+   "projected_cpu_seconds": 1766,
+   "fits_7200": true
+  }
+ },
+ "note": "projection assumes every NN cell uses its full update allowance (early stopping only lowers it); options are proposals for a new sealed successor, none was run"
+}

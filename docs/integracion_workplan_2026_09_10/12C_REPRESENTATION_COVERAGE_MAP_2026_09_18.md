@@ -63,3 +63,22 @@ remaining operators is **not** opened by this order; their design is delivered b
    anything; a `wavelet_trailing` twin without emissions is INSUFFICIENT by design (07C).
    **Not launched by this order.**
 3. Nothing financial, no reserve, no GPU.
+
+## Matrix model × context × task × preprocessing (S4, 2026-09-18)
+
+Statuses are separate: IMPLEMENTED (code + tests), EXECUTED (a governed run produced it), VERIFIED
+(losses recomputed from arrays and reconciled by content), NOT_TESTED. Shortcomings included.
+
+| model | context W | task | preprocessing | IMPLEMENTED | EXECUTED | VERIFIED | note |
+|---|---|---|---|---|---|---|---|
+| ridge λ=1 | 4 | observed increment | raw / transformed (cusum, delta, mad) / augmented, raw_wide | yes | yes (utildev-v1, utilinst-v1) | yes | relative utility only; consumed span 0.07–0.10 P; no pair advanced |
+| ridge | 4, 8, 128, 256 | clean level / clean increment / observed increment | raw | yes | cost pilot only (W256, L768, observed) | yes (1 cell) | factorial budget-limited (12D) |
+| causal Conv1D/TCN | 4, 8, 128, 256 | the three tasks | raw | yes (RF 7/15/255/511) | cost pilot only (200 updates: UNDERFIT) | yes (1 cell) | adequacy NOT measured |
+| LSTM (32, reset per window) | 4, 8, 128, 256 | the three tasks | raw | yes | cost pilot only (200 updates: UNDERFIT) | yes (1 cell) | adequacy NOT measured |
+| any learner | any | any | transformed / augmented with Conv1D or LSTM | no | no | no | after raw adequacy only, with its own calibration |
+| deployed CNN/LSTM plugins (composite, bidirectional, Bayesian heads) | configured | configured | configured | exist | no (this front) | no | graphs not inspected here; 12E row 4 |
+| any | any | any | feature engineering, per-feature denoising, compression, learned representations, lake-wide selection | no | no | no | untested; needs its own order |
+
+Instrument status: `utilinst-v1` INCONCLUSIVE (H_T side met every criterion; H_A undecided by its
+1/119 calibration). Adequacy status: design frozen and tested; measurement **BUDGET_LIMITED**
+(10 538 s projected vs 7 200 s); staged successor options in `S3_ADEQUACY_STAGED_OPTIONS.json`.
