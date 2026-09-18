@@ -391,3 +391,12 @@ Primero inventario del negocio/configs y escalas observadas en entrenamiento;
 diagnostico minimo separado, P16 solo como convencion explicita de prueba, no mercado.
 No nuevas campanas hasta revisar requisitos/contexto/objetivo y presupuesto.
 [Orden prioritaria](../handoffs/MUSASHI_REQUIREMENTS_FIRST_PERIOD_REDESIGN_2026_09_18.md).
+
+### Fundamentacion en literatura y evidencia
+
+El ejemplo del owner de unas 2000 muestras no es una ley exacta ni una cifra a refutar.
+Periodo y volumen siguen sin seleccionarse. DeepLOB, curvas de aprendizaje (Hoiem)
+y TCN (Bai) fundamentan requisitos, con limites de transferencia explicitados.
+Cada numero debe tener fuente/ecuacion, supuestos, medicion, incertidumbre y prueba
+de fallo; distinguir observaciones, ventanas y unidades independientes.
+[Procedimiento y fuentes primarias](../handoffs/MUSASHI_LITERATURE_BASED_SAMPLE_CONTEXT_DESIGN_2026_09_18.md).

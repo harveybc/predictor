@@ -1,5 +1,8 @@
 # Requirements-first redesign: stop automatic inherited-period expansion
 
+Latest clarification: [literature-based derivation](MUSASHI_LITERATURE_BASED_SAMPLE_CONTEXT_DESIGN_2026_09_18.md)
+is mandatory. P=16 below is an illustrative convention, not a selected learning dataset.
+
 Priority: latest owner direction. Supersedes permission in T3 to launch the inherited
 216-cell adequacy factorial and its larger CPU allowance. Existing evidence is preserved.
 This order permits design, code tests and read-only business/data discovery, NOT another
