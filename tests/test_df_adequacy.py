@@ -169,7 +169,8 @@ def test_S2_conv_receptive_field_optimizer_updates_diagnosis_and_reload_parity(t
     base = M.mae(M._scale_y(P["train"]["baseline"], s), M._scale_y(P["train"]["y"], s))
     assert M.diagnose(fit, base)["class"] in (M.FITTED, M.UNDERFIT, M.OVERFIT)
     assert M.diagnose({"updates": 0, "weight_change_norm": 0.0, "curve": {"train": [1.0], "validation": [1.0]}}, 1.0)["class"] == M.OPT_FAIL
-    assert M.diagnose({"updates": 5, "weight_change_norm": 1.0, "curve": {"train": [1.0] * 12, "validation": [1.0] * 12}}, 1.0)["class"] == M.OPT_FAIL
+    flat = M.diagnose({"updates": 5, "weight_change_norm": 1.0, "curve": {"train": [1.0] * 12, "validation": [1.0] * 12}}, 1.0)
+    assert flat["class"] == M.UNDERFIT and "NO_EARLY_PROGRESS" in flat["flags"]                 # a trend is a flag, not a failure (T2)
     assert M.diagnose({"updates": 5, "weight_change_norm": 1.0, "curve": {"train": [1.0, 0.98], "validation": [1.0, 0.99]}}, 1.0)["class"] == M.UNDERFIT
     assert M.diagnose({"updates": 5, "weight_change_norm": 1.0, "curve": {"train": [1.0, 0.5, 0.2, 0.1], "validation": [1.0, 0.5, 0.7, 0.9]}}, 1.0)["class"] == M.OVERFIT
 

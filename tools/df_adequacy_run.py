@@ -130,18 +130,26 @@ def _job(design: dict, cell: dict, bank: Path, run_id: str, **extra) -> dict:
 
 
 def _metrics(rec: dict) -> list:
-    t = rec["losses"]["test"]
-    m = [R._metric("adequacy.mae_test", t["model"], "mae"), R._metric("adequacy.mae_baseline_test", t["baseline"], "mae"),
-         R._metric("adequacy.rows_test", t["rows"], "count"), R._metric("adequacy.updates", rec["training"]["updates"], "count")]
-    if rec["skill_test"] is not None:
-        m.append(R._metric("adequacy.skill_test", rec["skill_test"], "ratio"))
-    if t.get("oracle") is not None:
-        m.append(R._metric("adequacy.mae_oracle_test", t["oracle"], "mae"))
+    """Validation metrics always; test metrics only when the role scored the test (never for pilots)."""
+    v = rec["losses"]["validation"]
+    m = [R._metric("adequacy.mae_validation", v["model"], "mae"), R._metric("adequacy.mae_baseline_validation", v["baseline"], "mae"),
+         R._metric("adequacy.rows_validation", v["rows"], "count"), R._metric("adequacy.updates", rec["training"]["updates"], "count")]
+    if rec.get("skill_validation") is not None:
+        m.append(R._metric("adequacy.skill_validation", rec["skill_validation"], "ratio"))
+    t = rec["losses"].get("test")
+    if t:
+        m += [R._metric("adequacy.mae_test", t["model"], "mae"), R._metric("adequacy.mae_baseline_test", t["baseline"], "mae"),
+              R._metric("adequacy.rows_test", t["rows"], "count")]
+        if rec.get("skill_test") is not None:
+            m.append(R._metric("adequacy.skill_test", rec["skill_test"], "ratio"))
+        if t.get("oracle") is not None:
+            m.append(R._metric("adequacy.mae_oracle_test", t["oracle"], "mae"))
     return m
 
 
 def run_adequacy(design: dict, *, root: Path, run_id: str, bank: Path, gov, trace, GR, outbox, OB, CE, code_identity: dict,
-                 budgets: dict, cap_seconds: float, already_spent: float, pilot_updates: int, isolated=None) -> dict:
+                 budgets: dict, cap_seconds: float, already_spent: float, pilot_updates: int, isolated=None,
+                 pilot_only: bool = False, units_filter: list | None = None) -> dict:
     isolated = isolated or run_isolated
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
@@ -213,69 +221,89 @@ def run_adequacy(design: dict, *, root: Path, run_id: str, bank: Path, gov, trac
                                     "pending_after_flush": flushed["pending"]})
         return out
 
-    pilot_cells = []
-    for model in D.factorial_models(design):
-        c = {"cell_id": f"pilot__{model}", "unit": design["units"][0], "task": "observed_increment", "model": model,
-             "window": max(design["contexts"]), "train_length": max(design["train_lengths"]), "seed": design["seeds"][0]}
-        pilot_cells.append(c)
+    # cost pilots at a representative SHORT and LONG context, no test access (T2), overhead apart (T3)
+    short_w, long_w = min(design["contexts"]), max(design["contexts"])
+    pilot_cells = [{"cell_id": f"pilot__{model}__W{w}", "unit": design["units"][0], "task": "observed_increment", "model": model,
+                    "window": w, "train_length": max(design["train_lengths"]), "seed": design["seeds"][0]}
+                   for model in D.factorial_models(design) for w in (short_w, long_w)]
     pilot_sha = register(pilot_key, [c["cell_id"] for c in pilot_cells])
-    per_update, per_cell = {}, {}
+    measured = {}
     try:
         for c in pilot_cells:
             job = _job(design, c, bank, run_id, max_updates_override=int(pilot_updates), role="COST_PILOT")
             out = child(pilot_sha, pilot_key, c["cell_id"], job, budgets["wall_seconds"], budgets["cpu_seconds"],
-                        {"role": "COST_PILOT", "model": c["model"]})
+                        {"role": "COST_PILOT", "model": c["model"], "window": str(c["window"])})
             rec = out.get("score")
             if rec is None:
-                report["cost_pilot"][c["model"]] = {"outcome": out["outcome"], "cost": out["cost"]}
-                report.update(stopped=f"COST_PILOT_FAILED: {c['model']} {out['outcome']}", spent_cpu_seconds=spent())
+                report["cost_pilot"][c["cell_id"]] = {"outcome": out["outcome"], "cost": out["cost"]}
+                report.update(stopped=f"COST_PILOT_FAILED: {c['cell_id']} {out['outcome']}", spent_cpu_seconds=spent())
                 campaign.write_once(root / "REPORT.json", report)
                 return report
+            if "test" in rec.get("losses", {}) or rec.get("exposure") != "NO_TEST_ACCESS":
+                raise R.Refusal("REFUSED: a cost pilot scored the test")
             cpu = float(out["cost"].get("cpu_seconds") or rec["cost"]["cpu_seconds"])
+            fit_s = float(rec["cost"].get("fit_seconds") or 0.0)
             updates = max(1, int(rec["training"]["updates"]))
-            overhead = cpu if c["model"] == "ridge" else max(0.0, cpu - updates * (cpu / updates) * 0.5)
-            per_update[c["model"]] = (cpu / updates) if c["model"] != "ridge" else 0.0
-            per_cell[c["model"]] = cpu
-            report["cost_pilot"][c["model"]] = {"cpu_seconds": cpu, "updates": updates, "seconds_per_update": per_update[c["model"]],
-                                                "diagnosis": rec["diagnosis"]["class"]}
+            measured[(c["model"], c["window"])] = {"cpu_seconds": cpu, "fit_seconds": fit_s, "overhead_seconds": max(0.0, cpu - fit_s),
+                                                    "updates": updates, "seconds_per_update": (fit_s / updates) if c["model"] != "ridge" else 0.0,
+                                                    "diagnosis": rec["diagnosis"]["class"], "exposure": rec["exposure"]}
+            report["cost_pilot"][c["cell_id"]] = measured[(c["model"], c["window"])]
     except DEV.CapExhausted as e:
         report.update(stopped=str(e), spent_cpu_seconds=spent())
         campaign.write_once(root / "REPORT.json", report)
         return report
     _, rb = gov.reconcile_campaign(pilot_sha)
     report["cost_pilot"]["reconciliation"] = rb
-    # --- projection: every cell at its own size (updates scale with rows/batch up to max_updates) ---------
+    # --- projection: per-update cost interpolated between the short and long pilots, overhead per child,
+    # every NN cell at its full update allowance (early stopping only lowers it), + 25 % headroom -------
     max_updates = int(design["training"]["max_updates"])
     batch = int(design["training"]["batch"])
     max_epochs = int(design["training"]["max_epochs"])
+    headroom = float((design.get("budget") or {}).get("headroom", 0.25))
     projected = {}
     for c in cells:
-        if c["model"] == "ridge":
-            projected[c["cell_id"]] = per_cell["ridge"]
+        m = c["model"]
+        ms, ml = measured[(m, short_w)], measured[(m, long_w)]
+        overhead = max(ms["overhead_seconds"], ml["overhead_seconds"])
+        if m == "ridge":
+            projected[c["cell_id"]] = max(ms["cpu_seconds"], ml["cpu_seconds"])
         else:
+            frac = (c["window"] - short_w) / max(1, (long_w - short_w))
+            per_update = ms["seconds_per_update"] + frac * (ml["seconds_per_update"] - ms["seconds_per_update"])
             steps = -(-c["train_length"] // batch)
             updates = min(max_updates, steps * max_epochs)
-            width = c["window"] / max(design["contexts"])
-            projected[c["cell_id"]] = per_update[c["model"]] * updates * max(0.25, width) + 3.0     # + child overhead
-    total = DEV.spent_cpu(root) + sum(projected.values())
-    report["projection"] = {"per_cell": projected, "cells": len(cells), "projected_cpu_seconds": total,
-                            "already_spent": already_spent, "cost_pilot_seconds": DEV.spent_cpu(root),
-                            "assumption": "updates per cell = min(max_updates, steps_per_epoch x max_epochs); early stopping only lowers it"}
-    trace("projection", cpu_seconds=total, cap=cap_seconds, already=already_spent)
-    if already_spent + total > cap_seconds:
-        campaign.write_once(root / "PLAN.json", {"schema": "df_adequacy_plan.v1", "verdict": "PROJECTION_EXCEEDS_CAP_NOT_LAUNCHED",
+            projected[c["cell_id"]] = per_update * updates + overhead
+    remaining = [c for c in cells if not (root / "attempts" / c["cell_id"] / "outcome.json").is_file()]
+    total_remaining = sum(projected[c["cell_id"]] for c in remaining)
+    with_headroom = total_remaining * (1.0 + headroom)
+    report["projection"] = {"per_cell": projected, "cells": len(cells), "remaining_cells": len(remaining),
+                            "projected_remaining_cpu_seconds": total_remaining, "headroom": headroom,
+                            "projected_with_headroom": with_headroom, "spent_so_far": spent(), "cap_seconds": cap_seconds,
+                            "fits": spent() + with_headroom <= cap_seconds,
+                            "assumption": "per-update cost interpolated linearly in W between the short and long pilots; updates per cell = "
+                                          "min(max_updates, steps_per_epoch x max_epochs) (early stopping only lowers it); overhead per child "
+                                          "from the pilots; a projection, not an exact need"}
+    trace("projection", cpu_seconds=with_headroom, cap=cap_seconds, spent=spent())
+    if spent() + with_headroom > cap_seconds:
+        campaign.write_once(root / "PLAN.json", {"schema": "df_adequacy_plan.v2", "verdict": "PROJECTION_EXCEEDS_CAP_NOT_LAUNCHED",
                                                  "projection": report["projection"], "cap_seconds": cap_seconds,
-                                                 "exact_need_cpu_seconds": already_spent + total})
+                                                 "measured_costs": {f"{k[0]}__W{k[1]}": v for k, v in measured.items()}})
         report.update(stopped="PROJECTION_EXCEEDS_CAP_NOT_LAUNCHED", spent_cpu_seconds=spent())
         campaign.write_once(root / "REPORT.json", report)
         return report
+    if pilot_only:
+        report.update(stopped="PILOT_ONLY", spent_cpu_seconds=spent())
+        campaign.write_once(root / "REPORT.pilot.json", report)
+        return report
+    if units_filter:
+        cells = [c for c in cells if c["unit"] in units_filter]
     # --- the factorial, governed --------------------------------------------------------------------------
-    key = f"{run_id}-adequacy-cells"
+    key = f"{run_id}-adequacy-cells" + (f"-{units_filter[0].split('__')[-1]}" if units_filter and len(units_filter) == 1 else "")
     sha = register(key, [c["cell_id"] for c in cells])
     report["campaign"] = {"key": key, "campaign_sha256": sha}
     try:
         for c in cells:
-            need = projected[c["cell_id"]]
+            need = projected[c["cell_id"]] * (1.0 + headroom)
             if not (root / "attempts" / c["cell_id"] / "outcome.json").is_file() and not cap_ok(need):
                 raise DEV.CapExhausted(f"{DEV.CAP_EXHAUSTED}: spent {spent():.0f} s + next cell up to {need:.0f} s exceeds {cap_seconds:.0f} s")
             job = _job(design, c, bank, run_id, role="CELL")
@@ -310,7 +338,7 @@ def run_adequacy(design: dict, *, root: Path, run_id: str, bank: Path, gov, trac
             report["envelope"] = R.emit_envelope(cfg, outcomes, frozen, pre, OB, CE)
         except Exception as e:  # noqa: BLE001 — the envelope is secondary evidence; its failure is recorded, never hidden
             report["envelope"] = {"error": str(e)[:300]}
-    campaign.write_once(root / "REPORT.json", report)
+    campaign.write_once(root / ("REPORT.json" if not units_filter else f"REPORT.{units_filter[0].split('__')[-1]}.json"), report)
     return report
 
 
@@ -332,6 +360,8 @@ def main(argv=None) -> int:
     parser.add_argument("--task-memory", type=int, default=2 << 30)
     parser.add_argument("--wall-seconds", type=float, default=900.0)
     parser.add_argument("--cpu-seconds", type=int, default=900)
+    parser.add_argument("--pilot-only", action="store_true", help="measure and project, launch nothing")
+    parser.add_argument("--units", nargs="+", default=None, help="run only these units' cells (parallel processes share the root ledger)")
     args = parser.parse_args(argv)
     design = json.loads(args.design.read_text())
     if design.get("schema") != D.DESIGN_SCHEMA or D.sha_obj({k: v for k, v in design.items() if k != "design_sha256"}) != design["design_sha256"]:
@@ -347,10 +377,11 @@ def main(argv=None) -> int:
     outbox = GR.TerminalOutbox(Path(os.path.expanduser(args.outbox_dir)).resolve())
     report = run_adequacy(design, root=args.root, run_id=args.run_id, bank=args.bank, gov=gov, trace=trace, GR=GR, outbox=outbox,
                           OB=OB, CE=CE, code_identity=code_identity, budgets=budgets, cap_seconds=args.cpu_cap_seconds,
-                          already_spent=args.already_spent, pilot_updates=args.pilot_updates)
+                          already_spent=args.already_spent, pilot_updates=args.pilot_updates, pilot_only=args.pilot_only,
+                          units_filter=args.units)
     (args.root / "TRACE.json").write_text(json.dumps(trace_log, indent=1, default=str))
     print(json.dumps({"stopped": report["stopped"], "spent_cpu_seconds": report.get("spent_cpu_seconds"),
-                      "projection": (report.get("projection") or {}).get("projected_cpu_seconds"),
+                      "projection": {k: v for k, v in (report.get("projection") or {}).items() if k != "per_cell"},
                       "cost_pilot": {k: v for k, v in report["cost_pilot"].items() if k != "reconciliation"},
                       "cells_done": len(report["cells"]), "reconciliation": report["reconciliation"]}, indent=1, default=str))
     return 0 if report["stopped"] is None else 2

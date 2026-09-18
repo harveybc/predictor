@@ -59,10 +59,14 @@ def _stub(children, cell_cost=1.0, fail=(), role_cost=None):
             marker.write_text(json.dumps(summary))
             return summary
         updates = 40 if job["model"] != "ridge" else 1
+        pilot = job.get("role") == "COST_PILOT"
         rec = {"schema": M.CELL_SCHEMA, "cell_id": job["cell_id"], "diagnosis": {"class": M.FITTED, "why": "stub"},
-               "losses": {"test": {"model": 0.1, "baseline": 0.2, "oracle": 0.05, "rows": 383}}, "skill_test": 0.5, "block_skill_test": [0.4, 0.5, 0.6, 0.5],
+               "losses": {"validation": {"model": 0.1, "baseline": 0.2, "oracle": 0.05, "rows": 96},
+                          **({} if pilot else {"test": {"model": 0.1, "baseline": 0.2, "oracle": 0.05, "rows": 383}})},
+               "skill_test": None if pilot else 0.5, "skill_validation": 0.5, "block_skill_test": None if pilot else [0.4, 0.5, 0.6, 0.5],
+               "exposure": "NO_TEST_ACCESS" if pilot else "TEST_SCORED_DESCRIPTIVE",
                "training": {"updates": updates}, "graph": {"receptive_field": job["window"]}, "consumed_span_over_P": (job["window"] - 1) / 40.0,
-               "cost": {"cpu_seconds": cell_cost}}
+               "cost": {"cpu_seconds": cell_cost, "fit_seconds": 0.8 if job["model"] != "ridge" else 0.0}}
         summary = {"outcome": M.FITTED, "reason": "", "cost": cost, "score": rec, "output_sha256": "o" * 64}
         marker.write_text(json.dumps(summary))
         return summary
@@ -85,28 +89,34 @@ def test_S3_freeze_pilot_projection_register_then_cells_with_terminals_and_recon
     report, gov, trace, children, design = _run(tmp_path, cap=10 ** 9)
     events = [e for e, _ in trace]
     assert events[0] == "design-frozen" and (tmp_path / "adq" / "DESIGN.json").is_file()
-    assert children[:2] == ["pilot__ridge", "pilot__lstm"]
+    assert children[:4] == ["pilot__ridge__W4", "pilot__ridge__W8", "pilot__lstm__W4", "pilot__lstm__W8"]
     assert events.index("projection") < events.index("register", events.index("projection"))
     assert report["stopped"] is None and len(report["cells"]) == design["cells_total"] == 3 * 2 * 2
-    assert report["projection"]["cells"] == 12 and report["projection"]["projected_cpu_seconds"] > 0
+    assert report["projection"]["cells"] == 12 and report["projection"]["projected_with_headroom"] > report["projection"]["projected_remaining_cpu_seconds"] > 0
+    assert report["projection"]["headroom"] == 0.25 and "not an exact need" in report["projection"]["assumption"]
     assert report["reconciliation"]["missing_units"] == []
     assert len([c for c in gov.calls if c[0] == "submit_campaign"]) == 2
-    t = gov.terminals[(report["campaign"]["campaign_sha256"], children[2])]
-    assert t["tags"]["role"] == "CELL" and t["metrics"][0]["metric"] == "adequacy.mae_test" and t["costs"]["cpu_seconds"] == 1.0
-    assert report["envelope"]["sha"] == "e" * 64 and report["spent_cpu_seconds"] == pytest.approx(14.0)
+    t = gov.terminals[(report["campaign"]["campaign_sha256"], children[4])]
+    assert t["tags"]["role"] == "CELL" and t["metrics"][0]["metric"] == "adequacy.mae_validation" and t["costs"]["cpu_seconds"] == 1.0
+    assert any(x["metric"] == "adequacy.mae_test" for x in t["metrics"])
+    pt = gov.terminals[(report["cost_pilot"]["reconciliation"] and list(gov.terminals)[0][0], children[0])]
+    assert not any(x["metric"].endswith("_test") for x in pt["metrics"])            # pilots publish no test metric
+    assert report["envelope"]["sha"] == "e" * 64 and report["spent_cpu_seconds"] == pytest.approx(16.0)
+    for pid in children[:4]:                                                       # pilots never scored the test
+        assert "test" not in json.loads((tmp_path / "adq" / "attempts" / pid / "outcome.json").read_text())["score"]["losses"]
 
 
-def test_S3_projection_beyond_the_ceiling_writes_the_exact_need_and_launches_nothing(tmp_path):
-    report, gov, trace, children, design = _run(tmp_path, cap=3.0, cell_cost=1.0)
+def test_S3_projection_beyond_the_ceiling_writes_the_projection_with_headroom_and_launches_nothing(tmp_path):
+    report, gov, trace, children, design = _run(tmp_path, cap=5.0, cell_cost=1.0)
     assert report["stopped"] == "PROJECTION_EXCEEDS_CAP_NOT_LAUNCHED" and report["cells"] == {}
     plan = json.loads((tmp_path / "adq" / "PLAN.json").read_text())
-    assert plan["exact_need_cpu_seconds"] > 3.0 and plan["projection"]["cells"] == 12
-    assert children == ["pilot__ridge", "pilot__lstm"]
+    assert plan["projection"]["projected_with_headroom"] > 5.0 and plan["projection"]["cells"] == 12 and "measured_costs" in plan
+    assert children == ["pilot__ridge__W4", "pilot__ridge__W8", "pilot__lstm__W4", "pilot__lstm__W8"]
 
 
 def test_S3_the_ceiling_exhausted_mid_way_keeps_incompletes_and_a_failed_cell_is_a_complete_failure(tmp_path):
-    # the pilot projects ~150 s for the factorial; the cells then cost 100 s each: the ceiling of
-    # 260 s is exhausted after two cells (2 pilot + 2 x 100 + the next cell's projected need > 260)
+    # the pilots project ~130 s (with headroom) for the factorial; the cells then cost 100 s each:
+    # the 260 s ceiling is exhausted after a few cells
     report, gov, trace, children, design = _run(tmp_path, cap=260.0, cell_cost=1.0, fail=("seed12__clean_next_level__ridge__W4__L256__s1",),
                                                 role_cost={"CELL": 100.0, "COST_PILOT": 1.0})
     assert report["stopped"] and report["stopped"].startswith(RUN.DEV.CAP_EXHAUSTED)

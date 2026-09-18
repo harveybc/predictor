@@ -383,9 +383,11 @@ def run_cell(job: dict, out_dir: Path) -> dict:
         training["max_updates"] = int(job["max_updates_override"])
     model = build_model(job["model"], int(job["window"]))
     np.random.seed(int(job["seed"]))
+    t_fit0 = time.process_time()
     fit = model.fit(_scale_x(P["train"]["X"], s), _scale_y(P["train"]["y"], s),
                     _scale_x(P["validation"]["X"], s), _scale_y(P["validation"]["y"], s),
                     seed=int(job["seed"]), training=training)
+    fit_seconds = round(time.process_time() - t_fit0, 3)
     baseline_train_scaled = mae(_scale_y(P["train"]["baseline"], s), _scale_y(P["train"]["y"], s))
     diagnosis = diagnose(fit, baseline_train_scaled)
     preds = {name: _unscale_y(model.predict(_scale_x(P[name]["X"], s)), s) for name in names}
@@ -435,7 +437,10 @@ def run_cell(job: dict, out_dir: Path) -> dict:
               "oracle_role": "diagnostic, truth-derived (known period); conditional on the current observation for the observed task; never a learner input",
               "arrays_sha256": hashlib.sha256((out_dir / "arrays.npz").read_bytes()).hexdigest(),
               "weights_sha256": hashlib.sha256(weights_path.read_bytes()).hexdigest(), "weights_file": weights_path.name,
-              "unit_digests": meta["digests"], "cost": {"cpu_seconds": round(time.process_time() - t0, 3)}}
+              "unit_digests": meta["digests"],
+              "cost": {"cpu_seconds": round(time.process_time() - t0, 3), "fit_seconds": fit_seconds,
+                       "overhead_seconds": round(time.process_time() - t0 - fit_seconds, 3),
+                       "note": "process CPU inside the child; startup (imports, data) and evaluation are overhead; fit is optimizer work"}}
     body = json.dumps(record, sort_keys=True, default=float).encode()
     (out_dir / "cell.json").write_bytes(body)
     return record
