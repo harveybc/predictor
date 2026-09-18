@@ -993,3 +993,12 @@ prueba (orden por callbacks) y en produccion (v5: 409 antes de cualquier hijo; v
 (239 sims, cotas 0.01246/0.01246/0.01969), contrastes con metricas verificadas hasta DuckDB
 (contenido igual), control lento `RESOURCE_EXCEEDED`, conciliado. Piloto descriptivo
 `utilpilot-v2` sobre tres unidades sinteticas de desarrollo: calibracion por operador (538 sims; cotas 0.00555/0.00555/0.00879 frente a alfa/9 = 0.00556), 9 contrastes (6 DOES_NOT_ADVANCE, 3 descriptivos), contenido igual en el cubo (12 unidades), sobre DEVELOPMENT cargado; ~1 s CPU por contraste. Descriptivo: nada afirma mejora ni selecciona. 301 pruebas.
+### Retorno 9880f45: recuperacion confirmada, cota y resume pendientes
+
+68 pruebas focales independientes pasan. Contabilidad leida: las tres recuperaciones
+gen-2 contienen doce metricas, con deltas iguales a los archivos. Dos casos nuevos:
+poner cota MAD a cero concede apoyo sin cambiar per_sim; resume con score ausente
+conserva ADVANCES junto a SCORE_UNVERIFIED. Corregir, reverificar las simulaciones
+conservadas y cerrar descriptivamente el piloto sin repetir campanas. Preparar
+el siguiente diseno por variable, sin ejecutar reserva o ampliar poblacion ahora.
+[Orden O1-O4](../handoffs/MUSASHI_D3_N1_N5_REVIEW_AND_O1_O4_2026_09_17.md).
