@@ -1,6 +1,7 @@
 # Context and model adequacy: audit and S1-S4 order
 
 Owner accepted continuation and explicitly requested adequate context and temporal models.
+Mandatory companion: [ML review before campaigns](MUSASHI_ML_REVIEW_REQUIRED_BEFORE_CAMPAIGNS_2026_09_18.md).
 This order supersedes automatic expansion to the six remaining operators: adequacy first.
 Preserve utildev-v1 and utilinst-v1 outcomes. No claim of failed sinusoid prediction follows
 from a non-improving representation compared with raw inputs.

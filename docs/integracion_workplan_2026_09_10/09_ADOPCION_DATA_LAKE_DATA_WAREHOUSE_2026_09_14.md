@@ -362,3 +362,13 @@ S1-S4 ordena pruebas primero y piloto gobernado de contexto/modelo/objetivo con
 ridge, Conv1D causal y LSTM, curvas y costos observados; sin transferir calibracion
 entre modelos. Mantener diseno RL y reentrenamiento semanal como trabajo requerido.
 [Orden de adecuacion S1-S4](../handoffs/MUSASHI_CONTEXT_MODEL_ADEQUACY_AND_S1_S4_2026_09_18.md).
+
+### Revision ML obligatoria: no reinicio global
+
+Conservar resultados anteriores en su alcance diagnostico. No hay evidencia para
+invalidarlos todos ni para usarlos como validacion de trading. La siguiente campana
+incluye tabla requisito/prueba/evidencia/estado de contexto, objetivo, ruido, muestras,
+modelo, ajuste, causalidad, estadistica y negocio. Musashi revisa esos aspectos,
+no solo codigo y conciliacion. Satoshi continua S1-S4; el piloto puede investigar
+lo no probado pero no autoriza seleccion posterior por el solo hecho de terminar.
+[Addendum operativo y responsabilidades](../handoffs/MUSASHI_ML_REVIEW_REQUIRED_BEFORE_CAMPAIGNS_2026_09_18.md).
