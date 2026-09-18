@@ -412,7 +412,7 @@ requisito de esta tarea. Grafo, error operativo y recursos explicitados en la or
 Sensibilidad, ruido, no linealidad, negocio semanal y RL siguen separados y pendientes.
 [Orden emitida y calculos](../handoffs/MUSASHI_NUMERICAL_RESTART_2026_09_18.md).
 
-### Orden vigente C1-C6: diversidad real en entrenamiento
+### Orden C1-C6: historica, sustituida por RP1-RP8
 
 Sustituye A como proxima campana; B fue borrador no emitido. P=8/W=17/h=1,
 train 8 amplitudes x 8/16/32/64 fases x 8 ventanas = 512/1024/2048/4096
@@ -423,3 +423,15 @@ restauracion/minimo verificables; test fuera de seleccion. 12 NN +4 ridge, no
 busqueda de arquitectura. Presupuesto total14400 s CPU, gobernanza/conciliacion.
 No atribuir al control validez financiera ni RL. Completar C1-C6 sin microaprobaciones.
 [Orden unica para Satoshi](../handoffs/MUSASHI_SATOSHI_DIVERSE_SINUSOID_C1_C6_2026_09_18.md).
+
+### Direccion vigente: programa doctoral completo y MOD-E0-DEV
+
+La instruccion posterior del owner exige que la siguiente campana sirva al plan
+doctoral. C1-C6 deja de ser la proxima ejecucion. Rige el
+[master v3](../tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md)
+y [RP1-RP8](../handoffs/MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md): comparar
+agrupacion por perfiles y fusion de secuencias en E0 multivariado de desarrollo,
+con controles de adecuacion dentro del experimento. Conservar historia y no
+atribuir utilidad financiera a los diagnosticos previos. Forecasting, RL semanal,
+las seis propuestas inventariadas, STEP01-13, compresion y feature-eng quedan
+trazados por separado. Publicacion de orden, no constancia de ejecucion de Satoshi.

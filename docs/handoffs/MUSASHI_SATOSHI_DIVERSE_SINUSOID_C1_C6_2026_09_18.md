@@ -1,5 +1,9 @@
 # Orden unica para Satoshi: C1-C6, banco diverso y curva de aprendizaje
 
+> SUPERSEDIDA como proxima campana por [RP1-RP8](MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md).
+> Conservar calculos y tests compatibles como controles internos. No ejecutar
+> este barrido ni heredar sus numeros como diseno del programa doctoral.
+
 Fecha: 2026-09-18. Responsable de ejecucion: Satoshi. Revision ML: Musashi.
 Sustituye A1-A5 como proxima campana. B1-B5 fue borrador retenido, no emitido.
 Ejecutar C1-C6 hasta el cierre sin microaprobaciones. No es entrenamiento RL.
