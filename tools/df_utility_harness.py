@@ -1243,7 +1243,10 @@ def worker_main(job_file: Path) -> int:
     proto = Protocol(**{k: (tuple(v) if isinstance(v, list) else v)
                         for k, v in job["protocol"].items()
                         if k not in ("protocol_sha256", "comparisons", "alpha_adjusted")})
-    operator = ops.build(job["operator"]) if job.get("operator") else None
+    if job.get("operator") == "future_leak_control":                # the instrument's leak control (Q3/R3)
+        operator = _load("df_utility_controls").FutureLeakOperator()
+    else:
+        operator = ops.build(job["operator"]) if job.get("operator") else None
     kind = job.get("kind", "contrast")
     if kind == "calibrate":
         # preparatory work under the same ceilings: the record is the child's output. With a

@@ -309,12 +309,13 @@ def main(argv=None) -> int:
     parser.add_argument("--map", nargs="+", required=True, help="SELECTION=REPLICA unit ids")
     parser.add_argument("--variable", default="v0")
     parser.add_argument("--predecessor", default=None)
+    parser.add_argument("--operators", nargs="+", default=None, help="default: the pilot's operators")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
     pre = json.loads((args.pilot_root / "FREEZE.pre.json").read_text())
     rmap = dict(x.split("=", 1) for x in args.map)
     doc = build_design(bank_root=args.bank, cells_record=args.cells, replication_map=rmap,
-                       operators=pre["operators"], inherited_protocol=pre["protocol_base"],
+                       operators=args.operators or pre["operators"], inherited_protocol=pre["protocol_base"],
                        pilot_units=[u["unit"] for u in pre["units"]], variable=args.variable,
                        predecessor=args.predecessor)
     if args.out.exists():
