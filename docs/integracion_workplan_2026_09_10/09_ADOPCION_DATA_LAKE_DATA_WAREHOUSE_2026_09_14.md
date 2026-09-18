@@ -1073,3 +1073,12 @@ lo no probado pero no autoriza seleccion posterior por el solo hecho de terminar
 [Addendum operativo y responsabilidades](../handoffs/MUSASHI_ML_REVIEW_REQUIRED_BEFORE_CAMPAIGNS_2026_09_18.md).
 
 **2026-09-18 · S1–S4 (Satoshi, adecuación de contexto/modelo/objetivo; revisión ML obligatoria).** S1: diseño factorial sellado antes de entrenar (dos sinusoides del banco; tres tareas con línea base y oráculo propios; ridge, Conv1D causal/TCN, LSTM; W = 4/8/128/256 con cobertura (W−1)/P; L = 256/512/768 — 1024 no cabe en n = 2048 con las purgas, propuesta escalonada; fronteras cronológicas con purga W+h; escalado sólo con entrenamiento; criterios y tabla de revisión ML con 10 filas). Pruebas de aceptación antes de entrenar (12 reglas: recurrencia analítica resuelta exactamente por ridge con dos rezagos, identidad de etiquetas, escalado train-only, perturbación futura, paridad de reinicio, control de ruido, actualizaciones reales del optimizador, diagnóstico, paridad de recarga, fallos completos con costo). S2: aprendices reales con grafo, campo receptivo, política de estado y curvas registradas. S3: ejecución gobernada `adequacy-v1`: piloto de costo (3 hijos, verificados por arrays, padre y consulta viva al warehouse) y proyección del factorial completo **10 538 s > 7 200 s** → detenido tras el piloto con el diseño congelado y la necesidad exacta (PLAN.json); opciones escalonadas proyectadas (B: 120 celdas, 5 217 s). S4: matriz modelo×contexto×tarea×preprocesamiento en 12C; protocolo de negocio semanal y contraparte RL en 12E (diseño, brechas con dueño); tabla de revisión con estados en 12D. Retorno `SATOSHI_ADEQUACY_S1_S4_RETURN_2026_09_18.md`. Salida: adecuación **BUDGET_LIMITED**.
+### Revision S1-S4: corregir comparacion antes del factorial
+
+12 pruebas focales pasan, pero la revision independiente reproduce oraculo de ruido
+incorrecto y cambio de fechas al variar W; la CNN tambien cambia profundidad.
+El piloto ya puntuo el test: no llamarlo intacto. Preservar evidencia historica.
+T1-T4 corrige oraculo, filas comparables y exposicion; prefiere factorial completo
+216 celdas sobre opcion B que pierde curvas neuronales. Nuevo techo 14400 s CPU,
+piloto corregido y 25% holgura requeridos; ejecucion gobernada y condicionada a pruebas.
+[Dictamen y orden T1-T4](../handoffs/MUSASHI_ADEQUACY_S_REVIEW_AND_T1_T4_2026_09_18.md).
