@@ -123,3 +123,16 @@ def test_P3_a_ceiling_exhausted_mid_way_stops_and_keeps_incomplete_attempts(tmp_
     assert "sinusoid__s12" not in report["families"]
     assert report["spent_cpu_seconds"] == pytest.approx(DEV.spent_cpu(tmp_path / "dev"))
     assert report["spent_cpu_seconds"] > 6000
+
+
+def test_P3_the_family_config_keeps_the_members_order_even_from_a_key_sorted_sealed_file(tmp_path):
+    design = json.loads(json.dumps(DESIGN.design(), sort_keys=True))
+    fam = design["families"][0]
+    cfg = DEV.family_cfg(design, fam, root=tmp_path, run_id="x", code_identity={"kind": "git_commit", "value": "0" * 40},
+                         values=[0.0] * 10, budgets=_budgets())
+    assert list(cfg["hypotheses"]) == ["H_T", "H_A"] and cfg["expected_family"] == [m["contrast_id"] for m in fam["members"]]
+    gov = ORDER.StubGov()
+    receipt, outcomes, *_ = R.run_rehearsal(dict(cfg, units=[{**cfg["units"][0], "values": [float(i % 7) for i in range(400)]}]),
+                                            gov, lambda e, **f: None, GR=GR, outbox=ORDER.StubOutbox(gov),
+                                            isolated=ORDER.stub_isolated([]))
+    assert list(outcomes) == cfg["expected_family"]

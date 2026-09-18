@@ -100,8 +100,10 @@ def family_cfg(design: dict, fam: dict, *, root: Path, run_id: str, code_identit
             "units": [{"unit": fam["unit"], "variable": fam["variable"], "values": values,
                        "eligibility": design["cells_record"]}],
             "operators": list(design["operators"]),
-            "hypotheses": {h: {"branch_a": s["branch_a"], "branch_b": s["branch_b"]}
-                           for h, s in design["hypotheses"].items()},
+            # in the members' order (a sealed file is sorted by key; the family order is the members')
+            "hypotheses": {h: {"branch_a": design["hypotheses"][h]["branch_a"],
+                               "branch_b": design["hypotheses"][h]["branch_b"]}
+                           for h in dict.fromkeys(m["hypothesis"] for m in fam["members"])},
             "expected_family": [m["contrast_id"] for m in fam["members"]],
             "purpose": "UTILITY_DEVELOPMENT_SELECTION" if fam["role"] == "selection" else "UTILITY_DEVELOPMENT_REPLICATION",
             "eligibility_state": design["eligibility_state"],
