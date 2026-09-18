@@ -1,0 +1,809 @@
+{
+ "budget": {
+  "aggregate_cpu_seconds": 14400.0,
+  "counts": "cost pilot + every child + failures + verification",
+  "gpu": "none unless in the authorised cost design; not used",
+  "headroom": 0.25,
+  "prior_adequacy_seconds_separately": 76.0
+ },
+ "cells": [
+  {
+   "arm": "profiles",
+   "cell_id": "H2__h0__s1__profiles",
+   "hypothesis": "H2",
+   "level": 0,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "random_0",
+   "cell_id": "H2__h0__s1__random_0",
+   "hypothesis": "H2",
+   "level": 0,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "random_1",
+   "cell_id": "H2__h0__s1__random_1",
+   "hypothesis": "H2",
+   "level": 0,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "random_2",
+   "cell_id": "H2__h0__s1__random_2",
+   "hypothesis": "H2",
+   "level": 0,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "profiles",
+   "cell_id": "H2__h0__s2__profiles",
+   "hypothesis": "H2",
+   "level": 0,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "random_0",
+   "cell_id": "H2__h0__s2__random_0",
+   "hypothesis": "H2",
+   "level": 0,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "random_1",
+   "cell_id": "H2__h0__s2__random_1",
+   "hypothesis": "H2",
+   "level": 0,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "random_2",
+   "cell_id": "H2__h0__s2__random_2",
+   "hypothesis": "H2",
+   "level": 0,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "profiles",
+   "cell_id": "H2__h0__s3__profiles",
+   "hypothesis": "H2",
+   "level": 0,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "random_0",
+   "cell_id": "H2__h0__s3__random_0",
+   "hypothesis": "H2",
+   "level": 0,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "random_1",
+   "cell_id": "H2__h0__s3__random_1",
+   "hypothesis": "H2",
+   "level": 0,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "random_2",
+   "cell_id": "H2__h0__s3__random_2",
+   "hypothesis": "H2",
+   "level": 0,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "profiles",
+   "cell_id": "H2__h1__s1__profiles",
+   "hypothesis": "H2",
+   "level": 1,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "random_0",
+   "cell_id": "H2__h1__s1__random_0",
+   "hypothesis": "H2",
+   "level": 1,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "random_1",
+   "cell_id": "H2__h1__s1__random_1",
+   "hypothesis": "H2",
+   "level": 1,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "random_2",
+   "cell_id": "H2__h1__s1__random_2",
+   "hypothesis": "H2",
+   "level": 1,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "profiles",
+   "cell_id": "H2__h1__s2__profiles",
+   "hypothesis": "H2",
+   "level": 1,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "random_0",
+   "cell_id": "H2__h1__s2__random_0",
+   "hypothesis": "H2",
+   "level": 1,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "random_1",
+   "cell_id": "H2__h1__s2__random_1",
+   "hypothesis": "H2",
+   "level": 1,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "random_2",
+   "cell_id": "H2__h1__s2__random_2",
+   "hypothesis": "H2",
+   "level": 1,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "profiles",
+   "cell_id": "H2__h1__s3__profiles",
+   "hypothesis": "H2",
+   "level": 1,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "random_0",
+   "cell_id": "H2__h1__s3__random_0",
+   "hypothesis": "H2",
+   "level": 1,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "random_1",
+   "cell_id": "H2__h1__s3__random_1",
+   "hypothesis": "H2",
+   "level": 1,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "random_2",
+   "cell_id": "H2__h1__s3__random_2",
+   "hypothesis": "H2",
+   "level": 1,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "profiles",
+   "cell_id": "H2__h2__s1__profiles",
+   "hypothesis": "H2",
+   "level": 2,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "random_0",
+   "cell_id": "H2__h2__s1__random_0",
+   "hypothesis": "H2",
+   "level": 2,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "random_1",
+   "cell_id": "H2__h2__s1__random_1",
+   "hypothesis": "H2",
+   "level": 2,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "random_2",
+   "cell_id": "H2__h2__s1__random_2",
+   "hypothesis": "H2",
+   "level": 2,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "profiles",
+   "cell_id": "H2__h2__s2__profiles",
+   "hypothesis": "H2",
+   "level": 2,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "random_0",
+   "cell_id": "H2__h2__s2__random_0",
+   "hypothesis": "H2",
+   "level": 2,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "random_1",
+   "cell_id": "H2__h2__s2__random_1",
+   "hypothesis": "H2",
+   "level": 2,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "random_2",
+   "cell_id": "H2__h2__s2__random_2",
+   "hypothesis": "H2",
+   "level": 2,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "profiles",
+   "cell_id": "H2__h2__s3__profiles",
+   "hypothesis": "H2",
+   "level": 2,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "random_0",
+   "cell_id": "H2__h2__s3__random_0",
+   "hypothesis": "H2",
+   "level": 2,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "random_1",
+   "cell_id": "H2__h2__s3__random_1",
+   "hypothesis": "H2",
+   "level": 2,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "random_2",
+   "cell_id": "H2__h2__s3__random_2",
+   "hypothesis": "H2",
+   "level": 2,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "profiles",
+   "cell_id": "H2__h3__s1__profiles",
+   "hypothesis": "H2",
+   "level": 3,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "random_0",
+   "cell_id": "H2__h3__s1__random_0",
+   "hypothesis": "H2",
+   "level": 3,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "random_1",
+   "cell_id": "H2__h3__s1__random_1",
+   "hypothesis": "H2",
+   "level": 3,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "random_2",
+   "cell_id": "H2__h3__s1__random_2",
+   "hypothesis": "H2",
+   "level": 3,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "profiles",
+   "cell_id": "H2__h3__s2__profiles",
+   "hypothesis": "H2",
+   "level": 3,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "random_0",
+   "cell_id": "H2__h3__s2__random_0",
+   "hypothesis": "H2",
+   "level": 3,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "random_1",
+   "cell_id": "H2__h3__s2__random_1",
+   "hypothesis": "H2",
+   "level": 3,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "random_2",
+   "cell_id": "H2__h3__s2__random_2",
+   "hypothesis": "H2",
+   "level": 3,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "profiles",
+   "cell_id": "H2__h3__s3__profiles",
+   "hypothesis": "H2",
+   "level": 3,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "random_0",
+   "cell_id": "H2__h3__s3__random_0",
+   "hypothesis": "H2",
+   "level": 3,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "random_1",
+   "cell_id": "H2__h3__s3__random_1",
+   "hypothesis": "H2",
+   "level": 3,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "random_2",
+   "cell_id": "H2__h3__s3__random_2",
+   "hypothesis": "H2",
+   "level": 3,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "extractor",
+   "cell_id": "H3__r0__s1__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arm": "sequence",
+   "cell_id": "H3__r0__s1__sequence",
+   "depends_on": "H3__r0__s1__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arm": "summary",
+   "cell_id": "H3__r0__s1__summary",
+   "depends_on": "H3__r0__s1__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arm": "extractor",
+   "cell_id": "H3__r0__s2__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arm": "sequence",
+   "cell_id": "H3__r0__s2__sequence",
+   "depends_on": "H3__r0__s2__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arm": "summary",
+   "cell_id": "H3__r0__s2__summary",
+   "depends_on": "H3__r0__s2__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arm": "extractor",
+   "cell_id": "H3__r0__s3__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 3
+  },
+  {
+   "arm": "sequence",
+   "cell_id": "H3__r0__s3__sequence",
+   "depends_on": "H3__r0__s3__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 3
+  },
+  {
+   "arm": "summary",
+   "cell_id": "H3__r0__s3__summary",
+   "depends_on": "H3__r0__s3__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 3
+  },
+  {
+   "arm": "extractor",
+   "cell_id": "H3__r1__s1__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "sequence",
+   "cell_id": "H3__r1__s1__sequence",
+   "depends_on": "H3__r1__s1__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "summary",
+   "cell_id": "H3__r1__s1__summary",
+   "depends_on": "H3__r1__s1__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arm": "extractor",
+   "cell_id": "H3__r1__s2__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "sequence",
+   "cell_id": "H3__r1__s2__sequence",
+   "depends_on": "H3__r1__s2__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "summary",
+   "cell_id": "H3__r1__s2__summary",
+   "depends_on": "H3__r1__s2__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 1,
+   "seed": 2
+  },
+  {
+   "arm": "extractor",
+   "cell_id": "H3__r1__s3__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "sequence",
+   "cell_id": "H3__r1__s3__sequence",
+   "depends_on": "H3__r1__s3__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 1,
+   "seed": 3
+  },
+  {
+   "arm": "summary",
+   "cell_id": "H3__r1__s3__summary",
+   "depends_on": "H3__r1__s3__extractor",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 1,
+   "seed": 3
+  }
+ ],
+ "cells_total": 66,
+ "classification": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION",
+ "derivations": {
+  "architecture": {
+   "fusion_sequence": "Concatenate(channels) -> Conv1D(16,3,causal) core -> last position -> Dense(p)",
+   "fusion_summary": "GlobalAveragePooling1D per branch -> Concatenate -> Dense(32) core -> Dense(p)",
+   "optimizer": {
+    "batch": 64,
+    "early_stopping": {
+     "monitor": "validation loss (mse)",
+     "patience": 30,
+     "restore_best": true
+    },
+    "learning_rate": 0.003,
+    "loss": "mse",
+    "max_epochs": 200,
+    "max_updates": 6000,
+    "ml07_diagnostic": "plain ReLU stack + mae + lr 1e-3 + 3000 updates stayed at the naive level (val MASE 0.49 vs naive 0.50, linear 48x8 reference 0.43); residual TCN blocks with ELU + mse + lr 3e-3 + 6000 updates + patience 30 reach 0.43-0.46 on 3/3 seeds (relu at lr 1e-2 collapsed on 3/3); metrics reported are MAE/MASE, the optimisation loss is mse",
+    "optimizer": "adam",
+    "tuning_allowance": "NONE after the ML07 instrument diagnostic (sealed before any pilot cell)"
+   },
+   "per_branch": [
+    "Conv1D(16,3,causal,relu) x2 (detector)",
+    "Conv1D(16,3,causal,d=2) + Conv1D(16,3,causal,d=4) (integrator)",
+    "TimeDistributed Dense(8,relu) (adapter)"
+   ],
+   "trainable_params": {
+    "H2 full model": 6312,
+    "H3 sequence (fusion+core+head)": 920,
+    "H3 summary": 808,
+    "tolerance": "15 % (declared in this pilot)"
+   },
+   "why": "widths follow the proposal's illustration scaled down for CPU; every width is a sensitivity alternative, not an optimum"
+  },
+  "context": {
+   "alternatives": [
+    24,
+    96
+   ],
+   "in_cycles_A": 2.0,
+   "receptive_field": 65,
+   "why": "W = 48 = 2 cycles of P_A and 0.80 cycles of P_B at h = 3; covers tau and the branch receptive field",
+   "window": 48
+  },
+  "controls": {
+   "adverse": "a shuffled-time control is NOT used as the r = 0 arm",
+   "grouping_positive": "profile grouping recovers the latent groups at h >= 2 (ARI = 1) and not at h = 0",
+   "null_H2": "level 0",
+   "null_H3": "r = 0",
+   "positive_learning": "the modular model must beat the naive forecaster and approach the causal oracle on the development split at h = 3, r = 1 (ML07); measured with the real receiver"
+  },
+  "cross_dependence": {
+   "beta": 0.8,
+   "r0_construction": "the lagged partner term is replaced by an independent N(0,1) draw scaled to the same variance; marginals preserved in distribution (ML04 checks variance, ACF and quantiles across replicates); no temporal shuffle",
+   "tau": 3,
+   "why": "tau = 3 < window and > horizon: the dependence is causal and inside the context; beta = 0.8 gives the oracle a visible gain over the marginal oracle (smoke: cross-correlation 0.68 at lag tau under r = 1 vs 0.00 under r = 0, marginal variance equal within 4 %)"
+  },
+  "estimands": {
+   "H2": "e(h) = MASE(profiles, h) - MASE(random, h), averaged over replicates and the predefined random assignments; slope of e over h by least squares with equal weights",
+   "H3": "d_r = MASE(sequence, r) - MASE(summary, r); gamma = d_1 - d_0",
+   "sign": "negative favours the method; no margin applied in the pilot; the pilot reports precision, not support"
+  },
+  "heterogeneity_levels": {
+   "control": "level 0 is the internal null of H2: e(0) has no mechanism to favour profiles",
+   "levels": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "period_B": {
+    "0": 24.0,
+    "1": 36.0,
+    "2": 48.0,
+    "3": 60.0
+   },
+   "phi": {
+    "0": 0.5,
+    "1": 0.62,
+    "2": 0.74,
+    "3": 0.86
+   },
+   "phi_B": {
+    "0": 0.5,
+    "1": 0.38,
+    "2": 0.26,
+    "3": 0.14
+   },
+   "why": "h scales BOTH persistence gap (0.24 h) and period gap (50 % h) so that level 0 is a homogeneous population (grouping arbitrary by construction) and level 3 separates groups by profile alone; amplitude, sampling, p, N and noise are constant across h (H2 rule)"
+  },
+  "horizon": {
+   "value": 1,
+   "why": "one step, direct, per variable (multi-output head); multi-step is E1 work"
+  },
+  "information_not_seen": "latent group labels, generator parameters, thetas, the oracle and the future are never inputs",
+  "mase": {
+   "denominator": "train MAE of the seasonal naive with the variable's declared period; shared by every arm",
+   "zero_policy": "a zero denominator (deterministic clean control) is NO_APLICA before any test score; MAE reported"
+  },
+  "period_A": {
+   "alternatives": [
+    12,
+    48
+   ],
+   "sensitivity": "declared, not run in this pilot",
+   "value": 24,
+   "why": "P_A = 24 samples gives 86 cycles in training and 2 cycles in the context; small enough for many cycles, large enough for the detector's receptive field (17) to see a fraction of a cycle"
+  },
+  "precision_rule": "the pilot's replicate SD of e(h), d_r and gamma feeds a simulation-based sample-size rule for E0-CONF (bootstrap over replicates); not claimed confirmatory",
+  "sampling": {
+   "unit": "1 sample = 1 time step of the generator; all variables share the interval",
+   "why": "H2 forbids changing sampling or volume across levels; a common grid keeps information equal"
+  },
+  "volume": {
+   "boundaries": {
+    "horizon": 1,
+    "purge": 49,
+    "test": [
+     2600,
+     2999
+    ],
+    "train": [
+     47,
+     2102
+    ],
+    "validation": [
+     2151,
+     2551
+    ],
+    "window": 48
+   },
+   "max_updates": 6000,
+   "mini_batches_per_epoch": 33,
+   "n_total": 3000,
+   "purge": 49,
+   "rows_test": 399,
+   "rows_train": 2055,
+   "rows_validation": 400,
+   "unique_values": 24000,
+   "why": "purge = W + H derived from the consumed support; windows are overlapping (not independent replicates); independence comes from replicates (generator seeds), not from windows, seeds of the optimiser or origins",
+   "windows_train": 2055
+  }
+ },
+ "design_sha256": "96f447e665094d3aa781f5a6ea026bd99673dff32c1ba56d9c42608d1d0f75b7",
+ "experiment": "MOD-E0-DEV",
+ "h3_level": 2,
+ "horizon": 1,
+ "hypotheses": [
+  "H2",
+  "H3"
+ ],
+ "levels": [
+  0,
+  1,
+  2,
+  3
+ ],
+ "n_total": 3000,
+ "p": 8,
+ "proposal": "P-MOD",
+ "random_assignments": 3,
+ "replicates": [
+  1,
+  2,
+  3
+ ],
+ "reserve": "not generated, not opened: E0-CONF uses distinct generator parameter ranges and seeds fixed later",
+ "review_table": [
+  {
+   "evidence": "tests",
+   "id": "ML01",
+   "obligation": "generator reproduces equations, population and distribution; labels/metadata/latent group never features",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests",
+   "id": "ML02",
+   "obligation": "future/validation/test changes leave fit, groups and past outputs unchanged; roles by identity/time",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + cell records",
+   "id": "ML03",
+   "obligation": "H2 changes the assignment, not names; sizes, models, contexts, budget equal per arm",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests",
+   "id": "ML04",
+   "obligation": "H3 preserves marginals in distribution and changes the relevant dependence; no shuffle control",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + cell records",
+   "id": "ML05",
+   "obligation": "H3 arms use identical frozen extractor activations; freezing verified by weights",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests",
+   "id": "ML06",
+   "obligation": "group -> detector/integrator/adapter -> fusion -> core/head keeps temporal shape; real gradients",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + pilot",
+   "id": "ML07",
+   "obligation": "positive learning with the real receiver; oracle and naive references; curves distinguish lack of training from lack of utility",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + cell records",
+   "id": "ML08",
+   "obligation": "early stopping by validation, real weight restore, reload parity, test never selects",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + verify",
+   "id": "ML09",
+   "obligation": "metrics from arrays; shared denominators; zero policy; empty/non-finite refuse",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + verify",
+   "id": "ML10",
+   "obligation": "e(h), d0/d1/gamma with the declared sign; replicates/seeds/windows never inflate the unit",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "runner tests + pilot",
+   "id": "ML11",
+   "obligation": "child reads delivered bytes; CPU updates observed; complete costs and limits",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "runner tests + verify",
+   "id": "ML12",
+   "obligation": "a real failure leaves a terminal/outbox; reconciliation by population and content",
+   "status": "NOT_TESTED"
+  }
+ ],
+ "schema": "df_mod_e0_design.v1",
+ "training": {
+  "batch": 64,
+  "early_stopping": {
+   "monitor": "validation loss (mse)",
+   "patience": 30,
+   "restore_best": true
+  },
+  "learning_rate": 0.003,
+  "loss": "mse",
+  "max_epochs": 200,
+  "max_updates": 6000,
+  "ml07_diagnostic": "plain ReLU stack + mae + lr 1e-3 + 3000 updates stayed at the naive level (val MASE 0.49 vs naive 0.50, linear 48x8 reference 0.43); residual TCN blocks with ELU + mse + lr 3e-3 + 6000 updates + patience 30 reach 0.43-0.46 on 3/3 seeds (relu at lr 1e-2 collapsed on 3/3); metrics reported are MAE/MASE, the optimisation loss is mse",
+  "optimizer": "adam",
+  "tuning_allowance": "NONE after the ML07 instrument diagnostic (sealed before any pilot cell)"
+ },
+ "window": 48
+}
