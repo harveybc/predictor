@@ -213,7 +213,12 @@ def reverify(root: Path, repo: Path) -> dict:
             entry["carried"] = f"attempt ended {doc.get('outcome')}: {doc.get('reason')}"
         elif doc is not None and job is not None:
             entry["original_outcome"] = doc.get("outcome")
-            if doc.get("contrast_id") not in (None, attempt.name) or job.get("contrast_id") != attempt.name:
+            # the attempt is named by its governed unit id: the contrast id itself (campaigns), or
+            # the instrument's control__rNN whose job names control and replicate; the file's
+            # contrast id must be the job's in every case
+            unit_name = job.get("unit_id") or (f"{job['control']}__r{int(job['replicate']):02d}" if job.get("control") is not None
+                                               and job.get("replicate") is not None else job.get("contrast_id"))
+            if doc.get("contrast_id") not in (None, job.get("contrast_id")) or unit_name != attempt.name:
                 entry["problems"].append("contrast identity differs from the attempt")
             sealed = (job.get("protocol") or {}).get("protocol_sha256")
             if key not in protocols or sealed != protocols[key]["protocol_sha256"]:

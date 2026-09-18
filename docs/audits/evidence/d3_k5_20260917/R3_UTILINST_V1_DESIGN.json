@@ -1,0 +1,173 @@
+{
+ "blocks": 4,
+ "calibration_contracts": [
+  {
+   "branch_a": "raw",
+   "branch_b": "transformed",
+   "hypothesis": "H_T",
+   "n_sims": 119,
+   "protocol_key": "mad_extremes_trailing__H_T"
+  },
+  {
+   "branch_a": "raw_wide",
+   "branch_b": "augmented",
+   "hypothesis": "H_A",
+   "n_sims": 119,
+   "protocol_key": "mad_extremes_trailing__H_A"
+  }
+ ],
+ "calibration_plan": {
+  "bound_confidence": 0.95,
+  "generator": "white_null",
+  "n": 2048,
+  "n_sims": 119
+ },
+ "controls": {
+  "future_leak": {
+   "criterion": {
+    "min_count": 12,
+    "of": 12,
+    "outcome": "REFUSED",
+    "why": "a leak must be refused before scoring every time; no slack",
+    "why_contains": "not causal"
+   },
+   "estimand": "none (refusal)",
+   "generator": "white_null",
+   "hypothesis": "H_T",
+   "pair": [
+    "raw",
+    "transformed"
+   ],
+   "requirement": "a representation that looks one row ahead is refused before any scoring"
+  },
+  "info_loss": {
+   "criterion": {
+    "delta_sign": -1,
+    "min_count": 11,
+    "of": 12,
+    "outcome": "DOES_NOT_ADVANCE",
+    "why": "the unsigned score cannot carry signed momentum: the transformed branch must lose in 11/12 (one replicate of slack for a paired-block accident)"
+   },
+   "estimand": "paired MAE(raw) \u2212 MAE(transformed); sign of the delta",
+   "generator": "signed_momentum",
+   "hypothesis": "H_T",
+   "pair": [
+    "raw",
+    "transformed"
+   ],
+   "requirement": "when the signal is the signed last increment, the unsigned score must lose: delta < 0 and no advance"
+  },
+  "null_contrast": {
+   "criterion": {
+    "max_advances": 1,
+    "min_count": 11,
+    "of": 12,
+    "outcome": "DOES_NOT_ADVANCE",
+    "why": "under the null the advance probability is <= alpha_adjusted = 0.025: expected 0.30 advances in 12; P(>= 2) = 3.7%"
+   },
+   "estimand": "paired MAE(raw) \u2212 MAE(transformed)",
+   "generator": "white_null",
+   "hypothesis": "H_T",
+   "pair": [
+    "raw",
+    "transformed"
+   ],
+   "requirement": "no advance under independent increments"
+  },
+  "positive_H_A": {
+   "criterion": {
+    "min_count": 10,
+    "of": 12,
+    "outcome": "ADVANCES",
+    "why": "as positive_H_T, with the capacity control"
+   },
+   "estimand": "paired MAE(raw_wide) \u2212 MAE(augmented), lower bound at 1\u2212\u03b1/2",
+   "generator": "mad_extremeness_drift",
+   "hypothesis": "H_A",
+   "pair": [
+    "raw_wide",
+    "augmented"
+   ],
+   "requirement": "raw+R must ADVANCE over raw of the same width (8 lags, below the 16-row support)"
+  },
+  "positive_H_T": {
+   "criterion": {
+    "min_count": 10,
+    "of": 12,
+    "outcome": "ADVANCES",
+    "why": "10/12: with a true detection rate of 0.95 the chance of fewer than 10 is 2%; with 0.5 the chance of 10 or more is 1.9% - separates a working from a weak instrument at 12 replicates"
+   },
+   "estimand": "paired MAE(raw) \u2212 MAE(transformed) over 4 walk-forward blocks, lower bound at 1\u2212\u03b1/2",
+   "generator": "mad_extremeness_drift",
+   "hypothesis": "H_T",
+   "pair": [
+    "raw",
+    "transformed"
+   ],
+   "requirement": "the transformed branch must ADVANCE when the next increment depends on the operator's own unsigned extremeness score, which 4 raw lags cannot compute"
+  }
+ },
+ "design_sha256": "160b84de1917110874d434af7014aeb3bbe6fba908f1c0d53796237438a7435d",
+ "failed_calibration_policy": "controls of a pair whose calibration gives no support are INCONCLUSIVE, not negative",
+ "family": [
+  "ctl__v0__mad_extremes_trailing__transformed",
+  "ctl__v0__mad_extremes_trailing__augmented"
+ ],
+ "generators": {
+  "mad_extremeness_drift": {
+   "a_drift": 1.0,
+   "noise": 1.0,
+   "window": 16
+  },
+  "signed_momentum": {
+   "b_momentum": 0.5,
+   "noise": 1.0
+  },
+  "white_null": {
+   "noise": 1.0
+  }
+ },
+ "loss": "MAE on the return target",
+ "multiplicity": {
+  "alpha_adjusted": 0.025,
+  "comparisons": 2
+ },
+ "n": 2048,
+ "operator": "mad_extremes_trailing",
+ "protocol": {
+  "alpha": 0.05,
+  "horizon": 1,
+  "margin": 0.0,
+  "min_rows_per_block": 30,
+  "model": "ridge",
+  "n_blocks": 4,
+  "ridge_lambda": 1.0,
+  "seed": 7,
+  "target": "return",
+  "window": 4
+ },
+ "purpose": "UTILITY_INSTRUMENT_VALIDATION",
+ "replicates": 12,
+ "reuse_policy": "verified calibration records of the SAME computation may be reused (code-bound key); never a relabeled one",
+ "schema": "df_utility_instrument_design.v1",
+ "scope_note": "twelve replicates estimate detection at these effect sizes only; the positive generator is aligned to the unsigned extremeness score of this operator and validates no other representation",
+ "seeds": {
+  "disjoint_from": "Q3 (100-105)",
+  "list": [
+   200,
+   201,
+   202,
+   203,
+   204,
+   205,
+   206,
+   207,
+   208,
+   209,
+   210,
+   211
+  ],
+  "replicates": 12,
+  "seed0": 200
+ }
+}

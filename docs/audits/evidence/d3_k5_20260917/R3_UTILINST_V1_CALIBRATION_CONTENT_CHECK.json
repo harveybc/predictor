@@ -1,0 +1,43 @@
+{
+ "all_equal": true,
+ "generation": 1,
+ "refused": [],
+ "run_id": "utilinst-v1-calibration",
+ "schema": "df_utility_content_check.v1",
+ "units": {
+  "calibrate__mad_extremes_trailing__H_A": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.008403361344537815,
+    "calibration.scored": 119.0,
+    "calibration.upper_bound": 0.03924277735630701
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.008403361344537815,
+    "calibration.scored": 119.0,
+    "calibration.upper_bound": 0.03924277735630701
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__mad_extremes_trailing__H_T": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 119.0,
+    "calibration.upper_bound": 0.024859992430424388
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 119.0,
+    "calibration.upper_bound": 0.024859992430424388
+   },
+   "kind": "calibration",
+   "outcome": null
+  }
+ }
+}

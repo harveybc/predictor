@@ -211,3 +211,19 @@ def test_P1_P4_hypothesis_keyed_contracts_are_verified_with_their_own_pair_and_r
     assert any("branch pair" in x for x in r2["calibrations"][f"{MAD.KIND}__H_A"]["problems"])
     assert r2["contrasts"]["fab__v0__mad_extremes_trailing__augmented"]["reverified_outcome"] == H.INCONCLUSIVE_UNCALIBRATED
     assert "| H_A | raw_wide | augmented |" in RV.markdown(r)
+
+
+def test_R4_an_instrument_attempt_named_by_control_and_replicate_binds_to_its_job_and_file(tmp_path, monkeypatch):
+    root, outs = build_root_hyp(tmp_path, monkeypatch)
+    src = root / "attempts" / "fab__v0__mad_extremes_trailing__transformed"
+    dst = root / "attempts" / "positive_H_T__r03"
+    src.rename(dst)
+    job = json.loads((dst / "job.json").read_text())
+    job.update(control="positive_H_T", replicate=3)
+    (dst / "job.json").write_text(json.dumps(job))
+    r = RV.reverify(root, tmp_path)
+    assert r["contrasts"]["positive_H_T__r03"]["problems"] == []
+    job.update(replicate=4)                                            # another replicate's job under this name
+    (dst / "job.json").write_text(json.dumps(job))
+    r = RV.reverify(root, tmp_path)
+    assert any("identity" in x for x in r["contrasts"]["positive_H_T__r03"]["problems"])
