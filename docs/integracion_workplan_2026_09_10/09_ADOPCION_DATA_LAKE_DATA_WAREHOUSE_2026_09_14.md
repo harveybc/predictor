@@ -352,3 +352,13 @@ protocolo de negocio con suficientes semanas/regimenes, curvas de aprendizaje,
 modelos representativos, disponibilidad real, validacion semanal y costos netos.
 Ridge queda como comparador, no juez unico de representaciones para trading.
 [Requisitos obligatorios y estado](../handoffs/MUSASHI_UTILITY_STATUS_AND_WEEKLY_TRADING_REQUIREMENTS_2026_09_18.md).
+
+### Adecuacion de contexto/modelo antes de ampliar representaciones
+
+Auditoria de metadata: sinusoides de periodos 41.438459 y 78.154908; ridge recibe
+4 valores crudos (8 en raw_wide), no dos periodos. Objetivo: incremento observado
+con ruido, no onda limpia. No inferir incapacidad predictiva de un delta relativo.
+S1-S4 ordena pruebas primero y piloto gobernado de contexto/modelo/objetivo con
+ridge, Conv1D causal y LSTM, curvas y costos observados; sin transferir calibracion
+entre modelos. Mantener diseno RL y reentrenamiento semanal como trabajo requerido.
+[Orden de adecuacion S1-S4](../handoffs/MUSASHI_CONTEXT_MODEL_ADEQUACY_AND_S1_S4_2026_09_18.md).
