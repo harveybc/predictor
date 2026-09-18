@@ -1,0 +1,10 @@
+# PRE (bfe2545, reviewer's reproducer)
+{"past_noise_only_old_error": 3.0000000000000004, "conditional_oracle_error": 8.881784197001252e-16}
+{"256": {"consumed_first_row": 31, "purge": 257, "test": [1664, 2048], "train": [286, 1054], "validation": [1311, 1407]}, "4": {"consumed_first_row": 787, "purge": 5, "test": [1664, 2048], "train": [790, 1558], "validation": [1563, 1659]}}
+{"4": {"conv_layers": 2, "rf": 7}, "256": {"conv_layers": 8, "rf": 511}}
+
+# POST (reproducer unchanged, code after T1-T2)
+{"past_noise_only_old_error": 8.881784197001252e-16, "conditional_oracle_error": 8.881784197001252e-16}
+{"256": {"consumed_first_row": 31, "cutoff": 1054, "purge": 257, "test": [1664, 2048], "train": [286, 1054], "validation": [1311, 1407]}, "4": {"consumed_first_row": 283, "cutoff": 1054, "purge": 257, "test": [1664, 2048], "train": [286, 1054], "validation": [1311, 1407]}}
+{"4": {"conv_layers": 2, "rf": 7}, "256": {"conv_layers": 8, "rf": 511}}
+# POST note: conv_dilations(w) is the S1 variable-depth configuration kept as separate evidence; the factorial uses conv_dilations_fixed() = [1..128], RF 511 at every W

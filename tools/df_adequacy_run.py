@@ -214,7 +214,7 @@ def run_adequacy(design: dict, *, root: Path, run_id: str, bank: Path, gov, trac
         return out
 
     pilot_cells = []
-    for model in design["models"]:
+    for model in D.factorial_models(design):
         c = {"cell_id": f"pilot__{model}", "unit": design["units"][0], "task": "observed_increment", "model": model,
              "window": max(design["contexts"]), "train_length": max(design["train_lengths"]), "seed": design["seeds"][0]}
         pilot_cells.append(c)

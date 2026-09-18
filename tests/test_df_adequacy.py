@@ -48,8 +48,8 @@ def _fake_bank(tmp_path, period=40.0, amplitude=1.0, noise=0.3, n=2048, seed=0):
     np.save(d / "observed_signal.npy", observed)
     (d / "UNIT.json").write_text(json.dumps({"unit_id": UNIT, "n_samples": n, "clean_params": {"per_variable": [{"amplitude": amplitude, "period": period, "phase": 0.7}]},
                                             "noise_model": {"scale_per_variable": [noise]},
-                                            "digests": {"observed_signal": hashlib.sha256(observed.tobytes()).hexdigest(),
-                                                        "clean_signal": hashlib.sha256(clean.tobytes()).hexdigest()}}))
+                                            "digests": {"observed_signal": M.array_digest(observed),
+                                                        "clean_signal": M.array_digest(clean)}}))
     return tmp_path / "bank"
 
 
@@ -158,9 +158,9 @@ def test_S2_conv_receptive_field_optimizer_updates_diagnosis_and_reload_parity(t
     conv = M.CausalConv1D(8)
     fit = conv.fit(M._scale_x(P["train"]["X"], s), M._scale_y(P["train"]["y"], s), M._scale_x(P["validation"]["X"], s),
                    M._scale_y(P["validation"]["y"], s), seed=3, training=TRAINING_FAST)
-    assert fit["updates"] > 0 and fit["weight_change_norm"] > 0 and fit["receptive_field"] == 15
+    assert fit["updates"] > 0 and fit["weight_change_norm"] > 0 and fit["receptive_field"] == 511      # fixed graph (T1)
     assert fit["updates"] <= TRAINING_FAST["max_updates"] and len(fit["curve"]["train"]) == fit["epochs"]
-    assert [l["type"] for l in fit["layers"]][:3] == ["Conv1D", "Conv1D", "Conv1D"] and fit["layers"][-1]["type"] == "Dense"
+    assert [l["type"] for l in fit["layers"]][:8] == ["Conv1D"] * 8 and fit["layers"][-1]["type"] == "Dense"
     pred = conv.predict(M._scale_x(P["test"]["X"], s))
     conv.save(tmp_path / "w.weights.h5")
     again = M.CausalConv1D(8)
@@ -220,3 +220,114 @@ def test_S3_a_ceiling_hit_is_a_complete_failure_with_cost_and_no_partial_score(t
     design = {"horizon": 1, "training": D.TRAINING, "design_sha256": "d" * 64}
     out = RUN.run_isolated(RUN._job(design, cell, bank, "t"), attempt_dir=tmp_path / "f", assigned_bytes=2 << 30, wall_seconds=8.0, cpu_seconds=8)
     assert out["outcome"] == RUN.H.RESOURCE_EXCEEDED and out["score"] is None and out["cost"]["wall_seconds"] is not None, out
+
+
+# --- T1: corrected estimands and comparison geometry (frozen before implementation) -------------------
+
+def test_T1_the_observed_oracle_is_conditional_on_the_current_observation(tmp_path):
+    period = 40.0
+    clean = np.sin(2 * np.pi * np.arange(128) / period)
+    meta = {"period": period, "noise_sd": 0.0}
+    # current-only noise: the conditional oracle removes it; the old one did not
+    obs = clean.copy()
+    obs[40] += 3.0
+    _, y, _, oracle = M.task_series({"clean": clean, "observed": obs, "meta": meta}, "observed_increment")
+    assert abs(y[40] - oracle[40]) < 1e-12
+    # future-only noise: the residual is exactly the next noise sample
+    obs = clean.copy()
+    obs[41] += 3.0
+    _, y, _, oracle = M.task_series({"clean": clean, "observed": obs, "meta": meta}, "observed_increment")
+    assert abs(abs(y[40] - oracle[40]) - 3.0) < 1e-12
+    # zero noise: zero error
+    _, y, _, oracle = M.task_series({"clean": clean, "observed": clean.copy(), "meta": meta}, "observed_increment")
+    assert np.nanmax(np.abs(y[1:-1] - oracle[1:-1])) < 1e-9
+    # the old oracle is kept for history under its own name, and the expected noise-only MAE is
+    # separated from the realised one
+    series = M.task_series_full({"clean": clean, "observed": clean.copy(), "meta": {"period": period, "noise_sd": 0.5}}, "observed_increment")
+    assert "oracle_old" in series and series["noise_floor"]["expected_gaussian_mae"] == pytest.approx(0.5 * math.sqrt(2 / math.pi))
+    assert series["noise_floor"]["note"].startswith("neither")
+    # non-finite values refuse before any use
+    bad = clean.copy()
+    bad[50] = np.nan
+    with pytest.raises(ValueError, match="finite"):
+        M.task_series({"clean": bad, "observed": bad, "meta": meta}, "clean_increment")
+
+
+def test_T1_shared_decision_rows_across_W_and_nested_training_histories_at_one_cutoff():
+    ref = D.boundaries(4, 768)
+    for w in D.CONTEXTS:
+        for l in D.TRAIN_LENGTHS:
+            b = D.boundaries(w, l)
+            assert b["test"] == ref["test"] and b["validation"] == ref["validation"]          # identical decision rows
+            assert b["train"][1] == ref["train"][1]                                          # same cutoff, nested history
+            assert b["purge"] == max(D.CONTEXTS) + D.HORIZON                                 # separation for the largest support
+            assert b["train"][0] == b["train"][1] - l and b["consumed_first_row"] >= 0
+    assert D.boundaries(256, 768)["train"][0] < D.boundaries(256, 256)["train"][0]           # nested, not shifted
+    ids = D.geometry_identity()
+    assert ids["validation"] == tuple(ref["validation"]) and ids["test"] == tuple(ref["test"])
+
+
+def test_T1_the_cnn_graph_is_fixed_across_W_and_ridge_parameter_count_is_declared_to_vary():
+    for w in D.CONTEXTS:
+        assert D.conv_dilations_fixed() == D.conv_dilations(max(D.CONTEXTS))
+        assert D.receptive_field(3, D.conv_dilations_fixed()) >= max(D.CONTEXTS)
+    a, b = M.CausalConv1D(4), M.CausalConv1D(256)
+    a.model = a.build(1)
+    b.model = b.build(1)
+    assert [l for l in a.graph["layers"]] == [l for l in b.graph["layers"]]
+    assert a.model.count_params() == b.model.count_params()
+    assert a.graph["effective_support"] == 4 and b.graph["effective_support"] == 256
+    assert a.graph["padding"] == "causal" and a.graph["receptive_field"] == b.graph["receptive_field"]
+    assert D.MODELS["ridge"]["limitation"].startswith("parameter count varies")
+    assert D.MODELS["causal_conv1d_variable_depth"]["role"].startswith("separate evidence")
+
+
+# --- T2: test exposure, input identity, diagnosis -------------------------------------------------------
+
+def test_T2_a_cost_pilot_cannot_touch_the_test_while_a_cell_can(tmp_path):
+    bank = _fake_bank(tmp_path)
+    arrays = M.load_unit_arrays(bank, UNIT)
+    prep = M.prepare(arrays, "observed_increment", 8, 256, test_access=False)
+    assert "test" not in prep["parts"]
+    with pytest.raises(PermissionError, match="test"):
+        M.part(prep, "test")
+    full = M.prepare(arrays, "observed_increment", 8, 256, test_access=True)
+    assert M.part(full, "test")["rows"].min() == D.TEST[0]
+    job = {"kind": "adequacy_cell", "cell_id": "pilot__ridge", "unit": UNIT, "task": "observed_increment", "model": "ridge", "window": 8,
+           "train_length": 256, "seed": 1, "horizon": 1, "bank": str(bank), "training": D.TRAINING, "role": "COST_PILOT"}
+    rec = M.run_cell(job, tmp_path / "p")
+    assert "test" not in rec["losses"] and rec["skill_test"] is None and rec["exposure"] == "NO_TEST_ACCESS"
+    arr = np.load(tmp_path / "p" / "arrays.npz")
+    assert not any(k.startswith("test_") for k in arr.files)
+
+
+def test_T2_consumed_arrays_are_bound_by_recomputed_digest_and_one_flipped_byte_refuses_before_training(tmp_path):
+    bank = _fake_bank(tmp_path)
+    arrays = M.load_unit_arrays(bank, UNIT)
+    assert arrays["binding"]["observed"] == arrays["meta"]["digests"]["observed"]
+    raw = np.load(bank / UNIT / "observed_signal.npy")
+    raw[100] += 1e-9
+    np.save(bank / UNIT / "observed_signal.npy", raw)                                         # metadata unchanged
+    with pytest.raises(ValueError, match="digest"):
+        M.load_unit_arrays(bank, UNIT)
+    job = {"kind": "adequacy_cell", "cell_id": "x", "unit": UNIT, "task": "observed_increment", "model": "ridge", "window": 8,
+           "train_length": 256, "seed": 1, "horizon": 1, "bank": str(bank), "training": D.TRAINING, "role": "CELL"}
+    with pytest.raises(ValueError, match="digest"):
+        M.run_cell(job, tmp_path / "c")
+    assert not (tmp_path / "c" / "cell.json").exists()
+
+
+def test_T2_diagnosis_records_stop_reason_checkpoint_and_parity_and_never_fails_optimisation_on_one_trend(tmp_path):
+    bank = _fake_bank(tmp_path)
+    job = {"kind": "adequacy_cell", "cell_id": "seed12__clean_increment__lstm__W8__L256__s1", "unit": UNIT, "task": "clean_increment",
+           "model": "lstm", "window": 8, "train_length": 256, "seed": 1, "horizon": 1, "bank": str(bank),
+           "training": {**D.TRAINING, "max_epochs": 12, "max_updates": 48}, "role": "CELL"}
+    rec = M.run_cell(job, tmp_path / "l")
+    tr = rec["training"]
+    assert tr["stop_reason"] in ("UPDATE_BUDGET", "EPOCH_BUDGET", "EARLY_STOPPING") and tr["updates"] <= 48
+    assert tr["restored_checkpoint_epoch"] is not None and tr["prediction_parity_after_reload"] is True
+    flat = {"updates": 5, "weight_change_norm": 1.0, "curve": {"train": [1.0] * 12, "validation": [1.0] * 12}, "stop_reason": "EPOCH_BUDGET"}
+    d = M.diagnose(flat, 1.0)
+    assert d["class"] != M.OPT_FAIL and "NO_EARLY_PROGRESS" in d["flags"]
+    assert M.diagnose({**flat, "updates": 0, "weight_change_norm": 0.0}, 1.0)["class"] == M.OPT_FAIL
+    assert rec["diagnosis"]["note"].startswith("heuristic")

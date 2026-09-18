@@ -21,7 +21,7 @@ import json
 import math
 from pathlib import Path
 
-DESIGN_SCHEMA = "df_adequacy_design.v1"
+DESIGN_SCHEMA = "df_adequacy_design.v2"
 UNITS = ("sinusoid__white__snr10__none__n2048__v1__seed12", "sinusoid__white__snr10__none__n2048__v1__seed13")
 TASKS = {
     "clean_next_level": {"input": "clean", "label": "clean[t+1]", "baseline": "persistence: clean[t]",
@@ -31,18 +31,25 @@ TASKS = {
                         "oracle": "recurrence increment: (2cos(2pi/P)-1)*clean[t] - clean[t-1] (diagnostic; truth-derived)",
                         "loss": "MAE", "denominator": "MAE of the zero-change baseline on the same test rows"},
     "observed_increment": {"input": "observed", "label": "observed[t+1] - observed[t]", "baseline": "zero change",
-                           "oracle": "clean recurrence increment evaluated against the OBSERVED label: its error is the "
-                                     "irreducible future-noise floor plus the noise already in the last observation (diagnostic)",
+                           "oracle": "CONDITIONAL oracle (T1): next_clean by the known recurrence minus the CURRENT observation, "
+                                     "2cos(2pi/P)*clean[t] - clean[t-1] - observed[t]; its residual is the next noise sample only "
+                                     "(diagnostic; truth-derived). The old oracle (clean increment) is kept as oracle_old for history",
                            "loss": "MAE", "denominator": "MAE of the zero-change baseline on the same test rows",
+                           "noise_floor": "expected Gaussian noise-only MAE sigma*sqrt(2/pi) under the declared generator, reported "
+                                          "apart from the realised sample MAE of the oracle; neither is a samplewise lower bound",
                            "limitation": "the future noise sample is independent of the past: zero error is impossible; "
-                                         "adequacy is judged against the oracle floor, never against zero"},
+                                         "adequacy is judged against the conditional oracle, never against zero"},
 }
 MODELS = {
     "ridge": {"family": "linear", "lambda": 1.0, "inputs": "W standardised lags", "state": "none",
-              "note": "closed form on train-only standardised features; the historical probe, kept as baseline"},
-    "causal_conv1d": {"family": "tcn", "filters": 16, "kernel": 3, "dilations": "1,2,4,... until the receptive field covers W",
-                      "head": "last position -> Dense(1)", "activation": "relu", "state": "none",
-                      "note": "explicit multilayer causal Conv1D; receptive field computed from kernel/dilation and recorded"},
+              "note": "closed form on train-only standardised features; the historical probe, kept as baseline",
+              "limitation": "parameter count varies with the lag count (W + 1): a context change is also a capacity change for ridge"},
+    "causal_conv1d": {"family": "tcn", "filters": 16, "kernel": 3, "dilations": "FIXED across W: 1,2,4,...,128 (receptive field 511 >= 256)",
+                      "head": "last position -> Dense(1)", "activation": "relu", "state": "none", "padding": "causal",
+                      "note": "the same graph and parameter count at every W (T1): a context ablation for the CNN; effective support = min(W, RF)"},
+    "causal_conv1d_variable_depth": {"family": "tcn", "dilations": "1,2,4,... until the receptive field covers W (2 layers at W=4, 8 at W=256)",
+                                     "role": "separate evidence (the S1 configuration): depth changes with W, so it is a joint "
+                                             "architecture/context experiment; NOT in the factorial, no budget"},
     "lstm": {"family": "recurrent", "units": 32, "head": "Dense(1) on the final state", "state_policy": "RESET_PER_WINDOW",
              "note": "state never carries across windows, so validation/test never leak into training state"},
 }
@@ -69,8 +76,10 @@ CRITERIA = {
                    "observed updates (rules in df_adequacy_models.diagnose)",
     "stopping": "fixed factorial; no cell is added, repeated or re-seeded after seeing results; incomplete cells are reported",
 }
-BUDGET = {"aggregate_cpu_seconds": 7200.0, "counts": "cost pilot + every child + failures", "gpu": "none",
-          "cost_pilot": "one child per model at W=256, L=768, max_updates 200, to measure seconds per update and per cell"}
+BUDGET = {"aggregate_cpu_seconds": 14400.0, "counts": "this successor's pilots + every child + failures + all workers",
+          "prior_pilot_seconds_separately": 31.0, "headroom": 0.25, "gpu": "none",
+          "cost_pilot": "one child per model at W=4 and at W=256 (L=768), 200-update ceiling, no test access; startup/evaluation "
+                        "overhead separated from optimizer work; projection with 25 % headroom must fit before dispatch"}
 
 REVIEW_ROWS = [
     ("question_estimand", "distinct questions: raw skill (this pilot), representation utility (utildev-v1, relative), "
@@ -83,7 +92,7 @@ REVIEW_ROWS = [
     ("context_support", "time span, periods, lookback, emission time, receptive field/state, equal information across arms",
      "per cell: W, (W-1)/P, RF, state policy; every model of a cell reads the same rows and labels", "cell records"),
     ("data_sufficiency", "usable training/evaluation rows after purge, independent series, regime coverage, learning curves",
-     "learning curves over L in {256, 512, 768} and W (1024 needs a longer series: staged proposal); two independent units; regimes: one SNR, one perturbation (limited)",
+     "learning curves over nested L in {256, 512, 768} at one cutoff and over W on shared rows (1024 needs a longer series: staged proposal); two independent units; regimes: one SNR, one perturbation (limited)",
      "curves in the report"),
     ("model_adequacy", "actual graph, optimizer updates, train/validation curves, capacity and context ablations, "
                        "underfit vs overfit vs optimisation failure",
@@ -95,7 +104,7 @@ REVIEW_ROWS = [
      "tests; DESIGN.json"),
     ("comparison_fairness", "raw skill first; matched decision times and targets; information span vs input width, "
                             "capacity, compute and tuning allowance",
-     "same rows/labels per cell across models; contexts vary span explicitly; no tuning allowance", "DESIGN.json"),
+     "identical validation/test rows across W, model and L (asserted); fixed CNN graph across W; ridge capacity varies with W (declared); no tuning allowance", "DESIGN.json"),
     ("statistics", "practical effect, uncertainty, multiplicity, replication, calibration scope, predefined stopping",
      "skill with block-wise dispersion over the test; fixed factorial; no calibration transferred from ridge/W=4",
      "report"),
@@ -116,17 +125,24 @@ def receptive_field(kernel: int, dilations: list) -> int:
 
 
 def conv_dilations(window: int, kernel: int = 3) -> list:
-    """Dilations 1, 2, 4, ... until the receptive field covers the window (at least one layer)."""
+    """Dilations 1, 2, 4, ... until the receptive field covers the window (the variable-depth
+    configuration of S1, kept as separate evidence)."""
     dilations = [1]
     while receptive_field(kernel, dilations) < window:
         dilations.append(dilations[-1] * 2)
     return dilations
 
 
+def conv_dilations_fixed(kernel: int = 3) -> list:
+    """The ONE CNN graph of the factorial (T1): enough receptive field for the largest context."""
+    return conv_dilations(max(CONTEXTS), kernel)
+
+
 def boundaries(window: int, train_length: int, horizon: int = HORIZON) -> dict:
-    """Chronological train -> inner validation -> untouched test with a purge of W + h rows between
-    splits, derived from the support a decision row consumes (W rows back) and the label (h ahead)."""
-    purge = window + horizon
+    """Shared decision rows (T1): validation and test rows are the SAME for every W, model and L;
+    the purge between splits is the largest allowed support + h, so no cell's consumption reaches
+    the next split; training histories are nested, ending at one cutoff and starting L rows before."""
+    purge = max(CONTEXTS) + horizon
     test_start, test_end = TEST
     val_end = test_start - purge
     val_start = val_end - INNER_VALIDATION_ROWS
@@ -135,7 +151,13 @@ def boundaries(window: int, train_length: int, horizon: int = HORIZON) -> dict:
     if train_start - (window - 1) < 0:
         raise ValueError(f"W={window}, L={train_length}: the first training row would consume rows before 0")
     return {"train": [train_start, train_end], "validation": [val_start, val_end], "test": [test_start, test_end],
-            "purge": purge, "consumed_first_row": train_start - (window - 1)}
+            "purge": purge, "cutoff": train_end, "consumed_first_row": train_start - (window - 1)}
+
+
+def geometry_identity() -> dict:
+    """The decision-row anchors every cell must share (asserted at preparation)."""
+    b = boundaries(min(CONTEXTS), min(TRAIN_LENGTHS))
+    return {"validation": tuple(b["validation"]), "test": tuple(b["test"]), "cutoff": b["cutoff"], "purge": b["purge"]}
 
 
 def unit_metadata(bank: Path, unit: str) -> dict:
@@ -146,11 +168,19 @@ def unit_metadata(bank: Path, unit: str) -> dict:
             "digests": {"observed": rec["digests"]["observed_signal"], "clean": rec["digests"]["clean_signal"]}}
 
 
+def factorial_models(design: dict) -> list:
+    """The models of the factorial: separate-evidence configurations (variable-depth CNN) excluded."""
+    models = design["models"]
+    if isinstance(models, dict):
+        return [m for m, spec in models.items() if not str(spec.get("role", "")).startswith("separate evidence")]
+    return list(models)
+
+
 def cells(design: dict) -> list:
     out = []
     for unit in design["units"]:
         for task in design["tasks"]:
-            for model in design["models"]:
+            for model in factorial_models(design):
                 for window in design["contexts"]:
                     for length in design["train_lengths"]:
                         for seed in design["seeds"]:
@@ -168,8 +198,10 @@ def build(bank: Path) -> dict:
             contexts[f"{u.split('__')[-1]}__W{w}"] = {"W": w, "W_over_P": w / meta["period"],
                                                        "consumed_span_over_P": (w - 1) / meta["period"],
                                                        "covers_two_periods": (w - 1) / meta["period"] >= 2.0,
-                                                       "conv_dilations": conv_dilations(w),
-                                                       "conv_receptive_field": receptive_field(3, conv_dilations(w))}
+                                                       "conv_dilations_fixed": conv_dilations_fixed(),
+                                                       "conv_receptive_field": receptive_field(3, conv_dilations_fixed()),
+                                                       "conv_effective_support": min(w, receptive_field(3, conv_dilations_fixed())),
+                                                       "variable_depth_layers_S1": len(conv_dilations(w))}
     doc = {"schema": DESIGN_SCHEMA, "purpose": "DEVELOPMENT_ADEQUACY_PILOT", "classification": "NON_GOVERNING",
            "questions": {"a_raw_task": "can the learner predict the raw task?", "b_context": "how much history does it need?",
                          "c_representation": "NOT in this pilot", "d_transfer": "NOT in this pilot"},
@@ -177,6 +209,17 @@ def build(bank: Path) -> dict:
            "context_coverage": contexts, "train_lengths": list(TRAIN_LENGTHS), "horizon": HORIZON,
            "horizon_semantics": "one-step direct; one-period and multi-period tasks are a separate staged proposal",
            "seeds": list(SEEDS), "n": N, "boundaries": {f"W{w}__L{l}": boundaries(w, l) for w in CONTEXTS for l in TRAIN_LENGTHS},
+           "geometry": {"shared_decision_rows": {k: list(v) if isinstance(v, tuple) else v for k, v in geometry_identity().items()},
+                        "rule": "validation and test rows identical across W, model and L; purge = max(W) + h; nested training "
+                                "histories ending at one cutoff; a cell whose prepared rows differ refuses"},
+           "exposure_ledger": {"test_rows": list(TEST),
+                               "history": ["adequacy-v1 cost pilot (S3) SCORED the test rows of three cells: DEVELOPMENT diagnostic, "
+                                           "not an untouched confirmation"],
+                               "rule": "cost pilots have no test access (the accessor fails); cells score the test descriptively; "
+                                       "any proposed model/context is selected from inner validation only; independent final "
+                                       "confirmation is future work"},
+           "cnn_graph": {"dilations": conv_dilations_fixed(), "receptive_field": receptive_field(3, conv_dilations_fixed()),
+                         "padding": "causal", "fixed_across_W": True},
            "training": TRAINING, "criteria": CRITERIA, "budget": BUDGET,
            "review_table": [{"requirement": r, "executable_check": c, "evidence": e, "status": "NOT_TESTED",
                              "owner": "Satoshi", "next_action": "measure in S3; Musashi reviews"} for r, c, e, _ in REVIEW_ROWS],
