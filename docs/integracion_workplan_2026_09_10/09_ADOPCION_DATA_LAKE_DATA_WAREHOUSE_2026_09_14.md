@@ -1015,3 +1015,14 @@ horas CPU agregadas y limites existentes, sin reserva/finanzas/GPU.
 [Orden P1-P4](../handoffs/MUSASHI_UTILITY_O1_O4_REVIEW_AND_P1_P4_2026_09_17.md).
 
 **2026-09-18 · P1–P4 (Satoshi, sobre la revisión de O1–O4).** P1: cada hipótesis se calibra con su par exacto por el mismo callable del experimento; el registro v2 liga par, anchuras y política de filas y nunca transfiere entre pares. P2: validación recursiva de cada protocolo de familia (campos heredados, digests, miembros, pares, plan, longitud y elegibilidad desde los recursos ligados), mapa explícito de replicación al mismo régimen (bumps→bumps, sinusoid→sinusoid, steps→steps; semilla y datos distintos), frontera train/validación derivada del soporte consumido y registrada por identidades; diseño 12B sellado (`55ef8321…`), 12A preservado como historia. P3: campaña gobernada `utildev-v1` — piloto de costo, proyección 9 232 s ≤ 14 400 s, gasto 5 852 s CPU, 6 familias, 36 contratos de calibración, 36 contrastes, 6 sobres DEVELOPMENT cargados. P4: archivos → padre → contabilidad → warehouse verificados en las seis familias; ninguna pareja propuesta (18 DOES_NOT_ADVANCE bajo contrato favorable, 18 descriptivos); observación: las semillas de calibración se repiten entre familias (mismos sorteos nulos ×6). Retorno `SATOSHI_UTILITY_P1_P4_RETURN_2026_09_18.md`. Salida `PER_VARIABLE_DEVELOPMENT_SELECTION_AND_REPLICATION_READY_FOR_REVIEW`.
+### Retorno fb1833c: sin propuestas en utildev-v1
+
+17 pruebas focales pasan. Relectura del cierre: cuatro checks true, 18 sin avance,
+18 inconclusos y ninguna propuesta; se consumieron recibos conservados, no una
+consulta nueva al cubo. Dos contraejemplos del cierre: diseno vacio todo true;
+propuestas emitidas aun con files_verified=false. Corregir sin repetir campana.
+Reconteo de calibraciones: seis lotes per_sim, cada uno repetido seis veces.
+Cache cientificamente equivalente autorizado en ensayo; cambiar semillas no
+ahorra CPU. Controles de utilidad conocida y mapa de areas pendientes antes de
+otro barrido. Sin nuevas reservas, GPU ni datos financieros.
+[Orden Q1-Q4](../handoffs/MUSASHI_UTILITY_P1_P4_REVIEW_AND_Q1_Q4_2026_09_18.md).
