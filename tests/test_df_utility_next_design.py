@@ -111,8 +111,8 @@ def test_O3_the_capacity_control_branch_has_the_width_of_augmented_and_contrasts
                    family=fam, min_rows_per_block=30, branches=("raw", "transformed", "augmented", "raw_wide"))
     mad = ops.build("mad_extremes_trailing")
     rep = H.represent(mad, s, 300)
-    Xw, okw = H.features("raw_wide", s, None, p)
-    Xa, oka = H.features("augmented", s, rep, p)
+    Xw, okw, _ = H.features("raw_wide", s, None, p)
+    Xa, oka, _ = H.features("augmented", s, rep, p)
     assert Xw.shape[1] == Xa.shape[1] == 2 * p.window
     elig = {"freeze_sha256": "f" * 64, "design_sha256": "d" * 64,
             "cells": {("u", "v0", mad.KIND): {"verdict": "MECHANICALLY_ACCEPTED",

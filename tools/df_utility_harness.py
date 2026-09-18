@@ -193,6 +193,10 @@ class Protocol:
         return Protocol(**{**self.__dict__, "calibration": dict(record)})
 
 
+#: P1 — a record names the branch pair it simulated, the widths it consumed and the rows
+#: policy; a v1 record (the pilot's) is the raw/transformed pair by construction.
+ROWS_POLICY = "PAIRED_EMITTABLE_ROWS_ALL_BLOCKS_OR_INSUFFICIENT"
+CALIBRATION_PAIR_KEYS = ("branch_a", "branch_b", "widths", "rows_policy")
 CALIBRATION_KEYS = ("schema", "generator", "null", "plan", "n_sims", "scored", "failed", "advances",
                     "false_advance_rate", "upper_bound", "bound_confidence", "alpha_adjusted",
                     "seed", "n", "operator", "protocol_base_sha256", "family", "margin", "n_blocks",
@@ -294,10 +298,21 @@ def calibration_record_problems(rec) -> list:
     simulations and compared with the summaries (O1)."""
     import math
     problems = []
-    if not isinstance(rec, dict) or set(rec) != set(CALIBRATION_KEYS):
-        return [f"calibration must carry exactly {list(CALIBRATION_KEYS)}"]
-    if rec["schema"] != "df_utility_calibration.v1":
-        problems.append("calibration schema")
+    if not isinstance(rec, dict) or set(rec) not in (set(CALIBRATION_KEYS),
+                                                     set(CALIBRATION_KEYS) | set(CALIBRATION_PAIR_KEYS)):
+        return [f"calibration must carry exactly {list(CALIBRATION_KEYS)} (+ {list(CALIBRATION_PAIR_KEYS)} in v2)"]
+    v2 = set(rec) == set(CALIBRATION_KEYS) | set(CALIBRATION_PAIR_KEYS)
+    if rec["schema"] != ("df_utility_calibration.v2" if v2 else "df_utility_calibration.v1"):
+        problems.append("calibration schema does not match its keys")
+    if v2:
+        a, b = rec["branch_a"], rec["branch_b"]
+        if a not in BRANCHES or b not in BRANCHES or a == b:
+            problems.append("branch pair must be two distinct declared branches")
+        elif isinstance(rec.get("window"), int):
+            if rec["widths"] != {"a": branch_width(a, rec["window"]), "b": branch_width(b, rec["window"])}:
+                problems.append("widths are not the pair's widths at this window")
+        if rec["rows_policy"] != ROWS_POLICY:
+            problems.append(f"rows policy must be {ROWS_POLICY}")
     if rec["generator"] not in GENERATORS:
         problems.append(f"unknown generator {rec['generator']!r}")
     elif not GENERATORS[rec["generator"]]["null"] or rec["null"] is not True:
@@ -456,6 +471,7 @@ def _lags_by_emission(values, available, emitted_at, decision, window) -> tuple:
     n = values.size
     X = np.full((n, window), np.nan)
     ok = np.zeros(n, dtype=bool)
+    first = np.full(n, -1, dtype=int)                  # the earliest row a feature row consumes
     for t in range(n):
         taken = 0
         i = t
@@ -463,34 +479,44 @@ def _lags_by_emission(values, available, emitted_at, decision, window) -> tuple:
             if available[i] and emitted_at[i] <= decision[t]:
                 X[t, taken] = values[i]
                 taken += 1
+                first[t] = i
             elif available[i] and emitted_at[i] > decision[t] and i == t:
                 pass                                   # the newest output is not out yet
             i -= 1
         ok[t] = taken == window
-    return X, ok
+    return X, ok, first
+
+
+def branch_width(branch: str, window: int) -> int:
+    """Feature columns a branch consumes: raw and transformed `window`, augmented and its
+    capacity control raw_wide 2·window (equal total width by construction)."""
+    if branch in ("raw", "transformed"):
+        return int(window)
+    if branch in ("augmented", "raw_wide"):
+        return 2 * int(window)
+    raise ValueError(f"unknown branch {branch!r}")
 
 
 def features(branch: str, s: dict, rep: dict | None, protocol: Protocol) -> tuple:
+    """(X, emittable, support_start): the feature matrix, the rows that have every lag, and for
+    each row the earliest row it consumed (gaps, delays and emission alignment included)."""
     decision = s["available_at"]                       # the decision for row t happens when
     raw_avail = ~np.isnan(s["values"])                 # observation t is itself available
-    if branch == "raw":
+    if branch in ("raw", "raw_wide"):
+        # raw_wide is the capacity control for `augmented`: raw lags of the SAME total width
+        # (2·window), so raw+R is compared against raw of equal dimensionality, never raw alone
         return _lags_by_emission(np.nan_to_num(s["values"]), raw_avail, s["available_at"],
-                                 decision, protocol.window)
-    if branch == "raw_wide":
-        # the capacity control for `augmented`: raw lags of the SAME total width (2·window),
-        # so raw+R is compared against raw of equal dimensionality, never against raw alone
-        return _lags_by_emission(np.nan_to_num(s["values"]), raw_avail, s["available_at"],
-                                 decision, 2 * protocol.window)
+                                 decision, branch_width(branch, protocol.window))
     if rep is None:
         raise ValueError("a transformed branch needs a representation")
-    Xr, okr = _lags_by_emission(np.nan_to_num(rep["values"]), rep["available"],
-                                rep["emitted_at"], decision, protocol.window)
+    Xr, okr, fr = _lags_by_emission(np.nan_to_num(rep["values"]), rep["available"],
+                                    rep["emitted_at"], decision, protocol.window)
     if branch == "transformed":
-        return Xr, okr
+        return Xr, okr, fr
     if branch == "augmented":
-        Xa, oka = _lags_by_emission(np.nan_to_num(s["values"]), raw_avail, s["available_at"],
-                                    decision, protocol.window)
-        return np.hstack([Xa, Xr]), oka & okr
+        Xa, oka, fa = _lags_by_emission(np.nan_to_num(s["values"]), raw_avail, s["available_at"],
+                                        decision, protocol.window)
+        return np.hstack([Xa, Xr]), oka & okr, np.minimum(fa, fr)
     raise ValueError(f"unknown branch {branch!r}")
 
 
@@ -530,11 +556,15 @@ def loss(pred, y, protocol: Protocol) -> float:
 
 # --- blocks -------------------------------------------------------------------------------------------
 
-def blocks(rows: np.ndarray, protocol: Protocol, purge: int) -> list:
-    """Walk-forward: validation slices over the second half of the emittable rows, training
-    rows ending at least `purge` samples before the slice. Every block must reach the
-    minimum or the contrast is INSUFFICIENT_ROWS (blocks_policy all_or_insufficient)."""
+def blocks(rows: np.ndarray, protocol: Protocol, support_start: np.ndarray, train_reach: int) -> list:
+    """Walk-forward: validation slices over the second half of the emittable rows; training
+    rows are those whose consumed rows (label to t + horizon, representation to t + reach)
+    end strictly BEFORE the earliest row the validation slice consumes (`support_start`, per
+    row, from the features actually built: widths, gaps, delays, emission). The boundary is
+    recorded by row identity, never as a number alone. Every block must reach the minimum or
+    the contrast is INSUFFICIENT_ROWS (blocks_policy all_or_insufficient)."""
     idx = np.asarray(rows)
+    support = np.asarray(support_start)
     if idx.size < protocol.n_blocks * protocol.min_rows_per_block * 2:
         return []
     cuts = np.linspace(idx.size // 2, idx.size, protocol.n_blocks + 1).astype(int)
@@ -543,9 +573,20 @@ def blocks(rows: np.ndarray, protocol: Protocol, purge: int) -> list:
         va = idx[cuts[k]:cuts[k + 1]]
         if va.size == 0:
             return []
-        tr = idx[idx <= va[0] - purge]
-        out.append({"block": k, "train": tr, "validation": va, "purge": int(purge)})
+        earliest = int(support[va].min())
+        tr = idx[idx + int(train_reach) < earliest]
+        out.append({"block": k, "train": tr, "validation": va,
+                    "purge": int(va[0] - tr.max()) if tr.size else None,
+                    "boundary": {"min_validation_support_row": earliest,
+                                 "max_train_consumed_row": int(tr.max() + train_reach) if tr.size else None}})
     return out
+
+
+def boundary_violations(scheme: list) -> list:
+    """Blocks whose training consumption reaches the validation support (by row identity)."""
+    return [b["block"] for b in scheme
+            if b["boundary"]["max_train_consumed_row"] is None
+            or b["boundary"]["max_train_consumed_row"] >= b["boundary"]["min_validation_support_row"]]
 
 
 # --- inference ----------------------------------------------------------------------------------------
@@ -589,17 +630,20 @@ def contrast(s: dict, operator, protocol: Protocol, *, contrast_id: str, eligibi
     coverage = {"n": int(n), "inputs_missing": int(np.isnan(s["values"]).sum())}
     # a first pass with a train-only fit at the split decides the emittable rows and blocks
     rep0 = represent(operator, s, int(n * train_fraction)) if needs_rep else None
-    Xa, oka = features(branch_a, s, rep0, protocol)
-    Xb, okb = features(branch_b, s, rep0, protocol)
+    Xa, oka, fa = features(branch_a, s, rep0, protocol)
+    Xb, okb, fb = features(branch_b, s, rep0, protocol)
     emittable = oka & okb & ~np.isnan(y)
     coverage.update(rows_a=int(oka.sum()), rows_b=int(okb.sum()), rows_paired=int(emittable.sum()))
     reach = rep_meta["reach_right"] if rep_meta else 0
-    purge = protocol.horizon + reach + protocol.window
+    train_reach = max(protocol.horizon, reach)         # label to t+h, representation to t+reach
+    support = {"branch_a": branch_width(branch_a, protocol.window),
+               "branch_b": branch_width(branch_b, protocol.window), "operator_reach": int(reach)}
     rows = np.flatnonzero(emittable)
-    scheme = blocks(rows, protocol, purge)
+    scheme = blocks(rows, protocol, np.minimum(fa, fb), train_reach)
+    purge = min((b["purge"] for b in scheme if b["purge"] is not None), default=None)
     if not scheme or any(b["train"].size < protocol.min_rows_per_block
                          or b["validation"].size < protocol.min_rows_per_block for b in scheme):
-        return {"outcome": INSUFFICIENT_ROWS, "coverage": coverage, "purge": purge,
+        return {"outcome": INSUFFICIENT_ROWS, "coverage": coverage, "purge": purge, "support": support,
                 "blocks": len(scheme), "policy": protocol.blocks_policy}
     rng = np.random.default_rng(protocol.seed)
     deltas, per_block = [], []
@@ -617,19 +661,28 @@ def contrast(s: dict, operator, protocol: Protocol, *, contrast_id: str, eligibi
                         "where": where, "block": b["block"]}
         else:
             rep = None
-        Xa, oka = features(branch_a, s, rep, protocol)
-        Xb, okb = features(branch_b, s, rep, protocol)
+        Xa, oka, fa = features(branch_a, s, rep, protocol)
+        Xb, okb, fb = features(branch_b, s, rep, protocol)
         both = oka & okb & ~np.isnan(y)
-        tr_k = tr[both[tr]]
         va_k = va[both[va]]
+        # the boundary is re-derived from THIS block's features (the representation was refit)
+        earliest = int(np.minimum(fa, fb)[va_k].min()) if va_k.size else b["boundary"]["min_validation_support_row"]
+        tr_k = tr[both[tr]]
+        tr_k = tr_k[tr_k + train_reach < earliest]
+        boundary = {"min_validation_support_row": earliest,
+                    "max_train_consumed_row": int(tr_k.max() + train_reach) if tr_k.size else None}
         if tr_k.size < protocol.min_rows_per_block or va_k.size < protocol.min_rows_per_block:
-            return {"outcome": INSUFFICIENT_ROWS, "coverage": coverage, "purge": purge,
+            return {"outcome": INSUFFICIENT_ROWS, "coverage": coverage, "purge": purge, "support": support,
                     "block": b["block"], "policy": protocol.blocks_policy}
+        if boundary["max_train_consumed_row"] >= boundary["min_validation_support_row"]:
+            return {"outcome": REFUSED, "why": "training consumption reaches the validation support",
+                    "block": b["block"], "boundary": boundary}
         la = loss(fit_predict(Xa[tr_k], y[tr_k], Xa[va_k], protocol), y[va_k], protocol)
         lb = loss(fit_predict(Xb[tr_k], y[tr_k], Xb[va_k], protocol), y[va_k], protocol)
         deltas.append(la - lb)
         per_block.append({"block": b["block"], "loss_a": la, "loss_b": lb, "delta": la - lb,
                           "train_rows": int(tr_k.size), "validation_rows": int(va_k.size),
+                          "boundary": boundary, "purge": int(va_k[0] - tr_k.max()),
                           "train_ids": [int(s["ids"][tr_k[0]]), int(s["ids"][tr_k[-1]])],
                           "validation_ids": [int(s["ids"][va_k[0]]), int(s["ids"][va_k[-1]])]})
     mean, se, t_crit, lower = t_interval_lower(np.asarray(deltas), protocol.alpha_adjusted)
@@ -641,12 +694,13 @@ def contrast(s: dict, operator, protocol: Protocol, *, contrast_id: str, eligibi
             "loss_name": "log_loss" if protocol.target == "direction" else "mae",
             "delta_mean": mean, "delta_se": se, "delta_lower": lower, "t_crit": t_crit,
             "alpha_adjusted": protocol.alpha_adjusted, "margin": protocol.margin,
-            "blocks": per_block, "blocks_used": len(deltas), "purge": purge, "coverage": coverage,
+            "blocks": per_block, "blocks_used": len(deltas), "purge": purge, "support": support,
+            "rows_policy": ROWS_POLICY, "coverage": coverage,
             "cost": cost, "protocol_sha256": protocol.sealed()["protocol_sha256"],
             "note": "a difference of predictive losses of the probe model; not information, "
                     "not mutual information, not trading utility"}
-    supported, why = calibration_supports(protocol, operator, n) if operator is not None \
-        else (False, "no operator to calibrate against")
+    supported, why = calibration_supports(protocol, operator, n, branch_a=branch_a, branch_b=branch_b) \
+        if operator is not None else (False, "no operator to calibrate against")
     if not supported:
         return {**base, "outcome": INCONCLUSIVE_UNCALIBRATED,
                 "why": f"{why}; the delta is descriptive, not a decision"}
@@ -705,7 +759,8 @@ def sims_required_for_zero(alpha: float, confidence: float) -> int:
 
 def calibrate(protocol: Protocol, operator, *, plan: dict | None = None, seed: int | None = None,
               n_sims: int | None = None, n: int | None = None, generator: str | None = None,
-              bound_confidence: float | None = None) -> dict:
+              bound_confidence: float | None = None, branch_a: str = "raw",
+              branch_b: str = "transformed") -> dict:
     """The false-advance rate of THIS protocol with THIS operator at THIS length under a null of
     no effect, from the sealed plan (`protocol.calibration_plan`) or explicit arguments for
     diagnostics. Every simulation is kept (index, seed, outcome, delta); the rate is
@@ -736,7 +791,7 @@ def calibrate(protocol: Protocol, operator, *, plan: dict | None = None, seed: i
         sim_seed = int(rng.integers(0, 2 ** 31 - 1))
         s = _make_series(generator, n, np.random.default_rng(sim_seed))
         out = contrast(s, operator, proto, contrast_id=proto.family[0], eligibility=fake,
-                       unit="cal", variable="v0")
+                       unit="cal", variable="v0", branch_a=branch_a, branch_b=branch_b)
         if "delta_lower" in out:
             scored += 1
             advanced = out["delta_lower"] > proto.margin
@@ -749,8 +804,11 @@ def calibrate(protocol: Protocol, operator, *, plan: dict | None = None, seed: i
             per_sim.append({"index": k, "seed": sim_seed, "outcome": out["outcome"],
                             "why": out.get("why")})
     rate = advances / scored if scored else float("nan")
-    return {"schema": "df_utility_calibration.v1", "generator": generator,
+    return {"schema": "df_utility_calibration.v2", "generator": generator,
             "null": bool(GENERATORS[generator]["null"]),
+            "branch_a": branch_a, "branch_b": branch_b,
+            "widths": {"a": branch_width(branch_a, protocol.window), "b": branch_width(branch_b, protocol.window)},
+            "rows_policy": ROWS_POLICY,
             "plan": {"generator": generator, "n_sims": n_sims, "n": n,
                      "bound_confidence": bound_confidence},
             "n_sims": n_sims, "scored": scored, "failed": failed, "advances": advances,
@@ -772,8 +830,13 @@ def harness_sha256() -> str:
     return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 
+def record_pair(rec: dict) -> tuple:
+    return (rec.get("branch_a", "raw"), rec.get("branch_b", "transformed"))
+
+
 def calibration_supports(protocol: Protocol, operator, n: int, *, record: dict | None = None,
-                         harness_sha256: str | None = None) -> tuple:
+                         harness_sha256: str | None = None, branch_a: str = "raw",
+                         branch_b: str = "transformed") -> tuple:
     """Does the sealed record support a decision for THIS contrast? Scope and identity are
     checked (operator declaration, protocol base, family, length, multiplicity, the sealed
     plan, margin, blocks, window, target/model and the harness code that applied), then the
@@ -796,6 +859,9 @@ def calibration_supports(protocol: Protocol, operator, n: int, *, record: dict |
         return False, "calibrated for another protocol"
     if list(rec["family"]) != list(protocol.family):
         return False, "calibrated for another contrast family"
+    if record_pair(rec) != (branch_a, branch_b):
+        return False, (f"calibrated for another branch pair {record_pair(rec)}, this contrast is "
+                       f"({branch_a}, {branch_b})")
     if rec["n"] != int(n):
         return False, f"calibrated at length {rec['n']}, this series has {n}"
     if rec["alpha_adjusted"] != protocol.alpha_adjusted:
@@ -845,13 +911,17 @@ def verified_score(attempt_dir: Path, result: dict, verified: dict, job: dict, *
     except ValueError:
         return None, {"outcome": SCORE_UNVERIFIED, "why": "the output is not JSON"}
     legacy = allow_legacy_schema and "schema" not in score and "delta_mean" in score
-    preparatory = score.get("schema") in ("df_utility_calibration.v1", "d3_mechanics_cells.v1")
+    preparatory = score.get("schema") in ("df_utility_calibration.v1", "df_utility_calibration.v2",
+                                          "d3_mechanics_cells.v1")
     if not legacy and not preparatory and score.get("schema") != CONTRAST_SCHEMA \
             and score.get("outcome") not in (REFUSED, INSUFFICIENT_ROWS):
         return None, {"outcome": SCORE_UNVERIFIED, "why": f"schema {score.get('schema')!r}"}
     if preparatory:
-        if score.get("schema") == "df_utility_calibration.v1":
+        if score.get("schema") in ("df_utility_calibration.v1", "df_utility_calibration.v2"):
             problems = calibration_record_problems(score)
+            if job.get("branch_a") or job.get("branch_b"):
+                if record_pair(score) != (job.get("branch_a", "raw"), job.get("branch_b", "transformed")):
+                    return None, {"outcome": SCORE_UNVERIFIED, "why": "calibration is for another branch pair"}
             if problems:
                 return None, {"outcome": SCORE_UNVERIFIED, "why": "calibration record unusable "
                               "(bound or counts not derived from its simulations): " + "; ".join(problems)}
@@ -1002,7 +1072,8 @@ def worker_main(job_file: Path) -> int:
     kind = job.get("kind", "contrast")
     if kind == "calibrate":
         # preparatory work under the same ceilings: the record is the child's output
-        record = calibrate(proto, operator, plan=job["plan"], seed=job.get("seed"))
+        record = calibrate(proto, operator, plan=job["plan"], seed=job.get("seed"),
+                           branch_a=job.get("branch_a", "raw"), branch_b=job.get("branch_b", "transformed"))
         return _finish(adir, "calibration.json", record, record.get("upper_bound"))
     if kind == "mechanics":
         battery = _load("df_d3_acceptance")

@@ -138,7 +138,7 @@ def test_R3_an_output_emitted_after_the_decision_is_used_only_at_a_later_row():
     available = np.ones(10, dtype=bool)
     emitted = np.arange(10, dtype=float) + 2          # every output is two samples late
     decision = np.arange(10, dtype=float)
-    X, ok = H._lags_by_emission(values, available, emitted, decision, window=2)
+    X, ok, _ = H._lags_by_emission(values, available, emitted, decision, window=2)
     assert ok[4] and list(X[4]) == [2.0, 1.0]          # at t=4 the newest usable output is i=2
     assert not ok[1]
 
@@ -474,7 +474,7 @@ def test_N3_a_preparatory_calibration_child_completes_with_its_record_as_the_ver
                                             "bound_confidence": 0.5}, "seed": 5}
     out = H.run_isolated(job, attempt_dir=tmp_path / "cal", assigned_bytes=1 << 30,
                          wall_seconds=300.0, cpu_seconds=300)
-    assert out["outcome"] == "COMPLETED" and out["score"]["schema"] == "df_utility_calibration.v1"
+    assert out["outcome"] == "COMPLETED" and out["score"]["schema"] == "df_utility_calibration.v2"
     assert out["score"]["n_sims"] == 2 and out["output_sha256"]
     assert (tmp_path / "cal" / "outcome.json").is_file()
 
@@ -682,3 +682,114 @@ def test_O2_a_resumed_preparatory_record_is_revalidated_against_the_job(tmp_path
                                                 "output_sha256": __import__("hashlib").sha256(tb).hexdigest()}))
     bad = H.run_isolated(dict(job), attempt_dir=d2, assigned_bytes=1, wall_seconds=1, cpu_seconds=1)
     assert bad["outcome"] == H.SCORE_UNVERIFIED and bad["score"] is None and "bound" in bad["refusal"]["why"]
+
+
+# --- P1: every hypothesis is calibrated with exactly its branch pair ----------------------------------
+
+def _spy_pairs(monkeypatch, fn, *args, **kw):
+    seen = []
+    original = H.contrast
+
+    def spy(*a, **k):
+        seen.append((k.get("branch_a", "raw"), k.get("branch_b", "transformed")))
+        return original(*a, **k)
+    monkeypatch.setattr(H, "contrast", spy)
+    try:
+        out = fn(*args, **kw)
+    finally:
+        monkeypatch.setattr(H, "contrast", original)
+    return out, seen
+
+
+def test_P1_H_A_is_calibrated_and_scored_with_raw_wide_vs_augmented_by_the_same_callable(monkeypatch):
+    p = proto(branches=("raw", "transformed", "augmented", "raw_wide"))
+    plan = {**FIXTURE_PLAN, "n_sims": 2, "n": 600}
+    rec, seen = _spy_pairs(monkeypatch, H.calibrate, p, MAD, plan=plan, seed=5,
+                           branch_a="raw_wide", branch_b="augmented")
+    assert seen == [("raw_wide", "augmented")] * 2
+    assert rec["schema"] == "df_utility_calibration.v2"
+    assert rec["branch_a"] == "raw_wide" and rec["branch_b"] == "augmented"
+    assert rec["widths"] == {"a": 8, "b": 8} and rec["rows_policy"] == H.ROWS_POLICY
+    rec_t, seen_t = _spy_pairs(monkeypatch, H.calibrate, p, MAD, plan=plan, seed=5)
+    assert seen_t == [("raw", "transformed")] * 2 and rec_t["widths"] == {"a": 4, "b": 4}
+    # the experiment goes through the very same callable with the same pair
+    s = H.series(fabricated(n=600))
+    out, seen_x = _spy_pairs(monkeypatch, lambda *a, **k: H.contrast(*a, **k), s, MAD, p.with_calibration(rec),
+                             contrast_id=FAMILY[1], eligibility=record_for(MAD), unit="fab",
+                             variable="v0", branch_a="raw_wide", branch_b="augmented")
+    assert seen_x == [("raw_wide", "augmented")] and out["branch_a"] == "raw_wide"
+
+
+def test_P1_records_of_the_two_pairs_do_not_transfer_and_the_pair_is_bound_to_the_record():
+    p = proto(branches=("raw", "transformed", "augmented", "raw_wide"))
+    plan = {**FIXTURE_PLAN, "n_sims": 2, "n": 600}
+    rec_a = H.calibrate(p, MAD, plan=plan, seed=5, branch_a="raw_wide", branch_b="augmented")
+    rec_t = H.calibrate(p, MAD, plan=plan, seed=5)
+    bare = p
+    assert H.calibration_supports(bare, MAD, 600, record=rec_a, branch_a="raw", branch_b="transformed")[0] is False
+    assert "branch pair" in H.calibration_supports(bare, MAD, 600, record=rec_a, branch_a="raw", branch_b="transformed")[1]
+    assert H.calibration_supports(bare, MAD, 600, record=rec_t, branch_a="raw_wide", branch_b="augmented")[0] is False
+    s = H.series(fabricated(n=600))
+    swapped = H.contrast(s, MAD, p.with_calibration(rec_t), contrast_id=FAMILY[1], eligibility=record_for(MAD),
+                         unit="fab", variable="v0", branch_a="raw_wide", branch_b="augmented")
+    assert swapped["outcome"] == H.INCONCLUSIVE_UNCALIBRATED and "branch pair" in swapped["why"]
+    # widths, pair and rows policy are part of the record and are checked
+    for bad in ({"widths": {"a": 4, "b": 8}}, {"branch_a": "raw"}, {"rows_policy": "ANY"},
+                {"branch_b": "transformed"}):
+        assert H.calibration_record_problems({**rec_a, **bad})
+    # a v1 record (the pilot's) is the raw/transformed pair by construction
+    v1 = {k: v for k, v in rec_t.items() if k not in ("branch_a", "branch_b", "widths", "rows_policy")}
+    v1["schema"] = "df_utility_calibration.v1"
+    assert H.calibration_record_problems(v1) == []
+    assert H.calibration_supports(bare, MAD, 600, record=v1)[0] in (True, False)
+    assert "branch pair" in H.calibration_supports(bare, MAD, 600, record=v1, branch_a="raw_wide",
+                                                   branch_b="augmented")[1]
+
+
+# --- P2: the train/validation boundary is derived from the support actually consumed ----------------
+
+def _boundary_holds(out):
+    for b in out["blocks"]:
+        assert b["boundary"]["max_train_consumed_row"] < b["boundary"]["min_validation_support_row"], b
+        assert b["train_ids"][1] < b["validation_ids"][0]
+
+
+def test_P2_raw_wide_and_gaps_widen_the_purge_and_the_boundary_holds_by_row_identity():
+    p = proto(branches=("raw", "transformed", "augmented", "raw_wide"))
+    x = fabricated(n=900)
+    s = H.series(x)
+    narrow = H.contrast(s, MAD, p, contrast_id=FAMILY[0], eligibility=record_for(MAD), unit="fab", variable="v0")
+    wide = H.contrast(s, MAD, p, contrast_id=FAMILY[1], eligibility=record_for(MAD), unit="fab", variable="v0",
+                      branch_a="raw_wide", branch_b="augmented")
+    assert "blocks" in narrow and "blocks" in wide
+    _boundary_holds(narrow)
+    _boundary_holds(wide)
+    assert wide["purge"] > narrow["purge"]                  # eight raw lags consume more history
+    assert wide["support"] == {"branch_a": 8, "branch_b": 8, "operator_reach": 0}
+    # gaps: a missing observation pushes the consumed support further back
+    gappy = x.copy()
+    for b in wide["blocks"]:
+        gappy[b["validation_ids"][0] - 2] = np.nan
+    sg = H.series(gappy)
+    with_gaps = H.contrast(sg, MAD, p, contrast_id=FAMILY[1], eligibility=record_for(MAD), unit="fab",
+                           variable="v0", branch_a="raw_wide", branch_b="augmented")
+    assert "blocks" in with_gaps
+    _boundary_holds(with_gaps)
+    assert any(g["boundary"]["min_validation_support_row"] < w["boundary"]["min_validation_support_row"]
+               or g["train_ids"][1] < w["train_ids"][1]
+               for g, w in zip(with_gaps["blocks"], wide["blocks"]))
+
+
+def test_P2_blocks_take_training_rows_only_before_the_support_the_validation_slice_consumes():
+    p = proto()
+    rows = np.arange(0, 600)
+    support_start = rows - 7                                # every row consumes eight rows back
+    scheme = H.blocks(rows, p, support_start, train_reach=1)
+    assert len(scheme) == p.n_blocks
+    for b in scheme:
+        assert b["train"].max() + 1 < b["boundary"]["min_validation_support_row"]
+        assert b["boundary"]["min_validation_support_row"] == b["validation"][0] - 7
+    with_gap = support_start.copy()
+    with_gap[scheme[0]["validation"][0]] -= 5               # a gap at the first validation row
+    scheme2 = H.blocks(rows, p, with_gap, train_reach=1)
+    assert scheme2[0]["train"].max() == scheme[0]["train"].max() - 5
