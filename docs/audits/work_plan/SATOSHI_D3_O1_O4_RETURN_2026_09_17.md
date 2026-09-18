@@ -129,7 +129,7 @@ published in the next window the warehouse already needs; no restart for it.
 **Suites** (trading-stack, `crispdm-run`): `tests/test_d3_*.py tests/test_df_*.py tests/test_olap_*.py
 olap/store/tests` — **1231 passed, 6 skipped**, 406 s (utility harness 36 · run order 7 ·
 reverify 4 · next design 5 among them). **Commits**: `1a5dab8` (merge of the order) · `3050195`
-(O1–O2) · `8826263` (verifier, O4 evidence) · this return (design, docs). Not repeated: the 538 and
+(O1–O2) · `8826263` (verifier, O4 evidence) · `eae14ab` (design, docs, this return) · the closing commit that names it. Not repeated: the 538 and
 239 simulations, the D3 mechanics, the warehouse publication window. Omitted by design: any
 governed run of 12A. Terminal outbox and OLAP outbox untouched (no new evidence persisted;
 receipts and checks are files under the run roots and the evidence folder). The owner works
