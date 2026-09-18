@@ -341,3 +341,14 @@ reuso a codigo ejecutado, prueba recuperacion completa y autoriza un unico suces
 del instrumento con criterios previos, gobernado y limitado a 7200 s CPU agregados.
 Los seis operadores restantes quedan en diseno, sin GPU/finanzas/reserva.
 [Orden R1-R4 de utilidad](../handoffs/MUSASHI_UTILITY_Q1_Q4_REVIEW_AND_R1_R4_2026_09_18.md).
+
+### R1-R4: instrumento inconcluso; adecuacion al negocio pendiente
+
+El retorno 500f3c6 sigue en D3, validacion del instrumento de utilidad: H_T 10/12,
+H_A inconcluso por calibracion. No es validacion de trading semanal ni finalizacion
+de los trece pasos. No aumentar simulaciones hasta lograr un pase: justificar
+precision/potencia y regla de parada antes del sucesor. Disenar en paralelo el
+protocolo de negocio con suficientes semanas/regimenes, curvas de aprendizaje,
+modelos representativos, disponibilidad real, validacion semanal y costos netos.
+Ridge queda como comparador, no juez unico de representaciones para trading.
+[Requisitos obligatorios y estado](../handoffs/MUSASHI_UTILITY_STATUS_AND_WEEKLY_TRADING_REQUIREMENTS_2026_09_18.md).
