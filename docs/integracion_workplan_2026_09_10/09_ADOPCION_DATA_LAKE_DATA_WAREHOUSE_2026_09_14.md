@@ -1028,3 +1028,14 @@ otro barrido. Sin nuevas reservas, GPU ni datos financieros.
 [Orden Q1-Q4](../handoffs/MUSASHI_UTILITY_P1_P4_REVIEW_AND_Q1_Q4_2026_09_18.md).
 
 **2026-09-18 · Q1–Q4 (Satoshi, sobre la revisión de P1–P4).** Q1: cierre ligado a la población registrada (identidad del diseño, familias, miembros, contratos, pares y mapa derivados; rechazos tipados; recibos ligados al run y a la población completa; propuestas sólo con ambas familias del par verificadas; política de cierre parcial); cierre sucesor de `utildev-v1` sin remedir: 0 cambios, 0 propuestas. Q2: clave canónica de la computación de calibración (sin etiquetas), registros v3, caché verificado (miss→hit con cero simulaciones y bytes idénticos en ensayo gobernado; replay de los 36 registros = 6 computaciones ×6, 4 801 s evitables como proyección). Q3: controles del instrumento (nulo, pérdida de información y fuga separados 6/6; positivos por debajo del criterio predeclarado: H_T 4/6, H_A indecidible bajo la calibración de fixture) y mapa de cobertura 12C con propuesta acotada del siguiente experimento (no lanzado). Retorno `SATOSHI_UTILITY_Q1_Q4_RETURN_2026_09_18.md`. Salida `DEVELOPMENT_CLOSURE_VERIFIED_CALIBRATION_REUSE_TESTED`.
+### Retorno 0352328: cache e instrumento antes de ampliar seleccion
+
+Revision independiente: 22 pruebas focales verdes; cierre real TOTAL, cuatro
+comprobaciones verdaderas y cero propuestas desde archivos y recibos conservados.
+Dos defectos reproducidos: cambiar la implementacion del operador no cambia la
+clave de cache; perder record.json deja un miss cuya recuperacion falla con errno 39.
+Los positivos Q3 no cumplen el criterio: no autorizan otro barrido. R1-R4 liga
+reuso a codigo ejecutado, prueba recuperacion completa y autoriza un unico sucesor
+del instrumento con criterios previos, gobernado y limitado a 7200 s CPU agregados.
+Los seis operadores restantes quedan en diseno, sin GPU/finanzas/reserva.
+[Orden R1-R4 de utilidad](../handoffs/MUSASHI_UTILITY_Q1_Q4_REVIEW_AND_R1_R4_2026_09_18.md).
