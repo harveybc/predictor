@@ -1,0 +1,9 @@
+# PRE (fb1833c, reviewer's reproducer)
+EMPTY_DESIGN {'files_verified': True, 'parent_equals_files': True, 'accounting_reconciled': True, 'warehouse_content_equal': True}
+UNVERIFIED_PROPOSALS {'files_verified': False, 'parent_equals_files': True, 'accounting_reconciled': True, 'warehouse_content_equal': True} 12
+
+# POST (reproducer unchanged, code after Q1)
+REFUSED: the design is not a sealed valid one: schema; stage must be DEVELOPMENT_SELECTION; design digest does not seal the document; replication units are not independent of selection units, or absent; calibration contract count; a design executes nothing
+# POST (second case reached by catching the first refusal)
+EMPTY_DESIGN REFUSED: the design is not a sealed valid one: schema; stage must be DEVELOPMENT_SELECTION; design digest does not seal the document; replication units are not independent of selection units, or absent; calibration contract count; a design executes nothing
+UNVERIFIED_PROPOSALS {'files_verified': False, 'parent_equals_files': True, 'accounting_reconciled': True, 'warehouse_content_equal': True} proposed 0 unverified_candidates 12 verdicts {'UNVERIFIED_PAIR'}
