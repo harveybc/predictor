@@ -1,0 +1,116 @@
+{
+ "all_equal": true,
+ "generation": 1,
+ "refused": [
+  {
+   "attempt": "faba__v0__mad_extremes_trailing__transformed__slow-control",
+   "why": "no result.json (not COMPLETED)"
+  }
+ ],
+ "run_id": "utilcache-v1a",
+ "schema": "df_utility_content_check.v1",
+ "units": {
+  "calibrate__cusum_causal": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 4.0,
+    "calibration.upper_bound": 0.527129195498412
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 4.0,
+    "calibration.upper_bound": 0.527129195498412
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__delta_run_length": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 4.0,
+    "calibration.upper_bound": 0.527129195498412
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 4.0,
+    "calibration.upper_bound": 0.527129195498412
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__mad_extremes_trailing": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 4.0,
+    "calibration.upper_bound": 0.527129195498412
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 4.0,
+    "calibration.upper_bound": 0.527129195498412
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "faba__v0__cusum_causal__transformed": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.4604248577064293,
+    "utility.delta_mean": -0.11138315151074385,
+    "utility.delta_se": 0.06473386553528526
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.4604248577064293,
+    "utility.delta_mean": -0.11138315151074385,
+    "utility.delta_se": 0.06473386553528526
+   },
+   "kind": "contrast",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  "faba__v0__delta_run_length__transformed": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.22653740281793783,
+    "utility.delta_mean": 0.15628115985754615,
+    "utility.delta_se": 0.07099817850063064
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.22653740281793783,
+    "utility.delta_mean": 0.15628115985754615,
+    "utility.delta_se": 0.07099817850063064
+   },
+   "kind": "contrast",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  "faba__v0__mad_extremes_trailing__transformed": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.5152821352353848,
+    "utility.delta_mean": -0.09731220580850725,
+    "utility.delta_se": 0.07751741046711229
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.5152821352353848,
+    "utility.delta_mean": -0.09731220580850725,
+    "utility.delta_se": 0.07751741046711229
+   },
+   "kind": "contrast",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  }
+ }
+}

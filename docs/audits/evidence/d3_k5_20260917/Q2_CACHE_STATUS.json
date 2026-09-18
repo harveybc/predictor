@@ -1,0 +1,41 @@
+{
+ "schema": "df_utility_calibration_cache_status.v1",
+ "root": "/home/harveybc/.local/state/crispdm-data-foundation/calibration_cache_v1",
+ "unique_computations": 3,
+ "entries": [
+  {
+   "key_sha256": "31c45b11320c77fbaacbf8b9b43dd69bdf2d8c64c39e2adf30b2ad6375cc1f6e",
+   "simulations": 4,
+   "cost_cpu_seconds": 1.966,
+   "reads": 1,
+   "hits": 1,
+   "saved_cpu_seconds": 1.966,
+   "verification_seconds_total": 0.605,
+   "quarantined": 0
+  },
+  {
+   "key_sha256": "4cafbe9fad3f8cd3d10be166b2a5d3959eaa4154f3990165f95617e7751c490c",
+   "simulations": 4,
+   "cost_cpu_seconds": 2.415,
+   "reads": 1,
+   "hits": 1,
+   "saved_cpu_seconds": 2.415,
+   "verification_seconds_total": 1.188,
+   "quarantined": 0
+  },
+  {
+   "key_sha256": "d93fbc5c85b27f7acc5a974e58d9a05f7f26c0f16368fcad13008d42507744c6",
+   "simulations": 4,
+   "cost_cpu_seconds": 2.014,
+   "reads": 1,
+   "hits": 1,
+   "saved_cpu_seconds": 2.014,
+   "verification_seconds_total": 0.61,
+   "quarantined": 0
+  }
+ ],
+ "simulations_unique": 12,
+ "hits": 3,
+ "saved_cpu_seconds": 6.395,
+ "verification_seconds_total": 2.403
+}

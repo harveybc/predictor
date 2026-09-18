@@ -164,7 +164,16 @@ def reverify(root: Path, repo: Path) -> dict:
                 job_base, entry["problems"] = None, entry["problems"] + [f"recorded protocol unsealable: {e}"]
             if job_base and job_base != bare[key].base_sha256():
                 entry["problems"].append("recorded job's protocol base is not the freeze's")
-            if doc.get("protocol_base_sha256") != bare[key].base_sha256():
+            if "computation" in doc:
+                # v3 (Q2): the record may be a verified shared computation; its key must be the
+                # consumer's (labels apart) — the binding is by computation, not by family base
+                expected = H.computation_key(bare[key], ops.build(kind), doc["plan"], branch_a=pair[0], branch_b=pair[1],
+                                             seed=doc["seed"], harness=doc["computation"].get("harness_sha256"))
+                expected["numeric_dependencies"] = doc["computation"].get("numeric_dependencies")
+                if H.computation_sha256(expected) != doc.get("computation_sha256"):
+                    entry["problems"].append("record's computation is not this contract's")
+                entry["source"] = (json.loads((attempt / "result.json").read_text()).get("calibration_source") or {}).get("kind", "MEASURED_HERE")
+            elif doc.get("protocol_base_sha256") != bare[key].base_sha256():
                 entry["problems"].append("record's protocol base is not the freeze's")
             if H.record_pair(doc) != pair:
                 entry["problems"].append("record's branch pair is not the recorded job's")

@@ -1,0 +1,430 @@
+{
+ "calibration": {
+  "campaign": {
+   "campaign_sha256": "afcfdc6d360e28ac601026f371e93fd08032a0ab1e7f8f4525ae42e9b8cb7be9",
+   "key": "utilcache-v1a-utility-calibration"
+  },
+  "cusum_causal": {
+   "cost": {
+    "cgroup_memory_peak": 68349952,
+    "cpu_seconds": 2.858,
+    "ended_at": "2026-09-18T07:19:24+00:00",
+    "peak_rss_bytes": 109436928,
+    "started_at": "2026-09-18T07:19:21+00:00",
+    "wall_seconds": 3.035
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "record_sha256": "5c15e1560cf99e2c3d4a79648bb76423fb0320a21c0876ed912483c7f1ce9138",
+   "source": {
+    "computation_sha256": "4cafbe9fad3f8cd3d10be166b2a5d3959eaa4154f3990165f95617e7751c490c",
+    "kind": "MISS_PRODUCED",
+    "stored": {
+     "record_sha256": "5c15e1560cf99e2c3d4a79648bb76423fb0320a21c0876ed912483c7f1ce9138",
+     "status": "STORED"
+    },
+    "why_miss": "absent"
+   },
+   "upper_bound": 0.527129195498412
+  },
+  "delta_run_length": {
+   "cost": {
+    "cgroup_memory_peak": 68153344,
+    "cpu_seconds": 2.417,
+    "ended_at": "2026-09-18T07:19:21+00:00",
+    "peak_rss_bytes": 109420544,
+    "started_at": "2026-09-18T07:19:18+00:00",
+    "wall_seconds": 2.635
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "record_sha256": "198507d9c4bddc9d0cb6e7d40a6eb89e4fdfa695ddbf9800d31178bf6546a169",
+   "source": {
+    "computation_sha256": "31c45b11320c77fbaacbf8b9b43dd69bdf2d8c64c39e2adf30b2ad6375cc1f6e",
+    "kind": "MISS_PRODUCED",
+    "stored": {
+     "record_sha256": "198507d9c4bddc9d0cb6e7d40a6eb89e4fdfa695ddbf9800d31178bf6546a169",
+     "status": "STORED"
+    },
+    "why_miss": "absent"
+   },
+   "upper_bound": 0.527129195498412
+  },
+  "mad_extremes_trailing": {
+   "cost": {
+    "cgroup_memory_peak": 68472832,
+    "cpu_seconds": 2.465,
+    "ended_at": "2026-09-18T07:19:17+00:00",
+    "peak_rss_bytes": 109424640,
+    "started_at": "2026-09-18T07:19:14+00:00",
+    "wall_seconds": 2.63
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "record_sha256": "af8ef85508c8d3dda4d26a160ce20718693e83ccdca78b158f612dde8961acc4",
+   "source": {
+    "computation_sha256": "d93fbc5c85b27f7acc5a974e58d9a05f7f26c0f16368fcad13008d42507744c6",
+    "kind": "MISS_PRODUCED",
+    "stored": {
+     "record_sha256": "af8ef85508c8d3dda4d26a160ce20718693e83ccdca78b158f612dde8961acc4",
+     "status": "STORED"
+    },
+    "why_miss": "absent"
+   },
+   "upper_bound": 0.527129195498412
+  }
+ },
+ "code_identity_frozen": {
+  "kind": "git_commit",
+  "value": "03106e9bfcd22b3a2833734e58088ed173aa418b"
+ },
+ "code_identity_now": {
+  "kind": "git_commit",
+  "value": "03106e9bfcd22b3a2833734e58088ed173aa418b"
+ },
+ "contrasts": {
+  "campaign": {
+   "campaign_sha256": "2438d1ba8f0cd5ca61b04284fffeba2bd971008ed92053f435c9fca27f7acc42",
+   "key": "utilcache-v1a-utility-contrasts"
+  },
+  "outcomes": {
+   "faba__v0__cusum_causal__transformed": {
+    "cost": {
+     "cgroup_memory_peak": 67203072,
+     "cpu_seconds": 0.97,
+     "ended_at": "2026-09-18T07:19:31+00:00",
+     "peak_rss_bytes": 109330432,
+     "started_at": "2026-09-18T07:19:30+00:00",
+     "wall_seconds": 1.02
+    },
+    "hypothesis": "H_T",
+    "operator": "cusum_causal",
+    "outcome": "INCONCLUSIVE_UNCALIBRATED",
+    "output_sha256": "879646e6893aa4677295250f99bfffc185d81109f730becd27bee2e7a0451812",
+    "reason": ""
+   },
+   "faba__v0__delta_run_length__transformed": {
+    "cost": {
+     "cgroup_memory_peak": 67719168,
+     "cpu_seconds": 0.905,
+     "ended_at": "2026-09-18T07:19:29+00:00",
+     "peak_rss_bytes": 108773376,
+     "started_at": "2026-09-18T07:19:28+00:00",
+     "wall_seconds": 1.021
+    },
+    "hypothesis": "H_T",
+    "operator": "delta_run_length",
+    "outcome": "INCONCLUSIVE_UNCALIBRATED",
+    "output_sha256": "0fc551d8f4f2f2737310c8f865d07d89bef210ed3e1a459278024a14b71d6498",
+    "reason": ""
+   },
+   "faba__v0__mad_extremes_trailing__transformed": {
+    "cost": {
+     "cgroup_memory_peak": 67473408,
+     "cpu_seconds": 0.905,
+     "ended_at": "2026-09-18T07:19:28+00:00",
+     "peak_rss_bytes": 109916160,
+     "started_at": "2026-09-18T07:19:27+00:00",
+     "wall_seconds": 1.021
+    },
+    "hypothesis": "H_T",
+    "operator": "mad_extremes_trailing",
+    "outcome": "INCONCLUSIVE_UNCALIBRATED",
+    "output_sha256": "17f0a3e34027941a3fa6c9dac85d9b9e7e3c5247c33da2eec239ad71b6ba32fe",
+    "reason": ""
+   },
+   "faba__v0__mad_extremes_trailing__transformed__slow-control": {
+    "cost": {
+     "cgroup_memory_peak": 22163456,
+     "cpu_seconds": 6.009,
+     "ended_at": "2026-09-18T07:19:37+00:00",
+     "peak_rss_bytes": 70901760,
+     "started_at": "2026-09-18T07:19:31+00:00",
+     "wall_seconds": 6.038
+    },
+    "hypothesis": "H_T",
+    "operator": "mad_extremes_trailing",
+    "outcome": "RESOURCE_EXCEEDED",
+    "output_sha256": null,
+    "reason": "WALL_TIME_LIMIT; no heartbeat"
+   }
+  }
+ },
+ "envelope": {
+  "digest": "4fedfbb9f4017c301a8aed07582045b189b2ddbde4287d984efb2fc266be3878",
+  "envelope_sha256": "7b7638dd7b6c7ed64800f19e5c681b6d352db02bc5cf2e0fde29ba9132c80c53",
+  "outbox_entry": "envelope-4fedfbb9f4017c301a8aed07582045b189b2ddbde4287d984efb2fc266be3878.json",
+  "state": "pending",
+  "written": true
+ },
+ "finished_utc": "2026-09-18T07:19:37Z",
+ "freeze_pre_sha256": "c14bb77e7cc887a89949261ddb6b6db92c9f25c4981421f6ef7978766055f817",
+ "mechanics": {
+  "faba": {
+   "cells_sha256": "0c6fda110f18830b5bee82e7a168011679d601c0787c93232e03a56a5c6c4d5e",
+   "cost": {
+    "cgroup_memory_peak": 59621376,
+    "cpu_seconds": 3.193,
+    "ended_at": "2026-09-18T07:19:27+00:00",
+    "peak_rss_bytes": 116940800,
+    "started_at": "2026-09-18T07:19:24+00:00",
+    "wall_seconds": 3.229
+   },
+   "verdicts": {
+    "cusum_causal": "MECHANICALLY_ACCEPTED",
+    "delta_run_length": "MECHANICALLY_ACCEPTED",
+    "mad_extremes_trailing": "MECHANICALLY_ACCEPTED"
+   }
+  }
+ },
+ "purpose": "UTILITY_HARNESS_REHEARSAL",
+ "reconciliation": {
+  "calibration": {
+   "accounting_only": [],
+   "http": 200,
+   "lake_only": [],
+   "missing_units": []
+  },
+  "contrasts": {
+   "accounting_only": [],
+   "http": 200,
+   "lake_only": [],
+   "missing_units": []
+  }
+ },
+ "resumed_under_new_code": false,
+ "run_id": "utilcache-v1a",
+ "schema": "df_utility_rehearsal_report.v2",
+ "terminals": [
+  {
+   "cost": {
+    "cgroup_memory_peak": 67473408,
+    "cpu_seconds": 0.905,
+    "ended_at": "2026-09-18T07:19:28+00:00",
+    "peak_rss_bytes": 109916160,
+    "started_at": "2026-09-18T07:19:27+00:00",
+    "wall_seconds": 1.021
+   },
+   "delta_mean": -0.09731220580850725,
+   "outcome": "INCONCLUSIVE_UNCALIBRATED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "faba__v0__mad_extremes_trailing__transformed"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 67719168,
+    "cpu_seconds": 0.905,
+    "ended_at": "2026-09-18T07:19:29+00:00",
+    "peak_rss_bytes": 108773376,
+    "started_at": "2026-09-18T07:19:28+00:00",
+    "wall_seconds": 1.021
+   },
+   "delta_mean": 0.15628115985754615,
+   "outcome": "INCONCLUSIVE_UNCALIBRATED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "faba__v0__delta_run_length__transformed"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 67203072,
+    "cpu_seconds": 0.97,
+    "ended_at": "2026-09-18T07:19:31+00:00",
+    "peak_rss_bytes": 109330432,
+    "started_at": "2026-09-18T07:19:30+00:00",
+    "wall_seconds": 1.02
+   },
+   "delta_mean": -0.11138315151074385,
+   "outcome": "INCONCLUSIVE_UNCALIBRATED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "faba__v0__cusum_causal__transformed"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 22163456,
+    "cpu_seconds": 6.009,
+    "ended_at": "2026-09-18T07:19:37+00:00",
+    "peak_rss_bytes": 70901760,
+    "started_at": "2026-09-18T07:19:31+00:00",
+    "wall_seconds": 6.038
+   },
+   "delta_mean": null,
+   "outcome": "RESOURCE_EXCEEDED",
+   "pending_after_flush": 0,
+   "status": "FAILED",
+   "unit_id": "faba__v0__mad_extremes_trailing__transformed__slow-control"
+  }
+ ],
+ "trace": [
+  {
+   "at": "2026-09-18T07:19:14Z",
+   "event": "freeze-pre",
+   "sha256": "c14bb77e7cc887a89949261ddb6b6db92c9f25c4981421f6ef7978766055f817"
+  },
+  {
+   "at": "2026-09-18T07:19:14Z",
+   "event": "register",
+   "http": 201,
+   "key": "utilcache-v1a-utility-calibration"
+  },
+  {
+   "at": "2026-09-18T07:19:14Z",
+   "event": "before_run",
+   "key": "utilcache-v1a-utility-calibration",
+   "unit": "mad_extremes_trailing"
+  },
+  {
+   "at": "2026-09-18T07:19:14Z",
+   "event": "child",
+   "kind": "calibrate",
+   "name": "calibrate__mad_extremes_trailing"
+  },
+  {
+   "at": "2026-09-18T07:19:18Z",
+   "event": "child-done",
+   "kind": "calibrate",
+   "name": "calibrate__mad_extremes_trailing",
+   "outcome": "COMPLETED"
+  },
+  {
+   "at": "2026-09-18T07:19:18Z",
+   "event": "before_run",
+   "key": "utilcache-v1a-utility-calibration",
+   "unit": "delta_run_length"
+  },
+  {
+   "at": "2026-09-18T07:19:18Z",
+   "event": "child",
+   "kind": "calibrate",
+   "name": "calibrate__delta_run_length"
+  },
+  {
+   "at": "2026-09-18T07:19:21Z",
+   "event": "child-done",
+   "kind": "calibrate",
+   "name": "calibrate__delta_run_length",
+   "outcome": "COMPLETED"
+  },
+  {
+   "at": "2026-09-18T07:19:21Z",
+   "event": "before_run",
+   "key": "utilcache-v1a-utility-calibration",
+   "unit": "cusum_causal"
+  },
+  {
+   "at": "2026-09-18T07:19:21Z",
+   "event": "child",
+   "kind": "calibrate",
+   "name": "calibrate__cusum_causal"
+  },
+  {
+   "at": "2026-09-18T07:19:24Z",
+   "event": "child-done",
+   "kind": "calibrate",
+   "name": "calibrate__cusum_causal",
+   "outcome": "COMPLETED"
+  },
+  {
+   "at": "2026-09-18T07:19:24Z",
+   "event": "child",
+   "kind": "mechanics",
+   "name": "mechanics__faba"
+  },
+  {
+   "at": "2026-09-18T07:19:27Z",
+   "event": "child-done",
+   "kind": "mechanics",
+   "name": "mechanics__faba",
+   "outcome": "COMPLETED"
+  },
+  {
+   "at": "2026-09-18T07:19:27Z",
+   "event": "freeze",
+   "sha256": "c72e59e4f797280bbdfcbf6a74dba6d65fa7f572c641be71889139f210969e03"
+  },
+  {
+   "at": "2026-09-18T07:19:27Z",
+   "event": "register",
+   "http": 201,
+   "key": "utilcache-v1a-utility-contrasts"
+  },
+  {
+   "at": "2026-09-18T07:19:27Z",
+   "event": "before_run",
+   "key": "utilcache-v1a-utility-contrasts",
+   "unit": "faba__v0__mad_extremes_trailing__transformed"
+  },
+  {
+   "at": "2026-09-18T07:19:27Z",
+   "event": "child",
+   "kind": "contrast",
+   "name": "faba__v0__mad_extremes_trailing__transformed"
+  },
+  {
+   "at": "2026-09-18T07:19:28Z",
+   "event": "child-done",
+   "kind": "contrast",
+   "name": "faba__v0__mad_extremes_trailing__transformed",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  {
+   "at": "2026-09-18T07:19:28Z",
+   "event": "before_run",
+   "key": "utilcache-v1a-utility-contrasts",
+   "unit": "faba__v0__delta_run_length__transformed"
+  },
+  {
+   "at": "2026-09-18T07:19:28Z",
+   "event": "child",
+   "kind": "contrast",
+   "name": "faba__v0__delta_run_length__transformed"
+  },
+  {
+   "at": "2026-09-18T07:19:29Z",
+   "event": "child-done",
+   "kind": "contrast",
+   "name": "faba__v0__delta_run_length__transformed",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  {
+   "at": "2026-09-18T07:19:29Z",
+   "event": "before_run",
+   "key": "utilcache-v1a-utility-contrasts",
+   "unit": "faba__v0__cusum_causal__transformed"
+  },
+  {
+   "at": "2026-09-18T07:19:29Z",
+   "event": "child",
+   "kind": "contrast",
+   "name": "faba__v0__cusum_causal__transformed"
+  },
+  {
+   "at": "2026-09-18T07:19:31Z",
+   "event": "child-done",
+   "kind": "contrast",
+   "name": "faba__v0__cusum_causal__transformed",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  {
+   "at": "2026-09-18T07:19:31Z",
+   "event": "before_run",
+   "key": "utilcache-v1a-utility-contrasts",
+   "unit": "faba__v0__mad_extremes_trailing__transformed__slow-control"
+  },
+  {
+   "at": "2026-09-18T07:19:31Z",
+   "event": "child",
+   "kind": "contrast",
+   "name": "faba__v0__mad_extremes_trailing__transformed__slow-control"
+  },
+  {
+   "at": "2026-09-18T07:19:37Z",
+   "event": "child-done",
+   "kind": "contrast",
+   "name": "faba__v0__mad_extremes_trailing__transformed__slow-control",
+   "outcome": "RESOURCE_EXCEEDED"
+  }
+ ]
+}

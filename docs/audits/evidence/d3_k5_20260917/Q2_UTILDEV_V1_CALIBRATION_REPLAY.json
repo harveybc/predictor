@@ -1,0 +1,89 @@
+{
+ "schema": "df_utility_calibration_replay.v1",
+ "run": "utildev-v1",
+ "records": 36,
+ "cost_cpu_seconds_total": 5761.3,
+ "unique_computations": 6,
+ "groups": {
+  "e1a46424f8f8533dc701c096dbb004a65bdd8c53e081b2af243d31a723bcab75": {
+   "contract": "cusum_causal__H_A",
+   "families": 6,
+   "per_sim_digests": [
+    "3a4bceaeb6d330766457cf37f16b28ac1d0728ad402e704258a9f1658af8a141"
+   ],
+   "record_digests_distinct": 6,
+   "advances": [
+    "0/358"
+   ],
+   "cost_cpu_seconds": 1762.56,
+   "problems": []
+  },
+  "77a28532a050f94ec4aeaa42cfde998695209b875e838873944488d2d68e6e66": {
+   "contract": "cusum_causal__H_T",
+   "families": 6,
+   "per_sim_digests": [
+    "4aac1275073a5f45100f66e851ad6643d7a278d0c9aaccc74000d72f68fd111a"
+   ],
+   "record_digests_distinct": 6,
+   "advances": [
+    "1/358"
+   ],
+   "cost_cpu_seconds": 1657.49,
+   "problems": []
+  },
+  "e61b2fe7e877a4dda9a4b3257ed884388f43016663f3557442d9c8b93449f7bc": {
+   "contract": "delta_run_length__H_A",
+   "families": 6,
+   "per_sim_digests": [
+    "a29e1679437e23586ff47d7cba05eb60f43a4714653209bc5f9330166344870e"
+   ],
+   "record_digests_distinct": 6,
+   "advances": [
+    "3/358"
+   ],
+   "cost_cpu_seconds": 602.94,
+   "problems": []
+  },
+  "f530cf81ab201b25cddbdb0a7ff917253c65c216cc42e5446333faca0b943364": {
+   "contract": "delta_run_length__H_T",
+   "families": 6,
+   "per_sim_digests": [
+    "3be49d5d7bb33a5f5cad96ef629c1aa71ca2496a440d0b056b1a545004dae18a"
+   ],
+   "record_digests_distinct": 6,
+   "advances": [
+    "0/358"
+   ],
+   "cost_cpu_seconds": 527.0,
+   "problems": []
+  },
+  "36287b67f85eb96e1a33d8a875eaaa2c5cd5efcca2347f5f0613fdce563b0cac": {
+   "contract": "mad_extremes_trailing__H_A",
+   "families": 6,
+   "per_sim_digests": [
+    "542dc75c1662f414b45c99156609e8ed2c9048a3ac6c869338343300316272b2"
+   ],
+   "record_digests_distinct": 6,
+   "advances": [
+    "0/358"
+   ],
+   "cost_cpu_seconds": 640.88,
+   "problems": []
+  },
+  "706630b8668ab599d9a87fd7afd63e10b934e65059b6d5cf58e109e3408f6ea7": {
+   "contract": "mad_extremes_trailing__H_T",
+   "families": 6,
+   "per_sim_digests": [
+    "ac586af8f36cae5a0686c3299e699cd79163b04b7852b693d4d7e366fa787411"
+   ],
+   "record_digests_distinct": 6,
+   "advances": [
+    "1/358"
+   ],
+   "cost_cpu_seconds": 570.42,
+   "problems": []
+  }
+ },
+ "avoidable_cpu_seconds": 4801.08,
+ "note": "records differ in bytes only by protocol base (family labels) and cost; per_sim digests identical within a group; nothing deduplicated in the cube; the saving is a replay projection, the measured saving is the rehearsal's"
+}

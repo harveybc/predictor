@@ -1,0 +1,454 @@
+{
+ "calibration": {
+  "campaign": {
+   "campaign_sha256": "13838e7b17d47a44fe16e325483f4422a046eddf4f686cccbfb79789dd361ade",
+   "key": "utilcache-v1b-utility-calibration"
+  },
+  "cusum_causal": {
+   "cost": {
+    "cgroup_memory_peak": 67936256,
+    "cpu_seconds": 1.482,
+    "ended_at": "2026-09-18T07:19:42+00:00",
+    "peak_rss_bytes": 108396544,
+    "started_at": "2026-09-18T07:19:40+00:00",
+    "wall_seconds": 1.63
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "record_sha256": "5c15e1560cf99e2c3d4a79648bb76423fb0320a21c0876ed912483c7f1ce9138",
+   "source": {
+    "computation_sha256": "4cafbe9fad3f8cd3d10be166b2a5d3959eaa4154f3990165f95617e7751c490c",
+    "kind": "CACHE_HIT",
+    "producer": {
+     "key_sha256": "4cafbe9fad3f8cd3d10be166b2a5d3959eaa4154f3990165f95617e7751c490c",
+     "producer": {
+      "attempt_dir": "/home/harveybc/.local/state/crispdm-data-foundation/utility_cache_v1a/attempts/calibrate__cusum_causal",
+      "contrast_id": "faba__v0__mad_extremes_trailing__transformed",
+      "cost_cpu_seconds": 2.415,
+      "protocol_key": null
+     },
+     "record_sha256": "5c15e1560cf99e2c3d4a79648bb76423fb0320a21c0876ed912483c7f1ce9138",
+     "stored_at": "2026-09-18T07:19:24Z"
+    },
+    "simulations_run_here": 0,
+    "verification_seconds": 1.19
+   },
+   "upper_bound": 0.527129195498412
+  },
+  "delta_run_length": {
+   "cost": {
+    "cgroup_memory_peak": 67264512,
+    "cpu_seconds": 0.833,
+    "ended_at": "2026-09-18T07:19:40+00:00",
+    "peak_rss_bytes": 108195840,
+    "started_at": "2026-09-18T07:19:39+00:00",
+    "wall_seconds": 1.023
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "record_sha256": "198507d9c4bddc9d0cb6e7d40a6eb89e4fdfa695ddbf9800d31178bf6546a169",
+   "source": {
+    "computation_sha256": "31c45b11320c77fbaacbf8b9b43dd69bdf2d8c64c39e2adf30b2ad6375cc1f6e",
+    "kind": "CACHE_HIT",
+    "producer": {
+     "key_sha256": "31c45b11320c77fbaacbf8b9b43dd69bdf2d8c64c39e2adf30b2ad6375cc1f6e",
+     "producer": {
+      "attempt_dir": "/home/harveybc/.local/state/crispdm-data-foundation/utility_cache_v1a/attempts/calibrate__delta_run_length",
+      "contrast_id": "faba__v0__mad_extremes_trailing__transformed",
+      "cost_cpu_seconds": 1.966,
+      "protocol_key": null
+     },
+     "record_sha256": "198507d9c4bddc9d0cb6e7d40a6eb89e4fdfa695ddbf9800d31178bf6546a169",
+     "stored_at": "2026-09-18T07:19:21Z"
+    },
+    "simulations_run_here": 0,
+    "verification_seconds": 0.606
+   },
+   "upper_bound": 0.527129195498412
+  },
+  "mad_extremes_trailing": {
+   "cost": {
+    "cgroup_memory_peak": 67739648,
+    "cpu_seconds": 0.825,
+    "ended_at": "2026-09-18T07:19:38+00:00",
+    "peak_rss_bytes": 108212224,
+    "started_at": "2026-09-18T07:19:37+00:00",
+    "wall_seconds": 1.017
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "record_sha256": "af8ef85508c8d3dda4d26a160ce20718693e83ccdca78b158f612dde8961acc4",
+   "source": {
+    "computation_sha256": "d93fbc5c85b27f7acc5a974e58d9a05f7f26c0f16368fcad13008d42507744c6",
+    "kind": "CACHE_HIT",
+    "producer": {
+     "key_sha256": "d93fbc5c85b27f7acc5a974e58d9a05f7f26c0f16368fcad13008d42507744c6",
+     "producer": {
+      "attempt_dir": "/home/harveybc/.local/state/crispdm-data-foundation/utility_cache_v1a/attempts/calibrate__mad_extremes_trailing",
+      "contrast_id": "faba__v0__mad_extremes_trailing__transformed",
+      "cost_cpu_seconds": 2.014,
+      "protocol_key": null
+     },
+     "record_sha256": "af8ef85508c8d3dda4d26a160ce20718693e83ccdca78b158f612dde8961acc4",
+     "stored_at": "2026-09-18T07:19:17Z"
+    },
+    "simulations_run_here": 0,
+    "verification_seconds": 0.61
+   },
+   "upper_bound": 0.527129195498412
+  }
+ },
+ "code_identity_frozen": {
+  "kind": "git_commit",
+  "value": "03106e9bfcd22b3a2833734e58088ed173aa418b"
+ },
+ "code_identity_now": {
+  "kind": "git_commit",
+  "value": "03106e9bfcd22b3a2833734e58088ed173aa418b"
+ },
+ "contrasts": {
+  "campaign": {
+   "campaign_sha256": "66693ea3a40db9bf6e924412e702cde337a370f709cb4d76920d338867a82d59",
+   "key": "utilcache-v1b-utility-contrasts"
+  },
+  "outcomes": {
+   "fabb__v0__cusum_causal__transformed": {
+    "cost": {
+     "cgroup_memory_peak": 67469312,
+     "cpu_seconds": 2.029,
+     "ended_at": "2026-09-18T07:19:51+00:00",
+     "peak_rss_bytes": 109043712,
+     "started_at": "2026-09-18T07:19:49+00:00",
+     "wall_seconds": 2.235
+    },
+    "hypothesis": "H_T",
+    "operator": "cusum_causal",
+    "outcome": "INCONCLUSIVE_UNCALIBRATED",
+    "output_sha256": "6f66523683d5df4421e1d89de882c03c4306c7e119ef156878fc86027479c8af",
+    "reason": ""
+   },
+   "fabb__v0__delta_run_length__transformed": {
+    "cost": {
+     "cgroup_memory_peak": 67207168,
+     "cpu_seconds": 1.241,
+     "ended_at": "2026-09-18T07:19:49+00:00",
+     "peak_rss_bytes": 109113344,
+     "started_at": "2026-09-18T07:19:47+00:00",
+     "wall_seconds": 1.427
+    },
+    "hypothesis": "H_T",
+    "operator": "delta_run_length",
+    "outcome": "INCONCLUSIVE_UNCALIBRATED",
+    "output_sha256": "e1f6df1a31a28cd697e433d789916a50522f16cac3def8652a8dd0c545a1ee67",
+    "reason": ""
+   },
+   "fabb__v0__mad_extremes_trailing__transformed": {
+    "cost": {
+     "cgroup_memory_peak": 67211264,
+     "cpu_seconds": 0.932,
+     "ended_at": "2026-09-18T07:19:47+00:00",
+     "peak_rss_bytes": 109563904,
+     "started_at": "2026-09-18T07:19:46+00:00",
+     "wall_seconds": 1.022
+    },
+    "hypothesis": "H_T",
+    "operator": "mad_extremes_trailing",
+    "outcome": "INCONCLUSIVE_UNCALIBRATED",
+    "output_sha256": "4248a66cee54c73e0f35c3ed5d7a951f349ab4ea8c5ed0569534a34ddc01e00a",
+    "reason": ""
+   },
+   "fabb__v0__mad_extremes_trailing__transformed__slow-control": {
+    "cost": {
+     "cgroup_memory_peak": 22368256,
+     "cpu_seconds": 6.016,
+     "ended_at": "2026-09-18T07:19:57+00:00",
+     "peak_rss_bytes": 70557696,
+     "started_at": "2026-09-18T07:19:51+00:00",
+     "wall_seconds": 6.045
+    },
+    "hypothesis": "H_T",
+    "operator": "mad_extremes_trailing",
+    "outcome": "RESOURCE_EXCEEDED",
+    "output_sha256": null,
+    "reason": "WALL_TIME_LIMIT; no heartbeat"
+   }
+  }
+ },
+ "envelope": {
+  "digest": "b05532b073607e66761cb88661b1a96ec519f482f0f2de707466c9c0954c749d",
+  "envelope_sha256": "547e4c2576953d76bd1eee9b049165ec4889de86e48e60a209d9cddeab901160",
+  "outbox_entry": "envelope-b05532b073607e66761cb88661b1a96ec519f482f0f2de707466c9c0954c749d.json",
+  "state": "pending",
+  "written": true
+ },
+ "finished_utc": "2026-09-18T07:19:57Z",
+ "freeze_pre_sha256": "393b8187d27b8825529e27e3889dfae3b48106c30811c00476b2500596082470",
+ "mechanics": {
+  "fabb": {
+   "cells_sha256": "ab8636cccfcc6c9850aca20b95d2aea0ba7fb8a521fd9210fab9a6ef74a6fbcf",
+   "cost": {
+    "cgroup_memory_peak": 59736064,
+    "cpu_seconds": 4.419,
+    "ended_at": "2026-09-18T07:19:46+00:00",
+    "peak_rss_bytes": 116957184,
+    "started_at": "2026-09-18T07:19:42+00:00",
+    "wall_seconds": 4.636
+   },
+   "verdicts": {
+    "cusum_causal": "MECHANICALLY_ACCEPTED",
+    "delta_run_length": "MECHANICALLY_ACCEPTED",
+    "mad_extremes_trailing": "MECHANICALLY_ACCEPTED"
+   }
+  }
+ },
+ "purpose": "UTILITY_HARNESS_REHEARSAL",
+ "reconciliation": {
+  "calibration": {
+   "accounting_only": [],
+   "http": 200,
+   "lake_only": [],
+   "missing_units": []
+  },
+  "contrasts": {
+   "accounting_only": [],
+   "http": 200,
+   "lake_only": [],
+   "missing_units": []
+  }
+ },
+ "resumed_under_new_code": false,
+ "run_id": "utilcache-v1b",
+ "schema": "df_utility_rehearsal_report.v2",
+ "terminals": [
+  {
+   "cost": {
+    "cgroup_memory_peak": 67211264,
+    "cpu_seconds": 0.932,
+    "ended_at": "2026-09-18T07:19:47+00:00",
+    "peak_rss_bytes": 109563904,
+    "started_at": "2026-09-18T07:19:46+00:00",
+    "wall_seconds": 1.022
+   },
+   "delta_mean": -0.09731220580850725,
+   "outcome": "INCONCLUSIVE_UNCALIBRATED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "fabb__v0__mad_extremes_trailing__transformed"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 67207168,
+    "cpu_seconds": 1.241,
+    "ended_at": "2026-09-18T07:19:49+00:00",
+    "peak_rss_bytes": 109113344,
+    "started_at": "2026-09-18T07:19:47+00:00",
+    "wall_seconds": 1.427
+   },
+   "delta_mean": 0.15628115985754615,
+   "outcome": "INCONCLUSIVE_UNCALIBRATED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "fabb__v0__delta_run_length__transformed"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 67469312,
+    "cpu_seconds": 2.029,
+    "ended_at": "2026-09-18T07:19:51+00:00",
+    "peak_rss_bytes": 109043712,
+    "started_at": "2026-09-18T07:19:49+00:00",
+    "wall_seconds": 2.235
+   },
+   "delta_mean": -0.11138315151074385,
+   "outcome": "INCONCLUSIVE_UNCALIBRATED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "fabb__v0__cusum_causal__transformed"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 22368256,
+    "cpu_seconds": 6.016,
+    "ended_at": "2026-09-18T07:19:57+00:00",
+    "peak_rss_bytes": 70557696,
+    "started_at": "2026-09-18T07:19:51+00:00",
+    "wall_seconds": 6.045
+   },
+   "delta_mean": null,
+   "outcome": "RESOURCE_EXCEEDED",
+   "pending_after_flush": 0,
+   "status": "FAILED",
+   "unit_id": "fabb__v0__mad_extremes_trailing__transformed__slow-control"
+  }
+ ],
+ "trace": [
+  {
+   "at": "2026-09-18T07:19:37Z",
+   "event": "freeze-pre",
+   "sha256": "393b8187d27b8825529e27e3889dfae3b48106c30811c00476b2500596082470"
+  },
+  {
+   "at": "2026-09-18T07:19:37Z",
+   "event": "register",
+   "http": 201,
+   "key": "utilcache-v1b-utility-calibration"
+  },
+  {
+   "at": "2026-09-18T07:19:37Z",
+   "event": "before_run",
+   "key": "utilcache-v1b-utility-calibration",
+   "unit": "mad_extremes_trailing"
+  },
+  {
+   "at": "2026-09-18T07:19:37Z",
+   "event": "child",
+   "kind": "calibrate",
+   "name": "calibrate__mad_extremes_trailing"
+  },
+  {
+   "at": "2026-09-18T07:19:39Z",
+   "event": "child-done",
+   "kind": "calibrate",
+   "name": "calibrate__mad_extremes_trailing",
+   "outcome": "COMPLETED"
+  },
+  {
+   "at": "2026-09-18T07:19:39Z",
+   "event": "before_run",
+   "key": "utilcache-v1b-utility-calibration",
+   "unit": "delta_run_length"
+  },
+  {
+   "at": "2026-09-18T07:19:39Z",
+   "event": "child",
+   "kind": "calibrate",
+   "name": "calibrate__delta_run_length"
+  },
+  {
+   "at": "2026-09-18T07:19:40Z",
+   "event": "child-done",
+   "kind": "calibrate",
+   "name": "calibrate__delta_run_length",
+   "outcome": "COMPLETED"
+  },
+  {
+   "at": "2026-09-18T07:19:40Z",
+   "event": "before_run",
+   "key": "utilcache-v1b-utility-calibration",
+   "unit": "cusum_causal"
+  },
+  {
+   "at": "2026-09-18T07:19:40Z",
+   "event": "child",
+   "kind": "calibrate",
+   "name": "calibrate__cusum_causal"
+  },
+  {
+   "at": "2026-09-18T07:19:42Z",
+   "event": "child-done",
+   "kind": "calibrate",
+   "name": "calibrate__cusum_causal",
+   "outcome": "COMPLETED"
+  },
+  {
+   "at": "2026-09-18T07:19:42Z",
+   "event": "child",
+   "kind": "mechanics",
+   "name": "mechanics__fabb"
+  },
+  {
+   "at": "2026-09-18T07:19:46Z",
+   "event": "child-done",
+   "kind": "mechanics",
+   "name": "mechanics__fabb",
+   "outcome": "COMPLETED"
+  },
+  {
+   "at": "2026-09-18T07:19:46Z",
+   "event": "freeze",
+   "sha256": "fed7cc33eef927c07a520c50f14e729700d4bc5536e7a4f7a6499f07185e4412"
+  },
+  {
+   "at": "2026-09-18T07:19:46Z",
+   "event": "register",
+   "http": 201,
+   "key": "utilcache-v1b-utility-contrasts"
+  },
+  {
+   "at": "2026-09-18T07:19:46Z",
+   "event": "before_run",
+   "key": "utilcache-v1b-utility-contrasts",
+   "unit": "fabb__v0__mad_extremes_trailing__transformed"
+  },
+  {
+   "at": "2026-09-18T07:19:46Z",
+   "event": "child",
+   "kind": "contrast",
+   "name": "fabb__v0__mad_extremes_trailing__transformed"
+  },
+  {
+   "at": "2026-09-18T07:19:47Z",
+   "event": "child-done",
+   "kind": "contrast",
+   "name": "fabb__v0__mad_extremes_trailing__transformed",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  {
+   "at": "2026-09-18T07:19:47Z",
+   "event": "before_run",
+   "key": "utilcache-v1b-utility-contrasts",
+   "unit": "fabb__v0__delta_run_length__transformed"
+  },
+  {
+   "at": "2026-09-18T07:19:47Z",
+   "event": "child",
+   "kind": "contrast",
+   "name": "fabb__v0__delta_run_length__transformed"
+  },
+  {
+   "at": "2026-09-18T07:19:49Z",
+   "event": "child-done",
+   "kind": "contrast",
+   "name": "fabb__v0__delta_run_length__transformed",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  {
+   "at": "2026-09-18T07:19:49Z",
+   "event": "before_run",
+   "key": "utilcache-v1b-utility-contrasts",
+   "unit": "fabb__v0__cusum_causal__transformed"
+  },
+  {
+   "at": "2026-09-18T07:19:49Z",
+   "event": "child",
+   "kind": "contrast",
+   "name": "fabb__v0__cusum_causal__transformed"
+  },
+  {
+   "at": "2026-09-18T07:19:51Z",
+   "event": "child-done",
+   "kind": "contrast",
+   "name": "fabb__v0__cusum_causal__transformed",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  {
+   "at": "2026-09-18T07:19:51Z",
+   "event": "before_run",
+   "key": "utilcache-v1b-utility-contrasts",
+   "unit": "fabb__v0__mad_extremes_trailing__transformed__slow-control"
+  },
+  {
+   "at": "2026-09-18T07:19:51Z",
+   "event": "child",
+   "kind": "contrast",
+   "name": "fabb__v0__mad_extremes_trailing__transformed__slow-control"
+  },
+  {
+   "at": "2026-09-18T07:19:57Z",
+   "event": "child-done",
+   "kind": "contrast",
+   "name": "fabb__v0__mad_extremes_trailing__transformed__slow-control",
+   "outcome": "RESOURCE_EXCEEDED"
+  }
+ ]
+}
