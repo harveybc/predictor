@@ -1,0 +1,416 @@
+{
+ "schema": "df_utility_controls.v1",
+ "operator": "mad_extremes_trailing",
+ "n": 1200,
+ "replicates": 6,
+ "seed0": 100,
+ "budget_cpu_seconds": 1800.0,
+ "effect_sizes": {
+  "a_drift": 1.0,
+  "b_momentum": 0.5,
+  "noise": 1.0
+ },
+ "calibration_role": "fixture calibration (white null, low confidence) decides ADVANCES/DOES_NOT_ADVANCE; it is NOT a positive control and the positive controls are NOT calibrations",
+ "calibrations": {
+  "raw/transformed": {
+   "advances": 0,
+   "scored": 28,
+   "upper_bound": 0.02445135794742679,
+   "supports": true
+  },
+  "raw_wide/augmented": {
+   "advances": 1,
+   "scored": 28,
+   "upper_bound": 0.05922054147555465,
+   "supports": false
+  }
+ },
+ "controls": {
+  "positive_H_T": {
+   "spec": {
+    "generator": "mad_extremeness_drift",
+    "pair": [
+     "raw",
+     "transformed"
+    ],
+    "requirement": "the transformed branch must ADVANCE when the next increment depends on the operator's own unsigned extremeness score, which 4 raw lags cannot compute",
+    "estimand": "paired MAE(raw) \u2212 MAE(transformed) over 4 walk-forward blocks, lower bound at 1\u2212\u03b1/2"
+   },
+   "expected": {
+    "outcome": "ADVANCES",
+    "min_fraction": 0.8333333333333334
+   },
+   "rows": [
+    {
+     "replicate": 0,
+     "seed": 100,
+     "outcome": "ADVANCES",
+     "delta_mean": 0.0809333766110096,
+     "delta_lower": 0.03126053745738425,
+     "why": null,
+     "cpu_seconds": 0.15
+    },
+    {
+     "replicate": 1,
+     "seed": 101,
+     "outcome": "ADVANCES",
+     "delta_mean": 0.05069769429918067,
+     "delta_lower": 0.021276152281733095,
+     "why": null,
+     "cpu_seconds": 0.153
+    },
+    {
+     "replicate": 2,
+     "seed": 102,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": 0.06928457530839935,
+     "delta_lower": -0.0497711407603756,
+     "why": null,
+     "cpu_seconds": 0.152
+    },
+    {
+     "replicate": 3,
+     "seed": 103,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": 0.10852771526741883,
+     "delta_lower": -0.010052991298438799,
+     "why": null,
+     "cpu_seconds": 0.153
+    },
+    {
+     "replicate": 4,
+     "seed": 104,
+     "outcome": "ADVANCES",
+     "delta_mean": 0.1629596760523206,
+     "delta_lower": 0.007764218904709991,
+     "why": null,
+     "cpu_seconds": 0.152
+    },
+    {
+     "replicate": 5,
+     "seed": 105,
+     "outcome": "ADVANCES",
+     "delta_mean": 0.07604182514531913,
+     "delta_lower": 0.0025983467426010654,
+     "why": null,
+     "cpu_seconds": 0.151
+    }
+   ],
+   "hits": 4,
+   "advances": 4,
+   "of": 6,
+   "completed": 6,
+   "met": false
+  },
+  "positive_H_A": {
+   "spec": {
+    "generator": "mad_extremeness_drift",
+    "pair": [
+     "raw_wide",
+     "augmented"
+    ],
+    "requirement": "raw+R must ADVANCE over raw of the same width (8 lags, below the 16-row support)",
+    "estimand": "paired MAE(raw_wide) \u2212 MAE(augmented), lower bound at 1\u2212\u03b1/2"
+   },
+   "expected": {
+    "outcome": "ADVANCES",
+    "min_fraction": 0.8333333333333334
+   },
+   "rows": [
+    {
+     "replicate": 0,
+     "seed": 100,
+     "outcome": "INCONCLUSIVE_UNCALIBRATED",
+     "delta_mean": 0.07817563243130277,
+     "delta_lower": 0.027172973972129706,
+     "why": "derived upper bound 0.0592 exceeds alpha_adjusted 0.0250 (1/28 at 50%); the delta is descriptive, not a decision",
+     "cpu_seconds": 0.172
+    },
+    {
+     "replicate": 1,
+     "seed": 101,
+     "outcome": "INCONCLUSIVE_UNCALIBRATED",
+     "delta_mean": 0.04641443276226176,
+     "delta_lower": 0.02253766532953734,
+     "why": "derived upper bound 0.0592 exceeds alpha_adjusted 0.0250 (1/28 at 50%); the delta is descriptive, not a decision",
+     "cpu_seconds": 0.171
+    },
+    {
+     "replicate": 2,
+     "seed": 102,
+     "outcome": "INCONCLUSIVE_UNCALIBRATED",
+     "delta_mean": 0.06264334423920134,
+     "delta_lower": -0.051568033459618814,
+     "why": "derived upper bound 0.0592 exceeds alpha_adjusted 0.0250 (1/28 at 50%); the delta is descriptive, not a decision",
+     "cpu_seconds": 0.172
+    },
+    {
+     "replicate": 3,
+     "seed": 103,
+     "outcome": "INCONCLUSIVE_UNCALIBRATED",
+     "delta_mean": 0.10517632601282059,
+     "delta_lower": -0.010023810756434617,
+     "why": "derived upper bound 0.0592 exceeds alpha_adjusted 0.0250 (1/28 at 50%); the delta is descriptive, not a decision",
+     "cpu_seconds": 0.173
+    },
+    {
+     "replicate": 4,
+     "seed": 104,
+     "outcome": "INCONCLUSIVE_UNCALIBRATED",
+     "delta_mean": 0.1504324756368541,
+     "delta_lower": 0.005321638926174349,
+     "why": "derived upper bound 0.0592 exceeds alpha_adjusted 0.0250 (1/28 at 50%); the delta is descriptive, not a decision",
+     "cpu_seconds": 0.172
+    },
+    {
+     "replicate": 5,
+     "seed": 105,
+     "outcome": "INCONCLUSIVE_UNCALIBRATED",
+     "delta_mean": 0.07086947391809437,
+     "delta_lower": -0.006053192182842837,
+     "why": "derived upper bound 0.0592 exceeds alpha_adjusted 0.0250 (1/28 at 50%); the delta is descriptive, not a decision",
+     "cpu_seconds": 0.172
+    }
+   ],
+   "hits": 0,
+   "advances": 0,
+   "of": 6,
+   "completed": 6,
+   "met": false
+  },
+  "null_contrast": {
+   "spec": {
+    "generator": "white_null",
+    "pair": [
+     "raw",
+     "transformed"
+    ],
+    "requirement": "no advance under independent increments",
+    "estimand": "paired MAE(raw) \u2212 MAE(transformed)"
+   },
+   "expected": {
+    "outcome": "DOES_NOT_ADVANCE",
+    "min_fraction": 0.8333333333333334,
+    "max_advances": 1
+   },
+   "rows": [
+    {
+     "replicate": 0,
+     "seed": 100,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": 0.004536939385308941,
+     "delta_lower": -0.02213847012152088,
+     "why": null,
+     "cpu_seconds": 0.158
+    },
+    {
+     "replicate": 1,
+     "seed": 101,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": 0.001431663028669511,
+     "delta_lower": -0.00831535903522513,
+     "why": null,
+     "cpu_seconds": 0.158
+    },
+    {
+     "replicate": 2,
+     "seed": 102,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": -0.0028297975092291816,
+     "delta_lower": -0.01837661168918331,
+     "why": null,
+     "cpu_seconds": 0.158
+    },
+    {
+     "replicate": 3,
+     "seed": 103,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": 0.020172910614033174,
+     "delta_lower": -0.02983280333199178,
+     "why": null,
+     "cpu_seconds": 0.157
+    },
+    {
+     "replicate": 4,
+     "seed": 104,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": 0.016276420140976577,
+     "delta_lower": -0.04342972923253344,
+     "why": null,
+     "cpu_seconds": 0.157
+    },
+    {
+     "replicate": 5,
+     "seed": 105,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": -0.0006924197246568342,
+     "delta_lower": -0.015299255354900844,
+     "why": null,
+     "cpu_seconds": 0.157
+    }
+   ],
+   "hits": 6,
+   "advances": 0,
+   "of": 6,
+   "completed": 6,
+   "met": true
+  },
+  "info_loss": {
+   "spec": {
+    "generator": "signed_momentum",
+    "pair": [
+     "raw",
+     "transformed"
+    ],
+    "requirement": "when the signal is the signed last increment, the unsigned score must lose: delta < 0 and no advance",
+    "estimand": "paired MAE(raw) \u2212 MAE(transformed); sign of the delta"
+   },
+   "expected": {
+    "outcome": "DOES_NOT_ADVANCE",
+    "delta_sign": -1,
+    "min_fraction": 0.8333333333333334
+   },
+   "rows": [
+    {
+     "replicate": 0,
+     "seed": 100,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": -0.07932340140789268,
+     "delta_lower": -0.1513671351451158,
+     "why": null,
+     "cpu_seconds": 0.156
+    },
+    {
+     "replicate": 1,
+     "seed": 101,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": -0.0891814655692385,
+     "delta_lower": -0.14407410999349776,
+     "why": null,
+     "cpu_seconds": 0.157
+    },
+    {
+     "replicate": 2,
+     "seed": 102,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": -0.06873998639763026,
+     "delta_lower": -0.14985914369153994,
+     "why": null,
+     "cpu_seconds": 0.156
+    },
+    {
+     "replicate": 3,
+     "seed": 103,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": -0.07518952788561523,
+     "delta_lower": -0.17120116466164906,
+     "why": null,
+     "cpu_seconds": 0.157
+    },
+    {
+     "replicate": 4,
+     "seed": 104,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": -0.10911616404375557,
+     "delta_lower": -0.19630494163185946,
+     "why": null,
+     "cpu_seconds": 0.156
+    },
+    {
+     "replicate": 5,
+     "seed": 105,
+     "outcome": "DOES_NOT_ADVANCE",
+     "delta_mean": -0.09500550174159944,
+     "delta_lower": -0.2072753594022006,
+     "why": null,
+     "cpu_seconds": 0.157
+    }
+   ],
+   "hits": 6,
+   "advances": 0,
+   "of": 6,
+   "completed": 6,
+   "met": true
+  },
+  "future_leak": {
+   "spec": {
+    "generator": "white_null",
+    "pair": [
+     "raw",
+     "transformed"
+    ],
+    "requirement": "a representation that looks one row ahead is refused before any scoring",
+    "estimand": "none (refusal)"
+   },
+   "expected": {
+    "outcome": "REFUSED",
+    "why_contains": "not causal",
+    "min_fraction": 1.0
+   },
+   "rows": [
+    {
+     "replicate": 0,
+     "seed": 100,
+     "outcome": "REFUSED",
+     "delta_mean": null,
+     "delta_lower": null,
+     "why": "representation is not causal: its prefix outputs changed when the series was cut",
+     "cpu_seconds": null
+    },
+    {
+     "replicate": 1,
+     "seed": 101,
+     "outcome": "REFUSED",
+     "delta_mean": null,
+     "delta_lower": null,
+     "why": "representation is not causal: its prefix outputs changed when the series was cut",
+     "cpu_seconds": null
+    },
+    {
+     "replicate": 2,
+     "seed": 102,
+     "outcome": "REFUSED",
+     "delta_mean": null,
+     "delta_lower": null,
+     "why": "representation is not causal: its prefix outputs changed when the series was cut",
+     "cpu_seconds": null
+    },
+    {
+     "replicate": 3,
+     "seed": 103,
+     "outcome": "REFUSED",
+     "delta_mean": null,
+     "delta_lower": null,
+     "why": "representation is not causal: its prefix outputs changed when the series was cut",
+     "cpu_seconds": null
+    },
+    {
+     "replicate": 4,
+     "seed": 104,
+     "outcome": "REFUSED",
+     "delta_mean": null,
+     "delta_lower": null,
+     "why": "representation is not causal: its prefix outputs changed when the series was cut",
+     "cpu_seconds": null
+    },
+    {
+     "replicate": 5,
+     "seed": 105,
+     "outcome": "REFUSED",
+     "delta_mean": null,
+     "delta_lower": null,
+     "why": "representation is not causal: its prefix outputs changed when the series was cut",
+     "cpu_seconds": null
+    }
+   ],
+   "hits": 6,
+   "advances": 0,
+   "of": 6,
+   "completed": 6,
+   "met": true
+  }
+ },
+ "stopped": null,
+ "cpu_seconds": 19.26,
+ "instrument_verdict": "DOES_NOT_SEPARATE_OR_INCOMPLETE"
+}
