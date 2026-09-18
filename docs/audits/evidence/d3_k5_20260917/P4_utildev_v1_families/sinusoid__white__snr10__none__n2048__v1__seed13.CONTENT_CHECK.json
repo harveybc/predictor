@@ -1,0 +1,213 @@
+{
+ "all_equal": true,
+ "generation": 1,
+ "refused": [],
+ "run_id": "utildev-v1-rep-13-sinusoid",
+ "schema": "df_utility_content_check.v1",
+ "units": {
+  "calibrate__cusum_causal__H_A": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__cusum_causal__H_T": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.002793296089385475,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.013181931796950916
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.002793296089385475,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.013181931796950916
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__delta_run_length__H_A": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.008379888268156424,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.021514841630509172
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.008379888268156424,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.021514841630509172
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__delta_run_length__H_T": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__mad_extremes_trailing__H_A": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__mad_extremes_trailing__H_T": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.002793296089385475,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.013181931796950916
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.002793296089385475,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.013181931796950916
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "sinusoid__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.015971942661489914,
+    "utility.delta_mean": -0.0037186187616980587,
+    "utility.delta_se": 0.0019663385086154546
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.015971942661489914,
+    "utility.delta_mean": -0.0037186187616980587,
+    "utility.delta_se": 0.0019663385086154546
+   },
+   "kind": "contrast",
+   "outcome": "DOES_NOT_ADVANCE"
+  },
+  "sinusoid__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.03419947846351443,
+    "utility.delta_mean": -0.02736185574257717,
+    "utility.delta_se": 0.0010972598923783693
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.03419947846351443,
+    "utility.delta_mean": -0.02736185574257717,
+    "utility.delta_se": 0.0010972598923783693
+   },
+   "kind": "contrast",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  "sinusoid__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.017985968412694366,
+    "utility.delta_mean": -0.0036875638138996886,
+    "utility.delta_se": 0.002294520556569297
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.017985968412694366,
+    "utility.delta_mean": -0.0036875638138996886,
+    "utility.delta_se": 0.002294520556569297
+   },
+   "kind": "contrast",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  "sinusoid__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.004518274844067048,
+    "utility.delta_mean": -0.0018045194716913085,
+    "utility.delta_se": 0.00043548687158715625
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.004518274844067048,
+    "utility.delta_mean": -0.0018045194716913085,
+    "utility.delta_se": 0.00043548687158715625
+   },
+   "kind": "contrast",
+   "outcome": "DOES_NOT_ADVANCE"
+  },
+  "sinusoid__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.013995407048745172,
+    "utility.delta_mean": -0.00427838874527179,
+    "utility.delta_se": 0.0015593276922489163
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.013995407048745172,
+    "utility.delta_mean": -0.00427838874527179,
+    "utility.delta_se": 0.0015593276922489163
+   },
+   "kind": "contrast",
+   "outcome": "DOES_NOT_ADVANCE"
+  },
+  "sinusoid__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.03747714539181752,
+    "utility.delta_mean": -0.02794018680525958,
+    "utility.delta_se": 0.0015304328096752786
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.03747714539181752,
+    "utility.delta_mean": -0.02794018680525958,
+    "utility.delta_se": 0.0015304328096752786
+   },
+   "kind": "contrast",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  }
+ }
+}

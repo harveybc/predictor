@@ -1,0 +1,213 @@
+{
+ "all_equal": true,
+ "generation": 1,
+ "refused": [],
+ "run_id": "utildev-v1-sel-12-bumps",
+ "schema": "df_utility_content_check.v1",
+ "units": {
+  "bumps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.006922227472103366,
+    "utility.delta_mean": -0.0012533636255049295,
+    "utility.delta_se": 0.0009097046134440131
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.006922227472103366,
+    "utility.delta_mean": -0.0012533636255049295,
+    "utility.delta_se": 0.0009097046134440131
+   },
+   "kind": "contrast",
+   "outcome": "DOES_NOT_ADVANCE"
+  },
+  "bumps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.018353081056596665,
+    "utility.delta_mean": -0.008027003158970612,
+    "utility.delta_se": 0.0016570658524263716
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.018353081056596665,
+    "utility.delta_mean": -0.008027003158970612,
+    "utility.delta_se": 0.0016570658524263716
+   },
+   "kind": "contrast",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  "bumps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.0028386399955470324,
+    "utility.delta_mean": -0.0009193614268533136,
+    "utility.delta_se": 0.00030799409117447045
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.0028386399955470324,
+    "utility.delta_mean": -0.0009193614268533136,
+    "utility.delta_se": 0.00030799409117447045
+   },
+   "kind": "contrast",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  "bumps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.0043037612436600155,
+    "utility.delta_mean": -0.0018495941702089888,
+    "utility.delta_se": 0.00039382972837148444
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.0043037612436600155,
+    "utility.delta_mean": -0.0018495941702089888,
+    "utility.delta_se": 0.00039382972837148444
+   },
+   "kind": "contrast",
+   "outcome": "DOES_NOT_ADVANCE"
+  },
+  "bumps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.012892555937477167,
+    "utility.delta_mean": 0.000881141969825458,
+    "utility.delta_se": 0.00221031883451847
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.012892555937477167,
+    "utility.delta_mean": 0.000881141969825458,
+    "utility.delta_se": 0.00221031883451847
+   },
+   "kind": "contrast",
+   "outcome": "DOES_NOT_ADVANCE"
+  },
+  "bumps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.021230209433437962,
+    "utility.delta_mean": -0.007107087664377305,
+    "utility.delta_se": 0.002266392239646985
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.021230209433437962,
+    "utility.delta_mean": -0.007107087664377305,
+    "utility.delta_se": 0.002266392239646985
+   },
+   "kind": "contrast",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  "calibrate__cusum_causal__H_A": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__cusum_causal__H_T": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.002793296089385475,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.013181931796950916
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.002793296089385475,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.013181931796950916
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__delta_run_length__H_A": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.008379888268156424,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.021514841630509172
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.008379888268156424,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.021514841630509172
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__delta_run_length__H_T": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__mad_extremes_trailing__H_A": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__mad_extremes_trailing__H_T": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.002793296089385475,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.013181931796950916
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.002793296089385475,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.013181931796950916
+   },
+   "kind": "calibration",
+   "outcome": null
+  }
+ }
+}

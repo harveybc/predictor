@@ -1,0 +1,213 @@
+{
+ "all_equal": true,
+ "generation": 1,
+ "refused": [],
+ "run_id": "utildev-v1-sel-12-steps",
+ "schema": "df_utility_content_check.v1",
+ "units": {
+  "calibrate__cusum_causal__H_A": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__cusum_causal__H_T": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.002793296089385475,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.013181931796950916
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.002793296089385475,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.013181931796950916
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__delta_run_length__H_A": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.008379888268156424,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.021514841630509172
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.008379888268156424,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.021514841630509172
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__delta_run_length__H_T": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__mad_extremes_trailing__H_A": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.0,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.008333053260890996
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "calibrate__mad_extremes_trailing__H_T": {
+   "cube": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.002793296089385475,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.013181931796950916
+   },
+   "equal": true,
+   "expected": {
+    "calibration.failed": 0.0,
+    "calibration.false_advance_rate": 0.002793296089385475,
+    "calibration.scored": 358.0,
+    "calibration.upper_bound": 0.013181931796950916
+   },
+   "kind": "calibration",
+   "outcome": null
+  },
+  "steps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.07669186313415388,
+    "utility.delta_mean": -0.02542895312492363,
+    "utility.delta_se": 0.008226358401947598
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.07669186313415388,
+    "utility.delta_mean": -0.02542895312492363,
+    "utility.delta_se": 0.008226358401947598
+   },
+   "kind": "contrast",
+   "outcome": "DOES_NOT_ADVANCE"
+  },
+  "steps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.2256972793478043,
+    "utility.delta_mean": -0.12945212603513184,
+    "utility.delta_se": 0.015444833807871587
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.2256972793478043,
+    "utility.delta_mean": -0.12945212603513184,
+    "utility.delta_se": 0.015444833807871587
+   },
+   "kind": "contrast",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  "steps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.020083057919385704,
+    "utility.delta_mean": -0.010062620317214041,
+    "utility.delta_se": 0.0016080185663469768
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.020083057919385704,
+    "utility.delta_mean": -0.010062620317214041,
+    "utility.delta_se": 0.0016080185663469768
+   },
+   "kind": "contrast",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  },
+  "steps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.008455959976225969,
+    "utility.delta_mean": 0.003864610327488152,
+    "utility.delta_se": 0.0019771298004053095
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.008455959976225969,
+    "utility.delta_mean": 0.003864610327488152,
+    "utility.delta_se": 0.0019771298004053095
+   },
+   "kind": "contrast",
+   "outcome": "DOES_NOT_ADVANCE"
+  },
+  "steps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.032867214978944036,
+    "utility.delta_mean": -0.017876488776258997,
+    "utility.delta_se": 0.002405620095046294
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.032867214978944036,
+    "utility.delta_mean": -0.017876488776258997,
+    "utility.delta_se": 0.002405620095046294
+   },
+   "kind": "contrast",
+   "outcome": "DOES_NOT_ADVANCE"
+  },
+  "steps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed": {
+   "cube": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.2193544793706039,
+    "utility.delta_mean": -0.12965001070597593,
+    "utility.delta_se": 0.014395224722097047
+   },
+   "equal": true,
+   "expected": {
+    "utility.blocks_used": 4.0,
+    "utility.delta_lower": -0.2193544793706039,
+    "utility.delta_mean": -0.12965001070597593,
+    "utility.delta_se": 0.014395224722097047
+   },
+   "kind": "contrast",
+   "outcome": "INCONCLUSIVE_UNCALIBRATED"
+  }
+ }
+}
