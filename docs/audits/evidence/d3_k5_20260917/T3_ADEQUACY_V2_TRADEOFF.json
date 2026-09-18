@@ -1,0 +1,109 @@
+{
+ "schema": "df_adequacy_tradeoff.v1",
+ "cap_seconds": 14400.0,
+ "spent_pilot_seconds": 45.040000000000006,
+ "headroom": 0.25,
+ "measured_costs": {
+  "causal_conv1d__W256": {
+   "cpu_seconds": 13.932,
+   "diagnosis": "UNDERFIT",
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 12.4,
+   "overhead_seconds": 1.532,
+   "seconds_per_update": 0.07380952380952381,
+   "updates": 168
+  },
+  "causal_conv1d__W4": {
+   "cpu_seconds": 10.625,
+   "diagnosis": "UNDERFIT",
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 9.204,
+   "overhead_seconds": 1.4209999999999994,
+   "seconds_per_update": 0.0479375,
+   "updates": 192
+  },
+  "lstm__W256": {
+   "cpu_seconds": 13.191,
+   "diagnosis": "UNDERFIT",
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 11.769,
+   "overhead_seconds": 1.4220000000000006,
+   "seconds_per_update": 0.061296875,
+   "updates": 192
+  },
+  "lstm__W4": {
+   "cpu_seconds": 6.981,
+   "diagnosis": "UNDERFIT",
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 5.787,
+   "overhead_seconds": 1.194,
+   "seconds_per_update": 0.030140625,
+   "updates": 192
+  },
+  "ridge__W256": {
+   "cpu_seconds": 0.16,
+   "diagnosis": "FITTED",
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 0.007,
+   "overhead_seconds": 0.153,
+   "seconds_per_update": 0.0,
+   "updates": 1
+  },
+  "ridge__W4": {
+   "cpu_seconds": 0.151,
+   "diagnosis": "FITTED",
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 0.0,
+   "overhead_seconds": 0.151,
+   "seconds_per_update": 0.0,
+   "updates": 1
+  }
+ },
+ "options": {
+  "A_as_sealed": {
+   "projected_cpu_seconds": 11695,
+   "by_model": {
+    "causal_conv1d": 6756,
+    "lstm": 4928,
+    "ridge": 12
+   },
+   "with_headroom": 14619,
+   "fits_remaining": false,
+   "required_ceiling_for_fit": 14664
+  },
+  "B_max_epochs_160": {
+   "projected_cpu_seconds": 9401,
+   "by_model": {
+    "causal_conv1d": 5427,
+    "lstm": 3963,
+    "ridge": 12
+   },
+   "with_headroom": 11751,
+   "fits_remaining": true,
+   "required_ceiling_for_fit": 11796
+  },
+  "C_max_updates_2400": {
+   "projected_cpu_seconds": 11695,
+   "by_model": {
+    "causal_conv1d": 6756,
+    "lstm": 4928,
+    "ridge": 12
+   },
+   "with_headroom": 14619,
+   "fits_remaining": false,
+   "required_ceiling_for_fit": 14664
+  },
+  "D_max_epochs_150": {
+   "projected_cpu_seconds": 8828,
+   "by_model": {
+    "causal_conv1d": 5095,
+    "lstm": 3721,
+    "ridge": 12
+   },
+   "with_headroom": 11035,
+   "fits_remaining": true,
+   "required_ceiling_for_fit": 11080
+  }
+ },
+ "note": "options B-D change the sealed training rule (a scientific change needing review); A needs a ceiling of 14664 s (+264 s over 14400); no cell is removed in any option; the projection assumes every NN cell exhausts its allowance, early stopping only lowers actual cost"
+}

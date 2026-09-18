@@ -1,4 +1,19 @@
-# 12D — Context, model, target and data-volume adequacy (S1–S4): frozen design, real learners, budget-limited execution
+# 12D — Context, model, target and data-volume adequacy (S1–S4, corrected under T1–T4)
+
+> **Corrections (T1–T4, 2026-09-18) beside the historical claims below — the S1–S3 text is kept as history:**
+> (1) the S1 "observed-increment oracle" (clean recurrence increment) was **not** the conditional noise floor: it
+> included the noise already observable in the current observation; the corrected oracle is
+> `2cos(2π/P)·clean[t] − clean[t−1] − observed[t]`, whose residual is the next noise sample only. The old
+> oracle is kept in the arrays as `oracle_old`; the S1 adequacy criterion "MAE ≤ 1.1 × oracle" is **not reused**.
+> (2) S1 boundaries shifted training/validation dates with W (W4 train 790–1558, W256 train 286–1054), so a
+> W comparison changed recency, phase and realisation as well as context, and the CNN depth changed with W
+> (2 → 8 layers): the corrected design v2 uses the **same validation and test rows for every W, model and L**
+> (purge = max W + h), nested training histories at one cutoff (1054), and **one fixed CNN graph** (RF 511)
+> at every W; the variable-depth CNN is kept only as separate evidence. Ridge's parameter count still
+> varies with W (declared limitation). (3) The S3 cost pilot **scored the test rows** (1664–2046) of three
+> cells: those rows are a disclosed DEVELOPMENT diagnostic, not an untouched confirmation; new cost pilots
+> have no test access (the accessor fails). (4) The S3 verification recorded ridge as FITTED, not all three
+> pilots UNDERFIT (corrected wording); "exact need" was an extrapolation, now called a projection.
 
 Orders: `MUSASHI_CONTEXT_MODEL_ADEQUACY_AND_S1_S4_2026_09_18.md` and the mandatory addendum
 `MUSASHI_ML_REVIEW_REQUIRED_BEFORE_CAMPAIGNS_2026_09_18.md`. Stage: **S3 executed to its budget
@@ -9,7 +24,7 @@ and `utilinst-v1` keep their original diagnostic scope; nothing is recomputed or
 
 | question | where | status |
 |---|---|---|
-| (a) can the learner predict the raw task? | this pilot (`S1_ADEQUACY_DESIGN.json`, `8a277881…`) | design frozen, tests green, **measurement budget-limited** |
+| (a) can the learner predict the raw task? | this pilot (S1 design superseded by `T1_ADEQUACY_DESIGN_V2.json` `ad14cc17…`; S1: `S1_ADEQUACY_DESIGN.json`, `8a277881…`) | design frozen, tests green, **measurement budget-limited** |
 | (b) how much history does it need? | this pilot (contexts W = 4/8/128/256, learning curves over L) | as above |
 | (c) does a representation improve it? | utildev-v1 (relative, ridge/W = 4) | preserved at its scope; not re-run |
 | (d) does it transfer to prediction/RL and weekly trading? | 12E protocol | design only; NOT_TESTED |
@@ -91,3 +106,45 @@ design and the tests establish: the ridge/W = 4 probe consumed 0.07 (seed 12) an
 periods, far below two periods; the clean special case is solvable by two exact lags; the observed
 target carries an irreducible floor that the oracle quantifies per cell. Whether the neural
 learners need W ≥ 128 on these signals is the successor's measurement.
+
+## T1–T4 (2026-09-18): corrected design v2, second cost pilot, still budget-limited
+
+**Design v2** (`T1_ADEQUACY_DESIGN_V2.json`, `ad14cc17…`, sealed before any outcome): conditional
+oracle; shared decision rows (validation 1311–1406, test 1664–2047 for every cell; cutoff 1054;
+purge 257; training histories nested: L = 256/512/768 start at 798/542/286); fixed CNN graph
+(dilations 1…128, RF 511, causal padding, effective support = W); exposure ledger; cost pilots
+without test access; digest binding of the consumed arrays with the bank's scheme; diagnosis
+with stop reason, restored checkpoint and reload parity; ceiling 14 400 s with 25 % headroom.
+Tests: 19 rules (`tests/test_df_adequacy.py`, `tests/test_df_adequacy_run.py`), the T1/T2
+counterexamples frozen first.
+
+**Cost pilots `adequacy-v2`** (governed, 6 children at W = 4 and 256, L = 768, 200-update ceiling,
+**no test access**, verified: arrays = record = parent = live warehouse, 6 units):
+
+| cell | CPU s | fit s | overhead s | updates | s/update | stop | diagnosis (heuristic) |
+|---|---:|---:|---:|---:|---:|---|---|
+| conv W4 | 10.6 | 9.2 | 1.4 | 192 | 0.048 | UPDATE_BUDGET | UNDERFIT |
+| conv W256 | 13.9 | 12.4 | 1.5 | 168 | 0.074 | EARLY_STOPPING | UNDERFIT |
+| lstm W4 | 7.0 | 5.8 | 1.2 | 192 | 0.030 | UPDATE_BUDGET | UNDERFIT |
+| lstm W256 | 13.2 | 11.8 | 1.4 | 192 | 0.061 | UPDATE_BUDGET | UNDERFIT |
+| ridge W4 / W256 | 0.15 / 0.16 | 0 / 0.007 | 0.15 | 1 | — | CLOSED_FORM | FITTED |
+
+Validation-only descriptive values (no test): skill 0.02–0.12; conditional oracle MAE 0.2135 on
+the validation rows vs the expected Gaussian noise-only MAE 0.2619 (σ = 0.328) — the realised
+value is below the expectation, which is why neither is a samplewise bound.
+
+**Projection** (per-update cost interpolated in W, every NN cell at its full allowance, overhead
+per child): 11 695 s; **with 25 % headroom 14 619 s vs 14 355 s remaining — does not fit by
+264 s (1.8 %)**. As ordered, nothing was launched and no cell was removed (`T3_ADEQUACY_V2_PLAN.json`).
+
+**Trade-off proposal** (`T3_ADEQUACY_V2_TRADEOFF.json`; no cell removed in any option):
+
+| option | change | projected s | with headroom | fits 14 400 |
+|---|---|---:|---:|---|
+| A | none (as sealed) | 11 695 | 14 619 | no — needs a ceiling of 14 664 s (+264 s) |
+| B | max_epochs 200 → 160 (training rule, needs review) | 9 401 | 11 751 | yes |
+| D | max_epochs 200 → 150 | 8 828 | 11 035 | yes |
+
+Recommendation for review: **A with a 14 700 s ceiling** (keeps the sealed training rule; the
+overrun is 1.8 % of a conservative projection), otherwise B as a declared rule change re-sealed
+before any outcome. Early stopping in the pilots already stopped one cell before its allowance.

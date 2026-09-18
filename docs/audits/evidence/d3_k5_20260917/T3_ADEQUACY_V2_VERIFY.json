@@ -1,0 +1,491 @@
+{
+ "all_verified": true,
+ "cells": {
+  "pilot__causal_conv1d__W256": {
+   "attempt": "pilot__causal_conv1d__W256",
+   "problems": [],
+   "recomputed": {
+    "train": {
+     "baseline": 0.3920720737000572,
+     "first_row": 286,
+     "last_row": 1053,
+     "model": 0.3750358064439547,
+     "rows": 768
+    },
+    "validation": {
+     "baseline": 0.34499480177418135,
+     "first_row": 1311,
+     "last_row": 1406,
+     "model": 0.32089745224019817,
+     "rows": 96
+    }
+   },
+   "record": {
+    "binding": {
+     "clean": "8c1fdc212e60ff9d74980d73447bd1e81ec95d2696f8e6a4d6367fbd668d4b58",
+     "observed": "4a012a4f61ea8b9ae258fc2d36b8c2faf1d344cb9debd73559a98156685e70ec"
+    },
+    "cell_id": "pilot__causal_conv1d__W256",
+    "consumed_span_over_P": 6.153703737689665,
+    "diagnosis": {
+     "class": "UNDERFIT",
+     "flags": [],
+     "note": "heuristic fit class from curves and updates; NOT a scientific adequacy verdict",
+     "why": "final training MAE 0.750 is within 10 % of the baseline's 0.801"
+    },
+    "effective_support": 256,
+    "exposure": "NO_TEST_ACCESS",
+    "losses_test": null,
+    "losses_validation": {
+     "baseline": 0.34499480177418135,
+     "model": 0.32089745224019817,
+     "oracle": 0.21351223983118103,
+     "oracle_old": 0.31842171873046016,
+     "rows": 96
+    },
+    "model": "causal_conv1d",
+    "noise_floor": {
+     "expected_gaussian_mae": 0.26191305489824285,
+     "noise_sd_declared": 0.3282593344514585,
+     "note": "neither the expected noise-only MAE nor the realised oracle MAE is a samplewise lower bound; both fluctuate; reported apart"
+    },
+    "parameters": 5569,
+    "receptive_field": 511,
+    "seed": 1,
+    "skill_test": null,
+    "skill_validation": 0.0698484423824921,
+    "stop_reason": "EARLY_STOPPING",
+    "task": "observed_increment",
+    "train_length": 768,
+    "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+    "updates": 168,
+    "window": 256
+   }
+  },
+  "pilot__causal_conv1d__W4": {
+   "attempt": "pilot__causal_conv1d__W4",
+   "problems": [],
+   "recomputed": {
+    "train": {
+     "baseline": 0.3920720737000572,
+     "first_row": 286,
+     "last_row": 1053,
+     "model": 0.3680299851167552,
+     "rows": 768
+    },
+    "validation": {
+     "baseline": 0.34499480177418135,
+     "first_row": 1311,
+     "last_row": 1406,
+     "model": 0.3206252035398791,
+     "rows": 96
+    }
+   },
+   "record": {
+    "binding": {
+     "clean": "8c1fdc212e60ff9d74980d73447bd1e81ec95d2696f8e6a4d6367fbd668d4b58",
+     "observed": "4a012a4f61ea8b9ae258fc2d36b8c2faf1d344cb9debd73559a98156685e70ec"
+    },
+    "cell_id": "pilot__causal_conv1d__W4",
+    "consumed_span_over_P": 0.07239651456105488,
+    "diagnosis": {
+     "class": "UNDERFIT",
+     "flags": [
+      "STOPPED_BY_BUDGET"
+     ],
+     "note": "heuristic fit class from curves and updates; NOT a scientific adequacy verdict",
+     "why": "final training MAE 0.751 is within 10 % of the baseline's 0.801"
+    },
+    "effective_support": 4,
+    "exposure": "NO_TEST_ACCESS",
+    "losses_test": null,
+    "losses_validation": {
+     "baseline": 0.34499480177418135,
+     "model": 0.3206252035398791,
+     "oracle": 0.21351223983118103,
+     "oracle_old": 0.31842171873046016,
+     "rows": 96
+    },
+    "model": "causal_conv1d",
+    "noise_floor": {
+     "expected_gaussian_mae": 0.26191305489824285,
+     "noise_sd_declared": 0.3282593344514585,
+     "note": "neither the expected noise-only MAE nor the realised oracle MAE is a samplewise lower bound; both fluctuate; reported apart"
+    },
+    "parameters": 5569,
+    "receptive_field": 511,
+    "seed": 1,
+    "skill_test": null,
+    "skill_validation": 0.07063758094028771,
+    "stop_reason": "UPDATE_BUDGET",
+    "task": "observed_increment",
+    "train_length": 768,
+    "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+    "updates": 192,
+    "window": 4
+   }
+  },
+  "pilot__lstm__W256": {
+   "attempt": "pilot__lstm__W256",
+   "problems": [],
+   "recomputed": {
+    "train": {
+     "baseline": 0.3920720737000572,
+     "first_row": 286,
+     "last_row": 1053,
+     "model": 0.3606620567079599,
+     "rows": 768
+    },
+    "validation": {
+     "baseline": 0.34499480177418135,
+     "first_row": 1311,
+     "last_row": 1406,
+     "model": 0.30609814714009226,
+     "rows": 96
+    }
+   },
+   "record": {
+    "binding": {
+     "clean": "8c1fdc212e60ff9d74980d73447bd1e81ec95d2696f8e6a4d6367fbd668d4b58",
+     "observed": "4a012a4f61ea8b9ae258fc2d36b8c2faf1d344cb9debd73559a98156685e70ec"
+    },
+    "cell_id": "pilot__lstm__W256",
+    "consumed_span_over_P": 6.153703737689665,
+    "diagnosis": {
+     "class": "UNDERFIT",
+     "flags": [
+      "STOPPED_BY_BUDGET"
+     ],
+     "note": "heuristic fit class from curves and updates; NOT a scientific adequacy verdict",
+     "why": "final training MAE 0.741 is within 10 % of the baseline's 0.801"
+    },
+    "effective_support": 256,
+    "exposure": "NO_TEST_ACCESS",
+    "losses_test": null,
+    "losses_validation": {
+     "baseline": 0.34499480177418135,
+     "model": 0.30609814714009226,
+     "oracle": 0.21351223983118103,
+     "oracle_old": 0.31842171873046016,
+     "rows": 96
+    },
+    "model": "lstm",
+    "noise_floor": {
+     "expected_gaussian_mae": 0.26191305489824285,
+     "noise_sd_declared": 0.3282593344514585,
+     "note": "neither the expected noise-only MAE nor the realised oracle MAE is a samplewise lower bound; both fluctuate; reported apart"
+    },
+    "parameters": 4385,
+    "receptive_field": 256,
+    "seed": 1,
+    "skill_test": null,
+    "skill_validation": 0.11274562525017162,
+    "stop_reason": "UPDATE_BUDGET",
+    "task": "observed_increment",
+    "train_length": 768,
+    "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+    "updates": 192,
+    "window": 256
+   }
+  },
+  "pilot__lstm__W4": {
+   "attempt": "pilot__lstm__W4",
+   "problems": [],
+   "recomputed": {
+    "train": {
+     "baseline": 0.3920720737000572,
+     "first_row": 286,
+     "last_row": 1053,
+     "model": 0.38601761622269204,
+     "rows": 768
+    },
+    "validation": {
+     "baseline": 0.34499480177418135,
+     "first_row": 1311,
+     "last_row": 1406,
+     "model": 0.33696620487205875,
+     "rows": 96
+    }
+   },
+   "record": {
+    "binding": {
+     "clean": "8c1fdc212e60ff9d74980d73447bd1e81ec95d2696f8e6a4d6367fbd668d4b58",
+     "observed": "4a012a4f61ea8b9ae258fc2d36b8c2faf1d344cb9debd73559a98156685e70ec"
+    },
+    "cell_id": "pilot__lstm__W4",
+    "consumed_span_over_P": 0.07239651456105488,
+    "diagnosis": {
+     "class": "UNDERFIT",
+     "flags": [
+      "STOPPED_BY_BUDGET"
+     ],
+     "note": "heuristic fit class from curves and updates; NOT a scientific adequacy verdict",
+     "why": "final training MAE 0.789 is within 10 % of the baseline's 0.801"
+    },
+    "effective_support": 4,
+    "exposure": "NO_TEST_ACCESS",
+    "losses_test": null,
+    "losses_validation": {
+     "baseline": 0.34499480177418135,
+     "model": 0.33696620487205875,
+     "oracle": 0.21351223983118103,
+     "oracle_old": 0.31842171873046016,
+     "rows": 96
+    },
+    "model": "lstm",
+    "noise_floor": {
+     "expected_gaussian_mae": 0.26191305489824285,
+     "noise_sd_declared": 0.3282593344514585,
+     "note": "neither the expected noise-only MAE nor the realised oracle MAE is a samplewise lower bound; both fluctuate; reported apart"
+    },
+    "parameters": 4385,
+    "receptive_field": 4,
+    "seed": 1,
+    "skill_test": null,
+    "skill_validation": 0.023271646009836888,
+    "stop_reason": "UPDATE_BUDGET",
+    "task": "observed_increment",
+    "train_length": 768,
+    "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+    "updates": 192,
+    "window": 4
+   }
+  },
+  "pilot__ridge__W256": {
+   "attempt": "pilot__ridge__W256",
+   "problems": [],
+   "recomputed": {
+    "train": {
+     "baseline": 0.3920720737000572,
+     "first_row": 286,
+     "last_row": 1053,
+     "model": 0.21529172170928965,
+     "rows": 768
+    },
+    "validation": {
+     "baseline": 0.34499480177418135,
+     "first_row": 1311,
+     "last_row": 1406,
+     "model": 0.30324924304485773,
+     "rows": 96
+    }
+   },
+   "record": {
+    "binding": {
+     "clean": "8c1fdc212e60ff9d74980d73447bd1e81ec95d2696f8e6a4d6367fbd668d4b58",
+     "observed": "4a012a4f61ea8b9ae258fc2d36b8c2faf1d344cb9debd73559a98156685e70ec"
+    },
+    "cell_id": "pilot__ridge__W256",
+    "consumed_span_over_P": 6.153703737689665,
+    "diagnosis": {
+     "class": "FITTED",
+     "flags": [],
+     "note": "heuristic fit class from curves and updates; NOT a scientific adequacy verdict",
+     "why": "training loss fell below the baseline and validation did not diverge"
+    },
+    "effective_support": 256,
+    "exposure": "NO_TEST_ACCESS",
+    "losses_test": null,
+    "losses_validation": {
+     "baseline": 0.34499480177418135,
+     "model": 0.30324924304485773,
+     "oracle": 0.21351223983118103,
+     "oracle_old": 0.31842171873046016,
+     "rows": 96
+    },
+    "model": "ridge",
+    "noise_floor": {
+     "expected_gaussian_mae": 0.26191305489824285,
+     "noise_sd_declared": 0.3282593344514585,
+     "note": "neither the expected noise-only MAE nor the realised oracle MAE is a samplewise lower bound; both fluctuate; reported apart"
+    },
+    "parameters": 257,
+    "receptive_field": 256,
+    "seed": 1,
+    "skill_test": null,
+    "skill_validation": 0.12100344270302499,
+    "stop_reason": "CLOSED_FORM",
+    "task": "observed_increment",
+    "train_length": 768,
+    "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+    "updates": 1,
+    "window": 256
+   }
+  },
+  "pilot__ridge__W4": {
+   "attempt": "pilot__ridge__W4",
+   "problems": [],
+   "recomputed": {
+    "train": {
+     "baseline": 0.3920720737000572,
+     "first_row": 286,
+     "last_row": 1053,
+     "model": 0.3504491468986069,
+     "rows": 768
+    },
+    "validation": {
+     "baseline": 0.34499480177418135,
+     "first_row": 1311,
+     "last_row": 1406,
+     "model": 0.3179310174455535,
+     "rows": 96
+    }
+   },
+   "record": {
+    "binding": {
+     "clean": "8c1fdc212e60ff9d74980d73447bd1e81ec95d2696f8e6a4d6367fbd668d4b58",
+     "observed": "4a012a4f61ea8b9ae258fc2d36b8c2faf1d344cb9debd73559a98156685e70ec"
+    },
+    "cell_id": "pilot__ridge__W4",
+    "consumed_span_over_P": 0.07239651456105488,
+    "diagnosis": {
+     "class": "FITTED",
+     "flags": [],
+     "note": "heuristic fit class from curves and updates; NOT a scientific adequacy verdict",
+     "why": "training loss fell below the baseline and validation did not diverge"
+    },
+    "effective_support": 4,
+    "exposure": "NO_TEST_ACCESS",
+    "losses_test": null,
+    "losses_validation": {
+     "baseline": 0.34499480177418135,
+     "model": 0.3179310174455535,
+     "oracle": 0.21351223983118103,
+     "oracle_old": 0.31842171873046016,
+     "rows": 96
+    },
+    "model": "ridge",
+    "noise_floor": {
+     "expected_gaussian_mae": 0.26191305489824285,
+     "noise_sd_declared": 0.3282593344514585,
+     "note": "neither the expected noise-only MAE nor the realised oracle MAE is a samplewise lower bound; both fluctuate; reported apart"
+    },
+    "parameters": 5,
+    "receptive_field": 4,
+    "seed": 1,
+    "skill_test": null,
+    "skill_validation": 0.0784469336623298,
+    "stop_reason": "CLOSED_FORM",
+    "task": "observed_increment",
+    "train_length": 768,
+    "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+    "updates": 1,
+    "window": 4
+   }
+  }
+ },
+ "design_sha256": "ad14cc1727d85f0e6ca328236af8cfd781f6c302cf7a87cc3a8af0be0d1b067e",
+ "live_query": true,
+ "parent_equal": true,
+ "run_id": "adequacy-v2",
+ "schema": "df_adequacy_verify.v1",
+ "stopped": "PROJECTION_EXCEEDS_CAP_NOT_LAUNCHED",
+ "warehouse": {
+  "all_equal": true,
+  "covered": 6,
+  "units": {
+   "pilot__causal_conv1d__W256": {
+    "cube": {
+     "adequacy.mae_baseline_validation": 0.34499480177418135,
+     "adequacy.mae_validation": 0.32089745224019817,
+     "adequacy.rows_validation": 96.0,
+     "adequacy.skill_validation": 0.0698484423824921,
+     "adequacy.updates": 168.0
+    },
+    "equal": true,
+    "expected": {
+     "adequacy.mae_baseline_validation": 0.34499480177418135,
+     "adequacy.mae_validation": 0.32089745224019817,
+     "adequacy.rows_validation": 96.0,
+     "adequacy.skill_validation": 0.0698484423824921,
+     "adequacy.updates": 168.0
+    }
+   },
+   "pilot__causal_conv1d__W4": {
+    "cube": {
+     "adequacy.mae_baseline_validation": 0.34499480177418135,
+     "adequacy.mae_validation": 0.3206252035398791,
+     "adequacy.rows_validation": 96.0,
+     "adequacy.skill_validation": 0.07063758094028771,
+     "adequacy.updates": 192.0
+    },
+    "equal": true,
+    "expected": {
+     "adequacy.mae_baseline_validation": 0.34499480177418135,
+     "adequacy.mae_validation": 0.3206252035398791,
+     "adequacy.rows_validation": 96.0,
+     "adequacy.skill_validation": 0.07063758094028771,
+     "adequacy.updates": 192.0
+    }
+   },
+   "pilot__lstm__W256": {
+    "cube": {
+     "adequacy.mae_baseline_validation": 0.34499480177418135,
+     "adequacy.mae_validation": 0.30609814714009226,
+     "adequacy.rows_validation": 96.0,
+     "adequacy.skill_validation": 0.11274562525017162,
+     "adequacy.updates": 192.0
+    },
+    "equal": true,
+    "expected": {
+     "adequacy.mae_baseline_validation": 0.34499480177418135,
+     "adequacy.mae_validation": 0.30609814714009226,
+     "adequacy.rows_validation": 96.0,
+     "adequacy.skill_validation": 0.11274562525017162,
+     "adequacy.updates": 192.0
+    }
+   },
+   "pilot__lstm__W4": {
+    "cube": {
+     "adequacy.mae_baseline_validation": 0.34499480177418135,
+     "adequacy.mae_validation": 0.33696620487205875,
+     "adequacy.rows_validation": 96.0,
+     "adequacy.skill_validation": 0.023271646009836888,
+     "adequacy.updates": 192.0
+    },
+    "equal": true,
+    "expected": {
+     "adequacy.mae_baseline_validation": 0.34499480177418135,
+     "adequacy.mae_validation": 0.33696620487205875,
+     "adequacy.rows_validation": 96.0,
+     "adequacy.skill_validation": 0.023271646009836888,
+     "adequacy.updates": 192.0
+    }
+   },
+   "pilot__ridge__W256": {
+    "cube": {
+     "adequacy.mae_baseline_validation": 0.34499480177418135,
+     "adequacy.mae_validation": 0.30324924304485773,
+     "adequacy.rows_validation": 96.0,
+     "adequacy.skill_validation": 0.12100344270302499,
+     "adequacy.updates": 1.0
+    },
+    "equal": true,
+    "expected": {
+     "adequacy.mae_baseline_validation": 0.34499480177418135,
+     "adequacy.mae_validation": 0.30324924304485773,
+     "adequacy.rows_validation": 96.0,
+     "adequacy.skill_validation": 0.12100344270302499,
+     "adequacy.updates": 1.0
+    }
+   },
+   "pilot__ridge__W4": {
+    "cube": {
+     "adequacy.mae_baseline_validation": 0.34499480177418135,
+     "adequacy.mae_validation": 0.3179310174455535,
+     "adequacy.rows_validation": 96.0,
+     "adequacy.skill_validation": 0.0784469336623298,
+     "adequacy.updates": 1.0
+    },
+    "equal": true,
+    "expected": {
+     "adequacy.mae_baseline_validation": 0.34499480177418135,
+     "adequacy.mae_validation": 0.3179310174455535,
+     "adequacy.rows_validation": 96.0,
+     "adequacy.skill_validation": 0.0784469336623298,
+     "adequacy.updates": 1.0
+    }
+   }
+  }
+ }
+}

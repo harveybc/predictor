@@ -82,18 +82,35 @@ def verify_cell(attempt: Path) -> dict:
                 entry["problems"].append(f"{part} {k}: record {rec['losses'][part][k]} vs recomputed {recomputed[part][k]}")
         if int(y.size) != rec["losses"][part]["rows"]:
             entry["problems"].append(f"{part} rows differ")
-    if recomputed["test"]["first_row"] < rec["boundaries"]["test"][0] or recomputed["train"]["last_row"] >= rec["boundaries"]["validation"][0]:
+    if recomputed["train"]["last_row"] >= rec["boundaries"]["validation"][0] \
+            or recomputed["validation"]["first_row"] < rec["boundaries"]["validation"][0] \
+            or ("test" in recomputed and recomputed["test"]["first_row"] < rec["boundaries"]["test"][0]):
         entry["problems"].append("rows outside the frozen boundaries")
-    skill = 1.0 - recomputed["test"]["model"] / recomputed["test"]["baseline"] if recomputed["test"]["baseline"] > 0 else None
-    if skill is not None and rec.get("skill_test") is not None and abs(skill - rec["skill_test"]) > 1e-9:
-        entry["problems"].append("skill differs from the recomputed one")
+    ident = M.D.geometry_identity()                                      # shared decision rows (T1)
+    if (recomputed["validation"]["first_row"], recomputed["validation"]["last_row"] + 1) != ident["validation"]:
+        entry["problems"].append("validation rows are not the shared decision rows")
+    if "test" in recomputed and recomputed["test"]["first_row"] != ident["test"][0]:
+        entry["problems"].append("test rows are not the shared decision rows")
+    for part, key in (("validation", "skill_validation"), ("test", "skill_test")):
+        if part in recomputed and recomputed[part]["baseline"] > 0 and rec.get(key) is not None:
+            skill = 1.0 - recomputed[part]["model"] / recomputed[part]["baseline"]
+            if abs(skill - rec[key]) > 1e-9:
+                entry["problems"].append(f"{key} differs from the recomputed one")
+    for part in recomputed:                                              # the (conditional) oracle from the arrays
+        o = arr[f"{part}_oracle"]
+        rec_o = rec["losses"][part].get("oracle")
+        if rec_o is not None and not np.isnan(o).any() and abs(M.mae(o, arr[f"{part}_y"]) - rec_o) > 1e-9:
+            entry["problems"].append(f"{part} oracle loss differs from the arrays")
     entry["recomputed"] = recomputed
-    entry["record"] = {k: rec[k] for k in ("cell_id", "unit", "task", "model", "window", "train_length", "seed", "skill_test",
-                                          "consumed_span_over_P", "effective_support", "diagnosis")}
+    entry["record"] = {k: rec.get(k) for k in ("cell_id", "unit", "task", "model", "window", "train_length", "seed", "skill_test",
+                                              "skill_validation", "consumed_span_over_P", "effective_support", "diagnosis", "exposure",
+                                              "binding", "noise_floor")}
     entry["record"]["updates"] = rec["training"]["updates"]
+    entry["record"]["stop_reason"] = rec["training"].get("stop_reason")
     entry["record"]["parameters"] = rec["graph"]["parameters"]
     entry["record"]["receptive_field"] = rec["graph"]["receptive_field"]
-    entry["record"]["losses_test"] = rec["losses"]["test"]
+    entry["record"]["losses_validation"] = rec["losses"]["validation"]
+    entry["record"]["losses_test"] = rec["losses"].get("test")
     return entry
 
 
@@ -107,8 +124,9 @@ def verify(root: Path, warehouse_url: str | None, token: str | None) -> dict:
         out["cells"][attempt.name] = e
         if e["problems"]:
             out["all_verified"] = False
-        parent = (report.get("cells") or {}).get(attempt.name) or (report.get("cost_pilot") or {}).get(attempt.name.replace("pilot__", ""))
-        if e.get("record") and parent and "skill_test" in parent and abs(parent["skill_test"] - e["record"]["skill_test"]) > 1e-9:
+        parent = (report.get("cells") or {}).get(attempt.name) or (report.get("cost_pilot") or {}).get(attempt.name)
+        if e.get("record") and parent and parent.get("skill_test") is not None and e["record"].get("skill_test") is not None \
+                and abs(parent["skill_test"] - e["record"]["skill_test"]) > 1e-9:
             out["parent_equal"] = False
             e["problems"].append("parent's skill differs from the file")
     if warehouse_url and token:
@@ -121,10 +139,16 @@ def verify(root: Path, warehouse_url: str | None, token: str | None) -> dict:
             if not e.get("record"):
                 continue
             got = held.get(name, {})
-            expected = {"adequacy.mae_test": e["recomputed"]["test"]["model"], "adequacy.mae_baseline_test": e["recomputed"]["test"]["baseline"],
-                        "adequacy.rows_test": float(e["recomputed"]["test"]["rows"]), "adequacy.updates": float(e["record"]["updates"])}
-            if e["record"]["skill_test"] is not None:
-                expected["adequacy.skill_test"] = e["record"]["skill_test"]
+            v = e["recomputed"]["validation"]
+            expected = {"adequacy.mae_validation": v["model"], "adequacy.mae_baseline_validation": v["baseline"],
+                        "adequacy.rows_validation": float(v["rows"]), "adequacy.updates": float(e["record"]["updates"])}
+            if e["record"].get("skill_validation") is not None:
+                expected["adequacy.skill_validation"] = e["record"]["skill_validation"]
+            if "test" in e["recomputed"]:
+                t = e["recomputed"]["test"]
+                expected.update({"adequacy.mae_test": t["model"], "adequacy.mae_baseline_test": t["baseline"], "adequacy.rows_test": float(t["rows"])})
+                if e["record"]["skill_test"] is not None:
+                    expected["adequacy.skill_test"] = e["record"]["skill_test"]
             equal = bool(got) and all(k in got and abs(float(got[k]) - v) < 1e-9 for k, v in expected.items())
             wh["units"][name] = {"equal": equal, "cube": got, "expected": expected}
             wh["all_equal"] &= equal
