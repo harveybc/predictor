@@ -317,3 +317,15 @@ Corregir y sellar sucesor, sin repetir D3 ni el piloto; autorizacion condicional
 para 36 contrastes de desarrollo y sus calibraciones/replicas, techo cuatro
 horas CPU agregadas y limites existentes, sin reserva/finanzas/GPU.
 [Orden P1-P4](../handoffs/MUSASHI_UTILITY_O1_O4_REVIEW_AND_P1_P4_2026_09_17.md).
+
+### Retorno fb1833c: sin propuestas en utildev-v1
+
+17 pruebas focales pasan. Relectura del cierre: cuatro checks true, 18 sin avance,
+18 inconclusos y ninguna propuesta; se consumieron recibos conservados, no una
+consulta nueva al cubo. Dos contraejemplos del cierre: diseno vacio todo true;
+propuestas emitidas aun con files_verified=false. Corregir sin repetir campana.
+Reconteo de calibraciones: seis lotes per_sim, cada uno repetido seis veces.
+Cache cientificamente equivalente autorizado en ensayo; cambiar semillas no
+ahorra CPU. Controles de utilidad conocida y mapa de areas pendientes antes de
+otro barrido. Sin nuevas reservas, GPU ni datos financieros.
+[Orden Q1-Q4](../handoffs/MUSASHI_UTILITY_P1_P4_REVIEW_AND_Q1_Q4_2026_09_18.md).
