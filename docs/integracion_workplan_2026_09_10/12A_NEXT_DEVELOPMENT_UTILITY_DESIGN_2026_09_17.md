@@ -1,5 +1,7 @@
 # 12A — Next DEVELOPMENT utility design, per variable (design only)
 
+> **Superseded by 12B** (`12B_DEVELOPMENT_UTILITY_DESIGN_SUCCESSOR_2026_09_17.md`) after Musashi's O1–O4 review: H_A had no calibration path of its own, the inner protocols were not validated recursively, and the purge ignored the wider history. Instance `386fe033…` is preserved as history and was never executed.
+
 Order O3 (`MUSASHI_D3_N1_N5_REVIEW_AND_O1_O4_2026_09_17.md`). Built by `tools/df_utility_next_design.py`,
 validated by `tests/test_df_utility_next_design.py`; a sealed instance over the synthetic bank is
 `docs/audits/evidence/d3_k5_20260917/O3_NEXT_DEV_DESIGN.json` (`386fe033…`). **Nothing here runs**:
