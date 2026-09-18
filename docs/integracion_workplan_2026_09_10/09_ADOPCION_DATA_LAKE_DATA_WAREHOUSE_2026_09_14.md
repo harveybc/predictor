@@ -411,3 +411,15 @@ replicas independientes. P=32 por interpolacion queda retirado por no ser un
 requisito de esta tarea. Grafo, error operativo y recursos explicitados en la orden.
 Sensibilidad, ruido, no linealidad, negocio semanal y RL siguen separados y pendientes.
 [Orden emitida y calculos](../handoffs/MUSASHI_NUMERICAL_RESTART_2026_09_18.md).
+
+### Orden vigente C1-C6: diversidad real en entrenamiento
+
+Sustituye A como proxima campana; B fue borrador no emitido. P=8/W=17/h=1,
+train 8 amplitudes x 8/16/32/64 fases x 8 ventanas = 512/1024/2048/4096
+ventanas distintas, no copias. Val/test con amplitudes/fases intercaladas retenidas.
+Estado: ORDEN_EMITIDA; pruebas geometricas separadas de ejecucion ML pendiente.
+Igual techo 12800 updates por NN, validacion cada 64, paciencia20 comprobaciones,
+restauracion/minimo verificables; test fuera de seleccion. 12 NN +4 ridge, no
+busqueda de arquitectura. Presupuesto total14400 s CPU, gobernanza/conciliacion.
+No atribuir al control validez financiera ni RL. Completar C1-C6 sin microaprobaciones.
+[Orden unica para Satoshi](../handoffs/MUSASHI_SATOSHI_DIVERSE_SINUSOID_C1_C6_2026_09_18.md).

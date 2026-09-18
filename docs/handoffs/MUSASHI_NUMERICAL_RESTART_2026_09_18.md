@@ -1,5 +1,9 @@
 # Orden aprobada: control limpio P=8, W=17
 
+> SUPERSEDED como proxima campana por [C1-C6: banco diverso](MUSASHI_SATOSHI_DIVERSE_SINUSOID_C1_C6_2026_09_18.md).
+> A se conserva como antecedente: ocho ventanas repetidas no acreditan diversidad
+> de entrenamiento. No ejecutar esta orden antigua por separado.
+
 Fecha: 2026-09-18. Owner: "aprobado", tras proponer P=8/W=17 como control
 inicial y P=16/32 como sensibilidad posterior. Ejecutor: Satoshi. Diseno: Musashi.
 Estado: EMITIDA, aun sin resultados. Alcance: DEVELOPMENT, prediccion sintetica.
