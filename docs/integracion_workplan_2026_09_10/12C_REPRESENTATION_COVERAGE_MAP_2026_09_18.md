@@ -1,5 +1,10 @@
 # 12C — What the utility work has tested, what it has not, and the next bounded experiment
 
+**Dispatch update, 2026-09-18:** the next-stage proposals below are historical,
+not a launch order. [Master v3](https://github.com/harveybc/predictor/blob/master/docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md)
+and RP1-RP8 prioritize the multivariate P-MOD E0 mechanism pilot. Preserve this
+coverage and reuse only compatible evidence. This change creates no new scores.
+
 Orders Q3 and R3/R4 (`MUSASHI_UTILITY_Q1_Q4_REVIEW_AND_R1_R4_2026_09_18.md`). Updated 2026-09-18 (R4). This map
 enumerates evidence; negative results are not a licence for arbitrary further search, and none of
 the results below diagnoses the data as wrong or the preprocessing as useless.

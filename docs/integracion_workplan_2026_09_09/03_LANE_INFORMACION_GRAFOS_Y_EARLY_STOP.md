@@ -1,5 +1,10 @@
 # 03 — Lane I-INFO: información, grafos y early stopping
 
+**Correccion 18-sep:** rige el [contrato de metricas v1](https://github.com/harveybc/predictor/blob/master/docs/tres_temas_entrevista/PROGRAM_METRICS_CONTRACT_v1.md).
+Los estados de implementacion siguientes son historicos al 9-sep, no una auditoria
+actual. Se corrigen aqui definiciones matematicas; no se reetiquetan mediciones
+historicas como si hubieran usado la definicion nueva.
+
 **Origen:** orden de Harvey, 2026-09-09.  
 **Estado:** PROPUESTO. No hay plugin. No hay columna en el cubo.  
 **Disciplina ya escrita:** STEP 05 (entropía, MDL, surprisal) y recorte Retsu 5-sep: **MDL ≠ Kolmogorov ≠ \(C\) de MacKay ≠ \(U^*\)**.
@@ -44,9 +49,13 @@ Para cada serie/variable \(k\) en el split de **entrenamiento** (nunca test):
 | `D.H0` | entropía de orden cero del alfabeto \(Q\) | STEP 05, train only | alfabeto provisional hasta 4B |
 | `D.H_ctx` | rate con contexto (si 5B abre) | \(-\log_2 p(x_t\mid context)\) | si no baja vs H0, no hay rama de fuente |
 | `D.SNR_hat` | SNR estimada causal | STEP 02–03 | en series naturales **no** se afirma \(n_t\) conocido |
-| `D.I_free_synth` | bits de la señal limpia | **solo** si el generador es conocido (E0, T1, P-CAP) | prohibido en finanzas como “información libre de ruido verdadera” |
+| `D.I_free_synth` | campo retirado como cantidad generica | requiere definir variable aleatoria, ley y precision para cualquier entropia objetivo | conocer el generador o su semilla no proporciona esa cantidad |
 
-**Información libre de ruido:** en sintético se **calcula** (generador). En series naturales se **acota por abajo** con \(L_C\) de la serie cuantizada y se **acota por arriba** con \(L_C\) de la serie cruda. Nunca se etiqueta el residuo de un filtro como \(N\) verdadero.
+**Informacion libre de ruido:** retirada la afirmacion de que las longitudes
+comprimidas cuantizada/cruda sean cotas inferior/superior. No lo son. En sintetico
+se conocen los componentes plantados; su entropia exige una ley/precision definida.
+En datos naturales esos componentes no quedan identificados por compresion.
+Nunca se etiqueta el residuo de un filtro como N verdadero.
 
 ### 3.2 Información del target
 
@@ -60,10 +69,10 @@ Además:
 
 | Código | Cantidad | Cómo |
 |---|---|---|
-| `M.n_params` | cuenta de pesos entrenables | Keras `count_params` |
+| `M.n_params` | total, entrenables y congelados por separado | verificar listas de variables; `count_params` total no implica entrenables |
 | `M.bytes_raw` | serialización canónica de pesos (sin optimizer state) | mismo protocolo en todos los plugins |
 | `M.L_zstd` / `M.L_lzma` | longitud comprimida de esos bytes | proxy de descripción del modelo **en ese epoch** |
-| `M.L_ratio` | `M.L_zstd / M.bytes_raw` | 1 = incompresible (ruido en pesos); baja = estructura |
+| `M.L_ratio` | `M.L_zstd / M.bytes_raw` | longitud relativa con coder fijado; puede superar 1; no porcentaje de ruido ni capacidad libre |
 | `M.graph.*` | métricas de grafo, §4 | snapshot del grafo de pesos |
 
 Opcional posterior (no I1): `M+D.L_zstd` de concatenar pesos+datos — solo como diagnóstico NCD, no como “información mutua”.
@@ -78,8 +87,8 @@ Mínimo (todas en valor absoluto de pesos, umbral relativo fijado en desarrollo,
 |---|---|---|
 | `G.density` | densidad tras umbral | ¿el modelo se vuelve denso al overfittear? |
 | `G.weight_entropy` | entropía de \(\lvert w\rvert\) normalizados | concentración de magnitud |
-| `G.spec_radius` | radio espectral de \(\lvert W\rvert\) (capas cuadradas o vía unfold Conv) | estabilidad / explosión |
-| `G.eff_rank` | rango efectivo (suma de singular values / máx) | dimensión ocupada |
+| `G.spec_radius` | solo de un operador cuadrado definido; rectangular usa norma espectral separada | una adyacencia DAG tiene radio cero por estructura, no prueba estabilidad del modelo |
+| `G.eff_rank` | `exp(-sum(p*ln(p)))`, p = valores singulares / su suma | cero matriz no definido; suma/max se conserva solo como `nuclear_ratio`, no bajo este nombre |
 | `G.modularity` | modularidad (si la capa es interpretable como bloques) | ¿aparecen comunidades al memorizar? |
 | `G.path_mean` | camino medio en el grafo umbralizado | conectividad |
 
@@ -134,6 +143,6 @@ Piloto de \(f\) y \(R\): **después** de tener ≥ N runs instrumentados (N se f
 |---|---|---|
 | `D.*` / `Y.*` sobre CSV/ventanas | `preprocessor` (fit en train) + `predictor` al armar ventanas | una vez por split, no por epoch |
 | `M.*` / `G.*` | `predictor` y `feature-extractor` al final de epoch | callback, CPU, opcional GPU-off |
-| escritura al cubo | `predictor/olap` (schema `public` del ETL v2) | throwaway primero; ver doc 05 |
+| escritura al cubo | data-gov -> data-warehouse / proveedor DuckDB | contratos versionados, poblacion y contenido conciliados; ETL Postgres es antecedente |
 
 No se calcula \(L_C\) de datos en el GPU training loop. Se cachea.

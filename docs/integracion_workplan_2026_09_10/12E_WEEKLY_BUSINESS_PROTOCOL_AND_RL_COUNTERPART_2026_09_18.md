@@ -1,5 +1,12 @@
 # 12E — Weekly-trading business protocol and the RL counterpart (S4, design only)
 
+**Dependency correction, 2026-09-18:** [master v3](https://github.com/harveybc/predictor/blob/master/docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md)
+makes this application mandatory and distinct from P-L2. Prepare its business/data
+contract now; it does not wait for a successful sinusoid run, DOIN or a positive
+H1. Historical/point-in-time eligibility and economic execution assumptions still
+must hold for its own evaluation. The old next-action references to 12D below do
+not govern dispatch. No RL experiment is marked executed by this correction.
+
 Order: `MUSASHI_UTILITY_STATUS_AND_WEEKLY_TRADING_REQUIREMENTS_2026_09_18.md` (mandatory
 requirements) and S4 of the adequacy order. **Nothing here is executed**: no financial scores,
 no reserve, no trading, no GPU, no running service touched. Every requirement lists its gap and

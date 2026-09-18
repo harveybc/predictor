@@ -1,5 +1,11 @@
 # Plan obligatorio: crear y adoptar data-lake y data-warehouse
 
+**Direccion vigente 18-sep:** [master v3](https://github.com/harveybc/predictor/blob/master/docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md)
+y [RP1-RP8](https://github.com/harveybc/predictor/blob/master/docs/handoffs/MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md).
+Prioridad: E0-DEV multivariado de agrupacion/fusion, no una nueva campana sinusoidal
+aislada. Preservar los retornos y evidencia de este archivo; ninguna orden vieja
+de ampliacion del factorial sustituye la instruccion posterior del owner.
+
 Fecha: 2026-09-14. Decisor: Harvey. Ejecutor: Satoshi. Revision: Musashi.
 Estado actual: repositorios publicos y hosts desplegados; catalogo sintetico
 ampliado activo y cuatro consumidores probados en produccion. Siguen las

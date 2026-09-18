@@ -1,7 +1,13 @@
 # Estado real del preprocesamiento y secuencia vinculante
 
 **Fecha:** 2026-09-13
-**Estado:** `AUTHORITATIVE_STATUS_SUPPLEMENT`
+**Estado:** `HISTORICAL_STATUS_SUPPLEMENT`
+
+**Correccion 18-sep:** los estados registrados aqui conservan su fecha/alcance;
+la secuencia vigente es el [master v3](https://github.com/harveybc/predictor/blob/master/docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md)
+y RP1-RP8. No usar un estado historico como veto general al piloto multivariado
+P-MOD E0-DEV ni como aprobacion de resultados nuevos. Reusar evidencia solo por
+contrato y bytes verificados. Esta correccion no modifica ninguna reja ejecutable.
 
 Este suplemento evita confundir cuatro estados distintos:
 

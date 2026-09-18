@@ -1,11 +1,14 @@
 # Plan maestro CRISP-DM para el programa data-centric
 
-**Fecha de corte:** 2026-09-12
+**Corte del inventario historico:** 2026-09-12. **Secuencia corregida:** 2026-09-18.
 
 **Alcance:** pronostico supervisado, seleccion de representaciones para RL y optimizacion con DOIN.
 **Regla principal:** ningun modelo compensa una entrada mal definida. La unidad de trabajo inicial es la variable con su procedencia y disponibilidad temporal, no la arquitectura neuronal.
 
-**Estado vinculante:** `06_ESTADO_REAL_PREPROCESAMIENTO_Y_SECUENCIA_2026_09_12.md`.
+**Plan vinculante:** [master v3](https://github.com/harveybc/predictor/blob/master/docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md).
+El estado 06 de 12-sep y los conteos historicos de este archivo no son el estado
+actual de ejecucion. La orden vigente es RP1-RP8: piloto multivariado E0 de P-MOD,
+con H2/H3 de desarrollo, y preparacion publica/negocio/RL en paralelo.
 Un protocolo escrito, una implementacion, una ejecucion y una decision de
 elegibilidad son estados distintos.
 
@@ -84,14 +87,16 @@ No se permite que un selector rescate una variable que fallo la primera reja ni 
 
 ### 3.4 Modelado
 
-El modelado se ordena de barato a caro:
+Los baselines diagnostican dificultad, no sustituyen al receptor adecuado de la
+intervencion. P-MOD requiere ramas detector/integrador/adaptador, fusion temporal
+y nucleo/cabezal reales. La capacidad, contexto, volumen y entrenamiento deben
+permitir probar el mecanismo, con curvas y controles positivos pertinentes.
 
-1. baselines de persistencia, estacionales, lineales y aleatorios;
-2. seleccion univariada y multivariada con estabilidad temporal;
-3. modelos supervisados pequenos en `predictor` para pronostico;
-4. seleccion de representaciones y extractores bajo presupuesto;
-5. optimizacion L2/DOIN;
-6. RL y evaluacion economica solo cuando las rejas anteriores permiten atribuir el resultado.
+La seleccion de variables se ajusta en train/validacion anidados, pero H2 compara
+asignacion de las mismas variables, no dos subconjuntos diferentes. E3/RL exige
+su propio contrato economico/temporal; no depende de terminar el selector L2 o
+DOIN, que son preguntas distintas. Los comparadores publicos de E1/E2 conservan
+las arquitecturas y presupuestos declarados en la propuesta.
 
 `predictor` se reactiva como banco supervisado reproducible, no como generador de features ni como sistema live. Sus plugins permiten comparar el mismo contrato de datos entre familias de modelos, pero se deben corregir o aislar los preprocessors historicos que ajustan informacion fuera de entrenamiento.
 
@@ -122,6 +127,12 @@ Un resultado apto para consumo incluye:
 
 ## 4. Orden cientifico y operativo
 
+**Correccion 18-sep:** I0-I10 se conserva abajo como mapa historico de actividades,
+no como una cadena de bloqueos. La cola y dependencias vigentes son las del master
+v3: E0-DEV multivariado, E1 publico, E0-CONF/E2 reservados y E3 forecast/RL obligatorio;
+las otras propuestas conservan sus carriles. Reusar D0-D3 compatible, no repetirlo
+como prerequisito de cada campana.
+
 | Paso | Trabajo | Salida que abre el siguiente paso |
 |---|---|---|
 | I0 | Congelar decisiones, objetivos y roles temporales | Contrato CRISP-DM por experimento |
@@ -136,22 +147,17 @@ Un resultado apto para consumo incluye:
 | I9 | Evaluar RL y trading offline | Resultado mecanico/economico atribuible |
 | I10 | Revalidar en dominio financiero y live | Elegibilidad operativa separada de la cientifica |
 
-La seleccion de variables ocurre en **I5**, despues de caracterizar los datos y licenciar transformaciones. Puede haber un filtro mecanico previo para retirar columnas imposibles o causales invalidas, pero ese filtro no es seleccion por rendimiento.
+La seleccion exige caracterizacion y controles temporales de sus entradas. No
+confundir admisibilidad de datos, aptitud mecanica de un operador experimental y
+licencia para aplicarlo fuera del laboratorio. Estudiar un operador en DEVELOPMENT
+no exige demostrar su utilidad antes de experimentar; tampoco lo autoriza para
+produccion. Los objetivos de una tarea se definen antes de evaluar sus resultados.
 
-**Reja de consumo de I5 (C144, 2026-09-12).** I5 no puede consumir una variable ni una transformacion sin estados revisados externamente para cada etapa D0-D4:
-
-- D0: contrato revisado;
-- D1: perfil crudo revisado;
-- D2: `LAB_CALIBRATED`, o `REGIME_LIMITED` solo dentro de sus regimenes;
-- D3 y D4: aceptacion revisada.
-
-La forma ejecutable es `predictor/tools/df_consumption_gate.py`. Un registro escrito por el productor no es revision, y ninguna etapa concede `PUBLICLY_ELIGIBLE`. Sin registros, que es el estado actual, rechaza todo.
-
-Hasta que existan esos registros:
-
-- el selector v5 no se ejecuta;
-- no se escogen targets;
-- ninguna salida de D0-D2 se presenta como variable o transformacion lista para seleccion.
+La reja historica `df_consumption_gate.py` conserva su alcance: ningun cambio de
+prosa la desactiva ni fabrica sus records. RP1-RP8 debe usar una ruta DEVELOPMENT
+explicita y probada para el banco sintetico del experimento, con datos admisibles,
+sin atribuir `PUBLICLY_ELIGIBLE` a sus salidas. Si falta esa ruta, implementarla
+con pruebas en el contrato correspondiente, no eliminar la reja.
 
 ## 5. Relacion con el trabajo ya realizado
 
@@ -176,19 +182,20 @@ Los resultados viejos no se borran. Se marcan con cobertura de metadatos y, cuan
 
 ## 7. Entregables doctorales acumulativos
 
-Cada tarea del programa deja material reutilizable para la propuesta de seleccion de representaciones:
+P-MOD: grupos/contextos por datos, arquitectura con secuencias, E0 H2/H3,
+E1 reglas y regimenes R0/R1/R2, E2 H1 publico y E3/RL independiente obligatorio.
+P-L2: fidelidades del mismo candidato, riesgo/cobertura, costo/regret y comparadores
+multifidelidad; esos entregables no sustituyen los de P-MOD.
+P-CAP: memorizacion/generalizacion/dimensionamiento. P-PRE y P-TRN: ruido,
+preservacion, transferencia y abstencion, con sus propios contrastes. P-INC:
+asignacion financiada y aprendizaje de nodos en dominios simulados.
 
-- mapa de tareas, variables, operadores y costos;
-- definicion reproducible de fidelidad como presupuesto parcial de entrenamiento o evaluacion;
-- curvas parciales y decisiones de continuar, detener o abstenerse;
-- comparadores ASHA/Hyperband y BOHB/SMAC bajo el mismo espacio;
-- analisis de transferencia entre tareas y cambio temporal;
-- resultados negativos y limites de identificabilidad;
-- artefactos y protocolos suficientes para reproducir cada figura o tabla.
+El master v3 traza experimentos, metricas y fuentes de los seis objetos. Se comparte
+infraestructura, no conclusiones por semejanza de nombres. Cada tarea informa
+exactamente que hipotesis sirve y con que alcance; los tests tecnicos son controles
+internos, no reemplazo del experimento doctoral.
 
-La tesis no gobierna el work plan completo: consume evidencia del programa. El programa puede explorar mas operadores y dominios, pero solo los resultados que respeten el protocolo doctoral entran como evidencia academica.
-
-## 8. Estado de esta iteracion
+## 8. Estado historico de esta iteracion (12-sep)
 
 Completado o demostrado:
 
@@ -211,4 +218,7 @@ No completado:
 - seleccion de variables, pronostico, representaciones, L2/DOIN y RL bajo el
   contrato nuevo.
 
-La orden siguiente es D0-D2. I5-I10 permanecen cerradas.
+La frase historica "la orden siguiente es D0-D2" queda sustituida por RP1-RP8.
+Los conteos y estados anteriores se conservan para trazabilidad y no deben usarse
+para afirmar que ningun STEP se ha ejecutado desde entonces. Consultar el master v3
+y los recibos del run especifico para determinar que evidencia puede reutilizarse.

@@ -1,5 +1,9 @@
 # 02 — Inventario de propuestas
 
+**Actualizacion 18-sep:** rige el [master v3](https://github.com/harveybc/predictor/blob/master/docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md).
+Las seis preguntas de este inventario se conservan. Las referencias a paginas,
+"hoy" y estado del README corresponden a la fecha original, no al estado actual.
+
 Todas viven bajo `docs/` de `predictor`. El directorio `docs/tres_temas_entrevista/` es el índice histórico (el README de ahí **aún dice** que la #1 L2/RL es la elegida para La Sabana; eso quedó **desactualizado** respecto del objeto que Harvey edita el 9-sep). G12 (el adjunto del correo) **no se cambia aquí**.
 
 ## 1. Objetos doctorales (preguntas distintas)
@@ -44,8 +48,10 @@ Tomadas de los textos, no inventadas.
 ### 3.1 P-MOD (E0–E3)
 
 - **H1** diseño basado en datos vs control principal (sin ramas o modular sin perfiles).
-- **H2** escalas / campos receptivos (pendiente en sintético).
-- **H3** agrupación y fusión (dos diferencias).
+- **H2** ventaja de agrupar por perfiles frente a asignacion aleatoria al aumentar
+  heterogeneidad de periodicidad/persistencia; pendiente del efecto pareado.
+- **H3** fusion de secuencias vs resumen temprano, con activaciones del mismo
+  extractor fijo, con y sin dependencia retardada; d1 y gamma=d1-d0.
 - **E0** sintético; **E1** desarrollo público; **E2** familias reservadas; **E3** finanzas + RL, **no** sostiene H1–H3.
 
 ### 3.2 P-PRE (H1–H3 de ruido)

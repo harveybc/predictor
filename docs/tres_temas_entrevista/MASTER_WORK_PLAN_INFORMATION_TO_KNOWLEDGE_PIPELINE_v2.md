@@ -1,9 +1,16 @@
 # MASTER WORK PLAN v2
 ## Information-to-Knowledge Pipeline for Multivariate Time-Series Machine Learning
 
-**Status:** Consolidated master roadmap  
+**Status:** Historical catalog; execution order superseded on 2026-09-18
 **Version:** 2  
-**Purpose:** Maintain one authoritative map of the research program while individual STEP documents remain independently auditable.
+**Purpose:** Preserve the STEP and compression catalog while individual protocols remain independently auditable.
+
+**Current authority:** [master v3](https://github.com/harveybc/predictor/blob/master/docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md)
+and [RP1-RP8](https://github.com/harveybc/predictor/blob/master/docs/handoffs/MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md).
+The next experiment is the multivariate P-MOD E0 development pilot, not a
+standalone sinusoid campaign. Sections 9-10 below are historical, not dispatch
+instructions. The 13 STEPs are experimental questions, not a compulsory serial
+pipeline; each experiment declares its own admissible data and dependencies.
 
 **Execution status supplement:**
 `../integracion_workplan_2026_09_10/06_ESTADO_REAL_PREPROCESAMIENTO_Y_SECUENCIA_2026_09_12.md`.
@@ -630,7 +637,7 @@ The governance, experiment structure and modular contracts should remain stable.
 
 ---
 
-# 9. Current project state
+# 9. Historical project state (superseded)
 
 | Step | Protocol | Execution status |
 |---|---|---|
@@ -647,7 +654,7 @@ The governance, experiment structure and modular contracts should remain stable.
 
 ---
 
-# 10. Immediate decision
+# 10. Historical decision (not the current execution order)
 
 Before STEP 08 implementation/research:
 
