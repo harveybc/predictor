@@ -1084,3 +1084,55 @@ piloto corregido y 25% holgura requeridos; ejecucion gobernada y condicionada a 
 [Dictamen y orden T1-T4](../handoffs/MUSASHI_ADEQUACY_S_REVIEW_AND_T1_T4_2026_09_18.md).
 
 **2026-09-18 · T1–T4 (Satoshi, sobre la revisión de S1–S4).** T1: oráculo condicional del incremento observado (residuo = ruido futuro; el oráculo antiguo se conserva como historia; MAE gaussiano esperado aparte del realizado), filas de decisión compartidas entre W, modelo y L (purga = W máx + h; historias anidadas a un mismo corte), grafo CNN fijo entre W (profundidad variable como evidencia separada), limitación de ridge declarada. T2: libro de exposición corregido (el piloto S3 puntuó el test: diagnóstico DEVELOPMENT, no confirmación intacta); pilotos de costo sin acceso al test (el accesor falla); arrays ligados por digest recomputado con el esquema del banco (un byte cambiado rechaza antes de entrenar); diagnóstico con razón de parada, checkpoint restaurado y paridad de recarga; fallo de optimización sólo con evidencia dura. Diseño v2 sellado (`ad14cc17…`). T3: pilotos de costo gobernados `adequacy-v2` (6 hijos, W=4 y 256, sin test, verificados contra arrays, padre y warehouse vivo); proyección 11 695 s, con holgura 25 % **14 619 s frente a 14 355 s restantes: no cabe por 264 s**; no se lanzó ni se recortó nada; propuesta de compromiso en `T3_ADEQUACY_V2_TRADEOFF.json` (A: techo 14 700 s; B: max_epochs 160 con re-sellado). T4: verificador con oráculo condicional, identidad de filas y ligadura; 12D con correcciones junto a las afirmaciones históricas; 12C actualizado. Retorno `SATOSHI_ADEQUACY_T1_T4_RETURN_2026_09_18.md`. Salida `ADEQUACY_MATCHED_CONTEXT_CORRECTED_ORACLE_REVIEW` — ejecución **BUDGET_LIMITED**.
+### Ultima direccion: requisitos antes del periodo
+
+SUPERSEDED_PENDING_REDESIGN: retirada la autorizacion de ampliar al factorial de
+216 celdas heredando periodos sorteados. Mantener correcciones T1/T2 y evidencia.
+Primero inventario del negocio/configs y escalas observadas en entrenamiento;
+diagnostico minimo separado, P16 solo como convencion explicita de prueba, no mercado.
+No nuevas campanas hasta revisar requisitos/contexto/objetivo y presupuesto.
+[Orden prioritaria](../handoffs/MUSASHI_REQUIREMENTS_FIRST_PERIOD_REDESIGN_2026_09_18.md).
+
+### Fundamentacion en literatura y evidencia
+
+El ejemplo del owner de unas 2000 muestras no es una ley exacta ni una cifra a refutar.
+Periodo y volumen siguen sin seleccionarse. DeepLOB, curvas de aprendizaje (Hoiem)
+y TCN (Bai) fundamentan requisitos, con limites de transferencia explicitados.
+Cada numero debe tener fuente/ecuacion, supuestos, medicion, incertidumbre y prueba
+de fallo; distinguir observaciones, ventanas y unidades independientes.
+[Procedimiento y fuentes primarias](../handoffs/MUSASHI_LITERATURE_BASED_SAMPLE_CONTEXT_DESIGN_2026_09_18.md).
+
+### Orden aprobada: control limpio P=8, W=17
+
+El owner aprobo P=8/W=17 como control inicial y P=16/32 como sensibilidad posterior.
+Se sustituye el factorial anterior sin borrar resultados. Satoshi ejecuta A1-A5:
+pruebas, ridge y tres inicializaciones Conv1D, cierre gobernado y diagnostico ML.
+5683 muestras brutas para 4096/512/1024 ventanas con soportes disjuntos; no son
+replicas independientes. P=32 por interpolacion queda retirado por no ser un
+requisito de esta tarea. Grafo, error operativo y recursos explicitados en la orden.
+Sensibilidad, ruido, no linealidad, negocio semanal y RL siguen separados y pendientes.
+[Orden emitida y calculos](../handoffs/MUSASHI_NUMERICAL_RESTART_2026_09_18.md).
+
+### Orden C1-C6: historica, sustituida por RP1-RP8
+
+Sustituye A como proxima campana; B fue borrador no emitido. P=8/W=17/h=1,
+train 8 amplitudes x 8/16/32/64 fases x 8 ventanas = 512/1024/2048/4096
+ventanas distintas, no copias. Val/test con amplitudes/fases intercaladas retenidas.
+Estado: ORDEN_EMITIDA; pruebas geometricas separadas de ejecucion ML pendiente.
+Igual techo 12800 updates por NN, validacion cada 64, paciencia20 comprobaciones,
+restauracion/minimo verificables; test fuera de seleccion. 12 NN +4 ridge, no
+busqueda de arquitectura. Presupuesto total14400 s CPU, gobernanza/conciliacion.
+No atribuir al control validez financiera ni RL. Completar C1-C6 sin microaprobaciones.
+[Orden unica para Satoshi](../handoffs/MUSASHI_SATOSHI_DIVERSE_SINUSOID_C1_C6_2026_09_18.md).
+
+### Direccion vigente: programa doctoral completo y MOD-E0-DEV
+
+La instruccion posterior del owner exige que la siguiente campana sirva al plan
+doctoral. C1-C6 deja de ser la proxima ejecucion. Rige el
+[master v3](../tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md)
+y [RP1-RP8](../handoffs/MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md): comparar
+agrupacion por perfiles y fusion de secuencias en E0 multivariado de desarrollo,
+con controles de adecuacion dentro del experimento. Conservar historia y no
+atribuir utilidad financiera a los diagnosticos previos. Forecasting, RL semanal,
+las seis propuestas inventariadas, STEP01-13, compresion y feature-eng quedan
+trazados por separado. Publicacion de orden, no constancia de ejecucion de Satoshi.
