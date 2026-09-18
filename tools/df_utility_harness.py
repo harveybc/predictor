@@ -61,7 +61,7 @@ REFUSED = "REFUSED"
 SCORE_UNVERIFIED = "SCORE_UNVERIFIED"
 CONTRAST_SCHEMA = "df_utility_contrast.v1"
 TARGETS = {"direction": "logistic", "return": "ridge"}
-BRANCHES = ("raw", "transformed", "augmented")
+BRANCHES = ("raw", "transformed", "augmented", "raw_wide")   # raw_wide: the capacity control
 HOLDOUT_STATE = Path("~/.local/state/crispdm-data-foundation/utility_holdout").expanduser()
 
 
@@ -476,6 +476,11 @@ def features(branch: str, s: dict, rep: dict | None, protocol: Protocol) -> tupl
     if branch == "raw":
         return _lags_by_emission(np.nan_to_num(s["values"]), raw_avail, s["available_at"],
                                  decision, protocol.window)
+    if branch == "raw_wide":
+        # the capacity control for `augmented`: raw lags of the SAME total width (2·window),
+        # so raw+R is compared against raw of equal dimensionality, never against raw alone
+        return _lags_by_emission(np.nan_to_num(s["values"]), raw_avail, s["available_at"],
+                                 decision, 2 * protocol.window)
     if rep is None:
         raise ValueError("a transformed branch needs a representation")
     Xr, okr = _lags_by_emission(np.nan_to_num(rep["values"]), rep["available"],
@@ -569,7 +574,7 @@ def contrast(s: dict, operator, protocol: Protocol, *, contrast_id: str, eligibi
     for b in (branch_a, branch_b):
         if b not in protocol.branches:
             return {"outcome": REFUSED, "why": f"branch {b!r} is not declared by the protocol"}
-    needs_rep = "raw" not in (branch_a, branch_b) or branch_b != "raw"
+    needs_rep = branch_b not in ("raw", "raw_wide")
     rep_meta = None
     if needs_rep:
         if operator is None:

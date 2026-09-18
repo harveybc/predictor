@@ -1,0 +1,17 @@
+# PRE (b6facb8 → 9880f45 code, reviewer's reproducer, 2026-09-17)
+ORIGINAL_SUPPORT (False, 'upper bound 0.0088 exceeds alpha_adjusted 0.0056 (1/538 at 95%)')
+CHANGED_BOUND_SUPPORT (True, None)
+INCONSISTENT_COUNTS []
+RESUME_MISSING_SCORE {"outcome": "ADVANCES", "cost": {}, "score": null, "resumed": true, "refusal": {"outcome": "SCORE_UNVERIFIED", "why": "contrast.json is absent"}}
+
+# POST (reviewer's reproducer unchanged, code after O1/O2)
+ORIGINAL_SUPPORT (False, 'calibrated under another harness code')
+df_utility_harness.ProtocolRefusal: upper_bound 0.0 is not the derived 0.008786971227311154
+
+# POST (same counterexamples, reported through the successor API)
+ORIGINAL_SUPPORT (under the harness that applied) (False, 'derived upper bound 0.0088 exceeds alpha_adjusted 0.0056 (1/538 at 95%)')
+CHANGED_BOUND_SEAL_REFUSED upper_bound 0.0 is not the derived 0.008786971227311154
+CHANGED_BOUND_SUPPORT (False, 'calibration record unusable: upper_bound 0.0 is not the derived 0.008786971227311154')
+INCONSISTENT_COUNTS ['advances 0 is not the derived 1 (recounted from per_sim)', 'false_advance_rate 0.0 is not the derived 0.0018587360594795538', 'upper_bound 0.0 is not the derived 0.008786971227311154']
+RESUME_MISSING_SCORE {"outcome": "SCORE_UNVERIFIED", "reason": "contrast.json is absent", "cost": {}, "score": null, "output_sha256": null, "resumed": true, "refusal": {"outcome": "SCORE_UNVERIFIED", "why": "contrast.json is absent"}, "history": {"outcome": "ADVANCES", "cost": {}}}
+RESUME_UNBOUND_JOB {"outcome": "SCORE_UNVERIFIED", "reason": "the attempt records no job to bind to", "cost": {}, "score": null, "output_sha256": null, "resumed": true, "refusal": {"outcome": "SCORE_UNVERIFIED", "why": "the attempt records no job to bind to"}, "history": {"outcome": "ADVANCES", "cost": {}}}

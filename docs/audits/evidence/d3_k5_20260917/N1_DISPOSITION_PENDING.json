@@ -1,7 +1,7 @@
 {
  "schema": "olap_selection_manifest.v1",
  "declared_utc": "2026-09-17",
- "declared_by": "Satoshi, order N1 (MUSASHI_D3_M1_M6_REVIEW_AND_N1_N5_2026_09_17.md)",
+ "declared_by": "Satoshi, orders N1 and O4",
  "runs": [
   {
    "run_id": "2e68209e28ba07ea18edfc51fff92f930b6ff7027f06f3a42b1e2b9b5efc6ab8",
@@ -11,7 +11,11 @@
    "admissibility": "NOT_ADMISSIBLE_SCIENTIFIC",
    "status": "RETAINED_AS_LOADED",
    "rationale": "Emitted by the first attempt of df_utility_recover on 2026-09-17 with ZERO recovered contrasts (the legacy contrast.json files lacked the schema field and were refused); the loader took it before it could be closed (outbox entry 9863420429497f5d...). Four units with metric_value UNAVAILABLE; no measurement in it. The real corrective envelope is utility-rehearsal-utilreh-v4-recovery-2 (57e5f959...). Kept with its history; not promoted.",
-   "admissibility_reason": "an empty corrective envelope; not evidence of anything; superseded by the recovery-2 envelope"
+   "admissibility_reason": "an empty corrective envelope; not evidence of anything; superseded by the recovery-2 envelope",
+   "superseded_by_campaign_key": "utility-rehearsal-utilreh-v4-recovery-2",
+   "superseded_by_run_id_prefix": "57e5f959",
+   "exclusion_evidence": "docs/audits/evidence/d3_k5_20260917/O4_EMPTY_ENVELOPE_EXCLUSION.json (2026-09-18: 0 rows in gov_scientific_evidence, 0 in gov_mechanical_evidence)",
+   "approved_in": "MUSASHI_D3_N1_N5_REVIEW_AND_O1_O4_2026_09_17.md, O4 (disposition approved at that scope; publish in the next window the warehouse already needs)"
   }
  ]
 }

@@ -1,0 +1,733 @@
+{
+ "capacity_control": {
+  "augmented": "raw_wide"
+ },
+ "design_sha256": "386fe0338d076499ab77906d9c504598e8657973850759dccae5878532bf677c",
+ "eligibility": {
+  "cells_record": "/home/harveybc/.local/state/crispdm-data-foundation/d3_mechanics_v3/MATRIX.verified.v5.cells.json",
+  "state": "SYNTHETIC_DEVELOPMENT"
+ },
+ "execution": "NONE \u2014 design only; a governed run needs its own order",
+ "families": [
+  {
+   "alpha_adjusted": 0.008333333333333333,
+   "calibration_plan": {
+    "bound_confidence": 0.95,
+    "generator": "white_null",
+    "n": 2048,
+    "n_sims": 358
+   },
+   "comparisons": 6,
+   "members": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed",
+     "hypothesis": "H_T",
+     "operator": "mad_extremes_trailing",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented",
+     "hypothesis": "H_A",
+     "operator": "mad_extremes_trailing",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed",
+     "hypothesis": "H_T",
+     "operator": "delta_run_length",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented",
+     "hypothesis": "H_A",
+     "operator": "delta_run_length",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed",
+     "hypothesis": "H_T",
+     "operator": "cusum_causal",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented",
+     "hypothesis": "H_A",
+     "operator": "cusum_causal",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    }
+   ],
+   "n": 2048,
+   "protocol": {
+    "alpha": 0.05,
+    "alpha_adjusted": 0.008333333333333333,
+    "blocks_policy": "all_or_insufficient",
+    "branches": [
+     "raw",
+     "transformed",
+     "augmented",
+     "raw_wide"
+    ],
+    "calibration": null,
+    "calibration_plan": {
+     "bound_confidence": 0.95,
+     "generator": "white_null",
+     "n": 2048,
+     "n_sims": 358
+    },
+    "comparisons": 6,
+    "family": [
+     "bumps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed",
+     "bumps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented",
+     "bumps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed",
+     "bumps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented",
+     "bumps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed",
+     "bumps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented"
+    ],
+    "horizon": 1,
+    "inference": "block_t",
+    "logistic_steps": 200,
+    "margin": 0.0,
+    "min_rows_per_block": 30,
+    "model": "ridge",
+    "n_blocks": 4,
+    "prefix_checks": 8,
+    "protocol_sha256": "c5c33ab32bf349bce32635564e0f6ddcf8df40ec320600f9b73b6f65fbbb55b3",
+    "ridge_lambda": 1.0,
+    "schema": "df_utility_protocol.v3",
+    "seed": 3,
+    "target": "return",
+    "window": 4
+   },
+   "protocol_base_sha256": "dc92268adda5a8f8422fa1bc74e022c809f7c954950c7864f681585bd46c4917",
+   "role": "selection",
+   "unit": "bumps__white__snr10__none__n2048__v1__seed12",
+   "variable": "v0"
+  },
+  {
+   "alpha_adjusted": 0.008333333333333333,
+   "calibration_plan": {
+    "bound_confidence": 0.95,
+    "generator": "white_null",
+    "n": 2048,
+    "n_sims": 358
+   },
+   "comparisons": 6,
+   "members": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed",
+     "hypothesis": "H_T",
+     "operator": "mad_extremes_trailing",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented",
+     "hypothesis": "H_A",
+     "operator": "mad_extremes_trailing",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed",
+     "hypothesis": "H_T",
+     "operator": "delta_run_length",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented",
+     "hypothesis": "H_A",
+     "operator": "delta_run_length",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed",
+     "hypothesis": "H_T",
+     "operator": "cusum_causal",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented",
+     "hypothesis": "H_A",
+     "operator": "cusum_causal",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    }
+   ],
+   "n": 2048,
+   "protocol": {
+    "alpha": 0.05,
+    "alpha_adjusted": 0.008333333333333333,
+    "blocks_policy": "all_or_insufficient",
+    "branches": [
+     "raw",
+     "transformed",
+     "augmented",
+     "raw_wide"
+    ],
+    "calibration": null,
+    "calibration_plan": {
+     "bound_confidence": 0.95,
+     "generator": "white_null",
+     "n": 2048,
+     "n_sims": 358
+    },
+    "comparisons": 6,
+    "family": [
+     "sinusoid__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed",
+     "sinusoid__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented",
+     "sinusoid__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed",
+     "sinusoid__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented",
+     "sinusoid__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed",
+     "sinusoid__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented"
+    ],
+    "horizon": 1,
+    "inference": "block_t",
+    "logistic_steps": 200,
+    "margin": 0.0,
+    "min_rows_per_block": 30,
+    "model": "ridge",
+    "n_blocks": 4,
+    "prefix_checks": 8,
+    "protocol_sha256": "7984ffa5f455db73da38910645dbf0bedd92a4c3801f717d7a4be15a137cd5ef",
+    "ridge_lambda": 1.0,
+    "schema": "df_utility_protocol.v3",
+    "seed": 3,
+    "target": "return",
+    "window": 4
+   },
+   "protocol_base_sha256": "af2bd9e766def40f366321f0a109096e7af04cacf466bebc0cf5cad2447852e7",
+   "role": "selection",
+   "unit": "sinusoid__white__snr10__none__n2048__v1__seed12",
+   "variable": "v0"
+  },
+  {
+   "alpha_adjusted": 0.008333333333333333,
+   "calibration_plan": {
+    "bound_confidence": 0.95,
+    "generator": "white_null",
+    "n": 2048,
+    "n_sims": 358
+   },
+   "comparisons": 6,
+   "members": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed",
+     "hypothesis": "H_T",
+     "operator": "mad_extremes_trailing",
+     "unit": "steps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented",
+     "hypothesis": "H_A",
+     "operator": "mad_extremes_trailing",
+     "unit": "steps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed",
+     "hypothesis": "H_T",
+     "operator": "delta_run_length",
+     "unit": "steps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented",
+     "hypothesis": "H_A",
+     "operator": "delta_run_length",
+     "unit": "steps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed",
+     "hypothesis": "H_T",
+     "operator": "cusum_causal",
+     "unit": "steps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented",
+     "hypothesis": "H_A",
+     "operator": "cusum_causal",
+     "unit": "steps__white__snr10__none__n2048__v1__seed12",
+     "variable": "v0"
+    }
+   ],
+   "n": 2048,
+   "protocol": {
+    "alpha": 0.05,
+    "alpha_adjusted": 0.008333333333333333,
+    "blocks_policy": "all_or_insufficient",
+    "branches": [
+     "raw",
+     "transformed",
+     "augmented",
+     "raw_wide"
+    ],
+    "calibration": null,
+    "calibration_plan": {
+     "bound_confidence": 0.95,
+     "generator": "white_null",
+     "n": 2048,
+     "n_sims": 358
+    },
+    "comparisons": 6,
+    "family": [
+     "steps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__transformed",
+     "steps__white__snr10__none__n2048__v1__seed12__v0__mad_extremes_trailing__augmented",
+     "steps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__transformed",
+     "steps__white__snr10__none__n2048__v1__seed12__v0__delta_run_length__augmented",
+     "steps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__transformed",
+     "steps__white__snr10__none__n2048__v1__seed12__v0__cusum_causal__augmented"
+    ],
+    "horizon": 1,
+    "inference": "block_t",
+    "logistic_steps": 200,
+    "margin": 0.0,
+    "min_rows_per_block": 30,
+    "model": "ridge",
+    "n_blocks": 4,
+    "prefix_checks": 8,
+    "protocol_sha256": "430e8c84c9e399564a4d8c9f7d0a6e9b320cb2a12876a73969800b60fd1448df",
+    "ridge_lambda": 1.0,
+    "schema": "df_utility_protocol.v3",
+    "seed": 3,
+    "target": "return",
+    "window": 4
+   },
+   "protocol_base_sha256": "05994d11560cce9218cafaa3041fe7a8cc61e7018c2820d60f062f8c6ce0f94e",
+   "role": "selection",
+   "unit": "steps__white__snr10__none__n2048__v1__seed12",
+   "variable": "v0"
+  },
+  {
+   "alpha_adjusted": 0.008333333333333333,
+   "calibration_plan": {
+    "bound_confidence": 0.95,
+    "generator": "white_null",
+    "n": 2048,
+    "n_sims": 358
+   },
+   "comparisons": 6,
+   "members": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed",
+     "hypothesis": "H_T",
+     "operator": "mad_extremes_trailing",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented",
+     "hypothesis": "H_A",
+     "operator": "mad_extremes_trailing",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed",
+     "hypothesis": "H_T",
+     "operator": "delta_run_length",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented",
+     "hypothesis": "H_A",
+     "operator": "delta_run_length",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed",
+     "hypothesis": "H_T",
+     "operator": "cusum_causal",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "bumps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented",
+     "hypothesis": "H_A",
+     "operator": "cusum_causal",
+     "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    }
+   ],
+   "n": 2048,
+   "protocol": {
+    "alpha": 0.05,
+    "alpha_adjusted": 0.008333333333333333,
+    "blocks_policy": "all_or_insufficient",
+    "branches": [
+     "raw",
+     "transformed",
+     "augmented",
+     "raw_wide"
+    ],
+    "calibration": null,
+    "calibration_plan": {
+     "bound_confidence": 0.95,
+     "generator": "white_null",
+     "n": 2048,
+     "n_sims": 358
+    },
+    "comparisons": 6,
+    "family": [
+     "bumps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed",
+     "bumps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented",
+     "bumps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed",
+     "bumps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented",
+     "bumps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed",
+     "bumps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented"
+    ],
+    "horizon": 1,
+    "inference": "block_t",
+    "logistic_steps": 200,
+    "margin": 0.0,
+    "min_rows_per_block": 30,
+    "model": "ridge",
+    "n_blocks": 4,
+    "prefix_checks": 8,
+    "protocol_sha256": "f2adceefd9bd536f538ef7d8bb8c9e9ed4965a891b5c687685b07ac89ea6edd2",
+    "ridge_lambda": 1.0,
+    "schema": "df_utility_protocol.v3",
+    "seed": 3,
+    "target": "return",
+    "window": 4
+   },
+   "protocol_base_sha256": "aa011d4c5e8c4faf81ddbabd351bf612ec3f5e7cb777fafba5db63874461a435",
+   "role": "replication",
+   "unit": "bumps__white__snr10__none__n2048__v1__seed13",
+   "variable": "v0"
+  },
+  {
+   "alpha_adjusted": 0.008333333333333333,
+   "calibration_plan": {
+    "bound_confidence": 0.95,
+    "generator": "white_null",
+    "n": 2048,
+    "n_sims": 358
+   },
+   "comparisons": 6,
+   "members": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed",
+     "hypothesis": "H_T",
+     "operator": "mad_extremes_trailing",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented",
+     "hypothesis": "H_A",
+     "operator": "mad_extremes_trailing",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed",
+     "hypothesis": "H_T",
+     "operator": "delta_run_length",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented",
+     "hypothesis": "H_A",
+     "operator": "delta_run_length",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed",
+     "hypothesis": "H_T",
+     "operator": "cusum_causal",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "sinusoid__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented",
+     "hypothesis": "H_A",
+     "operator": "cusum_causal",
+     "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    }
+   ],
+   "n": 2048,
+   "protocol": {
+    "alpha": 0.05,
+    "alpha_adjusted": 0.008333333333333333,
+    "blocks_policy": "all_or_insufficient",
+    "branches": [
+     "raw",
+     "transformed",
+     "augmented",
+     "raw_wide"
+    ],
+    "calibration": null,
+    "calibration_plan": {
+     "bound_confidence": 0.95,
+     "generator": "white_null",
+     "n": 2048,
+     "n_sims": 358
+    },
+    "comparisons": 6,
+    "family": [
+     "sinusoid__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed",
+     "sinusoid__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented",
+     "sinusoid__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed",
+     "sinusoid__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented",
+     "sinusoid__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed",
+     "sinusoid__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented"
+    ],
+    "horizon": 1,
+    "inference": "block_t",
+    "logistic_steps": 200,
+    "margin": 0.0,
+    "min_rows_per_block": 30,
+    "model": "ridge",
+    "n_blocks": 4,
+    "prefix_checks": 8,
+    "protocol_sha256": "fc562e7b03480f38f817479845ca87f3b15522255b28b62dfda7790f5935f298",
+    "ridge_lambda": 1.0,
+    "schema": "df_utility_protocol.v3",
+    "seed": 3,
+    "target": "return",
+    "window": 4
+   },
+   "protocol_base_sha256": "cb55c8c56ebdae65a886c0b37a9c43d5b2055b9d47d355212d17372911703201",
+   "role": "replication",
+   "unit": "sinusoid__white__snr10__none__n2048__v1__seed13",
+   "variable": "v0"
+  },
+  {
+   "alpha_adjusted": 0.008333333333333333,
+   "calibration_plan": {
+    "bound_confidence": 0.95,
+    "generator": "white_null",
+    "n": 2048,
+    "n_sims": 358
+   },
+   "comparisons": 6,
+   "members": [
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed",
+     "hypothesis": "H_T",
+     "operator": "mad_extremes_trailing",
+     "unit": "steps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented",
+     "hypothesis": "H_A",
+     "operator": "mad_extremes_trailing",
+     "unit": "steps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed",
+     "hypothesis": "H_T",
+     "operator": "delta_run_length",
+     "unit": "steps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented",
+     "hypothesis": "H_A",
+     "operator": "delta_run_length",
+     "unit": "steps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw",
+     "branch_b": "transformed",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed",
+     "hypothesis": "H_T",
+     "operator": "cusum_causal",
+     "unit": "steps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    },
+    {
+     "branch_a": "raw_wide",
+     "branch_b": "augmented",
+     "contrast_id": "steps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented",
+     "hypothesis": "H_A",
+     "operator": "cusum_causal",
+     "unit": "steps__white__snr10__none__n2048__v1__seed13",
+     "variable": "v0"
+    }
+   ],
+   "n": 2048,
+   "protocol": {
+    "alpha": 0.05,
+    "alpha_adjusted": 0.008333333333333333,
+    "blocks_policy": "all_or_insufficient",
+    "branches": [
+     "raw",
+     "transformed",
+     "augmented",
+     "raw_wide"
+    ],
+    "calibration": null,
+    "calibration_plan": {
+     "bound_confidence": 0.95,
+     "generator": "white_null",
+     "n": 2048,
+     "n_sims": 358
+    },
+    "comparisons": 6,
+    "family": [
+     "steps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__transformed",
+     "steps__white__snr10__none__n2048__v1__seed13__v0__mad_extremes_trailing__augmented",
+     "steps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__transformed",
+     "steps__white__snr10__none__n2048__v1__seed13__v0__delta_run_length__augmented",
+     "steps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__transformed",
+     "steps__white__snr10__none__n2048__v1__seed13__v0__cusum_causal__augmented"
+    ],
+    "horizon": 1,
+    "inference": "block_t",
+    "logistic_steps": 200,
+    "margin": 0.0,
+    "min_rows_per_block": 30,
+    "model": "ridge",
+    "n_blocks": 4,
+    "prefix_checks": 8,
+    "protocol_sha256": "d9265f7b687a89e5724de81089c55fcf262b3c56200a2f05f9cfb249c62b7a64",
+    "ridge_lambda": 1.0,
+    "schema": "df_utility_protocol.v3",
+    "seed": 3,
+    "target": "return",
+    "window": 4
+   },
+   "protocol_base_sha256": "f7aac524e533077d77710034966c14c3579ec64b1b0e1fd3e8836a4c037d5575",
+   "role": "replication",
+   "unit": "steps__white__snr10__none__n2048__v1__seed13",
+   "variable": "v0"
+  }
+ ],
+ "hypotheses": {
+  "H_A": {
+   "branch_a": "raw_wide",
+   "branch_b": "augmented",
+   "question": "does raw+representation beat raw lags of the same total width (capacity control)?"
+  },
+  "H_T": {
+   "branch_a": "raw",
+   "branch_b": "transformed",
+   "question": "does the representation alone predict at least as well as raw lags of width `window`?"
+  }
+ },
+ "inherited_from_sha256": "4181a9c4350c5a701205e047946f3883d57d25784bfc6668366b32210b978062",
+ "inherited_protocol_base": {
+  "alpha": 0.05,
+  "horizon": 1,
+  "margin": 0.0,
+  "min_rows_per_block": 30,
+  "model": "ridge",
+  "n_blocks": 4,
+  "target": "return",
+  "window": 4
+ },
+ "multiplicity_policy": "alpha / |family| per variable; contrasts of one family are correlated (same series) and are never treated as independent experiments; replicates are counted, not pooled",
+ "operators": [
+  "mad_extremes_trailing",
+  "delta_run_length",
+  "cusum_causal"
+ ],
+ "pilot_units": [
+  "bumps__white__snr10__none__n2048__v1__seed11",
+  "sinusoid__white__snr10__none__n2048__v1__seed11",
+  "steps__white__snr10__none__n2048__v1__seed11"
+ ],
+ "replication_rule": {
+  "of": 3,
+  "replicates": 3,
+  "required_advances": 3,
+  "rule": "an operator is proposed for confirmation on a variable only if the same hypothesis ADVANCES in the selection family AND in every independent replicate"
+ },
+ "schema": "df_utility_dev_design.v1",
+ "stage": "DEVELOPMENT_SELECTION",
+ "stages_out_of_scope": [
+  "FLOW_DIAGNOSTIC",
+  "PUBLIC_CONFIRMATION",
+  "FINANCIAL_REVALIDATION"
+ ],
+ "thresholds_policy": "margin, alpha, target, horizon, model, window and blocks are inherited from the sealed pilot protocol; none is chosen from results seen"
+}
