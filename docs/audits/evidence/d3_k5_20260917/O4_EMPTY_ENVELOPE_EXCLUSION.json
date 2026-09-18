@@ -1,0 +1,77 @@
+{
+ "campaign_key": "utility-rehearsal-utilreh-v4-recovery",
+ "checked_utc": "2026-09-18T03:23:23Z",
+ "dim_run": [
+  {
+   "adjudication": "RECOVERY_NO_ADJUDICATION",
+   "campaign_key": "utility-rehearsal-utilreh-v4-recovery",
+   "result_class": "DEVELOPMENT",
+   "run_id": "utilreh-v4",
+   "terminal_state": "COMPLETED"
+  }
+ ],
+ "disposition_pending": true,
+ "disposition_rows": [],
+ "envelope": "2e68209e28ba07ea18edfc51fff92f930b6ff7027f06f3a42b1e2b9b5efc6ab8",
+ "excluded_from_mechanical_selection": true,
+ "excluded_from_scientific_selection": true,
+ "fact_rows": [
+  {
+   "campaign_key": "utility-rehearsal-utilreh-v4-recovery",
+   "cell_key": "fab__v0__cusum_causal__transformed",
+   "metric_name": "outcome",
+   "metric_value": null,
+   "result_class": "DEVELOPMENT",
+   "run_id": "utilreh-v4",
+   "superseded_by_envelope_sha256": null,
+   "terminal_state": "SCORE_UNVERIFIED"
+  },
+  {
+   "campaign_key": "utility-rehearsal-utilreh-v4-recovery",
+   "cell_key": "fab__v0__delta_run_length__transformed",
+   "metric_name": "outcome",
+   "metric_value": null,
+   "result_class": "DEVELOPMENT",
+   "run_id": "utilreh-v4",
+   "superseded_by_envelope_sha256": null,
+   "terminal_state": "SCORE_UNVERIFIED"
+  },
+  {
+   "campaign_key": "utility-rehearsal-utilreh-v4-recovery",
+   "cell_key": "fab__v0__mad_extremes_trailing__transformed",
+   "metric_name": "outcome",
+   "metric_value": null,
+   "result_class": "DEVELOPMENT",
+   "run_id": "utilreh-v4",
+   "superseded_by_envelope_sha256": null,
+   "terminal_state": "SCORE_UNVERIFIED"
+  },
+  {
+   "campaign_key": "utility-rehearsal-utilreh-v4-recovery",
+   "cell_key": "fab__v0__mad_extremes_trailing__transformed__slow-control",
+   "metric_name": "outcome",
+   "metric_value": null,
+   "result_class": "DEVELOPMENT",
+   "run_id": "utilreh-v4",
+   "superseded_by_envelope_sha256": null,
+   "terminal_state": "RESOURCE_EXCEEDED"
+  }
+ ],
+ "mechanical_evidence_rows": [],
+ "schema": "o4_empty_envelope_exclusion.v1",
+ "scientific_evidence_definition": [
+  {
+   "sql": "CREATE VIEW gov_scientific_evidence AS SELECT run_id, kind, campaign_key, status, admissibility, admissibility_reason FROM main.gov_campaign_disposition WHERE ((disposition = 'INCLUDED_CURRENT') AND (admissibility = 'CURRENT_SCIENTIFIC'));"
+  }
+ ],
+ "scientific_evidence_rows": [],
+ "successor_campaign_key": "utility-rehearsal-utilreh-v4-recovery-2",
+ "successor_run": [
+  {
+   "campaign_key": "utility-rehearsal-utilreh-v4-recovery-2",
+   "result_class": "DEVELOPMENT",
+   "run_id": "utilreh-v4",
+   "terminal_state": "COMPLETED"
+  }
+ ]
+}
