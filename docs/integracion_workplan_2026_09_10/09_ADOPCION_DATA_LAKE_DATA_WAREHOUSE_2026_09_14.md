@@ -400,3 +400,14 @@ y TCN (Bai) fundamentan requisitos, con limites de transferencia explicitados.
 Cada numero debe tener fuente/ecuacion, supuestos, medicion, incertidumbre y prueba
 de fallo; distinguir observaciones, ventanas y unidades independientes.
 [Procedimiento y fuentes primarias](../handoffs/MUSASHI_LITERATURE_BASED_SAMPLE_CONTEXT_DESIGN_2026_09_18.md).
+
+### Orden aprobada: control limpio P=8, W=17
+
+El owner aprobo P=8/W=17 como control inicial y P=16/32 como sensibilidad posterior.
+Se sustituye el factorial anterior sin borrar resultados. Satoshi ejecuta A1-A5:
+pruebas, ridge y tres inicializaciones Conv1D, cierre gobernado y diagnostico ML.
+5683 muestras brutas para 4096/512/1024 ventanas con soportes disjuntos; no son
+replicas independientes. P=32 por interpolacion queda retirado por no ser un
+requisito de esta tarea. Grafo, error operativo y recursos explicitados en la orden.
+Sensibilidad, ruido, no linealidad, negocio semanal y RL siguen separados y pendientes.
+[Orden emitida y calculos](../handoffs/MUSASHI_NUMERICAL_RESTART_2026_09_18.md).
