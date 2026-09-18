@@ -329,3 +329,15 @@ Cache cientificamente equivalente autorizado en ensayo; cambiar semillas no
 ahorra CPU. Controles de utilidad conocida y mapa de areas pendientes antes de
 otro barrido. Sin nuevas reservas, GPU ni datos financieros.
 [Orden Q1-Q4](../handoffs/MUSASHI_UTILITY_P1_P4_REVIEW_AND_Q1_Q4_2026_09_18.md).
+
+### Retorno 0352328: cache e instrumento antes de ampliar seleccion
+
+Revision independiente: 22 pruebas focales verdes; cierre real TOTAL, cuatro
+comprobaciones verdaderas y cero propuestas desde archivos y recibos conservados.
+Dos defectos reproducidos: cambiar la implementacion del operador no cambia la
+clave de cache; perder record.json deja un miss cuya recuperacion falla con errno 39.
+Los positivos Q3 no cumplen el criterio: no autorizan otro barrido. R1-R4 liga
+reuso a codigo ejecutado, prueba recuperacion completa y autoriza un unico sucesor
+del instrumento con criterios previos, gobernado y limitado a 7200 s CPU agregados.
+Los seis operadores restantes quedan en diseno, sin GPU/finanzas/reserva.
+[Orden R1-R4 de utilidad](../handoffs/MUSASHI_UTILITY_Q1_Q4_REVIEW_AND_R1_R4_2026_09_18.md).
