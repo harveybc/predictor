@@ -128,11 +128,18 @@ REVIEW = [
 ]
 
 
-def build() -> dict:
+def build(max_updates: int | None = None, successor_of: str | None = None, reason: str | None = None) -> dict:
+    """`max_updates`: a smaller DEV stage sealed BEFORE its scores (RP4) keeping both contrasts,
+    every condition and replicate; recorded as a successor with its reason."""
+    training = dict(E.TRAINING)
+    if max_updates is not None:
+        training["max_updates"] = int(max_updates)
+        training["stage_note"] = reason or "smaller DEV stage: update allowance reduced before any score"
     doc = {"schema": DESIGN_SCHEMA, "experiment": "MOD-E0-DEV", "proposal": "P-MOD", "hypotheses": ["H2", "H3"],
            "classification": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION", "levels": list(E.LEVELS), "replicates": list(REPLICATES),
            "random_assignments": RANDOM_ASSIGNMENTS, "h3_level": H3_LEVEL, "p": E.P_VARS, "window": E.WINDOW, "horizon": E.HORIZON,
-           "n_total": E.N_TOTAL, "training": E.TRAINING, "derivations": derivations(), "budget": BUDGET,
+           "n_total": E.N_TOTAL, "training": training, "successor_of": successor_of, "successor_reason": reason,
+           "derivations": derivations(), "budget": BUDGET,
            "review_table": [{"id": i, "obligation": o, "evidence": e, "status": "NOT_TESTED"} for i, o, e in REVIEW],
            "reserve": "not generated, not opened: E0-CONF uses distinct generator parameter ranges and seeds fixed later",
            "design_sha256": ""}
@@ -145,8 +152,11 @@ def build() -> dict:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--max-updates", type=int, default=None)
+    parser.add_argument("--successor-of", default=None)
+    parser.add_argument("--reason", default=None)
     args = parser.parse_args(argv)
-    doc = build()
+    doc = build(args.max_updates, args.successor_of, args.reason)
     if args.out.exists():
         raise SystemExit(f"REFUSED: {args.out} exists; a design is never written over")
     args.out.write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n")
