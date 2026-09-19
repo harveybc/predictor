@@ -1,0 +1,15 @@
+{
+ "schema": "df_e1_budget_sheet.v1",
+ "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+ "measured_seconds_per_update_conv3": 0.020168750000000003,
+ "measured_seconds_per_update_tcn_w": 0.02538125,
+ "core_cost_ratio": 1.2584443755810348,
+ "previous_mean_ae_cpu_seconds": 43.913000000000004,
+ "previous_mean_fit_cpu_seconds": 188.46966666666668,
+ "projected_ae_cpu_seconds_each": 43.913000000000004,
+ "projected_fit_cpu_seconds_each": 237.17859198429912,
+ "projected_total_cpu_seconds": 2352.561433839479,
+ "headroom": 0.25,
+ "projected_with_headroom": 2940.7017922993487,
+ "note": "seconds per update measured on the SAME DEV windows for both cores in the RP37 diagnostics; the auto-encoder trains the detector only, so the core change does not touch it; the fits scale by the measured ratio. This is a projection from measurements, not a promise: the sealed run measures its own cost pilot first."
+}

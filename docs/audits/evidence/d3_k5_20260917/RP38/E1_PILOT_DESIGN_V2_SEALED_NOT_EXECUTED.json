@@ -1,0 +1,336 @@
+{
+ "schema": "df_e1_pilot_design.v1",
+ "purpose": "E1_DEV_PILOT_HOUSEHOLD",
+ "phase": "DEVELOPMENT",
+ "data_access": "GOVERNED_DELIVERY",
+ "what_this_is": "the first E1 development pilot: three learning regimes on one public task; it does not confirm H1, does not select a universal model and does not replace the benchmark of the proposal (families/comparators stay pending in the matrix)",
+ "family": "uci_235",
+ "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+ "governed_bytes": {
+  "path": "/home/harveybc/.local/state/crispdm-data-foundation/public_panels_c126_v2/uci_235_individual_household_power/panel.parquet",
+  "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "receipt": {
+   "columns": 7,
+   "duplicate_timestamp_labels": 0,
+   "logical_id": "uci_235_individual_household_power",
+   "member_sha256": {
+    "household_power_consumption.txt": "4259c9d7ece5dbee9ab8d53682baac68d791c864f0f64a52b4043cb3b90894b7"
+   },
+   "missing_values": 181853,
+   "parse_rule": "sep ';', missing '?' or empty",
+   "parser": "uci_235",
+   "rows": 2075259,
+   "rows_dropped": 0,
+   "rows_filled": 0,
+   "rows_reordered": 0,
+   "schema": "crispdm.data_foundation.public_parse_receipt.v1",
+   "timestamp_format": "%d/%m/%Y %H:%M:%S",
+   "units_declared": {
+    "Global_active_power": "kW",
+    "Global_intensity": "A",
+    "Global_reactive_power": "kW",
+    "Sub_metering_1": "Wh",
+    "Sub_metering_2": "Wh",
+    "Sub_metering_3": "Wh",
+    "Voltage": "V"
+   },
+   "units_unknown": []
+  }
+ },
+ "task_source": "E1_TASKS",
+ "task": {
+  "id": "W60_h60",
+  "window_steps": 60,
+  "horizon_steps": 60,
+  "context_physical_seconds": 3540,
+  "horizon_physical_seconds": 3600,
+  "purge": 120,
+  "model_reach_steps": 60,
+  "model_reach_physical_seconds": 3600,
+  "reach_measured_by": "perturbation and gradient per input row (tools/df_e1_receiver.py), not asserted",
+  "reach_note": "ARCH-A with the sequence fusion depends on the last `model_reach_steps` samples of the window (branch 5 + core 3 - 1); the window is the declared context, the reach is what the prediction can depend on (RP28: full real reach declared)",
+  "target": [
+   "Global_active_power"
+  ],
+  "features": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3"
+  ],
+  "target_history_as_feature": true,
+  "family_usable_windows": {
+   "train": 1440653,
+   "validation": 305221,
+   "test": 298224
+  }
+ },
+ "contract": {
+  "family": "uci_235",
+  "timestamp": "timestamp_label",
+  "ts_format": "%d/%m/%Y %H:%M:%S",
+  "step_seconds": 60,
+  "features": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3"
+  ],
+  "targets": [
+   "Global_active_power"
+  ],
+  "metadata": [],
+  "controls": [],
+  "ignore": [],
+  "target_history_as_feature": true,
+  "dtype": "float64",
+  "activation_rule": "none",
+  "gap_policy": "withdraw",
+  "ambiguous_labels": [],
+  "horizon": 60,
+  "window": 60,
+  "splits": {
+   "train": 0.8,
+   "validation": 0.2
+  },
+  "task_kind": "forecast"
+ },
+ "contract_sha256": "9f4c972043be998150cd09dafaceaf05ed5e9d4e6c9efef4263a8c29d6d53027",
+ "dev_subpartition": {
+  "rows": [
+   1412361,
+   1462761
+  ],
+  "rows_note": "the last 28 days of the family's train split and the first 7 days of its validation split (family train end row 1452681); test rows never read",
+  "train_days": 28,
+  "validation_days": 7,
+  "splits_within_slice": {
+   "train": 0.8,
+   "validation": 0.2
+  },
+  "purge_between_splits": 120
+ },
+ "graph": {
+  "arch": "A",
+  "fusion": "sequence",
+  "core_kind": "tcn_w",
+  "assignment": [
+   0,
+   1,
+   0,
+   2,
+   2,
+   2,
+   0
+  ],
+  "input_columns": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3",
+   "Global_active_power"
+  ],
+  "core": "causal dilated Conv1D stack with dilations [1, 2, 4, 8, 16] (kernel 3, 16 filters, residual), reach 60 positions: derived from W, not searched",
+  "grouping": "held constant: physical groups (power: active history, reactive, intensity | voltage | sub-metering 1-3); profile-based grouping is a separate factor not varied here",
+  "layers": {
+   "detector (per branch)": "2 residual causal Conv1D blocks: Conv1D(16, k=3, d=1, ELU) + 1x1 projection skip",
+   "integrator": "identity (ARCH-A)",
+   "adapter": "TimeDistributed Dense(8), linear",
+   "core": "Conv1D(16, k=3, causal, ELU) on the channel-concatenated branch sequences, last position",
+   "head": "Dense(p) increment over the last observation (persistence skip); the target channel is read out",
+   "readout": "the model output at the target's input channel; only that channel is trained and scored"
+  },
+  "loss": "mse on the train-only-scaled target",
+  "optimizer": "adam lr 0.003",
+  "initial_weights": "keras set_random_seed(seed) before build: the SAME initial checkpoint for R0/R1/R2 of a seed (digest recorded per unit)",
+  "regimes": {
+   "R0": "random detector, trainable",
+   "R1": "detector from ae_s (masked AE, train windows only), frozen",
+   "R2": "detector from ae_s, adjustable (same imported weights as R1)"
+  }
+ },
+ "pretraining": {
+  "objective": "masked reconstruction (mask ratio 0.30 of time x channel positions) on DEV TRAIN windows; the internal validation is a PURGED TAIL of those same train origins, so the supervised DEV validation is never consumed by pre-training; decoder separate and never connected at inference",
+  "mask_ratio": 0.3,
+  "max_updates": 1500,
+  "patience_epochs": 3,
+  "internal_validation_fraction": 0.15,
+  "internal_validation_purge": "window + horizon rows between the pre-training origins and the internal validation ones",
+  "validation_bank_seed": 20260919,
+  "validation_mask_policy": "FIXED BANK by window identity for validation; epoch-varying noise for training, as declared"
+ },
+ "training": {
+  "batch": 64,
+  "max_updates": 4000,
+  "learning_rate": 0.003,
+  "loss": "mse",
+  "early_stopping": {
+   "monitor": "validation loss (mse)",
+   "patience_epochs": 3,
+   "restore_best": true
+  },
+  "epoch_note": "an epoch is one pass over the DEV train origins in batches; the update counter binds exactly",
+  "same_task_budget": "every regime gets the same update ceiling; the AE cost is reported apart and added for the total-cost reading"
+ },
+ "controls": {
+  "persistence": "y_hat(t+h) = y(t)",
+  "seasonal_naive_daily": "y_hat(t+h) = y(t+h-1440)",
+  "linear_ridge": "ridge (lambda 1.0 x n_train on standardised inputs) on the flattened scaled window (W x p) + bias, fitted on DEV train windows",
+  "linear_reach": "the same ridge on the last `model_reach_steps` rows only: the information a local receiver can use",
+  "support": {
+   "persistence": "one sample: the target's last observation (inside every receiver's reach)",
+   "seasonal_naive_daily": "the target one day before the target row: OUTSIDE the context window; a HIGHER-INFORMATION reference, not an equal-information peer",
+   "linear_ridge": "the whole window (W x p): the same information the declared context gives",
+   "linear_reach": "the last `model_reach_steps` rows of the window: the same information a local receiver can use"
+  }
+ },
+ "metrics": {
+  "mae": "kW on the common evaluation set",
+  "mase": "MAE / mean |y(t+h) - y(t)| over DEV train origins (persistence at the horizon)",
+  "common_evaluation_set": "DEV validation origins admissible for the model AND with a finite label AND a finite daily lookup; identical for every unit",
+  "test": "NOT SCORED (the benchmark's final test stays unscored)"
+ },
+ "replicas": {
+  "seeds": [
+   1,
+   2,
+   3
+  ],
+  "pairing": "R0/R1/R2 of a seed share the initial checkpoint; R1/R2 share the AE of the seed",
+  "purpose": "optimisation variability, not a power calculation"
+ },
+ "budget": {
+  "headroom": 0.25,
+  "pilot_updates": 300,
+  "task_memory_bytes": 2147483648,
+  "wall_seconds": 2400.0,
+  "cpu_seconds": 2400,
+  "memory_preflight_cap_bytes": 1073741824,
+  "rule": "projection = sum over remaining units of (seconds/update x update ceiling + overhead) x (1 + headroom); if spent + projection exceeds the ceiling the pilot stops BUDGET_LIMITED before any outcome (arms/seeds are never cut after results)"
+ },
+ "cells": [
+  {
+   "cell_id": "ae_s1",
+   "kind": "ae",
+   "seed": 1,
+   "max_updates": 1500
+  },
+  {
+   "cell_id": "R0_s1",
+   "kind": "fit",
+   "regime": "R0",
+   "seed": 1,
+   "max_updates": 4000
+  },
+  {
+   "cell_id": "R1_s1",
+   "kind": "fit",
+   "regime": "R1",
+   "seed": 1,
+   "max_updates": 4000,
+   "depends_on": "ae_s1"
+  },
+  {
+   "cell_id": "R2_s1",
+   "kind": "fit",
+   "regime": "R2",
+   "seed": 1,
+   "max_updates": 4000,
+   "depends_on": "ae_s1"
+  },
+  {
+   "cell_id": "ae_s2",
+   "kind": "ae",
+   "seed": 2,
+   "max_updates": 1500
+  },
+  {
+   "cell_id": "R0_s2",
+   "kind": "fit",
+   "regime": "R0",
+   "seed": 2,
+   "max_updates": 4000
+  },
+  {
+   "cell_id": "R1_s2",
+   "kind": "fit",
+   "regime": "R1",
+   "seed": 2,
+   "max_updates": 4000,
+   "depends_on": "ae_s2"
+  },
+  {
+   "cell_id": "R2_s2",
+   "kind": "fit",
+   "regime": "R2",
+   "seed": 2,
+   "max_updates": 4000,
+   "depends_on": "ae_s2"
+  },
+  {
+   "cell_id": "ae_s3",
+   "kind": "ae",
+   "seed": 3,
+   "max_updates": 1500
+  },
+  {
+   "cell_id": "R0_s3",
+   "kind": "fit",
+   "regime": "R0",
+   "seed": 3,
+   "max_updates": 4000
+  },
+  {
+   "cell_id": "R1_s3",
+   "kind": "fit",
+   "regime": "R1",
+   "seed": 3,
+   "max_updates": 4000,
+   "depends_on": "ae_s3"
+  },
+  {
+   "cell_id": "R2_s3",
+   "kind": "fit",
+   "regime": "R2",
+   "seed": 3,
+   "max_updates": 4000,
+   "depends_on": "ae_s3"
+  },
+  {
+   "cell_id": "controls",
+   "kind": "controls",
+   "seed": 0
+  }
+ ],
+ "pilots": [
+  {
+   "cell_id": "pilot_ae",
+   "kind": "ae",
+   "seed": 1,
+   "max_updates": 300,
+   "role": "COST_PILOT"
+  },
+  {
+   "cell_id": "pilot_fit",
+   "kind": "fit",
+   "regime": "R0",
+   "seed": 1,
+   "max_updates": 300,
+   "role": "COST_PILOT"
+  }
+ ],
+ "ridge_lambda": 1.0,
+ "governance": {
+  "disposition": "LOCAL_TERMINALS_PUBLIC_PANEL_NOT_A_LAKE_RESOURCE",
+  "why": "the deployed data-gov serves no lake holding the public panels; DATASETS campaigns complete units only through deliveries of every declared dataset; SYNTHETIC would misdeclare real bytes",
+  "missing_object": "one lake registration of public_panels_c126_v2 in data-gov (config + service restart: an owner action)",
+  "what_is_recorded": "governed_terminal.v1 documents per unit in the run root + CAMPAIGN_PROPOSAL.json"
+ },
+ "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7"
+}

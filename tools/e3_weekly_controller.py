@@ -27,9 +27,12 @@ records per decision as (decision_time, order_time, expected_fill_time).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import math
 from datetime import datetime, timedelta, timezone
 
 HOLD, LONG, SHORT, CLOSE = 0, 1, 2, 3
+#: the declared fallbacks; the parameter DECIDES behaviour, it is not decoration
+FALLBACKS = {"last_valid_or_flat", "flat_only"}
 
 
 class IncompatibleProposal(ValueError):
@@ -45,6 +48,10 @@ class ModelRelease:
     release: datetime
     first_decision: datetime
     name: str
+    #: RP39: the model itself. The controller RUNS the selected model's inference; an action that
+    #: arrives from elsewhere is accepted only when it names the model that produced it AND that model
+    #: is the one selected. A proposal with no identity is never labelled with the last released model.
+    model: object | None = None
 
     def valid_clocks(self) -> bool:
         """The fitting clocks must be ordered; release <= first_decision is the PLAN, and a violation is a
@@ -73,6 +80,13 @@ def week_start(ts: datetime) -> datetime:
 
 class WeeklyLongFlatController:
     def __init__(self, releases: list, *, size_fraction: float = 0.5, latency_bars: int = 1, fallback: str = "last_valid_or_flat"):
+        if not isinstance(latency_bars, int) or isinstance(latency_bars, bool) or latency_bars < 1:
+            raise ValueError("latency_bars must be a positive whole number of bars: a decision cannot be filled "
+                             "on the bar that produced it")
+        if fallback not in FALLBACKS:
+            raise ValueError(f"unknown fallback {fallback!r}; the declared ones are {sorted(FALLBACKS)}")
+        if not (0 < float(size_fraction) <= 1):
+            raise ValueError("size_fraction is a fraction of equity in (0, 1]")
         for r in releases:
             if not r.valid_clocks():
                 raise ValueError(f"release {r.name}: clocks violate cutoff <= fit_start < fit_end <= release")
@@ -86,21 +100,61 @@ class WeeklyLongFlatController:
                 self.state.misses.append({"model": r.name, "release": r.release.isoformat(), "planned_first_decision": r.first_decision.isoformat(),
                                           "disposition": "LATE: acts only from its release; the fallback covers the gap; the release is not moved"})
 
-    def available_model(self, bar_time: datetime) -> str | None:
-        """The last model whose release instant is <= the decision bar's timestamp."""
+    def available_release(self, bar_time: datetime):
+        """The release whose model may act at this bar: the last one released at or before it. Under the
+        `flat_only` fallback only the release of THIS week may act, so a stale model never carries over."""
         avail = [r for r in self.releases if r.release <= bar_time]
-        return avail[-1].name if avail else None
+        if not avail:
+            return None
+        chosen = avail[-1]
+        if self.fallback == "flat_only" and week_start(chosen.week_start) != week_start(bar_time):
+            return None
+        return chosen
 
-    def decide(self, bar_time: datetime, bar_step: timedelta, proposal: int | None, equity: float, price: float, position_units: float) -> dict:
+    def available_model(self, bar_time: datetime) -> str | None:
+        """The name of the model that may act at this bar (None when the fallback governs)."""
+        chosen = self.available_release(bar_time)
+        return chosen.name if chosen else None
+
+    def infer(self, bar_time: datetime, features) -> dict:
+        """Run the SELECTED model's own inference. This is where the action comes from: nothing else
+        may be labelled with this model's name."""
+        chosen = self.available_release(bar_time)
+        if chosen is None:
+            return {"model": None, "proposal": None, "source": "NO_MODEL_AVAILABLE"}
+        if chosen.model is None:
+            raise IncompatibleProposal(f"release {chosen.name} carries no model to run")
+        action = chosen.model.decide(features)
+        if action not in (HOLD, LONG, SHORT, CLOSE):
+            raise IncompatibleProposal(f"model {chosen.name} proposed {action!r}, which is not an action")
+        return {"model": chosen.name, "proposal": int(action), "source": "MODEL_INFERENCE"}
+
+    def accept_external(self, bar_time: datetime, proposal: int, model_id: str) -> dict:
+        """An action produced elsewhere is admitted only when it names the model that produced it and
+        that model is the selected one."""
+        chosen = self.available_release(bar_time)
+        if chosen is None:
+            raise IncompatibleProposal("no model is available: an external action cannot be attributed to one")
+        if model_id != chosen.name:
+            raise IncompatibleProposal(f"the action names model {model_id!r} but the selected model is {chosen.name!r}")
+        return {"model": chosen.name, "proposal": int(proposal), "source": "EXTERNAL_IDENTITY_VERIFIED"}
+
+    def decide(self, bar_time: datetime, bar_step: timedelta, proposal: int | None, equity: float, price: float,
+               position_units: float, *, reserved_cash: float = 0.0, model: str | None = None) -> dict:
         """One decision. `proposal` is the active model's proposed action (LONG/FLAT) or None when no model is
         available; returns the environment action and the record of the decision."""
-        model = self.available_model(bar_time)
+        model = model if model is not None else self.available_model(bar_time)
+        for name, value in (("price", price), ("equity", equity), ("position_units", position_units),
+                            ("reserved_cash", reserved_cash)):
+            if value is None or isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+                raise IncompatibleProposal(f"{name} is not a finite number ({value!r}): no action is emitted")
         wk = week_start(bar_time)
         new_week = self.state.current_week is not None and wk != self.state.current_week
         self.state.current_week = wk
         record = {"decision_time": bar_time.isoformat(), "order_time": bar_time.isoformat(),
                   "expected_fill_time": (bar_time + bar_step * self.latency_bars).isoformat(), "week_start": wk.isoformat(),
-                  "new_week": bool(new_week), "model": model, "proposal": proposal, "equity": float(equity), "price": float(price)}
+                  "new_week": bool(new_week), "model": model, "proposal": proposal, "equity": float(equity),
+                  "price": float(price), "reserved_cash": float(reserved_cash), "fallback": self.fallback}
         if model is None:
             action = HOLD if position_units == 0 else CLOSE                    # no model ever released: FLAT is the declared fallback
             record.update(action=action, reason="FALLBACK_NO_MODEL_FLAT")
@@ -114,8 +168,10 @@ class WeeklyLongFlatController:
                 if position_units > 0:
                     action, reason = HOLD, "ALREADY_LONG"
                 else:
+                    # cash that pending orders already reserve is not available to a new one
+                    free = equity - float(reserved_cash)
                     notional = self.size_fraction * equity
-                    if notional <= 0 or notional > equity + 1e-12 or price <= 0:
+                    if notional <= 0 or notional > free + 1e-12 or price <= 0:
                         action, reason = HOLD, "INSUFFICIENT_CASH_OR_PRICE"
                     else:
                         action, reason = LONG, "OPEN_LONG"
