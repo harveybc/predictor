@@ -1,0 +1,279 @@
+{
+ "fixture_root": "/tmp/mod-e0-mutants-hszymw8p/fixture",
+ "intact_closure": "TOTAL",
+ "mutants": [
+  {
+   "applied": true,
+   "case": "labels",
+   "expected_message_of_intact_guard": "validation.y: not the generator's",
+   "file": "df_mod_e0_close.py",
+   "intact_guard_red": true,
+   "mutant": "M01_labels",
+   "mutant_accepts_the_altered_copy": true,
+   "under_intact": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_status": "PROBLEMS"
+   },
+   "under_mutant": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_problems": [
+     "parent: the report's recorded outcome differs from the file (or is absent)"
+    ],
+    "unit_status": "VERIFIED"
+   },
+   "verdict": "MUTANT_KILLED_BY_BEHAVIOUR_TEST"
+  },
+  {
+   "applied": true,
+   "case": "denominator",
+   "expected_message_of_intact_guard": "denominators are not the train seasonal-naive",
+   "file": "df_mod_e0_close.py",
+   "intact_guard_red": true,
+   "mutant": "M02_denominator",
+   "mutant_accepts_the_altered_copy": true,
+   "under_intact": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_status": "PROBLEMS"
+   },
+   "under_mutant": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_problems": [
+     "parent: the report's recorded outcome differs from the file (or is absent)"
+    ],
+    "unit_status": "VERIFIED"
+   },
+   "verdict": "MUTANT_KILLED_BY_BEHAVIOUR_TEST"
+  },
+  {
+   "applied": true,
+   "case": "rows",
+   "expected_message_of_intact_guard": "rows: not the generator's",
+   "file": "df_mod_e0_close.py",
+   "intact_guard_red": true,
+   "mutant": "M03_rows",
+   "mutant_accepts_the_altered_copy": true,
+   "under_intact": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_status": "PROBLEMS"
+   },
+   "under_mutant": {
+    "all_verified": true,
+    "closure": "TOTAL",
+    "unit_problems": [],
+    "unit_status": "VERIFIED"
+   },
+   "verdict": "MUTANT_KILLED_BY_BEHAVIOUR_TEST"
+  },
+  {
+   "applied": true,
+   "case": "mae",
+   "expected_message_of_intact_guard": "validation.model.mae_mean",
+   "file": "df_mod_e0_close.py",
+   "intact_guard_red": true,
+   "mutant": "M04_mae",
+   "mutant_accepts_the_altered_copy": true,
+   "under_intact": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_status": "PROBLEMS"
+   },
+   "under_mutant": {
+    "all_verified": true,
+    "closure": "TOTAL",
+    "unit_problems": [],
+    "unit_status": "VERIFIED"
+   },
+   "verdict": "MUTANT_KILLED_BY_BEHAVIOUR_TEST"
+  },
+  {
+   "applied": true,
+   "case": "unreadable",
+   "expected_message_of_intact_guard": "weights unreadable",
+   "file": "df_mod_e0_close.py",
+   "intact_guard_red": true,
+   "mutant": "M05_weights_unreadable",
+   "mutant_accepts_the_altered_copy": true,
+   "under_intact": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_status": "PROBLEMS"
+   },
+   "under_mutant": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_problems": [
+     "replay: train predictions from the reloaded weights differ by None (> 1e-05)",
+     "replay: validation predictions from the reloaded weights differ by None (> 1e-05)",
+     "replay: test predictions from the reloaded weights differ by None (> 1e-05)",
+     "replay: the saved weights do not reach the recorded best validation loss (|diff| = None)",
+     "replay: adapter activations differ from the donor's: {}",
+     "replay: the donor file read in the fresh process is not the one the record names"
+    ],
+    "unit_status": "PROBLEMS"
+   },
+   "verdict": "MUTANT_KILLED_BY_BEHAVIOUR_TEST"
+  },
+  {
+   "applied": true,
+   "case": "parity",
+   "expected_message_of_intact_guard": "validation predictions from the reloaded weights differ",
+   "file": "df_mod_e0_close.py",
+   "intact_guard_red": true,
+   "mutant": "M06_prediction_tolerance",
+   "mutant_accepts_the_altered_copy": true,
+   "under_intact": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_status": "PROBLEMS"
+   },
+   "under_mutant": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_problems": [
+     "parent: the report's recorded outcome differs from the file (or is absent)"
+    ],
+    "unit_status": "VERIFIED"
+   },
+   "verdict": "MUTANT_KILLED_BY_BEHAVIOUR_TEST"
+  },
+  {
+   "applied": true,
+   "case": "unfrozen",
+   "expected_message_of_intact_guard": "does not show a frozen extractor",
+   "file": "df_mod_e0_close.py",
+   "intact_guard_red": true,
+   "mutant": "M07_frozen",
+   "mutant_accepts_the_altered_copy": true,
+   "under_intact": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_status": "PROBLEMS"
+   },
+   "under_mutant": {
+    "all_verified": true,
+    "closure": "TOTAL",
+    "unit_problems": [],
+    "unit_status": "VERIFIED"
+   },
+   "verdict": "MUTANT_KILLED_BY_BEHAVIOUR_TEST"
+  },
+  {
+   "applied": true,
+   "case": "nan",
+   "expected_message_of_intact_guard": "non-finite or empty arrays recorded as measured",
+   "file": "df_mod_e0.py",
+   "intact_guard_red": true,
+   "mutant": "M08_non_finite_is_medido",
+   "mutant_accepts_the_altered_copy": true,
+   "under_intact": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_status": "PROBLEMS"
+   },
+   "under_mutant": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_problems": [
+     "replay: validation predictions from the reloaded weights differ by None (> 1e-05)"
+    ],
+    "unit_status": "PROBLEMS"
+   },
+   "verdict": "MUTANT_KILLED_BY_BEHAVIOUR_TEST"
+  },
+  {
+   "applied": true,
+   "case": "parent",
+   "expected_message_of_intact_guard": "parent: the report's recorded outcome differs",
+   "file": "df_mod_e0_close.py",
+   "intact_guard_red": true,
+   "mutant": "M09_parent",
+   "mutant_accepts_the_altered_copy": true,
+   "under_intact": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_status": "VERIFIED"
+   },
+   "under_mutant": {
+    "all_verified": true,
+    "closure": "TOTAL",
+    "unit_problems": [],
+    "unit_status": "VERIFIED"
+   },
+   "verdict": "MUTANT_KILLED_BY_BEHAVIOUR_TEST"
+  },
+  {
+   "applied": true,
+   "case": "parent",
+   "expected_message_of_intact_guard": "ALL_VERIFIED_MUST_BE_FALSE",
+   "file": "df_mod_e0_close.py",
+   "intact_guard_red": true,
+   "mutant": "M10_all_verified_conjunction",
+   "mutant_accepts_the_altered_copy": true,
+   "under_intact": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_status": "VERIFIED"
+   },
+   "under_mutant": {
+    "all_verified": true,
+    "closure": "TOTAL",
+    "unit_problems": [
+     "parent: the report's recorded outcome differs from the file (or is absent)"
+    ],
+    "unit_status": "VERIFIED"
+   },
+   "verdict": "MUTANT_KILLED_BY_BEHAVIOUR_TEST"
+  },
+  {
+   "applied": true,
+   "case": "updates",
+   "expected_message_of_intact_guard": "exceed the allowance",
+   "file": "df_mod_e0_close.py",
+   "intact_guard_red": true,
+   "mutant": "M11_update_allowance",
+   "mutant_accepts_the_altered_copy": true,
+   "under_intact": {
+    "all_verified": false,
+    "closure": "PARTIAL",
+    "unit_status": "PROBLEMS"
+   },
+   "under_mutant": {
+    "all_verified": true,
+    "closure": "TOTAL",
+    "unit_problems": [],
+    "unit_status": "VERIFIED"
+   },
+   "verdict": "MUTANT_KILLED_BY_BEHAVIOUR_TEST"
+  },
+  {
+   "applied": true,
+   "case": "stranger",
+   "expected_message_of_intact_guard": "REFUSAL_EXPECTED",
+   "file": "df_mod_e0_close.py",
+   "intact_guard_red": true,
+   "mutant": "M12_strangers",
+   "mutant_accepts_the_altered_copy": true,
+   "under_intact": {
+    "refused": "REFUSED: attempts that are not members of the design: ['H2__h9__s1__profiles']"
+   },
+   "under_mutant": {
+    "all_verified": true,
+    "closure": "TOTAL",
+    "unit_problems": [],
+    "unit_status": "VERIFIED"
+   },
+   "verdict": "MUTANT_KILLED_BY_BEHAVIOUR_TEST"
+  }
+ ],
+ "schema": "df_mod_e0_mutants.v1",
+ "summary": {
+  "cpu_seconds": 155.3,
+  "killed": 12,
+  "mutants": 12
+ }
+}

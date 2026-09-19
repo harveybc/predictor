@@ -35,14 +35,20 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
 
 
+_LOAD_LOCK = __import__("threading").RLock()
+
+
 def _load(name: str, where: Path = HERE):
-    if name in sys.modules:
-        return sys.modules[name]
-    spec = importlib.util.spec_from_file_location(name, where / f"{name}.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    spec.loader.exec_module(module)
-    return module
+    """Thread-safe: concurrent children (RP14 --parallel) must never see a half-initialised module
+    (a worker crashed with `df_isolated_runner has no attribute Task` under that race)."""
+    with _LOAD_LOCK:
+        if name in sys.modules:
+            return sys.modules[name]
+        spec = importlib.util.spec_from_file_location(name, where / f"{name}.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        sys.modules[name] = module
+        return module
 
 
 E = _load("df_mod_e0")
@@ -51,6 +57,8 @@ AD = _load("df_mod_e0_arch_design")
 R = _load("df_utility_run")
 DEV = _load("df_utility_dev_run")
 H = _load("df_utility_harness")
+IR = _load("df_isolated_runner")
+MET = _load("df_mod_e0_metrics")
 campaign = _load("df_d3_campaign")
 
 SCORE_UNVERIFIED = "SCORE_UNVERIFIED"
@@ -82,7 +90,6 @@ def verified_cell(attempt_dir: Path, result: dict, verified: dict) -> tuple:
 
 
 def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seconds: float, cpu_seconds: float) -> dict:
-    IR = _load("df_isolated_runner")
     attempt_dir = Path(attempt_dir)
     attempt_dir.mkdir(parents=True, exist_ok=True)
     prior = attempt_dir / "outcome.json"
@@ -156,9 +163,10 @@ def _metrics(rec: dict) -> tuple:
                 source = rec["scores"]["test"]["model"]
             states[name] = "NO_MEDIDO" if (source or {}).get("status") == E.NO_MEDIDO else "NO_APLICA"
     # RP13: the D/Y/M/G rows of the metrics contract (data per split, model per checkpoint)
-    for name, value, unit, split in _load("df_mod_e0_metrics").terminal_rows(rec)[0]:
+    contract_rows, contract_states = MET.terminal_rows(rec)
+    for name, value, unit, split in contract_rows:
         rows.append({**R._metric(name, value, unit), "split": split})
-    states.update(_load("df_mod_e0_metrics").terminal_rows(rec)[1])
+    states.update(contract_states)
     return rows, states
 
 
