@@ -1,17 +1,17 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
 Actualizado: 2026-09-19. Responsable del programa y revision: Musashi.
-Ejecucion delegada: Satoshi. Estado: E0-DEV y etapa ARCH EJECUTADOS;
-REVISION ML CON CORRECCIONES, sin ganador ni confirmacion.
+Ejecucion delegada: Satoshi. Estado: E0-DEV, etapa ARCH y piloto E1 EJECUTADOS;
+PILOTO E1 NO GOBERNADO, revision ML con correcciones, sin confirmacion.
 
-**Vigente:** [RP25-RP32](../handoffs/MUSASHI_PROGRAM_RP25_RP32_2026_09_19.md).
-[Dictamen RP17-RP24](../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md):
-los 16 controles nuevos conservan MASE y el gamma factorial recalculado es
--0.0223 a -0.0244, descriptivo. No repetirlos. Reparar la union de cierres y el
-loader E1; los tests actuales no prueban politica semanal ni long/flat ejecutable.
-Recuperar R0/R1/R2 de la propuesta y ejecutar piloto household de desarrollo
-solo despues de los tests de datos/entrenamiento y del preflight de recursos.
-No lanzar el factorial completo ni reservas.
+**Vigente:** [RP33-RP40](../handoffs/MUSASHI_PROGRAM_RP33_RP40_2026_09_19.md).
+[Dictamen RP25-RP32](../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md):
+el piloto household produjo errores reproducibles pero ejecuto fuera de data-gov;
+conservarlo como historico no gobernado, no fingir entregas retrospectivas.
+Reparar verificacion del cierre, mascaras de validacion AE, soporte del receptor
+y adopcion antes de un sucesor E1 realmente gobernado. R0/R1/R2 ya nombran los
+regimenes correctos; no hay ganador. El controlador RL aun requiere integracion
+con modelo/entorno/broker reales. E0 no se repite por estos defectos.
 [13D](program_v3/13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md)
 resuelve el escenario de simulacion: capital real y exposicion no bloquean DEV.
 
@@ -20,6 +20,12 @@ preentrenado congelado; R2 = los mismos pesos iniciales preentrenados ajustables
 El resto del modelo se entrena en los tres. Crudo/agrupado/fusion y arquitectura
 son factores separados; nunca redefinen estos codigos. El checker documental
 verifica el contrato; gradientes/estados/pesos verifican su ejecucion.
+
+**Invariante de ejecucion:** nuevos experimentos registran campana y entrega
+ANTES de preparar/fitear; terminal local no reemplaza contabilidad y cubo.
+Importacion historica es evidencia retrospectiva separada, nunca una campana
+prospectiva reconstruida despues. Registrar recursos es trabajo tecnico del
+ejecutor por el procedimiento existente, no una nueva decision del owner.
 
 **Antecedente aprobado, 18-sep:** comparar ARCH-A (Conv1D local, referencia), ARCH-B
 (convolucion dilatada/TCN), ARCH-C (Conv1D + GRU/LSTM) y control sin extractor
@@ -213,10 +219,10 @@ demuestra por si solo ausencia de sobreajuste ni selecciona por el test.
 | Orden | Trabajo / responsable ejecutor Satoshi | Dependencia y salida |
 |---|---|---|
 | Ejecutado, revision parcial | Piloto multivariado RP1-RP8 | 66 celdas y 3 pilotos; conservar efectos descriptivos, no aceptacion confirmatoria |
-| Ahora A | RP25-RP26: union de cierres, herencia y semantica del diseno | Recalcular sin entrenar; preservar etapa original y 16 controles completados |
-| Ahora B | RP27-RP30: loader real y piloto E1 R0/R1/R2 | Roles/tiempos/soporte/espectro, equivalencia de pesos y gradientes; piloto household acotado, no confirmacion |
+| Ahora A | RP33-RP34: adopcion de paneles, importacion historica y cierre E1/E0 | Campana/entregas antes de trabajo nuevo; conservar y reverificar resultados, sin reentrenar E0 |
+| Ahora B | RP35-RP38: dominios, stopping AE, adecuacion y sucesor E1 | Validacion fija, contexto realmente consumido, modelos comparables y piloto gobernado antes de reservas |
 | E0, antes de elegir | MOD-ARCH-COMPARE: ARCH-A/B/C y ARCH-0 en el modular propio | Efectos descriptivos recalculados; aceptacion compuesta pendiente de RP26, sin ganador universal |
-| Paralelo C | RP31: controlador semanal y accion long/flat en la ruta real | Release/fallback por timestamps, gap de precio, costos y continuidad; pruebas offline, no ejecucion financiera |
+| Paralelo C | RP39: integrar controlador, inferencia y broker reales | Release/fallback, gaps/latencia, cash/equity, costos y pendientes; pruebas offline, no entrenamiento RL aun |
 | Despues D | E1 publico: desarrollar perfiles, seleccion, contextos, R0/R1/R2 y comparadores | Piloto de mecanismos y datos admisibles; fijar procedimiento, margenes, precision y presupuestos antes de reservas |
 | Despues D, extension | MOD-FROZEN-PREFIX y MOD-CORE-PRETRAIN: hipotesis H-CORE del owner | Comparacion R0/R1/R2 y receptor adecuado completados; fijar/materializar prefijo; nucleo desde cero vs preentrenado ajustable vs congelado, con cabezales y costo total |
 | Despues E | E0-CONF H2/H3 y E2 H1 en reservas independientes | Reglas E1 fijadas y revision ML; no reutilizar test de diagnosticos anteriores |

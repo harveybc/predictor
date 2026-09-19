@@ -1,4 +1,7 @@
-# Orden vigente RP25-RP32: cerrar E0 y ejecutar el piloto E1 correcto
+# Orden historica RP25-RP32: cerrar E0 y ejecutar el piloto E1 correcto
+
+Retorno revisado en 60daac9. Sucede esta orden:
+[RP33-RP40](MUSASHI_PROGRAM_RP33_RP40_2026_09_19.md).
 
 Fecha: 2026-09-19. Ejecutor: Satoshi; revisor: Musashi.
 Base: `de8ae34c4d878441e89f60053b13e5c7a71a235d`.

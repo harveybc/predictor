@@ -25,6 +25,10 @@ LEARNING_REGIMES = {
     "R1": {"detector_initialization": "SHARED_PRETRAINED", "detector_update": "FROZEN", "rest_update": "TRAINABLE"},
     "R2": {"detector_initialization": "SHARED_PRETRAINED", "detector_update": "TRAINABLE", "rest_update": "TRAINABLE"},
 }
+EXECUTION_GOVERNANCE = {
+    "new_runs": "REGISTER_AND_DELIVER_BEFORE_DATA_PREPARATION_OR_FIT",
+    "historical_import": "SEPARATE_RETROSPECTIVE_EVIDENCE",
+}
 
 
 def validate(state, root):
@@ -37,6 +41,8 @@ def validate(state, root):
         issues.append("next actions required")
     if state.get("learning_regimes") != LEARNING_REGIMES:
         issues.append("learning regimes contract")
+    if state.get("execution_governance") != EXECUTION_GOVERNANCE:
+        issues.append("execution governance contract")
 
     def exact_list(field, expected, label):
         values = state.get(field, [])

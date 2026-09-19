@@ -1,0 +1,14 @@
+{
+  "date": "2026-09-19",
+  "scope": "read-only systemd, service startup config and active data-gov SQLite accounting; no warehouse query",
+  "service_states": {"data_gov": "active", "financial_lake": "active", "synthetic_lake": "active", "warehouse": "active"},
+  "automatic_restarts": {"data_gov": 0, "financial_lake": 0, "synthetic_lake": 0, "warehouse": 0},
+  "startup_config_lake_ids": ["financial_files", "olap_cube", "predictor_examples", "governance_smoke"],
+  "campaign_key": "satoshi-e1-household-dev-20260919-e1-household-dev-pilot",
+  "exact_registered_campaigns": 0,
+  "campaign_keys_containing_household": 0,
+  "catalog_activation_performed": false,
+  "services_changed": false,
+  "database_writes": false,
+  "owner_input_required_for_technical_registration": false
+}
