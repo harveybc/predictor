@@ -1,6 +1,6 @@
 {
   "schema": "research_program_method_state.v1",
-  "updated_on": "2026-09-18",
+  "updated_on": "2026-09-19",
   "current_stage": "external_review",
   "completed_stages": [
     "discovery",
@@ -8,7 +8,7 @@
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "RP1_RP8_REVIEWED_CORRECTIONS_ORDERED_RP9_RP16",
+  "handoff_status": "RP9_RP16_ML_REVIEWED_CORRECTIONS_ORDERED_RP17_RP24",
   "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
   "architecture_comparison": {
     "reference": "ARCH-A",
@@ -19,22 +19,24 @@
       "ARCH-0"
     ],
     "selected_winner": null,
-    "adoption": "IN_NEXT_DEVELOPMENT_SUCCESSOR_RP9_RP16"
+    "adoption": "INFORMATIVE_DEV_STAGE_EXECUTED_ESTIMANDS_REQUIRE_CORRECTION"
   },
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
-    "RP9-RP12: adopt review, repair verification and descriptors; reuse original results within demonstrated scope",
-    "RP13: complete metric coverage before new training; backfill only observed or reconstructible facts",
-    "RP14: governed bounded ARCH-A/B/C/0 development comparison with matched mechanism controls",
-    "RP15-RP16: concrete E1 bank and RL demand, complete closure; no reserve or live"
+    "RP17-RP20: adopt ML review; repair complete-pair estimands, replay validity and metric support; preserve original measurements",
+    "RP21-RP22: matched adequacy/cost review and 16 missing readout controls under a bounded sequential DEVELOPMENT successor",
+    "RP23: physical per-task E1 geometry and weekly RL environment tests; 13D resolves owner questions for simulation",
+    "RP24: complete governed closure, test evidence and one review request; no reserve, full factorial or live"
   ],
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
     "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-    "orders": "../../handoffs/MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md",
+    "orders": "../../handoffs/MUSASHI_PROGRAM_RP17_RP24_2026_09_19.md",
     "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-    "external_review": "../../audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md"
+    "external_review": "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
+    "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
+    "return": "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md"
   },
   "proposal_coverage": {
     "P-MOD": [
@@ -106,32 +108,38 @@
         "docs/audits/evidence/RP_REVIEW_2026_09_18/results.json",
         "https://github.com/harveybc/predictor/blob/2347c7b/docs/audits/work_plan/SATOSHI_PROGRAM_RP1_RP8_RETURN_2026_09_18.md"
       ],
-      "next_action": "Repair closure and profile formula, preserve original pilot and descriptive effects; no blanket restart",
+      "next_action": "Preserve pilot and architecture-stage measurements; correct interpretation under RP17-RP24, no blanket restart",
       "deliverable": "H2 profile/random effects and H3 sequence/summary effects with matched controls and cost"
     },
     {
       "id": "MOD-E0-CLOSURE",
       "owner": "Satoshi",
-      "status": "DESIGNED",
+      "status": "EXECUTED",
       "depends_on": [
         "MOD-E0-DEV"
       ],
       "evidence": [
-        "docs/audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md"
+        "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
+        "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
+        "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md"
       ],
-      "next_action": "RP10-RP13: exact population, task reconstruction, inference, metrics and independent warehouse reconciliation",
+      "next_action": "RP18-RP20: fixed contrast populations, code-bound finite replays, D/Y support and DX composition",
       "deliverable": "Corrected closure, descriptor impact proof and honest metric coverage with preserved history"
     },
     {
       "id": "MOD-ARCH-COMPARE",
       "owner": "Satoshi",
-      "status": "NOT_STARTED",
+      "status": "EXECUTED",
       "depends_on": [
         "MOD-E0-DEV",
         "MOD-E0-CLOSURE"
       ],
-      "evidence": [],
-      "next_action": "RP14: test adequate matched ARCH-A/B/C/0 receivers, seal bounded successor then execute",
+      "evidence": [
+        "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
+        "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
+        "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md"
+      ],
+      "next_action": "RP21-RP22: matched criteria/costs, reanalyse saved results, then 16 missing controls with verified donors; no universal winner",
       "deliverable": "Adequacy, H2/H3 effects by architecture and regime, uncertainty, learning curves and total cost; no universal winner presumed"
     },
     {
@@ -143,9 +151,10 @@
         "MOD-ARCH-COMPARE"
       ],
       "evidence": [
-        "https://github.com/harveybc/predictor/blob/2347c7b/docs/tres_temas_entrevista/program_v3/13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
+        "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
+        "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/tres_temas_entrevista/program_v3/E1_FAMILIES.json"
       ],
-      "next_action": "RP15: replace criteria-only draft with explicit census-derived family manifest; final selection after architecture development",
+      "next_action": "RP23: replace catalog eligibility with physical per-task split/window/availability evidence; prepare design without training or opening reserves",
       "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan"
     },
     {
@@ -188,9 +197,10 @@
       "status": "DESIGNED",
       "depends_on": [],
       "evidence": [
-        "https://github.com/harveybc/predictor/blob/2347c7b/docs/tres_temas_entrevista/program_v3/13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
+        "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
+        "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md"
       ],
-      "next_action": "RP15: verify executable demand per config and derive weekly contract; historical defaults are not adopted business choices",
+      "next_action": "Implement 13D simulation specification and weekly environment tests; real account details are not required for current development",
       "deliverable": "Observations/targets/actions, availability, weekly cycle, cost and data gaps"
     },
     {
@@ -202,7 +212,7 @@
         "BUSINESS-CONTRACT"
       ],
       "evidence": [],
-      "next_action": "Prepare mandatory historical forecasting and RL evaluation without requiring positive H1",
+      "next_action": "RP23 environment tests now; scientific weekly forecasting and RL evaluation remains mandatory after its data/method prerequisites",
       "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost"
     },
     {
@@ -253,22 +263,41 @@
   ],
   "state_semantics": "Stage refers to the successor program. EXECUTED is not external scientific acceptance. Historical evidence is preserved at its original scope; the reviewer checked local source facts, not a fresh live warehouse reconciliation. Documentary PASS grants no scientific approval.",
   "review": {
-    "reviewed_revision": "2347c7b",
-    "disposition": "REVISIONS_REQUIRED_PRESERVE_DESCRIPTIVE_PILOT",
+    "reviewed_revision": "6f6c1a00bf2fe8e285f821dfb72d12505a9049ed",
+    "disposition": "REVISIONS_REQUIRED_PRESERVE_MEASUREMENTS_CORRECT_ESTIMANDS",
     "independent_local_source_checks": {
-      "cells": 69,
+      "attempts": 120,
+      "scope": "model MASE from saved predictions, labels and denominators",
       "discrepancies": 0,
-      "scope": "rows, labels, naive/oracle, denominators, aggregate MAE/MASE, weights digest"
+      "max_abs_difference": 7.771561172376096e-16
     },
-    "counterexamples": "docs/audits/evidence/RP_REVIEW_2026_09_18/results.json",
+    "counterexamples": "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
     "live_warehouse_rechecked_by_reviewer": false,
-    "inference_replayed_by_reviewer": false,
-    "descriptor_reanalysis": {
-      "partitions": 15,
-      "changed": 0
-    },
-    "original_files": 497,
-    "originals_unchanged": true,
-    "scientific_confirmation": false
-  }
+    "fresh_weight_replay_executed_by_reviewer": false,
+    "inference_recomputed_by_reviewer": true,
+    "scientific_confirmation": false,
+    "owner_input_required_for_current_order": false,
+    "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D_REAL_ACCOUNT_UNSPECIFIED"
+  },
+  "review_history": [
+    {
+      "reviewed_revision": "2347c7b",
+      "disposition": "REVISIONS_REQUIRED_PRESERVE_DESCRIPTIVE_PILOT",
+      "independent_local_source_checks": {
+        "cells": 69,
+        "discrepancies": 0,
+        "scope": "rows, labels, naive/oracle, denominators, aggregate MAE/MASE, weights digest"
+      },
+      "counterexamples": "docs/audits/evidence/RP_REVIEW_2026_09_18/results.json",
+      "live_warehouse_rechecked_by_reviewer": false,
+      "inference_replayed_by_reviewer": false,
+      "descriptor_reanalysis": {
+        "partitions": 15,
+        "changed": 0
+      },
+      "original_files": 497,
+      "originals_unchanged": true,
+      "scientific_confirmation": false
+    }
+  ]
 }

@@ -1,9 +1,19 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
-Fecha: 2026-09-18. Responsable del programa y revision: Musashi.
-Ejecucion delegada: Satoshi. Estado: E0-DEV EJECUTADO; REVISION CON CORRECCIONES.
+Actualizado: 2026-09-19. Responsable del programa y revision: Musashi.
+Ejecucion delegada: Satoshi. Estado: E0-DEV y etapa ARCH EJECUTADOS;
+REVISION ML CON CORRECCIONES, sin ganador ni confirmacion.
 
-**Adicion aprobada, 18-sep:** comparar ARCH-A (Conv1D local, referencia), ARCH-B
+**Vigente:** [RP17-RP24](../handoffs/MUSASHI_PROGRAM_RP17_RP24_2026_09_19.md).
+[Dictamen RP9-RP16](../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md):
+120 MASE recalculados desde arrays sin discrepancias; gamma publicado mezclaba
+contrastes y cambia de signo al usar el mismo par. Conservar mediciones, corregir
+inferencia/replay/metricas, completar solo 16 controles faltantes bajo sucesor DEV
+y preparar E1 con geometria fisica por dataset. No repetir todo ni lanzar el
+factorial completo. [13D](program_v3/13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md)
+resuelve el escenario de simulacion: capital real y exposicion no bloquean DEV.
+
+**Antecedente aprobado, 18-sep:** comparar ARCH-A (Conv1D local, referencia), ARCH-B
 (convolucion dilatada/TCN), ARCH-C (Conv1D + GRU/LSTM) y control sin extractor
 aprendido dentro de E0 antes de elegir el procedimiento. Hipotesis
 [H-CORE](CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md)
@@ -15,7 +25,9 @@ incompleto, descriptor de tendencia incorrecto y atribucion H3 limitada.
 No borrar el piloto ni repetirlo entero: corregir, demostrar reuso y ejecutar
 [RP9-RP16](../handoffs/MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md).
 La correccion de tendencia mantiene las 15 particiones del piloto en el reanalisis.
-ARCH-A/B/C/0 aun no comparadas; H-CORE sigue despues de E1 y del prefijo verificable.
+Ese era el estado al emitir RP9-RP16. La etapa informativa ARCH-A/B/C/0 ya se
+ejecuto; su lectura queda corregida por el dictamen de 19-sep. H-CORE sigue
+despues de E1 y del prefijo verificable.
 
 ## 1. Autoridad, alcance y correccion de rumbo
 
@@ -193,10 +205,10 @@ demuestra por si solo ausencia de sobreajuste ni selecciona por el test.
 | Orden | Trabajo / responsable ejecutor Satoshi | Dependencia y salida |
 |---|---|---|
 | Ejecutado, revision parcial | Piloto multivariado RP1-RP8 | 66 celdas y 3 pilotos; conservar efectos descriptivos, no aceptacion confirmatoria |
-| Ahora A | MOD-E0-CLOSURE: corregir verificador, descriptor y cobertura de metricas | RP9-RP13; pruebas contra los contraejemplos, reuso y conciliacion independiente |
-| Ahora B | Comparacion arquitectonica y controles mecanisticos del sucesor | RP14: diseno numerico, adecuacion/contexto/costo, cuatro arquitecturas y ambos contrastes antes de elegir |
-| E0, antes de elegir | MOD-ARCH-COMPARE: ARCH-A/B/C y ARCH-0 en el modular propio | Adoptar tras conciliar el retorno en curso; reutilizar piloto compatible, medir interacciones arquitectura/regimen y costo antes de fijar el procedimiento |
-| Paralelo C | Reconciliar demanda real de forecasting/RL semanal y banco publico de E1 | Leer configs/productores existentes; no recenso global ni dependencia de un seno aprobado; contratos y deficits por fuente |
+| Ahora A | RP17-RP20: contrastes completos, replays, metricas D/Y y DX | Corregir calculo y finitud con PRE/POST; preservar/reutilizar las 112 celdas y sucesor DX al alcance demostrado |
+| Ahora B | RP21-RP22: adecuacion y controles faltantes ARCH | Costo por tarea comparable, criterio lineal explicito, 16 controles r=0 bajo sucesor DEV; no factorial completo ni confirmacion |
+| E0, antes de elegir | MOD-ARCH-COMPARE: ARCH-A/B/C y ARCH-0 en el modular propio | Etapa ejecutada, efectos en revision; no confundir falta de convergencia con incapacidad ni control de readout con mecanismo aislado |
+| Paralelo C | RP23: demanda semanal/RL, contratos y geometria E1 | 13D resuelve DEV; ventanas reales por split, disponibilidad, DST, exposicion previa y fuente fisica; no recenso global |
 | Despues D | E1 publico: desarrollar perfiles, seleccion, contextos, R0/R1/R2 y comparadores | Piloto de mecanismos y datos admisibles; fijar procedimiento, margenes, precision y presupuestos antes de reservas |
 | Despues D, extension | MOD-FROZEN-PREFIX y MOD-CORE-PRETRAIN: hipotesis H-CORE del owner | Comparacion R0/R1/R2 y receptor adecuado completados; fijar/materializar prefijo; nucleo desde cero vs preentrenado ajustable vs congelado, con cabezales y costo total |
 | Despues E | E0-CONF H2/H3 y E2 H1 en reservas independientes | Reglas E1 fijadas y revision ML; no reutilizar test de diagnosticos anteriores |

@@ -1,4 +1,7 @@
-# Orden vigente RP9-RP16: corregir, reutilizar y comparar el modular
+# Orden historica RP9-RP16: corregir, reutilizar y comparar el modular
+
+Retorno revisado el 19-sep. La siguiente orden vigente es
+[RP17-RP24](MUSASHI_PROGRAM_RP17_RP24_2026_09_19.md); conservar esta como historia.
 
 Fecha: 2026-09-18. Responsable: Satoshi. Revision: Musashi.
 Origen: retorno `2347c7b` y [dictamen con evidencia ejecutada](../audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md).

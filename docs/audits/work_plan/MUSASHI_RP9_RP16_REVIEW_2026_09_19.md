@@ -127,12 +127,15 @@ Ejecutado con Python de `trading-stack`, CPU, numpy, y codigo revisado:
 ```bash
 CUDA_VISIBLE_DEVICES='' OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python -B docs/audits/evidence/RP16_REVIEW_2026_09_19/reproduce.py \
-  --repo . --run-root <root-preservado-mod_e0_arch_stage_v1> \
+  --repo <checkout-de-la-revision-6f6c1a0> \
+  --run-root <root-preservado-mod_e0_arch_stage_v1> \
   --output /tmp/rp16-review-results.json
 ```
 
 Sin `--run-root` reproduce los defectos del estimador/cache con la evidencia
 commiteada; la prueba de restauracion y la lectura fisica requieren ese root.
+El script se publica en master; el codigo y la evidencia examinados se leen
+del checkout fijado mediante `--repo`, no del runtime distinto de master.
 Recalculo independiente de MASE del modelo desde arrays: **120 intentos, cero
 discrepancias**, diferencia maxima 7.77e-16. No es un nuevo replay de pesos ni
 una nueva conciliacion viva del warehouse. Diseno/cierre originales intactos;
@@ -143,6 +146,8 @@ Tres tests existentes ejecutados: enumeracion arquitectonica, composicion DX y
 efectos RP16: **3 passed**. El ultimo pasa pese a F1: evidencia concreta de que
 la suite no cubria la pregunta correcta. No reejecute la suite completa de
 Satoshi; sus 2056/37/3/8 siguen siendo conteos del ejecutor, no certificacion mia.
+Publicacion documental: `check_plan.py` PASS y sus **17 tests passed**. Esto
+comprueba cobertura/dependencias del plan, no valida una hipotesis cientifica.
 
 ## Disposicion y siguiente trabajo
 
