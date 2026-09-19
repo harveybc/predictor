@@ -94,7 +94,8 @@ def test_RP4_freeze_pilots_without_test_project_with_headroom_register_then_cell
     assert report["reconciliation"]["missing_units"] == []
     t = gov.terminals[(report["campaign"]["campaign_sha256"], "H2__h3__s1__profiles")]
     names = {m["metric"]: m for m in t["metrics"]}
-    assert names["mod_e0.mase_validation"]["status"] == "MEDIDO" and "mod_e0.mase_test" in names
+    assert all(set(m) == RUN.METRIC_KEYS for m in t["metrics"])                      # exactly the governed schema (data-gov METRIC_KEYS)
+    assert json.loads(t["tags"]["metric_states"])["mod_e0.mase_validation"] == "MEDIDO" and "mod_e0.mase_test" in names
     assert t["tags"]["hypothesis"] == "H2" and t["tags"]["condition"] == "h3_r1" and t["tags"]["phase"] == "DEVELOPMENT"
     pt = gov.terminals[(list(gov.terminals)[0][0], "pilot__H2_profiles")]
     assert not any(m["metric"].endswith("_test") for m in pt["metrics"])
@@ -137,3 +138,17 @@ def test_ML11_a_real_cost_pilot_child_completes_and_verifies_without_a_test_spli
     assert rec["exposure"] == "NO_TEST_ACCESS" and "test" not in rec["scores"] and rec["cost"]["fit_seconds"] > 0
     again = RUN.run_isolated(job, attempt_dir=tmp_path / "p", assigned_bytes=3 << 30, wall_seconds=600.0, cpu_seconds=600)
     assert again["resumed"] is True and again["score"]["scores"]["validation"]["model"]["mase_mean"] == rec["scores"]["validation"]["model"]["mase_mean"]
+
+
+def test_RP5_a_terminal_refused_for_its_metric_rows_is_corrected_into_a_schema_valid_successor():
+    bad = {"schema": "governed_terminal.v1", "status": "COMPLETED", "generation": 1, "deliveries": [], "artifacts": [],
+           "metrics": [{"metric": "mod_e0.mase_validation", "split": "development", "horizon": 1, "unit": "mase", "value": 0.5,
+                        "std_dev": None, "min_value": None, "max_value": None, "status": "MEDIDO"},
+                       {"metric": "mod_e0.oracle_mase_validation", "split": "development", "horizon": 1, "unit": "mase", "value": None,
+                        "std_dev": None, "min_value": None, "max_value": None, "status": "NO_APLICA"}],
+           "tags": {"purpose": "MOD_E0_DEV"}, "costs": {"cpu_seconds": 1.0, "wall_seconds": 1.0}, "started_at": "2026-09-18T12:00:00Z", "finished_at": "2026-09-18T12:00:01Z"}
+    fixed = RUN.corrected_terminal(bad)
+    assert [set(m) for m in fixed["metrics"]] == [RUN.METRIC_KEYS] and fixed["metrics"][0]["value"] == 0.5
+    states = json.loads(fixed["tags"]["metric_states"])
+    assert states == {"mod_e0.mase_validation": "MEDIDO", "mod_e0.oracle_mase_validation": "NO_APLICA"}
+    assert fixed["status"] == "COMPLETED" and fixed["deliveries"] == [] and "generation" not in fixed and "repair" in fixed["tags"]

@@ -1,0 +1,2 @@
+# PRE (mod-e0-dev-v2, 2026-09-18 20:0x): every terminal refused by data-gov
+outbox: sent 1758, pending 72, class REFUSED_BY_SERVER, last_error 'terminal refused: http 400 invalid metric schema' (a 'status' key had been added to each metric row); reconciliation of mod-e0-dev-v2-mod-e0-cells: 66 missing units; warehouse covered 0/66

@@ -121,25 +121,75 @@ def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seco
     return summary
 
 
-def _metric(name, value, unit, status="MEDIDO"):
-    m = R._metric(name, value if value is not None else 0.0, unit)
-    m["status"] = status if value is not None else "NO_APLICA"
-    if value is None:
-        m["value"] = None
-    return m
+METRIC_KEYS = {"metric", "split", "horizon", "unit", "value", "std_dev", "min_value", "max_value"}   # governed_terminal.v1 (data-gov)
 
 
-def _metrics(rec: dict) -> list:
+def _metric(name, value, unit):
+    """A governed metric carries exactly the schema's keys; a NO_APLICA value is not a metric row
+    (the state travels in the terminal's tags), never a fabricated zero."""
+    return R._metric(name, value, unit) if value is not None else None
+
+
+def _metrics(rec: dict) -> tuple:
+    """(metric rows, metric states) — states MEDIDO / NO_APLICA per contract, carried in tags."""
     v = rec["scores"]["validation"]
-    m = [_metric("mod_e0.mase_validation", v["model"]["mase_mean"], "mase"), _metric("mod_e0.mae_validation", v["model"]["mae_mean"], "mae"),
-         _metric("mod_e0.naive_mase_validation", v["naive"]["mase_mean"], "mase"), _metric("mod_e0.oracle_mase_validation", v["oracle"]["mase_mean"], "mase"),
-         _metric("mod_e0.linear_mase_validation", v["linear_window"]["mase_mean"], "mase"),
-         _metric("mod_e0.updates", rec["training"]["updates"], "count"), _metric("mod_e0.params_trainable", rec["parameters"]["trainable"], "count"),
-         _metric("mod_e0.profiles_ari", rec["profiles"]["ari_vs_latent"], "ratio")]
+    wanted = [("mod_e0.mase_validation", v["model"]["mase_mean"], "mase"), ("mod_e0.mae_validation", v["model"]["mae_mean"], "mae"),
+              ("mod_e0.naive_mase_validation", v["naive"]["mase_mean"], "mase"), ("mod_e0.oracle_mase_validation", v["oracle"]["mase_mean"], "mase"),
+              ("mod_e0.linear_mase_validation", v["linear_window"]["mase_mean"], "mase"),
+              ("mod_e0.updates", rec["training"]["updates"], "count"), ("mod_e0.params_trainable", rec["parameters"]["trainable"], "count"),
+              ("mod_e0.profiles_ari", rec["profiles"]["ari_vs_latent"], "ratio")]
     if "test" in rec["scores"]:
         t = rec["scores"]["test"]
-        m += [_metric("mod_e0.mase_test", t["model"]["mase_mean"], "mase"), _metric("mod_e0.mae_test", t["model"]["mae_mean"], "mae")]
-    return [x for x in m if x["value"] is not None]
+        wanted += [("mod_e0.mase_test", t["model"]["mase_mean"], "mase"), ("mod_e0.mae_test", t["model"]["mae_mean"], "mae")]
+    rows, states = [], {}
+    for name, value, unit in wanted:
+        m = _metric(name, value, unit)
+        states[name] = "MEDIDO" if m is not None else "NO_APLICA"
+        if m is not None:
+            rows.append(m)
+    return rows, states
+
+
+def corrected_terminal(terminal: dict) -> dict:
+    """The successor of a terminal refused for its metric rows (RP5 repair): the same outcome,
+    instants, costs, deliveries and tags; every metric row reduced to the schema's keys, rows
+    without a finite value dropped and their state recorded in the tags."""
+    rows, states = [], {}
+    for m in terminal.get("metrics") or []:
+        row = {k: m.get(k) for k in METRIC_KEYS}
+        if isinstance(row.get("value"), (int, float)) and np.isfinite(row["value"]):
+            rows.append(row)
+            states[m["metric"]] = "MEDIDO"
+        else:
+            states[m["metric"]] = "NO_APLICA"
+    fixed = {k: v for k, v in terminal.items() if k != "generation"}
+    fixed["metrics"] = rows
+    fixed["tags"] = {**(terminal.get("tags") or {}), "metric_states": json.dumps(states, sort_keys=True),
+                     "repair": "RP5: metric rows reduced to the governed schema (a status key had been added)"}
+    return fixed
+
+
+def repair_refused_terminals(outbox, gov, GR, campaign_shas: set, reason: str) -> dict:
+    """Supersede every pending terminal of the given campaigns that the server refused: the
+    corrected successor is sent as generation 2 and the original disposed SUPERSEDED."""
+    done, failed = [], []
+    for item in list(outbox.status()["pending"]):
+        if item.get("campaign_sha256") not in campaign_shas:
+            continue
+        original = json.loads((outbox.pending / item["file"]).read_text(encoding="ascii"))
+        successor = corrected_terminal(original["terminal"])
+
+        def sender(envelope):
+            status, receipt = gov.report_terminal(envelope["campaign_sha256"], envelope["unit_id"], envelope["terminal"])
+            if status not in (200, 201):
+                raise GR.GovernedRunError(f"terminal refused: http {status} {receipt.get('error', '')}".strip())
+            return receipt
+        try:
+            rec = outbox.supersede(item["file"], successor, sender, reason)
+            done.append({"unit_id": item["unit_id"], "disposition": rec})
+        except Exception as e:  # noqa: BLE001
+            failed.append({"unit_id": item["unit_id"], "error": str(e)[:200]})
+    return {"superseded": done, "failed": failed}
 
 
 def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox, OB, CE, code_identity: dict, budgets: dict,
@@ -199,11 +249,13 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
             status_t, reason = "COMPLETED", None
         else:
             status_t, reason = "INCONCLUSIVE", f"{out['outcome']}: {out.get('reason') or ''}"[:300]
-        terminal = R._terminal(status=status_t, reason=reason, cost=cost, metrics=_metrics(rec) if rec else [],
+        rows, states = _metrics(rec) if rec else ([], {})
+        terminal = R._terminal(status=status_t, reason=reason, cost=cost, metrics=rows,
                                started=cost.get("started_at") or R.now_iso(), finished=cost.get("ended_at") or R.now_iso(),
                                tags={"purpose": "MOD_E0_DEV", "proposal": "P-MOD", "grants": "NONE", "classification": "NON_GOVERNING",
                                      "outcome": str(out["outcome"]), "design_sha256": design["design_sha256"],
-                                     "output_sha256": out.get("output_sha256") or "", "phase": "DEVELOPMENT", **tags})
+                                     "output_sha256": out.get("output_sha256") or "", "phase": "DEVELOPMENT",
+                                     "metric_states": json.dumps(states, sort_keys=True), **tags})
         outbox.put({"campaign_sha256": sha, "unit_id": unit_id, "terminal": terminal})
         flushed = GR._send_pending(gov, outbox)
         report["terminals"].append({"unit_id": unit_id, "status": status_t, "outcome": out["outcome"], "cost": cost, "pending_after_flush": flushed["pending"]})
@@ -360,6 +412,7 @@ def main(argv=None) -> int:
     parser.add_argument("--wall-seconds", type=float, default=1200.0)
     parser.add_argument("--cpu-seconds", type=int, default=1200)
     parser.add_argument("--pilot-only", action="store_true")
+    parser.add_argument("--repair-terminals", action="store_true", help="RP5: supersede refused terminals of this run's campaigns; no child runs")
     args = parser.parse_args(argv)
     design = json.loads(args.design.read_text())
     if design.get("schema") != D.DESIGN_SCHEMA or E.sha_obj({k: v for k, v in design.items() if k != "design_sha256"}) != design["design_sha256"]:
@@ -373,6 +426,17 @@ def main(argv=None) -> int:
         print(json.dumps({"event": event, **{k: (v if isinstance(v, (str, int, float, bool)) or v is None else str(v)[:80]) for k, v in facts.items()}}), flush=True)
     gov = GR.GovHttp(args.gov_url, GR.load_api_key(args.api_key_file), args.run_id)
     outbox = GR.TerminalOutbox(Path(os.path.expanduser(args.outbox_dir)).resolve())
+    if args.repair_terminals:
+        regs = json.loads((args.root / "CAMPAIGNS.json").read_text())
+        shas = {v["campaign_sha256"] for v in regs.values()}
+        rep = repair_refused_terminals(outbox, gov, GR, shas, "RP5 repair: metric rows carried a status key the governed schema does not admit")
+        recon = {k: gov.reconcile_campaign(v["campaign_sha256"])[1] for k, v in regs.items()}
+        out = {"schema": "df_mod_e0_terminal_repair.v1", "run_id": args.run_id, "superseded": len(rep["superseded"]), "failed": rep["failed"],
+               "reconciliation": {k: {"missing": len(v.get("missing_units") or []), "accounting_only": v.get("accounting_only"), "lake_only": v.get("lake_only")}
+                                  for k, v in recon.items()}}
+        (args.root / "TERMINAL_REPAIR.json").write_text(json.dumps({**out, "details": rep}, indent=1, default=str))
+        print(json.dumps(out, indent=1, default=str))
+        return 0 if not rep["failed"] else 2
     report = run_mod_e0(design, root=args.root, run_id=args.run_id, gov=gov, trace=trace, GR=GR, outbox=outbox, OB=OB, CE=CE,
                         code_identity=code_identity, budgets=budgets, cap_seconds=args.cpu_cap_seconds, already_spent=args.already_spent,
                         pilot_updates=args.pilot_updates, pilot_only=args.pilot_only)

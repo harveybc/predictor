@@ -45,7 +45,7 @@ def derivations() -> dict:
                      "why": "H2 forbids changing sampling or volume across levels; a common grid keeps information equal"},
         "period_A": {"value": E.P_A, "why": f"P_A = {E.P_A} samples gives {rows_train / E.P_A:.0f} cycles in training and "
                                             f"{E.WINDOW / E.P_A:.0f} cycles in the context; small enough for many cycles, large enough "
-                                            "for the detector's receptive field (17) to see a fraction of a cycle",
+                                            "for the branch receptive field (65) to cover the context",
                      "alternatives": [12, 48], "sensitivity": "declared, not run in this pilot"},
         "heterogeneity_levels": {"levels": list(E.LEVELS),
                                  "phi": {h: E.group_params(h)["A"]["phi"] for h in E.LEVELS},
@@ -59,9 +59,9 @@ def derivations() -> dict:
                              "why": f"tau = {E.TAU} < window and > horizon: the dependence is causal and inside the context; beta = {E.BETA} "
                                     "gives the oracle a visible gain over the marginal oracle (smoke: cross-correlation 0.68 at lag tau under "
                                     "r = 1 vs 0.00 under r = 0, marginal variance equal within 4 %)",
-                             "r0_construction": "the lagged partner term is replaced by an independent N(0,1) draw scaled to the same variance; "
-                                                "marginals preserved in distribution (ML04 checks variance, ACF and quantiles across replicates); "
-                                                "no temporal shuffle"},
+                             "r0_construction": "the lagged partner term is fed by an independent PHANTOM partner generated with group A's "
+                                                "parameters (own AR, periodic and noise draws): marginals of B preserved in distribution (ML04 "
+                                                "checks variance and ACF across replicates, cross-correlation 0.68 vs 0.00); no temporal shuffle"},
         "context": {"window": E.WINDOW, "why": f"W = {E.WINDOW} = 2 cycles of P_A and {E.WINDOW / E.group_params(3)['B']['period']:.2f} cycles of "
                                               "P_B at h = 3; covers tau and the branch receptive field",
                     "receptive_field": E.RECEPTIVE_FIELD, "alternatives": [24, 96], "in_cycles_A": E.WINDOW / E.P_A},
@@ -74,12 +74,14 @@ def derivations() -> dict:
                           "independence comes from replicates (generator seeds), not from windows, seeds of the optimiser or origins"},
         "mase": {"denominator": "train MAE of the seasonal naive with the variable's declared period; shared by every arm",
                  "zero_policy": "a zero denominator (deterministic clean control) is NO_APLICA before any test score; MAE reported"},
-        "architecture": {"per_branch": ["Conv1D(16,3,causal,relu) x2 (detector)", "Conv1D(16,3,causal,d=2) + Conv1D(16,3,causal,d=4) (integrator)",
-                                        "TimeDistributed Dense(8,relu) (adapter)"],
-                         "fusion_sequence": "Concatenate(channels) -> Conv1D(16,3,causal) core -> last position -> Dense(p)",
-                         "fusion_summary": "GlobalAveragePooling1D per branch -> Concatenate -> Dense(32) core -> Dense(p)",
-                         "trainable_params": {"H2 full model": 6312, "H3 sequence (fusion+core+head)": 920, "H3 summary": 808,
+        "architecture": {"per_branch": ["residual causal TCN block(16 filters, kernel 3, ELU) x2 (detector)",
+                                        "residual dilated blocks d = 2, 4, 8, 16 (integrator; branch reach 65)",
+                                        "TimeDistributed Dense(8), linear (adapter)"],
+                         "fusion_sequence": "Concatenate(channels) -> Conv1D(16,3,causal,ELU) core -> last position -> Dense(p) + persistence skip",
+                         "fusion_summary": "GlobalAveragePooling1D per branch -> Concatenate -> Dense(32,ELU) core -> Dense(p) + persistence skip",
+                         "trainable_params": {"H2 full model": 9608, "H3 sequence (fusion+core+head)": 920, "H3 summary": 808,
                                               "tolerance": "15 % (declared in this pilot)"},
+                         "ml07_note": "the plain ReLU stack of the first draft was replaced after the ML07 diagnostic (RP3_ML07_RECEIVER_DIAGNOSTIC.json)",
                          "optimizer": E.TRAINING, "why": "widths follow the proposal's illustration scaled down for CPU; every width is a "
                                                        "sensitivity alternative, not an optimum"},
         "estimands": {"H2": "e(h) = MASE(profiles, h) - MASE(random, h), averaged over replicates and the predefined random assignments; "
