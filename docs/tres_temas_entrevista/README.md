@@ -5,6 +5,7 @@
 - [Plan maestro v3: todas las propuestas, senales, feature engineering y RL](MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md).
 - [Orden actual para Satoshi: piloto multivariado E0 y siguientes entregables](../handoffs/MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md).
 - [Metricas de informacion, modelo, grafos y negocio: definiciones y limites](PROGRAM_METRICS_CONTRACT_v1.md).
+- [Comparacion de arquitecturas y H-CORE: preentrenar el nucleo](CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md).
 
 La campana sinusoidal aislada queda sustituida, no el programa de investigacion.
 El plan conserva las otras propuestas como frentes de trabajo con sus propios

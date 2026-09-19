@@ -435,3 +435,15 @@ con controles de adecuacion dentro del experimento. Conservar historia y no
 atribuir utilidad financiera a los diagnosticos previos. Forecasting, RL semanal,
 las seis propuestas inventariadas, STEP01-13, compresion y feature-eng quedan
 trazados por separado. Publicacion de orden, no constancia de ejecucion de Satoshi.
+
+### Adicion aprobada: comparar arquitecturas y luego preentrenar el nucleo
+
+El owner aprueba ARCH-A como referencia (Conv1D causal local), comparada con
+ARCH-B (TCN/dilatada), ARCH-C (Conv1D + GRU/LSTM) y ARCH-0 sin extractor aprendido,
+dentro de E0 y antes de elegir. Cabezal y nucleo controlados, adecuacion, efectos
+por arquitectura/regimen, incertidumbre y costo; no ganador universal supuesto.
+La hipotesis H-CORE se programa tras E1 y una representacion congelada verificada:
+el mismo nucleo desde cero, preentrenado ajustable o preentrenado congelado.
+[Detalle y prerrequisitos](../tres_temas_entrevista/CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md).
+Satoshi aun trabaja segun el owner. Adoptar al conciliar su retorno; no interrumpir
+ni cambiar su diseno sellado, no emitir una nueva corrida mientras tanto.

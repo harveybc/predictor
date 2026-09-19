@@ -61,6 +61,37 @@ class PlanChecks(unittest.TestCase):
         self.state["tasks"].append(copy.deepcopy(self.state["tasks"][0]))
         self.assertIn("duplicate task", " ".join(validate(self.state, ROOT)))
 
+    def test_core_hypothesis_cannot_disappear(self):
+        self.state["proposal_coverage"]["P-MOD"].remove("MOD-CORE-PRETRAIN")
+        self.state["tasks"] = [t for t in self.state["tasks"] if t["id"] != "MOD-CORE-PRETRAIN"]
+        self.assertIn("unknown task MOD-CORE-PRETRAIN", " ".join(validate(self.state, ROOT)))
+
+    def test_core_requires_prefix_stage(self):
+        task = next(t for t in self.state["tasks"] if t["id"] == "MOD-CORE-PRETRAIN")
+        task["depends_on"].remove("MOD-FROZEN-PREFIX")
+        self.assertIn("core prerequisites", " ".join(validate(self.state, ROOT)))
+
+    def test_prefix_requires_extractor_development_stage(self):
+        task = next(t for t in self.state["tasks"] if t["id"] == "MOD-FROZEN-PREFIX")
+        task["depends_on"] = []
+        self.assertIn("prefix prerequisites", " ".join(validate(self.state, ROOT)))
+
+    def test_core_hypothesis_document_exists(self):
+        self.state["documents"]["core_pretraining"] = "missing.md"
+        self.assertIn("missing document core_pretraining", " ".join(validate(self.state, ROOT)))
+
+    def test_architecture_comparison_cannot_disappear(self):
+        self.state["proposal_coverage"]["P-MOD"].remove("MOD-ARCH-COMPARE")
+        self.state["tasks"] = [t for t in self.state["tasks"] if t["id"] != "MOD-ARCH-COMPARE"]
+        for task in self.state["tasks"]:
+            task["depends_on"] = [d for d in task["depends_on"] if d != "MOD-ARCH-COMPARE"]
+        self.assertIn("unknown task MOD-ARCH-COMPARE", " ".join(validate(self.state, ROOT)))
+
+    def test_e1_requires_architecture_comparison(self):
+        task = next(t for t in self.state["tasks"] if t["id"] == "MOD-E1")
+        task["depends_on"].remove("MOD-ARCH-COMPARE")
+        self.assertIn("E1 prerequisites", " ".join(validate(self.state, ROOT)))
+
 
 if __name__ == "__main__":
     unittest.main()

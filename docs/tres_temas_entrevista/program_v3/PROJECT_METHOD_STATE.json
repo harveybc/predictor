@@ -6,6 +6,13 @@
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
   "handoff_status": "PUBLISHED_ORDER_NOT_EXECUTION_ACKNOWLEDGEMENT",
+  "pending_owner_amendment": "Approved architecture comparison and H-CORE recorded; integrate after reconciling Satoshi's ongoing work, no new dispatch or active sealed-run changes",
+  "architecture_comparison": {
+    "reference": "ARCH-A",
+    "alternatives": ["ARCH-A", "ARCH-B", "ARCH-C", "ARCH-0"],
+    "selected_winner": null,
+    "adoption": "AFTER_CURRENT_RETURN_BEFORE_NEXT_UNSEALED_DESIGN"
+  },
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
@@ -17,10 +24,11 @@
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
     "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-    "orders": "../../handoffs/MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md"
+    "orders": "../../handoffs/MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md",
+    "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md"
   },
   "proposal_coverage": {
-    "P-MOD": ["MOD-E0-DEV", "MOD-E1", "MOD-CONF", "MOD-E3"],
+    "P-MOD": ["MOD-E0-DEV", "MOD-ARCH-COMPARE", "MOD-E1", "MOD-FROZEN-PREFIX", "MOD-CORE-PRETRAIN", "MOD-CONF", "MOD-E3"],
     "P-L2": ["L2-PUBLIC-RL"],
     "P-CAP": ["CAP-CALIBRATION"],
     "P-PRE": ["PRE-NOISE"],
@@ -32,7 +40,10 @@
   "shared_requirements": ["FE", "EVENT", "META", "I-INFO", "H-ES", "GOVERNANCE", "WEEKLY-RL"],
   "tasks": [
     {"id": "MOD-E0-DEV", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": [], "evidence": [], "next_action": "Numerical H2/H3 design, adequate real learners, tests, then governed multivariate pilot", "deliverable": "H2 profile/random effects and H3 sequence/summary effects with matched controls and cost"},
-    {"id": "MOD-E1", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": ["MOD-E0-DEV"], "evidence": [], "next_action": "Inventory admissible public development families in parallel; freeze design rules after pilot", "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan"},
+    {"id": "MOD-ARCH-COMPARE", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": ["MOD-E0-DEV"], "evidence": [], "next_action": "After current return, reuse compatible E0 evidence and compare ARCH-A/B/C plus no-learned-extractor control inside the modular task", "deliverable": "Adequacy, H2/H3 effects by architecture and regime, uncertainty, learning curves and total cost; no universal winner presumed"},
+    {"id": "MOD-E1", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": ["MOD-E0-DEV", "MOD-ARCH-COMPARE"], "evidence": [], "next_action": "Inventory admissible public development families in parallel; freeze design rules after pilot and architecture comparison", "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan"},
+    {"id": "MOD-FROZEN-PREFIX", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": ["MOD-E1"], "evidence": [], "next_action": "After extractor regime comparison, fix all preprocessing/grouping/D/I/A/fusion states and verify governed sequence materialization per split", "deliverable": "Versioned derived dataset with direct/cache parity, temporal support and complete prefix lineage"},
+    {"id": "MOD-CORE-PRETRAIN", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": ["MOD-E1", "MOD-FROZEN-PREFIX"], "evidence": [], "next_action": "Design H-CORE then compare random, pretrained-finetuned and pretrained-frozen core with actual task heads and full cost; no active-run changes", "deliverable": "Independent H-CORE effects on forecasting, total cost and limitations; RL counterpart in MOD-E3"},
     {"id": "MOD-CONF", "owner": "Musashi + Satoshi", "status": "NOT_STARTED", "depends_on": ["MOD-E1"], "evidence": [], "next_action": "Review fixed method before independent E0 synthetic and E2 public reserves", "deliverable": "H1/H2/H3 effects under the proposal's reserved protocol"},
     {"id": "BUSINESS-CONTRACT", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": [], "evidence": [], "next_action": "Derive active demand and weekly timing from executable configs, not an arbitrary asset", "deliverable": "Observations/targets/actions, availability, weekly cycle, cost and data gaps"},
     {"id": "MOD-E3", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": ["MOD-E1", "BUSINESS-CONTRACT"], "evidence": [], "next_action": "Prepare mandatory historical forecasting and RL evaluation without requiring positive H1", "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost"},
