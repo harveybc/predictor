@@ -1,0 +1,188 @@
+{
+  "DX_component_reconstruction_max_error": 4.7490000000000006,
+  "DX_metric_signal_definition": "10 log10(Var(s + periodic + cross) / Var(noise)) over the split rows; components of the generator, never estimated",
+  "adequacy": {
+    "0": [
+      {
+        "cell": "H2__h3__s1__0__profiles",
+        "gap_to_linear": -0.00988439238708605,
+        "within_previous_0_03_bar": true
+      },
+      {
+        "cell": "H2__h3__s2__0__profiles",
+        "gap_to_linear": -0.0035122926701524615,
+        "within_previous_0_03_bar": true
+      }
+    ],
+    "A": [
+      {
+        "cell": "H2__h3__s1__A__profiles",
+        "gap_to_linear": -0.017048999167136925,
+        "within_previous_0_03_bar": true
+      },
+      {
+        "cell": "H2__h3__s2__A__profiles",
+        "gap_to_linear": -0.015236595058061353,
+        "within_previous_0_03_bar": true
+      }
+    ],
+    "B": [
+      {
+        "cell": "H2__h3__s1__B__profiles",
+        "gap_to_linear": 0.019160308664980363,
+        "within_previous_0_03_bar": true
+      },
+      {
+        "cell": "H2__h3__s2__B__profiles",
+        "gap_to_linear": 0.017812064653996096,
+        "within_previous_0_03_bar": true
+      }
+    ],
+    "C": [
+      {
+        "cell": "H2__h3__s1__C__profiles",
+        "gap_to_linear": -0.008601913201796763,
+        "within_previous_0_03_bar": true
+      },
+      {
+        "cell": "H2__h3__s2__C__profiles",
+        "gap_to_linear": -0.005669826329971817,
+        "within_previous_0_03_bar": true
+      }
+    ]
+  },
+  "evidence_unchanged": true,
+  "foreign_design_identity_accepted": true,
+  "h3": {
+    "0": {
+      "arms_by_regime": {
+        "0": [
+          "extractor",
+          "sequence",
+          "summary"
+        ],
+        "1": [
+          "extractor",
+          "sequence",
+          "sequence_gap",
+          "summary",
+          "summary_last"
+        ]
+      },
+      "common_pair_d": {
+        "0": -0.07492045742122472,
+        "1": -0.12979430932153696
+      },
+      "common_pair_gamma": -0.05487385190031224,
+      "reported_gamma": 0.04019825028441981
+    },
+    "A": {
+      "arms_by_regime": {
+        "0": [
+          "extractor",
+          "sequence",
+          "summary"
+        ],
+        "1": [
+          "extractor",
+          "extractor_summary",
+          "sequence",
+          "sequence_gap",
+          "summary",
+          "summary_last"
+        ]
+      },
+      "common_pair_d": {
+        "0": -0.06542803926201146,
+        "1": -0.14028623350670077
+      },
+      "common_pair_gamma": -0.07485819424468931,
+      "reported_gamma": 0.03538326593857832
+    },
+    "B": {
+      "arms_by_regime": {
+        "0": [
+          "extractor",
+          "sequence",
+          "summary"
+        ],
+        "1": [
+          "extractor",
+          "extractor_summary",
+          "sequence",
+          "sequence_gap",
+          "summary",
+          "summary_last"
+        ]
+      },
+      "common_pair_d": {
+        "0": -0.027710932227128948,
+        "1": -0.0954945777100174
+      },
+      "common_pair_gamma": -0.06778364548288845,
+      "reported_gamma": 0.009520932552206096
+    },
+    "C": {
+      "arms_by_regime": {
+        "0": [
+          "extractor",
+          "sequence",
+          "summary"
+        ],
+        "1": [
+          "extractor",
+          "sequence",
+          "sequence_gap",
+          "summary",
+          "summary_last"
+        ]
+      },
+      "common_pair_d": {
+        "0": -0.06430825405449625,
+        "1": -0.13183616121070557
+      },
+      "common_pair_gamma": -0.06752790715620932,
+      "reported_gamma": 0.033998924406874964
+    }
+  },
+  "incomplete_pair_H3": {
+    "d": {
+      "0": -0.06542803926201146,
+      "1": -0.006695316814041619
+    },
+    "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+    "gamma": 0.05873272244796984,
+    "n_replicates": 2,
+    "sd_replicates": {
+      "0": 0.007336382683681065,
+      "1": 0.03650363378343446
+    }
+  },
+  "nonfinite_restore_replay": {
+    "mutated_problems": [],
+    "mutated_status": "VERIFIED",
+    "original_status": "VERIFIED",
+    "scope": "in-memory replay copy; original files unchanged"
+  },
+  "physical_arrays": {
+    "max_mase_difference": 7.771561172376096e-16,
+    "mismatches": [],
+    "scope": "model MASE from saved arrays; not a fresh weight replay or live warehouse audit",
+    "verified_attempts_checked": 120
+  },
+  "pure_readout_no_fusion_true_gamma_zero": {
+    "0": 0.5,
+    "A": 0.5,
+    "B": 0.5,
+    "C": 0.5
+  },
+  "replay_cache": {
+    "cpu_seconds_children": 0.0,
+    "notes": {
+      "attempt": "reused"
+    },
+    "returned_code": "DIFFERENT_CODE"
+  },
+  "reviewed_revision": "6f6c1a0",
+  "scope": "saved evidence and disposable diagnostic fixtures only"
+}

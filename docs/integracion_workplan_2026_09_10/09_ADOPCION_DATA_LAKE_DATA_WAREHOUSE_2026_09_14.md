@@ -1162,3 +1162,16 @@ H-CORE mantiene E1 y prefijo verificable como dependencias; RL sigue obligatorio
 [Revision](../audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md) y
 [orden vigente](../handoffs/MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md).
 No hubo entrenamiento, reinicio ni escritura al warehouse en esta auditoria.
+
+### Revision RP9-RP16 y orden RP17-RP24 (19-sep)
+
+Retorno `6f6c1a0` examinado contra codigo y arrays: 120 intentos con MASE
+coincidente, pero el calculador mezcla el contraste H3 entre regimenes. Dictamen
+con reproducciones para gamma, pares incompletos, diseno ajeno, replay no finito,
+cache sin identidad de codigo, composicion DX y limitaciones de E1/adecuacion.
+No se reinicia toda la evidencia: corregir inferencia y completar solo controles
+faltantes. [Orden vigente RP17-RP24](../handoffs/MUSASHI_PROGRAM_RP17_RP24_2026_09_19.md).
+13D resuelve las preguntas de negocio para simulacion; no hay decision del owner
+pendiente para ejecutar esos bloques. RL sigue obligatorio, H-CORE despues de E1.
+Ninguna conciliacion viva, escritura de base ni operacion de servicios fue
+ejecutada por Musashi en este dictamen; los conteos vivos del retorno son de Satoshi.

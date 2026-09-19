@@ -22,6 +22,9 @@ its hypotheses have already been confirmed.
 - [Research repository map](docs/RESEARCH_STACK.md): data, preprocessing,
   feature engineering, representation learning, optimization and evaluation.
 - [Related proposals and earlier formulations](docs/tres_temas_entrevista/README.md).
+- [Current research plan](docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md),
+  [latest ML review](docs/audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md)
+  and [active execution orders](docs/handoffs/MUSASHI_PROGRAM_RP17_RP24_2026_09_19.md).
 - [Data governance](https://github.com/harveybc/data-gov): dataset receipts,
   experiment provenance and results in an analytical warehouse.
 
