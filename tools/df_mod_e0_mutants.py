@@ -43,7 +43,7 @@ MUTANTS = [
      'for why in replay_doc.get("problems") or []:\n            prob(f"replay: {why}")', 'for why in []:\n            prob(f"replay: {why}")',
      "unreadable", "weights unreadable"),
     ("M06_prediction_tolerance", "df_mod_e0_close.py",
-     'if d is None or not np.isfinite(d) or d > tolerance["prediction_atol"]:', 'if d is None:',
+     'if not _finite(d) or d > tolerance["prediction_atol"]:', 'if not _finite(d):',
      "parity", "validation predictions from the reloaded weights differ"),
     ("M07_frozen", "df_mod_e0_close.py",
      'if not frozen or rec.get("extractor_weight_change", 1.0) != 0.0:', 'if not frozen:',
@@ -61,7 +61,7 @@ MUTANTS = [
      'if int(tr.get("updates", -1)) > int(expected_rule["max_updates"]):', 'if False:',
      "updates", "exceed the allowance"),
     ("M12_strangers", "df_mod_e0_close.py",
-     'strangers = sorted(set(on_disk) - set(pop["members"]) - set(pop["pilot_ids"]))\n    if strangers:', 'strangers = []\n    if strangers:',
+     'strangers = sorted(set(on_disk) - set(pop["members"]) - set(pop["pilot_ids"]) - {i["cell_id"] for i in pop.get("inherited", [])})\n    if strangers:', 'strangers = []\n    if strangers:',
      "stranger", "REFUSAL_EXPECTED"),
 ]
 

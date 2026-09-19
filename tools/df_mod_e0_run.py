@@ -393,7 +393,7 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
         trace("register", key=key, http=status)
         if status not in (200, 201):
             raise R.Refusal(f"REFUSED: campaign {key} refused: http {status}; no child was started")
-        registrations[key] = {"campaign_sha256": reg["campaign_sha256"], "http": status, "at": R.now_iso()}
+        registrations[key] = {"campaign_sha256": reg["campaign_sha256"], "http": status, "at": R.now_iso(), "code_identity": code_identity}
         registrations_path.write_text(json.dumps(registrations, indent=1))
         return reg["campaign_sha256"]
 

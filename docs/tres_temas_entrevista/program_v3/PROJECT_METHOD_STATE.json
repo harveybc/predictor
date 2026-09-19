@@ -8,7 +8,7 @@
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "RP9_RP16_ML_REVIEWED_CORRECTIONS_ORDERED_RP17_RP24",
+  "handoff_status": "RP17_RP24_ML_CORRECTIONS_AND_E1_TASKS_READY_FOR_REVIEW",
   "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
   "architecture_comparison": {
     "reference": "ARCH-A",
@@ -19,7 +19,10 @@
       "ARCH-0"
     ],
     "selected_winner": null,
-    "adoption": "INFORMATIVE_DEV_STAGE_EXECUTED_ESTIMANDS_REQUIRE_CORRECTION"
+    "adoption": "STAGE + READOUT_COMPLETION_SUCCESSOR EXECUTED; CONTRAST-BOUND EFFECTS v2; NO WINNER",
+    "successor_design": "../../audits/evidence/d3_k5_20260917/RP22_ARCH_READOUT_COMPLETION_DESIGN.json",
+    "effects_v2": "../../audits/evidence/d3_k5_20260917/RP22_ARCH_MERGED_EFFECTS_v2.json",
+    "withdrawn_readings": "gamma positive (mixed contrast); readout as dominant attribution; interpretable-by-naive; efficiency ordering (see errata)"
   },
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
@@ -36,7 +39,11 @@
     "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
     "external_review": "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
     "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-    "return": "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md"
+    "return": "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md",
+    "errata_rp16": "../../audits/work_plan/SATOSHI_RP16_ERRATA_2026_09_19.md",
+    "e1_tasks": "E1_TASKS.json",
+    "e1_task_sheet": "13E_E1_TASK_SHEET_2026_09_19.md",
+    "return_rp17_rp24": "../../audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md"
   },
   "proposal_coverage": {
     "P-MOD": [
@@ -135,11 +142,17 @@
         "MOD-E0-CLOSURE"
       ],
       "evidence": [
-        "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
         "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
+        "../../audits/evidence/d3_k5_20260917/RP18_ARCH_STAGE_EFFECTS_v2.json",
+        "../../audits/evidence/d3_k5_20260917/RP21_ARCH_STAGE_ADEQUACY.json",
+        "../../audits/evidence/d3_k5_20260917/RP22_ARCH_MERGED_EFFECTS_v2.json",
+        "../../audits/evidence/d3_k5_20260917/RP22_ARCH_RC_CLOSE.json",
+        "../../audits/evidence/d3_k5_20260917/RP22_ARCH_READOUT_COMPLETION_DESIGN.json",
+        "../../audits/evidence/d3_k5_20260917/RP22_ARCH_STAGE_CLOSE_V3.json",
+        "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
         "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md"
       ],
-      "next_action": "RP21-RP22: matched criteria/costs, reanalyse saved results, then 16 missing controls with verified donors; no universal winner",
+      "next_action": "review of the contrast-bound effects and the completed 2x2; learning-curve ladder before any further allowance claim; no winner",
       "deliverable": "Adequacy, H2/H3 effects by architecture and regime, uncertainty, learning curves and total cost; no universal winner presumed"
     },
     {
@@ -151,10 +164,11 @@
         "MOD-ARCH-COMPARE"
       ],
       "evidence": [
-        "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/tres_temas_entrevista/program_v3/E1_FAMILIES.json"
+        "E1_TASKS.json",
+        "13E_E1_TASK_SHEET_2026_09_19.md",
+        "13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
       ],
-      "next_action": "RP23: replace catalog eligibility with physical per-task split/window/availability evidence; prepare design without training or opening reserves",
+      "next_action": "review of the task sheet; then seal the E1 design (contexts on validation only, comparators fixed) and run the cost pilot; the campaign is not launched on eligible:true of v1",
       "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan"
     },
     {
@@ -197,10 +211,11 @@
       "status": "DESIGNED",
       "depends_on": [],
       "evidence": [
+        "13C_E3_WEEKLY_CYCLE_CONTRACT_2026_09_18.md",
         "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md"
+        "../../../tests/test_e3_weekly_env.py"
       ],
-      "next_action": "Implement 13D simulation specification and weekly environment tests; real account details are not required for current development",
+      "next_action": "E3 design under 13D (cash-spot BTC/ETH first, equity 1, weekly UTC clocks); real operating facts requested together only before a dependent test",
       "deliverable": "Observations/targets/actions, availability, weekly cycle, cost and data gaps"
     },
     {
@@ -299,5 +314,69 @@
       "originals_unchanged": true,
       "scientific_confirmation": false
     }
-  ]
+  ],
+  "rp17_rp24_blocks": {
+    "legend": [
+      "IMPLEMENTED",
+      "EXECUTED",
+      "VERIFIED",
+      "REVIEWED"
+    ],
+    "RP17": {
+      "IMPLEMENTED": true,
+      "EXECUTED": true,
+      "VERIFIED": "PRE byte-equal to the dictum (RP17_PRE/)",
+      "REVIEWED": false,
+      "inference": "gamma-positive and readout-dominant readings withdrawn (errata); measurements kept; 13C owner dependency resolved for DEV by 13D"
+    },
+    "RP18": {
+      "IMPLEMENTED": true,
+      "EXECUTED": true,
+      "VERIFIED": "9 numeric oracles + survivor-average mutant + real closure = dictum values",
+      "REVIEWED": false,
+      "inference": "gamma common pair A/B/C/0 = -0.0749/-0.0678/-0.0675/-0.0549; gamma factorial NOT_ESTIMABLE until RP22; successor table published (campaign mod-e0-arch-stage-v1-effects-v2)"
+    },
+    "RP19": {
+      "IMPLEMENTED": true,
+      "EXECUTED": true,
+      "VERIFIED": "18 replay tests (NaN/inf/missing/bool/partial/exit; cache bound to code+environment); 24 inherited/r0 cells replayed under current code",
+      "REVIEWED": false,
+      "inference": "historic replays keep HISTORIC_v1 scope (labelled); no tolerance raised"
+    },
+    "RP20": {
+      "IMPLEMENTED": true,
+      "EXECUTED": true,
+      "VERIFIED": "grain tests; composition residual < 1e-9 incl. deterministic; backfill v2 published (stage 120, DX 4, historic 69) reconciled",
+      "REVIEWED": false,
+      "inference": "SNR v1 kept under its name; SNR total v2 added; window tensor repetitions declared"
+    },
+    "RP21": {
+      "IMPLEMENTED": true,
+      "EXECUTED": true,
+      "VERIFIED": "adequacy/cost tables from records; intersection 24 task x seed pairs",
+      "REVIEWED": false,
+      "inference": "no convergence declared where best checkpoint touches the allowance; learning-curve design PREPARED, not launched"
+    },
+    "RP22": {
+      "IMPLEMENTED": true,
+      "EXECUTED": "16/16 cells, inherited donors verified under current code",
+      "VERIFIED": "successor closure local+live; stage closure v3",
+      "REVIEWED": false,
+      "inference": "see RP22_ARCH_MERGED_EFFECTS_v2.json: 2x2 at both r, gamma factorial now estimable; no sign is a stop criterion"
+    },
+    "RP23": {
+      "IMPLEMENTED": true,
+      "EXECUTED": true,
+      "VERIFIED": "E1 loader tests (5) and RL environment tests (6) pass",
+      "REVIEWED": false,
+      "inference": "E1 task contracts from governed bytes (E1_TASKS.json, 13E); 13D adopted; E1 campaign NOT launched"
+    },
+    "RP24": {
+      "IMPLEMENTED": true,
+      "EXECUTED": "return + ledger + suite",
+      "VERIFIED": "see return",
+      "REVIEWED": false,
+      "inference": "one audit request"
+    }
+  }
 }

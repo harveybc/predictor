@@ -568,7 +568,7 @@ def local_closure(root: Path, out_dir: Path, tolerance: dict | None = None, repl
             raise ClosureRefusal(f"REFUSED: REPORT.json names units that are not members of the design: {strangers}")
     attempts_dir = root / "attempts"
     on_disk = sorted(p.name for p in attempts_dir.iterdir() if p.is_dir()) if attempts_dir.is_dir() else []
-    strangers = sorted(set(on_disk) - set(pop["members"]) - set(pop["pilot_ids"]))
+    strangers = sorted(set(on_disk) - set(pop["members"]) - set(pop["pilot_ids"]) - {i["cell_id"] for i in pop.get("inherited", [])})
     if strangers:
         raise ClosureRefusal(f"REFUSED: attempts that are not members of the design: {strangers}")
     if pilot_updates is None:                                  # the allowance the pilots consumed, read from any pilot's job (v1 or v2 names)
@@ -690,6 +690,23 @@ def _metric_key(m: dict) -> tuple:
             None if m.get("value") is None else round(float(m["value"]), 9))
 
 
+def _later_commit_equivalent(terminal_ci: dict, reported_ci: dict) -> dict:
+    """The terminal carries the EXECUTION commit (registration + children); a REPORT written by a later
+    resume carries a later commit. Accepted only when the later commit descends from the execution commit
+    and the consumed training code (tools/df_mod_e0.py) is byte-identical between them; recorded, not hidden."""
+    a, b = (terminal_ci or {}).get("value"), (reported_ci or {}).get("value")
+    if not a or not b or (terminal_ci or {}).get("kind") != "git_commit" or (reported_ci or {}).get("kind") != "git_commit":
+        return {"equivalent": False, "why": "identities are not git commits"}
+    anc = subprocess.run(["git", "-C", str(REPO), "merge-base", "--is-ancestor", a, b], capture_output=True)
+    if anc.returncode != 0:
+        return {"equivalent": False, "why": f"{b[:8]} does not descend from the execution commit {a[:8]}"}
+    sa = subprocess.run(["git", "-C", str(REPO), "show", f"{a}:tools/df_mod_e0.py"], capture_output=True).stdout
+    sb = subprocess.run(["git", "-C", str(REPO), "show", f"{b}:tools/df_mod_e0.py"], capture_output=True).stdout
+    if not sa or sa != sb:
+        return {"equivalent": False, "why": "tools/df_mod_e0.py differs between the execution commit and the reporting commit"}
+    return {"equivalent": True, "execution_commit": a, "reporting_commit": b, "why": "REPORT written by a later resume; the consumed training code is byte-identical"}
+
+
 def live_closure(root: Path, local: dict, gov, warehouse_url: str, token: str, backfill_dir: Path | None = None) -> dict:
     """`backfill_dir`: RP13 backfill documents (one per unit); when given, the expected metric rows
     and states of a unit are the run's rows plus the backfilled ones (the successor generation)."""
@@ -770,8 +787,14 @@ def live_closure(root: Path, local: dict, gov, warehouse_url: str, token: str, b
                 if tags.get("design_sha256") != design["design_sha256"] or t.get("config_sha256") != design["design_sha256"]:
                     u["problems"].append("design identity in the terminal differs")
                 ci = json.loads(t["code_identity_json"] or "{}")
-                if local.get("code_identity_reported") and ci != local["code_identity_reported"]:
-                    u["problems"].append(f"code identity {ci} vs reported {local['code_identity_reported']}")
+                reg_ci = (reg or {}).get("code_identity")
+                execution_ci = reg_ci or local.get("code_identity_reported")
+                if execution_ci and ci != execution_ci:
+                    verdict = _later_commit_equivalent(ci, execution_ci)
+                    if verdict["equivalent"]:
+                        u["code_identity_note"] = verdict
+                    else:
+                        u["problems"].append(f"code identity {ci} vs execution/reported {execution_ci}: {verdict['why']}")
                 if (attempt / "cell.json").is_file() and outcome.get("status") == "COMPLETED":
                     rec = json.loads((attempt / "cell.json").read_bytes())
                     rows, states = RUN._metrics(rec)
