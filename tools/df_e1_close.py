@@ -156,7 +156,8 @@ def replay_worker(job_file: Path) -> int:
     Xs, W, h, j = z["Xs"], int(z["window"][0]), int(z["horizon"][0]), int(z["target_channel"][0])
     origins = np.asarray(job["origins"], dtype=np.int64)
     design = json.loads(Path(job["design"]).read_text())
-    model = P._model_for_target(design["graph"]["assignment"], W, Xs.shape[1], j, int(job["seed"]))
+    model = P._model_for_target(design["graph"]["assignment"], W, Xs.shape[1], j, int(job["seed"]),
+                                core=design["graph"].get("core_kind", "conv3"))
     model.load_weights(job["weights"])
     X = P._gather(Xs, origins, W)
     pred_scaled = np.asarray(model.predict(X, verbose=0))[:, 0]

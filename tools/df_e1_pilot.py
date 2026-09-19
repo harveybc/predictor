@@ -330,11 +330,64 @@ def _dataset_class():
     return WindowBatches
 
 
-def _model_for_target(assignment, W, p, j_t, seed):
+def core_dilations(window: int) -> list:
+    """RP37: the dilations a causal kernel-3 stack needs for its reach to cover `window`, derived from
+    W and nothing else. Reach of a stack with dilations d1..dk is 1 + 2*sum(d), so powers of two are
+    added until that reaches W. No search, no tuning: the rule is the window."""
+    dils, reach = [], 1
+    d = 1
+    while reach < window:
+        dils.append(d)
+        reach += 2 * d
+        d *= 2
+    return dils
+
+
+def core_reach(window: int, core: str) -> int:
+    """Samples of the FUSED sequence the readout can depend on, per core."""
+    if core == "conv3":
+        return 3
+    if core == "tcn_w":
+        return min(window, 1 + 2 * sum(core_dilations(window)))
+    raise SystemExit(f"unknown core {core!r}")
+
+
+def model_reach(window: int, core: str, arch: str = "A") -> int:
+    """Branch reach and core reach compose: the branch's last position sees `branch` samples and the
+    readout sees `core` positions of the branch output."""
+    branch = E.branch_reach(arch, window)
+    return min(window, branch + core_reach(window, core) - 1)
+
+
+def _model_for_target(assignment, W, p, j_t, seed, core: str = "conv3"):
+    """ARCH-A's detector and adapter are PRESERVED; only the common core changes, and only between the
+    two declared options: `conv3` (the local kernel-3 core of E0) and `tcn_w` (a causal dilated stack
+    whose reach covers W). The core is never pre-trained here: H-CORE remains a later question."""
     tf = E._tf()
-    m = E.build_modular(assignment, W, p, fusion="sequence", seed=seed, arch="A")
-    out = tf.keras.layers.Lambda(lambda t: t[:, j_t:j_t + 1], name="target_readout")(m.output)
-    return tf.keras.Model(m.input, out, name="modular_A_target")
+    tf.keras.utils.set_random_seed(int(seed))
+    if core == "conv3":
+        m = E.build_modular(assignment, W, p, fusion="sequence", seed=seed, arch="A")
+        out = tf.keras.layers.Lambda(lambda t: t[:, j_t:j_t + 1], name="target_readout")(m.output)
+        return tf.keras.Model(m.input, out, name="modular_A_conv3_target")
+    if core != "tcn_w":
+        raise SystemExit(f"unknown core {core!r}")
+    inp = tf.keras.Input(shape=(W, p), name="x")
+    groups = sorted(set(assignment))
+    branches = []
+    for g in groups:
+        idx = [k for k in range(p) if assignment[k] == g]
+        sub = tf.keras.layers.Lambda(lambda t, idx=idx: tf.gather(t, idx, axis=2), name=f"g{g}_select")(inp)
+        branches.append(E.branch_extractor(tf, sub, f"g{g}", "A"))          # the SAME detector and adapter as ARCH-A
+    joint = tf.keras.layers.Concatenate(axis=2, name="fusion_seq")(branches) if len(branches) > 1 else branches[0]
+    h = joint
+    for i, d in enumerate(core_dilations(W), start=1):
+        h = E._tcn_block(tf, h, f"core_tcn{i}", d)
+    read = tf.keras.layers.Lambda(lambda t: t[:, -1, :], name="core_last")(h)
+    delta = tf.keras.layers.Dense(p, name="head")(read)
+    last_x = tf.keras.layers.Lambda(lambda t: t[:, -1, :], name="last_observation")(inp)
+    full = tf.keras.layers.Add(name="persistence_skip")([last_x, delta])
+    out = tf.keras.layers.Lambda(lambda t: t[:, j_t:j_t + 1], name="target_readout")(full)
+    return tf.keras.Model(inp, out, name="modular_A_tcnw_target")
 
 
 def _fit_batched(model, train_ds, val_ds, *, max_updates, patience, lr, seed) -> dict:
@@ -489,7 +542,7 @@ def run_unit(job: dict, out_dir: Path) -> dict:
                  ae_validation_origins=ae_va, ae_train_origins=ae_tr)
     elif job["kind"] == "fit":
         regime = job["regime"]
-        model = _model_for_target(assignment, W, p, j, int(job["seed"]))
+        model = _model_for_target(assignment, W, p, j, int(job["seed"]), core=design["graph"].get("core_kind", "conv3"))
         det = RG.detector_layer_names(model)
         rec["initial_checkpoint"] = {"seed": int(job["seed"]), "full_digest": RG.weights_digest(model, det + RG.non_detector_weighted_layer_names(model)),
                                      "detector_digest": RG.weights_digest(model, det), "note": "digest of the model right after build, BEFORE any import: shared by R0/R1/R2 of the seed"}
