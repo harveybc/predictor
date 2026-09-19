@@ -207,6 +207,18 @@ def repair_refused_terminals(outbox, gov, GR, campaign_shas: set, reason: str) -
 DELEGATED = "DELEGATED"
 
 
+def _measured_cost(out: dict, rec: dict) -> dict:
+    """Per-update cost NET of the descriptor checkpoints (RP13 instrumentation, a per-cell cost that
+    does not scale with the allowance); the descriptor seconds join the per-child overhead."""
+    cpu = float(out["cost"].get("cpu_seconds") or rec["cost"]["cpu_seconds"])
+    fit_s = float(rec["cost"].get("fit_seconds") or 0.0)
+    desc = float(((rec.get("metrics_cost_seconds") or {}).get("model_descriptors")) or 0.0)
+    fit_net = max(0.0, fit_s - desc)
+    updates = max(1, int(rec["training"]["updates"]))
+    return {"cpu_seconds": cpu, "fit_seconds": fit_s, "descriptor_seconds": desc, "fit_seconds_net": fit_net,
+            "overhead_seconds": max(0.0, cpu - fit_net), "updates": updates, "seconds_per_update": fit_net / updates, "exposure": rec["exposure"]}
+
+
 def _cell_summary(out: dict) -> dict:
     rec = out.get("score")
     return {"outcome": out["outcome"], "cost": out.get("cost"), "resumed": out.get("resumed", False),
@@ -426,11 +438,7 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
                 return report
             if "test" in rec["scores"] or rec.get("exposure") != "NO_TEST_ACCESS":
                 raise R.Refusal("REFUSED: a cost pilot scored the test")
-            cpu = float(out["cost"].get("cpu_seconds") or rec["cost"]["cpu_seconds"])
-            fit_s = float(rec["cost"].get("fit_seconds") or 0.0)
-            updates = max(1, int(rec["training"]["updates"]))
-            measured[c["cell_id"]] = {"cpu_seconds": cpu, "fit_seconds": fit_s, "overhead_seconds": max(0.0, cpu - fit_s), "updates": updates,
-                                      "seconds_per_update": fit_s / updates, "exposure": rec["exposure"]}
+            measured[c["cell_id"]] = _measured_cost(out, rec)
             report["cost_pilot"][c["cell_id"]] = measured[c["cell_id"]]
         # the H3 arm children (frozen extractor) at the pilot's size, chained to their pilot extractor
         register(pilot_key + "-arm", [c["cell_id"] for c in arm_pilots])
@@ -444,11 +452,7 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
                 report.update(stopped=f"COST_PILOT_FAILED: {arm['cell_id']} {out['outcome']}", spent_cpu_seconds=spent())
                 campaign.write_once(root / "REPORT.json", report)
                 return report
-            cpu = float(out["cost"].get("cpu_seconds") or rec["cost"]["cpu_seconds"])
-            fit_s = float(rec["cost"].get("fit_seconds") or 0.0)
-            updates = max(1, int(rec["training"]["updates"]))
-            measured[arm["cell_id"]] = {"cpu_seconds": cpu, "fit_seconds": fit_s, "overhead_seconds": max(0.0, cpu - fit_s), "updates": updates,
-                                        "seconds_per_update": fit_s / updates, "exposure": rec["exposure"]}
+            measured[arm["cell_id"]] = _measured_cost(out, rec)
             report["cost_pilot"][arm["cell_id"]] = measured[arm["cell_id"]]
     except DEV.CapExhausted as e:
         report.update(stopped=str(e), spent_cpu_seconds=spent())

@@ -1,0 +1,445 @@
+{
+ "schema": "df_mod_e0_backfill.v1",
+ "root": "/home/harveybc/.local/state/crispdm-data-foundation/mod_e0_dev_v2",
+ "units": 69,
+ "rows_total": 8776,
+ "cpu_seconds": 64.805,
+ "published": {
+  "units": 69,
+  "failed": [],
+  "skipped": [],
+  "details": [
+   {
+    "unit_id": "H2__h0__s1__profiles",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h0__s1__random_0",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h0__s1__random_1",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h0__s1__random_2",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h0__s2__profiles",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h0__s2__random_0",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h0__s2__random_1",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h0__s2__random_2",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h0__s3__profiles",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h0__s3__random_0",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h0__s3__random_1",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h0__s3__random_2",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h1__s1__profiles",
+    "generation": 3,
+    "rows": 141,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h1__s1__random_0",
+    "generation": 3,
+    "rows": 141,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h1__s1__random_1",
+    "generation": 3,
+    "rows": 141,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h1__s1__random_2",
+    "generation": 3,
+    "rows": 141,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h1__s2__profiles",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h1__s2__random_0",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h1__s2__random_1",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h1__s2__random_2",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h1__s3__profiles",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h1__s3__random_0",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h1__s3__random_1",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h1__s3__random_2",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h2__s1__profiles",
+    "generation": 3,
+    "rows": 140,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h2__s1__random_0",
+    "generation": 3,
+    "rows": 140,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h2__s1__random_1",
+    "generation": 3,
+    "rows": 140,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h2__s1__random_2",
+    "generation": 3,
+    "rows": 140,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h2__s2__profiles",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h2__s2__random_0",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h2__s2__random_1",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h2__s2__random_2",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h2__s3__profiles",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h2__s3__random_0",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h2__s3__random_1",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h2__s3__random_2",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h3__s1__profiles",
+    "generation": 3,
+    "rows": 140,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h3__s1__random_0",
+    "generation": 3,
+    "rows": 140,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h3__s1__random_1",
+    "generation": 3,
+    "rows": 140,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h3__s1__random_2",
+    "generation": 3,
+    "rows": 140,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h3__s2__profiles",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h3__s2__random_0",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h3__s2__random_1",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h3__s2__random_2",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h3__s3__profiles",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h3__s3__random_0",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h3__s3__random_1",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H2__h3__s3__random_2",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r0__s1__extractor",
+    "generation": 3,
+    "rows": 141,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r0__s1__sequence",
+    "generation": 3,
+    "rows": 141,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r0__s1__summary",
+    "generation": 3,
+    "rows": 141,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r0__s2__extractor",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r0__s2__sequence",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r0__s2__summary",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r0__s3__extractor",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r0__s3__sequence",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r0__s3__summary",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r1__s1__extractor",
+    "generation": 3,
+    "rows": 140,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r1__s1__sequence",
+    "generation": 3,
+    "rows": 140,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r1__s1__summary",
+    "generation": 3,
+    "rows": 140,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r1__s2__extractor",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r1__s2__sequence",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r1__s2__summary",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r1__s3__extractor",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r1__s3__sequence",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "H3__r1__s3__summary",
+    "generation": 3,
+    "rows": 138,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "pilot__H2_profiles",
+    "generation": 3,
+    "rows": 103,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "pilot__H3_extractor",
+    "generation": 3,
+    "rows": 103,
+    "pending_after": 0
+   },
+   {
+    "unit_id": "pilot__H3_sequence",
+    "generation": 3,
+    "rows": 103,
+    "pending_after": 0
+   }
+  ],
+  "reconciliation": {
+   "mod-e0-dev-v2-mod-e0-cost-pilot": {
+    "missing": 0,
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "mod-e0-dev-v2-mod-e0-cost-pilot-arm": {
+    "missing": 0,
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "mod-e0-dev-v2-mod-e0-cells": {
+    "missing": 0,
+    "accounting_only": [],
+    "lake_only": []
+   }
+  }
+ }
+}
