@@ -222,7 +222,7 @@ def route_checks(gov_url: str, token: str, *, cache_dir: Path, run_id: str, reso
     sys.path.insert(0, str(REPO / "tools"))
     import governed_run as GR
 
-    key = f"{run_id}-lake-route"
+    key = f"{run_id}-{Path(resource).parent.name}-lake-route"
     gov = GR.GovHttp(gov_url, token, key)
     unit = "route-1"
     code_identity = GR.strict_code_identity(REPO)          # the real checkout identity; a clean tree is required
@@ -238,17 +238,32 @@ def route_checks(gov_url: str, token: str, *, cache_dir: Path, run_id: str, reso
         return {**out, "error": receipt}
     sha = receipt["campaign_sha256"]
     status, info = gov.governed_download(sha, unit, lake, resource, "panel", str(cache_dir))
-    out["download"] = {"http": status, "state": info.get("state"), "bytes": info.get("bytes"),
-                       "sha256": info.get("sha256"), "availability": info.get("availability"),
-                       "delivery_id": info.get("delivery_id"), "cached": info.get("cached"), "path": info.get("path")}
+    out["download"] = {"http": status, "verification_state": info.get("verification_state"), "bytes": info.get("bytes"),
+                       "sha256": info.get("sha256"), "delivery": info.get("delivery"), "cached": info.get("cached"),
+                       "availability_use": info.get("availability_use"), "availability_label": info.get("availability_label"),
+                       "availability_completion_lag_max": info.get("availability_completion_lag_max"),
+                       "availability_contract_sha256": info.get("availability_contract_sha256"),
+                       "delivery_id": info.get("delivery_id"), "path": info.get("path")}
+    out["availability_stays_undeclared"] = (info.get("availability_use") == "UNDECLARED"
+                                            and info.get("availability_label") == "UNKNOWN")
     out["bytes_match_characterised"] = info.get("sha256") == expect_sha
     on_disk = sha_file(Path(info["path"]))
     out["bytes_on_disk_sha256"] = on_disk
     out["delivered_bytes_verified"] = on_disk == expect_sha
-    # the refusals: a date range must not be deliverable for this archive
+    # the refusals. A range must be refused BY THE ARCHIVE, so it is requested under a campaign that
+    # declares exactly that range: the refusal cannot then be "not declared by campaign".
+    ranged_key = key + "-ranged"
+    gov_r = GR.GovHttp(gov_url, token, ranged_key)
+    ranged_campaign = {**campaign, "campaign_key": ranged_key, "units": ["ranged-1"],
+                       "datasets": [{"lake": lake, "resource": resource, "role": "panel",
+                                     "from": "2007-01-01", "to": "2007-01-02"}]}
+    rc_status, rc = gov_r.submit_campaign(ranged_campaign)
+    out["ranged_campaign_http"] = rc_status
     rng = http_json(f"{gov_url}/api/v2/download?lake={lake}&resource={resource}&role=panel&from=2007-01-01&to=2007-01-02",
-                    token, headers={"X-Experiment-Key": key, "X-Campaign-SHA256": sha, "X-Unit-ID": unit})
-    out["ranged_request"] = {"http": rng[0], "body": rng[1]}
+                    token, headers={"X-Experiment-Key": ranged_key,
+                                    "X-Campaign-SHA256": rc.get("campaign_sha256") or "", "X-Unit-ID": "ranged-1"})
+    out["ranged_request"] = {"http": rng[0], "body": rng[1],
+                             "declared_by_its_own_campaign": rc_status in (200, 201)}
     absent = http_json(f"{gov_url}/api/v2/download?lake={lake}&resource=uci_501_beijing_multisite_air_quality/panel.parquet&role=panel",
                        token, headers={"X-Experiment-Key": key, "X-Campaign-SHA256": sha, "X-Unit-ID": unit})
     out["undeclared_resource"] = {"http": absent[0], "body": absent[1]}
@@ -256,7 +271,8 @@ def route_checks(gov_url: str, token: str, *, cache_dir: Path, run_id: str, reso
                        headers={"X-Experiment-Key": key})
     out["download_without_campaign"] = {"http": nocamp[0], "body": nocamp[1]}
     out["refusals_hold"] = (out["ranged_request"]["http"] >= 400 and out["undeclared_resource"]["http"] >= 400
-                            and out["download_without_campaign"]["http"] >= 400)
+                            and out["download_without_campaign"]["http"] >= 400
+                            and out["ranged_request"]["declared_by_its_own_campaign"])
     return out
 
 
@@ -322,7 +338,7 @@ def rehearse(out_path: Path, *, keep: bool = False) -> dict:
             report[resource] = route_checks(url, token, cache_dir=work / "cache", run_id=f"rp33-rehearsal-{int(time.time())}",
                                             resource=resource, expect_sha=built["declared"][resource]["sha256"])
         report["route_ok"] = all(report[r].get("delivered_bytes_verified") and report[r].get("refusals_hold")
-                                 for r in RESOURCES)
+                                 and report[r].get("availability_stays_undeclared") for r in RESOURCES)
     finally:
         for p_ in (proc, cube_proc):
             p_.terminate()
