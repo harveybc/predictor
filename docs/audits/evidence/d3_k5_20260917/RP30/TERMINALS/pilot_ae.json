@@ -1,0 +1,36 @@
+{
+ "unit_id": "pilot_ae",
+ "campaign": "SEE CAMPAIGN_PROPOSAL.json",
+ "terminal": {
+  "schema": "governed_terminal.v1",
+  "generation": 1,
+  "status": "INCONCLUSIVE",
+  "reason": "UNCERTAIN: OUTPUT_DIGEST_OR_ROW_COUNT_MISMATCH",
+  "started_at": "2026-09-19T16:57:40Z",
+  "finished_at": "2026-09-19T16:57:57Z",
+  "costs": {
+   "wall_seconds": 17.678,
+   "cpu_seconds": 20.458
+  },
+  "deliveries": [],
+  "artifacts": [],
+  "metrics": [],
+  "tags": {
+   "purpose": "E1_DEV_PILOT",
+   "proposal": "P-E1",
+   "grants": "NONE",
+   "classification": "NON_GOVERNING",
+   "phase": "DEVELOPMENT",
+   "outcome": "UNCERTAIN",
+   "design_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+   "unit_id": "pilot_ae",
+   "family": "uci_235",
+   "task": "W60_h60",
+   "host": "omega",
+   "metric_states": "{}",
+   "role": "COST_PILOT",
+   "kind": "ae",
+   "seed": "1"
+  }
+ }
+}

@@ -1,0 +1,773 @@
+{
+ "schema": "df_e1_pilot_results.v1",
+ "design_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+ "run_id": "satoshi-e1-household-dev-20260919",
+ "stopped": null,
+ "task": {
+  "context_physical_seconds": 3540,
+  "family_usable_windows": {
+   "test": 298224,
+   "train": 1440653,
+   "validation": 305221
+  },
+  "features": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3"
+  ],
+  "horizon_physical_seconds": 3600,
+  "horizon_steps": 60,
+  "id": "W60_h60",
+  "model_reach_physical_seconds": 420,
+  "model_reach_steps": 7,
+  "purge": 120,
+  "reach_note": "ARCH-A with the sequence fusion depends on the last `model_reach_steps` samples of the window (branch 5 + core 3 - 1); the window is the declared context, the reach is what the prediction can depend on (RP28: full real reach declared)",
+  "target": [
+   "Global_active_power"
+  ],
+  "target_history_as_feature": true,
+  "window_steps": 60
+ },
+ "dev": {
+  "purge_between_splits": 120,
+  "rows": [
+   1412361,
+   1462761
+  ],
+  "rows_note": "the last 28 days of the family's train split and the first 7 days of its validation split (family train end row 1452681); test rows never read",
+  "splits_within_slice": {
+   "train": 0.8,
+   "validation": 0.2
+  },
+  "train_days": 28,
+  "validation_days": 7
+ },
+ "data": {
+  "common_evaluation_set": 10020,
+  "validation_admissible": 10020,
+  "with_finite_daily_lookup": 10020,
+  "with_finite_label": 10020
+ },
+ "denominator": 0.6162615768463073,
+ "cells": {
+  "R0_s1": {
+   "regime": "R0",
+   "seed": 1,
+   "mase": 0.8831314352266401,
+   "mae": 0.5442399708353117,
+   "updates": 4000,
+   "epochs": 7,
+   "stop": "UPDATE_BUDGET",
+   "truncation": {
+    "best_epoch_is_last": false,
+    "hit_update_ceiling": true,
+    "reading": "a best epoch at the last epoch with the ceiling hit means the curve was still improving: truncated"
+   },
+   "best_epoch": 6,
+   "curve_val": [
+    0.7622466683387756,
+    0.7405323386192322,
+    0.7391694188117981,
+    0.7733210325241089,
+    0.7475670576095581,
+    0.7373929023742676,
+    0.746880292892456
+   ],
+   "curve_train": [
+    0.8095179796218872,
+    0.7840350866317749,
+    0.7769021391868591,
+    0.7739484310150146,
+    0.7709521055221558,
+    0.7662908434867859,
+    0.7478388547897339
+   ],
+   "phases": {
+    "cpu_seconds_process": 257.017,
+    "fit_seconds": 245.792,
+    "inference_seconds": 2.702,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.005
+   },
+   "child_cpu": 258.165,
+   "peak_rss": 931348480,
+   "cgroup_peak": 517058560,
+   "detector_unchanged": false,
+   "detector_gradient": true,
+   "initial_full_digest": "f51b6174aa4fd621701dddb41c60964c43a055c151d1f6d4493c8d05d7852e61",
+   "detector_after_setup": "8b9567a5e9d0cc673a728dcd241ca0dc8e68816c95e6d86d6c86e8a7b6fee084",
+   "params_trainable": 4591,
+   "pretrained_sha256": null
+  },
+  "R1_s1": {
+   "regime": "R1",
+   "seed": 1,
+   "mase": 0.8864746249877243,
+   "mae": 0.546300250229174,
+   "updates": 3135,
+   "epochs": 5,
+   "stop": "EARLY_STOPPING",
+   "truncation": {
+    "best_epoch_is_last": false,
+    "hit_update_ceiling": false,
+    "reading": "a best epoch at the last epoch with the ceiling hit means the curve was still improving: truncated"
+   },
+   "best_epoch": 2,
+   "curve_val": [
+    0.7612819075584412,
+    0.7415401339530945,
+    0.7444962859153748,
+    0.762963056564331,
+    0.758062481880188
+   ],
+   "curve_train": [
+    0.8196078538894653,
+    0.7797974348068237,
+    0.7697357535362244,
+    0.7672035694122314,
+    0.7656123042106628
+   ],
+   "phases": {
+    "cpu_seconds_process": 63.324,
+    "fit_seconds": 55.095,
+    "inference_seconds": 3.149,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.012
+   },
+   "child_cpu": 64.428,
+   "peak_rss": 892387328,
+   "cgroup_peak": 484343808,
+   "detector_unchanged": true,
+   "detector_gradient": false,
+   "initial_full_digest": "f51b6174aa4fd621701dddb41c60964c43a055c151d1f6d4493c8d05d7852e61",
+   "detector_after_setup": "c5806b20662228c622c07278372053fb3a466d5f8e0cf14f43e3256427703586",
+   "params_trainable": 1695,
+   "pretrained_sha256": "94bdc1799ac8ac90996aef6f9aeb73cde360a4eccf03d7968f5fdcf823cfa88a"
+  },
+  "R2_s1": {
+   "regime": "R2",
+   "seed": 1,
+   "mase": 0.8886672431878541,
+   "mae": 0.5476514765786078,
+   "updates": 3135,
+   "epochs": 5,
+   "stop": "EARLY_STOPPING",
+   "truncation": {
+    "best_epoch_is_last": false,
+    "hit_update_ceiling": false,
+    "reading": "a best epoch at the last epoch with the ceiling hit means the curve was still improving: truncated"
+   },
+   "best_epoch": 2,
+   "curve_val": [
+    0.7565995454788208,
+    0.7341700196266174,
+    0.7431302666664124,
+    0.7582063674926758,
+    0.7546144723892212
+   ],
+   "curve_train": [
+    0.8149946928024292,
+    0.7808541059494019,
+    0.7694104909896851,
+    0.7671866416931152,
+    0.7640941739082336
+   ],
+   "phases": {
+    "cpu_seconds_process": 199.959,
+    "fit_seconds": 192.488,
+    "inference_seconds": 2.71,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.012
+   },
+   "child_cpu": 201.081,
+   "peak_rss": 918908928,
+   "cgroup_peak": 514134016,
+   "detector_unchanged": false,
+   "detector_gradient": true,
+   "initial_full_digest": "f51b6174aa4fd621701dddb41c60964c43a055c151d1f6d4493c8d05d7852e61",
+   "detector_after_setup": "c5806b20662228c622c07278372053fb3a466d5f8e0cf14f43e3256427703586",
+   "params_trainable": 4591,
+   "pretrained_sha256": "94bdc1799ac8ac90996aef6f9aeb73cde360a4eccf03d7968f5fdcf823cfa88a"
+  },
+  "R0_s2": {
+   "regime": "R0",
+   "seed": 2,
+   "mase": 0.8980929094961791,
+   "mae": 0.5534601525606033,
+   "updates": 4000,
+   "epochs": 7,
+   "stop": "UPDATE_BUDGET",
+   "truncation": {
+    "best_epoch_is_last": false,
+    "hit_update_ceiling": true,
+    "reading": "a best epoch at the last epoch with the ceiling hit means the curve was still improving: truncated"
+   },
+   "best_epoch": 6,
+   "curve_val": [
+    0.7510451078414917,
+    0.7875280976295471,
+    0.748904824256897,
+    0.7439997792243958,
+    0.7464045286178589,
+    0.7391490340232849,
+    0.7493548393249512
+   ],
+   "curve_train": [
+    0.799500584602356,
+    0.7810462713241577,
+    0.7739905714988708,
+    0.7713068723678589,
+    0.7661795020103455,
+    0.7631064653396606,
+    0.7748494148254395
+   ],
+   "phases": {
+    "cpu_seconds_process": 252.311,
+    "fit_seconds": 244.99,
+    "inference_seconds": 2.649,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.002
+   },
+   "child_cpu": 253.354,
+   "peak_rss": 932589568,
+   "cgroup_peak": 520183808,
+   "detector_unchanged": false,
+   "detector_gradient": true,
+   "initial_full_digest": "22d374a12ceac11ae520ed650185a818d4139137d387dec9a334cbd8227cd409",
+   "detector_after_setup": "615d28656f50f862fa0543711eb8a835793251daaad5113bfc64c7871bed0f94",
+   "params_trainable": 4591,
+   "pretrained_sha256": null
+  },
+  "R1_s2": {
+   "regime": "R1",
+   "seed": 2,
+   "mase": 0.8955338274128621,
+   "mae": 0.5518830886006593,
+   "updates": 4000,
+   "epochs": 7,
+   "stop": "UPDATE_BUDGET",
+   "truncation": {
+    "best_epoch_is_last": false,
+    "hit_update_ceiling": true,
+    "reading": "a best epoch at the last epoch with the ceiling hit means the curve was still improving: truncated"
+   },
+   "best_epoch": 6,
+   "curve_val": [
+    0.7593785524368286,
+    0.7495694756507874,
+    0.7474488615989685,
+    0.7461981773376465,
+    0.7496064305305481,
+    0.7396933436393738,
+    0.7498777508735657
+   ],
+   "curve_train": [
+    0.8134921789169312,
+    0.7768852710723877,
+    0.7698081135749817,
+    0.7664734721183777,
+    0.7625848054885864,
+    0.7617942094802856,
+    0.7713682651519775
+   ],
+   "phases": {
+    "cpu_seconds_process": 83.645,
+    "fit_seconds": 75.028,
+    "inference_seconds": 3.306,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.011
+   },
+   "child_cpu": 84.687,
+   "peak_rss": 892416000,
+   "cgroup_peak": 487161856,
+   "detector_unchanged": true,
+   "detector_gradient": false,
+   "initial_full_digest": "22d374a12ceac11ae520ed650185a818d4139137d387dec9a334cbd8227cd409",
+   "detector_after_setup": "2444eda9a399f637d1ef6b46118b2f0b7b49a30478d090110c4b6987ebf830e2",
+   "params_trainable": 1695,
+   "pretrained_sha256": "8a5a6bfc77fd05e5db6a4ebb08dd97506a4248faf93c7abb38ffcca66d7d6cd0"
+  },
+  "R2_s2": {
+   "regime": "R2",
+   "seed": 2,
+   "mase": 0.8912197625990839,
+   "mae": 0.5492244962159031,
+   "updates": 4000,
+   "epochs": 7,
+   "stop": "UPDATE_BUDGET",
+   "truncation": {
+    "best_epoch_is_last": false,
+    "hit_update_ceiling": true,
+    "reading": "a best epoch at the last epoch with the ceiling hit means the curve was still improving: truncated"
+   },
+   "best_epoch": 6,
+   "curve_val": [
+    0.7527220249176025,
+    0.7644237875938416,
+    0.7636388540267944,
+    0.7519534826278687,
+    0.7450448870658875,
+    0.7418819665908813,
+    0.7680056095123291
+   ],
+   "curve_train": [
+    0.8074278831481934,
+    0.7765668034553528,
+    0.7695935964584351,
+    0.7649020552635193,
+    0.7598926424980164,
+    0.7580746412277222,
+    0.7666277885437012
+   ],
+   "phases": {
+    "cpu_seconds_process": 251.624,
+    "fit_seconds": 243.946,
+    "inference_seconds": 2.649,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.012
+   },
+   "child_cpu": 252.662,
+   "peak_rss": 932917248,
+   "cgroup_peak": 519516160,
+   "detector_unchanged": false,
+   "detector_gradient": true,
+   "initial_full_digest": "22d374a12ceac11ae520ed650185a818d4139137d387dec9a334cbd8227cd409",
+   "detector_after_setup": "2444eda9a399f637d1ef6b46118b2f0b7b49a30478d090110c4b6987ebf830e2",
+   "params_trainable": 4591,
+   "pretrained_sha256": "8a5a6bfc77fd05e5db6a4ebb08dd97506a4248faf93c7abb38ffcca66d7d6cd0"
+  },
+  "R0_s3": {
+   "regime": "R0",
+   "seed": 3,
+   "mase": 0.9149295527842866,
+   "mae": 0.5638359289021312,
+   "updates": 3762,
+   "epochs": 6,
+   "stop": "EARLY_STOPPING",
+   "truncation": {
+    "best_epoch_is_last": false,
+    "hit_update_ceiling": false,
+    "reading": "a best epoch at the last epoch with the ceiling hit means the curve was still improving: truncated"
+   },
+   "best_epoch": 3,
+   "curve_val": [
+    0.7660843133926392,
+    0.7596161961555481,
+    0.743360698223114,
+    0.7628163695335388,
+    0.7508080005645752,
+    0.743852436542511
+   ],
+   "curve_train": [
+    0.8081555366516113,
+    0.7809873223304749,
+    0.7772960662841797,
+    0.770861804485321,
+    0.7657876014709473,
+    0.762310266494751
+   ],
+   "phases": {
+    "cpu_seconds_process": 245.142,
+    "fit_seconds": 236.418,
+    "inference_seconds": 3.715,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.003
+   },
+   "child_cpu": 246.114,
+   "peak_rss": 928890880,
+   "cgroup_peak": 515493888,
+   "detector_unchanged": false,
+   "detector_gradient": true,
+   "initial_full_digest": "6057904c767ae8376695cf3b1c359107b504af23fd3c41ed69fe97d6d4d51a0f",
+   "detector_after_setup": "1117b8d9ca1b0a66f9eecc6370f2173a05a9e48bc18e9e4e54bbfe3aaf717df5",
+   "params_trainable": 4591,
+   "pretrained_sha256": null
+  },
+  "R1_s3": {
+   "regime": "R1",
+   "seed": 3,
+   "mase": 0.9046434590697988,
+   "mae": 0.5574970045700521,
+   "updates": 3762,
+   "epochs": 6,
+   "stop": "EARLY_STOPPING",
+   "truncation": {
+    "best_epoch_is_last": false,
+    "hit_update_ceiling": false,
+    "reading": "a best epoch at the last epoch with the ceiling hit means the curve was still improving: truncated"
+   },
+   "best_epoch": 3,
+   "curve_val": [
+    0.7615209221839905,
+    0.7524868845939636,
+    0.7399207949638367,
+    0.7586615681648254,
+    0.7446564435958862,
+    0.7476360201835632
+   ],
+   "curve_train": [
+    0.8869088888168335,
+    0.7825712561607361,
+    0.7737244367599487,
+    0.7676383256912231,
+    0.7641108632087708,
+    0.7605980634689331
+   ],
+   "phases": {
+    "cpu_seconds_process": 77.228,
+    "fit_seconds": 68.566,
+    "inference_seconds": 3.255,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.012
+   },
+   "child_cpu": 78.29,
+   "peak_rss": 899977216,
+   "cgroup_peak": 486600704,
+   "detector_unchanged": true,
+   "detector_gradient": false,
+   "initial_full_digest": "6057904c767ae8376695cf3b1c359107b504af23fd3c41ed69fe97d6d4d51a0f",
+   "detector_after_setup": "d317fc1fe35acac55cb958fb2d5632dd4cf5a3cfbb4df367fc721e1151d952b8",
+   "params_trainable": 1695,
+   "pretrained_sha256": "fb2026ee2fee68afa06ac210f38cb9fb618953c0aea86e5308edae2d114a5e94"
+  },
+  "R2_s3": {
+   "regime": "R2",
+   "seed": 3,
+   "mase": 0.9205692655035862,
+   "mae": 0.567311467155487,
+   "updates": 3762,
+   "epochs": 6,
+   "stop": "EARLY_STOPPING",
+   "truncation": {
+    "best_epoch_is_last": false,
+    "hit_update_ceiling": false,
+    "reading": "a best epoch at the last epoch with the ceiling hit means the curve was still improving: truncated"
+   },
+   "best_epoch": 3,
+   "curve_val": [
+    0.755305290222168,
+    0.7554654479026794,
+    0.739343523979187,
+    0.7593635320663452,
+    0.7548602223396301,
+    0.7512564063072205
+   ],
+   "curve_train": [
+    0.8593449592590332,
+    0.7790079712867737,
+    0.7731437683105469,
+    0.7679334878921509,
+    0.7624993324279785,
+    0.757332980632782
+   ],
+   "phases": {
+    "cpu_seconds_process": 256.453,
+    "fit_seconds": 246.828,
+    "inference_seconds": 4.435,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.013
+   },
+   "child_cpu": 257.446,
+   "peak_rss": 926711808,
+   "cgroup_peak": 513122304,
+   "detector_unchanged": false,
+   "detector_gradient": true,
+   "initial_full_digest": "6057904c767ae8376695cf3b1c359107b504af23fd3c41ed69fe97d6d4d51a0f",
+   "detector_after_setup": "d317fc1fe35acac55cb958fb2d5632dd4cf5a3cfbb4df367fc721e1151d952b8",
+   "params_trainable": 4591,
+   "pretrained_sha256": "fb2026ee2fee68afa06ac210f38cb9fb618953c0aea86e5308edae2d114a5e94"
+  }
+ },
+ "ae": {
+  "1": {
+   "updates": 1500,
+   "stop": "UPDATE_BUDGET",
+   "reconstruction": 0.14626669883728027,
+   "phases": {
+    "cpu_seconds_process": 44.08,
+    "metrics_seconds": 0.847,
+    "pretrain_seconds": 36.362
+   },
+   "child_cpu": 44.982,
+   "detector_sha256": "94bdc1799ac8ac90996aef6f9aeb73cde360a4eccf03d7968f5fdcf823cfa88a",
+   "curve_val": [
+    0.1638423353433609,
+    0.15166398882865906,
+    0.14545616507530212
+   ]
+  },
+  "2": {
+   "updates": 1500,
+   "stop": "UPDATE_BUDGET",
+   "reconstruction": 0.14637550711631775,
+   "phases": {
+    "cpu_seconds_process": 44.295,
+    "metrics_seconds": 0.843,
+    "pretrain_seconds": 36.659
+   },
+   "child_cpu": 45.194,
+   "detector_sha256": "8a5a6bfc77fd05e5db6a4ebb08dd97506a4248faf93c7abb38ffcca66d7d6cd0",
+   "curve_val": [
+    0.16282592713832855,
+    0.1529429852962494,
+    0.145786315202713
+   ]
+  },
+  "3": {
+   "updates": 1500,
+   "stop": "UPDATE_BUDGET",
+   "reconstruction": 0.14635001122951508,
+   "phases": {
+    "cpu_seconds_process": 40.633,
+    "metrics_seconds": 0.789,
+    "pretrain_seconds": 36.221
+   },
+   "child_cpu": 41.563,
+   "detector_sha256": "fb2026ee2fee68afa06ac210f38cb9fb618953c0aea86e5308edae2d114a5e94",
+   "curve_val": [
+    0.161863312125206,
+    0.15050075948238373,
+    0.14548203349113464
+   ]
+  }
+ },
+ "controls": {
+  "persistence": {
+   "mase": 1.0018019605369508,
+   "mae": 0.6173720558882235
+  },
+  "seasonal_naive_daily": {
+   "mase": 1.1872544207304976,
+   "mae": 0.7316592814371257
+  },
+  "linear_ridge": {
+   "mase": 0.8851672468675469,
+   "mae": 0.5454945633272991
+  },
+  "phases": {
+   "cpu_seconds_process": 3.83,
+   "fit_seconds": 0.302,
+   "metrics_seconds": 0.001
+  }
+ },
+ "means": {
+  "R0": {
+   "n": 3,
+   "mase_mean": 0.898717965835702,
+   "mase_sd": 0.01590827117015422
+  },
+  "R1": {
+   "n": 3,
+   "mase_mean": 0.8955506371567951,
+   "mase_sd": 0.00908442870526849
+  },
+  "R2": {
+   "n": 3,
+   "mase_mean": 0.9001520904301747,
+   "mase_sd": 0.017727792229150472
+  }
+ },
+ "paired": {
+  "R1_minus_R0": {
+   "n": 3,
+   "mean": -0.003167328678906826,
+   "per_seed": {
+    "1": 0.0033431897610842753,
+    "2": -0.0025590820833170103,
+    "3": -0.010286093714487743
+   },
+   "min": -0.010286093714487743,
+   "max": 0.0033431897610842753
+  },
+  "R2_minus_R0": {
+   "n": 3,
+   "mean": 0.0014341245944727854,
+   "per_seed": {
+    "1": 0.005535807961214001,
+    "2": -0.006873146897095284,
+    "3": 0.005639712719299639
+   },
+   "min": -0.006873146897095284,
+   "max": 0.005639712719299639
+  },
+  "R2_minus_R1": {
+   "n": 3,
+   "mean": 0.004601453273379612,
+   "per_seed": {
+    "1": 0.0021926182001297256,
+    "2": -0.004314064813778273,
+    "3": 0.01592580643378738
+   },
+   "min": -0.004314064813778273,
+   "max": 0.01592580643378738
+  }
+ },
+ "identity": {
+  "1": {
+   "shared_initial_checkpoint": true,
+   "R1_R2_same_imported_detector": true,
+   "R0_detector_is_the_random_initial": true,
+   "R1_detector_frozen": true,
+   "R0_R2_detector_learns": true
+  },
+  "2": {
+   "shared_initial_checkpoint": true,
+   "R1_R2_same_imported_detector": true,
+   "R0_detector_is_the_random_initial": true,
+   "R1_detector_frozen": true,
+   "R0_R2_detector_learns": true
+  },
+  "3": {
+   "shared_initial_checkpoint": true,
+   "R1_R2_same_imported_detector": true,
+   "R0_detector_is_the_random_initial": true,
+   "R1_detector_frozen": true,
+   "R0_R2_detector_learns": true
+  }
+ },
+ "costs": {
+  "ae_cpu": 131.739,
+  "fit_cpu_by_regime": {
+   "R0": 757.633,
+   "R1": 227.405,
+   "R2": 711.1890000000001
+  },
+  "pilot_cpu": 64.819,
+  "controls_cpu": 4.644,
+  "spent_cpu_seconds_root": 1897.429,
+  "reading": "same task budget per regime (fit CPU); total cost = fit + the AE of the seed for R1/R2 (reported apart)"
+ },
+ "projection": {
+  "assumption": "every unit at its full update ceiling (early stopping only lowers it); per-update cost from the pilot of its kind; overhead per child from the pilots",
+  "cap_seconds": 11000.0,
+  "fits": true,
+  "headroom": 0.25,
+  "per_cell": {
+   "R0_s1": 448.6893333333333,
+   "R0_s2": 448.6893333333333,
+   "R0_s3": 448.6893333333333,
+   "R1_s1": 448.6893333333333,
+   "R1_s2": 448.6893333333333,
+   "R1_s3": 448.6893333333333,
+   "R2_s1": 448.6893333333333,
+   "R2_s2": 448.6893333333333,
+   "R2_s3": 448.6893333333333,
+   "ae_s1": 66.288,
+   "ae_s2": 66.288,
+   "ae_s3": 66.288,
+   "controls": 22.952000000000012
+  },
+  "projected_remaining_cpu_seconds": 4260.0199999999995,
+  "projected_with_headroom": 5325.025,
+  "remaining_cells": 13,
+  "spent_so_far": 364.819
+ },
+ "cost_pilot": {
+  "pilot_ae": {
+   "cgroup_memory_peak": 399249408,
+   "cost": {
+    "cgroup_memory_peak": 399249408,
+    "cpu_seconds": 20.552,
+    "ended_at": "2026-09-19T16:58:46+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 809553920,
+    "started_at": "2026-09-19T16:58:28+00:00",
+    "wall_seconds": 17.672
+   },
+   "cpu_seconds": 20.552,
+   "detector_sha256": "09cea143bb5a22b64c41db72b2b328159778495c63b3fb9ebfd77a5d1fb1f442",
+   "fit_seconds": 11.434,
+   "outcome": "COMPLETED",
+   "overhead_seconds": 9.118,
+   "peak_rss_bytes": 809553920,
+   "phases": {
+    "cpu_seconds_process": 19.422,
+    "metrics_seconds": 1.039,
+    "pretrain_seconds": 11.434
+   },
+   "reconstruction": 0.18013037741184235,
+   "resumed": true,
+   "seconds_per_update": 0.03811333333333333,
+   "seed": 1,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 300
+  },
+  "pilot_fit": {
+   "cgroup_memory_peak": 507408384,
+   "cost": {
+    "cgroup_memory_peak": 507408384,
+    "cpu_seconds": 44.267,
+    "ended_at": "2026-09-19T16:59:26+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 920850432,
+    "started_at": "2026-09-19T16:58:46+00:00",
+    "wall_seconds": 39.728
+   },
+   "cpu_seconds": 44.267,
+   "detector_receives_gradient": true,
+   "detector_unchanged": false,
+   "fit_seconds": 32.791,
+   "initial_full_digest": "f51b6174aa4fd621701dddb41c60964c43a055c151d1f6d4493c8d05d7852e61",
+   "mae_validation": 0.5493574232643473,
+   "mase_validation": 0.891435461668178,
+   "outcome": "COMPLETED",
+   "overhead_seconds": 11.476000000000006,
+   "parameters": {
+    "frozen": 0,
+    "total": 4591,
+    "trainable": 4591
+   },
+   "peak_rss_bytes": 920850432,
+   "phases": {
+    "cpu_seconds_process": 43.176,
+    "fit_seconds": 32.791,
+    "inference_seconds": 4.015,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.003
+   },
+   "regime": "R0",
+   "resumed": true,
+   "seconds_per_update": 0.10930333333333332,
+   "seed": 1,
+   "stop_reason": "UPDATE_BUDGET",
+   "truncation": {
+    "best_epoch_is_last": true,
+    "hit_update_ceiling": true,
+    "reading": "a best epoch at the last epoch with the ceiling hit means the curve was still improving: truncated"
+   },
+   "updates": 300
+  }
+ },
+ "verified_units": {
+  "ae_s1": true,
+  "R0_s1": true,
+  "R1_s1": true,
+  "R2_s1": true,
+  "ae_s2": true,
+  "R0_s2": true,
+  "R1_s2": true,
+  "R2_s2": true,
+  "ae_s3": true,
+  "R0_s3": true,
+  "R1_s3": true,
+  "R2_s3": true,
+  "controls": true,
+  "pilot_ae": true,
+  "pilot_fit": true
+ },
+ "governance": {
+  "disposition": "LOCAL_TERMINALS_PUBLIC_PANEL_NOT_A_LAKE_RESOURCE",
+  "missing_object": "one lake registration of public_panels_c126_v2 in data-gov (config + service restart: an owner action)",
+  "what_is_recorded": "governed_terminal.v1 documents per unit in the run root + CAMPAIGN_PROPOSAL.json",
+  "why": "the deployed data-gov serves no lake holding the public panels; DATASETS campaigns complete units only through deliveries of every declared dataset; SYNTHETIC would misdeclare real bytes"
+ },
+ "host": "omega",
+ "reading_rules": [
+  "development pilot: no H1 confirmation, no model selection, no benchmark substitute",
+  "BUDGET_LIMITED / truncated curves are not evidence against pre-training",
+  "no row or task was chosen after seeing regime results (design sealed before outcomes)"
+ ]
+}

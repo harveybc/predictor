@@ -1,0 +1,93 @@
+{
+ "schema": "df_e1_pilot_data.v1",
+ "design_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+ "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+ "panel_rows": 2075259,
+ "slice_rows": [
+  1412361,
+  1462761
+ ],
+ "contract_sha256": "306cdf04e03c760c573eb213f3438a4af9fd0952cc70c0ba9d162c5f0ede9403",
+ "input_columns": [
+  "Global_reactive_power",
+  "Voltage",
+  "Global_intensity",
+  "Sub_metering_1",
+  "Sub_metering_2",
+  "Sub_metering_3",
+  "Global_active_power"
+ ],
+ "target_channel": 6,
+ "window": 60,
+ "horizon": 60,
+ "p": 7,
+ "enumerator": {
+  "train": {
+   "origins": 40141,
+   "admissible": 40081,
+   "withdrawn_grid": 0,
+   "withdrawn_non_finite_inputs": 60,
+   "masked_inputs": 0,
+   "targets_valid_per_column": {
+    "Global_active_power": 40080
+   },
+   "targets_valid_any": 40080,
+   "targets_valid_all": 40080,
+   "support_physical_seconds": 2404860
+  },
+  "validation": {
+   "origins": 10020,
+   "admissible": 10020,
+   "withdrawn_grid": 0,
+   "withdrawn_non_finite_inputs": 0,
+   "masked_inputs": 0,
+   "targets_valid_per_column": {
+    "Global_active_power": 10020
+   },
+   "targets_valid_any": 10020,
+   "targets_valid_all": 10020,
+   "support_physical_seconds": 601200
+  }
+ },
+ "grid_rows_not_ok": 0,
+ "input_rows_non_finite": 1,
+ "scaler": {
+  "mean": [
+   0.16394039569874333,
+   241.13327788719684,
+   3.979902281204715,
+   1.2482722486963898,
+   0.8695229659938625,
+   6.320571675690061,
+   0.926139629748496
+  ],
+  "sd": [
+   0.12462470429263597,
+   2.20610330333974,
+   3.8047190184746955,
+   6.578895446497683,
+   3.6476937059712364,
+   8.382971207465904,
+   0.9125164391265214
+  ],
+  "fitted_on": "train windows only",
+  "n_rows": 2404860
+ },
+ "train_origins_with_label": 40080,
+ "mase_denominator_persistence_h": 0.6162615768463073,
+ "coverage": {
+  "validation_admissible": 10020,
+  "with_finite_label": 10020,
+  "with_finite_daily_lookup": 10020,
+  "common_evaluation_set": 10020
+ },
+ "memory_preflight": {
+  "slice_bytes": 1411200,
+  "train_tensor_bytes_for_scaler": 134672160,
+  "cap_bytes": 1073741824,
+  "batch_window_bytes": 107520,
+  "policy": "windows are gathered per batch from the scaled slice; only the train tensor for the scaler is materialised once, here"
+ },
+ "cpu_seconds": 0.67,
+ "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194"
+}

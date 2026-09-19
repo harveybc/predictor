@@ -1,0 +1,147 @@
+{
+ "unit_id": "controls",
+ "campaign": "SEE CAMPAIGN_PROPOSAL.json",
+ "terminal": {
+  "schema": "governed_terminal.v1",
+  "generation": 1,
+  "status": "COMPLETED",
+  "reason": null,
+  "started_at": "2026-09-19T17:03:20Z",
+  "finished_at": "2026-09-19T17:03:24Z",
+  "costs": {
+   "wall_seconds": 4.833,
+   "cpu_seconds": 4.644
+  },
+  "deliveries": [],
+  "artifacts": [],
+  "metrics": [
+   {
+    "metric": "e1.updates",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "count",
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.params_trainable",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "count",
+    "value": 421.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.cost.cpu_seconds_process",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "seconds",
+    "value": 3.83,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.cost.fit_seconds",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "seconds",
+    "value": 0.302,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.cost.metrics_seconds",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "seconds",
+    "value": 0.001,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.persistence.mase_validation",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "mase",
+    "value": 1.0018019605369508,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.persistence.mae_validation",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "mae",
+    "value": 0.6173720558882235,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.seasonal_naive_daily.mase_validation",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "mase",
+    "value": 1.1872544207304976,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.seasonal_naive_daily.mae_validation",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "mae",
+    "value": 0.7316592814371257,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.linear_ridge.mase_validation",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "mase",
+    "value": 0.8851672468675469,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.linear_ridge.mae_validation",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "mae",
+    "value": 0.5454945633272991,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  ],
+  "tags": {
+   "purpose": "E1_DEV_PILOT",
+   "proposal": "P-E1",
+   "grants": "NONE",
+   "classification": "NON_GOVERNING",
+   "phase": "DEVELOPMENT",
+   "outcome": "COMPLETED",
+   "design_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+   "unit_id": "controls",
+   "family": "uci_235",
+   "task": "W60_h60",
+   "host": "omega",
+   "metric_states": "{\"e1.cost.cpu_seconds_process\": \"MEDIDO\", \"e1.cost.fit_seconds\": \"MEDIDO\", \"e1.cost.metrics_seconds\": \"MEDIDO\", \"e1.linear_ridge.mae_validation\": \"MEDIDO\", \"e1.linear_ridge.mase_validation\": \"MEDIDO\", \"e1.params_trainable\": \"MEDIDO\", \"e1.persistence.mae_validation\": \"MEDIDO\", \"e1.persistence.mase_validation\": \"MEDIDO\", \"e1.seasonal_naive_daily.mae_validation\": \"MEDIDO\", \"e1.seasonal_naive_daily.mase_validation\": \"MEDIDO\", \"e1.updates\": \"MEDIDO\"}",
+   "role": "CELL",
+   "kind": "controls",
+   "seed": "0"
+  }
+ }
+}

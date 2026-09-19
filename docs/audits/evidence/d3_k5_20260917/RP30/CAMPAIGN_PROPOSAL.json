@@ -1,0 +1,44 @@
+{
+ "campaign_key": "satoshi-e1-household-dev-20260919-e1-household-dev-pilot",
+ "classification": "NON_GOVERNING",
+ "code_identity": {
+  "kind": "git_commit",
+  "value": "5e7cac28fcfcc743cb29f4362819232920c83349"
+ },
+ "config_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+ "datasets": [
+  {
+   "from": null,
+   "lake": "public_panels_c126_v2 (NOT YET A LAKE)",
+   "resource": "uci_235_individual_household_power/panel.parquet",
+   "role": "panel",
+   "to": null
+  }
+ ],
+ "input_mode": "DATASETS",
+ "missing_object": "one lake registration of public_panels_c126_v2 in data-gov (config + service restart: an owner action)",
+ "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+ "project": "predictor",
+ "schema": "governed_campaign.v1",
+ "status": "PROPOSAL_NOT_SUBMITTED",
+ "synthetic_spec_sha256": null,
+ "terminal_lake": "olap_cube",
+ "units": [
+  "pilot_ae",
+  "pilot_fit",
+  "ae_s1",
+  "R0_s1",
+  "R1_s1",
+  "R2_s1",
+  "ae_s2",
+  "R0_s2",
+  "R1_s2",
+  "R2_s2",
+  "ae_s3",
+  "R0_s3",
+  "R1_s3",
+  "R2_s3",
+  "controls"
+ ],
+ "why": "the deployed data-gov serves no lake holding the public panels; DATASETS campaigns complete units only through deliveries of every declared dataset; SYNTHETIC would misdeclare real bytes"
+}

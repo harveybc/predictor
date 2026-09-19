@@ -123,7 +123,7 @@ def test_RP30_units_share_the_initial_checkpoint_and_the_ae_and_are_verified_fro
     body = (root / "attempts" / "R0_s1" / "cell.json").read_bytes()
     res = {"output_file": "cell.json", "output_sha256": __import__("hashlib").sha256(body).hexdigest()}
     rec, refusal = P.verified_unit(root / "attempts" / "R0_s1", res, res)
-    assert rec is None and "arrays" in refusal["why"]
+    assert rec is None and refusal["why"] == "arrays absent or altered"        # the DIGEST refuses, before any recomputation
 
 
 def test_RP30_batched_windows_equal_the_materialised_tensor():

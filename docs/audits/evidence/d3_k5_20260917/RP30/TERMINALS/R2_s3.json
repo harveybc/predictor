@@ -1,0 +1,128 @@
+{
+ "unit_id": "R2_s3",
+ "campaign": "SEE CAMPAIGN_PROPOSAL.json",
+ "terminal": {
+  "schema": "governed_terminal.v1",
+  "generation": 1,
+  "status": "COMPLETED",
+  "reason": null,
+  "started_at": "2026-09-19T17:06:13Z",
+  "finished_at": "2026-09-19T17:09:56Z",
+  "costs": {
+   "wall_seconds": 222.356,
+   "cpu_seconds": 257.446
+  },
+  "deliveries": [],
+  "artifacts": [],
+  "metrics": [
+   {
+    "metric": "e1.updates",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "count",
+    "value": 3762.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.params_trainable",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "count",
+    "value": 4591.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.cost.cpu_seconds_process",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "seconds",
+    "value": 256.453,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.cost.fit_seconds",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "seconds",
+    "value": 246.828,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.cost.inference_seconds",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "seconds",
+    "value": 4.435,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.cost.metrics_seconds",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "seconds",
+    "value": 0.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.cost.reuse_seconds",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "seconds",
+    "value": 0.013,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.mase_validation",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "mase",
+    "value": 0.9205692655035862,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.mae_validation",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "mae",
+    "value": 0.567311467155487,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  ],
+  "tags": {
+   "purpose": "E1_DEV_PILOT",
+   "proposal": "P-E1",
+   "grants": "NONE",
+   "classification": "NON_GOVERNING",
+   "phase": "DEVELOPMENT",
+   "outcome": "COMPLETED",
+   "design_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+   "unit_id": "R2_s3",
+   "family": "uci_235",
+   "task": "W60_h60",
+   "host": "omega",
+   "metric_states": "{\"e1.cost.cpu_seconds_process\": \"MEDIDO\", \"e1.cost.fit_seconds\": \"MEDIDO\", \"e1.cost.inference_seconds\": \"MEDIDO\", \"e1.cost.metrics_seconds\": \"MEDIDO\", \"e1.cost.reuse_seconds\": \"MEDIDO\", \"e1.mae_validation\": \"MEDIDO\", \"e1.mase_validation\": \"MEDIDO\", \"e1.params_trainable\": \"MEDIDO\", \"e1.updates\": \"MEDIDO\"}",
+   "role": "CELL",
+   "kind": "fit",
+   "seed": "3",
+   "regime": "R2"
+  }
+ }
+}

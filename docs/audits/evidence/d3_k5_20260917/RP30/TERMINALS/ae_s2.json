@@ -1,0 +1,97 @@
+{
+ "unit_id": "ae_s2",
+ "campaign": "SEE CAMPAIGN_PROPOSAL.json",
+ "terminal": {
+  "schema": "governed_terminal.v1",
+  "generation": 1,
+  "status": "COMPLETED",
+  "reason": null,
+  "started_at": "2026-09-19T16:59:37Z",
+  "finished_at": "2026-09-19T17:00:12Z",
+  "costs": {
+   "wall_seconds": 35.305,
+   "cpu_seconds": 45.194
+  },
+  "deliveries": [],
+  "artifacts": [],
+  "metrics": [
+   {
+    "metric": "e1.updates",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "count",
+    "value": 1500.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.params_trainable",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "count",
+    "value": 3831.0,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.cost.cpu_seconds_process",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "seconds",
+    "value": 44.295,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.cost.metrics_seconds",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "seconds",
+    "value": 0.843,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.cost.pretrain_seconds",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "seconds",
+    "value": 36.659,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   },
+   {
+    "metric": "e1.ae.reconstruction_val_mse_masked",
+    "split": "validation",
+    "horizon": 60,
+    "unit": "mse",
+    "value": 0.14637550711631775,
+    "std_dev": null,
+    "min_value": null,
+    "max_value": null
+   }
+  ],
+  "tags": {
+   "purpose": "E1_DEV_PILOT",
+   "proposal": "P-E1",
+   "grants": "NONE",
+   "classification": "NON_GOVERNING",
+   "phase": "DEVELOPMENT",
+   "outcome": "COMPLETED",
+   "design_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+   "unit_id": "ae_s2",
+   "family": "uci_235",
+   "task": "W60_h60",
+   "host": "omega",
+   "metric_states": "{\"e1.ae.reconstruction_val_mse_masked\": \"MEDIDO\", \"e1.cost.cpu_seconds_process\": \"MEDIDO\", \"e1.cost.metrics_seconds\": \"MEDIDO\", \"e1.cost.pretrain_seconds\": \"MEDIDO\", \"e1.params_trainable\": \"MEDIDO\", \"e1.updates\": \"MEDIDO\"}",
+   "role": "CELL",
+   "kind": "ae",
+   "seed": "2"
+  }
+ }
+}
