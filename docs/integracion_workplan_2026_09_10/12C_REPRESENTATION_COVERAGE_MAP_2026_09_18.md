@@ -85,3 +85,13 @@ rows, fixed CNN graph, no test access for pilots, digest-bound arrays) and teste
 verified; measurement still **BUDGET_LIMITED** (14 619 s with headroom vs 14 355 s remaining; +264 s);
 trade-off in `T3_ADEQUACY_V2_TRADEOFF.json`. The S1 cost pilot's test scores are a disclosed DEVELOPMENT
 diagnostic, not an untouched confirmation; the S1 oracle interpretation is corrected in 12D.
+
+## MOD-E0-DEV (P-MOD, 2026-09-18): EXECUTED and VERIFIED, descriptive
+
+| mechanism | arms | result (validation, 3 replicates) | status |
+|---|---|---|---|
+| H2 profile grouping vs random redistribution (h = 0..3) | modular residual TCN, same branches/capacity/context | e(h) within ±0.01, slope +0.004 [0.000, 0.006] — no effect | EXECUTED, VERIFIED, no support |
+| H3 sequence fusion vs early summary (r = 0/1), frozen shared extractor | 920 vs 808 trainable | d_0 −0.023, d_1 −0.091, γ −0.068 [−0.072, −0.064] — sequences better, more with lagged dependence | EXECUTED, VERIFIED, descriptive |
+
+Not covered: public families (E1), reserved confirmation (E0-CONF/E2), financial/RL (E3), other
+operators or representations, learned pretraining regimes R1/R2.

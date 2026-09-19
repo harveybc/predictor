@@ -1,2 +1,5 @@
 # PRE (mod-e0-dev-v2, 2026-09-18 20:0x): every terminal refused by data-gov
 outbox: sent 1758, pending 72, class REFUSED_BY_SERVER, last_error 'terminal refused: http 400 invalid metric schema' (a 'status' key had been added to each metric row); reconciliation of mod-e0-dev-v2-mod-e0-cells: 66 missing units; warehouse covered 0/66
+
+# POST (after bb213b3 repair mode)
+mod-e0-dev-v2: 69 terminals superseded by generation-2 successors with schema-valid metric rows (states in tags); originals disposed SUPERSEDED; reconciliation of the three campaigns: 0 missing; mod-e0-dev-v1 cost pilots: 3 superseded, 0 missing; live warehouse content: see RP5_MOD_E0_V2_VERIFY.json

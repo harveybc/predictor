@@ -1,0 +1,95 @@
+{
+ "schema": "df_mod_e0_terminal_repair.v1",
+ "run_id": "mod-e0-dev-v1",
+ "superseded": 3,
+ "failed": [],
+ "reconciliation": {
+  "mod-e0-dev-v1-mod-e0-cost-pilot": {
+   "missing": 0,
+   "accounting_only": [],
+   "lake_only": []
+  },
+  "mod-e0-dev-v1-mod-e0-cost-pilot-arm": {
+   "missing": 0,
+   "accounting_only": [],
+   "lake_only": []
+  }
+ },
+ "details": {
+  "superseded": [
+   {
+    "unit_id": "pilot__H3_extractor",
+    "disposition": {
+     "schema": "terminal_outbox_disposition.v1",
+     "file": "b13e44ff67c4e6dd4bddfce86f129ec4a15ed2bd52ba950a11cc771f1cb76221.json",
+     "decision": "SUPERSEDED",
+     "reason": "RP5 repair: metric rows carried a status key the governed schema does not admit",
+     "envelope_sha256": "b13e44ff67c4e6dd4bddfce86f129ec4a15ed2bd52ba950a11cc771f1cb76221",
+     "campaign_sha256": "7fcd3d58eb279bcea700d1f4b91a4bef138ace9df92a9f8d02267861d4d08d2e",
+     "unit_id": "pilot__H3_extractor",
+     "generation": 1,
+     "status": "COMPLETED",
+     "failure": {
+      "attempts": 71,
+      "first_seen": "2026-09-19T00:02:36.930344Z",
+      "last_seen": "2026-09-19T00:58:03.470503Z",
+      "last_error": "GovernedRunError: terminal refused: http 400 invalid metric schema",
+      "class": "REFUSED_BY_SERVER"
+     },
+     "successor_terminal_sha256": "9e154645071d730a435f7aa81a22c6b73d14c584e975e2aedce8424e325f9dea",
+     "successor_generation": 2,
+     "disposed_at": "2026-09-19T01:07:42.620103Z"
+    }
+   },
+   {
+    "unit_id": "pilot__H2_profiles",
+    "disposition": {
+     "schema": "terminal_outbox_disposition.v1",
+     "file": "c4e81e31608236b66a7a3e0f03e6ec92fe5a54861d8ba8722ec372cca2424c83.json",
+     "decision": "SUPERSEDED",
+     "reason": "RP5 repair: metric rows carried a status key the governed schema does not admit",
+     "envelope_sha256": "c4e81e31608236b66a7a3e0f03e6ec92fe5a54861d8ba8722ec372cca2424c83",
+     "campaign_sha256": "7fcd3d58eb279bcea700d1f4b91a4bef138ace9df92a9f8d02267861d4d08d2e",
+     "unit_id": "pilot__H2_profiles",
+     "generation": 1,
+     "status": "COMPLETED",
+     "failure": {
+      "attempts": 72,
+      "first_seen": "2026-09-19T00:02:17.227026Z",
+      "last_seen": "2026-09-19T00:58:03.490263Z",
+      "last_error": "GovernedRunError: terminal refused: http 400 invalid metric schema",
+      "class": "REFUSED_BY_SERVER"
+     },
+     "successor_terminal_sha256": "d5c3aacca7841e1038664a8f0a92122037c140f06b9b1fdadd40e73a92a608fd",
+     "successor_generation": 2,
+     "disposed_at": "2026-09-19T01:07:42.655046Z"
+    }
+   },
+   {
+    "unit_id": "pilot__H3_sequence",
+    "disposition": {
+     "schema": "terminal_outbox_disposition.v1",
+     "file": "c91ad6da4f1aaaf44cc333c89af60b214f1a09a601becf627ffde374f260e6c7.json",
+     "decision": "SUPERSEDED",
+     "reason": "RP5 repair: metric rows carried a status key the governed schema does not admit",
+     "envelope_sha256": "c91ad6da4f1aaaf44cc333c89af60b214f1a09a601becf627ffde374f260e6c7",
+     "campaign_sha256": "eb17f162423d9ed759f463b00af2b9b59b910eb57b294a3a197fab076b58920a",
+     "unit_id": "pilot__H3_sequence",
+     "generation": 1,
+     "status": "COMPLETED",
+     "failure": {
+      "attempts": 70,
+      "first_seen": "2026-09-19T00:02:51.027113Z",
+      "last_seen": "2026-09-19T00:58:03.498095Z",
+      "last_error": "GovernedRunError: terminal refused: http 400 invalid metric schema",
+      "class": "REFUSED_BY_SERVER"
+     },
+     "successor_terminal_sha256": "cbee9072f4c58515f326036093b8092a56430edced7c9e449bc95bb60090c773",
+     "successor_generation": 2,
+     "disposed_at": "2026-09-19T01:07:42.690301Z"
+    }
+   }
+  ],
+  "failed": []
+ }
+}

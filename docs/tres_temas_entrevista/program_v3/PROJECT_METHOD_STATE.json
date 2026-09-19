@@ -1,7 +1,7 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-09-18",
-  "current_stage": "implementation",
+  "current_stage": "external_review",
   "completed_stages": [
     "discovery",
     "requirements",
@@ -10,18 +10,22 @@
     "system_test_design",
     "component_design",
     "integration_test_design",
-    "unit_test_design"
+    "unit_test_design",
+    "implementation",
+    "unit_verification",
+    "integration_verification",
+    "system_verification",
+    "alpha_acceptance"
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "RP1_RP8_IN_EXECUTION_BY_SATOSHI",
+  "handoff_status": "RP1_RP8_RETURN_PUBLISHED_REVIEW_REQUESTED",
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
-    "RP1: reconcile reusable evidence and adopt the corrected work plan",
-    "RP2: derive the multivariate mechanism pilot design and numerical requirements",
-    "RP3: design acceptance, system, integration and unit tests before new implementation",
-    "RP4-RP8: implement gaps, execute the governed development pilot and close by content"
+    "Musashi: review MOD-E0-DEV design, implementation, execution and effects",
+    "Satoshi: E1 family selection over the census; business contract gaps with the owner",
+    "no reserve, no live, no financial scoring until reviewed"
   ],
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
@@ -90,15 +94,20 @@
     {
       "id": "MOD-E0-DEV",
       "owner": "Satoshi",
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "depends_on": [],
       "evidence": [
         "docs/audits/evidence/d3_k5_20260917/RP2_MOD_E0_DESIGN.json",
         "docs/audits/evidence/d3_k5_20260917/RP3_ML07_RECEIVER_DIAGNOSTIC.json",
         "tests/test_df_mod_e0.py",
-        "tests/test_df_mod_e0_run.py"
+        "tests/test_df_mod_e0_run.py",
+        "docs/audits/evidence/d3_k5_20260917/RP4_MOD_E0_DESIGN_V2_STAGE.json",
+        "docs/audits/evidence/d3_k5_20260917/RP4_MOD_E0_V2_REPORT.json",
+        "docs/audits/evidence/d3_k5_20260917/RP5_MOD_E0_V2_VERIFY.json",
+        "docs/audits/evidence/d3_k5_20260917/RP5_MOD_E0_V2_TABLES.md",
+        "docs/audits/evidence/d3_k5_20260917/RP5_TERMINAL_REPAIR_PRE_POST.txt"
       ],
-      "next_action": "RP4 governed pilot mod-e0-dev-v1 running; then RP5 verification and effects",
+      "next_action": "Musashi review; then E1 development design",
       "deliverable": "H2 profile/random effects and H3 sequence/summary effects with matched controls and cost"
     },
     {

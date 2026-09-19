@@ -214,7 +214,7 @@ def verify(root: Path, warehouse_url: str | None, token: str | None, split: str 
     out["bootstrap"] = bootstrap_effects(usable) if usable else None
     out["effects_test"] = effects({k: {**v, "mase": out["cells"][k]["record"]["mase"].get("test")} for k, v in usable.items()}) if usable else None
     if warehouse_url and token:
-        keys = [k for k in ((report.get("campaign") or {}).get("key"), f"{report['run_id']}-mod-e0-cost-pilot") if k]
+        keys = [k for k in ((report.get("campaign") or {}).get("key"), f"{report['run_id']}-mod-e0-cost-pilot", f"{report['run_id']}-mod-e0-cost-pilot-arm") if k]
         held = {}
         for k in keys:
             held.update(cube_rows(warehouse_url, token, k))
