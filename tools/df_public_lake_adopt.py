@@ -51,6 +51,9 @@ PANEL_ROOT = HOME / ".local/state/crispdm-data-foundation/public_panels_c126_v2"
 TASKS_FILE = REPO / "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
 GOV_APP = HOME / "Documents/GitHub/.worktrees/musashi-n3-data-gov-20260914T063541Z"
 PYTHON = HOME / "anaconda3/envs/trading-stack/bin/python3.12"
+#: the deployed warehouse host, used in the rehearsal against a DISPOSABLE DuckDB file
+WAREHOUSE_PYTHON = HOME / ".venvs/store-hosts-duckdb-prod/bin/python"
+WAREHOUSE_CONFIG = HOME / ".local/state/crispdm-duckdb/prod/5057.host.duckdb.json"
 
 LAKE_ID = "public_panels"
 RESOURCES = {
@@ -274,10 +277,27 @@ def rehearse(out_path: Path, *, keep: bool = False) -> dict:
     stack.update(web_port=port, accounting_db=str(work / "accounting.db"), spool_dir=str(work / "spool"),
                  cuts_dir=str(work / "cuts"), save_config=str(work / "effective.json"),
                  operator_config_path=str(work / "pending.json"))
-    stack["lakes"] = [l for l in stack["lakes"] if l.get("plugin") != "http_lake"]      # the disposable stack talks to no other service
-    stack["policies"] = [p for p in stack["policies"] if p.get("lake") not in {"financial_files", "olap_cube", "governance_smoke"}]
+    # the disposable stack talks to no production service: the other http lakes are dropped and the
+    # warehouse is a DISPOSABLE DuckDB file served by the same deployed warehouse host
+    cube_port = free_port()
+    cube_cfg = json.loads(WAREHOUSE_CONFIG.read_text())
+    cube_cfg["web_port"] = cube_port
+    cube_cfg["backend"]["settings"] = {**cube_cfg["backend"]["settings"], "duckdb_path": str(work / "cube.duckdb"),
+                                       "min_free_bytes": 1 << 20}
+    cube_cfg["operator_config_path"] = str(work / "cube.pending.json")
+    cube_path = work / "cube.host.json"
+    cube_path.write_text(json.dumps(cube_cfg, indent=1))
+    stack["lakes"] = [l for l in stack["lakes"] if l.get("plugin") != "http_lake"
+                      or l.get("lake_id") == "olap_cube"]
+    for lake in stack["lakes"]:
+        if lake.get("lake_id") == "olap_cube":
+            lake["base_url"] = f"http://127.0.0.1:{cube_port}"
+    stack["policies"] = [p for p in stack["policies"] if p.get("lake") not in {"financial_files", "governance_smoke"}]
     cfg_path = work / "stack.json"
     cfg_path.write_text(json.dumps(stack, indent=1))
+    cube_log = open(work / "cube.log", "w")
+    cube_proc = subprocess.Popen([str(WAREHOUSE_PYTHON), "-m", "data_warehouse_service.main", "--load_config", str(cube_path)],
+                                 cwd=str(work), stdout=cube_log, stderr=subprocess.STDOUT)
     log = open(work / "service.log", "w")
     proc = subprocess.Popen([str(PYTHON), "-m", "app.main", "--load_config", str(cfg_path)], cwd=str(GOV_APP),
                             stdout=log, stderr=subprocess.STDOUT, env={**os.environ, "PYTHONPATH": str(GOV_APP)})
@@ -285,6 +305,7 @@ def rehearse(out_path: Path, *, keep: bool = False) -> dict:
               "stack": "disposable data-gov with the successor configuration; no production service touched"}
     try:
         url = f"http://127.0.0.1:{port}"
+        report["disposable_cube"] = {"port": cube_port, "duckdb": str(work / "cube.duckdb")}
         for _ in range(120):
             if http_json(f"{url}/healthz")[0] == 200:
                 break
@@ -303,12 +324,15 @@ def rehearse(out_path: Path, *, keep: bool = False) -> dict:
         report["route_ok"] = all(report[r].get("delivered_bytes_verified") and report[r].get("refusals_hold")
                                  for r in RESOURCES)
     finally:
-        proc.terminate()
-        try:
-            proc.wait(timeout=30)
-        except subprocess.TimeoutExpired:
-            proc.kill()
+        for p_ in (proc, cube_proc):
+            p_.terminate()
+            try:
+                p_.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                p_.kill()
         log.close()
+        cube_log.close()
+        report["cube_log_tail"] = (work / "cube.log").read_text()[-800:]
         report["service_log_tail"] = (work / "service.log").read_text()[-1500:]
         if not keep and report.get("route_ok"):
             shutil.rmtree(work, ignore_errors=True)
