@@ -115,10 +115,12 @@ def build(root: Path, close_doc: dict, *, run_id: str | None = None) -> dict:
         campaign_key=f"{run}-retrospective-import", producer="predictor", result_class="DEVELOPMENT",
         identity={"run_id": run, "code_identity": report["code_identity"]["value"],
                   "design_sha256": design["design_sha256"], "record_sha256": close_doc.get("data_sha256")},
-        data_consumed={"datasets": [{"kind": "public_panel", "id": design["dataset_id"],
-                                     "digest": close_doc["panel_sha256"],
+        data_consumed={"datasets": [{"id": design["dataset_id"], "digest": close_doc["panel_sha256"],
                                      "eligibility_state": "UNGOVERNED_AT_EXECUTION"}],
-                       "variables": design["task"]["features"] + design["task"]["target"], "operators": []},
+                       "variables": [{"id": v, "digest": close_doc["data_sha256"],
+                                      "eligibility_state": "UNGOVERNED_AT_EXECUTION"}
+                                     for v in design["task"]["features"] + design["task"]["target"]],
+                       "operators": []},
         partitions={"exposure": "DEVELOPMENT_NO_RESERVE", "splits": json.dumps(design["dev_subpartition"]["rows"])},
         budget={"device": "cpu", "wall_seconds": float(report.get("spent_cpu_seconds") or 0.0), "cost_units": 0.0},
         terminal={"state": "COMPLETED", "adjudication": "DESCRIPTIVE",
@@ -173,7 +175,9 @@ def rehearse(envelope: dict, out_path: Path) -> dict:
     cfg["operator_config_path"] = str(work / "pending.json")
     cfg_path = work / "host.json"
     cfg_path.write_text(json.dumps(cfg, indent=1))
-    report = {"schema": "df_e1_retrospective_import_rehearsal.v1", "at": now_iso(), "work": str(work), "port": port}
+    report = {"schema": "df_e1_retrospective_import_rehearsal.v1", "at": now_iso(), "work": str(work), "port": port,
+              "package": "CANDIDATE (olap/store/src) on PYTHONPATH; the deployed build predates the provenance block "
+                         "and adopting it is the same guarded operation as the lake registration"}
     log = open(work / "cube.log", "w")
     proc = subprocess.Popen([str(WAREHOUSE_PYTHON), "-c",
                              "import json,sys;from predictor_duckdb_store.provider import PredictorDuckdbStore;"
@@ -187,7 +191,10 @@ def rehearse(envelope: dict, out_path: Path) -> dict:
                              "'SELECT cell_key, metric_name, metric_value, provenance_mode, executed_at, "
                              "governed_delivery_at_execution FROM public.fact_campaign_unit ORDER BY cell_key, metric_name')).fetchall()]}))",
                              str(cfg_path), str(work / "envelope.json")],
-                            stdout=subprocess.PIPE, stderr=log, text=True, cwd=str(work))
+                            stdout=subprocess.PIPE, stderr=log, text=True, cwd=str(work),
+                            # the CANDIDATE package on PYTHONPATH, exactly as the adoption procedure
+                            # rehearses a new build: the deployed one predates the provenance block
+                            env={**os.environ, "PYTHONPATH": str(REPO / "olap" / "store" / "src")})
     (work / "envelope.json").write_text(json.dumps(envelope))
     try:
         stdout, _ = proc.communicate(timeout=600)

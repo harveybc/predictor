@@ -1,0 +1,491 @@
+{
+ "envelope": {
+  "schema": "crispdm.campaign_envelope.v1",
+  "campaign_key": "satoshi-e1-household-dev-20260919-retrospective-import",
+  "producer": "predictor",
+  "result_class": "DEVELOPMENT",
+  "identity": {
+   "run_id": "satoshi-e1-household-dev-20260919",
+   "code_identity": "5e7cac28fcfcc743cb29f4362819232920c83349",
+   "design_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+   "record_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194"
+  },
+  "data_consumed": {
+   "datasets": [
+    {
+     "id": "public.uci.235.individual_household_electric_power_consumption",
+     "digest": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+     "eligibility_state": "UNGOVERNED_AT_EXECUTION"
+    }
+   ],
+   "variables": [
+    {
+     "id": "Global_reactive_power",
+     "digest": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+     "eligibility_state": "UNGOVERNED_AT_EXECUTION"
+    },
+    {
+     "id": "Voltage",
+     "digest": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+     "eligibility_state": "UNGOVERNED_AT_EXECUTION"
+    },
+    {
+     "id": "Global_intensity",
+     "digest": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+     "eligibility_state": "UNGOVERNED_AT_EXECUTION"
+    },
+    {
+     "id": "Sub_metering_1",
+     "digest": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+     "eligibility_state": "UNGOVERNED_AT_EXECUTION"
+    },
+    {
+     "id": "Sub_metering_2",
+     "digest": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+     "eligibility_state": "UNGOVERNED_AT_EXECUTION"
+    },
+    {
+     "id": "Sub_metering_3",
+     "digest": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+     "eligibility_state": "UNGOVERNED_AT_EXECUTION"
+    },
+    {
+     "id": "Global_active_power",
+     "digest": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+     "eligibility_state": "UNGOVERNED_AT_EXECUTION"
+    }
+   ],
+   "operators": []
+  },
+  "partitions": {
+   "exposure": "DEVELOPMENT_NO_RESERVE",
+   "splits": "[1412361, 1462761]"
+  },
+  "budget": {
+   "device": "cpu",
+   "wall_seconds": 2197.429,
+   "cost_units": 0.0
+  },
+  "terminal": {
+   "state": "COMPLETED",
+   "adjudication": "DESCRIPTIVE",
+   "reason": "development pilot: no hypothesis confirmed or refuted"
+  },
+  "artifacts": {
+   "verification": "SCHEMA_EXACT_AND_SELF_DIGEST_REDERIVED"
+  },
+  "units": [
+   {
+    "candidate_key": "ae_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "pilot_ae",
+    "metric_name": "e1.ae.reconstruction_val_mse_masked",
+    "metric_value": 0.18013037741184235,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R0_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "pilot_fit",
+    "metric_name": "e1.mase",
+    "metric_value": 0.891435461668178,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R0_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "pilot_fit",
+    "metric_name": "e1.mae",
+    "metric_value": 0.5493574232643473,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R0_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "pilot_fit",
+    "metric_name": "e1.updates",
+    "metric_value": 300.0,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "ae_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "ae_s1",
+    "metric_name": "e1.ae.reconstruction_val_mse_masked",
+    "metric_value": 0.14626669883728027,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R0_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R0_s1",
+    "metric_name": "e1.mase",
+    "metric_value": 0.8831314352266401,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R0_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R0_s1",
+    "metric_name": "e1.mae",
+    "metric_value": 0.5442399708353117,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R0_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R0_s1",
+    "metric_name": "e1.updates",
+    "metric_value": 4000.0,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R1_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R1_s1",
+    "metric_name": "e1.mase",
+    "metric_value": 0.8864746249877243,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R1_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R1_s1",
+    "metric_name": "e1.mae",
+    "metric_value": 0.546300250229174,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R1_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R1_s1",
+    "metric_name": "e1.updates",
+    "metric_value": 3135.0,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R2_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R2_s1",
+    "metric_name": "e1.mase",
+    "metric_value": 0.8886672431878541,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R2_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R2_s1",
+    "metric_name": "e1.mae",
+    "metric_value": 0.5476514765786078,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R2_seed1",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R2_s1",
+    "metric_name": "e1.updates",
+    "metric_value": 3135.0,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "ae_seed2",
+    "terminal_state": "COMPLETED",
+    "cell_key": "ae_s2",
+    "metric_name": "e1.ae.reconstruction_val_mse_masked",
+    "metric_value": 0.14637550711631775,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R0_seed2",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R0_s2",
+    "metric_name": "e1.mase",
+    "metric_value": 0.8980929094961791,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R0_seed2",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R0_s2",
+    "metric_name": "e1.mae",
+    "metric_value": 0.5534601525606033,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R0_seed2",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R0_s2",
+    "metric_name": "e1.updates",
+    "metric_value": 4000.0,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R1_seed2",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R1_s2",
+    "metric_name": "e1.mase",
+    "metric_value": 0.8955338274128621,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R1_seed2",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R1_s2",
+    "metric_name": "e1.mae",
+    "metric_value": 0.5518830886006593,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R1_seed2",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R1_s2",
+    "metric_name": "e1.updates",
+    "metric_value": 4000.0,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R2_seed2",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R2_s2",
+    "metric_name": "e1.mase",
+    "metric_value": 0.8912197625990839,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R2_seed2",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R2_s2",
+    "metric_name": "e1.mae",
+    "metric_value": 0.5492244962159031,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R2_seed2",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R2_s2",
+    "metric_name": "e1.updates",
+    "metric_value": 4000.0,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "ae_seed3",
+    "terminal_state": "COMPLETED",
+    "cell_key": "ae_s3",
+    "metric_name": "e1.ae.reconstruction_val_mse_masked",
+    "metric_value": 0.14635001122951508,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R0_seed3",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R0_s3",
+    "metric_name": "e1.mase",
+    "metric_value": 0.9149295527842866,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R0_seed3",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R0_s3",
+    "metric_name": "e1.mae",
+    "metric_value": 0.5638359289021312,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R0_seed3",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R0_s3",
+    "metric_name": "e1.updates",
+    "metric_value": 3762.0,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R1_seed3",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R1_s3",
+    "metric_name": "e1.mase",
+    "metric_value": 0.9046434590697988,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R1_seed3",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R1_s3",
+    "metric_name": "e1.mae",
+    "metric_value": 0.5574970045700521,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R1_seed3",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R1_s3",
+    "metric_name": "e1.updates",
+    "metric_value": 3762.0,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R2_seed3",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R2_s3",
+    "metric_name": "e1.mase",
+    "metric_value": 0.9205692655035862,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R2_seed3",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R2_s3",
+    "metric_name": "e1.mae",
+    "metric_value": 0.567311467155487,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "R2_seed3",
+    "terminal_state": "COMPLETED",
+    "cell_key": "R2_s3",
+    "metric_name": "e1.updates",
+    "metric_value": 3762.0,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "controls_seed0",
+    "terminal_state": "COMPLETED",
+    "cell_key": "controls",
+    "metric_name": "e1.linear_ridge.mase",
+    "metric_value": 0.8851672468675469,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "controls_seed0",
+    "terminal_state": "COMPLETED",
+    "cell_key": "controls",
+    "metric_name": "e1.linear_ridge.mae",
+    "metric_value": 0.5454945633272991,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "controls_seed0",
+    "terminal_state": "COMPLETED",
+    "cell_key": "controls",
+    "metric_name": "e1.persistence.mase",
+    "metric_value": 1.0018019605369508,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "controls_seed0",
+    "terminal_state": "COMPLETED",
+    "cell_key": "controls",
+    "metric_name": "e1.persistence.mae",
+    "metric_value": 0.6173720558882235,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "controls_seed0",
+    "terminal_state": "COMPLETED",
+    "cell_key": "controls",
+    "metric_name": "e1.seasonal_naive_daily.mase",
+    "metric_value": 1.1872544207304976,
+    "uncertainty_kind": "UNAVAILABLE"
+   },
+   {
+    "candidate_key": "controls_seed0",
+    "terminal_state": "COMPLETED",
+    "cell_key": "controls",
+    "metric_name": "e1.seasonal_naive_daily.mae",
+    "metric_value": 0.7316592814371257,
+    "uncertainty_kind": "UNAVAILABLE"
+   }
+  ],
+  "provenance": {
+   "mode": "RETROSPECTIVE_IMPORT_UNGOVERNED_AT_EXECUTION",
+   "executed_at": "2026-09-19T16:58:28+00:00",
+   "imported_at": "2026-09-19T23:04:47Z",
+   "governed_delivery_at_execution": false,
+   "reason": "the household DEV pilot of 2026-09-19 ran while no lake served the public panels: there was no governed delivery, campaign or accepted terminal for it, and this import states that rather than back-dating one"
+  },
+  "envelope_sha256": "cd940defff3fe80a8b0543bafde4a408bd7d4f082329afdb36cf7d68c314e737"
+ },
+ "skipped_units": [],
+ "scopes": [
+  {
+   "cell_key": "pilot_ae",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "7f4059c87b771cf3cbac3e97c90f2f3c332edc98a70f47be91cc899c0df1d3d9"
+  },
+  {
+   "cell_key": "pilot_fit",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "7f9e2c69ac0f832fe0c42e59600ba330ba46e6582f253f7cba62b2a3b71f3a70"
+  },
+  {
+   "cell_key": "ae_s1",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "ddde4dc247b9dd819bc095a336d9342853ba1ab95b96815f2c11702c08c9197d"
+  },
+  {
+   "cell_key": "R0_s1",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "c88c0025c420e860ab8ac475e937549bd752b226a314b54fe7be2a7df27c2441"
+  },
+  {
+   "cell_key": "R1_s1",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "772b125252135d9ab84ccdd6c05ac4aea59f26dd6316598f0001d4dab4ca64a4"
+  },
+  {
+   "cell_key": "R2_s1",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "6c431efd25f4529228327b696a48c0fd60ce367cec85a5d952f60f4900a1c74e"
+  },
+  {
+   "cell_key": "ae_s2",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "ff040831e1e4cb2f2dc209efab22cf49ac3079ed553271a2d2c37edbf8a10d61"
+  },
+  {
+   "cell_key": "R0_s2",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "0693393511747d37c3973def22be7a58ab99b939b5f9cb7e41e0e10bfe016a71"
+  },
+  {
+   "cell_key": "R1_s2",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "b58cf66fda1acf574a7d223bdbaacb3ff119d90ded17318e45df50e47e410179"
+  },
+  {
+   "cell_key": "R2_s2",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "e99301c01ac6ef0f46ed9a458394a227b68a11ddfd84042aa8ff7e442809ffea"
+  },
+  {
+   "cell_key": "ae_s3",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "e4d4cd065b95dbe55426041a507ba85851263df665e7ee16e7dc0480f06d1e1e"
+  },
+  {
+   "cell_key": "R0_s3",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "859aaa5b213fd6b1db1f44ad3f14778da280123556c37c3972a95df9ad169abe"
+  },
+  {
+   "cell_key": "R1_s3",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "7018020d3e2394edb3ccc3bfe2d153104df6ac94ced4aa022030095cd66b7ac1"
+  },
+  {
+   "cell_key": "R2_s3",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "342534f9fc463db99ba459bf7aeda3e8997e5e89f5b9102dcbc11c53317a403c"
+  },
+  {
+   "cell_key": "controls",
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED",
+   "record_sha256": "d3a43a1826dcd5ecba68c08eb67e5563f9f7677a2443cae8fa412c5bed544b9e"
+  }
+ ],
+ "counts": {
+  "units_imported": 15,
+  "metric_rows": 40,
+  "units_skipped": 0
+ }
+}

@@ -1,0 +1,688 @@
+{
+ "schema": "df_e1_close.v1",
+ "at": "2026-09-19T22:54:29Z",
+ "root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_dev_pilot_v1",
+ "design_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+ "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+ "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+ "register_problems": [],
+ "population": {
+  "declared": [
+   "pilot_ae",
+   "pilot_fit",
+   "ae_s1",
+   "R0_s1",
+   "R1_s1",
+   "R2_s1",
+   "ae_s2",
+   "R0_s2",
+   "R1_s2",
+   "R2_s2",
+   "ae_s3",
+   "R0_s3",
+   "R1_s3",
+   "R2_s3",
+   "controls"
+  ],
+  "present": [
+   "R0_s1",
+   "R0_s2",
+   "R0_s3",
+   "R1_s1",
+   "R1_s2",
+   "R1_s3",
+   "R2_s1",
+   "R2_s2",
+   "R2_s3",
+   "ae_s1",
+   "ae_s2",
+   "ae_s3",
+   "controls",
+   "pilot_ae",
+   "pilot_fit"
+  ],
+  "absent_ids": [],
+  "strangers_on_disk": [],
+  "rule": "the population is the sealed design's enumeration; absence is declared by id, never by a count"
+ },
+ "units": {
+  "pilot_ae": {
+   "cell_id": "pilot_ae",
+   "metrics": "VERIFIED",
+   "inference": "NOT_APPLICABLE",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "7f4059c87b771cf3cbac3e97c90f2f3c332edc98a70f47be91cc899c0df1d3d9",
+    "job_fields_differing": [],
+    "recomputed": {},
+    "detector_sha256": "09cea143bb5a22b64c41db72b2b328159778495c63b3fb9ebfd77a5d1fb1f442",
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "pilot_fit": {
+   "cell_id": "pilot_fit",
+   "metrics": "VERIFIED",
+   "inference": "VERIFIED",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "7f9e2c69ac0f832fe0c42e59600ba330ba46e6582f253f7cba62b2a3b71f3a70",
+    "job_fields_differing": [],
+    "recomputed": {
+     "model": {
+      "mase_mean": 0.891435461668178,
+      "mae_mean": 0.5493574232643473,
+      "rmse_mean": 0.8049784339684742,
+      "status": "MEDIDO"
+     }
+    },
+    "replay": {
+     "windows": 256,
+     "max_abs_diff_kw": 2.384185791015625e-07,
+     "tolerance_kw": 1e-05,
+     "identity": {
+      "python": "3.12.13",
+      "numpy": "2.5.1",
+      "tensorflow": "2.21.0",
+      "process": 3451266,
+      "threads": "1"
+     },
+     "weights_sha256": "53f3761d199f1a5f79fcd3e342dd13785b423439f817eec1c2601fbfd535754e",
+     "detector_digest": "46172e3e3c8a7a7c2610569cff0f0a4364caab6804bb63bbd617171ace4ce1b1",
+     "parameters": {
+      "total": 4591,
+      "trainable": 4591,
+      "frozen": 0
+     }
+    },
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "ae_s1": {
+   "cell_id": "ae_s1",
+   "metrics": "VERIFIED",
+   "inference": "NOT_APPLICABLE",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "ddde4dc247b9dd819bc095a336d9342853ba1ab95b96815f2c11702c08c9197d",
+    "job_fields_differing": [],
+    "recomputed": {},
+    "detector_sha256": "94bdc1799ac8ac90996aef6f9aeb73cde360a4eccf03d7968f5fdcf823cfa88a",
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "R0_s1": {
+   "cell_id": "R0_s1",
+   "metrics": "VERIFIED",
+   "inference": "VERIFIED",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "c88c0025c420e860ab8ac475e937549bd752b226a314b54fe7be2a7df27c2441",
+    "job_fields_differing": [],
+    "recomputed": {
+     "model": {
+      "mase_mean": 0.8831314352266401,
+      "mae_mean": 0.5442399708353117,
+      "rmse_mean": 0.7835922320547943,
+      "status": "MEDIDO"
+     }
+    },
+    "replay": {
+     "windows": 256,
+     "max_abs_diff_kw": 2.384185791015625e-07,
+     "tolerance_kw": 1e-05,
+     "identity": {
+      "python": "3.12.13",
+      "numpy": "2.5.1",
+      "tensorflow": "2.21.0",
+      "process": 3451420,
+      "threads": "1"
+     },
+     "weights_sha256": "46397bd808b5300b6c3d17edf2842184377d59aed5ae63d34771bcde3f92c923",
+     "detector_digest": "72c9a3557dca2afa96302188d6f727c77e920080a36104687276cfad3cc4f2e4",
+     "parameters": {
+      "total": 4591,
+      "trainable": 4591,
+      "frozen": 0
+     }
+    },
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "R1_s1": {
+   "cell_id": "R1_s1",
+   "metrics": "VERIFIED",
+   "inference": "VERIFIED",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "772b125252135d9ab84ccdd6c05ac4aea59f26dd6316598f0001d4dab4ca64a4",
+    "job_fields_differing": [],
+    "recomputed": {
+     "model": {
+      "mase_mean": 0.8864746249877243,
+      "mae_mean": 0.546300250229174,
+      "rmse_mean": 0.7857927492048561,
+      "status": "MEDIDO"
+     }
+    },
+    "replay": {
+     "windows": 256,
+     "max_abs_diff_kw": 3.5762786865234375e-07,
+     "tolerance_kw": 1e-05,
+     "identity": {
+      "python": "3.12.13",
+      "numpy": "2.5.1",
+      "tensorflow": "2.21.0",
+      "process": 3451501,
+      "threads": "1"
+     },
+     "weights_sha256": "56a7c8c31a1c97e718b3302a514c266c5a9a67c141e1b986d2684d10c5a3567d",
+     "detector_digest": "c5806b20662228c622c07278372053fb3a466d5f8e0cf14f43e3256427703586",
+     "parameters": {
+      "total": 4591,
+      "trainable": 1695,
+      "frozen": 2896
+     }
+    },
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "R2_s1": {
+   "cell_id": "R2_s1",
+   "metrics": "VERIFIED",
+   "inference": "VERIFIED",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "6c431efd25f4529228327b696a48c0fd60ce367cec85a5d952f60f4900a1c74e",
+    "job_fields_differing": [],
+    "recomputed": {
+     "model": {
+      "mase_mean": 0.8886672431878541,
+      "mae_mean": 0.5476514765786078,
+      "rmse_mean": 0.7818780745286081,
+      "status": "MEDIDO"
+     }
+    },
+    "replay": {
+     "windows": 256,
+     "max_abs_diff_kw": 2.384185791015625e-07,
+     "tolerance_kw": 1e-05,
+     "identity": {
+      "python": "3.12.13",
+      "numpy": "2.5.1",
+      "tensorflow": "2.21.0",
+      "process": 3451578,
+      "threads": "1"
+     },
+     "weights_sha256": "d2340786206ac48f1c0eadc609be9934b5a07b9b1e9d6d5a80c0c42040c412ce",
+     "detector_digest": "435bc8006b45038ec9f0c6ed5073475f86a32ed65041f9a01329de5c42a432b2",
+     "parameters": {
+      "total": 4591,
+      "trainable": 4591,
+      "frozen": 0
+     }
+    },
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "ae_s2": {
+   "cell_id": "ae_s2",
+   "metrics": "VERIFIED",
+   "inference": "NOT_APPLICABLE",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "ff040831e1e4cb2f2dc209efab22cf49ac3079ed553271a2d2c37edbf8a10d61",
+    "job_fields_differing": [],
+    "recomputed": {},
+    "detector_sha256": "8a5a6bfc77fd05e5db6a4ebb08dd97506a4248faf93c7abb38ffcca66d7d6cd0",
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "R0_s2": {
+   "cell_id": "R0_s2",
+   "metrics": "VERIFIED",
+   "inference": "VERIFIED",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "0693393511747d37c3973def22be7a58ab99b939b5f9cb7e41e0e10bfe016a71",
+    "job_fields_differing": [],
+    "recomputed": {
+     "model": {
+      "mase_mean": 0.8980929094961791,
+      "mae_mean": 0.5534601525606033,
+      "rmse_mean": 0.7845248548448969,
+      "status": "MEDIDO"
+     }
+    },
+    "replay": {
+     "windows": 256,
+     "max_abs_diff_kw": 2.384185791015625e-07,
+     "tolerance_kw": 1e-05,
+     "identity": {
+      "python": "3.12.13",
+      "numpy": "2.5.1",
+      "tensorflow": "2.21.0",
+      "process": 3451669,
+      "threads": "1"
+     },
+     "weights_sha256": "c9c588d0a4e0f646ab9f436519ca25ce6f31a0b5e3139c232e118f858f85edc3",
+     "detector_digest": "dc502c932144f117b53ca7a5874920737a37929f537fe7cea0ae7c3a83f2785f",
+     "parameters": {
+      "total": 4591,
+      "trainable": 4591,
+      "frozen": 0
+     }
+    },
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "R1_s2": {
+   "cell_id": "R1_s2",
+   "metrics": "VERIFIED",
+   "inference": "VERIFIED",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "b58cf66fda1acf574a7d223bdbaacb3ff119d90ded17318e45df50e47e410179",
+    "job_fields_differing": [],
+    "recomputed": {
+     "model": {
+      "mase_mean": 0.8955338274128621,
+      "mae_mean": 0.5518830886006593,
+      "rmse_mean": 0.7848136600487184,
+      "status": "MEDIDO"
+     }
+    },
+    "replay": {
+     "windows": 256,
+     "max_abs_diff_kw": 2.384185791015625e-07,
+     "tolerance_kw": 1e-05,
+     "identity": {
+      "python": "3.12.13",
+      "numpy": "2.5.1",
+      "tensorflow": "2.21.0",
+      "process": 3451951,
+      "threads": "1"
+     },
+     "weights_sha256": "5cdfd0f7fb99df95d0f2d3cb39696d0c2eeb653cc9e3fa2b5b0f8ea4975d308e",
+     "detector_digest": "2444eda9a399f637d1ef6b46118b2f0b7b49a30478d090110c4b6987ebf830e2",
+     "parameters": {
+      "total": 4591,
+      "trainable": 1695,
+      "frozen": 2896
+     }
+    },
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "R2_s2": {
+   "cell_id": "R2_s2",
+   "metrics": "VERIFIED",
+   "inference": "VERIFIED",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "e99301c01ac6ef0f46ed9a458394a227b68a11ddfd84042aa8ff7e442809ffea",
+    "job_fields_differing": [],
+    "recomputed": {
+     "model": {
+      "mase_mean": 0.8912197625990839,
+      "mae_mean": 0.5492244962159031,
+      "rmse_mean": 0.7859738643962633,
+      "status": "MEDIDO"
+     }
+    },
+    "replay": {
+     "windows": 256,
+     "max_abs_diff_kw": 1.1920928955078125e-07,
+     "tolerance_kw": 1e-05,
+     "identity": {
+      "python": "3.12.13",
+      "numpy": "2.5.1",
+      "tensorflow": "2.21.0",
+      "process": 3452082,
+      "threads": "1"
+     },
+     "weights_sha256": "75c5cf9f46b74cd72c971c0bb4af5b55e71f820e0e43e3c482d67d14dbef3de7",
+     "detector_digest": "7344fc7e2949151920d2ecb605f8ae35b9ad489af3dc6b5a71bf14dd960b637b",
+     "parameters": {
+      "total": 4591,
+      "trainable": 4591,
+      "frozen": 0
+     }
+    },
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "ae_s3": {
+   "cell_id": "ae_s3",
+   "metrics": "VERIFIED",
+   "inference": "NOT_APPLICABLE",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "e4d4cd065b95dbe55426041a507ba85851263df665e7ee16e7dc0480f06d1e1e",
+    "job_fields_differing": [],
+    "recomputed": {},
+    "detector_sha256": "fb2026ee2fee68afa06ac210f38cb9fb618953c0aea86e5308edae2d114a5e94",
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "R0_s3": {
+   "cell_id": "R0_s3",
+   "metrics": "VERIFIED",
+   "inference": "VERIFIED",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "859aaa5b213fd6b1db1f44ad3f14778da280123556c37c3972a95df9ad169abe",
+    "job_fields_differing": [],
+    "recomputed": {
+     "model": {
+      "mase_mean": 0.9149295527842866,
+      "mae_mean": 0.5638359289021312,
+      "rmse_mean": 0.7867567734184184,
+      "status": "MEDIDO"
+     }
+    },
+    "replay": {
+     "windows": 256,
+     "max_abs_diff_kw": 2.384185791015625e-07,
+     "tolerance_kw": 1e-05,
+     "identity": {
+      "python": "3.12.13",
+      "numpy": "2.5.1",
+      "tensorflow": "2.21.0",
+      "process": 3452157,
+      "threads": "1"
+     },
+     "weights_sha256": "381e7df11ca4a0e7ec1db819aab938dc3e200529724972d5186831c2ce1edba7",
+     "detector_digest": "dda2f4454248475b334ba69ce69cb4e261f7acfc1b0aeefa50d29ff74a6d7e68",
+     "parameters": {
+      "total": 4591,
+      "trainable": 4591,
+      "frozen": 0
+     }
+    },
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "R1_s3": {
+   "cell_id": "R1_s3",
+   "metrics": "VERIFIED",
+   "inference": "VERIFIED",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "7018020d3e2394edb3ccc3bfe2d153104df6ac94ced4aa022030095cd66b7ac1",
+    "job_fields_differing": [],
+    "recomputed": {
+     "model": {
+      "mase_mean": 0.9046434590697988,
+      "mae_mean": 0.5574970045700521,
+      "rmse_mean": 0.7849343108333446,
+      "status": "MEDIDO"
+     }
+    },
+    "replay": {
+     "windows": 256,
+     "max_abs_diff_kw": 3.5762786865234375e-07,
+     "tolerance_kw": 1e-05,
+     "identity": {
+      "python": "3.12.13",
+      "numpy": "2.5.1",
+      "tensorflow": "2.21.0",
+      "process": 3452247,
+      "threads": "1"
+     },
+     "weights_sha256": "6c151b44660eb17654efef26032736cdf7ec6bda4d85893444d10dfaf18ac899",
+     "detector_digest": "d317fc1fe35acac55cb958fb2d5632dd4cf5a3cfbb4df367fc721e1151d952b8",
+     "parameters": {
+      "total": 4591,
+      "trainable": 1695,
+      "frozen": 2896
+     }
+    },
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "R2_s3": {
+   "cell_id": "R2_s3",
+   "metrics": "VERIFIED",
+   "inference": "VERIFIED",
+   "regime": "VERIFIED",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "342534f9fc463db99ba459bf7aeda3e8997e5e89f5b9102dcbc11c53317a403c",
+    "job_fields_differing": [],
+    "recomputed": {
+     "model": {
+      "mase_mean": 0.9205692655035862,
+      "mae_mean": 0.567311467155487,
+      "rmse_mean": 0.7846280329600773,
+      "status": "MEDIDO"
+     }
+    },
+    "replay": {
+     "windows": 256,
+     "max_abs_diff_kw": 2.384185791015625e-07,
+     "tolerance_kw": 1e-05,
+     "identity": {
+      "python": "3.12.13",
+      "numpy": "2.5.1",
+      "tensorflow": "2.21.0",
+      "process": 3452324,
+      "threads": "1"
+     },
+     "weights_sha256": "e7996b3851e15b45b3fe64f682c7527333bdc289d7b309aa917954be1ce0ce0d",
+     "detector_digest": "86d2834a28da973fec8bcd4703a75f11197a46009f95e4b589a6a42f0a359c5f",
+     "parameters": {
+      "total": 4591,
+      "trainable": 4591,
+      "frozen": 0
+     }
+    },
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  },
+  "controls": {
+   "cell_id": "controls",
+   "metrics": "VERIFIED",
+   "inference": "VERIFIED",
+   "regime": "NOT_APPLICABLE",
+   "governance": "HISTORICAL_UNGOVERNED",
+   "problems": [],
+   "facts": {
+    "record_sha256": "d3a43a1826dcd5ecba68c08eb67e5563f9f7677a2443cae8fa412c5bed544b9e",
+    "job_fields_differing": [],
+    "recomputed": {
+     "linear_ridge": {
+      "mase_mean": 0.8851672468675469,
+      "mae_mean": 0.5454945633272991,
+      "rmse_mean": 0.7740378285266319,
+      "status": "MEDIDO"
+     },
+     "persistence": {
+      "mase_mean": 1.0018019605369508,
+      "mae_mean": 0.6173720558882235,
+      "rmse_mean": 0.966454889734754,
+      "status": "MEDIDO"
+     },
+     "seasonal_naive_daily": {
+      "mase_mean": 1.1872544207304976,
+      "mae_mean": 0.7316592814371257,
+      "rmse_mean": 1.0890280496910867,
+      "status": "MEDIDO"
+     }
+    },
+    "controls_recomputed_max_abs_diff": {
+     "persistence": 0.0,
+     "seasonal_naive_daily": 0.0,
+     "linear_ridge": 0.0
+    },
+    "governance": {
+     "local_terminal_document": true,
+     "campaign_proposal": "PROPOSAL_NOT_SUBMITTED",
+     "delivery_receipt": false,
+     "accepted_terminal_receipt": false,
+     "reading": "no governed delivery and no accepted terminal existed when this unit ran: the local document carries the terminal schema but was never submitted to, or accepted by, data-gov"
+    }
+   },
+   "verified": true,
+   "scope": "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED"
+  }
+ },
+ "counts": {
+  "declared": 15,
+  "verified": 15,
+  "refused": 0,
+  "metrics_verified": 15,
+  "inference_verified": 11,
+  "regime_verified": 14
+ },
+ "governance": {
+  "units_governed": 0,
+  "units_historical_ungoverned": 15,
+  "meaning": "HISTORICAL_UNGOVERNED units are preserved development evidence: they were not delivered, registered or accepted by governance when they ran and are never presented as prospective governed evidence"
+ },
+ "replay": {
+  "performed": true,
+  "windows_per_unit": 256,
+  "tolerance_kw": 1e-05,
+  "rule": "a fresh process reloads the saved weights and regathers the windows from DATA; a gradient summary is never accepted in place of this"
+ },
+ "verdict": "ALL_VERIFIED"
+}
