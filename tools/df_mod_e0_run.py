@@ -47,6 +47,7 @@ def _load(name: str, where: Path = HERE):
 
 E = _load("df_mod_e0")
 D = _load("df_mod_e0_design")
+AD = _load("df_mod_e0_arch_design")
 R = _load("df_utility_run")
 DEV = _load("df_utility_dev_run")
 H = _load("df_utility_harness")
@@ -144,9 +145,20 @@ def _metrics(rec: dict) -> tuple:
     rows, states = [], {}
     for name, value, unit in wanted:
         m = _metric(name, value, unit)
-        states[name] = "MEDIDO" if m is not None else "NO_APLICA"
         if m is not None:
+            states[name] = "MEDIDO"
             rows.append(m)
+        else:
+            # NO_MEDIDO when the score itself says so (non-finite / empty), NO_APLICA otherwise (zero denominators)
+            source = {"mod_e0.mase_validation": v["model"], "mod_e0.mae_validation": v["model"], "mod_e0.naive_mase_validation": v["naive"],
+                      "mod_e0.oracle_mase_validation": v["oracle"], "mod_e0.linear_mase_validation": v["linear_window"]}.get(name)
+            if name.startswith("mod_e0.mase_test") or name.startswith("mod_e0.mae_test"):
+                source = rec["scores"]["test"]["model"]
+            states[name] = "NO_MEDIDO" if (source or {}).get("status") == E.NO_MEDIDO else "NO_APLICA"
+    # RP13: the D/Y/M/G rows of the metrics contract (data per split, model per checkpoint)
+    for name, value, unit, split in _load("df_mod_e0_metrics").terminal_rows(rec)[0]:
+        rows.append({**R._metric(name, value, unit), "split": split})
+    states.update(_load("df_mod_e0_metrics").terminal_rows(rec)[1])
     return rows, states
 
 
@@ -192,11 +204,97 @@ def repair_refused_terminals(outbox, gov, GR, campaign_shas: set, reason: str) -
     return {"superseded": done, "failed": failed}
 
 
+DELEGATED = "DELEGATED"
+
+
+def _cell_summary(out: dict) -> dict:
+    rec = out.get("score")
+    return {"outcome": out["outcome"], "cost": out.get("cost"), "resumed": out.get("resumed", False),
+            **({"mase_validation": rec["scores"]["validation"]["model"]["mase_mean"],
+                "mase_test": (rec["scores"].get("test") or {}).get("model", {}).get("mase_mean"),
+                "naive_validation": rec["scores"]["validation"]["naive"]["mase_mean"],
+                "linear_validation": rec["scores"]["validation"]["linear_window"]["mase_mean"],
+                "oracle_validation": rec["scores"]["validation"]["oracle"]["mase_mean"],
+                "updates": rec["training"]["updates"], "stop_reason": rec["training"]["stop_reason"],
+                "profiles_ari": rec["profiles"]["ari_vs_latent"], "extractor_weight_change": rec.get("extractor_weight_change"),
+                "arch": rec.get("arch"), "fusion": rec.get("fusion"), "parameters": rec.get("parameters")}
+               if rec else {})}
+
+
+def _run_waves(cells: list, done: dict, report: dict, run_one, parallel: int, lock, trace, dep_state=None) -> None:
+    """Run `cells` respecting `depends_on`, up to `parallel` at a time; a cell whose dependency did
+    not complete and verify is INCONCLUSIVE_DEPENDENCY (never re-run silently); the CPU ceiling
+    raised by any child stops the dispatch after the running wave finishes."""
+    import concurrent.futures
+    pending = list(cells)
+    ids = {c["cell_id"] for c in cells}
+    while pending:
+        ready, later = [], []
+        for c in pending:
+            dep = c.get("depends_on")
+            if not dep:
+                ready.append(c)
+                continue
+            state = done.get(dep)
+            if state is None and dep_state is not None and dep not in ids:
+                state = dep_state(dep)
+            if state is None:
+                later.append(c)
+            elif state.get("score") is None and state.get("outcome") != "AVAILABLE":
+                report["cells"][c["cell_id"]] = {"outcome": "INCONCLUSIVE_DEPENDENCY", "depends_on": dep,
+                                                 "why": "its extractor cell did not complete and verify; not re-run silently"}
+                done[c["cell_id"]] = {"score": None, "outcome": "INCONCLUSIVE_DEPENDENCY"}
+            else:
+                ready.append(c)
+        if not ready:
+            for c in later:
+                report["cells"][c["cell_id"]] = {"outcome": "INCONCLUSIVE_DEPENDENCY", "depends_on": c.get("depends_on"),
+                                                 "why": "its dependency is not available on this host"}
+                done[c["cell_id"]] = {"score": None, "outcome": "INCONCLUSIVE_DEPENDENCY"}
+            break
+        stop = None
+        if int(parallel) <= 1:
+            for c in ready:
+                try:
+                    out = run_one(c)
+                except DEV.CapExhausted as e:
+                    stop = e
+                    break
+                with lock:
+                    done[c["cell_id"]] = out
+                    report["cells"][c["cell_id"]] = _cell_summary(out)
+        else:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=int(parallel)) as pool:
+                futures = {pool.submit(run_one, c): c for c in ready}
+                for fut in concurrent.futures.as_completed(futures):
+                    c = futures[fut]
+                    try:
+                        out = fut.result()
+                    except DEV.CapExhausted as e:
+                        stop = e
+                        continue
+                    with lock:
+                        done[c["cell_id"]] = out
+                        report["cells"][c["cell_id"]] = _cell_summary(out)
+        if stop is not None:
+            raise stop
+        pending = list(later)                                  # every ready cell is now in `done`
+
+
 def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox, OB, CE, code_identity: dict, budgets: dict,
-               cap_seconds: float, already_spent: float, pilot_updates: int, isolated=None, pilot_only: bool = False) -> dict:
+               cap_seconds: float, already_spent: float, pilot_updates: int, isolated=None, pilot_only: bool = False,
+               role: str | None = None, execute_only: bool = False, report_collected: bool = False, parallel: int = 1) -> dict:
+    """`role`: this host's role (a v2 design deals cells to roles); `execute_only`: a worker runs its
+    cells with no governance (the coordinator registered every unit before and reports the collected
+    outcomes after); `report_collected`: the coordinator emits the terminals of delegated cells whose
+    attempts were collected; `parallel`: concurrent children (dependencies respected)."""
+    import threading
     isolated = isolated or run_isolated
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
+    v2 = design.get("schema") == AD.DESIGN_SCHEMA
+    role = role or "COORDINATOR"
+    lock = threading.RLock()
     if (root / "DESIGN.json").is_file():
         if json.loads((root / "DESIGN.json").read_text())["design_sha256"] != design["design_sha256"]:
             raise R.Refusal("REFUSED: this root was frozen under another design")
@@ -205,8 +303,42 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
     trace("design-frozen", sha256=design["design_sha256"])
     report = {"schema": "df_mod_e0_report.v1", "run_id": run_id, "design_sha256": design["design_sha256"], "code_identity": code_identity,
               "cap_seconds": cap_seconds, "already_spent_seconds": already_spent, "cost_pilot": {}, "projection": None, "campaign": None,
-              "cells": {}, "terminals": [], "reconciliation": None, "stopped": None, "envelope": None,
+              "cells": {}, "terminals": [], "reconciliation": None, "stopped": None, "envelope": None, "role": role, "execute_only": execute_only,
+              "report_collected": report_collected, "parallel": int(parallel),
               "live_checks_note": "reconciliation is a live data-gov query at run time; warehouse content checks are separate"}
+    if execute_only:
+        # a worker: its cells only, no governance; the coordinator registered every unit before and reports after collection
+        prior = root / "REPORT.json"
+        if prior.is_file() and json.loads(prior.read_text()).get("run_id") != run_id:
+            raise R.Refusal("REFUSED: this root belongs to another run")
+        mine = [c for c in design["cells"] if c.get("host_role", "COORDINATOR") == role]
+        spent_w = lambda: already_spent + DEV.spent_cpu(root)
+        done_w = {}
+
+        def worker_child(c):
+            extra = {"role": "CELL", **{k: c[k] for k in ("arch", "donor", "diagnostic", "depends_on") if k in c}}
+            if c.get("depends_on"):
+                extra["extractor_weights"] = str(root / "attempts" / c["depends_on"] / "weights.weights.h5")
+            job = {"kind": "mod_e0_cell", "cell_id": c["cell_id"], "hypothesis": c["hypothesis"], "level": c["level"], "r": c["r"], "seed": c["seed"],
+                   "arm": c["arm"], "window": design["window"], "training": design["training"], "design_sha256": design["design_sha256"], "run_id": run_id, **extra}
+            attempt = root / "attempts" / c["cell_id"]
+            with lock:
+                if not (attempt / "outcome.json").is_file() and spent_w() > cap_seconds:
+                    raise DEV.CapExhausted(f"{DEV.CAP_EXHAUSTED}: worker {role} spent {spent_w():.0f} s of {cap_seconds:.0f} s")
+            trace("child", kind="mod_e0_cell", name=c["cell_id"], role=role)
+            out = isolated(job, attempt_dir=attempt, assigned_bytes=budgets["task_memory_bytes"], wall_seconds=budgets["wall_seconds"], cpu_seconds=budgets["cpu_seconds"])
+            trace("child-done", kind="mod_e0_cell", name=c["cell_id"], outcome=out.get("outcome"), role=role)
+            return out
+        try:
+            _run_waves(mine, done_w, report, worker_child, parallel, lock, trace)
+        except DEV.CapExhausted as e:
+            report["stopped"] = str(e)
+        report["spent_cpu_seconds"] = spent_w()
+        target = root / f"REPORT.{role}.json"
+        if target.exists():
+            target = root / f"REPORT.{role}.{R.now_iso().replace(':', '')}.json"
+        campaign.write_once(target, report)
+        return report
     spent = lambda: already_spent + DEV.spent_cpu(root)
     registrations_path = root / "CAMPAIGNS.json"
     registrations = json.loads(registrations_path.read_text()) if registrations_path.is_file() else {}
@@ -226,21 +358,26 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
         registrations_path.write_text(json.dumps(registrations, indent=1))
         return reg["campaign_sha256"]
 
-    def child(sha, key, unit_id, job, tags, need=0.0):
+    def child(sha, key, unit_id, job, tags, need=0.0, emit_resumed=False):
         attempt = root / "attempts" / unit_id
         resumed = (attempt / "outcome.json").is_file()
-        if not resumed:
-            if spent() + need > cap_seconds:
-                raise DEV.CapExhausted(f"{DEV.CAP_EXHAUSTED}: spent {spent():.0f} s + next child up to {need:.0f} s exceeds {cap_seconds:.0f} s")
-            GR._require_reconciled(gov, sha, unit_id, before_run=True)
-            trace("before_run", key=key, unit=unit_id)
-        trace("child", kind="mod_e0_cell", name=unit_id)
+        with lock:
+            if not resumed:
+                if spent() + need > cap_seconds:
+                    raise DEV.CapExhausted(f"{DEV.CAP_EXHAUSTED}: spent {spent():.0f} s + next child up to {need:.0f} s exceeds {cap_seconds:.0f} s")
+                GR._require_reconciled(gov, sha, unit_id, before_run=True)
+                trace("before_run", key=key, unit=unit_id)
+            trace("child", kind="mod_e0_cell", name=unit_id)
         out = isolated(job, attempt_dir=attempt, assigned_bytes=budgets["task_memory_bytes"], wall_seconds=budgets["wall_seconds"],
                        cpu_seconds=budgets["cpu_seconds"])
-        trace("child-done", kind="mod_e0_cell", name=unit_id, outcome=out.get("outcome"))
-        if resumed:
-            report["terminals"].append({"unit_id": unit_id, "status": "RESUMED", "outcome": out["outcome"], "cost": out["cost"], "resumed": True})
-            return out
+        with lock:
+            trace("child-done", kind="mod_e0_cell", name=unit_id, outcome=out.get("outcome"))
+            if resumed and not emit_resumed:
+                report["terminals"].append({"unit_id": unit_id, "status": "RESUMED", "outcome": out["outcome"], "cost": out["cost"], "resumed": True})
+                return out
+            return _emit(sha, unit_id, job, tags, out)
+
+    def _emit(sha, unit_id, job, tags, out):
         rec = out.get("score")
         cost = out["cost"]
         if out["outcome"] == H.RESOURCE_EXCEEDED:
@@ -264,17 +401,23 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
     def job_for(cell, **extra):
         return {"kind": "mod_e0_cell", "cell_id": cell["cell_id"], "hypothesis": cell["hypothesis"], "level": cell["level"], "r": cell["r"],
                 "seed": cell["seed"], "arm": cell["arm"], "window": design["window"], "training": design["training"],
-                "design_sha256": design["design_sha256"], "run_id": run_id, **extra}
-    # --- cost pilots: one per arm type at the sealed size, no test access, small update ceiling ----------
+                "design_sha256": design["design_sha256"], "run_id": run_id, **{k: cell[k] for k in ("arch", "donor", "diagnostic") if k in cell}, **extra}
+    # --- cost pilots: one per arm type (per architecture in v2), no test access, small update ceiling ------
     pilot_key = f"{run_id}-mod-e0-cost-pilot"
-    pilots = [{"cell_id": "pilot__H2_profiles", "hypothesis": "H2", "level": 3, "r": 1, "seed": 1, "arm": "profiles"},
-              {"cell_id": "pilot__H3_extractor", "hypothesis": "H3", "level": design["h3_level"], "r": 1, "seed": 1, "arm": "extractor"}]
+    if v2:
+        pilots = [c for c in design["pilots"] if c["campaign"] == "-mod-e0-cost-pilot"]
+        arm_pilots = [c for c in design["pilots"] if c["campaign"] == "-mod-e0-cost-pilot-arm"]
+    else:
+        pilots = [{"cell_id": "pilot__H2_profiles", "hypothesis": "H2", "level": 3, "r": 1, "seed": 1, "arm": "profiles"},
+                  {"cell_id": "pilot__H3_extractor", "hypothesis": "H3", "level": design["h3_level"], "r": 1, "seed": 1, "arm": "extractor"}]
+        arm_pilots = [{"cell_id": "pilot__H3_sequence", "hypothesis": "H3", "level": design["h3_level"], "r": 1, "seed": 1, "arm": "sequence",
+                       "depends_on": "pilot__H3_extractor"}]
     pilot_sha = register(pilot_key, [c["cell_id"] for c in pilots])
     measured = {}
     try:
         for c in pilots:
             out = child(pilot_sha, pilot_key, c["cell_id"], job_for(c, max_updates_override=int(pilot_updates), role="COST_PILOT"),
-                        {"role": "COST_PILOT", "hypothesis": c["hypothesis"], "arm": c["arm"]})
+                        {"role": "COST_PILOT", "hypothesis": c["hypothesis"], "arm": c["arm"], **({"arch": c["arch"]} if "arch" in c else {})})
             rec = out.get("score")
             if rec is None:
                 report["cost_pilot"][c["cell_id"]] = {"outcome": out["outcome"], "cost": out["cost"]}
@@ -289,24 +432,24 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
             measured[c["cell_id"]] = {"cpu_seconds": cpu, "fit_seconds": fit_s, "overhead_seconds": max(0.0, cpu - fit_s), "updates": updates,
                                       "seconds_per_update": fit_s / updates, "exposure": rec["exposure"]}
             report["cost_pilot"][c["cell_id"]] = measured[c["cell_id"]]
-        # an H3 arm child (frozen extractor) at the pilot's size, chained to the pilot extractor
-        arm = {"cell_id": "pilot__H3_sequence", "hypothesis": "H3", "level": design["h3_level"], "r": 1, "seed": 1, "arm": "sequence"}
-        register(pilot_key + "-arm", [arm["cell_id"]])
+        # the H3 arm children (frozen extractor) at the pilot's size, chained to their pilot extractor
+        register(pilot_key + "-arm", [c["cell_id"] for c in arm_pilots])
         arm_sha = registrations[pilot_key + "-arm"]["campaign_sha256"]
-        out = child(arm_sha, pilot_key + "-arm", arm["cell_id"], job_for(arm, max_updates_override=int(pilot_updates), role="COST_PILOT",
-                    extractor_weights=str(root / "attempts" / "pilot__H3_extractor" / "weights.weights.h5")),
-                    {"role": "COST_PILOT", "hypothesis": "H3", "arm": "sequence"})
-        rec = out.get("score")
-        if rec is None:
-            report.update(stopped=f"COST_PILOT_FAILED: {arm['cell_id']} {out['outcome']}", spent_cpu_seconds=spent())
-            campaign.write_once(root / "REPORT.json", report)
-            return report
-        cpu = float(out["cost"].get("cpu_seconds") or rec["cost"]["cpu_seconds"])
-        fit_s = float(rec["cost"].get("fit_seconds") or 0.0)
-        updates = max(1, int(rec["training"]["updates"]))
-        measured[arm["cell_id"]] = {"cpu_seconds": cpu, "fit_seconds": fit_s, "overhead_seconds": max(0.0, cpu - fit_s), "updates": updates,
-                                    "seconds_per_update": fit_s / updates, "exposure": rec["exposure"]}
-        report["cost_pilot"][arm["cell_id"]] = measured[arm["cell_id"]]
+        for arm in arm_pilots:
+            out = child(arm_sha, pilot_key + "-arm", arm["cell_id"], job_for(arm, max_updates_override=int(pilot_updates), role="COST_PILOT",
+                        extractor_weights=str(root / "attempts" / arm["depends_on"] / "weights.weights.h5"), depends_on=arm["depends_on"]),
+                        {"role": "COST_PILOT", "hypothesis": "H3", "arm": arm["arm"], **({"arch": arm["arch"]} if "arch" in arm else {})})
+            rec = out.get("score")
+            if rec is None:
+                report.update(stopped=f"COST_PILOT_FAILED: {arm['cell_id']} {out['outcome']}", spent_cpu_seconds=spent())
+                campaign.write_once(root / "REPORT.json", report)
+                return report
+            cpu = float(out["cost"].get("cpu_seconds") or rec["cost"]["cpu_seconds"])
+            fit_s = float(rec["cost"].get("fit_seconds") or 0.0)
+            updates = max(1, int(rec["training"]["updates"]))
+            measured[arm["cell_id"]] = {"cpu_seconds": cpu, "fit_seconds": fit_s, "overhead_seconds": max(0.0, cpu - fit_s), "updates": updates,
+                                        "seconds_per_update": fit_s / updates, "exposure": rec["exposure"]}
+            report["cost_pilot"][arm["cell_id"]] = measured[arm["cell_id"]]
     except DEV.CapExhausted as e:
         report.update(stopped=str(e), spent_cpu_seconds=spent())
         campaign.write_once(root / "REPORT.json", report)
@@ -321,14 +464,20 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
     headroom = float(design["budget"]["headroom"])
     per_cell = {}
     for c in design["cells"]:
-        key = "pilot__H3_sequence" if (c["hypothesis"] == "H3" and c["arm"] in ("sequence", "summary")) else \
-              ("pilot__H3_extractor" if c["hypothesis"] == "H3" else "pilot__H2_profiles")
+        if v2:
+            key = AD.pilot_key_for(c)
+        else:
+            key = "pilot__H3_sequence" if (c["hypothesis"] == "H3" and c["arm"] in ("sequence", "summary")) else \
+                  ("pilot__H3_extractor" if c["hypothesis"] == "H3" else "pilot__H2_profiles")
         m = measured[key]
         per_cell[c["cell_id"]] = m["seconds_per_update"] * updates_full + m["overhead_seconds"]
     remaining = [c for c in design["cells"] if not (root / "attempts" / c["cell_id"] / "outcome.json").is_file()]
     total_remaining = sum(per_cell[c["cell_id"]] for c in remaining)
     with_headroom = total_remaining * (1 + headroom)
-    report["projection"] = {"per_cell": per_cell, "cells": len(design["cells"]), "remaining_cells": len(remaining),
+    by_role = {}
+    for c in remaining:
+        by_role[c.get("host_role", "COORDINATOR")] = by_role.get(c.get("host_role", "COORDINATOR"), 0.0) + per_cell[c["cell_id"]] * (1 + headroom)
+    report["projection"] = {"per_cell": per_cell, "cells": len(design["cells"]), "remaining_cells": len(remaining), "by_role_with_headroom": by_role,
                             "projected_remaining_cpu_seconds": total_remaining, "headroom": headroom, "projected_with_headroom": with_headroom,
                             "spent_so_far": spent(), "cap_seconds": cap_seconds, "fits": spent() + with_headroom <= cap_seconds,
                             "assumption": "every cell at its full update allowance (early stopping only lowers it); per-update cost from the "
@@ -344,35 +493,46 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
         report.update(stopped="PILOT_ONLY", spent_cpu_seconds=spent())
         campaign.write_once(root / "REPORT.pilot.json", report)
         return report
-    # --- the cells, governed, in dependency order ------------------------------------------------------
+    # --- the cells, governed, in dependency order (waves of `parallel` children) ---------------------------
     key = f"{run_id}-mod-e0-cells"
     sha = register(key, [c["cell_id"] for c in design["cells"]])
     report["campaign"] = {"key": key, "campaign_sha256": sha}
     done = {}
+    missing_now = None
+    if report_collected:
+        rs, rb = gov.reconcile_campaign(sha)
+        missing_now = set(rb.get("missing_units") or []) if rs == 200 else set()
+    mine, delegated = [], []
+    for c in design["cells"]:
+        owner = c.get("host_role", "COORDINATOR")
+        if owner == role:
+            mine.append(c)
+        elif report_collected and (root / "attempts" / c["cell_id"] / "outcome.json").is_file() and c["cell_id"] in (missing_now or set()):
+            mine.append({**c, "_collected": True})
+        else:
+            delegated.append(c)
+    for c in delegated:
+        report["cells"][c["cell_id"]] = {"outcome": DELEGATED, "host_role": c.get("host_role"), "why": "dealt to another host; reported after collection"}
+
+    def cell_child(c):
+        extra = {"role": "CELL", **{k: c[k] for k in ("depends_on",) if k in c}}
+        if c.get("depends_on"):
+            extra["extractor_weights"] = str(root / "attempts" / c["depends_on"] / "weights.weights.h5")
+        return child(sha, key, c["cell_id"], job_for(c, **extra),
+                     {"role": "CELL", "hypothesis": c["hypothesis"], "arm": c["arm"], "level": str(c["level"]), "r": str(c["r"]),
+                      "seed": str(c["seed"]), "condition": f"h{c['level']}_r{c['r']}", "replicate": str(c["seed"]),
+                      **({"arch": c["arch"]} if "arch" in c else {}), **({"donor": c["donor"]} if c.get("donor") else {}),
+                      **({"diagnostic": c["diagnostic"]} if c.get("diagnostic") else {}), "host_role": c.get("host_role", "COORDINATOR"),
+                      **({"collected": "true"} if c.get("_collected") else {})},
+                     need=per_cell[c["cell_id"]] * (1 + headroom), emit_resumed=bool(c.get("_collected")))
+    def dep_state(dep):
+        attempt = root / "attempts" / dep
+        if (attempt / "outcome.json").is_file() and (attempt / "cell.json").is_file() \
+                and json.loads((attempt / "outcome.json").read_text()).get("status") == "COMPLETED":
+            return {"outcome": "AVAILABLE", "score": None}
+        return {"outcome": "ABSENT", "score": None} if not (attempt / "outcome.json").is_file() else {"outcome": "FAILED", "score": None}
     try:
-        for c in design["cells"]:
-            extra = {"role": "CELL"}
-            if c.get("depends_on"):
-                dep = done.get(c["depends_on"])
-                if dep is None or dep.get("score") is None:
-                    report["cells"][c["cell_id"]] = {"outcome": "INCONCLUSIVE_DEPENDENCY", "depends_on": c["depends_on"],
-                                                     "why": "its extractor cell did not complete and verify; not re-run silently"}
-                    continue
-                extra["extractor_weights"] = str(root / "attempts" / c["depends_on"] / "weights.weights.h5")
-            out = child(sha, key, c["cell_id"], job_for(c, **extra),
-                        {"role": "CELL", "hypothesis": c["hypothesis"], "arm": c["arm"], "level": str(c["level"]), "r": str(c["r"]),
-                         "seed": str(c["seed"]), "condition": f"h{c['level']}_r{c['r']}", "replicate": str(c["seed"])},
-                        need=per_cell[c["cell_id"]] * (1 + headroom))
-            done[c["cell_id"]] = out
-            rec = out.get("score")
-            report["cells"][c["cell_id"]] = {"outcome": out["outcome"], "cost": out["cost"], "resumed": out.get("resumed", False),
-                                             **({"mase_validation": rec["scores"]["validation"]["model"]["mase_mean"],
-                                                 "mase_test": (rec["scores"].get("test") or {}).get("model", {}).get("mase_mean"),
-                                                 "naive_validation": rec["scores"]["validation"]["naive"]["mase_mean"],
-                                                 "linear_validation": rec["scores"]["validation"]["linear_window"]["mase_mean"],
-                                                 "updates": rec["training"]["updates"], "stop_reason": rec["training"]["stop_reason"],
-                                                 "profiles_ari": rec["profiles"]["ari_vs_latent"], "extractor_weight_change": rec.get("extractor_weight_change")}
-                                                if rec else {})}
+        _run_waves(mine, done, report, cell_child, parallel, lock, trace, dep_state=dep_state)
     except DEV.CapExhausted as e:
         report["stopped"] = str(e)
     rstatus, rbody = gov.reconcile_campaign(sha)
@@ -390,7 +550,7 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
             report["envelope"] = R.emit_envelope(cfg, outcomes, {"freeze_sha256": design["design_sha256"]}, pre, OB, CE)
         except Exception as e:  # noqa: BLE001
             report["envelope"] = {"error": str(e)[:300]}
-    campaign.write_once(root / "REPORT.json", report)
+    campaign.write_once(root / ("REPORT.collected.json" if report_collected else "REPORT.json"), report)
     return report
 
 
@@ -403,7 +563,7 @@ def main(argv=None) -> int:
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--gov-url", default="http://127.0.0.1:5055")
-    parser.add_argument("--api-key-file", required=True)
+    parser.add_argument("--api-key-file", default=None, help="required unless --execute-only")
     parser.add_argument("--outbox-dir", default=GR.DEFAULT_OUTBOX)
     parser.add_argument("--cpu-cap-seconds", type=float, default=14400.0)
     parser.add_argument("--already-spent", type=float, default=0.0)
@@ -413,10 +573,14 @@ def main(argv=None) -> int:
     parser.add_argument("--cpu-seconds", type=int, default=1200)
     parser.add_argument("--pilot-only", action="store_true")
     parser.add_argument("--repair-terminals", action="store_true", help="RP5: supersede refused terminals of this run's campaigns; no child runs")
+    parser.add_argument("--role", default="COORDINATOR", help="RP14: this host's role in a v2 design (COORDINATOR, WORKER_A, WORKER_B)")
+    parser.add_argument("--execute-only", action="store_true", help="RP14 worker: run this role's cells without governance (registered before, reported after)")
+    parser.add_argument("--report-collected", action="store_true", help="RP14 coordinator: emit the terminals of collected delegated attempts")
+    parser.add_argument("--parallel", type=int, default=1, help="concurrent children on this host (memory-aware: task memory x parallel must fit)")
     args = parser.parse_args(argv)
     design = json.loads(args.design.read_text())
-    if design.get("schema") != D.DESIGN_SCHEMA or E.sha_obj({k: v for k, v in design.items() if k != "design_sha256"}) != design["design_sha256"]:
-        raise SystemExit("REFUSED: the design is not a sealed MOD-E0-DEV design")
+    if design.get("schema") not in (D.DESIGN_SCHEMA, AD.DESIGN_SCHEMA) or E.sha_obj({k: v for k, v in design.items() if k != "design_sha256"}) != design["design_sha256"]:
+        raise SystemExit("REFUSED: the design is not a sealed MOD-E0 design")
     code_identity = GR.strict_code_identity(REPO)
     budgets = {"task_memory_bytes": args.task_memory, "wall_seconds": args.wall_seconds, "cpu_seconds": args.cpu_seconds}
     trace_log = []
@@ -424,8 +588,8 @@ def main(argv=None) -> int:
     def trace(event, **facts):
         trace_log.append({"event": event, "at": R.now_iso(), **facts})
         print(json.dumps({"event": event, **{k: (v if isinstance(v, (str, int, float, bool)) or v is None else str(v)[:80]) for k, v in facts.items()}}), flush=True)
-    gov = GR.GovHttp(args.gov_url, GR.load_api_key(args.api_key_file), args.run_id)
-    outbox = GR.TerminalOutbox(Path(os.path.expanduser(args.outbox_dir)).resolve())
+    gov = None if args.execute_only else GR.GovHttp(args.gov_url, GR.load_api_key(args.api_key_file), args.run_id)
+    outbox = None if args.execute_only else GR.TerminalOutbox(Path(os.path.expanduser(args.outbox_dir)).resolve())
     if args.repair_terminals:
         regs = json.loads((args.root / "CAMPAIGNS.json").read_text())
         shas = {v["campaign_sha256"] for v in regs.values()}
@@ -437,10 +601,14 @@ def main(argv=None) -> int:
         (args.root / "TERMINAL_REPAIR.json").write_text(json.dumps({**out, "details": rep}, indent=1, default=str))
         print(json.dumps(out, indent=1, default=str))
         return 0 if not rep["failed"] else 2
+    if not args.execute_only and not args.api_key_file:
+        raise SystemExit("REFUSED: --api-key-file is required unless --execute-only")
     report = run_mod_e0(design, root=args.root, run_id=args.run_id, gov=gov, trace=trace, GR=GR, outbox=outbox, OB=OB, CE=CE,
                         code_identity=code_identity, budgets=budgets, cap_seconds=args.cpu_cap_seconds, already_spent=args.already_spent,
-                        pilot_updates=args.pilot_updates, pilot_only=args.pilot_only)
-    (args.root / "TRACE.json").write_text(json.dumps(trace_log, indent=1, default=str))
+                        pilot_updates=args.pilot_updates, pilot_only=args.pilot_only, role=args.role, execute_only=args.execute_only,
+                        report_collected=args.report_collected, parallel=args.parallel)
+    trace_name = "TRACE.json" if not (args.root / "TRACE.json").exists() else f"TRACE.{args.role}.{R.now_iso().replace(':', '')}.json"
+    (args.root / trace_name).write_text(json.dumps(trace_log, indent=1, default=str))
     print(json.dumps({"stopped": report["stopped"], "spent_cpu_seconds": report.get("spent_cpu_seconds"),
                       "projection": {k: v for k, v in (report.get("projection") or {}).items() if k != "per_cell"},
                       "cost_pilot": report["cost_pilot"], "cells_done": len(report["cells"]), "reconciliation": report["reconciliation"]},

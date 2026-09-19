@@ -58,9 +58,25 @@ def test_ML01_the_causal_oracle_uses_the_past_only_and_beats_the_naive():
     oracle = E.mase(P["oracle"], P["y"], prep["mase_denominator"])["mase_mean"]
     naive = E.mase(P["naive"], P["y"], prep["mase_denominator"])["mase_mean"]
     assert oracle < naive
-    # the oracle at row t must not change when the future beyond t is perturbed (it is a function of the past)
-    g2 = E.generate(3, 1, 5)
-    assert np.allclose(g2["oracle"][:1500], o[:1500])
+    # the oracle at row t must not change when the future beyond t is perturbed: the REAL callable is
+    # re-run on components whose rows > t are altered (RP11 / review F4: the former check perturbed nothing)
+    prm = g["params"]
+    t_cut = 1500
+    s2, src2 = g["s"].copy(), g["source"].copy()
+    s2[t_cut + 1:] += 50.0
+    src2[t_cut + 1:] -= 30.0
+    o2 = E.causal_oracle(prm["groups"], prm["latent_groups"], prm["thetas"], s2, src2)
+    assert np.array_equal(o2[:t_cut + 1], o[:t_cut + 1]) and not np.allclose(o2[t_cut + 1:-1], o[t_cut + 1:-1])
+    # and a perturbation AT t changes the oracle at t (it does consume the present)
+    s3 = g["s"].copy()
+    s3[t_cut] += 1.0
+    o3 = E.causal_oracle(prm["groups"], prm["latent_groups"], prm["thetas"], s3, g["source"])
+    assert not np.allclose(o3[t_cut], o[t_cut]) and np.array_equal(o3[:t_cut], o[:t_cut])
+    # the lagged partner enters through a[t + 1 - tau] <= t: perturbing source rows > t + 1 - tau leaves oracle[t]
+    src4 = g["source"].copy()
+    src4[t_cut + 2 - E.TAU:] += 7.0
+    o4 = E.causal_oracle(prm["groups"], prm["latent_groups"], prm["thetas"], g["s"], src4)
+    assert np.array_equal(o4[:t_cut + 1], o[:t_cut + 1]) and not np.allclose(o4[t_cut + 1:-1], o[t_cut + 1:-1])
 
 
 def test_ML02_future_and_test_changes_do_not_change_past_outputs_or_the_fit():
@@ -228,12 +244,64 @@ def test_ML09_metrics_from_arrays_with_shared_denominators_and_zero_policy():
     assert out["per_variable"][0]["mase"] == pytest.approx((0.5 + 0 + 1.0) / 3 / 0.5)
     assert out["per_variable"][1]["status"] == "NO_APLICA" and out["per_variable"][1]["mase"] is None
     assert out["mase_mean"] == pytest.approx(out["per_variable"][0]["mase"])                    # NO_APLICA is not zero
+    assert out["status"] == "MEDIDO_PARTIAL" and out["per_variable"][0]["mse"] == pytest.approx((0.25 + 0 + 1.0) / 3)
+    # RP11 (review F4): the PRODUCTIVE metric refuses to call a non-finite or empty value measured
+    nan = E.mase(np.array([[np.nan, 1.0]]), np.array([[1.0, 1.0]]), [1.0, 1.0])
+    assert nan["status"] == E.NO_MEDIDO and nan["mase_mean"] is None and nan["mae_mean"] is None
+    assert nan["per_variable"][0] == {"mae": None, "mse": None, "rmse": None, "mase": None, "status": E.NO_MEDIDO, "reason": "NON_FINITE"}
+    assert nan["per_variable"][1]["status"] == E.MEDIDO
+    inf = E.mase(np.array([[np.inf], [1.0]]), np.array([[1.0], [1.0]]), [1.0])
+    assert inf["status"] == E.NO_MEDIDO and inf["rmse_mean"] is None
+    empty = E.mase(np.zeros((0, 2)), np.zeros((0, 2)), [1.0, 1.0])
+    assert empty["status"] == E.NO_MEDIDO and empty["per_variable"][0]["reason"] == "EMPTY"
+    assert E.mase(np.zeros((3, 1)), np.zeros((3, 1)), [0.0])["status"] == E.NO_APLICA
+    with pytest.raises(ValueError):                                                              # schema, not an observation
+        E.mase(np.zeros((3, 2)), np.zeros((3, 3)), [1.0, 1.0, 1.0])
     with pytest.raises(ValueError):
-        E.mase(np.array([[np.nan, 1.0]]), np.array([[1.0, 1.0]]), [1.0, 1.0]) if not np.isfinite(np.array([[np.nan]])).all() and _raise() else None
+        E.mase(np.zeros((3, 2)), np.zeros((3, 2)), [1.0])
+    with pytest.raises(ValueError):
+        E.mase(np.zeros(3), np.zeros(3), [1.0])
 
 
-def _raise():
-    raise ValueError("non-finite")
+def test_RP12_trend_and_seasonal_strength_follow_var_T_plus_R_and_var_S_plus_R():
+    t = np.arange(480)
+    period = 24
+    sine = np.sin(2 * np.pi * t / period)
+    ramp = 0.01 * t
+    noise = np.random.default_rng(0).normal(size=480)
+
+    def reference(x):                                                     # independent formula on the SAME declared decomposition
+        d = E.decompose_moving_average(x, period)
+        T, S, R = d["trend"], d["seasonal"], d["remainder"]
+        ft = 1 - np.var(R) / np.var(T + R) if np.var(T + R) > 0 else 0.0
+        fs = 1 - np.var(R) / np.var(S + R) if np.var(S + R) > 0 else 0.0
+        return [max(0.0, ft), max(0.0, fs)]
+    for x in (sine, ramp, noise, sine + ramp, sine + 0.3 * noise, ramp + 0.3 * noise, np.ones(480), np.sin(2 * np.pi * t / 7)):
+        assert np.allclose(E.trend_seasonal_strength(x, period), reference(x))
+    ft, fs = E.trend_seasonal_strength(sine, period)
+    assert ft < 0.05 and fs > 0.95                                        # pure sine of the declared period: seasonal, no trend
+    ft, fs = E.trend_seasonal_strength(ramp, period)
+    assert ft > 0.95 and fs < 0.1                                         # pure trend
+    assert E.trend_seasonal_strength(np.ones(480), period)[0] == 0.0     # constant: zero denominators -> 0 by convention
+    ft, fs = E.trend_seasonal_strength(noise, period)
+    assert ft < 0.15 and fs < 0.15                                        # white noise: neither
+    ft, fs = E.trend_seasonal_strength(sine + ramp, period)
+    assert ft > 0.9 and fs > 0.8                                          # mixture: both
+    # review F3: the v1 descriptor called a pure sine "trend-strong" (0.99); v2 does not; the v1 stays only for reanalysis
+    assert E.trend_seasonal_strength_v1(sine, period)[0] > 0.9 and E.DESCRIPTOR_VERSION == 2
+    # edges: short series (below one period) and a length that is not a multiple of the period do not fail
+    assert len(E.trend_seasonal_strength(sine[:10], period)) == 2 and len(E.trend_seasonal_strength(sine[:101], period)) == 2
+    assert E.decompose_moving_average(sine[:10], period)["period_truncated"] and not E.decompose_moving_average(sine, period)["period_truncated"]
+    with pytest.raises(ValueError):
+        E.trend_seasonal_strength(np.zeros(0), period)
+    d = E.decompose_moving_average(sine, period)
+    assert d["availability"] == "TRAIN_BATCH_CENTRED_MA_NOT_CAUSAL"       # declared: a centred window, not an online operator
+    assert np.allclose(d["trend"] + d["seasonal"] + d["remainder"], sine)
+    # the profiles record their descriptor version and are computed on train rows only
+    g = E.generate(3, 1, 8)
+    lo, hi = E.boundaries()["train"]
+    prof = E.profiles(g["x"][lo:hi])
+    assert prof["descriptor_version"] == 2 and E.profiles(g["x"][lo:hi], 1)["descriptor_version"] == 1
 
 
 def test_ML10_effects_are_computed_with_the_declared_sign_and_replicates_do_not_inflate_units():

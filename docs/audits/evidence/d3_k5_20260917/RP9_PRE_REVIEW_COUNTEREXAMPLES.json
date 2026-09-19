@@ -1,0 +1,833 @@
+{
+  "counterexamples": {
+    "denominator": {
+      "accepted": true,
+      "problems": [],
+      "validation_model_score": 0.005821267022406319
+    },
+    "empty_population": {
+      "all_verified": true,
+      "effects": {},
+      "parent_equal": true
+    },
+    "labels": {
+      "accepted": true,
+      "problems": [],
+      "validation_model_score": 0.0
+    },
+    "mae_and_linear": {
+      "accepted": true,
+      "problems": [],
+      "validation_model_score": 0.582126702240632
+    },
+    "nonfinite_metric": {
+      "returned_nan": true,
+      "status": "MEDIDO"
+    },
+    "parent_disagreement": {
+      "all_verified": true,
+      "effects": {
+        "H3": {
+          "d": {
+            "1": -0.09036868822537963
+          },
+          "gamma": null,
+          "n_units": 3,
+          "sd_replicates": {
+            "1": 0.008156659487308357
+          },
+          "sign": "negative d favours sequence fusion; negative gamma means the advantage is larger with lagged dependence",
+          "unit": "replicate; both arms of a replicate share the frozen extractor"
+        }
+      },
+      "parent_equal": false
+    },
+    "row_ids": {
+      "accepted": true,
+      "problems": [],
+      "validation_model_score": 0.582126702240632
+    },
+    "six_of_69": {
+      "all_verified": true,
+      "effects": {
+        "H3": {
+          "d": {
+            "1": -0.09072099072250761
+          },
+          "gamma": null,
+          "n_units": 3,
+          "sd_replicates": {
+            "1": 0.0057998188027210415
+          },
+          "sign": "negative d favours sequence fusion; negative gamma means the advantage is larger with lagged dependence",
+          "unit": "replicate; both arms of a replicate share the frozen extractor"
+        }
+      },
+      "parent_equal": true
+    },
+    "weights": {
+      "accepted": true,
+      "problems": [],
+      "validation_model_score": 0.582126702240632
+    }
+  },
+  "descriptor_reanalysis_no_training": [
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "level": 0,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "r": 1,
+      "same_partition": true,
+      "seed": 1
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "level": 0,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "r": 1,
+      "same_partition": true,
+      "seed": 2
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "level": 0,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "r": 1,
+      "same_partition": true,
+      "seed": 3
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "level": 1,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "r": 1,
+      "same_partition": true,
+      "seed": 1
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "level": 1,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "r": 1,
+      "same_partition": true,
+      "seed": 2
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "level": 1,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "r": 1,
+      "same_partition": true,
+      "seed": 3
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "level": 2,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "r": 0,
+      "same_partition": true,
+      "seed": 1
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "level": 2,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "r": 0,
+      "same_partition": true,
+      "seed": 2
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "level": 2,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "r": 0,
+      "same_partition": true,
+      "seed": 3
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "level": 2,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "r": 1,
+      "same_partition": true,
+      "seed": 1
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "level": 2,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "r": 1,
+      "same_partition": true,
+      "seed": 2
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "level": 2,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "r": 1,
+      "same_partition": true,
+      "seed": 3
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "level": 3,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "r": 1,
+      "same_partition": true,
+      "seed": 1
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "level": 3,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "r": 1,
+      "same_partition": true,
+      "seed": 2
+    },
+    {
+      "corrected": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "level": 3,
+      "old": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "r": 1,
+      "same_partition": true,
+      "seed": 3
+    }
+  ],
+  "geometry": {
+    "periods": {
+      "A": {
+        "period": 24.0,
+        "phi": 0.86
+      },
+      "B": {
+        "period": 60.0,
+        "phi": 0.14
+      }
+    },
+    "span_cycles_B": 0.7833333333333333,
+    "window": 48
+  },
+  "honest": {
+    "all_verified": true,
+    "bootstrap": {
+      "H2_slope": {
+        "ci95": [
+          3.2386335799834294e-05,
+          0.006383748842834502
+        ],
+        "n": 2000
+      },
+      "H3_d1": {
+        "ci95": [
+          -0.09613631746068496,
+          -0.08460105899007431
+        ],
+        "n": 2000
+      },
+      "H3_gamma": {
+        "ci95": [
+          -0.07207053537421693,
+          -0.0637151223426703
+        ],
+        "n": 2000
+      }
+    },
+    "effects": {
+      "H2": {
+        "e": {
+          "0": -0.008899768163328345,
+          "1": 0.005793666270352049,
+          "2": -8.063826165301731e-05,
+          "3": 0.005645294364070796
+        },
+        "levels": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "random_assignments": 3,
+        "replicates": 3,
+        "sd_replicates": {
+          "0": 0.005579053945007873,
+          "1": 0.004165731780959465,
+          "2": 0.006260980502856382,
+          "3": 0.004328926026086169
+        },
+        "sign": "negative favours profile grouping; a negative slope means the advantage grows with heterogeneity",
+        "slope": 0.0037760883050192355,
+        "unit": "replicate (independent trajectory); random assignments averaged within the replicate"
+      },
+      "H3": {
+        "d": {
+          "0": -0.022695657550192056,
+          "1": -0.09072099072250761
+        },
+        "gamma": -0.06802533317231556,
+        "n_units": 3,
+        "sd_replicates": {
+          "0": 0.005822073616658204,
+          "1": 0.0057998188027210415
+        },
+        "sign": "negative d favours sequence fusion; negative gamma means the advantage is larger with lagged dependence",
+        "unit": "replicate; both arms of a replicate share the frozen extractor"
+      }
+    },
+    "parent_equal": true
+  },
+  "independent_source_checks": [
+    {
+      "cell_id": "H2__h0__s1__profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h0__s1__random_0",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h0__s1__random_1",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h0__s1__random_2",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h0__s2__profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h0__s2__random_0",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h0__s2__random_1",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h0__s2__random_2",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h0__s3__profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h0__s3__random_0",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h0__s3__random_1",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h0__s3__random_2",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h1__s1__profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h1__s1__random_0",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h1__s1__random_1",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h1__s1__random_2",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h1__s2__profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h1__s2__random_0",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h1__s2__random_1",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h1__s2__random_2",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h1__s3__profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h1__s3__random_0",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h1__s3__random_1",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h1__s3__random_2",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h2__s1__profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h2__s1__random_0",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h2__s1__random_1",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h2__s1__random_2",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h2__s2__profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h2__s2__random_0",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h2__s2__random_1",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h2__s2__random_2",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h2__s3__profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h2__s3__random_0",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h2__s3__random_1",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h2__s3__random_2",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h3__s1__profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h3__s1__random_0",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h3__s1__random_1",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h3__s1__random_2",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h3__s2__profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h3__s2__random_0",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h3__s2__random_1",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h3__s2__random_2",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h3__s3__profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h3__s3__random_0",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h3__s3__random_1",
+      "issues": []
+    },
+    {
+      "cell_id": "H2__h3__s3__random_2",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r0__s1__extractor",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r0__s1__sequence",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r0__s1__summary",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r0__s2__extractor",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r0__s2__sequence",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r0__s2__summary",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r0__s3__extractor",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r0__s3__sequence",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r0__s3__summary",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r1__s1__extractor",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r1__s1__sequence",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r1__s1__summary",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r1__s2__extractor",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r1__s2__sequence",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r1__s2__summary",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r1__s3__extractor",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r1__s3__sequence",
+      "issues": []
+    },
+    {
+      "cell_id": "H3__r1__s3__summary",
+      "issues": []
+    },
+    {
+      "cell_id": "pilot__H2_profiles",
+      "issues": []
+    },
+    {
+      "cell_id": "pilot__H3_extractor",
+      "issues": []
+    },
+    {
+      "cell_id": "pilot__H3_sequence",
+      "issues": []
+    }
+  ],
+  "original_files": 497,
+  "originals_unchanged": true,
+  "scope": "LOCAL_READ_ONLY_NO_WAREHOUSE_QUERY_NO_TRAINING",
+  "trend_strength": {
+    "implemented": 0.9931997483741039,
+    "one_minus_var_R_over_var_T_plus_R": 0.0
+  }
+}

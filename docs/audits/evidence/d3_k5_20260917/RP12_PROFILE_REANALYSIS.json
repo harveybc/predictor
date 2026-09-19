@@ -1,0 +1,2441 @@
+{
+ "attempts": 69,
+ "changed": {
+  "candidates": [],
+  "donor_assignment": [],
+  "kept": [],
+  "labels": [],
+  "recorded_assignment": [],
+  "sizes": [],
+  "x_digest": []
+ },
+ "combos": [
+  {
+   "ari_v1": 0.16000000000000003,
+   "ari_v2": 0.16000000000000003,
+   "attempts": [
+    "H2__h0__s1__profiles",
+    "H2__h0__s1__random_0",
+    "H2__h0__s1__random_1",
+    "H2__h0__s1__random_2"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     1,
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     1
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 0,
+   "r": 1,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 1,
+   "sizes_v1": [
+    6,
+    2
+   ],
+   "sizes_v2": [
+    6,
+    2
+   ],
+   "x_equals_records": true,
+   "x_sha256": "26de9222ad8526cc9061efbb570f9906746b76a1a1eea59c590104a517e31161"
+  },
+  {
+   "ari_v1": 0.4948453608247423,
+   "ari_v2": 0.4948453608247423,
+   "attempts": [
+    "H2__h0__s2__profiles",
+    "H2__h0__s2__random_0",
+    "H2__h0__s2__random_1",
+    "H2__h0__s2__random_2"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     0,
+     1,
+     1,
+     0,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     0,
+     0,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     0,
+     0,
+     1,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     0,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     0,
+     1,
+     0,
+     1,
+     0,
+     1,
+     0
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    0
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    0
+   ],
+   "labels_ordered_equal": true,
+   "level": 0,
+   "r": 1,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 2,
+   "sizes_v1": [
+    5,
+    3
+   ],
+   "sizes_v2": [
+    5,
+    3
+   ],
+   "x_equals_records": true,
+   "x_sha256": "7530909d48b5b18f78db3c2c35b62bae8ed4fd73e42cc61f79e246671fac63f1"
+  },
+  {
+   "ari_v1": 0.16000000000000003,
+   "ari_v2": 0.16000000000000003,
+   "attempts": [
+    "H2__h0__s3__profiles",
+    "H2__h0__s3__random_0",
+    "H2__h0__s3__random_1",
+    "H2__h0__s3__random_2"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     0,
+     1,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     0,
+     0,
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     1,
+     0
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 0,
+   "r": 1,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 3,
+   "sizes_v1": [
+    6,
+    2
+   ],
+   "sizes_v2": [
+    6,
+    2
+   ],
+   "x_equals_records": true,
+   "x_sha256": "e120a460e8820bf65f8f8c845dcf81f80ca6fa724e5278adf5cae1ff62319521"
+  },
+  {
+   "ari_v1": 1.0,
+   "ari_v2": 1.0,
+   "attempts": [
+    "H2__h1__s1__profiles",
+    "H2__h1__s1__random_0",
+    "H2__h1__s1__random_1",
+    "H2__h1__s1__random_2"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     1,
+     0,
+     0,
+     1,
+     0,
+     1,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     1,
+     0,
+     1,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     1,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     1,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     1,
+     1,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     1
+    ],
+    [
+     1,
+     1,
+     0,
+     0,
+     1,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     0,
+     1,
+     1,
+     1
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 1,
+   "r": 1,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 1,
+   "sizes_v1": [
+    4,
+    4
+   ],
+   "sizes_v2": [
+    4,
+    4
+   ],
+   "x_equals_records": true,
+   "x_sha256": "94297a0bca6a24ef2afe5328a0b50c478885888232f8dc474616229ab1cd0259"
+  },
+  {
+   "ari_v1": 1.0,
+   "ari_v2": 1.0,
+   "attempts": [
+    "H2__h1__s2__profiles",
+    "H2__h1__s2__random_0",
+    "H2__h1__s2__random_1",
+    "H2__h1__s2__random_2"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     0,
+     1,
+     1,
+     1,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     0,
+     0,
+     0,
+     1,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     0,
+     1
+    ],
+    [
+     1,
+     1,
+     1,
+     0,
+     0,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     1,
+     0,
+     1,
+     0
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 1,
+   "r": 1,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 2,
+   "sizes_v1": [
+    4,
+    4
+   ],
+   "sizes_v2": [
+    4,
+    4
+   ],
+   "x_equals_records": true,
+   "x_sha256": "a95ecb013a8fa0503882c79b89ddf109b544dd70cefe90478b54691a611d5bc3"
+  },
+  {
+   "ari_v1": 1.0,
+   "ari_v2": 1.0,
+   "attempts": [
+    "H2__h1__s3__profiles",
+    "H2__h1__s3__random_0",
+    "H2__h1__s3__random_1",
+    "H2__h1__s3__random_2"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     0,
+     1,
+     0,
+     1,
+     1,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     1,
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     1,
+     0,
+     0,
+     0,
+     1,
+     1,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     1,
+     0,
+     0,
+     1,
+     1,
+     0
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 1,
+   "r": 1,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 3,
+   "sizes_v1": [
+    4,
+    4
+   ],
+   "sizes_v2": [
+    4,
+    4
+   ],
+   "x_equals_records": true,
+   "x_sha256": "1f8dee702ee746a3239002e7167a0a54e33ef181c61310823b1579a05420dff7"
+  },
+  {
+   "ari_v1": 1.0,
+   "ari_v2": 1.0,
+   "attempts": [
+    "H3__r0__s1__extractor",
+    "H3__r0__s1__sequence",
+    "H3__r0__s1__summary"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     1,
+     0,
+     0,
+     1,
+     0,
+     1,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     1,
+     0,
+     1,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     1,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     1,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     1,
+     1,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     1
+    ],
+    [
+     1,
+     1,
+     0,
+     0,
+     1,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     0,
+     1,
+     1,
+     1
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 2,
+   "r": 0,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 1,
+   "sizes_v1": [
+    4,
+    4
+   ],
+   "sizes_v2": [
+    4,
+    4
+   ],
+   "x_equals_records": true,
+   "x_sha256": "595e439b94717126c06ddaf5da4c95be9fe82bc62339f07b6216b1fff2a80d32"
+  },
+  {
+   "ari_v1": 1.0,
+   "ari_v2": 1.0,
+   "attempts": [
+    "H3__r0__s2__extractor",
+    "H3__r0__s2__sequence",
+    "H3__r0__s2__summary"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     0,
+     1,
+     1,
+     1,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     0,
+     0,
+     0,
+     1,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     0,
+     1
+    ],
+    [
+     1,
+     1,
+     1,
+     0,
+     0,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     1,
+     0,
+     1,
+     0
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 2,
+   "r": 0,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 2,
+   "sizes_v1": [
+    4,
+    4
+   ],
+   "sizes_v2": [
+    4,
+    4
+   ],
+   "x_equals_records": true,
+   "x_sha256": "c2f1dc94ab1d2e06037e8c3e5e408c65c43bed2638f0f190bee43aef612d7ecc"
+  },
+  {
+   "ari_v1": 1.0,
+   "ari_v2": 1.0,
+   "attempts": [
+    "H3__r0__s3__extractor",
+    "H3__r0__s3__sequence",
+    "H3__r0__s3__summary"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     0,
+     1,
+     0,
+     1,
+     1,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     1,
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     1,
+     0,
+     0,
+     0,
+     1,
+     1,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     1,
+     0,
+     0,
+     1,
+     1,
+     0
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 2,
+   "r": 0,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 3,
+   "sizes_v1": [
+    4,
+    4
+   ],
+   "sizes_v2": [
+    4,
+    4
+   ],
+   "x_equals_records": true,
+   "x_sha256": "957fbb46790699c1c3578614941beb16a5e48fa6f612e7726febd6ab57e9afa2"
+  },
+  {
+   "ari_v1": 1.0,
+   "ari_v2": 1.0,
+   "attempts": [
+    "H2__h2__s1__profiles",
+    "H2__h2__s1__random_0",
+    "H2__h2__s1__random_1",
+    "H2__h2__s1__random_2",
+    "H3__r1__s1__extractor",
+    "H3__r1__s1__sequence",
+    "H3__r1__s1__summary",
+    "pilot__H3_extractor",
+    "pilot__H3_sequence"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     1,
+     0,
+     0,
+     1,
+     0,
+     1,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     1,
+     0,
+     1,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     1,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     1,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     1,
+     1,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     1
+    ],
+    [
+     1,
+     1,
+     0,
+     0,
+     1,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     0,
+     1,
+     1,
+     1
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 2,
+   "r": 1,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 1,
+   "sizes_v1": [
+    4,
+    4
+   ],
+   "sizes_v2": [
+    4,
+    4
+   ],
+   "x_equals_records": true,
+   "x_sha256": "470a317b114cfb8c378bf895409ce7e1fbfd4858812cc1686e4ac606e62d1bbf"
+  },
+  {
+   "ari_v1": 1.0,
+   "ari_v2": 1.0,
+   "attempts": [
+    "H2__h2__s2__profiles",
+    "H2__h2__s2__random_0",
+    "H2__h2__s2__random_1",
+    "H2__h2__s2__random_2",
+    "H3__r1__s2__extractor",
+    "H3__r1__s2__sequence",
+    "H3__r1__s2__summary"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     0,
+     1,
+     1,
+     1,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     0,
+     0,
+     0,
+     1,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     0,
+     1
+    ],
+    [
+     1,
+     1,
+     1,
+     0,
+     0,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     1,
+     0,
+     1,
+     0
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 2,
+   "r": 1,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 2,
+   "sizes_v1": [
+    4,
+    4
+   ],
+   "sizes_v2": [
+    4,
+    4
+   ],
+   "x_equals_records": true,
+   "x_sha256": "96807756d34cba142507b0032efb29eb155b2c8727d5765ea8a1b014efca186d"
+  },
+  {
+   "ari_v1": 1.0,
+   "ari_v2": 1.0,
+   "attempts": [
+    "H2__h2__s3__profiles",
+    "H2__h2__s3__random_0",
+    "H2__h2__s3__random_1",
+    "H2__h2__s3__random_2",
+    "H3__r1__s3__extractor",
+    "H3__r1__s3__sequence",
+    "H3__r1__s3__summary"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     0,
+     1,
+     0,
+     1,
+     1,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     1,
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     1,
+     0,
+     0,
+     0,
+     1,
+     1,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     1,
+     0,
+     0,
+     1,
+     1,
+     0
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 2,
+   "r": 1,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 3,
+   "sizes_v1": [
+    4,
+    4
+   ],
+   "sizes_v2": [
+    4,
+    4
+   ],
+   "x_equals_records": true,
+   "x_sha256": "667336a4f23bfa810e67b57b250953f1b3d3e51dbeb203245a06b24bbd9182fc"
+  },
+  {
+   "ari_v1": 1.0,
+   "ari_v2": 1.0,
+   "attempts": [
+    "H2__h3__s1__profiles",
+    "H2__h3__s1__random_0",
+    "H2__h3__s1__random_1",
+    "H2__h3__s1__random_2",
+    "pilot__H2_profiles"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     1,
+     0,
+     0,
+     1,
+     0,
+     1,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     1,
+     0,
+     1,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     1,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     1,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     1,
+     1,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     1
+    ],
+    [
+     1,
+     1,
+     0,
+     0,
+     1,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     0,
+     1,
+     1,
+     1
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 3,
+   "r": 1,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 1,
+   "sizes_v1": [
+    4,
+    4
+   ],
+   "sizes_v2": [
+    4,
+    4
+   ],
+   "x_equals_records": true,
+   "x_sha256": "4b4ff3063e2de14e5140f12a5cf589735093ded873e05ed66ef3e62b0f531b41"
+  },
+  {
+   "ari_v1": 1.0,
+   "ari_v2": 1.0,
+   "attempts": [
+    "H2__h3__s2__profiles",
+    "H2__h3__s2__random_0",
+    "H2__h3__s2__random_1",
+    "H2__h3__s2__random_2"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     0,
+     1,
+     1,
+     1,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     0,
+     0,
+     0,
+     1,
+     1,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     0,
+     1
+    ],
+    [
+     1,
+     1,
+     1,
+     0,
+     0,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     1,
+     0,
+     1,
+     0,
+     1,
+     0
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 3,
+   "r": 1,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 2,
+   "sizes_v1": [
+    4,
+    4
+   ],
+   "sizes_v2": [
+    4,
+    4
+   ],
+   "x_equals_records": true,
+   "x_sha256": "ee53c5634d54f41f1e578994a4977111447dc49eb287110dffdc04409a0cc7e4"
+  },
+  {
+   "ari_v1": 1.0,
+   "ari_v2": 1.0,
+   "attempts": [
+    "H2__h3__s3__profiles",
+    "H2__h3__s3__random_0",
+    "H2__h3__s3__random_1",
+    "H2__h3__s3__random_2"
+   ],
+   "candidates_equal": true,
+   "candidates_v2": [
+    [
+     0,
+     1,
+     0,
+     1,
+     1,
+     1,
+     0,
+     0
+    ],
+    [
+     1,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     1,
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     1,
+     0
+    ],
+    [
+     1,
+     0,
+     0,
+     0,
+     1,
+     1,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     1,
+     0,
+     0,
+     1,
+     1,
+     0
+    ]
+   ],
+   "descriptor_columns_changed": [
+    "trend"
+   ],
+   "donor_assignment_equals_v2": true,
+   "kept_equal": true,
+   "kept_v1": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "kept_v2": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "labels_corrected_v2": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_executed_v1": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "labels_ordered_equal": true,
+   "level": 3,
+   "r": 1,
+   "recorded_assignments_equal_v1_derivation": true,
+   "records_reproduce_v1_labels": true,
+   "same_partition": true,
+   "seed": 3,
+   "sizes_v1": [
+    4,
+    4
+   ],
+   "sizes_v2": [
+    4,
+    4
+   ],
+   "x_equals_records": true,
+   "x_sha256": "714837b1e360b2c7bf17800383e72f9d98e50e482312b42a88d406d1ba908014"
+  }
+ ],
+ "descriptor_versions": {
+  "corrected": 2,
+  "executed": 1
+ },
+ "root": "/home/harveybc/.local/state/crispdm-data-foundation/mod_e0_dev_v2",
+ "schema": "df_mod_e0_reanalysis.v1",
+ "summary": {
+  "any_consumed_datum_changed": false,
+  "combos": 15,
+  "ordered_labels_equal": 15,
+  "reuse": "JUSTIFIED: every consumed datum (ordered assignment, sizes, redistributions, inputs, donors) is unchanged under v2",
+  "same_partition": 15
+ }
+}

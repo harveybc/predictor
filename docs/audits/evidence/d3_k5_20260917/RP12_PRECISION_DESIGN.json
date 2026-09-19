@@ -1,0 +1,472 @@
+{
+ "assumptions": "replicate differences approximately normal with the pilot SD; the slope SD is derived analytically and by simulation; gamma treats d_1 and d_0 as independent (conservative if they are positively correlated across seeds)",
+ "estimators": {
+  "e(h)": "mean over replicates of MASE(profiles) - mean(random)",
+  "gamma": "d_1 - d_0 with d_r the mean over replicates; the replicate of r=1 and r=0 share the seed (paired)",
+  "slope": "least squares over levels of the per-level means"
+ },
+ "inputs": {
+  "levels": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "pilot_replicates": 3,
+  "sd_d_by_r": {
+   "0": 0.005822073616658204,
+   "1": 0.0057998188027210415
+  },
+  "sd_e_by_level": {
+   "0": 0.005579053945007873,
+   "1": 0.004165731780959465,
+   "2": 0.006260980502856382,
+   "3": 0.004328926026086169
+  },
+  "sd_uncertainty_95": {
+   "d_r0": [
+    0.003031310757842176,
+    0.036590188064103954
+   ],
+   "d_r1": [
+    0.0030197236049919482,
+    0.03645032246278924
+   ],
+   "e_h0": [
+    0.0029047805568269986,
+    0.03506287390175463
+   ],
+   "e_h1": [
+    0.002168922688606533,
+    0.026180519060047796
+   ],
+   "e_h2": [
+    0.0032598312564522942,
+    0.03934860140032
+   ],
+   "e_h3": [
+    0.0022538911214094247,
+    0.027206151594662335
+   ]
+  }
+ },
+ "not_a_confirmatory_size": true,
+ "rows": [
+  {
+   "d1_half_width_95": 0.003281,
+   "e_h_half_width_95": {
+    "0": 0.00316,
+    "1": 0.00236,
+    "2": 0.00354,
+    "3": 0.00245
+   },
+   "gamma_detectable_at_80pct_power": 0.006646,
+   "gamma_half_width_95": 0.00465,
+   "replicates": 3,
+   "sd_multiplier": 0.5,
+   "slope_detectable_at_80pct_power": 0.001818,
+   "slope_half_width_95": 0.001272,
+   "slope_sd_analytic": 0.000649,
+   "slope_sd_simulated": 0.000647
+  },
+  {
+   "d1_half_width_95": 0.002542,
+   "e_h_half_width_95": {
+    "0": 0.00245,
+    "1": 0.00183,
+    "2": 0.00274,
+    "3": 0.0019
+   },
+   "gamma_detectable_at_80pct_power": 0.005148,
+   "gamma_half_width_95": 0.003602,
+   "replicates": 5,
+   "sd_multiplier": 0.5,
+   "slope_detectable_at_80pct_power": 0.001408,
+   "slope_half_width_95": 0.000985,
+   "slope_sd_analytic": 0.000503,
+   "slope_sd_simulated": 0.000502
+  },
+  {
+   "d1_half_width_95": 0.002009,
+   "e_h_half_width_95": {
+    "0": 0.00193,
+    "1": 0.00144,
+    "2": 0.00217,
+    "3": 0.0015
+   },
+   "gamma_detectable_at_80pct_power": 0.00407,
+   "gamma_half_width_95": 0.002847,
+   "replicates": 8,
+   "sd_multiplier": 0.5,
+   "slope_detectable_at_80pct_power": 0.001113,
+   "slope_half_width_95": 0.000779,
+   "slope_sd_analytic": 0.000397,
+   "slope_sd_simulated": 0.000402
+  },
+  {
+   "d1_half_width_95": 0.001797,
+   "e_h_half_width_95": {
+    "0": 0.00173,
+    "1": 0.00129,
+    "2": 0.00194,
+    "3": 0.00134
+   },
+   "gamma_detectable_at_80pct_power": 0.00364,
+   "gamma_half_width_95": 0.002547,
+   "replicates": 10,
+   "sd_multiplier": 0.5,
+   "slope_detectable_at_80pct_power": 0.000996,
+   "slope_half_width_95": 0.000697,
+   "slope_sd_analytic": 0.000355,
+   "slope_sd_simulated": 0.000355
+  },
+  {
+   "d1_half_width_95": 0.001468,
+   "e_h_half_width_95": {
+    "0": 0.00141,
+    "1": 0.00105,
+    "2": 0.00158,
+    "3": 0.0011
+   },
+   "gamma_detectable_at_80pct_power": 0.002972,
+   "gamma_half_width_95": 0.002079,
+   "replicates": 15,
+   "sd_multiplier": 0.5,
+   "slope_detectable_at_80pct_power": 0.000813,
+   "slope_half_width_95": 0.000569,
+   "slope_sd_analytic": 0.00029,
+   "slope_sd_simulated": 0.000289
+  },
+  {
+   "d1_half_width_95": 0.001271,
+   "e_h_half_width_95": {
+    "0": 0.00122,
+    "1": 0.00091,
+    "2": 0.00137,
+    "3": 0.00095
+   },
+   "gamma_detectable_at_80pct_power": 0.002574,
+   "gamma_half_width_95": 0.001801,
+   "replicates": 20,
+   "sd_multiplier": 0.5,
+   "slope_detectable_at_80pct_power": 0.000704,
+   "slope_half_width_95": 0.000493,
+   "slope_sd_analytic": 0.000251,
+   "slope_sd_simulated": 0.00025
+  },
+  {
+   "d1_half_width_95": 0.001038,
+   "e_h_half_width_95": {
+    "0": 0.001,
+    "1": 0.00075,
+    "2": 0.00112,
+    "3": 0.00077
+   },
+   "gamma_detectable_at_80pct_power": 0.002102,
+   "gamma_half_width_95": 0.00147,
+   "replicates": 30,
+   "sd_multiplier": 0.5,
+   "slope_detectable_at_80pct_power": 0.000575,
+   "slope_half_width_95": 0.000402,
+   "slope_sd_analytic": 0.000205,
+   "slope_sd_simulated": 0.000206
+  },
+  {
+   "d1_half_width_95": 0.000804,
+   "e_h_half_width_95": {
+    "0": 0.00077,
+    "1": 0.00058,
+    "2": 0.00087,
+    "3": 0.0006
+   },
+   "gamma_detectable_at_80pct_power": 0.001628,
+   "gamma_half_width_95": 0.001139,
+   "replicates": 50,
+   "sd_multiplier": 0.5,
+   "slope_detectable_at_80pct_power": 0.000445,
+   "slope_half_width_95": 0.000312,
+   "slope_sd_analytic": 0.000159,
+   "slope_sd_simulated": 0.000163
+  },
+  {
+   "d1_half_width_95": 0.006563,
+   "e_h_half_width_95": {
+    "0": 0.00631,
+    "1": 0.00471,
+    "2": 0.00708,
+    "3": 0.0049
+   },
+   "gamma_detectable_at_80pct_power": 0.013292,
+   "gamma_half_width_95": 0.009299,
+   "replicates": 3,
+   "sd_multiplier": 1.0,
+   "slope_detectable_at_80pct_power": 0.003636,
+   "slope_half_width_95": 0.002544,
+   "slope_sd_analytic": 0.001298,
+   "slope_sd_simulated": 0.001281
+  },
+  {
+   "d1_half_width_95": 0.005084,
+   "e_h_half_width_95": {
+    "0": 0.00489,
+    "1": 0.00365,
+    "2": 0.00549,
+    "3": 0.00379
+   },
+   "gamma_detectable_at_80pct_power": 0.010296,
+   "gamma_half_width_95": 0.007203,
+   "replicates": 5,
+   "sd_multiplier": 1.0,
+   "slope_detectable_at_80pct_power": 0.002817,
+   "slope_half_width_95": 0.00197,
+   "slope_sd_analytic": 0.001005,
+   "slope_sd_simulated": 0.001014
+  },
+  {
+   "d1_half_width_95": 0.004019,
+   "e_h_half_width_95": {
+    "0": 0.00387,
+    "1": 0.00289,
+    "2": 0.00434,
+    "3": 0.003
+   },
+   "gamma_detectable_at_80pct_power": 0.00814,
+   "gamma_half_width_95": 0.005695,
+   "replicates": 8,
+   "sd_multiplier": 1.0,
+   "slope_detectable_at_80pct_power": 0.002227,
+   "slope_half_width_95": 0.001558,
+   "slope_sd_analytic": 0.000795,
+   "slope_sd_simulated": 0.000803
+  },
+  {
+   "d1_half_width_95": 0.003595,
+   "e_h_half_width_95": {
+    "0": 0.00346,
+    "1": 0.00258,
+    "2": 0.00388,
+    "3": 0.00268
+   },
+   "gamma_detectable_at_80pct_power": 0.007281,
+   "gamma_half_width_95": 0.005093,
+   "replicates": 10,
+   "sd_multiplier": 1.0,
+   "slope_detectable_at_80pct_power": 0.001992,
+   "slope_half_width_95": 0.001393,
+   "slope_sd_analytic": 0.000711,
+   "slope_sd_simulated": 0.00069
+  },
+  {
+   "d1_half_width_95": 0.002935,
+   "e_h_half_width_95": {
+    "0": 0.00282,
+    "1": 0.00211,
+    "2": 0.00317,
+    "3": 0.00219
+   },
+   "gamma_detectable_at_80pct_power": 0.005945,
+   "gamma_half_width_95": 0.004159,
+   "replicates": 15,
+   "sd_multiplier": 1.0,
+   "slope_detectable_at_80pct_power": 0.001626,
+   "slope_half_width_95": 0.001138,
+   "slope_sd_analytic": 0.00058,
+   "slope_sd_simulated": 0.000586
+  },
+  {
+   "d1_half_width_95": 0.002542,
+   "e_h_half_width_95": {
+    "0": 0.00245,
+    "1": 0.00183,
+    "2": 0.00274,
+    "3": 0.0019
+   },
+   "gamma_detectable_at_80pct_power": 0.005148,
+   "gamma_half_width_95": 0.003602,
+   "replicates": 20,
+   "sd_multiplier": 1.0,
+   "slope_detectable_at_80pct_power": 0.001408,
+   "slope_half_width_95": 0.000985,
+   "slope_sd_analytic": 0.000503,
+   "slope_sd_simulated": 0.000505
+  },
+  {
+   "d1_half_width_95": 0.002075,
+   "e_h_half_width_95": {
+    "0": 0.002,
+    "1": 0.00149,
+    "2": 0.00224,
+    "3": 0.00155
+   },
+   "gamma_detectable_at_80pct_power": 0.004203,
+   "gamma_half_width_95": 0.002941,
+   "replicates": 30,
+   "sd_multiplier": 1.0,
+   "slope_detectable_at_80pct_power": 0.00115,
+   "slope_half_width_95": 0.000804,
+   "slope_sd_analytic": 0.00041,
+   "slope_sd_simulated": 0.000411
+  },
+  {
+   "d1_half_width_95": 0.001608,
+   "e_h_half_width_95": {
+    "0": 0.00155,
+    "1": 0.00115,
+    "2": 0.00174,
+    "3": 0.0012
+   },
+   "gamma_detectable_at_80pct_power": 0.003256,
+   "gamma_half_width_95": 0.002278,
+   "replicates": 50,
+   "sd_multiplier": 1.0,
+   "slope_detectable_at_80pct_power": 0.000891,
+   "slope_half_width_95": 0.000623,
+   "slope_sd_analytic": 0.000318,
+   "slope_sd_simulated": 0.000317
+  },
+  {
+   "d1_half_width_95": 0.013126,
+   "e_h_half_width_95": {
+    "0": 0.01263,
+    "1": 0.00943,
+    "2": 0.01417,
+    "3": 0.0098
+   },
+   "gamma_detectable_at_80pct_power": 0.026585,
+   "gamma_half_width_95": 0.018599,
+   "replicates": 3,
+   "sd_multiplier": 2.0,
+   "slope_detectable_at_80pct_power": 0.007272,
+   "slope_half_width_95": 0.005088,
+   "slope_sd_analytic": 0.002596,
+   "slope_sd_simulated": 0.002594
+  },
+  {
+   "d1_half_width_95": 0.010167,
+   "e_h_half_width_95": {
+    "0": 0.00978,
+    "1": 0.0073,
+    "2": 0.01098,
+    "3": 0.00759
+   },
+   "gamma_detectable_at_80pct_power": 0.020593,
+   "gamma_half_width_95": 0.014406,
+   "replicates": 5,
+   "sd_multiplier": 2.0,
+   "slope_detectable_at_80pct_power": 0.005633,
+   "slope_half_width_95": 0.003941,
+   "slope_sd_analytic": 0.002011,
+   "slope_sd_simulated": 0.00197
+  },
+  {
+   "d1_half_width_95": 0.008038,
+   "e_h_half_width_95": {
+    "0": 0.00773,
+    "1": 0.00577,
+    "2": 0.00868,
+    "3": 0.006
+   },
+   "gamma_detectable_at_80pct_power": 0.01628,
+   "gamma_half_width_95": 0.011389,
+   "replicates": 8,
+   "sd_multiplier": 2.0,
+   "slope_detectable_at_80pct_power": 0.004453,
+   "slope_half_width_95": 0.003115,
+   "slope_sd_analytic": 0.00159,
+   "slope_sd_simulated": 0.001603
+  },
+  {
+   "d1_half_width_95": 0.007189,
+   "e_h_half_width_95": {
+    "0": 0.00692,
+    "1": 0.00516,
+    "2": 0.00776,
+    "3": 0.00537
+   },
+   "gamma_detectable_at_80pct_power": 0.014561,
+   "gamma_half_width_95": 0.010187,
+   "replicates": 10,
+   "sd_multiplier": 2.0,
+   "slope_detectable_at_80pct_power": 0.003983,
+   "slope_half_width_95": 0.002787,
+   "slope_sd_analytic": 0.001422,
+   "slope_sd_simulated": 0.001422
+  },
+  {
+   "d1_half_width_95": 0.00587,
+   "e_h_half_width_95": {
+    "0": 0.00565,
+    "1": 0.00422,
+    "2": 0.00634,
+    "3": 0.00438
+   },
+   "gamma_detectable_at_80pct_power": 0.011889,
+   "gamma_half_width_95": 0.008318,
+   "replicates": 15,
+   "sd_multiplier": 2.0,
+   "slope_detectable_at_80pct_power": 0.003252,
+   "slope_half_width_95": 0.002275,
+   "slope_sd_analytic": 0.001161,
+   "slope_sd_simulated": 0.001157
+  },
+  {
+   "d1_half_width_95": 0.005084,
+   "e_h_half_width_95": {
+    "0": 0.00489,
+    "1": 0.00365,
+    "2": 0.00549,
+    "3": 0.00379
+   },
+   "gamma_detectable_at_80pct_power": 0.010296,
+   "gamma_half_width_95": 0.007203,
+   "replicates": 20,
+   "sd_multiplier": 2.0,
+   "slope_detectable_at_80pct_power": 0.002817,
+   "slope_half_width_95": 0.00197,
+   "slope_sd_analytic": 0.001005,
+   "slope_sd_simulated": 0.001002
+  },
+  {
+   "d1_half_width_95": 0.004151,
+   "e_h_half_width_95": {
+    "0": 0.00399,
+    "1": 0.00298,
+    "2": 0.00448,
+    "3": 0.0031
+   },
+   "gamma_detectable_at_80pct_power": 0.008407,
+   "gamma_half_width_95": 0.005881,
+   "replicates": 30,
+   "sd_multiplier": 2.0,
+   "slope_detectable_at_80pct_power": 0.0023,
+   "slope_half_width_95": 0.001609,
+   "slope_sd_analytic": 0.000821,
+   "slope_sd_simulated": 0.000834
+  },
+  {
+   "d1_half_width_95": 0.003215,
+   "e_h_half_width_95": {
+    "0": 0.00309,
+    "1": 0.00231,
+    "2": 0.00347,
+    "3": 0.0024
+   },
+   "gamma_detectable_at_80pct_power": 0.006512,
+   "gamma_half_width_95": 0.004556,
+   "replicates": 50,
+   "sd_multiplier": 2.0,
+   "slope_detectable_at_80pct_power": 0.001781,
+   "slope_half_width_95": 0.001246,
+   "slope_sd_analytic": 0.000636,
+   "slope_sd_simulated": 0.000621
+  }
+ ],
+ "schema": "df_mod_e0_precision_design.v1",
+ "sensitivity_multipliers": [
+  0.5,
+  1.0,
+  2.0
+ ],
+ "source": "docs/audits/evidence/d3_k5_20260917/RP11_MOD_E0_V2_CLOSE_LOCAL.json",
+ "why_not": "the E0-CONF margin is not fixed; three trajectories give a dispersion whose own interval spans a factor ~4 (see sd_uncertainty_95)"
+}

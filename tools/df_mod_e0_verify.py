@@ -321,7 +321,7 @@ def figures(root: Path, out: dict) -> list:
         for k, c in curves:
             plt.plot(c["validation"], lw=0.7, alpha=0.7)
         plt.xlabel("epoch")
-        plt.ylabel("validation MAE (scaled)")
+        plt.ylabel("validation loss (mse on scaled targets)")
         plt.title("validation curves of every cell")
         plt.tight_layout()
         p = root / "fig_curves.png"

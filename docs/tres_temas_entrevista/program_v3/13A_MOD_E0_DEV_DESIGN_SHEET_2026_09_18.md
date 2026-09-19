@@ -8,11 +8,24 @@ comparable information, training and resources? DEVELOPMENT mechanism pilot; no 
 ## Question, estimands, unit
 
 * H2: `e(h) = MASE(profiles, h) − MASE(random, h)`; slope of e over h (least squares, equal weights).
-  Negative favours profiles; a negative slope means the advantage grows with heterogeneity.
+  Negative favours profiles; a negative slope means the advantage grows with heterogeneity. What the
+  pilot reports is a **descriptive difference between two grouping procedures** on three trajectories:
+  a small e(h) is not evidence of equivalence nor of absence of an effect (RP12 reframing); the
+  observed slope was positive (not favourable to H2) with an interval that excludes zero only barely.
 * H3: `d_r = MASE(sequence, r) − MASE(summary, r)`; `γ = d_1 − d_0`. Negative d favours sequence fusion.
+  It is a contrast between two **complete procedures** (sequence → Conv1D core → last position vs global
+  average → Dense core), sharing one frozen extractor that was pre-trained with the sequence receiver:
+  readout, optimisation and pre-training compatibility differ with the fusion, so the advantage belongs to
+  the executed procedure and is not attributable exclusively to "preserving the sequence until fusion".
+  r = 0 removes the planted lagged link, not every cross-predictability (common periodic components).
+  The ARCH-A/B/C/0 successor adds the readout control that separates pooling from history preservation.
 * Unit: the replicate (independent generator trajectory). Random assignments are averaged within
   the replicate; optimiser seeds, windows and origins never count as units. Precision (replicate SD,
-  bootstrap over replicates) feeds the E0-CONF sample-size rule; no margin in the pilot.
+  bootstrap over replicates) is DESCRIPTIVE with three trajectories: 2 000 resamples of three units are
+  not 2 000 replicates, and the SD itself has a 95 % interval spanning a factor of about 4
+  (`RP12_PRECISION_DESIGN.json`). Confirmatory sizes are not proposed; the precision design gives, per
+  number of replicates and for SD × 0.5 / 1 / 2, the interval half-widths and the effect detectable at
+  80 % power, to be read against a margin fixed later in E0-CONF.
 
 ## Generator (ML01) — every number with its derivation
 
@@ -31,10 +44,10 @@ comparable information, training and resources? DEVELOPMENT mechanism pilot; no 
 
 | item | value | why |
 |---|---|---|
-| context W | 48 (= 2 cycles of P_A; 2.0 cycles A; 0.67 cycles of P_B at h=3) | covers τ and the branch receptive field; alternatives 24 / 96 declared |
+| context W | 48 (= 2 cycles of P_A; 2.0 cycles A; at h=3 P_B = 24·(1 + 0.5·3) = **60**, so W/P_B = **0.80** cycles, or (W−1)/P_B = **0.783** between the first and last observation of the window) | covers τ and the branch receptive field; alternatives 24 / 96 declared, not run (RP12 erratum: an earlier version wrote P_B = 72 and 0.67) |
 | branch receptive field | 65 samples (kernel 3; dilations 1,1,2,4,8,16) | must reach the whole context (ML07 diagnostic) |
 | horizon | 1, direct, all variables | multi-step is E1 work |
-| N per trajectory | 3000: train rows 2055, validation 400, test 399; purge W + h = 49 | purge derived from the consumed support; windows overlap (not replicates) |
+| N per trajectory | 3000: train rows [47, 2102) = 2055 windows (33 mini-batches of 64 per epoch), validation [2151, 2551) = 400, test [2600, 2999) = 399; purge W + h = 49 | purge derived from the consumed support; windows overlap (not replicates); the update allowance is enforced inside an epoch (RP11) |
 | replicates | [1, 2, 3] independent trajectories per condition; 3 predefined random assignments per H2 condition | independence from generator seeds only |
 | MASE denominator | train MAE of the seasonal naive with the variable's declared period; shared by every arm; zero → NO_APLICA before scoring | contract of metrics v1 |
 
@@ -53,8 +66,18 @@ core and head train (weights verified unchanged). Grouping: ACF at lags 1–24, 
 seasonal strength on training rows, scaled by development SD, constants excluded, average linkage.
 
 Training rule (sealed after the ML07 diagnostic, `RP3_ML07_RECEIVER_DIAGNOSTIC.json`): ELU, Adam 3e-3,
-batch 64, ≤ 6 000 updates, early stopping on validation loss (patience 30, best restored), mse as the
-optimisation loss, MAE/MASE as the metrics; no tuning after outcomes.
+batch 64, ≤ 6 000 updates (stage v2: ≤ 3 000, i.e. 90 epochs × 33 = 2 970 executed at most), early
+stopping on validation **mse** (patience 30, best restored and verified by re-evaluation), mse as the
+optimisation loss, MAE/MSE/RMSE/MASE as the metrics; the validation curves plotted are the mse loss on
+the scaled targets (RP12 erratum: an earlier figure label said MAE); no tuning after outcomes.
+
+Profiles (RP12): ACF at lags 1–24, Welch bands, trend and seasonal strength. The strengths are
+Hyndman's F_T = 1 − Var(R)/Var(T+R) and F_S = 1 − Var(R)/Var(S+R) on a **centred moving-average
+decomposition** of the declared period (descriptor v2; the executed pilot used v1, whose F_T divided by
+Var(X) — corrected after the review; the reanalysis without training shows the 15 ordered partitions,
+kept masks, sizes, redistributions, inputs and donors unchanged: `RP12_PROFILE_REANALYSIS.json`).
+The decomposition is a train-batch characterisation computed once the training block is closed, not
+a causal online operator; nothing in it is used at prediction time.
 
 ## Controls and what the model never sees
 
