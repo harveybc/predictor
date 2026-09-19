@@ -20,6 +20,11 @@ STAGES = {
     "integration_verification", "system_verification", "alpha_acceptance",
     "external_review", "release",
 }
+LEARNING_REGIMES = {
+    "R0": {"detector_initialization": "RANDOM", "detector_update": "TRAINABLE", "rest_update": "TRAINABLE"},
+    "R1": {"detector_initialization": "SHARED_PRETRAINED", "detector_update": "FROZEN", "rest_update": "TRAINABLE"},
+    "R2": {"detector_initialization": "SHARED_PRETRAINED", "detector_update": "TRAINABLE", "rest_update": "TRAINABLE"},
+}
 
 
 def validate(state, root):
@@ -30,6 +35,8 @@ def validate(state, root):
         issues.append("unknown stage")
     if not state.get("next_allowed_actions"):
         issues.append("next actions required")
+    if state.get("learning_regimes") != LEARNING_REGIMES:
+        issues.append("learning regimes contract")
 
     def exact_list(field, expected, label):
         values = state.get(field, [])

@@ -148,6 +148,12 @@ Sin entrenamiento, GPU, reservas, reinicios ni escritura al warehouse. La
 conciliacion viva del retorno sigue siendo evidencia de Satoshi, no una lectura
 actual hecha por mi. Archivos fuente de los cierres preservados por digest.
 
+Plan y estado persistente actualizados. Dos regresiones documentales nuevas
+(regimenes ausentes o redefinidos como brazos de representacion) fallaron antes
+del arreglo; despues, **19/19** tests del plan pasan y `check_plan.py` informa
+documentary_coverage PASS, scientific_approval false. Esta proteccion documental
+no reemplaza las pruebas de gradientes/estado del runtime ordenadas en RP29.
+
 ## Disposicion
 
 Conservar etapa original y controles nuevos. Aceptar el recalculo descriptivo

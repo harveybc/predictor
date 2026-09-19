@@ -93,6 +93,14 @@ class PlanChecks(unittest.TestCase):
         task["depends_on"].remove("MOD-ARCH-COMPARE")
         self.assertIn("E1 prerequisites", " ".join(validate(self.state, ROOT)))
 
+    def test_learning_regimes_cannot_disappear(self):
+        self.state.pop("learning_regimes", None)
+        self.assertIn("learning regimes contract", " ".join(validate(self.state, ROOT)))
+
+    def test_learning_regimes_cannot_be_redefined_as_representation_arms(self):
+        self.state["learning_regimes"] = {"R0": "raw", "R1": "grouping", "R2": "grouping_and_fusion"}
+        self.assertIn("learning regimes contract", " ".join(validate(self.state, ROOT)))
+
 
 if __name__ == "__main__":
     unittest.main()

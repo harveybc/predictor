@@ -473,3 +473,22 @@ faltantes. [Orden vigente RP17-RP24](../handoffs/MUSASHI_PROGRAM_RP17_RP24_2026_
 pendiente para ejecutar esos bloques. RL sigue obligatorio, H-CORE despues de E1.
 Ninguna conciliacion viva, escritura de base ni operacion de servicios fue
 ejecutada por Musashi en este dictamen; los conteos vivos del retorno son de Satoshi.
+
+### Revision RP17-RP24 y orden RP25-RP32 (19-sep)
+
+Retorno `de8ae34` revisado con contraejemplos ejecutables. Gamma factorial
+negativo reproducido manualmente en las cuatro arquitecturas; MASE de las 16
+celdas nuevas coincide con sus arrays (maxima diferencia 4.44e-16). Conservar
+mediciones: corregir composicion de cierres sin reentrenar toda E0.
+Se detectaron seis problemas: validacion perdida al unir cierres, redefinicion
+de R0/R1/R2, ventanas E1 ajenas a roles/huecos, pruebas RL fuera del controlador,
+resolucion espectral insuficiente y discrepancia DST aun sin resolver.
+R0/R1/R2 vuelven al contrato de la propuesta: detector aleatorio entrenable,
+preentrenado congelado, preentrenado ajustable; resto entrenable en los tres.
+[Dictamen](../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md) y
+[orden vigente RP25-RP32](../handoffs/MUSASHI_PROGRAM_RP25_RP32_2026_09_19.md).
+Tras los tests correctivos, se autoriza condicionalmente el piloto publico
+household E1 de desarrollo y se prueba el controlador semanal real por separado.
+Sin decision pendiente del owner; sin reserva, live ni entrenamiento RL en esta
+ronda. H-CORE y la evaluacion cientifica RL mantienen sus dependencias.
+Esta auditoria no escribio al cubo ni reentreno; no hizo conciliacion viva.

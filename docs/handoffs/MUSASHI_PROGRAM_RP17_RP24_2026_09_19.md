@@ -1,4 +1,7 @@
-# Orden vigente RP17-RP24: corregir inferencia ML y avanzar con datos adecuados
+# Orden historica RP17-RP24: corregir inferencia ML y avanzar con datos adecuados
+
+Retorno `de8ae34` revisado. Siguiente orden vigente:
+[RP25-RP32](MUSASHI_PROGRAM_RP25_RP32_2026_09_19.md). Conservar esta como historia.
 
 Fecha: 2026-09-19. Ejecutor: Satoshi. Revisor: Musashi.
 Base revisada: `6f6c1a00bf2fe8e285f821dfb72d12505a9049ed`.
