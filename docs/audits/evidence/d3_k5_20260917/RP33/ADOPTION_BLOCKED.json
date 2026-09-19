@@ -1,0 +1,20 @@
+{
+ "schema": "df_public_lake_adoption_blocked.v1",
+ "at": "2026-09-19",
+ "what_was_attempted": "the adoption step of RP33: write the successor data-gov configuration and restart the data-gov service only",
+ "exact_operation": [
+  "write /home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json (backup taken first, byte-identical restore command recorded)",
+  "systemctl --user restart crispdm-data-gov.service"
+ ],
+ "exact_command": "python tools/df_public_lake_adopt.py adopt --state-dir ~/.local/state/crispdm-data-foundation/satoshi-public-lake-adoption-<UTC stamp>",
+ "refused_by": "the execution environment's auto-mode classifier, category Modify Shared Resources",
+ "refusal_is": "a tool-environment permission denial, NOT a refusal by data-gov, NOT a missing owner authorisation and NOT a scientific decision",
+ "not_worked_around": "no alternative path was used to change the service or its configuration; nothing was written to the production config and no service was restarted, started or stopped",
+ "already_proven_without_it": {
+  "rehearsal": "docs/audits/evidence/d3_k5_20260917/RP33/REHEARSAL.json — the successor configuration serves both panels on a disposable data-gov plus a disposable DuckDB cube: campaign registered before any read, whole-resource AS_IS delivery, delivered bytes equal to the characterised digests, availability UNDECLARED in the delivery, and every date range refused at campaign registration by the holdout policy",
+  "change_is_additive": "config_is_additive() refuses to proceed unless the four previous lakes and every other policy and key are byte-identical",
+  "rollback": "the backup file and the exact restore command are written into the receipt before the change"
+ },
+ "consequence_declared": "RP38's successor pilot is SEALED but NOT EXECUTED: no scientific training was launched while the governance prerequisite is unresolved, exactly as the order requires",
+ "what_unblocks_it": "one approval of that single command by the owner (or an allow rule for it); the rehearsal, backup, post-check and rollback are already implemented and green"
+}
