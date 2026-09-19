@@ -737,10 +737,10 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
 def close(root: Path) -> dict:
     root = Path(root)
     design = json.loads((root / "DESIGN.json").read_text())
-    reports = sorted(root.glob("REPORT*.json"))
+    reports = [root / "REPORT.json"] if (root / "REPORT.json").is_file() else sorted(root.glob("REPORT*.json"))
     if not reports:
         raise SystemExit("REFUSED: no REPORT in the root")
-    report = json.loads(reports[-1].read_text())
+    report = json.loads(reports[-1].read_text())          # the full run's report governs; REPORT.pilot.json is only the cost pilot
     cells = {}
     for c in design["cells"] + design["pilots"]:
         p = root / "attempts" / c["cell_id"] / "cell.json"
