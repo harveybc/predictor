@@ -157,7 +157,7 @@ def test_RP38_an_absent_or_silent_governance_host_blocks_new_work(stack, tmp_pat
     with pytest.raises(G.GovernanceUnavailable, match="unreachable|not registered"):
         G.acquire(run_id="t", root=root, lake="public_panels", resource=stack["resource"],
                   gov_url=f"http://127.0.0.1:{_free_port()}", api_key_file=KEY,
-                  units=["u1"], design_sha256=design["design_sha256"], cache_dir=root / "cache")
+                  design_sha256=design["design_sha256"], cache_dir=root / "cache")
     assert not (root / "DELIVERIES.json").exists()
 
 
@@ -166,7 +166,7 @@ def test_RP38_a_resource_the_lake_does_not_serve_blocks_new_work(stack, tmp_path
     design = _design(stack, root)
     with pytest.raises((G.GovernanceUnavailable, SystemExit)):
         G.acquire(run_id="t", root=root, lake="public_panels", resource="uci_501_beijing/panel.parquet",
-                  gov_url=stack["url"], api_key_file=KEY, units=["u1"],
+                  gov_url=stack["url"], api_key_file=KEY,
                   design_sha256=design["design_sha256"], cache_dir=root / "cache")
 
 
@@ -174,18 +174,24 @@ def test_RP38_the_campaign_precedes_the_data_and_the_run_consumes_the_delivered_
     root = tmp_path / "route"
     design = _design(stack, root)
     doc = G.acquire(run_id="rp38-route", root=root, lake="public_panels", resource=stack["resource"],
-                    gov_url=stack["url"], api_key_file=KEY,
-                    units=[c["cell_id"] for c in design["pilots"] + design["cells"]],
+                    unit_id="prepare", gov_url=stack["url"], api_key_file=KEY,
                     design_sha256=design["design_sha256"], cache_dir=root / "cache",
                     expect_sha256=stack["digest"])
-    assert doc["delivery"]["sha256"] == stack["digest"] and doc["bytes_on_disk_sha256"] == stack["digest"]
-    assert doc["delivery"]["availability_use"] == "UNDECLARED" and doc["campaign_sha256"]
+    first = doc["units"]["prepare"]
+    assert first["sha256"] == stack["digest"] and first["bytes_on_disk_sha256"] == stack["digest"]
+    assert first["availability_use"] == "UNDECLARED" and first["campaign_sha256"] and not first["cached"]
+    # a second unit gets its own campaign and delivery, served from the verified cache: reuse is measured
+    doc = G.acquire(run_id="rp38-route", root=root, lake="public_panels", resource=stack["resource"],
+                    unit_id="ae_s1", gov_url=stack["url"], api_key_file=KEY,
+                    design_sha256=design["design_sha256"], cache_dir=root / "cache", expect_sha256=stack["digest"])
+    assert doc["units"]["ae_s1"]["cached"] and doc["transfer"]["transferred_units"] == 1 and doc["transfer"]["cache_reused_units"] == 1
+    assert doc["units"]["ae_s1"]["campaign_sha256"] != first["campaign_sha256"]
     data = P.prepare(design, root)
     assert data["data_access"] == "GOVERNED_DELIVERY" and data["panel_sha256"] == stack["digest"]
-    assert data["campaign_sha256"] == doc["campaign_sha256"] and data["delivery"]["delivery_id"] == doc["delivery"]["delivery_id"]
+    assert data["campaign_sha256"] == first["campaign_sha256"] and data["delivery"]["delivery_id"] == first["delivery_id"]
     # the delivered bytes are the ones on disk; if they change afterwards the run refuses to continue
     shutil.copy2(root / "DELIVERIES.json", root / "DELIVERIES.backup.json")
-    delivered = Path(doc["delivery"]["path"])
+    delivered = Path(first["path"])
     tampered = tmp_path / "tampered.parquet"
     shutil.copy2(delivered, tampered)
     with open(delivered, "ab") as fh:
@@ -194,14 +200,15 @@ def test_RP38_the_campaign_precedes_the_data_and_the_run_consumes_the_delivered_
         G.require_delivery(root, design)
     shutil.copy2(tampered, delivered)
     assert G.require_delivery(root, design)["delivery"]["sha256"] == stack["digest"]
+    with pytest.raises(G.GovernanceUnavailable, match="has no governed delivery of its own"):
+        G.require_delivery(root, design, "R0_s1")
 
 
 def test_RP38_a_units_terminal_reaches_the_accounting_and_the_campaign_reconciles(stack, tmp_path):
     root = tmp_path / "terminal"
     design = _design(stack, root)
-    units = ["ae_s1"]
     G.acquire(run_id="rp38-terminal", root=root, lake="public_panels", resource=stack["resource"],
-              gov_url=stack["url"], api_key_file=KEY, units=units, design_sha256=design["design_sha256"],
+              unit_id="ae_s1", gov_url=stack["url"], api_key_file=KEY, design_sha256=design["design_sha256"],
               cache_dir=root / "cache", expect_sha256=stack["digest"])
     R = _load("df_utility_run")
     terminal = R._terminal(status="COMPLETED", reason=None, cost={"wall_seconds": 1.0, "cpu_seconds": 1.0},

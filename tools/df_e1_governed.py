@@ -62,26 +62,34 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
-def acquire(*, run_id: str, root: Path, lake: str, resource: str, role: str = "panel",
-            gov_url: str = DEFAULT_GOV, api_key_file: Path, units: list, design_sha256: str,
-            cache_dir: Path | None = None, expect_sha256: str | None = None) -> dict:
-    """Register the campaign, take the delivery and record it. Returns the acquisition receipt."""
+def acquire(*, run_id: str, root: Path, lake: str, resource: str, unit_id: str = "prepare", role: str = "panel",
+            gov_url: str = DEFAULT_GOV, api_key_file: Path, design_sha256: str,
+            cache_dir: Path | None = None, expect_sha256: str | None = None, units: list | None = None) -> dict:
+    """One campaign and one delivery PER UNIT (the shape data-gov completes: a delivery binds to
+    campaign, actor and unit, so a unit without its own verified delivery cannot complete).
+
+    The first unit transfers the bytes; the next ones are served from the verified cache, and the
+    receipt records which, so transfer and reuse are measured instead of assumed.
+    """
     GR = _load("governed_run")
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     receipt_path = root / "DELIVERIES.json"
-    if receipt_path.is_file():
-        prior = json.loads(receipt_path.read_text())
-        if prior.get("design_sha256") != design_sha256 or prior.get("resource") != resource:
-            raise SystemExit("REFUSED: this root already holds a delivery of another design or resource")
-        return prior
+    doc = json.loads(receipt_path.read_text()) if receipt_path.is_file() else {
+        "schema": SCHEMA, "at": now_iso(), "host": os.uname().nodename, "run_id": run_id,
+        "design_sha256": design_sha256, "lake": lake, "resource": resource, "role": role, "units": {},
+        "order": "each unit's campaign is registered BEFORE it reads anything; its delivery is verified before it runs"}
+    if doc.get("design_sha256") != design_sha256 or doc.get("resource") != resource:
+        raise SystemExit("REFUSED: this root already holds deliveries of another design or resource")
+    if unit_id in doc["units"]:
+        return doc
     code_identity = GR.strict_code_identity(REPO)
-    key = f"{run_id}-e1-data"
+    key = f"{run_id}-{unit_id}-data"
     token = Path(api_key_file).read_text().strip()
     gov = GR.GovHttp(gov_url, token, key)
     campaign = {"schema": "governed_campaign.v1", "campaign_key": key, "classification": "NON_GOVERNING",
                 "project": "predictor", "code_identity": code_identity, "config_sha256": design_sha256,
-                "input_mode": "DATASETS", "synthetic_spec_sha256": None, "units": list(units),
+                "input_mode": "DATASETS", "synthetic_spec_sha256": None, "units": [unit_id],
                 "datasets": [{"lake": lake, "resource": resource, "role": role, "from": None, "to": None}],
                 "terminal_lake": "olap_cube"}
     try:
@@ -92,9 +100,8 @@ def acquire(*, run_id: str, root: Path, lake: str, resource: str, role: str = "p
         raise GovernanceUnavailable(f"REFUSED: the campaign was not registered (http {status}: {body.get('error')}); "
                                     "no data is read and no unit runs")
     sha = body["campaign_sha256"]
-    unit = list(units)[0]
     try:
-        http, info = gov.governed_download(sha, unit, lake, resource, role,
+        http, info = gov.governed_download(sha, unit_id, lake, resource, role,
                                            str(cache_dir or (Path.home() / ".cache/data-gov")))
     except GR.GovernedRunError as exc:
         raise GovernanceUnavailable(f"REFUSED: the delivery failed ({exc}); no new work starts") from None
@@ -104,52 +111,39 @@ def acquire(*, run_id: str, root: Path, lake: str, resource: str, role: str = "p
         raise SystemExit("REFUSED: the delivered bytes on disk are not the ones the stream declared")
     if expect_sha256 and on_disk != expect_sha256:
         raise SystemExit(f"REFUSED: the delivered panel {on_disk} is not the characterised {expect_sha256}")
-    doc = {"schema": SCHEMA, "at": now_iso(), "host": os.uname().nodename, "run_id": run_id,
-           "campaign_key": key, "campaign_sha256": sha, "code_identity": code_identity,
-           "design_sha256": design_sha256, "lake": lake, "resource": resource, "role": role,
-           "delivery": {"delivery_id": info.get("delivery_id"), "sha256": info["sha256"], "bytes": info.get("bytes"),
-                        "cached": info.get("cached"), "verification_state": info.get("verification_state"),
-                        "availability_use": info.get("availability_use"), "availability_label": info.get("availability_label"),
-                        "availability_contract_sha256": info.get("availability_contract_sha256"),
-                        "path": str(path)},
-           "bytes_on_disk_sha256": on_disk,
-           "order": "campaign registered BEFORE any preparation or fit; the panel was then delivered and verified"}
+    doc["units"][unit_id] = {"campaign_key": key, "campaign_sha256": sha, "code_identity": code_identity,
+                             "at": now_iso(), "host": os.uname().nodename,
+                             "delivery_id": info.get("delivery_id"), "sha256": info["sha256"],
+                             "bytes": info.get("bytes"), "cached": bool(info.get("cached")),
+                             "verification_state": info.get("verification_state"),
+                             "availability_use": info.get("availability_use"),
+                             "availability_label": info.get("availability_label"),
+                             "availability_contract_sha256": info.get("availability_contract_sha256"),
+                             "path": str(path), "bytes_on_disk_sha256": on_disk}
+    doc["transfer"] = {"transferred_units": sum(1 for u in doc["units"].values() if not u["cached"]),
+                       "cache_reused_units": sum(1 for u in doc["units"].values() if u["cached"]),
+                       "bytes_first_transfer": next((u["bytes"] for u in doc["units"].values() if not u["cached"]), None)}
     receipt_path.write_text(json.dumps(doc, indent=1, default=str))
-    return doc
-
-
-def require_delivery(root: Path, design: dict) -> dict:
-    """What `prepare` calls: the run may only read a panel that was delivered to it."""
-    path = Path(root) / "DELIVERIES.json"
-    if not path.is_file():
-        raise GovernanceUnavailable(
-            "REFUSED: this run has no governed delivery. The panel is a governed resource and the run reads it only "
-            "through data-gov; run `df_e1_governed.py acquire` first (and, if the resource is not served yet, the "
-            "lake registration is the missing object, not the science).")
-    doc = json.loads(path.read_text())
-    if doc.get("design_sha256") != design["design_sha256"]:
-        raise SystemExit("REFUSED: the delivery in this root belongs to another design")
-    delivered = Path(doc["delivery"]["path"])
-    if not delivered.is_file():
-        raise GovernanceUnavailable("REFUSED: the delivered bytes are gone from the cache; nothing is read from anywhere else")
-    if sha_file(delivered) != doc["delivery"]["sha256"]:
-        raise SystemExit("REFUSED: the delivered bytes changed after the delivery was confirmed")
     return doc
 
 
 def report_terminal(root: Path, unit_id: str, terminal: dict, *, gov_url: str = DEFAULT_GOV,
                     api_key_file: Path, outbox_dir: str | None = None) -> dict:
-    """Terminal -> outbox -> accounting, with the campaign of this run's delivery."""
+    """Terminal -> outbox -> accounting, under THIS unit's own campaign and delivery."""
     GR = _load("governed_run")
     doc = json.loads((Path(root) / "DELIVERIES.json").read_text())
-    gov = GR.GovHttp(gov_url, Path(api_key_file).read_text().strip(), doc["campaign_key"])
+    unit = (doc.get("units") or {}).get(unit_id)
+    if unit is None:
+        raise GovernanceUnavailable(f"REFUSED: unit {unit_id!r} has no delivery, so it has no terminal to report")
+    gov = GR.GovHttp(gov_url, Path(api_key_file).read_text().strip(), unit["campaign_key"])
     outbox = GR.TerminalOutbox(Path(os.path.expanduser(outbox_dir or GR.DEFAULT_OUTBOX)).resolve())
-    outbox.put({"campaign_sha256": doc["campaign_sha256"], "unit_id": unit_id, "terminal": terminal})
+    body = {**terminal, "deliveries": sorted({unit["delivery_id"]})}
+    outbox.put({"campaign_sha256": unit["campaign_sha256"], "unit_id": unit_id, "terminal": body})
     flushed = GR._send_pending(gov, outbox)
-    status, body = gov.reconcile_campaign(doc["campaign_sha256"])
-    return {"flushed": flushed, "reconciliation": {"http": status, "missing_units": body.get("missing_units"),
-                                                   "accounting_only": body.get("accounting_only"),
-                                                   "lake_only": body.get("lake_only")}}
+    status, rbody = gov.reconcile_campaign(unit["campaign_sha256"])
+    return {"flushed": flushed, "campaign_sha256": unit["campaign_sha256"],
+            "reconciliation": {"http": status, "missing_units": rbody.get("missing_units"),
+                               "accounting_only": rbody.get("accounting_only"), "lake_only": rbody.get("lake_only")}}
 
 
 def main(argv=None) -> int:
@@ -169,11 +163,12 @@ def main(argv=None) -> int:
     if a.command == "check":
         print(json.dumps(require_delivery(a.root, design), indent=1, default=str))
         return 0
-    units = [c["cell_id"] for c in design["pilots"] + design["cells"]]
-    doc = acquire(run_id=a.run_id or "e1-run", root=a.root, lake=a.lake, resource=a.resource, role=a.role,
-                  gov_url=a.gov_url, api_key_file=a.api_key_file, units=units,
-                  design_sha256=design["design_sha256"], cache_dir=a.cache_dir,
-                  expect_sha256=design["governed_bytes"]["sha256"])
+    doc = None
+    for unit_id in ["prepare"] + [c["cell_id"] for c in design["pilots"] + design["cells"]]:
+        doc = acquire(run_id=a.run_id or "e1-run", root=a.root, lake=a.lake, resource=a.resource, role=a.role,
+                      unit_id=unit_id, gov_url=a.gov_url, api_key_file=a.api_key_file,
+                      design_sha256=design["design_sha256"], cache_dir=a.cache_dir,
+                      expect_sha256=design["governed_bytes"]["sha256"])
     print(json.dumps(doc, indent=1, default=str))
     return 0
 
