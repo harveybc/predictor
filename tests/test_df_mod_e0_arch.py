@@ -111,9 +111,23 @@ def test_RP14_a_DX_cell_runs_the_profiles_arm_under_the_diagnostic_and_a_success
     rec = E.run_cell({"cell_id": "dx", "hypothesis": "DX", "level": 3, "r": 1, "seed": 1, "arm": "profiles", "role": "CELL", "arch": "0",
                       "diagnostic": "trend_event", "max_updates_override": 4, "descriptors": False}, tmp_path / "dx")
     assert rec["diagnostic"] == "trend_event" and rec["arch"] == "0" and rec["assignment_is_profile"] and rec["scores"]["validation"]["model"]["status"] == "MEDIDO"
-    d = AD.build(levels=[0, 3], replicates=[1], random_assignments=1, max_updates=6, only_hypotheses=["DX"], hosts=["COORDINATOR"])
-    assert d["cells_total"] == 8 and all(c["hypothesis"] == "DX" and c["host_role"] == "COORDINATOR" for c in d["cells"])
-    assert CLOSE.population(d)["members"] == [c["cell_id"] for c in d["cells"]]
+    d = AD.build(levels=[0, 3], replicates=[1], random_assignments=1, max_updates=6, only_hypotheses=["DX"], hosts=["COORDINATOR"], successor_of="p" * 64)
+    assert d["cells_total"] == 8 and all(c["hypothesis"] == "DX" and c["host_role"] == "COORDINATOR" for c in d["cells"]) and d["pilots"] == []
+    assert CLOSE.population(d)["members"] == [c["cell_id"] for c in d["cells"]] and CLOSE.population(d)["pilot_ids"] == []
+    # the successor inherits the parent's measured pilot costs, checked by identity; without them it refuses
+    parent = _design()
+    report, gov, trace, children = _run(tmp_path, parent, root=tmp_path / "parent")
+    d2 = AD.build(levels=[0, 3], replicates=[1], random_assignments=1, max_updates=6, only_hypotheses=["DX"], hosts=["COORDINATOR"], successor_of=parent["design_sha256"])
+    with pytest.raises(RUN.R.Refusal):
+        _run(tmp_path, d2, root=tmp_path / "dx_norep")
+    gov2 = ORDER.StubGov()
+    trace2, children2 = [], []
+    rep2 = RUN.run_mod_e0(d2, root=tmp_path / "dx", run_id="dx", gov=gov2, trace=lambda e, **f: trace2.append((e, f)), GR=GR, outbox=ORDER.StubOutbox(gov2),
+                          OB=DEVT.StubOB(), CE=DEVT.StubCE(), code_identity={"kind": "git_commit", "value": "0" * 40},
+                          budgets={"task_memory_bytes": 1, "wall_seconds": 5.0, "cpu_seconds": 5}, cap_seconds=10 ** 9, already_spent=0.0, pilot_updates=10,
+                          isolated=RUNT._stub(children2), pilot_costs_from={"run_id": "e0", "design_sha256": parent["design_sha256"], "cost_pilot": report["cost_pilot"]})
+    assert rep2["stopped"] is None and len(rep2["cells"]) == 8 and all(k.startswith("DX__") for k in children2) and len(children2) == 8
+    assert rep2["cost_pilot"]["inherited_from_run"] == "e0" and "pilots-inherited" in [e for e, _ in trace2]
 
 
 def test_RP14_the_diagnostic_condition_adds_a_known_deterministic_term_the_oracle_sees():

@@ -112,7 +112,7 @@ def population(design: dict) -> dict:
     if E.sha_obj(body) != design.get("design_sha256"):
         raise ClosureRefusal("REFUSED: the design does not seal itself (self-digest differs)")
     expected_cells = AD.cells(design) if v2 else D.cells(design)
-    if v2 and design.get("pilots") != AD.pilots(design):
+    if v2 and design.get("pilots") != ([] if design.get("only_hypotheses") else AD.pilots(design)):
         raise ClosureRefusal("REFUSED: the design's pilots are not its own derivation")
     if expected_cells != design.get("cells") or design.get("cells_total") != len(expected_cells):
         raise ClosureRefusal("REFUSED: the design's cells are not its own enumeration (levels/replicates/assignments/h3_level)")
@@ -124,7 +124,7 @@ def population(design: dict) -> dict:
     for c in expected_cells:
         if c.get("depends_on") and c["depends_on"] not in ids:
             raise ClosureRefusal(f"REFUSED: {c['cell_id']} depends on {c['depends_on']!r}, not a member")
-    pilots = AD.pilots(design) if v2 else pilots_of(design)
+    pilots = (design.get("pilots") or []) if v2 else pilots_of(design)
     return {"design_sha256": design["design_sha256"], "successor_of": design.get("successor_of"), "successor_reason": design.get("successor_reason"), "v2": v2,
             "cells": expected_cells, "members": ids, "pilots": pilots, "pilot_ids": [p["cell_id"] for p in pilots],
             "campaigns": {"-mod-e0-cells": ids, "-mod-e0-cost-pilot": [p["cell_id"] for p in pilots if p["campaign"] == "-mod-e0-cost-pilot"],
@@ -624,6 +624,9 @@ def live_closure(root: Path, local: dict, gov, warehouse_url: str, token: str, b
         reg = registrations.get(key)
         camp = {"key": key, "registered": bool(reg), "members_by_design": members, "problems": []}
         out["campaigns"][key] = camp
+        if not members and not reg:
+            camp["note"] = "no member by design (a hypothesis-only successor has no pilots)"
+            continue
         if not reg:
             camp["problems"].append("campaign not registered by this run")
             out["population_equal"] = out["all_equal"] = False

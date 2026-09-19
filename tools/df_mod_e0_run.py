@@ -307,7 +307,8 @@ def _run_waves(cells: list, done: dict, report: dict, run_one, parallel: int, lo
 
 def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox, OB, CE, code_identity: dict, budgets: dict,
                cap_seconds: float, already_spent: float, pilot_updates: int, isolated=None, pilot_only: bool = False,
-               role: str | None = None, execute_only: bool = False, report_collected: bool = False, parallel: int = 1) -> dict:
+               role: str | None = None, execute_only: bool = False, report_collected: bool = False, parallel: int = 1,
+               pilot_costs_from: dict | None = None) -> dict:
     """`role`: this host's role (a v2 design deals cells to roles); `execute_only`: a worker runs its
     cells with no governance (the coordinator registered every unit before and reports the collected
     outcomes after); `report_collected`: the coordinator emits the terminals of delegated cells whose
@@ -428,6 +429,17 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
                 "design_sha256": design["design_sha256"], "run_id": run_id, **{k: cell[k] for k in ("arch", "donor", "diagnostic") if k in cell}, **extra}
     # --- cost pilots: one per arm type (per architecture in v2), no test access, small update ceiling ------
     pilot_key = f"{run_id}-mod-e0-cost-pilot"
+    inherited = None
+    if v2 and not design.get("pilots"):
+        # a hypothesis-only successor (design.only_hypotheses): its parent's MEASURED pilot costs are inherited, named and checked
+        if not pilot_costs_from or not pilot_costs_from.get("cost_pilot"):
+            raise R.Refusal("REFUSED: this design has no pilots; pass the parent's report (--pilot-costs-from) with its measured costs")
+        if pilot_costs_from.get("design_sha256") != design.get("successor_of"):
+            raise R.Refusal("REFUSED: --pilot-costs-from is not the report of this design's parent")
+        inherited = pilot_costs_from["cost_pilot"]
+        report["cost_pilot"] = {"inherited_from_run": pilot_costs_from.get("run_id"), "parent_design_sha256": pilot_costs_from.get("design_sha256"),
+                                "measured": inherited}
+        trace("pilots-inherited", run=pilot_costs_from.get("run_id"), pilots=len(inherited))
     if v2:
         pilots = [c for c in design["pilots"] if c["campaign"] == "-mod-e0-cost-pilot"]
         arm_pilots = [c for c in design["pilots"] if c["campaign"] == "-mod-e0-cost-pilot-arm"]
@@ -436,8 +448,8 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
                   {"cell_id": "pilot__H3_extractor", "hypothesis": "H3", "level": design["h3_level"], "r": 1, "seed": 1, "arm": "extractor"}]
         arm_pilots = [{"cell_id": "pilot__H3_sequence", "hypothesis": "H3", "level": design["h3_level"], "r": 1, "seed": 1, "arm": "sequence",
                        "depends_on": "pilot__H3_extractor"}]
-    pilot_sha = register(pilot_key, [c["cell_id"] for c in pilots])
-    measured = {}
+    pilot_sha = register(pilot_key, [c["cell_id"] for c in pilots]) if pilots else None
+    measured = dict(inherited or {})
     try:
         for c in pilots:
             out = child(pilot_sha, pilot_key, c["cell_id"], job_for(c, max_updates_override=int(pilot_updates), role="COST_PILOT"),
@@ -453,8 +465,9 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
             measured[c["cell_id"]] = _measured_cost(out, rec)
             report["cost_pilot"][c["cell_id"]] = measured[c["cell_id"]]
         # the H3 arm children (frozen extractor) at the pilot's size, chained to their pilot extractor
-        register(pilot_key + "-arm", [c["cell_id"] for c in arm_pilots])
-        arm_sha = registrations[pilot_key + "-arm"]["campaign_sha256"]
+        if arm_pilots:
+            register(pilot_key + "-arm", [c["cell_id"] for c in arm_pilots])
+        arm_sha = registrations[pilot_key + "-arm"]["campaign_sha256"] if arm_pilots else None
         for arm in arm_pilots:
             out = child(arm_sha, pilot_key + "-arm", arm["cell_id"], job_for(arm, max_updates_override=int(pilot_updates), role="COST_PILOT",
                         extractor_weights=str(root / "attempts" / arm["depends_on"] / "weights.weights.h5"), depends_on=arm["depends_on"]),
@@ -593,6 +606,7 @@ def main(argv=None) -> int:
     parser.add_argument("--execute-only", action="store_true", help="RP14 worker: run this role's cells without governance (registered before, reported after)")
     parser.add_argument("--report-collected", action="store_true", help="RP14 coordinator: emit the terminals of collected delegated attempts")
     parser.add_argument("--parallel", type=int, default=1, help="concurrent children on this host (memory-aware: task memory x parallel must fit)")
+    parser.add_argument("--pilot-costs-from", type=Path, default=None, help="parent run's REPORT.json whose measured pilot costs a hypothesis-only successor inherits")
     args = parser.parse_args(argv)
     design = json.loads(args.design.read_text())
     if design.get("schema") not in (D.DESIGN_SCHEMA, AD.DESIGN_SCHEMA) or E.sha_obj({k: v for k, v in design.items() if k != "design_sha256"}) != design["design_sha256"]:
@@ -622,7 +636,8 @@ def main(argv=None) -> int:
     report = run_mod_e0(design, root=args.root, run_id=args.run_id, gov=gov, trace=trace, GR=GR, outbox=outbox, OB=OB, CE=CE,
                         code_identity=code_identity, budgets=budgets, cap_seconds=args.cpu_cap_seconds, already_spent=args.already_spent,
                         pilot_updates=args.pilot_updates, pilot_only=args.pilot_only, role=args.role, execute_only=args.execute_only,
-                        report_collected=args.report_collected, parallel=args.parallel)
+                        report_collected=args.report_collected, parallel=args.parallel,
+                        pilot_costs_from=json.loads(args.pilot_costs_from.read_text()) if args.pilot_costs_from else None)
     trace_name = "TRACE.json" if not (args.root / "TRACE.json").exists() else f"TRACE.{args.role}.{R.now_iso().replace(':', '')}.json"
     (args.root / trace_name).write_text(json.dumps(trace_log, indent=1, default=str))
     print(json.dumps({"stopped": report["stopped"], "spent_cpu_seconds": report.get("spent_cpu_seconds"),

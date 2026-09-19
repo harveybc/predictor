@@ -93,7 +93,7 @@ def build(*, levels=(0, 1, 2, 3), replicates=(1, 2, 3), random_assignments=3, h3
                                          "else its effects are reported as NOT_INTERPRETABLE", "reach tests pass", "cost pilots complete without test access"],
            "budget": BUDGET, "review_table": [{"id": i, "obligation": o, "evidence": e, "status": "NOT_TESTED"} for i, o, e in D1.REVIEW],
            "design_sha256": ""}
-    doc["pilots"] = pilots(doc)
+    doc["pilots"] = [] if only_hypotheses else pilots(doc)     # a hypothesis-only successor inherits its parent's measured pilot costs
     doc["cells"] = cells(doc)
     doc["cells_total"] = len(doc["cells"])
     doc["cells_by_role"] = {r: sum(1 for c in doc["cells"] if c["host_role"] == r) for r in hosts}
