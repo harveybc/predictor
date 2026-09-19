@@ -1,14 +1,24 @@
 {
   "schema": "research_program_method_state.v1",
-  "updated_on": "2026-09-18",
+  "updated_on": "2026-09-19",
   "current_stage": "external_review",
   "completed_stages": [
     "discovery",
-    "requirements"
+    "requirements",
+    "acceptance_test_design",
+    "architecture",
+    "system_test_design",
+    "component_design",
+    "integration_test_design",
+    "unit_test_design",
+    "implementation",
+    "unit_verification",
+    "integration_verification",
+    "system_verification"
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "RP1_RP8_REVIEWED_CORRECTIONS_ORDERED_RP9_RP16",
+  "handoff_status": "RP9_RP16_RETURN_PUBLISHED_REVIEW_REQUESTED",
   "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
   "architecture_comparison": {
     "reference": "ARCH-A",
@@ -19,22 +29,28 @@
       "ARCH-0"
     ],
     "selected_winner": null,
-    "adoption": "IN_NEXT_DEVELOPMENT_SUCCESSOR_RP9_RP16"
+    "adoption": "INFORMATIVE_DEV_STAGE_EXECUTED_RP14_NO_WINNER_DECLARED",
+    "stage_design": "../../audits/evidence/d3_k5_20260917/RP14_ARCH_STAGE_DESIGN.json",
+    "full_design_not_launched": "../../audits/evidence/d3_k5_20260917/RP14_ARCH_DESIGN.json"
   },
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
-    "RP9-RP12: adopt review, repair verification and descriptors; reuse original results within demonstrated scope",
-    "RP13: complete metric coverage before new training; backfill only observed or reconstructible facts",
-    "RP14: governed bounded ARCH-A/B/C/0 development comparison with matched mechanism controls",
-    "RP15-RP16: concrete E1 bank and RL demand, complete closure; no reserve or live"
+    "Musashi: review RP9-RP16 (closure v2, backfill, descriptor v2 reanalysis, ARCH stage effects and adequacy)",
+    "after review: full ARCH factorial only under a new budget; E1 development on the selected public families; E3 under the 13C contract once the owner decides the business items",
+    "no reserve, no live, no financial scoring; H-CORE stays after E1 and the verified frozen prefix"
   ],
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
     "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
     "orders": "../../handoffs/MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md",
     "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-    "external_review": "../../audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md"
+    "external_review": "../../audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md",
+    "design_sheet": "13A_MOD_E0_DEV_DESIGN_SHEET_2026_09_18.md",
+    "next_steps": "13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md",
+    "e3_contract": "13C_E3_WEEKLY_CYCLE_CONTRACT_2026_09_18.md",
+    "e1_families": "E1_FAMILIES.json",
+    "return": "../../audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md"
   },
   "proposal_coverage": {
     "P-MOD": [
@@ -102,36 +118,46 @@
       "status": "EXECUTED",
       "depends_on": [],
       "evidence": [
-        "docs/audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md",
-        "docs/audits/evidence/RP_REVIEW_2026_09_18/results.json",
-        "https://github.com/harveybc/predictor/blob/2347c7b/docs/audits/work_plan/SATOSHI_PROGRAM_RP1_RP8_RETURN_2026_09_18.md"
+        "../../audits/evidence/d3_k5_20260917/RP11_MOD_E0_V2_CLOSE_LOCAL.json",
+        "../../audits/evidence/d3_k5_20260917/RP10_MOD_E0_V2_CLOSE_LIVE.json",
+        "../../audits/evidence/d3_k5_20260917/RP12_PROFILE_REANALYSIS.json"
       ],
-      "next_action": "Repair closure and profile formula, preserve original pilot and descriptive effects; no blanket restart",
+      "next_action": "external review of the corrected closure; results reused within the demonstrated scope (descriptor v2 leaves every consumed datum unchanged)",
       "deliverable": "H2 profile/random effects and H3 sequence/summary effects with matched controls and cost"
     },
     {
       "id": "MOD-E0-CLOSURE",
       "owner": "Satoshi",
-      "status": "DESIGNED",
+      "status": "EXECUTED",
       "depends_on": [
         "MOD-E0-DEV"
       ],
       "evidence": [
-        "docs/audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md"
+        "../../audits/evidence/d3_k5_20260917/RP11_MOD_E0_V2_CLOSE_LOCAL.json",
+        "../../audits/evidence/d3_k5_20260917/RP13_MOD_E0_V2_CLOSE_LIVE_BACKFILL.json",
+        "../../audits/evidence/d3_k5_20260917/RP11_MUTANTS.json",
+        "../../audits/evidence/d3_k5_20260917/RP9_PRE_REVIEW_COUNTEREXAMPLES.json"
       ],
-      "next_action": "RP10-RP13: exact population, task reconstruction, inference, metrics and independent warehouse reconciliation",
+      "next_action": "review; the closure tool is the one every MOD campaign uses from now on",
       "deliverable": "Corrected closure, descriptor impact proof and honest metric coverage with preserved history"
     },
     {
       "id": "MOD-ARCH-COMPARE",
       "owner": "Satoshi",
-      "status": "NOT_STARTED",
+      "status": "EXECUTED",
       "depends_on": [
         "MOD-E0-DEV",
         "MOD-E0-CLOSURE"
       ],
-      "evidence": [],
-      "next_action": "RP14: test adequate matched ARCH-A/B/C/0 receivers, seal bounded successor then execute",
+      "evidence": [
+        "../../audits/evidence/d3_k5_20260917/RP14_ARCH_STAGE_DESIGN.json",
+        "../../audits/evidence/d3_k5_20260917/RP14_ARCH_STAGE_REPORT_COLLECTED.json",
+        "../../audits/evidence/d3_k5_20260917/RP14_ARCH_STAGE_CLOSE_LOCAL.json",
+        "../../audits/evidence/d3_k5_20260917/RP14_ARCH_STAGE_CLOSE_LIVE.json",
+        "../../audits/evidence/d3_k5_20260917/RP14_ARCH_STAGE_EFFECTS.json",
+        "../../audits/evidence/d3_k5_20260917/RP14_ARCH_FULL_PLAN_NOT_LAUNCHED.json"
+      ],
+      "next_action": "review of the informative stage; the full factorial needs a new budget; no winner is declared by this stage",
       "deliverable": "Adequacy, H2/H3 effects by architecture and regime, uncertainty, learning curves and total cost; no universal winner presumed"
     },
     {
@@ -143,9 +169,10 @@
         "MOD-ARCH-COMPARE"
       ],
       "evidence": [
-        "https://github.com/harveybc/predictor/blob/2347c7b/docs/tres_temas_entrevista/program_v3/13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
+        "E1_FAMILIES.json",
+        "13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
       ],
-      "next_action": "RP15: replace criteria-only draft with explicit census-derived family manifest; final selection after architecture development",
+      "next_action": "after review: development on the two DEV families; reserve candidates stay closed; source deficit to be resolved by engineering",
       "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan"
     },
     {
@@ -188,9 +215,10 @@
       "status": "DESIGNED",
       "depends_on": [],
       "evidence": [
-        "https://github.com/harveybc/predictor/blob/2347c7b/docs/tres_temas_entrevista/program_v3/13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
+        "13C_E3_WEEKLY_CYCLE_CONTRACT_2026_09_18.md",
+        "13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
       ],
-      "next_action": "RP15: verify executable demand per config and derive weekly contract; historical defaults are not adopted business choices",
+      "next_action": "owner decides the asset universe, real capital/exposure, retraining schedule and funding model (13C); everything else proceeds under declared values",
       "deliverable": "Observations/targets/actions, availability, weekly cycle, cost and data gaps"
     },
     {
@@ -270,5 +298,79 @@
     "original_files": 497,
     "originals_unchanged": true,
     "scientific_confirmation": false
+  },
+  "rp9_rp16_blocks": {
+    "legend": [
+      "implemented",
+      "executed",
+      "verified_locally",
+      "reconciled_independently",
+      "reviewed",
+      "inference"
+    ],
+    "RP9": {
+      "implemented": true,
+      "executed": true,
+      "verified_locally": true,
+      "reconciled_independently": "n/a",
+      "reviewed": false,
+      "inference": "state taken from master; PRE frozen identical to the review (RP9_PRE_REVIEW_COUNTEREXAMPLES.json); originals unchanged (497 files)"
+    },
+    "RP10": {
+      "implemented": true,
+      "executed": true,
+      "verified_locally": true,
+      "reconciled_independently": true,
+      "reviewed": false,
+      "inference": "closure bound to DESIGN + CAMPAIGNS; every review counterexample refuses through the real CLI/API; historic pilot TOTAL 69/69 local and live (RP10/RP11 CLOSE files)"
+    },
+    "RP11": {
+      "implemented": true,
+      "executed": true,
+      "verified_locally": true,
+      "reconciled_independently": true,
+      "reviewed": false,
+      "inference": "task, weights (fresh-process replays, |diff| 0.0), metrics and donors verified from files; 12/12 guard mutants killed (RP11_MUTANTS.json); mase never MEDIDO on non-finite; allowance enforced inside epochs"
+    },
+    "RP12": {
+      "implemented": true,
+      "executed": true,
+      "verified_locally": true,
+      "reconciled_independently": "n/a",
+      "reviewed": false,
+      "inference": "trend strength corrected to Var(T+R); 15/15 ordered partitions, sizes, redistributions, inputs and donors unchanged -> reuse justified (RP12_PROFILE_REANALYSIS.json); precision design descriptive (RP12_PRECISION_DESIGN.json); 13A errata and H2/H3 reframing"
+    },
+    "RP13": {
+      "implemented": true,
+      "executed": true,
+      "verified_locally": true,
+      "reconciled_independently": true,
+      "reviewed": false,
+      "inference": "D/Y/M/G meters with states; instrumentation at predeclared checkpoints; backfill of 69 units published as generation 3 (8 776 rows) and equal in the warehouse (RP13_MOD_E0_V2_CLOSE_LIVE_BACKFILL.json); trajectory of the historic run NO_MEDIDO"
+    },
+    "RP14": {
+      "implemented": true,
+      "executed": true,
+      "verified_locally": "see closure_v2 of the stage",
+      "reconciled_independently": "see live closure",
+      "reviewed": false,
+      "inference": "full factorial (338 cells) projected 52 624 s > ceiling -> informative stage sealed before scores (112 cells, 4 architectures, both mechanisms, readout control, donor sensitivity, DX); executed on three hosts under own identities; DX cells failed by a code defect and were re-run as a sealed DX-only successor"
+    },
+    "RP15": {
+      "implemented": true,
+      "executed": true,
+      "verified_locally": true,
+      "reconciled_independently": "n/a",
+      "reviewed": false,
+      "inference": "E1_FAMILIES.json from the census (4 public families; source deficit recorded); 13B traced config -> entry point -> plugin -> data; 13C weekly cycle as an experiment contract; one owner decision escalated"
+    },
+    "RP16": {
+      "implemented": true,
+      "executed": "in the return",
+      "verified_locally": "full suite in the return",
+      "reconciled_independently": "ledger + live closures",
+      "reviewed": false,
+      "inference": "tables per architecture/hypothesis/condition/replica; negatives, NO_MEDIDO and pending visible"
+    }
   }
 }

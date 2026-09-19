@@ -1,0 +1,353 @@
+{
+ "already_spent_seconds": 7500.0,
+ "campaign": {
+  "campaign_sha256": "57048da4f4116c4de35ad3d849e9965cd650ee169e41ad86a47d93f097167862",
+  "key": "mod-e0-arch-stage-v1-dx-mod-e0-cells"
+ },
+ "cap_seconds": 11100.0,
+ "cells": {
+  "DX__trend_event__s1__0__profiles": {
+   "arch": "0",
+   "cost": {
+    "cgroup_memory_peak": 440131584,
+    "cpu_seconds": 11.537,
+    "ended_at": "2026-09-19T05:19:59+00:00",
+    "peak_rss_bytes": 854122496,
+    "started_at": "2026-09-19T05:19:48+00:00",
+    "wall_seconds": 11.038
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence",
+   "linear_validation": 0.4123637844279549,
+   "mase_test": 0.4100646399737705,
+   "mase_validation": 0.41537133030282547,
+   "naive_validation": 0.4999485160169203,
+   "oracle_validation": 0.35915325798253633,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 536,
+    "trainable": 536
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "DX__trend_event__s1__A__profiles": {
+   "arch": "A",
+   "cost": {
+    "cgroup_memory_peak": 549113856,
+    "cpu_seconds": 33.333,
+    "ended_at": "2026-09-19T05:19:33+00:00",
+    "peak_rss_bytes": 963637248,
+    "started_at": "2026-09-19T05:19:01+00:00",
+    "wall_seconds": 32.709
+   },
+   "extractor_weight_change": 8.681047439575195,
+   "fusion": "sequence",
+   "linear_validation": 0.4123637844279549,
+   "mase_test": 0.39720242042036547,
+   "mase_validation": 0.4037563237772762,
+   "naive_validation": 0.4999485160169203,
+   "oracle_validation": 0.35915325798253633,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 3336,
+    "trainable": 3336
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "DX__trend_event__s1__B__profiles": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 601931776,
+    "cpu_seconds": 47.361,
+    "ended_at": "2026-09-19T05:19:47+00:00",
+    "peak_rss_bytes": 1015652352,
+    "started_at": "2026-09-19T05:19:01+00:00",
+    "wall_seconds": 46.736
+   },
+   "extractor_weight_change": 19.201372146606445,
+   "fusion": "sequence",
+   "linear_validation": 0.4123637844279549,
+   "mase_test": 0.43130103377711027,
+   "mase_validation": 0.45099239169530375,
+   "naive_validation": 0.4999485160169203,
+   "oracle_validation": 0.35915325798253633,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 9608,
+    "trainable": 9608
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "DX__trend_event__s1__C__profiles": {
+   "arch": "C",
+   "cost": {
+    "cgroup_memory_peak": 604782592,
+    "cpu_seconds": 51.84,
+    "ended_at": "2026-09-19T05:20:25+00:00",
+    "peak_rss_bytes": 1019645952,
+    "started_at": "2026-09-19T05:19:34+00:00",
+    "wall_seconds": 51.525
+   },
+   "extractor_weight_change": 18.649250030517578,
+   "fusion": "sequence",
+   "linear_validation": 0.4123637844279549,
+   "mase_test": 0.4041865830240929,
+   "mase_validation": 0.413133149377215,
+   "naive_validation": 0.4999485160169203,
+   "oracle_validation": 0.35915325798253633,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 6600,
+    "trainable": 6600
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 726
+  }
+ },
+ "code_identity": {
+  "kind": "git_commit",
+  "value": "c9e19711985411e1b7ceafd7a79897696ce625e1"
+ },
+ "cost_pilot": {
+  "inherited_from_run": "mod-e0-arch-stage-v1",
+  "measured": {
+   "pilot__0__H2_profiles": {
+    "cpu_seconds": 7.471,
+    "descriptor_seconds": 0.1938,
+    "exposure": "NO_TEST_ACCESS",
+    "fit_seconds": 2.141,
+    "fit_seconds_net": 1.9472,
+    "overhead_seconds": 5.5238,
+    "seconds_per_update": 0.006490666666666667,
+    "updates": 300
+   },
+   "pilot__0__H3_extractor": {
+    "cpu_seconds": 7.605,
+    "descriptor_seconds": 0.1965,
+    "exposure": "NO_TEST_ACCESS",
+    "fit_seconds": 2.145,
+    "fit_seconds_net": 1.9485000000000001,
+    "overhead_seconds": 5.6565,
+    "seconds_per_update": 0.006495000000000001,
+    "updates": 300
+   },
+   "pilot__0__H3_sequence": {
+    "cpu_seconds": 7.603,
+    "descriptor_seconds": 0.2054,
+    "exposure": "NO_TEST_ACCESS",
+    "fit_seconds": 2.177,
+    "fit_seconds_net": 1.9716,
+    "overhead_seconds": 5.631399999999999,
+    "seconds_per_update": 0.006572,
+    "updates": 300
+   },
+   "pilot__A__H2_profiles": {
+    "cpu_seconds": 18.695,
+    "descriptor_seconds": 1.9829,
+    "exposure": "NO_TEST_ACCESS",
+    "fit_seconds": 10.354,
+    "fit_seconds_net": 8.371099999999998,
+    "overhead_seconds": 10.323900000000002,
+    "seconds_per_update": 0.02790366666666666,
+    "updates": 300
+   },
+   "pilot__A__H3_extractor": {
+    "cpu_seconds": 18.387,
+    "descriptor_seconds": 1.9478,
+    "exposure": "NO_TEST_ACCESS",
+    "fit_seconds": 10.092,
+    "fit_seconds_net": 8.144200000000001,
+    "overhead_seconds": 10.242799999999999,
+    "seconds_per_update": 0.02714733333333334,
+    "updates": 300
+   },
+   "pilot__A__H3_sequence": {
+    "cpu_seconds": 15.375,
+    "descriptor_seconds": 1.9041,
+    "exposure": "NO_TEST_ACCESS",
+    "fit_seconds": 7.143,
+    "fit_seconds_net": 5.2389,
+    "overhead_seconds": 10.136099999999999,
+    "seconds_per_update": 0.017463,
+    "updates": 300
+   },
+   "pilot__B__H2_profiles": {
+    "cpu_seconds": 24.89,
+    "descriptor_seconds": 2.6299,
+    "exposure": "NO_TEST_ACCESS",
+    "fit_seconds": 15.61,
+    "fit_seconds_net": 12.9801,
+    "overhead_seconds": 11.9099,
+    "seconds_per_update": 0.043267,
+    "updates": 300
+   },
+   "pilot__B__H3_extractor": {
+    "cpu_seconds": 24.922,
+    "descriptor_seconds": 2.577,
+    "exposure": "NO_TEST_ACCESS",
+    "fit_seconds": 15.537,
+    "fit_seconds_net": 12.96,
+    "overhead_seconds": 11.962,
+    "seconds_per_update": 0.0432,
+    "updates": 300
+   },
+   "pilot__B__H3_sequence": {
+    "cpu_seconds": 18.452,
+    "descriptor_seconds": 2.4607,
+    "exposure": "NO_TEST_ACCESS",
+    "fit_seconds": 9.142,
+    "fit_seconds_net": 6.681299999999999,
+    "overhead_seconds": 11.770700000000001,
+    "seconds_per_update": 0.022271,
+    "updates": 300
+   },
+   "pilot__C__H2_profiles": {
+    "cpu_seconds": 35.451,
+    "descriptor_seconds": 8.4769,
+    "exposure": "NO_TEST_ACCESS",
+    "fit_seconds": 25.195,
+    "fit_seconds_net": 16.7181,
+    "overhead_seconds": 18.7329,
+    "seconds_per_update": 0.055727,
+    "updates": 300
+   },
+   "pilot__C__H3_extractor": {
+    "cpu_seconds": 35.05,
+    "descriptor_seconds": 8.2513,
+    "exposure": "NO_TEST_ACCESS",
+    "fit_seconds": 24.713,
+    "fit_seconds_net": 16.4617,
+    "overhead_seconds": 18.588299999999997,
+    "seconds_per_update": 0.054872333333333335,
+    "updates": 300
+   },
+   "pilot__C__H3_sequence": {
+    "cpu_seconds": 27.429,
+    "descriptor_seconds": 8.3219,
+    "exposure": "NO_TEST_ACCESS",
+    "fit_seconds": 17.166,
+    "fit_seconds_net": 8.844100000000001,
+    "overhead_seconds": 18.584899999999998,
+    "seconds_per_update": 0.029480333333333338,
+    "updates": 300
+   }
+  },
+  "parent_design_sha256": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e"
+ },
+ "design_sha256": "ec16db5f06f8a56b043f5dadb39c7335ce029139aec830502cf7eb68d7abe2c3",
+ "envelope": {
+  "digest": "0f63c6c880735c2b1429a8ad29f9dcefce5baf409c745a6411a2a99566adc572",
+  "envelope_sha256": "7d8166b4caa76b8909349224b2f7a6fba9d6931b9810f4eeea3eb225c8f3902e",
+  "outbox_entry": "envelope-0f63c6c880735c2b1429a8ad29f9dcefce5baf409c745a6411a2a99566adc572.json",
+  "state": "pending",
+  "written": true
+ },
+ "execute_only": false,
+ "live_checks_note": "reconciliation is a live data-gov query at run time; warehouse content checks are separate",
+ "parallel": 2,
+ "projection": {
+  "assumption": "every cell at its full update allowance (early stopping only lowers it); per-update cost from the pilot of its arm type; overhead per child from the pilots; a projection, not an exact need",
+  "by_role_with_headroom": {
+   "COORDINATOR": 241.52208333333334
+  },
+  "cap_seconds": 11100.0,
+  "cells": 4,
+  "fits": true,
+  "headroom": 0.25,
+  "per_cell": {
+   "DX__trend_event__s1__0__profiles": 12.663533333333334,
+   "DX__trend_event__s1__A__profiles": 41.01793333333333,
+   "DX__trend_event__s1__B__profiles": 59.5036,
+   "DX__trend_event__s1__C__profiles": 80.0326
+  },
+  "projected_remaining_cpu_seconds": 193.21766666666667,
+  "projected_with_headroom": 241.52208333333334,
+  "remaining_cells": 4,
+  "spent_so_far": 7500.0
+ },
+ "reconciliation": {
+  "accounting_only": [],
+  "http": 200,
+  "lake_only": [],
+  "missing_units": []
+ },
+ "report_collected": false,
+ "role": "COORDINATOR",
+ "run_id": "mod-e0-arch-stage-v1-dx",
+ "schema": "df_mod_e0_report.v1",
+ "spent_cpu_seconds": 7644.071,
+ "stopped": null,
+ "terminals": [
+  {
+   "cost": {
+    "cgroup_memory_peak": 549113856,
+    "cpu_seconds": 33.333,
+    "ended_at": "2026-09-19T05:19:33+00:00",
+    "peak_rss_bytes": 963637248,
+    "started_at": "2026-09-19T05:19:01+00:00",
+    "wall_seconds": 32.709
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "DX__trend_event__s1__A__profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 601931776,
+    "cpu_seconds": 47.361,
+    "ended_at": "2026-09-19T05:19:47+00:00",
+    "peak_rss_bytes": 1015652352,
+    "started_at": "2026-09-19T05:19:01+00:00",
+    "wall_seconds": 46.736
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "DX__trend_event__s1__B__profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 440131584,
+    "cpu_seconds": 11.537,
+    "ended_at": "2026-09-19T05:19:59+00:00",
+    "peak_rss_bytes": 854122496,
+    "started_at": "2026-09-19T05:19:48+00:00",
+    "wall_seconds": 11.038
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "DX__trend_event__s1__0__profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 604782592,
+    "cpu_seconds": 51.84,
+    "ended_at": "2026-09-19T05:20:25+00:00",
+    "peak_rss_bytes": 1019645952,
+    "started_at": "2026-09-19T05:19:34+00:00",
+    "wall_seconds": 51.525
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "DX__trend_event__s1__C__profiles"
+  }
+ ]
+}

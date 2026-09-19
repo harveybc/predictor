@@ -1,0 +1,416 @@
+{
+ "adequacy": {
+  "0": {
+   "cells": [],
+   "receiver_adequate": false,
+   "rule": "every H2 profiles cell at h = 3, r = 1 beats the seasonal-naive on validation"
+  },
+  "A": {
+   "cells": [],
+   "receiver_adequate": false,
+   "rule": "every H2 profiles cell at h = 3, r = 1 beats the seasonal-naive on validation"
+  },
+  "B": {
+   "cells": [],
+   "receiver_adequate": false,
+   "rule": "every H2 profiles cell at h = 3, r = 1 beats the seasonal-naive on validation"
+  },
+  "C": {
+   "cells": [],
+   "receiver_adequate": false,
+   "rule": "every H2 profiles cell at h = 3, r = 1 beats the seasonal-naive on validation"
+  }
+ },
+ "bootstrap": {
+  "0": {
+   "H2_slope": null,
+   "H3_d1": null,
+   "H3_gamma": null
+  },
+  "A": {
+   "H2_slope": null,
+   "H3_d1": null,
+   "H3_gamma": null
+  },
+  "B": {
+   "H2_slope": null,
+   "H3_d1": null,
+   "H3_gamma": null
+  },
+  "C": {
+   "H2_slope": null,
+   "H3_d1": null,
+   "H3_gamma": null
+  }
+ },
+ "bootstrap_note": "percentile intervals from resampling 2 replicates with replacement: descriptive precision, not confirmation",
+ "costs": {
+  "0": {
+   "cells": 1,
+   "cpu_seconds_mean": 10.506,
+   "cpu_seconds_total": 10.506,
+   "fit_seconds_mean": 5.903,
+   "parameters": [
+    "{\"frozen\": 0, \"total\": 536, \"trainable\": 536}"
+   ],
+   "stop_reasons": {
+    "UPDATE_BUDGET": 1
+   },
+   "updates_mean": 1100.0
+  },
+  "A": {
+   "cells": 1,
+   "cpu_seconds_mean": 32.054,
+   "cpu_seconds_total": 32.054,
+   "fit_seconds_mean": 21.654,
+   "parameters": [
+    "{\"frozen\": 0, \"total\": 3336, \"trainable\": 3336}"
+   ],
+   "stop_reasons": {
+    "UPDATE_BUDGET": 1
+   },
+   "updates_mean": 1100.0
+  },
+  "B": {
+   "cells": 1,
+   "cpu_seconds_mean": 46.031,
+   "cpu_seconds_total": 46.031,
+   "fit_seconds_mean": 34.831,
+   "parameters": [
+    "{\"frozen\": 0, \"total\": 9608, \"trainable\": 9608}"
+   ],
+   "stop_reasons": {
+    "UPDATE_BUDGET": 1
+   },
+   "updates_mean": 1100.0
+  },
+  "C": {
+   "cells": 1,
+   "cpu_seconds_mean": 50.56,
+   "cpu_seconds_total": 50.56,
+   "fit_seconds_mean": 41.308,
+   "parameters": [
+    "{\"frozen\": 0, \"total\": 6600, \"trainable\": 6600}"
+   ],
+   "stop_reasons": {
+    "EARLY_STOPPING": 1
+   },
+   "updates_mean": 726.0
+  }
+ },
+ "donor": {
+  "0": {
+   "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+   "delta": null,
+   "n": 0,
+   "sd_replicates": null
+  },
+  "A": {
+   "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+   "delta": null,
+   "n": 0,
+   "sd_replicates": null
+  },
+  "B": {
+   "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+   "delta": null,
+   "n": 0,
+   "sd_replicates": null
+  },
+  "C": {
+   "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+   "delta": null,
+   "n": 0,
+   "sd_replicates": null
+  }
+ },
+ "dx": {
+  "0": [
+   {
+    "beats_naive": true,
+    "cell": "DX__trend_event__s1__0__profiles",
+    "linear": 0.4123637844279549,
+    "model": 0.41537133030282547,
+    "naive": 0.4999485160169203,
+    "oracle": 0.35915325798253633,
+    "seed": 1,
+    "within_linear": true
+   }
+  ],
+  "A": [
+   {
+    "beats_naive": true,
+    "cell": "DX__trend_event__s1__A__profiles",
+    "linear": 0.4123637844279549,
+    "model": 0.4037563237772762,
+    "naive": 0.4999485160169203,
+    "oracle": 0.35915325798253633,
+    "seed": 1,
+    "within_linear": true
+   }
+  ],
+  "B": [
+   {
+    "beats_naive": true,
+    "cell": "DX__trend_event__s1__B__profiles",
+    "linear": 0.4123637844279549,
+    "model": 0.45099239169530375,
+    "naive": 0.4999485160169203,
+    "oracle": 0.35915325798253633,
+    "seed": 1,
+    "within_linear": false
+   }
+  ],
+  "C": [
+   {
+    "beats_naive": true,
+    "cell": "DX__trend_event__s1__C__profiles",
+    "linear": 0.4123637844279549,
+    "model": 0.413133149377215,
+    "naive": 0.4999485160169203,
+    "oracle": 0.35915325798253633,
+    "seed": 1,
+    "within_linear": true
+   }
+  ]
+ },
+ "effects_test": {
+  "donor": {
+   "0": {
+    "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+    "delta": null,
+    "n": 0,
+    "sd_replicates": null
+   },
+   "A": {
+    "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+    "delta": null,
+    "n": 0,
+    "sd_replicates": null
+   },
+   "B": {
+    "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+    "delta": null,
+    "n": 0,
+    "sd_replicates": null
+   },
+   "C": {
+    "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+    "delta": null,
+    "n": 0,
+    "sd_replicates": null
+   }
+  },
+  "per_arch": {
+   "0": {
+    "H2": {
+     "e": {},
+     "n_replicates": 0,
+     "sd_replicates": {},
+     "slope": null
+    },
+    "H3": {
+     "d": {},
+     "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+     "gamma": null,
+     "n_replicates": 0,
+     "sd_replicates": {}
+    },
+    "interpretable": false,
+    "mase_mean_validation_by_arm": {
+     "profiles": 0.4100646399737705
+    }
+   },
+   "A": {
+    "H2": {
+     "e": {},
+     "n_replicates": 0,
+     "sd_replicates": {},
+     "slope": null
+    },
+    "H3": {
+     "d": {},
+     "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+     "gamma": null,
+     "n_replicates": 0,
+     "sd_replicates": {}
+    },
+    "interpretable": false,
+    "mase_mean_validation_by_arm": {
+     "profiles": 0.39720242042036547
+    }
+   },
+   "B": {
+    "H2": {
+     "e": {},
+     "n_replicates": 0,
+     "sd_replicates": {},
+     "slope": null
+    },
+    "H3": {
+     "d": {},
+     "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+     "gamma": null,
+     "n_replicates": 0,
+     "sd_replicates": {}
+    },
+    "interpretable": false,
+    "mase_mean_validation_by_arm": {
+     "profiles": 0.43130103377711027
+    }
+   },
+   "C": {
+    "H2": {
+     "e": {},
+     "n_replicates": 0,
+     "sd_replicates": {},
+     "slope": null
+    },
+    "H3": {
+     "d": {},
+     "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+     "gamma": null,
+     "n_replicates": 0,
+     "sd_replicates": {}
+    },
+    "interpretable": false,
+    "mase_mean_validation_by_arm": {
+     "profiles": 0.4041865830240929
+    }
+   }
+  },
+  "readout": {
+   "0": {
+    "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+    "rho": {},
+    "sd_replicates": {}
+   },
+   "A": {
+    "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+    "rho": {},
+    "sd_replicates": {}
+   },
+   "B": {
+    "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+    "rho": {},
+    "sd_replicates": {}
+   },
+   "C": {
+    "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+    "rho": {},
+    "sd_replicates": {}
+   }
+  }
+ },
+ "per_arch": {
+  "0": {
+   "H2": {
+    "e": {},
+    "n_replicates": 0,
+    "sd_replicates": {},
+    "slope": null
+   },
+   "H3": {
+    "d": {},
+    "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+    "gamma": null,
+    "n_replicates": 0,
+    "sd_replicates": {}
+   },
+   "interpretable": false,
+   "mase_mean_validation_by_arm": {
+    "profiles": 0.41537133030282547
+   }
+  },
+  "A": {
+   "H2": {
+    "e": {},
+    "n_replicates": 0,
+    "sd_replicates": {},
+    "slope": null
+   },
+   "H3": {
+    "d": {},
+    "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+    "gamma": null,
+    "n_replicates": 0,
+    "sd_replicates": {}
+   },
+   "interpretable": false,
+   "mase_mean_validation_by_arm": {
+    "profiles": 0.4037563237772762
+   }
+  },
+  "B": {
+   "H2": {
+    "e": {},
+    "n_replicates": 0,
+    "sd_replicates": {},
+    "slope": null
+   },
+   "H3": {
+    "d": {},
+    "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+    "gamma": null,
+    "n_replicates": 0,
+    "sd_replicates": {}
+   },
+   "interpretable": false,
+   "mase_mean_validation_by_arm": {
+    "profiles": 0.45099239169530375
+   }
+  },
+  "C": {
+   "H2": {
+    "e": {},
+    "n_replicates": 0,
+    "sd_replicates": {},
+    "slope": null
+   },
+   "H3": {
+    "d": {},
+    "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+    "gamma": null,
+    "n_replicates": 0,
+    "sd_replicates": {}
+   },
+   "interpretable": false,
+   "mase_mean_validation_by_arm": {
+    "profiles": 0.413133149377215
+   }
+  }
+ },
+ "population": {
+  "cells": 4,
+  "closure": "TOTAL",
+  "verified_cells": 4
+ },
+ "readout": {
+  "0": {
+   "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+   "rho": {},
+   "sd_replicates": {}
+  },
+  "A": {
+   "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+   "rho": {},
+   "sd_replicates": {}
+  },
+  "B": {
+   "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+   "rho": {},
+   "sd_replicates": {}
+  },
+  "C": {
+   "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+   "rho": {},
+   "sd_replicates": {}
+  }
+ },
+ "replicates": [
+  1,
+  2
+ ],
+ "schema": "df_mod_e0_arch_effects.v1",
+ "split": "validation"
+}

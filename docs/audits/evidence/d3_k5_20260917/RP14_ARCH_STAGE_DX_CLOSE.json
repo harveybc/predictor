@@ -1,0 +1,1198 @@
+{
+ "live": {
+  "all_equal": true,
+  "campaigns": {
+   "mod-e0-arch-stage-v1-dx-mod-e0-cells": {
+    "key": "mod-e0-arch-stage-v1-dx-mod-e0-cells",
+    "members_by_design": [
+     "DX__trend_event__s1__A__profiles",
+     "DX__trend_event__s1__B__profiles",
+     "DX__trend_event__s1__C__profiles",
+     "DX__trend_event__s1__0__profiles"
+    ],
+    "population_by_accounting": [
+     "DX__trend_event__s1__0__profiles",
+     "DX__trend_event__s1__A__profiles",
+     "DX__trend_event__s1__B__profiles",
+     "DX__trend_event__s1__C__profiles"
+    ],
+    "problems": [],
+    "reconcile": {
+     "accounting_only": [],
+     "http": 200,
+     "lake_only": [],
+     "missing_units": []
+    },
+    "registered": true,
+    "rows_all_generations": 4
+   },
+   "mod-e0-arch-stage-v1-dx-mod-e0-cost-pilot": {
+    "key": "mod-e0-arch-stage-v1-dx-mod-e0-cost-pilot",
+    "members_by_design": [],
+    "note": "no member by design (a hypothesis-only successor has no pilots)",
+    "problems": [],
+    "registered": false
+   },
+   "mod-e0-arch-stage-v1-dx-mod-e0-cost-pilot-arm": {
+    "key": "mod-e0-arch-stage-v1-dx-mod-e0-cost-pilot-arm",
+    "members_by_design": [],
+    "note": "no member by design (a hypothesis-only successor has no pilots)",
+    "problems": [],
+    "registered": false
+   }
+  },
+  "covered": 4,
+  "population_equal": true,
+  "run_id": "mod-e0-arch-stage-v1-dx",
+  "schema": "df_mod_e0_live_closure.v1",
+  "units": {
+   "DX__trend_event__s1__0__profiles": {
+    "artifacts": 0,
+    "generation": 1,
+    "in_warehouse": true,
+    "metric_rows": {
+     "expected": 187,
+     "warehouse": 187
+    },
+    "problems": []
+   },
+   "DX__trend_event__s1__A__profiles": {
+    "artifacts": 0,
+    "generation": 1,
+    "in_warehouse": true,
+    "metric_rows": {
+     "expected": 196,
+     "warehouse": 196
+    },
+    "problems": []
+   },
+   "DX__trend_event__s1__B__profiles": {
+    "artifacts": 0,
+    "generation": 1,
+    "in_warehouse": true,
+    "metric_rows": {
+     "expected": 196,
+     "warehouse": 196
+    },
+    "problems": []
+   },
+   "DX__trend_event__s1__C__profiles": {
+    "artifacts": 0,
+    "generation": 1,
+    "in_warehouse": true,
+    "metric_rows": {
+     "expected": 189,
+     "warehouse": 189
+    },
+    "problems": []
+   }
+  }
+ },
+ "live_requested": true,
+ "local": {
+  "all_verified": true,
+  "bootstrap": {
+   "H2_slope": {
+    "ci95": null,
+    "n": 0
+   },
+   "H3_d1": {
+    "ci95": null,
+    "n": 0
+   },
+   "H3_gamma": {
+    "ci95": null,
+    "n": 0
+   }
+  },
+  "closure": "TOTAL",
+  "code_identity_reported": {
+   "kind": "git_commit",
+   "value": "c9e19711985411e1b7ceafd7a79897696ce625e1"
+  },
+  "counts": {
+   "VERIFIED": 4
+  },
+  "denominator": {
+   "cells": 4,
+   "fixed_by": "DESIGN.json + runner's pilot derivation",
+   "pilots": 0
+  },
+  "design_sha256": "ec16db5f06f8a56b043f5dadb39c7335ce029139aec830502cf7eb68d7abe2c3",
+  "effects": {},
+  "effects_population": {
+   "complete": true,
+   "of": 4,
+   "scope": "VERIFIED_MEMBERS_ONLY",
+   "verified_cells": 4
+  },
+  "effects_split": "validation",
+  "effects_test": {},
+  "not_verified": [],
+  "parent": {
+   "DX__trend_event__s1__0__profiles": {
+    "equal": true,
+    "file": 0.41537133030282547,
+    "parent_mase_validation": 0.41537133030282547,
+    "parent_outcome": "COMPLETED"
+   },
+   "DX__trend_event__s1__A__profiles": {
+    "equal": true,
+    "file": 0.4037563237772762,
+    "parent_mase_validation": 0.4037563237772762,
+    "parent_outcome": "COMPLETED"
+   },
+   "DX__trend_event__s1__B__profiles": {
+    "equal": true,
+    "file": 0.45099239169530375,
+    "parent_mase_validation": 0.45099239169530375,
+    "parent_outcome": "COMPLETED"
+   },
+   "DX__trend_event__s1__C__profiles": {
+    "equal": true,
+    "file": 0.413133149377215,
+    "parent_mase_validation": 0.413133149377215,
+    "parent_outcome": "COMPLETED"
+   }
+  },
+  "parent_equal": true,
+  "population": {
+   "cells": 4,
+   "members": [
+    "DX__trend_event__s1__A__profiles",
+    "DX__trend_event__s1__B__profiles",
+    "DX__trend_event__s1__C__profiles",
+    "DX__trend_event__s1__0__profiles"
+   ],
+   "pilot_ids": [],
+   "pilots": 0
+  },
+  "replays": {
+   "cpu_seconds_children": 0.0,
+   "notes": {
+    "DX__trend_event__s1__0__profiles": "reused",
+    "DX__trend_event__s1__A__profiles": "reused",
+    "DX__trend_event__s1__B__profiles": "reused",
+    "DX__trend_event__s1__C__profiles": "reused"
+   },
+   "threads_per_replay": 2,
+   "workers": 2
+  },
+  "root": "/home/harveybc/.local/state/crispdm-data-foundation/mod_e0_arch_stage_v1_dx",
+  "run_id": "mod-e0-arch-stage-v1-dx",
+  "schema": "df_mod_e0_close.v2",
+  "successor_of": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+  "tolerance": {
+   "activation_atol": 1e-06,
+   "linear_rtol": 1e-06,
+   "prediction_atol": 1e-05,
+   "restore_rel": 1e-05,
+   "why": "float32 inference: convolution accumulation order differs between processes and thread counts (observed max |diff| ~1e-6 in the replays of the executed pilot); the tolerance is declared BEFORE the check and recorded with every measured difference"
+  },
+  "units": {
+   "DX__trend_event__s1__0__profiles": {
+    "attempt": "DX__trend_event__s1__0__profiles",
+    "checks": {
+     "job_equals_design": true,
+     "profiles_and_assignment": true,
+     "receipts": true,
+     "scores_from_arrays": true,
+     "task_from_generator": true,
+     "weights_and_replay": true
+    },
+    "depends_on": null,
+    "digests": {
+     "cell": "72b4dd4f0c4f482a130672c1a4a253a18ebd8d692b6ce3d2c2a104533197a02d"
+    },
+    "measured": {
+     "replay": {
+      "adapter_activation_max_abs_diff": null,
+      "cpu_seconds": 4.248,
+      "extractor_weights_unequal_layers": null,
+      "prediction_max_abs_diff": {
+       "test": 0.0,
+       "train": 0.0,
+       "validation": 0.0
+      },
+      "process": 2128493,
+      "recorded_best_validation_loss": 0.11870694160461426,
+      "restore_abs_diff": 1.654646193671727e-08,
+      "restored_validation_loss": 0.11870692505815232,
+      "scale_recomputed_equal": true
+     }
+    },
+    "problems": [],
+    "recomputed": {
+     "test": {
+      "linear_window": {
+       "mae_mean": 0.528974455675641,
+       "mase_mean": 0.41114083521488837,
+       "status": "MEDIDO"
+      },
+      "model": {
+       "mae_mean": 0.5322478028633338,
+       "mase_mean": 0.4100646399737705,
+       "status": "MEDIDO"
+      },
+      "naive": {
+       "mae_mean": 0.6359101405024321,
+       "mase_mean": 0.48272862118963245,
+       "status": "MEDIDO"
+      },
+      "oracle": {
+       "mae_mean": 0.4542981699550048,
+       "mase_mean": 0.3517382717044203,
+       "status": "MEDIDO"
+      }
+     },
+     "train": {
+      "linear_window": {
+       "mae_mean": 0.43777571449219205,
+       "mase_mean": 0.34038472392127533,
+       "status": "MEDIDO"
+      },
+      "model": {
+       "mae_mean": 0.5276901529381202,
+       "mase_mean": 0.40726224556364476,
+       "status": "MEDIDO"
+      },
+      "naive": {
+       "mae_mean": 0.659596612869193,
+       "mase_mean": 0.5006614207171942,
+       "status": "MEDIDO"
+      },
+      "oracle": {
+       "mae_mean": 0.46246473658782467,
+       "mase_mean": 0.35823386066413454,
+       "status": "MEDIDO"
+      }
+     },
+     "validation": {
+      "linear_window": {
+       "mae_mean": 0.5309954904706198,
+       "mase_mean": 0.4123637844279549,
+       "status": "MEDIDO"
+      },
+      "model": {
+       "mae_mean": 0.5392091866712608,
+       "mase_mean": 0.41537133030282547,
+       "status": "MEDIDO"
+      },
+      "naive": {
+       "mae_mean": 0.6598628987556141,
+       "mase_mean": 0.4999485160169203,
+       "status": "MEDIDO"
+      },
+      "oracle": {
+       "mae_mean": 0.464329576192545,
+       "mase_mean": 0.35915325798253633,
+       "status": "MEDIDO"
+      }
+     }
+    },
+    "record": {
+     "arm": "profiles",
+     "assignment": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1
+     ],
+     "assignment_is_profile": true,
+     "cell_id": "DX__trend_event__s1__0__profiles",
+     "cost": {
+      "cpu_seconds": 10.506,
+      "fit_seconds": 5.903
+     },
+     "curve": {
+      "train": [
+       0.297055721282959,
+       0.1890002191066742,
+       0.16737467050552368,
+       0.15528251230716705,
+       0.14666372537612915,
+       0.14001469314098358,
+       0.13474392890930176,
+       0.13050886988639832,
+       0.12709584832191467,
+       0.12438435852527618,
+       0.12227767705917358,
+       0.12067095935344696,
+       0.11946113407611847,
+       0.11855649203062057,
+       0.11788022518157959,
+       0.1173679381608963,
+       0.11697358638048172,
+       0.11666316539049149,
+       0.11641373485326767,
+       0.1162109375,
+       0.11604354530572891,
+       0.11590289324522018,
+       0.11578234285116196,
+       0.11567702144384384,
+       0.11558347940444946,
+       0.11549901962280273,
+       0.1154213473200798,
+       0.11534955352544785,
+       0.1152828186750412,
+       0.11522051692008972,
+       0.11516203731298447,
+       0.11510693281888962,
+       0.11505518108606339,
+       0.11681614071130753
+      ],
+      "validation": [
+       0.2079743593931198,
+       0.17681308090686798,
+       0.16317906975746155,
+       0.15337590873241425,
+       0.14678868651390076,
+       0.14245420694351196,
+       0.13922417163848877,
+       0.1363857388496399,
+       0.13392412662506104,
+       0.1319466233253479,
+       0.13039320707321167,
+       0.12917068600654602,
+       0.1282234638929367,
+       0.12747815251350403,
+       0.12689299881458282,
+       0.1264333873987198,
+       0.12607023119926453,
+       0.12576040625572205,
+       0.12547999620437622,
+       0.125224769115448,
+       0.12498559057712555,
+       0.12475401163101196,
+       0.12452048063278198,
+       0.12428539246320724,
+       0.12405586242675781,
+       0.12383279204368591,
+       0.12362067401409149,
+       0.12342477589845657,
+       0.12324081361293793,
+       0.12306974083185196,
+       0.1229110136628151,
+       0.12276536226272583,
+       0.1226336658000946,
+       0.11870694160461426
+      ]
+     },
+     "denominator": [
+      1.170794063101142,
+      1.1436150059045973,
+      1.1161784175020293,
+      1.1654930143339133,
+      1.5312624727783528,
+      1.4515251525112418,
+      1.4638685170898487,
+      1.4485473421355164
+     ],
+     "descriptor_version": 2,
+     "exposure": "TEST_SCORED_DESCRIPTIVE",
+     "extractor_weight_change": 0.0,
+     "fusion": "sequence",
+     "hypothesis": "DX",
+     "level": 3,
+     "linear_mase": {
+      "test": 0.41114083521488837,
+      "train": 0.34038472392127533,
+      "validation": 0.4123637844279549
+     },
+     "mae": {
+      "test": 0.5322478028633338,
+      "train": 0.5276901529381202,
+      "validation": 0.5392091866712608
+     },
+     "mase": {
+      "test": 0.4100646399737705,
+      "train": 0.40726224556364476,
+      "validation": 0.41537133030282547
+     },
+     "mse": {
+      "test": 0.45652838068591317,
+      "train": 0.4365952529915932,
+      "validation": 0.4534416691987356
+     },
+     "naive_mase": {
+      "test": 0.48272862118963245,
+      "train": 0.5006614207171942,
+      "validation": 0.4999485160169203
+     },
+     "oracle_mase": {
+      "test": 0.3517382717044203,
+      "train": 0.35823386066413454,
+      "validation": 0.35915325798253633
+     },
+     "parameters": {
+      "frozen": 0,
+      "total": 536,
+      "trainable": 536
+     },
+     "profiles_ari": 1.0,
+     "r": 1,
+     "receptive_field": 65,
+     "role": "CELL",
+     "seed": 1,
+     "stop_reason": "UPDATE_BUDGET",
+     "updates": 1100,
+     "window": 48
+    },
+    "role": "CELL",
+    "status": "VERIFIED"
+   },
+   "DX__trend_event__s1__A__profiles": {
+    "attempt": "DX__trend_event__s1__A__profiles",
+    "checks": {
+     "job_equals_design": true,
+     "profiles_and_assignment": true,
+     "receipts": true,
+     "scores_from_arrays": true,
+     "task_from_generator": true,
+     "weights_and_replay": true
+    },
+    "depends_on": null,
+    "digests": {
+     "cell": "0952cf47a2cf65cd12765da2ddbddcedbb020762c25ee4b85c44f8f033035f4a"
+    },
+    "measured": {
+     "replay": {
+      "adapter_activation_max_abs_diff": null,
+      "cpu_seconds": 5.29,
+      "extractor_weights_unequal_layers": null,
+      "prediction_max_abs_diff": {
+       "test": 0.0,
+       "train": 0.0,
+       "validation": 0.0
+      },
+      "process": 2127342,
+      "recorded_best_validation_loss": 0.11262911558151245,
+      "restore_abs_diff": 2.2874972610553712e-09,
+      "restored_validation_loss": 0.11262911329401519,
+      "scale_recomputed_equal": true
+     }
+    },
+    "problems": [],
+    "recomputed": {
+     "test": {
+      "linear_window": {
+       "mae_mean": 0.528974455675641,
+       "mase_mean": 0.41114083521488837,
+       "status": "MEDIDO"
+      },
+      "model": {
+       "mae_mean": 0.513058211807671,
+       "mase_mean": 0.39720242042036547,
+       "status": "MEDIDO"
+      },
+      "naive": {
+       "mae_mean": 0.6359101405024321,
+       "mase_mean": 0.48272862118963245,
+       "status": "MEDIDO"
+      },
+      "oracle": {
+       "mae_mean": 0.4542981699550048,
+       "mase_mean": 0.3517382717044203,
+       "status": "MEDIDO"
+      }
+     },
+     "train": {
+      "linear_window": {
+       "mae_mean": 0.43777571449219205,
+       "mase_mean": 0.34038472392127533,
+       "status": "MEDIDO"
+      },
+      "model": {
+       "mae_mean": 0.49635222390428657,
+       "mase_mean": 0.38517449355974154,
+       "status": "MEDIDO"
+      },
+      "naive": {
+       "mae_mean": 0.659596612869193,
+       "mase_mean": 0.5006614207171942,
+       "status": "MEDIDO"
+      },
+      "oracle": {
+       "mae_mean": 0.46246473658782467,
+       "mase_mean": 0.35823386066413454,
+       "status": "MEDIDO"
+      }
+     },
+     "validation": {
+      "linear_window": {
+       "mae_mean": 0.5309954904706198,
+       "mase_mean": 0.4123637844279549,
+       "status": "MEDIDO"
+      },
+      "model": {
+       "mae_mean": 0.5218504690600313,
+       "mase_mean": 0.4037563237772762,
+       "status": "MEDIDO"
+      },
+      "naive": {
+       "mae_mean": 0.6598628987556141,
+       "mase_mean": 0.4999485160169203,
+       "status": "MEDIDO"
+      },
+      "oracle": {
+       "mae_mean": 0.464329576192545,
+       "mase_mean": 0.35915325798253633,
+       "status": "MEDIDO"
+      }
+     }
+    },
+    "record": {
+     "arm": "profiles",
+     "assignment": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1
+     ],
+     "assignment_is_profile": true,
+     "cell_id": "DX__trend_event__s1__A__profiles",
+     "cost": {
+      "cpu_seconds": 32.054,
+      "fit_seconds": 21.654
+     },
+     "curve": {
+      "train": [
+       0.3068819046020508,
+       0.1704169064760208,
+       0.15180671215057373,
+       0.14034470915794373,
+       0.13156992197036743,
+       0.1250000298023224,
+       0.12045609951019287,
+       0.11724880337715149,
+       0.11480606347322464,
+       0.11293266713619232,
+       0.11152898520231247,
+       0.11048018932342529,
+       0.10967375338077545,
+       0.10901772975921631,
+       0.1084558367729187,
+       0.10796625912189484,
+       0.10753646492958069,
+       0.10715574026107788,
+       0.10681536793708801,
+       0.10650862008333206,
+       0.10623063892126083,
+       0.10597767680883408,
+       0.10574758052825928,
+       0.10553639382123947,
+       0.10534004122018814,
+       0.1051570326089859,
+       0.10498475283384323,
+       0.10482075810432434,
+       0.1046634316444397,
+       0.10451104491949081,
+       0.1043616235256195,
+       0.10421434044837952,
+       0.1040685847401619,
+       0.10484978556632996
+      ],
+      "validation": [
+       0.18333400785923004,
+       0.15733052790164948,
+       0.1464097499847412,
+       0.13851214945316315,
+       0.13273155689239502,
+       0.12689359486103058,
+       0.12336639314889908,
+       0.12114689499139786,
+       0.1194099709391594,
+       0.11808963865041733,
+       0.117042675614357,
+       0.11623863875865936,
+       0.11564339697360992,
+       0.11519508063793182,
+       0.11487371474504471,
+       0.11466645449399948,
+       0.11452911049127579,
+       0.11442338675260544,
+       0.11431416869163513,
+       0.11418949067592621,
+       0.11405039578676224,
+       0.11389657855033875,
+       0.11372041702270508,
+       0.11352735757827759,
+       0.11333601921796799,
+       0.113164521753788,
+       0.1130155548453331,
+       0.11290058493614197,
+       0.11281728744506836,
+       0.11275748908519745,
+       0.1127118468284607,
+       0.11266972869634628,
+       0.11262911558151245,
+       0.11609398573637009
+      ]
+     },
+     "denominator": [
+      1.170794063101142,
+      1.1436150059045973,
+      1.1161784175020293,
+      1.1654930143339133,
+      1.5312624727783528,
+      1.4515251525112418,
+      1.4638685170898487,
+      1.4485473421355164
+     ],
+     "descriptor_version": 2,
+     "exposure": "TEST_SCORED_DESCRIPTIVE",
+     "extractor_weight_change": 8.681047439575195,
+     "fusion": "sequence",
+     "hypothesis": "DX",
+     "level": 3,
+     "linear_mase": {
+      "test": 0.41114083521488837,
+      "train": 0.34038472392127533,
+      "validation": 0.4123637844279549
+     },
+     "mae": {
+      "test": 0.513058211807671,
+      "train": 0.49635222390428657,
+      "validation": 0.5218504690600313
+     },
+     "mase": {
+      "test": 0.39720242042036547,
+      "train": 0.38517449355974154,
+      "validation": 0.4037563237772762
+     },
+     "mse": {
+      "test": 0.4238088787606464,
+      "train": 0.3856961210059495,
+      "validation": 0.42820744509652287
+     },
+     "naive_mase": {
+      "test": 0.48272862118963245,
+      "train": 0.5006614207171942,
+      "validation": 0.4999485160169203
+     },
+     "oracle_mase": {
+      "test": 0.3517382717044203,
+      "train": 0.35823386066413454,
+      "validation": 0.35915325798253633
+     },
+     "parameters": {
+      "frozen": 0,
+      "total": 3336,
+      "trainable": 3336
+     },
+     "profiles_ari": 1.0,
+     "r": 1,
+     "receptive_field": 65,
+     "role": "CELL",
+     "seed": 1,
+     "stop_reason": "UPDATE_BUDGET",
+     "updates": 1100,
+     "window": 48
+    },
+    "role": "CELL",
+    "status": "VERIFIED"
+   },
+   "DX__trend_event__s1__B__profiles": {
+    "attempt": "DX__trend_event__s1__B__profiles",
+    "checks": {
+     "job_equals_design": true,
+     "profiles_and_assignment": true,
+     "receipts": true,
+     "scores_from_arrays": true,
+     "task_from_generator": true,
+     "weights_and_replay": true
+    },
+    "depends_on": null,
+    "digests": {
+     "cell": "3e364f9122a665d8d10f1d3ce690ee9c6e9c8ca7a5ab33f6f249116d495d9483"
+    },
+    "measured": {
+     "replay": {
+      "adapter_activation_max_abs_diff": null,
+      "cpu_seconds": 5.806,
+      "extractor_weights_unequal_layers": null,
+      "prediction_max_abs_diff": {
+       "test": 0.0,
+       "train": 0.0,
+       "validation": 0.0
+      },
+      "process": 2127343,
+      "recorded_best_validation_loss": 0.140424907207489,
+      "restore_abs_diff": 1.410271591173462e-08,
+      "restored_validation_loss": 0.14042492131020493,
+      "scale_recomputed_equal": true
+     }
+    },
+    "problems": [],
+    "recomputed": {
+     "test": {
+      "linear_window": {
+       "mae_mean": 0.528974455675641,
+       "mase_mean": 0.41114083521488837,
+       "status": "MEDIDO"
+      },
+      "model": {
+       "mae_mean": 0.5607105067061552,
+       "mase_mean": 0.43130103377711027,
+       "status": "MEDIDO"
+      },
+      "naive": {
+       "mae_mean": 0.6359101405024321,
+       "mase_mean": 0.48272862118963245,
+       "status": "MEDIDO"
+      },
+      "oracle": {
+       "mae_mean": 0.4542981699550048,
+       "mase_mean": 0.3517382717044203,
+       "status": "MEDIDO"
+      }
+     },
+     "train": {
+      "linear_window": {
+       "mae_mean": 0.43777571449219205,
+       "mase_mean": 0.34038472392127533,
+       "status": "MEDIDO"
+      },
+      "model": {
+       "mae_mean": 0.5275107857834622,
+       "mase_mean": 0.40709497666623035,
+       "status": "MEDIDO"
+      },
+      "naive": {
+       "mae_mean": 0.659596612869193,
+       "mase_mean": 0.5006614207171942,
+       "status": "MEDIDO"
+      },
+      "oracle": {
+       "mae_mean": 0.46246473658782467,
+       "mase_mean": 0.35823386066413454,
+       "status": "MEDIDO"
+      }
+     },
+     "validation": {
+      "linear_window": {
+       "mae_mean": 0.5309954904706198,
+       "mase_mean": 0.4123637844279549,
+       "status": "MEDIDO"
+      },
+      "model": {
+       "mae_mean": 0.5872652188251092,
+       "mase_mean": 0.45099239169530375,
+       "status": "MEDIDO"
+      },
+      "naive": {
+       "mae_mean": 0.6598628987556141,
+       "mase_mean": 0.4999485160169203,
+       "status": "MEDIDO"
+      },
+      "oracle": {
+       "mae_mean": 0.464329576192545,
+       "mase_mean": 0.35915325798253633,
+       "status": "MEDIDO"
+      }
+     }
+    },
+    "record": {
+     "arm": "profiles",
+     "assignment": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1
+     ],
+     "assignment_is_profile": true,
+     "cell_id": "DX__trend_event__s1__B__profiles",
+     "cost": {
+      "cpu_seconds": 46.031,
+      "fit_seconds": 34.831
+     },
+     "curve": {
+      "train": [
+       1.2714776992797852,
+       0.2479008585214615,
+       0.2033359408378601,
+       0.18879729509353638,
+       0.18131117522716522,
+       0.1765630692243576,
+       0.1731126457452774,
+       0.17035384476184845,
+       0.1679784655570984,
+       0.1658143252134323,
+       0.16377314925193787,
+       0.1618081033229828,
+       0.15989501774311066,
+       0.15802063047885895,
+       0.15616419911384583,
+       0.15430927276611328,
+       0.1524341106414795,
+       0.15051209926605225,
+       0.14852070808410645,
+       0.14646217226982117,
+       0.14434054493904114,
+       0.1421598196029663,
+       0.139923095703125,
+       0.13763098418712616,
+       0.13530327379703522,
+       0.13295398652553558,
+       0.13059623539447784,
+       0.12823761999607086,
+       0.12591826915740967,
+       0.12369486689567566,
+       0.12159930169582367,
+       0.11961887776851654,
+       0.11775115132331848,
+       0.11758965998888016
+      ],
+      "validation": [
+       0.2704031765460968,
+       0.21606764197349548,
+       0.19645968079566956,
+       0.18727901577949524,
+       0.1820695847272873,
+       0.17870107293128967,
+       0.1762835830450058,
+       0.17442554235458374,
+       0.17292460799217224,
+       0.171656996011734,
+       0.1705467253923416,
+       0.16951984167099,
+       0.16854435205459595,
+       0.16757413744926453,
+       0.16659259796142578,
+       0.16558074951171875,
+       0.16451337933540344,
+       0.16341473162174225,
+       0.16232329607009888,
+       0.16127079725265503,
+       0.1602531224489212,
+       0.15924417972564697,
+       0.158119797706604,
+       0.15682078897953033,
+       0.15535582602024078,
+       0.15367373824119568,
+       0.15176178514957428,
+       0.14964570105075836,
+       0.14739000797271729,
+       0.14520391821861267,
+       0.14326725900173187,
+       0.14168141782283783,
+       0.140424907207489,
+       0.14100545644760132
+      ]
+     },
+     "denominator": [
+      1.170794063101142,
+      1.1436150059045973,
+      1.1161784175020293,
+      1.1654930143339133,
+      1.5312624727783528,
+      1.4515251525112418,
+      1.4638685170898487,
+      1.4485473421355164
+     ],
+     "descriptor_version": 2,
+     "exposure": "TEST_SCORED_DESCRIPTIVE",
+     "extractor_weight_change": 19.201372146606445,
+     "fusion": "sequence",
+     "hypothesis": "DX",
+     "level": 3,
+     "linear_mase": {
+      "test": 0.41114083521488837,
+      "train": 0.34038472392127533,
+      "validation": 0.4123637844279549
+     },
+     "mae": {
+      "test": 0.5607105067061552,
+      "train": 0.5275107857834622,
+      "validation": 0.5872652188251092
+     },
+     "mase": {
+      "test": 0.43130103377711027,
+      "train": 0.40709497666623035,
+      "validation": 0.45099239169530375
+     },
+     "mse": {
+      "test": 0.5140425696169538,
+      "train": 0.4409235254564838,
+      "validation": 0.5383899662116808
+     },
+     "naive_mase": {
+      "test": 0.48272862118963245,
+      "train": 0.5006614207171942,
+      "validation": 0.4999485160169203
+     },
+     "oracle_mase": {
+      "test": 0.3517382717044203,
+      "train": 0.35823386066413454,
+      "validation": 0.35915325798253633
+     },
+     "parameters": {
+      "frozen": 0,
+      "total": 9608,
+      "trainable": 9608
+     },
+     "profiles_ari": 1.0,
+     "r": 1,
+     "receptive_field": 65,
+     "role": "CELL",
+     "seed": 1,
+     "stop_reason": "UPDATE_BUDGET",
+     "updates": 1100,
+     "window": 48
+    },
+    "role": "CELL",
+    "status": "VERIFIED"
+   },
+   "DX__trend_event__s1__C__profiles": {
+    "attempt": "DX__trend_event__s1__C__profiles",
+    "checks": {
+     "job_equals_design": true,
+     "profiles_and_assignment": true,
+     "receipts": true,
+     "scores_from_arrays": true,
+     "task_from_generator": true,
+     "weights_and_replay": true
+    },
+    "depends_on": null,
+    "digests": {
+     "cell": "9e660881e14554374bf4c91b833203d1446d3e215bc504afd9b407640d5e76a6"
+    },
+    "measured": {
+     "replay": {
+      "adapter_activation_max_abs_diff": null,
+      "cpu_seconds": 6.009,
+      "extractor_weights_unequal_layers": null,
+      "prediction_max_abs_diff": {
+       "test": 0.0,
+       "train": 0.0,
+       "validation": 0.0
+      },
+      "process": 2128361,
+      "recorded_best_validation_loss": 0.11717788875102997,
+      "restore_abs_diff": 8.657977390580385e-09,
+      "restored_validation_loss": 0.11717788009305258,
+      "scale_recomputed_equal": true
+     }
+    },
+    "problems": [],
+    "recomputed": {
+     "test": {
+      "linear_window": {
+       "mae_mean": 0.528974455675641,
+       "mase_mean": 0.41114083521488837,
+       "status": "MEDIDO"
+      },
+      "model": {
+       "mae_mean": 0.5229064292603987,
+       "mase_mean": 0.4041865830240929,
+       "status": "MEDIDO"
+      },
+      "naive": {
+       "mae_mean": 0.6359101405024321,
+       "mase_mean": 0.48272862118963245,
+       "status": "MEDIDO"
+      },
+      "oracle": {
+       "mae_mean": 0.4542981699550048,
+       "mase_mean": 0.3517382717044203,
+       "status": "MEDIDO"
+      }
+     },
+     "train": {
+      "linear_window": {
+       "mae_mean": 0.43777571449219205,
+       "mase_mean": 0.34038472392127533,
+       "status": "MEDIDO"
+      },
+      "model": {
+       "mae_mean": 0.5018105475992641,
+       "mase_mean": 0.3894122924812461,
+       "status": "MEDIDO"
+      },
+      "naive": {
+       "mae_mean": 0.659596612869193,
+       "mase_mean": 0.5006614207171942,
+       "status": "MEDIDO"
+      },
+      "oracle": {
+       "mae_mean": 0.46246473658782467,
+       "mase_mean": 0.35823386066413454,
+       "status": "MEDIDO"
+      }
+     },
+     "validation": {
+      "linear_window": {
+       "mae_mean": 0.5309954904706198,
+       "mase_mean": 0.4123637844279549,
+       "status": "MEDIDO"
+      },
+      "model": {
+       "mae_mean": 0.5350470601743542,
+       "mase_mean": 0.413133149377215,
+       "status": "MEDIDO"
+      },
+      "naive": {
+       "mae_mean": 0.6598628987556141,
+       "mase_mean": 0.4999485160169203,
+       "status": "MEDIDO"
+      },
+      "oracle": {
+       "mae_mean": 0.464329576192545,
+       "mase_mean": 0.35915325798253633,
+       "status": "MEDIDO"
+      }
+     }
+    },
+    "record": {
+     "arm": "profiles",
+     "assignment": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1
+     ],
+     "assignment_is_profile": true,
+     "cell_id": "DX__trend_event__s1__C__profiles",
+     "cost": {
+      "cpu_seconds": 50.56,
+      "fit_seconds": 41.308
+     },
+     "curve": {
+      "train": [
+       0.2101273536682129,
+       0.17224444448947906,
+       0.1615697145462036,
+       0.15063253045082092,
+       0.14018666744232178,
+       0.13050277531147003,
+       0.12301938235759735,
+       0.11760121583938599,
+       0.11424153298139572,
+       0.11208370327949524,
+       0.1104862317442894,
+       0.10922136902809143,
+       0.10817673802375793,
+       0.1072799414396286,
+       0.1064859926700592,
+       0.10576551407575607,
+       0.10510087013244629,
+       0.10447946935892105,
+       0.10389154404401779,
+       0.10333120077848434,
+       0.10279449075460434,
+       0.10227813571691513
+      ],
+      "validation": [
+       0.18144094944000244,
+       0.17022518813610077,
+       0.1612623631954193,
+       0.14991356432437897,
+       0.13935689628124237,
+       0.1320812851190567,
+       0.12522169947624207,
+       0.12110017985105515,
+       0.11938084661960602,
+       0.11831839382648468,
+       0.11767946183681488,
+       0.11734127998352051,
+       0.11719813197851181,
+       0.11717788875102997,
+       0.1172536090016365,
+       0.11740238964557648,
+       0.11760753393173218,
+       0.1178678423166275,
+       0.1181882917881012,
+       0.11857164651155472,
+       0.11901015043258667,
+       0.11948984116315842
+      ]
+     },
+     "denominator": [
+      1.170794063101142,
+      1.1436150059045973,
+      1.1161784175020293,
+      1.1654930143339133,
+      1.5312624727783528,
+      1.4515251525112418,
+      1.4638685170898487,
+      1.4485473421355164
+     ],
+     "descriptor_version": 2,
+     "exposure": "TEST_SCORED_DESCRIPTIVE",
+     "extractor_weight_change": 18.649250030517578,
+     "fusion": "sequence",
+     "hypothesis": "DX",
+     "level": 3,
+     "linear_mase": {
+      "test": 0.41114083521488837,
+      "train": 0.34038472392127533,
+      "validation": 0.4123637844279549
+     },
+     "mae": {
+      "test": 0.5229064292603987,
+      "train": 0.5018105475992641,
+      "validation": 0.5350470601743542
+     },
+     "mase": {
+      "test": 0.4041865830240929,
+      "train": 0.3894122924812461,
+      "validation": 0.413133149377215
+     },
+     "mse": {
+      "test": 0.4421745896215987,
+      "train": 0.396892331105677,
+      "validation": 0.44638016098776717
+     },
+     "naive_mase": {
+      "test": 0.48272862118963245,
+      "train": 0.5006614207171942,
+      "validation": 0.4999485160169203
+     },
+     "oracle_mase": {
+      "test": 0.3517382717044203,
+      "train": 0.35823386066413454,
+      "validation": 0.35915325798253633
+     },
+     "parameters": {
+      "frozen": 0,
+      "total": 6600,
+      "trainable": 6600
+     },
+     "profiles_ari": 1.0,
+     "r": 1,
+     "receptive_field": 65,
+     "role": "CELL",
+     "seed": 1,
+     "stop_reason": "EARLY_STOPPING",
+     "updates": 726,
+     "window": 48
+    },
+    "role": "CELL",
+    "status": "VERIFIED"
+   }
+  }
+ },
+ "schema": "df_mod_e0_close.v2",
+ "verdict": {
+  "live_all_equal": true,
+  "live_population_equal": true,
+  "local_closure": "TOTAL",
+  "note": "local (files) and live (accounting + warehouse) are separate results; neither stands for the other"
+ }
+}

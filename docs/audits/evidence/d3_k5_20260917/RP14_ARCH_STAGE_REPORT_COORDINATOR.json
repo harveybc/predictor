@@ -1,0 +1,2432 @@
+{
+ "already_spent_seconds": 4600.0,
+ "campaign": {
+  "campaign_sha256": "8ab01a5d37bdf24514a4989beee3e0317de11a6c224cb18a34963b56194d2fe7",
+  "key": "mod-e0-arch-stage-v1-mod-e0-cells"
+ },
+ "cap_seconds": 11100.0,
+ "cells": {
+  "DX__trend_event__s1__0__profiles": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "DX__trend_event__s1__A__profiles": {
+   "cost": {
+    "cgroup_memory_peak": 80482304,
+    "cpu_seconds": 1.141,
+    "ended_at": "2026-09-19T05:04:41+00:00",
+    "peak_rss_bytes": 119529472,
+    "started_at": "2026-09-19T05:04:40+00:00",
+    "wall_seconds": 1.219
+   },
+   "outcome": "UNCERTAIN",
+   "resumed": false
+  },
+  "DX__trend_event__s1__B__profiles": {
+   "cost": {
+    "cgroup_memory_peak": 80216064,
+    "cpu_seconds": 1.157,
+    "ended_at": "2026-09-19T05:04:42+00:00",
+    "peak_rss_bytes": 119369728,
+    "started_at": "2026-09-19T05:04:41+00:00",
+    "wall_seconds": 1.219
+   },
+   "outcome": "UNCERTAIN",
+   "resumed": false
+  },
+  "DX__trend_event__s1__C__profiles": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h0__s1__0__profiles": {
+   "arch": "0",
+   "cost": {
+    "cgroup_memory_peak": 436629504,
+    "cpu_seconds": 12.025,
+    "ended_at": "2026-09-19T05:04:33+00:00",
+    "peak_rss_bytes": 850481152,
+    "started_at": "2026-09-19T05:04:21+00:00",
+    "wall_seconds": 11.438
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence",
+   "linear_validation": 0.628297027008013,
+   "mase_test": 0.5914637031879738,
+   "mase_validation": 0.602555940407433,
+   "naive_validation": 0.7874266609640427,
+   "oracle_validation": 0.5589834177406332,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 536,
+    "trainable": 536
+   },
+   "profiles_ari": 0.16000000000000003,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H2__h0__s1__0__random_0": {
+   "arch": "0",
+   "cost": {
+    "cgroup_memory_peak": 438829056,
+    "cpu_seconds": 11.458,
+    "ended_at": "2026-09-19T05:04:34+00:00",
+    "peak_rss_bytes": 854523904,
+    "started_at": "2026-09-19T05:04:23+00:00",
+    "wall_seconds": 11.038
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence",
+   "linear_validation": 0.628297027008013,
+   "mase_test": 0.5931189314837098,
+   "mase_validation": 0.6023564187504531,
+   "naive_validation": 0.7874266609640427,
+   "oracle_validation": 0.5589834177406332,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 536,
+    "trainable": 536
+   },
+   "profiles_ari": 0.16000000000000003,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 957
+  },
+  "H2__h0__s1__A__profiles": {
+   "arch": "A",
+   "cost": {
+    "cgroup_memory_peak": 540426240,
+    "cpu_seconds": 28.747,
+    "ended_at": "2026-09-19T05:03:00+00:00",
+    "peak_rss_bytes": 953716736,
+    "started_at": "2026-09-19T05:02:31+00:00",
+    "wall_seconds": 28.476
+   },
+   "extractor_weight_change": 8.151283264160156,
+   "fusion": "sequence",
+   "linear_validation": 0.628297027008013,
+   "mase_test": 0.5905373184980661,
+   "mase_validation": 0.6093138139551935,
+   "naive_validation": 0.7874266609640427,
+   "oracle_validation": 0.5589834177406332,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 3336,
+    "trainable": 3336
+   },
+   "profiles_ari": 0.16000000000000003,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 693
+  },
+  "H2__h0__s1__A__random_0": {
+   "arch": "A",
+   "cost": {
+    "cgroup_memory_peak": 547536896,
+    "cpu_seconds": 30.771,
+    "ended_at": "2026-09-19T05:03:02+00:00",
+    "peak_rss_bytes": 961507328,
+    "started_at": "2026-09-19T05:02:31+00:00",
+    "wall_seconds": 30.503
+   },
+   "extractor_weight_change": 8.952432632446289,
+   "fusion": "sequence",
+   "linear_validation": 0.628297027008013,
+   "mase_test": 0.5885945656996365,
+   "mase_validation": 0.6058571740237443,
+   "naive_validation": 0.7874266609640427,
+   "oracle_validation": 0.5589834177406332,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 3336,
+    "trainable": 3336
+   },
+   "profiles_ari": 0.16000000000000003,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 891
+  },
+  "H2__h0__s1__B__profiles": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 602247168,
+    "cpu_seconds": 49.409,
+    "ended_at": "2026-09-19T05:03:20+00:00",
+    "peak_rss_bytes": 1012961280,
+    "started_at": "2026-09-19T05:02:31+00:00",
+    "wall_seconds": 48.922
+   },
+   "extractor_weight_change": 22.045818328857422,
+   "fusion": "sequence",
+   "linear_validation": 0.628297027008013,
+   "mase_test": 0.6399852707194909,
+   "mase_validation": 0.651891136936901,
+   "naive_validation": 0.7874266609640427,
+   "oracle_validation": 0.5589834177406332,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 9608,
+    "trainable": 9608
+   },
+   "profiles_ari": 0.16000000000000003,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 1089
+  },
+  "H2__h0__s1__B__random_0": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 604684288,
+    "cpu_seconds": 48.202,
+    "ended_at": "2026-09-19T05:03:47+00:00",
+    "peak_rss_bytes": 1015668736,
+    "started_at": "2026-09-19T05:03:00+00:00",
+    "wall_seconds": 47.745
+   },
+   "extractor_weight_change": 21.1527042388916,
+   "fusion": "sequence",
+   "linear_validation": 0.628297027008013,
+   "mase_test": 0.6396234812520929,
+   "mase_validation": 0.6717228831915132,
+   "naive_validation": 0.7874266609640427,
+   "oracle_validation": 0.5589834177406332,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 9608,
+    "trainable": 9608
+   },
+   "profiles_ari": 0.16000000000000003,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 1089
+  },
+  "H2__h0__s1__C__profiles": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h0__s1__C__random_0": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h0__s2__0__profiles": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h0__s2__0__random_0": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h0__s2__A__profiles": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h0__s2__A__random_0": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h0__s2__B__profiles": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 600158208,
+    "cpu_seconds": 40.103,
+    "ended_at": "2026-09-19T05:03:40+00:00",
+    "peak_rss_bytes": 1008209920,
+    "started_at": "2026-09-19T05:03:00+00:00",
+    "wall_seconds": 39.701
+   },
+   "extractor_weight_change": 20.947126388549805,
+   "fusion": "sequence",
+   "linear_validation": 0.6358264906632409,
+   "mase_test": 0.662056962340801,
+   "mase_validation": 0.6496193378206065,
+   "naive_validation": 0.793570071921698,
+   "oracle_validation": 0.5606905724849442,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 9608,
+    "trainable": 9608
+   },
+   "profiles_ari": 0.4948453608247423,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 759
+  },
+  "H2__h0__s2__B__random_0": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 600899584,
+    "cpu_seconds": 42.512,
+    "ended_at": "2026-09-19T05:03:44+00:00",
+    "peak_rss_bytes": 1009680384,
+    "started_at": "2026-09-19T05:03:02+00:00",
+    "wall_seconds": 42.128
+   },
+   "extractor_weight_change": 22.04296112060547,
+   "fusion": "sequence",
+   "linear_validation": 0.6358264906632409,
+   "mase_test": 0.6646015558845006,
+   "mase_validation": 0.6605345733220197,
+   "naive_validation": 0.793570071921698,
+   "oracle_validation": 0.5606905724849442,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 9608,
+    "trainable": 9608
+   },
+   "profiles_ari": 0.4948453608247423,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 858
+  },
+  "H2__h0__s2__C__profiles": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h0__s2__C__random_0": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s1__0__profiles": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s1__0__random_0": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s1__A__profiles": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s1__A__random_0": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s1__B__profiles": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s1__B__random_0": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s1__C__profiles": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s1__C__random_0": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s2__0__profiles": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s2__0__random_0": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s2__A__profiles": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s2__A__random_0": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s2__B__profiles": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 593465344,
+    "cpu_seconds": 42.739,
+    "ended_at": "2026-09-19T05:04:03+00:00",
+    "peak_rss_bytes": 1008701440,
+    "started_at": "2026-09-19T05:03:20+00:00",
+    "wall_seconds": 42.307
+   },
+   "extractor_weight_change": 20.514516830444336,
+   "fusion": "sequence",
+   "linear_validation": 0.4247401236357582,
+   "mase_test": 0.4462109228203489,
+   "mase_validation": 0.4425521882897543,
+   "naive_validation": 0.5084844906000098,
+   "oracle_validation": 0.36562848483942273,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 9608,
+    "trainable": 9608
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 858
+  },
+  "H2__h3__s2__B__random_0": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 594096128,
+    "cpu_seconds": 42.908,
+    "ended_at": "2026-09-19T05:04:23+00:00",
+    "peak_rss_bytes": 1009037312,
+    "started_at": "2026-09-19T05:03:40+00:00",
+    "wall_seconds": 42.906
+   },
+   "extractor_weight_change": 20.1861515045166,
+   "fusion": "sequence",
+   "linear_validation": 0.4247401236357582,
+   "mase_test": 0.440029056800167,
+   "mase_validation": 0.42903846307427396,
+   "naive_validation": 0.5084844906000098,
+   "oracle_validation": 0.36562848483942273,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 9608,
+    "trainable": 9608
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 924
+  },
+  "H2__h3__s2__C__profiles": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H2__h3__s2__C__random_0": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s1__0__extractor": {
+   "arch": "0",
+   "cost": {
+    "cgroup_memory_peak": 437637120,
+    "cpu_seconds": 12.29,
+    "ended_at": "2026-09-19T05:04:40+00:00",
+    "peak_rss_bytes": 851783680,
+    "started_at": "2026-09-19T05:04:28+00:00",
+    "wall_seconds": 11.841
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence",
+   "linear_validation": 0.6432099649798575,
+   "mase_test": 0.5959961961562837,
+   "mase_validation": 0.6067678194578504,
+   "naive_validation": 0.6906544826729741,
+   "oracle_validation": 0.4878828052134256,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 536,
+    "trainable": 536
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r0__s1__0__sequence": {
+   "arch": "0",
+   "cost": {
+    "cgroup_memory_peak": 434614272,
+    "cpu_seconds": 12.236,
+    "ended_at": "2026-09-19T05:06:38+00:00",
+    "peak_rss_bytes": 848519168,
+    "started_at": "2026-09-19T05:06:26+00:00",
+    "wall_seconds": 11.641
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence",
+   "linear_validation": 0.6432099649798575,
+   "mase_test": 0.5959961961562837,
+   "mase_validation": 0.6067678194578504,
+   "naive_validation": 0.6906544826729741,
+   "oracle_validation": 0.4878828052134256,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 536,
+    "trainable": 536
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r0__s1__0__summary": {
+   "arch": "0",
+   "cost": {
+    "cgroup_memory_peak": 413073408,
+    "cpu_seconds": 8.084,
+    "ended_at": "2026-09-19T05:06:46+00:00",
+    "peak_rss_bytes": 827531264,
+    "started_at": "2026-09-19T05:06:38+00:00",
+    "wall_seconds": 8.032
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "summary",
+   "linear_validation": 0.6432099649798575,
+   "mase_test": 0.668153435073989,
+   "mase_validation": 0.690231305672834,
+   "naive_validation": 0.6906544826729741,
+   "oracle_validation": 0.4878828052134256,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 552,
+    "trainable": 552
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 363
+  },
+  "H3__r0__s1__A__extractor": {
+   "arch": "A",
+   "cost": {
+    "cgroup_memory_peak": 540090368,
+    "cpu_seconds": 28.427,
+    "ended_at": "2026-09-19T05:02:59+00:00",
+    "peak_rss_bytes": 953221120,
+    "started_at": "2026-09-19T05:02:31+00:00",
+    "wall_seconds": 28.095
+   },
+   "extractor_weight_change": 7.591155052185059,
+   "fusion": "sequence",
+   "linear_validation": 0.6432099649798575,
+   "mase_test": 0.6005063939131036,
+   "mase_validation": 0.6113234543587758,
+   "naive_validation": 0.6906544826729741,
+   "oracle_validation": 0.4878828052134256,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 3336,
+    "trainable": 3336
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 693
+  },
+  "H3__r0__s1__A__sequence": {
+   "arch": "A",
+   "cost": {
+    "cgroup_memory_peak": 521023488,
+    "cpu_seconds": 20.737,
+    "ended_at": "2026-09-19T05:05:25+00:00",
+    "peak_rss_bytes": 933167104,
+    "started_at": "2026-09-19T05:05:05+00:00",
+    "wall_seconds": 20.463
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence",
+   "linear_validation": 0.6432099649798575,
+   "mase_test": 0.6026204711795105,
+   "mase_validation": 0.6072456771246714,
+   "naive_validation": 0.6906544826729741,
+   "oracle_validation": 0.4878828052134256,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 2416,
+    "total": 3336,
+    "trainable": 920
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 825
+  },
+  "H3__r0__s1__A__summary": {
+   "arch": "A",
+   "cost": {
+    "cgroup_memory_peak": 526688256,
+    "cpu_seconds": 22.502,
+    "ended_at": "2026-09-19T05:05:27+00:00",
+    "peak_rss_bytes": 940736512,
+    "started_at": "2026-09-19T05:05:05+00:00",
+    "wall_seconds": 22.063
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "summary",
+   "linear_validation": 0.6432099649798575,
+   "mase_test": 0.6585719485631498,
+   "mase_validation": 0.6778613223316933,
+   "naive_validation": 0.6906544826729741,
+   "oracle_validation": 0.4878828052134256,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 2416,
+    "total": 3224,
+    "trainable": 808
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r0__s1__B__extractor": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s1__B__sequence": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s1__B__summary": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s1__C__extractor": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s1__C__sequence": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s1__C__summary": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s2__0__extractor": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s2__0__sequence": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s2__0__summary": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s2__A__extractor": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s2__A__sequence": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s2__A__summary": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s2__B__extractor": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 586907648,
+    "cpu_seconds": 36.947,
+    "ended_at": "2026-09-19T05:04:21+00:00",
+    "peak_rss_bytes": 1002467328,
+    "started_at": "2026-09-19T05:03:44+00:00",
+    "wall_seconds": 36.692
+   },
+   "extractor_weight_change": 16.933767318725586,
+   "fusion": "sequence",
+   "linear_validation": 0.6551631618876486,
+   "mase_test": 0.6680903925838763,
+   "mase_validation": 0.6558284816571801,
+   "naive_validation": 0.6832257666606776,
+   "oracle_validation": 0.4879938490060962,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 9608,
+    "trainable": 9608
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 627
+  },
+  "H3__r0__s2__B__sequence": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 550359040,
+    "cpu_seconds": 27.337,
+    "ended_at": "2026-09-19T05:05:32+00:00",
+    "peak_rss_bytes": 964558848,
+    "started_at": "2026-09-19T05:05:05+00:00",
+    "wall_seconds": 26.881
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence",
+   "linear_validation": 0.6551631618876486,
+   "mase_test": 0.6650371153617047,
+   "mase_validation": 0.651681251708591,
+   "naive_validation": 0.6832257666606776,
+   "oracle_validation": 0.4879938490060962,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 8688,
+    "total": 9608,
+    "trainable": 920
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 990
+  },
+  "H3__r0__s2__B__summary": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 558014464,
+    "cpu_seconds": 28.387,
+    "ended_at": "2026-09-19T05:05:33+00:00",
+    "peak_rss_bytes": 965726208,
+    "started_at": "2026-09-19T05:05:05+00:00",
+    "wall_seconds": 27.873
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "summary",
+   "linear_validation": 0.6551631618876486,
+   "mase_test": 0.6930326273569928,
+   "mase_validation": 0.6778757088619293,
+   "naive_validation": 0.6832257666606776,
+   "oracle_validation": 0.4879938490060962,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 8688,
+    "total": 9496,
+    "trainable": 808
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r0__s2__C__extractor": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s2__C__sequence": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r0__s2__C__summary": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__0__extractor": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__0__sequence": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__0__sequence_gap": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__0__summary": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__0__summary_last": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__A__extractor": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__A__extractor_summary": {
+   "arch": "A",
+   "cost": {
+    "cgroup_memory_peak": 551350272,
+    "cpu_seconds": 31.413,
+    "ended_at": "2026-09-19T05:05:04+00:00",
+    "peak_rss_bytes": 966156288,
+    "started_at": "2026-09-19T05:04:33+00:00",
+    "wall_seconds": 30.881
+   },
+   "extractor_weight_change": 15.704680442810059,
+   "fusion": "summary",
+   "linear_validation": 0.5545724837889016,
+   "mase_test": 0.6098176530600978,
+   "mase_validation": 0.6284991338604958,
+   "naive_validation": 0.6864284565033694,
+   "oracle_validation": 0.488970648919542,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 3224,
+    "trainable": 3224
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r1__s1__A__sequence": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__A__sequence__dsum": {
+   "arch": "A",
+   "cost": {
+    "cgroup_memory_peak": 525025280,
+    "cpu_seconds": 22.558,
+    "ended_at": "2026-09-19T05:07:04+00:00",
+    "peak_rss_bytes": 939855872,
+    "started_at": "2026-09-19T05:06:42+00:00",
+    "wall_seconds": 22.057
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence",
+   "linear_validation": 0.5545724837889016,
+   "mase_test": 0.5433483909724223,
+   "mase_validation": 0.5633627868810278,
+   "naive_validation": 0.6864284565033694,
+   "oracle_validation": 0.488970648919542,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 2416,
+    "total": 3336,
+    "trainable": 920
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r1__s1__A__sequence_gap": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__A__summary": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__A__summary__dsum": {
+   "arch": "A",
+   "cost": {
+    "cgroup_memory_peak": 511848448,
+    "cpu_seconds": 16.997,
+    "ended_at": "2026-09-19T05:07:02+00:00",
+    "peak_rss_bytes": 925274112,
+    "started_at": "2026-09-19T05:06:45+00:00",
+    "wall_seconds": 16.852
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "summary",
+   "linear_validation": 0.5545724837889016,
+   "mase_test": 0.602490375496588,
+   "mase_validation": 0.6180214724962254,
+   "naive_validation": 0.6864284565033694,
+   "oracle_validation": 0.488970648919542,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 2416,
+    "total": 3224,
+    "trainable": 808
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 429
+  },
+  "H3__r1__s1__A__summary_last": {
+   "host_role": "WORKER_B",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__B__extractor": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__B__extractor_summary": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__B__sequence": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__B__sequence__dsum": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__B__sequence_gap": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__B__summary": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__B__summary__dsum": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__B__summary_last": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s1__C__extractor": {
+   "arch": "C",
+   "cost": {
+    "cgroup_memory_peak": 602415104,
+    "cpu_seconds": 56.657,
+    "ended_at": "2026-09-19T05:04:59+00:00",
+    "peak_rss_bytes": 1017241600,
+    "started_at": "2026-09-19T05:04:03+00:00",
+    "wall_seconds": 56.336
+   },
+   "extractor_weight_change": 21.283294677734375,
+   "fusion": "sequence",
+   "linear_validation": 0.5545724837889016,
+   "mase_test": 0.5336638949160939,
+   "mase_validation": 0.5483200451096801,
+   "naive_validation": 0.6864284565033694,
+   "oracle_validation": 0.488970648919542,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 6600,
+    "trainable": 6600
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 693
+  },
+  "H3__r1__s1__C__sequence": {
+   "arch": "C",
+   "cost": {
+    "cgroup_memory_peak": 568713216,
+    "cpu_seconds": 36.376,
+    "ended_at": "2026-09-19T05:06:26+00:00",
+    "peak_rss_bytes": 982786048,
+    "started_at": "2026-09-19T05:05:50+00:00",
+    "wall_seconds": 36.1
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence",
+   "linear_validation": 0.5545724837889016,
+   "mase_test": 0.531201704958805,
+   "mase_validation": 0.5451252972295743,
+   "naive_validation": 0.6864284565033694,
+   "oracle_validation": 0.488970648919542,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 5680,
+    "total": 6600,
+    "trainable": 920
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 594
+  },
+  "H3__r1__s1__C__sequence_gap": {
+   "arch": "C",
+   "cost": {
+    "cgroup_memory_peak": 588484608,
+    "cpu_seconds": 46.976,
+    "ended_at": "2026-09-19T05:06:42+00:00",
+    "peak_rss_bytes": 996970496,
+    "started_at": "2026-09-19T05:05:56+00:00",
+    "wall_seconds": 46.333
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence_gap",
+   "linear_validation": 0.5545724837889016,
+   "mase_test": 0.6445481444103437,
+   "mase_validation": 0.6667964497793228,
+   "naive_validation": 0.6864284565033694,
+   "oracle_validation": 0.488970648919542,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 5680,
+    "total": 6600,
+    "trainable": 920
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r1__s1__C__summary": {
+   "arch": "C",
+   "cost": {
+    "cgroup_memory_peak": 585510912,
+    "cpu_seconds": 45.695,
+    "ended_at": "2026-09-19T05:06:45+00:00",
+    "peak_rss_bytes": 994893824,
+    "started_at": "2026-09-19T05:05:59+00:00",
+    "wall_seconds": 45.133
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "summary",
+   "linear_validation": 0.5545724837889016,
+   "mase_test": 0.6517587314438636,
+   "mase_validation": 0.6741190966691148,
+   "naive_validation": 0.6864284565033694,
+   "oracle_validation": 0.488970648919542,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 5680,
+    "total": 6488,
+    "trainable": 808
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r1__s1__C__summary_last": {
+   "arch": "C",
+   "cost": {
+    "cgroup_memory_peak": 585142272,
+    "cpu_seconds": 46.438,
+    "ended_at": "2026-09-19T05:06:46+00:00",
+    "peak_rss_bytes": 999796736,
+    "started_at": "2026-09-19T05:06:00+00:00",
+    "wall_seconds": 45.91
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "summary_last",
+   "linear_validation": 0.5545724837889016,
+   "mase_test": 0.5800134081755801,
+   "mase_validation": 0.5987939603870511,
+   "naive_validation": 0.6864284565033694,
+   "oracle_validation": 0.488970648919542,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 5680,
+    "total": 6488,
+    "trainable": 808
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r1__s2__0__extractor": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__0__sequence": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__0__sequence_gap": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__0__summary": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__0__summary_last": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__A__extractor": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__A__extractor_summary": {
+   "arch": "A",
+   "cost": {
+    "cgroup_memory_peak": 550711296,
+    "cpu_seconds": 31.173,
+    "ended_at": "2026-09-19T05:05:05+00:00",
+    "peak_rss_bytes": 965312512,
+    "started_at": "2026-09-19T05:04:34+00:00",
+    "wall_seconds": 30.477
+   },
+   "extractor_weight_change": 15.709692001342773,
+   "fusion": "summary",
+   "linear_validation": 0.5681967230879232,
+   "mase_test": 0.6470191553431557,
+   "mase_validation": 0.6393104520478046,
+   "naive_validation": 0.6987060981192222,
+   "oracle_validation": 0.49487495814315735,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 3224,
+    "trainable": 3224
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r1__s2__A__sequence": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__A__sequence__dsum": {
+   "arch": "A",
+   "cost": {
+    "cgroup_memory_peak": 524865536,
+    "cpu_seconds": 22.242,
+    "ended_at": "2026-09-19T05:07:07+00:00",
+    "peak_rss_bytes": 938127360,
+    "started_at": "2026-09-19T05:06:46+00:00",
+    "wall_seconds": 21.657
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence",
+   "linear_validation": 0.5681967230879232,
+   "mase_test": 0.5854578544085751,
+   "mase_validation": 0.5757447531074033,
+   "naive_validation": 0.6987060981192222,
+   "oracle_validation": 0.49487495814315735,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 2416,
+    "total": 3336,
+    "trainable": 920
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r1__s2__A__sequence_gap": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__A__summary": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__A__summary__dsum": {
+   "arch": "A",
+   "cost": {
+    "cgroup_memory_peak": 530632704,
+    "cpu_seconds": 21.662,
+    "ended_at": "2026-09-19T05:07:07+00:00",
+    "peak_rss_bytes": 943161344,
+    "started_at": "2026-09-19T05:06:46+00:00",
+    "wall_seconds": 21.057
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "summary",
+   "linear_validation": 0.5681967230879232,
+   "mase_test": 0.645982189287815,
+   "mase_validation": 0.635430415994241,
+   "naive_validation": 0.6987060981192222,
+   "oracle_validation": 0.49487495814315735,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 2416,
+    "total": 3224,
+    "trainable": 808
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r1__s2__A__summary_last": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__B__extractor": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 596586496,
+    "cpu_seconds": 40.41,
+    "ended_at": "2026-09-19T05:04:28+00:00",
+    "peak_rss_bytes": 1008623616,
+    "started_at": "2026-09-19T05:03:48+00:00",
+    "wall_seconds": 40.096
+   },
+   "extractor_weight_change": 20.49820327758789,
+   "fusion": "sequence",
+   "linear_validation": 0.5681967230879232,
+   "mase_test": 0.6035594655297545,
+   "mase_validation": 0.5912529340601284,
+   "naive_validation": 0.6987060981192222,
+   "oracle_validation": 0.49487495814315735,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 9608,
+    "trainable": 9608
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 792
+  },
+  "H3__r1__s2__B__extractor_summary": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__B__sequence": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 543416320,
+    "cpu_seconds": 24.728,
+    "ended_at": "2026-09-19T05:05:50+00:00",
+    "peak_rss_bytes": 958513152,
+    "started_at": "2026-09-19T05:05:25+00:00",
+    "wall_seconds": 24.466
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence",
+   "linear_validation": 0.5681967230879232,
+   "mase_test": 0.5994285105992058,
+   "mase_validation": 0.5913653398274931,
+   "naive_validation": 0.6987060981192222,
+   "oracle_validation": 0.49487495814315735,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 8688,
+    "total": 9608,
+    "trainable": 920
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 693
+  },
+  "H3__r1__s2__B__sequence__dsum": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__B__sequence_gap": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 558309376,
+    "cpu_seconds": 29.087,
+    "ended_at": "2026-09-19T05:05:55+00:00",
+    "peak_rss_bytes": 969818112,
+    "started_at": "2026-09-19T05:05:27+00:00",
+    "wall_seconds": 28.476
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "sequence_gap",
+   "linear_validation": 0.5681967230879232,
+   "mase_test": 0.6790002613042561,
+   "mase_validation": 0.6762246811287953,
+   "naive_validation": 0.6987060981192222,
+   "oracle_validation": 0.49487495814315735,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 8688,
+    "total": 9608,
+    "trainable": 920
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r1__s2__B__summary": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 557826048,
+    "cpu_seconds": 28.027,
+    "ended_at": "2026-09-19T05:05:59+00:00",
+    "peak_rss_bytes": 968368128,
+    "started_at": "2026-09-19T05:05:32+00:00",
+    "wall_seconds": 27.478
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "summary",
+   "linear_validation": 0.5681967230879232,
+   "mase_test": 0.6939755051313656,
+   "mase_validation": 0.6894255587132818,
+   "naive_validation": 0.6987060981192222,
+   "oracle_validation": 0.49487495814315735,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 8688,
+    "total": 9496,
+    "trainable": 808
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1100
+  },
+  "H3__r1__s2__B__summary__dsum": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__B__summary_last": {
+   "arch": "B",
+   "cost": {
+    "cgroup_memory_peak": 556249088,
+    "cpu_seconds": 26.961,
+    "ended_at": "2026-09-19T05:06:00+00:00",
+    "peak_rss_bytes": 966987776,
+    "started_at": "2026-09-19T05:05:33+00:00",
+    "wall_seconds": 26.47
+   },
+   "extractor_weight_change": 0.0,
+   "fusion": "summary_last",
+   "linear_validation": 0.5681967230879232,
+   "mase_test": 0.6065498368429059,
+   "mase_validation": 0.6217646452735113,
+   "naive_validation": 0.6987060981192222,
+   "oracle_validation": 0.49487495814315735,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 8688,
+    "total": 9496,
+    "trainable": 808
+   },
+   "profiles_ari": 1.0,
+   "resumed": false,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 990
+  },
+  "H3__r1__s2__C__extractor": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__C__sequence": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__C__sequence_gap": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__C__summary": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  },
+  "H3__r1__s2__C__summary_last": {
+   "host_role": "WORKER_A",
+   "outcome": "DELEGATED",
+   "why": "dealt to another host; reported after collection"
+  }
+ },
+ "code_identity": {
+  "kind": "git_commit",
+  "value": "e1550ace1ee47747b855a311dad9e18af689b22e"
+ },
+ "cost_pilot": {
+  "pilot__0__H2_profiles": {
+   "cpu_seconds": 7.471,
+   "descriptor_seconds": 0.1938,
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 2.141,
+   "fit_seconds_net": 1.9472,
+   "overhead_seconds": 5.5238,
+   "seconds_per_update": 0.006490666666666667,
+   "updates": 300
+  },
+  "pilot__0__H3_extractor": {
+   "cpu_seconds": 7.605,
+   "descriptor_seconds": 0.1965,
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 2.145,
+   "fit_seconds_net": 1.9485000000000001,
+   "overhead_seconds": 5.6565,
+   "seconds_per_update": 0.006495000000000001,
+   "updates": 300
+  },
+  "pilot__0__H3_sequence": {
+   "cpu_seconds": 7.603,
+   "descriptor_seconds": 0.2054,
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 2.177,
+   "fit_seconds_net": 1.9716,
+   "overhead_seconds": 5.631399999999999,
+   "seconds_per_update": 0.006572,
+   "updates": 300
+  },
+  "pilot__A__H2_profiles": {
+   "cpu_seconds": 18.695,
+   "descriptor_seconds": 1.9829,
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 10.354,
+   "fit_seconds_net": 8.371099999999998,
+   "overhead_seconds": 10.323900000000002,
+   "seconds_per_update": 0.02790366666666666,
+   "updates": 300
+  },
+  "pilot__A__H3_extractor": {
+   "cpu_seconds": 18.387,
+   "descriptor_seconds": 1.9478,
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 10.092,
+   "fit_seconds_net": 8.144200000000001,
+   "overhead_seconds": 10.242799999999999,
+   "seconds_per_update": 0.02714733333333334,
+   "updates": 300
+  },
+  "pilot__A__H3_sequence": {
+   "cpu_seconds": 15.375,
+   "descriptor_seconds": 1.9041,
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 7.143,
+   "fit_seconds_net": 5.2389,
+   "overhead_seconds": 10.136099999999999,
+   "seconds_per_update": 0.017463,
+   "updates": 300
+  },
+  "pilot__B__H2_profiles": {
+   "cpu_seconds": 24.89,
+   "descriptor_seconds": 2.6299,
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 15.61,
+   "fit_seconds_net": 12.9801,
+   "overhead_seconds": 11.9099,
+   "seconds_per_update": 0.043267,
+   "updates": 300
+  },
+  "pilot__B__H3_extractor": {
+   "cpu_seconds": 24.922,
+   "descriptor_seconds": 2.577,
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 15.537,
+   "fit_seconds_net": 12.96,
+   "overhead_seconds": 11.962,
+   "seconds_per_update": 0.0432,
+   "updates": 300
+  },
+  "pilot__B__H3_sequence": {
+   "cpu_seconds": 18.452,
+   "descriptor_seconds": 2.4607,
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 9.142,
+   "fit_seconds_net": 6.681299999999999,
+   "overhead_seconds": 11.770700000000001,
+   "seconds_per_update": 0.022271,
+   "updates": 300
+  },
+  "pilot__C__H2_profiles": {
+   "cpu_seconds": 35.451,
+   "descriptor_seconds": 8.4769,
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 25.195,
+   "fit_seconds_net": 16.7181,
+   "overhead_seconds": 18.7329,
+   "seconds_per_update": 0.055727,
+   "updates": 300
+  },
+  "pilot__C__H3_extractor": {
+   "cpu_seconds": 35.05,
+   "descriptor_seconds": 8.2513,
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 24.713,
+   "fit_seconds_net": 16.4617,
+   "overhead_seconds": 18.588299999999997,
+   "seconds_per_update": 0.054872333333333335,
+   "updates": 300
+  },
+  "pilot__C__H3_sequence": {
+   "cpu_seconds": 27.429,
+   "descriptor_seconds": 8.3219,
+   "exposure": "NO_TEST_ACCESS",
+   "fit_seconds": 17.166,
+   "fit_seconds_net": 8.844100000000001,
+   "overhead_seconds": 18.584899999999998,
+   "seconds_per_update": 0.029480333333333338,
+   "updates": 300
+  }
+ },
+ "design_sha256": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+ "envelope": {
+  "digest": "a44846eefca704a0d4f157d978451950bf90f9197aa4b9d265fa98be9bfb0074",
+  "envelope_sha256": "a2540711e70166d74133871df3c1afc7afbdbf665b425d9a2fde11808e9ee3ad",
+  "outbox_entry": "envelope-a44846eefca704a0d4f157d978451950bf90f9197aa4b9d265fa98be9bfb0074.json",
+  "state": "pending",
+  "written": true
+ },
+ "execute_only": false,
+ "live_checks_note": "reconciliation is a live data-gov query at run time; warehouse content checks are separate",
+ "parallel": 4,
+ "projection": {
+  "assumption": "every cell at its full update allowance (early stopping only lowers it); per-update cost from the pilot of its arm type; overhead per child from the pilots; a projection, not an exact need",
+  "by_role_with_headroom": {
+   "COORDINATOR": 1899.2412499999998,
+   "WORKER_A": 2912.829833333332,
+   "WORKER_B": 837.6655
+  },
+  "cap_seconds": 11100.0,
+  "cells": 112,
+  "fits": true,
+  "headroom": 0.25,
+  "per_cell": {
+   "DX__trend_event__s1__0__profiles": 12.663533333333334,
+   "DX__trend_event__s1__A__profiles": 41.01793333333333,
+   "DX__trend_event__s1__B__profiles": 59.5036,
+   "DX__trend_event__s1__C__profiles": 80.0326,
+   "H2__h0__s1__0__profiles": 12.663533333333334,
+   "H2__h0__s1__0__random_0": 12.663533333333334,
+   "H2__h0__s1__A__profiles": 41.01793333333333,
+   "H2__h0__s1__A__random_0": 41.01793333333333,
+   "H2__h0__s1__B__profiles": 59.5036,
+   "H2__h0__s1__B__random_0": 59.5036,
+   "H2__h0__s1__C__profiles": 80.0326,
+   "H2__h0__s1__C__random_0": 80.0326,
+   "H2__h0__s2__0__profiles": 12.663533333333334,
+   "H2__h0__s2__0__random_0": 12.663533333333334,
+   "H2__h0__s2__A__profiles": 41.01793333333333,
+   "H2__h0__s2__A__random_0": 41.01793333333333,
+   "H2__h0__s2__B__profiles": 59.5036,
+   "H2__h0__s2__B__random_0": 59.5036,
+   "H2__h0__s2__C__profiles": 80.0326,
+   "H2__h0__s2__C__random_0": 80.0326,
+   "H2__h3__s1__0__profiles": 12.663533333333334,
+   "H2__h3__s1__0__random_0": 12.663533333333334,
+   "H2__h3__s1__A__profiles": 41.01793333333333,
+   "H2__h3__s1__A__random_0": 41.01793333333333,
+   "H2__h3__s1__B__profiles": 59.5036,
+   "H2__h3__s1__B__random_0": 59.5036,
+   "H2__h3__s1__C__profiles": 80.0326,
+   "H2__h3__s1__C__random_0": 80.0326,
+   "H2__h3__s2__0__profiles": 12.663533333333334,
+   "H2__h3__s2__0__random_0": 12.663533333333334,
+   "H2__h3__s2__A__profiles": 41.01793333333333,
+   "H2__h3__s2__A__random_0": 41.01793333333333,
+   "H2__h3__s2__B__profiles": 59.5036,
+   "H2__h3__s2__B__random_0": 59.5036,
+   "H2__h3__s2__C__profiles": 80.0326,
+   "H2__h3__s2__C__random_0": 80.0326,
+   "H3__r0__s1__0__extractor": 12.801000000000002,
+   "H3__r0__s1__0__sequence": 12.860599999999998,
+   "H3__r0__s1__0__summary": 12.860599999999998,
+   "H3__r0__s1__A__extractor": 40.10486666666667,
+   "H3__r0__s1__A__sequence": 29.345399999999998,
+   "H3__r0__s1__A__summary": 29.345399999999998,
+   "H3__r0__s1__B__extractor": 59.482,
+   "H3__r0__s1__B__sequence": 36.2688,
+   "H3__r0__s1__B__summary": 36.2688,
+   "H3__r0__s1__C__extractor": 78.94786666666667,
+   "H3__r0__s1__C__sequence": 51.01326666666667,
+   "H3__r0__s1__C__summary": 51.01326666666667,
+   "H3__r0__s2__0__extractor": 12.801000000000002,
+   "H3__r0__s2__0__sequence": 12.860599999999998,
+   "H3__r0__s2__0__summary": 12.860599999999998,
+   "H3__r0__s2__A__extractor": 40.10486666666667,
+   "H3__r0__s2__A__sequence": 29.345399999999998,
+   "H3__r0__s2__A__summary": 29.345399999999998,
+   "H3__r0__s2__B__extractor": 59.482,
+   "H3__r0__s2__B__sequence": 36.2688,
+   "H3__r0__s2__B__summary": 36.2688,
+   "H3__r0__s2__C__extractor": 78.94786666666667,
+   "H3__r0__s2__C__sequence": 51.01326666666667,
+   "H3__r0__s2__C__summary": 51.01326666666667,
+   "H3__r1__s1__0__extractor": 12.801000000000002,
+   "H3__r1__s1__0__sequence": 12.860599999999998,
+   "H3__r1__s1__0__sequence_gap": 12.860599999999998,
+   "H3__r1__s1__0__summary": 12.860599999999998,
+   "H3__r1__s1__0__summary_last": 12.860599999999998,
+   "H3__r1__s1__A__extractor": 40.10486666666667,
+   "H3__r1__s1__A__extractor_summary": 40.10486666666667,
+   "H3__r1__s1__A__sequence": 29.345399999999998,
+   "H3__r1__s1__A__sequence__dsum": 29.345399999999998,
+   "H3__r1__s1__A__sequence_gap": 29.345399999999998,
+   "H3__r1__s1__A__summary": 29.345399999999998,
+   "H3__r1__s1__A__summary__dsum": 29.345399999999998,
+   "H3__r1__s1__A__summary_last": 29.345399999999998,
+   "H3__r1__s1__B__extractor": 59.482,
+   "H3__r1__s1__B__extractor_summary": 59.482,
+   "H3__r1__s1__B__sequence": 36.2688,
+   "H3__r1__s1__B__sequence__dsum": 36.2688,
+   "H3__r1__s1__B__sequence_gap": 36.2688,
+   "H3__r1__s1__B__summary": 36.2688,
+   "H3__r1__s1__B__summary__dsum": 36.2688,
+   "H3__r1__s1__B__summary_last": 36.2688,
+   "H3__r1__s1__C__extractor": 78.94786666666667,
+   "H3__r1__s1__C__sequence": 51.01326666666667,
+   "H3__r1__s1__C__sequence_gap": 51.01326666666667,
+   "H3__r1__s1__C__summary": 51.01326666666667,
+   "H3__r1__s1__C__summary_last": 51.01326666666667,
+   "H3__r1__s2__0__extractor": 12.801000000000002,
+   "H3__r1__s2__0__sequence": 12.860599999999998,
+   "H3__r1__s2__0__sequence_gap": 12.860599999999998,
+   "H3__r1__s2__0__summary": 12.860599999999998,
+   "H3__r1__s2__0__summary_last": 12.860599999999998,
+   "H3__r1__s2__A__extractor": 40.10486666666667,
+   "H3__r1__s2__A__extractor_summary": 40.10486666666667,
+   "H3__r1__s2__A__sequence": 29.345399999999998,
+   "H3__r1__s2__A__sequence__dsum": 29.345399999999998,
+   "H3__r1__s2__A__sequence_gap": 29.345399999999998,
+   "H3__r1__s2__A__summary": 29.345399999999998,
+   "H3__r1__s2__A__summary__dsum": 29.345399999999998,
+   "H3__r1__s2__A__summary_last": 29.345399999999998,
+   "H3__r1__s2__B__extractor": 59.482,
+   "H3__r1__s2__B__extractor_summary": 59.482,
+   "H3__r1__s2__B__sequence": 36.2688,
+   "H3__r1__s2__B__sequence__dsum": 36.2688,
+   "H3__r1__s2__B__sequence_gap": 36.2688,
+   "H3__r1__s2__B__summary": 36.2688,
+   "H3__r1__s2__B__summary__dsum": 36.2688,
+   "H3__r1__s2__B__summary_last": 36.2688,
+   "H3__r1__s2__C__extractor": 78.94786666666667,
+   "H3__r1__s2__C__sequence": 51.01326666666667,
+   "H3__r1__s2__C__sequence_gap": 51.01326666666667,
+   "H3__r1__s2__C__summary": 51.01326666666667,
+   "H3__r1__s2__C__summary_last": 51.01326666666667
+  },
+  "projected_remaining_cpu_seconds": 4519.789266666667,
+  "projected_with_headroom": 5649.736583333333,
+  "remaining_cells": 112,
+  "spent_so_far": 4841.33
+ },
+ "reconciliation": {
+  "accounting_only": [],
+  "http": 200,
+  "lake_only": [],
+  "missing_units": [
+   "DX__trend_event__s1__0__profiles",
+   "DX__trend_event__s1__C__profiles",
+   "H2__h0__s1__C__profiles",
+   "H2__h0__s1__C__random_0",
+   "H2__h0__s2__0__profiles",
+   "H2__h0__s2__0__random_0",
+   "H2__h0__s2__A__profiles",
+   "H2__h0__s2__A__random_0",
+   "H2__h0__s2__C__profiles",
+   "H2__h0__s2__C__random_0",
+   "H2__h3__s1__0__profiles",
+   "H2__h3__s1__0__random_0",
+   "H2__h3__s1__A__profiles",
+   "H2__h3__s1__A__random_0",
+   "H2__h3__s1__B__profiles",
+   "H2__h3__s1__B__random_0",
+   "H2__h3__s1__C__profiles",
+   "H2__h3__s1__C__random_0",
+   "H2__h3__s2__0__profiles",
+   "H2__h3__s2__0__random_0",
+   "H2__h3__s2__A__profiles",
+   "H2__h3__s2__A__random_0",
+   "H2__h3__s2__C__profiles",
+   "H2__h3__s2__C__random_0",
+   "H3__r0__s1__B__extractor",
+   "H3__r0__s1__B__sequence",
+   "H3__r0__s1__B__summary",
+   "H3__r0__s1__C__extractor",
+   "H3__r0__s1__C__sequence",
+   "H3__r0__s1__C__summary",
+   "H3__r0__s2__0__extractor",
+   "H3__r0__s2__0__sequence",
+   "H3__r0__s2__0__summary",
+   "H3__r0__s2__A__extractor",
+   "H3__r0__s2__A__sequence",
+   "H3__r0__s2__A__summary",
+   "H3__r0__s2__C__extractor",
+   "H3__r0__s2__C__sequence",
+   "H3__r0__s2__C__summary",
+   "H3__r1__s1__0__extractor",
+   "H3__r1__s1__0__sequence",
+   "H3__r1__s1__0__sequence_gap",
+   "H3__r1__s1__0__summary",
+   "H3__r1__s1__0__summary_last",
+   "H3__r1__s1__A__extractor",
+   "H3__r1__s1__A__sequence",
+   "H3__r1__s1__A__sequence_gap",
+   "H3__r1__s1__A__summary",
+   "H3__r1__s1__A__summary_last",
+   "H3__r1__s1__B__extractor",
+   "H3__r1__s1__B__extractor_summary",
+   "H3__r1__s1__B__sequence",
+   "H3__r1__s1__B__sequence__dsum",
+   "H3__r1__s1__B__sequence_gap",
+   "H3__r1__s1__B__summary",
+   "H3__r1__s1__B__summary__dsum",
+   "H3__r1__s1__B__summary_last",
+   "H3__r1__s2__0__extractor",
+   "H3__r1__s2__0__sequence",
+   "H3__r1__s2__0__sequence_gap",
+   "H3__r1__s2__0__summary",
+   "H3__r1__s2__0__summary_last",
+   "H3__r1__s2__A__extractor",
+   "H3__r1__s2__A__sequence",
+   "H3__r1__s2__A__sequence_gap",
+   "H3__r1__s2__A__summary",
+   "H3__r1__s2__A__summary_last",
+   "H3__r1__s2__B__extractor_summary",
+   "H3__r1__s2__B__sequence__dsum",
+   "H3__r1__s2__B__summary__dsum",
+   "H3__r1__s2__C__extractor",
+   "H3__r1__s2__C__sequence",
+   "H3__r1__s2__C__sequence_gap",
+   "H3__r1__s2__C__summary",
+   "H3__r1__s2__C__summary_last"
+  ]
+ },
+ "report_collected": false,
+ "role": "COORDINATOR",
+ "run_id": "mod-e0-arch-stage-v1",
+ "schema": "df_mod_e0_report.v1",
+ "spent_cpu_seconds": 5916.849,
+ "stopped": null,
+ "terminals": [
+  {
+   "cost": {
+    "cgroup_memory_peak": 526700544,
+    "cpu_seconds": 18.695,
+    "ended_at": "2026-09-19T04:58:49+00:00",
+    "peak_rss_bytes": 938156032,
+    "started_at": "2026-09-19T04:58:30+00:00",
+    "wall_seconds": 18.652
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "pilot__A__H2_profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 525914112,
+    "cpu_seconds": 18.387,
+    "ended_at": "2026-09-19T04:59:07+00:00",
+    "peak_rss_bytes": 939220992,
+    "started_at": "2026-09-19T04:58:49+00:00",
+    "wall_seconds": 18.25
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "pilot__A__H3_extractor"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 582541312,
+    "cpu_seconds": 24.89,
+    "ended_at": "2026-09-19T04:59:32+00:00",
+    "peak_rss_bytes": 989421568,
+    "started_at": "2026-09-19T04:59:07+00:00",
+    "wall_seconds": 24.863
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "pilot__B__H2_profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 579788800,
+    "cpu_seconds": 24.922,
+    "ended_at": "2026-09-19T04:59:57+00:00",
+    "peak_rss_bytes": 991444992,
+    "started_at": "2026-09-19T04:59:32+00:00",
+    "wall_seconds": 24.861
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "pilot__B__H3_extractor"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 590708736,
+    "cpu_seconds": 35.451,
+    "ended_at": "2026-09-19T05:00:32+00:00",
+    "peak_rss_bytes": 1002037248,
+    "started_at": "2026-09-19T04:59:57+00:00",
+    "wall_seconds": 35.283
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "pilot__C__H2_profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 589455360,
+    "cpu_seconds": 35.05,
+    "ended_at": "2026-09-19T05:01:07+00:00",
+    "peak_rss_bytes": 1002524672,
+    "started_at": "2026-09-19T05:00:32+00:00",
+    "wall_seconds": 34.882
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "pilot__C__H3_extractor"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 411582464,
+    "cpu_seconds": 7.471,
+    "ended_at": "2026-09-19T05:01:15+00:00",
+    "peak_rss_bytes": 825573376,
+    "started_at": "2026-09-19T05:01:08+00:00",
+    "wall_seconds": 7.429
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "pilot__0__H2_profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 410578944,
+    "cpu_seconds": 7.605,
+    "ended_at": "2026-09-19T05:01:23+00:00",
+    "peak_rss_bytes": 824369152,
+    "started_at": "2026-09-19T05:01:15+00:00",
+    "wall_seconds": 7.432
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "pilot__0__H3_extractor"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 509263872,
+    "cpu_seconds": 15.375,
+    "ended_at": "2026-09-19T05:01:38+00:00",
+    "peak_rss_bytes": 920801280,
+    "started_at": "2026-09-19T05:01:23+00:00",
+    "wall_seconds": 15.244
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "pilot__A__H3_sequence"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 532049920,
+    "cpu_seconds": 18.452,
+    "ended_at": "2026-09-19T05:01:56+00:00",
+    "peak_rss_bytes": 942596096,
+    "started_at": "2026-09-19T05:01:38+00:00",
+    "wall_seconds": 18.249
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "pilot__B__H3_sequence"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 564948992,
+    "cpu_seconds": 27.429,
+    "ended_at": "2026-09-19T05:02:24+00:00",
+    "peak_rss_bytes": 971841536,
+    "started_at": "2026-09-19T05:01:56+00:00",
+    "wall_seconds": 27.268
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "pilot__C__H3_sequence"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 411471872,
+    "cpu_seconds": 7.603,
+    "ended_at": "2026-09-19T05:02:31+00:00",
+    "peak_rss_bytes": 825573376,
+    "started_at": "2026-09-19T05:02:24+00:00",
+    "wall_seconds": 7.43
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "pilot__0__H3_sequence"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 540090368,
+    "cpu_seconds": 28.427,
+    "ended_at": "2026-09-19T05:02:59+00:00",
+    "peak_rss_bytes": 953221120,
+    "started_at": "2026-09-19T05:02:31+00:00",
+    "wall_seconds": 28.095
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r0__s1__A__extractor"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 540426240,
+    "cpu_seconds": 28.747,
+    "ended_at": "2026-09-19T05:03:00+00:00",
+    "peak_rss_bytes": 953716736,
+    "started_at": "2026-09-19T05:02:31+00:00",
+    "wall_seconds": 28.476
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H2__h0__s1__A__profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 547536896,
+    "cpu_seconds": 30.771,
+    "ended_at": "2026-09-19T05:03:02+00:00",
+    "peak_rss_bytes": 961507328,
+    "started_at": "2026-09-19T05:02:31+00:00",
+    "wall_seconds": 30.503
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H2__h0__s1__A__random_0"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 602247168,
+    "cpu_seconds": 49.409,
+    "ended_at": "2026-09-19T05:03:20+00:00",
+    "peak_rss_bytes": 1012961280,
+    "started_at": "2026-09-19T05:02:31+00:00",
+    "wall_seconds": 48.922
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H2__h0__s1__B__profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 600158208,
+    "cpu_seconds": 40.103,
+    "ended_at": "2026-09-19T05:03:40+00:00",
+    "peak_rss_bytes": 1008209920,
+    "started_at": "2026-09-19T05:03:00+00:00",
+    "wall_seconds": 39.701
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H2__h0__s2__B__profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 600899584,
+    "cpu_seconds": 42.512,
+    "ended_at": "2026-09-19T05:03:44+00:00",
+    "peak_rss_bytes": 1009680384,
+    "started_at": "2026-09-19T05:03:02+00:00",
+    "wall_seconds": 42.128
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H2__h0__s2__B__random_0"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 604684288,
+    "cpu_seconds": 48.202,
+    "ended_at": "2026-09-19T05:03:47+00:00",
+    "peak_rss_bytes": 1015668736,
+    "started_at": "2026-09-19T05:03:00+00:00",
+    "wall_seconds": 47.745
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H2__h0__s1__B__random_0"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 593465344,
+    "cpu_seconds": 42.739,
+    "ended_at": "2026-09-19T05:04:03+00:00",
+    "peak_rss_bytes": 1008701440,
+    "started_at": "2026-09-19T05:03:20+00:00",
+    "wall_seconds": 42.307
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H2__h3__s2__B__profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 586907648,
+    "cpu_seconds": 36.947,
+    "ended_at": "2026-09-19T05:04:21+00:00",
+    "peak_rss_bytes": 1002467328,
+    "started_at": "2026-09-19T05:03:44+00:00",
+    "wall_seconds": 36.692
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r0__s2__B__extractor"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 594096128,
+    "cpu_seconds": 42.908,
+    "ended_at": "2026-09-19T05:04:23+00:00",
+    "peak_rss_bytes": 1009037312,
+    "started_at": "2026-09-19T05:03:40+00:00",
+    "wall_seconds": 42.906
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H2__h3__s2__B__random_0"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 596586496,
+    "cpu_seconds": 40.41,
+    "ended_at": "2026-09-19T05:04:28+00:00",
+    "peak_rss_bytes": 1008623616,
+    "started_at": "2026-09-19T05:03:48+00:00",
+    "wall_seconds": 40.096
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s2__B__extractor"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 436629504,
+    "cpu_seconds": 12.025,
+    "ended_at": "2026-09-19T05:04:33+00:00",
+    "peak_rss_bytes": 850481152,
+    "started_at": "2026-09-19T05:04:21+00:00",
+    "wall_seconds": 11.438
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H2__h0__s1__0__profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 438829056,
+    "cpu_seconds": 11.458,
+    "ended_at": "2026-09-19T05:04:34+00:00",
+    "peak_rss_bytes": 854523904,
+    "started_at": "2026-09-19T05:04:23+00:00",
+    "wall_seconds": 11.038
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H2__h0__s1__0__random_0"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 437637120,
+    "cpu_seconds": 12.29,
+    "ended_at": "2026-09-19T05:04:40+00:00",
+    "peak_rss_bytes": 851783680,
+    "started_at": "2026-09-19T05:04:28+00:00",
+    "wall_seconds": 11.841
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r0__s1__0__extractor"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 80482304,
+    "cpu_seconds": 1.141,
+    "ended_at": "2026-09-19T05:04:41+00:00",
+    "peak_rss_bytes": 119529472,
+    "started_at": "2026-09-19T05:04:40+00:00",
+    "wall_seconds": 1.219
+   },
+   "outcome": "UNCERTAIN",
+   "pending_after_flush": 0,
+   "status": "INCONCLUSIVE",
+   "unit_id": "DX__trend_event__s1__A__profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 80216064,
+    "cpu_seconds": 1.157,
+    "ended_at": "2026-09-19T05:04:42+00:00",
+    "peak_rss_bytes": 119369728,
+    "started_at": "2026-09-19T05:04:41+00:00",
+    "wall_seconds": 1.219
+   },
+   "outcome": "UNCERTAIN",
+   "pending_after_flush": 0,
+   "status": "INCONCLUSIVE",
+   "unit_id": "DX__trend_event__s1__B__profiles"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 602415104,
+    "cpu_seconds": 56.657,
+    "ended_at": "2026-09-19T05:04:59+00:00",
+    "peak_rss_bytes": 1017241600,
+    "started_at": "2026-09-19T05:04:03+00:00",
+    "wall_seconds": 56.336
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s1__C__extractor"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 551350272,
+    "cpu_seconds": 31.413,
+    "ended_at": "2026-09-19T05:05:04+00:00",
+    "peak_rss_bytes": 966156288,
+    "started_at": "2026-09-19T05:04:33+00:00",
+    "wall_seconds": 30.881
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s1__A__extractor_summary"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 550711296,
+    "cpu_seconds": 31.173,
+    "ended_at": "2026-09-19T05:05:05+00:00",
+    "peak_rss_bytes": 965312512,
+    "started_at": "2026-09-19T05:04:34+00:00",
+    "wall_seconds": 30.477
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s2__A__extractor_summary"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 521023488,
+    "cpu_seconds": 20.737,
+    "ended_at": "2026-09-19T05:05:25+00:00",
+    "peak_rss_bytes": 933167104,
+    "started_at": "2026-09-19T05:05:05+00:00",
+    "wall_seconds": 20.463
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r0__s1__A__sequence"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 526688256,
+    "cpu_seconds": 22.502,
+    "ended_at": "2026-09-19T05:05:27+00:00",
+    "peak_rss_bytes": 940736512,
+    "started_at": "2026-09-19T05:05:05+00:00",
+    "wall_seconds": 22.063
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r0__s1__A__summary"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 550359040,
+    "cpu_seconds": 27.337,
+    "ended_at": "2026-09-19T05:05:32+00:00",
+    "peak_rss_bytes": 964558848,
+    "started_at": "2026-09-19T05:05:05+00:00",
+    "wall_seconds": 26.881
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r0__s2__B__sequence"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 558014464,
+    "cpu_seconds": 28.387,
+    "ended_at": "2026-09-19T05:05:33+00:00",
+    "peak_rss_bytes": 965726208,
+    "started_at": "2026-09-19T05:05:05+00:00",
+    "wall_seconds": 27.873
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r0__s2__B__summary"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 543416320,
+    "cpu_seconds": 24.728,
+    "ended_at": "2026-09-19T05:05:50+00:00",
+    "peak_rss_bytes": 958513152,
+    "started_at": "2026-09-19T05:05:25+00:00",
+    "wall_seconds": 24.466
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s2__B__sequence"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 558309376,
+    "cpu_seconds": 29.087,
+    "ended_at": "2026-09-19T05:05:55+00:00",
+    "peak_rss_bytes": 969818112,
+    "started_at": "2026-09-19T05:05:27+00:00",
+    "wall_seconds": 28.476
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s2__B__sequence_gap"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 557826048,
+    "cpu_seconds": 28.027,
+    "ended_at": "2026-09-19T05:05:59+00:00",
+    "peak_rss_bytes": 968368128,
+    "started_at": "2026-09-19T05:05:32+00:00",
+    "wall_seconds": 27.478
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s2__B__summary"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 556249088,
+    "cpu_seconds": 26.961,
+    "ended_at": "2026-09-19T05:06:00+00:00",
+    "peak_rss_bytes": 966987776,
+    "started_at": "2026-09-19T05:05:33+00:00",
+    "wall_seconds": 26.47
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s2__B__summary_last"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 568713216,
+    "cpu_seconds": 36.376,
+    "ended_at": "2026-09-19T05:06:26+00:00",
+    "peak_rss_bytes": 982786048,
+    "started_at": "2026-09-19T05:05:50+00:00",
+    "wall_seconds": 36.1
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s1__C__sequence"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 434614272,
+    "cpu_seconds": 12.236,
+    "ended_at": "2026-09-19T05:06:38+00:00",
+    "peak_rss_bytes": 848519168,
+    "started_at": "2026-09-19T05:06:26+00:00",
+    "wall_seconds": 11.641
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r0__s1__0__sequence"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 588484608,
+    "cpu_seconds": 46.976,
+    "ended_at": "2026-09-19T05:06:42+00:00",
+    "peak_rss_bytes": 996970496,
+    "started_at": "2026-09-19T05:05:56+00:00",
+    "wall_seconds": 46.333
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s1__C__sequence_gap"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 585510912,
+    "cpu_seconds": 45.695,
+    "ended_at": "2026-09-19T05:06:45+00:00",
+    "peak_rss_bytes": 994893824,
+    "started_at": "2026-09-19T05:05:59+00:00",
+    "wall_seconds": 45.133
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s1__C__summary"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 585142272,
+    "cpu_seconds": 46.438,
+    "ended_at": "2026-09-19T05:06:46+00:00",
+    "peak_rss_bytes": 999796736,
+    "started_at": "2026-09-19T05:06:00+00:00",
+    "wall_seconds": 45.91
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s1__C__summary_last"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 413073408,
+    "cpu_seconds": 8.084,
+    "ended_at": "2026-09-19T05:06:46+00:00",
+    "peak_rss_bytes": 827531264,
+    "started_at": "2026-09-19T05:06:38+00:00",
+    "wall_seconds": 8.032
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r0__s1__0__summary"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 511848448,
+    "cpu_seconds": 16.997,
+    "ended_at": "2026-09-19T05:07:02+00:00",
+    "peak_rss_bytes": 925274112,
+    "started_at": "2026-09-19T05:06:45+00:00",
+    "wall_seconds": 16.852
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s1__A__summary__dsum"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 525025280,
+    "cpu_seconds": 22.558,
+    "ended_at": "2026-09-19T05:07:04+00:00",
+    "peak_rss_bytes": 939855872,
+    "started_at": "2026-09-19T05:06:42+00:00",
+    "wall_seconds": 22.057
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s1__A__sequence__dsum"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 530632704,
+    "cpu_seconds": 21.662,
+    "ended_at": "2026-09-19T05:07:07+00:00",
+    "peak_rss_bytes": 943161344,
+    "started_at": "2026-09-19T05:06:46+00:00",
+    "wall_seconds": 21.057
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s2__A__summary__dsum"
+  },
+  {
+   "cost": {
+    "cgroup_memory_peak": 524865536,
+    "cpu_seconds": 22.242,
+    "ended_at": "2026-09-19T05:07:07+00:00",
+    "peak_rss_bytes": 938127360,
+    "started_at": "2026-09-19T05:06:46+00:00",
+    "wall_seconds": 21.657
+   },
+   "outcome": "COMPLETED",
+   "pending_after_flush": 0,
+   "status": "COMPLETED",
+   "unit_id": "H3__r1__s2__A__sequence__dsum"
+  }
+ ]
+}

@@ -1,0 +1,14 @@
+{
+ "schema": "cpu_ledger.v1",
+ "host": "gamma",
+ "since": "2026-09-19 00:00",
+ "match": [
+  "rp14-worker"
+ ],
+ "units": [],
+ "cpu_seconds_total": 0.0,
+ "ceiling_seconds": 14400.0,
+ "remaining_seconds": 14400.0,
+ "within_ceiling": true,
+ "note": "systemd accounting of the transient unit (all its children); units still running are not listed"
+}

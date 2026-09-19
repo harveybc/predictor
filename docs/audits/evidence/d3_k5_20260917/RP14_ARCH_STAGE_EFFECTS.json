@@ -1,0 +1,705 @@
+{
+ "adequacy": {
+  "0": {
+   "cells": [
+    {
+     "beats_naive": true,
+     "cell": "H2__h3__s1__0__profiles",
+     "linear": 0.4176911495690657,
+     "model": 0.4078067571819797,
+     "naive": 0.5060424514831777,
+     "oracle": 0.36347891771285895
+    },
+    {
+     "beats_naive": true,
+     "cell": "H2__h3__s2__0__profiles",
+     "linear": 0.4247401236357582,
+     "model": 0.42122783096560573,
+     "naive": 0.5084844906000098,
+     "oracle": 0.36562848483942273
+    }
+   ],
+   "receiver_adequate": true,
+   "rule": "every H2 profiles cell at h = 3, r = 1 beats the seasonal-naive on validation"
+  },
+  "A": {
+   "cells": [
+    {
+     "beats_naive": true,
+     "cell": "H2__h3__s1__A__profiles",
+     "linear": 0.4176911495690657,
+     "model": 0.4006421504019288,
+     "naive": 0.5060424514831777,
+     "oracle": 0.36347891771285895
+    },
+    {
+     "beats_naive": true,
+     "cell": "H2__h3__s2__A__profiles",
+     "linear": 0.4247401236357582,
+     "model": 0.40950352857769684,
+     "naive": 0.5084844906000098,
+     "oracle": 0.36562848483942273
+    }
+   ],
+   "receiver_adequate": true,
+   "rule": "every H2 profiles cell at h = 3, r = 1 beats the seasonal-naive on validation"
+  },
+  "B": {
+   "cells": [
+    {
+     "beats_naive": true,
+     "cell": "H2__h3__s1__B__profiles",
+     "linear": 0.41769114956906545,
+     "model": 0.4368514582340458,
+     "naive": 0.5060424514831777,
+     "oracle": 0.36347891771285895
+    },
+    {
+     "beats_naive": true,
+     "cell": "H2__h3__s2__B__profiles",
+     "linear": 0.4247401236357582,
+     "model": 0.4425521882897543,
+     "naive": 0.5084844906000098,
+     "oracle": 0.36562848483942273
+    }
+   ],
+   "receiver_adequate": true,
+   "rule": "every H2 profiles cell at h = 3, r = 1 beats the seasonal-naive on validation"
+  },
+  "C": {
+   "cells": [
+    {
+     "beats_naive": true,
+     "cell": "H2__h3__s1__C__profiles",
+     "linear": 0.41769114956906545,
+     "model": 0.4090892363672687,
+     "naive": 0.5060424514831777,
+     "oracle": 0.36347891771285895
+    },
+    {
+     "beats_naive": true,
+     "cell": "H2__h3__s2__C__profiles",
+     "linear": 0.4247401236357582,
+     "model": 0.4190702973057864,
+     "naive": 0.5084844906000098,
+     "oracle": 0.36562848483942273
+    }
+   ],
+   "receiver_adequate": true,
+   "rule": "every H2 profiles cell at h = 3, r = 1 beats the seasonal-naive on validation"
+  }
+ },
+ "bootstrap": {
+  "0": {
+   "H2_slope": {
+    "ci95": [
+     -0.0002733723459084255,
+     0.0005685686141487976
+    ],
+    "n": 1000
+   },
+   "H3_d1": {
+    "ci95": [
+     -0.03542691785334384,
+     -0.03401749642026597
+    ],
+    "n": 1000
+   },
+   "H3_gamma": {
+    "ci95": [
+     0.032359932207199904,
+     0.04803656836163972
+    ],
+    "n": 1000
+   }
+  },
+  "A": {
+   "H2_slope": {
+    "ci95": [
+     -0.001615531790112775,
+     -0.0007362054438182499
+    ],
+    "n": 1000
+   },
+   "H3_d1": {
+    "ci95": [
+     -0.03250728380025847,
+     -0.027582262846607808
+    ],
+    "n": 1000
+   },
+   "H3_gamma": {
+    "ci95": [
+     0.03265817047039321,
+     0.038108361406763436
+    ],
+    "n": 1000
+   }
+  },
+  "B": {
+   "H2_slope": {
+    "ci95": [
+     0.007945324379050527,
+     0.008142986905631165
+    ],
+    "n": 1000
+   },
+   "H3_d1": {
+    "ci95": [
+     -0.021800091515252307,
+     -0.014579907834593397
+    ],
+    "n": 1000
+   },
+   "H3_gamma": {
+    "ci95": [
+     0.004394365638085929,
+     0.014647499466326264
+    ],
+    "n": 1000
+   }
+  },
+  "C": {
+   "H2_slope": {
+    "ci95": [
+     0.0017820898028110457,
+     0.0019923923748331744
+    ],
+    "n": 1000
+   },
+   "H3_d1": {
+    "ci95": [
+     -0.030495655023634383,
+     -0.03012300427160819
+    ],
+    "n": 1000
+   },
+   "H3_gamma": {
+    "ci95": [
+     0.025928627087005163,
+     0.042069221726744765
+    ],
+    "n": 1000
+   }
+  }
+ },
+ "bootstrap_note": "percentile intervals from resampling 2 replicates with replacement: descriptive precision, not confirmation",
+ "costs": {
+  "0": {
+   "cells": 24,
+   "cpu_seconds_mean": 6.429833333333334,
+   "cpu_seconds_total": 154.316,
+   "fit_seconds_mean": 3.5706249999999997,
+   "parameters": [
+    "{\"frozen\": 0, \"total\": 536, \"trainable\": 536}",
+    "{\"frozen\": 0, \"total\": 552, \"trainable\": 552}"
+   ],
+   "stop_reasons": {
+    "EARLY_STOPPING": 8,
+    "UPDATE_BUDGET": 16
+   },
+   "updates_mean": 993.2083333333334
+  },
+  "A": {
+   "cells": 30,
+   "cpu_seconds_mean": 16.296133333333334,
+   "cpu_seconds_total": 488.884,
+   "fit_seconds_mean": 10.932966666666667,
+   "parameters": [
+    "{\"frozen\": 0, \"total\": 3224, \"trainable\": 3224}",
+    "{\"frozen\": 0, \"total\": 3336, \"trainable\": 3336}",
+    "{\"frozen\": 2416, \"total\": 3224, \"trainable\": 808}",
+    "{\"frozen\": 2416, \"total\": 3336, \"trainable\": 920}"
+   ],
+   "stop_reasons": {
+    "EARLY_STOPPING": 16,
+    "UPDATE_BUDGET": 14
+   },
+   "updates_mean": 940.1333333333333
+  },
+  "B": {
+   "cells": 30,
+   "cpu_seconds_mean": 24.568533333333335,
+   "cpu_seconds_total": 737.056,
+   "fit_seconds_mean": 18.106466666666666,
+   "parameters": [
+    "{\"frozen\": 0, \"total\": 9496, \"trainable\": 9496}",
+    "{\"frozen\": 0, \"total\": 9608, \"trainable\": 9608}",
+    "{\"frozen\": 8688, \"total\": 9496, \"trainable\": 808}",
+    "{\"frozen\": 8688, \"total\": 9608, \"trainable\": 920}"
+   ],
+   "stop_reasons": {
+    "EARLY_STOPPING": 19,
+    "UPDATE_BUDGET": 11
+   },
+   "updates_mean": 922.5333333333333
+  },
+  "C": {
+   "cells": 24,
+   "cpu_seconds_mean": 26.23629166666667,
+   "cpu_seconds_total": 629.671,
+   "fit_seconds_mean": 20.514458333333334,
+   "parameters": [
+    "{\"frozen\": 0, \"total\": 6600, \"trainable\": 6600}",
+    "{\"frozen\": 5680, \"total\": 6488, \"trainable\": 808}",
+    "{\"frozen\": 5680, \"total\": 6600, \"trainable\": 920}"
+   ],
+   "stop_reasons": {
+    "EARLY_STOPPING": 17,
+    "UPDATE_BUDGET": 7
+   },
+   "updates_mean": 778.7083333333334
+  }
+ },
+ "donor": {
+  "0": {
+   "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+   "delta": null,
+   "n": 0,
+   "sd_replicates": null
+  },
+  "A": {
+   "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+   "delta": 0.0831140592556831,
+   "n": 2,
+   "sd_replicates": 0.005501178820120292
+  },
+  "B": {
+   "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+   "delta": 0.06453971283284987,
+   "n": 2,
+   "sd_replicates": 0.015372002984162761
+  },
+  "C": {
+   "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+   "delta": null,
+   "n": 0,
+   "sd_replicates": null
+  }
+ },
+ "dx": {
+  "0": [],
+  "A": [],
+  "B": [],
+  "C": []
+ },
+ "effects_test": {
+  "donor": {
+   "0": {
+    "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+    "delta": null,
+    "n": 0,
+    "sd_replicates": null
+   },
+   "A": {
+    "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+    "delta": 0.06597925467400251,
+    "n": 2,
+    "sd_replicates": 0.011102790030456194
+   },
+   "B": {
+    "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+    "delta": 0.07231641442503789,
+    "n": 2,
+    "sd_replicates": 0.004922668598880194
+   },
+   "C": {
+    "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate",
+    "delta": null,
+    "n": 0,
+    "sd_replicates": null
+   }
+  },
+  "per_arch": {
+   "0": {
+    "H2": {
+     "e": {
+      "0": 0.00044402769437368317,
+      "3": 0.0012757466700505926
+     },
+     "n_replicates": 2,
+     "sd_replicates": {
+      "0": 0.002968796292105995,
+      "3": 0.0009787540044660825
+     },
+     "slope": 0.0002772396585589698
+    },
+    "H3": {
+     "d": {
+      "0": -0.07399350503116958,
+      "1": -0.03646117707512525
+     },
+     "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+     "gamma": 0.03753232795604433,
+     "n_replicates": 2,
+     "sd_replicates": {
+      "0": 0.0025968724417873017,
+      "1": 0.0020328292543572717
+     }
+    },
+    "interpretable": true,
+    "mase_mean_validation_by_arm": {
+     "extractor": 0.5811899170678463,
+     "profiles": 0.5099999564763686,
+     "random_0": 0.5091400692941566,
+     "sequence": 0.5811899170678463,
+     "sequence_gap": 0.6639218622028906,
+     "summary": 0.6827297938908699,
+     "summary_last": 0.607757967738264
+    }
+   },
+   "A": {
+    "H2": {
+     "e": {
+      "0": -0.0010260657607970014,
+      "3": -0.0009250757146807564
+     },
+     "n_replicates": 2,
+     "sd_replicates": {
+      "0": 0.004198543470683201,
+      "3": 0.0042111517949194295
+     },
+     "slope": 3.3663348705415006e-05
+    },
+    "H3": {
+     "d": {
+      "0": -0.057933584900617785,
+      "1": -0.0269469911394824
+     },
+     "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+     "gamma": 0.030986593761135384,
+     "n_replicates": 2,
+     "sd_replicates": {
+      "0": 0.002803123332592535,
+      "1": 0.0027196794986738913
+     }
+    },
+    "interpretable": true,
+    "mase_mean_validation_by_arm": {
+     "extractor": 0.5782457605936085,
+     "extractor_summary": 0.6284184042016268,
+     "profiles": 0.5042403738037353,
+     "random_0": 0.5052159445414742,
+     "sequence": 0.5732326409688766,
+     "sequence_gap": 0.6559818203436226,
+     "summary": 0.6544256939615519,
+     "summary_last": 0.5840633882468821
+    }
+   },
+   "B": {
+    "H2": {
+     "e": {
+      "0": -0.001091402038150835,
+      "3": 0.001705363361648199
+     },
+     "n_replicates": 2,
+     "sd_replicates": {
+      "0": 0.0020551231358724754,
+      "3": 0.006330730771697565
+     },
+     "slope": 0.0009322551332663449
+    },
+    "H3": {
+     "d": {
+      "0": -0.02491426132090485,
+      "1": -0.015738908090314863
+     },
+     "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+     "gamma": 0.009175353230589989,
+     "n_replicates": 2,
+     "sd_replicates": {
+      "0": 0.004357546492783961,
+      "1": 0.006633542740233756
+     }
+    },
+    "interpretable": true,
+    "mase_mean_validation_by_arm": {
+     "extractor": 0.6178645853036253,
+     "extractor_summary": 0.6464539425739244,
+     "profiles": 0.5414793106816014,
+     "random_0": 0.5411723300198528,
+     "sequence": 0.618927300551532,
+     "sequence_gap": 0.6598453963067241,
+     "summary": 0.664932318531155,
+     "summary_last": 0.5986146089658531
+    }
+   },
+   "C": {
+    "H2": {
+     "e": {
+      "0": -0.0010453156872893277,
+      "3": 0.002803983250634051
+     },
+     "n_replicates": 2,
+     "sd_replicates": {
+      "0": 0.00013693948122682164,
+      "3": 0.0050410773780014935
+     },
+     "slope": 0.00128309964597446
+    },
+    "H3": {
+     "d": {
+      "0": -0.0613254920838287,
+      "1": -0.028796163752090653
+     },
+     "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+     "gamma": 0.03252932833173805,
+     "n_replicates": 2,
+     "sd_replicates": {
+      "0": 0.00884916684654303,
+      "1": 0.0011101839889384078
+     }
+    },
+    "interpretable": true,
+    "mase_mean_validation_by_arm": {
+     "extractor": 0.583882591574068,
+     "profiles": 0.5133405924926907,
+     "random_0": 0.5124612587110183,
+     "sequence": 0.5818839875539774,
+     "sequence_gap": 0.664632831903969,
+     "summary": 0.6758925634852185,
+     "summary_last": 0.5955334996294968
+    }
+   }
+  },
+  "readout": {
+   "0": {
+    "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+    "rho": {
+     "1": -0.09262507153975208
+    },
+    "sd_replicates": {
+     "1": 0.008750624384004238
+    }
+   },
+   "A": {
+    "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+    "rho": {
+     "1": -0.09886542323622294
+    },
+    "sd_replicates": {
+     "1": 0.014799938839178819
+    }
+   },
+   "B": {
+    "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+    "rho": {
+     "1": -0.07696969543118604
+    },
+    "sd_replicates": {
+     "1": 0.00923342024045245
+    }
+   },
+   "C": {
+    "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+    "rho": {
+     "1": -0.09789549602656289
+    },
+    "sd_replicates": {
+     "1": 0.007565497615048909
+    }
+   }
+  }
+ },
+ "per_arch": {
+  "0": {
+   "H2": {
+    "e": {
+     "0": 0.00022583325699848666,
+     "3": 0.0006686276593590446
+    },
+    "n_replicates": 2,
+    "sd_replicates": {
+     "0": 3.721022159402821e-05,
+     "3": 0.0018232367082395516
+    },
+    "slope": 0.00014759813412018602
+   },
+   "H3": {
+    "d": {
+     "0": -0.07492045742122472,
+     "1": -0.034722207136804906
+    },
+    "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+    "gamma": 0.04019825028441981,
+    "n_replicates": 2,
+    "sd_replicates": {
+     "0": 0.01208166718387762,
+     "1": 0.0009966114528790258
+    }
+   },
+   "interpretable": true,
+   "mase_mean_validation_by_arm": {
+    "extractor": 0.5854258720046672,
+    "profiles": 0.5132615852699556,
+    "random_0": 0.5128143548117768,
+    "sequence": 0.5854258720046672,
+    "sequence_gap": 0.6740691035325658,
+    "summary": 0.6877832553760481,
+    "summary_last": 0.6137192084846387
+   }
+  },
+  "A": {
+   "H2": {
+    "e": {
+     "0": 0.0021570598460591284,
+     "3": -0.0013705460048374085
+    },
+    "n_replicates": 2,
+    "sd_replicates": {
+     "0": 0.0018378837821485948,
+     "3": 2.7449084873952648e-05
+    },
+    "slope": -0.0011758686169655126
+   },
+   "H3": {
+    "d": {
+     "0": -0.06542803926201146,
+     "1": -0.030044773323433138
+    },
+    "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+    "gamma": 0.03538326593857832,
+    "n_replicates": 2,
+    "sd_replicates": {
+     "0": 0.007336382683681065,
+     "1": 0.0034825157138122192
+    }
+   },
+   "interpretable": true,
+   "mase_mean_validation_by_arm": {
+    "extractor": 0.5780736726189792,
+    "extractor_summary": 0.6339047929541501,
+    "profiles": 0.5081990904079253,
+    "random_0": 0.5078058334873146,
+    "sequence": 0.5730205423022046,
+    "sequence_gap": 0.6697935172588031,
+    "summary": 0.6606493579754478,
+    "summary_last": 0.5895968303989686
+   }
+  },
+  "B": {
+   "H2": {
+    "e": {
+     "0": -0.015373490878012652,
+     "3": 0.008758976049009881
+    },
+    "n_replicates": 2,
+    "sd_replicates": {
+     "0": 0.006304925218109778,
+     "3": 0.006724230756904681
+    },
+    "slope": 0.008044155642340846
+   },
+   "H3": {
+    "d": {
+     "0": -0.027710932227128948,
+     "1": -0.018189999674922852
+    },
+    "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+    "gamma": 0.009520932552206096,
+    "n_replicates": 2,
+    "sd_replicates": {
+     "0": 0.0021446196163555664,
+     "1": 0.005105440842006361
+    }
+   },
+   "interpretable": true,
+   "mase_mean_validation_by_arm": {
+    "extractor": 0.6213698613268213,
+    "extractor_summary": 0.6601079017105411,
+    "profiles": 0.5452285303203268,
+    "random_0": 0.5485357877348284,
+    "sequence": 0.6235933830506626,
+    "sequence_gap": 0.6720301405824768,
+    "summary": 0.6749801746554338,
+    "summary_last": 0.6129155622223051
+   }
+  },
+  "C": {
+   "H2": {
+    "e": {
+     "0": -0.004340808944821917,
+     "3": 0.001320914321644412
+    },
+    "n_replicates": 2,
+    "sd_replicates": {
+     "0": 0.00239301828970117,
+     "3": 0.0019468991653677108
+    },
+    "slope": 0.00188724108882211
+   },
+   "H3": {
+    "d": {
+     "0": -0.06430825405449625,
+     "1": -0.030309329647621286
+    },
+    "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)",
+    "gamma": 0.033998924406874964,
+    "n_replicates": 2,
+    "sd_replicates": {
+     "0": 0.011676627795915101,
+     "1": 0.000263503873771988
+    }
+   },
+   "interpretable": true,
+   "mase_mean_validation_by_arm": {
+    "extractor": 0.5869727149801225,
+    "profiles": 0.5154076894456734,
+    "random_0": 0.5169176367572621,
+    "sequence": 0.5836928298218365,
+    "sequence_gap": 0.674139093344313,
+    "summary": 0.6817650374544375,
+    "summary_last": 0.6029215914288502
+   }
+  }
+ },
+ "population": {
+  "cells": 112,
+  "closure": "PARTIAL",
+  "verified_cells": 108
+ },
+ "readout": {
+  "0": {
+   "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+   "rho": {
+    "1": -0.095072102184732
+   },
+   "sd_replicates": {
+    "1": 0.002254397175176223
+   }
+  },
+  "A": {
+   "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+   "rho": {
+    "1": -0.11024146018326764
+   },
+   "sd_replicates": {
+    "1": 0.0015359466113393217
+   }
+  },
+  "B": {
+   "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+   "rho": {
+    "1": -0.07730457803509455
+   },
+   "sd_replicates": {
+    "1": 0.0014770762950476646
+   }
+  },
+  "C": {
+   "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); only where the 2 x 2 exists",
+   "rho": {
+    "1": -0.10152683156308423
+   },
+   "sd_replicates": {
+    "1": 0.004283210439724237
+   }
+  }
+ },
+ "replicates": [
+  1,
+  2
+ ],
+ "schema": "df_mod_e0_arch_effects.v1",
+ "split": "validation"
+}

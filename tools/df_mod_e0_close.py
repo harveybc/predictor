@@ -333,7 +333,7 @@ def verify_attempt(attempt: Path, job_expected: dict, replay_doc: dict | None, t
     if abs(E.adjusted_rand(labels, latent) - float((rec.get("profiles") or {}).get("ari_vs_latent", -9))) > 1e-12:
         prob("ARI vs latent groups differs from the record's")
     assignment = rec.get("assignment")
-    if rec["hypothesis"] == "H2":
+    if rec["hypothesis"] in ("H2", "DX"):                       # DX (RP14 diagnostic) uses the H2 arms
         if rec["arm"] == "profiles":
             if assignment != labels or not rec.get("assignment_is_profile"):
                 prob("H2 profiles arm did not use the profile partition")
@@ -409,7 +409,7 @@ def verify_attempt(attempt: Path, job_expected: dict, replay_doc: dict | None, t
     entry["status"] = VERIFIED if not entry["problems"] else PROBLEMS
     entry["record"] = {k: rec.get(k) for k in ("cell_id", "hypothesis", "level", "r", "seed", "arm", "role", "assignment", "assignment_is_profile",
                                               "fusion", "parameters", "exposure", "extractor_weight_change", "receptive_field", "window",
-                                              "descriptor_version")}
+                                              "descriptor_version", "arch", "diagnostic", "donor", "branch_reach", "support_reach")}
     entry["record"]["profiles_ari"] = rec["profiles"]["ari_vs_latent"]
     entry["record"]["updates"] = tr.get("updates")
     entry["record"]["stop_reason"] = tr.get("stop_reason")
@@ -486,6 +486,8 @@ def local_closure(root: Path, out_dir: Path, tolerance: dict | None = None, repl
         first = json.loads((root / "REPORT.json").read_text())
         if first.get("run_id") != report.get("run_id") or first.get("design_sha256") != report.get("design_sha256"):
             raise ClosureRefusal("REFUSED: REPORT.json and REPORT.collected.json disagree on the run or design")
+        report["reporting_code_identity"] = report.get("code_identity")   # the collected report was emitted under a later commit
+        report["code_identity"] = first.get("code_identity")               # the EXECUTION identity is the first run's (the campaigns' registration)
         for cid, entry in (first.get("cells") or {}).items():         # the first run's own outcomes stay authoritative for its cells
             if entry.get("outcome") != RUN.DELEGATED and cid not in (report.get("cells") or {}):
                 report.setdefault("cells", {})[cid] = entry
@@ -506,9 +508,12 @@ def local_closure(root: Path, out_dir: Path, tolerance: dict | None = None, repl
     strangers = sorted(set(on_disk) - set(pop["members"]) - set(pop["pilot_ids"]))
     if strangers:
         raise ClosureRefusal(f"REFUSED: attempts that are not members of the design: {strangers}")
-    if pilot_updates is None:
-        pj = attempts_dir / "pilot__H2_profiles" / "job.json"
-        pilot_updates = json.loads(pj.read_text()).get("max_updates_override") if pj.is_file() else None
+    if pilot_updates is None:                                  # the allowance the pilots consumed, read from any pilot's job (v1 or v2 names)
+        for pid in pop["pilot_ids"]:
+            pj = attempts_dir / pid / "job.json"
+            if pj.is_file():
+                pilot_updates = json.loads(pj.read_text()).get("max_updates_override")
+                break
     units = pop["pilots"] + pop["cells"]
     # replays only for attempts that completed
     replay_docs = {}
@@ -522,6 +527,7 @@ def local_closure(root: Path, out_dir: Path, tolerance: dict | None = None, repl
     out = {"schema": SCHEMA, "run_id": run_id, "root": str(root), "design_sha256": design["design_sha256"], "successor_of": pop["successor_of"],
            "population": {"cells": len(pop["members"]), "pilots": len(pop["pilot_ids"]), "members": pop["members"], "pilot_ids": pop["pilot_ids"]},
            "tolerance": tolerance, "units": {}, "code_identity_reported": (report or {}).get("code_identity"),
+           "reporting_code_identity": (report or {}).get("reporting_code_identity"),
            "replays": None if replay_meta is None else {k: v for k, v in replay_meta.items() if k != "docs"}}
     for u in units:
         job = expected_job(design, run_id, u, root, pilot_updates)

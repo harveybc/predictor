@@ -1,0 +1,22 @@
+{
+ "schema": "cpu_ledger.v1",
+ "host": "dragon",
+ "since": "2026-09-19 00:00",
+ "match": [
+  "rp14-worker"
+ ],
+ "units": [
+  {
+   "unit": "rp14-worker-WORKER_A-1789794215.service",
+   "at": "Sep 19 00:06:08",
+   "cpu_seconds": 2.109,
+   "wall_seconds": 153.066,
+   "memory_peak": "65.1M"
+  }
+ ],
+ "cpu_seconds_total": 2.109,
+ "ceiling_seconds": 14400.0,
+ "remaining_seconds": 14397.891,
+ "within_ceiling": true,
+ "note": "systemd accounting of the transient unit (all its children); units still running are not listed"
+}
