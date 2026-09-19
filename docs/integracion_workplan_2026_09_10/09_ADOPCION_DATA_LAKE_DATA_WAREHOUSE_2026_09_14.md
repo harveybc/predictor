@@ -1138,3 +1138,27 @@ las seis propuestas inventariadas, STEP01-13, compresion y feature-eng quedan
 trazados por separado. Publicacion de orden, no constancia de ejecucion de Satoshi.
 
 **2026-09-18 · RP1–RP8 (Satoshi, reinicio del programa; plan maestro v3).** RP1: plan/contrato/estado integrados por merge, estado persistente actualizado por etapa, chequeo documental PASS. RP2: ficha numérica MOD-E0-DEV (13A) con derivaciones, 66 celdas, sellada `96f447e6…`. RP3: pruebas de aceptación ML01–ML12 antes de entrenar (16 reglas), diagnóstico ML07 del receptor (la pila ReLU inicial no superaba al ingenuo; TCN residual con ELU, mse, Adam 3e-3, ≤ 6 000 updates sí, en 3/3 semillas) sellado antes del piloto. RP4: piloto de costo gobernado; la asignación sellada proyectó 19 218 s > 14 400 → etapa DEV menor sellada antes de puntuar (3 000 updates, todas las celdas y condiciones) `6173c5d1…`, proyección 10 219 s; ejecución completa 66/66 celdas, 3 191 s CPU; defecto de esquema de métricas (todos los terminales rechazados) corregido con PRE/POST y sucesores de generación 2, 0 faltantes. RP5: verificación desde arrays, padre, contabilidad y warehouse vivo (69/69 iguales); H2: e(h) ≈ 0 en todos los niveles (pendiente +0,004), sin efecto de la asignación por perfiles aunque los perfiles recuperan los grupos latentes (ARI 1 en h ≥ 1); H3: d_0 = −0,023, d_1 = −0,091, γ = −0,068 (bootstrap [−0,072, −0,064]), conservar secuencias mejor que resumir, más con dependencia retardada. Descriptivo, sin apoyo confirmatorio ni ADVANCES. RP6: 13B (demanda RL/forecasting desde configs ejecutables, banco E1 por selección del censo, protocolo E3, carriles). Retorno `SATOSHI_PROGRAM_RP1_RP8_RETURN_2026_09_18.md`; solicitud única de revisión a Musashi.
+### Adicion aprobada: comparar arquitecturas y luego preentrenar el nucleo
+
+El owner aprueba ARCH-A como referencia (Conv1D causal local), comparada con
+ARCH-B (TCN/dilatada), ARCH-C (Conv1D + GRU/LSTM) y ARCH-0 sin extractor aprendido,
+dentro de E0 y antes de elegir. Cabezal y nucleo controlados, adecuacion, efectos
+por arquitectura/regimen, incertidumbre y costo; no ganador universal supuesto.
+La hipotesis H-CORE se programa tras E1 y una representacion congelada verificada:
+el mismo nucleo desde cero, preentrenado ajustable o preentrenado congelado.
+[Detalle y prerrequisitos](../tres_temas_entrevista/CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md).
+Satoshi aun trabaja segun el owner. Adoptar al conciliar su retorno; no interrumpir
+ni cambiar su diseno sellado, no emitir una nueva corrida mientras tanto.
+
+### Revision del retorno RP1-RP8 y orden RP9-RP16
+
+Recibido `2347c7b`; piloto ejecutado, revision con correcciones, no confirmacion.
+Musashi reprodujo brechas del cierre sobre copias y verifico 69 originales al
+alcance local de datos/errores; 497 archivos originales intactos. Correccion de
+formula de tendencia: 15/15 particiones conservadas, sin entrenar otra vez.
+No se repite todo. Corregir poblacion, reconstruccion ML, metricas y perfiles;
+despues comparar ARCH-A/B/C/0 con controles y costo, conforme a la aprobacion.
+H-CORE mantiene E1 y prefijo verificable como dependencias; RL sigue obligatorio.
+[Revision](../audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md) y
+[orden vigente](../handoffs/MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md).
+No hubo entrenamiento, reinicio ni escritura al warehouse en esta auditoria.

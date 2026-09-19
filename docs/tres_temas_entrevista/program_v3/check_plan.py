@@ -5,7 +5,8 @@ from pathlib import Path
 
 
 REQUIRED = {
-    "P-MOD": {"MOD-E0-DEV", "MOD-E1", "MOD-CONF", "MOD-E3"},
+    "P-MOD": {"MOD-E0-DEV", "MOD-ARCH-COMPARE", "MOD-E1",
+              "MOD-FROZEN-PREFIX", "MOD-CORE-PRETRAIN", "MOD-CONF", "MOD-E3"},
     "P-L2": {"L2-PUBLIC-RL"},
     "P-CAP": {"CAP-CALIBRATION"},
     "P-PRE": {"PRE-NOISE"},
@@ -47,7 +48,7 @@ def validate(state, root):
             issues.append(f"proposal coverage {proposal}")
 
     documents = state.get("documents", {})
-    for name in ("master", "metrics", "orders"):
+    for name in ("master", "metrics", "orders", "core_pretraining"):
         path = documents.get(name)
         if not path or not (root / path).is_file():
             issues.append(f"missing document {name}")
@@ -73,6 +74,15 @@ def validate(state, root):
     for task_id in sorted(required_tasks, key=str):
         if task_id not in by_id:
             issues.append(f"unknown task {task_id}")
+
+    required_dependencies = {
+        "MOD-E1": ({"MOD-E0-DEV", "MOD-ARCH-COMPARE"}, "E1 prerequisites"),
+        "MOD-FROZEN-PREFIX": ({"MOD-E1"}, "prefix prerequisites"),
+        "MOD-CORE-PRETRAIN": ({"MOD-E1", "MOD-FROZEN-PREFIX"}, "core prerequisites"),
+    }
+    for task_id, (dependencies, label) in required_dependencies.items():
+        if not dependencies.issubset(by_id.get(task_id, {}).get("depends_on", [])):
+            issues.append(label)
 
     # Check the whole dependency graph, including branches not first in the queue.
     visiting, visited = set(), set()

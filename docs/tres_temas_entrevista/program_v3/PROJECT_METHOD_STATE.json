@@ -4,6 +4,7 @@
   "current_stage": "external_review",
   "completed_stages": [
     "discovery",
+<<<<<<< HEAD
     "requirements",
     "acceptance_test_design",
     "architecture",
@@ -26,18 +27,57 @@
     "Musashi: review MOD-E0-DEV design, implementation, execution and effects",
     "Satoshi: E1 family selection over the census; business contract gaps with the owner",
     "no reserve, no live, no financial scoring until reviewed"
+=======
+    "requirements"
+  ],
+  "program_owner": "Musashi",
+  "execution_owner": "Satoshi",
+  "handoff_status": "RP1_RP8_REVIEWED_CORRECTIONS_ORDERED_RP9_RP16",
+  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
+  "architecture_comparison": {
+    "reference": "ARCH-A",
+    "alternatives": [
+      "ARCH-A",
+      "ARCH-B",
+      "ARCH-C",
+      "ARCH-0"
+    ],
+    "selected_winner": null,
+    "adoption": "IN_NEXT_DEVELOPMENT_SUCCESSOR_RP9_RP16"
+  },
+  "first_experiment": "MOD-E0-DEV",
+  "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
+  "next_allowed_actions": [
+    "RP9-RP12: adopt review, repair verification and descriptors; reuse original results within demonstrated scope",
+    "RP13: complete metric coverage before new training; backfill only observed or reconstructible facts",
+    "RP14: governed bounded ARCH-A/B/C/0 development comparison with matched mechanism controls",
+    "RP15-RP16: concrete E1 bank and RL demand, complete closure; no reserve or live"
+>>>>>>> origin/master
   ],
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
     "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
+<<<<<<< HEAD
     "orders": "../../handoffs/MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md",
     "design_sheet": "13A_MOD_E0_DEV_DESIGN_SHEET_2026_09_18.md",
     "next_steps": "13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
+=======
+    "orders": "../../handoffs/MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md",
+    "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
+    "external_review": "../../audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md"
+>>>>>>> origin/master
   },
   "proposal_coverage": {
     "P-MOD": [
       "MOD-E0-DEV",
+<<<<<<< HEAD
       "MOD-E1",
+=======
+      "MOD-ARCH-COMPARE",
+      "MOD-E1",
+      "MOD-FROZEN-PREFIX",
+      "MOD-CORE-PRETRAIN",
+>>>>>>> origin/master
       "MOD-CONF",
       "MOD-E3"
     ],
@@ -71,6 +111,7 @@
     "STEP-11",
     "STEP-12",
     "STEP-13"
+<<<<<<< HEAD
   ],
   "compression_lanes": [
     "C1",
@@ -208,3 +249,201 @@
   ],
   "state_semantics": "NOT_STARTED describes this successor task, not absence of historical work. No experiment was run by publishing this plan. The checker verifies documentary completeness, not scientific adequacy."
 }
+=======
+  ],
+  "compression_lanes": [
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5",
+    "C6",
+    "C7"
+  ],
+  "shared_requirements": [
+    "FE",
+    "EVENT",
+    "META",
+    "I-INFO",
+    "H-ES",
+    "GOVERNANCE",
+    "WEEKLY-RL"
+  ],
+  "tasks": [
+    {
+      "id": "MOD-E0-DEV",
+      "owner": "Satoshi",
+      "status": "EXECUTED",
+      "depends_on": [],
+      "evidence": [
+        "docs/audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md",
+        "docs/audits/evidence/RP_REVIEW_2026_09_18/results.json",
+        "https://github.com/harveybc/predictor/blob/2347c7b/docs/audits/work_plan/SATOSHI_PROGRAM_RP1_RP8_RETURN_2026_09_18.md"
+      ],
+      "next_action": "Repair closure and profile formula, preserve original pilot and descriptive effects; no blanket restart",
+      "deliverable": "H2 profile/random effects and H3 sequence/summary effects with matched controls and cost"
+    },
+    {
+      "id": "MOD-E0-CLOSURE",
+      "owner": "Satoshi",
+      "status": "DESIGNED",
+      "depends_on": [
+        "MOD-E0-DEV"
+      ],
+      "evidence": [
+        "docs/audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md"
+      ],
+      "next_action": "RP10-RP13: exact population, task reconstruction, inference, metrics and independent warehouse reconciliation",
+      "deliverable": "Corrected closure, descriptor impact proof and honest metric coverage with preserved history"
+    },
+    {
+      "id": "MOD-ARCH-COMPARE",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "MOD-E0-DEV",
+        "MOD-E0-CLOSURE"
+      ],
+      "evidence": [],
+      "next_action": "RP14: test adequate matched ARCH-A/B/C/0 receivers, seal bounded successor then execute",
+      "deliverable": "Adequacy, H2/H3 effects by architecture and regime, uncertainty, learning curves and total cost; no universal winner presumed"
+    },
+    {
+      "id": "MOD-E1",
+      "owner": "Satoshi",
+      "status": "DESIGNED",
+      "depends_on": [
+        "MOD-E0-DEV",
+        "MOD-ARCH-COMPARE"
+      ],
+      "evidence": [
+        "https://github.com/harveybc/predictor/blob/2347c7b/docs/tres_temas_entrevista/program_v3/13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
+      ],
+      "next_action": "RP15: replace criteria-only draft with explicit census-derived family manifest; final selection after architecture development",
+      "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan"
+    },
+    {
+      "id": "MOD-FROZEN-PREFIX",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "MOD-E1"
+      ],
+      "evidence": [],
+      "next_action": "After extractor regime comparison, fix all preprocessing/grouping/D/I/A/fusion states and verify governed sequence materialization per split",
+      "deliverable": "Versioned derived dataset with direct/cache parity, temporal support and complete prefix lineage"
+    },
+    {
+      "id": "MOD-CORE-PRETRAIN",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "MOD-E1",
+        "MOD-FROZEN-PREFIX"
+      ],
+      "evidence": [],
+      "next_action": "Design H-CORE then compare random, pretrained-finetuned and pretrained-frozen core with actual task heads and full cost; no active-run changes",
+      "deliverable": "Independent H-CORE effects on forecasting, total cost and limitations; RL counterpart in MOD-E3"
+    },
+    {
+      "id": "MOD-CONF",
+      "owner": "Musashi + Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "MOD-E1"
+      ],
+      "evidence": [],
+      "next_action": "Review fixed method before independent E0 synthetic and E2 public reserves",
+      "deliverable": "H1/H2/H3 effects under the proposal's reserved protocol"
+    },
+    {
+      "id": "BUSINESS-CONTRACT",
+      "owner": "Satoshi",
+      "status": "DESIGNED",
+      "depends_on": [],
+      "evidence": [
+        "https://github.com/harveybc/predictor/blob/2347c7b/docs/tres_temas_entrevista/program_v3/13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
+      ],
+      "next_action": "RP15: verify executable demand per config and derive weekly contract; historical defaults are not adopted business choices",
+      "deliverable": "Observations/targets/actions, availability, weekly cycle, cost and data gaps"
+    },
+    {
+      "id": "MOD-E3",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "MOD-E1",
+        "BUSINESS-CONTRACT"
+      ],
+      "evidence": [],
+      "next_action": "Prepare mandatory historical forecasting and RL evaluation without requiring positive H1",
+      "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost"
+    },
+    {
+      "id": "L2-PUBLIC-RL",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [],
+      "evidence": [],
+      "next_action": "Map existing B4/selector evidence to the exact POPGym/CARL protocol before new RL development",
+      "deliverable": "H1 cost/regret, H2 risk-coverage and H3 transfer with observed fidelities"
+    },
+    {
+      "id": "CAP-CALIBRATION",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [],
+      "evidence": [],
+      "next_action": "Map M3/M4 evidence to random-label capacity and N_min protocol; implement only missing scope",
+      "deliverable": "H1 capacity, H2 bits/generalization and H3 dimensioning with censoring"
+    },
+    {
+      "id": "PRE-NOISE",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [],
+      "evidence": [],
+      "next_action": "Reconcile D2 by regime and extend only uncovered task/receiver contrasts with causal noise controls",
+      "deliverable": "H1 degradation, H2 conditional denoising and H3 residual preservation"
+    },
+    {
+      "id": "TRN-TRANSFER",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [],
+      "evidence": [],
+      "next_action": "Reuse T0-T2/D3 within scope; design per-variable/public transfer with adequate receivers",
+      "deliverable": "Conditional utility, transfer/cost, abstention and DOIN parity"
+    },
+    {
+      "id": "INC-SIMULATION",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [],
+      "evidence": [],
+      "next_action": "Map existing implementation to HPO-B pilot and required training-domain validation",
+      "deliverable": "H1 allocation, H2 learning and H3 manipulation utility in simulation"
+    }
+  ],
+  "state_semantics": "Stage refers to the successor program. EXECUTED is not external scientific acceptance. Historical evidence is preserved at its original scope; the reviewer checked local source facts, not a fresh live warehouse reconciliation. Documentary PASS grants no scientific approval.",
+  "review": {
+    "reviewed_revision": "2347c7b",
+    "disposition": "REVISIONS_REQUIRED_PRESERVE_DESCRIPTIVE_PILOT",
+    "independent_local_source_checks": {
+      "cells": 69,
+      "discrepancies": 0,
+      "scope": "rows, labels, naive/oracle, denominators, aggregate MAE/MASE, weights digest"
+    },
+    "counterexamples": "docs/audits/evidence/RP_REVIEW_2026_09_18/results.json",
+    "live_warehouse_rechecked_by_reviewer": false,
+    "inference_replayed_by_reviewer": false,
+    "descriptor_reanalysis": {
+      "partitions": 15,
+      "changed": 0
+    },
+    "original_files": 497,
+    "originals_unchanged": true,
+    "scientific_confirmation": false
+  }
+}
+>>>>>>> origin/master

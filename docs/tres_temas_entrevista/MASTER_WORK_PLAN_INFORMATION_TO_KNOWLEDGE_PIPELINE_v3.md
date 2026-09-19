@@ -1,7 +1,21 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
 Fecha: 2026-09-18. Responsable del programa y revision: Musashi.
-Ejecucion delegada: Satoshi. Estado: PLAN CORREGIDO; E0-DEV NO EJECUTADO.
+Ejecucion delegada: Satoshi. Estado: E0-DEV EJECUTADO; REVISION CON CORRECCIONES.
+
+**Adicion aprobada, 18-sep:** comparar ARCH-A (Conv1D local, referencia), ARCH-B
+(convolucion dilatada/TCN), ARCH-C (Conv1D + GRU/LSTM) y control sin extractor
+aprendido dentro de E0 antes de elegir el procedimiento. Hipotesis
+[H-CORE](CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md)
+incorporada despues del desarrollo del extractor y su prefijo congelado verificable.
+Retorno RP1-RP8 recibido en `2347c7b`; esta adicion se adopta en el sucesor,
+sin cambiar la corrida sellada. [Revision ejecutada y limites](../audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md):
+69 records sin discrepancia en la comprobacion local de datos/errores, pero cierre
+incompleto, descriptor de tendencia incorrecto y atribucion H3 limitada.
+No borrar el piloto ni repetirlo entero: corregir, demostrar reuso y ejecutar
+[RP9-RP16](../handoffs/MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md).
+La correccion de tendencia mantiene las 15 particiones del piloto en el reanalisis.
+ARCH-A/B/C/0 aun no comparadas; H-CORE sigue despues de E1 y del prefijo verificable.
 
 ## 1. Autoridad, alcance y correccion de rumbo
 
@@ -120,6 +134,16 @@ informativos y el experimento no confunde falta de aprendizaje con falta de efec
 
 ### 4.2 Aprendices, agrupacion y contrastes
 
+**Comparacion aprobada para desarrollo E0:** ARCH-A como referencia inicial
+(Conv1D causal de una/dos capas e integrador identidad), frente a ARCH-B
+(bloque causal dilatado tipo TCN) y ARCH-C (Conv1D + GRU o LSTM con secuencias).
+Anadir ARCH-0 sin extractor aprendido con adaptacion dimensional si hace falta.
+Todas usan el modular con fusion y cabezal reales; no elegir ganador por facilidad
+de implementacion. Controlar nucleo/cabezal, acceso a informacion y oportunidades
+de ajuste; comparar efectos por arquitectura/regimen y costo total. Pocas capas
+no garantizan contexto suficiente: calcular alcance rama+nucleo. Ver el documento
+H-CORE, seccion 2, para controles, criterios y adopcion despues del retorno de Satoshi.
+
 - Agrupacion: ACF, bandas Welch y fuerza de tendencia/estacionalidad; escalado de
   descriptores y exclusion de constantes en desarrollo; enlace promedio/distancia
   euclidiana segun propuesta. Estabilidad por segmentos. Feature selection y
@@ -168,13 +192,21 @@ demuestra por si solo ausencia de sobreajuste ni selecciona por el test.
 
 | Orden | Trabajo / responsable ejecutor Satoshi | Dependencia y salida |
 |---|---|---|
-| Ahora A | Integrar este plan, reconciliar solo evidencia reutilizada, requisitos/aceptacion y diseno de MOD-E0-DEV | Fuentes de esta revision; producir diseno numerico razonado, contratos y tests antes de codigo nuevo |
-| Ahora B | Implementar lo que falte y ejecutar piloto multivariado H2/H3 completo | A y adecuacion del mecanismo; resultados DEVELOPMENT conciliados, positivos/negativos/costo, diagnostico de fallos |
+| Ejecutado, revision parcial | Piloto multivariado RP1-RP8 | 66 celdas y 3 pilotos; conservar efectos descriptivos, no aceptacion confirmatoria |
+| Ahora A | MOD-E0-CLOSURE: corregir verificador, descriptor y cobertura de metricas | RP9-RP13; pruebas contra los contraejemplos, reuso y conciliacion independiente |
+| Ahora B | Comparacion arquitectonica y controles mecanisticos del sucesor | RP14: diseno numerico, adecuacion/contexto/costo, cuatro arquitecturas y ambos contrastes antes de elegir |
+| E0, antes de elegir | MOD-ARCH-COMPARE: ARCH-A/B/C y ARCH-0 en el modular propio | Adoptar tras conciliar el retorno en curso; reutilizar piloto compatible, medir interacciones arquitectura/regimen y costo antes de fijar el procedimiento |
 | Paralelo C | Reconciliar demanda real de forecasting/RL semanal y banco publico de E1 | Leer configs/productores existentes; no recenso global ni dependencia de un seno aprobado; contratos y deficits por fuente |
 | Despues D | E1 publico: desarrollar perfiles, seleccion, contextos, R0/R1/R2 y comparadores | Piloto de mecanismos y datos admisibles; fijar procedimiento, margenes, precision y presupuestos antes de reservas |
+| Despues D, extension | MOD-FROZEN-PREFIX y MOD-CORE-PRETRAIN: hipotesis H-CORE del owner | Comparacion R0/R1/R2 y receptor adecuado completados; fijar/materializar prefijo; nucleo desde cero vs preentrenado ajustable vs congelado, con cabezales y costo total |
 | Despues E | E0-CONF H2/H3 y E2 H1 en reservas independientes | Reglas E1 fijadas y revision ML; no reutilizar test de diagnosticos anteriores |
 | Obligatorio F | E3 forecasting aplicado y RL con reentrenamiento semanal | Datos temporalmente aptos, entorno/modelo y contrato de ejecucion validados; evaluacion propia aunque H1-H3 no sean positivos |
 | Carriles propios | P-PRE/P-TRN, P-CAP, P-L2, P-INC | Sus protocolos, modelos y unidades; compartir datos/metricas/codigo solo si equivalencia demostrada, no multiplicar claims sobre el mismo resultado |
+
+H-CORE es un experimento de desarrollo propio, no requisito para E0 ni aprobacion
+presupuesta del preentrenamiento. No modifica H1-H3 o sus pruebas reservadas sin
+una revision previa a la confirmacion. Su comparacion RL pertenece a E3; un resultado
+de reconstruccion o forecasting no la reemplaza. No se pierde si R0 supera R1/R2.
 
 No hacer depender E0-DEV de que todas las transformaciones ganen previamente,
 de terminar DOIN, de Metabase o de resolver datos financieros que no consume.
