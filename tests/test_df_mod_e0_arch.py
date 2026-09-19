@@ -214,38 +214,8 @@ def test_RP14_concurrent_waves_respect_dependencies_and_the_ceiling(tmp_path):
     assert report["stopped"] and report["stopped"].startswith(RUN.DEV.CAP_EXHAUSTED) and report["reconciliation"]["missing_units"]
 
 
-def test_RP16_arch_effects_and_tables_use_verified_cells_only_with_the_population_stated(tmp_path):
-    AV = _load("df_mod_e0_arch_verify")
-    design = _design(readout_controls_r=[1])                  # the 2 x 2 readout control at r = 1 only (as in the sealed stage)
-    # a synthetic closure: every cell verified with MASE = base(arch) + arm offsets, one cell with problems
-    base = {"A": 0.60, "B": 0.55, "C": 0.58, "0": 0.70}
-    off = {"profiles": -0.02, "random_0": 0.0, "extractor": 0.0, "sequence": -0.05, "sequence_gap": -0.04, "summary": 0.0, "summary_last": -0.01,
-           "extractor_summary": 0.0}
-    units = {}
-    for c in design["cells"]:
-        m = AV._parse(c["cell_id"])
-        val = base[c["arch"]] + off[c["arm"]] + (0.01 if m["hypothesis"] == "H2" and m["cond"] == "h3" and c["arm"] == "profiles" else 0.0)
-        rec = {"arch": c["arch"], "arm": c["arm"], "hypothesis": c["hypothesis"], "seed": c["seed"], "level": c["level"], "r": c["r"],
-               "mase": {"validation": val, "test": val + 0.01}, "mae": {"validation": val, "test": val}, "naive_mase": {"validation": 1.0, "test": 1.0},
-               "linear_mase": {"validation": 0.62, "test": 0.62}, "oracle_mase": {"validation": 0.4, "test": 0.4}, "denominator": [0.5] * 8,
-               "updates": 500, "stop_reason": "EARLY_STOPPING", "cost": {"cpu_seconds": 10.0, "fit_seconds": 8.0}, "parameters": {"total": 1, "trainable": 1, "frozen": 0},
-               "support_reach": 7}
-        units[c["cell_id"]] = {"status": "VERIFIED", "role": "CELL", "record": rec, "problems": []}
-    bad = next(k for k in units if k.startswith("H2__h3__s1__B__profiles"))
-    units[bad]["status"] = "PROBLEMS"
-    local = {"units": units, "population": {"members": [c["cell_id"] for c in design["cells"]]}, "closure": "PARTIAL"}
-    eff = AV.effects(local, design)
-    assert eff["population"]["verified_cells"] == len(units) - 1 and eff["population"]["cells"] == len(units)
-    assert eff["per_arch"]["A"]["interpretable"] and not eff["per_arch"]["B"]["interpretable"]      # one replicate: B lost its only adequacy cell (PROBLEMS excluded)
-    assert abs(eff["per_arch"]["A"]["H3"]["d"][1] - ((-0.05 - 0.04) / 2 - (0.0 - 0.01) / 2)) < 1e-9        # fusion contrast averaged over readouts
-    assert abs(eff["readout"]["A"]["rho"][1] - ((-0.05 + -0.01) / 2 - (-0.04 + 0.0) / 2)) < 1e-9          # last - pooled
-    assert eff["per_arch"]["A"]["H3"]["d"][0] == pytest.approx(-0.05)                                       # r = 0: sequence vs summary only
-    assert eff["donor"]["A"]["n"] == 1 and eff["donor"]["A"]["delta"] == pytest.approx(0.0)
-    assert eff["per_arch"]["A"]["H2"]["e"][3] == pytest.approx(-0.01) and eff["per_arch"]["A"]["H2"]["e"][0] == pytest.approx(-0.02)
-    assert eff["per_arch"]["A"]["H2"]["slope"] == pytest.approx((-0.01 - -0.02) / 3)
-    assert eff["dx"]["A"] and eff["bootstrap"]["A"]["H3_gamma"]["n"] > 0
-    md = AV.tables(eff, local, design)
-    assert "population" in md and "PROBLEMS" in md and "| A |" in md
+# The RP16 effects test that encoded the "average of the surviving fusion arms" (dictum F1) was removed with
+# the v1 estimator; the contrast-bound estimator is tested in tests/test_df_mod_e0_arch_effects.py (RP18).
 
 
 def test_RP22_readout_completion_successor_inherits_the_parent_donors_never_retrains_and_closes_with_them(tmp_path):
