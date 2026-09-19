@@ -262,17 +262,21 @@ def route_checks(gov_url: str, token: str, *, cache_dir: Path, run_id: str, reso
     rng = http_json(f"{gov_url}/api/v2/download?lake={lake}&resource={resource}&role=panel&from=2007-01-01&to=2007-01-02",
                     token, headers={"X-Experiment-Key": ranged_key,
                                     "X-Campaign-SHA256": rc.get("campaign_sha256") or "", "X-Unit-ID": "ranged-1"})
-    out["ranged_request"] = {"http": rng[0], "body": rng[1],
-                             "declared_by_its_own_campaign": rc_status in (200, 201)}
+    out["ranged_request"] = {"campaign_http": rc_status, "campaign_body": rc if rc_status >= 400 else None,
+                             "download_http": rng[0], "body": rng[1],
+                             "refused_at": "CAMPAIGN_REGISTRATION" if rc_status >= 400 else "DOWNLOAD",
+                             "refused": rc_status >= 400 or rng[0] >= 400,
+                             "note": "a date range over this archive is refused at the earliest point: the policy "
+                                     "denies every day from the declared holdout, so the campaign that declares the "
+                                     "range is never registered and no delivery is possible"}
     absent = http_json(f"{gov_url}/api/v2/download?lake={lake}&resource=uci_501_beijing_multisite_air_quality/panel.parquet&role=panel",
                        token, headers={"X-Experiment-Key": key, "X-Campaign-SHA256": sha, "X-Unit-ID": unit})
     out["undeclared_resource"] = {"http": absent[0], "body": absent[1]}
     nocamp = http_json(f"{gov_url}/api/v2/download?lake={lake}&resource={resource}&role=panel", token,
                        headers={"X-Experiment-Key": key})
     out["download_without_campaign"] = {"http": nocamp[0], "body": nocamp[1]}
-    out["refusals_hold"] = (out["ranged_request"]["http"] >= 400 and out["undeclared_resource"]["http"] >= 400
-                            and out["download_without_campaign"]["http"] >= 400
-                            and out["ranged_request"]["declared_by_its_own_campaign"])
+    out["refusals_hold"] = (out["ranged_request"]["refused"] and out["undeclared_resource"]["http"] >= 400
+                            and out["download_without_campaign"]["http"] >= 400)
     return out
 
 
