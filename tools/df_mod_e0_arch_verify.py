@@ -1,36 +1,204 @@
 #!/usr/bin/env python3
-"""RP14/RP16: effects and tables of the ARCH comparison from a closure (df_mod_e0_close CLOSE.json).
+"""RP18: contrast-bound effects of the ARCH comparison from a closure (CLOSE.json) and its sealed design.
 
-Only VERIFIED cells enter; the denominator (design population) is stated with every table. Effects
-per architecture: H2 e_a(h) and slope; H3 d_a,r over the fusion arms (averaged over readouts where
-the controls exist) and gamma_a; READOUT rho_a,r (last - pooled, averaged over fusions); DONOR delta_a;
-DX adequacy rows; receiver adequacy (model < naive on validation at h = 3, r = 1) gates the
-interpretation. Replicate SDs and paired bootstrap over replicates are DESCRIPTIVE (n replicates is
-stated). Costs per phase and stop reasons are tabulated per architecture, never only mean MASE.
+Every effect is a CONTRAST with an exact member list, fixed weights and a denominator derived from the
+design (never from what survived verification). The closure must be the closure of the very design
+(identity), its population must be the design's, every member must be a VERIFIED cell whose record
+agrees with its id and the design, and every value must be finite; a foreign design, a duplicated
+member, an unexpected arm or a non-finite value REFUSES. A contrast whose members are not all
+present is INCOMPLETE with n expected / observed and the reasons; it is never filled with other
+arms' averages. One estimator serves the point estimate and the replicate bootstrap.
 
-    python tools/df_mod_e0_arch_verify.py --close CLOSE.json --design DESIGN.json --out ARCH_EFFECTS.json [--tables TABLES.md]
+Contrasts (per architecture a):
+  H2       e_a(h) = mean over replicates of [MASE(profiles) - mean over ALL random_k]; slope over h.
+  COMMON   d_a,r = mean over replicates of [MASE(sequence) - MASE(summary)] (donor sequence), at each r;
+           gamma_common_pair = d_a,1 - d_a,0 (the SAME pair at both r).
+  FACT     2 x 2 fusion x readout at r: fusion = mean(last, gap of sequence fusion) - mean(gap, last of
+           summary fusion); readout = mean(sequence, summary_last) - mean(sequence_gap, summary);
+           interaction; gamma_factorial = fusion(r=1) - fusion(r=0) only when the 2 x 2 exists at BOTH r.
+  READOUT  per fusion at r: sequence - sequence_gap (sequence fusion); summary_last - summary (summary fusion).
+  DONOR    delta_a = [seq_dsum - summ_dsum] - [seq - summ] per replicate at r = 1: the SAME common pair.
+  DX       adequacy rows only (no effect).
+Adequacy is reported apart: persistence naive (the naive of prepare()), the MASE denominator (train
+seasonal-naive MAE, a denominator, not a predictor score), the linear reference (point gap AND the
+historic +0.03 criterion), the oracle. No `interpretable` flag.
+
+    python tools/df_mod_e0_arch_verify.py --close CLOSE.json --design DESIGN.json --out EFFECTS.json [--tables T.md]
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 
 import numpy as np
 
-SEQ_FUSIONS = ("sequence", "sequence_gap")
-SUM_FUSIONS = ("summary", "summary_last")
-LAST_READOUTS = ("sequence", "summary_last")
-POOLED_READOUTS = ("sequence_gap", "summary")
+SCHEMA = "df_mod_e0_arch_effects.v2"
+ESTIMATED, INCOMPLETE, NOT_ESTIMABLE = "ESTIMATED", "INCOMPLETE", "NOT_ESTIMABLE"
+LINEAR_TOLERANCE = 0.03
 
 
-def _mean(values):
-    return float(np.mean(values)) if values else None
+class EffectsRefusal(SystemExit):
+    def __init__(self, why: str):
+        super().__init__(why)
+        self.code = 2
+        self.why = why
 
 
-def _sd(values):
-    return float(np.std(values, ddof=1)) if len(values) > 1 else None
+def _fin(x) -> float:
+    if x is None or isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(float(x)):
+        raise EffectsRefusal(f"REFUSED: non-finite or non-numeric value {x!r}")
+    return float(x)
+
+
+def parse_id(cell_id: str) -> dict:
+    parts = cell_id.split("__")
+    if parts[0] in ("H2", "H3") and len(parts) >= 5:
+        return {"hypothesis": parts[0], "cond": parts[1], "seed": int(parts[2][1:]), "arch": parts[3], "arm": parts[4],
+                "donor": "summary" if (len(parts) > 5 and parts[5] == "dsum") else ("sequence" if parts[0] == "H3" else None)}
+    if parts[0] == "DX" and len(parts) >= 5:
+        return {"hypothesis": "DX", "cond": parts[1], "seed": int(parts[2][1:]), "arch": parts[3], "arm": parts[4], "donor": None}
+    raise EffectsRefusal(f"REFUSED: unrecognised cell id {cell_id!r}")
+
+
+# --- the contracts derived from the design ------------------------------------------------------------------
+
+def contrasts(design: dict) -> dict:
+    """Member lists, weights and denominators of every contrast, from the design alone."""
+    by_id = {c["cell_id"]: c for c in design["cells"]}
+    archs, seeds, levels, rs = design["archs"], sorted(design["replicates"]), sorted(design["levels"]), sorted(design["r_values"])
+    ctrl_r = set(design.get("readout_controls_r") or rs)
+    ds = design.get("donor_sensitivity") or {}
+    out = {"design_sha256": design["design_sha256"], "replicates": seeds, "per_arch": {}}
+    for a in archs:
+        ent = {"H2": {}, "COMMON": {}, "FACT": {}, "READOUT": {}, "DONOR": None, "DX": []}
+        for h in levels:
+            ent["H2"][h] = {s: {"profiles": f"H2__h{h}__s{s}__{a}__profiles",
+                                "random": [f"H2__h{h}__s{s}__{a}__random_{k}" for k in range(design["random_assignments"])]} for s in seeds}
+        for r in rs:
+            ent["COMMON"][r] = {s: {"sequence": f"H3__r{r}__s{s}__{a}__sequence", "summary": f"H3__r{r}__s{s}__{a}__summary"} for s in seeds}
+            if r in ctrl_r:
+                ent["FACT"][r] = {s: {arm: f"H3__r{r}__s{s}__{a}__{arm}" for arm in ("sequence", "sequence_gap", "summary", "summary_last")} for s in seeds}
+        if a in (ds.get("archs") or []):
+            ent["DONOR"] = {r: {s: {"sequence_dsum": f"H3__r{r}__s{s}__{a}__sequence__dsum", "summary_dsum": f"H3__r{r}__s{s}__{a}__summary__dsum",
+                                    "sequence": f"H3__r{r}__s{s}__{a}__sequence", "summary": f"H3__r{r}__s{s}__{a}__summary"} for s in seeds}
+                            for r in (ds.get("r") or [])}
+        dx = design.get("diagnostic") or {}
+        if dx:
+            ent["DX"] = [f"DX__{dx['condition']}__s{s}__{a}__{arm}" for s in dx.get("seeds", []) for arm in dx.get("arms", ["profiles"])]
+        out["per_arch"][a] = ent
+    # every member named must be a design cell
+    for a, ent in out["per_arch"].items():
+        for group in ("H2", "COMMON", "FACT"):
+            for _, by_seed in ent[group].items():
+                for _, members in by_seed.items():
+                    for m in (members.values() if isinstance(members, dict) else []):
+                        for cid in (m if isinstance(m, list) else [m]):
+                            if cid not in by_id:
+                                raise EffectsRefusal(f"REFUSED: contrast member {cid} is not a design cell")
+    out["weights"] = "equal weight per replicate; random assignments averaged within the replicate; readouts averaged within the fusion"
+    return out
+
+
+# --- binding of the closure to the design ---------------------------------------------------------------------
+
+def bind(close_local: dict, design: dict, split: str) -> dict:
+    """{cell_id: value} for every VERIFIED cell whose record agrees with its id and the design; refusals on
+    identity, population, duplicates, unexpected arms and non-finite values."""
+    if close_local.get("design_sha256") != design.get("design_sha256"):
+        raise EffectsRefusal(f"REFUSED: the closure is of design {close_local.get('design_sha256')!r}, not {design.get('design_sha256')!r}")
+    members = list((close_local.get("population") or {}).get("members") or [])
+    expected = [c["cell_id"] for c in design["cells"]]
+    if members != expected:
+        raise EffectsRefusal("REFUSED: the closure's population is not the design's enumeration")
+    if len(set(members)) != len(members):
+        raise EffectsRefusal("REFUSED: duplicated member in the population")
+    by_id = {c["cell_id"]: c for c in design["cells"]}
+    units = close_local.get("units") or {}
+    strangers = sorted(k for k, u in units.items() if u.get("role") == "CELL" and k not in by_id)
+    if strangers:
+        raise EffectsRefusal(f"REFUSED: unexpected cell(s) in the closure: {strangers[:5]}")
+    values, states = {}, {}
+    for cid, c in by_id.items():
+        u = units.get(cid)
+        if u is None:
+            states[cid] = "ABSENT"
+            continue
+        if u.get("status") != "VERIFIED" or u.get("role") != "CELL":
+            states[cid] = str(u.get("status"))
+            continue
+        rec = u.get("record") or {}
+        meta = parse_id(cid)
+        if (str(rec.get("arch")) != str(c["arch"]) or rec.get("arm") != c["arm"] or int(rec.get("seed", -1)) != int(c["seed"])
+                or rec.get("hypothesis") != c["hypothesis"] or int(rec.get("level", -1)) != int(c["level"]) or int(rec.get("r", -1)) != int(c["r"])
+                or (rec.get("donor") or ("sequence" if c.get("depends_on") else None)) != (c.get("donor") or ("sequence" if c.get("depends_on") else None))):
+            raise EffectsRefusal(f"REFUSED: {cid}: the record's identity does not match its id / the design")
+        if meta["arm"] != c["arm"]:
+            raise EffectsRefusal(f"REFUSED: {cid}: unexpected arm")
+        values[cid] = _fin((rec.get("mase") or {}).get(split))
+        states[cid] = "VERIFIED"
+    return {"values": values, "states": states}
+
+
+# --- the single estimator --------------------------------------------------------------------------------------
+
+def estimate(spec: dict, values: dict, seeds: list) -> dict:
+    """One contrast on a set of replicate ids: per-replicate value from the FULL member list (or the
+    replicate is missing), mean and SD; complete only if every replicate's every member is present."""
+    per, missing = {}, {}
+    for s in seeds:
+        members = spec.get(s)
+        if members is None:
+            missing[s] = ["replicate not in the design"]
+            continue
+        flat = []
+        for m in members.values():
+            flat += m if isinstance(m, list) else [m]
+        absent = [cid for cid in flat if cid not in values]
+        if absent:
+            missing[s] = absent
+            continue
+        per[s] = spec["_f"](members, values)
+    n_expected, n_observed = len(seeds), len(per)
+    vals = list(per.values())
+    return {"state": ESTIMATED if (n_observed == n_expected and n_expected > 0) else (INCOMPLETE if n_observed > 0 or n_expected > 0 else NOT_ESTIMABLE),
+            "n_expected": n_expected, "n_observed": n_observed, "complete": n_observed == n_expected and n_expected > 0,
+            "value": float(np.mean(vals)) if vals else None, "sd_replicates": float(np.std(vals, ddof=1)) if len(vals) > 1 else None,
+            "per_replicate": {int(s): float(v) for s, v in per.items()}, "missing": {int(s): m for s, m in missing.items()}}
+
+
+def _f_h2(members, values):
+    return values[members["profiles"]] - float(np.mean([values[k] for k in members["random"]]))
+
+
+def _f_common(members, values):
+    return values[members["sequence"]] - values[members["summary"]]
+
+
+def _f_fusion(members, values):
+    return float(np.mean([values[members["sequence"]], values[members["sequence_gap"]]]) - np.mean([values[members["summary"]], values[members["summary_last"]]]))
+
+
+def _f_readout(members, values):
+    return float(np.mean([values[members["sequence"]], values[members["summary_last"]]]) - np.mean([values[members["sequence_gap"]], values[members["summary"]]]))
+
+
+def _f_interaction(members, values):
+    return float((values[members["sequence"]] - values[members["sequence_gap"]]) - (values[members["summary_last"]] - values[members["summary"]]))
+
+
+def _f_readout_seq(members, values):
+    return values[members["sequence"]] - values[members["sequence_gap"]]
+
+
+def _f_readout_sum(members, values):
+    return values[members["summary_last"]] - values[members["summary"]]
+
+
+def _f_donor(members, values):
+    return (values[members["sequence_dsum"]] - values[members["summary_dsum"]]) - (values[members["sequence"]] - values[members["summary"]])
 
 
 def _slope(levels, values):
@@ -40,223 +208,172 @@ def _slope(levels, values):
     return float(np.linalg.lstsq(A, np.asarray(values), rcond=None)[0][0])
 
 
-def _parse(cell_id: str) -> dict:
-    parts = cell_id.split("__")
-    if parts[0] in ("H2", "H3"):
-        cond, seed, arch, arm = parts[1], int(parts[2][1:]), parts[3], parts[4]
-        return {"hypothesis": parts[0], "cond": cond, "seed": seed, "arch": arch, "arm": arm, "dsum": len(parts) > 5 and parts[5] == "dsum"}
-    if parts[0] == "DX":
-        return {"hypothesis": "DX", "cond": parts[1], "seed": int(parts[2][1:]), "arch": parts[3], "arm": parts[4], "dsum": False}
-    return {"hypothesis": parts[0], "cond": None, "seed": None, "arch": None, "arm": None, "dsum": False}
+def _spec(by_seed: dict, f) -> dict:
+    return {**by_seed, "_f": f}
 
 
-def effects(close_local: dict, design: dict, split: str = "validation") -> dict:
-    units = close_local["units"]
-    verified = {k: u for k, u in units.items() if u["status"] == "VERIFIED" and u.get("role") == "CELL"}
-    archs = design["archs"]
-    out = {"schema": "df_mod_e0_arch_effects.v1", "split": split, "population": {"cells": len(close_local["population"]["members"]), "verified_cells": len(verified),
-                                                                                     "closure": close_local["closure"]},
-           "replicates": design["replicates"], "per_arch": {}, "adequacy": {}, "readout": {}, "donor": {}, "dx": {}, "costs": {}}
-    for a in archs:
-        cells = {k: u for k, u in verified.items() if u["record"].get("arch") == a}
-        rec = lambda k: cells[k]["record"]
-        # --- adequacy: H2 profiles at h=3 (or the max level), r=1: model < naive ---
-        lv = max(design["levels"])
-        adequate = []
-        for k, u in cells.items():
-            m = _parse(k)
-            if m["hypothesis"] == "H2" and m["arm"] == "profiles" and m["cond"] == f"h{lv}":
-                r = u["record"]
-                adequate.append({"cell": k, "model": r["mase"][split], "naive": r["naive_mase"][split], "linear": r["linear_mase"][split], "oracle": r["oracle_mase"][split],
-                                 "beats_naive": r["mase"][split] < r["naive_mase"][split]})
-        out["adequacy"][a] = {"cells": adequate, "receiver_adequate": bool(adequate) and all(x["beats_naive"] for x in adequate),
-                              "rule": f"every H2 profiles cell at h = {lv}, r = 1 beats the seasonal-naive on {split}"}
-        # --- H2 within arch ---
-        by = {}
-        for k, u in cells.items():
-            m = _parse(k)
-            if m["hypothesis"] == "H2":
-                by.setdefault((int(m["cond"][1:]), m["seed"]), {})[m["arm"]] = u["record"]["mase"][split]
-        e_by, sd_by = {}, {}
-        for h in sorted({lv_ for lv_, _ in by}):
-            diffs = [arms["profiles"] - _mean([v for a_, v in arms.items() if a_.startswith("random_")])
-                     for (lv_, s), arms in by.items() if lv_ == h and "profiles" in arms and any(a_.startswith("random_") for a_ in arms)]
-            if diffs:
-                e_by[h], sd_by[h] = _mean(diffs), _sd(diffs)
-        h2 = {"e": e_by, "sd_replicates": sd_by, "slope": _slope(sorted(e_by), [e_by[h] for h in sorted(e_by)]), "n_replicates": len({s for _, s in by})}
-        # --- H3 within arch: fusion contrast averaged over readouts, per (r, seed); readout contrast; donor ---
-        h3 = {}
-        by3 = {}
-        for k, u in cells.items():
-            m = _parse(k)
-            if m["hypothesis"] == "H3" and m["arm"] not in ("extractor", "extractor_summary"):
-                by3.setdefault((int(m["cond"][1:]), m["seed"], "dsum" if m["dsum"] else "seq"), {})[m["arm"]] = u["record"]["mase"][split]
-        d, sd_d, rho, sd_rho = {}, {}, {}, {}
-        for r in design["r_values"]:
-            diffs, rdiffs = [], []
-            for (rr, s, donor), arms in by3.items():
-                if rr != r or donor != "seq":
-                    continue
-                seq = [v for f, v in arms.items() if f in SEQ_FUSIONS]
-                summ = [v for f, v in arms.items() if f in SUM_FUSIONS]
-                if seq and summ:
-                    diffs.append(_mean(seq) - _mean(summ))
-                last = [v for f, v in arms.items() if f in LAST_READOUTS]
-                pooled = [v for f, v in arms.items() if f in POOLED_READOUTS]
-                if last and pooled and len(arms) >= 4:
-                    rdiffs.append(_mean(last) - _mean(pooled))
-            if diffs:
-                d[r], sd_d[r] = _mean(diffs), _sd(diffs)
-            if rdiffs:
-                rho[r], sd_rho[r] = _mean(rdiffs), _sd(rdiffs)
-        h3 = {"d": d, "sd_replicates": sd_d, "gamma": (d[1] - d[0]) if 0 in d and 1 in d else None, "n_replicates": len({s for _, s, _ in by3}),
-              "definition": "d_r = mean(sequence-fusion arms) - mean(summary-fusion arms) per replicate (readouts averaged where present)"}
-        out["readout"][a] = {"rho": rho, "sd_replicates": sd_rho, "definition": "rho_r = mean(last readouts) - mean(pooled readouts) per replicate (fusions averaged); "
-                                                                                  "only where the 2 x 2 exists"}
-        dd = []
-        for (rr, s, donor), arms in by3.items():
-            if donor != "dsum" or rr != 1:
+def _difference(a: dict, b: dict, label: str) -> dict:
+    """a - b of two ESTIMATED contrasts on the same replicates (paired)."""
+    if a["state"] != ESTIMATED or b["state"] != ESTIMATED:
+        return {"state": NOT_ESTIMABLE, "value": None, "why": f"{label}: both terms must be complete ({a['state']} / {b['state']})"}
+    per = {s: a["per_replicate"][s] - b["per_replicate"][s] for s in a["per_replicate"] if s in b["per_replicate"]}
+    vals = list(per.values())
+    return {"state": ESTIMATED, "value": float(np.mean(vals)), "sd_replicates": float(np.std(vals, ddof=1)) if len(vals) > 1 else None,
+            "per_replicate": per, "n_replicates": len(vals)}
+
+
+def arch_effects(a: str, ent: dict, values: dict, seeds: list, levels: list, rs: list) -> dict:
+    out = {"H2": {"e": {}, "slope": None, "state": None}, "COMMON": {"d": {}}, "FACT": {}, "READOUT": {}, "DONOR": None}
+    for h in levels:
+        out["H2"]["e"][h] = estimate(_spec(ent["H2"][h], _f_h2), values, seeds)
+    est_levels = [h for h in levels if out["H2"]["e"][h]["state"] == ESTIMATED]
+    out["H2"]["state"] = ESTIMATED if len(est_levels) == len(levels) else INCOMPLETE
+    out["H2"]["slope"] = _slope(est_levels, [out["H2"]["e"][h]["value"] for h in est_levels]) if (len(est_levels) == len(levels) and len(levels) >= 2) else None
+    for r in rs:
+        out["COMMON"]["d"][r] = estimate(_spec(ent["COMMON"][r], _f_common), values, seeds)
+    out["COMMON"]["gamma_common_pair"] = _difference(out["COMMON"]["d"].get(1, {"state": NOT_ESTIMABLE}), out["COMMON"]["d"].get(0, {"state": NOT_ESTIMABLE}), "gamma_common_pair") \
+        if (0 in out["COMMON"]["d"] and 1 in out["COMMON"]["d"]) else {"state": NOT_ESTIMABLE, "value": None, "why": "r = 0 and r = 1 both required"}
+    for r, by_seed in ent["FACT"].items():
+        out["FACT"][r] = {"fusion": estimate(_spec(by_seed, _f_fusion), values, seeds), "readout": estimate(_spec(by_seed, _f_readout), values, seeds),
+                          "interaction": estimate(_spec(by_seed, _f_interaction), values, seeds)}
+        out["READOUT"][r] = {"sequence_fusion": estimate(_spec(by_seed, _f_readout_seq), values, seeds),
+                             "summary_fusion": estimate(_spec(by_seed, _f_readout_sum), values, seeds)}
+    if 0 in out["FACT"] and 1 in out["FACT"]:
+        out["FACT"]["gamma_factorial"] = _difference(out["FACT"][1]["fusion"], out["FACT"][0]["fusion"], "gamma_factorial")
+    else:
+        out["FACT"]["gamma_factorial"] = {"state": NOT_ESTIMABLE, "value": None,
+                                          "why": f"the 2 x 2 exists at r = {sorted(ent['FACT'])} only; the balanced factorial gamma needs it at both r"}
+    if ent["DONOR"]:
+        out["DONOR"] = {r: estimate(_spec(by_seed, _f_donor), values, seeds) for r, by_seed in ent["DONOR"].items()}
+    return out
+
+
+def effects(close_local: dict, design: dict, split: str = "validation", n_boot: int = 1000, seed: int = 0) -> dict:
+    """Bound, contrast-wise effects with a replicate bootstrap that reuses the same estimator."""
+    con = contrasts(design)
+    bound = bind(close_local, design, split)
+    values = bound["values"]
+    seeds, levels, rs = con["replicates"], sorted(design["levels"]), sorted(design["r_values"])
+    out = {"schema": SCHEMA, "split": split, "design_sha256": design["design_sha256"], "closure": close_local.get("closure"),
+           "population": {"cells": len(design["cells"]), "verified_cells": sum(1 for v in bound["states"].values() if v == "VERIFIED"),
+                          "not_verified": {k: v for k, v in bound["states"].items() if v != "VERIFIED"}},
+           "replicates": seeds, "weights": con["weights"], "per_arch": {}, "adequacy": {}, "dx": {}, "bootstrap": {}, "definitions": {
+               "gamma_common_pair": "d_1 - d_0 with d_r = mean over replicates of MASE(sequence) - MASE(summary), same donor kind, same pair at both r",
+               "gamma_factorial": "fusion effect at r=1 minus at r=0, each the balanced 2 x 2 average; NOT_ESTIMABLE unless the 2 x 2 exists at both r",
+               "readout": "last-step readout minus pooled readout, per fusion and balanced; descriptive at the r where it exists",
+               "donor_delta": "(sequence_dsum - summary_dsum) - (sequence - summary) per replicate: the SAME common pair with the other donor",
+               "H2": "profiles minus the mean of ALL random redistributions of the replicate; every control required"}}
+    units = close_local.get("units") or {}
+    for a in design["archs"]:
+        out["per_arch"][a] = arch_effects(a, con["per_arch"][a], values, seeds, levels, rs)
+        # adequacy apart: top level H2 profiles and DX, with every reference separately
+        rows = []
+        for cid in [con["per_arch"][a]["H2"][max(levels)][s]["profiles"] for s in seeds] + con["per_arch"][a]["DX"]:
+            u = units.get(cid)
+            if not u or u.get("status") != "VERIFIED":
+                rows.append({"cell": cid, "state": (u or {}).get("status", "ABSENT")})
                 continue
-            seq_arms = by3.get((rr, s, "seq"), {})
-            if "sequence" in arms and "summary" in arms and "sequence" in seq_arms and "summary" in seq_arms:
-                dd.append((arms["sequence"] - arms["summary"]) - (seq_arms["sequence"] - seq_arms["summary"]))
-        out["donor"][a] = {"delta": _mean(dd), "sd_replicates": _sd(dd), "n": len(dd),
-                           "definition": "delta = d_1(donor trained with the summary receiver) - d_1(donor trained with the sequence receiver), paired by replicate"}
-        dx = []
-        for k, u in cells.items():
-            m = _parse(k)
-            if m["hypothesis"] == "DX":
-                r = u["record"]
-                dx.append({"cell": k, "seed": m["seed"], "model": r["mase"][split], "naive": r["naive_mase"][split], "linear": r["linear_mase"][split],
-                           "oracle": r["oracle_mase"][split], "beats_naive": r["mase"][split] < r["naive_mase"][split],
-                           "within_linear": r["mase"][split] <= r["linear_mase"][split] + 0.03})
-        out["dx"][a] = dx
-        costs = [u["record"]["cost"]["cpu_seconds"] for u in cells.values()]
-        fits = [u["record"]["cost"].get("fit_seconds") for u in cells.values()]
-        stops = {}
-        for u in cells.values():
-            stops[u["record"]["stop_reason"]] = stops.get(u["record"]["stop_reason"], 0) + 1
-        out["costs"][a] = {"cells": len(cells), "cpu_seconds_total": float(sum(costs)), "cpu_seconds_mean": _mean(costs), "fit_seconds_mean": _mean([f for f in fits if f]),
-                           "updates_mean": _mean([u["record"]["updates"] for u in cells.values()]), "stop_reasons": stops,
-                           "parameters": sorted({json.dumps(u["record"].get("parameters"), sort_keys=True) for u in cells.values()})[:4]}
-        out["per_arch"][a] = {"H2": h2, "H3": h3, "interpretable": out["adequacy"][a]["receiver_adequate"],
-                              "mase_mean_validation_by_arm": {arm: _mean([u["record"]["mase"][split] for k, u in cells.items() if _parse(k)["arm"] == arm])
-                                                              for arm in sorted({_parse(k)["arm"] for k in cells})}}
-    # bootstrap over replicates (paired within replicate), descriptive
-    rng = np.random.default_rng(0)
-    seeds = sorted(design["replicates"])
-    boot = {a: {"H2_slope": [], "H3_gamma": [], "H3_d1": []} for a in archs}
-    for _ in range(1000):
-        pick = list(rng.choice(seeds, size=len(seeds), replace=True))
-        sub = {}
-        for i, s in enumerate(pick):
-            for k, u in verified.items():
-                m = _parse(k)
-                if m["seed"] == s:
-                    kk = k.replace(f"__s{s}__", f"__s{100 + i}__")
-                    sub[kk] = {**u, "record": {**u["record"], "seed": 100 + i}}
-        eff = effects({"units": sub, "population": close_local["population"], "closure": close_local["closure"]}, {**design, "replicates": [100 + i for i in range(len(pick))]}, split) \
-            if False else None
-        # (a full recursive bootstrap is avoided: the per-arch estimators are recomputed inline)
-        for a in archs:
-            e_by = {}
-            by = {}
+            r = u["record"]
+            m, nv, lin, orc = r["mase"][split], r["naive_mase"][split], r["linear_mase"][split], r["oracle_mase"][split]
+            rows.append({"cell": cid, "state": "VERIFIED", "model": m, "naive_persistence": nv, "linear": lin, "oracle": orc,
+                         "mase_denominator_mean": float(np.mean(r.get("denominator") or [float("nan")])),
+                         "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+                         "beats_persistence": m < nv, "gap_to_linear": m - lin, "within_linear_plus_0_03": m <= lin + LINEAR_TOLERANCE,
+                         "reaches_linear_point": m <= lin})
+        out["adequacy"][a] = rows
+    # bootstrap over replicates with the SAME estimator
+    rng = np.random.default_rng(seed)
+    boot = {a: {"H2_slope": [], "gamma_common_pair": [], "d1_common": [], "readout_r1_fusion_effect": []} for a in design["archs"]}
+    for _ in range(n_boot):
+        pick = [int(s) for s in rng.choice(seeds, size=len(seeds), replace=True)]
+        for a in design["archs"]:
+            ent = con["per_arch"][a]
+            # resampled replicates: duplicate ids are allowed (each draw is a unit)
+            vals = []
+            for i, s in enumerate(pick):
+                vals.append(s)
+            e = {}
+            for h in levels:
+                spec = {i: ent["H2"][h][s] for i, s in enumerate(pick)}
+                est = estimate(_spec(spec, _f_h2), values, list(range(len(pick))))
+                e[h] = est["value"] if est["state"] == ESTIMATED else None
+            if all(v is not None for v in e.values()) and len(levels) >= 2:
+                boot[a]["H2_slope"].append(_slope(levels, [e[h] for h in levels]))
             d = {}
-            by3 = {}
-            for kk, u in sub.items():
-                m = _parse(kk)
-                if u["record"].get("arch") != a:
-                    continue
-                if m["hypothesis"] == "H2":
-                    by.setdefault((int(m["cond"][1:]), m["seed"]), {})[m["arm"]] = u["record"]["mase"][split]
-                elif m["hypothesis"] == "H3" and m["arm"] not in ("extractor", "extractor_summary") and not m["dsum"]:
-                    by3.setdefault((int(m["cond"][1:]), m["seed"]), {})[m["arm"]] = u["record"]["mase"][split]
-            for h in sorted({lv_ for lv_, _ in by}):
-                diffs = [arms["profiles"] - _mean([v for a_, v in arms.items() if a_.startswith("random_")])
-                         for (lv_, s), arms in by.items() if lv_ == h and "profiles" in arms and any(a_.startswith("random_") for a_ in arms)]
-                if diffs:
-                    e_by[h] = _mean(diffs)
-            sl = _slope(sorted(e_by), [e_by[h] for h in sorted(e_by)])
-            if sl is not None:
-                boot[a]["H2_slope"].append(sl)
-            for r in design["r_values"]:
-                diffs = []
-                for (rr, s), arms in by3.items():
-                    if rr != r:
-                        continue
-                    seq = [v for f, v in arms.items() if f in SEQ_FUSIONS]
-                    summ = [v for f, v in arms.items() if f in SUM_FUSIONS]
-                    if seq and summ:
-                        diffs.append(_mean(seq) - _mean(summ))
-                if diffs:
-                    d[r] = _mean(diffs)
-            if 1 in d:
-                boot[a]["H3_d1"].append(d[1])
-            if 0 in d and 1 in d:
-                boot[a]["H3_gamma"].append(d[1] - d[0])
+            for r in rs:
+                est = estimate(_spec({i: ent["COMMON"][r][s] for i, s in enumerate(pick)}, _f_common), values, list(range(len(pick))))
+                d[r] = est["value"] if est["state"] == ESTIMATED else None
+            if d.get(1) is not None:
+                boot[a]["d1_common"].append(d[1])
+            if d.get(0) is not None and d.get(1) is not None:
+                boot[a]["gamma_common_pair"].append(d[1] - d[0])
+            if 1 in ent["FACT"]:
+                est = estimate(_spec({i: ent["FACT"][1][s] for i, s in enumerate(pick)}, _f_readout), values, list(range(len(pick))))
+                if est["state"] == ESTIMATED:
+                    boot[a]["readout_r1_fusion_effect"].append(est["value"])
     out["bootstrap"] = {a: {k: ({"ci95": [float(np.percentile(v, 2.5)), float(np.percentile(v, 97.5))], "n": len(v)} if v else None) for k, v in b.items()}
                         for a, b in boot.items()}
-    out["bootstrap_note"] = f"percentile intervals from resampling {len(seeds)} replicates with replacement: descriptive precision, not confirmation"
+    out["bootstrap_note"] = (f"percentile intervals from resampling {len(seeds)} replicate ids with replacement, same estimator as the point; with "
+                             f"{len(seeds)} replicates this is a description of two observations, not population precision, equivalence or power")
     return out
 
 
 def tables(eff: dict, close_local: dict, design: dict) -> str:
     split = eff["split"]
-    lines = [f"# ARCH comparison — tables ({split}; population {eff['population']['cells']} cells, verified {eff['population']['verified_cells']}, closure {eff['population']['closure']})", ""]
-    lines.append("## Receiver adequacy (H2 profiles at the top level, r = 1)")
-    lines.append("| arch | cell | model MASE | naive | linear | oracle | beats naive |")
-    lines.append("|---|---|---|---|---|---|---|")
-    for a, ad in eff["adequacy"].items():
-        for x in ad["cells"]:
-            lines.append(f"| {a} | {x['cell']} | {x['model']:.4f} | {x['naive']:.4f} | {x['linear']:.4f} | {x['oracle']:.4f} | {x['beats_naive']} |")
-    lines.append("")
-    lines.append("## Effects per architecture (replicate = unit; SD with n replicates; descriptive)")
-    lines.append("| arch | interpretable | e(h) | slope | d_0 | d_1 | gamma | rho_1 (last − pooled) | donor delta | n rep |")
-    lines.append("|---|---|---|---|---|---|---|---|---|---|")
+    L = [f"# ARCH comparison — contrast-bound tables ({split}; design {eff['design_sha256'][:12]}; population {eff['population']['cells']} cells, "
+         f"verified {eff['population']['verified_cells']}, closure {eff['closure']})", "", f"Replicates: {eff['replicates']} (two observations). {eff['bootstrap_note']}", ""]
+    L += ["## Adequacy (H2 profiles at the top level and DX; every reference apart)", "",
+          "| arch | cell | model | persistence naive | linear | gap to linear | ≤ linear + 0.03 | reaches linear point | oracle | MASE denom (train seasonal-naive MAE) |",
+          "|---|---|---|---|---|---|---|---|---|---|"]
+    for a, rows in eff["adequacy"].items():
+        for x in rows:
+            if x.get("state") != "VERIFIED":
+                L.append(f"| {a} | {x['cell']} | {x['state']} | | | | | | | |")
+            else:
+                L.append(f"| {a} | {x['cell']} | {x['model']:.4f} | {x['naive_persistence']:.4f} | {x['linear']:.4f} | {x['gap_to_linear']:+.4f} | {x['within_linear_plus_0_03']} | "
+                         f"{x['reaches_linear_point']} | {x['oracle']:.4f} | {x['mase_denominator_mean']:.4f} |")
+    L += ["", "## Contrasts per architecture (state · n expected/observed · value · SD of replicates)", "",
+          "| arch | H2 e(h) | H2 slope | d_0 common | d_1 common | gamma common pair | fusion 2×2 r=1 | readout 2×2 r=1 | interaction r=1 | gamma factorial | donor Δ r=1 |",
+          "|---|---|---|---|---|---|---|---|---|---|---|"]
+
+    def cell(e):
+        if e is None:
+            return "n/a"
+        if e.get("state") != ESTIMATED:
+            return f"{e.get('state')} ({e.get('n_observed', 0)}/{e.get('n_expected', 0)})" if "n_expected" in e else str(e.get("state"))
+        sd = e.get("sd_replicates")
+        return f"{e['value']:+.4f} (sd {sd:.4f})" if sd is not None else f"{e['value']:+.4f}"
     for a, p in eff["per_arch"].items():
-        h2, h3 = p["H2"], p["H3"]
-        e = ", ".join(f"h{h}: {v:+.4f}" for h, v in h2["e"].items())
-        rho = eff["readout"][a]["rho"].get(1)
-        dd = eff["donor"][a]["delta"]
-        lines.append(f"| {a} | {p['interpretable']} | {e} | {h2['slope'] if h2['slope'] is None else f'{h2['slope']:+.4f}'} | "
-                     f"{h3['d'].get(0) if h3['d'].get(0) is None else f'{h3['d'][0]:+.4f}'} | {h3['d'].get(1) if h3['d'].get(1) is None else f'{h3['d'][1]:+.4f}'} | "
-                     f"{h3['gamma'] if h3['gamma'] is None else f'{h3['gamma']:+.4f}'} | {rho if rho is None else f'{rho:+.4f}'} | {dd if dd is None else f'{dd:+.4f}'} | {h3['n_replicates']} |")
-    lines.append("")
-    lines.append("## Cells (raw error and MASE, denominator, control delta, support, updates, stop, cost)")
-    lines.append("| cell | arch | arm | status | MAE val | MASE val | naive | linear | oracle | MASE test | denom mean | reach | updates | stop | cpu s |")
-    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
-    for k, u in sorted(close_local["units"].items()):
+        e_h = ", ".join(f"h{h}: {cell(v)}" for h, v in p["H2"]["e"].items())
+        fact1 = p["FACT"].get(1) or {}
+        L.append(f"| {a} | {e_h} | {p['H2']['slope'] if p['H2']['slope'] is None else f'{p['H2']['slope']:+.4f}'} | {cell(p['COMMON']['d'].get(0))} | {cell(p['COMMON']['d'].get(1))} | "
+                 f"{cell(p['COMMON']['gamma_common_pair'])} | {cell(fact1.get('fusion'))} | {cell(fact1.get('readout'))} | {cell(fact1.get('interaction'))} | "
+                 f"{cell(p['FACT']['gamma_factorial'])} | {cell((p['DONOR'] or {}).get(1))} |")
+    L += ["", "## Per-replicate values of the common pair and the readout"]
+    for a, p in eff["per_arch"].items():
+        L.append(f"- {a}: d_0 {p['COMMON']['d'].get(0, {}).get('per_replicate')}; d_1 {p['COMMON']['d'].get(1, {}).get('per_replicate')}; "
+                 f"readout r=1 {(p['FACT'].get(1) or {}).get('readout', {}).get('per_replicate')}; missing: {p['COMMON']['d'].get(0, {}).get('missing')} / {p['COMMON']['d'].get(1, {}).get('missing')}")
+    L += ["", "## Bootstrap (same estimator; descriptive)"]
+    for a, b in eff["bootstrap"].items():
+        L.append(f"- {a}: " + ", ".join(f"{k} [{v['ci95'][0]:+.4f}, {v['ci95'][1]:+.4f}]" if v else f"{k} —" for k, v in b.items()))
+    L += ["", "## Cells (raw error, MASE, references, denominator, reach, updates, stop, cost)",
+          "| cell | arch | arm | status | MAE val | MASE val | persistence | linear | oracle | MASE test | denom mean | reach | updates | stop | cpu s |",
+          "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    for k, u in sorted((close_local.get("units") or {}).items()):
         if u.get("role") != "CELL":
             continue
         r = u.get("record") or {}
         if not r:
-            lines.append(f"| {k} | | | {u['status']} | | | | | | | | | | | |")
+            L.append(f"| {k} | | | {u['status']} | | | | | | | | | | | |")
             continue
-        lines.append(f"| {k} | {r.get('arch')} | {r['arm']} | {u['status']} | {r['mae'][split]:.4f} | {r['mase'][split]:.4f} | {r['naive_mase'][split]:.4f} | "
-                     f"{r['linear_mase'][split]:.4f} | {r['oracle_mase'][split]:.4f} | {r['mase'].get('test', float('nan')):.4f} | {np.mean(r['denominator']):.4f} | "
-                     f"{r.get('support_reach')} | {r['updates']} | {r['stop_reason']} | {r['cost']['cpu_seconds']:.1f} |")
-    lines.append("")
-    lines.append("## Costs per architecture")
-    lines.append("| arch | cells | cpu total s | cpu mean s | fit mean s | updates mean | stop reasons |")
-    lines.append("|---|---|---|---|---|---|---|")
-    for a, c in eff["costs"].items():
-        lines.append(f"| {a} | {c['cells']} | {c['cpu_seconds_total']:.0f} | {c['cpu_seconds_mean'] or 0:.1f} | {c['fit_seconds_mean'] or 0:.1f} | {c['updates_mean'] or 0:.0f} | {c['stop_reasons']} |")
-    lines.append("")
-    lines.append("## Diagnostic trend/event (adequacy only)")
-    lines.append("| arch | cell | model | naive | linear | oracle | beats naive | within linear + 0.03 |")
-    lines.append("|---|---|---|---|---|---|---|---|")
-    for a, rows in eff["dx"].items():
-        for x in rows:
-            lines.append(f"| {a} | {x['cell']} | {x['model']:.4f} | {x['naive']:.4f} | {x['linear']:.4f} | {x['oracle']:.4f} | {x['beats_naive']} | {x['within_linear']} |")
-    lines.append("")
-    lines.append(f"Bootstrap: {eff['bootstrap_note']}")
-    for a, b in eff["bootstrap"].items():
-        lines.append(f"- {a}: " + ", ".join(f"{k} {v['ci95'][0]:+.4f}..{v['ci95'][1]:+.4f}" if v else f"{k} —" for k, v in b.items()))
-    return "\n".join(lines) + "\n"
+        L.append(f"| {k} | {r.get('arch')} | {r['arm']} | {u['status']} | {r['mae'][split]:.4f} | {r['mase'][split]:.4f} | {r['naive_mase'][split]:.4f} | "
+                 f"{r['linear_mase'][split]:.4f} | {r['oracle_mase'][split]:.4f} | {r['mase'].get('test', float('nan')):.4f} | {np.mean(r['denominator']):.4f} | "
+                 f"{r.get('support_reach')} | {r['updates']} | {r['stop_reason']} | {r['cost']['cpu_seconds']:.1f} |")
+    return "\n".join(L) + "\n"
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--close", type=Path, required=True)
     parser.add_argument("--design", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
@@ -266,17 +383,24 @@ def main(argv=None) -> int:
     close = json.loads(args.close.read_text())
     local = close.get("local") or close
     design = json.loads(args.design.read_text())
-    eff = effects(local, design, args.split)
-    eff["effects_test"] = effects(local, design, "test") if args.split != "test" else None
-    if eff["effects_test"]:
-        eff["effects_test"] = {k: eff["effects_test"][k] for k in ("per_arch", "readout", "donor")}
     if args.out.exists():
         raise SystemExit(f"REFUSED: {args.out} exists")
-    args.out.write_text(json.dumps(eff, indent=1, sort_keys=True, default=str) + "\n")
+    try:
+        eff = effects(local, design, args.split)
+        eff["effects_test"] = None
+        if args.split != "test":
+            t = effects(local, design, "test", n_boot=0)
+            eff["effects_test"] = {"per_arch": t["per_arch"], "adequacy": t["adequacy"]}
+    except EffectsRefusal as e:
+        print(json.dumps({"refused": e.why}))
+        return 2
+    args.out.write_text(json.dumps(eff, indent=1, default=str) + "\n")
     if args.tables:
         args.tables.write_text(tables(eff, local, design))
-    print(json.dumps({a: {"interpretable": p["interpretable"], "H2_slope": p["H2"]["slope"], "H3_d": p["H3"]["d"], "gamma": p["H3"]["gamma"],
-                          "rho_1": eff["readout"][a]["rho"].get(1), "donor_delta": eff["donor"][a]["delta"]} for a, p in eff["per_arch"].items()}, indent=1))
+    print(json.dumps({a: {"gamma_common_pair": p["COMMON"]["gamma_common_pair"].get("value"), "d": {r: v.get("value") for r, v in p["COMMON"]["d"].items()},
+                          "gamma_factorial": p["FACT"]["gamma_factorial"]["state"], "readout_r1": (p["FACT"].get(1) or {}).get("readout", {}).get("value"),
+                          "donor_delta_r1": ((p["DONOR"] or {}).get(1) or {}).get("value"), "H2_slope": p["H2"]["slope"]}
+                      for a, p in eff["per_arch"].items()}, indent=1))
     return 0
 
 

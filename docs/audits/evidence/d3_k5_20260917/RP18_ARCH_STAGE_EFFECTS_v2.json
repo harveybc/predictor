@@ -1,0 +1,1714 @@
+{
+ "schema": "df_mod_e0_arch_effects.v2",
+ "split": "validation",
+ "design_sha256": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+ "closure": "PARTIAL",
+ "population": {
+  "cells": 112,
+  "verified_cells": 108,
+  "not_verified": {
+   "DX__trend_event__s1__A__profiles": "FAILED",
+   "DX__trend_event__s1__B__profiles": "FAILED",
+   "DX__trend_event__s1__C__profiles": "FAILED",
+   "DX__trend_event__s1__0__profiles": "FAILED"
+  }
+ },
+ "replicates": [
+  1,
+  2
+ ],
+ "weights": "equal weight per replicate; random assignments averaged within the replicate; readouts averaged within the fusion",
+ "per_arch": {
+  "A": {
+   "H2": {
+    "e": {
+     "0": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": 0.0021570598460591284,
+      "sd_replicates": 0.0018378837821485948,
+      "per_replicate": {
+       "1": 0.003456639931449179,
+       "2": 0.0008574797606690776
+      },
+      "missing": {}
+     },
+     "3": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.0013705460048374085,
+      "sd_replicates": 2.7449084873952648e-05,
+      "per_replicate": {
+       "1": -0.0013899554388891455,
+       "2": -0.0013511365707856715
+      },
+      "missing": {}
+     }
+    },
+    "slope": -0.0011758686169655126,
+    "state": "ESTIMATED"
+   },
+   "COMMON": {
+    "d": {
+     "0": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.06542803926201146,
+      "sd_replicates": 0.007336382683681065,
+      "per_replicate": {
+       "1": -0.0706156452070219,
+       "2": -0.06024043331700102
+      },
+      "missing": {}
+     },
+     "1": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.14028623350670077,
+      "sd_replicates": 0.0019465691024728976,
+      "per_replicate": {
+       "1": -0.14166266571910757,
+       "2": -0.13890980129429398
+      },
+      "missing": {}
+     }
+    },
+    "gamma_common_pair": {
+     "state": "ESTIMATED",
+     "value": -0.07485819424468931,
+     "sd_replicates": 0.005389813581208167,
+     "per_replicate": {
+      "1": -0.07104702051208567,
+      "2": -0.07866936797729296
+     },
+     "n_replicates": 2
+    }
+   },
+   "FACT": {
+    "1": {
+     "fusion": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.030044773323433138,
+      "sd_replicates": 0.0034825157138122192,
+      "per_replicate": {
+       "1": -0.03250728380025847,
+       "2": -0.027582262846607808
+      },
+      "missing": {}
+     },
+     "readout": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.11024146018326764,
+      "sd_replicates": 0.0015359466113393217,
+      "per_replicate": {
+       "1": -0.1091553819188491,
+       "2": -0.11132753844768617
+      },
+      "missing": {}
+     },
+     "interaction": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.04273780194240562,
+      "sd_replicates": 0.009727494213283177,
+      "per_replicate": {
+       "1": -0.04961617906457105,
+       "2": -0.03585942482024018
+      },
+      "missing": {}
+     }
+    },
+    "gamma_factorial": {
+     "state": "NOT_ESTIMABLE",
+     "value": null,
+     "why": "the 2 x 2 exists at r = [1] only; the balanced factorial gamma needs it at both r"
+    }
+   },
+   "READOUT": {
+    "1": {
+     "sequence_fusion": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.13161036115447045,
+      "sd_replicates": 0.003327800495302267,
+      "per_replicate": {
+       "1": -0.13396347145113463,
+       "2": -0.12925725085780626
+      },
+      "missing": {}
+     },
+     "summary_fusion": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.08887255921206483,
+      "sd_replicates": 0.0063996937179809105,
+      "per_replicate": {
+       "1": -0.08434729238656358,
+       "2": -0.09339782603756608
+      },
+      "missing": {}
+     }
+    }
+   },
+   "DONOR": {
+    "1": {
+     "state": "ESTIMATED",
+     "n_expected": 2,
+     "n_observed": 2,
+     "complete": true,
+     "value": 0.0831140592556831,
+     "sd_replicates": 0.005501178820120292,
+     "per_replicate": {
+      "1": 0.08700398010390997,
+      "2": 0.07922413840745623
+     },
+     "missing": {}
+    }
+   }
+  },
+  "B": {
+   "H2": {
+    "e": {
+     "0": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.015373490878012652,
+      "sd_replicates": 0.006304925218109778,
+      "per_replicate": {
+       "1": -0.019831746254612148,
+       "2": -0.010915235501413156
+      },
+      "missing": {}
+     },
+     "3": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": 0.008758976049009881,
+      "sd_replicates": 0.006724230756904681,
+      "per_replicate": {
+       "1": 0.00400422688253943,
+       "2": 0.013513725215480332
+      },
+      "missing": {}
+     }
+    },
+    "slope": 0.008044155642340846,
+    "state": "ESTIMATED"
+   },
+   "COMMON": {
+    "d": {
+     "0": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.027710932227128948,
+      "sd_replicates": 0.0021446196163555664,
+      "per_replicate": {
+       "1": -0.02922740730091966,
+       "2": -0.026194457153338235
+      },
+      "missing": {}
+     },
+     "1": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.0954945777100174,
+      "sd_replicates": 0.003628364546958696,
+      "per_replicate": {
+       "1": -0.09292893653424605,
+       "2": -0.09806021888578875
+      },
+      "missing": {}
+     }
+    },
+    "gamma_common_pair": {
+     "state": "ESTIMATED",
+     "value": -0.06778364548288845,
+     "sd_replicates": 0.005772984163314262,
+     "per_replicate": {
+      "1": -0.06370152923332639,
+      "2": -0.07186576173245052
+     },
+     "n_replicates": 2
+    }
+   },
+   "FACT": {
+    "1": {
+     "fusion": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.018189999674922852,
+      "sd_replicates": 0.005105440842006361,
+      "per_replicate": {
+       "1": -0.014579907834593397,
+       "2": -0.021800091515252307
+      },
+      "missing": {}
+     },
+     "readout": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.07730457803509455,
+      "sd_replicates": 0.0014770762950476646,
+      "per_replicate": {
+       "1": -0.07834902869965266,
+       "2": -0.07626012737053645
+      },
+      "missing": {}
+     },
+     "interaction": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.015959081311142598,
+      "sd_replicates": 0.0017527007000405724,
+      "per_replicate": {
+       "1": -0.0147197347607535,
+       "2": -0.017198427861531695
+      },
+      "missing": {}
+     }
+    },
+    "gamma_factorial": {
+     "state": "NOT_ESTIMABLE",
+     "value": null,
+     "why": "the 2 x 2 exists at r = [1] only; the balanced factorial gamma needs it at both r"
+    }
+   },
+   "READOUT": {
+    "1": {
+     "sequence_fusion": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.08528411869066582,
+      "sd_replicates": 0.0006007259450274177,
+      "per_replicate": {
+       "1": -0.0857088960800294,
+       "2": -0.08485934130130224
+      },
+      "missing": {}
+     },
+     "summary_fusion": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.06932503737952322,
+      "sd_replicates": 0.00235342664506799,
+      "per_replicate": {
+       "1": -0.0709891613192759,
+       "2": -0.06766091343977054
+      },
+      "missing": {}
+     }
+    }
+   },
+   "DONOR": {
+    "1": {
+     "state": "ESTIMATED",
+     "n_expected": 2,
+     "n_observed": 2,
+     "complete": true,
+     "value": 0.06453971283284987,
+     "sd_replicates": 0.015372002984162761,
+     "per_replicate": {
+      "1": 0.05367006528232854,
+      "2": 0.0754093603833712
+     },
+     "missing": {}
+    }
+   }
+  },
+  "C": {
+   "H2": {
+    "e": {
+     "0": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.004340808944821917,
+      "sd_replicates": 0.00239301828970117,
+      "per_replicate": {
+       "1": -0.006032928404973048,
+       "2": -0.0026486894846707854
+      },
+      "missing": {}
+     },
+     "3": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": 0.001320914321644412,
+      "sd_replicates": 0.0019468991653677108,
+      "per_replicate": {
+       "1": -5.5751280473526066e-05,
+       "2": 0.00269757992376235
+      },
+      "missing": {}
+     }
+    },
+    "slope": 0.00188724108882211,
+    "state": "ESTIMATED"
+   },
+   "COMMON": {
+    "d": {
+     "0": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.06430825405449625,
+      "sd_replicates": 0.011676627795915101,
+      "per_replicate": {
+       "1": -0.07256487675037915,
+       "2": -0.05605163135861335
+      },
+      "missing": {}
+     },
+     "1": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.13183616121070557,
+      "sd_replicates": 0.004019706565952327,
+      "per_replicate": {
+       "1": -0.1289937994395406,
+       "2": -0.13467852298187055
+      },
+      "missing": {}
+     }
+    },
+    "gamma_common_pair": {
+     "state": "ESTIMATED",
+     "value": -0.06752790715620932,
+     "sd_replicates": 0.015696334361867428,
+     "per_replicate": {
+      "1": -0.05642892268916144,
+      "2": -0.0786268916232572
+     },
+     "n_replicates": 2
+    }
+   },
+   "FACT": {
+    "1": {
+     "fusion": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.030309329647621286,
+      "sd_replicates": 0.000263503873771988,
+      "per_replicate": {
+       "1": -0.030495655023634383,
+       "2": -0.03012300427160819
+      },
+      "missing": {}
+     },
+     "readout": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.10152683156308423,
+      "sd_replicates": 0.004283210439724237,
+      "per_replicate": {
+       "1": -0.09849814441590621,
+       "2": -0.10455551871026225
+      },
+      "missing": {}
+     },
+     "interaction": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.04424960453187532,
+      "sd_replicates": 0.00296477390909998,
+      "per_replicate": {
+       "1": -0.046346016267684864,
+       "2": -0.042153192796065775
+      },
+      "missing": {}
+     }
+    },
+    "gamma_factorial": {
+     "state": "NOT_ESTIMABLE",
+     "value": null,
+     "why": "the 2 x 2 exists at r = [1] only; the balanced factorial gamma needs it at both r"
+    }
+   },
+   "READOUT": {
+    "1": {
+     "sequence_fusion": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.12365163382902189,
+      "sd_replicates": 0.0028008234851743252,
+      "per_replicate": {
+       "1": -0.12167115254974858,
+       "2": -0.1256321151082952
+      },
+      "missing": {}
+     },
+     "summary_fusion": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.07940202929714657,
+      "sd_replicates": 0.005765597394274305,
+      "per_replicate": {
+       "1": -0.07532513628206372,
+       "2": -0.08347892231222942
+      },
+      "missing": {}
+     }
+    }
+   },
+   "DONOR": null
+  },
+  "0": {
+   "H2": {
+    "e": {
+     "0": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": 0.00022583325699848666,
+      "sd_replicates": 3.721022159402821e-05,
+      "per_replicate": {
+       "1": 0.0001995216569798952,
+       "2": 0.0002521448570170781
+      },
+      "missing": {}
+     },
+     "3": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": 0.0006686276593590446,
+      "sd_replicates": 0.0018232367082395516,
+      "per_replicate": {
+       "1": -0.0006205953807453812,
+       "2": 0.0019578506994634703
+      },
+      "missing": {}
+     }
+    },
+    "slope": 0.00014759813412018602,
+    "state": "ESTIMATED"
+   },
+   "COMMON": {
+    "d": {
+     "0": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.07492045742122472,
+      "sd_replicates": 0.01208166718387762,
+      "per_replicate": {
+       "1": -0.08346348621498356,
+       "2": -0.06637742862746587
+      },
+      "missing": {}
+     },
+     "1": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.12979430932153696,
+      "sd_replicates": 0.0032510086280551705,
+      "per_replicate": {
+       "1": -0.13209311956813075,
+       "2": -0.12749549907494317
+      },
+      "missing": {}
+     }
+    },
+    "gamma_common_pair": {
+     "state": "ESTIMATED",
+     "value": -0.05487385190031224,
+     "sd_replicates": 0.00883065855582245,
+     "per_replicate": {
+      "1": -0.048629633353147184,
+      "2": -0.0611180704474773
+     },
+     "n_replicates": 2
+    }
+   },
+   "FACT": {
+    "1": {
+     "fusion": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.034722207136804906,
+      "sd_replicates": 0.0009966114528790258,
+      "per_replicate": {
+       "1": -0.03542691785334384,
+       "2": -0.03401749642026597
+      },
+      "missing": {}
+     },
+     "readout": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.095072102184732,
+      "sd_replicates": 0.002254397175176223,
+      "per_replicate": {
+       "1": -0.0966662017147869,
+       "2": -0.0934780026546771
+      },
+      "missing": {}
+     },
+     "interaction": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.039654937521231004,
+      "sd_replicates": 0.0009274418559973769,
+      "per_replicate": {
+       "1": -0.04031073794676299,
+       "2": -0.03899913709569902
+      },
+      "missing": {}
+     }
+    },
+    "gamma_factorial": {
+     "state": "NOT_ESTIMABLE",
+     "value": null,
+     "why": "the 2 x 2 exists at r = [1] only; the balanced factorial gamma needs it at both r"
+    }
+   },
+   "READOUT": {
+    "1": {
+     "sequence_fusion": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.11489957094534753,
+      "sd_replicates": 0.0027181181031747936,
+      "per_replicate": {
+       "1": -0.11682157068816834,
+       "2": -0.11297757120252672
+      },
+      "missing": {}
+     },
+     "summary_fusion": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": -0.07524463342411652,
+      "sd_replicates": 0.0017906762471774167,
+      "per_replicate": {
+       "1": -0.07651083274140535,
+       "2": -0.0739784341068277
+      },
+      "missing": {}
+     }
+    }
+   },
+   "DONOR": null
+  }
+ },
+ "adequacy": {
+  "A": [
+   {
+    "cell": "H2__h3__s1__A__profiles",
+    "state": "VERIFIED",
+    "model": 0.4006421504019288,
+    "naive_persistence": 0.5060424514831777,
+    "linear": 0.4176911495690657,
+    "oracle": 0.36347891771285895,
+    "mase_denominator_mean": 1.2954143793237134,
+    "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+    "beats_persistence": true,
+    "gap_to_linear": -0.017048999167136925,
+    "within_linear_plus_0_03": true,
+    "reaches_linear_point": true
+   },
+   {
+    "cell": "H2__h3__s2__A__profiles",
+    "state": "VERIFIED",
+    "model": 0.40950352857769684,
+    "naive_persistence": 0.5084844906000098,
+    "linear": 0.4247401236357582,
+    "oracle": 0.36562848483942273,
+    "mase_denominator_mean": 1.269828216480501,
+    "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+    "beats_persistence": true,
+    "gap_to_linear": -0.015236595058061353,
+    "within_linear_plus_0_03": true,
+    "reaches_linear_point": true
+   },
+   {
+    "cell": "DX__trend_event__s1__A__profiles",
+    "state": "FAILED"
+   }
+  ],
+  "B": [
+   {
+    "cell": "H2__h3__s1__B__profiles",
+    "state": "VERIFIED",
+    "model": 0.4368514582340458,
+    "naive_persistence": 0.5060424514831777,
+    "linear": 0.41769114956906545,
+    "oracle": 0.36347891771285895,
+    "mase_denominator_mean": 1.2954143793237134,
+    "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+    "beats_persistence": true,
+    "gap_to_linear": 0.019160308664980363,
+    "within_linear_plus_0_03": true,
+    "reaches_linear_point": false
+   },
+   {
+    "cell": "H2__h3__s2__B__profiles",
+    "state": "VERIFIED",
+    "model": 0.4425521882897543,
+    "naive_persistence": 0.5084844906000098,
+    "linear": 0.4247401236357582,
+    "oracle": 0.36562848483942273,
+    "mase_denominator_mean": 1.269828216480501,
+    "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+    "beats_persistence": true,
+    "gap_to_linear": 0.017812064653996096,
+    "within_linear_plus_0_03": true,
+    "reaches_linear_point": false
+   },
+   {
+    "cell": "DX__trend_event__s1__B__profiles",
+    "state": "FAILED"
+   }
+  ],
+  "C": [
+   {
+    "cell": "H2__h3__s1__C__profiles",
+    "state": "VERIFIED",
+    "model": 0.4090892363672687,
+    "naive_persistence": 0.5060424514831777,
+    "linear": 0.41769114956906545,
+    "oracle": 0.36347891771285895,
+    "mase_denominator_mean": 1.2954143793237134,
+    "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+    "beats_persistence": true,
+    "gap_to_linear": -0.008601913201796763,
+    "within_linear_plus_0_03": true,
+    "reaches_linear_point": true
+   },
+   {
+    "cell": "H2__h3__s2__C__profiles",
+    "state": "VERIFIED",
+    "model": 0.4190702973057864,
+    "naive_persistence": 0.5084844906000098,
+    "linear": 0.4247401236357582,
+    "oracle": 0.36562848483942273,
+    "mase_denominator_mean": 1.269828216480501,
+    "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+    "beats_persistence": true,
+    "gap_to_linear": -0.005669826329971817,
+    "within_linear_plus_0_03": true,
+    "reaches_linear_point": true
+   },
+   {
+    "cell": "DX__trend_event__s1__C__profiles",
+    "state": "FAILED"
+   }
+  ],
+  "0": [
+   {
+    "cell": "H2__h3__s1__0__profiles",
+    "state": "VERIFIED",
+    "model": 0.4078067571819797,
+    "naive_persistence": 0.5060424514831777,
+    "linear": 0.4176911495690657,
+    "oracle": 0.36347891771285895,
+    "mase_denominator_mean": 1.2954143793237134,
+    "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+    "beats_persistence": true,
+    "gap_to_linear": -0.00988439238708605,
+    "within_linear_plus_0_03": true,
+    "reaches_linear_point": true
+   },
+   {
+    "cell": "H2__h3__s2__0__profiles",
+    "state": "VERIFIED",
+    "model": 0.42122783096560573,
+    "naive_persistence": 0.5084844906000098,
+    "linear": 0.4247401236357582,
+    "oracle": 0.36562848483942273,
+    "mase_denominator_mean": 1.269828216480501,
+    "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+    "beats_persistence": true,
+    "gap_to_linear": -0.0035122926701524615,
+    "within_linear_plus_0_03": true,
+    "reaches_linear_point": true
+   },
+   {
+    "cell": "DX__trend_event__s1__0__profiles",
+    "state": "FAILED"
+   }
+  ]
+ },
+ "dx": {},
+ "bootstrap": {
+  "A": {
+   "H2_slope": {
+    "ci95": [
+     -0.001615531790112775,
+     -0.0007362054438182499
+    ],
+    "n": 1000
+   },
+   "gamma_common_pair": {
+    "ci95": [
+     -0.07866936797729296,
+     -0.07104702051208567
+    ],
+    "n": 1000
+   },
+   "d1_common": {
+    "ci95": [
+     -0.14166266571910757,
+     -0.13890980129429398
+    ],
+    "n": 1000
+   },
+   "readout_r1_fusion_effect": {
+    "ci95": [
+     -0.11132753844768617,
+     -0.1091553819188491
+    ],
+    "n": 1000
+   }
+  },
+  "B": {
+   "H2_slope": {
+    "ci95": [
+     0.007945324379050527,
+     0.008142986905631165
+    ],
+    "n": 1000
+   },
+   "gamma_common_pair": {
+    "ci95": [
+     -0.07186576173245052,
+     -0.06370152923332639
+    ],
+    "n": 1000
+   },
+   "d1_common": {
+    "ci95": [
+     -0.09806021888578875,
+     -0.09292893653424605
+    ],
+    "n": 1000
+   },
+   "readout_r1_fusion_effect": {
+    "ci95": [
+     -0.07834902869965266,
+     -0.07626012737053645
+    ],
+    "n": 1000
+   }
+  },
+  "C": {
+   "H2_slope": {
+    "ci95": [
+     0.0017820898028110457,
+     0.0019923923748331744
+    ],
+    "n": 1000
+   },
+   "gamma_common_pair": {
+    "ci95": [
+     -0.0786268916232572,
+     -0.05642892268916144
+    ],
+    "n": 1000
+   },
+   "d1_common": {
+    "ci95": [
+     -0.13467852298187055,
+     -0.1289937994395406
+    ],
+    "n": 1000
+   },
+   "readout_r1_fusion_effect": {
+    "ci95": [
+     -0.10455551871026225,
+     -0.09849814441590621
+    ],
+    "n": 1000
+   }
+  },
+  "0": {
+   "H2_slope": {
+    "ci95": [
+     -0.0002733723459084255,
+     0.0005685686141487976
+    ],
+    "n": 1000
+   },
+   "gamma_common_pair": {
+    "ci95": [
+     -0.0611180704474773,
+     -0.048629633353147184
+    ],
+    "n": 1000
+   },
+   "d1_common": {
+    "ci95": [
+     -0.13209311956813075,
+     -0.12749549907494317
+    ],
+    "n": 1000
+   },
+   "readout_r1_fusion_effect": {
+    "ci95": [
+     -0.0966662017147869,
+     -0.0934780026546771
+    ],
+    "n": 1000
+   }
+  }
+ },
+ "definitions": {
+  "gamma_common_pair": "d_1 - d_0 with d_r = mean over replicates of MASE(sequence) - MASE(summary), same donor kind, same pair at both r",
+  "gamma_factorial": "fusion effect at r=1 minus at r=0, each the balanced 2 x 2 average; NOT_ESTIMABLE unless the 2 x 2 exists at both r",
+  "readout": "last-step readout minus pooled readout, per fusion and balanced; descriptive at the r where it exists",
+  "donor_delta": "(sequence_dsum - summary_dsum) - (sequence - summary) per replicate: the SAME common pair with the other donor",
+  "H2": "profiles minus the mean of ALL random redistributions of the replicate; every control required"
+ },
+ "bootstrap_note": "percentile intervals from resampling 2 replicate ids with replacement, same estimator as the point; with 2 replicates this is a description of two observations, not population precision, equivalence or power",
+ "effects_test": {
+  "per_arch": {
+   "A": {
+    "H2": {
+     "e": {
+      "0": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.0010260657607970014,
+       "sd_replicates": 0.004198543470683201,
+       "per_replicate": {
+        "1": 0.0019427527984295923,
+        "2": -0.003994884320023595
+       },
+       "missing": {}
+      },
+      "3": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.0009250757146807564,
+       "sd_replicates": 0.0042111517949194295,
+       "per_replicate": {
+        "1": 0.0020526582761126733,
+        "2": -0.003902809705474186
+       },
+       "missing": {}
+      }
+     },
+     "slope": 3.3663348705415006e-05,
+     "state": "ESTIMATED"
+    },
+    "COMMON": {
+     "d": {
+      "0": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.057933584900617785,
+       "sd_replicates": 0.002803123332592535,
+       "per_replicate": {
+        "1": -0.05595147738363937,
+        "2": -0.0599156924175962
+       },
+       "missing": {}
+      },
+      "1": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.12581241437570534,
+       "sd_replicates": 0.012080259340504771,
+       "per_replicate": {
+        "1": -0.11727038107754229,
+        "2": -0.1343544476738684
+       },
+       "missing": {}
+      }
+     },
+     "gamma_common_pair": {
+      "state": "ESTIMATED",
+      "value": -0.06787882947508755,
+      "sd_replicates": 0.009277136007912237,
+      "per_replicate": {
+       "1": -0.061318903693902915,
+       "2": -0.0744387552562722
+      },
+      "n_replicates": 2
+     }
+    },
+    "FACT": {
+     "1": {
+      "fusion": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.0269469911394824,
+       "sd_replicates": 0.0027196794986738913,
+       "per_replicate": {
+        "1": -0.02887009495564874,
+        "2": -0.025023887323316063
+       },
+       "missing": {}
+      },
+      "readout": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.09886542323622294,
+       "sd_replicates": 0.014799938839178819,
+       "per_replicate": {
+        "1": -0.08840028612189343,
+        "2": -0.10933056035055244
+       },
+       "missing": {}
+      },
+      "interaction": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.03799893494669193,
+       "sd_replicates": 0.014246311158381458,
+       "per_replicate": {
+        "1": -0.04807259817367704,
+        "2": -0.027925271719706823
+       },
+       "missing": {}
+      }
+     },
+     "gamma_factorial": {
+      "state": "NOT_ESTIMABLE",
+      "value": null,
+      "why": "the 2 x 2 exists at r = [1] only; the balanced factorial gamma needs it at both r"
+     }
+    },
+    "READOUT": {
+     "1": {
+      "sequence_fusion": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.1178648907095689,
+       "sd_replicates": 0.0076767832599880115,
+       "per_replicate": {
+        "1": -0.11243658520873201,
+        "2": -0.1232931962104058
+       },
+       "missing": {}
+      },
+      "summary_fusion": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.07986595576287697,
+       "sd_replicates": 0.021923094418369468,
+       "per_replicate": {
+        "1": -0.06436398703505497,
+        "2": -0.09536792449069897
+       },
+       "missing": {}
+      }
+     }
+    },
+    "DONOR": {
+     "1": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": 0.06597925467400251,
+      "sd_replicates": 0.011102790030456194,
+      "per_replicate": {
+       "1": 0.05812839655337654,
+       "2": 0.07383011279462848
+      },
+      "missing": {}
+     }
+    }
+   },
+   "B": {
+    "H2": {
+     "e": {
+      "0": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.001091402038150835,
+       "sd_replicates": 0.0020551231358724754,
+       "per_replicate": {
+        "1": 0.0003617894673979549,
+        "2": -0.0025445935436996248
+       },
+       "missing": {}
+      },
+      "3": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": 0.001705363361648199,
+       "sd_replicates": 0.006330730771697565,
+       "per_replicate": {
+        "1": -0.002771139296885494,
+        "2": 0.006181866020181892
+       },
+       "missing": {}
+      }
+     },
+     "slope": 0.0009322551332663449,
+     "state": "ESTIMATED"
+    },
+    "COMMON": {
+     "d": {
+      "0": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.02491426132090485,
+       "sd_replicates": 0.004357546492783961,
+       "per_replicate": {
+        "1": -0.021833010646521656,
+        "2": -0.027995511995288047
+       },
+       "missing": {}
+      },
+      "1": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.0927086035215009,
+       "sd_replicates": 0.0025998775002186946,
+       "per_replicate": {
+        "1": -0.09087021251084193,
+        "2": -0.09454699453215987
+       },
+       "missing": {}
+      }
+     },
+     "gamma_common_pair": {
+      "state": "ESTIMATED",
+      "value": -0.06779434220059605,
+      "sd_replicates": 0.0017576689925652665,
+      "per_replicate": {
+       "1": -0.06903720186432027,
+       "2": -0.06655148253687182
+      },
+      "n_replicates": 2
+     }
+    },
+    "FACT": {
+     "1": {
+      "fusion": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.015738908090314863,
+       "sd_replicates": 0.006633542740233756,
+       "per_replicate": {
+        "1": -0.020429531145224944,
+        "2": -0.011048285035404781
+       },
+       "missing": {}
+      },
+      "readout": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.07696969543118604,
+       "sd_replicates": 0.00923342024045245,
+       "per_replicate": {
+        "1": -0.07044068136561699,
+        "2": -0.08349870949675509
+       },
+       "missing": {}
+      },
+      "interaction": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.007615677575229518,
+       "sd_replicates": 0.021877311277768437,
+       "per_replicate": {
+        "1": -0.02308527273386851,
+        "2": 0.007853917583409475
+       },
+       "missing": {}
+      }
+     },
+     "gamma_factorial": {
+      "state": "NOT_ESTIMABLE",
+      "value": null,
+      "why": "the 2 x 2 exists at r = [1] only; the balanced factorial gamma needs it at both r"
+     }
+    },
+    "READOUT": {
+     "1": {
+      "sequence_fusion": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.08077753421880074,
+       "sd_replicates": 0.0017052353984317674,
+       "per_replicate": {
+        "1": -0.08198331773255119,
+        "2": -0.07957175070505029
+       },
+       "missing": {}
+      },
+      "summary_fusion": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.07316185664357122,
+       "sd_replicates": 0.020172075879336667,
+       "per_replicate": {
+        "1": -0.058898044998682675,
+        "2": -0.08742566828845977
+       },
+       "missing": {}
+      }
+     }
+    },
+    "DONOR": {
+     "1": {
+      "state": "ESTIMATED",
+      "n_expected": 2,
+      "n_observed": 2,
+      "complete": true,
+      "value": 0.07231641442503789,
+      "sd_replicates": 0.004922668598880194,
+      "per_replicate": {
+       "1": 0.06883556207723562,
+       "2": 0.07579726677284016
+      },
+      "missing": {}
+     }
+    }
+   },
+   "C": {
+    "H2": {
+     "e": {
+      "0": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.0010453156872893277,
+       "sd_replicates": 0.00013693948122682164,
+       "per_replicate": {
+        "1": -0.0011421465230769812,
+        "2": -0.0009484848515016742
+       },
+       "missing": {}
+      },
+      "3": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": 0.002803983250634051,
+       "sd_replicates": 0.0050410773780014935,
+       "per_replicate": {
+        "1": 0.006368563249105008,
+        "2": -0.0007605967478369058
+       },
+       "missing": {}
+      }
+     },
+     "slope": 0.00128309964597446,
+     "state": "ESTIMATED"
+    },
+    "COMMON": {
+     "d": {
+      "0": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.0613254920838287,
+       "sd_replicates": 0.00884916684654303,
+       "per_replicate": {
+        "1": -0.05506818619878695,
+        "2": -0.06758279796887046
+       },
+       "missing": {}
+      },
+      "1": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.1266916597786535,
+       "sd_replicates": 0.008675681603987396,
+       "per_replicate": {
+        "1": -0.12055702648505862,
+        "2": -0.13282629307224836
+       },
+       "missing": {}
+      }
+     },
+     "gamma_common_pair": {
+      "state": "ESTIMATED",
+      "value": -0.06536616769482478,
+      "sd_replicates": 0.000173485242555634,
+      "per_replicate": {
+       "1": -0.06548884028627167,
+       "2": -0.0652434951033779
+      },
+      "n_replicates": 2
+     }
+    },
+    "FACT": {
+     "1": {
+      "fusion": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.028796163752090653,
+       "sd_replicates": 0.0011101839889384078,
+       "per_replicate": {
+        "1": -0.028011145125147574,
+        "2": -0.029581182379033732
+       },
+       "missing": {}
+      },
+      "readout": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.09789549602656289,
+       "sd_replicates": 0.007565497615048909,
+       "per_replicate": {
+        "1": -0.09254588135991115,
+        "2": -0.10324511069321463
+       },
+       "missing": {}
+      },
+      "interaction": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.03867582016487142,
+       "sd_replicates": 0.00413699330315425,
+       "per_replicate": {
+        "1": -0.04160111618325513,
+        "2": -0.03575052414648772
+       },
+       "missing": {}
+      }
+     },
+     "gamma_factorial": {
+      "state": "NOT_ESTIMABLE",
+      "value": null,
+      "why": "the 2 x 2 exists at r = [1] only; the balanced factorial gamma needs it at both r"
+     }
+    },
+    "READOUT": {
+     "1": {
+      "sequence_fusion": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.11723340610899863,
+       "sd_replicates": 0.005497000963471902,
+       "per_replicate": {
+        "1": -0.11334643945153866,
+        "2": -0.1211203727664586
+       },
+       "missing": {}
+      },
+      "summary_fusion": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.0785575859441272,
+       "sd_replicates": 0.009633994266626153,
+       "per_replicate": {
+        "1": -0.07174532326828353,
+        "2": -0.08536984861997088
+       },
+       "missing": {}
+      }
+     }
+    },
+    "DONOR": null
+   },
+   "0": {
+    "H2": {
+     "e": {
+      "0": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": 0.00044402769437368317,
+       "sd_replicates": 0.002968796292105995,
+       "per_replicate": {
+        "1": -0.0016552282957359443,
+        "2": 0.0025432836844833107
+       },
+       "missing": {}
+      },
+      "3": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": 0.0012757466700505926,
+       "sd_replicates": 0.0009787540044660825,
+       "per_replicate": {
+        "1": 0.0005836630763791373,
+        "2": 0.001967830263722048
+       },
+       "missing": {}
+      }
+     },
+     "slope": 0.0002772396585589698,
+     "state": "ESTIMATED"
+    },
+    "COMMON": {
+     "d": {
+      "0": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.07399350503116958,
+       "sd_replicates": 0.0025968724417873017,
+       "per_replicate": {
+        "1": -0.07215723891770531,
+        "2": -0.07582977114463385
+       },
+       "missing": {}
+      },
+      "1": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.12908624861487733,
+       "sd_replicates": 0.01078345363836151,
+       "per_replicate": {
+        "1": -0.12146119542258116,
+        "2": -0.1367113018071735
+       },
+       "missing": {}
+      }
+     },
+     "gamma_common_pair": {
+      "state": "ESTIMATED",
+      "value": -0.05509274358370775,
+      "sd_replicates": 0.008186581196574208,
+      "per_replicate": {
+       "1": -0.049303956504875845,
+       "2": -0.06088153066253965
+      },
+      "n_replicates": 2
+     }
+    },
+    "FACT": {
+     "1": {
+      "fusion": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.03646117707512525,
+       "sd_replicates": 0.0020328292543572717,
+       "per_replicate": {
+        "1": -0.03502374972437483,
+        "2": -0.03789860442587567
+       },
+       "missing": {}
+      },
+      "readout": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.09262507153975208,
+       "sd_replicates": 0.008750624384004238,
+       "per_replicate": {
+        "1": -0.08643744569820633,
+        "2": -0.09881269738129783
+       },
+       "missing": {}
+      },
+      "interaction": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.038352791464024816,
+       "sd_replicates": 0.012607840115412262,
+       "per_replicate": {
+        "1": -0.02943770222230102,
+        "2": -0.04726788070574861
+       },
+       "missing": {}
+      }
+     },
+     "gamma_factorial": {
+      "state": "NOT_ESTIMABLE",
+      "value": null,
+      "why": "the 2 x 2 exists at r = [1] only; the balanced factorial gamma needs it at both r"
+     }
+    },
+    "READOUT": {
+     "1": {
+      "sequence_fusion": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.11180146727176443,
+       "sd_replicates": 0.01505454444171037,
+       "per_replicate": {
+        "1": -0.10115629680935678,
+        "2": -0.12244663773417208
+       },
+       "missing": {}
+      },
+      "summary_fusion": {
+       "state": "ESTIMATED",
+       "n_expected": 2,
+       "n_observed": 2,
+       "complete": true,
+       "value": -0.07344867580773962,
+       "sd_replicates": 0.0024467043262981067,
+       "per_replicate": {
+        "1": -0.07171859458705576,
+        "2": -0.07517875702842347
+       },
+       "missing": {}
+      }
+     }
+    },
+    "DONOR": null
+   }
+  },
+  "adequacy": {
+   "A": [
+    {
+     "cell": "H2__h3__s1__A__profiles",
+     "state": "VERIFIED",
+     "model": 0.3968401167530615,
+     "naive_persistence": 0.4852345180502533,
+     "linear": 0.40607907846758595,
+     "oracle": 0.355956512278544,
+     "mase_denominator_mean": 1.2954143793237134,
+     "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+     "beats_persistence": true,
+     "gap_to_linear": -0.00923896171452443,
+     "within_linear_plus_0_03": true,
+     "reaches_linear_point": true
+    },
+    {
+     "cell": "H2__h3__s2__A__profiles",
+     "state": "VERIFIED",
+     "model": 0.4163540253713347,
+     "naive_persistence": 0.5164496555686215,
+     "linear": 0.4310464797249176,
+     "oracle": 0.3711751973071115,
+     "mase_denominator_mean": 1.269828216480501,
+     "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+     "beats_persistence": true,
+     "gap_to_linear": -0.014692454353582907,
+     "within_linear_plus_0_03": true,
+     "reaches_linear_point": true
+    },
+    {
+     "cell": "DX__trend_event__s1__A__profiles",
+     "state": "FAILED"
+    }
+   ],
+   "B": [
+    {
+     "cell": "H2__h3__s1__B__profiles",
+     "state": "VERIFIED",
+     "model": 0.4176640868457647,
+     "naive_persistence": 0.4852345180502533,
+     "linear": 0.4060790784675854,
+     "oracle": 0.355956512278544,
+     "mase_denominator_mean": 1.2954143793237134,
+     "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+     "beats_persistence": true,
+     "gap_to_linear": 0.011585008378179329,
+     "within_linear_plus_0_03": true,
+     "reaches_linear_point": false
+    },
+    {
+     "cell": "H2__h3__s2__B__profiles",
+     "state": "VERIFIED",
+     "model": 0.4462109228203489,
+     "naive_persistence": 0.5164496555686215,
+     "linear": 0.4310464797249176,
+     "oracle": 0.3711751973071115,
+     "mase_denominator_mean": 1.269828216480501,
+     "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+     "beats_persistence": true,
+     "gap_to_linear": 0.015164443095431301,
+     "within_linear_plus_0_03": true,
+     "reaches_linear_point": false
+    },
+    {
+     "cell": "DX__trend_event__s1__B__profiles",
+     "state": "FAILED"
+    }
+   ],
+   "C": [
+    {
+     "cell": "H2__h3__s1__C__profiles",
+     "state": "VERIFIED",
+     "model": 0.4005256636390713,
+     "naive_persistence": 0.4852345180502533,
+     "linear": 0.4060790784675854,
+     "oracle": 0.355956512278544,
+     "mase_denominator_mean": 1.2954143793237134,
+     "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+     "beats_persistence": true,
+     "gap_to_linear": -0.005553414828514069,
+     "within_linear_plus_0_03": true,
+     "reaches_linear_point": true
+    },
+    {
+     "cell": "H2__h3__s2__C__profiles",
+     "state": "VERIFIED",
+     "model": 0.4231380498069373,
+     "naive_persistence": 0.5164496555686215,
+     "linear": 0.4310464797249176,
+     "oracle": 0.3711751973071115,
+     "mase_denominator_mean": 1.269828216480501,
+     "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+     "beats_persistence": true,
+     "gap_to_linear": -0.007908429917980297,
+     "within_linear_plus_0_03": true,
+     "reaches_linear_point": true
+    },
+    {
+     "cell": "DX__trend_event__s1__C__profiles",
+     "state": "FAILED"
+    }
+   ],
+   "0": [
+    {
+     "cell": "H2__h3__s1__0__profiles",
+     "state": "VERIFIED",
+     "model": 0.4017777909340118,
+     "naive_persistence": 0.4852345180502533,
+     "linear": 0.40607907846758595,
+     "oracle": 0.355956512278544,
+     "mase_denominator_mean": 1.2954143793237134,
+     "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+     "beats_persistence": true,
+     "gap_to_linear": -0.004301287533574172,
+     "within_linear_plus_0_03": true,
+     "reaches_linear_point": true
+    },
+    {
+     "cell": "H2__h3__s2__0__profiles",
+     "state": "VERIFIED",
+     "model": 0.4271298272746633,
+     "naive_persistence": 0.5164496555686215,
+     "linear": 0.4310464797249176,
+     "oracle": 0.3711751973071115,
+     "mase_denominator_mean": 1.269828216480501,
+     "seasonal_naive_score": "NOT_MEASURED (the seasonal naive is the MASE denominator on train, not a stored predictor)",
+     "beats_persistence": true,
+     "gap_to_linear": -0.003916652450254299,
+     "within_linear_plus_0_03": true,
+     "reaches_linear_point": true
+    },
+    {
+     "cell": "DX__trend_event__s1__0__profiles",
+     "state": "FAILED"
+    }
+   ]
+  }
+ }
+}

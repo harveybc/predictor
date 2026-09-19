@@ -39,6 +39,7 @@ import concurrent.futures
 import hashlib
 import importlib.util
 import json
+import math
 import os
 import resource
 import subprocess
@@ -91,6 +92,15 @@ class ClosureRefusal(SystemExit):
 
 def sha(path: Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def _finite(x) -> bool:
+    """A number that is really a number: not None, not bool, not NaN/inf (RP19: NaN > tol is False)."""
+    return isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(float(x))
+
+
+REPLAY_REQUIRED = ("schema", "attempt", "problems", "inputs", "prediction_max_abs_diff", "restore_abs_diff", "restored_validation_loss",
+                   "recorded_best_validation_loss", "scale_recomputed_equal")
 
 
 # --- population --------------------------------------------------------------------------------------------
@@ -374,28 +384,43 @@ def verify_attempt(attempt: Path, job_expected: dict, replay_doc: dict | None, t
         entry["measured"]["replay"] = {k: replay_doc.get(k) for k in ("prediction_max_abs_diff", "restore_abs_diff", "restored_validation_loss",
                                                                        "recorded_best_validation_loss", "extractor_weights_unequal_layers",
                                                                        "adapter_activation_max_abs_diff", "scale_recomputed_equal", "process", "cpu_seconds")}
+        entry["replay_scope"] = replay_doc.get("_scope") or ("CURRENT_CODE" if replay_doc.get("identity") else "HISTORIC_v1_UNBOUND_CODE")
+        entry["replay_identity"] = replay_doc.get("identity")
         for why in replay_doc.get("problems") or []:
             prob(f"replay: {why}")
+        missing_keys = [k for k in REPLAY_REQUIRED if k not in replay_doc]
+        if missing_keys:
+            prob(f"replay: document incomplete, missing {missing_keys}")
+        if replay_doc.get("_process_exit") not in (None, 0):
+            prob(f"replay: the replay process exited {replay_doc.get('_process_exit')}; a partial document is not a reproduction")
         diffs = replay_doc.get("prediction_max_abs_diff") or {}
         for part in parts:
             d = diffs.get(part)
-            if d is None or not np.isfinite(d) or d > tolerance["prediction_atol"]:
-                prob(f"replay: {part} predictions from the reloaded weights differ by {d} (> {tolerance['prediction_atol']})")
-        rd = replay_doc.get("restore_abs_diff")
-        best = replay_doc.get("recorded_best_validation_loss")
-        if rd is None or best is None or rd > tolerance["restore_rel"] * max(1.0, abs(best)):
+            if not _finite(d) or d > tolerance["prediction_atol"]:
+                prob(f"replay: {part} predictions from the reloaded weights differ by {d} (> {tolerance['prediction_atol']}) or are not a finite number")
+        rd, best, rl = replay_doc.get("restore_abs_diff"), replay_doc.get("recorded_best_validation_loss"), replay_doc.get("restored_validation_loss")
+        if not (_finite(rd) and _finite(best) and _finite(rl)):
+            prob(f"replay: restore evidence is not finite (diff {rd!r}, best {best!r}, restored {rl!r})")
+        elif rd > tolerance["restore_rel"] * max(1.0, abs(best)):
             prob(f"replay: the saved weights do not reach the recorded best validation loss (|diff| = {rd})")
-        if not replay_doc.get("scale_recomputed_equal", True):
-            prob("replay: scale differs")
+        if replay_doc.get("scale_recomputed_equal") is not True:
+            prob(f"replay: scale equality is {replay_doc.get('scale_recomputed_equal')!r}, not True")
         if arm_h3:
             if replay_doc.get("extractor_weights_unequal_layers"):
                 prob(f"replay: extractor weights differ from the donor in {replay_doc['extractor_weights_unequal_layers']}")
-            act = replay_doc.get("adapter_activation_max_abs_diff") or {}
+            act = replay_doc.get("adapter_activation_max_abs_diff")
             if no_extractor:
                 if act:
                     prob("replay: ARCH-0 has no extractor, yet adapter activations were reported")
-            elif not act or any(v > tolerance["activation_atol"] for v in act.values()):
-                prob(f"replay: adapter activations differ from the donor's: {act}")
+            else:
+                expected_adapters = sorted({f"g{g}_adapt" for g in set(rec.get("assignment") or [])})
+                if not isinstance(act, dict) or sorted(act) != expected_adapters:
+                    prob(f"replay: adapter activations missing or not the expected adapters {expected_adapters}: {act!r}")
+                elif any(not _finite(v) or v > tolerance["activation_atol"] for v in act.values()):
+                    prob(f"replay: adapter activations differ from the donor's or are not finite: {act}")
+            unequal = replay_doc.get("extractor_weights_unequal_layers")
+            if not isinstance(unequal, list):
+                prob(f"replay: extractor weight comparison absent ({unequal!r})")
             if not (replay_doc.get("donor") or {}).get("sha256_equals_record"):
                 prob("replay: the donor file read in the fresh process is not the one the record names")
         # the parity flag alone is not evidence: the replayed arrays are
@@ -427,10 +452,24 @@ def verify_attempt(attempt: Path, job_expected: dict, replay_doc: dict | None, t
 
 # --- replays in fresh processes -----------------------------------------------------------------------------
 
-def run_replays(attempts: list, out_dir: Path, workers: int = 4, threads: int = 2) -> dict:
-    """Reproduce each attempt in its own CPU process (df_mod_e0.py --replay); CPU accounted."""
+def current_replay_identity(threads: int) -> dict:
+    """The identity a fresh replay would carry now (computed in a child process with the same environment)."""
+    env = {**os.environ, "CUDA_VISIBLE_DEVICES": "", "OMP_NUM_THREADS": str(threads), "TF_CPP_MIN_LOG_LEVEL": "3"}
+    code = "import json,sys; sys.path.insert(0, sys.argv[1]); import df_mod_e0 as E; print(json.dumps(E.replay_identity()))"
+    proc = subprocess.run([sys.executable, "-B", "-c", code, str(HERE)], env=env, capture_output=True, text=True, timeout=600)
+    if proc.returncode != 0:
+        raise RuntimeError(f"replay identity failed: {proc.stderr[-300:]}")
+    return json.loads(proc.stdout.strip().splitlines()[-1])
+
+
+def run_replays(attempts: list, out_dir: Path, workers: int = 4, threads: int = 2, historic: Path | None = None, only: set | None = None) -> dict:
+    """Reproduce each attempt in its own CPU process (df_mod_e0.py --replay); CPU accounted. A cached document
+    is reused only when its inputs AND its replay identity (code + numeric environment) equal the current
+    ones. `historic`: a directory of earlier replay documents used, for attempts outside `only`, under the
+    explicit scope HISTORIC (labelled, never promoted); `only`: attempt names that must be replayed now."""
     out_dir.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, "CUDA_VISIBLE_DEVICES": "", "OMP_NUM_THREADS": str(threads), "TF_CPP_MIN_LOG_LEVEL": "3"}
+    identity = current_replay_identity(threads)
     before = resource.getrusage(resource.RUSAGE_CHILDREN)
 
     def current_inputs(attempt: Path) -> dict:
@@ -445,14 +484,24 @@ def run_replays(attempts: list, out_dir: Path, workers: int = 4, threads: int = 
         target = out_dir / f"{attempt.name}.json"
         if target.is_file():
             prior = json.loads(target.read_text())
-            if prior.get("inputs") == current_inputs(attempt):      # a replay is reused only for the very same bytes
-                return attempt.name, prior, "reused"
+            if prior.get("inputs") == current_inputs(attempt) and prior.get("identity") == identity and prior.get("_process_exit", 0) == 0:
+                return attempt.name, prior, "reused"                 # the very same bytes under the very same implementation and environment
             target.unlink()
+        if only is not None and attempt.name not in only and historic is not None and (historic / f"{attempt.name}.json").is_file():
+            doc = json.loads((historic / f"{attempt.name}.json").read_text())
+            if doc.get("inputs") == current_inputs(attempt):
+                doc["_scope"] = "HISTORIC_" + ("v2_" + doc["identity"]["df_mod_e0_sha256"][:8] if doc.get("identity") else "v1_UNBOUND_CODE")
+                return attempt.name, doc, "historic"
         proc = subprocess.run([sys.executable, "-B", str(HERE / "df_mod_e0.py"), "--replay", str(attempt), "--out", str(target)],
                               env=env, capture_output=True, text=True, timeout=1800)
         if target.is_file():
-            return attempt.name, json.loads(target.read_text()), f"exit {proc.returncode}"
-        return attempt.name, {"schema": "df_mod_e0_replay.v1", "attempt": attempt.name,
+            doc = json.loads(target.read_text())
+            doc["_process_exit"] = proc.returncode
+            if proc.returncode != 0:
+                doc.setdefault("problems", []).append(f"replay process exited {proc.returncode}: {(proc.stderr or '')[-200:]}")
+            target.write_text(json.dumps(doc, indent=1, sort_keys=True, default=float))
+            return attempt.name, doc, f"exit {proc.returncode}"
+        return attempt.name, {"schema": "df_mod_e0_replay.v2", "attempt": attempt.name, "_process_exit": proc.returncode,
                               "problems": [f"replay process failed: exit {proc.returncode}: {(proc.stderr or '')[-300:]}"]}, f"exit {proc.returncode}"
     docs, notes = {}, {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
@@ -460,13 +509,14 @@ def run_replays(attempts: list, out_dir: Path, workers: int = 4, threads: int = 
             docs[name], notes[name] = doc, note
     after = resource.getrusage(resource.RUSAGE_CHILDREN)
     cpu = (after.ru_utime + after.ru_stime) - (before.ru_utime + before.ru_stime)
-    return {"docs": docs, "notes": notes, "cpu_seconds_children": round(cpu, 3), "workers": workers, "threads_per_replay": threads}
+    return {"docs": docs, "notes": notes, "cpu_seconds_children": round(cpu, 3), "workers": workers, "threads_per_replay": threads,
+            "identity": identity, "scopes": {n: (d.get("_scope") or "CURRENT_CODE") for n, d in docs.items()}}
 
 
 # --- local closure -----------------------------------------------------------------------------------------
 
 def local_closure(root: Path, out_dir: Path, tolerance: dict | None = None, replays: bool = True, workers: int = 4,
-                  pilot_updates: int | None = None, split: str = "validation") -> dict:
+                  pilot_updates: int | None = None, split: str = "validation", historic_replays: Path | None = None, replay_only: set | None = None) -> dict:
     root, out_dir = Path(root), Path(out_dir)
     tolerance = {**DEFAULT_TOLERANCE, **(tolerance or {})}
     if not (root / "DESIGN.json").is_file():
@@ -522,7 +572,7 @@ def local_closure(root: Path, out_dir: Path, tolerance: dict | None = None, repl
         completed = [attempts_dir / u["cell_id"] for u in units if (attempts_dir / u["cell_id"] / "outcome.json").is_file()
                      and json.loads((attempts_dir / u["cell_id"] / "outcome.json").read_text()).get("status") == "COMPLETED"
                      and (attempts_dir / u["cell_id"] / "cell.json").is_file()]
-        replay_meta = run_replays(completed, out_dir / "replays", workers=workers)
+        replay_meta = run_replays(completed, out_dir / "replays", workers=workers, historic=historic_replays, only=replay_only)
         replay_docs = replay_meta["docs"]
     out = {"schema": SCHEMA, "run_id": run_id, "root": str(root), "design_sha256": design["design_sha256"], "successor_of": pop["successor_of"],
            "population": {"cells": len(pop["members"]), "pilots": len(pop["pilot_ids"]), "members": pop["members"], "pilot_ids": pop["pilot_ids"]},
@@ -565,6 +615,11 @@ def local_closure(root: Path, out_dir: Path, tolerance: dict | None = None, repl
         counts[e["status"]] = counts.get(e["status"], 0) + 1
     out["counts"] = counts
     out["not_verified"] = sorted(k for k, e in out["units"].items() if e["status"] != VERIFIED)
+    out["replay_scopes"] = {}
+    for e in out["units"].values():
+        sc = e.get("replay_scope")
+        if sc:
+            out["replay_scopes"][sc] = out["replay_scopes"].get(sc, 0) + 1
     out["all_verified"] = not out["not_verified"] and (out["parent_equal"] is not False)
     out["closure"] = TOTAL if out["all_verified"] else PARTIAL
     out["denominator"] = {"cells": len(pop["members"]), "pilots": len(pop["pilot_ids"]), "fixed_by": "DESIGN.json + runner's pilot derivation"}
@@ -735,6 +790,8 @@ def main(argv=None) -> int:
     parser.add_argument("--warehouse-url", default="http://127.0.0.1:5057")
     parser.add_argument("--token-env", default="DATA_GOV_LAKE_TOKEN")
     parser.add_argument("--backfill-dir", type=Path, default=None, help="RP13 backfill documents whose rows the live terminals must carry")
+    parser.add_argument("--historic-replays", type=Path, default=None, help="RP19: earlier replay documents reused under an explicit HISTORIC scope for attempts not in --replay-units")
+    parser.add_argument("--replay-units", default=None, help="comma-separated attempt names that must be replayed now under the current code")
     parser.add_argument("--local-from", type=Path, default=None,
                         help="reuse the local closure of a prior CLOSE.json of this very root (the live closure is a separate result)")
     args = parser.parse_args(argv)
@@ -751,7 +808,8 @@ def main(argv=None) -> int:
                 raise ClosureRefusal("REFUSED: --local-from is a closure of another root or design")
             local["reused_from"] = str(args.local_from)
         else:
-            local = local_closure(args.root, out_dir, tol, replays=not args.no_replay, workers=args.workers, split=args.split)
+            local = local_closure(args.root, out_dir, tol, replays=not args.no_replay, workers=args.workers, split=args.split,
+                                  historic_replays=args.historic_replays, replay_only=set(args.replay_units.split(",")) if args.replay_units else None)
     except ClosureRefusal as e:
         (out_dir / "REFUSAL.json").write_text(json.dumps({"schema": SCHEMA, "closure": REFUSED, "why": e.why}, indent=1) + "\n")
         print(json.dumps({"closure": REFUSED, "why": e.why}))

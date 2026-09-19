@@ -52,7 +52,7 @@ def _load(name: str):
 
 PI = _load("df_profile_information")
 
-SCHEMA = "df_mod_e0_metrics.v1"
+SCHEMA = "df_mod_e0_metrics.v2"        # v2 (RP20): grains (base series, unique inputs, window tensor, targets) and SNR total
 MEDIDO, NO_APLICA, NO_MEDIDO, INCONCLUSIVE, NOT_DEFINED = "MEDIDO", "NO_APLICA", "NO_MEDIDO", "INCONCLUSIVE", "NOT_DEFINED"
 CHECKPOINT_EPOCHS = (1, 2, 4, 8, 16, 32, 64, 128, 256)         # fixed before any run; geometric, cheap
 CODERS = {"zlib9": lambda b: len(zlib.compress(b, PI.ZLIB_LEVEL)), "lzma6": lambda b: len(lzma.compress(b, preset=PI.LZMA_PRESET))}
@@ -62,7 +62,13 @@ DECLARATIONS = {
     "symbols": f"train-frozen {PI.N_BINS}-quantile quantizer of df_profile_information (edges fitted on the train rows of the same variable)",
     "h0": "plug-in Shannon entropy of the symbol counts, bits; biased low; not differential entropy, not a rate with memory",
     "conditional": f"H(X_t) - H(X_t | X_(t-1)) on symbols; INCONCLUSIVE when a conditioning state has fewer than {PI.COND_MIN_COUNT} counts",
-    "snr_planted": "10 log10(Var(s + periodic + cross) / Var(noise)) over the split rows; components of the generator, never estimated",
+    "snr_planted": "v1 (kept under its name, NOT the whole signal of a diagnostic condition): 10 log10(Var(s + periodic + cross) / Var(noise)) over the split rows",
+    "snr_planted_total": "v2: 10 log10(Var(s + periodic + cross + deterministic) / Var(noise)) over the split rows, power = variance over the rows; "
+                         "equals v1 when the deterministic term is zero; the components are the generator's (identified), never estimated",
+    "composition": "x = s + periodic + cross + deterministic + noise exactly; the maximum residual is reported per split",
+    "grains": "base_series = the split's rows of x; inputs_unique = the rows any window of the split consumes (rows - W + 1 .. rows); "
+              "window_tensor = X (rows x W x p, WITH repetitions: every base row appears in up to W windows); targets = y = x[rows + h]; "
+              "descriptors of the base series are not descriptors of X or Y",
     "dependence_planted": "Pearson correlation between x_B[t] and its lagged partner a[t - tau] over the split rows (r = 1: partner; r = 0: phantom)",
     "effective_rank_entropy": "exp(-sum p ln p), p = s / sum s (Roy & Vetterli 2007, definition 1)",
     "stable_rank": "sum(s^2) / max(s)^2", "nuclear_ratio": "sum(s) / max(s) (NOT the effective rank)", "spectral_norm": "max(s) of the rectangular kernel (not a radius)",
@@ -80,6 +86,36 @@ def _pearson(a: np.ndarray, b: np.ndarray):
     return float(np.corrcoef(a, b)[0, 1])
 
 
+def grain_metrics(x: np.ndarray, prep: dict, part: str, scale: dict) -> dict:
+    """RP20: the four grains a split really consumes, each with row identities, shape, bytes, mask, scale
+    and (for targets) the denominator; compression of the window tensor counts its repetitions."""
+    b = prep["boundaries"]
+    lo, hi = b[part]
+    W, h = int(b["window"]), int(b["horizon"])
+    rows = np.arange(lo, hi)
+    P = prep["parts"][part]
+    X, y = P["X"], P["y"]
+    p = x.shape[1]
+    g = {}
+    base = np.ascontiguousarray(x[lo:hi], dtype="<f8")
+    uniq = np.ascontiguousarray(x[lo - W + 1:hi], dtype="<f8")
+    xt = np.ascontiguousarray(X, dtype="<f8")
+    yt = np.ascontiguousarray(y, dtype="<f8")
+    for name, arr, ident in (("base_series", base, [int(lo), int(hi)]), ("inputs_unique", uniq, [int(lo - W + 1), int(hi)]),
+                             ("window_tensor", xt, {"origins": [int(lo), int(hi)], "window": W, "rows_per_window": W}),
+                             ("targets", yt, [int(lo + h), int(hi + h)])):
+        raw = arr.tobytes()
+        g[name] = {"row_identity": ident, "shape": list(arr.shape), "dtype": "<f8", "bytes_raw": len(raw), "mask_non_finite": int((~np.isfinite(arr)).sum()),
+                   "compressed_bytes_zlib9": CODERS["zlib9"](raw), "compressed_bits_per_value_zlib9": 8.0 * CODERS["zlib9"](raw) / arr.size,
+                   "scale": {"applied": False, "train_only": {"mean": [float(v) for v in scale["mean"]], "sd": [float(v) for v in scale["sd"]]},
+                             "note": "the model consumes (X - mean) / sd and predicts in the scaled space; arrays here are raw"}}
+    g["window_tensor"]["repetition_factor"] = float(xt.size / max(uniq.size, 1))
+    g["window_tensor"]["note"] = "every base row of the split appears in up to W windows; the tensor is what the learner consumed, not new information"
+    g["targets"]["mase_denominator"] = [float(d) for d in prep["mase_denominator"]]
+    g["targets"]["horizon"] = h
+    return g
+
+
 def data_metrics(gen: dict, prep: dict, parts: list, descriptor_version: int) -> dict:
     """Per split and variable; the states are explicit."""
     E = _load("df_mod_e0")
@@ -87,15 +123,20 @@ def data_metrics(gen: dict, prep: dict, parts: list, descriptor_version: int) ->
     p = x.shape[1]
     half = p // 2
     clean = gen["s"] + gen["periodic"] + gen["cross"]
+    det = gen.get("deterministic")
+    det = np.zeros(x.shape[0]) if det is None else np.asarray(det)
+    clean_total = clean + det[:, None]
     noise = gen["noise"]
     b = prep["boundaries"]
     lo_tr, hi_tr = b["train"]
-    out = {"schema": SCHEMA, "declarations": DECLARATIONS, "descriptor_version": int(descriptor_version), "splits": {}, "support": {}}
+    out = {"schema": SCHEMA, "declarations": DECLARATIONS, "descriptor_version": int(descriptor_version), "splits": {}, "support": {},
+           "composition": {"formula": "x = s + periodic + cross + deterministic + noise",
+                           "max_residual": float(np.max(np.abs(x - (clean_total + noise)))), "diagnostic": params.get("diagnostic", "none")}}
     edges = [PI.frozen_edges(x[lo_tr:hi_tr, k]) for k in range(p)]
     for part in parts:
         lo, hi = b[part]
         rows = np.arange(lo, hi)
-        entry = {"rows": int(rows.size), "range": [int(lo), int(hi)], "variables": {}}
+        entry = {"rows": int(rows.size), "range": [int(lo), int(hi)], "variables": {}, "grains": grain_metrics(x, prep, part, prep["scale"])}
         for k in range(p):
             v = np.ascontiguousarray(x[lo:hi, k], dtype="<f8")
             raw = v.tobytes()
@@ -121,10 +162,16 @@ def data_metrics(gen: dict, prep: dict, parts: list, descriptor_version: int) ->
             else:
                 var.update(conditional_redundancy_bits_lag1=cr[0] - cr[1], conditional_surprisal_bits_lag1=cr[1], conditional_state=MEDIDO)
             sv, nv = float(clean[lo:hi, k].var()), float(noise[lo:hi, k].var())
+            st = float(clean_total[lo:hi, k].var())
             if nv > 0 and sv > 0:
                 var.update(snr_planted_db=float(10 * np.log10(sv / nv)), snr_state=MEDIDO, signal_variance=sv, noise_variance=nv)
             else:
                 var.update(snr_planted_db=None, snr_state=NO_APLICA, signal_variance=sv, noise_variance=nv)
+            if nv > 0 and st > 0:
+                var.update(snr_planted_total_db=float(10 * np.log10(st / nv)), snr_total_state=MEDIDO, signal_total_variance=st)
+            else:
+                var.update(snr_planted_total_db=None, snr_total_state=NO_APLICA, signal_total_variance=st)
+            var["snr_versions"] = {"snr_planted_db": "v1 components s+periodic+cross (kept)", "snr_planted_total_db": "v2 total incl. deterministic"}
             var["acf"] = E.acf(v, E.ACF_LAGS)
             var["welch_bands"] = E.welch_bands(v)
             var["trend_seasonal_strength"] = E.DESCRIPTORS[int(descriptor_version)](v)
@@ -149,6 +196,7 @@ def data_metrics(gen: dict, prep: dict, parts: list, descriptor_version: int) ->
                               "compressed_bits_per_sample_zlib9_symbols_mean": float(np.mean([v["compressed_bits_per_sample_zlib9_symbols"] for v in vs])),
                               "h0_bits_mean": float(np.mean([v["h0_bits"] for v in vs if v["h0_bits"] is not None])) if any(v["h0_bits"] is not None for v in vs) else None,
                               "snr_planted_db_mean": float(np.mean([v["snr_planted_db"] for v in vs if v["snr_planted_db"] is not None])) if any(v["snr_planted_db"] is not None for v in vs) else None,
+                              "snr_planted_total_db_mean": float(np.mean([v["snr_planted_total_db"] for v in vs if v["snr_planted_total_db"] is not None])) if any(v["snr_planted_total_db"] is not None for v in vs) else None,
                               "conditional_redundancy_bits_lag1_mean": float(np.mean([v["conditional_redundancy_bits_lag1"] for v in vs if v["conditional_state"] == MEDIDO]))
                                                                         if any(v["conditional_state"] == MEDIDO for v in vs) else None,
                               "conditional_measured_variables": int(sum(v["conditional_state"] == MEDIDO for v in vs)),
@@ -320,9 +368,21 @@ def terminal_rows(rec: dict) -> tuple:
     dm = rec.get("data_metrics") or {}
     for split, entry in (dm.get("splits") or {}).items():
         agg = entry.get("aggregate") or {}
+        for gname, gm in (entry.get("grains") or {}).items():
+            for name, unit in (("bytes_raw", "bytes"), ("compressed_bits_per_value_zlib9", "bits_per_value"), ("mask_non_finite", "count")):
+                key = f"mod_e0.data.grain.{gname}.{name}"
+                v = gm.get(name)
+                if v is not None and np.isfinite(v):
+                    rows.append((key, float(v), unit, split))
+                    states[f"{key}@{split}"] = MEDIDO
+                else:
+                    states[f"{key}@{split}"] = NO_MEDIDO
+            if gname == "window_tensor" and gm.get("repetition_factor") is not None:
+                rows.append((f"mod_e0.data.grain.window_tensor.repetition_factor", float(gm["repetition_factor"]), "ratio", split))
+                states[f"mod_e0.data.grain.window_tensor.repetition_factor@{split}"] = MEDIDO
         for name, unit in (("bytes_raw_total", "bytes"), ("compressed_bits_per_sample_zlib9_raw_float64_mean", "bits_per_sample"),
                            ("compressed_bits_per_sample_lzma6_raw_float64_mean", "bits_per_sample"), ("compressed_bits_per_sample_zlib9_symbols_mean", "bits_per_sample"),
-                           ("h0_bits_mean", "bits"), ("snr_planted_db_mean", "dB"), ("conditional_redundancy_bits_lag1_mean", "bits"),
+                           ("h0_bits_mean", "bits"), ("snr_planted_db_mean", "dB"), ("snr_planted_total_db_mean", "dB"), ("conditional_redundancy_bits_lag1_mean", "bits"),
                            ("dependence_planted_corr_mean_B", "corr")):
             key = f"mod_e0.data.{name}"
             v = agg.get(name)
@@ -335,6 +395,7 @@ def terminal_rows(rec: dict) -> tuple:
                 states[f"{key}@{split}"] = NO_APLICA if name.startswith("dependence") or name.startswith("snr") else NO_MEDIDO
         for k, var in (entry.get("variables") or {}).items():
             for name, unit, st in (("h0_bits", "bits", var.get("h0_state")), ("snr_planted_db", "dB", var.get("snr_state")),
+                                   ("snr_planted_total_db", "dB", var.get("snr_total_state")),
                                    ("compressed_bits_per_sample_zlib9_raw_float64", "bits_per_sample", MEDIDO),
                                    ("conditional_redundancy_bits_lag1", "bits", var.get("conditional_state")),
                                    ("dependence_planted_corr", "corr", var.get("dependence_state"))):

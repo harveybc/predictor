@@ -1,0 +1,196 @@
+{
+ "by_bank_and_license": {
+  "FINANCIAL": {
+   "INTERNAL_RESEARCH_ONLY_PENDING_EVIDENCE": 198
+  },
+  "PUBLIC": {
+   "OPEN_ATTRIBUTION": 4
+  },
+  "SYNTHETIC": {
+   "NOT_APPLICABLE_GENERATED": 513
+  }
+ },
+ "census_datasets": 715,
+ "families": [
+  {
+   "adequacy": {
+    "aperiodic_rule": "if no period is confirmed, adequacy = blocks >= 200 plus a stationarity / dependence diagnostic from the D1 profiles (ADF/KPSS/correlation time rows in coverage)",
+    "blocks_context_plus_horizon": 1445,
+    "cycles_in_range": 1461.0,
+    "declared_period": "daily (24 h) \u2014 declared from the sampling, to be CONFIRMED by the profile's spectrum before use",
+    "declared_period_samples": 96.0
+   },
+   "bank": "PUBLIC",
+   "coverage_rows": 92130,
+   "coverage_states": {
+    "INCONCLUSIVE": 2564,
+    "NOT_APPLICABLE": 21090,
+    "RESULT": 68476
+   },
+   "dataset_id": "public.uci.321.electricityloaddiagrams20112014",
+   "eligible": true,
+   "exclusions": [],
+   "license_id": "CC-BY-4.0",
+   "license_state": "OPEN_ATTRIBUTION",
+   "n_variables": 370,
+   "panel_series": 370,
+   "provider": "UCI Machine Learning Repository",
+   "range": [
+    "2011-01-01 00:15:00",
+    "2015-01-01 00:00:00"
+   ],
+   "rows_estimated": 140256,
+   "sampling_seconds": 900,
+   "semantics": [
+    "ELECTRICITY_CONSUMPTION_PER_CLIENT"
+   ],
+   "split_proposal": "DEV",
+   "split_rule": "distinct datasets (never the same dataset split by rows); DEV = the two largest supports; the reserve is not generated, read or profiled here",
+   "targets_candidate": 370
+  },
+  {
+   "adequacy": {
+    "aperiodic_rule": "if no period is confirmed, adequacy = blocks >= 200 plus a stationarity / dependence diagnostic from the D1 profiles (ADF/KPSS/correlation time rows in coverage)",
+    "blocks_context_plus_horizon": 21394,
+    "cycles_in_range": 1441.1520833333334,
+    "declared_period": "daily (24 h) \u2014 declared from the sampling, to be CONFIRMED by the profile's spectrum before use",
+    "declared_period_samples": 1440.0
+   },
+   "bank": "PUBLIC",
+   "coverage_rows": 1743,
+   "coverage_states": {
+    "INCONCLUSIVE": 58,
+    "NOT_APPLICABLE": 399,
+    "RESULT": 1286
+   },
+   "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+   "eligible": true,
+   "exclusions": [],
+   "license_id": "CC-BY-4.0",
+   "license_state": "OPEN_ATTRIBUTION",
+   "n_variables": 7,
+   "panel_series": 7,
+   "provider": "UCI Machine Learning Repository",
+   "range": [
+    "16/12/2006 17:24:00",
+    "26/11/2010 21:02:00"
+   ],
+   "rows_estimated": 2075259,
+   "sampling_seconds": 60,
+   "semantics": [
+    "HOUSEHOLD_ELECTRICITY_MEASUREMENT"
+   ],
+   "split_proposal": "DEV",
+   "split_rule": "distinct datasets (never the same dataset split by rows); DEV = the two largest supports; the reserve is not generated, read or profiled here",
+   "targets_candidate": 7
+  },
+  {
+   "adequacy": {
+    "aperiodic_rule": "if no period is confirmed, adequacy = blocks >= 200 plus a stationarity / dependence diagnostic from the D1 profiles (ADF/KPSS/correlation time rows in coverage)",
+    "blocks_context_plus_horizon": 361,
+    "cycles_in_range": 1461.0,
+    "declared_period": "daily (24 h) \u2014 declared from the sampling, to be CONFIRMED by the profile's spectrum before use",
+    "declared_period_samples": 24.0
+   },
+   "bank": "PUBLIC",
+   "coverage_rows": 35856,
+   "coverage_states": {
+    "INCONCLUSIVE": 799,
+    "NOT_APPLICABLE": 10512,
+    "RESULT": 24545
+   },
+   "dataset_id": "public.uci.501.beijing_multisite_air_quality",
+   "eligible": true,
+   "exclusions": [],
+   "license_id": "CC-BY-4.0",
+   "license_state": "OPEN_ATTRIBUTION",
+   "n_variables": 144,
+   "panel_series": 144,
+   "provider": "UCI Machine Learning Repository",
+   "range": [
+    "2013-03-01 00:00:00",
+    "2017-02-28 23:00:00"
+   ],
+   "rows_estimated": 35064,
+   "sampling_seconds": 3600,
+   "semantics": [
+    "URBAN_AIR_QUALITY_AND_METEOROLOGY"
+   ],
+   "split_proposal": "RESERVE_CANDIDATE_NOT_OPENED",
+   "split_rule": "distinct datasets (never the same dataset split by rows); DEV = the two largest supports; the reserve is not generated, read or profiled here",
+   "targets_candidate": 144
+  },
+  {
+   "adequacy": {
+    "aperiodic_rule": "if no period is confirmed, adequacy = blocks >= 200 plus a stationarity / dependence diagnostic from the D1 profiles (ADF/KPSS/correlation time rows in coverage)",
+    "blocks_context_plus_horizon": 203,
+    "cycles_in_range": 137.04861111111111,
+    "declared_period": "daily (24 h) \u2014 declared from the sampling, to be CONFIRMED by the profile's spectrum before use",
+    "declared_period_samples": 144.0
+   },
+   "bank": "PUBLIC",
+   "coverage_rows": 6972,
+   "coverage_states": {
+    "INCONCLUSIVE": 182,
+    "NOT_APPLICABLE": 1596,
+    "RESULT": 5194
+   },
+   "dataset_id": "public.uci.374.appliances_energy_prediction",
+   "eligible": true,
+   "exclusions": [],
+   "license_id": "CC-BY-4.0",
+   "license_state": "OPEN_ATTRIBUTION",
+   "n_variables": 28,
+   "panel_series": 28,
+   "provider": "UCI Machine Learning Repository",
+   "range": [
+    "2016-01-11 17:00:00",
+    "2016-05-27 18:00:00"
+   ],
+   "rows_estimated": 19735,
+   "sampling_seconds": 600,
+   "semantics": [
+    "LOW_ENERGY_HOUSE_MONITORING"
+   ],
+   "split_proposal": "RESERVE_CANDIDATE_NOT_OPENED",
+   "split_rule": "distinct datasets (never the same dataset split by rows); DEV = the two largest supports; the reserve is not generated, read or profiled here",
+   "targets_candidate": 26
+  }
+ ],
+ "geometry": {
+  "context_window": 96,
+  "horizon": 1,
+  "min_blocks_aperiodic": 200,
+  "min_targets": 2,
+  "min_variables": 6,
+  "why": "context 96 covers one daily cycle at 15-min sampling and four at hourly; the block count is the support in independent (non-overlapping) context + horizon spans, the unit that matters for a process without an identifiable period"
+ },
+ "non_public_summary": {
+  "FINANCIAL": 198,
+  "SYNTHETIC": 513
+ },
+ "public_excluded": [],
+ "references_fixed_before_development": [
+  "naive",
+  "seasonal naive",
+  "a pertinent multivariate statistical model (VAR)",
+  "DLinear",
+  "PatchTST",
+  "iTransformer",
+  "DUET",
+  "one of MTST/Pathformer/TimeMixer chosen before development results"
+ ],
+ "schema": "e1_families.v1",
+ "source": {
+  "tables": [
+   "df_dim_dataset",
+   "df_fact_coverage_v2"
+  ],
+  "warehouse": "http://127.0.0.1:5057"
+ },
+ "source_deficit": {
+  "no_universal_cycle_minimum": "cycles_in_range is reported where a daily period is declared; adequacy for an aperiodic process is the block count plus the D1 stationarity/dependence diagnostic",
+  "public_families_eligible": 4,
+  "statement": "the census holds four public multivariate families (all UCI, CC-BY-4.0); the financial bank (198) is INTERNAL_RESEARCH_ONLY_PENDING_EVIDENCE and the synthetic bank (513) is generated: E1 cannot draw a development AND a reserve family from independent public SOURCES beyond these four; resolving it is engineering (licence evidence for financial sources or ingestion of further public multivariate datasets through the governed census), not a selection choice"
+ }
+}

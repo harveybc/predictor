@@ -778,6 +778,25 @@ def _bind_donor(job: dict) -> dict:
             "donor_cell_id": donor_cell.get("cell_id") if donor_cell else None}
 
 
+def replay_identity() -> dict:
+    """RP19: what a replay's result depends on besides the attempt's bytes — the implementation really
+    executed (this file), its helpers (the isolated runner is not used; the metrics module is not used by
+    replay), the numeric environment (python, numpy, tensorflow, keras, BLAS threads) and the platform.
+    A cached replay is reused only under the SAME identity; older documents keep their own scope."""
+    import platform
+    out = {"schema": "df_mod_e0_replay_identity.v1", "df_mod_e0_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+           "python": platform.python_version(), "numpy": np.__version__, "platform": platform.machine(),
+           "omp_threads": os.environ.get("OMP_NUM_THREADS", ""), "cuda_visible": os.environ.get("CUDA_VISIBLE_DEVICES", "<unset>")}
+    try:
+        import tensorflow as tf
+        import keras
+        out["tensorflow"] = tf.__version__
+        out["keras"] = keras.__version__
+    except Exception as e:  # noqa: BLE001
+        out["tensorflow"] = f"unavailable: {type(e).__name__}"
+    return out
+
+
 def replay(attempt_dir: Path) -> dict:
     """RP11 fresh-process reproduction of an attempt from its files ONLY: regenerate the inputs
     from (level, r, seed) and the contract, rebuild the graph from the record, load the saved
@@ -786,7 +805,7 @@ def replay(attempt_dir: Path) -> dict:
     graph and compare every extractor weight and the adapter activations of every group. No
     training. Returns a document with measured differences; the closure applies the tolerance."""
     attempt_dir = Path(attempt_dir)
-    out = {"schema": "df_mod_e0_replay.v1", "attempt": attempt_dir.name, "problems": [], "process": os.getpid()}
+    out = {"schema": "df_mod_e0_replay.v2", "attempt": attempt_dir.name, "problems": [], "process": os.getpid(), "identity": replay_identity()}
     rec = json.loads((attempt_dir / "cell.json").read_bytes())
     job = json.loads((attempt_dir / "job.json").read_text()) if (attempt_dir / "job.json").is_file() else {}
     out["inputs"] = {n: (hashlib.sha256((attempt_dir / f).read_bytes()).hexdigest() if (attempt_dir / f).is_file() else None)
