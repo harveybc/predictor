@@ -75,7 +75,16 @@ FAMILY = "uci_235"
 DAY = 1440                                   # rows per day at one-minute sampling
 MEMORY_PREFLIGHT_CAP = 1 << 30               # bytes the prepared DATA may occupy in a child
 REGIMES = ("R0", "R1", "R2")
-CONTROLS = ("persistence", "seasonal_naive_daily", "linear_ridge")
+#: RP37: the controls are named by the INFORMATION they use, because a control with more information
+#: than the network is a reference, not a peer.
+CONTROLS = ("persistence", "seasonal_naive_daily", "linear_ridge", "linear_reach")
+CONTROL_SUPPORT = {
+    "persistence": "one sample: the target's last observation (inside every receiver's reach)",
+    "seasonal_naive_daily": "the target one day before the target row: OUTSIDE the context window; a HIGHER-INFORMATION "
+                            "reference, not an equal-information peer",
+    "linear_ridge": "the whole window (W x p): the same information the declared context gives",
+    "linear_reach": "the last `model_reach_steps` rows of the window: the same information a local receiver can use",
+}
 
 
 def sha_file(path: Path) -> str:
@@ -91,7 +100,8 @@ def sha_file(path: Path) -> str:
 def seal(*, window: int = 60, horizon: int = 60, dev_train_days: int = 28, dev_val_days: int = 7, seeds=(1, 2, 3), max_updates: int = 4000,
          ae_updates: int = 1500, batch: int = 64, patience_epochs: int = 3, pilot_updates: int = 300, headroom: float = 0.25,
          learning_rate: float = 3e-3, mask_ratio: float = 0.3, ridge_lambda: float = 1.0, task_memory_bytes: int = 2 << 30,
-         internal_validation_fraction: float = 0.15, validation_bank_seed: int = 20260919,
+         internal_validation_fraction: float = 0.15, validation_bank_seed: int = 20260919, core_kind: str = "conv3",
+         data_access: str = "LOCAL_CHARACTERISED_FILE",
          wall_seconds: float = 2400.0, cpu_seconds: int = 2400, declared_task: dict | None = None) -> dict:
     """`declared_task`: a task declaration used INSTEAD of the E1_TASKS lookup (tests on synthetic panels only; recorded)."""
     tasks = json.loads(TASKS_FILE.read_text())
@@ -108,7 +118,7 @@ def seal(*, window: int = 60, horizon: int = 60, dev_train_days: int = 28, dev_v
     physical = {"Global_reactive_power": 0, "Global_intensity": 0, "Global_active_power": 0, "Voltage": 1,
                 "Sub_metering_1": 2, "Sub_metering_2": 2, "Sub_metering_3": 2}
     assignment = [physical[c] for c in cols]
-    reach = E.support_reach("A", "sequence", window)
+    reach = model_reach(window, core_kind)
     cells, pilots = [], []
     for s in seeds:
         cells.append({"cell_id": f"ae_s{s}", "kind": "ae", "seed": s, "max_updates": ae_updates})
@@ -119,7 +129,7 @@ def seal(*, window: int = 60, horizon: int = 60, dev_train_days: int = 28, dev_v
     pilots = [{"cell_id": "pilot_ae", "kind": "ae", "seed": int(seeds[0]), "max_updates": pilot_updates, "role": "COST_PILOT"},
               {"cell_id": "pilot_fit", "kind": "fit", "regime": "R0", "seed": int(seeds[0]), "max_updates": pilot_updates, "role": "COST_PILOT"}]
     design = {
-        "schema": SCHEMA_DESIGN, "purpose": "E1_DEV_PILOT_HOUSEHOLD", "phase": "DEVELOPMENT",
+        "schema": SCHEMA_DESIGN, "purpose": "E1_DEV_PILOT_HOUSEHOLD", "phase": "DEVELOPMENT", "data_access": data_access,
         "what_this_is": "the first E1 development pilot: three learning regimes on one public task; it does not confirm H1, does not select a "
                         "universal model and does not replace the benchmark of the proposal (families/comparators stay pending in the matrix)",
         "family": FAMILY, "dataset_id": fam["dataset_id"], "governed_bytes": fam["governed_bytes"],
@@ -127,6 +137,7 @@ def seal(*, window: int = 60, horizon: int = 60, dev_train_days: int = 28, dev_v
         "task": {"id": key, "window_steps": window, "horizon_steps": horizon, "context_physical_seconds": task["context_physical_seconds"],
                  "horizon_physical_seconds": task["horizon_physical_seconds"], "purge": task["purge"],
                  "model_reach_steps": reach, "model_reach_physical_seconds": reach * 60,
+                 "reach_measured_by": "perturbation and gradient per input row (tools/df_e1_receiver.py), not asserted",
                  "reach_note": "ARCH-A with the sequence fusion depends on the last `model_reach_steps` samples of the window (branch 5 + core 3 - 1); "
                                "the window is the declared context, the reach is what the prediction can depend on (RP28: full real reach declared)",
                  "target": contract.targets, "features": contract.features, "target_history_as_feature": True,
@@ -136,7 +147,10 @@ def seal(*, window: int = 60, horizon: int = 60, dev_train_days: int = 28, dev_v
                                                             f"of its validation split (family train end row {train_end}); test rows never read",
                              "train_days": dev_train_days, "validation_days": dev_val_days, "splits_within_slice": contract.splits,
                              "purge_between_splits": window + horizon},
-        "graph": {"arch": "A", "fusion": "sequence", "assignment": assignment, "input_columns": cols,
+        "graph": {"arch": "A", "fusion": "sequence", "core_kind": core_kind, "assignment": assignment, "input_columns": cols,
+                  "core": ("Conv1D(16, k=3, causal, ELU), reach 3 positions" if core_kind == "conv3" else
+                           f"causal dilated Conv1D stack with dilations {core_dilations(window)} (kernel 3, 16 filters, "
+                           f"residual), reach {core_reach(window, 'tcn_w')} positions: derived from W, not searched"),
                   "grouping": "held constant: physical groups (power: active history, reactive, intensity | voltage | sub-metering 1-3); "
                               "profile-based grouping is a separate factor not varied here",
                   "layers": {"detector (per branch)": "2 residual causal Conv1D blocks: Conv1D(16, k=3, d=1, ELU) + 1x1 projection skip",
@@ -161,7 +175,9 @@ def seal(*, window: int = 60, horizon: int = 60, dev_train_days: int = 28, dev_v
                      "epoch_note": "an epoch is one pass over the DEV train origins in batches; the update counter binds exactly",
                      "same_task_budget": "every regime gets the same update ceiling; the AE cost is reported apart and added for the total-cost reading"},
         "controls": {"persistence": "y_hat(t+h) = y(t)", "seasonal_naive_daily": "y_hat(t+h) = y(t+h-1440)",
-                     "linear_ridge": f"ridge (lambda {ridge_lambda} x n_train on standardised inputs) on the flattened scaled window (W x p) + bias, fitted on DEV train windows"},
+                     "linear_ridge": f"ridge (lambda {ridge_lambda} x n_train on standardised inputs) on the flattened scaled window (W x p) + bias, fitted on DEV train windows",
+                     "linear_reach": "the same ridge on the last `model_reach_steps` rows only: the information a local receiver can use",
+                     "support": CONTROL_SUPPORT},
         "metrics": {"mae": "kW on the common evaluation set", "mase": "MAE / mean |y(t+h) - y(t)| over DEV train origins (persistence at the horizon)",
                     "common_evaluation_set": "DEV validation origins admissible for the model AND with a finite label AND a finite daily lookup; identical for every unit",
                     "test": "NOT SCORED (the benchmark's final test stays unscored)"},
@@ -591,6 +607,7 @@ def run_unit(job: dict, out_dir: Path) -> dict:
         Y, ev = d["Y"], d["eval_origins"]
         y = Y[ev + h]
         preds = {"persistence": Y[ev], "seasonal_naive_daily": Y[ev + h - DAY]}
+        reach = int(design["task"]["model_reach_steps"])
         tr = d["train_origins"]
         m_t, s_t = float(d["scaler_mean"][j]), float(d["scaler_sd"][j])
         nfeat = W * p + 1
@@ -607,12 +624,29 @@ def run_unit(job: dict, out_dir: Path) -> dict:
         beta = np.linalg.solve(G + reg, b)
         Xe = np.concatenate([_gather(d["Xs"], ev, W).reshape(ev.size, -1).astype(np.float64), np.ones((ev.size, 1))], axis=1)
         preds["linear_ridge"] = (Xe @ beta) * s_t + m_t
+        # the information-matched linear control: only the rows a local receiver can reach
+        nfeat_r = reach * p + 1
+        Gr, br = np.zeros((nfeat_r, nfeat_r)), np.zeros(nfeat_r)
+        for i in range(0, tr.size, 1024):
+            o = tr[i:i + 1024]
+            Xf = np.concatenate([_gather(d["Xs"], o, W)[:, W - reach:, :].reshape(o.size, -1).astype(np.float64),
+                                 np.ones((o.size, 1))], axis=1)
+            Gr += Xf.T @ Xf
+            br += Xf.T @ ((Y[o + h] - m_t) / s_t)
+        reg_r = float(design["ridge_lambda"]) * tr.size * np.eye(nfeat_r)
+        reg_r[-1, -1] = 0.0
+        beta_r = np.linalg.solve(Gr + reg_r, br)
+        Xer = np.concatenate([_gather(d["Xs"], ev, W)[:, W - reach:, :].reshape(ev.size, -1).astype(np.float64),
+                              np.ones((ev.size, 1))], axis=1)
+        preds["linear_reach"] = (Xer @ beta_r) * s_t + m_t
         cost["fit_seconds"] = round(time.process_time() - t0, 3)
         t1 = time.process_time()
         scores = {k: E.mase(v[:, None], y[:, None], d["denominator"].tolist()) for k, v in preds.items()}
         cost["metrics_seconds"] = round(time.process_time() - t1, 3)
         np.savez(out_dir / "arrays.npz", validation_y=y[:, None], denominator=d["denominator"], eval_origins=ev, **{f"validation_pred_{k}": v[:, None] for k, v in preds.items()})
-        rec.update(scores={"validation": {k: v for k, v in scores.items()}}, ridge={"lambda_scaled": lam, "features": nfeat}, training={"updates": 0, "stop_reason": "CLOSED_FORM"},
+        rec.update(scores={"validation": {k: v for k, v in scores.items()}},
+                   ridge={"lambda_scaled": lam, "features": nfeat, "reach_features": nfeat_r, "reach_steps": reach},
+                   control_support=CONTROL_SUPPORT, training={"updates": 0, "stop_reason": "CLOSED_FORM"},
                    parameters={"total": nfeat, "trainable": nfeat, "frozen": 0})
     else:
         raise SystemExit(f"unknown unit kind {job['kind']!r}")
