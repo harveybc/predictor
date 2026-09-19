@@ -1,0 +1,257 @@
+#!/usr/bin/env python3
+"""RP27: the E1 task loader — a structured contract that the training consumes, and one window
+enumerator from which every count, tensor, mask, origin id/time and denominator derives.
+
+Contract (`TaskContract`): ordered feature names, target names, metadata names, control names and the
+expected dtype per role; an unexpected column is REFUSED unless listed in `ignore` (explicit exclusion);
+a column is never included because of its dtype. Timestamps are parsed, never coerced to numbers.
+The target's own history may be a feature only when `target_history_as_feature` is declared (household
+primary pilot: yes, to equal the information of persistence / seasonal-naive); the future of the target
+never enters an input: inputs of the window with origin t are rows t - W + 1 .. t, the target is row
+t + h, enforced by identity of the rows, not by column name.
+
+Grid (`fixed_grid`): the declared step; a window whose W + h rows are not exactly consecutive on the grid
+(gap, duplicate, disorder, DST-ambiguous row) is WITHDRAWN (policy `withdraw`), or, under a declared causal
+policy `mask_ffill` (last observation carried forward with a mask channel; never a future value), kept with
+its mask recorded. Time is never compressed by deleting rows.
+
+Masks: an input row is valid when every feature is finite; a target is valid when finite and, for the
+electricity family, when the client is ACTIVE under the declared causal rule: active from the first row
+where the client has a finite non-zero value observed at or before the window origin (a proxy for the
+service start, declared as such), never-active clients get state NEVER_ACTIVE, and a real zero after
+activation is a measurement. Nothing is trained on a label without an objective.
+
+Scaling: `fit_scaler(train_windows)` only; validation/test changes cannot alter it nor any earlier window.
+Evaluation: every arm scores the SAME origins/targets/denominators (`EvalSet`); if an arm cannot emit a
+prediction for an origin, coverage is reported and the common policy applies (origin dropped for ALL arms).
+
+    python tools/df_e1_loader.py --self-check
+"""
+
+from __future__ import annotations
+
+import dataclasses
+import hashlib
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+
+class ContractRefusal(ValueError):
+    pass
+
+
+@dataclass
+class TaskContract:
+    family: str
+    timestamp: str
+    ts_format: str
+    step_seconds: int
+    features: list
+    targets: list
+    metadata: list = field(default_factory=list)
+    controls: list = field(default_factory=list)
+    ignore: list = field(default_factory=list)
+    target_history_as_feature: bool = False
+    dtype: str = "float64"
+    activation_rule: str = "none"                 # "none" | "first_finite_nonzero_at_or_before_origin"
+    gap_policy: str = "withdraw"                  # "withdraw" | "mask_ffill"
+    ambiguous_labels: list = field(default_factory=list)   # timestamp labels declared AMBIGUOUS_SUPPORT (e.g. DST hours)
+    horizon: int = 1
+    window: int = 24
+    splits: dict = field(default_factory=lambda: {"train": 0.7, "validation": 0.15, "test": 0.15})
+
+    def sha256(self) -> str:
+        return hashlib.sha256(json.dumps(dataclasses.asdict(self), sort_keys=True).encode()).hexdigest()
+
+    def input_columns(self) -> list:
+        cols = list(self.features)
+        if self.target_history_as_feature:
+            cols += [t for t in self.targets if t not in cols]
+        return cols
+
+
+def resolve(frame: pd.DataFrame, c: TaskContract) -> dict:
+    """Bind the frame's columns to the contract's roles; refuse extras and missing roles; parse time."""
+    cols = list(frame.columns)
+    declared = [c.timestamp] + c.features + c.targets + c.metadata + c.controls + c.ignore
+    missing = [x for x in [c.timestamp] + c.features + c.targets + c.metadata + c.controls if x not in cols]
+    if missing:
+        raise ContractRefusal(f"columns declared by the contract are absent: {missing}")
+    extra = [x for x in cols if x not in declared]
+    if extra:
+        raise ContractRefusal(f"columns not foreseen by the contract (declare a role or list them in `ignore`): {extra}")
+    dup = [x for x in set(declared) if declared.count(x) > 1]
+    if dup:
+        raise ContractRefusal(f"a column has more than one role: {dup}")
+    if not pd.api.types.is_string_dtype(frame[c.timestamp]) and not pd.api.types.is_datetime64_any_dtype(frame[c.timestamp]):
+        raise ContractRefusal("the timestamp column must be text or datetime, never numeric")
+    ts = pd.to_datetime(frame[c.timestamp], format=c.ts_format) if not pd.api.types.is_datetime64_any_dtype(frame[c.timestamp]) else frame[c.timestamp]
+    for col in c.features + c.targets:
+        if not pd.api.types.is_numeric_dtype(frame[col]):
+            raise ContractRefusal(f"{col}: a feature/target must be numeric (dtype {frame[col].dtype})")
+    return {"timestamps": ts.reset_index(drop=True), "inputs": frame[c.input_columns()].to_numpy(dtype=c.dtype),
+            "targets": frame[c.targets].to_numpy(dtype=c.dtype), "metadata": frame[c.metadata].reset_index(drop=True),
+            "controls": frame[c.controls].to_numpy(dtype=c.dtype) if c.controls else None, "input_columns": c.input_columns()}
+
+
+def grid_ok(ts: pd.Series, step: int) -> np.ndarray:
+    """Row i is 'grid-ok' when its label is exactly step seconds after row i-1 (row 0 is ok)."""
+    d = ts.diff().dt.total_seconds().to_numpy()
+    ok = np.ones(ts.size, dtype=bool)
+    ok[1:] = d[1:] == step
+    return ok
+
+
+def ambiguous_rows(ts: pd.Series, ambiguous: set) -> np.ndarray:
+    """Rows whose label is declared AMBIGUOUS_SUPPORT (e.g. the DST hours): any window containing one is withdrawn."""
+    if not ambiguous:
+        return np.zeros(ts.size, dtype=bool)
+    lab = ts.dt.strftime("%Y-%m-%d %H:%M:%S").to_numpy()
+    return np.isin(lab, list(ambiguous))
+
+
+def activation(targets: np.ndarray, rule: str) -> np.ndarray:
+    """Per target column: rows at or after the first finite non-zero value (a declared proxy of service
+    start); a never-active column is all False. Under rule 'none' every row is active."""
+    n, k = targets.shape
+    if rule == "none":
+        return np.ones((n, k), dtype=bool)
+    if rule != "first_finite_nonzero_at_or_before_origin":
+        raise ContractRefusal(f"unknown activation rule {rule!r}")
+    act = np.zeros((n, k), dtype=bool)
+    for j in range(k):
+        nz = np.flatnonzero(np.isfinite(targets[:, j]) & (targets[:, j] != 0))
+        if nz.size:
+            act[nz[0]:, j] = True
+    return act
+
+
+def split_edges(n: int, splits: dict) -> dict:
+    edges, cur = {}, 0
+    for name, frac in splits.items():
+        edges[name] = [cur, cur + int(n * frac)]
+        cur = edges[name][1]
+    last = list(splits)[-1]
+    edges[last][1] = n
+    return edges
+
+
+def enumerate_windows(resolved: dict, c: TaskContract) -> dict:
+    """THE enumerator: for every split, the admissible origins with ids, times, support and masks."""
+    ts = resolved["timestamps"]
+    X, Y = resolved["inputs"], resolved["targets"]
+    n, W, h = X.shape[0], int(c.window), int(c.horizon)
+    ok = grid_ok(ts, c.step_seconds)
+    amb = ambiguous_rows(ts, set(c.ambiguous_labels))
+    csum_amb = np.concatenate([[0], np.cumsum(amb)])
+    fin_in = np.isfinite(X).all(axis=1)
+    act = activation(Y, c.activation_rule)
+    fin_t = np.isfinite(Y)
+    csum_grid = np.concatenate([[0], np.cumsum(ok)])
+    csum_fin = np.concatenate([[0], np.cumsum(fin_in)])
+    edges = split_edges(n, c.splits)
+    purge = W + h
+    out = {"contract_sha256": c.sha256(), "window": W, "horizon": h, "purge": purge, "splits": {}, "grid_rows_not_ok": int((~ok).sum()), "ambiguous_rows": int(amb.sum()),
+           "input_rows_non_finite": int((~fin_in).sum()), "never_active_targets": [c.targets[j] for j in range(Y.shape[1]) if not act[:, j].any()],
+           "policy": {"gap": c.gap_policy, "activation": c.activation_rule, "ambiguous_labels": len(c.ambiguous_labels)}}
+    for name, (lo, hi) in edges.items():
+        end = hi - (purge if name != list(edges)[-1] else h)
+        origins = np.arange(max(lo, W - 1), max(end, 0))
+        if origins.size == 0:
+            out["splits"][name] = {"origins": 0, "admissible": 0}
+            continue
+        # support rows t-W+1 .. t+h must all be grid-consecutive: rows t-W+2 .. t+h each 'ok' relative to their predecessor
+        span_ok = ((csum_grid[origins + h + 1] - csum_grid[origins - W + 2]) == (W + h - 1)) & ((csum_amb[origins + h + 1] - csum_amb[origins - W + 1]) == 0)
+        inputs_finite = (csum_fin[origins + 1] - csum_fin[origins - W + 1]) == W
+        if c.gap_policy == "withdraw":
+            admissible = span_ok & inputs_finite
+            mask_used = np.zeros(origins.size, dtype=bool)
+        elif c.gap_policy == "mask_ffill":
+            admissible = span_ok                                           # the grid must hold; non-finite inputs are carried forward with a mask
+            mask_used = ~inputs_finite
+        else:
+            raise ContractRefusal(f"unknown gap policy {c.gap_policy!r}")
+        tgt_valid = fin_t[origins + h] & act[origins, :]                     # activity judged AT THE ORIGIN, never with future rows
+        rows = origins[admissible]
+        out["splits"][name] = {"range": [int(lo), int(hi)], "origins": int(origins.size), "admissible": int(admissible.sum()),
+                               "withdrawn_grid": int((~span_ok).sum()), "withdrawn_non_finite_inputs": int((span_ok & ~inputs_finite).sum()) if c.gap_policy == "withdraw" else 0,
+                               "masked_inputs": int(mask_used.sum()),
+                               "targets_valid_per_column": {c.targets[j]: int(tgt_valid[admissible, j].sum()) for j in range(Y.shape[1])},
+                               "targets_valid_any": int(tgt_valid[admissible].any(axis=1).sum()), "targets_valid_all": int(tgt_valid[admissible].all(axis=1).sum()),
+                               "origin_ids": rows.tolist(), "origin_times": ts.iloc[rows].dt.strftime("%Y-%m-%d %H:%M:%S").tolist(),
+                               "target_ids": (rows + h).tolist(), "target_mask": tgt_valid[admissible].tolist(),
+                               "support_physical_seconds": int(rows.size) * c.step_seconds}
+    return out
+
+
+def build_tensors(resolved: dict, enum: dict, split: str, c: TaskContract, scaler: dict | None) -> dict:
+    """The tensor the model receives, for one split, from the enumerator's origins only."""
+    X, Y = resolved["inputs"], resolved["targets"]
+    s = enum["splits"][split]
+    rows = np.asarray(s.get("origin_ids") or [], dtype=int)
+    W, h = enum["window"], enum["horizon"]
+    if rows.size == 0:
+        return {"X": np.zeros((0, W, X.shape[1])), "y": np.zeros((0, Y.shape[1])), "mask_y": np.zeros((0, Y.shape[1]), dtype=bool), "origins": rows}
+    Xw = np.stack([X[t - W + 1:t + 1] for t in rows])
+    if c.gap_policy == "mask_ffill":
+        Xw = np.where(np.isfinite(Xw), Xw, np.nan)
+        for i in range(Xw.shape[0]):                                       # causal forward fill inside the window; the first row cannot be filled from the past
+            for j in range(Xw.shape[2]):
+                col = Xw[i, :, j]
+                last = np.nan
+                for k in range(col.size):
+                    if np.isfinite(col[k]):
+                        last = col[k]
+                    else:
+                        col[k] = last if np.isfinite(last) else 0.0
+    y = Y[rows + h]
+    if scaler is not None:
+        Xw = (Xw - scaler["mean"]) / scaler["sd"]
+    return {"X": Xw, "y": y, "mask_y": np.asarray(s["target_mask"], dtype=bool), "origins": rows, "target_ids": rows + h}
+
+
+def fit_scaler(train_tensor: dict) -> dict:
+    """Train-only per-feature mean and SD of the input rows (never validation or test)."""
+    flat = train_tensor["X"].reshape(-1, train_tensor["X"].shape[2])
+    mean, sd = flat.mean(axis=0), flat.std(axis=0)
+    return {"mean": mean, "sd": np.where(sd > 0, sd, 1.0), "fitted_on": "train windows only", "n_rows": int(flat.shape[0])}
+
+
+def eval_set(enum: dict, split: str) -> dict:
+    """The common evaluation set: origins/targets/mask every arm must score; a denominator per target from
+    the train seasonal naive is computed by the caller with the same origins."""
+    s = enum["splits"][split]
+    return {"origins": list(s.get("origin_ids") or []), "target_ids": list(s.get("target_ids") or []), "mask": s.get("target_mask") or [],
+            "rule": "every arm scores exactly these; an origin an arm cannot score is dropped for ALL arms and reported as coverage"}
+
+
+def household_contract(window: int = 60, horizon: int = 1, history: bool = True) -> TaskContract:
+    return TaskContract(family="uci_235", timestamp="timestamp_label", ts_format="%d/%m/%Y %H:%M:%S", step_seconds=60,
+                        features=["Global_reactive_power", "Voltage", "Global_intensity", "Sub_metering_1", "Sub_metering_2", "Sub_metering_3"],
+                        targets=["Global_active_power"], metadata=[], controls=[], ignore=[], target_history_as_feature=history,
+                        activation_rule="none", gap_policy="withdraw", horizon=horizon, window=window)
+
+
+def electricity_contract(clients: list, window: int = 96, horizon: int = 1, ambiguous: list | None = None) -> TaskContract:
+    return TaskContract(family="uci_321", timestamp="timestamp_label", ts_format="%Y-%m-%d %H:%M:%S", step_seconds=900,
+                        features=[], targets=list(clients), metadata=[], controls=[], target_history_as_feature=True,
+                        activation_rule="first_finite_nonzero_at_or_before_origin", gap_policy="withdraw", ambiguous_labels=list(ambiguous or []),
+                        horizon=horizon, window=window)
+
+
+if __name__ == "__main__":
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--self-check", action="store_true")
+    a = ap.parse_args()
+    if a.self_check:
+        c = household_contract(window=4, horizon=1)
+        ts = pd.date_range("2007-01-01 00:00", periods=40, freq="min")
+        df = pd.DataFrame({"timestamp_label": ts.strftime("%d/%m/%Y %H:%M:%S"), **{k: np.arange(40, dtype=float) + i for i, k in enumerate(c.features + c.targets)}})
+        r = resolve(df, c)
+        e = enumerate_windows(r, c)
+        print(json.dumps({k: {kk: vv for kk, vv in v.items() if not isinstance(vv, list)} for k, v in e["splits"].items()}, indent=1))

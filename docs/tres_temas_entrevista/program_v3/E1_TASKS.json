@@ -402,7 +402,7 @@
    "producer_notes": [
     "timestamps in Portuguese local wall clock (producer: 'All time labels report to Portuguese hour')",
     "clients created after 2011 have zero consumption before their first record (structural zeros, not measurements)",
-    "DST: the March change day has one hour of zeros (23 records); the October change day aggregates two hours into one (25 records) \u2014 producer statement",
+    "DST (producer statement): 96 values per day kept on the grid; the March change day is a 23-HOUR day whose missing wall-clock hour carries zeros; the October change day is a 25-HOUR day whose repeated hour is aggregated into one \u2014 hours of 23/25-hour days, NOT 23/25 records (RP28 trace: rows with labels 01:00-01:45 of the last Sunday of March are zero for ~2/3 of the active clients in the raw file and in the panel alike; October shows no zero signature)",
     "availability delay and revision policy: UNKNOWN in the contract; the file is a static archive (no revisions)"
    ],
    "source": "https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014",
@@ -578,39 +578,350 @@
    },
    "train_only_periodicities": {
     "columns_used": 32,
+    "column_rule": "every declared target/feature column of the family (electricity: a declared sample of 32 clients by column order, NOT representative by proof)",
     "top_peaks": [
      {
+      "period_hours": 8192.0,
+      "share_of_total_power": 0.28970287201231987
+     },
+     {
+      "period_hours": 4096.0,
+      "share_of_total_power": 0.13390339610601093
+     },
+     {
       "period_hours": 24.023460410557185,
-      "share_of_total_power": 0.0868786127662992
+      "share_of_total_power": 0.06717729871794474
+     },
+     {
+      "period_hours": 2730.6666666666665,
+      "share_of_total_power": 0.048500020673286105
      },
      {
       "period_hours": 23.953216374269008,
-      "share_of_total_power": 0.05839855860069378
+      "share_of_total_power": 0.04690386735725712
      },
      {
       "period_hours": 11.99414348462665,
-      "share_of_total_power": 0.05572946825205067
-     },
-     {
-      "period_hours": 12.011730205278592,
-      "share_of_total_power": 0.03702782621730483
-     },
-     {
-      "period_hours": 24.094117647058823,
-      "share_of_total_power": 0.014598081683942537
-     },
-     {
-      "period_hours": 11.976608187134504,
-      "share_of_total_power": 0.009538204377776405
+      "share_of_total_power": 0.03887629644194171
      }
     ],
     "bands": {
-     "daily_24h_share": 0.1820684871222278,
-     "half_day_12h_share": 0.12244744449563173,
-     "weekly_168h_share": 0.014975465867255823,
-     "slower_than_5_weeks_share": 0.5281998407710938
+     "daily_24h_share": 0.15001998700972655,
+     "half_day_12h_share": 0.08976280631599343,
+     "weekly_168h_share": 0.01928341825501778,
+     "35_days_share": 0.004657183654095287
     },
-    "note": "Welch on the TRAIN block only (mean over the first 32 columns); a peak is a measured periodicity, not an assumption from the sampling; power slower than five weeks is drift/trend, reported apart"
+    "sensitivity_last_third_of_train": {
+     "daily_24h_share_last_third": 0.23796660159674962,
+     "half_day_12h_share_last_third": 0.15821759858180795,
+     "weekly_168h_share_last_third": 0.036344290462847255,
+     "35_days_share_last_third": 0.004343022314503708
+    },
+    "resolution": {
+     "nperseg": 32768,
+     "delta_f_hz": 3.390842013888889e-08,
+     "slowest_resolvable_period_seconds": 29491200.0,
+     "fastest_period_seconds": 1800.0,
+     "declaration": {
+      "window": "hann",
+      "overlap": "50 %",
+      "detrend": "constant (mean removed)",
+      "scaling": "density (V**2/Hz)",
+      "dc_bin": "excluded",
+      "segments": 4
+     }
+    },
+    "per_variable": {
+     "MT_001": {
+      "bands": {
+       "daily_24h": 0.03993677451056854,
+       "half_day_12h": 0.023686812888269793,
+       "weekly_168h": 0.0024271894816046222,
+       "35_days": 0.015288221813200425
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_002": {
+      "bands": {
+       "daily_24h": 0.07316975646537924,
+       "half_day_12h": 0.09079789233956023,
+       "weekly_168h": 0.00549242130401335,
+       "35_days": 0.005938827945817983
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_003": {
+      "bands": {
+       "daily_24h": 0.11167203327527983,
+       "half_day_12h": 0.06733471477742131,
+       "weekly_168h": 0.004293489707462018,
+       "35_days": 0.0038770706992024397
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_004": {
+      "bands": {
+       "daily_24h": 0.20239394877289502,
+       "half_day_12h": 0.16052371803273915,
+       "weekly_168h": 0.005416434347241594,
+       "35_days": 0.00404374529749365
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_005": {
+      "bands": {
+       "daily_24h": 0.13101090786451364,
+       "half_day_12h": 0.04630022708627392,
+       "weekly_168h": 0.006072070908419227,
+       "35_days": 0.005993876985512116
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_006": {
+      "bands": {
+       "daily_24h": 0.1783239576920501,
+       "half_day_12h": 0.12692816930790526,
+       "weekly_168h": 0.0030386524605582146,
+       "35_days": 0.0048713998749733405
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_007": {
+      "bands": {
+       "daily_24h": 0.023053413195961527,
+       "half_day_12h": 0.009945597287547606,
+       "weekly_168h": 0.006357048780757688,
+       "35_days": 0.004505569100390428
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_008": {
+      "bands": {
+       "daily_24h": 0.1783703148061032,
+       "half_day_12h": 0.08246825937092636,
+       "weekly_168h": 0.0054068573939859005,
+       "35_days": 0.004573632162168073
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_009": {
+      "bands": {
+       "daily_24h": 0.09040958328650439,
+       "half_day_12h": 0.08992788340075523,
+       "weekly_168h": 0.029115096545830218,
+       "35_days": 0.005149740366405865
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_010": {
+      "bands": {
+       "daily_24h": 0.16479912698449545,
+       "half_day_12h": 0.05271781158385179,
+       "weekly_168h": 0.02958038748377761,
+       "35_days": 0.004240622914897141
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_011": {
+      "bands": {
+       "daily_24h": 0.16065569582356004,
+       "half_day_12h": 0.08841125689387934,
+       "weekly_168h": 0.0032332680328872976,
+       "35_days": 0.005193905427169933
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_012": {
+      "bands": {
+       "daily_24h": null,
+       "half_day_12h": null,
+       "weekly_168h": null,
+       "35_days": null
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_013": {
+      "bands": {
+       "daily_24h": 0.2577649365168738,
+       "half_day_12h": 0.011087401203390324,
+       "weekly_168h": 0.12210584258281938,
+       "35_days": 0.0016367607349520358
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_014": {
+      "bands": {
+       "daily_24h": 0.2625292819709832,
+       "half_day_12h": 0.028603935939073642,
+       "weekly_168h": 0.052475655013007515,
+       "35_days": 0.004357969909185988
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_015": {
+      "bands": {
+       "daily_24h": null,
+       "half_day_12h": null,
+       "weekly_168h": null,
+       "35_days": null
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_016": {
+      "bands": {
+       "daily_24h": 0.1786218234715654,
+       "half_day_12h": 0.15571705993479548,
+       "weekly_168h": 0.007149019737511308,
+       "35_days": 0.004272490128026488
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_017": {
+      "bands": {
+       "daily_24h": 0.21884047811237706,
+       "half_day_12h": 0.10927122412068474,
+       "weekly_168h": 0.0023762234204749346,
+       "35_days": 0.004148853674465845
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_018": {
+      "bands": {
+       "daily_24h": 0.20658275970602846,
+       "half_day_12h": 0.14419299991421475,
+       "weekly_168h": 0.014938667636294764,
+       "35_days": 0.005522728598105677
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_019": {
+      "bands": {
+       "daily_24h": 0.14747659893151982,
+       "half_day_12h": 0.11035083969019481,
+       "weekly_168h": 0.0038251302359393036,
+       "35_days": 0.004557048806086477
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_020": {
+      "bands": {
+       "daily_24h": 0.10951823632156737,
+       "half_day_12h": 0.10704070177889972,
+       "weekly_168h": 0.003969542399284157,
+       "35_days": 0.004893905879963303
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_021": {
+      "bands": {
+       "daily_24h": 0.24169153169493615,
+       "half_day_12h": 0.08134011348841448,
+       "weekly_168h": 0.005961131896055316,
+       "35_days": 0.003992527609670703
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_022": {
+      "bands": {
+       "daily_24h": 0.17320481254145903,
+       "half_day_12h": 0.07958978152941654,
+       "weekly_168h": 0.03283329147307721,
+       "35_days": 0.003957870426743707
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_023": {
+      "bands": {
+       "daily_24h": 0.094578142903239,
+       "half_day_12h": 0.2411362843741557,
+       "weekly_168h": 0.0049480763020096725,
+       "35_days": 0.002911896007661714
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_024": {
+      "bands": {
+       "daily_24h": 0.24218387659470306,
+       "half_day_12h": 0.13265310493048513,
+       "weekly_168h": 0.013717584474023485,
+       "35_days": 0.0022480198118729577
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_025": {
+      "bands": {
+       "daily_24h": 0.14898770520968008,
+       "half_day_12h": 0.19539579802583026,
+       "weekly_168h": 0.0030756062936453184,
+       "35_days": 0.0033659472920649007
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_026": {
+      "bands": {
+       "daily_24h": 0.2339392979458978,
+       "half_day_12h": 0.13414639188348468,
+       "weekly_168h": 0.0017814133819010279,
+       "35_days": 0.004100239784805542
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_027": {
+      "bands": {
+       "daily_24h": 0.24215157298035808,
+       "half_day_12h": 0.09594223790970133,
+       "weekly_168h": 0.0028617111346103032,
+       "35_days": 0.004222958944066925
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_028": {
+      "bands": {
+       "daily_24h": 0.1649811313728637,
+       "half_day_12h": 0.08259065209152035,
+       "weekly_168h": 0.008956596291098927,
+       "35_days": 0.004562709378904919
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_029": {
+      "bands": {
+       "daily_24h": 0.06441396993747137,
+       "half_day_12h": 0.034825821599867794,
+       "weekly_168h": 0.1920301897919474,
+       "35_days": 0.008206808591827701
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_030": {
+      "bands": {
+       "daily_24h": 8.540690850478083e-34,
+       "half_day_12h": 5.22661287207783e-34,
+       "weekly_168h": 2.473574808049061e-35,
+       "35_days": 3.8959199369458404e-37
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_031": {
+      "bands": {
+       "daily_24h": 0.1460587733627331,
+       "half_day_12h": 0.10628609550714378,
+       "weekly_168h": 0.003435215914232575,
+       "35_days": 0.004212604005342055
+      },
+      "n_missing_imputed": 0
+     },
+     "MT_032": {
+      "bands": {
+       "daily_24h": 0.01327916804022976,
+       "half_day_12h": 0.0036714025893992887,
+       "weekly_168h": 0.0016287332260631246,
+       "35_days": 0.004867557451880288
+      },
+      "n_missing_imputed": 0
+     }
+    },
+    "note": "Welch on the TRAIN block only with a declared segment/resolution; a band without bins is NO_RESUELTO, never a measured zero; batch characterisation of train, never an online filter; the aggregate weighs variables equally after unit-power normalisation"
    },
    "dst_march_change_days": {
     "2011-03-27": {
@@ -641,7 +952,14 @@
       }
      },
      "producer_statement": "one hour of zeros on the March change day",
-     "reproduced": false
+     "reproduced_as_all_clients_zero": false,
+     "trace": "RP28_DST_TRACE.json: labels 01:00-01:45 zero for most ACTIVE clients (raw == panel); disposition AMBIGUOUS_SUPPORT",
+     "ambiguous_labels": [
+      "2011-03-27 01:00:00",
+      "2011-03-27 01:15:00",
+      "2011-03-27 01:30:00",
+      "2011-03-27 01:45:00"
+     ]
     },
     "2012-03-25": {
      "hours_0_to_5": {
@@ -671,7 +989,14 @@
       }
      },
      "producer_statement": "one hour of zeros on the March change day",
-     "reproduced": false
+     "reproduced_as_all_clients_zero": false,
+     "trace": "RP28_DST_TRACE.json: labels 01:00-01:45 zero for most ACTIVE clients (raw == panel); disposition AMBIGUOUS_SUPPORT",
+     "ambiguous_labels": [
+      "2012-03-25 01:00:00",
+      "2012-03-25 01:15:00",
+      "2012-03-25 01:30:00",
+      "2012-03-25 01:45:00"
+     ]
     },
     "2013-03-31": {
      "hours_0_to_5": {
@@ -701,7 +1026,14 @@
       }
      },
      "producer_statement": "one hour of zeros on the March change day",
-     "reproduced": false
+     "reproduced_as_all_clients_zero": false,
+     "trace": "RP28_DST_TRACE.json: labels 01:00-01:45 zero for most ACTIVE clients (raw == panel); disposition AMBIGUOUS_SUPPORT",
+     "ambiguous_labels": [
+      "2013-03-31 01:00:00",
+      "2013-03-31 01:15:00",
+      "2013-03-31 01:30:00",
+      "2013-03-31 01:45:00"
+     ]
     },
     "2014-03-30": {
      "hours_0_to_5": {
@@ -731,7 +1063,62 @@
       }
      },
      "producer_statement": "one hour of zeros on the March change day",
-     "reproduced": false
+     "reproduced_as_all_clients_zero": false,
+     "trace": "RP28_DST_TRACE.json: labels 01:00-01:45 zero for most ACTIVE clients (raw == panel); disposition AMBIGUOUS_SUPPORT",
+     "ambiguous_labels": [
+      "2014-03-30 01:00:00",
+      "2014-03-30 01:15:00",
+      "2014-03-30 01:30:00",
+      "2014-03-30 01:45:00"
+     ]
+    },
+    "2011-10-30": {
+     "producer_statement": "two hours aggregated into one on the October change day",
+     "trace": "no zero signature; aggregation not observable from values",
+     "disposition": "AMBIGUOUS_SUPPORT for the labels 01:00-02:00",
+     "ambiguous_labels": [
+      "2011-10-30 01:00:00",
+      "2011-10-30 01:15:00",
+      "2011-10-30 01:30:00",
+      "2011-10-30 01:45:00",
+      "2011-10-30 02:00:00"
+     ]
+    },
+    "2012-10-28": {
+     "producer_statement": "two hours aggregated into one on the October change day",
+     "trace": "no zero signature; aggregation not observable from values",
+     "disposition": "AMBIGUOUS_SUPPORT for the labels 01:00-02:00",
+     "ambiguous_labels": [
+      "2012-10-28 01:00:00",
+      "2012-10-28 01:15:00",
+      "2012-10-28 01:30:00",
+      "2012-10-28 01:45:00",
+      "2012-10-28 02:00:00"
+     ]
+    },
+    "2013-10-27": {
+     "producer_statement": "two hours aggregated into one on the October change day",
+     "trace": "no zero signature; aggregation not observable from values",
+     "disposition": "AMBIGUOUS_SUPPORT for the labels 01:00-02:00",
+     "ambiguous_labels": [
+      "2013-10-27 01:00:00",
+      "2013-10-27 01:15:00",
+      "2013-10-27 01:30:00",
+      "2013-10-27 01:45:00",
+      "2013-10-27 02:00:00"
+     ]
+    },
+    "2014-10-26": {
+     "producer_statement": "two hours aggregated into one on the October change day",
+     "trace": "no zero signature; aggregation not observable from values",
+     "disposition": "AMBIGUOUS_SUPPORT for the labels 01:00-02:00",
+     "ambiguous_labels": [
+      "2014-10-26 01:00:00",
+      "2014-10-26 01:15:00",
+      "2014-10-26 01:30:00",
+      "2014-10-26 01:45:00",
+      "2014-10-26 02:00:00"
+     ]
     }
    },
    "windows": {
@@ -1576,39 +1963,125 @@
    },
    "train_only_periodicities": {
     "columns_used": 7,
+    "column_rule": "every declared target/feature column of the family (electricity: a declared sample of 32 clients by column order, NOT representative by proof)",
     "top_peaks": [
      {
-      "period_hours": 23.744927536231884,
-      "share_of_total_power": 0.03920558827648521
+      "period_hours": 11.872463768115942,
+      "share_of_total_power": 0.04043218844538422
      },
      {
       "period_hours": 12.136296296296296,
-      "share_of_total_power": 0.03206706119974324
+      "share_of_total_power": 0.04012358403812016
      },
      {
-      "period_hours": 11.872463768115942,
-      "share_of_total_power": 0.03190846239981379
+      "period_hours": 23.744927536231884,
+      "share_of_total_power": 0.03829424679062355
      },
      {
       "period_hours": 24.824242424242428,
-      "share_of_total_power": 0.02193850902278385
+      "share_of_total_power": 0.021634323129666868
      },
      {
       "period_hours": 546.1333333333333,
-      "share_of_total_power": 0.008661249062974049
+      "share_of_total_power": 0.014423843921846388
      },
      {
-      "period_hours": 22.755555555555556,
-      "share_of_total_power": 0.008116794469524355
+      "period_hours": 273.06666666666666,
+      "share_of_total_power": 0.00969669007113273
      }
     ],
     "bands": {
-     "daily_24h_share": 0.06926089176879341,
-     "half_day_12h_share": 0.0860778088572701,
-     "weekly_168h_share": 0.0,
-     "slower_than_5_weeks_share": 0.0
+     "daily_24h_share": 0.0674807313099007,
+     "half_day_12h_share": 0.10105418574133604,
+     "weekly_168h_share": "NO_RESUELTO",
+     "35_days_share": "NO_RESUELTO"
     },
-    "note": "Welch on the TRAIN block only (mean over the first 32 columns); a peak is a measured periodicity, not an assumption from the sampling; power slower than five weeks is drift/trend, reported apart"
+    "sensitivity_last_third_of_train": {
+     "daily_24h_share_last_third": 0.06708630232729737,
+     "half_day_12h_share_last_third": 0.10121309309875691,
+     "weekly_168h_share_last_third": "NO_RESUELTO",
+     "35_days_share_last_third": "NO_RESUELTO"
+    },
+    "resolution": {
+     "nperseg": 32768,
+     "delta_f_hz": 5.086263020833333e-07,
+     "slowest_resolvable_period_seconds": 1966080.0,
+     "fastest_period_seconds": 120.0,
+     "declaration": {
+      "window": "hann",
+      "overlap": "50 %",
+      "detrend": "constant (mean removed)",
+      "scaling": "density (V**2/Hz)",
+      "dc_bin": "excluded",
+      "segments": 87
+     }
+    },
+    "per_variable": {
+     "Global_active_power": {
+      "bands": {
+       "daily_24h": 0.07707303929522924,
+       "half_day_12h": 0.15888741389759722,
+       "weekly_168h": "NO_RESUELTO",
+       "35_days": "NO_RESUELTO"
+      },
+      "n_missing_imputed": 8344
+     },
+     "Global_reactive_power": {
+      "bands": {
+       "daily_24h": 0.038353684903668556,
+       "half_day_12h": 0.01463396138762319,
+       "weekly_168h": "NO_RESUELTO",
+       "35_days": "NO_RESUELTO"
+      },
+      "n_missing_imputed": 8344
+     },
+     "Voltage": {
+      "bands": {
+       "daily_24h": 0.11811409942061883,
+       "half_day_12h": 0.20883119619957294,
+       "weekly_168h": "NO_RESUELTO",
+       "35_days": "NO_RESUELTO"
+      },
+      "n_missing_imputed": 8344
+     },
+     "Global_intensity": {
+      "bands": {
+       "daily_24h": 0.07765934249858325,
+       "half_day_12h": 0.15706819663985433,
+       "weekly_168h": "NO_RESUELTO",
+       "35_days": "NO_RESUELTO"
+      },
+      "n_missing_imputed": 8344
+     },
+     "Sub_metering_1": {
+      "bands": {
+       "daily_24h": 0.01768109843401219,
+       "half_day_12h": 0.02032206706554751,
+       "weekly_168h": "NO_RESUELTO",
+       "35_days": "NO_RESUELTO"
+      },
+      "n_missing_imputed": 8344
+     },
+     "Sub_metering_2": {
+      "bands": {
+       "daily_24h": 0.02969981978914585,
+       "half_day_12h": 0.023719509702722564,
+       "weekly_168h": "NO_RESUELTO",
+       "35_days": "NO_RESUELTO"
+      },
+      "n_missing_imputed": 8344
+     },
+     "Sub_metering_3": {
+      "bands": {
+       "daily_24h": 0.113784034828047,
+       "half_day_12h": 0.12391695529643461,
+       "weekly_168h": "NO_RESUELTO",
+       "35_days": "NO_RESUELTO"
+      },
+      "n_missing_imputed": 8344
+     }
+    },
+    "note": "Welch on the TRAIN block only with a declared segment/resolution; a band without bins is NO_RESUELTO, never a measured zero; batch characterisation of train, never an online filter; the aggregate weighs variables equally after unit-power normalisation"
    },
    "dst_march_change_days": {},
    "windows": {

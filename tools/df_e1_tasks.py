@@ -34,7 +34,7 @@ FAMILIES = {
                 "delta_seconds": 900, "unit": "kW (15-min average consumption per client)",
                 "producer_notes": ["timestamps in Portuguese local wall clock (producer: 'All time labels report to Portuguese hour')",
                                    "clients created after 2011 have zero consumption before their first record (structural zeros, not measurements)",
-                                   "DST: the March change day has one hour of zeros (23 records); the October change day aggregates two hours into one (25 records) — producer statement",
+                                   "DST (producer statement): 96 values per day kept on the grid; the March change day is a 23-HOUR day whose missing wall-clock hour carries zeros; the October change day is a 25-HOUR day whose repeated hour is aggregated into one — hours of 23/25-hour days, NOT 23/25 records (RP28 trace: rows with labels 01:00-01:45 of the last Sunday of March are zero for ~2/3 of the active clients in the raw file and in the panel alike; October shows no zero signature)",
                                    "availability delay and revision policy: UNKNOWN in the contract; the file is a static archive (no revisions)"],
                 "source": "https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014", "roles": {"timestamp": ["timestamp_label"]},
                 "structural_zero_rule": "a client's rows before its first non-zero value are STRUCTURAL zeros (client not yet existing); zeros after that are measurements"},
@@ -55,6 +55,15 @@ DEFAULT_ROLES = {"uci_321": {"targets": "every client column (kW)", "features": 
 SPLIT_FRACTIONS = {"train": 0.7, "validation": 0.15, "test": 0.15}
 HORIZONS = {"uci_321": [1, 4, 96], "uci_235": [1, 60, 1440]}          # steps: next step, one hour, one day
 CONTEXT_CANDIDATES_STEPS = {"uci_321": [24, 96, 192, 672], "uci_235": [60, 180, 1440, 10080]}
+
+
+def _spectrum():
+    import importlib.util
+    here = Path(__file__).resolve().parent
+    spec = importlib.util.spec_from_file_location("df_e1_spectrum", here / "df_e1_spectrum.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
 
 
 def load_panel(fam: dict) -> tuple:
@@ -145,28 +154,21 @@ def family_contract(key: str, contexts: list, horizons: list) -> dict:
                 struct[:nz[0], j] = True
     target_valid_any = np.isfinite(vals).any(axis=1)
     target_valid_all = np.isfinite(vals).all(axis=1) & ~struct.any(axis=1)
-    # train-only measured periodicities: mean spectrum over (up to 32) columns of the train block
+    # train-only spectra with DECLARED resolution (RP28): per-variable and aggregate grains; bands outside the support are NO_RESUELTO
     lo, hi = edges["train"]
-    from scipy.signal import welch
+    SP = _spectrum()
+    rule = "every declared target/feature column of the family (electricity: a declared sample of 32 clients by column order, NOT representative by proof)"
     cols = used[: min(32, len(used))]
-    acc = None
-    for c in cols:
-        v = num[c].to_numpy(dtype=float)[lo:hi]
-        v = np.where(np.isfinite(v), v, np.nanmean(v))
-        v = v - v.mean()
-        f, pxx = welch(v, fs=1.0 / delta, nperseg=min(1 << 15, v.size))
-        acc = pxx if acc is None else acc + pxx
-    acc[0] = 0
-    periods_h = np.where(f > 0, 1.0 / np.maximum(f, 1e-12) / 3600.0, np.inf)
-    inband = periods_h <= 24 * 35                                        # periodicities up to five weeks; the slower part is trend/drift, reported apart
-    top = [int(i) for i in np.argsort(acc)[::-1] if inband[i]][:6]
-    peaks = [{"period_hours": float(periods_h[i]), "share_of_total_power": float(acc[i] / acc.sum())} for i in top]
-
-    def band(hours, tol=0.08):
-        sel = np.abs(periods_h - hours) <= tol * hours
-        return float(acc[sel].sum() / acc.sum()) if sel.any() else 0.0
-    peaks_named = {"daily_24h_share": band(24.0), "half_day_12h_share": band(12.0), "weekly_168h_share": band(168.0),
-                   "slower_than_5_weeks_share": float(acc[~inband].sum() / acc.sum())}
+    Xtr = num[cols].to_numpy(dtype=float)[lo:hi]
+    nperseg = int(min(1 << 15, Xtr.shape[0]))
+    bands_s = {"daily_24h": 86400.0, "half_day_12h": 43200.0, "weekly_168h": 7 * 86400.0, "35_days": 35 * 86400.0}
+    spec = SP.per_variable_and_aggregate(Xtr, cols, delta, nperseg, bands_s, rule)
+    agg = spec["aggregate"] or {}
+    peaks = [{"period_hours": p["period_seconds"] / 3600.0, "share_of_total_power": p["share"]} for p in agg.get("peaks", [])]
+    peaks_named = {f"{k}_share": (v.get("share") if v.get("state") == "MEDIDO" else v.get("state")) for k, v in (agg.get("bands") or {}).items()}
+    # sensitivity to the train support: the same bands on the last third of train
+    short = SP.per_variable_and_aggregate(Xtr[-max(Xtr.shape[0] // 3, 32):], cols, delta, nperseg, bands_s, rule)
+    sens = {f"{k}_share_last_third": (v.get("share") if v.get("state") == "MEDIDO" else v.get("state")) for k, v in ((short["aggregate"] or {}).get("bands") or {}).items()}
     dst = {}
     if delta == 900:                                                     # electricity: producer statement on the March change day (one hour of zeros)
         for year in sorted(set(ts.dt.year)):
@@ -181,7 +183,16 @@ def family_contract(key: str, contexts: list, horizons: list) -> dict:
                 block = arr[sel]
                 hours[hr] = {"rows": int(sel.sum()), "rows_all_zero": int((block == 0).all(axis=1).sum()) if block.size else 0}
             dst[str(day.date())] = {"hours_0_to_5": hours, "producer_statement": "one hour of zeros on the March change day",
-                                    "reproduced": any(v["rows"] > 0 and v["rows_all_zero"] == v["rows"] for v in hours.values())}
+                                    "reproduced_as_all_clients_zero": any(v["rows"] > 0 and v["rows_all_zero"] == v["rows"] for v in hours.values()),
+                                    "trace": "RP28_DST_TRACE.json: labels 01:00-01:45 zero for most ACTIVE clients (raw == panel); disposition AMBIGUOUS_SUPPORT",
+                                    "ambiguous_labels": [(day + pd.Timedelta(hours=1, minutes=m)).strftime("%Y-%m-%d %H:%M:%S") for m in (0, 15, 30, 45)]}
+        for year in sorted(set(ts.dt.year)):
+            octo = ts[(ts.dt.year == year) & (ts.dt.month == 10) & (ts.dt.weekday == 6)]
+            if octo.empty:
+                continue
+            day = octo.dt.floor("D").max()
+            dst[str(day.date())] = {"producer_statement": "two hours aggregated into one on the October change day", "trace": "no zero signature; aggregation not observable from values",
+                                    "disposition": "AMBIGUOUS_SUPPORT for the labels 01:00-02:00", "ambiguous_labels": [(day + pd.Timedelta(hours=1, minutes=m)).strftime("%Y-%m-%d %H:%M:%S") for m in (0, 15, 30, 45, 60)]}
     windows = {}
     for W in contexts:
         for h in horizons:
@@ -208,9 +219,11 @@ def family_contract(key: str, contexts: list, horizons: list) -> dict:
     return {"family": key, "dataset_id": fam["dataset_id"], "governed_bytes": gov, "unit": fam["unit"], "producer_notes": fam["producer_notes"], "source": fam["source"],
             "structural_zero_rule": fam["structural_zero_rule"], "time": tstruct, "columns": cstruct, "roles": DEFAULT_ROLES[key],
             "splits_by_time": edges,
-            "train_only_periodicities": {"columns_used": len(cols), "top_peaks": peaks, "bands": peaks_named,
-                                         "note": "Welch on the TRAIN block only (mean over the first 32 columns); a peak is a measured periodicity, not an assumption "
-                                                 "from the sampling; power slower than five weeks is drift/trend, reported apart"},
+            "train_only_periodicities": {"columns_used": len(cols), "column_rule": rule, "top_peaks": peaks, "bands": peaks_named, "sensitivity_last_third_of_train": sens,
+                                         "resolution": agg.get("resolution"), "per_variable": {c: {"bands": {k: (v.get("share") if v.get("state") == "MEDIDO" else v.get("state")) for k, v in e["bands"].items()},
+                                                                                                       "n_missing_imputed": e["n_missing_imputed"]} for c, e in spec["per_variable"].items()},
+                                         "note": "Welch on the TRAIN block only with a declared segment/resolution; a band without bins is NO_RESUELTO, never a measured zero; "
+                                                 "batch characterisation of train, never an online filter; the aggregate weighs variables equally after unit-power normalisation"},
             "dst_march_change_days": dst,
             "windows": windows,
             "eligibility": {"catalogue": "OPEN_ATTRIBUTION (CC-BY-4.0) — licence eligibility, not adequacy",

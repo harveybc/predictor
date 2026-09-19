@@ -1,0 +1,109 @@
+{
+ "schema": "df_mod_e0_effects_publish.v1",
+ "campaign_key": "mod-e0-arch-stage-v1-effects-v3-composed",
+ "campaign_sha256": "033f660d7215b03193a81c090721f9bf23f3c4ea49263888769bbd82367d0fec",
+ "http": 201,
+ "effects_sha256": "8aa480de39da9495e1648cf53ddf5fa2db07e691f6f12c6ef8f19a4eabb06f94",
+ "units": {
+  "effects__A": {
+   "rows": 35,
+   "states": {
+    "mod_e0.effect.d_common_r0": "ESTIMATED",
+    "mod_e0.effect.d_common_r1": "ESTIMATED",
+    "mod_e0.effect.gamma_common_pair": "ESTIMATED",
+    "mod_e0.effect.gamma_factorial": "ESTIMATED",
+    "mod_e0.effect.fusion_2x2_r0": "ESTIMATED",
+    "mod_e0.effect.readout_2x2_r0": "ESTIMATED",
+    "mod_e0.effect.interaction_2x2_r0": "ESTIMATED",
+    "mod_e0.effect.fusion_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.interaction_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_sequence_fusion_r0": "ESTIMATED",
+    "mod_e0.effect.readout_summary_fusion_r0": "ESTIMATED",
+    "mod_e0.effect.readout_sequence_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.readout_summary_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.h2_e_h0": "ESTIMATED",
+    "mod_e0.effect.h2_e_h3": "ESTIMATED",
+    "mod_e0.effect.h2_slope": "ESTIMATED",
+    "mod_e0.effect.donor_delta_r1": "ESTIMATED"
+   },
+   "pending_after_flush": 0
+  },
+  "effects__B": {
+   "rows": 35,
+   "states": {
+    "mod_e0.effect.d_common_r0": "ESTIMATED",
+    "mod_e0.effect.d_common_r1": "ESTIMATED",
+    "mod_e0.effect.gamma_common_pair": "ESTIMATED",
+    "mod_e0.effect.gamma_factorial": "ESTIMATED",
+    "mod_e0.effect.fusion_2x2_r0": "ESTIMATED",
+    "mod_e0.effect.readout_2x2_r0": "ESTIMATED",
+    "mod_e0.effect.interaction_2x2_r0": "ESTIMATED",
+    "mod_e0.effect.fusion_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.interaction_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_sequence_fusion_r0": "ESTIMATED",
+    "mod_e0.effect.readout_summary_fusion_r0": "ESTIMATED",
+    "mod_e0.effect.readout_sequence_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.readout_summary_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.h2_e_h0": "ESTIMATED",
+    "mod_e0.effect.h2_e_h3": "ESTIMATED",
+    "mod_e0.effect.h2_slope": "ESTIMATED",
+    "mod_e0.effect.donor_delta_r1": "ESTIMATED"
+   },
+   "pending_after_flush": 0
+  },
+  "effects__C": {
+   "rows": 33,
+   "states": {
+    "mod_e0.effect.d_common_r0": "ESTIMATED",
+    "mod_e0.effect.d_common_r1": "ESTIMATED",
+    "mod_e0.effect.gamma_common_pair": "ESTIMATED",
+    "mod_e0.effect.gamma_factorial": "ESTIMATED",
+    "mod_e0.effect.fusion_2x2_r0": "ESTIMATED",
+    "mod_e0.effect.readout_2x2_r0": "ESTIMATED",
+    "mod_e0.effect.interaction_2x2_r0": "ESTIMATED",
+    "mod_e0.effect.fusion_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.interaction_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_sequence_fusion_r0": "ESTIMATED",
+    "mod_e0.effect.readout_summary_fusion_r0": "ESTIMATED",
+    "mod_e0.effect.readout_sequence_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.readout_summary_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.h2_e_h0": "ESTIMATED",
+    "mod_e0.effect.h2_e_h3": "ESTIMATED",
+    "mod_e0.effect.h2_slope": "ESTIMATED"
+   },
+   "pending_after_flush": 0
+  },
+  "effects__0": {
+   "rows": 33,
+   "states": {
+    "mod_e0.effect.d_common_r0": "ESTIMATED",
+    "mod_e0.effect.d_common_r1": "ESTIMATED",
+    "mod_e0.effect.gamma_common_pair": "ESTIMATED",
+    "mod_e0.effect.gamma_factorial": "ESTIMATED",
+    "mod_e0.effect.fusion_2x2_r0": "ESTIMATED",
+    "mod_e0.effect.readout_2x2_r0": "ESTIMATED",
+    "mod_e0.effect.interaction_2x2_r0": "ESTIMATED",
+    "mod_e0.effect.fusion_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.interaction_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_sequence_fusion_r0": "ESTIMATED",
+    "mod_e0.effect.readout_summary_fusion_r0": "ESTIMATED",
+    "mod_e0.effect.readout_sequence_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.readout_summary_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.h2_e_h0": "ESTIMATED",
+    "mod_e0.effect.h2_e_h3": "ESTIMATED",
+    "mod_e0.effect.h2_slope": "ESTIMATED"
+   },
+   "pending_after_flush": 0
+  }
+ },
+ "reconciliation": {
+  "http": 200,
+  "missing_units": [],
+  "accounting_only": [],
+  "lake_only": []
+ }
+}
