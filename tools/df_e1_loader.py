@@ -63,6 +63,57 @@ class TaskContract:
     horizon: int = 1
     window: int = 24
     splits: dict = field(default_factory=lambda: {"train": 0.7, "validation": 0.15, "test": 0.15})
+    #: RP35: what kind of task this contract describes. A forecast needs a strictly positive horizon;
+    #: `h = 0` means the target row IS inside the window, which is RECONSTRUCTION — another task, whose
+    #: trivial solution (copy the last input) says nothing about forecasting. Declaring it is the only
+    #: way to get it, and a forecasting contract refuses it.
+    task_kind: str = "forecast"                   # "forecast" | "reconstruction"
+
+    def validate(self) -> "TaskContract":
+        """Every domain the enumerator later assumes, checked before it runs (RP35)."""
+        def integral(value, name, minimum):
+            if isinstance(value, bool) or not isinstance(value, (int, np.integer)):
+                raise ContractRefusal(f"{name} must be an integer, not {value!r}")
+            if int(value) < minimum:
+                raise ContractRefusal(f"{name} must be >= {minimum}, not {value}")
+            return int(value)
+        if self.task_kind not in ("forecast", "reconstruction"):
+            raise ContractRefusal(f"unknown task kind {self.task_kind!r}")
+        integral(self.window, "window", 1)
+        integral(self.step_seconds, "step_seconds", 1)
+        h = integral(self.horizon, "horizon", 0)
+        if self.task_kind == "forecast" and h < 1:
+            raise ContractRefusal("a forecasting contract needs horizon >= 1: with h = 0 the target row is inside "
+                                  "the window and copying the last input would score perfectly; declare "
+                                  "task_kind='reconstruction' if that is the task you mean")
+        if self.task_kind == "reconstruction" and h != 0:
+            raise ContractRefusal("a reconstruction contract has horizon 0")
+        if not self.targets:
+            raise ContractRefusal("a contract declares at least one target")
+        for name, group in (("features", self.features), ("targets", self.targets), ("metadata", self.metadata),
+                            ("controls", self.controls), ("ignore", self.ignore)):
+            if not isinstance(group, list) or any(not isinstance(x, str) or not x for x in group):
+                raise ContractRefusal(f"{name} must be a list of column names")
+        if not isinstance(self.splits, dict) or not self.splits:
+            raise ContractRefusal("splits must be a non-empty object")
+        total = 0.0
+        for name, frac in self.splits.items():
+            if isinstance(frac, bool) or not isinstance(frac, (int, float)) or not (0 < float(frac) <= 1):
+                raise ContractRefusal(f"split {name!r}: a fraction in (0, 1], not {frac!r}")
+            total += float(frac)
+        if total > 1 + 1e-9:
+            raise ContractRefusal(f"the splits add to {total}, more than the data")
+        if self.gap_policy == "mask_ffill":
+            raise ContractRefusal("gap policy 'mask_ffill' is REFUSED until a consumer exists: the loader would fill "
+                                  "values causally but no model in this programme takes the input mask, so the fill "
+                                  "would enter the tensor unannounced. Use 'withdraw'.")
+        if self.gap_policy != "withdraw":
+            raise ContractRefusal(f"unknown gap policy {self.gap_policy!r}")
+        if self.activation_rule not in ("none", "first_finite_nonzero_at_or_before_origin"):
+            raise ContractRefusal(f"unknown activation rule {self.activation_rule!r}")
+        if not isinstance(self.target_history_as_feature, bool):
+            raise ContractRefusal("target_history_as_feature must be a boolean")
+        return self
 
     def sha256(self) -> str:
         return hashlib.sha256(json.dumps(dataclasses.asdict(self), sort_keys=True).encode()).hexdigest()
@@ -76,6 +127,7 @@ class TaskContract:
 
 def resolve(frame: pd.DataFrame, c: TaskContract) -> dict:
     """Bind the frame's columns to the contract's roles; refuse extras and missing roles; parse time."""
+    c.validate()
     cols = list(frame.columns)
     declared = [c.timestamp] + c.features + c.targets + c.metadata + c.controls + c.ignore
     missing = [x for x in [c.timestamp] + c.features + c.targets + c.metadata + c.controls if x not in cols]
@@ -142,6 +194,7 @@ def split_edges(n: int, splits: dict) -> dict:
 
 def enumerate_windows(resolved: dict, c: TaskContract) -> dict:
     """THE enumerator: for every split, the admissible origins with ids, times, support and masks."""
+    c.validate()
     ts = resolved["timestamps"]
     X, Y = resolved["inputs"], resolved["targets"]
     n, W, h = X.shape[0], int(c.window), int(c.horizon)
@@ -167,14 +220,8 @@ def enumerate_windows(resolved: dict, c: TaskContract) -> dict:
         # support rows t-W+1 .. t+h must all be grid-consecutive: rows t-W+2 .. t+h each 'ok' relative to their predecessor
         span_ok = ((csum_grid[origins + h + 1] - csum_grid[origins - W + 2]) == (W + h - 1)) & ((csum_amb[origins + h + 1] - csum_amb[origins - W + 1]) == 0)
         inputs_finite = (csum_fin[origins + 1] - csum_fin[origins - W + 1]) == W
-        if c.gap_policy == "withdraw":
-            admissible = span_ok & inputs_finite
-            mask_used = np.zeros(origins.size, dtype=bool)
-        elif c.gap_policy == "mask_ffill":
-            admissible = span_ok                                           # the grid must hold; non-finite inputs are carried forward with a mask
-            mask_used = ~inputs_finite
-        else:
-            raise ContractRefusal(f"unknown gap policy {c.gap_policy!r}")
+        admissible = span_ok & inputs_finite                               # the only implemented policy (RP35)
+        mask_used = np.zeros(origins.size, dtype=bool)
         tgt_valid = fin_t[origins + h] & act[origins, :]                     # activity judged AT THE ORIGIN, never with future rows
         rows = origins[admissible]
         out["splits"][name] = {"range": [int(lo), int(hi)], "origins": int(origins.size), "admissible": int(admissible.sum()),
@@ -197,28 +244,37 @@ def build_tensors(resolved: dict, enum: dict, split: str, c: TaskContract, scale
     if rows.size == 0:
         return {"X": np.zeros((0, W, X.shape[1])), "y": np.zeros((0, Y.shape[1])), "mask_y": np.zeros((0, Y.shape[1]), dtype=bool), "origins": rows}
     Xw = np.stack([X[t - W + 1:t + 1] for t in rows])
-    if c.gap_policy == "mask_ffill":
-        Xw = np.where(np.isfinite(Xw), Xw, np.nan)
-        for i in range(Xw.shape[0]):                                       # causal forward fill inside the window; the first row cannot be filled from the past
-            for j in range(Xw.shape[2]):
-                col = Xw[i, :, j]
-                last = np.nan
-                for k in range(col.size):
-                    if np.isfinite(col[k]):
-                        last = col[k]
-                    else:
-                        col[k] = last if np.isfinite(last) else 0.0
     y = Y[rows + h]
     if scaler is not None:
         Xw = (Xw - scaler["mean"]) / scaler["sd"]
     return {"X": Xw, "y": y, "mask_y": np.asarray(s["target_mask"], dtype=bool), "origins": rows, "target_ids": rows + h}
 
 
-def fit_scaler(train_tensor: dict) -> dict:
-    """Train-only per-feature mean and SD of the input rows (never validation or test)."""
-    flat = train_tensor["X"].reshape(-1, train_tensor["X"].shape[2])
+def fit_scaler(train_tensor: dict, *, grain: str = "windows") -> dict:
+    """Train-only per-feature mean and SD, over a DECLARED grain (RP35).
+
+    `windows` weighs each row once per window that contains it, so interior rows count W times; `rows`
+    weighs each distinct row once. The two give different moments on overlapping windows, so the grain
+    is part of the scaler's identity and travels with it. Neither reads validation or test.
+    """
+    if grain not in ("windows", "rows"):
+        raise ContractRefusal(f"unknown scaler grain {grain!r}")
+    X, origins, W = train_tensor["X"], np.asarray(train_tensor.get("origins", []), dtype=np.int64), int(train_tensor["X"].shape[1])
+    if grain == "windows" or origins.size == 0:
+        flat = X.reshape(-1, X.shape[2])
+        n_unique = None
+    else:
+        rows = np.unique((origins[:, None] - W + 1 + np.arange(W)[None, :]).ravel())
+        index = {int(r): k for k, r in enumerate(rows)}
+        flat = np.empty((rows.size, X.shape[2]), dtype=X.dtype)
+        for i, o in enumerate(origins):
+            for k, r in enumerate(range(int(o) - W + 1, int(o) + 1)):
+                flat[index[r]] = X[i, k]
+        n_unique = int(rows.size)
     mean, sd = flat.mean(axis=0), flat.std(axis=0)
-    return {"mean": mean, "sd": np.where(sd > 0, sd, 1.0), "fitted_on": "train windows only", "n_rows": int(flat.shape[0])}
+    return {"mean": mean, "sd": np.where(sd > 0, sd, 1.0), "fitted_on": "train windows only", "grain": grain,
+            "n_rows": int(flat.shape[0]), "unique_rows": n_unique,
+            "grain_note": "windows: each row counted once per window containing it; rows: each distinct row once"}
 
 
 def eval_set(enum: dict, split: str) -> dict:

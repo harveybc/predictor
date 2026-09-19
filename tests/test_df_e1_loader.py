@@ -181,3 +181,84 @@ def test_RP27_every_arm_scores_the_same_evaluation_set():
     ev = L.eval_set(e, "validation")
     assert ev["origins"] == e["splits"]["validation"]["origin_ids"] and len(ev["mask"]) == len(ev["origins"]) and "ALL arms" in ev["rule"]
     assert set(ev["target_ids"]) == {o + 1 for o in ev["origins"]}
+
+
+# --- RP35: the contract's domains, checked before the enumerator ever runs -------------------------------
+
+@pytest.mark.parametrize("field,value,expect", [
+    ("horizon", 0, "forecasting contract needs horizon >= 1"),
+    ("horizon", -1, "must be >= 0"),
+    ("horizon", 1.5, "must be an integer"),
+    ("horizon", True, "must be an integer"),
+    ("window", 0, "window must be >= 1"),
+    ("window", -5, "window must be >= 1"),
+    ("window", 2.5, "must be an integer"),
+    ("step_seconds", 0, "step_seconds must be >= 1"),
+    ("targets", [], "at least one target"),
+    ("features", ["a", 3], "list of column names"),
+    ("splits", {"train": 0.8, "validation": 0.4}, "add to"),
+    ("splits", {"train": 0.0}, "fraction in"),
+    ("splits", {"train": True}, "fraction in"),
+    ("splits", {}, "non-empty"),
+    ("gap_policy", "mask_ffill", "REFUSED until a consumer exists"),
+    ("gap_policy", "interpolate", "unknown gap policy"),
+    ("activation_rule", "guess", "unknown activation rule"),
+    ("task_kind", "regression", "unknown task kind"),
+    ("target_history_as_feature", "yes", "must be a boolean"),
+])
+def test_RP35_a_contract_with_an_impossible_domain_is_refused_before_any_window(field, value, expect):
+    df, _ = _household(200)
+    c = L.household_contract(window=10, horizon=2)
+    setattr(c, field, value)
+    with pytest.raises(L.ContractRefusal, match=expect):
+        L.resolve(df, c)
+    with pytest.raises(L.ContractRefusal, match=expect):
+        L.enumerate_windows({"timestamps": None, "inputs": None, "targets": None}, c)
+
+
+def test_RP35_reconstruction_is_another_task_and_must_be_declared():
+    df, _ = _household(500)
+    forecast = L.household_contract(window=10, horizon=0)
+    with pytest.raises(L.ContractRefusal, match="reconstruction"):
+        L.resolve(df, forecast)
+    recon = L.TaskContract(**{**L.household_contract(window=10, horizon=0).__dict__, "task_kind": "reconstruction"})
+    e = L.enumerate_windows(L.resolve(df, recon), recon)
+    assert e["horizon"] == 0 and e["splits"]["train"]["admissible"] > 0
+    # and it is trivially solvable by copying the last input, which is exactly why it is not a forecast
+    T = L.build_tensors(L.resolve(df, recon), e, "train", recon, None)
+    assert np.allclose(T["X"][:, -1, T["X"].shape[2] - 1], T["y"][:, 0])
+    bad = L.TaskContract(**{**recon.__dict__, "horizon": 3})
+    with pytest.raises(L.ContractRefusal, match="reconstruction contract has horizon 0"):
+        L.resolve(df, bad)
+
+
+def test_RP35_the_scaler_declares_its_grain_and_the_two_grains_differ_on_overlapping_windows():
+    df, _ = _household(3000)
+    c = L.household_contract(window=60, horizon=1)
+    r = L.resolve(df, c)
+    e = L.enumerate_windows(r, c)
+    T = L.build_tensors(r, e, "train", c, None)
+    by_windows, by_rows = L.fit_scaler(T, grain="windows"), L.fit_scaler(T, grain="rows")
+    assert by_windows["grain"] == "windows" and by_rows["grain"] == "rows"
+    assert by_rows["unique_rows"] is not None and by_rows["unique_rows"] < by_windows["n_rows"]
+    assert not np.allclose(by_windows["mean"], by_rows["mean"], atol=0, rtol=0)      # the grain changes the moments
+    with pytest.raises(L.ContractRefusal, match="unknown scaler grain"):
+        L.fit_scaler(T, grain="everything")
+
+
+def test_RP35_labels_are_bound_by_identity_not_by_value_and_the_last_window_is_handled():
+    """Two rows may carry the same value; a label is right because it is THAT row, not because the
+    number matches. The last admissible origin is the one whose target row still exists."""
+    df, ts = _household(1000)
+    df.loc[:, "Global_active_power"] = 5.0                                   # every value identical
+    df.loc[300, "Global_active_power"] = 7.0
+    c = L.household_contract(window=10, horizon=5)
+    r = L.resolve(df, c)
+    e = L.enumerate_windows(r, c)
+    T = L.build_tensors(r, e, "train", c, None)
+    k = int(np.where(T["origins"] == 295)[0][0])
+    assert T["target_ids"][k] == 300 and T["y"][k, 0] == 7.0                 # identity, not "a 7 somewhere"
+    assert sum(1 for v in T["y"][:, 0] if v == 7.0) == 1
+    last_split = list(e["splits"])[-1]
+    s = e["splits"][last_split]
+    assert max(s["origin_ids"]) + c.horizon <= len(df) - 1                   # no window reaches past the data
