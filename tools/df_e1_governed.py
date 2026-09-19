@@ -127,6 +127,28 @@ def acquire(*, run_id: str, root: Path, lake: str, resource: str, unit_id: str =
     return doc
 
 
+def require_delivery(root: Path, design: dict, unit_id: str = "prepare") -> dict:
+    """What `prepare` and every unit call: it may only read a panel delivered to THAT unit."""
+    path = Path(root) / "DELIVERIES.json"
+    if not path.is_file():
+        raise GovernanceUnavailable(
+            "REFUSED: this run has no governed delivery. The panel is a governed resource and the run reads it only "
+            "through data-gov; run `df_e1_governed.py acquire` first (and, if the resource is not served yet, the "
+            "lake registration is the missing object, not the science).")
+    doc = json.loads(path.read_text())
+    if doc.get("design_sha256") != design["design_sha256"]:
+        raise SystemExit("REFUSED: the delivery in this root belongs to another design")
+    unit = (doc.get("units") or {}).get(unit_id)
+    if unit is None:
+        raise GovernanceUnavailable(f"REFUSED: unit {unit_id!r} has no governed delivery of its own; it does not run")
+    delivered = Path(unit["path"])
+    if not delivered.is_file():
+        raise GovernanceUnavailable("REFUSED: the delivered bytes are gone from the cache; nothing is read from anywhere else")
+    if sha_file(delivered) != unit["sha256"]:
+        raise SystemExit("REFUSED: the delivered bytes changed after the delivery was confirmed")
+    return {**doc, "delivery": unit, "campaign_sha256": unit["campaign_sha256"], "campaign_key": unit["campaign_key"]}
+
+
 def report_terminal(root: Path, unit_id: str, terminal: dict, *, gov_url: str = DEFAULT_GOV,
                     api_key_file: Path, outbox_dir: str | None = None) -> dict:
     """Terminal -> outbox -> accounting, under THIS unit's own campaign and delivery."""
