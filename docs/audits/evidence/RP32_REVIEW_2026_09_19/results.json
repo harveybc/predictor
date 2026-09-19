@@ -1,0 +1,186 @@
+{
+  "reviewed_revision": "60daac9",
+  "training_executed": false,
+  "saved_array_checks": {
+    "R0_s1": {
+      "finite": true,
+      "mae": 0.5442399708353117,
+      "mase": 0.8831314352266401,
+      "mae_difference": 0.0,
+      "mase_difference": 0.0,
+      "origins_equal_prepared": true,
+      "labels_equal_prepared": true,
+      "restore_verified_record": true,
+      "budget_hit": true
+    },
+    "R0_s2": {
+      "finite": true,
+      "mae": 0.5534601525606033,
+      "mase": 0.8980929094961791,
+      "mae_difference": 0.0,
+      "mase_difference": 0.0,
+      "origins_equal_prepared": true,
+      "labels_equal_prepared": true,
+      "restore_verified_record": true,
+      "budget_hit": true
+    },
+    "R0_s3": {
+      "finite": true,
+      "mae": 0.5638359289021312,
+      "mase": 0.9149295527842866,
+      "mae_difference": 0.0,
+      "mase_difference": 0.0,
+      "origins_equal_prepared": true,
+      "labels_equal_prepared": true,
+      "restore_verified_record": true,
+      "budget_hit": false
+    },
+    "R1_s1": {
+      "finite": true,
+      "mae": 0.546300250229174,
+      "mase": 0.8864746249877243,
+      "mae_difference": 0.0,
+      "mase_difference": 0.0,
+      "origins_equal_prepared": true,
+      "labels_equal_prepared": true,
+      "restore_verified_record": true,
+      "budget_hit": false
+    },
+    "R1_s2": {
+      "finite": true,
+      "mae": 0.5518830886006593,
+      "mase": 0.8955338274128621,
+      "mae_difference": 0.0,
+      "mase_difference": 0.0,
+      "origins_equal_prepared": true,
+      "labels_equal_prepared": true,
+      "restore_verified_record": true,
+      "budget_hit": true
+    },
+    "R1_s3": {
+      "finite": true,
+      "mae": 0.5574970045700521,
+      "mase": 0.9046434590697988,
+      "mae_difference": 0.0,
+      "mase_difference": 0.0,
+      "origins_equal_prepared": true,
+      "labels_equal_prepared": true,
+      "restore_verified_record": true,
+      "budget_hit": false
+    },
+    "R2_s1": {
+      "finite": true,
+      "mae": 0.5476514765786078,
+      "mase": 0.8886672431878541,
+      "mae_difference": 0.0,
+      "mase_difference": 0.0,
+      "origins_equal_prepared": true,
+      "labels_equal_prepared": true,
+      "restore_verified_record": true,
+      "budget_hit": false
+    },
+    "R2_s2": {
+      "finite": true,
+      "mae": 0.5492244962159031,
+      "mase": 0.8912197625990839,
+      "mae_difference": 0.0,
+      "mase_difference": 0.0,
+      "origins_equal_prepared": true,
+      "labels_equal_prepared": true,
+      "restore_verified_record": true,
+      "budget_hit": true
+    },
+    "R2_s3": {
+      "finite": true,
+      "mae": 0.567311467155487,
+      "mase": 0.9205692655035862,
+      "mae_difference": 0.0,
+      "mase_difference": 0.0,
+      "origins_equal_prepared": true,
+      "labels_equal_prepared": true,
+      "restore_verified_record": true,
+      "budget_hit": false
+    },
+    "pilot_fit": {
+      "finite": true,
+      "mae": 0.5493574232643473,
+      "mase": 0.891435461668178,
+      "mae_difference": 0.0,
+      "mase_difference": 0.0,
+      "origins_equal_prepared": true,
+      "labels_equal_prepared": true,
+      "restore_verified_record": true,
+      "budget_hit": true
+    }
+  },
+  "pilot_verifier_cases": {
+    "intact_without_weights_or_job": {
+      "accepted": true,
+      "refusal": null
+    },
+    "mae_999": {
+      "accepted": true,
+      "refusal": null
+    },
+    "mase_nan": {
+      "accepted": true,
+      "refusal": null
+    },
+    "foreign_design_and_data": {
+      "accepted": true,
+      "refusal": null
+    },
+    "shifted_origin_ids": {
+      "accepted": true,
+      "refusal": null
+    }
+  },
+  "full_closure_foreign_design": {
+    "emitted_design": "0000000000000000000000000000000000000000000000000000000000000000",
+    "emitted_horizon_steps": 120,
+    "all_present_units_verified": true,
+    "means_unchanged": true
+  },
+  "zero_horizon": {
+    "accepted": true,
+    "origins": 125,
+    "target_is_in_input_window": true
+  },
+  "negative_horizon": {
+    "exception_type": "IndexError",
+    "reason": "index 201 is out of bounds for axis 0 with size 201"
+  },
+  "masked_validation": {
+    "same_clean_values": true,
+    "changed_mask_positions": 2785,
+    "fixed_weights_loss_epoch0": 0.25978371500968933,
+    "fixed_weights_loss_epoch1": 0.3264980614185333
+  },
+  "actual_model_reach": {
+    "old_53_rows_perturbation_max_difference": 0.0,
+    "last_7_rows_perturbation_max_difference": 0.47001558542251587,
+    "saved_weights_prediction_check_rows": 64,
+    "max_difference_to_saved_predictions": 8.934663142667887e-08,
+    "sample_count": 7,
+    "first_to_last_span_seconds": 360,
+    "linear_control_samples": 60,
+    "seasonal_control_lookup_lag_steps": 1380
+  },
+  "weekly_controller": {
+    "zero_latency_accepted": true,
+    "external_proposal_not_model_bound": {
+      "record_model": "old",
+      "action": 1,
+      "note": "API accepts an unlabelled proposal; it does not call or bind the selected model"
+    },
+    "nan_price_action": 1
+  },
+  "e0_donor_update_change": {
+    "accepted": true,
+    "contradictions": {},
+    "original_updates": 1100,
+    "changed_updates": 0
+  },
+  "original_files_count": 131,
+  "originals_unchanged": true
+}
