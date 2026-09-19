@@ -1,4 +1,21 @@
-# 13C — E3 weekly cycle: contract of the experiment (RP15)
+# 13C — E3 weekly cycle: contract of the experiment (RP15, amended under RP23 by 13D)
+
+**Amendment (2026-09-19, RP23).** Musashi's [13D](13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md) resolves every
+OWNER_DECISION item below for DEVELOPMENT/SIMULATION and prevails over them: universe = the traced
+BTC/ETH/EURUSD candidates with the cash-spot BTC/ETH scenario first (conditional on data contracts; FX and
+derivatives are distinct strata); capital = initial equity 1, long/flat actions, no credit or leverage, sum
+of long notionals ≤ equity; retraining weekly with the UTC week [Monday 00:00, next Monday 00:00), cutoff and
+release derived from measured availability and duration (never "the last bar before the release"); funding
+= zero ONLY by definition of the cash-spot scenario (derivatives: per-instrument data or NO_EVALUABLE).
+Clocks fixed before scoring: acquisition window, last permitted information, fit start/end, publication,
+first decision, first execution, with cutoff ≤ fit_start < fit_end ≤ release ≤ first_decision and every
+feature's available_time ≤ decision_time; the inner validation window precedes the cutoff; a late model
+uses the declared fallback (last valid model or flat) and records the miss, never a shifted release; state
+(equity, positions, pending orders, commissions, financing) persists across weeks; purge/embargo derive
+from the pipeline. Real operating facts (venue, monetary capital, lot minimums, SLA, derivative funding)
+remain UNKNOWN and are requested together only before a test that depends on them. The deterministic
+environment tests of this contract are `tests/test_e3_weekly_env.py` (software tests, no financial return).
+
 
 This is the contract E3 will be judged against. It is written as an EXPERIMENT contract: every value
 below is either read from an executable configuration (13B, with its file and line), declared here as

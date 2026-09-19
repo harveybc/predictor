@@ -1,0 +1,2265 @@
+{
+ "schema": "e1_tasks.v1",
+ "families": {
+  "uci_321": {
+   "family": "uci_321",
+   "dataset_id": "public.uci.321.electricityloaddiagrams20112014",
+   "governed_bytes": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/public_panels_c126_v2/uci_321_electricityloaddiagrams20112014/panel.parquet",
+    "sha256": "7cf225c4869e88abcb12b7fd274d532756e41fedbe3094ebc805cc803fc6a6a8",
+    "receipt": {
+     "columns": 370,
+     "duplicate_timestamp_labels": 0,
+     "logical_id": "uci_321_electricityloaddiagrams20112014",
+     "member_sha256": {
+      "LD2011_2014.txt": "d51565f2cb5a6b768d06ba1bbd3c084c6e2f3aab07f00c6f2dcb80e90175124b"
+     },
+     "missing_values": 0,
+     "parse_rule": "sep ';', quoted label index, DECIMAL_COMMA",
+     "parser": "uci_321",
+     "rows": 140256,
+     "rows_dropped": 0,
+     "rows_filled": 0,
+     "rows_reordered": 0,
+     "schema": "crispdm.data_foundation.public_parse_receipt.v1",
+     "timestamp_format": "%Y-%m-%d %H:%M:%S",
+     "units_declared": {
+      "MT_001": "kW",
+      "MT_002": "kW",
+      "MT_003": "kW",
+      "MT_004": "kW",
+      "MT_005": "kW",
+      "MT_006": "kW",
+      "MT_007": "kW",
+      "MT_008": "kW",
+      "MT_009": "kW",
+      "MT_010": "kW",
+      "MT_011": "kW",
+      "MT_012": "kW",
+      "MT_013": "kW",
+      "MT_014": "kW",
+      "MT_015": "kW",
+      "MT_016": "kW",
+      "MT_017": "kW",
+      "MT_018": "kW",
+      "MT_019": "kW",
+      "MT_020": "kW",
+      "MT_021": "kW",
+      "MT_022": "kW",
+      "MT_023": "kW",
+      "MT_024": "kW",
+      "MT_025": "kW",
+      "MT_026": "kW",
+      "MT_027": "kW",
+      "MT_028": "kW",
+      "MT_029": "kW",
+      "MT_030": "kW",
+      "MT_031": "kW",
+      "MT_032": "kW",
+      "MT_033": "kW",
+      "MT_034": "kW",
+      "MT_035": "kW",
+      "MT_036": "kW",
+      "MT_037": "kW",
+      "MT_038": "kW",
+      "MT_039": "kW",
+      "MT_040": "kW",
+      "MT_041": "kW",
+      "MT_042": "kW",
+      "MT_043": "kW",
+      "MT_044": "kW",
+      "MT_045": "kW",
+      "MT_046": "kW",
+      "MT_047": "kW",
+      "MT_048": "kW",
+      "MT_049": "kW",
+      "MT_050": "kW",
+      "MT_051": "kW",
+      "MT_052": "kW",
+      "MT_053": "kW",
+      "MT_054": "kW",
+      "MT_055": "kW",
+      "MT_056": "kW",
+      "MT_057": "kW",
+      "MT_058": "kW",
+      "MT_059": "kW",
+      "MT_060": "kW",
+      "MT_061": "kW",
+      "MT_062": "kW",
+      "MT_063": "kW",
+      "MT_064": "kW",
+      "MT_065": "kW",
+      "MT_066": "kW",
+      "MT_067": "kW",
+      "MT_068": "kW",
+      "MT_069": "kW",
+      "MT_070": "kW",
+      "MT_071": "kW",
+      "MT_072": "kW",
+      "MT_073": "kW",
+      "MT_074": "kW",
+      "MT_075": "kW",
+      "MT_076": "kW",
+      "MT_077": "kW",
+      "MT_078": "kW",
+      "MT_079": "kW",
+      "MT_080": "kW",
+      "MT_081": "kW",
+      "MT_082": "kW",
+      "MT_083": "kW",
+      "MT_084": "kW",
+      "MT_085": "kW",
+      "MT_086": "kW",
+      "MT_087": "kW",
+      "MT_088": "kW",
+      "MT_089": "kW",
+      "MT_090": "kW",
+      "MT_091": "kW",
+      "MT_092": "kW",
+      "MT_093": "kW",
+      "MT_094": "kW",
+      "MT_095": "kW",
+      "MT_096": "kW",
+      "MT_097": "kW",
+      "MT_098": "kW",
+      "MT_099": "kW",
+      "MT_100": "kW",
+      "MT_101": "kW",
+      "MT_102": "kW",
+      "MT_103": "kW",
+      "MT_104": "kW",
+      "MT_105": "kW",
+      "MT_106": "kW",
+      "MT_107": "kW",
+      "MT_108": "kW",
+      "MT_109": "kW",
+      "MT_110": "kW",
+      "MT_111": "kW",
+      "MT_112": "kW",
+      "MT_113": "kW",
+      "MT_114": "kW",
+      "MT_115": "kW",
+      "MT_116": "kW",
+      "MT_117": "kW",
+      "MT_118": "kW",
+      "MT_119": "kW",
+      "MT_120": "kW",
+      "MT_121": "kW",
+      "MT_122": "kW",
+      "MT_123": "kW",
+      "MT_124": "kW",
+      "MT_125": "kW",
+      "MT_126": "kW",
+      "MT_127": "kW",
+      "MT_128": "kW",
+      "MT_129": "kW",
+      "MT_130": "kW",
+      "MT_131": "kW",
+      "MT_132": "kW",
+      "MT_133": "kW",
+      "MT_134": "kW",
+      "MT_135": "kW",
+      "MT_136": "kW",
+      "MT_137": "kW",
+      "MT_138": "kW",
+      "MT_139": "kW",
+      "MT_140": "kW",
+      "MT_141": "kW",
+      "MT_142": "kW",
+      "MT_143": "kW",
+      "MT_144": "kW",
+      "MT_145": "kW",
+      "MT_146": "kW",
+      "MT_147": "kW",
+      "MT_148": "kW",
+      "MT_149": "kW",
+      "MT_150": "kW",
+      "MT_151": "kW",
+      "MT_152": "kW",
+      "MT_153": "kW",
+      "MT_154": "kW",
+      "MT_155": "kW",
+      "MT_156": "kW",
+      "MT_157": "kW",
+      "MT_158": "kW",
+      "MT_159": "kW",
+      "MT_160": "kW",
+      "MT_161": "kW",
+      "MT_162": "kW",
+      "MT_163": "kW",
+      "MT_164": "kW",
+      "MT_165": "kW",
+      "MT_166": "kW",
+      "MT_167": "kW",
+      "MT_168": "kW",
+      "MT_169": "kW",
+      "MT_170": "kW",
+      "MT_171": "kW",
+      "MT_172": "kW",
+      "MT_173": "kW",
+      "MT_174": "kW",
+      "MT_175": "kW",
+      "MT_176": "kW",
+      "MT_177": "kW",
+      "MT_178": "kW",
+      "MT_179": "kW",
+      "MT_180": "kW",
+      "MT_181": "kW",
+      "MT_182": "kW",
+      "MT_183": "kW",
+      "MT_184": "kW",
+      "MT_185": "kW",
+      "MT_186": "kW",
+      "MT_187": "kW",
+      "MT_188": "kW",
+      "MT_189": "kW",
+      "MT_190": "kW",
+      "MT_191": "kW",
+      "MT_192": "kW",
+      "MT_193": "kW",
+      "MT_194": "kW",
+      "MT_195": "kW",
+      "MT_196": "kW",
+      "MT_197": "kW",
+      "MT_198": "kW",
+      "MT_199": "kW",
+      "MT_200": "kW",
+      "MT_201": "kW",
+      "MT_202": "kW",
+      "MT_203": "kW",
+      "MT_204": "kW",
+      "MT_205": "kW",
+      "MT_206": "kW",
+      "MT_207": "kW",
+      "MT_208": "kW",
+      "MT_209": "kW",
+      "MT_210": "kW",
+      "MT_211": "kW",
+      "MT_212": "kW",
+      "MT_213": "kW",
+      "MT_214": "kW",
+      "MT_215": "kW",
+      "MT_216": "kW",
+      "MT_217": "kW",
+      "MT_218": "kW",
+      "MT_219": "kW",
+      "MT_220": "kW",
+      "MT_221": "kW",
+      "MT_222": "kW",
+      "MT_223": "kW",
+      "MT_224": "kW",
+      "MT_225": "kW",
+      "MT_226": "kW",
+      "MT_227": "kW",
+      "MT_228": "kW",
+      "MT_229": "kW",
+      "MT_230": "kW",
+      "MT_231": "kW",
+      "MT_232": "kW",
+      "MT_233": "kW",
+      "MT_234": "kW",
+      "MT_235": "kW",
+      "MT_236": "kW",
+      "MT_237": "kW",
+      "MT_238": "kW",
+      "MT_239": "kW",
+      "MT_240": "kW",
+      "MT_241": "kW",
+      "MT_242": "kW",
+      "MT_243": "kW",
+      "MT_244": "kW",
+      "MT_245": "kW",
+      "MT_246": "kW",
+      "MT_247": "kW",
+      "MT_248": "kW",
+      "MT_249": "kW",
+      "MT_250": "kW",
+      "MT_251": "kW",
+      "MT_252": "kW",
+      "MT_253": "kW",
+      "MT_254": "kW",
+      "MT_255": "kW",
+      "MT_256": "kW",
+      "MT_257": "kW",
+      "MT_258": "kW",
+      "MT_259": "kW",
+      "MT_260": "kW",
+      "MT_261": "kW",
+      "MT_262": "kW",
+      "MT_263": "kW",
+      "MT_264": "kW",
+      "MT_265": "kW",
+      "MT_266": "kW",
+      "MT_267": "kW",
+      "MT_268": "kW",
+      "MT_269": "kW",
+      "MT_270": "kW",
+      "MT_271": "kW",
+      "MT_272": "kW",
+      "MT_273": "kW",
+      "MT_274": "kW",
+      "MT_275": "kW",
+      "MT_276": "kW",
+      "MT_277": "kW",
+      "MT_278": "kW",
+      "MT_279": "kW",
+      "MT_280": "kW",
+      "MT_281": "kW",
+      "MT_282": "kW",
+      "MT_283": "kW",
+      "MT_284": "kW",
+      "MT_285": "kW",
+      "MT_286": "kW",
+      "MT_287": "kW",
+      "MT_288": "kW",
+      "MT_289": "kW",
+      "MT_290": "kW",
+      "MT_291": "kW",
+      "MT_292": "kW",
+      "MT_293": "kW",
+      "MT_294": "kW",
+      "MT_295": "kW",
+      "MT_296": "kW",
+      "MT_297": "kW",
+      "MT_298": "kW",
+      "MT_299": "kW",
+      "MT_300": "kW",
+      "MT_301": "kW",
+      "MT_302": "kW",
+      "MT_303": "kW",
+      "MT_304": "kW",
+      "MT_305": "kW",
+      "MT_306": "kW",
+      "MT_307": "kW",
+      "MT_308": "kW",
+      "MT_309": "kW",
+      "MT_310": "kW",
+      "MT_311": "kW",
+      "MT_312": "kW",
+      "MT_313": "kW",
+      "MT_314": "kW",
+      "MT_315": "kW",
+      "MT_316": "kW",
+      "MT_317": "kW",
+      "MT_318": "kW",
+      "MT_319": "kW",
+      "MT_320": "kW",
+      "MT_321": "kW",
+      "MT_322": "kW",
+      "MT_323": "kW",
+      "MT_324": "kW",
+      "MT_325": "kW",
+      "MT_326": "kW",
+      "MT_327": "kW",
+      "MT_328": "kW",
+      "MT_329": "kW",
+      "MT_330": "kW",
+      "MT_331": "kW",
+      "MT_332": "kW",
+      "MT_333": "kW",
+      "MT_334": "kW",
+      "MT_335": "kW",
+      "MT_336": "kW",
+      "MT_337": "kW",
+      "MT_338": "kW",
+      "MT_339": "kW",
+      "MT_340": "kW",
+      "MT_341": "kW",
+      "MT_342": "kW",
+      "MT_343": "kW",
+      "MT_344": "kW",
+      "MT_345": "kW",
+      "MT_346": "kW",
+      "MT_347": "kW",
+      "MT_348": "kW",
+      "MT_349": "kW",
+      "MT_350": "kW",
+      "MT_351": "kW",
+      "MT_352": "kW",
+      "MT_353": "kW",
+      "MT_354": "kW",
+      "MT_355": "kW",
+      "MT_356": "kW",
+      "MT_357": "kW",
+      "MT_358": "kW",
+      "MT_359": "kW",
+      "MT_360": "kW",
+      "MT_361": "kW",
+      "MT_362": "kW",
+      "MT_363": "kW",
+      "MT_364": "kW",
+      "MT_365": "kW",
+      "MT_366": "kW",
+      "MT_367": "kW",
+      "MT_368": "kW",
+      "MT_369": "kW",
+      "MT_370": "kW"
+     },
+     "units_unknown": []
+    }
+   },
+   "unit": "kW (15-min average consumption per client)",
+   "producer_notes": [
+    "timestamps in Portuguese local wall clock (producer: 'All time labels report to Portuguese hour')",
+    "clients created after 2011 have zero consumption before their first record (structural zeros, not measurements)",
+    "DST: the March change day has one hour of zeros (23 records); the October change day aggregates two hours into one (25 records) \u2014 producer statement",
+    "availability delay and revision policy: UNKNOWN in the contract; the file is a static archive (no revisions)"
+   ],
+   "source": "https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014",
+   "structural_zero_rule": "a client's rows before its first non-zero value are STRUCTURAL zeros (client not yet existing); zeros after that are measurements",
+   "time": {
+    "rows": 140256,
+    "start": "2011-01-01 00:15:00",
+    "end": "2015-01-01 00:00:00",
+    "delta_seconds_declared": 900,
+    "delta_seconds_observed": {
+     "900": 140255
+    },
+    "irregular_steps": 0,
+    "monotone": true,
+    "duplicates": 0,
+    "days_with_row_count_not_nominal": {
+     "2011-01-01": 95,
+     "2015-01-01": 1
+    },
+    "days_with_row_count_not_nominal_total": 2
+   },
+   "columns": {
+    "n_numeric": 370,
+    "missing_fraction_overall": 0.0,
+    "columns": {
+     "MT_001": {
+      "missing": 0,
+      "zeros": 40743,
+      "structural_zero_rows": 35040,
+      "measured_zero_rows": 5703,
+      "first_non_zero_row": 35040,
+      "first_non_zero_time": "2012-01-01 00:15:00",
+      "quantiles": [
+       0.0,
+       1.26903553299492,
+       48.2233502538071
+      ],
+      "constant": false
+     },
+     "MT_002": {
+      "missing": 0,
+      "zeros": 35044,
+      "structural_zero_rows": 35040,
+      "measured_zero_rows": 4,
+      "first_non_zero_row": 35040,
+      "first_non_zero_time": "2012-01-01 00:15:00",
+      "quantiles": [
+       0.0,
+       24.8933143669986,
+       115.220483641536
+      ],
+      "constant": false
+     },
+     "MT_003": {
+      "missing": 0,
+      "zeros": 35650,
+      "structural_zero_rows": 35040,
+      "measured_zero_rows": 610,
+      "first_non_zero_row": 35040,
+      "first_non_zero_time": "2012-01-01 00:15:00",
+      "quantiles": [
+       0.0,
+       1.73761946133797,
+       151.172893136403
+      ],
+      "constant": false
+     },
+     "MT_004": {
+      "missing": 0,
+      "zeros": 35053,
+      "structural_zero_rows": 35040,
+      "measured_zero_rows": 13,
+      "first_non_zero_row": 35040,
+      "first_non_zero_time": "2012-01-01 00:15:00",
+      "quantiles": [
+       0.0,
+       87.3983739837398,
+       321.138211382114
+      ],
+      "constant": false
+     },
+     "MT_005": {
+      "missing": 0,
+      "zeros": 35052,
+      "structural_zero_rows": 35040,
+      "measured_zero_rows": 12,
+      "first_non_zero_row": 35040,
+      "first_non_zero_time": "2012-01-01 00:15:00",
+      "quantiles": [
+       0.0,
+       39.0243902439024,
+       150.0
+      ],
+      "constant": false
+     },
+     "MT_006": {
+      "missing": 0,
+      "zeros": 35052,
+      "structural_zero_rows": 35040,
+      "measured_zero_rows": 12,
+      "first_non_zero_row": 35040,
+      "first_non_zero_time": "2012-01-01 00:15:00",
+      "quantiles": [
+       0.0,
+       157.738095238095,
+       535.714285714286
+      ],
+      "constant": false
+     },
+     "MT_007": {
+      "missing": 0,
+      "zeros": 35053,
+      "structural_zero_rows": 35040,
+      "measured_zero_rows": 13,
+      "first_non_zero_row": 35040,
+      "first_non_zero_time": "2012-01-01 00:15:00",
+      "quantiles": [
+       0.0,
+       2.82645562464669,
+       44.6579988694178
+      ],
+      "constant": false
+     },
+     "MT_008": {
+      "missing": 0,
+      "zeros": 35053,
+      "structural_zero_rows": 35040,
+      "measured_zero_rows": 13,
+      "first_non_zero_row": 35040,
+      "first_non_zero_time": "2012-01-01 00:15:00",
+      "quantiles": [
+       0.0,
+       222.222222222222,
+       552.188552188552
+      ],
+      "constant": false
+     }
+    },
+    "columns_summary": {
+     "structural_zero_rows_quantiles": [
+      0.0,
+      0.0,
+      35040.0,
+      35040.0,
+      124224.0
+     ],
+     "missing_total": 0,
+     "constant_columns": []
+    },
+    "columns_note": "first 8 of the columns shown; the summary covers all"
+   },
+   "roles": {
+    "targets": "every client column (kW)",
+    "features": "the same columns (lagged) plus calendar (hour, weekday, DST flag) derived from the timestamp",
+    "metadata": [
+     "timestamp_label"
+    ],
+    "controls": "seasonal naive (daily and weekly), persistence"
+   },
+   "splits_by_time": {
+    "train": [
+     0,
+     98179
+    ],
+    "validation": [
+     98179,
+     119217
+    ],
+    "test": [
+     119217,
+     140256
+    ]
+   },
+   "train_only_periodicities": {
+    "columns_used": 32,
+    "top_peaks": [
+     {
+      "period_hours": 24.023460410557185,
+      "share_of_total_power": 0.0868786127662992
+     },
+     {
+      "period_hours": 23.953216374269008,
+      "share_of_total_power": 0.05839855860069378
+     },
+     {
+      "period_hours": 11.99414348462665,
+      "share_of_total_power": 0.05572946825205067
+     },
+     {
+      "period_hours": 12.011730205278592,
+      "share_of_total_power": 0.03702782621730483
+     },
+     {
+      "period_hours": 24.094117647058823,
+      "share_of_total_power": 0.014598081683942537
+     },
+     {
+      "period_hours": 11.976608187134504,
+      "share_of_total_power": 0.009538204377776405
+     }
+    ],
+    "bands": {
+     "daily_24h_share": 0.1820684871222278,
+     "half_day_12h_share": 0.12244744449563173,
+     "weekly_168h_share": 0.014975465867255823,
+     "slower_than_5_weeks_share": 0.5281998407710938
+    },
+    "note": "Welch on the TRAIN block only (mean over the first 32 columns); a peak is a measured periodicity, not an assumption from the sampling; power slower than five weeks is drift/trend, reported apart"
+   },
+   "dst_march_change_days": {
+    "2011-03-27": {
+     "hours_0_to_5": {
+      "0": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "1": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "2": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "3": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "4": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "5": {
+       "rows": 4,
+       "rows_all_zero": 0
+      }
+     },
+     "producer_statement": "one hour of zeros on the March change day",
+     "reproduced": false
+    },
+    "2012-03-25": {
+     "hours_0_to_5": {
+      "0": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "1": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "2": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "3": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "4": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "5": {
+       "rows": 4,
+       "rows_all_zero": 0
+      }
+     },
+     "producer_statement": "one hour of zeros on the March change day",
+     "reproduced": false
+    },
+    "2013-03-31": {
+     "hours_0_to_5": {
+      "0": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "1": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "2": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "3": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "4": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "5": {
+       "rows": 4,
+       "rows_all_zero": 0
+      }
+     },
+     "producer_statement": "one hour of zeros on the March change day",
+     "reproduced": false
+    },
+    "2014-03-30": {
+     "hours_0_to_5": {
+      "0": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "1": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "2": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "3": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "4": {
+       "rows": 4,
+       "rows_all_zero": 0
+      },
+      "5": {
+       "rows": 4,
+       "rows_all_zero": 0
+      }
+     },
+     "producer_statement": "one hour of zeros on the March change day",
+     "reproduced": false
+    }
+   },
+   "windows": {
+    "W24_h1": {
+     "context_steps": 24,
+     "context_physical_seconds": 20700,
+     "context_physical_hours": 5.75,
+     "horizon_steps": 1,
+     "horizon_physical_seconds": 900,
+     "purge": 25,
+     "usable_windows_all_targets_valid": {
+      "train": 0,
+      "validation": 0,
+      "test": 16032
+     },
+     "usable_windows_any_target_valid": {
+      "train": 98131,
+      "validation": 21013,
+      "test": 21038
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       0,
+       63115,
+       63115,
+       98131,
+       98131
+      ],
+      "validation": [
+       0,
+       21013,
+       21013,
+       21013,
+       21013
+      ],
+      "test": [
+       16032,
+       21038,
+       21038,
+       21038,
+       21038
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 98131,
+      "validation": 21013,
+      "test": 21038
+     },
+     "support_physical_days": {
+      "train": 0.0,
+      "validation": 0.0,
+      "test": 167.0
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W24_h4": {
+     "context_steps": 24,
+     "context_physical_seconds": 20700,
+     "context_physical_hours": 5.75,
+     "horizon_steps": 4,
+     "horizon_physical_seconds": 3600,
+     "purge": 28,
+     "usable_windows_all_targets_valid": {
+      "train": 0,
+      "validation": 0,
+      "test": 16032
+     },
+     "usable_windows_any_target_valid": {
+      "train": 98128,
+      "validation": 21010,
+      "test": 21035
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       0,
+       63115,
+       63115,
+       98128,
+       98128
+      ],
+      "validation": [
+       0,
+       21010,
+       21010,
+       21010,
+       21010
+      ],
+      "test": [
+       16032,
+       21035,
+       21035,
+       21035,
+       21035
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 98128,
+      "validation": 21010,
+      "test": 21035
+     },
+     "support_physical_days": {
+      "train": 0.0,
+      "validation": 0.0,
+      "test": 167.0
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W24_h96": {
+     "context_steps": 24,
+     "context_physical_seconds": 20700,
+     "context_physical_hours": 5.75,
+     "horizon_steps": 96,
+     "horizon_physical_seconds": 86400,
+     "purge": 120,
+     "usable_windows_all_targets_valid": {
+      "train": 0,
+      "validation": 0,
+      "test": 16032
+     },
+     "usable_windows_any_target_valid": {
+      "train": 98036,
+      "validation": 20918,
+      "test": 20943
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       0,
+       63115,
+       63115,
+       98036,
+       98036
+      ],
+      "validation": [
+       0,
+       20918,
+       20918,
+       20918,
+       20918
+      ],
+      "test": [
+       16032,
+       20943,
+       20943,
+       20943,
+       20943
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 98036,
+      "validation": 20918,
+      "test": 20943
+     },
+     "support_physical_days": {
+      "train": 0.0,
+      "validation": 0.0,
+      "test": 167.0
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W96_h1": {
+     "context_steps": 96,
+     "context_physical_seconds": 85500,
+     "context_physical_hours": 23.75,
+     "horizon_steps": 1,
+     "horizon_physical_seconds": 900,
+     "purge": 97,
+     "usable_windows_all_targets_valid": {
+      "train": 0,
+      "validation": 0,
+      "test": 16032
+     },
+     "usable_windows_any_target_valid": {
+      "train": 97987,
+      "validation": 20941,
+      "test": 21038
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       0,
+       63043,
+       63043,
+       97987,
+       97987
+      ],
+      "validation": [
+       0,
+       20941,
+       20941,
+       20941,
+       20941
+      ],
+      "test": [
+       16032,
+       21038,
+       21038,
+       21038,
+       21038
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 97987,
+      "validation": 20941,
+      "test": 21038
+     },
+     "support_physical_days": {
+      "train": 0.0,
+      "validation": 0.0,
+      "test": 167.0
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W96_h4": {
+     "context_steps": 96,
+     "context_physical_seconds": 85500,
+     "context_physical_hours": 23.75,
+     "horizon_steps": 4,
+     "horizon_physical_seconds": 3600,
+     "purge": 100,
+     "usable_windows_all_targets_valid": {
+      "train": 0,
+      "validation": 0,
+      "test": 16032
+     },
+     "usable_windows_any_target_valid": {
+      "train": 97984,
+      "validation": 20938,
+      "test": 21035
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       0,
+       63043,
+       63043,
+       97984,
+       97984
+      ],
+      "validation": [
+       0,
+       20938,
+       20938,
+       20938,
+       20938
+      ],
+      "test": [
+       16032,
+       21035,
+       21035,
+       21035,
+       21035
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 97984,
+      "validation": 20938,
+      "test": 21035
+     },
+     "support_physical_days": {
+      "train": 0.0,
+      "validation": 0.0,
+      "test": 167.0
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W96_h96": {
+     "context_steps": 96,
+     "context_physical_seconds": 85500,
+     "context_physical_hours": 23.75,
+     "horizon_steps": 96,
+     "horizon_physical_seconds": 86400,
+     "purge": 192,
+     "usable_windows_all_targets_valid": {
+      "train": 0,
+      "validation": 0,
+      "test": 16032
+     },
+     "usable_windows_any_target_valid": {
+      "train": 97892,
+      "validation": 20846,
+      "test": 20943
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       0,
+       63043,
+       63043,
+       97892,
+       97892
+      ],
+      "validation": [
+       0,
+       20846,
+       20846,
+       20846,
+       20846
+      ],
+      "test": [
+       16032,
+       20943,
+       20943,
+       20943,
+       20943
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 97892,
+      "validation": 20846,
+      "test": 20943
+     },
+     "support_physical_days": {
+      "train": 0.0,
+      "validation": 0.0,
+      "test": 167.0
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W192_h1": {
+     "context_steps": 192,
+     "context_physical_seconds": 171900,
+     "context_physical_hours": 47.75,
+     "horizon_steps": 1,
+     "horizon_physical_seconds": 900,
+     "purge": 193,
+     "usable_windows_all_targets_valid": {
+      "train": 0,
+      "validation": 0,
+      "test": 16032
+     },
+     "usable_windows_any_target_valid": {
+      "train": 97795,
+      "validation": 20845,
+      "test": 21038
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       0,
+       62947,
+       62947,
+       97795,
+       97795
+      ],
+      "validation": [
+       0,
+       20845,
+       20845,
+       20845,
+       20845
+      ],
+      "test": [
+       16032,
+       21038,
+       21038,
+       21038,
+       21038
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 97795,
+      "validation": 20845,
+      "test": 21038
+     },
+     "support_physical_days": {
+      "train": 0.0,
+      "validation": 0.0,
+      "test": 167.0
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W192_h4": {
+     "context_steps": 192,
+     "context_physical_seconds": 171900,
+     "context_physical_hours": 47.75,
+     "horizon_steps": 4,
+     "horizon_physical_seconds": 3600,
+     "purge": 196,
+     "usable_windows_all_targets_valid": {
+      "train": 0,
+      "validation": 0,
+      "test": 16032
+     },
+     "usable_windows_any_target_valid": {
+      "train": 97792,
+      "validation": 20842,
+      "test": 21035
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       0,
+       62947,
+       62947,
+       97792,
+       97792
+      ],
+      "validation": [
+       0,
+       20842,
+       20842,
+       20842,
+       20842
+      ],
+      "test": [
+       16032,
+       21035,
+       21035,
+       21035,
+       21035
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 97792,
+      "validation": 20842,
+      "test": 21035
+     },
+     "support_physical_days": {
+      "train": 0.0,
+      "validation": 0.0,
+      "test": 167.0
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W192_h96": {
+     "context_steps": 192,
+     "context_physical_seconds": 171900,
+     "context_physical_hours": 47.75,
+     "horizon_steps": 96,
+     "horizon_physical_seconds": 86400,
+     "purge": 288,
+     "usable_windows_all_targets_valid": {
+      "train": 0,
+      "validation": 0,
+      "test": 16032
+     },
+     "usable_windows_any_target_valid": {
+      "train": 97700,
+      "validation": 20750,
+      "test": 20943
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       0,
+       62947,
+       62947,
+       97700,
+       97700
+      ],
+      "validation": [
+       0,
+       20750,
+       20750,
+       20750,
+       20750
+      ],
+      "test": [
+       16032,
+       20943,
+       20943,
+       20943,
+       20943
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 97700,
+      "validation": 20750,
+      "test": 20943
+     },
+     "support_physical_days": {
+      "train": 0.0,
+      "validation": 0.0,
+      "test": 167.0
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W672_h1": {
+     "context_steps": 672,
+     "context_physical_seconds": 603900,
+     "context_physical_hours": 167.75,
+     "horizon_steps": 1,
+     "horizon_physical_seconds": 900,
+     "purge": 673,
+     "usable_windows_all_targets_valid": {
+      "train": 0,
+      "validation": 0,
+      "test": 16032
+     },
+     "usable_windows_any_target_valid": {
+      "train": 96835,
+      "validation": 20365,
+      "test": 21038
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       0,
+       62467,
+       62467,
+       96835,
+       96835
+      ],
+      "validation": [
+       0,
+       20365,
+       20365,
+       20365,
+       20365
+      ],
+      "test": [
+       16032,
+       21038,
+       21038,
+       21038,
+       21038
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 96835,
+      "validation": 20365,
+      "test": 21038
+     },
+     "support_physical_days": {
+      "train": 0.0,
+      "validation": 0.0,
+      "test": 167.0
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W672_h4": {
+     "context_steps": 672,
+     "context_physical_seconds": 603900,
+     "context_physical_hours": 167.75,
+     "horizon_steps": 4,
+     "horizon_physical_seconds": 3600,
+     "purge": 676,
+     "usable_windows_all_targets_valid": {
+      "train": 0,
+      "validation": 0,
+      "test": 16032
+     },
+     "usable_windows_any_target_valid": {
+      "train": 96832,
+      "validation": 20362,
+      "test": 21035
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       0,
+       62467,
+       62467,
+       96832,
+       96832
+      ],
+      "validation": [
+       0,
+       20362,
+       20362,
+       20362,
+       20362
+      ],
+      "test": [
+       16032,
+       21035,
+       21035,
+       21035,
+       21035
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 96832,
+      "validation": 20362,
+      "test": 21035
+     },
+     "support_physical_days": {
+      "train": 0.0,
+      "validation": 0.0,
+      "test": 167.0
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W672_h96": {
+     "context_steps": 672,
+     "context_physical_seconds": 603900,
+     "context_physical_hours": 167.75,
+     "horizon_steps": 96,
+     "horizon_physical_seconds": 86400,
+     "purge": 768,
+     "usable_windows_all_targets_valid": {
+      "train": 0,
+      "validation": 0,
+      "test": 16032
+     },
+     "usable_windows_any_target_valid": {
+      "train": 96740,
+      "validation": 20270,
+      "test": 20943
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       0,
+       62467,
+       62467,
+       96740,
+       96740
+      ],
+      "validation": [
+       0,
+       20270,
+       20270,
+       20270,
+       20270
+      ],
+      "test": [
+       16032,
+       20943,
+       20943,
+       20943,
+       20943
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 96740,
+      "validation": 20270,
+      "test": 20943
+     },
+     "support_physical_days": {
+      "train": 0.0,
+      "validation": 0.0,
+      "test": 167.0
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    }
+   },
+   "eligibility": {
+    "catalogue": "OPEN_ATTRIBUTION (CC-BY-4.0) \u2014 licence eligibility, not adequacy",
+    "task": "TASK_CONTRACT_DECLARED (this document): usable windows counted per split after masks, purge and horizon; contexts in physical units; roles declared",
+    "reserve": "NOT_JUDGED_HERE (no reserve is opened by this order)"
+   },
+   "independence_note": "blocks without overlap are NOT independent replicates; columns (clients) are not independent replicates either: the cross-sectional dependence between clients is a measured fact (see the pair relations of the D1 profiles) and the unit of replication must be declared by task"
+  },
+  "uci_235": {
+   "family": "uci_235",
+   "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+   "governed_bytes": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/public_panels_c126_v2/uci_235_individual_household_power/panel.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "receipt": {
+     "columns": 7,
+     "duplicate_timestamp_labels": 0,
+     "logical_id": "uci_235_individual_household_power",
+     "member_sha256": {
+      "household_power_consumption.txt": "4259c9d7ece5dbee9ab8d53682baac68d791c864f0f64a52b4043cb3b90894b7"
+     },
+     "missing_values": 181853,
+     "parse_rule": "sep ';', missing '?' or empty",
+     "parser": "uci_235",
+     "rows": 2075259,
+     "rows_dropped": 0,
+     "rows_filled": 0,
+     "rows_reordered": 0,
+     "schema": "crispdm.data_foundation.public_parse_receipt.v1",
+     "timestamp_format": "%d/%m/%Y %H:%M:%S",
+     "units_declared": {
+      "Global_active_power": "kW",
+      "Global_intensity": "A",
+      "Global_reactive_power": "kW",
+      "Sub_metering_1": "Wh",
+      "Sub_metering_2": "Wh",
+      "Sub_metering_3": "Wh",
+      "Voltage": "V"
+     },
+     "units_unknown": []
+    }
+   },
+   "unit": "mixed: kW (global active/reactive power), V (voltage), A (intensity), Wh (sub-metering 1-3)",
+   "producer_notes": [
+    "one household near Paris, one-minute sampling, 2006-12 to 2010-11",
+    "about 1.25 % of rows have missing measurements while keeping their timestamps (producer statement); missing = NaN in the panel",
+    "time zone: UNKNOWN in the contract (local French time presumed, DST not documented by the producer)",
+    "availability delay and revision policy: UNKNOWN; static archive"
+   ],
+   "source": "https://archive.ics.uci.edu/dataset/235/individual+household+electric+power+consumption",
+   "structural_zero_rule": "no structural zeros: the household exists throughout; zeros are measurements (e.g. sub-metering 3 off)",
+   "time": {
+    "rows": 2075259,
+    "start": "2006-12-16 17:24:00",
+    "end": "2010-11-26 21:02:00",
+    "delta_seconds_declared": 60,
+    "delta_seconds_observed": {
+     "60": 2075258
+    },
+    "irregular_steps": 0,
+    "monotone": true,
+    "duplicates": 0,
+    "days_with_row_count_not_nominal": {
+     "2006-12-16": 396,
+     "2010-11-26": 1263
+    },
+    "days_with_row_count_not_nominal_total": 2
+   },
+   "columns": {
+    "n_numeric": 7,
+    "missing_fraction_overall": 0.012518437457686006,
+    "columns": {
+     "Global_active_power": {
+      "missing": 25979,
+      "zeros": 0,
+      "structural_zero_rows": 0,
+      "measured_zero_rows": 0,
+      "first_non_zero_row": 0,
+      "first_non_zero_time": "2006-12-16 17:24:00",
+      "quantiles": [
+       0.076,
+       0.602,
+       11.122
+      ],
+      "constant": false
+     },
+     "Global_reactive_power": {
+      "missing": 25979,
+      "zeros": 481561,
+      "structural_zero_rows": 0,
+      "measured_zero_rows": 481561,
+      "first_non_zero_row": 0,
+      "first_non_zero_time": "2006-12-16 17:24:00",
+      "quantiles": [
+       0.0,
+       0.1,
+       1.39
+      ],
+      "constant": false
+     },
+     "Voltage": {
+      "missing": 25979,
+      "zeros": 0,
+      "structural_zero_rows": 0,
+      "measured_zero_rows": 0,
+      "first_non_zero_row": 0,
+      "first_non_zero_time": "2006-12-16 17:24:00",
+      "quantiles": [
+       223.2,
+       241.01,
+       254.15
+      ],
+      "constant": false
+     },
+     "Global_intensity": {
+      "missing": 25979,
+      "zeros": 0,
+      "structural_zero_rows": 0,
+      "measured_zero_rows": 0,
+      "first_non_zero_row": 0,
+      "first_non_zero_time": "2006-12-16 17:24:00",
+      "quantiles": [
+       0.2,
+       2.6,
+       48.4
+      ],
+      "constant": false
+     },
+     "Sub_metering_1": {
+      "missing": 25979,
+      "zeros": 1880175,
+      "structural_zero_rows": 0,
+      "measured_zero_rows": 1880175,
+      "first_non_zero_row": 1019,
+      "first_non_zero_time": "2006-12-17 10:23:00",
+      "quantiles": [
+       0.0,
+       0.0,
+       88.0
+      ],
+      "constant": false
+     },
+     "Sub_metering_2": {
+      "missing": 25979,
+      "zeros": 1436830,
+      "structural_zero_rows": 0,
+      "measured_zero_rows": 1436830,
+      "first_non_zero_row": 0,
+      "first_non_zero_time": "2006-12-16 17:24:00",
+      "quantiles": [
+       0.0,
+       0.0,
+       80.0
+      ],
+      "constant": false
+     },
+     "Sub_metering_3": {
+      "missing": 25979,
+      "zeros": 852092,
+      "structural_zero_rows": 0,
+      "measured_zero_rows": 852092,
+      "first_non_zero_row": 0,
+      "first_non_zero_time": "2006-12-16 17:24:00",
+      "quantiles": [
+       0.0,
+       1.0,
+       31.0
+      ],
+      "constant": false
+     }
+    }
+   },
+   "roles": {
+    "targets": [
+     "Global_active_power"
+    ],
+    "features": [
+     "Global_reactive_power",
+     "Voltage",
+     "Global_intensity",
+     "Sub_metering_1",
+     "Sub_metering_2",
+     "Sub_metering_3"
+    ],
+    "metadata": [
+     "timestamp_label"
+    ],
+    "controls": "persistence, seasonal naive (daily)"
+   },
+   "splits_by_time": {
+    "train": [
+     0,
+     1452681
+    ],
+    "validation": [
+     1452681,
+     1763969
+    ],
+    "test": [
+     1763969,
+     2075259
+    ]
+   },
+   "train_only_periodicities": {
+    "columns_used": 7,
+    "top_peaks": [
+     {
+      "period_hours": 23.744927536231884,
+      "share_of_total_power": 0.03920558827648521
+     },
+     {
+      "period_hours": 12.136296296296296,
+      "share_of_total_power": 0.03206706119974324
+     },
+     {
+      "period_hours": 11.872463768115942,
+      "share_of_total_power": 0.03190846239981379
+     },
+     {
+      "period_hours": 24.824242424242428,
+      "share_of_total_power": 0.02193850902278385
+     },
+     {
+      "period_hours": 546.1333333333333,
+      "share_of_total_power": 0.008661249062974049
+     },
+     {
+      "period_hours": 22.755555555555556,
+      "share_of_total_power": 0.008116794469524355
+     }
+    ],
+    "bands": {
+     "daily_24h_share": 0.06926089176879341,
+     "half_day_12h_share": 0.0860778088572701,
+     "weekly_168h_share": 0.0,
+     "slower_than_5_weeks_share": 0.0
+    },
+    "note": "Welch on the TRAIN block only (mean over the first 32 columns); a peak is a measured periodicity, not an assumption from the sampling; power slower than five weeks is drift/trend, reported apart"
+   },
+   "dst_march_change_days": {},
+   "windows": {
+    "W60_h1": {
+     "context_steps": 60,
+     "context_physical_seconds": 3540,
+     "context_physical_hours": 0.9833333333333333,
+     "horizon_steps": 1,
+     "horizon_physical_seconds": 60,
+     "purge": 61,
+     "usable_windows_all_targets_valid": {
+      "train": 1441187,
+      "validation": 305400,
+      "test": 298401
+     },
+     "usable_windows_any_target_valid": {
+      "train": 1441187,
+      "validation": 305400,
+      "test": 298401
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       1441187,
+       1441187,
+       1441187,
+       1441187,
+       1441187
+      ],
+      "validation": [
+       305400,
+       305400,
+       305400,
+       305400,
+       305400
+      ],
+      "test": [
+       298401,
+       298401,
+       298401,
+       298401,
+       298401
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 1452561,
+      "validation": 311227,
+      "test": 311289
+     },
+     "support_physical_days": {
+      "train": 1000.8243055555556,
+      "validation": 212.08333333333334,
+      "test": 207.22291666666666
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W60_h60": {
+     "context_steps": 60,
+     "context_physical_seconds": 3540,
+     "context_physical_hours": 0.9833333333333333,
+     "horizon_steps": 60,
+     "horizon_physical_seconds": 3600,
+     "purge": 120,
+     "usable_windows_all_targets_valid": {
+      "train": 1440653,
+      "validation": 305221,
+      "test": 298224
+     },
+     "usable_windows_any_target_valid": {
+      "train": 1440653,
+      "validation": 305221,
+      "test": 298224
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       1440653,
+       1440653,
+       1440653,
+       1440653,
+       1440653
+      ],
+      "validation": [
+       305221,
+       305221,
+       305221,
+       305221,
+       305221
+      ],
+      "test": [
+       298224,
+       298224,
+       298224,
+       298224,
+       298224
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 1452502,
+      "validation": 311168,
+      "test": 311230
+     },
+     "support_physical_days": {
+      "train": 1000.4534722222222,
+      "validation": 211.95902777777778,
+      "test": 207.1
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W60_h1440": {
+     "context_steps": 60,
+     "context_physical_seconds": 3540,
+     "context_physical_hours": 0.9833333333333333,
+     "horizon_steps": 1440,
+     "horizon_physical_seconds": 86400,
+     "purge": 1500,
+     "usable_windows_all_targets_valid": {
+      "train": 1435602,
+      "validation": 301081,
+      "test": 294084
+     },
+     "usable_windows_any_target_valid": {
+      "train": 1435602,
+      "validation": 301081,
+      "test": 294084
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       1435602,
+       1435602,
+       1435602,
+       1435602,
+       1435602
+      ],
+      "validation": [
+       301081,
+       301081,
+       301081,
+       301081,
+       301081
+      ],
+      "test": [
+       294084,
+       294084,
+       294084,
+       294084,
+       294084
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 1451122,
+      "validation": 309788,
+      "test": 309850
+     },
+     "support_physical_days": {
+      "train": 996.9458333333333,
+      "validation": 209.08402777777778,
+      "test": 204.225
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W180_h1": {
+     "context_steps": 180,
+     "context_physical_seconds": 10740,
+     "context_physical_hours": 2.9833333333333334,
+     "horizon_steps": 1,
+     "horizon_physical_seconds": 60,
+     "purge": 181,
+     "usable_windows_all_targets_valid": {
+      "train": 1434947,
+      "validation": 303960,
+      "test": 297561
+     },
+     "usable_windows_any_target_valid": {
+      "train": 1434947,
+      "validation": 303960,
+      "test": 297561
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       1434947,
+       1434947,
+       1434947,
+       1434947,
+       1434947
+      ],
+      "validation": [
+       303960,
+       303960,
+       303960,
+       303960,
+       303960
+      ],
+      "test": [
+       297561,
+       297561,
+       297561,
+       297561,
+       297561
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 1452321,
+      "validation": 311107,
+      "test": 311289
+     },
+     "support_physical_days": {
+      "train": 996.4909722222222,
+      "validation": 211.08333333333334,
+      "test": 206.63958333333332
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W180_h60": {
+     "context_steps": 180,
+     "context_physical_seconds": 10740,
+     "context_physical_hours": 2.9833333333333334,
+     "horizon_steps": 60,
+     "horizon_physical_seconds": 3600,
+     "purge": 240,
+     "usable_windows_all_targets_valid": {
+      "train": 1434413,
+      "validation": 303781,
+      "test": 297384
+     },
+     "usable_windows_any_target_valid": {
+      "train": 1434413,
+      "validation": 303781,
+      "test": 297384
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       1434413,
+       1434413,
+       1434413,
+       1434413,
+       1434413
+      ],
+      "validation": [
+       303781,
+       303781,
+       303781,
+       303781,
+       303781
+      ],
+      "test": [
+       297384,
+       297384,
+       297384,
+       297384,
+       297384
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 1452262,
+      "validation": 311048,
+      "test": 311230
+     },
+     "support_physical_days": {
+      "train": 996.1201388888888,
+      "validation": 210.95902777777778,
+      "test": 206.51666666666668
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W180_h1440": {
+     "context_steps": 180,
+     "context_physical_seconds": 10740,
+     "context_physical_hours": 2.9833333333333334,
+     "horizon_steps": 1440,
+     "horizon_physical_seconds": 86400,
+     "purge": 1620,
+     "usable_windows_all_targets_valid": {
+      "train": 1429362,
+      "validation": 299641,
+      "test": 293244
+     },
+     "usable_windows_any_target_valid": {
+      "train": 1429362,
+      "validation": 299641,
+      "test": 293244
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       1429362,
+       1429362,
+       1429362,
+       1429362,
+       1429362
+      ],
+      "validation": [
+       299641,
+       299641,
+       299641,
+       299641,
+       299641
+      ],
+      "test": [
+       293244,
+       293244,
+       293244,
+       293244,
+       293244
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 1450882,
+      "validation": 309668,
+      "test": 309850
+     },
+     "support_physical_days": {
+      "train": 992.6125,
+      "validation": 208.08402777777778,
+      "test": 203.64166666666668
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W1440_h1": {
+     "context_steps": 1440,
+     "context_physical_seconds": 86340,
+     "context_physical_hours": 23.983333333333334,
+     "horizon_steps": 1,
+     "horizon_physical_seconds": 60,
+     "purge": 1441,
+     "usable_windows_all_targets_valid": {
+      "train": 1370518,
+      "validation": 288840,
+      "test": 288741
+     },
+     "usable_windows_any_target_valid": {
+      "train": 1370518,
+      "validation": 288840,
+      "test": 288741
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       1370518,
+       1370518,
+       1370518,
+       1370518,
+       1370518
+      ],
+      "validation": [
+       288840,
+       288840,
+       288840,
+       288840,
+       288840
+      ],
+      "test": [
+       288741,
+       288741,
+       288741,
+       288741,
+       288741
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 1449801,
+      "validation": 309847,
+      "test": 311289
+     },
+     "support_physical_days": {
+      "train": 951.7486111111111,
+      "validation": 200.58333333333334,
+      "test": 200.51458333333332
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W1440_h60": {
+     "context_steps": 1440,
+     "context_physical_seconds": 86340,
+     "context_physical_hours": 23.983333333333334,
+     "horizon_steps": 60,
+     "horizon_physical_seconds": 3600,
+     "purge": 1500,
+     "usable_windows_all_targets_valid": {
+      "train": 1370019,
+      "validation": 288661,
+      "test": 288564
+     },
+     "usable_windows_any_target_valid": {
+      "train": 1370019,
+      "validation": 288661,
+      "test": 288564
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       1370019,
+       1370019,
+       1370019,
+       1370019,
+       1370019
+      ],
+      "validation": [
+       288661,
+       288661,
+       288661,
+       288661,
+       288661
+      ],
+      "test": [
+       288564,
+       288564,
+       288564,
+       288564,
+       288564
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 1449742,
+      "validation": 309788,
+      "test": 311230
+     },
+     "support_physical_days": {
+      "train": 951.4020833333333,
+      "validation": 200.45902777777778,
+      "test": 200.39166666666668
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W1440_h1440": {
+     "context_steps": 1440,
+     "context_physical_seconds": 86340,
+     "context_physical_hours": 23.983333333333334,
+     "horizon_steps": 1440,
+     "horizon_physical_seconds": 86400,
+     "purge": 2880,
+     "usable_windows_all_targets_valid": {
+      "train": 1364934,
+      "validation": 284521,
+      "test": 284424
+     },
+     "usable_windows_any_target_valid": {
+      "train": 1364934,
+      "validation": 284521,
+      "test": 284424
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       1364934,
+       1364934,
+       1364934,
+       1364934,
+       1364934
+      ],
+      "validation": [
+       284521,
+       284521,
+       284521,
+       284521,
+       284521
+      ],
+      "test": [
+       284424,
+       284424,
+       284424,
+       284424,
+       284424
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 1448362,
+      "validation": 308408,
+      "test": 309850
+     },
+     "support_physical_days": {
+      "train": 947.8708333333333,
+      "validation": 197.58402777777778,
+      "test": 197.51666666666668
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W10080_h1": {
+     "context_steps": 10080,
+     "context_physical_seconds": 604740,
+     "context_physical_hours": 167.98333333333332,
+     "horizon_steps": 1,
+     "horizon_physical_seconds": 60,
+     "purge": 10081,
+     "usable_windows_all_targets_valid": {
+      "train": 965428,
+      "validation": 189711,
+      "test": 228261
+     },
+     "usable_windows_any_target_valid": {
+      "train": 965428,
+      "validation": 189711,
+      "test": 228261
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       965428,
+       965428,
+       965428,
+       965428,
+       965428
+      ],
+      "validation": [
+       189711,
+       189711,
+       189711,
+       189711,
+       189711
+      ],
+      "test": [
+       228261,
+       228261,
+       228261,
+       228261,
+       228261
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 1432521,
+      "validation": 301207,
+      "test": 311289
+     },
+     "support_physical_days": {
+      "train": 670.4361111111111,
+      "validation": 131.74375,
+      "test": 158.51458333333332
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W10080_h60": {
+     "context_steps": 10080,
+     "context_physical_seconds": 604740,
+     "context_physical_hours": 167.98333333333332,
+     "horizon_steps": 60,
+     "horizon_physical_seconds": 3600,
+     "purge": 10140,
+     "usable_windows_all_targets_valid": {
+      "train": 964955,
+      "validation": 189591,
+      "test": 228084
+     },
+     "usable_windows_any_target_valid": {
+      "train": 964955,
+      "validation": 189591,
+      "test": 228084
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       964955,
+       964955,
+       964955,
+       964955,
+       964955
+      ],
+      "validation": [
+       189591,
+       189591,
+       189591,
+       189591,
+       189591
+      ],
+      "test": [
+       228084,
+       228084,
+       228084,
+       228084,
+       228084
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 1432462,
+      "validation": 301148,
+      "test": 311230
+     },
+     "support_physical_days": {
+      "train": 670.1076388888889,
+      "validation": 131.66041666666666,
+      "test": 158.39166666666668
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    },
+    "W10080_h1440": {
+     "context_steps": 10080,
+     "context_physical_seconds": 604740,
+     "context_physical_hours": 167.98333333333332,
+     "horizon_steps": 1440,
+     "horizon_physical_seconds": 86400,
+     "purge": 11520,
+     "usable_windows_all_targets_valid": {
+      "train": 959905,
+      "validation": 186831,
+      "test": 223944
+     },
+     "usable_windows_any_target_valid": {
+      "train": 959905,
+      "validation": 186831,
+      "test": 223944
+     },
+     "usable_windows_per_target_column_quantiles": {
+      "train": [
+       959905,
+       959905,
+       959905,
+       959905,
+       959905
+      ],
+      "validation": [
+       186831,
+       186831,
+       186831,
+       186831,
+       186831
+      ],
+      "test": [
+       223944,
+       223944,
+       223944,
+       223944,
+       223944
+      ]
+     },
+     "usable_note": "'all targets valid' requires every column measured (never true early for a panel of clients that appear over time); the per-column quantiles are the honest support of a multi-output task with masks; 'any' is the upper bound",
+     "origins": {
+      "train": 1431082,
+      "validation": 299768,
+      "test": 309850
+     },
+     "support_physical_days": {
+      "train": 666.6006944444445,
+      "validation": 129.74375,
+      "test": 155.51666666666668
+     },
+     "cost_note": "cost per window grows linearly with W x p; the pilot fixes seconds per update per (W, p)"
+    }
+   },
+   "eligibility": {
+    "catalogue": "OPEN_ATTRIBUTION (CC-BY-4.0) \u2014 licence eligibility, not adequacy",
+    "task": "TASK_CONTRACT_DECLARED (this document): usable windows counted per split after masks, purge and horizon; contexts in physical units; roles declared",
+    "reserve": "NOT_JUDGED_HERE (no reserve is opened by this order)"
+   },
+   "independence_note": "blocks without overlap are NOT independent replicates; columns (clients) are not independent replicates either: the cross-sectional dependence between clients is a measured fact (see the pair relations of the D1 profiles) and the unit of replication must be declared by task"
+  }
+ },
+ "prior_exposure": {
+  "public.uci.501.beijing_multisite_air_quality": "characterised by the D1/D2 fronts (coverage_v2 RESULT rows in the census); read for descriptors, never used for model selection; RESERVE_CANDIDATE keeps its result-level reserve defensible only for the modelling results, not for descriptive knowledge",
+  "public.uci.374.appliances_energy_prediction": "same: descriptors exist in the census; not opened by this order"
+ },
+ "catalogue_note": "UCI is a repository, not one physical source: the four families are distinct producers/entities/panels; sharing the catalogue proves no dependence"
+}

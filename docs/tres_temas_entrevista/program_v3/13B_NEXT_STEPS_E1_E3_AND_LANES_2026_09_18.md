@@ -88,7 +88,18 @@ Entry point `predictor = app.main:main` (`setup.py:10`).
   which does not exist (only `base_d*.csv`); of the 137 configs with all inputs present, none has `1h`
   in its name.
 
-## E1 public multivariate bank (selected from the existing census, no re-census)
+## E1 public multivariate bank (selected from the existing census, no re-census; corrected under RP23)
+
+**Correction (RP23, dictum F4).** `E1_FAMILIES.json` (v1, frozen as PRE) declared eligibility from date ranges with
+W = 96 / h = 1 / ≥ 200 blocks: withdrawn as a task judgement. The task contracts are now built from the governed bytes
+of the two DEV families in [`E1_TASKS.json`](E1_TASKS.json) (`tools/df_e1_tasks.py`): entities, units, timestamps,
+DST facts, structural zeros vs measurements, missing values, column roles, splits by time with purge derived from
+(W, h), usable windows per split AFTER masks (per target column, "any" and "all"), contexts in physical units with
+their measured periodicities (train-only spectrum bands: daily / half-day / weekly / slower-than-five-weeks), and
+the explicit note that neither non-overlapping blocks nor client columns are independent replicates. Eligibility is
+separated: catalogue (licence) / task (contract) / reserve (not judged). Prior exposure of Beijing and appliances
+(D1/D2 descriptors in the census) is declared; they stay closed. UCI is a repository, not a single physical source.
+
 
 Deliverable produced: [`E1_FAMILIES.json`](E1_FAMILIES.json) by `tools/df_e1_families.py` over the
 warehouse census (`df_dim_dataset`: 715 datasets = 198 FINANCIAL `INTERNAL_RESEARCH_ONLY_PENDING_EVIDENCE`,

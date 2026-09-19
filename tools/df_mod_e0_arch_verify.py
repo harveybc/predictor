@@ -372,10 +372,48 @@ def tables(eff: dict, close_local: dict, design: dict) -> str:
     return "\n".join(L) + "\n"
 
 
+def merge_successor(close_local: dict, design: dict, succ_close: dict, succ_design: dict) -> tuple:
+    """RP22: the stage plus its readout-completion successor as ONE population for the contrasts. Each closure
+    is bound to its own design first (identity, population); the merged design enumerates the stage's cells
+    plus the successor's, with the readout controls at every r; inherited donors are the stage's own cells.
+    A successor of another parent, or a cell present in both, refuses."""
+    if succ_design.get("successor_of") != design.get("design_sha256") or succ_design.get("kind") != "READOUT_COMPLETION":
+        raise EffectsRefusal("REFUSED: the successor is not the readout completion of this design")
+    if succ_close.get("design_sha256") != succ_design.get("design_sha256"):
+        raise EffectsRefusal("REFUSED: the successor closure is of another design")
+    ids = {c["cell_id"] for c in design["cells"]}
+    dup = [c["cell_id"] for c in succ_design["cells"] if c["cell_id"] in ids]
+    if dup:
+        raise EffectsRefusal(f"REFUSED: successor cells already in the stage: {dup[:3]}")
+    for inh in succ_design.get("inherited") or []:
+        if inh["cell_id"] not in ids or inh["inherited_from"]["design_sha256"] != design["design_sha256"]:
+            raise EffectsRefusal(f"REFUSED: inherited donor {inh['cell_id']} is not a stage cell")
+    merged_design = {**design, "cells": list(design["cells"]) + list(succ_design["cells"]),
+                     "readout_controls_r": sorted(set(design.get("readout_controls_r") or design["r_values"]) | {c["r"] for c in succ_design["cells"]}),
+                     "design_sha256": "MERGED:" + design["design_sha256"][:16] + "+" + succ_design["design_sha256"][:16],
+                     "merged_from": [design["design_sha256"], succ_design["design_sha256"]]}
+    merged_design["cells_total"] = len(merged_design["cells"])
+    units = dict(close_local["units"])
+    for cid, u in succ_close["units"].items():
+        if u.get("role") == "INHERITED":
+            continue                                          # the stage's own verification of the donor stands; the successor re-verified it apart
+        if cid in units:
+            raise EffectsRefusal(f"REFUSED: {cid} verified in both closures")
+        units[cid] = u
+    merged_close = {"design_sha256": merged_design["design_sha256"], "population": {"members": [c["cell_id"] for c in merged_design["cells"]]},
+                    "closure": f"{close_local.get('closure')}+{succ_close.get('closure')}", "units": units,
+                    "sources": {"stage": {"design": design["design_sha256"], "closure": close_local.get("closure")},
+                                "successor": {"design": succ_design["design_sha256"], "closure": succ_close.get("closure"),
+                                              "inherited_verified": {k: u["status"] for k, u in succ_close["units"].items() if u.get("role") == "INHERITED"}}}}
+    return merged_close, merged_design
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--close", type=Path, required=True)
     parser.add_argument("--design", type=Path, required=True)
+    parser.add_argument("--successor-close", type=Path, default=None, help="RP22: the readout-completion successor's CLOSE.json")
+    parser.add_argument("--successor-design", type=Path, default=None)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--tables", type=Path, default=None)
     parser.add_argument("--split", default="validation")
@@ -386,7 +424,12 @@ def main(argv=None) -> int:
     if args.out.exists():
         raise SystemExit(f"REFUSED: {args.out} exists")
     try:
+        if args.successor_close is not None:
+            sc = json.loads(args.successor_close.read_text())
+            local, design = merge_successor(local, design, sc.get("local") or sc, json.loads(args.successor_design.read_text()))
         eff = effects(local, design, args.split)
+        if "sources" in local:
+            eff["sources"] = local["sources"]
         eff["effects_test"] = None
         if args.split != "test":
             t = effects(local, design, "test", n_boot=0)

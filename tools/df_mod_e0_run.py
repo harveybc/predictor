@@ -397,6 +397,8 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
         registrations_path.write_text(json.dumps(registrations, indent=1))
         return reg["campaign_sha256"]
 
+    missing_units_ref = {"sha": None, "set": set()}
+
     def child(sha, key, unit_id, job, tags, need=0.0, emit_resumed=False):
         attempt = root / "attempts" / unit_id
         resumed = (attempt / "outcome.json").is_file()
@@ -411,7 +413,7 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
                        cpu_seconds=budgets["cpu_seconds"])
         with lock:
             trace("child-done", kind="mod_e0_cell", name=unit_id, outcome=out.get("outcome"))
-            if resumed and not emit_resumed:
+            if resumed and not emit_resumed and not (unit_id in (missing_units_ref.get("set") or set()) and sha == missing_units_ref.get("sha")):
                 report["terminals"].append({"unit_id": unit_id, "status": "RESUMED", "outcome": out["outcome"], "cost": out["cost"], "resumed": True})
                 return out
             return _emit(sha, unit_id, job, tags, out)
@@ -541,10 +543,10 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
     sha = register(key, [c["cell_id"] for c in design["cells"]])
     report["campaign"] = {"key": key, "campaign_sha256": sha}
     done = {}
-    missing_now = None
-    if report_collected:
-        rs, rb = gov.reconcile_campaign(sha)
-        missing_now = set(rb.get("missing_units") or []) if rs == 200 else set()
+    # units registered but without a terminal (a crash between a child's end and its report, or delegated cells): reported on resume
+    rs, rb = gov.reconcile_campaign(sha)
+    missing_now = set(rb.get("missing_units") or []) if rs == 200 else set()
+    missing_units_ref.update(sha=sha, set=set(missing_now))
     mine, delegated = [], []
     for c in design["cells"]:
         owner = c.get("host_role", "COORDINATOR")
