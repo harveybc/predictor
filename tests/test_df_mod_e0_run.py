@@ -125,3 +125,15 @@ def test_ML11_the_ceiling_is_enforced_before_each_child_and_incompletes_are_kept
     report, gov, trace, children, design = _run(tmp_path, cap=2600.0, cost=1.0, cell_cost=400.0)
     assert report["stopped"] and report["stopped"].startswith(RUN.DEV.CAP_EXHAUSTED)
     assert 0 < len(report["cells"]) < design["cells_total"] and report["reconciliation"]["missing_units"]
+
+
+@pytest.mark.skipif(not Path("/usr/bin/systemd-run").exists(), reason="no systemd user scope")
+def test_ML11_a_real_cost_pilot_child_completes_and_verifies_without_a_test_split(tmp_path):
+    job = {"kind": "mod_e0_cell", "cell_id": "pilot__H2_profiles", "hypothesis": "H2", "level": 3, "r": 1, "seed": 1, "arm": "profiles",
+           "window": E.WINDOW, "training": E.TRAINING, "design_sha256": "d" * 64, "run_id": "t", "max_updates_override": 8, "role": "COST_PILOT"}
+    out = RUN.run_isolated(job, attempt_dir=tmp_path / "p", assigned_bytes=3 << 30, wall_seconds=600.0, cpu_seconds=600)
+    assert out["outcome"] == "COMPLETED", out
+    rec = out["score"]
+    assert rec["exposure"] == "NO_TEST_ACCESS" and "test" not in rec["scores"] and rec["cost"]["fit_seconds"] > 0
+    again = RUN.run_isolated(job, attempt_dir=tmp_path / "p", assigned_bytes=3 << 30, wall_seconds=600.0, cpu_seconds=600)
+    assert again["resumed"] is True and again["score"]["scores"]["validation"]["model"]["mase_mean"] == rec["scores"]["validation"]["model"]["mase_mean"]

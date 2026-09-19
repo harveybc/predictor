@@ -72,7 +72,7 @@ def verified_cell(attempt_dir: Path, result: dict, verified: dict) -> tuple:
         return None, {"outcome": SCORE_UNVERIFIED, "why": "arrays absent or altered"}
     arr = np.load(arrays)
     denom = arr["denominator"].tolist()
-    for part in [p for p in ("train", "validation", "test") if f"{part}_y" in arr.files]:
+    for part in [q for q in ("train", "validation", "test") if f"{q}_y" in arr.files]:
         rec_m = E.mase(arr[f"{part}_pred"], arr[f"{part}_y"], denom)["mase_mean"]
         a, b = rec_m, rec["scores"][part]["model"]["mase_mean"]
         if (a is None) != (b is None) or (a is not None and abs(a - b) > 1e-9):

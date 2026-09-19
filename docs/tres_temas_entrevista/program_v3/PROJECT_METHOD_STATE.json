@@ -1,11 +1,20 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-09-18",
-  "current_stage": "acceptance_test_design",
-  "completed_stages": ["discovery", "requirements"],
+  "current_stage": "implementation",
+  "completed_stages": [
+    "discovery",
+    "requirements",
+    "acceptance_test_design",
+    "architecture",
+    "system_test_design",
+    "component_design",
+    "integration_test_design",
+    "unit_test_design"
+  ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "PUBLISHED_ORDER_NOT_EXECUTION_ACKNOWLEDGEMENT",
+  "handoff_status": "RP1_RP8_IN_EXECUTION_BY_SATOSHI",
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
@@ -17,30 +26,176 @@
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
     "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-    "orders": "../../handoffs/MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md"
+    "orders": "../../handoffs/MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md",
+    "design_sheet": "13A_MOD_E0_DEV_DESIGN_SHEET_2026_09_18.md",
+    "next_steps": "13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
   },
   "proposal_coverage": {
-    "P-MOD": ["MOD-E0-DEV", "MOD-E1", "MOD-CONF", "MOD-E3"],
-    "P-L2": ["L2-PUBLIC-RL"],
-    "P-CAP": ["CAP-CALIBRATION"],
-    "P-PRE": ["PRE-NOISE"],
-    "P-TRN": ["TRN-TRANSFER"],
-    "P-INC": ["INC-SIMULATION"]
+    "P-MOD": [
+      "MOD-E0-DEV",
+      "MOD-E1",
+      "MOD-CONF",
+      "MOD-E3"
+    ],
+    "P-L2": [
+      "L2-PUBLIC-RL"
+    ],
+    "P-CAP": [
+      "CAP-CALIBRATION"
+    ],
+    "P-PRE": [
+      "PRE-NOISE"
+    ],
+    "P-TRN": [
+      "TRN-TRANSFER"
+    ],
+    "P-INC": [
+      "INC-SIMULATION"
+    ]
   },
-  "signal_steps": ["STEP-01", "STEP-02", "STEP-03", "STEP-04", "STEP-05", "STEP-06", "STEP-07", "STEP-08", "STEP-09", "STEP-10", "STEP-11", "STEP-12", "STEP-13"],
-  "compression_lanes": ["C1", "C2", "C3", "C4", "C5", "C6", "C7"],
-  "shared_requirements": ["FE", "EVENT", "META", "I-INFO", "H-ES", "GOVERNANCE", "WEEKLY-RL"],
+  "signal_steps": [
+    "STEP-01",
+    "STEP-02",
+    "STEP-03",
+    "STEP-04",
+    "STEP-05",
+    "STEP-06",
+    "STEP-07",
+    "STEP-08",
+    "STEP-09",
+    "STEP-10",
+    "STEP-11",
+    "STEP-12",
+    "STEP-13"
+  ],
+  "compression_lanes": [
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5",
+    "C6",
+    "C7"
+  ],
+  "shared_requirements": [
+    "FE",
+    "EVENT",
+    "META",
+    "I-INFO",
+    "H-ES",
+    "GOVERNANCE",
+    "WEEKLY-RL"
+  ],
   "tasks": [
-    {"id": "MOD-E0-DEV", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": [], "evidence": [], "next_action": "Numerical H2/H3 design, adequate real learners, tests, then governed multivariate pilot", "deliverable": "H2 profile/random effects and H3 sequence/summary effects with matched controls and cost"},
-    {"id": "MOD-E1", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": ["MOD-E0-DEV"], "evidence": [], "next_action": "Inventory admissible public development families in parallel; freeze design rules after pilot", "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan"},
-    {"id": "MOD-CONF", "owner": "Musashi + Satoshi", "status": "NOT_STARTED", "depends_on": ["MOD-E1"], "evidence": [], "next_action": "Review fixed method before independent E0 synthetic and E2 public reserves", "deliverable": "H1/H2/H3 effects under the proposal's reserved protocol"},
-    {"id": "BUSINESS-CONTRACT", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": [], "evidence": [], "next_action": "Derive active demand and weekly timing from executable configs, not an arbitrary asset", "deliverable": "Observations/targets/actions, availability, weekly cycle, cost and data gaps"},
-    {"id": "MOD-E3", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": ["MOD-E1", "BUSINESS-CONTRACT"], "evidence": [], "next_action": "Prepare mandatory historical forecasting and RL evaluation without requiring positive H1", "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost"},
-    {"id": "L2-PUBLIC-RL", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": [], "evidence": [], "next_action": "Map existing B4/selector evidence to the exact POPGym/CARL protocol before new RL development", "deliverable": "H1 cost/regret, H2 risk-coverage and H3 transfer with observed fidelities"},
-    {"id": "CAP-CALIBRATION", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": [], "evidence": [], "next_action": "Map M3/M4 evidence to random-label capacity and N_min protocol; implement only missing scope", "deliverable": "H1 capacity, H2 bits/generalization and H3 dimensioning with censoring"},
-    {"id": "PRE-NOISE", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": [], "evidence": [], "next_action": "Reconcile D2 by regime and extend only uncovered task/receiver contrasts with causal noise controls", "deliverable": "H1 degradation, H2 conditional denoising and H3 residual preservation"},
-    {"id": "TRN-TRANSFER", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": [], "evidence": [], "next_action": "Reuse T0-T2/D3 within scope; design per-variable/public transfer with adequate receivers", "deliverable": "Conditional utility, transfer/cost, abstention and DOIN parity"},
-    {"id": "INC-SIMULATION", "owner": "Satoshi", "status": "NOT_STARTED", "depends_on": [], "evidence": [], "next_action": "Map existing implementation to HPO-B pilot and required training-domain validation", "deliverable": "H1 allocation, H2 learning and H3 manipulation utility in simulation"}
+    {
+      "id": "MOD-E0-DEV",
+      "owner": "Satoshi",
+      "status": "IMPLEMENTED",
+      "depends_on": [],
+      "evidence": [
+        "docs/audits/evidence/d3_k5_20260917/RP2_MOD_E0_DESIGN.json",
+        "docs/audits/evidence/d3_k5_20260917/RP3_ML07_RECEIVER_DIAGNOSTIC.json",
+        "tests/test_df_mod_e0.py",
+        "tests/test_df_mod_e0_run.py"
+      ],
+      "next_action": "RP4 governed pilot mod-e0-dev-v1 running; then RP5 verification and effects",
+      "deliverable": "H2 profile/random effects and H3 sequence/summary effects with matched controls and cost"
+    },
+    {
+      "id": "MOD-E1",
+      "owner": "Satoshi",
+      "status": "DESIGNED",
+      "depends_on": [
+        "MOD-E0-DEV"
+      ],
+      "evidence": [
+        "docs/tres_temas_entrevista/program_v3/13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
+      ],
+      "next_action": "Inventory admissible public development families in parallel; freeze design rules after pilot",
+      "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan"
+    },
+    {
+      "id": "MOD-CONF",
+      "owner": "Musashi + Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "MOD-E1"
+      ],
+      "evidence": [],
+      "next_action": "Review fixed method before independent E0 synthetic and E2 public reserves",
+      "deliverable": "H1/H2/H3 effects under the proposal's reserved protocol"
+    },
+    {
+      "id": "BUSINESS-CONTRACT",
+      "owner": "Satoshi",
+      "status": "DESIGNED",
+      "depends_on": [],
+      "evidence": [
+        "docs/tres_temas_entrevista/program_v3/13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md",
+        "docs/integracion_workplan_2026_09_10/12E_WEEKLY_BUSINESS_PROTOCOL_AND_RL_COUNTERPART_2026_09_18.md"
+      ],
+      "next_action": "owner decision on universe/weekly timing; per-feature availability ledger",
+      "deliverable": "Observations/targets/actions, availability, weekly cycle, cost and data gaps"
+    },
+    {
+      "id": "MOD-E3",
+      "owner": "Satoshi",
+      "status": "DESIGNED",
+      "depends_on": [
+        "MOD-E1",
+        "BUSINESS-CONTRACT"
+      ],
+      "evidence": [
+        "docs/tres_temas_entrevista/program_v3/13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md"
+      ],
+      "next_action": "Prepare mandatory historical forecasting and RL evaluation without requiring positive H1",
+      "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost"
+    },
+    {
+      "id": "L2-PUBLIC-RL",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [],
+      "evidence": [],
+      "next_action": "Map existing B4/selector evidence to the exact POPGym/CARL protocol before new RL development",
+      "deliverable": "H1 cost/regret, H2 risk-coverage and H3 transfer with observed fidelities"
+    },
+    {
+      "id": "CAP-CALIBRATION",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [],
+      "evidence": [],
+      "next_action": "Map M3/M4 evidence to random-label capacity and N_min protocol; implement only missing scope",
+      "deliverable": "H1 capacity, H2 bits/generalization and H3 dimensioning with censoring"
+    },
+    {
+      "id": "PRE-NOISE",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [],
+      "evidence": [],
+      "next_action": "Reconcile D2 by regime and extend only uncovered task/receiver contrasts with causal noise controls",
+      "deliverable": "H1 degradation, H2 conditional denoising and H3 residual preservation"
+    },
+    {
+      "id": "TRN-TRANSFER",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [],
+      "evidence": [],
+      "next_action": "Reuse T0-T2/D3 within scope; design per-variable/public transfer with adequate receivers",
+      "deliverable": "Conditional utility, transfer/cost, abstention and DOIN parity"
+    },
+    {
+      "id": "INC-SIMULATION",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [],
+      "evidence": [],
+      "next_action": "Map existing implementation to HPO-B pilot and required training-domain validation",
+      "deliverable": "H1 allocation, H2 learning and H3 manipulation utility in simulation"
+    }
   ],
   "state_semantics": "NOT_STARTED describes this successor task, not absence of historical work. No experiment was run by publishing this plan. The checker verifies documentary completeness, not scientific adequacy."
 }

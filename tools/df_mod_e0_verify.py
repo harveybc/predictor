@@ -141,7 +141,7 @@ def verify_cell(attempt: Path) -> dict:
     if denom != rec["mase_denominator"]:
         entry["problems"].append("denominator differs")
     recomputed = {}
-    for part in [p for p in ("train", "validation", "test") if f"{part}_y" in arr.files]:
+    for part in [q for q in ("train", "validation", "test") if f"{q}_y" in arr.files]:
         y = arr[f"{part}_y"]
         if not np.isfinite(y).all() or not np.isfinite(arr[f"{part}_pred"]).all():
             entry["problems"].append(f"{part}: non-finite arrays")
