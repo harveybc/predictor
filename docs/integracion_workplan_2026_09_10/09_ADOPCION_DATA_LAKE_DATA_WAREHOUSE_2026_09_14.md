@@ -492,3 +492,21 @@ household E1 de desarrollo y se prueba el controlador semanal real por separado.
 Sin decision pendiente del owner; sin reserva, live ni entrenamiento RL en esta
 ronda. H-CORE y la evaluacion cientifica RL mantienen sus dependencias.
 Esta auditoria no escribio al cubo ni reentreno; no hizo conciliacion viva.
+
+### Revision RP25-RP32 y orden RP33-RP40 (19-sep)
+
+Retorno `60daac9` auditado. Diez ajustes (nueve principales y costo) coinciden
+exactamente en MAE/MASE desde arrays y DATA; 131 archivos originales intactos.
+El piloto household se entreno sin campana registrada: consulta de solo lectura
+a contabilidad activa da cero para su identidad. No se activa ni reinicia nada
+en esta auditoria. Se conserva como historico no gobernado, no como adopcion.
+
+[Dictamen](../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md) con casos
+del cierre E1, mascara AE variable, alcance 7/60 del receptor, controlador sin
+integracion con broker real y limites del contrato/equivalencia de donantes.
+[Orden vigente RP33-RP40](../handoffs/MUSASHI_PROGRAM_RP33_RP40_2026_09_19.md):
+registrar el panel por la ruta existente antes de trabajo nuevo, importar pasado
+sin cambiar cronologia, corregir ML y ejecutar sucesor E1 condicionado a tests.
+Integracion semanal/RL por separado, sin live ni entrenamiento RL esta ronda.
+No hay permiso cientifico pendiente del owner para este registro tecnico.
+H-CORE, seis propuestas y frentes preservados; no repetir toda E0.

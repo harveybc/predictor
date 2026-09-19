@@ -168,3 +168,8 @@ threads=1: script --repo <checkout-60daac9> --run-root <e1-household-pilot-v1>
 --out <reporte>. El script solo escribe fixtures temporales y su reporte.
 
 [Orden RP33-RP40](../../handoffs/MUSASHI_PROGRAM_RP33_RP40_2026_09_19.md).
+
+Plan/estado/README actualizados. Dos regresiones documentales nuevas fallaron
+antes del arreglo (prerrequisito de gobernanza ausente o sustituido por registro
+posterior); despues **21/21** pasan y check_plan indica cobertura documental
+PASS, scientific_approval false. No reemplazan los tests del flujo desplegado.

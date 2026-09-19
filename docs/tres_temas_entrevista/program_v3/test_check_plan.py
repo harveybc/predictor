@@ -101,6 +101,14 @@ class PlanChecks(unittest.TestCase):
         self.state["learning_regimes"] = {"R0": "raw", "R1": "grouping", "R2": "grouping_and_fusion"}
         self.assertIn("learning regimes contract", " ".join(validate(self.state, ROOT)))
 
+    def test_local_terminals_cannot_replace_governed_execution(self):
+        self.state["execution_governance"] = {"new_runs": "LOCAL_TERMINALS_THEN_REGISTER", "historical_import": "SEPARATE_RETROSPECTIVE_EVIDENCE"}
+        self.assertIn("execution governance contract", " ".join(validate(self.state, ROOT)))
+
+    def test_governance_prerequisite_cannot_disappear(self):
+        self.state.pop("execution_governance", None)
+        self.assertIn("execution governance contract", " ".join(validate(self.state, ROOT)))
+
 
 if __name__ == "__main__":
     unittest.main()
