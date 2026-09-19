@@ -43,7 +43,8 @@ BUDGET = {"aggregate_cpu_seconds": 14400.0, "headroom": 0.25, "scope": "RP9-RP16
 
 def build(*, levels=(0, 1, 2, 3), replicates=(1, 2, 3), random_assignments=3, h3_level=2, r_values=(0, 1), archs=ARCHS,
           readout_arms=READOUT_ARMS, readout_controls_r=(0, 1), donor_sensitivity=None, diagnostic=None, max_updates=3000, patience=None,
-          hosts=ROLES, host_weights=None, successor_of: str | None = None, reason: str | None = None, stage_note: str | None = None) -> dict:
+          hosts=ROLES, host_weights=None, successor_of: str | None = None, reason: str | None = None, stage_note: str | None = None,
+          only_hypotheses=None) -> dict:
     """`readout_controls_r`: the r values at which the two readout-control arms run (the other r values
     keep sequence + summary only); `host_weights`: relative concurrency capacity per role, used to deal
     dependency groups (memory-aware placement); `patience`: early-stopping patience in epochs."""
@@ -68,7 +69,7 @@ def build(*, levels=(0, 1, 2, 3), replicates=(1, 2, 3), random_assignments=3, h3
            "fusions": {f: E.FUSIONS[f] for f in readout_arms}, "readout_arms": list(readout_arms),
            "levels": list(levels), "replicates": list(replicates), "random_assignments": int(random_assignments), "h3_level": int(h3_level),
            "r_values": list(r_values), "readout_controls_r": list(readout_controls_r), "donor_sensitivity": donor_sensitivity, "diagnostic": diagnostic,
-           "host_weights": host_weights,
+           "host_weights": host_weights, "only_hypotheses": list(only_hypotheses) if only_hypotheses else None,
            "p": E.P_VARS, "window": E.WINDOW, "horizon": E.HORIZON, "n_total": E.N_TOTAL, "training": training,
            "hosts": list(hosts), "successor_of": successor_of, "successor_reason": reason,
            "common": {"core": "Conv1D(16,3,causal,ELU) for sequence fusions; Dense(32,ELU) for summary fusions", "head": "Dense(p) + persistence skip",
@@ -151,6 +152,9 @@ def cells(design: dict) -> list:
                 g = [{"cell_id": f"DX__{dx['condition']}__s{seed}__{a}__{arm}", "hypothesis": "DX", "level": dx["level"], "r": dx["r"], "seed": seed,
                       "arm": arm, "arch": a, "diagnostic": dx["condition"]} for arm in dx.get("arms") or ["profiles"]]
                 groups.append(g)
+    only = design.get("only_hypotheses")
+    if only:                                                  # a successor that re-runs one hypothesis's cells (e.g. DX after a code defect)
+        groups = [g for g in groups if all(c["hypothesis"] in only for c in g)]
     roles = list(design["hosts"])
     weights = design.get("host_weights") or {r: 1 for r in roles}
     load = {r: 0.0 for r in roles}
@@ -182,6 +186,8 @@ def main(argv=None) -> int:
     parser.add_argument("--readout-controls-r", default="0,1")
     parser.add_argument("--host-weights", default=None, help="e.g. COORDINATOR=4,WORKER_A=6,WORKER_B=2")
     parser.add_argument("--diagnostic-seeds", default="1,2")
+    parser.add_argument("--only-hypotheses", default=None, help="e.g. DX: a successor with that hypothesis's cells only")
+    parser.add_argument("--hosts", default="COORDINATOR,WORKER_A,WORKER_B")
     parser.add_argument("--successor-of", default=None)
     parser.add_argument("--reason", default=None)
     parser.add_argument("--stage-note", default=None)
@@ -194,7 +200,8 @@ def main(argv=None) -> int:
     doc = build(levels=[int(v) for v in args.levels.split(",")], replicates=[int(v) for v in args.replicates.split(",")],
                 random_assignments=args.random_assignments, max_updates=args.max_updates, patience=args.patience,
                 readout_controls_r=[int(v) for v in args.readout_controls_r.split(",")], host_weights=weights, diagnostic=diagnostic,
-                successor_of=args.successor_of, reason=args.reason, stage_note=args.stage_note)
+                hosts=args.hosts.split(","), successor_of=args.successor_of, reason=args.reason, stage_note=args.stage_note,
+                only_hypotheses=args.only_hypotheses.split(",") if args.only_hypotheses else None)
     if args.out.exists():
         raise SystemExit(f"REFUSED: {args.out} exists; a design is never written over")
     args.out.write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n")

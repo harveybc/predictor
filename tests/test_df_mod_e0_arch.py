@@ -107,6 +107,15 @@ def test_RP14_the_readout_controls_share_the_fusion_and_differ_only_in_the_reado
         E.build_modular(assign, E.WINDOW, 8, fusion="sequence", seed=1, arch="Z")
 
 
+def test_RP14_a_DX_cell_runs_the_profiles_arm_under_the_diagnostic_and_a_successor_can_hold_DX_only(tmp_path):
+    rec = E.run_cell({"cell_id": "dx", "hypothesis": "DX", "level": 3, "r": 1, "seed": 1, "arm": "profiles", "role": "CELL", "arch": "0",
+                      "diagnostic": "trend_event", "max_updates_override": 4, "descriptors": False}, tmp_path / "dx")
+    assert rec["diagnostic"] == "trend_event" and rec["arch"] == "0" and rec["assignment_is_profile"] and rec["scores"]["validation"]["model"]["status"] == "MEDIDO"
+    d = AD.build(levels=[0, 3], replicates=[1], random_assignments=1, max_updates=6, only_hypotheses=["DX"], hosts=["COORDINATOR"])
+    assert d["cells_total"] == 8 and all(c["hypothesis"] == "DX" and c["host_role"] == "COORDINATOR" for c in d["cells"])
+    assert CLOSE.population(d)["members"] == [c["cell_id"] for c in d["cells"]]
+
+
 def test_RP14_the_diagnostic_condition_adds_a_known_deterministic_term_the_oracle_sees():
     g = E.generate(3, 1, 1, diagnostic="trend_event")
     g0 = E.generate(3, 1, 1)

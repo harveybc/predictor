@@ -678,7 +678,7 @@ def run_cell(job: dict, out_dir: Path) -> dict:
     profile_labels = average_linkage(prof["scaled"], 2)
     sizes = [profile_labels.count(g) for g in sorted(set(profile_labels))]
     arm = job["arm"]
-    if job["hypothesis"] == "H2":
+    if job["hypothesis"] in ("H2", "DX"):                    # DX (RP14 diagnostic) uses the H2 arms (profiles / random_k)
         if arm == "profiles":
             assignment = profile_labels
         else:

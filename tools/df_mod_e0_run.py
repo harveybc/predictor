@@ -41,13 +41,17 @@ _LOAD_LOCK = __import__("threading").RLock()
 def _load(name: str, where: Path = HERE):
     """Thread-safe: concurrent children (RP14 --parallel) must never see a half-initialised module
     (a worker crashed with `df_isolated_runner has no attribute Task` under that race)."""
-    with _LOAD_LOCK:
-        if name in sys.modules:
+    with _LOAD_LOCK:                                      # the lock alone removes the race; the module must be registered
+        if name in sys.modules:                           # BEFORE its body runs (dataclasses look themselves up in sys.modules)
             return sys.modules[name]
         spec = importlib.util.spec_from_file_location(name, where / f"{name}.py")
         module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
         sys.modules[name] = module
+        try:
+            spec.loader.exec_module(module)
+        except BaseException:
+            sys.modules.pop(name, None)
+            raise
         return module
 
 
