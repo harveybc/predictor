@@ -16,7 +16,7 @@ paired replicas (same initial checkpoint per seed across regimes; same AE per se
               R2_s (R1/R2 depend on ae_s), controls; verified scores recomputed from the child's arrays;
               a terminal document (governed_terminal.v1) per unit in the run root
     close     RESULTS.json/.md: per regime x seed, paired differences, controls, costs by phase, curves
-              and truncation, identity proofs (shared initial checkpoint, detector digests, gradients)
+              and censoring, identity proofs (shared initial checkpoint, detector digests, gradients)
 
 Governance disposition (declared, not hidden): the public panels are NOT resources of any lake the
 deployed data-gov serves (lakes: financial_files, olap_cube, predictor_examples), and a DATASETS
@@ -91,6 +91,7 @@ def sha_file(path: Path) -> str:
 def seal(*, window: int = 60, horizon: int = 60, dev_train_days: int = 28, dev_val_days: int = 7, seeds=(1, 2, 3), max_updates: int = 4000,
          ae_updates: int = 1500, batch: int = 64, patience_epochs: int = 3, pilot_updates: int = 300, headroom: float = 0.25,
          learning_rate: float = 3e-3, mask_ratio: float = 0.3, ridge_lambda: float = 1.0, task_memory_bytes: int = 2 << 30,
+         internal_validation_fraction: float = 0.15, validation_bank_seed: int = 20260919,
          wall_seconds: float = 2400.0, cpu_seconds: int = 2400, declared_task: dict | None = None) -> dict:
     """`declared_task`: a task declaration used INSTEAD of the E1_TASKS lookup (tests on synthetic panels only; recorded)."""
     tasks = json.loads(TASKS_FILE.read_text())
@@ -147,9 +148,14 @@ def seal(*, window: int = 60, horizon: int = 60, dev_train_days: int = 28, dev_v
                   "initial_weights": "keras set_random_seed(seed) before build: the SAME initial checkpoint for R0/R1/R2 of a seed (digest recorded per unit)",
                   "regimes": {"R0": "random detector, trainable", "R1": "detector from ae_s (masked AE, train windows only), frozen",
                               "R2": "detector from ae_s, adjustable (same imported weights as R1)"}},
-        "pretraining": {"objective": "masked reconstruction (mask ratio %.2f of time x channel positions) on DEV TRAIN windows, internal validation = the DEV "
-                                     "validation windows' INPUTS only (no label), decoder separate and never connected at inference" % mask_ratio,
-                        "mask_ratio": mask_ratio, "max_updates": ae_updates, "patience_epochs": patience_epochs},
+        "pretraining": {"objective": "masked reconstruction (mask ratio %.2f of time x channel positions) on DEV TRAIN windows; the internal "
+                                     "validation is a PURGED TAIL of those same train origins, so the supervised DEV validation is never "
+                                     "consumed by pre-training; decoder separate and never connected at inference" % mask_ratio,
+                        "mask_ratio": mask_ratio, "max_updates": ae_updates, "patience_epochs": patience_epochs,
+                        "internal_validation_fraction": internal_validation_fraction,
+                        "internal_validation_purge": "window + horizon rows between the pre-training origins and the internal validation ones",
+                        "validation_bank_seed": validation_bank_seed,
+                        "validation_mask_policy": "FIXED BANK by window identity for validation; epoch-varying noise for training, as declared"},
         "training": {"batch": batch, "max_updates": max_updates, "learning_rate": learning_rate, "loss": "mse",
                      "early_stopping": {"monitor": "validation loss (mse)", "patience_epochs": patience_epochs, "restore_best": True},
                      "epoch_note": "an epoch is one pass over the DEV train origins in batches; the update counter binds exactly",
@@ -250,16 +256,53 @@ def _gather(Xs: np.ndarray, origins: np.ndarray, W: int) -> np.ndarray:
     return Xs[idx]
 
 
+def _mask_for(origins: np.ndarray, W: int, p: int, ratio: float, *, bank_seed: int, epoch: int | None) -> np.ndarray:
+    """The mask of each window, derived from the WINDOW'S OWN IDENTITY (its origin), never from its
+    position in a batch (RP36, dictum F3).
+
+    `epoch=None` is the fixed VALIDATION BANK: the same origin always receives the same mask, so the
+    criterion a stopping rule compares across epochs is the same stimulus, and a reordering, a resume
+    or a second evaluation cannot move it. An integer `epoch` is TRAINING noise, which the design
+    declares as varying: it still depends on the window's identity, so shuffling does not change what
+    a given window sees within an epoch.
+    """
+    out = np.empty((origins.size, W, p), dtype=bool)
+    for k, origin in enumerate(origins):
+        key = [int(bank_seed), int(origin)] if epoch is None else [int(bank_seed), int(epoch), int(origin)]
+        out[k] = np.random.default_rng(key).random((W, p)) < ratio
+    return out
+
+
+def mask_bank_digest(origins: np.ndarray, W: int, p: int, ratio: float, *, bank_seed: int) -> str:
+    """The identity of a validation bank: its origins and the masks they receive."""
+    m = _mask_for(np.asarray(origins, dtype=np.int64), W, p, ratio, bank_seed=bank_seed, epoch=None)
+    h = hashlib.sha256()
+    h.update(np.asarray(origins, dtype=np.int64).tobytes())
+    h.update(m.tobytes())
+    h.update(json.dumps({"W": W, "p": p, "ratio": ratio, "bank_seed": bank_seed}, sort_keys=True).encode())
+    return h.hexdigest()
+
+
 def _dataset_class():
     tf = E._tf()
 
     class WindowBatches(tf.keras.utils.PyDataset):
-        """Windows gathered per batch from the scaled slice (never materialised); shuffled per epoch by seed."""
-        def __init__(self, Xs, Y, origins, W, h, j_t, batch, *, scaler_mean, scaler_sd, shuffle, seed, masked=None):
+        """Windows gathered per batch from the scaled slice (never materialised).
+
+        `masked` turns it into the auto-encoder's stream. `mask_mode` says which stimulus it serves:
+        "bank" is the fixed validation bank (invariant to epoch, batch order, resume and repetition)
+        and "training" is the declared training noise. Shuffling only reorders windows; it never
+        changes what a window is asked to reconstruct.
+        """
+        def __init__(self, Xs, Y, origins, W, h, j_t, batch, *, scaler_mean, scaler_sd, shuffle, seed, masked=None,
+                     mask_mode="training", bank_seed=20260919):
             super().__init__(workers=1, use_multiprocessing=False)
             self.Xs, self.Y, self.origins, self.W, self.h, self.j, self.batch = Xs, Y, np.asarray(origins), W, h, j_t, batch
             self.m, self.s = float(scaler_mean[j_t]), float(scaler_sd[j_t])
             self.shuffle, self.seed, self.epoch, self.masked = shuffle, seed, 0, masked
+            self.mask_mode, self.bank_seed = mask_mode, bank_seed
+            if masked is not None and mask_mode not in ("bank", "training"):
+                raise SystemExit(f"unknown mask mode {mask_mode!r}")
             self.perm = np.arange(self.origins.size)
             self._reshuffle()
 
@@ -274,7 +317,9 @@ def _dataset_class():
             o = self.origins[self.perm[i * self.batch:(i + 1) * self.batch]]
             X = _gather(self.Xs, o, self.W)
             if self.masked is not None:                                           # AE: masked input -> [x, mask] target
-                m = np.random.default_rng([self.seed, self.epoch, i, 7]).random(X.shape) < self.masked
+                epoch = None if self.mask_mode == "bank" else self.epoch
+                seed = self.bank_seed if self.mask_mode == "bank" else self.seed
+                m = _mask_for(o, self.W, X.shape[2], self.masked, bank_seed=seed, epoch=epoch)
                 return np.where(m, 0.0, X).astype(np.float32), np.concatenate([X, m.astype(np.float32)], axis=2)
             y = ((self.Y[o + self.h] - self.m) / self.s).astype(np.float32)[:, None]
             return X, y
@@ -321,8 +366,22 @@ def _fit_batched(model, train_ds, val_ds, *, max_updates, patience, lr, seed) ->
             "curve": {"train": [float(v) for v in hist.history["loss"]], "validation": va}, "stop_reason": stop,
             "restored_checkpoint_epoch": int(np.argmin(va)) + 1, "restored_validation_loss": restored,
             "restore_verified": bool(abs(restored - min(va)) <= 1e-4 * max(1.0, abs(min(va)))),
-            "truncation": {"hit_update_ceiling": bool(counter.budget_stop), "best_epoch_is_last": int(np.argmin(va)) + 1 == len(va),
-                           "reading": "a best epoch at the last epoch with the ceiling hit means the curve was still improving: truncated"},
+            # RP36: reaching the budget IS optimisation censoring, whatever the argmin says. The reading
+            # reports the slope at the end, how long the run lasted and the adequacy criterion; it never
+            # concludes "not truncated" from a best epoch that happens not to be the last.
+            "censoring": {"budget_reached": bool(counter.budget_stop),
+                          "stopped_by": stop,
+                          "best_epoch": int(np.argmin(va)) + 1, "epochs": len(va),
+                          "validation_slope_last_two": (float(va[-1] - va[-2]) if len(va) > 1 else None),
+                          "validation_slope_last_third": (float(va[-1] - va[max(0, int(len(va) * 2 / 3) - 1)])
+                                                          if len(va) > 2 else None),
+                          "improvement_since_best": (float(va[-1] - min(va)) if va else None),
+                          "updates_used_of_ceiling": [int(counter.updates), int(max_updates)],
+                          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a "
+                                                "non-improving slope over the last third; a run that stopped at the update "
+                                                "ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+                          "verdict": ("CENSORED_BY_BUDGET" if counter.budget_stop else
+                                      "STOPPED_ON_VALIDATION" if es.stopped_epoch else "EPOCH_BUDGET_REACHED")},
             "fit_seconds": round(fit_s, 3)}
 
 
@@ -366,8 +425,21 @@ def run_unit(job: dict, out_dir: Path) -> dict:
             x, m = y_true[..., :p], y_true[..., p:]
             return tf.reduce_sum(m * tf.square(x - y_pred)) / (tf.reduce_sum(m) + 1e-8)
         ae.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=masked_mse)
-        tr_ds = WB(d["Xs"], d["Y"], d["train_origins"], W, h, j, batch, shuffle=True, seed=int(job["seed"]), masked=design["pretraining"]["mask_ratio"], **kw)
-        va_ds = WB(d["Xs"], d["Y"], d["eval_origins"], W, h, j, 256, shuffle=False, seed=0, masked=design["pretraining"]["mask_ratio"], **kw)
+        # RP36: the pre-training's internal validation is a PURGED TAIL OF THE TRAIN ORIGINS. The
+        # supervised DEV validation is never read here, so selecting the auto-encoder cannot consume
+        # the split the regimes are later compared on.
+        tr_all = np.asarray(d["train_origins"], dtype=np.int64)
+        frac = float(design["pretraining"]["internal_validation_fraction"])
+        cut = max(1, int(round(tr_all.size * (1.0 - frac))))
+        purge = W + h
+        ae_tr = tr_all[:max(1, cut - purge)]
+        ae_va = tr_all[cut:]
+        ratio = design["pretraining"]["mask_ratio"]
+        bank_seed = int(design["pretraining"]["validation_bank_seed"])
+        tr_ds = WB(d["Xs"], d["Y"], ae_tr, W, h, j, batch, shuffle=True, seed=int(job["seed"]), masked=ratio,
+                   mask_mode="training", **kw)
+        va_ds = WB(d["Xs"], d["Y"], ae_va, W, h, j, 256, shuffle=False, seed=0, masked=ratio,
+                   mask_mode="bank", bank_seed=bank_seed, **kw)
         steps = len(tr_ds)
         max_updates = int(job["max_updates"])
         max_epochs = max(1, math.ceil(max_updates / steps))
@@ -389,17 +461,32 @@ def run_unit(job: dict, out_dir: Path) -> dict:
         va = [float(v) for v in hist.history["val_loss"]]
         t1 = time.process_time()
         rec_val = float(ae.evaluate(va_ds, verbose=0))
+        rec_val_again = float(ae.evaluate(va_ds, verbose=0))
         cost["metrics_seconds"] = round(time.process_time() - t1, 3)
         stop_reason = "UPDATE_BUDGET" if counter["stop"] else ("EARLY_STOPPING" if es.stopped_epoch else "EPOCH_BUDGET")
+        best = float(min(va)) if va else None
         rec.update(pretraining={"updates": counter["updates"], "epochs": len(va), "steps_per_epoch": steps, "stop_reason": stop_reason,
-                                "curve": {"train": [float(v) for v in hist.history["loss"]], "validation": va}, "best_epoch": int(np.argmin(va)) + 1,
-                                "reconstruction_val_mse_masked": rec_val, "internal_validation": "DEV validation windows' INPUTS only (masked reconstruction), no label",
+                                "curve": {"train": [float(v) for v in hist.history["loss"]], "validation": va},
+                                "best_epoch": int(np.argmin(va)) + 1, "best_validation_loss": best,
+                                "reconstruction_val_mse_masked": rec_val,
+                                "restored_reproduces_best": bool(best is not None and abs(rec_val - best) <= 1e-4 * max(1.0, abs(best))),
+                                "evaluation_is_repeatable": bool(abs(rec_val - rec_val_again) <= 1e-9),
+                                "internal_validation": "a PURGED TAIL of the DEV train origins; the supervised DEV validation "
+                                                       "and the final test are never read during pre-training",
+                                "internal_validation_windows": int(ae_va.size), "pretrain_windows": int(ae_tr.size),
+                                "purge_between": int(purge), "mask_ratio": ratio,
+                                "validation_mask": "a FIXED BANK keyed by the window's origin: invariant to epoch, batch order, "
+                                                   "resume and repeated evaluation (training noise varies by epoch, as declared)",
+                                "validation_bank_sha256": mask_bank_digest(ae_va, W, p, ratio, bank_seed=bank_seed),
                                 "decoder_layers": dec_names, "detector_layers": det, "detector_digest": RG.weights_digest(ae, det),
                                 "decoder_never_at_inference": True, "diagnostic_only": True},
                    output_files={"detector": "detector_pretrained.npz", "decoder": "decoder.npz"},
-                   detector_sha256=sha_file(out_dir / "detector_pretrained.npz"), training={"updates": counter["updates"], "stop_reason": stop_reason},
+                   detector_sha256=sha_file(out_dir / "detector_pretrained.npz"),
+                   training={"updates": counter["updates"], "stop_reason": stop_reason},
                    parameters=E.count_params(ae), scores={"validation": {"model": {"mase_mean": None, "mae_mean": None, "status": "NO_APLICA"}}})
-        np.savez(out_dir / "arrays.npz", denominator=d["denominator"], eval_origins=d["eval_origins"])
+        ae.save_weights(str(out_dir / "ae.weights.h5"))
+        np.savez(out_dir / "arrays.npz", denominator=d["denominator"], eval_origins=d["eval_origins"],
+                 ae_validation_origins=ae_va, ae_train_origins=ae_tr)
     elif job["kind"] == "fit":
         regime = job["regime"]
         model = _model_for_target(assignment, W, p, j, int(job["seed"]))
@@ -642,7 +729,7 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
         s = {"outcome": out["outcome"], "cost": out.get("cost"), "resumed": out.get("resumed", False)}
         if rec and rec["kind"] == "fit":
             s.update(regime=rec["regime"], seed=rec["seed"], mase_validation=rec["scores"]["validation"]["model"]["mase_mean"], mae_validation=rec["scores"]["validation"]["model"]["mae_mean"],
-                     updates=rec["training"]["updates"], stop_reason=rec["training"]["stop_reason"], truncation=rec["training"]["truncation"], phases=rec["cost"],
+                     updates=rec["training"]["updates"], stop_reason=rec["training"]["stop_reason"], censoring=rec["training"]["censoring"], phases=rec["cost"],
                      detector_unchanged=rec["detector_unchanged"], detector_receives_gradient=rec["gradient_proof"]["detector_receives_gradient"],
                      initial_full_digest=rec["initial_checkpoint"]["full_digest"], parameters=rec["parameters"])
         elif rec and rec["kind"] == "ae":
@@ -760,7 +847,7 @@ def close(root: Path) -> dict:
             if k in cells and cells[k]["verified"]:
                 rec = cells[k]["rec"]
                 table[k] = {"regime": r, "seed": s, "mase": rec["scores"]["validation"]["model"]["mase_mean"], "mae": rec["scores"]["validation"]["model"]["mae_mean"],
-                            "updates": rec["training"]["updates"], "epochs": rec["training"]["epochs"], "stop": rec["training"]["stop_reason"], "truncation": rec["training"]["truncation"],
+                            "updates": rec["training"]["updates"], "epochs": rec["training"]["epochs"], "stop": rec["training"]["stop_reason"], "censoring": rec["training"]["censoring"],
                             "best_epoch": rec["training"]["restored_checkpoint_epoch"], "curve_val": rec["training"]["curve"]["validation"], "curve_train": rec["training"]["curve"]["train"],
                             "phases": rec["cost"], "child_cpu": cells[k]["outcome"]["summary"]["cost"].get("cpu_seconds"), "peak_rss": cells[k]["outcome"]["summary"]["cost"].get("peak_rss_bytes"),
                             "cgroup_peak": cells[k]["outcome"]["summary"]["cost"].get("cgroup_memory_peak"), "detector_unchanged": rec["detector_unchanged"],
@@ -814,10 +901,10 @@ def close(root: Path) -> dict:
     (root / "RESULTS.json").write_text(json.dumps(doc, indent=1, default=float))
     lines = [f"# E1 household DEV pilot — results (run {report['run_id']})", "", f"Task {design['task']['id']}: context {design['task']['context_physical_seconds']} s, horizon {design['task']['horizon_physical_seconds']} s, model reach {design['task']['model_reach_physical_seconds']} s. "
              f"DEV rows {design['dev_subpartition']['rows']}. Common evaluation set {report['data']['coverage']['common_evaluation_set']} origins. MASE denominator (persistence h, train) {report['data']['mase_denominator_persistence_h']:.4f} kW.", "",
-             "| unit | regime | seed | MASE | MAE (kW) | updates | epochs | stop | best epoch | truncated | fit s | child CPU s | peak RSS MB |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+             "| unit | regime | seed | MASE | MAE (kW) | updates | epochs | stop | best epoch | censoring | fit s | child CPU s | peak RSS MB |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for k, v in table.items():
         if "mase" in v:
-            trunc = v["truncation"]["hit_update_ceiling"] and v["truncation"]["best_epoch_is_last"]
+            trunc = v["censoring"]["verdict"]
             lines.append(f"| {k} | {v['regime']} | {v['seed']} | {v['mase']:.4f} | {v['mae']:.4f} | {v['updates']} | {v['epochs']} | {v['stop']} | {v['best_epoch']} | {trunc} | {v['phases'].get('fit_seconds')} | {v['child_cpu']} | {(v['peak_rss'] or 0) / 2**20:.0f} |")
         else:
             lines.append(f"| {k} | {v['regime']} | {v['seed']} | {v.get('outcome')} | | | | | | | | | |")
