@@ -185,6 +185,10 @@ def seal(*, window: int = 60, horizon: int = 60, dev_train_days: int = 28, dev_v
 # --- prepare -----------------------------------------------------------------------------------------------
 
 def prepare(design: dict, root: Path) -> dict:
+    """Prepare the run's tensors from the panel. Where the panel comes from is decided by the design:
+    `data_access: "GOVERNED_DELIVERY"` reads ONLY the bytes data-gov delivered to this run (RP33), and
+    refuses to start when there is none; the historical setting reads the characterised file in place
+    and is what the preserved 2026-09-19 pilot used."""
     import pandas as pd
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
@@ -195,7 +199,14 @@ def prepare(design: dict, root: Path) -> dict:
             raise SystemExit("REFUSED: DATA in this root belongs to another design or was altered")
         return rec
     t0 = time.process_time()
-    panel = Path(design["governed_bytes"]["path"]).expanduser()
+    access = design.get("data_access", "LOCAL_CHARACTERISED_FILE")
+    delivery = None
+    if access == "GOVERNED_DELIVERY":
+        G = _load("df_e1_governed")
+        delivery = G.require_delivery(root, design)
+        panel = Path(delivery["delivery"]["path"])
+    else:
+        panel = Path(design["governed_bytes"]["path"]).expanduser()
     digest = sha_file(panel)
     if digest != design["governed_bytes"]["sha256"]:
         raise SystemExit("REFUSED: the panel's bytes are not the governed bytes of E1_TASKS")
@@ -238,6 +249,8 @@ def prepare(design: dict, root: Path) -> dict:
     np.savez(data_npz, Xs=Xs, Y=Y, train_origins=tr_o, eval_origins=ev, denominator=np.array([denom]), scaler_mean=scaler["mean"], scaler_sd=scaler["sd"],
              target_channel=np.array([j_t]), window=np.array([W]), horizon=np.array([h]))
     rec = {"schema": SCHEMA_DATA, "design_sha256": design["design_sha256"], "panel_sha256": digest, "panel_rows": n_panel, "slice_rows": [lo, hi],
+           "data_access": access, "delivery": (delivery or {}).get("delivery"),
+           "campaign_sha256": (delivery or {}).get("campaign_sha256"),
            "contract_sha256": c.sha256(), "input_columns": c.input_columns(), "target_channel": j_t, "window": W, "horizon": h, "p": p,
            "enumerator": {k: {kk: vv for kk, vv in v.items() if not isinstance(vv, list)} for k, v in enum["splits"].items()},
            "grid_rows_not_ok": enum["grid_rows_not_ok"], "input_rows_non_finite": enum["input_rows_non_finite"],
