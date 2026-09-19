@@ -132,7 +132,7 @@ orchestrator; feature-eng lane left in the plan with its next task.
 
 **Suites** (trading-stack, `crispdm-run`, CPU; `tests/test_d3_*.py tests/test_df_*.py tests/test_olap_*.py olap/store/tests`): **1306 passed, 6 skipped**, 801 s at `2d59fc8`+docs; after the RP5 repair fix the targeted runner suite (6) and acceptance suite (11) re-run green; the plan checker PASS (documentary only). Disposition by block: design DONE (sealed v1 + stage v2); implemented DONE;
 executed DONE (66/66 cells, 3 191 s CPU); verified DONE (files = parent = accounting = live warehouse); inference: DEVELOPMENT descriptive
-only — no ADVANCES, no support to H2/H3, no eligibility. Commits: `5718f06` (merge) · `2d59fc8` (RP1–RP3) · `RP4A` (docs/state, runner fix) · `RP4B` (stage v2) · `bb213b3` (RP5 repair) · the closing commit. Workers synced.
+only — no ADVANCES, no support to H2/H3, no eligibility. Commits: `5718f06` (merge) · `2d59fc8` (RP1–RP3) · `5306f84` (docs/state, runner fix) · `56f2b08` (stage v2) · `bb213b3` (RP5 repair) · `20c8e68` (closure) and the commit naming it. Workers synced.
 Pending: the empty-envelope disposition (next needed window).
 
 Ending: **MOD-E0-DEV pilot delivered for Musashi's review** (single review request).
