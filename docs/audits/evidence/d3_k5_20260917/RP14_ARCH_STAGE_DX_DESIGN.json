@@ -1,0 +1,323 @@
+{
+ "acceptance_before_effects": [
+  "every architecture beats the naive forecaster on validation at h = 3, r = 1 (receiver adequacy), else its effects are reported as NOT_INTERPRETABLE",
+  "reach tests pass",
+  "cost pilots complete without test access"
+ ],
+ "architectures": {
+  "0": {
+   "adapter": "identity (the group's raw channels)",
+   "detector": "none",
+   "integrator": "none",
+   "name": "no learned extractor",
+   "reach": 1
+  },
+  "A": {
+   "adapter": "TimeDistributed Dense(8), linear",
+   "detector": "2 residual causal Conv1D blocks (16 filters, kernel 3, dilation 1)",
+   "integrator": "identity",
+   "name": "Conv1D local (reference)",
+   "reach": null
+  },
+  "B": {
+   "adapter": "as A",
+   "detector": "as A",
+   "integrator": "residual blocks with dilations 2, 4, 8, 16",
+   "name": "TCN (dilated causal residual)",
+   "reach": null
+  },
+  "C": {
+   "adapter": "as A",
+   "detector": "as A",
+   "integrator": "GRU(16, return_sequences) \u2014 GRU chosen over LSTM BEFORE any result: fewer parameters at equal width and one state",
+   "name": "Conv1D + GRU",
+   "reach": "whole context"
+  }
+ },
+ "archs": [
+  "A",
+  "B",
+  "C",
+  "0"
+ ],
+ "budget": {
+  "aggregate_cpu_seconds": 14400.0,
+  "gpu": "none",
+  "headroom": 0.25,
+  "hosts": "three healthy roles under their own identities; memory-aware concurrency per host",
+  "scope": "RP9-RP16: ML tests, re-verification inference, instrumentation, pilots, failures and this comparison; the executed pilot's history is separate"
+ },
+ "cells": [
+  {
+   "arch": "A",
+   "arm": "profiles",
+   "cell_id": "DX__trend_event__s1__A__profiles",
+   "diagnostic": "trend_event",
+   "host_role": "COORDINATOR",
+   "hypothesis": "DX",
+   "level": 3,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arch": "B",
+   "arm": "profiles",
+   "cell_id": "DX__trend_event__s1__B__profiles",
+   "diagnostic": "trend_event",
+   "host_role": "COORDINATOR",
+   "hypothesis": "DX",
+   "level": 3,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arch": "C",
+   "arm": "profiles",
+   "cell_id": "DX__trend_event__s1__C__profiles",
+   "diagnostic": "trend_event",
+   "host_role": "COORDINATOR",
+   "hypothesis": "DX",
+   "level": 3,
+   "r": 1,
+   "seed": 1
+  },
+  {
+   "arch": "0",
+   "arm": "profiles",
+   "cell_id": "DX__trend_event__s1__0__profiles",
+   "diagnostic": "trend_event",
+   "host_role": "COORDINATOR",
+   "hypothesis": "DX",
+   "level": 3,
+   "r": 1,
+   "seed": 1
+  }
+ ],
+ "cells_by_role": {
+  "COORDINATOR": 4
+ },
+ "cells_total": 4,
+ "classification": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_WINNER_PRESUPPOSED",
+ "common": {
+  "activation": "elu",
+  "activation_note": "ELU is a DEV decision recorded after the ML07 diagnostic of arch B; it is applied to every architecture as a common factor, not as a transferred result",
+  "adapter": "TimeDistributed Dense(8) linear (identity for ARCH-0)",
+  "core": "Conv1D(16,3,causal,ELU) for sequence fusions; Dense(32,ELU) for summary fusions",
+  "head": "Dense(p) + persistence skip",
+  "parameters_differ": "widths are common; parameter counts differ by architecture and are recorded per cell; equal counts would not prove functional equivalence and are not imposed",
+  "reach": {
+   "0": {
+    "branch": 1,
+    "sequence": 3,
+    "sequence_gap": 48,
+    "summary": 48,
+    "summary_last": 1
+   },
+   "A": {
+    "branch": 5,
+    "sequence": 7,
+    "sequence_gap": 48,
+    "summary": 48,
+    "summary_last": 5
+   },
+   "B": {
+    "branch": 65,
+    "sequence": 48,
+    "sequence_gap": 48,
+    "summary": 48,
+    "summary_last": 48
+   },
+   "C": {
+    "branch": 48,
+    "sequence": 48,
+    "sequence_gap": 48,
+    "summary": 48,
+    "summary_last": 48
+   }
+  },
+  "reach_note": "declared and tested by perturbation (tests/test_df_mod_e0_arch.py); the core sees 3 positions, so ARCH-0 and ARCH-A reach the planted lag tau = 3 (ARCH-0: x[t-2] = a[t+1-tau]) \u2014 they do not lose for a blind core; the period 24 is beyond their reach by construction (that is what the comparison measures)",
+  "width": 16
+ },
+ "design_sha256": "ec16db5f06f8a56b043f5dadb39c7335ce029139aec830502cf7eb68d7abe2c3",
+ "diagnostic": {
+  "arms": [
+   "profiles"
+  ],
+  "condition": "trend_event",
+  "level": 3,
+  "r": 1,
+  "seeds": [
+   1
+  ],
+  "why": "absent from the executed pilot: a deterministic drift and two level shifts (one in train, one in test) test receiver adequacy and the corrected trend descriptor; no effect is estimated on it"
+ },
+ "donor_sensitivity": {
+  "archs": [
+   "A",
+   "B"
+  ],
+  "arms": [
+   "sequence",
+   "summary"
+  ],
+  "r": [
+   1
+  ],
+  "why": "bounded: is the H3 contrast sensitive to a donor optimised for the summary receiver? Shared within each pair; the sequence-trained donor is NOT called neutral"
+ },
+ "estimands": {
+  "ARCH": "differences of the above effects and of raw MASE / cost between architectures, descriptive; no winner presupposed",
+  "DONOR": "delta_a = d_a,1(donor summary) - d_a,1(donor sequence) on the bounded subset",
+  "DX": "MASE of the profiles arm vs naive / linear / oracle under trend_event per architecture: adequacy, no effect",
+  "H2_within_arch": "e_a(h) = MASE(profiles) - mean MASE(random) per replicate, slope over h, per architecture a",
+  "H3_within_arch": "d_a,r = MASE(sequence-fusion arms) - MASE(summary-fusion arms) per replicate, averaged over readouts; gamma_a = d_1 - d_0",
+  "READOUT": "rho_a,r = MASE(last readouts) - MASE(pooled readouts) per replicate, averaged over fusions: separates the readout from preserving history until fusion (the 2 x 2 fusion x readout within each (arch, r, replicate) shares one donor)"
+ },
+ "experiment": "MOD-ARCH-COMPARE",
+ "fusions": {
+  "sequence": "channel concatenation of the aligned sequences -> Conv1D(16,3,causal) core -> LAST position -> Dense(p)",
+  "sequence_gap": "channel concatenation -> Conv1D(16,3,causal) core -> global average over time -> Dense(p) (readout control: same fusion, pooled readout)",
+  "summary": "global average per branch -> concatenation -> Dense(32) core -> Dense(p)",
+  "summary_last": "LAST position per branch -> concatenation -> Dense(32) core -> Dense(p) (readout control: same summary fusion, last-step readout)"
+ },
+ "h3_level": 2,
+ "horizon": 1,
+ "host_weights": {
+  "COORDINATOR": 4.0,
+  "WORKER_A": 6.0,
+  "WORKER_B": 2.0
+ },
+ "hosts": [
+  "COORDINATOR"
+ ],
+ "hypotheses": [
+  "H2",
+  "H3",
+  "READOUT",
+  "DX"
+ ],
+ "levels": [
+  0,
+  3
+ ],
+ "n_total": 3000,
+ "only_hypotheses": [
+  "DX"
+ ],
+ "p": 8,
+ "pilots": [],
+ "proposal": "P-MOD",
+ "r_values": [
+  0,
+  1
+ ],
+ "random_assignments": 1,
+ "readout_arms": [
+  "sequence",
+  "sequence_gap",
+  "summary",
+  "summary_last"
+ ],
+ "readout_controls_r": [
+  1
+ ],
+ "reference": "A",
+ "replicates": [
+  1,
+  2
+ ],
+ "review_table": [
+  {
+   "evidence": "tests",
+   "id": "ML01",
+   "obligation": "generator reproduces equations, population and distribution; labels/metadata/latent group never features",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests",
+   "id": "ML02",
+   "obligation": "future/validation/test changes leave fit, groups and past outputs unchanged; roles by identity/time",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + cell records",
+   "id": "ML03",
+   "obligation": "H2 changes the assignment, not names; sizes, models, contexts, budget equal per arm",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests",
+   "id": "ML04",
+   "obligation": "H3 preserves marginals in distribution and changes the relevant dependence; no shuffle control",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + cell records",
+   "id": "ML05",
+   "obligation": "H3 arms use identical frozen extractor activations; freezing verified by weights",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests",
+   "id": "ML06",
+   "obligation": "group -> detector/integrator/adapter -> fusion -> core/head keeps temporal shape; real gradients",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + pilot",
+   "id": "ML07",
+   "obligation": "positive learning with the real receiver; oracle and naive references; curves distinguish lack of training from lack of utility",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + cell records",
+   "id": "ML08",
+   "obligation": "early stopping by validation, real weight restore, reload parity, test never selects",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + verify",
+   "id": "ML09",
+   "obligation": "metrics from arrays; shared denominators; zero policy; empty/non-finite refuse",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + verify",
+   "id": "ML10",
+   "obligation": "e(h), d0/d1/gamma with the declared sign; replicates/seeds/windows never inflate the unit",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "runner tests + pilot",
+   "id": "ML11",
+   "obligation": "child reads delivered bytes; CPU updates observed; complete costs and limits",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "runner tests + verify",
+   "id": "ML12",
+   "obligation": "a real failure leaves a terminal/outbox; reconciliation by population and content",
+   "status": "NOT_TESTED"
+  }
+ ],
+ "schema": "df_mod_e0_arch_design.v1",
+ "successor_of": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+ "successor_reason": "DX_RERUN_AFTER_CODE_DEFECT: the four DX cells of the stage failed at start (KeyError 'profiles' in run_cell: the diagnostic hypothesis was routed to the H3 arm map; recorded as UNCERTAIN terminals with their tracebacks); fixed at commit deec2ca9d495eaabf7278cf815124bae574c19e8 (DX uses the H2 arms); this successor re-runs the four diagnostic cells only, inheriting the stage's measured pilot costs",
+ "training": {
+  "batch": 64,
+  "early_stopping": {
+   "monitor": "validation loss (mse)",
+   "patience": 8,
+   "restore_best": true
+  },
+  "learning_rate": 0.003,
+  "loss": "mse",
+  "max_epochs": 200,
+  "max_updates": 1100,
+  "ml07_diagnostic": "plain ReLU stack + mae + lr 1e-3 + 3000 updates stayed at the naive level (val MASE 0.49 vs naive 0.50, linear 48x8 reference 0.43); residual TCN blocks with ELU + mse + lr 3e-3 + 6000 updates + patience 30 reach 0.43-0.46 on 3/3 seeds (relu at lr 1e-2 collapsed on 3/3); metrics reported are MAE/MASE, the optimisation loss is mse",
+  "optimizer": "adam",
+  "stage_note": "DX-only successor of the informative stage; same allowance, patience and geometry",
+  "tuning_allowance": "NONE after the ML07 instrument diagnostic (sealed before any pilot cell)"
+ },
+ "window": 48
+}
