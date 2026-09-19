@@ -1,5 +1,12 @@
 # 13B — Next real steps (RP6, corrected under RP15): E1 public bank, forecasting/RL demand, E3 protocol, lanes
 
+> **Amendment (RP32).** Two corrections to what this document's E1/E3 lanes may claim. (1) The learning regimes
+> R0 / R1 / R2 are the detector's regimes as [13E v2](13E_v2_E1_TASK_SHEET_AND_REGIMES_2026_09_19.md) defines them
+> (random trainable / pre-trained frozen / pre-trained adjustable), not grouping arms. (2) The E3 lane's weekly
+> cycle is covered, as software, by `tools/e3_weekly_controller.py` and its tests; data availability, late
+> releases and real weekly operation stay UNVERIFIED, and E3 keeps every dependency the plan gives it.
+
+
 Nothing here is executed; every row has an identifier, source, dependency and deliverable. This
 version replaces the earlier table that merely listed JSON files (review F6): the demand is now
 traced effective config → entry point → plugin → data, and each configuration is classified as

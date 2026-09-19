@@ -14,7 +14,14 @@ uses the declared fallback (last valid model or flat) and records the miss, neve
 (equity, positions, pending orders, commissions, financing) persists across weeks; purge/embargo derive
 from the pipeline. Real operating facts (venue, monetary capital, lot minimums, SLA, derivative funding)
 remain UNKNOWN and are requested together only before a test that depends on them. The deterministic
-environment tests of this contract are `tests/test_e3_weekly_env.py` (software tests, no financial return).
+environment tests of this contract are `tests/test_e3_weekly_env.py` (software tests, no financial return): they
+exercise what the ENVIRONMENT does when given actions, with the policy, the release check and the fallback written
+inside the test. **They validate neither real data availability, nor a late release, nor weekly operation.** The
+component that decides the available model, the fallback and the scenario's action is `tools/e3_weekly_controller.py`,
+tested by `tests/test_e3_weekly_controller.py` (RP31: early / late / absent model, fallback executed, week by
+timestamps, continuity, close-to-flat without a short, sizing against a varying equity, gap between close[t] and
+open[t+1] with positive latency, and mutants without a release check or turning flat into short that must fail).
+Offline software: no financial operation and no RL training were run for it, and it is not a completed E3.
 
 
 This is the contract E3 will be judged against. It is written as an EXPERIMENT contract: every value

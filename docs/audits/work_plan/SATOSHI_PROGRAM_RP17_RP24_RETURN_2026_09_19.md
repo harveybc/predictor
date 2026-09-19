@@ -111,6 +111,19 @@ decided at bar t fills at bar t+1's open; the declared fallback before the relea
 13D normalisation (equity 1, long/flat, notional ≤ equity). Software tests; no financial return. Funding is
 not replaced by zero outside the cash-spot scenario.
 
+> **Errata (RP32, dictum F4).** Three phrases of this RP23 paragraph claimed more than their tests supported and
+> are corrected here; the tests themselves are unchanged.
+> 1. *Data availability.* `tests/test_e3_weekly_env.py` exercises the environment's bar clock and the ordering of
+>    the declared instants. It does not measure any real feed's availability or publication delay, so it validates
+>    no availability claim; the availability of each feature series remains DECLARED and UNVERIFIED.
+> 2. *Long/flat and the fallback.* In those tests the policy, the release check and the fallback were written
+>    inside the test. They therefore proved the environment answers such actions, not that a production component
+>    decides them. The real component is `tools/e3_weekly_controller.py` with `tests/test_e3_weekly_controller.py`
+>    (RP31), including a late release, an absent model, a refused short proposal and two mutants that must fail.
+> 3. *Scaling / sizing.* "notional ≤ equity" was checked on a fixed equity. Sizing against a VARYING equity, cash
+>    sufficiency per decision and the fill price gap are covered by the RP31 controller tests, not by RP23's.
+> Nothing above turns these into a complete E3 experiment: E3 and H-CORE keep their dependencies and obligations.
+
 ## RP24 — closure
 
 Suite: `pytest tests --continue-on-collection-errors`: **2 097 passed, 37 skipped, 3 failed, 8 errors** in 30 min 29 s — the 3 failures (`tests/integration_tests/test_configuration_handling.py`) and 8 collection errors are the stale legacy tests AGENTS.md documents, unchanged by this round (`RP24_FULL_SUITE_SUMMARY.txt`); every MOD-E0 / closure / replay / effects / grains / E1 / E3 test passes. Mutants POST: 12/12 guard mutants killed by the behaviour test (RP24_MUTANTS_POST.json; the estimator mutant of RP18 and the 14 replay-field mutations of RP19 are in their test files). CPU of this round (systemd ledger on omega since the order,
