@@ -2,8 +2,8 @@
 
 Date: 2026-09-19. Executor: Satoshi. Order: [MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md](../../handoffs/MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md)
 over the dictum [MUSASHI_RP1_RP8_REVIEW_2026_09_18.md](MUSASHI_RP1_RP8_REVIEW_2026_09_18.md).
-Branch `satoshi/r1-r6-20260914`; commits `bd741f5`, `e1550ac`, `8c7d3fa`, `deec2ca`, `c9e1971` and the closing
-commit named at the end. Evidence under `docs/audits/evidence/d3_k5_20260917/` (files `RP9_*` … `RP16_*`).
+Branch `satoshi/r1-r6-20260914`; commits `bd741f5`, `e1550ac`, `8c7d3fa`, `deec2ca`, `c9e1971`, `4a27bf3` and the closing
+commit (this file's last commit in `git log`). Evidence under `docs/audits/evidence/d3_k5_20260917/` (files `RP9_*` … `RP16_*`).
 One external request, at the end. No reserve, no live, no financial scoring; H-CORE untouched (after E1).
 
 ## Per block: implemented · executed · verified locally · reconciled independently · reviewed · inference
@@ -216,13 +216,12 @@ from their reports: dragon 812.8 s, gamma 212.1 s):
 
 | item | CPU s |
 |---|---|
-| tests, replays, closures, backfill, reanalysis, mutants, pilots on omega (ledger, 40 units, before the final suite) | 6 936 |
-| workers' children (dragon + gamma) | 1 025 |
-| final suite and last closures (below) | see closing line |
+| omega: tests, replays, closures, backfill, reanalysis, mutants, pilots, stage, DX, final suite (ledger, every transient unit) | 9586 |
+| workers' children (dragon 812.8 + gamma 212.1) | 1 025 |
+| **total of the order** | **10611** (within the 14 400 s ceiling) |
 | ceiling of the order | 14 400 |
 
-Full suite: `SUITE_LINE`. Legacy collection errors in the stale integration tests are the ones AGENTS.md
-documents; no test of this order is skipped.
+Full suite (`pytest tests --continue-on-collection-errors`, 25 min 40 s): **2 056 passed, 37 skipped, 3 failed, 8 errors** — the 3 failures (`tests/integration_tests/test_configuration_handling.py`) and the 8 collection errors are the stale legacy tests AGENTS.md documents (`app.autoencoder_manager`, `load_encoder_decoder_plugins`, `merge_config` no longer exist); untouched by this order; every MOD-E0 / utility / closure / arch test passes ([summary](../evidence/d3_k5_20260917/RP16_FULL_SUITE_SUMMARY.txt)).
 
 State: [PROJECT_METHOD_STATE.json](../../tres_temas_entrevista/program_v3/PROJECT_METHOD_STATE.json)
 (`rp9_rp16_blocks`, tasks MOD-E0-DEV / MOD-E0-CLOSURE / MOD-ARCH-COMPARE EXECUTED, MOD-E1 and

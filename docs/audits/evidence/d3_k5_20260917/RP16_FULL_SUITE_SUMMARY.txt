@@ -1,0 +1,12 @@
+FAILED tests/integration_tests/test_configuration_handling.py::test_load_default_config
+FAILED tests/integration_tests/test_configuration_handling.py::test_save_config
+FAILED tests/integration_tests/test_configuration_handling.py::test_configure_with_args
+ERROR tests/integration_tests/test_data_processing.py
+ERROR tests/integration_tests/test_plugin_loading.py
+ERROR tests/unit_tests/test_config_handler.py
+ERROR tests/unit_tests/test_data_handler.py
+ERROR tests/unit_tests/test_data_processor.py
+ERROR tests/unit_tests/test_encoder_plugin_ann.py
+ERROR tests/unit_tests/test_main.py
+ERROR tests/unit_tests/test_plugin_loader.py
+3 failed, 2056 passed, 37 skipped, 2269 warnings, 8 errors in 1540.36s (0:25:40)

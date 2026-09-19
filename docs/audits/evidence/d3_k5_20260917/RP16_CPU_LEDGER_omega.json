@@ -293,11 +293,39 @@
    "cpu_seconds": 1.396,
    "wall_seconds": 1.411,
    "memory_peak": "21.5M"
+  },
+  {
+   "unit": "crispdm-rp16-stage-close-local4-1789795511-2146015.scope",
+   "at": "Sep 19 00:25:22",
+   "cpu_seconds": 11.003,
+   "wall_seconds": 10.92,
+   "memory_peak": "125.1M"
+  },
+  {
+   "unit": "crispdm-rp16-dx-close-local3-1789795522-2146120.scope",
+   "at": "Sep 19 00:25:23",
+   "cpu_seconds": 1.268,
+   "wall_seconds": 1.311,
+   "memory_peak": "119M"
+  },
+  {
+   "unit": "crispdm-rp16-arch-effects2-1789795526-2146432.scope",
+   "at": "Sep 19 00:25:29",
+   "cpu_seconds": 2.658,
+   "wall_seconds": 2.711,
+   "memory_peak": "22.7M"
+  },
+  {
+   "unit": "crispdm-rp16-full-suite2-1789795350-2137639.scope",
+   "at": "Sep 19 00:48:17",
+   "cpu_seconds": 2634.573,
+   "wall_seconds": 1547.267,
+   "memory_peak": "6.9G"
   }
  ],
- "cpu_seconds_total": 6936.449,
+ "cpu_seconds_total": 9585.951,
  "ceiling_seconds": 14400.0,
- "remaining_seconds": 7463.551,
+ "remaining_seconds": 4814.049,
  "within_ceiling": true,
  "note": "systemd accounting of the transient unit (all its children); units still running are not listed"
 }
