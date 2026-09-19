@@ -475,7 +475,8 @@ def worker_main(job_file: Path) -> int:
     adir = Path(job["attempt_dir"])
     run_unit(job, adir)
     body = (adir / "cell.json").read_bytes()
-    result = {"status": "COMPLETED", "reason": "", "output_file": "cell.json", "output_sha256": hashlib.sha256(body).hexdigest(), "rows_written": 1, "outcome": "COMPLETED"}
+    result = {"status": "COMPLETED", "reason": "", "output_file": "cell.json", "output_sha256": hashlib.sha256(body).hexdigest(),
+              "rows_written": body.count(b"\n") + (0 if body.endswith(b"\n") else 1), "outcome": "COMPLETED"}
     tmp = adir / "result.json.tmp"
     tmp.write_text(json.dumps(result))
     os.replace(tmp, adir / "result.json")
