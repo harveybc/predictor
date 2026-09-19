@@ -138,7 +138,9 @@ def expected_job(reg: dict, cell: dict, root: Path) -> dict:
     if "regime" in cell:
         job["regime"] = cell["regime"]
     if cell.get("depends_on"):
-        job["pretrained_npz"] = str(Path(root) / "attempts" / cell["depends_on"] / "detector_pretrained.npz")
+        # compared by the donor it names, not by an absolute path: a copy of the run is still the same
+        # experiment, while a donor from another cell or another file is not
+        job["pretrained_npz"] = f"{cell['depends_on']}/detector_pretrained.npz"
     return job
 
 
@@ -201,12 +203,12 @@ def verify_unit(reg: dict, cell_id: str, *, do_replay: bool = True, work: Path |
     if cell is None:
         entry.update(metrics=REFUSED, inference=REFUSED, regime=REFUSED)
         prob("not a member of the sealed population")
-        return entry
+        return _finish(entry, None)
     attempt = root / "attempts" / cell_id
     if not (attempt / "cell.json").is_file() or not (attempt / "outcome.json").is_file():
         entry.update(metrics=REFUSED, inference=REFUSED, regime=REFUSED)
         prob("absent: no attempt with a record")
-        return entry
+        return _finish(entry, None)
     body = (attempt / "cell.json").read_bytes()
     digest = hashlib.sha256(body).hexdigest()
     outcome = json.loads((attempt / "outcome.json").read_text())
@@ -214,7 +216,7 @@ def verify_unit(reg: dict, cell_id: str, *, do_replay: bool = True, work: Path |
     if digest != result.get("output_sha256") or digest != (outcome.get("verified") or {}).get("output_sha256"):
         entry.update(metrics=REFUSED, inference=REFUSED, regime=REFUSED)
         prob("the record's bytes are not the ones the child declared and the runner verified")
-        return entry
+        return _finish(entry, None)
     rec = json.loads(body)
     entry["facts"]["record_sha256"] = digest
     # --- identity against the independent register (never against the record's own claims) -----
@@ -240,6 +242,10 @@ def verify_unit(reg: dict, cell_id: str, *, do_replay: bool = True, work: Path |
     else:
         job = json.loads(job_path.read_text())
         want = expected_job(reg, cell, root)
+        job = dict(job)
+        if job.get("pretrained_npz"):
+            parts = Path(job["pretrained_npz"]).parts
+            job["pretrained_npz"] = "/".join(parts[-2:])
         diff = [k for k, v in want.items() if job.get(k) != v]
         entry["facts"]["job_fields_differing"] = diff
         if diff:
@@ -288,13 +294,25 @@ def verify_unit(reg: dict, cell_id: str, *, do_replay: bool = True, work: Path |
 
 
 def _finish(entry: dict, rec: dict | None) -> dict:
+    """The four facts are reported apart, and the scope NAMES what was verified. A unit whose weights
+    were not reloaded is not 'verified with a caveat': its inference and regime are NOT_ATTEMPTED and
+    the scope says so, so no reader can mistake a metric recomputation for a reproduced experiment."""
     for key in ("metrics", "inference", "regime"):
-        if entry[key] == NOT_ATTEMPTED:
-            entry[key] = REFUSED if entry["problems"] else VERIFIED
-    entry["verified"] = (entry["metrics"] == VERIFIED and entry["regime"] in (VERIFIED, NOT_APPLICABLE)
-                         and entry["inference"] in (VERIFIED, NOT_APPLICABLE) and not entry["problems"])
-    entry["scope"] = ("SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED" if entry["verified"] and entry["governance"] == HISTORICAL
-                      else "VERIFIED_AND_GOVERNED" if entry["verified"] else "REFUSED")
+        if entry[key] == NOT_ATTEMPTED and entry["problems"] and key == "metrics":
+            entry[key] = REFUSED
+        elif entry[key] == NOT_ATTEMPTED and key == "metrics":
+            entry[key] = VERIFIED
+    clean = not entry["problems"]
+    entry["verified"] = (entry["metrics"] == VERIFIED and entry["regime"] != REFUSED
+                         and entry["inference"] != REFUSED and clean)
+    replayed = entry["inference"] in (VERIFIED, NOT_APPLICABLE) and entry["regime"] in (VERIFIED, NOT_APPLICABLE)
+    if not entry["verified"]:
+        entry["scope"] = "REFUSED"
+    elif not replayed:
+        entry["scope"] = "METRICS_VERIFIED_INFERENCE_NOT_REPLAYED"
+    else:
+        entry["scope"] = ("SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED" if entry["governance"] == HISTORICAL
+                          else "VERIFIED_AND_GOVERNED")
     return entry
 
 
@@ -455,7 +473,7 @@ def _governance(root: Path, cell_id: str, rec: dict) -> tuple:
 
 # --- the whole closure ----------------------------------------------------------------------------
 
-def close(root: Path, *, do_replay: bool = True, out: Path | None = None) -> dict:
+def close(root: Path, *, do_replay: bool = True, out: Path | None = None, replay_units=None) -> dict:
     root = Path(root)
     reg = register(root)
     work = root / "closure_replays"
@@ -464,7 +482,8 @@ def close(root: Path, *, do_replay: bool = True, out: Path | None = None) -> dic
     for cell_id in reg["population"]:
         if not (root / "attempts" / cell_id / "cell.json").is_file():
             missing.append(cell_id)
-        units[cell_id] = verify_unit(reg, cell_id, do_replay=do_replay, work=work)
+        this_replay = do_replay and (replay_units is None or cell_id in set(replay_units))
+        units[cell_id] = verify_unit(reg, cell_id, do_replay=this_replay, work=work)
     strangers = sorted({p.name for p in (root / "attempts").iterdir() if p.is_dir()} - set(reg["population"]))
     verified = [c for c, u in units.items() if u["verified"]]
     doc = {"schema": SCHEMA, "at": now_iso(), "root": str(root), "design_sha256": reg["design_sha256"],
@@ -488,11 +507,19 @@ def close(root: Path, *, do_replay: bool = True, out: Path | None = None) -> dic
                       "tolerance_kw": PREDICTION_ATOL,
                       "rule": "a fresh process reloads the saved weights and regathers the windows from DATA; a gradient "
                               "summary is never accepted in place of this"},
-           "verdict": ("ALL_VERIFIED" if not missing and not reg["problems"] and len(verified) == len(reg["population"])
-                       else "PARTIAL" if verified else "NOT_VERIFIED")}
+           "verdict": _verdict(units, verified, missing, reg)}
     if out:
         Path(out).write_text(json.dumps(doc, indent=1, default=float))
     return doc
+
+
+def _verdict(units: dict, verified: list, missing: list, reg: dict) -> str:
+    """ALL_VERIFIED is claimed only when every unit verified AND every unit that could be replayed was."""
+    if missing or reg["problems"] or len(verified) != len(reg["population"]):
+        return "PARTIAL" if verified else "NOT_VERIFIED"
+    if any(u["scope"] == "METRICS_VERIFIED_INFERENCE_NOT_REPLAYED" for u in units.values()):
+        return "ALL_METRICS_VERIFIED_NO_REPLAY"
+    return "ALL_VERIFIED"
 
 
 def main(argv=None) -> int:
