@@ -33,7 +33,7 @@ SOURCE_PATH = "olap/lake/query_plugins/sql_query.py"
 #: `olap/campaign_envelope.py`, and the parity test fails the moment they differ:
 #: two loaders would eventually disagree about what an envelope means.
 ENVELOPE_SOURCE_PATH = "olap/campaign_envelope.py"
-ENVELOPE_SOURCE_SHA256 = "9de665ca2ab3dbcad2b67eaea47818b61f5b8eb80bce6e268b3730004d0ec5d4"
+ENVELOPE_SOURCE_SHA256 = "d518cedce2617a454fcc49e5be304c0622a5d7a6f9e14f6593844ca1d4f96969"
 
 #: The digest of the module in THIS branch. It differs from SOURCE_SHA256 exactly when a
 #: candidate change is awaiting production review, and PENDING_REVIEW says which one. The

@@ -164,6 +164,20 @@ ALTER TABLE {SCHEMA}.fact_campaign_unit
 ALTER TABLE {SCHEMA}.fact_campaign_unit
   ADD COLUMN IF NOT EXISTS superseded_by_envelope_sha256 TEXT;
 
+-- RP34: WHEN the work ran relative to its governance. NULL on
+-- every row loaded before this column existed, and NULL means
+-- UNSTATED, never "prospective".
+ALTER TABLE {SCHEMA}.fact_campaign_unit
+  ADD COLUMN IF NOT EXISTS provenance_mode TEXT;
+ALTER TABLE {SCHEMA}.fact_campaign_unit
+  ADD COLUMN IF NOT EXISTS executed_at TEXT;
+ALTER TABLE {SCHEMA}.fact_campaign_unit
+  ADD COLUMN IF NOT EXISTS governed_delivery_at_execution BOOLEAN;
+ALTER TABLE {SCHEMA}.fact_campaign_unit
+  ADD COLUMN IF NOT EXISTS import_reason TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_fact_campaign_unit_provenance
+  ON {SCHEMA}.fact_campaign_unit (provenance_mode);
 CREATE INDEX IF NOT EXISTS idx_fact_campaign_unit_authority
   ON {SCHEMA}.fact_campaign_unit (authority_state);
 CREATE INDEX IF NOT EXISTS idx_fact_campaign_unit_class
@@ -265,7 +279,8 @@ def build_envelope(*, campaign_key: str, producer: str,
                    data_consumed: dict, partitions: dict,
                    budget: dict, terminal: dict,
                    artifacts: dict,
-                   units: list[dict] | None = None) -> dict:
+                   units: list[dict] | None = None,
+                   provenance: dict | None = None) -> dict:
     doc = {
         "schema": ENVELOPE_SCHEMA,
         "campaign_key": campaign_key,
@@ -279,6 +294,8 @@ def build_envelope(*, campaign_key: str, producer: str,
         "artifacts": artifacts,
         "units": units or [],
     }
+    if provenance is not None:
+        doc["provenance"] = provenance
     doc["envelope_sha256"] = _sha(doc, "envelope_sha256")
     validate_envelope(doc)
     return doc
@@ -334,8 +351,10 @@ def validate_envelope(doc: dict) -> dict:
                 f"{group} declares undeclared fields {extra} — "
                 "an envelope schema that accepts anything "
                 "records nothing")
+    _validate_provenance(doc)
     extra_top = sorted(set(doc) - set(REQUIRED_TOP)
-                       - {"units", "envelope_sha256"})
+                       - {"units", "envelope_sha256",
+                          "provenance"})
     if extra_top:
         raise EnvelopeRefusal(
             f"envelope declares undeclared top-level fields "
@@ -460,6 +479,24 @@ BORN_AT_TERMINAL = "BORN_AT_PRODUCER_TERMINAL"
 # added, the values are untouched.
 FIRST_OBSERVATION = "FIRST_OBSERVATION_NOT_CAMPAIGN_IDENTITY"
 
+# RP34 (order 2026-09-19): evidence produced BEFORE its governance
+# existed is real evidence, and hiding it is as wrong as promoting
+# it. The cube could say who emitted a row and how authoritative
+# the reading was, but not WHEN it ran relative to its governance,
+# so a retrospective import was indistinguishable from a governed
+# one. The `provenance` block adds exactly that, additively:
+# rows already loaded keep NULL, which means UNSTATED and is never
+# read as "prospective".
+PROSPECTIVE = "PROSPECTIVE_GOVERNED"
+RETROSPECTIVE = "RETROSPECTIVE_IMPORT_UNGOVERNED_AT_EXECUTION"
+PROVENANCE_MODES = (PROSPECTIVE, RETROSPECTIVE)
+REQUIRED_PROVENANCE = ("mode", "executed_at", "imported_at",
+                       "governed_delivery_at_execution", "reason")
+#: a retrospectively imported run never carries a confirmatory or
+#: calibrating class: it was not under the rule when it ran.
+RETROSPECTIVE_CLASSES = ("NON_GOVERNING", "MECHANICAL",
+                         "DEVELOPMENT")
+
 
 def envelope_authority_state(doc: dict) -> str:
     """Three provenances, ranked by what actually happened.
@@ -481,11 +518,66 @@ def envelope_authority_state(doc: dict) -> str:
     return TRANSLATED
 
 
+def _validate_provenance(doc: dict) -> dict | None:
+    """The optional `provenance` block, refused unless complete.
+
+    A retrospective import must say when the work ran, when it was
+    imported, that no governed delivery existed at execution, and
+    why it is being imported at all. Claiming a governed delivery
+    while calling the import retrospective is a contradiction and
+    refuses; so does an import stamped before the execution it
+    imports, and so does a confirmatory class.
+    """
+    block = doc.get("provenance")
+    if block is None:
+        return None
+    if not isinstance(block, dict):
+        raise EnvelopeRefusal("provenance must be an object")
+    missing = [k for k in REQUIRED_PROVENANCE if k not in block]
+    extra = sorted(set(block) - set(REQUIRED_PROVENANCE))
+    if missing or extra:
+        raise EnvelopeRefusal(
+            f"provenance is missing {missing} and declares "
+            f"undeclared fields {extra}")
+    if block["mode"] not in PROVENANCE_MODES:
+        raise EnvelopeRefusal(
+            f"unknown provenance mode {block['mode']!r}")
+    if not isinstance(block["governed_delivery_at_execution"],
+                      bool):
+        raise EnvelopeRefusal(
+            "governed_delivery_at_execution must be a boolean")
+    for key in ("executed_at", "imported_at"):
+        if not isinstance(block[key], str) or not block[key]:
+            raise EnvelopeRefusal(f"provenance {key} must be a timestamp")
+    if block["executed_at"] > block["imported_at"]:
+        raise EnvelopeRefusal(
+            "provenance: the import cannot precede the execution "
+            "it imports")
+    if block["mode"] == RETROSPECTIVE:
+        if block["governed_delivery_at_execution"]:
+            raise EnvelopeRefusal(
+                "provenance: a retrospective import cannot claim "
+                "a governed delivery at execution")
+        if doc["result_class"] not in RETROSPECTIVE_CLASSES:
+            raise EnvelopeRefusal(
+                f"provenance: a retrospective import may not be "
+                f"{doc['result_class']!r}")
+        if not str(block["reason"]).strip():
+            raise EnvelopeRefusal(
+                "provenance: a retrospective import states its reason")
+    elif not block["governed_delivery_at_execution"]:
+        raise EnvelopeRefusal(
+            "provenance: a prospective envelope asserts a governed "
+            "delivery at execution")
+    return block
+
+
 def load_envelope(engine, doc: dict) -> dict:
     """Insert an envelope. Re-loading the same envelope changes
     nothing; loading a mutated one refuses before any write."""
     validate_envelope(doc)
     authority_state = envelope_authority_state(doc)
+    prov = _validate_provenance(doc)
     from sqlalchemy import text
 
     ident = doc["identity"]
@@ -596,16 +688,23 @@ def load_envelope(engine, doc: dict) -> dict:
                    uncertainty_kind, uncertainty_low,
                    uncertainty_high, exposure, device,
                    wall_seconds, checkpoint_count, epoch_count,
-                   envelope_json, authority_state, run_id)
+                   envelope_json, authority_state, run_id,
+                   provenance_mode, executed_at,
+                   governed_delivery_at_execution, import_reason)
                 VALUES (:e, :k, :cell, :cand, :rc, :ts, :adj,
                         :mn, :mv, :uk, :ul, :uh, :ex, :dev,
                         :ws, :cc, :ec, CAST(:j AS JSONB), :auth,
-                        :run)
+                        :run, :pmode, :pexec, :pgov, :preason)
                 ON CONFLICT (envelope_sha256, cell_key,
                              candidate_key, metric_name)
                 DO NOTHING
                 RETURNING envelope_sha256
             """, engine)), {
+                "pmode": (prov or {}).get("mode"),
+                "pexec": (prov or {}).get("executed_at"),
+                "pgov": (prov or {}).get(
+                    "governed_delivery_at_execution"),
+                "preason": (prov or {}).get("reason"),
                 "e": doc["envelope_sha256"],
                 "k": doc["campaign_key"],
                 "cell": u["cell_key"],
