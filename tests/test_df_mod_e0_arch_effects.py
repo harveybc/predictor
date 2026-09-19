@@ -229,3 +229,117 @@ def test_RP18_the_real_stage_closure_reproduces_the_dictum_gamma_of_the_common_p
         assert eff["per_arch"][a]["COMMON"]["gamma_common_pair"]["value"] == pytest.approx(g, abs=1e-9)
         assert eff["per_arch"][a]["FACT"]["gamma_factorial"]["state"] == AV.NOT_ESTIMABLE
     assert eff["population"]["not_verified"] and all(k.startswith("DX__") for k in eff["population"]["not_verified"])
+
+
+# --- RP26: composition of closures ---------------------------------------------------------------------------
+
+def _real():
+    ev = HERE.parent / "docs" / "audits" / "evidence" / "d3_k5_20260917"
+    d = json.loads((ev / "RP14_ARCH_STAGE_DESIGN.json").read_text())
+    c = json.loads((ev / "RP22_ARCH_STAGE_CLOSE_V3.json").read_text())["local"]
+    sd = json.loads((ev / "RP22_ARCH_READOUT_COMPLETION_DESIGN.json").read_text())
+    sc = json.loads((ev / "RP22_ARCH_RC_CLOSE.json").read_text())["local"]
+    return d, c, sd, sc
+
+
+def _manual_gamma_factorial(units, arch, seeds):
+    """Independent arithmetic on the four cells per replicate and regime (no estimator reused)."""
+    def m(cid):
+        return units[cid]["record"]["mase"]["validation"]
+    per = []
+    for s in seeds:
+        f = {}
+        for r in (0, 1):
+            f[r] = (m(f"H3__r{r}__s{s}__{arch}__sequence") + m(f"H3__r{r}__s{s}__{arch}__sequence_gap")
+                    - m(f"H3__r{r}__s{s}__{arch}__summary") - m(f"H3__r{r}__s{s}__{arch}__summary_last")) / 2
+        per.append(f[1] - f[0])
+    return sum(per) / len(per)
+
+
+def test_RP26_the_real_composition_validates_both_closures_and_matches_a_manual_gamma_per_replicate():
+    d, c, sd, sc = _real()
+    mc, md = AV.merge_successor(c, d, sc, sd)
+    assert mc["validated"]["parent"]["members"] == 112 and mc["validated"]["successor"]["members"] == 16 and mc["contradictions"] == {}
+    eff = AV.effects(mc, md, n_boot=0)
+    for a, expected in {"A": -0.022422, "B": -0.022268, "C": -0.024421, "0": -0.023393}.items():      # the dictum's independent recalculation
+        g = eff["per_arch"][a]["FACT"]["gamma_factorial"]
+        assert g["state"] == AV.ESTIMATED and g["value"] == pytest.approx(expected, abs=1e-6)
+        assert g["value"] == pytest.approx(_manual_gamma_factorial(mc["units"], a, d["replicates"]), abs=1e-12)
+    assert eff["validated"]["parent"]["design_sha256"] == d["design_sha256"]
+
+
+@pytest.mark.parametrize("case", ["foreign_parent", "empty_parent_population", "empty_successor_population", "failed_inherited_donors",
+                                  "changed_successor_window", "altered_design_old_digest", "altered_design_recomputed_digest", "omitted_population",
+                                  "changed_regime_donor", "successor_of_another_parent", "cell_in_both"])
+def test_RP26_every_composition_defect_refuses_or_leaves_the_contrast_unverifiable_for_its_cause(case):
+    import copy
+    d, c, sd, sc = _real()
+    d, c, sd, sc = copy.deepcopy(d), copy.deepcopy(c), copy.deepcopy(sd), copy.deepcopy(sc)
+    if case == "foreign_parent":
+        c["design_sha256"] = "0" * 64
+    elif case == "empty_parent_population":
+        c["population"]["members"] = []
+    elif case == "empty_successor_population":
+        sc["population"]["members"] = []
+    elif case == "failed_inherited_donors":
+        for k, u in sc["units"].items():
+            if u.get("role") == "INHERITED":
+                u["status"] = "PROBLEMS"
+    elif case == "changed_successor_window":
+        sd["window"] = 999                                                       # identity NOT updated: self-digest differs
+    elif case == "altered_design_old_digest":
+        d["training"]["max_updates"] = 5
+    elif case == "altered_design_recomputed_digest":
+        d["training"]["max_updates"] = 5
+        d["design_sha256"] = json.loads(json.dumps(d)) and __import__("hashlib").sha256(json.dumps({k: v for k, v in d.items() if k != "design_sha256"}, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
+    elif case == "omitted_population":
+        sc["population"]["members"] = sc["population"]["members"][:-1]
+    elif case == "changed_regime_donor":
+        u = sc["units"]["H3__r0__s1__A__sequence_gap"]
+        u["record"]["window"] = 24                                                  # consumed another window than the parent's group
+    elif case == "successor_of_another_parent":
+        sd["successor_of"] = "f" * 64
+        sd["design_sha256"] = __import__("hashlib").sha256(json.dumps({k: v for k, v in sd.items() if k != "design_sha256"}, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
+        sc["design_sha256"] = sd["design_sha256"]
+    elif case == "cell_in_both":
+        sc["units"]["H2__h0__s1__A__profiles"] = sc["units"]["H3__r0__s1__A__sequence_gap"]
+    with pytest.raises(AV.EffectsRefusal):
+        AV.merge_successor(c, d, sc, sd)
+
+
+def test_RP26_a_contradiction_between_verifications_is_a_disposition_not_a_choice():
+    import copy
+    d, c, sd, sc = _real()
+    c, sc = copy.deepcopy(c), copy.deepcopy(sc)
+    sc["units"]["H3__r0__s1__A__extractor"]["record"]["mase"]["validation"] += 0.01     # the successor's verification disagrees with the parent's
+    mc, md = AV.merge_successor(c, d, sc, sd)
+    assert "H3__r0__s1__A__extractor" in mc["contradictions"] and "CONTRADICTION" in mc["contradictions"]["H3__r0__s1__A__extractor"]["disposition"]
+    assert mc["units"]["H3__r0__s1__A__extractor"]["status"] == "CONTRADICTION_EXCLUDED"
+    assert mc["units"]["H3__r0__s1__A__sequence_gap"]["status"] == "DONOR_CONTRADICTION_EXCLUDED"
+    eff = AV.effects(mc, md, n_boot=0)
+    assert eff["per_arch"]["A"]["FACT"]["gamma_factorial"]["state"] == AV.NOT_ESTIMABLE                     # its contrast is unverifiable for that cause
+    assert eff["per_arch"]["B"]["FACT"]["gamma_factorial"]["state"] == AV.ESTIMATED
+
+
+def test_RP26_historic_replay_scope_of_an_inherited_donor_is_a_recorded_disposition():
+    import copy
+    d, c, sd, sc = _real()
+    sc = copy.deepcopy(sc)
+    sc["units"]["H3__r0__s2__B__extractor"]["replay_scope"] = "HISTORIC_v1_UNBOUND_CODE"
+    mc, md = AV.merge_successor(c, d, sc, sd)
+    assert "H3__r0__s2__B__extractor" in mc["contradictions"] and "not replayed under the successor's code scope" in mc["contradictions"]["H3__r0__s2__B__extractor"]["disposition"]
+    eff = AV.effects(mc, md, n_boot=0)
+    assert eff["per_arch"]["B"]["FACT"]["gamma_factorial"]["state"] == AV.NOT_ESTIMABLE and eff["per_arch"]["A"]["FACT"]["gamma_factorial"]["state"] == AV.ESTIMATED
+
+
+def test_RP26_the_cli_refuses_a_foreign_closure_and_accepts_the_real_composition(tmp_path):
+    import subprocess, sys as _sys
+    ev = HERE.parent / "docs" / "audits" / "evidence" / "d3_k5_20260917"
+    tool = HERE.parent / "tools" / "df_mod_e0_arch_verify.py"
+    ok = subprocess.run([_sys.executable, str(tool), "--close", str(ev / "RP22_ARCH_STAGE_CLOSE_V3.json"), "--design", str(ev / "RP14_ARCH_STAGE_DESIGN.json"),
+                         "--successor-close", str(ev / "RP22_ARCH_RC_CLOSE.json"), "--successor-design", str(ev / "RP22_ARCH_READOUT_COMPLETION_DESIGN.json"),
+                         "--out", str(tmp_path / "ok.json")], capture_output=True, text=True)
+    assert ok.returncode == 0 and json.loads((tmp_path / "ok.json").read_text())["validated"]["parent"]["members"] == 112
+    bad = subprocess.run([_sys.executable, str(tool), "--close", str(ev / "RP22_ARCH_RC_CLOSE.json"), "--design", str(ev / "RP14_ARCH_STAGE_DESIGN.json"),
+                          "--out", str(tmp_path / "bad.json")], capture_output=True, text=True)
+    assert bad.returncode == 2 and "REFUSED" in bad.stdout and not (tmp_path / "bad.json").exists()

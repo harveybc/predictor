@@ -1,0 +1,1646 @@
+{
+ "schema": "e1_dst_trace.v1",
+ "raw_archive": "/home/harveybc/.local/share/crispdm-data-foundation/public_raw_c126_20260912/data/uci_321_electricityloaddiagrams20112014__electricityloaddiagrams20112014.zip",
+ "raw_sha256": "f6c4d0e0df12ecdb9ea008dd6eef3518adb52c559d04a9bac2e1b81dcfc8d4e1",
+ "raw_sha256_matches_contract": true,
+ "member_sha256": "d51565f2cb5a6b768d06ba1bbd3c084c6e2f3aab07f00c6f2dcb80e90175124b",
+ "member_sha256_matches_receipt": true,
+ "rows_raw": 140256,
+ "rows_panel": 140256,
+ "header_first_columns": "\"\";\"MT_001\";\"MT_002\";\"MT_003\";\"MT_004\";\"MT_005\";\"MT_006\";\"MT_007\";\"MT_008\";\"MT_0",
+ "days": {
+  "2011_march": {
+   "day": "2011-03-27",
+   "rows_00_to_07": [
+    {
+     "label": "2011-03-27 00:15:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 00:30:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 00:45:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 01:00:00",
+     "raw_zero_clients": 214,
+     "raw_nonzero_clients": 156,
+     "panel_zero_clients": 214,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 01:15:00",
+     "raw_zero_clients": 214,
+     "raw_nonzero_clients": 156,
+     "panel_zero_clients": 214,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 01:30:00",
+     "raw_zero_clients": 214,
+     "raw_nonzero_clients": 156,
+     "panel_zero_clients": 214,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 01:45:00",
+     "raw_zero_clients": 214,
+     "raw_nonzero_clients": 156,
+     "panel_zero_clients": 214,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 02:00:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 02:15:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 02:30:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 02:45:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 03:00:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 03:15:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 03:30:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 03:45:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 04:00:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 04:15:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 04:30:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 04:45:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 05:00:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 05:15:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 05:30:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 05:45:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 06:00:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 06:15:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 06:30:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 06:45:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-03-27 07:00:00",
+     "raw_zero_clients": 211,
+     "raw_nonzero_clients": 159,
+     "panel_zero_clients": 211,
+     "raw_equals_panel": true
+    }
+   ],
+   "raw_rows_that_day": 96
+  },
+  "2011_october": {
+   "day": "2011-10-30",
+   "rows_00_to_07": [
+    {
+     "label": "2011-10-30 00:15:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 00:30:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 00:45:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 01:00:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 01:15:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 01:30:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 01:45:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 02:00:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 02:15:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 02:30:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 02:45:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 03:00:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 03:15:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 03:30:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 03:45:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 04:00:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 04:15:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 04:30:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 04:45:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 05:00:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 05:15:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 05:30:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 05:45:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 06:00:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 06:15:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 06:30:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 06:45:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2011-10-30 07:00:00",
+     "raw_zero_clients": 210,
+     "raw_nonzero_clients": 160,
+     "panel_zero_clients": 210,
+     "raw_equals_panel": true
+    }
+   ],
+   "raw_rows_that_day": 96
+  },
+  "2012_march": {
+   "day": "2012-03-25",
+   "rows_00_to_07": [
+    {
+     "label": "2012-03-25 00:15:00",
+     "raw_zero_clients": 49,
+     "raw_nonzero_clients": 321,
+     "panel_zero_clients": 49,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 00:30:00",
+     "raw_zero_clients": 50,
+     "raw_nonzero_clients": 320,
+     "panel_zero_clients": 50,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 00:45:00",
+     "raw_zero_clients": 50,
+     "raw_nonzero_clients": 320,
+     "panel_zero_clients": 50,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 01:00:00",
+     "raw_zero_clients": 251,
+     "raw_nonzero_clients": 119,
+     "panel_zero_clients": 251,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 01:15:00",
+     "raw_zero_clients": 250,
+     "raw_nonzero_clients": 120,
+     "panel_zero_clients": 250,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 01:30:00",
+     "raw_zero_clients": 250,
+     "raw_nonzero_clients": 120,
+     "panel_zero_clients": 250,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 01:45:00",
+     "raw_zero_clients": 250,
+     "raw_nonzero_clients": 120,
+     "panel_zero_clients": 250,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 02:00:00",
+     "raw_zero_clients": 55,
+     "raw_nonzero_clients": 315,
+     "panel_zero_clients": 55,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 02:15:00",
+     "raw_zero_clients": 55,
+     "raw_nonzero_clients": 315,
+     "panel_zero_clients": 55,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 02:30:00",
+     "raw_zero_clients": 55,
+     "raw_nonzero_clients": 315,
+     "panel_zero_clients": 55,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 02:45:00",
+     "raw_zero_clients": 55,
+     "raw_nonzero_clients": 315,
+     "panel_zero_clients": 55,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 03:00:00",
+     "raw_zero_clients": 50,
+     "raw_nonzero_clients": 320,
+     "panel_zero_clients": 50,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 03:15:00",
+     "raw_zero_clients": 50,
+     "raw_nonzero_clients": 320,
+     "panel_zero_clients": 50,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 03:30:00",
+     "raw_zero_clients": 50,
+     "raw_nonzero_clients": 320,
+     "panel_zero_clients": 50,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 03:45:00",
+     "raw_zero_clients": 49,
+     "raw_nonzero_clients": 321,
+     "panel_zero_clients": 49,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 04:00:00",
+     "raw_zero_clients": 50,
+     "raw_nonzero_clients": 320,
+     "panel_zero_clients": 50,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 04:15:00",
+     "raw_zero_clients": 49,
+     "raw_nonzero_clients": 321,
+     "panel_zero_clients": 49,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 04:30:00",
+     "raw_zero_clients": 49,
+     "raw_nonzero_clients": 321,
+     "panel_zero_clients": 49,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 04:45:00",
+     "raw_zero_clients": 52,
+     "raw_nonzero_clients": 318,
+     "panel_zero_clients": 52,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 05:00:00",
+     "raw_zero_clients": 49,
+     "raw_nonzero_clients": 321,
+     "panel_zero_clients": 49,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 05:15:00",
+     "raw_zero_clients": 49,
+     "raw_nonzero_clients": 321,
+     "panel_zero_clients": 49,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 05:30:00",
+     "raw_zero_clients": 50,
+     "raw_nonzero_clients": 320,
+     "panel_zero_clients": 50,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 05:45:00",
+     "raw_zero_clients": 49,
+     "raw_nonzero_clients": 321,
+     "panel_zero_clients": 49,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 06:00:00",
+     "raw_zero_clients": 51,
+     "raw_nonzero_clients": 319,
+     "panel_zero_clients": 51,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 06:15:00",
+     "raw_zero_clients": 49,
+     "raw_nonzero_clients": 321,
+     "panel_zero_clients": 49,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 06:30:00",
+     "raw_zero_clients": 49,
+     "raw_nonzero_clients": 321,
+     "panel_zero_clients": 49,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 06:45:00",
+     "raw_zero_clients": 49,
+     "raw_nonzero_clients": 321,
+     "panel_zero_clients": 49,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-03-25 07:00:00",
+     "raw_zero_clients": 49,
+     "raw_nonzero_clients": 321,
+     "panel_zero_clients": 49,
+     "raw_equals_panel": true
+    }
+   ],
+   "raw_rows_that_day": 96
+  },
+  "2012_october": {
+   "day": "2012-10-28",
+   "rows_00_to_07": [
+    {
+     "label": "2012-10-28 00:15:00",
+     "raw_zero_clients": 41,
+     "raw_nonzero_clients": 329,
+     "panel_zero_clients": 41,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 00:30:00",
+     "raw_zero_clients": 42,
+     "raw_nonzero_clients": 328,
+     "panel_zero_clients": 42,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 00:45:00",
+     "raw_zero_clients": 42,
+     "raw_nonzero_clients": 328,
+     "panel_zero_clients": 42,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 01:00:00",
+     "raw_zero_clients": 43,
+     "raw_nonzero_clients": 327,
+     "panel_zero_clients": 43,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 01:15:00",
+     "raw_zero_clients": 44,
+     "raw_nonzero_clients": 326,
+     "panel_zero_clients": 44,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 01:30:00",
+     "raw_zero_clients": 43,
+     "raw_nonzero_clients": 327,
+     "panel_zero_clients": 43,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 01:45:00",
+     "raw_zero_clients": 43,
+     "raw_nonzero_clients": 327,
+     "panel_zero_clients": 43,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 02:00:00",
+     "raw_zero_clients": 44,
+     "raw_nonzero_clients": 326,
+     "panel_zero_clients": 44,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 02:15:00",
+     "raw_zero_clients": 43,
+     "raw_nonzero_clients": 327,
+     "panel_zero_clients": 43,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 02:30:00",
+     "raw_zero_clients": 44,
+     "raw_nonzero_clients": 326,
+     "panel_zero_clients": 44,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 02:45:00",
+     "raw_zero_clients": 44,
+     "raw_nonzero_clients": 326,
+     "panel_zero_clients": 44,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 03:00:00",
+     "raw_zero_clients": 41,
+     "raw_nonzero_clients": 329,
+     "panel_zero_clients": 41,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 03:15:00",
+     "raw_zero_clients": 43,
+     "raw_nonzero_clients": 327,
+     "panel_zero_clients": 43,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 03:30:00",
+     "raw_zero_clients": 42,
+     "raw_nonzero_clients": 328,
+     "panel_zero_clients": 42,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 03:45:00",
+     "raw_zero_clients": 41,
+     "raw_nonzero_clients": 329,
+     "panel_zero_clients": 41,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 04:00:00",
+     "raw_zero_clients": 42,
+     "raw_nonzero_clients": 328,
+     "panel_zero_clients": 42,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 04:15:00",
+     "raw_zero_clients": 42,
+     "raw_nonzero_clients": 328,
+     "panel_zero_clients": 42,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 04:30:00",
+     "raw_zero_clients": 41,
+     "raw_nonzero_clients": 329,
+     "panel_zero_clients": 41,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 04:45:00",
+     "raw_zero_clients": 42,
+     "raw_nonzero_clients": 328,
+     "panel_zero_clients": 42,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 05:00:00",
+     "raw_zero_clients": 42,
+     "raw_nonzero_clients": 328,
+     "panel_zero_clients": 42,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 05:15:00",
+     "raw_zero_clients": 41,
+     "raw_nonzero_clients": 329,
+     "panel_zero_clients": 41,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 05:30:00",
+     "raw_zero_clients": 42,
+     "raw_nonzero_clients": 328,
+     "panel_zero_clients": 42,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 05:45:00",
+     "raw_zero_clients": 42,
+     "raw_nonzero_clients": 328,
+     "panel_zero_clients": 42,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 06:00:00",
+     "raw_zero_clients": 41,
+     "raw_nonzero_clients": 329,
+     "panel_zero_clients": 41,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 06:15:00",
+     "raw_zero_clients": 42,
+     "raw_nonzero_clients": 328,
+     "panel_zero_clients": 42,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 06:30:00",
+     "raw_zero_clients": 42,
+     "raw_nonzero_clients": 328,
+     "panel_zero_clients": 42,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 06:45:00",
+     "raw_zero_clients": 41,
+     "raw_nonzero_clients": 329,
+     "panel_zero_clients": 41,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2012-10-28 07:00:00",
+     "raw_zero_clients": 42,
+     "raw_nonzero_clients": 328,
+     "panel_zero_clients": 42,
+     "raw_equals_panel": true
+    }
+   ],
+   "raw_rows_that_day": 96
+  },
+  "2013_march": {
+   "day": "2013-03-31",
+   "rows_00_to_07": [
+    {
+     "label": "2013-03-31 00:15:00",
+     "raw_zero_clients": 36,
+     "raw_nonzero_clients": 334,
+     "panel_zero_clients": 36,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 00:30:00",
+     "raw_zero_clients": 35,
+     "raw_nonzero_clients": 335,
+     "panel_zero_clients": 35,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 00:45:00",
+     "raw_zero_clients": 36,
+     "raw_nonzero_clients": 334,
+     "panel_zero_clients": 36,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 01:00:00",
+     "raw_zero_clients": 242,
+     "raw_nonzero_clients": 128,
+     "panel_zero_clients": 242,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 01:15:00",
+     "raw_zero_clients": 241,
+     "raw_nonzero_clients": 129,
+     "panel_zero_clients": 241,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 01:30:00",
+     "raw_zero_clients": 241,
+     "raw_nonzero_clients": 129,
+     "panel_zero_clients": 241,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 01:45:00",
+     "raw_zero_clients": 241,
+     "raw_nonzero_clients": 129,
+     "panel_zero_clients": 241,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 02:00:00",
+     "raw_zero_clients": 37,
+     "raw_nonzero_clients": 333,
+     "panel_zero_clients": 37,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 02:15:00",
+     "raw_zero_clients": 37,
+     "raw_nonzero_clients": 333,
+     "panel_zero_clients": 37,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 02:30:00",
+     "raw_zero_clients": 35,
+     "raw_nonzero_clients": 335,
+     "panel_zero_clients": 35,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 02:45:00",
+     "raw_zero_clients": 36,
+     "raw_nonzero_clients": 334,
+     "panel_zero_clients": 36,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 03:00:00",
+     "raw_zero_clients": 36,
+     "raw_nonzero_clients": 334,
+     "panel_zero_clients": 36,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 03:15:00",
+     "raw_zero_clients": 37,
+     "raw_nonzero_clients": 333,
+     "panel_zero_clients": 37,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 03:30:00",
+     "raw_zero_clients": 35,
+     "raw_nonzero_clients": 335,
+     "panel_zero_clients": 35,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 03:45:00",
+     "raw_zero_clients": 36,
+     "raw_nonzero_clients": 334,
+     "panel_zero_clients": 36,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 04:00:00",
+     "raw_zero_clients": 37,
+     "raw_nonzero_clients": 333,
+     "panel_zero_clients": 37,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 04:15:00",
+     "raw_zero_clients": 35,
+     "raw_nonzero_clients": 335,
+     "panel_zero_clients": 35,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 04:30:00",
+     "raw_zero_clients": 36,
+     "raw_nonzero_clients": 334,
+     "panel_zero_clients": 36,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 04:45:00",
+     "raw_zero_clients": 37,
+     "raw_nonzero_clients": 333,
+     "panel_zero_clients": 37,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 05:00:00",
+     "raw_zero_clients": 36,
+     "raw_nonzero_clients": 334,
+     "panel_zero_clients": 36,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 05:15:00",
+     "raw_zero_clients": 35,
+     "raw_nonzero_clients": 335,
+     "panel_zero_clients": 35,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 05:30:00",
+     "raw_zero_clients": 36,
+     "raw_nonzero_clients": 334,
+     "panel_zero_clients": 36,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 05:45:00",
+     "raw_zero_clients": 36,
+     "raw_nonzero_clients": 334,
+     "panel_zero_clients": 36,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 06:00:00",
+     "raw_zero_clients": 36,
+     "raw_nonzero_clients": 334,
+     "panel_zero_clients": 36,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 06:15:00",
+     "raw_zero_clients": 35,
+     "raw_nonzero_clients": 335,
+     "panel_zero_clients": 35,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 06:30:00",
+     "raw_zero_clients": 36,
+     "raw_nonzero_clients": 334,
+     "panel_zero_clients": 36,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 06:45:00",
+     "raw_zero_clients": 36,
+     "raw_nonzero_clients": 334,
+     "panel_zero_clients": 36,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-03-31 07:00:00",
+     "raw_zero_clients": 34,
+     "raw_nonzero_clients": 336,
+     "panel_zero_clients": 34,
+     "raw_equals_panel": true
+    }
+   ],
+   "raw_rows_that_day": 96
+  },
+  "2013_october": {
+   "day": "2013-10-27",
+   "rows_00_to_07": [
+    {
+     "label": "2013-10-27 00:15:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 00:30:00",
+     "raw_zero_clients": 27,
+     "raw_nonzero_clients": 343,
+     "panel_zero_clients": 27,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 00:45:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 01:00:00",
+     "raw_zero_clients": 27,
+     "raw_nonzero_clients": 343,
+     "panel_zero_clients": 27,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 01:15:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 01:30:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 01:45:00",
+     "raw_zero_clients": 27,
+     "raw_nonzero_clients": 343,
+     "panel_zero_clients": 27,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 02:00:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 02:15:00",
+     "raw_zero_clients": 28,
+     "raw_nonzero_clients": 342,
+     "panel_zero_clients": 28,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 02:30:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 02:45:00",
+     "raw_zero_clients": 27,
+     "raw_nonzero_clients": 343,
+     "panel_zero_clients": 27,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 03:00:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 03:15:00",
+     "raw_zero_clients": 28,
+     "raw_nonzero_clients": 342,
+     "panel_zero_clients": 28,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 03:30:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 03:45:00",
+     "raw_zero_clients": 27,
+     "raw_nonzero_clients": 343,
+     "panel_zero_clients": 27,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 04:00:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 04:15:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 04:30:00",
+     "raw_zero_clients": 28,
+     "raw_nonzero_clients": 342,
+     "panel_zero_clients": 28,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 04:45:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 05:00:00",
+     "raw_zero_clients": 27,
+     "raw_nonzero_clients": 343,
+     "panel_zero_clients": 27,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 05:15:00",
+     "raw_zero_clients": 27,
+     "raw_nonzero_clients": 343,
+     "panel_zero_clients": 27,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 05:30:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 05:45:00",
+     "raw_zero_clients": 27,
+     "raw_nonzero_clients": 343,
+     "panel_zero_clients": 27,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 06:00:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 06:15:00",
+     "raw_zero_clients": 27,
+     "raw_nonzero_clients": 343,
+     "panel_zero_clients": 27,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 06:30:00",
+     "raw_zero_clients": 27,
+     "raw_nonzero_clients": 343,
+     "panel_zero_clients": 27,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 06:45:00",
+     "raw_zero_clients": 26,
+     "raw_nonzero_clients": 344,
+     "panel_zero_clients": 26,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2013-10-27 07:00:00",
+     "raw_zero_clients": 27,
+     "raw_nonzero_clients": 343,
+     "panel_zero_clients": 27,
+     "raw_equals_panel": true
+    }
+   ],
+   "raw_rows_that_day": 96
+  },
+  "2014_march": {
+   "day": "2014-03-30",
+   "rows_00_to_07": [
+    {
+     "label": "2014-03-30 00:15:00",
+     "raw_zero_clients": 5,
+     "raw_nonzero_clients": 365,
+     "panel_zero_clients": 5,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 00:30:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 00:45:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 01:00:00",
+     "raw_zero_clients": 253,
+     "raw_nonzero_clients": 117,
+     "panel_zero_clients": 253,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 01:15:00",
+     "raw_zero_clients": 252,
+     "raw_nonzero_clients": 118,
+     "panel_zero_clients": 252,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 01:30:00",
+     "raw_zero_clients": 252,
+     "raw_nonzero_clients": 118,
+     "panel_zero_clients": 252,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 01:45:00",
+     "raw_zero_clients": 252,
+     "raw_nonzero_clients": 118,
+     "panel_zero_clients": 252,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 02:00:00",
+     "raw_zero_clients": 8,
+     "raw_nonzero_clients": 362,
+     "panel_zero_clients": 8,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 02:15:00",
+     "raw_zero_clients": 9,
+     "raw_nonzero_clients": 361,
+     "panel_zero_clients": 9,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 02:30:00",
+     "raw_zero_clients": 9,
+     "raw_nonzero_clients": 361,
+     "panel_zero_clients": 9,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 02:45:00",
+     "raw_zero_clients": 9,
+     "raw_nonzero_clients": 361,
+     "panel_zero_clients": 9,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 03:00:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 03:15:00",
+     "raw_zero_clients": 5,
+     "raw_nonzero_clients": 365,
+     "panel_zero_clients": 5,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 03:30:00",
+     "raw_zero_clients": 3,
+     "raw_nonzero_clients": 367,
+     "panel_zero_clients": 3,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 03:45:00",
+     "raw_zero_clients": 5,
+     "raw_nonzero_clients": 365,
+     "panel_zero_clients": 5,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 04:00:00",
+     "raw_zero_clients": 6,
+     "raw_nonzero_clients": 364,
+     "panel_zero_clients": 6,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 04:15:00",
+     "raw_zero_clients": 5,
+     "raw_nonzero_clients": 365,
+     "panel_zero_clients": 5,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 04:30:00",
+     "raw_zero_clients": 5,
+     "raw_nonzero_clients": 365,
+     "panel_zero_clients": 5,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 04:45:00",
+     "raw_zero_clients": 6,
+     "raw_nonzero_clients": 364,
+     "panel_zero_clients": 6,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 05:00:00",
+     "raw_zero_clients": 3,
+     "raw_nonzero_clients": 367,
+     "panel_zero_clients": 3,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 05:15:00",
+     "raw_zero_clients": 7,
+     "raw_nonzero_clients": 363,
+     "panel_zero_clients": 7,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 05:30:00",
+     "raw_zero_clients": 5,
+     "raw_nonzero_clients": 365,
+     "panel_zero_clients": 5,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 05:45:00",
+     "raw_zero_clients": 5,
+     "raw_nonzero_clients": 365,
+     "panel_zero_clients": 5,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 06:00:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 06:15:00",
+     "raw_zero_clients": 6,
+     "raw_nonzero_clients": 364,
+     "panel_zero_clients": 6,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 06:30:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 06:45:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-03-30 07:00:00",
+     "raw_zero_clients": 5,
+     "raw_nonzero_clients": 365,
+     "panel_zero_clients": 5,
+     "raw_equals_panel": true
+    }
+   ],
+   "raw_rows_that_day": 96
+  },
+  "2014_october": {
+   "day": "2014-10-26",
+   "rows_00_to_07": [
+    {
+     "label": "2014-10-26 00:15:00",
+     "raw_zero_clients": 3,
+     "raw_nonzero_clients": 367,
+     "panel_zero_clients": 3,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 00:30:00",
+     "raw_zero_clients": 3,
+     "raw_nonzero_clients": 367,
+     "panel_zero_clients": 3,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 00:45:00",
+     "raw_zero_clients": 3,
+     "raw_nonzero_clients": 367,
+     "panel_zero_clients": 3,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 01:00:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 01:15:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 01:30:00",
+     "raw_zero_clients": 3,
+     "raw_nonzero_clients": 367,
+     "panel_zero_clients": 3,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 01:45:00",
+     "raw_zero_clients": 5,
+     "raw_nonzero_clients": 365,
+     "panel_zero_clients": 5,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 02:00:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 02:15:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 02:30:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 02:45:00",
+     "raw_zero_clients": 5,
+     "raw_nonzero_clients": 365,
+     "panel_zero_clients": 5,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 03:00:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 03:15:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 03:30:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 03:45:00",
+     "raw_zero_clients": 2,
+     "raw_nonzero_clients": 368,
+     "panel_zero_clients": 2,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 04:00:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 04:15:00",
+     "raw_zero_clients": 3,
+     "raw_nonzero_clients": 367,
+     "panel_zero_clients": 3,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 04:30:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 04:45:00",
+     "raw_zero_clients": 5,
+     "raw_nonzero_clients": 365,
+     "panel_zero_clients": 5,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 05:00:00",
+     "raw_zero_clients": 3,
+     "raw_nonzero_clients": 367,
+     "panel_zero_clients": 3,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 05:15:00",
+     "raw_zero_clients": 3,
+     "raw_nonzero_clients": 367,
+     "panel_zero_clients": 3,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 05:30:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 05:45:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 06:00:00",
+     "raw_zero_clients": 3,
+     "raw_nonzero_clients": 367,
+     "panel_zero_clients": 3,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 06:15:00",
+     "raw_zero_clients": 3,
+     "raw_nonzero_clients": 367,
+     "panel_zero_clients": 3,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 06:30:00",
+     "raw_zero_clients": 4,
+     "raw_nonzero_clients": 366,
+     "panel_zero_clients": 4,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 06:45:00",
+     "raw_zero_clients": 2,
+     "raw_nonzero_clients": 368,
+     "panel_zero_clients": 2,
+     "raw_equals_panel": true
+    },
+    {
+     "label": "2014-10-26 07:00:00",
+     "raw_zero_clients": 5,
+     "raw_nonzero_clients": 365,
+     "panel_zero_clients": 5,
+     "raw_equals_panel": true
+    }
+   ],
+   "raw_rows_that_day": 96
+  }
+ },
+ "per_day_counts": {
+  "2011_march": 96,
+  "2011_october": 96,
+  "2012_march": 96,
+  "2012_october": 96,
+  "2013_march": 96,
+  "2013_october": 96,
+  "2014_march": 96,
+  "2014_october": 96
+ },
+ "semantics": {
+  "label_meaning": "the file labels each row with the END of its 15-minute interval (first row 2011-01-01 00:15:00, last 2015-01-01 00:00:00); the producer calls the values kW averages of the interval",
+  "rows_per_day": "96 labels per calendar day in the raw file and in the panel (see per_day_counts): the change days are NOT 92/100 rows; the producer's 'one hour of zeros' / 'two hours aggregated' are VALUE semantics inside a 96-row day",
+  "utc": "UNKNOWN: labels are Portuguese wall clock by the producer's statement; no UTC offset is stored; the March 02:xx labels denote a wall-clock hour that did not exist",
+  "reception_publication_revisions": "UNKNOWN: a static archive carries no reception, publication or revision history; nothing is inferred",
+  "disposition": "rows of the March change day between 01:00 and 03:00 wall clock and of the October change day between 01:00 and 02:00 are AMBIGUOUS_SUPPORT in the task contract: excluded from window support, with the count of excluded windows reported; no DST flag replaces this"
+ }
+}

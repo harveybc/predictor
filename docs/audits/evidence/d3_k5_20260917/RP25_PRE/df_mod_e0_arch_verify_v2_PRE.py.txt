@@ -315,9 +315,6 @@ def effects(close_local: dict, design: dict, split: str = "validation", n_boot: 
                         for a, b in boot.items()}
     out["bootstrap_note"] = (f"percentile intervals from resampling {len(seeds)} replicate ids with replacement, same estimator as the point; with "
                              f"{len(seeds)} replicates this is a description of two observations, not population precision, equivalence or power")
-    for k in ("sources", "validated", "contradictions"):
-        if k in close_local:
-            out[k] = close_local[k]
     return out
 
 
@@ -375,121 +372,39 @@ def tables(eff: dict, close_local: dict, design: dict) -> str:
     return "\n".join(L) + "\n"
 
 
-INHERITED_EQUIVALENCE = ("level", "r", "seed", "arm", "arch", "window", "fusion", "exposure", "descriptor_version")
-
-
-def validate_closure(close_local: dict, design: dict, label: str, require_all_verified: bool = False) -> dict:
-    """RP26: a closure is accepted for composition only if it is the closure of THIS design (identity and
-    self-digest), its population is the design's enumeration (never empty, never rebuilt), and every unit
-    it names is a member, a pilot or an inherited donor of that design."""
-    from importlib import util as _u
-    body = {k: v for k, v in design.items() if k != "design_sha256"}
-    import hashlib as _h
-    digest = _h.sha256(json.dumps(body, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
-    if design.get("design_sha256") != digest:
-        raise EffectsRefusal(f"REFUSED: {label}: the design does not seal itself (recomputed digest differs)")
-    if close_local.get("design_sha256") != design["design_sha256"]:
-        raise EffectsRefusal(f"REFUSED: {label}: the closure is of design {str(close_local.get('design_sha256'))[:12]}, not {design['design_sha256'][:12]}")
-    members = list((close_local.get("population") or {}).get("members") or [])
-    expected = [c["cell_id"] for c in design.get("cells") or []]
-    if not expected or members != expected:
-        raise EffectsRefusal(f"REFUSED: {label}: the closure's population is empty or is not the design's enumeration")
-    units = close_local.get("units") or {}
-    allowed = set(expected) | {p["cell_id"] for p in design.get("pilots") or []} | {i["cell_id"] for i in design.get("inherited") or []}
-    strangers = sorted(k for k in units if k not in allowed)
-    if strangers:
-        raise EffectsRefusal(f"REFUSED: {label}: units that are not members, pilots or inherited donors: {strangers[:3]}")
-    missing = [m for m in expected if m not in units]
-    if missing:
-        raise EffectsRefusal(f"REFUSED: {label}: members without a unit in the closure: {missing[:3]}")
-    if require_all_verified and not close_local.get("all_verified"):
-        raise EffectsRefusal(f"REFUSED: {label}: closure not all_verified")
-    return {"label": label, "design_sha256": design["design_sha256"], "closure": close_local.get("closure"), "members": len(expected)}
-
-
-def _record_equivalent(a: dict, b: dict) -> list:
-    """Fields of two verified records that must agree for the same cell seen from two closures."""
-    return [k for k in INHERITED_EQUIVALENCE if (a or {}).get(k) != (b or {}).get(k)]
-
-
 def merge_successor(close_local: dict, design: dict, succ_close: dict, succ_design: dict) -> tuple:
-    """RP26: the stage plus its readout-completion successor as ONE population, only after BOTH closures are
-    validated against their own designs, the parent-successor relation is verified (successor_of, kind,
-    parent run/root recorded per inherited donor), every inherited donor is VERIFIED in the successor closure
-    (fresh replay under the successor's code scope) AND VERIFIED in the parent closure with an equivalent
-    record (level, r, seed, arm, arch, window, fusion, exposure, descriptor), every successor cell's consumed
-    parameters equal the parent's for the same (arch, r, seed) group (window, training rule, horizon, donor),
-    and no cell appears in both. A contradiction between the two verifications is a DISPOSITION recorded in
-    the merged closure (`contradictions`), never silently resolved by picking the parent's."""
-    validate_closure(close_local, design, "parent")
-    validate_closure(succ_close, succ_design, "successor")
+    """RP22: the stage plus its readout-completion successor as ONE population for the contrasts. Each closure
+    is bound to its own design first (identity, population); the merged design enumerates the stage's cells
+    plus the successor's, with the readout controls at every r; inherited donors are the stage's own cells.
+    A successor of another parent, or a cell present in both, refuses."""
     if succ_design.get("successor_of") != design.get("design_sha256") or succ_design.get("kind") != "READOUT_COMPLETION":
         raise EffectsRefusal("REFUSED: the successor is not the readout completion of this design")
-    for k in ("window", "horizon", "h3_level", "training", "n_total", "p", "archs", "replicates"):
-        if succ_design.get(k) != design.get(k):
-            raise EffectsRefusal(f"REFUSED: the successor's {k} differs from the parent's ({succ_design.get(k)!r} vs {design.get(k)!r})")
+    if succ_close.get("design_sha256") != succ_design.get("design_sha256"):
+        raise EffectsRefusal("REFUSED: the successor closure is of another design")
     ids = {c["cell_id"] for c in design["cells"]}
     dup = [c["cell_id"] for c in succ_design["cells"] if c["cell_id"] in ids]
     if dup:
         raise EffectsRefusal(f"REFUSED: successor cells already in the stage: {dup[:3]}")
-    contradictions = {}
     for inh in succ_design.get("inherited") or []:
-        cid = inh["cell_id"]
-        src = inh.get("inherited_from") or {}
-        if cid not in ids or src.get("design_sha256") != design["design_sha256"]:
-            raise EffectsRefusal(f"REFUSED: inherited donor {cid} is not a stage cell of this design")
-        pu, su = close_local["units"].get(cid), succ_close["units"].get(cid)
-        if su is None or su.get("status") != "VERIFIED" or su.get("role") != "INHERITED":
-            raise EffectsRefusal(f"REFUSED: inherited donor {cid} is not VERIFIED (role INHERITED) in the successor closure ({(su or {}).get('status')})")
-        if pu is None or pu.get("status") != "VERIFIED":
-            raise EffectsRefusal(f"REFUSED: inherited donor {cid} is not VERIFIED in the parent closure ({(pu or {}).get('status')})")
-        diff = _record_equivalent(pu.get("record"), su.get("record"))
-        if diff or (pu["record"].get("mase") or {}).get("validation") != (su["record"].get("mase") or {}).get("validation"):
-            contradictions[cid] = {"fields": diff, "disposition": "CONTRADICTION_RECORDED: the donor is excluded from every contrast that consumes it",
-                                   "parent_mase": (pu["record"].get("mase") or {}).get("validation"), "successor_mase": (su["record"].get("mase") or {}).get("validation")}
-        if su.get("replay_scope") not in ("CURRENT_CODE",):
-            contradictions[cid] = {**contradictions.get(cid, {}), "replay_scope": su.get("replay_scope"),
-                                   "disposition": "the inherited donor was not replayed under the successor's code scope: excluded"}
-    # successor cells: consumed parameters must equal the parent's group (same arch, r, seed): window, training, horizon, donor kind
-    parent_by_group = {}
-    for cid, u in close_local["units"].items():
-        r = u.get("record") or {}
-        if u.get("role") == "CELL" and r.get("hypothesis") == "H3" and r.get("arm") == "extractor":
-            parent_by_group[(str(r.get("arch")), int(r.get("r", -1)), int(r.get("seed", -1)))] = r
-    for c in succ_design["cells"]:
-        u = succ_close["units"].get(c["cell_id"]) or {}
-        r = u.get("record") or {}
-        if u.get("status") != "VERIFIED":
-            continue
-        g = parent_by_group.get((str(c["arch"]), int(c["r"]), int(c["seed"])))
-        if g is None or r.get("window") != g.get("window") or r.get("descriptor_version") != g.get("descriptor_version") or (r.get("donor") or "sequence") != "sequence":
-            raise EffectsRefusal(f"REFUSED: successor cell {c['cell_id']} does not consume the parent's data/window/donor (window {r.get('window')} vs {g and g.get('window')})")
-    excluded = set(contradictions)
+        if inh["cell_id"] not in ids or inh["inherited_from"]["design_sha256"] != design["design_sha256"]:
+            raise EffectsRefusal(f"REFUSED: inherited donor {inh['cell_id']} is not a stage cell")
     merged_design = {**design, "cells": list(design["cells"]) + list(succ_design["cells"]),
                      "readout_controls_r": sorted(set(design.get("readout_controls_r") or design["r_values"]) | {c["r"] for c in succ_design["cells"]}),
                      "design_sha256": "MERGED:" + design["design_sha256"][:16] + "+" + succ_design["design_sha256"][:16],
                      "merged_from": [design["design_sha256"], succ_design["design_sha256"]]}
     merged_design["cells_total"] = len(merged_design["cells"])
-    units = {}
-    for cid, u in close_local["units"].items():
-        units[cid] = dict(u, status="CONTRADICTION_EXCLUDED") if cid in excluded else u
+    units = dict(close_local["units"])
     for cid, u in succ_close["units"].items():
         if u.get("role") == "INHERITED":
-            continue
+            continue                                          # the stage's own verification of the donor stands; the successor re-verified it apart
         if cid in units:
             raise EffectsRefusal(f"REFUSED: {cid} verified in both closures")
         units[cid] = u
-    # arms whose donor is excluded do not enter any contrast
-    for c in list(design["cells"]) + list(succ_design["cells"]):
-        if c.get("depends_on") in excluded and c["cell_id"] in units:
-            units[c["cell_id"]] = dict(units[c["cell_id"]], status="DONOR_CONTRADICTION_EXCLUDED")
     merged_close = {"design_sha256": merged_design["design_sha256"], "population": {"members": [c["cell_id"] for c in merged_design["cells"]]},
                     "closure": f"{close_local.get('closure')}+{succ_close.get('closure')}", "units": units,
-                    "validated": {"parent": validate_closure(close_local, design, "parent"), "successor": validate_closure(succ_close, succ_design, "successor")},
-                    "contradictions": contradictions,
                     "sources": {"stage": {"design": design["design_sha256"], "closure": close_local.get("closure")},
                                 "successor": {"design": succ_design["design_sha256"], "closure": succ_close.get("closure"),
-                                              "inherited_verified": {k: (u["status"], u.get("replay_scope")) for k, u in succ_close["units"].items() if u.get("role") == "INHERITED"}}}}
+                                              "inherited_verified": {k: u["status"] for k, u in succ_close["units"].items() if u.get("role") == "INHERITED"}}}}
     return merged_close, merged_design
 
 
@@ -512,12 +427,9 @@ def main(argv=None) -> int:
         if args.successor_close is not None:
             sc = json.loads(args.successor_close.read_text())
             local, design = merge_successor(local, design, sc.get("local") or sc, json.loads(args.successor_design.read_text()))
-        else:
-            validate_closure(local, design, "closure")
         eff = effects(local, design, args.split)
-        for k in ("sources", "validated", "contradictions"):
-            if k in local:
-                eff[k] = local[k]
+        if "sources" in local:
+            eff["sources"] = local["sources"]
         eff["effects_test"] = None
         if args.split != "test":
             t = effects(local, design, "test", n_boot=0)

@@ -1,0 +1,75 @@
+# 13E — E1 task sheet (RP23): two DEV families dimensioned from governed data
+
+Source of every number: [`E1_TASKS.json`](E1_TASKS.json), built by `tools/df_e1_tasks.py` from the canonical
+panels registered in the census (digests checked against the dataset contracts: `public_panels_c126_v2/…/panel.parquet`).
+Nothing is trained here; no reserve is opened; the 715 datasets are not re-censused. This sheet is submitted
+for review; the E1 campaign is NOT launched on the v1 `eligible: true`.
+
+## Eligibility, separated
+
+| family | catalogue (licence) | task (contract) | reserve |
+|---|---|---|---|
+| electricity load diagrams 2011-2014 (UCI 321, 370 clients, 15 min) | OPEN_ATTRIBUTION CC-BY-4.0 | TASK_CONTRACT_DECLARED (below) | not judged (DEV) |
+| individual household electric power (UCI 235, 7 variables, 1 min) | OPEN_ATTRIBUTION CC-BY-4.0 | TASK_CONTRACT_DECLARED (below) | not judged (DEV) |
+| Beijing multi-site air quality (UCI 501) | OPEN_ATTRIBUTION | not built | RESERVE_CANDIDATE with prior exposure: D1/D2 descriptors exist in the census (coverage_v2 RESULT rows); defensible only as a results reserve, not as never-inspected data |
+| appliances energy prediction (UCI 374) | OPEN_ATTRIBUTION | not built | same |
+
+UCI is a repository, not one physical source: the four families are distinct producers, entities and panels;
+sharing the catalogue proves neither dependence nor independence.
+
+## Family contracts (from the bytes)
+
+**Electricity (UCI 321).** 140 256 rows, 370 clients, 15-min grid without irregular steps or duplicates;
+timestamps in Portuguese wall clock (producer statement); unit kW. Structural zeros: a client's rows before its
+first non-zero value are "client not yet existing" (quantiles of structural rows per client: 0 / 0 / 35 040 /
+35 040 / 124 224, i.e. half of the clients appear one year after the start) and are masked out of the targets;
+zeros after that are measurements. DST: the producer states one hour of zeros on the March change day and an
+aggregated hour in October; the hour-by-hour scan of the four March change days is recorded in the JSON
+(`dst_march_change_days`, with `reproduced` per day) and is a factor of the calendar features, not a filter.
+Missing values: none (the parse receipt reports 0). Measured periodicities on TRAIN (Welch, mean of 32 clients):
+daily 24 h carries 18 % of the power, 12 h 12 %, weekly 1.5 %; 53 % is slower than five weeks (drift and the
+staggered appearance of clients) — the daily period is measured, not assumed from the sampling. Roles: targets =
+the client columns (multi-output with masks); features = the same columns lagged plus calendar (hour, weekday,
+DST flag); metadata = timestamp; controls = persistence, seasonal naive daily and weekly.
+
+**Household (UCI 235).** 2 075 259 rows, 1-min grid, 2006-12 → 2010-11; mixed units (kW, V, A, Wh); 1.25 % of
+rows carry NaN measurements with their timestamps kept (masked); time zone UNKNOWN in the contract. Measured
+periodicities on TRAIN: daily 7 %, 12 h 9 %, weekly 0 %; no drift band. Roles: target = Global_active_power
+(one target, declared); features = reactive power, voltage, intensity, sub-metering 1–3 (lagged); controls =
+persistence and daily seasonal naive.
+
+## Usable windows per split (after masks, purge = W + h, horizon), physical contexts
+
+Splits by time 70 / 15 / 15 % of rows. "Per column" = median over target columns of windows whose W inputs are
+finite and whose own target is finite and not structural; "any"/"all" are the upper/lower bounds for a
+multi-output task.
+
+| family | W (steps) | (W−1)·Δt | h | usable train (per-col median) | validation | test | "all targets" train |
+|---|---|---|---|---|---|---|---|
+| electricity | 96 | 23.75 h | 1 (15 min) | 63 043 | 20 941 | 21 038 | 0 (never every client) |
+| electricity | 192 | 47.75 h | 4 (1 h) | 62 947 | 20 842 | 21 035 | 0 |
+| electricity | 672 | 167.75 h | 96 (1 day) | 62 467 | 20 270 | 20 943 | 0 |
+| household | 60 | 0.98 h | 1 (1 min) | 1 441 187 | 305 400 | 298 401 | 1 441 187 |
+| household | 1 440 | 23.98 h | 60 (1 h) | 1 370 019 | 288 661 | 288 564 | 1 370 019 |
+| household | 10 080 | 167.98 h | 1 440 (1 day) | 959 905 | 186 831 | 223 944 | 959 905 |
+
+Neither non-overlapping blocks nor client columns are independent replicates: the cross-sectional dependence
+between clients is measured (D1 pair relations) and the unit of replication is declared per task (below).
+
+## E1 design (proposal references; to be sealed after review)
+
+| item | electricity | household |
+|---|---|---|
+| R0 / R1 / R2 | R0 = raw client series; R1 = profile grouping of clients (descriptor v2, train only); R2 = grouping + sequence fusion with the readout as a declared factor | R0 = raw variables; R1 = grouping of the 6 features by profile; R2 = as left |
+| architecture | ARCH-A (reference) and ARCH-0 as controls, ARCH-B/C as candidates; common core/head; the readout (last vs pooled) is a declared factor after RP18/RP22 | same |
+| grouping / context | context candidates 96 / 192 / 672 steps (1 / 2 / 7 days) chosen on validation only; branch reach declared per architecture and compared with the measured 24 h and 168 h periods | 60 / 1 440 / 10 080 steps (1 h / 1 day / 1 week) |
+| feature engineering and ablations | calendar features (hour, weekday, DST flag) on/off; structural-zero mask on/off (must be on for targets); train-only scaling per client | calendar on/off; sub-metering features on/off |
+| comparators (proposal) | naive, seasonal naive (24 h, 168 h), VAR on the group means, DLinear, PatchTST, iTransformer, DUET, one of MTST/Pathformer/TimeMixer fixed before results | same with 24 h seasonal naive |
+| effective samples | per-column usable windows above; replicate unit = independent training seed × time block declared as DEPENDENT (moving-block bootstrap over weeks for uncertainty, never windows) | same |
+| baselines per horizon | h = 1, 4, 96 steps (15 min, 1 h, 1 day) | h = 1, 60, 1 440 steps (1 min, 1 h, 1 day) |
+| splits | by time 70/15/15 with purge W + h; the test block is scored once per sealed design | same |
+| budget | a cost pilot at the sealed (W, p, h) fixes seconds per update; the learning-curve ladder of RP21 (300 / 600 / 1 100 / 2 200 updates) decides the allowance before scoring | same |
+| controls of the pipeline | future/prefix, train-only scale, gaps, DST, structural zeros: exercised by tests against `df_e1_tasks.py` masks and the window builder before any training | same |
+
+Authorised now (this order): data/loader tests and a memory pilot without training. Not authorised: the E1
+campaign, any reserve, GPU.

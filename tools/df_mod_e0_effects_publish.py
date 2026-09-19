@@ -82,6 +82,7 @@ def main(argv=None) -> int:
     parser.add_argument("--api-key-file", required=True)
     parser.add_argument("--outbox-dir", default=None)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--suffix", default="-effects-v2", help="campaign key suffix (e.g. -effects-v3-composed for the RP26 composition)")
     args = parser.parse_args(argv)
     if args.out.exists():
         raise SystemExit(f"REFUSED: {args.out} exists")
@@ -91,12 +92,17 @@ def main(argv=None) -> int:
     code_identity = GR.strict_code_identity(REPO)
     gov = GR.GovHttp(args.gov_url, GR.load_api_key(args.api_key_file), args.run_id)
     outbox = GR.TerminalOutbox(Path(os.path.expanduser(args.outbox_dir or GR.DEFAULT_OUTBOX)).resolve())
-    key = f"{args.run_id}-effects-v2"
+    key = f"{args.run_id}{args.suffix}"
+    design_sha = eff["design_sha256"]
+    merged = None
+    if str(design_sha).startswith("MERGED:"):
+        merged = eff.get("sources") or {}
+        design_sha = (merged.get("stage") or {}).get("design") or eff["design_sha256"]
     units = [f"effects__{a}" for a in eff["per_arch"]]
     eff_sha = hashlib.sha256(args.effects.read_bytes()).hexdigest()
     status, reg = gov.submit_campaign({"schema": "governed_campaign.v1", "campaign_key": key, "classification": "NON_GOVERNING", "project": "predictor",
-                                       "code_identity": code_identity, "config_sha256": eff["design_sha256"], "input_mode": "SYNTHETIC",
-                                       "synthetic_spec_sha256": eff["design_sha256"], "units": units, "datasets": [], "terminal_lake": "olap_cube"})
+                                       "code_identity": code_identity, "config_sha256": design_sha, "input_mode": "SYNTHETIC",
+                                       "synthetic_spec_sha256": design_sha, "units": units, "datasets": [], "terminal_lake": "olap_cube"})
     if status not in (200, 201):
         raise SystemExit(f"REFUSED: campaign {key} refused: http {status} {reg}")
     sha = reg["campaign_sha256"]
@@ -107,7 +113,8 @@ def main(argv=None) -> int:
         now = R.now_iso()
         terminal = R._terminal(status="COMPLETED", reason=None, cost={"cpu_seconds": 0.0, "wall_seconds": 0.0}, metrics=rows, started=now, finished=now,
                                tags={"purpose": "MOD_E0_ARCH_EFFECTS_V2", "proposal": "P-MOD", "grants": "NONE", "classification": "NON_GOVERNING",
-                                     "phase": "DEVELOPMENT", "arch": a, "design_sha256": eff["design_sha256"], "effects_sha256": eff_sha,
+                                     "phase": "DEVELOPMENT", "arch": a, "design_sha256": design_sha, "composed_design": str(eff["design_sha256"]), "effects_sha256": eff_sha,
+                                     **({"composition_validated": json.dumps(eff.get("validated"), default=str)[:1500], "contradictions": json.dumps(eff.get("contradictions"), default=str)[:800]} if merged is not None else {}),
                                      "closure": str(eff.get("closure")), "split": eff["split"], "replicates": json.dumps(eff["replicates"]),
                                      "effect_states": json.dumps(states, sort_keys=True), "members": json.dumps(members, sort_keys=True, default=str)[:4000],
                                      "supersedes": "RP14_ARCH_STAGE_EFFECTS.json (v1, withdrawn reading; see SATOSHI_RP16_ERRATA_2026_09_19.md)",

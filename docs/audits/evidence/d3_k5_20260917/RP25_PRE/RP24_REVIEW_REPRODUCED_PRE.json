@@ -1,0 +1,145 @@
+{
+  "e1_counterexamples": {
+    "actual_train_origins_lost": 61,
+    "gap": {
+      "test": 749,
+      "train": 3380,
+      "validation": 689
+    },
+    "gap_irregular_steps": 1,
+    "gap_should_invalidate_crossing_windows_or_refuse": true,
+    "normal": {
+      "test": 749,
+      "train": 3380,
+      "validation": 689
+    },
+    "one_missing_target_should_drop_one_origin_with_declared_six_features": 1,
+    "reported_slower_than_days_threshold": 35,
+    "same_declared_roles": true,
+    "target_missing": {
+      "test": 749,
+      "train": 3319,
+      "validation": 689
+    },
+    "unused_numeric_metadata_missing": {
+      "test": 749,
+      "train": 3319,
+      "validation": 689
+    },
+    "welch_max_resolvable_period_days_household": 22.755555555555556
+  },
+  "evidence_unchanged": true,
+  "factorial_recalculation": {
+    "0": {
+      "agrees": true,
+      "d0": -0.011329701680673349,
+      "d1": -0.03472220713680493,
+      "gamma": -0.023392505456131585
+    },
+    "A": {
+      "agrees": true,
+      "d0": -0.00762264965604198,
+      "d1": -0.030044773323433138,
+      "gamma": -0.02242212366739116
+    },
+    "B": {
+      "agrees": true,
+      "d0": 0.004078065574581541,
+      "d1": -0.018189999674922852,
+      "gamma": -0.022268065249504393
+    },
+    "C": {
+      "agrees": true,
+      "d0": -0.005888026554038139,
+      "d1": -0.030309329647621286,
+      "gamma": -0.024421303093583147
+    }
+  },
+  "merge_counterexamples": {
+    "changed_successor_window": {
+      "accepted": true,
+      "gamma_states": {
+        "0": "ESTIMATED",
+        "A": "ESTIMATED",
+        "B": "ESTIMATED",
+        "C": "ESTIMATED"
+      }
+    },
+    "empty_parent_population": {
+      "accepted": true,
+      "gamma_states": {
+        "0": "ESTIMATED",
+        "A": "ESTIMATED",
+        "B": "ESTIMATED",
+        "C": "ESTIMATED"
+      }
+    },
+    "empty_successor_population": {
+      "accepted": true,
+      "gamma_states": {
+        "0": "ESTIMATED",
+        "A": "ESTIMATED",
+        "B": "ESTIMATED",
+        "C": "ESTIMATED"
+      }
+    },
+    "failed_inherited_donors": {
+      "accepted": true,
+      "gamma_states": {
+        "0": "ESTIMATED",
+        "A": "ESTIMATED",
+        "B": "ESTIMATED",
+        "C": "ESTIMATED"
+      }
+    },
+    "foreign_parent": {
+      "accepted": true,
+      "gamma_states": {
+        "0": "ESTIMATED",
+        "A": "ESTIMATED",
+        "B": "ESTIMATED",
+        "C": "ESTIMATED"
+      }
+    }
+  },
+  "physical_dst_scan": {
+    "days": {
+      "2011-03-27": {
+        "all_clients_zero_labels": [],
+        "nominal_hour_bins_fully_zero": []
+      },
+      "2012-03-25": {
+        "all_clients_zero_labels": [],
+        "nominal_hour_bins_fully_zero": []
+      },
+      "2013-03-31": {
+        "all_clients_zero_labels": [],
+        "nominal_hour_bins_fully_zero": []
+      },
+      "2014-03-30": {
+        "all_clients_zero_labels": [],
+        "nominal_hour_bins_fully_zero": []
+      }
+    },
+    "panel_digest_verified": true,
+    "scope": "existing canonical panel, bounded six-hour ranges only"
+  },
+  "physical_successor_arrays": {
+    "all_finite": true,
+    "attempts": 16,
+    "max_mase_difference": 4.440892098500626e-16,
+    "scope": "saved predictions/labels/denominators, not fresh weight replay"
+  },
+  "revision": "de8ae34",
+  "rl_action_2_after_long": {
+    "action_space_n": 3,
+    "minimum_position_units": -0.005,
+    "position_states": [
+      -1,
+      0,
+      1
+    ],
+    "scope": "same environment/fixture/config as RP23, no training"
+  },
+  "scope": "saved closures and disposable fixtures; no training, warehouse or live data writes"
+}
