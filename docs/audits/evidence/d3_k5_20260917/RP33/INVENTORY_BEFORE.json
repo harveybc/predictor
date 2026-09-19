@@ -1,0 +1,178 @@
+{
+ "schema": "df_public_lake_inventory.v1",
+ "at": "2026-09-19T22:38:34Z",
+ "host": "omega",
+ "runtime_config": {
+  "path": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json",
+  "sha256": "a5acc87295ac511ae4da18b51b276a904d769a0934bf327c55d76eb33aaab963"
+ },
+ "lakes": [
+  {
+   "plugin": "http_lake",
+   "lake_id": "financial_files",
+   "kind": "lake",
+   "engine": "files_inventory",
+   "base_url": "http://127.0.0.1:5056"
+  },
+  {
+   "plugin": "http_lake",
+   "lake_id": "olap_cube",
+   "kind": "warehouse",
+   "engine": "sql_olap",
+   "base_url": "http://127.0.0.1:5057"
+  },
+  {
+   "plugin": "files_lake",
+   "lake_id": "predictor_examples",
+   "kind": "lake",
+   "engine": "files_inventory",
+   "root_path": "/home/harveybc/Documents/GitHub/predictor/examples/data_downsampled"
+  },
+  {
+   "plugin": "http_lake",
+   "lake_id": "governance_smoke",
+   "kind": "lake",
+   "engine": "files_inventory",
+   "base_url": "http://127.0.0.1:5058"
+  }
+ ],
+ "policies": [
+  {
+   "principal": "*",
+   "lake": "financial_files",
+   "verbs": [
+    "discover",
+    "coverage",
+    "read",
+    "download"
+   ],
+   "deny_from": "2025-01-01"
+  },
+  {
+   "principal": "*",
+   "lake": "olap_cube",
+   "verbs": [
+    "discover",
+    "query",
+    "write_metrics",
+    "write_terminal"
+   ],
+   "require_lineage": true,
+   "deny_from": "2025-01-01"
+  },
+  {
+   "principal": "*",
+   "lake": "predictor_examples",
+   "verbs": [
+    "discover",
+    "coverage",
+    "read",
+    "download"
+   ],
+   "deny_from": "2025-01-01"
+  },
+  {
+   "principal": "predictor",
+   "lake": "governance_smoke",
+   "verbs": [
+    "download"
+   ]
+  },
+  {
+   "principal": "satoshi-gamma",
+   "lake": "governance_smoke",
+   "verbs": [
+    "discover",
+    "coverage",
+    "read",
+    "download"
+   ]
+  },
+  {
+   "principal": "satoshi-dragon",
+   "lake": "governance_smoke",
+   "verbs": [
+    "discover",
+    "coverage",
+    "read",
+    "download"
+   ]
+  }
+ ],
+ "principals": [
+  "doin",
+  "harvey",
+  "heuristic-strategy",
+  "musashi",
+  "predictor",
+  "satoshi-dragon",
+  "satoshi-gamma"
+ ],
+ "accounting_db": "/home/harveybc/Documents/GitHub/data-gov/var/accounting.db",
+ "services": {
+  "crispdm-data-gov.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-gov.service",
+   "NRestarts": "0",
+   "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+   "returncode": 0
+  },
+  "crispdm-data-lake-financial.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-lake-financial.service",
+   "NRestarts": "0",
+   "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+   "returncode": 0
+  },
+  "crispdm-data-warehouse-olap.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-warehouse-olap.service",
+   "NRestarts": "0",
+   "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+   "returncode": 0
+  },
+  "crispdm-data-lake-synthetic.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-lake-synthetic.service",
+   "NRestarts": "0",
+   "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+   "returncode": 0
+  },
+  "crispdm-olap-loader-duckdb.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-olap-loader-duckdb.service",
+   "NRestarts": "0",
+   "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+   "returncode": 0
+  }
+ },
+ "ports": [
+  {
+   "port": 5055,
+   "open": true
+  },
+  {
+   "port": 5056,
+   "open": true
+  },
+  {
+   "port": 5057,
+   "open": true
+  },
+  {
+   "port": 5058,
+   "open": true
+  }
+ ],
+ "public_panels_present": {
+  "uci_235_individual_household_power/panel.parquet": true,
+  "uci_321_electricityloaddiagrams20112014/panel.parquet": true
+ },
+ "public_panel_lake_registered": false,
+ "note": "read-only inventory; no service was started, stopped or configured by this command"
+}

@@ -1,0 +1,31 @@
+{
+ "schema": "df_public_lake_rehearsal.v1",
+ "at": "2026-09-19T22:43:58Z",
+ "work": "/tmp/rp33-rehearsal-yju1k9qz",
+ "port": 41687,
+ "stack": "disposable data-gov with the successor configuration; no production service touched",
+ "lakes": {
+  "http": 200,
+  "ids": [
+   "predictor_examples",
+   "public_panels"
+  ],
+  "raw": "{'lakes': [{'description': 'In-process file lake over the predictor sample data (downsampled CSVs). Governed downloads for the lab path.', 'engine': 'files_inventory', 'kind': 'lake', 'lake_id': 'predictor_examples', 'root_path': '/home/harveybc/Documents/GitHub/predictor/examples/data_downsampled', 'title': 'predictor examples', 'transport': 'local'}, {'description': 'Read-only lake over the alre"
+ },
+ "uci_235_individual_household_power/panel.parquet": {
+  "campaign_http": 400,
+  "campaign_sha256": null,
+  "error": {
+   "error": "invalid code_identity"
+  }
+ },
+ "uci_321_electricityloaddiagrams20112014/panel.parquet": {
+  "campaign_http": 400,
+  "campaign_sha256": null,
+  "error": {
+   "error": "invalid code_identity"
+  }
+ },
+ "route_ok": false,
+ "service_log_tail": "data-gov UI \u2192 http://127.0.0.1:41687\ncredentials: var/credentials.json  (not in git)\n * Serving Flask app 'web_plugins.default_web'\n * Debug mode: off\n\u001b[31m\u001b[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.\u001b[0m\n * Running on http://127.0.0.1:41687\n\u001b[33mPress CTRL+C to quit\u001b[0m\n127.0.0.1 - - [19/Sep/2026 17:44:00] \"GET /healthz HTTP/1.1\" 200 -\n127.0.0.1 - - [19/Sep/2026 17:44:00] \"GET /api/v1/lakes HTTP/1.1\" 200 -\n127.0.0.1 - - [19/Sep/2026 17:44:00] \"\u001b[31m\u001b[1mPOST /api/v2/campaigns HTTP/1.1\u001b[0m\" 400 -\n127.0.0.1 - - [19/Sep/2026 17:44:00] \"\u001b[31m\u001b[1mPOST /api/v2/campaigns HTTP/1.1\u001b[0m\" 400 -\n"
+}
