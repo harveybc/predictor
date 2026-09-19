@@ -1,0 +1,89 @@
+{
+ "schema": "df_mod_e0_effects_publish.v1",
+ "campaign_key": "mod-e0-arch-stage-v1-effects-v2",
+ "campaign_sha256": "59e849ec26f47653c73c64c813204009b2fe15a1b9eafce415b384f7fb447680",
+ "http": 201,
+ "effects_sha256": "2ac7ee199c0c41c70965b9a85f593b026076e53c06b04c33c430ef57d29deef2",
+ "units": {
+  "effects__A": {
+   "rows": 23,
+   "states": {
+    "mod_e0.effect.d_common_r0": "ESTIMATED",
+    "mod_e0.effect.d_common_r1": "ESTIMATED",
+    "mod_e0.effect.gamma_common_pair": "ESTIMATED",
+    "mod_e0.effect.gamma_factorial": "NOT_ESTIMABLE",
+    "mod_e0.effect.fusion_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.interaction_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_sequence_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.readout_summary_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.h2_e_h0": "ESTIMATED",
+    "mod_e0.effect.h2_e_h3": "ESTIMATED",
+    "mod_e0.effect.h2_slope": "ESTIMATED",
+    "mod_e0.effect.donor_delta_r1": "ESTIMATED"
+   },
+   "pending_after_flush": 0
+  },
+  "effects__B": {
+   "rows": 23,
+   "states": {
+    "mod_e0.effect.d_common_r0": "ESTIMATED",
+    "mod_e0.effect.d_common_r1": "ESTIMATED",
+    "mod_e0.effect.gamma_common_pair": "ESTIMATED",
+    "mod_e0.effect.gamma_factorial": "NOT_ESTIMABLE",
+    "mod_e0.effect.fusion_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.interaction_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_sequence_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.readout_summary_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.h2_e_h0": "ESTIMATED",
+    "mod_e0.effect.h2_e_h3": "ESTIMATED",
+    "mod_e0.effect.h2_slope": "ESTIMATED",
+    "mod_e0.effect.donor_delta_r1": "ESTIMATED"
+   },
+   "pending_after_flush": 0
+  },
+  "effects__C": {
+   "rows": 21,
+   "states": {
+    "mod_e0.effect.d_common_r0": "ESTIMATED",
+    "mod_e0.effect.d_common_r1": "ESTIMATED",
+    "mod_e0.effect.gamma_common_pair": "ESTIMATED",
+    "mod_e0.effect.gamma_factorial": "NOT_ESTIMABLE",
+    "mod_e0.effect.fusion_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.interaction_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_sequence_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.readout_summary_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.h2_e_h0": "ESTIMATED",
+    "mod_e0.effect.h2_e_h3": "ESTIMATED",
+    "mod_e0.effect.h2_slope": "ESTIMATED"
+   },
+   "pending_after_flush": 0
+  },
+  "effects__0": {
+   "rows": 21,
+   "states": {
+    "mod_e0.effect.d_common_r0": "ESTIMATED",
+    "mod_e0.effect.d_common_r1": "ESTIMATED",
+    "mod_e0.effect.gamma_common_pair": "ESTIMATED",
+    "mod_e0.effect.gamma_factorial": "NOT_ESTIMABLE",
+    "mod_e0.effect.fusion_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.interaction_2x2_r1": "ESTIMATED",
+    "mod_e0.effect.readout_sequence_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.readout_summary_fusion_r1": "ESTIMATED",
+    "mod_e0.effect.h2_e_h0": "ESTIMATED",
+    "mod_e0.effect.h2_e_h3": "ESTIMATED",
+    "mod_e0.effect.h2_slope": "ESTIMATED"
+   },
+   "pending_after_flush": 0
+  }
+ },
+ "reconciliation": {
+  "http": 200,
+  "missing_units": [],
+  "accounting_only": [],
+  "lake_only": []
+ }
+}

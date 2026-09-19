@@ -167,6 +167,36 @@ def cells(design: dict) -> list:
     return out
 
 
+def readout_completion(parent: dict, parent_run_id: str, parent_root: str, reason: str, code_equivalence: dict | None = None) -> dict:
+    """RP22: the successor that adds ONLY the missing r = 0 readout controls (sequence_gap, summary_last) for
+    every architecture and replicate of the parent stage, consuming the parent's ORIGINAL r = 0 extractors as
+    inherited donors (never re-trained), with the same data, seeds, training rule and parameters. Inherited
+    cells are enumerated per cell with their parent identity; they are not campaign units here."""
+    rs0 = [r for r in parent["r_values"] if r not in set(parent.get("readout_controls_r") or parent["r_values"])]
+    if not rs0:
+        raise ValueError("the parent already has the readout controls at every r")
+    cells, inherited = [], []
+    for a in parent["archs"]:
+        for r in rs0:
+            for seed in parent["replicates"]:
+                ext = f"H3__r{r}__s{seed}__{a}__extractor"
+                inherited.append({"cell_id": ext, "hypothesis": "H3", "level": parent["h3_level"], "r": r, "seed": seed, "arm": "extractor", "arch": a,
+                                  "inherited_from": {"run_id": parent_run_id, "design_sha256": parent["design_sha256"], "root": parent_root, "cell_id": ext}})
+                for arm in ("sequence_gap", "summary_last"):
+                    cells.append({"cell_id": f"H3__r{r}__s{seed}__{a}__{arm}", "hypothesis": "H3", "level": parent["h3_level"], "r": r, "seed": seed, "arm": arm,
+                                  "arch": a, "depends_on": ext, "donor": "sequence", "host_role": "COORDINATOR"})
+    doc = {k: v for k, v in parent.items() if k not in ("cells", "cells_total", "cells_by_role", "pilots", "design_sha256", "successor_of", "successor_reason")}
+    doc.update({"schema": DESIGN_SCHEMA, "kind": "READOUT_COMPLETION", "successor_of": parent["design_sha256"], "successor_reason": reason,
+                "parent_run_id": parent_run_id, "parent_root": parent_root, "hosts": ["COORDINATOR"], "host_weights": {"COORDINATOR": 1},
+                "readout_controls_r": sorted(set(parent.get("readout_controls_r") or parent["r_values"]) | set(rs0)),
+                "only_hypotheses": ["H3"], "pilots": [], "inherited": inherited, "cells": cells, "cells_total": len(cells),
+                "cells_by_role": {"COORDINATOR": len(cells)}, "code_equivalence": code_equivalence,
+                "decision": "taken AFTER seeing the stage's results: sequential development, not a predeclared factorial nor confirmation",
+                "design_sha256": ""})
+    doc["design_sha256"] = E.sha_obj({k: v for k, v in doc.items() if k != "design_sha256"})
+    return doc
+
+
 def pilot_key_for(cell: dict) -> str:
     """Which cost pilot projects a cell's cost."""
     a = cell["arch"]
@@ -188,10 +218,23 @@ def main(argv=None) -> int:
     parser.add_argument("--diagnostic-seeds", default="1,2")
     parser.add_argument("--only-hypotheses", default=None, help="e.g. DX: a successor with that hypothesis's cells only")
     parser.add_argument("--hosts", default="COORDINATOR,WORKER_A,WORKER_B")
+    parser.add_argument("--readout-completion-of", type=Path, default=None, help="RP22: parent stage DESIGN.json; emits the 16-cell successor")
+    parser.add_argument("--parent-run-id", default=None)
+    parser.add_argument("--parent-root", default=None)
+    parser.add_argument("--code-equivalence", type=Path, default=None)
     parser.add_argument("--successor-of", default=None)
     parser.add_argument("--reason", default=None)
     parser.add_argument("--stage-note", default=None)
     args = parser.parse_args(argv)
+    if args.readout_completion_of is not None:
+        parent = json.loads(args.readout_completion_of.read_text())
+        ce = json.loads(args.code_equivalence.read_text()) if args.code_equivalence else None
+        doc = readout_completion(parent, args.parent_run_id, args.parent_root, args.reason or "readout completion", ce)
+        if args.out.exists():
+            raise SystemExit(f"REFUSED: {args.out} exists; a design is never written over")
+        args.out.write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n")
+        print(json.dumps({"design_sha256": doc["design_sha256"], "cells": doc["cells_total"], "inherited": len(doc["inherited"])}, indent=1))
+        return 0
     weights = dict(kv.split("=") for kv in args.host_weights.split(",")) if args.host_weights else None
     weights = {k: float(v) for k, v in weights.items()} if weights else None
     diagnostic = {"condition": "trend_event", "level": 3, "r": 1, "seeds": [int(v) for v in args.diagnostic_seeds.split(",")], "arms": ["profiles"],

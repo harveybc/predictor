@@ -121,8 +121,19 @@ def population(design: dict) -> dict:
     body = {k: v for k, v in design.items() if k != "design_sha256"}
     if E.sha_obj(body) != design.get("design_sha256"):
         raise ClosureRefusal("REFUSED: the design does not seal itself (self-digest differs)")
-    expected_cells = AD.cells(design) if v2 else D.cells(design)
-    if v2 and design.get("pilots") != ([] if design.get("only_hypotheses") else AD.pilots(design)):
+    if v2 and design.get("kind") == "READOUT_COMPLETION":
+        # the successor's enumeration is the parent's readout completion; re-derive it from the design's own fields
+        parent_like = {**design, "readout_controls_r": [r for r in design["r_values"] if r not in {c["r"] for c in design["cells"]}] or design["readout_controls_r"]}
+        rs0 = sorted({c["r"] for c in design["cells"]})
+        expected_cells = [{"cell_id": f"H3__r{r}__s{seed}__{a}__{arm}", "hypothesis": "H3", "level": design["h3_level"], "r": r, "seed": seed, "arm": arm, "arch": a,
+                           "depends_on": f"H3__r{r}__s{seed}__{a}__extractor", "donor": "sequence", "host_role": "COORDINATOR"}
+                          for a in design["archs"] for r in rs0 for seed in design["replicates"] for arm in ("sequence_gap", "summary_last")]
+        expected_inherited = [f"H3__r{r}__s{seed}__{a}__extractor" for a in design["archs"] for r in rs0 for seed in design["replicates"]]
+        if [i["cell_id"] for i in design.get("inherited") or []] != expected_inherited or not design.get("successor_of"):
+            raise ClosureRefusal("REFUSED: the readout-completion successor does not enumerate its inherited donors")
+    else:
+        expected_cells = AD.cells(design) if v2 else D.cells(design)
+    if v2 and design.get("pilots") != ([] if (design.get("only_hypotheses") or design.get("kind") == "READOUT_COMPLETION") else AD.pilots(design)):
         raise ClosureRefusal("REFUSED: the design's pilots are not its own derivation")
     if expected_cells != design.get("cells") or design.get("cells_total") != len(expected_cells):
         raise ClosureRefusal("REFUSED: the design's cells are not its own enumeration (levels/replicates/assignments/h3_level)")
@@ -131,15 +142,17 @@ def population(design: dict) -> dict:
     ids = [c["cell_id"] for c in expected_cells]
     if len(set(ids)) != len(ids):
         raise ClosureRefusal("REFUSED: the design repeats a cell id")
+    inherited = {c["cell_id"]: c for c in (design.get("inherited") or [])}
     for c in expected_cells:
-        if c.get("depends_on") and c["depends_on"] not in ids:
-            raise ClosureRefusal(f"REFUSED: {c['cell_id']} depends on {c['depends_on']!r}, not a member")
+        if c.get("depends_on") and c["depends_on"] not in ids and c["depends_on"] not in inherited:
+            raise ClosureRefusal(f"REFUSED: {c['cell_id']} depends on {c['depends_on']!r}, not a member nor an inherited donor")
     pilots = (design.get("pilots") or []) if v2 else pilots_of(design)
     return {"design_sha256": design["design_sha256"], "successor_of": design.get("successor_of"), "successor_reason": design.get("successor_reason"), "v2": v2,
             "cells": expected_cells, "members": ids, "pilots": pilots, "pilot_ids": [p["cell_id"] for p in pilots],
             "campaigns": {"-mod-e0-cells": ids, "-mod-e0-cost-pilot": [p["cell_id"] for p in pilots if p["campaign"] == "-mod-e0-cost-pilot"],
                           "-mod-e0-cost-pilot-arm": [p["cell_id"] for p in pilots if p["campaign"] == "-mod-e0-cost-pilot-arm"]},
             "dependencies": {c["cell_id"]: c["depends_on"] for c in expected_cells + pilots if c.get("depends_on")},
+            "inherited": list(inherited.values()),
             "training": design["training"], "window": design["window"], "n_total": design["n_total"], "horizon": design["horizon"]}
 
 
@@ -564,7 +577,7 @@ def local_closure(root: Path, out_dir: Path, tolerance: dict | None = None, repl
             if pj.is_file():
                 pilot_updates = json.loads(pj.read_text()).get("max_updates_override")
                 break
-    units = pop["pilots"] + pop["cells"]
+    units = pop["pilots"] + pop["cells"] + pop.get("inherited", [])
     # replays only for attempts that completed
     replay_docs = {}
     replay_meta = None
@@ -579,12 +592,26 @@ def local_closure(root: Path, out_dir: Path, tolerance: dict | None = None, repl
            "tolerance": tolerance, "units": {}, "code_identity_reported": (report or {}).get("code_identity"),
            "reporting_code_identity": (report or {}).get("reporting_code_identity"),
            "replays": None if replay_meta is None else {k: v for k, v in replay_meta.items() if k != "docs"}}
+    parent_designs = {}
     for u in units:
-        job = expected_job(design, run_id, u, root, pilot_updates)
+        if u.get("inherited_from"):
+            inh = u["inherited_from"]
+            if inh["design_sha256"] not in parent_designs:
+                pd_path = Path(inh["root"]) / "DESIGN.json"
+                parent_designs[inh["design_sha256"]] = json.loads(pd_path.read_text()) if pd_path.is_file() else None
+            parent = parent_designs[inh["design_sha256"]]
+            if parent is None or parent.get("design_sha256") != inh["design_sha256"]:
+                raise ClosureRefusal(f"REFUSED: inherited donor {u['cell_id']}: the parent design at {inh['root']} is absent or not {inh['design_sha256'][:12]}")
+            job = expected_job(parent, inh["run_id"], u, Path(inh["root"]), None)
+        else:
+            job = expected_job(design, run_id, u, root, pilot_updates)
         donor = attempts_dir / u["depends_on"] if u.get("depends_on") else None
         entry = verify_attempt(attempts_dir / u["cell_id"], job, replay_docs.get(u["cell_id"]), tolerance, donor)
         entry["role"] = job["role"]
         entry["depends_on"] = u.get("depends_on")
+        if u.get("inherited_from"):
+            entry["inherited_from"] = u["inherited_from"]
+            entry["role"] = "INHERITED"
         out["units"][u["cell_id"]] = entry
     # dependencies: an H3 arm is verified only if its donor is
     for cid, dep in pop["dependencies"].items():
@@ -622,7 +649,7 @@ def local_closure(root: Path, out_dir: Path, tolerance: dict | None = None, repl
             out["replay_scopes"][sc] = out["replay_scopes"].get(sc, 0) + 1
     out["all_verified"] = not out["not_verified"] and (out["parent_equal"] is not False)
     out["closure"] = TOTAL if out["all_verified"] else PARTIAL
-    out["denominator"] = {"cells": len(pop["members"]), "pilots": len(pop["pilot_ids"]), "fixed_by": "DESIGN.json + runner's pilot derivation"}
+    out["denominator"] = {"cells": len(pop["members"]), "pilots": len(pop["pilot_ids"]), "inherited": len(pop.get("inherited", [])), "fixed_by": "DESIGN.json + runner's pilot derivation"}
     usable = {k: {"hypothesis": e["record"]["hypothesis"], "level": e["record"]["level"], "r": e["record"]["r"], "seed": e["record"]["seed"],
                   "arm": e["record"]["arm"], "mase": e["record"]["mase"].get(split)}
               for k, e in out["units"].items() if e["status"] == VERIFIED and e["role"] == "CELL"}

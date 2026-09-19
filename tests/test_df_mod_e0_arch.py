@@ -246,3 +246,48 @@ def test_RP16_arch_effects_and_tables_use_verified_cells_only_with_the_populatio
     assert eff["dx"]["A"] and eff["bootstrap"]["A"]["H3_gamma"]["n"] > 0
     md = AV.tables(eff, local, design)
     assert "population" in md and "PROBLEMS" in md and "| A |" in md
+
+
+def test_RP22_readout_completion_successor_inherits_the_parent_donors_never_retrains_and_closes_with_them(tmp_path):
+    """The parent stage (stubbed) executes; the successor enumerates only the 16 r=0 readout controls, links the
+    parent's r=0 extractors read-only, runs 16 children (no extractor), inherits the parent's measured pilot costs,
+    and the closure verifies the inherited donors against the PARENT's job while its population is the 16 cells."""
+    parent = _design()                                               # levels [0,3], replicates [1], readout controls at r in {0,1} by default
+    parent = AD.build(levels=[0, 3], replicates=[1], random_assignments=1, max_updates=6, readout_controls_r=[1])
+    parent_root = tmp_path / "parent"
+    report, gov, trace, children = _run(tmp_path, parent, root=parent_root)
+    # make the parent's delegated cells 'collected' for the test: run the workers and copy their attempts
+    for role in ("WORKER_A", "WORKER_B"):
+        wroot = tmp_path / role
+        _run(tmp_path, parent, role=role, execute_only=True, root=wroot)
+        for a in (wroot / "attempts").iterdir():
+            if not (parent_root / "attempts" / a.name).exists():
+                shutil.copytree(a, parent_root / "attempts" / a.name)
+    succ = AD.readout_completion(parent, "e0", str(parent_root), "test: complete the r=0 readout controls", {"equivalent_training_path": True})
+    assert succ["cells_total"] == 4 * 1 * 2 and len(succ["inherited"]) == 4 and succ["pilots"] == [] and succ["successor_of"] == parent["design_sha256"]
+    assert all(c["r"] == 0 and c["arm"] in ("sequence_gap", "summary_last") and c["depends_on"].endswith("__extractor") for c in succ["cells"])
+    assert {c["depends_on"] for c in succ["cells"]} == {i["cell_id"] for i in succ["inherited"]}
+    pop = CLOSE.population(succ)
+    assert pop["members"] == [c["cell_id"] for c in succ["cells"]] and len(pop["inherited"]) == 4
+    # the runner: inherited donors linked, only the 8 arms run, pilots inherited by identity
+    gov2 = ORDER.StubGov()
+    trace2, children2 = [], []
+    sroot = tmp_path / "succ"
+    rep2 = RUN.run_mod_e0(succ, root=sroot, run_id="succ", gov=gov2, trace=lambda e, **f: trace2.append((e, f)), GR=GR, outbox=ORDER.StubOutbox(gov2),
+                          OB=DEVT.StubOB(), CE=DEVT.StubCE(), code_identity={"kind": "git_commit", "value": "0" * 40},
+                          budgets={"task_memory_bytes": 1, "wall_seconds": 5.0, "cpu_seconds": 5}, cap_seconds=10 ** 9, already_spent=0.0, pilot_updates=10,
+                          isolated=RUNT._stub(children2), pilot_costs_from={"run_id": "e0", "design_sha256": parent["design_sha256"], "cost_pilot": report["cost_pilot"]})
+    assert rep2["stopped"] is None and sorted(children2) == sorted(c["cell_id"] for c in succ["cells"]) and len(children2) == 8
+    assert all(v["outcome"] == "INHERITED" for v in rep2["inherited"].values()) and len(rep2["inherited"]) == 4
+    for inh in succ["inherited"]:
+        link = sroot / "attempts" / inh["cell_id"]
+        assert link.is_symlink() and link.resolve() == (parent_root / "attempts" / inh["cell_id"]).resolve()
+    assert rep2["reconciliation"]["missing_units"] == [] and set(u for (s, u) in gov2.terminals) == set(children2)
+    # a second run refuses to replace the inherited link with something else
+    (sroot / "attempts" / succ["inherited"][0]["cell_id"]).unlink()
+    (sroot / "attempts" / succ["inherited"][0]["cell_id"]).mkdir()
+    with pytest.raises(RUN.R.Refusal):
+        RUN.run_mod_e0(succ, root=sroot, run_id="succ", gov=gov2, trace=lambda e, **f: None, GR=GR, outbox=ORDER.StubOutbox(gov2), OB=DEVT.StubOB(), CE=DEVT.StubCE(),
+                       code_identity={"kind": "git_commit", "value": "0" * 40}, budgets={"task_memory_bytes": 1, "wall_seconds": 5.0, "cpu_seconds": 5},
+                       cap_seconds=10 ** 9, already_spent=0.0, pilot_updates=10, isolated=RUNT._stub([]),
+                       pilot_costs_from={"run_id": "e0", "design_sha256": parent["design_sha256"], "cost_pilot": report["cost_pilot"]})

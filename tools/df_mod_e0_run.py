@@ -326,7 +326,21 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
     else:
         campaign.write_once(root / "DESIGN.json", design)
     trace("design-frozen", sha256=design["design_sha256"])
-    report = {"schema": "df_mod_e0_report.v1", "run_id": run_id, "design_sha256": design["design_sha256"], "code_identity": code_identity,
+    inherited_report = {}
+    for inh in design.get("inherited") or []:
+        src = Path(inh["inherited_from"]["root"]) / "attempts" / inh["inherited_from"]["cell_id"]
+        dst = root / "attempts" / inh["cell_id"]
+        oc = json.loads((src / "outcome.json").read_text()) if (src / "outcome.json").is_file() else {}
+        if (oc.get("status") or oc.get("outcome")) != "COMPLETED":
+            raise R.Refusal(f"REFUSED: inherited donor {inh['cell_id']} has no completed attempt at {src}")
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        if not dst.exists():
+            os.symlink(src.resolve(), dst)                       # read-only inheritance: the parent's bytes, never copied or re-trained
+        elif dst.resolve() != src.resolve():
+            raise R.Refusal(f"REFUSED: {dst} is not the inherited donor's attempt")
+        inherited_report[inh["cell_id"]] = {"outcome": "INHERITED", "from": inh["inherited_from"], "weights_sha256": hashlib.sha256((src / "weights.weights.h5").read_bytes()).hexdigest()}
+        trace("inherited", cell=inh["cell_id"], run=inh["inherited_from"]["run_id"])
+    report = {"schema": "df_mod_e0_report.v1", "run_id": run_id, "inherited": inherited_report, "design_sha256": design["design_sha256"], "code_identity": code_identity,
               "cap_seconds": cap_seconds, "already_spent_seconds": already_spent, "cost_pilot": {}, "projection": None, "campaign": None,
               "cells": {}, "terminals": [], "reconciliation": None, "stopped": None, "envelope": None, "role": role, "execute_only": execute_only,
               "report_collected": report_collected, "parallel": int(parallel),
@@ -556,8 +570,8 @@ def run_mod_e0(design: dict, *, root: Path, run_id: str, gov, trace, GR, outbox,
                      need=per_cell[c["cell_id"]] * (1 + headroom), emit_resumed=bool(c.get("_collected")))
     def dep_state(dep):
         attempt = root / "attempts" / dep
-        if (attempt / "outcome.json").is_file() and (attempt / "cell.json").is_file() \
-                and json.loads((attempt / "outcome.json").read_text()).get("status") == "COMPLETED":
+        oc = json.loads((attempt / "outcome.json").read_text()) if (attempt / "outcome.json").is_file() else {}
+        if (oc.get("status") or oc.get("outcome")) == "COMPLETED" and ((attempt / "cell.json").is_file() or oc.get("output_sha256") or (oc.get("summary") or {}).get("output_sha256")):
             return {"outcome": "AVAILABLE", "score": None}
         return {"outcome": "ABSENT", "score": None} if not (attempt / "outcome.json").is_file() else {"outcome": "FAILED", "score": None}
     try:

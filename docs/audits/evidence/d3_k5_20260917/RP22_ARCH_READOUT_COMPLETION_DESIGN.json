@@ -1,0 +1,852 @@
+{
+ "acceptance_before_effects": [
+  "every architecture beats the naive forecaster on validation at h = 3, r = 1 (receiver adequacy), else its effects are reported as NOT_INTERPRETABLE",
+  "reach tests pass",
+  "cost pilots complete without test access"
+ ],
+ "architectures": {
+  "0": {
+   "adapter": "identity (the group's raw channels)",
+   "detector": "none",
+   "integrator": "none",
+   "name": "no learned extractor",
+   "reach": 1
+  },
+  "A": {
+   "adapter": "TimeDistributed Dense(8), linear",
+   "detector": "2 residual causal Conv1D blocks (16 filters, kernel 3, dilation 1)",
+   "integrator": "identity",
+   "name": "Conv1D local (reference)",
+   "reach": null
+  },
+  "B": {
+   "adapter": "as A",
+   "detector": "as A",
+   "integrator": "residual blocks with dilations 2, 4, 8, 16",
+   "name": "TCN (dilated causal residual)",
+   "reach": null
+  },
+  "C": {
+   "adapter": "as A",
+   "detector": "as A",
+   "integrator": "GRU(16, return_sequences) \u2014 GRU chosen over LSTM BEFORE any result: fewer parameters at equal width and one state",
+   "name": "Conv1D + GRU",
+   "reach": "whole context"
+  }
+ },
+ "archs": [
+  "A",
+  "B",
+  "C",
+  "0"
+ ],
+ "budget": {
+  "aggregate_cpu_seconds": 14400.0,
+  "gpu": "none",
+  "headroom": 0.25,
+  "hosts": "three healthy roles under their own identities; memory-aware concurrency per host",
+  "scope": "RP9-RP16: ML tests, re-verification inference, instrumentation, pilots, failures and this comparison; the executed pilot's history is separate"
+ },
+ "cells": [
+  {
+   "arch": "A",
+   "arm": "sequence_gap",
+   "cell_id": "H3__r0__s1__A__sequence_gap",
+   "depends_on": "H3__r0__s1__A__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arch": "A",
+   "arm": "summary_last",
+   "cell_id": "H3__r0__s1__A__summary_last",
+   "depends_on": "H3__r0__s1__A__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arch": "A",
+   "arm": "sequence_gap",
+   "cell_id": "H3__r0__s2__A__sequence_gap",
+   "depends_on": "H3__r0__s2__A__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arch": "A",
+   "arm": "summary_last",
+   "cell_id": "H3__r0__s2__A__summary_last",
+   "depends_on": "H3__r0__s2__A__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arch": "B",
+   "arm": "sequence_gap",
+   "cell_id": "H3__r0__s1__B__sequence_gap",
+   "depends_on": "H3__r0__s1__B__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arch": "B",
+   "arm": "summary_last",
+   "cell_id": "H3__r0__s1__B__summary_last",
+   "depends_on": "H3__r0__s1__B__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arch": "B",
+   "arm": "sequence_gap",
+   "cell_id": "H3__r0__s2__B__sequence_gap",
+   "depends_on": "H3__r0__s2__B__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arch": "B",
+   "arm": "summary_last",
+   "cell_id": "H3__r0__s2__B__summary_last",
+   "depends_on": "H3__r0__s2__B__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arch": "C",
+   "arm": "sequence_gap",
+   "cell_id": "H3__r0__s1__C__sequence_gap",
+   "depends_on": "H3__r0__s1__C__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arch": "C",
+   "arm": "summary_last",
+   "cell_id": "H3__r0__s1__C__summary_last",
+   "depends_on": "H3__r0__s1__C__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arch": "C",
+   "arm": "sequence_gap",
+   "cell_id": "H3__r0__s2__C__sequence_gap",
+   "depends_on": "H3__r0__s2__C__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arch": "C",
+   "arm": "summary_last",
+   "cell_id": "H3__r0__s2__C__summary_last",
+   "depends_on": "H3__r0__s2__C__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arch": "0",
+   "arm": "sequence_gap",
+   "cell_id": "H3__r0__s1__0__sequence_gap",
+   "depends_on": "H3__r0__s1__0__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arch": "0",
+   "arm": "summary_last",
+   "cell_id": "H3__r0__s1__0__summary_last",
+   "depends_on": "H3__r0__s1__0__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arch": "0",
+   "arm": "sequence_gap",
+   "cell_id": "H3__r0__s2__0__sequence_gap",
+   "depends_on": "H3__r0__s2__0__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arch": "0",
+   "arm": "summary_last",
+   "cell_id": "H3__r0__s2__0__summary_last",
+   "depends_on": "H3__r0__s2__0__extractor",
+   "donor": "sequence",
+   "host_role": "COORDINATOR",
+   "hypothesis": "H3",
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  }
+ ],
+ "cells_by_role": {
+  "COORDINATOR": 16
+ },
+ "cells_total": 16,
+ "classification": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_WINNER_PRESUPPOSED",
+ "code_equivalence": {
+  "base": "e1550ace1ee47747b855a311dad9e18af689b22e",
+  "constants": {},
+  "equivalent_training_path": false,
+  "file": "tools/df_mod_e0.py",
+  "functions": {
+   "_bind_donor": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "0985e0c1422f4deb",
+    "sha_head": "0985e0c1422f4deb"
+   },
+   "_sx": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "5be33b41028b1457",
+    "sha_head": "5be33b41028b1457"
+   },
+   "_sy": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "9655bda7d2388c9f",
+    "sha_head": "9655bda7d2388c9f"
+   },
+   "_tcn_block": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "0c571eb7eb9d0bb9",
+    "sha_head": "0c571eb7eb9d0bb9"
+   },
+   "_tf": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "f3bc0d5a8bc349d6",
+    "sha_head": "f3bc0d5a8bc349d6"
+   },
+   "_uy": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "f6b6b8674160dec0",
+    "sha_head": "f6b6b8674160dec0"
+   },
+   "acf": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "e50fa4db5df9a6ee",
+    "sha_head": "e50fa4db5df9a6ee"
+   },
+   "adjusted_rand": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "69b4eea457977f8a",
+    "sha_head": "69b4eea457977f8a"
+   },
+   "average_linkage": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "8130c6740612747e",
+    "sha_head": "8130c6740612747e"
+   },
+   "boundaries": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "f34848047bd4390d",
+    "sha_head": "f34848047bd4390d"
+   },
+   "branch_extractor": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "5e8f7f1d94205322",
+    "sha_head": "5e8f7f1d94205322"
+   },
+   "branch_reach": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "d21d1d7358fea2f1",
+    "sha_head": "d21d1d7358fea2f1"
+   },
+   "build_modular": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "e3ee8ce91948a76a",
+    "sha_head": "e3ee8ce91948a76a"
+   },
+   "causal_oracle": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "7a89fc70e853680a",
+    "sha_head": "7a89fc70e853680a"
+   },
+   "count_params": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "5282a017263c4cdb",
+    "sha_head": "5282a017263c4cdb"
+   },
+   "decompose_moving_average": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "5ee37ab4d9440c5f",
+    "sha_head": "5ee37ab4d9440c5f"
+   },
+   "deterministic_component": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "55fea6aab37ed040",
+    "sha_head": "55fea6aab37ed040"
+   },
+   "extractor_layer_names": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "369f919820dab964",
+    "sha_head": "369f919820dab964"
+   },
+   "fit": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "7fe3615425558f57",
+    "sha_head": "7fe3615425558f57"
+   },
+   "freeze_extractor": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "9f4d0b8fa5308fe9",
+    "sha_head": "9f4d0b8fa5308fe9"
+   },
+   "generate": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "7b056708c6ab3511",
+    "sha_head": "7b056708c6ab3511"
+   },
+   "group_params": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "d66674cb9f2fce3b",
+    "sha_head": "d66674cb9f2fce3b"
+   },
+   "latent_groups": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "b3acbf4ed64788aa",
+    "sha_head": "b3acbf4ed64788aa"
+   },
+   "make_windows": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "1bcd39c2eacce197",
+    "sha_head": "1bcd39c2eacce197"
+   },
+   "mase": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "7cfe7d53f61924ae",
+    "sha_head": "7cfe7d53f61924ae"
+   },
+   "prepare": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "202001dbfb3de5bc",
+    "sha_head": "202001dbfb3de5bc"
+   },
+   "profiles": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "be91c48dc46abd1b",
+    "sha_head": "be91c48dc46abd1b"
+   },
+   "random_assignments": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "1f1ad28eaf1a629e",
+    "sha_head": "1f1ad28eaf1a629e"
+   },
+   "run_cell": {
+    "diff": "--- base\n+++ head\n@@ -21,3 +21,3 @@\n     arm = job['arm']\n-    if job['hypothesis'] == 'H2':\n+    if job['hypothesis'] in ('H2', 'DX'):\n         if arm == 'profiles':",
+    "equal": false,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "41c7ac2c342cb276",
+    "sha_head": "ea43e8b71e62899f"
+   },
+   "same_partition": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "8c116e3f0d52a70e",
+    "sha_head": "8c116e3f0d52a70e"
+   },
+   "support_reach": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "de7784113f314f5e",
+    "sha_head": "de7784113f314f5e"
+   },
+   "trend_seasonal_strength": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "72e49ec7de947928",
+    "sha_head": "72e49ec7de947928"
+   },
+   "trend_seasonal_strength_v1": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "7f67fe54a6d401c6",
+    "sha_head": "7f67fe54a6d401c6"
+   },
+   "welch_bands": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "46cbd06666065049",
+    "sha_head": "46cbd06666065049"
+   },
+   "worker_main": {
+    "equal": true,
+    "in_base": true,
+    "in_head": true,
+    "sha_base": "c574a68282473f41",
+    "sha_head": "c574a68282473f41"
+   }
+  },
+  "head": "HEAD",
+  "schema": "code_equivalence.v1"
+ },
+ "common": {
+  "activation": "elu",
+  "activation_note": "ELU is a DEV decision recorded after the ML07 diagnostic of arch B; it is applied to every architecture as a common factor, not as a transferred result",
+  "adapter": "TimeDistributed Dense(8) linear (identity for ARCH-0)",
+  "core": "Conv1D(16,3,causal,ELU) for sequence fusions; Dense(32,ELU) for summary fusions",
+  "head": "Dense(p) + persistence skip",
+  "parameters_differ": "widths are common; parameter counts differ by architecture and are recorded per cell; equal counts would not prove functional equivalence and are not imposed",
+  "reach": {
+   "0": {
+    "branch": 1,
+    "sequence": 3,
+    "sequence_gap": 48,
+    "summary": 48,
+    "summary_last": 1
+   },
+   "A": {
+    "branch": 5,
+    "sequence": 7,
+    "sequence_gap": 48,
+    "summary": 48,
+    "summary_last": 5
+   },
+   "B": {
+    "branch": 65,
+    "sequence": 48,
+    "sequence_gap": 48,
+    "summary": 48,
+    "summary_last": 48
+   },
+   "C": {
+    "branch": 48,
+    "sequence": 48,
+    "sequence_gap": 48,
+    "summary": 48,
+    "summary_last": 48
+   }
+  },
+  "reach_note": "declared and tested by perturbation (tests/test_df_mod_e0_arch.py); the core sees 3 positions, so ARCH-0 and ARCH-A reach the planted lag tau = 3 (ARCH-0: x[t-2] = a[t+1-tau]) \u2014 they do not lose for a blind core; the period 24 is beyond their reach by construction (that is what the comparison measures)",
+  "width": 16
+ },
+ "decision": "taken AFTER seeing the stage's results: sequential development, not a predeclared factorial nor confirmation",
+ "design_sha256": "616fe947aad35f98bf93083e59dad7f32cfa61e0caf7f2afd0ebf5636a3ed768",
+ "diagnostic": {
+  "arms": [
+   "profiles"
+  ],
+  "condition": "trend_event",
+  "level": 3,
+  "r": 1,
+  "seeds": [
+   1
+  ],
+  "why": "absent from the executed pilot: a deterministic drift and two level shifts (one in train, one in test) test receiver adequacy and the corrected trend descriptor; no effect is estimated on it"
+ },
+ "donor_sensitivity": {
+  "archs": [
+   "A",
+   "B"
+  ],
+  "arms": [
+   "sequence",
+   "summary"
+  ],
+  "r": [
+   1
+  ],
+  "why": "bounded: is the H3 contrast sensitive to a donor optimised for the summary receiver? Shared within each pair; the sequence-trained donor is NOT called neutral"
+ },
+ "estimands": {
+  "ARCH": "differences of the above effects and of raw MASE / cost between architectures, descriptive; no winner presupposed",
+  "DONOR": "delta_a = d_a,1(donor summary) - d_a,1(donor sequence) on the bounded subset",
+  "DX": "MASE of the profiles arm vs naive / linear / oracle under trend_event per architecture: adequacy, no effect",
+  "H2_within_arch": "e_a(h) = MASE(profiles) - mean MASE(random) per replicate, slope over h, per architecture a",
+  "H3_within_arch": "d_a,r = MASE(sequence-fusion arms) - MASE(summary-fusion arms) per replicate, averaged over readouts; gamma_a = d_1 - d_0",
+  "READOUT": "rho_a,r = MASE(last readouts) - MASE(pooled readouts) per replicate, averaged over fusions: separates the readout from preserving history until fusion (the 2 x 2 fusion x readout within each (arch, r, replicate) shares one donor)"
+ },
+ "experiment": "MOD-ARCH-COMPARE",
+ "fusions": {
+  "sequence": "channel concatenation of the aligned sequences -> Conv1D(16,3,causal) core -> LAST position -> Dense(p)",
+  "sequence_gap": "channel concatenation -> Conv1D(16,3,causal) core -> global average over time -> Dense(p) (readout control: same fusion, pooled readout)",
+  "summary": "global average per branch -> concatenation -> Dense(32) core -> Dense(p)",
+  "summary_last": "LAST position per branch -> concatenation -> Dense(32) core -> Dense(p) (readout control: same summary fusion, last-step readout)"
+ },
+ "h3_level": 2,
+ "horizon": 1,
+ "host_weights": {
+  "COORDINATOR": 1
+ },
+ "hosts": [
+  "COORDINATOR"
+ ],
+ "hypotheses": [
+  "H2",
+  "H3",
+  "READOUT",
+  "DX"
+ ],
+ "inherited": [
+  {
+   "arch": "A",
+   "arm": "extractor",
+   "cell_id": "H3__r0__s1__A__extractor",
+   "hypothesis": "H3",
+   "inherited_from": {
+    "cell_id": "H3__r0__s1__A__extractor",
+    "design_sha256": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+    "root": "/home/harveybc/.local/state/crispdm-data-foundation/mod_e0_arch_stage_v1",
+    "run_id": "mod-e0-arch-stage-v1"
+   },
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arch": "A",
+   "arm": "extractor",
+   "cell_id": "H3__r0__s2__A__extractor",
+   "hypothesis": "H3",
+   "inherited_from": {
+    "cell_id": "H3__r0__s2__A__extractor",
+    "design_sha256": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+    "root": "/home/harveybc/.local/state/crispdm-data-foundation/mod_e0_arch_stage_v1",
+    "run_id": "mod-e0-arch-stage-v1"
+   },
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arch": "B",
+   "arm": "extractor",
+   "cell_id": "H3__r0__s1__B__extractor",
+   "hypothesis": "H3",
+   "inherited_from": {
+    "cell_id": "H3__r0__s1__B__extractor",
+    "design_sha256": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+    "root": "/home/harveybc/.local/state/crispdm-data-foundation/mod_e0_arch_stage_v1",
+    "run_id": "mod-e0-arch-stage-v1"
+   },
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arch": "B",
+   "arm": "extractor",
+   "cell_id": "H3__r0__s2__B__extractor",
+   "hypothesis": "H3",
+   "inherited_from": {
+    "cell_id": "H3__r0__s2__B__extractor",
+    "design_sha256": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+    "root": "/home/harveybc/.local/state/crispdm-data-foundation/mod_e0_arch_stage_v1",
+    "run_id": "mod-e0-arch-stage-v1"
+   },
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arch": "C",
+   "arm": "extractor",
+   "cell_id": "H3__r0__s1__C__extractor",
+   "hypothesis": "H3",
+   "inherited_from": {
+    "cell_id": "H3__r0__s1__C__extractor",
+    "design_sha256": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+    "root": "/home/harveybc/.local/state/crispdm-data-foundation/mod_e0_arch_stage_v1",
+    "run_id": "mod-e0-arch-stage-v1"
+   },
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arch": "C",
+   "arm": "extractor",
+   "cell_id": "H3__r0__s2__C__extractor",
+   "hypothesis": "H3",
+   "inherited_from": {
+    "cell_id": "H3__r0__s2__C__extractor",
+    "design_sha256": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+    "root": "/home/harveybc/.local/state/crispdm-data-foundation/mod_e0_arch_stage_v1",
+    "run_id": "mod-e0-arch-stage-v1"
+   },
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  },
+  {
+   "arch": "0",
+   "arm": "extractor",
+   "cell_id": "H3__r0__s1__0__extractor",
+   "hypothesis": "H3",
+   "inherited_from": {
+    "cell_id": "H3__r0__s1__0__extractor",
+    "design_sha256": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+    "root": "/home/harveybc/.local/state/crispdm-data-foundation/mod_e0_arch_stage_v1",
+    "run_id": "mod-e0-arch-stage-v1"
+   },
+   "level": 2,
+   "r": 0,
+   "seed": 1
+  },
+  {
+   "arch": "0",
+   "arm": "extractor",
+   "cell_id": "H3__r0__s2__0__extractor",
+   "hypothesis": "H3",
+   "inherited_from": {
+    "cell_id": "H3__r0__s2__0__extractor",
+    "design_sha256": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+    "root": "/home/harveybc/.local/state/crispdm-data-foundation/mod_e0_arch_stage_v1",
+    "run_id": "mod-e0-arch-stage-v1"
+   },
+   "level": 2,
+   "r": 0,
+   "seed": 2
+  }
+ ],
+ "kind": "READOUT_COMPLETION",
+ "levels": [
+  0,
+  3
+ ],
+ "n_total": 3000,
+ "only_hypotheses": [
+  "H3"
+ ],
+ "p": 8,
+ "parent_root": "/home/harveybc/.local/state/crispdm-data-foundation/mod_e0_arch_stage_v1",
+ "parent_run_id": "mod-e0-arch-stage-v1",
+ "pilots": [],
+ "proposal": "P-MOD",
+ "r_values": [
+  0,
+  1
+ ],
+ "random_assignments": 1,
+ "readout_arms": [
+  "sequence",
+  "sequence_gap",
+  "summary",
+  "summary_last"
+ ],
+ "readout_controls_r": [
+  0,
+  1
+ ],
+ "reference": "A",
+ "replicates": [
+  1,
+  2
+ ],
+ "review_table": [
+  {
+   "evidence": "tests",
+   "id": "ML01",
+   "obligation": "generator reproduces equations, population and distribution; labels/metadata/latent group never features",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests",
+   "id": "ML02",
+   "obligation": "future/validation/test changes leave fit, groups and past outputs unchanged; roles by identity/time",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + cell records",
+   "id": "ML03",
+   "obligation": "H2 changes the assignment, not names; sizes, models, contexts, budget equal per arm",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests",
+   "id": "ML04",
+   "obligation": "H3 preserves marginals in distribution and changes the relevant dependence; no shuffle control",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + cell records",
+   "id": "ML05",
+   "obligation": "H3 arms use identical frozen extractor activations; freezing verified by weights",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests",
+   "id": "ML06",
+   "obligation": "group -> detector/integrator/adapter -> fusion -> core/head keeps temporal shape; real gradients",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + pilot",
+   "id": "ML07",
+   "obligation": "positive learning with the real receiver; oracle and naive references; curves distinguish lack of training from lack of utility",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + cell records",
+   "id": "ML08",
+   "obligation": "early stopping by validation, real weight restore, reload parity, test never selects",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + verify",
+   "id": "ML09",
+   "obligation": "metrics from arrays; shared denominators; zero policy; empty/non-finite refuse",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "tests + verify",
+   "id": "ML10",
+   "obligation": "e(h), d0/d1/gamma with the declared sign; replicates/seeds/windows never inflate the unit",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "runner tests + pilot",
+   "id": "ML11",
+   "obligation": "child reads delivered bytes; CPU updates observed; complete costs and limits",
+   "status": "NOT_TESTED"
+  },
+  {
+   "evidence": "runner tests + verify",
+   "id": "ML12",
+   "obligation": "a real failure leaves a terminal/outbox; reconciliation by population and content",
+   "status": "NOT_TESTED"
+  }
+ ],
+ "schema": "df_mod_e0_arch_design.v1",
+ "successor_of": "2059a3ab76cf43f668b403a240f0c855e3386befb2f6bd70057d9c4f6445e05e",
+ "successor_reason": "RP22: complete ONLY the missing mechanistic control: the r = 0 readout arms (sequence_gap, summary_last) for the four architectures and the two existing replicates, consuming the stage's original verified r = 0 extractors as inherited donors (never re-trained), same data, seeds, training rule and parameters; decided after seeing the stage's results (sequential development); the consumed training code is equivalent to the stage's execution commit e1550ac except the DX routing branch, which no H3 cell executes (RP22_CODE_EQUIVALENCE.json)",
+ "training": {
+  "batch": 64,
+  "early_stopping": {
+   "monitor": "validation loss (mse)",
+   "patience": 8,
+   "restore_best": true
+  },
+  "learning_rate": 0.003,
+  "loss": "mse",
+  "max_epochs": 200,
+  "max_updates": 1100,
+  "ml07_diagnostic": "plain ReLU stack + mae + lr 1e-3 + 3000 updates stayed at the naive level (val MASE 0.49 vs naive 0.50, linear 48x8 reference 0.43); residual TCN blocks with ELU + mse + lr 3e-3 + 6000 updates + patience 30 reach 0.43-0.46 on 3/3 seeds (relu at lr 1e-2 collapsed on 3/3); metrics reported are MAE/MASE, the optimisation loss is mse",
+  "optimizer": "adam",
+  "stage_note": "informative DEV stage sealed under the projection; 2 replicates: replicate SDs are reported with n = 2 and are descriptive only",
+  "tuning_allowance": "NONE after the ML07 instrument diagnostic (sealed before any pilot cell)"
+ },
+ "window": 48
+}

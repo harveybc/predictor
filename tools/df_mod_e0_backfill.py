@@ -47,6 +47,7 @@ RUN = _load("df_mod_e0_run")
 R = _load("df_utility_run")
 
 SCHEMA = "df_mod_e0_backfill.v1"
+BACKFILL_VERSION = "v2_grains_snr_total"      # RP20: a successor generation per backfill version; a unit is skipped only if it already carries THIS version
 NOT_DERIVABLE = {"state": M.NO_MEDIDO, "reason": "no checkpoint was saved at this point of the executed run; not reconstructible from the files"}
 
 
@@ -62,7 +63,7 @@ def backfill_attempt(attempt: Path) -> dict:
     s = rec.get("scale") or prep["scale"]
     dv = int((rec.get("profiles") or {}).get("descriptor_version") or rec.get("descriptor_version") or 1)
     data = M.data_metrics(gen, prep, list(P), dv)
-    model = E.build_modular(list(rec["assignment"]), int(rec["window"]), gen["x"].shape[1], fusion=rec["fusion"], seed=int(rec["seed"]))
+    model = E.build_modular(list(rec["assignment"]), int(rec["window"]), gen["x"].shape[1], fusion=rec["fusion"], seed=int(rec["seed"]), arch=str(rec.get("arch") or E.DEFAULT_ARCH))
     model.load_weights(str(attempt / "weights.weights.h5"))
     if rec["hypothesis"] == "H3" and rec["arm"] in ("sequence", "summary"):
         E.freeze_extractor(model)                                 # the arm trained with a frozen extractor: counts reflect it
@@ -118,7 +119,7 @@ def successor_terminal(base: dict, doc: dict, reason: str, envelope_path: Path, 
     successor["metrics"] = list(base.get("metrics") or []) + extra
     successor["generation"] = generation
     successor["tags"] = {**(base.get("tags") or {}), "metric_states": json.dumps(states, sort_keys=True), "backfill": reason,
-                         "backfill_schema": SCHEMA, "backfill_cell_sha256": doc["cell_sha256"],
+                         "backfill_schema": SCHEMA, "backfill_version": BACKFILL_VERSION, "backfill_cell_sha256": doc["cell_sha256"],
                          "supersedes_envelope_sha256": hashlib.sha256(envelope_path.read_bytes()).hexdigest(),
                          "supersedes_generation": str(generation - 1)}
     return successor
@@ -173,8 +174,8 @@ def main(argv=None) -> int:
                 skipped.append({"unit_id": unit_id, "why": "no sent envelope in the outbox"})
                 continue
             gen, path, env = found
-            if (env["terminal"].get("tags") or {}).get("backfill_schema") == SCHEMA:
-                skipped.append({"unit_id": unit_id, "why": f"generation {gen} already carries this backfill"})
+            if (env["terminal"].get("tags") or {}).get("backfill_version") == BACKFILL_VERSION:
+                skipped.append({"unit_id": unit_id, "why": f"generation {gen} already carries backfill {BACKFILL_VERSION}"})
                 continue
             succ = successor_terminal(env["terminal"], doc, args.reason, path, gen + 1)
             outbox.put({"campaign_sha256": env["campaign_sha256"], "unit_id": unit_id, "terminal": succ})

@@ -1,0 +1,256 @@
+{
+ "schema": "code_equivalence.v1",
+ "file": "tools/df_mod_e0.py",
+ "base": "e1550ace1ee47747b855a311dad9e18af689b22e",
+ "head": "HEAD",
+ "functions": {
+  "group_params": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "d66674cb9f2fce3b",
+   "sha_head": "d66674cb9f2fce3b",
+   "equal": true
+  },
+  "latent_groups": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "b3acbf4ed64788aa",
+   "sha_head": "b3acbf4ed64788aa",
+   "equal": true
+  },
+  "causal_oracle": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "7a89fc70e853680a",
+   "sha_head": "7a89fc70e853680a",
+   "equal": true
+  },
+  "deterministic_component": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "55fea6aab37ed040",
+   "sha_head": "55fea6aab37ed040",
+   "equal": true
+  },
+  "generate": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "7b056708c6ab3511",
+   "sha_head": "7b056708c6ab3511",
+   "equal": true
+  },
+  "acf": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "e50fa4db5df9a6ee",
+   "sha_head": "e50fa4db5df9a6ee",
+   "equal": true
+  },
+  "welch_bands": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "46cbd06666065049",
+   "sha_head": "46cbd06666065049",
+   "equal": true
+  },
+  "decompose_moving_average": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "5ee37ab4d9440c5f",
+   "sha_head": "5ee37ab4d9440c5f",
+   "equal": true
+  },
+  "trend_seasonal_strength": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "72e49ec7de947928",
+   "sha_head": "72e49ec7de947928",
+   "equal": true
+  },
+  "trend_seasonal_strength_v1": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "7f67fe54a6d401c6",
+   "sha_head": "7f67fe54a6d401c6",
+   "equal": true
+  },
+  "profiles": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "be91c48dc46abd1b",
+   "sha_head": "be91c48dc46abd1b",
+   "equal": true
+  },
+  "average_linkage": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "8130c6740612747e",
+   "sha_head": "8130c6740612747e",
+   "equal": true
+  },
+  "adjusted_rand": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "69b4eea457977f8a",
+   "sha_head": "69b4eea457977f8a",
+   "equal": true
+  },
+  "random_assignments": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "1f1ad28eaf1a629e",
+   "sha_head": "1f1ad28eaf1a629e",
+   "equal": true
+  },
+  "same_partition": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "8c116e3f0d52a70e",
+   "sha_head": "8c116e3f0d52a70e",
+   "equal": true
+  },
+  "boundaries": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "f34848047bd4390d",
+   "sha_head": "f34848047bd4390d",
+   "equal": true
+  },
+  "make_windows": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "1bcd39c2eacce197",
+   "sha_head": "1bcd39c2eacce197",
+   "equal": true
+  },
+  "prepare": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "202001dbfb3de5bc",
+   "sha_head": "202001dbfb3de5bc",
+   "equal": true
+  },
+  "mase": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "7cfe7d53f61924ae",
+   "sha_head": "7cfe7d53f61924ae",
+   "equal": true
+  },
+  "_tf": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "f3bc0d5a8bc349d6",
+   "sha_head": "f3bc0d5a8bc349d6",
+   "equal": true
+  },
+  "_tcn_block": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "0c571eb7eb9d0bb9",
+   "sha_head": "0c571eb7eb9d0bb9",
+   "equal": true
+  },
+  "branch_extractor": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "5e8f7f1d94205322",
+   "sha_head": "5e8f7f1d94205322",
+   "equal": true
+  },
+  "branch_reach": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "d21d1d7358fea2f1",
+   "sha_head": "d21d1d7358fea2f1",
+   "equal": true
+  },
+  "support_reach": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "de7784113f314f5e",
+   "sha_head": "de7784113f314f5e",
+   "equal": true
+  },
+  "build_modular": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "e3ee8ce91948a76a",
+   "sha_head": "e3ee8ce91948a76a",
+   "equal": true
+  },
+  "extractor_layer_names": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "369f919820dab964",
+   "sha_head": "369f919820dab964",
+   "equal": true
+  },
+  "freeze_extractor": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "9f4d0b8fa5308fe9",
+   "sha_head": "9f4d0b8fa5308fe9",
+   "equal": true
+  },
+  "count_params": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "5282a017263c4cdb",
+   "sha_head": "5282a017263c4cdb",
+   "equal": true
+  },
+  "fit": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "7fe3615425558f57",
+   "sha_head": "7fe3615425558f57",
+   "equal": true
+  },
+  "_sx": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "5be33b41028b1457",
+   "sha_head": "5be33b41028b1457",
+   "equal": true
+  },
+  "_sy": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "9655bda7d2388c9f",
+   "sha_head": "9655bda7d2388c9f",
+   "equal": true
+  },
+  "_uy": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "f6b6b8674160dec0",
+   "sha_head": "f6b6b8674160dec0",
+   "equal": true
+  },
+  "_bind_donor": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "0985e0c1422f4deb",
+   "sha_head": "0985e0c1422f4deb",
+   "equal": true
+  },
+  "run_cell": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "41c7ac2c342cb276",
+   "sha_head": "ea43e8b71e62899f",
+   "equal": false,
+   "diff": "--- base\n+++ head\n@@ -21,3 +21,3 @@\n     arm = job['arm']\n-    if job['hypothesis'] == 'H2':\n+    if job['hypothesis'] in ('H2', 'DX'):\n         if arm == 'profiles':"
+  },
+  "worker_main": {
+   "in_base": true,
+   "in_head": true,
+   "sha_base": "c574a68282473f41",
+   "sha_head": "c574a68282473f41",
+   "equal": true
+  }
+ },
+ "constants": {},
+ "equivalent_training_path": false
+}
