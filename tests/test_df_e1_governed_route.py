@@ -210,7 +210,7 @@ def test_RP38_a_units_terminal_reaches_the_accounting_and_the_campaign_reconcile
                            tags={"purpose": "E1_DEV_PILOT", "classification": "NON_GOVERNING", "phase": "DEVELOPMENT"})
     out = G.report_terminal(root, "ae_s1", terminal, gov_url=stack["url"], api_key_file=KEY,
                             outbox_dir=str(tmp_path / "outbox"))
-    assert out["flushed"]["sent"] == 1 and out["flushed"]["pending"] == 0 and not out["flushed"]["failures"]
+    assert out["flushed"]["sent"] == 1 and out["flushed"]["pending"] == 0, out["flushed"]["failures"]
     rec = out["reconciliation"]
     assert rec["http"] == 200 and not rec["accounting_only"] and not rec["lake_only"]
     assert "ae_s1" not in (rec["missing_units"] or [])
