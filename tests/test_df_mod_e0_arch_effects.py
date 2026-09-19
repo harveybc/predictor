@@ -343,3 +343,40 @@ def test_RP26_the_cli_refuses_a_foreign_closure_and_accepts_the_real_composition
     bad = subprocess.run([_sys.executable, str(tool), "--close", str(ev / "RP22_ARCH_RC_CLOSE.json"), "--design", str(ev / "RP14_ARCH_STAGE_DESIGN.json"),
                           "--out", str(tmp_path / "bad.json")], capture_output=True, text=True)
     assert bad.returncode == 2 and "REFUSED" in bad.stdout and not (tmp_path / "bad.json").exists()
+
+
+# --- RP34 (dictum F7): the inherited donor's equivalence covers every fact it promises -------------------
+
+def test_RP34_a_donor_whose_training_changed_is_a_contradiction_not_an_accepted_union():
+    """1100 updates -> 0 with the same MASE passed the old comparison; it must not pass now."""
+    import copy
+    p_design, parent, s_design, succ = _real()
+    ok, _ = AV.merge_successor(copy.deepcopy(parent), p_design, copy.deepcopy(succ), s_design)
+    assert not ok["contradictions"], ok["contradictions"]
+    for field, value in (("updates", 0), ("stop_reason", "OTHER"), ("parameters", {"total": 1, "trainable": 1, "frozen": 0}),
+                         ("assignment", [9, 9, 9, 9, 9, 9, 9, 9]), ("curve", {"train": [1.0], "validation": [1.0]}),
+                         ("denominator", [1.0] * 8), ("naive_mase", {"validation": 42.0})):
+        broken = copy.deepcopy(succ)
+        donor = (s_design.get("inherited") or [])[0]["cell_id"]
+        broken["units"][donor]["record"][field] = value
+        merged, _ = AV.merge_successor(copy.deepcopy(parent), p_design, broken, s_design)
+        assert donor in merged["contradictions"], f"{field} changed and the union accepted it"
+        assert field in merged["contradictions"][donor]["fields"], merged["contradictions"][donor]["fields"]
+        used = [c for c in (merged.get("effects_test") or {}).get("consumed", []) if donor in str(c)]
+        assert not used, "an excluded donor still fed a contrast"
+
+
+def test_RP34_a_donor_verified_under_different_checks_or_another_attempt_is_a_contradiction():
+    import copy
+    p_design, parent, s_design, succ = _real()
+    donor = (s_design.get("inherited") or [])[0]["cell_id"]
+    for mutate in ("checks", "attempt", "missing_field"):
+        broken = copy.deepcopy(succ)
+        if mutate == "checks":
+            broken["units"][donor]["checks"]["weights_and_replay"] = False
+        elif mutate == "attempt":
+            broken["units"][donor]["attempt"] = "another_attempt_dir"
+        else:
+            broken["units"][donor]["record"].pop("window")
+        merged, _ = AV.merge_successor(copy.deepcopy(parent), p_design, broken, s_design)
+        assert donor in merged["contradictions"], mutate

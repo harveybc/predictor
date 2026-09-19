@@ -375,7 +375,14 @@ def tables(eff: dict, close_local: dict, design: dict) -> str:
     return "\n".join(L) + "\n"
 
 
+#: RP34 (dictum F7): the equivalence of an inherited donor seen from two closures promises that it is THE
+#: SAME executed cell — same task, same training and the same bytes. Comparing a short list let a donor whose
+#: recorded `updates` went 1100 -> 0 pass. The comparison is therefore over the WHOLE record (every field the
+#: closure derived from the attempt) plus the closure's own verification facts (its checks and the replay's
+#: measured identity), with only the closure-level facts below excluded, and those are compared separately.
 INHERITED_EQUIVALENCE = ("level", "r", "seed", "arm", "arch", "window", "fusion", "exposure", "descriptor_version")
+#: fields that legitimately differ between two closures of the same attempt (they describe the CLOSURE, not the cell)
+EQUIVALENCE_EXCLUDED = ("cost",)
 
 
 def validate_closure(close_local: dict, design: dict, label: str, require_all_verified: bool = False) -> dict:
@@ -408,8 +415,35 @@ def validate_closure(close_local: dict, design: dict, label: str, require_all_ve
 
 
 def _record_equivalent(a: dict, b: dict) -> list:
-    """Fields of two verified records that must agree for the same cell seen from two closures."""
-    return [k for k in INHERITED_EQUIVALENCE if (a or {}).get(k) != (b or {}).get(k)]
+    """Every field of two verified records that must agree for the same cell seen from two closures.
+
+    The same attempt read twice yields the same record: task (window, horizon through the design, arch,
+    fusion, assignment), training (updates, stop_reason, curve), parameters, exposure, descriptors, donor
+    and every score with its denominator. A key present in one record and absent in the other is a
+    difference, not an excuse; `cost` is excluded because it describes the child, not the cell.
+    """
+    a, b = dict(a or {}), dict(b or {})
+    keys = (set(a) | set(b)) - set(EQUIVALENCE_EXCLUDED)
+    missing = [k for k in INHERITED_EQUIVALENCE if k not in a or k not in b]
+    return sorted([k for k in keys if a.get(k) != b.get(k)] + [f"MISSING:{k}" for k in missing])
+
+
+def _unit_equivalent(pu: dict, su: dict) -> list:
+    """The closure's own verification facts for the same attempt: the checks it ran and the replay's
+    identity of the weights it reloaded. A donor 'verified' under different checks is not the same fact."""
+    out = []
+    pc, sc = (pu or {}).get("checks") or {}, (su or {}).get("checks") or {}
+    for k in sorted(set(pc) | set(sc)):
+        if pc.get(k) != sc.get(k):
+            out.append(f"checks.{k}")
+    pm = ((pu or {}).get("measured") or {}).get("replay") or {}
+    sm = ((su or {}).get("measured") or {}).get("replay") or {}
+    for k in ("recorded_best_validation_loss", "scale_recomputed_equal", "extractor_weights_unequal_layers"):
+        if k in pm and k in sm and pm.get(k) != sm.get(k):
+            out.append(f"replay.{k}")
+    if (pu or {}).get("attempt") != (su or {}).get("attempt"):
+        out.append("attempt")
+    return out
 
 
 def merge_successor(close_local: dict, design: dict, succ_close: dict, succ_design: dict) -> tuple:
@@ -443,7 +477,7 @@ def merge_successor(close_local: dict, design: dict, succ_close: dict, succ_desi
             raise EffectsRefusal(f"REFUSED: inherited donor {cid} is not VERIFIED (role INHERITED) in the successor closure ({(su or {}).get('status')})")
         if pu is None or pu.get("status") != "VERIFIED":
             raise EffectsRefusal(f"REFUSED: inherited donor {cid} is not VERIFIED in the parent closure ({(pu or {}).get('status')})")
-        diff = _record_equivalent(pu.get("record"), su.get("record"))
+        diff = _record_equivalent(pu.get("record"), su.get("record")) + _unit_equivalent(pu, su)
         if diff or (pu["record"].get("mase") or {}).get("validation") != (su["record"].get("mase") or {}).get("validation"):
             contradictions[cid] = {"fields": diff, "disposition": "CONTRADICTION_RECORDED: the donor is excluded from every contrast that consumes it",
                                    "parent_mase": (pu["record"].get("mase") or {}).get("validation"), "successor_mase": (su["record"].get("mase") or {}).get("validation")}
