@@ -160,7 +160,11 @@ def replay_worker(job_file: Path) -> int:
     pred_scaled = np.asarray(model.predict(X, verbose=0))[:, 0]
     pred = pred_scaled * float(z["scaler_sd"][j]) + float(z["scaler_mean"][j])
     det = RG.detector_layer_names(model)
-    out = {"schema": "df_e1_replay.v1", "cell_id": job["cell_id"], "origins": origins.tolist(),
+    if job.get("regime") == "R1":                       # the sealed regime's own configuration, so the counts are comparable
+        for layer in model.layers:
+            if layer.name in det:
+                layer.trainable = False
+    out = {"schema": "df_e1_replay.v1", "regime": job.get("regime"), "cell_id": job["cell_id"], "origins": origins.tolist(),
            "prediction": pred.tolist(), "detector_digest": RG.weights_digest(model, det),
            "non_detector_digest": RG.weights_digest(model, RG.non_detector_weighted_layer_names(model)),
            "detector_layers": det, "parameters": E.count_params(model),
@@ -172,8 +176,8 @@ def replay_worker(job_file: Path) -> int:
     return 0
 
 
-def replay(root: Path, cell_id: str, weights: Path, origins: np.ndarray, seed: int, out_dir: Path) -> dict:
-    job = {"cell_id": cell_id, "weights": str(weights), "origins": origins.tolist(), "seed": int(seed),
+def replay(root: Path, cell_id: str, weights: Path, origins: np.ndarray, seed: int, out_dir: Path, regime: str | None = None) -> dict:
+    job = {"cell_id": cell_id, "weights": str(weights), "origins": origins.tolist(), "seed": int(seed), "regime": regime,
            "data_npz": str(Path(root) / "DATA.npz"), "design": str(Path(root) / "DESIGN.json"),
            "out": str(out_dir / f"replay_{cell_id}.json")}
     job_file = out_dir / f"replay_job_{cell_id}.json"
@@ -342,7 +346,7 @@ def _verify_fit(entry: dict, reg: dict, rec: dict, arr: dict, attempt: Path, cel
     ev = np.asarray(d["eval_origins"], dtype=np.int64)
     n = min(int(os.environ.get("DF_E1_REPLAY_WINDOWS", "512")), ev.size)
     if do_replay and weights.is_file():
-        out = replay(root, cell["cell_id"], weights, ev[:n], int(cell["seed"]), work or root / "replays")
+        out = replay(root, cell["cell_id"], weights, ev[:n], int(cell["seed"]), work or root / "replays", regime=cell.get("regime"))
         if "error" in out:
             prob(f"replay failed: {out['error'][:200]}")
             entry["inference"] = REFUSED
