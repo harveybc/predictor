@@ -1,5 +1,9 @@
 # Orden vigente RP1-RP8: ejecutar trabajo del programa, no otro control aislado
 
+**Historica tras el retorno `2347c7b`:** siguiente orden vigente
+[RP9-RP16](MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md).
+Conservar esta orden como contrato de la ejecucion anterior, no volver a lanzarla.
+
 Fecha: 2026-09-18. Emisor: Musashi por la instruccion del owner de revisar,
 corregir y ejecutar el programa completo con Satoshi. Responsable: Satoshi.
 

@@ -40,6 +40,7 @@ class PlanChecks(unittest.TestCase):
 
     def test_done_without_evidence(self):
         self.state["tasks"][0]["status"] = "VERIFIED"
+        self.state["tasks"][0]["evidence"] = []
         self.assertIn("evidence required", " ".join(validate(self.state, ROOT)))
 
     def test_unknown_stage(self):

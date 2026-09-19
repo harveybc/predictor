@@ -4,6 +4,11 @@ Autor de la hipotesis: Harvey. Registro: Musashi, 2026-09-18.
 Estado: HIPOTESIS INCORPORADA AL PLAN; DISENO NUMERICO Y EJECUCION PENDIENTES.
 No se envia una orden de interrupcion a Satoshi ni se modifica una corrida sellada.
 
+Actualizacion tras retorno `2347c7b`: adopcion ordenada en
+[RP9-RP16](../handoffs/MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md).
+La comparacion arquitectonica aun no se ha ejecutado; H-CORE conserva su etapa
+posterior. El piloto TCN no selecciona por si solo esa arquitectura.
+
 ## 1. Punto de entrada y alcance
 
 Extension de desarrollo de P-MOD, programada tras E1: primero comparar R0/R1/R2

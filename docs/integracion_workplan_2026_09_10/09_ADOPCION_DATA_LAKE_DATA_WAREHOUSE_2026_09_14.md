@@ -447,3 +447,16 @@ el mismo nucleo desde cero, preentrenado ajustable o preentrenado congelado.
 [Detalle y prerrequisitos](../tres_temas_entrevista/CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md).
 Satoshi aun trabaja segun el owner. Adoptar al conciliar su retorno; no interrumpir
 ni cambiar su diseno sellado, no emitir una nueva corrida mientras tanto.
+
+### Revision del retorno RP1-RP8 y orden RP9-RP16
+
+Recibido `2347c7b`; piloto ejecutado, revision con correcciones, no confirmacion.
+Musashi reprodujo brechas del cierre sobre copias y verifico 69 originales al
+alcance local de datos/errores; 497 archivos originales intactos. Correccion de
+formula de tendencia: 15/15 particiones conservadas, sin entrenar otra vez.
+No se repite todo. Corregir poblacion, reconstruccion ML, metricas y perfiles;
+despues comparar ARCH-A/B/C/0 con controles y costo, conforme a la aprobacion.
+H-CORE mantiene E1 y prefijo verificable como dependencias; RL sigue obligatorio.
+[Revision](../audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md) y
+[orden vigente](../handoffs/MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md).
+No hubo entrenamiento, reinicio ni escritura al warehouse en esta auditoria.

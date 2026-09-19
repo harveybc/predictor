@@ -3,7 +3,8 @@
 ## Plan de ejecucion vigente
 
 - [Plan maestro v3: todas las propuestas, senales, feature engineering y RL](MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md).
-- [Orden actual para Satoshi: piloto multivariado E0 y siguientes entregables](../handoffs/MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md).
+- [Orden actual RP9-RP16: correcciones, metricas y comparacion arquitectonica](../handoffs/MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md).
+- [Revision externa RP1-RP8: evidencia conservada y limites](../audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md).
 - [Metricas de informacion, modelo, grafos y negocio: definiciones y limites](PROGRAM_METRICS_CONTRACT_v1.md).
 - [Comparacion de arquitecturas y H-CORE: preentrenar el nucleo](CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md).
 

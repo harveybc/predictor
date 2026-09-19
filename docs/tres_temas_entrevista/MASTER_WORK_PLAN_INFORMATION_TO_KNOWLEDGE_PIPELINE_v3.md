@@ -1,15 +1,21 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
 Fecha: 2026-09-18. Responsable del programa y revision: Musashi.
-Ejecucion delegada: Satoshi. Estado: PLAN CORREGIDO; E0-DEV NO EJECUTADO.
+Ejecucion delegada: Satoshi. Estado: E0-DEV EJECUTADO; REVISION CON CORRECCIONES.
 
 **Adicion aprobada, 18-sep:** comparar ARCH-A (Conv1D local, referencia), ARCH-B
 (convolucion dilatada/TCN), ARCH-C (Conv1D + GRU/LSTM) y control sin extractor
 aprendido dentro de E0 antes de elegir el procedimiento. Hipotesis
 [H-CORE](CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md)
 incorporada despues del desarrollo del extractor y su prefijo congelado verificable.
-Satoshi sigue trabajando segun el owner; esta adicion no cambia una corrida sellada.
-Los estados de ejecucion de este documento siguen pendientes de conciliar con su retorno.
+Retorno RP1-RP8 recibido en `2347c7b`; esta adicion se adopta en el sucesor,
+sin cambiar la corrida sellada. [Revision ejecutada y limites](../audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md):
+69 records sin discrepancia en la comprobacion local de datos/errores, pero cierre
+incompleto, descriptor de tendencia incorrecto y atribucion H3 limitada.
+No borrar el piloto ni repetirlo entero: corregir, demostrar reuso y ejecutar
+[RP9-RP16](../handoffs/MUSASHI_MOD_E0_RP9_RP16_2026_09_18.md).
+La correccion de tendencia mantiene las 15 particiones del piloto en el reanalisis.
+ARCH-A/B/C/0 aun no comparadas; H-CORE sigue despues de E1 y del prefijo verificable.
 
 ## 1. Autoridad, alcance y correccion de rumbo
 
@@ -186,8 +192,9 @@ demuestra por si solo ausencia de sobreajuste ni selecciona por el test.
 
 | Orden | Trabajo / responsable ejecutor Satoshi | Dependencia y salida |
 |---|---|---|
-| Ahora A | Integrar este plan, reconciliar solo evidencia reutilizada, requisitos/aceptacion y diseno de MOD-E0-DEV | Fuentes de esta revision; producir diseno numerico razonado, contratos y tests antes de codigo nuevo |
-| Ahora B | Implementar lo que falte y ejecutar piloto multivariado H2/H3 completo | A y adecuacion del mecanismo; resultados DEVELOPMENT conciliados, positivos/negativos/costo, diagnostico de fallos |
+| Ejecutado, revision parcial | Piloto multivariado RP1-RP8 | 66 celdas y 3 pilotos; conservar efectos descriptivos, no aceptacion confirmatoria |
+| Ahora A | MOD-E0-CLOSURE: corregir verificador, descriptor y cobertura de metricas | RP9-RP13; pruebas contra los contraejemplos, reuso y conciliacion independiente |
+| Ahora B | Comparacion arquitectonica y controles mecanisticos del sucesor | RP14: diseno numerico, adecuacion/contexto/costo, cuatro arquitecturas y ambos contrastes antes de elegir |
 | E0, antes de elegir | MOD-ARCH-COMPARE: ARCH-A/B/C y ARCH-0 en el modular propio | Adoptar tras conciliar el retorno en curso; reutilizar piloto compatible, medir interacciones arquitectura/regimen y costo antes de fijar el procedimiento |
 | Paralelo C | Reconciliar demanda real de forecasting/RL semanal y banco publico de E1 | Leer configs/productores existentes; no recenso global ni dependencia de un seno aprobado; contratos y deficits por fuente |
 | Despues D | E1 publico: desarrollar perfiles, seleccion, contextos, R0/R1/R2 y comparadores | Piloto de mecanismos y datos admisibles; fijar procedimiento, margenes, precision y presupuestos antes de reservas |
