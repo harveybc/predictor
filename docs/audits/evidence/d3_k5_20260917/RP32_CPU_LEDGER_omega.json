@@ -1,0 +1,368 @@
+{
+ "schema": "cpu_ledger.v1",
+ "host": "omega",
+ "since": "2026-09-19 05:30",
+ "match": [
+  "rp25",
+  "rp26",
+  "rp27",
+  "rp28",
+  "rp29",
+  "rp30",
+  "rp31",
+  "rp32",
+  "e1",
+  "e3",
+  "effects",
+  "composed",
+  "ledger",
+  "plan-check",
+  "state-peek",
+  "res-peek",
+  "cov",
+  "mut-peek"
+ ],
+ "units": [
+  {
+   "unit": "crispdm-rp25-pre-1789835166-3043266.scope",
+   "at": "Sep 19 11:26:11",
+   "cpu_seconds": 4.864,
+   "wall_seconds": 4.916,
+   "memory_peak": "654.6M"
+  },
+  {
+   "unit": "crispdm-rp28-dst-trace3-1789835263-3044527.scope",
+   "at": "Sep 19 11:27:59",
+   "cpu_seconds": 15.106,
+   "wall_seconds": 15.233,
+   "memory_peak": "2.5G"
+  },
+  {
+   "unit": "crispdm-rp26-merge-check-1789835342-3045605.scope",
+   "at": "Sep 19 11:29:04",
+   "cpu_seconds": 2.202,
+   "wall_seconds": 2.213,
+   "memory_peak": "24.8M"
+  },
+  {
+   "unit": "crispdm-rp26-tests-1789835384-3046250.scope",
+   "at": "Sep 19 11:29:51",
+   "cpu_seconds": 6.764,
+   "wall_seconds": 6.824,
+   "memory_peak": "65.7M"
+  },
+  {
+   "unit": "crispdm-rp26-tests2-1789835407-3046754.scope",
+   "at": "Sep 19 11:30:13",
+   "cpu_seconds": 5.817,
+   "wall_seconds": 5.917,
+   "memory_peak": "63.8M"
+  },
+  {
+   "unit": "crispdm-rp26-effects3-1789835443-3047073.scope",
+   "at": "Sep 19 11:30:45",
+   "cpu_seconds": 2.384,
+   "wall_seconds": 2.418,
+   "memory_peak": "24.7M"
+  },
+  {
+   "unit": "crispdm-rp27-tests-1789835606-3049563.scope",
+   "at": "Sep 19 11:33:29",
+   "cpu_seconds": 3.374,
+   "wall_seconds": 3.515,
+   "memory_peak": "118M"
+  },
+  {
+   "unit": "crispdm-rp27-tests2-1789835642-3049997.scope",
+   "at": "Sep 19 11:34:05",
+   "cpu_seconds": 2.781,
+   "wall_seconds": 2.813,
+   "memory_peak": "111.9M"
+  },
+  {
+   "unit": "crispdm-rp28-tests-1789835698-3050648.scope",
+   "at": "Sep 19 11:35:01",
+   "cpu_seconds": 3.006,
+   "wall_seconds": 3.017,
+   "memory_peak": "82.6M"
+  },
+  {
+   "unit": "crispdm-rp28-tests2-1789835747-3051461.scope",
+   "at": "Sep 19 11:35:50",
+   "cpu_seconds": 2.997,
+   "wall_seconds": 3.014,
+   "memory_peak": "82.6M"
+  },
+  {
+   "unit": "crispdm-rp28-e1-tasks-1789835750-3051524.scope",
+   "at": "Sep 19 11:36:12",
+   "cpu_seconds": 21.89,
+   "wall_seconds": 21.935,
+   "memory_peak": "1G"
+  },
+  {
+   "unit": "crispdm-rp29-tests-1789835882-3053467.scope",
+   "at": "Sep 19 11:38:12",
+   "cpu_seconds": 9.309,
+   "wall_seconds": 9.32,
+   "memory_peak": "309.9M"
+  },
+  {
+   "unit": "crispdm-rp29-tests2-1789836027-3055433.scope",
+   "at": "Sep 19 11:41:06",
+   "cpu_seconds": 39.221,
+   "wall_seconds": 38.75,
+   "memory_peak": "596.2M"
+  },
+  {
+   "unit": "crispdm-rp31-tests-1789836109-3058698.scope",
+   "at": "Sep 19 11:41:51",
+   "cpu_seconds": 1.364,
+   "wall_seconds": 1.413,
+   "memory_peak": "41.7M"
+  },
+  {
+   "unit": "crispdm-rp31-tests2-1789836127-3059150.scope",
+   "at": "Sep 19 11:42:08",
+   "cpu_seconds": 1.281,
+   "wall_seconds": 1.312,
+   "memory_peak": "41.2M"
+  },
+  {
+   "unit": "crispdm-rp30-tests-1789836801-3067917.scope",
+   "at": "Sep 19 11:53:24",
+   "cpu_seconds": 2.124,
+   "wall_seconds": 2.217,
+   "memory_peak": "92M"
+  },
+  {
+   "unit": "crispdm-rp30-tests2-1789836821-3068095.scope",
+   "at": "Sep 19 11:53:54",
+   "cpu_seconds": 13.839,
+   "wall_seconds": 13.832,
+   "memory_peak": "409.5M"
+  },
+  {
+   "unit": "crispdm-rp30-tests3-1789836844-3068640.scope",
+   "at": "Sep 19 11:54:37",
+   "cpu_seconds": 32.849,
+   "wall_seconds": 32.547,
+   "memory_peak": "613.1M"
+  },
+  {
+   "unit": "crispdm-rp30-tests4-1789836886-3069431.scope",
+   "at": "Sep 19 11:55:19",
+   "cpu_seconds": 33.603,
+   "wall_seconds": 33.351,
+   "memory_peak": "613.7M"
+  },
+  {
+   "unit": "crispdm-rp30-tests5-1789836925-3070394.scope",
+   "at": "Sep 19 11:55:27",
+   "cpu_seconds": 2.092,
+   "wall_seconds": 2.118,
+   "memory_peak": "90.2M"
+  },
+  {
+   "unit": "crispdm-rp30-tests6-1789836952-3070629.scope",
+   "at": "Sep 19 11:56:25",
+   "cpu_seconds": 33.53,
+   "wall_seconds": 33.248,
+   "memory_peak": "613.1M"
+  },
+  {
+   "unit": "crispdm-rp30-prepare-1789836986-3071623.scope",
+   "at": "Sep 19 11:56:27",
+   "cpu_seconds": 1.099,
+   "wall_seconds": 1.109,
+   "memory_peak": "802.8M"
+  },
+  {
+   "unit": "crispdm-rp30-tests7-1789837012-3071860.scope",
+   "at": "Sep 19 11:57:26",
+   "cpu_seconds": 33.692,
+   "wall_seconds": 33.45,
+   "memory_peak": "612.8M"
+  },
+  {
+   "unit": "crispdm-df-e1-pilot_ae-3073154-1789837060159.scope",
+   "at": "Sep 19 11:57:57",
+   "cpu_seconds": 20.449,
+   "wall_seconds": 17.606,
+   "memory_peak": "380.2M"
+  },
+  {
+   "unit": "crispdm-rp30-pilot-1789837059-3073136.scope",
+   "at": "Sep 19 11:57:58",
+   "cpu_seconds": 1.075,
+   "wall_seconds": 18.732,
+   "memory_peak": "61.1M"
+  },
+  {
+   "unit": "crispdm-df-e1-pilot_ae-3073987-1789837108993.scope",
+   "at": "Sep 19 11:58:46",
+   "cpu_seconds": 20.544,
+   "wall_seconds": 17.605,
+   "memory_peak": "380.7M"
+  },
+  {
+   "unit": "crispdm-df-e1-pilot_fit-3073987-1789837126697.scope",
+   "at": "Sep 19 11:59:26",
+   "cpu_seconds": 44.258,
+   "wall_seconds": 39.64,
+   "memory_peak": "483.9M"
+  },
+  {
+   "unit": "crispdm-rp30-pilot3-1789837108-3073978.scope",
+   "at": "Sep 19 11:59:26",
+   "cpu_seconds": 1.133,
+   "wall_seconds": 58.375,
+   "memory_peak": "60.9M"
+  },
+  {
+   "unit": "crispdm-df-e1-ae_s1-3075023-1789837177008.scope",
+   "at": "Sep 19 12:00:12",
+   "cpu_seconds": 44.973,
+   "wall_seconds": 35.031,
+   "memory_peak": "383.9M"
+  },
+  {
+   "unit": "crispdm-df-e1-ae_s2-3075023-1789837177001.scope",
+   "at": "Sep 19 12:00:12",
+   "cpu_seconds": 45.187,
+   "wall_seconds": 35.151,
+   "memory_peak": "384.9M"
+  },
+  {
+   "unit": "crispdm-df-e1-ae_s3-3075023-1789837212328.scope",
+   "at": "Sep 19 12:00:43",
+   "cpu_seconds": 41.557,
+   "wall_seconds": 31.453,
+   "memory_peak": "384.7M"
+  },
+  {
+   "unit": "crispdm-df-e1-R0_s1-3075023-1789837177007.scope",
+   "at": "Sep 19 12:03:20",
+   "cpu_seconds": 258.158,
+   "wall_seconds": 222.953,
+   "memory_peak": "493.1M"
+  },
+  {
+   "unit": "crispdm-df-e1-controls-3075023-1789837400166.scope",
+   "at": "Sep 19 12:03:24",
+   "cpu_seconds": 4.635,
+   "wall_seconds": 4.652,
+   "memory_peak": "363.5M"
+  },
+  {
+   "unit": "crispdm-df-e1-R0_s2-3075023-1789837212151.scope",
+   "at": "Sep 19 12:03:50",
+   "cpu_seconds": 253.349,
+   "wall_seconds": 218.005,
+   "memory_peak": "496M"
+  },
+  {
+   "unit": "crispdm-df-e1-R0_s3-3075023-1789837244043.scope",
+   "at": "Sep 19 12:04:16",
+   "cpu_seconds": 246.11,
+   "wall_seconds": 212.481,
+   "memory_peak": "491.6M"
+  },
+  {
+   "unit": "crispdm-df-e1-R1_s1-3075023-1789837456787.scope",
+   "at": "Sep 19 12:05:03",
+   "cpu_seconds": 64.424,
+   "wall_seconds": 47.173,
+   "memory_peak": "461.9M"
+  },
+  {
+   "unit": "crispdm-df-e1-R1_s2-3075023-1789837456787.scope",
+   "at": "Sep 19 12:05:17",
+   "cpu_seconds": 84.684,
+   "wall_seconds": 60.46,
+   "memory_peak": "464.5M"
+  },
+  {
+   "unit": "crispdm-df-e1-R1_s3-3075023-1789837517397.scope",
+   "at": "Sep 19 12:06:13",
+   "cpu_seconds": 78.286,
+   "wall_seconds": 56.359,
+   "memory_peak": "464M"
+  },
+  {
+   "unit": "crispdm-df-e1-R2_s1-3075023-1789837456787.scope",
+   "at": "Sep 19 12:07:10",
+   "cpu_seconds": 201.077,
+   "wall_seconds": 173.81900000000002,
+   "memory_peak": "490.3M"
+  },
+  {
+   "unit": "crispdm-df-e1-R2_s2-3075023-1789837504134.scope",
+   "at": "Sep 19 12:08:41",
+   "cpu_seconds": 252.658,
+   "wall_seconds": 217.52,
+   "memory_peak": "495.4M"
+  },
+  {
+   "unit": "crispdm-df-e1-R2_s3-3075023-1789837573959.scope",
+   "at": "Sep 19 12:09:56",
+   "cpu_seconds": 257.438,
+   "wall_seconds": 222.20600000000002,
+   "memory_peak": "489.3M"
+  },
+  {
+   "unit": "crispdm-rp30-run-1789837176-3075017.scope",
+   "at": "Sep 19 12:09:56",
+   "cpu_seconds": 4.524,
+   "wall_seconds": 620.381,
+   "memory_peak": "67.2M"
+  },
+  {
+   "unit": "crispdm-rp32-mutants-1789837941-3094051.scope",
+   "at": "Sep 19 12:13:14",
+   "cpu_seconds": 53.009,
+   "wall_seconds": 52.563,
+   "memory_peak": "640.1M"
+  },
+  {
+   "unit": "crispdm-df-e182e3f0d3c52604eaea__financial_data.dev-3090367-1789838100944.scope",
+   "at": "Sep 19 12:15:02",
+   "cpu_seconds": 1.421,
+   "wall_seconds": 1.42,
+   "memory_peak": "123.1M"
+  },
+  {
+   "unit": "crispdm-df-e182e3f0d3c52604eaea__financial_data.dev-3090367-1789838103425.scope",
+   "at": "Sep 19 12:15:04",
+   "cpu_seconds": 1.412,
+   "wall_seconds": 1.413,
+   "memory_peak": "123.8M"
+  },
+  {
+   "unit": "crispdm-rp32-mutants2-1789838091-3101969.scope",
+   "at": "Sep 19 12:15:23",
+   "cpu_seconds": 32.441,
+   "wall_seconds": 32.243,
+   "memory_peak": "639.4M"
+  },
+  {
+   "unit": "crispdm-rp32-mutants3-1789838130-3103228.scope",
+   "at": "Sep 19 12:16:24",
+   "cpu_seconds": 54.631,
+   "wall_seconds": 54.17,
+   "memory_peak": "637.5M"
+  },
+  {
+   "unit": "crispdm-rp32-suite-1789837888-3090361.scope",
+   "at": "Sep 19 12:43:42",
+   "cpu_seconds": 3016.379,
+   "wall_seconds": 1934.154,
+   "memory_peak": "6.5G"
+  }
+ ],
+ "cpu_seconds_total": 5359.0,
+ "ceiling_seconds": 14400.0,
+ "remaining_seconds": 9041.0,
+ "within_ceiling": true,
+ "note": "systemd accounting of the transient unit (all its children); units still running are not listed"
+}

@@ -165,7 +165,37 @@ in `sent/` or `pending/`, one unit per sent envelope; the server may be told twi
 per unit and generation makes harmless), and a second flush drains what remains. A private outbox per process has
 no race, which is the operational rule this round follows.
 
-Tests, budget and hosts: see the closing table below.
+**Tests.** `pytest tests docs/tres_temas_entrevista/program_v3/test_check_plan.py --continue-on-collection-errors`:
+**2 163 passed, 37 skipped, 3 failed, 8 errors** in 32 min 05 s
+([`RP32_FULL_SUITE_SUMMARY.txt`](../evidence/d3_k5_20260917/RP32_FULL_SUITE_SUMMARY.txt)). The 3 failures
+(`tests/integration_tests/test_configuration_handling.py`) and the 8 collection errors are the stale legacy tests
+AGENTS.md documents; they are unchanged by this round and touch none of its code. Every MOD-E0, closure, effects,
+E1 (loader, spectra, tasks, regimes, pilot), E3 controller and outbox test passes. The skips are environment-gated
+(no lake, no live service) and are named in the summary.
+
+**Mutants POST** ([`RP32_E1_E3_MUTANTS_POST.json`](../evidence/d3_k5_20260917/RP32_E1_E3_MUTANTS_POST.json)):
+**10 of 10 killed** — extras admitted, the train split reaching later rows, the gap check removed, activation judged
+at the target row, R1 not frozen, the arrays digest not re-verified, the release check removed, flat turned into
+short, the week taken from a counter, and a test split reintroduced into the pilot. Three of them survived the
+first run; the two mutations were too weak and one test asserted a substring rather than the exact refusal, so the
+mutants and that assertion were corrected and rerun. That is reported here because a survivor is a guard that is
+not really tested.
+
+**Budget.** Systemd ledger on omega since the order
+([`RP32_CPU_LEDGER_omega.json`](../evidence/d3_k5_20260917/RP32_CPU_LEDGER_omega.json)): **5 359 CPU s** over 48
+transient units (PRE, tests, the composed closure and its publication, the E1 loader/spectra/DST work, the regime
+tests, the pilot's cost pilot and its 13 units, the controller tests, the mutant battery, the full suite and this
+closure) of the 14 400 s authorised — 9 041 s unused. The pilot itself cost 1 897 s.
+
+**Hosts.** All work ran on omega (load 0.2–3, 21 GiB available at close, tree clean at the closing commit). The
+workers were not used: the pilot's units are chained by seed through one auto-encoder and one prepared DATA file,
+and dealing three-minute children to other hosts would have cost more in synchronisation than it saved; no other
+host's load was touched. Workers are synced to the closing commit after this table.
+
+**Defects of my own this round**, all fixed and visible in the history: the masked pre-training loss first passed
+the mask as `sample_weight` and failed on rank (the mask now travels in the target tensor); the pilot child
+declared `rows_written: 1` for a multi-line output, which the isolated runner correctly refused; the closing read
+`REPORT.pilot.json` instead of the full run's report; three mutants were too weak on their first run.
 
 ## Request
 
