@@ -91,13 +91,18 @@ def stack(tmp_path_factory):
                                        "min_free_bytes": 1 << 20}
     cube_cfg["operator_config_path"] = str(work / "cube.pending.json")
     (work / "cube.host.json").write_text(json.dumps(cube_cfg, indent=1))
+    # both disposable hosts share a disposable token, the way the deployed pair shares one through its
+    # service environment; no production token is read or written here
+    token = hashlib.sha256(str(work).encode()).hexdigest()
     cube_log = open(work / "cube.log", "w")
     cube_proc = subprocess.Popen([str(A.WAREHOUSE_PYTHON), "-m", "data_warehouse_service.main",
                                   "--load_config", str(work / "cube.host.json")],
-                                 cwd=str(work), stdout=cube_log, stderr=subprocess.STDOUT)
+                                 cwd=str(work), stdout=cube_log, stderr=subprocess.STDOUT,
+                                 env={**os.environ, "DATA_GOV_LAKE_TOKEN": token})
     cube = [l for l in cfg["lakes"] if l.get("lake_id") == "olap_cube"]
     for lake in cube:
         lake["base_url"] = f"http://127.0.0.1:{cube_port}"
+        lake["lake_service_token"] = token
     cfg["lakes"] = [l for l in cfg["lakes"] if l.get("plugin") != "http_lake"] + cube + [entry]
     cfg["policies"] = [p for p in cfg["policies"] if p.get("lake") in ("predictor_examples", "olap_cube")] + A.policy_entries(["predictor"])
     cfg.update(web_port=port, accounting_db=str(work / "accounting.db"), spool_dir=str(work / "spool"),
