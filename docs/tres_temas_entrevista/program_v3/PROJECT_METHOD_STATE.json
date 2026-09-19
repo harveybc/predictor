@@ -1,407 +1,412 @@
 {
-  "schema": "research_program_method_state.v1",
-  "updated_on": "2026-09-19",
-  "current_stage": "external_review",
-  "completed_stages": [
-    "discovery",
-    "requirements"
+ "schema": "research_program_method_state.v1",
+ "updated_on": "2026-09-19",
+ "current_stage": "external_review",
+ "completed_stages": [
+  "discovery",
+  "requirements"
+ ],
+ "program_owner": "Musashi",
+ "execution_owner": "Satoshi",
+ "handoff_status": "RP33_RP40_E1_GOVERNED_VALIDATION_AND_WEEKLY_RUNTIME_READY_FOR_REVIEW",
+ "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
+ "architecture_comparison": {
+  "reference": "ARCH-A",
+  "alternatives": [
+   "ARCH-A",
+   "ARCH-B",
+   "ARCH-C",
+   "ARCH-0"
   ],
-  "program_owner": "Musashi",
-  "execution_owner": "Satoshi",
-  "handoff_status": "RP25_RP32_REVIEWED_E1_UNGOVERNED_CORRECTIONS_ORDERED_RP33_RP40",
-  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
-  "architecture_comparison": {
-    "reference": "ARCH-A",
-    "alternatives": [
-      "ARCH-A",
-      "ARCH-B",
-      "ARCH-C",
-      "ARCH-0"
-    ],
-    "selected_winner": null,
-    "adoption": "MEASUREMENTS_PRESERVED_E0_DONOR_EQUIVALENCE_REQUIRES_COMPLETION"
+  "selected_winner": null,
+  "adoption": "MEASUREMENTS_PRESERVED_E0_DONOR_EQUIVALENCE_REQUIRES_COMPLETION"
+ },
+ "first_experiment": "MOD-E0-DEV",
+ "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
+ "next_allowed_actions": [
+  "RP33 remains OPEN on ONE operation: writing the data-gov configuration and restarting that service was refused by the execution environment's permission layer; the rehearsal, backup, post-check and rollback are implemented and green",
+  "RP38 successor pilot is SEALED and NOT EXECUTED: no scientific training runs while the governance prerequisite is unresolved",
+  "After the lake registration: acquire per unit, run the sealed successor design, close it with tools/df_e1_close.py and import nothing retrospectively",
+  "E3 stays software: the weekly runtime drives the real environment and broker offline; no RL training, no venue, no availability claim"
+ ],
+ "documents": {
+  "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
+  "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
+  "orders": "../../handoffs/MUSASHI_PROGRAM_RP33_RP40_2026_09_19.md",
+  "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
+  "external_review": "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
+  "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
+  "return": "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md",
+  "e1_closure": "../../../tools/df_e1_close.py",
+  "e1_governed_entry": "../../../tools/df_e1_governed.py",
+  "e1_receiver_adequacy": "../../audits/evidence/d3_k5_20260917/RP37_RECEIVER_ADEQUACY_1600.json",
+  "e1_successor_design": "../../audits/evidence/d3_k5_20260917/RP38/E1_PILOT_DESIGN_V2_SEALED_NOT_EXECUTED.json",
+  "weekly_runtime": "../../../tools/e3_weekly_runtime.py"
+ },
+ "proposal_coverage": {
+  "P-MOD": [
+   "MOD-E0-DEV",
+   "MOD-ARCH-COMPARE",
+   "MOD-E1",
+   "MOD-FROZEN-PREFIX",
+   "MOD-CORE-PRETRAIN",
+   "MOD-CONF",
+   "MOD-E3"
+  ],
+  "P-L2": [
+   "L2-PUBLIC-RL"
+  ],
+  "P-CAP": [
+   "CAP-CALIBRATION"
+  ],
+  "P-PRE": [
+   "PRE-NOISE"
+  ],
+  "P-TRN": [
+   "TRN-TRANSFER"
+  ],
+  "P-INC": [
+   "INC-SIMULATION"
+  ]
+ },
+ "signal_steps": [
+  "STEP-01",
+  "STEP-02",
+  "STEP-03",
+  "STEP-04",
+  "STEP-05",
+  "STEP-06",
+  "STEP-07",
+  "STEP-08",
+  "STEP-09",
+  "STEP-10",
+  "STEP-11",
+  "STEP-12",
+  "STEP-13"
+ ],
+ "compression_lanes": [
+  "C1",
+  "C2",
+  "C3",
+  "C4",
+  "C5",
+  "C6",
+  "C7"
+ ],
+ "shared_requirements": [
+  "FE",
+  "EVENT",
+  "META",
+  "I-INFO",
+  "H-ES",
+  "GOVERNANCE",
+  "WEEKLY-RL"
+ ],
+ "tasks": [
+  {
+   "id": "MOD-E0-DEV",
+   "owner": "Satoshi",
+   "status": "EXECUTED",
+   "depends_on": [],
+   "evidence": [
+    "docs/audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md",
+    "docs/audits/evidence/RP_REVIEW_2026_09_18/results.json",
+    "https://github.com/harveybc/predictor/blob/2347c7b/docs/audits/work_plan/SATOSHI_PROGRAM_RP1_RP8_RETURN_2026_09_18.md",
+    "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
+    "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
+   ],
+   "next_action": "Preserve measurements and factorial results; no blanket restart",
+   "deliverable": "H2 profile/random effects and H3 sequence/summary effects with matched controls and cost"
   },
-  "first_experiment": "MOD-E0-DEV",
-  "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
-  "next_allowed_actions": [
-    "RP33-RP34: technically register public panel resources and govern new work before execution; import the old pilot honestly as retrospective evidence and repair closure without training",
-    "RP35-RP38: fix task domains, AE validation stimulus and actual receptive support; conditionally execute the bounded governed E1 successor after ML acceptance and cost/memory preflight",
-    "RP39: integrate actual model inference, weekly controller and broker/environment; offline software tests, no RL training or live",
-    "RP40: content reconciliation, measured tests and single final report under aggregate 14400 CPU seconds; no reserve or blanket restart"
-  ],
-  "documents": {
-    "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
-    "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-    "orders": "../../handoffs/MUSASHI_PROGRAM_RP33_RP40_2026_09_19.md",
-    "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-    "external_review": "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-    "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-    "return": "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
+  {
+   "id": "MOD-E0-CLOSURE",
+   "owner": "Satoshi",
+   "status": "EXECUTED",
+   "depends_on": [
+    "MOD-E0-DEV"
+   ],
+   "evidence": [
+    "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
+    "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
+    "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md",
+    "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
+    "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
+   ],
+   "next_action": "RP34: complete donor equivalence (updates/identity/task) and re-close E0 without fitting",
+   "deliverable": "Corrected closure, descriptor impact proof and honest metric coverage with preserved history"
   },
-  "proposal_coverage": {
-    "P-MOD": [
-      "MOD-E0-DEV",
-      "MOD-ARCH-COMPARE",
-      "MOD-E1",
-      "MOD-FROZEN-PREFIX",
-      "MOD-CORE-PRETRAIN",
-      "MOD-CONF",
-      "MOD-E3"
-    ],
-    "P-L2": [
-      "L2-PUBLIC-RL"
-    ],
-    "P-CAP": [
-      "CAP-CALIBRATION"
-    ],
-    "P-PRE": [
-      "PRE-NOISE"
-    ],
-    "P-TRN": [
-      "TRN-TRANSFER"
-    ],
-    "P-INC": [
-      "INC-SIMULATION"
-    ]
+  {
+   "id": "MOD-ARCH-COMPARE",
+   "owner": "Satoshi",
+   "status": "EXECUTED",
+   "depends_on": [
+    "MOD-E0-DEV",
+    "MOD-E0-CLOSURE"
+   ],
+   "evidence": [
+    "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
+    "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
+    "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md",
+    "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
+    "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
+   ],
+   "next_action": "No universal winner; preserve controls and qualify support/convergence; no training just to repair evidence",
+   "deliverable": "Adequacy, H2/H3 effects by architecture and regime, uncertainty, learning curves and total cost; no universal winner presumed"
   },
-  "signal_steps": [
-    "STEP-01",
-    "STEP-02",
-    "STEP-03",
-    "STEP-04",
-    "STEP-05",
-    "STEP-06",
-    "STEP-07",
-    "STEP-08",
-    "STEP-09",
-    "STEP-10",
-    "STEP-11",
-    "STEP-12",
-    "STEP-13"
-  ],
-  "compression_lanes": [
-    "C1",
-    "C2",
-    "C3",
-    "C4",
-    "C5",
-    "C6",
-    "C7"
-  ],
-  "shared_requirements": [
-    "FE",
-    "EVENT",
-    "META",
-    "I-INFO",
-    "H-ES",
-    "GOVERNANCE",
-    "WEEKLY-RL"
-  ],
-  "tasks": [
-    {
-      "id": "MOD-E0-DEV",
-      "owner": "Satoshi",
-      "status": "EXECUTED",
-      "depends_on": [],
-      "evidence": [
-        "docs/audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md",
-        "docs/audits/evidence/RP_REVIEW_2026_09_18/results.json",
-        "https://github.com/harveybc/predictor/blob/2347c7b/docs/audits/work_plan/SATOSHI_PROGRAM_RP1_RP8_RETURN_2026_09_18.md",
-        "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
-        "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
-      ],
-      "next_action": "Preserve measurements and factorial results; no blanket restart",
-      "deliverable": "H2 profile/random effects and H3 sequence/summary effects with matched controls and cost"
-    },
-    {
-      "id": "MOD-E0-CLOSURE",
-      "owner": "Satoshi",
-      "status": "EXECUTED",
-      "depends_on": [
-        "MOD-E0-DEV"
-      ],
-      "evidence": [
-        "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
-        "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
-        "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md",
-        "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
-        "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
-      ],
-      "next_action": "RP34: complete donor equivalence (updates/identity/task) and re-close E0 without fitting",
-      "deliverable": "Corrected closure, descriptor impact proof and honest metric coverage with preserved history"
-    },
-    {
-      "id": "MOD-ARCH-COMPARE",
-      "owner": "Satoshi",
-      "status": "EXECUTED",
-      "depends_on": [
-        "MOD-E0-DEV",
-        "MOD-E0-CLOSURE"
-      ],
-      "evidence": [
-        "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
-        "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
-        "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md",
-        "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
-        "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
-      ],
-      "next_action": "No universal winner; preserve controls and qualify support/convergence; no training just to repair evidence",
-      "deliverable": "Adequacy, H2/H3 effects by architecture and regime, uncertainty, learning curves and total cost; no universal winner presumed"
-    },
-    {
-      "id": "MOD-E1",
-      "owner": "Satoshi",
-      "status": "EXECUTED",
-      "depends_on": [
-        "MOD-E0-DEV",
-        "MOD-ARCH-COMPARE"
-      ],
-      "evidence": [
-        "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/tres_temas_entrevista/program_v3/E1_FAMILIES.json",
-        "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
-        "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
-      ],
-      "next_action": "RP33-RP38: historical pilot is executed but ungoverned; fix catalog/closure/masks/support before a prospective governed successor",
-      "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan",
-      "adoption": "HISTORICAL_UNGOVERNED_DEV_PILOT_NOT_ACCEPTED"
-    },
-    {
-      "id": "MOD-FROZEN-PREFIX",
-      "owner": "Satoshi",
-      "status": "NOT_STARTED",
-      "depends_on": [
-        "MOD-E1"
-      ],
-      "evidence": [],
-      "next_action": "After extractor regime comparison, fix all preprocessing/grouping/D/I/A/fusion states and verify governed sequence materialization per split",
-      "deliverable": "Versioned derived dataset with direct/cache parity, temporal support and complete prefix lineage"
-    },
-    {
-      "id": "MOD-CORE-PRETRAIN",
-      "owner": "Satoshi",
-      "status": "NOT_STARTED",
-      "depends_on": [
-        "MOD-E1",
-        "MOD-FROZEN-PREFIX"
-      ],
-      "evidence": [],
-      "next_action": "Design H-CORE then compare random, pretrained-finetuned and pretrained-frozen core with actual task heads and full cost; no active-run changes",
-      "deliverable": "Independent H-CORE effects on forecasting, total cost and limitations; RL counterpart in MOD-E3"
-    },
-    {
-      "id": "MOD-CONF",
-      "owner": "Musashi + Satoshi",
-      "status": "NOT_STARTED",
-      "depends_on": [
-        "MOD-E1"
-      ],
-      "evidence": [],
-      "next_action": "Review fixed method before independent E0 synthetic and E2 public reserves",
-      "deliverable": "H1/H2/H3 effects under the proposal's reserved protocol"
-    },
-    {
-      "id": "BUSINESS-CONTRACT",
-      "owner": "Satoshi",
-      "status": "DESIGNED",
-      "depends_on": [],
-      "evidence": [
-        "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md",
-        "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
-        "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
-      ],
-      "next_action": "RP39: integrate real model inference and broker with 13D; config/stub tests do not establish weekly operations",
-      "deliverable": "Observations/targets/actions, availability, weekly cycle, cost and data gaps"
-    },
-    {
-      "id": "MOD-E3",
-      "owner": "Satoshi",
-      "status": "NOT_STARTED",
-      "depends_on": [
-        "MOD-E1",
-        "BUSINESS-CONTRACT"
-      ],
-      "evidence": [
-        "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
-        "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-        "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
-      ],
-      "next_action": "Offline integrated tests pending RP39; scientific RL/weekly evaluation remains mandatory after E1 and business data prerequisites",
-      "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost"
-    },
-    {
-      "id": "L2-PUBLIC-RL",
-      "owner": "Satoshi",
-      "status": "NOT_STARTED",
-      "depends_on": [],
-      "evidence": [],
-      "next_action": "Map existing B4/selector evidence to the exact POPGym/CARL protocol before new RL development",
-      "deliverable": "H1 cost/regret, H2 risk-coverage and H3 transfer with observed fidelities"
-    },
-    {
-      "id": "CAP-CALIBRATION",
-      "owner": "Satoshi",
-      "status": "NOT_STARTED",
-      "depends_on": [],
-      "evidence": [],
-      "next_action": "Map M3/M4 evidence to random-label capacity and N_min protocol; implement only missing scope",
-      "deliverable": "H1 capacity, H2 bits/generalization and H3 dimensioning with censoring"
-    },
-    {
-      "id": "PRE-NOISE",
-      "owner": "Satoshi",
-      "status": "NOT_STARTED",
-      "depends_on": [],
-      "evidence": [],
-      "next_action": "Reconcile D2 by regime and extend only uncovered task/receiver contrasts with causal noise controls",
-      "deliverable": "H1 degradation, H2 conditional denoising and H3 residual preservation"
-    },
-    {
-      "id": "TRN-TRANSFER",
-      "owner": "Satoshi",
-      "status": "NOT_STARTED",
-      "depends_on": [],
-      "evidence": [],
-      "next_action": "Reuse T0-T2/D3 within scope; design per-variable/public transfer with adequate receivers",
-      "deliverable": "Conditional utility, transfer/cost, abstention and DOIN parity"
-    },
-    {
-      "id": "INC-SIMULATION",
-      "owner": "Satoshi",
-      "status": "NOT_STARTED",
-      "depends_on": [],
-      "evidence": [],
-      "next_action": "Map existing implementation to HPO-B pilot and required training-domain validation",
-      "deliverable": "H1 allocation, H2 learning and H3 manipulation utility in simulation"
-    }
-  ],
-  "state_semantics": "Stage refers to the successor program. EXECUTED is not external scientific acceptance. Historical evidence is preserved at its original scope; the reviewer checked local source facts, not a fresh live warehouse reconciliation. Documentary PASS grants no scientific approval.",
-  "review": {
-    "reviewed_revision": "60daac965143d9e9b6c1a357420b54c74f83afaf",
-    "disposition": "E1_HISTORICAL_PILOT_PRESERVED_REVISE_GOVERNANCE_CLOSURE_MASKED_VALIDATION_AND_RUNTIME",
-    "independent_local_source_checks": {
-      "fits": 10,
-      "scope": "saved arrays against prepared DATA; not raw-panel reconstruction",
-      "mae_mase_max_difference": 0,
-      "original_files": 131,
-      "originals_unchanged": true
-    },
-    "fresh_weight_replay": {
-      "model": "R0_s1",
-      "rows": 64,
-      "max_abs_difference": 8.934663142667887e-8,
-      "scope": "one restored model on first 64 validation windows only"
-    },
-    "counterexamples": "../../audits/evidence/RP32_REVIEW_2026_09_19/results.json",
-    "focused_tests": {
-      "passed": 44,
-      "full_suite_rerun": false
-    },
-    "operational_read": "../../audits/evidence/RP32_REVIEW_2026_09_19/operational_read.json",
-    "active_accounting_exact_campaign_count": 0,
-    "live_warehouse_rechecked_by_reviewer": false,
-    "catalog_activation_performed": false,
-    "scientific_confirmation": false,
-    "owner_input_required_for_current_order": false,
-    "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D"
+  {
+   "id": "MOD-E1",
+   "owner": "Satoshi",
+   "status": "IMPLEMENTED",
+   "depends_on": [
+    "MOD-E0-DEV",
+    "MOD-ARCH-COMPARE"
+   ],
+   "evidence": [
+    "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/tres_temas_entrevista/program_v3/E1_FAMILIES.json",
+    "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
+    "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
+   ],
+   "next_action": "The 2026-09-19 household pilot is preserved as HISTORICAL_UNGOVERNED evidence, re-verified without retraining (15/15, inference replayed in fresh processes). The successor is sealed with a core whose measured reach covers the declared context and with information-matched controls; it runs once the public panels are a governed resource",
+   "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan",
+   "adoption": "HISTORICAL_UNGOVERNED_DEV_PILOT_NOT_ACCEPTED"
   },
-  "review_history": [
-    {
-      "reviewed_revision": "2347c7b",
-      "disposition": "REVISIONS_REQUIRED_PRESERVE_DESCRIPTIVE_PILOT",
-      "independent_local_source_checks": {
-        "cells": 69,
-        "discrepancies": 0,
-        "scope": "rows, labels, naive/oracle, denominators, aggregate MAE/MASE, weights digest"
-      },
-      "counterexamples": "docs/audits/evidence/RP_REVIEW_2026_09_18/results.json",
-      "live_warehouse_rechecked_by_reviewer": false,
-      "inference_replayed_by_reviewer": false,
-      "descriptor_reanalysis": {
-        "partitions": 15,
-        "changed": 0
-      },
-      "original_files": 497,
-      "originals_unchanged": true,
-      "scientific_confirmation": false
-    },
-    {
-      "reviewed_revision": "6f6c1a00bf2fe8e285f821dfb72d12505a9049ed",
-      "disposition": "REVISIONS_REQUIRED_PRESERVE_MEASUREMENTS_CORRECT_ESTIMANDS",
-      "independent_local_source_checks": {
-        "attempts": 120,
-        "scope": "model MASE from saved predictions, labels and denominators",
-        "discrepancies": 0,
-        "max_abs_difference": 7.771561172376096e-16
-      },
-      "counterexamples": "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
-      "live_warehouse_rechecked_by_reviewer": false,
-      "fresh_weight_replay_executed_by_reviewer": false,
-      "inference_recomputed_by_reviewer": true,
-      "scientific_confirmation": false,
-      "owner_input_required_for_current_order": false,
-      "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D_REAL_ACCOUNT_UNSPECIFIED"
-    },
-    {
-      "reviewed_revision": "de8ae34c4d878441e89f60053b13e5c7a71a235d",
-      "disposition": "REVISIONS_REQUIRED_PRESERVE_FACTORIAL_MEASUREMENTS_REPAIR_E1_AND_RUNTIME_TESTS",
-      "independent_local_source_checks": {
-        "cells": 16,
-        "scope": "model MASE from saved prediction arrays, labels and denominators; not fresh weight replay",
-        "discrepancies": 0,
-        "max_abs_difference": 4.440892098500626e-16
-      },
-      "factorial_gamma_manual": {
-        "0": -0.02339250545613,
-        "A": -0.02242212366739,
-        "B": -0.0222680652495,
-        "C": -0.02442130309358
-      },
-      "counterexamples": "../../audits/evidence/RP24_REVIEW_2026_09_19/results.json",
-      "focused_tests": {
-        "effects_tasks_metrics_passed": 17,
-        "weekly_environment_passed": 6,
-        "full_suite_rerun": false
-      },
-      "live_warehouse_rechecked_by_reviewer": false,
-      "fresh_weight_replay_executed_by_reviewer": false,
-      "saved_array_metrics_recomputed_by_reviewer": true,
-      "scientific_confirmation": false,
-      "owner_input_required_for_current_order": false,
-      "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D_REAL_ACCOUNT_UNSPECIFIED"
-    }
-  ],
-  "learning_regimes": {
-    "R0": {
-      "detector_initialization": "RANDOM",
-      "detector_update": "TRAINABLE",
-      "rest_update": "TRAINABLE"
-    },
-    "R1": {
-      "detector_initialization": "SHARED_PRETRAINED",
-      "detector_update": "FROZEN",
-      "rest_update": "TRAINABLE"
-    },
-    "R2": {
-      "detector_initialization": "SHARED_PRETRAINED",
-      "detector_update": "TRAINABLE",
-      "rest_update": "TRAINABLE"
-    }
+  {
+   "id": "MOD-FROZEN-PREFIX",
+   "owner": "Satoshi",
+   "status": "NOT_STARTED",
+   "depends_on": [
+    "MOD-E1"
+   ],
+   "evidence": [],
+   "next_action": "After extractor regime comparison, fix all preprocessing/grouping/D/I/A/fusion states and verify governed sequence materialization per split",
+   "deliverable": "Versioned derived dataset with direct/cache parity, temporal support and complete prefix lineage"
   },
-  "execution_governance": {
-    "new_runs": "REGISTER_AND_DELIVER_BEFORE_DATA_PREPARATION_OR_FIT",
-    "historical_import": "SEPARATE_RETROSPECTIVE_EVIDENCE"
+  {
+   "id": "MOD-CORE-PRETRAIN",
+   "owner": "Satoshi",
+   "status": "NOT_STARTED",
+   "depends_on": [
+    "MOD-E1",
+    "MOD-FROZEN-PREFIX"
+   ],
+   "evidence": [],
+   "next_action": "Design H-CORE then compare random, pretrained-finetuned and pretrained-frozen core with actual task heads and full cost; no active-run changes",
+   "deliverable": "Independent H-CORE effects on forecasting, total cost and limitations; RL counterpart in MOD-E3"
+  },
+  {
+   "id": "MOD-CONF",
+   "owner": "Musashi + Satoshi",
+   "status": "NOT_STARTED",
+   "depends_on": [
+    "MOD-E1"
+   ],
+   "evidence": [],
+   "next_action": "Review fixed method before independent E0 synthetic and E2 public reserves",
+   "deliverable": "H1/H2/H3 effects under the proposal's reserved protocol"
+  },
+  {
+   "id": "BUSINESS-CONTRACT",
+   "owner": "Satoshi",
+   "status": "DESIGNED",
+   "depends_on": [],
+   "evidence": [
+    "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md",
+    "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
+    "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
+   ],
+   "next_action": "RP39: integrate real model inference and broker with 13D; config/stub tests do not establish weekly operations",
+   "deliverable": "Observations/targets/actions, availability, weekly cycle, cost and data gaps"
+  },
+  {
+   "id": "MOD-E3",
+   "owner": "Satoshi",
+   "status": "NOT_STARTED",
+   "depends_on": [
+    "MOD-E1",
+    "BUSINESS-CONTRACT"
+   ],
+   "evidence": [
+    "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
+    "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
+    "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
+   ],
+   "next_action": "tools/e3_weekly_runtime.py drives the deployed gym-fx environment and broker with the controller running the selected model's own inference; offline software, not a completed E3, and no data-availability claim is validated",
+   "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost"
+  },
+  {
+   "id": "L2-PUBLIC-RL",
+   "owner": "Satoshi",
+   "status": "NOT_STARTED",
+   "depends_on": [],
+   "evidence": [],
+   "next_action": "Map existing B4/selector evidence to the exact POPGym/CARL protocol before new RL development",
+   "deliverable": "H1 cost/regret, H2 risk-coverage and H3 transfer with observed fidelities"
+  },
+  {
+   "id": "CAP-CALIBRATION",
+   "owner": "Satoshi",
+   "status": "NOT_STARTED",
+   "depends_on": [],
+   "evidence": [],
+   "next_action": "Map M3/M4 evidence to random-label capacity and N_min protocol; implement only missing scope",
+   "deliverable": "H1 capacity, H2 bits/generalization and H3 dimensioning with censoring"
+  },
+  {
+   "id": "PRE-NOISE",
+   "owner": "Satoshi",
+   "status": "NOT_STARTED",
+   "depends_on": [],
+   "evidence": [],
+   "next_action": "Reconcile D2 by regime and extend only uncovered task/receiver contrasts with causal noise controls",
+   "deliverable": "H1 degradation, H2 conditional denoising and H3 residual preservation"
+  },
+  {
+   "id": "TRN-TRANSFER",
+   "owner": "Satoshi",
+   "status": "NOT_STARTED",
+   "depends_on": [],
+   "evidence": [],
+   "next_action": "Reuse T0-T2/D3 within scope; design per-variable/public transfer with adequate receivers",
+   "deliverable": "Conditional utility, transfer/cost, abstention and DOIN parity"
+  },
+  {
+   "id": "INC-SIMULATION",
+   "owner": "Satoshi",
+   "status": "NOT_STARTED",
+   "depends_on": [],
+   "evidence": [],
+   "next_action": "Map existing implementation to HPO-B pilot and required training-domain validation",
+   "deliverable": "H1 allocation, H2 learning and H3 manipulation utility in simulation"
   }
+ ],
+ "state_semantics": "Stage refers to the successor program. EXECUTED is not external scientific acceptance. Historical evidence is preserved at its original scope; the reviewer checked local source facts, not a fresh live warehouse reconciliation. Documentary PASS grants no scientific approval.",
+ "review": {
+  "reviewed_revision": "60daac965143d9e9b6c1a357420b54c74f83afaf",
+  "disposition": "E1_HISTORICAL_PILOT_PRESERVED_REVISE_GOVERNANCE_CLOSURE_MASKED_VALIDATION_AND_RUNTIME",
+  "independent_local_source_checks": {
+   "fits": 10,
+   "scope": "saved arrays against prepared DATA; not raw-panel reconstruction",
+   "mae_mase_max_difference": 0,
+   "original_files": 131,
+   "originals_unchanged": true
+  },
+  "fresh_weight_replay": {
+   "model": "R0_s1",
+   "rows": 64,
+   "max_abs_difference": 8.934663142667887e-08,
+   "scope": "one restored model on first 64 validation windows only"
+  },
+  "counterexamples": "../../audits/evidence/RP32_REVIEW_2026_09_19/results.json",
+  "focused_tests": {
+   "passed": 44,
+   "full_suite_rerun": false
+  },
+  "operational_read": "../../audits/evidence/RP32_REVIEW_2026_09_19/operational_read.json",
+  "active_accounting_exact_campaign_count": 0,
+  "live_warehouse_rechecked_by_reviewer": false,
+  "catalog_activation_performed": false,
+  "scientific_confirmation": false,
+  "owner_input_required_for_current_order": false,
+  "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D"
+ },
+ "review_history": [
+  {
+   "reviewed_revision": "2347c7b",
+   "disposition": "REVISIONS_REQUIRED_PRESERVE_DESCRIPTIVE_PILOT",
+   "independent_local_source_checks": {
+    "cells": 69,
+    "discrepancies": 0,
+    "scope": "rows, labels, naive/oracle, denominators, aggregate MAE/MASE, weights digest"
+   },
+   "counterexamples": "docs/audits/evidence/RP_REVIEW_2026_09_18/results.json",
+   "live_warehouse_rechecked_by_reviewer": false,
+   "inference_replayed_by_reviewer": false,
+   "descriptor_reanalysis": {
+    "partitions": 15,
+    "changed": 0
+   },
+   "original_files": 497,
+   "originals_unchanged": true,
+   "scientific_confirmation": false
+  },
+  {
+   "reviewed_revision": "6f6c1a00bf2fe8e285f821dfb72d12505a9049ed",
+   "disposition": "REVISIONS_REQUIRED_PRESERVE_MEASUREMENTS_CORRECT_ESTIMANDS",
+   "independent_local_source_checks": {
+    "attempts": 120,
+    "scope": "model MASE from saved predictions, labels and denominators",
+    "discrepancies": 0,
+    "max_abs_difference": 7.771561172376096e-16
+   },
+   "counterexamples": "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
+   "live_warehouse_rechecked_by_reviewer": false,
+   "fresh_weight_replay_executed_by_reviewer": false,
+   "inference_recomputed_by_reviewer": true,
+   "scientific_confirmation": false,
+   "owner_input_required_for_current_order": false,
+   "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D_REAL_ACCOUNT_UNSPECIFIED"
+  },
+  {
+   "reviewed_revision": "de8ae34c4d878441e89f60053b13e5c7a71a235d",
+   "disposition": "REVISIONS_REQUIRED_PRESERVE_FACTORIAL_MEASUREMENTS_REPAIR_E1_AND_RUNTIME_TESTS",
+   "independent_local_source_checks": {
+    "cells": 16,
+    "scope": "model MASE from saved prediction arrays, labels and denominators; not fresh weight replay",
+    "discrepancies": 0,
+    "max_abs_difference": 4.440892098500626e-16
+   },
+   "factorial_gamma_manual": {
+    "0": -0.02339250545613,
+    "A": -0.02242212366739,
+    "B": -0.0222680652495,
+    "C": -0.02442130309358
+   },
+   "counterexamples": "../../audits/evidence/RP24_REVIEW_2026_09_19/results.json",
+   "focused_tests": {
+    "effects_tasks_metrics_passed": 17,
+    "weekly_environment_passed": 6,
+    "full_suite_rerun": false
+   },
+   "live_warehouse_rechecked_by_reviewer": false,
+   "fresh_weight_replay_executed_by_reviewer": false,
+   "saved_array_metrics_recomputed_by_reviewer": true,
+   "scientific_confirmation": false,
+   "owner_input_required_for_current_order": false,
+   "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D_REAL_ACCOUNT_UNSPECIFIED"
+  }
+ ],
+ "learning_regimes": {
+  "R0": {
+   "detector_initialization": "RANDOM",
+   "detector_update": "TRAINABLE",
+   "rest_update": "TRAINABLE"
+  },
+  "R1": {
+   "detector_initialization": "SHARED_PRETRAINED",
+   "detector_update": "FROZEN",
+   "rest_update": "TRAINABLE"
+  },
+  "R2": {
+   "detector_initialization": "SHARED_PRETRAINED",
+   "detector_update": "TRAINABLE",
+   "rest_update": "TRAINABLE"
+  }
+ },
+ "execution_governance": {
+  "new_runs": "REGISTER_AND_DELIVER_BEFORE_DATA_PREPARATION_OR_FIT",
+  "historical_import": "SEPARATE_RETROSPECTIVE_EVIDENCE"
+ }
 }
