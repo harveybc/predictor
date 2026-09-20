@@ -1,0 +1,65 @@
+# PRE / POST — the reviewer's own reproducer, against f83d635 and against this round's code
+
+PRE is the reviewer's frozen output (docs/audits/evidence/RP48_REVIEW_2026_09_20/results.json),
+reproduced field-for-field before any edit (RP49_PRE/RP48_REVIEW_REPRODUCED_PRE.json).
+POST is RP56_REVIEW_REPRODUCED_POST.json, at execution checkout ea26f33.
+
+## The reproducer does not run unmodified any more, and that is itself a result
+
+    python docs/audits/evidence/RP48_REVIEW_2026_09_20/reproduce.py --repo . --out POST.json
+    TypeError: _governed_summary() missing 1 required positional argument: 'design'
+
+The population of a run is no longer read from the report it is summarising; it is enumerated from
+the SEALED DESIGN, so the summary cannot be computed without it. The POST above was produced by a
+copy with exactly two lines changed, both marked `# ADAPTED` and both only passing `design`; nothing
+else in the reviewer's script was touched. The unmodified script's failure is reported here rather
+than hidden behind the adaptation.
+
+## What changed
+
+local_claims_without_accounting
+  PRE   status GOVERNED, problems []
+  POST  status HISTORICAL_UNGOVERNED, problems:
+        "the accepted terminal of 'u' carries an impossible state 'NOT_A_REAL_STATUS'",
+        "the reconciliation of 'u' does not list missing_units / accounting_only / lake_only"
+
+runner_failure_population   (first child fails, real runner, disposable HTTP + DuckDB)
+  PRE   registered 8, reported ["pilot_ae"], six campaigns left with missing_units, and the
+        summary still said all_units_governed: true
+  POST  registered ["prepare","pilot_ae"] — a unit is registered when it is about to run, not in
+        advance — both reconcile with missing_units [], both CLOSED, the other six are named
+        NOT_STARTED, units_incomplete lists them, and the terminal receipts are persisted
+
+empty_report_summary
+  PRE   per_unit {}, units_incomplete [], all_units_governed TRUE
+  POST  the design's population with 2 CLOSED and 6 NOT_STARTED and units_incomplete naming all six:
+        an empty report can no longer pass as a total
+
+accepted_unit_closer_status  (a unit the services really accepted)
+  PRE   HISTORICAL_UNGOVERNED
+  POST  GOVERNED
+
+noise_floor_check_without_fitting
+  PRE   the published copy-reference R² alone
+  POST  the copy reference, the conditional mean, the theoretical Bayes and copy MSE and the
+        amplitude/power SNR apart, on a known generator, with no refitting
+
+broker_margin_probe
+  PRE   Margin left a false ALREADY_LONG with no position and no order
+  POST  the terminal events are consumed by order_ref and a new executable decision follows
+
+## What did NOT change, and why
+
+fresh_child_verification_order
+  PRE and POST are identical: with the parent record present the verdict is accepted; with it
+  absent the closure refuses "absent: no attempt with a record". That refusal is CORRECT and was
+  never the defect. The defect was the ORDER in which `run_isolated` asked for it — before writing
+  the record — and this probe calls `_closure_verdict` directly, so it cannot see the repair. The
+  repair is shown instead by tests/test_df_e1_first_child.py, which runs the real subprocess and
+  the real verifier and reaches a verified outcome on the FIRST child of a fresh run.
+
+named_rehearsal   exists false, binding false — unchanged and already declared: the rehearsal named
+  in the dictum was never committed. It was not reconstructed; a new rehearsal was executed instead
+  (RP49/REHEARSAL_EXTERNAL_HOST.json).
+
+historical_originals   131 checked, 0 changed, PRE and POST.
