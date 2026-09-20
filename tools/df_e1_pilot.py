@@ -734,6 +734,21 @@ def _closure_verdict(attempt_dir: Path, job: dict, score: dict) -> tuple:
 
 
 def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seconds: float, cpu_seconds: float) -> dict:
+    """RP50: the four phases of one unit, in the order they can actually happen.
+
+        ATTEMPT_STARTED   the job is written and the child is launched
+        CHILD_RESULT      the child's own result.json
+        PARENT_RECORD     outcome.json, written by THIS process from what it observed — the child's
+                          exit, the re-verified output digest and the cost. It is a record of what
+                          happened, never an accepted score, and it says so (`score_state`)
+        VERDICT           the closure's verification, run AFTER the parent record exists, and written
+                          back into it. Only then may a score be consumed.
+
+    The previous order asked the closure for a verdict before the parent record existed, so the first
+    child of a fresh run was refused with "absent: no attempt with a record" — the dictum's F1. A
+    provisional record is never promoted: a unit whose `score_state` is still PENDING_VERDICT is
+    refused by the closure as well.
+    """
     H = _load("df_utility_harness")
     IR = _load("df_isolated_runner")
     attempt_dir = Path(attempt_dir)
@@ -746,14 +761,17 @@ def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seco
         if refusal is None and recorded.get("status") == "COMPLETED":
             result = json.loads((attempt_dir / "result.json").read_text()) if (attempt_dir / "result.json").is_file() else None
             score, refusal = verified_unit(attempt_dir, result, recorded.get("verified"))
-            if score is not None:
+            if score is not None:                      # the SAME verdict on resume, recorded again
                 score, refusal = _closure_verdict(attempt_dir, job, score)
+                _record_verdict(prior, recorded, score, refusal, phase="RESUME")
         history = dict(recorded.get("summary") or {})
         if refusal is not None:
-            return {"outcome": "SCORE_UNVERIFIED", "reason": refusal["why"], "cost": history.get("cost", {}), "score": None, "resumed": True, "refusal": refusal}
+            return {"outcome": "SCORE_UNVERIFIED", "reason": refusal["why"], "cost": history.get("cost", {}),
+                    "score": None, "resumed": True, "refusal": refusal}
         return {**history, "score": score, "resumed": True}
     job_file = attempt_dir / "job.json"
     job_file.write_text(json.dumps({**job, "attempt_dir": str(attempt_dir)}, default=H._jsonable))
+    started_at = _now()
     task = IR.Task(argv=[sys.executable, "-B", str(HERE / "df_e1_pilot.py"), "--worker", str(job_file)], name=f"e1-{job['cell_id']}",
                    attempt_dir=attempt_dir, assigned_bytes=assigned_bytes, wall_seconds=wall_seconds, cpu_seconds=cpu_seconds,
                    mechanism=IR.detect_mechanism(), extra_env={"OMP_NUM_THREADS": "2"})
@@ -761,18 +779,52 @@ def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seco
     task.wait()
     status, reason, verified = IR.classify(task.outcome, attempt_dir)
     result = json.loads((attempt_dir / "result.json").read_text()) if (attempt_dir / "result.json").is_file() else None
-    cost = {"cpu_seconds": task.outcome.get("cpu_seconds"), "wall_seconds": task.outcome.get("wall_seconds"), "peak_rss_bytes": task.outcome.get("child_maxrss_bytes"),
-            "cgroup_memory_peak": task.outcome.get("cgroup_memory_peak"), "started_at": task.outcome.get("started_at"), "ended_at": task.outcome.get("ended_at"),
+    cost = {"cpu_seconds": task.outcome.get("cpu_seconds"), "wall_seconds": task.outcome.get("wall_seconds"),
+            "peak_rss_bytes": task.outcome.get("child_maxrss_bytes"), "cgroup_memory_peak": task.outcome.get("cgroup_memory_peak"),
+            "started_at": task.outcome.get("started_at"), "ended_at": task.outcome.get("ended_at"),
             "host": os.uname().nodename}
+    # --- PARENT_RECORD: written before any verdict, and marked as not-yet-judged ------------------
+    record = {"status": status, "verified": verified,
+              "phases": {"attempt_started_at": started_at, "child_result_at": (result or {}).get("finished_at") or _now(),
+                         "parent_record_at": _now(), "verdict_at": None},
+              "score_state": "PENDING_VERDICT",
+              "summary": {"outcome": "PENDING_VERDICT", "reason": reason, "cost": cost}}
+    prior.write_text(json.dumps(record, default=H._jsonable))
     if status != "COMPLETED":
-        summary = {"outcome": "RESOURCE_EXCEEDED" if status == "RESOURCE_EXCEEDED" else "UNCERTAIN", "reason": reason, "cost": cost, "score": None}
-    else:
-        score, refusal = verified_unit(attempt_dir, result, verified)
-        if score is not None:
-            score, refusal = _closure_verdict(attempt_dir, job, score)
-        summary = {"outcome": "COMPLETED" if score else "SCORE_UNVERIFIED", "reason": reason, "cost": cost, "score": score, **({"refusal": refusal} if refusal else {})}
-    prior.write_text(json.dumps({"status": status, "verified": verified, "summary": {k: v for k, v in summary.items() if k != "score"}}, default=H._jsonable))
+        summary = {"outcome": "RESOURCE_EXCEEDED" if status == "RESOURCE_EXCEEDED" else "UNCERTAIN", "reason": reason,
+                   "cost": cost, "score": None}
+        _record_verdict(prior, record, None, {"why": reason}, phase="FRESH", outcome=summary["outcome"])
+        return summary
+    score, refusal = verified_unit(attempt_dir, result, verified)
+    if score is not None:
+        score, refusal = _closure_verdict(attempt_dir, job, score)
+    summary = {"outcome": "COMPLETED" if score else "SCORE_UNVERIFIED", "reason": reason, "cost": cost, "score": score,
+               **({"refusal": refusal} if refusal else {})}
+    _record_verdict(prior, record, score, refusal, phase="FRESH",
+                    outcome=summary["outcome"], summary={k: v for k, v in summary.items() if k != "score"})
     return summary
+
+
+def _now() -> str:
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def _record_verdict(path: Path, record: dict, score, refusal, *, phase: str, outcome: str | None = None,
+                    summary: dict | None = None) -> None:
+    """Write the verdict back into the parent record. The record keeps both instants, so nobody can
+    read a provisional record as an accepted score."""
+    H = _load("df_utility_harness")
+    record = dict(record)
+    record.setdefault("phases", {})["verdict_at"] = _now()
+    record["phases"]["verdict_phase"] = phase
+    record["score_state"] = "VERIFIED" if score is not None else "REFUSED"
+    if refusal is not None:
+        record["verdict_refusal"] = refusal if isinstance(refusal, dict) else {"why": str(refusal)}
+    if summary is not None:
+        record["summary"] = summary
+    elif outcome is not None:
+        record["summary"] = {**(record.get("summary") or {}), "outcome": outcome}
+    path.write_text(json.dumps(record, default=H._jsonable))
 
 
 def _governed_summary(root: Path, report: dict) -> dict:

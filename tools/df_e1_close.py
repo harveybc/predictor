@@ -117,15 +117,32 @@ def register(root: Path) -> dict:
         problems.append("DATA.npz bytes are not the ones DATA.json recorded")
     if data_json.get("design_sha256") != design.get("design_sha256"):
         problems.append("DATA.json was prepared under another design")
+    # RP50 portability: a worker holds its DELIVERY, not the coordinator's paths. The panel is
+    # checked against the delivered bytes when there is a delivery, and only then against the
+    # design's own path; an absent original path is not a defect when the delivery proves the bytes.
     panel = Path(design["governed_bytes"]["path"])
-    panel_now = sha_file(panel) if panel.is_file() else None
-    if panel_now != data_json.get("panel_sha256"):
+    delivery = None
+    deliveries_path = root / "DELIVERIES.json"
+    if deliveries_path.is_file():
+        try:
+            doc = json.loads(deliveries_path.read_text())
+            delivery = (doc.get("units") or {}).get("prepare") or next(iter((doc.get("units") or {}).values()), None)
+        except ValueError:
+            problems.append("DELIVERIES.json is not JSON")
+    panel_now, panel_source = None, None
+    if delivery and Path(delivery.get("path", "")).is_file():
+        panel_now, panel_source = sha_file(Path(delivery["path"])), "GOVERNED_DELIVERY"
+    elif panel.is_file():
+        panel_now, panel_source = sha_file(panel), "DESIGN_PATH"
+    if panel_now is None:
+        problems.append("neither a delivered copy nor the design's path holds the panel here")
+    elif panel_now != data_json.get("panel_sha256"):
         problems.append("the panel's bytes are not the ones DATA was prepared from")
     z = np.load(data_npz)
     data = {k: z[k] for k in z.files}
     population = [c["cell_id"] for c in design["pilots"]] + [c["cell_id"] for c in design["cells"]]
     return {"design": design, "design_sha256": design["design_sha256"], "data": data, "data_json": data_json,
-            "data_sha256": data_digest, "panel_sha256": panel_now, "population": population,
+            "data_sha256": data_digest, "panel_sha256": panel_now, "panel_source": panel_source, "population": population,
             "cells_by_id": {c["cell_id"]: c for c in design["pilots"] + design["cells"]},
             "problems": problems, "root": root}
 
@@ -214,6 +231,13 @@ def verify_unit(reg: dict, cell_id: str, *, do_replay: bool = True, work: Path |
     digest = hashlib.sha256(body).hexdigest()
     outcome = json.loads((attempt / "outcome.json").read_text())
     result = json.loads((attempt / "result.json").read_text()) if (attempt / "result.json").is_file() else {}
+    entry["facts"]["phases"] = outcome.get("phases")
+    entry["facts"]["score_state"] = outcome.get("score_state", "LEGACY_NO_STATE")
+    if outcome.get("score_state") == "PENDING_VERDICT":
+        # RP50: a parent record that was never judged is not a score. It is a record of an attempt.
+        entry.update(metrics=REFUSED, inference=REFUSED, regime=REFUSED)
+        prob("the attempt's parent record exists but its verdict was never recorded (score_state PENDING_VERDICT)")
+        return _finish(entry, None)
     if digest != result.get("output_sha256") or digest != (outcome.get("verified") or {}).get("output_sha256"):
         entry.update(metrics=REFUSED, inference=REFUSED, regime=REFUSED)
         prob("the record's bytes are not the ones the child declared and the runner verified")
