@@ -1235,3 +1235,25 @@ lejano no prueba imposibilidad para un receptor corto en datos correlacionados.
 H-CORE y RL cientifico conservan dependencias. Cinco servicios active/running,
 NRestarts=0 y cuatro healthz200 leidos por Musashi; no se midio progreso del
 loader ni se concilio el cubo en este turno. Cero reinicios/escrituras productivas.
+
+### Revision RP41-RP48 y orden RP49-RP56 (20-sep)
+
+Revision independiente de `f83d635`: 74 tests focales verdes no cubren los nuevos
+contraejemplos. Primer hijo sin outcome rechaza su propio resultado; runner real
+con pila HTTP/DuckDB desechable deja siete de ocho campanas abiertas al fallar
+el primer hijo y aun declara todas gobernadas. No persiste los recibos que pide
+el cierre, mientras declaraciones locales sin campana tambien pasan GOVERNED.
+
+[Dictamen](../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md) y
+[orden vigente RP49-RP56](../handoffs/MUSASHI_PROGRAM_RP49_RP56_2026_09_20.md).
+Ensayo nombrado ausente en el commit; reparar la ruta del proveedor externo, no
+declarar equivalente el kernel embebido. La adopcion requiere primero una corrida
+nueva completa con hijo real, recibos y conciliacion por contenido. Autorizacion
+del owner vigente, sin otra pregunta ni reinicio del programa.
+
+Broker real offline: Margin deja falsa ALREADY_LONG sin posicion/orden. El
+diagnostico de innovacion separa informacion, pero copiar la entrada ruidosa no
+es su suelo irreducible: corregir referencia y scope sin remedir toda la historia.
+131 originales intactos; cinco servicios activos, NRestarts=0 y cuatro healthz200.
+Esta lectura de salud no es medicion del avance ni reconciliacion productiva.
+No se reinicio ni escribio produccion en esta revision.

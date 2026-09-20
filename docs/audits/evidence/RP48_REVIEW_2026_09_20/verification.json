@@ -1,0 +1,51 @@
+{
+  "reviewed_revision": "f83d63566309258b8c0aacddb6aba031c89ab7e0",
+  "review_date": "2026-09-20",
+  "interpreter_environment": "trading-stack",
+  "focused_suite": {
+    "paths": [
+      "tests/test_public_lake_adopt.py",
+      "tests/test_df_e1_governed_route.py",
+      "tests/test_df_e1_close.py",
+      "tests/test_e3_weekly_runtime.py",
+      "tests/test_e3_weekly_controller.py"
+    ],
+    "passed": 74,
+    "seconds": 25.94,
+    "exit_code": 0,
+    "full_suite": false
+  },
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "TF_NUM_INTEROP_THREADS": "1",
+    "TF_NUM_INTRAOP_THREADS": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "independent_probe": {
+    "execution_checkout": "95f02b3c11be4aa899df49045467ecfce82fb71d",
+    "results": "results.json",
+    "exit_code": 0,
+    "original_files_checked": 131,
+    "original_files_changed": 0,
+    "new_model_fits": 0,
+    "runner_child": "deterministic resource-failure fixture",
+    "http_services": "real disposable governance and DuckDB",
+    "broker": "real offline simulation",
+    "disposable_stack_teardown": "completed"
+  },
+  "production_health_read": {
+    "active_services": 5,
+    "automatic_restarts": 0,
+    "healthz_200": 4,
+    "scope": "health only, not warehouse content reconciliation or loader progress",
+    "production_writes": false,
+    "production_restarts": false
+  },
+  "publication_plan_checks": {
+    "tests_passed": 21,
+    "documentary_coverage": "PASS",
+    "scientific_approval": false
+  }
+}
