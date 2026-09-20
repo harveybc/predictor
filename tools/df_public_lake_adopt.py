@@ -476,7 +476,8 @@ def rehearse(out_path: Path, *, keep: bool = False, lake_port: int | None = None
         direct = http_json(f"http://127.0.0.1:{lake_port}/api/v2/download?resource={probe}&role=panel", lake_token)
         report["external_host_probe"] = {"http": direct[0], "body": direct[1],
                                          "divergence": EXTERNAL_HOST_DIVERGENCE,
-                                         "provider_sha256": rehearsal_binding(None, {})["provider_sha256"]}
+                                         "serving_provider_sha256": rehearsal_binding(None, {})["serving_provider_sha256"],
+                                         "installed_provider_sha256": rehearsal_binding(None, {})["installed_provider_sha256"]}
         report["external_host_serves_the_archive"] = direct[0] == 200
         # --- the route, through the EXTERNAL host with the corrected provider -----------------------
         for resource in sorted(RESOURCES):
