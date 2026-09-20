@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import fcntl
 import hashlib
 import http.client
 import json
@@ -329,6 +330,24 @@ def classify_failure(error: str) -> str:
     return "REFUSED_BY_SERVER"
 
 
+class _SpoolLock:
+    """Exclusive access to one outbox while it is flushed."""
+
+    def __init__(self, root):
+        self.path = Path(root) / ".flush.lock"
+
+    def __enter__(self):
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.handle = open(self.path, "w")
+        fcntl.flock(self.handle, fcntl.LOCK_EX)
+        return self
+
+    def __exit__(self, *exc):
+        fcntl.flock(self.handle, fcntl.LOCK_UN)
+        self.handle.close()
+        return False
+
+
 class TerminalOutbox:
     """Write-once terminal queue; accepted sends move atomically to sent/.
 
@@ -496,26 +515,46 @@ class TerminalOutbox:
     def flush(self, sender):
         """Send every pending envelope once. A refusal keeps the envelope pending
         and is reported under `failures` (file -> reason) so a permanent refusal
-        is diagnosable from GOVERNED_RUN.json instead of a bare pending count."""
+        is diagnosable from GOVERNED_RUN.json instead of a bare pending count.
+
+        One flusher at a time per spool, and an envelope another flusher already
+        delivered is not a failure: two processes sharing a spool used to race on
+        the same file and die with FileNotFoundError mid-send."""
+        with _SpoolLock(self.root):
+            return self._flush_locked(sender)
+
+    def _flush_locked(self, sender):
         sent = 0
         failures = {}
+        delivered_elsewhere = []
         for path in self._pending_files():
             try:
                 payload = json.loads(path.read_text(encoding="ascii"))
+            except FileNotFoundError:
+                delivered_elsewhere.append(path.name)      # another flusher moved it while we looked
+                continue
+            try:
                 receipt = sender(payload)
                 if not isinstance(receipt, dict) or not receipt.get("terminal_sha256"):
                     raise GovernedRunError("terminal receipt missing")
+            except FileNotFoundError:
+                delivered_elsewhere.append(path.name)
+                continue
             except Exception as exc:
                 failures[path.name] = f"{type(exc).__name__}: {exc}"
                 self._record_failure(path, failures[path.name])
                 continue
             target = self.sent / path.name
-            if target.exists():
-                if target.read_bytes() != path.read_bytes():
-                    raise GovernedRunError("sent outbox identity conflict")
-                path.unlink()
-            else:
-                os.replace(path, target)
+            try:
+                if target.exists():
+                    if target.read_bytes() != path.read_bytes():
+                        raise GovernedRunError("sent outbox identity conflict")
+                    path.unlink()
+                else:
+                    os.replace(path, target)
+            except FileNotFoundError:
+                delivered_elsewhere.append(path.name)
+                continue
             self._failure_path(path).unlink(missing_ok=True)
             _fsync_dir(self.pending)
             _fsync_dir(self.sent)
@@ -524,6 +563,7 @@ class TerminalOutbox:
             "sent": sent,
             "pending": len(self._pending_files()),
             "failures": failures,
+            **({"delivered_by_another_flusher": sorted(set(delivered_elsewhere))} if delivered_elsewhere else {}),
         }
 
 

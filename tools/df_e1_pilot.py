@@ -1051,13 +1051,23 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
             started=_now(), finished=_now(),
             tags={"purpose": "E1_DEV_PILOT", "classification": "NON_GOVERNING", "phase": "DEVELOPMENT",
                   "unit": "prepare", "design_sha256": design["design_sha256"]})
-        prep = G.report_terminal(root, "prepare", prep_terminal, gov_url=gov_url or G.DEFAULT_GOV,
-                                 api_key_file=api_key_file, outbox_dir=outbox_dir, started_at=_now())
+        # a resumed run rebuilds this terminal with its own costs: if the service already accepted
+        # generation 1 of it, reporting again is a second generation of the same fact, which it refuses
+        RC = _load("df_e1_receipts")
+        if RC.population_states(design, root)["units"].get("prepare") == RC.CLOSED:
+            existing = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]["prepare"]
+            prep = {"flushed": {"sent": 0, "pending": 0, "failures": {}}, "receipt": existing,
+                    "campaign_sha256": existing["campaign_sha256"],
+                    "reconciliation": existing["reconciliation"], "reused": True}
+        else:
+            prep = G.report_terminal(root, "prepare", prep_terminal, gov_url=gov_url or G.DEFAULT_GOV,
+                                     api_key_file=api_key_file, outbox_dir=outbox_dir, started_at=_now())
         report["terminals"].append({"unit_id": "prepare", "status": "COMPLETED", "outcome": "COMPLETED",
                                     "cost": {"cpu_seconds": data.get("cpu_seconds")}, "governed": True,
                                     "terminal_sent": prep["flushed"]["sent"], "terminal_pending": prep["flushed"]["pending"],
                                     "reconciliation": prep["reconciliation"],
-                                    "terminal_sha256": (prep.get("receipt") or {}).get("terminal_sha256")})
+                                    "terminal_sha256": (prep.get("receipt") or {}).get("terminal_sha256"),
+                                    "terminal_reused": bool(prep.get("reused"))})
     # --- cost pilot ---
     measured = {}
     for c in design["pilots"]:

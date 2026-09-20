@@ -191,7 +191,9 @@ def report_terminal(root: Path, unit_id: str, terminal: dict, *, gov_url: str = 
     if unit is None:
         raise GovernanceUnavailable(f"REFUSED: unit {unit_id!r} has no delivery, so it has no terminal to report")
     gov = GR.GovHttp(gov_url, Path(api_key_file).read_text().strip(), unit["campaign_key"])
-    outbox = GR.TerminalOutbox(Path(os.path.expanduser(outbox_dir or GR.DEFAULT_OUTBOX)).resolve())
+    # one spool PER UNIT: children run in parallel and a shared spool made each of them flush the
+    # others' envelopes — through its own campaign's client, and racing on the same file
+    outbox = GR.TerminalOutbox(Path(os.path.expanduser(outbox_dir or GR.DEFAULT_OUTBOX)).resolve() / "units" / unit_id)
     body = {**terminal, "deliveries": sorted({unit["delivery_id"]})}
     outbox.put({"campaign_sha256": unit["campaign_sha256"], "unit_id": unit_id, "terminal": body})
     receipts = {}

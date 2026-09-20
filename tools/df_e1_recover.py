@@ -14,10 +14,15 @@ THIS campaign and THIS unit, and is accepted only when
   * the delivered bytes are on this host and their digest is the digest the service recorded.
 
 A unit whose delivery the service does not hold is NOT restored: it must be acquired again.
-A unit that already has a local entry is left exactly as it is, and no terminal is ever invented here:
-the report of a terminal remains the runner's own act.
+A unit that already has a local entry is left exactly as it is.
 
-    python tools/df_e1_recover.py --root ROOT --accounting-db PATH [--apply]
+With --terminals the same repair is made for a terminal the service ALREADY ACCEPTED while the
+client lost the answer (the flush died mid-send). Nothing is invented there either: the status,
+generation and digest come from the service's own terminal row, the campaign must reconcile live at
+the moment of the repair, and a unit with no accepted terminal is never given one — it must be
+reported by the runner, as always.
+
+    python tools/df_e1_recover.py --root ROOT --accounting-db PATH [--apply] [--terminals]
 """
 
 from __future__ import annotations
@@ -31,6 +36,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SOURCE = "restored from the governance service's own accounting record after a client-side receipt loss"
+
+
+def _module(name: str):
+    """Load a sibling tool. It is registered in sys.modules first: a dataclass defined in a module
+    that is not registered cannot resolve its own annotations."""
+    import sys
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parent / f"{name}.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def sha_file(path: Path) -> str:
@@ -117,11 +135,67 @@ def plan(root: Path, db: Path, *, cache_dir: Path | None = None) -> dict:
             "rule": "a delivery is copied from the service's record; a terminal is never written here"}
 
 
+def terminal_plan(root: Path, db: Path, *, gov_url: str, api_key_file: Path) -> dict:
+    """Units whose terminal the service holds and the local receipt does not."""
+    gr = _module("governed_run")
+    root = Path(root)
+    design = json.loads((root / "DESIGN.json").read_text())
+    doc = json.loads((root / "DELIVERIES.json").read_text())
+    rpath = root / "TERMINAL_RECEIPTS.json"
+    local = (json.loads(rpath.read_text()).get("units") or {}) if rpath.is_file() else {}
+    con = _open(Path(db))
+    restore, refused, absent = {}, {}, []
+    key_text = Path(api_key_file).read_text().strip()
+    for unit in ["prepare"] + [c["cell_id"] for c in design["pilots"] + design["cells"]]:
+        if unit in local:
+            continue
+        record = service_record(con, f"{doc['run_id']}-{unit}-data")
+        if record is None:
+            continue
+        rows = [t for t in record["terminals"] if t["unit_id"] == unit]
+        if not rows:
+            absent.append(unit)                       # the runner still owes this terminal
+            continue
+        if len(rows) != 1:
+            refused[unit] = f"the service holds {len(rows)} terminals for this unit, not one"
+            continue
+        gov = gr.GovHttp(gov_url, key_text, f"{doc['run_id']}-{unit}-data")
+        status, body = gov.reconcile_campaign(record["campaign_sha256"])
+        clean = status == 200 and not body.get("missing_units") and not body.get("accounting_only") \
+            and not body.get("lake_only")
+        if not clean:
+            refused[unit] = f"the campaign does not reconcile now: http {status} {body}"
+            continue
+        restore[unit] = {"campaign_sha256": record["campaign_sha256"],
+                         "campaign_key": f"{doc['run_id']}-{unit}-data",
+                         "terminal": {"generation": rows[0]["generation"], "status": rows[0]["status"]},
+                         "receipt": {"terminal_sha256": rows[0]["terminal_sha256"]},
+                         "reconciliation": {"http": status, "missing_units": body.get("missing_units"),
+                                            "accounting_only": body.get("accounting_only"),
+                                            "lake_only": body.get("lake_only")}}
+    con.close()
+    return {"restore": restore, "refused": refused, "owed_by_the_runner": absent,
+            "design_sha256": design["design_sha256"]}
+
+
+def apply_terminals(root: Path, db: Path, *, gov_url: str, api_key_file: Path) -> dict:
+    rc = _module("df_e1_receipts")
+    decided = terminal_plan(root, db, gov_url=gov_url, api_key_file=api_key_file)
+    for unit, item in decided["restore"].items():
+        rc.record_accepted(root, unit, campaign_sha256=item["campaign_sha256"],
+                           campaign_key=item["campaign_key"], terminal=item["terminal"],
+                           receipt=item["receipt"], reconciliation=item["reconciliation"],
+                           design_sha256=decided["design_sha256"])
+        path = Path(root) / "TERMINAL_RECEIPTS.json"
+        doc = json.loads(path.read_text())
+        doc["units"][unit]["source"] = SOURCE
+        path.write_text(json.dumps(doc, indent=1, default=str))
+    decided["applied"] = sorted(decided["restore"])
+    return decided
+
+
 def apply(root: Path, db: Path, *, cache_dir: Path | None = None) -> dict:
-    spec = importlib.util.spec_from_file_location("df_e1_governed",
-                                                  Path(__file__).resolve().parent / "df_e1_governed.py")
-    gov = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(gov)
+    gov = _module("df_e1_governed")
     decided = plan(root, db, cache_dir=cache_dir)
     path = Path(root) / "DELIVERIES.json"
     for unit, entry in decided["restore"].items():
@@ -138,8 +212,16 @@ def main(argv=None) -> int:
     ap.add_argument("--accounting-db", type=Path, required=True)
     ap.add_argument("--cache-dir", type=Path, default=None)
     ap.add_argument("--apply", action="store_true")
+    ap.add_argument("--terminals", action="store_true",
+                    help="repair the receipts of terminals the service already accepted")
+    ap.add_argument("--gov-url", default="http://127.0.0.1:5055")
+    ap.add_argument("--api-key-file", type=Path, default=None)
     a = ap.parse_args(argv)
-    out = (apply if a.apply else plan)(a.root, a.accounting_db, cache_dir=a.cache_dir)
+    if a.terminals:
+        fn = apply_terminals if a.apply else terminal_plan
+        out = fn(a.root, a.accounting_db, gov_url=a.gov_url, api_key_file=a.api_key_file)
+    else:
+        out = (apply if a.apply else plan)(a.root, a.accounting_db, cache_dir=a.cache_dir)
     print(json.dumps(out, indent=1, default=str))
     return 1 if out["refused"] else 0
 
