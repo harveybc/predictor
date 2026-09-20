@@ -488,6 +488,28 @@ def _verify_controls(entry: dict, reg: dict, rec: dict, arr: dict) -> None:
     entry["inference"] = VERIFIED if not entry["problems"] else REFUSED
 
 
+def _instant(stamp):
+    """One instant from any of the spellings these receipts carry."""
+    if not isinstance(stamp, str) or not stamp:
+        return None
+    try:
+        return datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def _before(earlier, later) -> bool:
+    """Strictly before, as INSTANTS. These receipts are written by different writers and spell the
+    same instant two ways ('...19:01:29Z' and '...19:01:29+00:00'): compared as text, the second
+    sorts before the first and a delivery that did precede the work was read as following it. Equal
+    stamps are not a violation either — both are recorded to the second and an acquisition that is
+    immediately followed by its dispatch shares that second."""
+    a, b = _instant(earlier), _instant(later)
+    if a is None or b is None:
+        return False
+    return a < b
+
+
 def _governance(root: Path, cell_id: str, rec: dict) -> tuple:
     """RP43: GOVERNED is a set of FACTS about this unit, read from the receipts' contents.
 
@@ -552,13 +574,14 @@ def _governance(root: Path, cell_id: str, rec: dict) -> tuple:
             # RP52: the chronology in BOTH directions. The delivery precedes the START of the work,
             # not merely the acceptance that came later, and the terminal follows the work.
             started = unit_terminal.get("work_started_at") or unit_terminal.get("started_at")
+            accepted = unit_terminal.get("accepted_at")
             if unit_delivery and unit_delivery.get("at"):
-                if started and started < unit_delivery["at"]:
+                if _before(started, unit_delivery["at"]):
                     prob(f"the work of {cell_id!r} started at {started} but its delivery is stamped "
                          f"{unit_delivery['at']}: the delivery did not precede the work")
-                if unit_terminal.get("accepted_at") and unit_terminal["accepted_at"] < unit_delivery["at"]:
+                if _before(accepted, unit_delivery["at"]):
                     prob("the terminal was accepted before the delivery it consumed")
-            if started and unit_terminal.get("accepted_at") and unit_terminal["accepted_at"] < started:
+            if _before(accepted, started):
                 prob("the terminal was accepted before the work started")
     governed = bool(facts["delivery_receipt"] and facts["terminal_receipt"] and not facts["problems"])
     facts["reading"] = ("this unit was delivered, registered and closed under governance, and its campaign reconciles"
