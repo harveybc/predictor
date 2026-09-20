@@ -169,8 +169,12 @@ def lake_host_config(*, port: int, state_dir: Path, token_file: Path | None = No
             "transport": "http", "web_host": "127.0.0.1", "web_port": int(port),
             "operator_config_path": str(Path(state_dir) / "public-panels.pending.json"),
             "backend": {"entry_point": "financial_files", "distribution": "financial-data-store",
+                        # `untimed`: the lake may not parse these labels as availability evidence (they are
+                        # local wall-clock strings whose zone the producer never stated). Every DATE-RANGED
+                        # request is denied earlier, by the archive's holdout in the governance policy, so an
+                        # untimed resource here is never a way around a range refusal.
                         "settings": {"root_path": str(PANEL_ROOT), "include_globs": sorted(RESOURCES),
-                                     "untimed": [], "holdout_start": HOLDOUT_START,
+                                     "untimed": sorted(RESOURCES), "holdout_start": HOLDOUT_START,
                                      "holdout_reason": HOLDOUT_REASON,
                                      "resource_contracts": built["entry"]["resource_contracts"]}}}
 
