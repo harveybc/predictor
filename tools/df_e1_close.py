@@ -457,19 +457,89 @@ def _verify_controls(entry: dict, reg: dict, rec: dict, arr: dict) -> None:
 
 
 def _governance(root: Path, cell_id: str, rec: dict) -> tuple:
-    """Was there a governed delivery, campaign and ACCEPTED terminal when this unit ran? A local
-    document with the terminal schema is not an accepted terminal and never counts as one."""
+    """RP43: GOVERNED is a set of FACTS about this unit, read from the receipts' contents.
+
+    Two empty files used to be enough, because the check was `is_file()`. Now each receipt is parsed
+    and must name THIS unit with a campaign, a design, an actor, a resource, a delivery and a
+    chronology, and the terminal receipt must carry the accepted terminal's own payload for it. A
+    receipt that is empty, malformed, for another design, for another unit, or whose lists are empty
+    leaves the unit HISTORICAL_UNGOVERNED with the reason recorded — never promoted.
+    """
+    facts = {"delivery_receipt": None, "terminal_receipt": None, "problems": []}
+    prob = facts["problems"].append
+    deliveries = _read_json(root / "DELIVERIES.json", prob, "DELIVERIES.json")
+    terminals = _read_json(root / "TERMINAL_RECEIPTS.json", prob, "TERMINAL_RECEIPTS.json")
     local = root / "TERMINALS" / f"{cell_id}.json"
-    proposal = root / "CAMPAIGN_PROPOSAL.json"
-    facts = {"local_terminal_document": local.is_file(),
-             "campaign_proposal": json.loads(proposal.read_text()).get("status") if proposal.is_file() else None,
-             "delivery_receipt": (root / "DELIVERIES.json").is_file(),
-             "accepted_terminal_receipt": (root / "TERMINAL_RECEIPTS.json").is_file()}
-    governed = facts["delivery_receipt"] and facts["accepted_terminal_receipt"]
-    facts["reading"] = ("a governed delivery and an accepted terminal exist for this unit" if governed else
-                        "no governed delivery and no accepted terminal existed when this unit ran: the local document "
-                        "carries the terminal schema but was never submitted to, or accepted by, data-gov")
+    facts["local_terminal_document"] = local.is_file()
+    facts["local_terminal_is_not_a_terminal"] = ("a document with the terminal schema in the run root was never "
+                                                 "submitted to, or accepted by, governance")
+    unit_delivery = ((deliveries or {}).get("units") or {}).get(cell_id)
+    if deliveries is not None:
+        if not isinstance(unit_delivery, dict) or not unit_delivery:
+            prob(f"the delivery receipt names no delivery for {cell_id!r}")
+        else:
+            required = ("campaign_sha256", "campaign_key", "delivery_id", "sha256", "at", "host", "code_identity")
+            missing = [k for k in required if not unit_delivery.get(k)]
+            if missing:
+                prob(f"the delivery of {cell_id!r} lacks {missing}")
+            if deliveries.get("design_sha256") != (rec or {}).get("design_sha256"):
+                prob("the delivery receipt belongs to another design")
+            if unit_delivery.get("sha256") and (rec or {}).get("data_sha256") is None:
+                pass
+            facts["delivery_receipt"] = {k: unit_delivery.get(k) for k in
+                                         ("campaign_key", "campaign_sha256", "delivery_id", "sha256", "at", "host",
+                                          "cached", "verification_state")}
+            facts["resource"] = deliveries.get("resource")
+            facts["lake"] = deliveries.get("lake")
+    unit_terminal = ((terminals or {}).get("units") or {}).get(cell_id)
+    if terminals is not None:
+        if not isinstance(unit_terminal, dict) or not unit_terminal:
+            prob(f"the terminal receipt names no accepted terminal for {cell_id!r}")
+        else:
+            required = ("campaign_sha256", "terminal_sha256", "accepted_at", "status", "reconciliation")
+            missing = [k for k in required if unit_terminal.get(k) in (None, "", [], {})]
+            if missing:
+                prob(f"the accepted terminal of {cell_id!r} lacks {missing}")
+            recon = unit_terminal.get("reconciliation") or {}
+            if recon.get("http") != 200 or recon.get("missing_units") or recon.get("accounting_only") or recon.get("lake_only"):
+                prob(f"the reconciliation of {cell_id!r} is absent, incomplete or unsuccessful: {recon}")
+            if unit_delivery and unit_terminal.get("campaign_sha256") != unit_delivery.get("campaign_sha256"):
+                prob("the accepted terminal belongs to another campaign than the delivery")
+            facts["terminal_receipt"] = {k: unit_terminal.get(k) for k in
+                                         ("campaign_sha256", "terminal_sha256", "accepted_at", "status", "reconciliation")}
+            # chronology: the delivery precedes the work, the terminal follows it
+            if unit_delivery and unit_delivery.get("at") and unit_terminal.get("accepted_at"):
+                if unit_terminal["accepted_at"] < unit_delivery["at"]:
+                    prob("the terminal was accepted before the delivery it consumed")
+    governed = bool(facts["delivery_receipt"] and facts["terminal_receipt"] and not facts["problems"])
+    facts["reading"] = ("this unit was delivered, registered and closed under governance, and its campaign reconciles"
+                        if governed else
+                        "no governed delivery and accepted terminal can be shown for this unit: " +
+                        ("; ".join(facts["problems"][:3]) if facts["problems"] else "the receipts are absent"))
+    facts["import_scope"] = ("a LATER import of this unit stays RETROSPECTIVE / HISTORICAL_UNGOVERNED: an import "
+                             "receipt is never read as a governed execution")
     return (GOVERNED if governed else HISTORICAL), facts
+
+
+def _read_json(path: Path, prob, name: str):
+    """A receipt is its CONTENT. An absent one is silence; an empty or malformed one is a problem."""
+    if not path.is_file():
+        return None
+    raw = path.read_text().strip()
+    if not raw:
+        prob(f"{name} is empty")
+        return {}
+    try:
+        value = json.loads(raw)
+    except ValueError as exc:
+        prob(f"{name} is not JSON: {exc}"[:120])
+        return {}
+    if not isinstance(value, dict) or not value:
+        prob(f"{name} carries no object")
+        return {}
+    if not (value.get("units") or {}):
+        prob(f"{name} lists no units")
+    return value
 
 
 # --- the whole closure ----------------------------------------------------------------------------

@@ -210,3 +210,111 @@ def test_RP34_the_originals_were_never_written(originals):
     now = {str(p.relative_to(RUN)): C.sha_file(p) for p in RUN.rglob("*") if p.is_file()}
     changed = [k for k in originals if now.get(k) != originals[k]]
     assert not changed, changed
+
+
+# --- RP43 (dictum F3): GOVERNED is a set of facts, not two file names ------------------------------
+
+def _receipts(root: Path, *, units, design_sha, campaign="c" * 64, delivery="d" * 32, terminal="t" * 64,
+              at="2026-09-19T16:00:00Z", accepted="2026-09-19T17:00:00Z", recon=None, drop=()):
+    deliveries = {"schema": "df_e1_governed_acquisition.v1", "design_sha256": design_sha, "lake": "public_panels",
+                  "resource": "uci_235_individual_household_power/panel.parquet", "units": {}}
+    accepted_terminals = {"schema": "df_e1_terminal_receipts.v1", "design_sha256": design_sha, "units": {}}
+    for unit in units:
+        entry = {"campaign_key": f"k-{unit}", "campaign_sha256": campaign, "delivery_id": delivery,
+                 "sha256": "p" * 64, "at": at, "host": "omega", "code_identity": {"kind": "git_commit", "value": "a" * 40},
+                 "cached": False, "verification_state": "VERIFIED_TRANSFER"}
+        accepted_entry = {"campaign_sha256": campaign, "terminal_sha256": terminal, "accepted_at": accepted,
+                    "status": "COMPLETED",
+                    "reconciliation": recon if recon is not None else {"http": 200, "missing_units": [],
+                                                                       "accounting_only": [], "lake_only": []}}
+        for key in drop:
+            entry.pop(key, None)
+            accepted_entry.pop(key, None)
+        deliveries["units"][unit] = entry
+        accepted_terminals["units"][unit] = accepted_entry
+    (root / "DELIVERIES.json").write_text(json.dumps(deliveries))
+    (root / "TERMINAL_RECEIPTS.json").write_text(json.dumps(accepted_terminals))
+
+
+def test_RP43_two_empty_receipts_do_not_make_history_governed(tmp_path):
+    root = _copy(tmp_path)
+    (root / "DELIVERIES.json").write_text("")
+    (root / "TERMINAL_RECEIPTS.json").write_text("")
+    doc = _close(root)
+    assert all(u["governance"] == C.HISTORICAL for u in doc["units"].values())
+    assert doc["governance"]["units_governed"] == 0
+    problems = doc["units"]["R0_s1"]["facts"]["governance"]["problems"]
+    assert any("empty" in p for p in problems)
+    # and a unit that never existed is not promoted either
+    absent = C.verify_unit(C.register(root), "never-registered", do_replay=False)
+    assert absent["governance"] == C.HISTORICAL and not absent["verified"]
+
+
+@pytest.mark.parametrize("case,expect", [
+    ("malformed", "not JSON"),
+    ("no_units", "lists no units"),
+    ("other_unit", "names no delivery"),
+    ("foreign_design", "another design"),
+    ("missing_fields", "lacks"),
+    ("reconciliation_incomplete", "incomplete or unsuccessful"),
+    ("terminal_before_delivery", "before the delivery"),
+    ("campaign_mismatch", "another campaign"),
+])
+def test_RP43_a_receipt_that_does_not_prove_the_unit_leaves_it_historical(tmp_path, case, expect):
+    root = _copy(tmp_path)
+    design_sha = json.loads((root / "DESIGN.json").read_text())["design_sha256"]
+    units = [c["cell_id"] for c in json.loads((root / "DESIGN.json").read_text())["cells"]]
+    if case == "malformed":
+        (root / "DELIVERIES.json").write_text("{not json")
+        (root / "TERMINAL_RECEIPTS.json").write_text("{}")
+    elif case == "no_units":
+        (root / "DELIVERIES.json").write_text(json.dumps({"design_sha256": design_sha, "units": {}}))
+        (root / "TERMINAL_RECEIPTS.json").write_text(json.dumps({"design_sha256": design_sha, "units": {}}))
+    elif case == "other_unit":
+        _receipts(root, units=["someone-else"], design_sha=design_sha)
+    elif case == "foreign_design":
+        _receipts(root, units=units, design_sha="0" * 64)
+    elif case == "missing_fields":
+        _receipts(root, units=units, design_sha=design_sha, drop=("delivery_id", "terminal_sha256"))
+    elif case == "reconciliation_incomplete":
+        _receipts(root, units=units, design_sha=design_sha, recon={"http": 200, "missing_units": ["R0_s1"],
+                                                                   "accounting_only": [], "lake_only": []})
+    elif case == "terminal_before_delivery":
+        _receipts(root, units=units, design_sha=design_sha, at="2026-09-19T18:00:00Z", accepted="2026-09-19T09:00:00Z")
+    else:
+        root_design = design_sha
+        _receipts(root, units=units, design_sha=root_design)
+        data = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())
+        for unit in data["units"]:
+            data["units"][unit]["campaign_sha256"] = "9" * 64
+        (root / "TERMINAL_RECEIPTS.json").write_text(json.dumps(data))
+    doc = _close(root)
+    unit = doc["units"]["R0_s1"]
+    assert unit["governance"] == C.HISTORICAL, case
+    assert any(expect in p for p in unit["facts"]["governance"]["problems"]), (case, unit["facts"]["governance"]["problems"])
+    assert doc["governance"]["units_governed"] == 0
+
+
+def test_RP43_complete_receipts_do_make_a_unit_governed(tmp_path):
+    root = _copy(tmp_path)
+    design = json.loads((root / "DESIGN.json").read_text())
+    units = [c["cell_id"] for c in design["cells"] + design["pilots"]]
+    _receipts(root, units=units, design_sha=design["design_sha256"])
+    doc = _close(root)
+    assert doc["units"]["R0_s1"]["governance"] == C.GOVERNED
+    facts = doc["units"]["R0_s1"]["facts"]["governance"]
+    assert facts["delivery_receipt"]["delivery_id"] and facts["terminal_receipt"]["terminal_sha256"]
+    assert "RETROSPECTIVE" in facts["import_scope"]
+    assert doc["governance"]["units_governed"] >= 1
+
+
+def test_RP43_run_isolated_and_the_closure_share_one_verification(tmp_path):
+    """A record the closure refuses must not be accepted as a score when the unit is resumed."""
+    P = _load("df_e1_pilot")
+    root = _copy(tmp_path)
+    attempt = root / "attempts" / "R0_s1"
+    _rewrite_cell(root, "R0_s1", lambda r: r["scores"]["validation"]["model"].update(mae_mean=999.0))
+    job = json.loads((attempt / "job.json").read_text())
+    out = P.run_isolated(job, attempt_dir=attempt, assigned_bytes=1 << 30, wall_seconds=60, cpu_seconds=60)
+    assert out["outcome"] == "SCORE_UNVERIFIED" and out["score"] is None
+    assert "mae_mean" in json.dumps(out.get("refusal") or {})
