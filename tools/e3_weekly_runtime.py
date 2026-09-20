@@ -135,6 +135,20 @@ def _index_of_time(bars, iso_time) -> int | None:
     return None
 
 
+TERMINAL_STATUSES = ("Completed", "Canceled", "Cancelled", "Rejected", "Margin", "Expired")
+
+
+def _terminal_statuses(env) -> dict:
+    """Each order's TERMINAL verdict, from the notifications this runtime observed. The bridge keeps
+    its own map when the deployed build has one; it is reported beside this, never in place of it."""
+    plugin = getattr(env, "strategy_plugin", None)
+    out = {}
+    for event in list(getattr(plugin, "events", []) or []):
+        if event.get("status") in TERMINAL_STATUSES:
+            out[str(event["order_ref"])] = event["status"]
+    return out
+
+
 def _open_orders(info: dict) -> tuple:
     inventory = info.get("open_order_inventory")
     return tuple(inventory) if inventory else ()
@@ -258,7 +272,7 @@ def run_weekly(env, controller, bars, *, config: dict, bar_step: timedelta, feat
         record.update(equity_after=float(info.get("equity")), units_before=units, units_after=after_units,
                       commission_paid=float(info.get("commission_paid") or 0.0),
                       open_orders_after=int(info.get("open_order_count") or 0),
-                      broker_terminal_status=dict(getattr(getattr(env, "bridge", None), "order_terminal_status", {}) or {}),
+                      broker_terminal_status=_terminal_statuses(env),
                       terminated=bool(terminated))
         equity_path.append(float(info.get("equity")))
         records.append(record)
@@ -274,7 +288,8 @@ def run_weekly(env, controller, bars, *, config: dict, bar_step: timedelta, feat
             "final": {"equity": equity_path[-1], "units": float(info.get("position_units") or 0.0),
                       "commission_paid": float(info.get("commission_paid") or 0.0),
                       "open_orders": int(info.get("open_order_count") or 0),
-                      "terminal_status": dict(getattr(getattr(env, "bridge", None), "order_terminal_status", {}) or {})},
+                      "terminal_status": _terminal_statuses(env),
+                      "terminal_status_bridge": dict(getattr(getattr(env, "bridge", None), "order_terminal_status", {}) or {})},
             "controller": {"misses": controller.state.misses, "refused_proposals": controller.state.refused_proposals,
                            "fallback": controller.fallback, "latency_bars": controller.latency_bars}}
 
