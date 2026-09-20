@@ -1,14 +1,14 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-09-19",
-  "current_stage": "external_review",
+  "current_stage": "acceptance_test_design",
   "completed_stages": [
     "discovery",
     "requirements"
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "RP25_RP32_REVIEWED_E1_UNGOVERNED_CORRECTIONS_ORDERED_RP33_RP40",
+  "handoff_status": "RP33_RP40_REVIEWED_INTEGRATION_CORRECTIONS_ORDERED_RP41_RP48",
   "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
   "architecture_comparison": {
     "reference": "ARCH-A",
@@ -24,19 +24,19 @@
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
-    "RP33-RP34: technically register public panel resources and govern new work before execution; import the old pilot honestly as retrospective evidence and repair closure without training",
-    "RP35-RP38: fix task domains, AE validation stimulus and actual receptive support; conditionally execute the bounded governed E1 successor after ML acceptance and cost/memory preflight",
-    "RP39: integrate actual model inference, weekly controller and broker/environment; offline software tests, no RL training or live",
-    "RP40: content reconciliation, measured tests and single final report under aggregate 14400 CPU seconds; no reserve or blanket restart"
+    "RP41-RP43: reproduce RP40 review first; repair adopter recovery and complete actual runner/closure governance; empty receipt files never grant governed status",
+    "RP44-RP45 in parallel on available workers: independent-information ML diagnostics and actual broker quantity, clock, latency and execution events; offline software only",
+    "RP46-RP47: adopt only after complete disposable-stack acceptance; then execute the bounded prospective E1 successor with measured costs, all three regimes and paired seeds",
+    "RP48: content reconciliation, measured tests and one complete return under aggregate 14400 CPU seconds; no reserve, blanket restart or new owner decision"
   ],
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
     "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-    "orders": "../../handoffs/MUSASHI_PROGRAM_RP33_RP40_2026_09_19.md",
+    "orders": "../../handoffs/MUSASHI_PROGRAM_RP41_RP48_2026_09_19.md",
     "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-    "external_review": "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
+    "external_review": "../../audits/work_plan/MUSASHI_RP33_RP40_REVIEW_2026_09_19.md",
     "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-    "return": "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
+    "return": "https://github.com/harveybc/predictor/blob/f588400a9b3cd6d59c4549cc9829f5bb7957e140/docs/audits/work_plan/SATOSHI_PROGRAM_RP33_RP40_RETURN_2026_09_19.md"
   },
   "proposal_coverage": {
     "P-MOD": [
@@ -131,7 +131,7 @@
         "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
         "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
       ],
-      "next_action": "RP34: complete donor equivalence (updates/identity/task) and re-close E0 without fitting",
+      "next_action": "Preserve RP34 donor correction and verify historical closure without repeating fits; keep each evidence scope explicit",
       "deliverable": "Corrected closure, descriptor impact proof and honest metric coverage with preserved history"
     },
     {
@@ -170,7 +170,7 @@
         "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
         "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
       ],
-      "next_action": "RP33-RP38: historical pilot is executed but ungoverned; fix catalog/closure/masks/support before a prospective governed successor",
+      "next_action": "RP41-RP44/RP46-RP47: fixed AE masks tested; seal only after governed runner integration, evidence-based closure and qualified adequacy diagnostics; adopt bounded public resource then execute prospective successor; historical pilot stays ungoverned",
       "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan",
       "adoption": "HISTORICAL_UNGOVERNED_DEV_PILOT_NOT_ACCEPTED"
     },
@@ -221,7 +221,7 @@
         "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
         "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
       ],
-      "next_action": "RP39: integrate real model inference and broker with 13D; config/stub tests do not establish weekly operations",
+      "next_action": "RP45: model inference is integrated but broker quantity/latency/events and clock must match the actual decisions; 13D remains the offline business contract",
       "deliverable": "Observations/targets/actions, availability, weekly cycle, cost and data gaps"
     },
     {
@@ -238,7 +238,7 @@
         "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
         "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
       ],
-      "next_action": "Offline integrated tests pending RP39; scientific RL/weekly evaluation remains mandatory after E1 and business data prerequisites",
+      "next_action": "RP45 offline corrections: two decided sizes currently execute one fixed broker size; repair quantity, latency, fill events and pending orders. Scientific weekly RL remains mandatory after E1 and business data prerequisites",
       "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost"
     },
     {
@@ -289,6 +289,22 @@
   ],
   "state_semantics": "Stage refers to the successor program. EXECUTED is not external scientific acceptance. Historical evidence is preserved at its original scope; the reviewer checked local source facts, not a fresh live warehouse reconciliation. Documentary PASS grants no scientific approval.",
   "review": {
+    "reviewed_revision": "f588400a9b3cd6d59c4549cc9829f5bb7957e140",
+    "disposition": "REVISIONS_REQUIRED_BEFORE_PUBLIC_LAKE_ADOPTION_AND_E1_RUN",
+    "counterexamples": "../../audits/evidence/RP40_REVIEW_2026_09_19/results.json",
+    "verification": "../../audits/evidence/RP40_REVIEW_2026_09_19/verification.json",
+    "findings": ["ADOPTION_RECOVERY_AND_ROUTE", "RUNNER_GOVERNANCE_WIRING", "EMPTY_RECEIPT_PROMOTION", "RL_SIZE_LATENCY_EVENTS", "ML_DIAGNOSTIC_SCOPE_AND_UPDATES"],
+    "original_files_checked": 131,
+    "original_files_changed": 0,
+    "focused_tests": {"passed": 56, "warnings": 144, "full_suite_rerun": false},
+    "live_warehouse_rechecked_by_reviewer": false,
+    "catalog_activation_performed": false,
+    "scientific_confirmation": false,
+    "owner_input_required_for_current_order": false,
+    "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D"
+  },
+  "review_history": [
+  {
     "reviewed_revision": "60daac965143d9e9b6c1a357420b54c74f83afaf",
     "disposition": "E1_HISTORICAL_PILOT_PRESERVED_REVISE_GOVERNANCE_CLOSURE_MASKED_VALIDATION_AND_RUNTIME",
     "independent_local_source_checks": {
@@ -317,7 +333,6 @@
     "owner_input_required_for_current_order": false,
     "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D"
   },
-  "review_history": [
     {
       "reviewed_revision": "2347c7b",
       "disposition": "REVISIONS_REQUIRED_PRESERVE_DESCRIPTIVE_PILOT",
