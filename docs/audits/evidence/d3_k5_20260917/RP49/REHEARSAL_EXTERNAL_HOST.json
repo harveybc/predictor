@@ -1,11 +1,11 @@
 {
  "schema": "df_public_lake_rehearsal.v2",
- "at": "2026-09-20T18:22:42Z",
- "work": "/tmp/rp41-rehearsal-mlwy6tpo",
+ "at": "2026-09-20T18:23:23Z",
+ "work": "/tmp/rp41-rehearsal-adnis3v9",
  "ports": {
-  "data_gov": 42329,
-  "lake_host": 35293,
-  "warehouse": 38391
+  "data_gov": 39403,
+  "lake_host": 54679,
+  "warehouse": 59511
  },
  "stack": "disposable data-gov + disposable EXTERNAL lake host + disposable DuckDB warehouse",
  "external_host": "data_lake_service with the financial_files provider, the same package the deployed financial and synthetic lakes run: no files_lake embedded in data-gov",
@@ -15,7 +15,7 @@
  },
  "lakes": {
   "http": 200,
-  "raw": "{'lakes': [{'description': 'Cube at :5057 (PG*): SELECT-only query, append-only gov_* via write_metrics. Never reset_olap.', 'engine': 'sql_olap', 'kind': 'warehouse', 'lake_id': 'olap_cube', 'root_path': '/tmp/rp41-rehearsal-mlwy6tpo', 'title': 'predictor OLAP cube', 'transport': 'http'}, {'description': 'Read-only lake over the already characterised public panels. ARCHIVE/DEV use: whole-resource"
+  "raw": "{'lakes': [{'description': 'Cube at :5057 (PG*): SELECT-only query, append-only gov_* via write_metrics. Never reset_olap.', 'engine': 'sql_olap', 'kind': 'warehouse', 'lake_id': 'olap_cube', 'root_path': '/tmp/rp41-rehearsal-adnis3v9', 'title': 'predictor OLAP cube', 'transport': 'http'}, {'description': 'Read-only lake over the already characterised public panels. ARCHIVE/DEV use: whole-resource"
  },
  "external_host_probe": {
   "http": 200,
@@ -38,8 +38,8 @@
  "external_host_serves_the_archive": true,
  "uci_235_individual_household_power/panel.parquet": {
   "campaign_http": 201,
-  "campaign_sha256": "fbdee2b3413032fb3980873e515675d2758eae40e963eff2dee4bf8b49f12b0e",
-  "campaign_key": "rp41-rehearsal-1789928565-uci_235_individual_household_power-lake-route",
+  "campaign_sha256": "694bb193b7661d93b05562f92dd79c7541d51d8c4c4b5c8e74d463fceb35b5ef",
+  "campaign_key": "rp41-rehearsal-1789928606-uci_235_individual_household_power-lake-route",
   "units_registered": [
    "route-1",
    "route-probe-that-fails"
@@ -53,8 +53,8 @@
    "availability_use": "UNDECLARED",
    "availability_label": "UNKNOWN",
    "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
-   "delivery_id": "fbe1fa399e9843dfb07bb9e1e986c5ed",
-   "path": "/tmp/rp41-rehearsal-mlwy6tpo/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet"
+   "delivery_id": "2d0ba08eb4f741d58be38964c2b33e3f",
+   "path": "/tmp/rp41-rehearsal-adnis3v9/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet"
   },
   "cache_reuse": {
    "second_unit_cached": true,
@@ -76,14 +76,14 @@
       "generation": 1,
       "status": "COMPLETED",
       "reason": null,
-      "started_at": "2026-09-20T18:22:45Z",
-      "finished_at": "2026-09-20T18:22:45Z",
+      "started_at": "2026-09-20T18:23:27Z",
+      "finished_at": "2026-09-20T18:23:27Z",
       "costs": {
        "wall_seconds": 0.0,
        "cpu_seconds": 0.0
       },
       "deliveries": [
-       "fbe1fa399e9843dfb07bb9e1e986c5ed"
+       "2d0ba08eb4f741d58be38964c2b33e3f"
       ],
       "artifacts": [],
       "metrics": [
@@ -114,14 +114,14 @@
       "generation": 1,
       "status": "FAILED",
       "reason": "route probe: deliberate failure after its delivery, closed so the campaign has no open unit",
-      "started_at": "2026-09-20T18:22:45Z",
-      "finished_at": "2026-09-20T18:22:45Z",
+      "started_at": "2026-09-20T18:23:27Z",
+      "finished_at": "2026-09-20T18:23:27Z",
       "costs": {
        "wall_seconds": 0.0,
        "cpu_seconds": 0.0
       },
       "deliveries": [
-       "50af163e44334f7fb3bcbf4c59062021"
+       "fe605d4ee38345f993b7a6be64b052fb"
       ],
       "artifacts": [],
       "metrics": [],
@@ -156,7 +156,7 @@
      "costs_match": true,
      "tags_match": true,
      "artifacts_stored": 0,
-     "terminal_sha256": "fffc23441482c268e03ddf84630807926f71e8421b7128bca1a4ff2ab677e7f8",
+     "terminal_sha256": "0af91aa7020871ed44ea9e3a06f046e0c2b7927fe47183398e6eaa598e10c4af",
      "generation": 1
     },
     "route-probe-that-fails": {
@@ -170,7 +170,7 @@
      "costs_match": true,
      "tags_match": true,
      "artifacts_stored": 0,
-     "terminal_sha256": "2a48b6875daec66c4cf2dee94a391be0172f87046183f8bb6ba870dabdea69c2",
+     "terminal_sha256": "ef01dcb74f67a13a4282290f8070b8d1df8643007ec4b858652e9d96fc848b1a",
      "generation": 1
     }
    },
@@ -209,8 +209,8 @@
  },
  "uci_321_electricityloaddiagrams20112014/panel.parquet": {
   "campaign_http": 201,
-  "campaign_sha256": "47aa4d5af31e199955465fec82a863a048a389ad7487e11de6fa9a7454581151",
-  "campaign_key": "rp41-rehearsal-1789928565-uci_321_electricityloaddiagrams20112014-lake-route",
+  "campaign_sha256": "92d9fe3371f825a585ab892a09724cca349c022b457515da168a3e3e520186e9",
+  "campaign_key": "rp41-rehearsal-1789928607-uci_321_electricityloaddiagrams20112014-lake-route",
   "units_registered": [
    "route-1",
    "route-probe-that-fails"
@@ -224,8 +224,8 @@
    "availability_use": "UNDECLARED",
    "availability_label": "UNKNOWN",
    "availability_contract_sha256": "e2824b6eb94721bf01cd4087c6b99b14100cba797e4f52dda01c2cb3666e786f",
-   "delivery_id": "59ee2781c19c42c89ba96b2b995c39bd",
-   "path": "/tmp/rp41-rehearsal-mlwy6tpo/cache/public_panels/7cf225c4869e88abcb12b7fd274d532756e41fedbe3094ebc805cc803fc6a6a8.parquet"
+   "delivery_id": "5d5989e971ba4f84b63b869afc49f536",
+   "path": "/tmp/rp41-rehearsal-adnis3v9/cache/public_panels/7cf225c4869e88abcb12b7fd274d532756e41fedbe3094ebc805cc803fc6a6a8.parquet"
   },
   "cache_reuse": {
    "second_unit_cached": true,
@@ -247,14 +247,14 @@
       "generation": 1,
       "status": "COMPLETED",
       "reason": null,
-      "started_at": "2026-09-20T18:22:46Z",
-      "finished_at": "2026-09-20T18:22:46Z",
+      "started_at": "2026-09-20T18:23:28Z",
+      "finished_at": "2026-09-20T18:23:28Z",
       "costs": {
        "wall_seconds": 0.0,
        "cpu_seconds": 0.0
       },
       "deliveries": [
-       "59ee2781c19c42c89ba96b2b995c39bd"
+       "5d5989e971ba4f84b63b869afc49f536"
       ],
       "artifacts": [],
       "metrics": [
@@ -285,14 +285,14 @@
       "generation": 1,
       "status": "FAILED",
       "reason": "route probe: deliberate failure after its delivery, closed so the campaign has no open unit",
-      "started_at": "2026-09-20T18:22:46Z",
-      "finished_at": "2026-09-20T18:22:46Z",
+      "started_at": "2026-09-20T18:23:28Z",
+      "finished_at": "2026-09-20T18:23:28Z",
       "costs": {
        "wall_seconds": 0.0,
        "cpu_seconds": 0.0
       },
       "deliveries": [
-       "0a496ecc8733404aa7d8bc72a79b0915"
+       "ac1eaa8439f54598926cb551afbb70e4"
       ],
       "artifacts": [],
       "metrics": [],
@@ -327,7 +327,7 @@
      "costs_match": true,
      "tags_match": true,
      "artifacts_stored": 0,
-     "terminal_sha256": "5dbef7114cae9b65b1acdf37788c852de4de150dc32bd378fb482178d04c19bd",
+     "terminal_sha256": "df461789296e63de5d50b37a15266804d06bbc88118a3af1853c747f649b9082",
      "generation": 1
     },
     "route-probe-that-fails": {
@@ -341,7 +341,7 @@
      "costs_match": true,
      "tags_match": true,
      "artifacts_stored": 0,
-     "terminal_sha256": "c66a1d0ca4ad2c52fd43162a79e342b73f2e75a5c2c64cbc4990d14f5484e3d4",
+     "terminal_sha256": "4170f51c0ca45483313ccd8eb049a23dbc50936240d8bad4df2c68da005fe250",
      "generation": 1
     }
    },
@@ -390,16 +390,16 @@
   "serving_provider_path": "/home/harveybc/Documents/GitHub/financial-data/store/src/financial_data_store/inventory.py",
   "installed_provider_sha256": "3ea4ab5533405a044f71eacabe5d57dde9addf0244af4fbc8bdfd9918acb6a87",
   "serving_tools_sha256": {
-   "df_public_lake_adopt.py": "5d76c7d1108221dfeb3d3927cfcc2948f1b5f320e10cbaf70b56d5665ca44760",
+   "df_public_lake_adopt.py": "512a0b5ae5180262442ae891dc778b2e9d0cc2e6b54760e7c5a8a6347380b7d9",
    "df_e1_governed.py": "4a017748b2cd0fe9fba3ea3515a29b6bcb3df5055343168ded8d9416d7b78ddc",
    "df_e1_pilot.py": "176bd32792d268cc8a81835d3e67bd1221737ec7ea2ee832baf5280b433a9c6f",
    "df_e1_close.py": "839efc222525b9026a5d8ae6553838ad7d9026506f3638571ef3e94d124f6f27",
    "df_e1_receipts.py": "89eeee8d1a88e0109a520f51285005d2c61d796bc462f68d9b27b429704df3f9",
    "governed_run.py": "5ac809f9503f8943599b9f0498eaa955f724a3f43cf860358cc414252914bbe0"
   },
-  "repository_head": "22174a4748b85c5d9bc96bab415789f7c9cdf47b"
+  "repository_head": "a7ec7b962fffa193620f3abe4f14641f874710b5"
  },
- "lake_host_log_tail": "_household_power/panel.parquet&role=panel HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:22:45] \"GET /api/v2/download?resource=uci_235_individual_household_power/panel.parquet HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:22:45] \"GET /api/v2/download?resource=uci_235_individual_household_power/panel.parquet HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:22:45] \"GET /api/v2/download?resource=uci_321_electricityloaddiagrams20112014/panel.parquet HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:22:46] \"GET /api/v2/download?resource=uci_321_electricityloaddiagrams20112014/panel.parquet HTTP/1.1\" 200 -\n",
- "warehouse_log_tail": "788c852de4de150dc32bd378fb482178d04c19bd'+LIMIT+1000 HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:22:46] \"GET /api/v1/query?sql=SELECT+metric,+split,+horizon,+unit,+value,+std_dev,+min_value,+max_value+FROM+\"main\".\"gov_terminal_metric\"+WHERE+terminal_sha256+%3D+'c66a1d0ca4ad2c52fd43162a79e342b73f2e75a5c2c64cbc4990d14f5484e3d4'+LIMIT+1000 HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:22:46] \"GET /api/v1/query?sql=SELECT+role,+sha256,+bytes+FROM+\"main\".\"gov_terminal_artifact\"+WHERE+terminal_sha256+%3D+'c66a1d0ca4ad2c52fd43162a79e342b73f2e75a5c2c64cbc4990d14f5484e3d4'+LIMIT+1000 HTTP/1.1\" 200 -\n",
- "data_gov_log_tail": "ampaigns HTTP/1.1\u001b[0m\" 403 -\n127.0.0.1 - - [20/Sep/2026 13:22:46] \"\u001b[31m\u001b[1mGET /api/v2/download?lake=public_panels&resource=uci_321_electricityloaddiagrams20112014/panel.parquet&role=panel&from=2007-01-01&to=2007-01-02 HTTP/1.1\u001b[0m\" 400 -\n127.0.0.1 - - [20/Sep/2026 13:22:46] \"\u001b[31m\u001b[1mGET /api/v2/download?lake=public_panels&resource=uci_501_beijing_multisite_air_quality/panel.parquet&role=panel HTTP/1.1\u001b[0m\" 403 -\n127.0.0.1 - - [20/Sep/2026 13:22:46] \"\u001b[31m\u001b[1mGET /api/v2/download?lake=public_panels&resource=uci_321_electricityloaddiagrams20112014/panel.parquet&role=panel HTTP/1.1\u001b[0m\" 400 -\n"
+ "lake_host_log_tail": "_household_power/panel.parquet&role=panel HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:23:26] \"GET /api/v2/download?resource=uci_235_individual_household_power/panel.parquet HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:23:26] \"GET /api/v2/download?resource=uci_235_individual_household_power/panel.parquet HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:23:27] \"GET /api/v2/download?resource=uci_321_electricityloaddiagrams20112014/panel.parquet HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:23:27] \"GET /api/v2/download?resource=uci_321_electricityloaddiagrams20112014/panel.parquet HTTP/1.1\" 200 -\n",
+ "warehouse_log_tail": "b049a23dbc50936240d8bad4df2c68da005fe250'+LIMIT+1000 HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:23:28] \"GET /api/v1/query?sql=SELECT+metric,+split,+horizon,+unit,+value,+std_dev,+min_value,+max_value+FROM+\"main\".\"gov_terminal_metric\"+WHERE+terminal_sha256+%3D+'df461789296e63de5d50b37a15266804d06bbc88118a3af1853c747f649b9082'+LIMIT+1000 HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:23:28] \"GET /api/v1/query?sql=SELECT+role,+sha256,+bytes+FROM+\"main\".\"gov_terminal_artifact\"+WHERE+terminal_sha256+%3D+'df461789296e63de5d50b37a15266804d06bbc88118a3af1853c747f649b9082'+LIMIT+1000 HTTP/1.1\" 200 -\n",
+ "data_gov_log_tail": "ampaigns HTTP/1.1\u001b[0m\" 403 -\n127.0.0.1 - - [20/Sep/2026 13:23:28] \"\u001b[31m\u001b[1mGET /api/v2/download?lake=public_panels&resource=uci_321_electricityloaddiagrams20112014/panel.parquet&role=panel&from=2007-01-01&to=2007-01-02 HTTP/1.1\u001b[0m\" 400 -\n127.0.0.1 - - [20/Sep/2026 13:23:28] \"\u001b[31m\u001b[1mGET /api/v2/download?lake=public_panels&resource=uci_501_beijing_multisite_air_quality/panel.parquet&role=panel HTTP/1.1\u001b[0m\" 403 -\n127.0.0.1 - - [20/Sep/2026 13:23:28] \"\u001b[31m\u001b[1mGET /api/v2/download?lake=public_panels&resource=uci_321_electricityloaddiagrams20112014/panel.parquet&role=panel HTTP/1.1\u001b[0m\" 400 -\n"
 }
