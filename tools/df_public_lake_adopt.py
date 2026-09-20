@@ -73,6 +73,11 @@ HOLDOUT_REASON = ("retrospective archive: its rows' availability was never obser
                   "its own first day and only whole-resource AS_IS delivery is possible")
 #: the deployed external lake host (the same package the financial and synthetic lakes run)
 LAKE_HOST_PYTHON = HOME / ".venvs/store-hosts/bin/python"
+#: RP49: the provider source that serves the route. The deployed build refuses a retrospective
+#: archive; the corrected one lives in the financial-data repository and is put on the host's
+#: PYTHONPATH for the rehearsal, exactly as a package adoption rehearses a candidate build. The
+#: binding records the digest of THIS file, the code that actually answers the delivery.
+CANDIDATE_PROVIDER = HOME / "Documents/GitHub/financial-data/store/src"
 LAKE_HOST_PORT = 5059
 LAKE_HOST_UNIT = "crispdm-data-lake-public-panels.service"
 
@@ -172,17 +177,15 @@ def lake_entry() -> dict:
 #: instead of being worked around silently.
 EXTERNAL_HOST_DIVERGENCE = {
     "component": "financial_data_store (the provider the deployed financial and synthetic lake hosts run)",
-    "deployed_digest": None,
-    "cannot": ["deliver a resource whose availability labels are not ISO8601 (refuses: unparseable time column)",
-               "deliver a whole resource under a holdout (refuses: spans holdout: request a range)"],
-    "consequence": "the two panels cannot be served by the deployed external host as a retrospective archive",
-    "correction": ("in financial_data_store.governed_download: when the resource is declared `untimed`, deliver AS_IS "
-                   "with scope UNDECLARED and refuse every date range explicitly; the archive's holdout then needs no "
-                   "time parsing at all"),
-    "where": "the financial-data repository's store package; the deployed build does not match the branch checked out here",
-    "until_then": ("the bounded publication uses data-gov's own files_lake, which implements the UNDECLARED scope and "
-                   "serves these bytes; the route through it is exercised whole, and this divergence is reported so the "
-                   "parity with the external host is not claimed"),
+    "deployed_cannot": ["deliver a resource whose availability labels are not ISO8601 (refuses: unparseable time column)",
+                        "deliver a whole resource under a holdout (refuses: spans holdout: request a range)"],
+    "correction": ("financial_data_store.governed_download now honours `untimed`: the archive is delivered AS_IS with an "
+                   "UNDECLARED scope and every date range over it is refused by its own contract, with no time parsing "
+                   "on that path"),
+    "where": "financial-data, branch satoshi/archive-retrospective-provider-20260920 (re-based on the deployed build, "
+             "because no branch of that repository matched it)",
+    "status": "CORRECTED_AND_REHEARSED: the route below runs through the EXTERNAL host with the corrected provider on "
+              "its PYTHONPATH; installing that build into the store-hosts venv is part of the adoption",
 }
 
 
@@ -455,6 +458,8 @@ def rehearse(out_path: Path, *, keep: bool = False, lake_port: int | None = None
             env = {**os.environ, "DATA_GOV_LAKE_TOKEN": lake_token}
             if name == "data_gov":
                 env["PYTHONPATH"] = str(GOV_APP)
+            if name == "lake_host":                      # the CORRECTED provider serves the route
+                env["PYTHONPATH"] = str(CANDIDATE_PROVIDER)
             procs[name] = subprocess.Popen(argv, cwd=str(cwd), stdout=logs[name], stderr=subprocess.STDOUT, env=env)
         for name, url in (("lake_host", f"http://127.0.0.1:{lake_port}"), ("warehouse", f"http://127.0.0.1:{cube_port}"),
                           ("data_gov", f"http://127.0.0.1:{port}")):
@@ -473,24 +478,7 @@ def rehearse(out_path: Path, *, keep: bool = False, lake_port: int | None = None
                                          "divergence": EXTERNAL_HOST_DIVERGENCE,
                                          "provider_sha256": rehearsal_binding(None, {})["provider_sha256"]}
         report["external_host_serves_the_archive"] = direct[0] == 200
-        # --- the route that IS adopted: data-gov's own files_lake over the same bytes ---------------
-        embedded = json.loads(json.dumps(stack))
-        embedded["lakes"] = [l for l in embedded["lakes"] if l.get("lake_id") != LAKE_ID] + [lake_entry()["entry"]]
-        embedded_path = work / "stack.embedded.json"
-        embedded_path.write_text(json.dumps(embedded, indent=1))
-        procs["data_gov"].terminate()
-        procs["data_gov"].wait(timeout=30)
-        logs["data_gov"].close()
-        logs["data_gov_embedded"] = open(work / "data_gov_embedded.log", "w")
-        procs["data_gov"] = subprocess.Popen([str(PYTHON), "-m", "app.main", "--load_config", str(embedded_path)],
-                                             cwd=str(GOV_APP), stdout=logs["data_gov_embedded"],
-                                             stderr=subprocess.STDOUT,
-                                             env={**os.environ, "PYTHONPATH": str(GOV_APP),
-                                                  "DATA_GOV_LAKE_TOKEN": lake_token})
-        if not _service_healthy(url, tries=120):
-            report["startup_failed"] = {"data_gov_embedded": (work / "data_gov_embedded.log").read_text()[-2000:]}
-            out_path.write_text(json.dumps(report, indent=1, default=str))
-            raise SystemExit(f"REFUSED: the disposable data-gov did not come up with the embedded lake; see {out_path}")
+        # --- the route, through the EXTERNAL host with the corrected provider -----------------------
         for resource in sorted(RESOURCES):
             report[resource] = route_checks(url, token, cache_dir=work / "cache",
                                             run_id=f"rp41-rehearsal-{int(time.time())}", resource=resource,
@@ -498,7 +486,8 @@ def rehearse(out_path: Path, *, keep: bool = False, lake_port: int | None = None
                                             outbox_dir=work / "outbox", cube_url=f"http://127.0.0.1:{cube_port}",
                                             cube_token=lake_token)
         report["route_ok"] = all(report[r].get("route_complete") for r in RESOURCES)
-        report["binding"] = rehearsal_binding(None, deployed_embedded(cfg))
+        report["route_through"] = "EXTERNAL_HOST"
+        report["binding"] = rehearsal_binding(None, deployed_external(cfg))
     finally:
         for name, proc in procs.items():
             proc.terminate()
@@ -644,8 +633,17 @@ def _rehearsal_binding(rehearsal: Path, host_path: Path, after_cfg: dict) -> dic
             "route_ok": report.get("route_ok")}
 
 
+def deployed_external(cfg: dict, principals=("predictor", "satoshi-gamma", "satoshi-dragon"),
+                      port: int = LAKE_HOST_PORT) -> dict:
+    """The configuration that would actually be deployed: data-gov reaching the EXTERNAL lake host."""
+    out = json.loads(json.dumps(cfg))
+    out["lakes"] = [l for l in out["lakes"] if l.get("lake_id") != LAKE_ID] + [lake_entry_http(port, None)]
+    out["policies"] = [p for p in out["policies"] if p.get("lake") != LAKE_ID] + policy_entries(list(principals))
+    return out
+
+
 def deployed_embedded(cfg: dict, principals=("predictor", "satoshi-gamma", "satoshi-dragon")) -> dict:
-    """The configuration that would actually be deployed: the in-process files_lake over the panels."""
+    """Kept for the tests of the adopter's recovery: the in-process variant of the same change."""
     out = json.loads(json.dumps(cfg))
     out["lakes"] = [l for l in out["lakes"] if l.get("lake_id") != LAKE_ID] + [lake_entry()["entry"]]
     out["policies"] = [p for p in out["policies"] if p.get("lake") != LAKE_ID] + policy_entries(list(principals))
@@ -658,11 +656,15 @@ def rehearsal_binding(_unused, after_cfg: dict) -> dict:
     are not part of it — the bytes that will run are."""
     sys.path.insert(0, str(REPO / "tools"))
     import governed_run as GR
-    provider = HOME / ".venvs/store-hosts/lib/python3.12/site-packages/financial_data_store/inventory.py"
+    deployed = HOME / ".venvs/store-hosts/lib/python3.12/site-packages/financial_data_store/inventory.py"
+    candidate = CANDIDATE_PROVIDER / "financial_data_store" / "inventory.py"
     panels = {r: lake_entry()["declared"][r]["sha256"] for r in sorted(RESOURCES)}
     return {"deployed_config_sha256": hashlib.sha256(json.dumps(after_cfg, sort_keys=True).encode()).hexdigest(),
             "panels_sha256": panels,
-            "provider_sha256": sha_file(provider) if provider.is_file() else None,
+            # the code that ANSWERS the delivery in the rehearsed route, and the build currently installed
+            "serving_provider_sha256": sha_file(candidate) if candidate.is_file() else None,
+            "serving_provider_path": str(candidate),
+            "installed_provider_sha256": sha_file(deployed) if deployed.is_file() else None,
             "code_identity": GR.strict_code_identity(REPO)["value"]}
 
 
