@@ -1,0 +1,458 @@
+{
+  "reviewed_code": "f83d63566309258b8c0aacddb6aba031c89ab7e0",
+  "execution_checkout": "95f02b3c11be4aa899df49045467ecfce82fb71d",
+  "named_rehearsal": {
+    "exists": false,
+    "binding": false
+  },
+  "historical_originals": {
+    "checked": 131,
+    "changed": []
+  },
+  "fresh_child_verification_order": {
+    "with_outcome_accepted": true,
+    "with_outcome_refusal": null,
+    "without_outcome_accepted": false,
+    "without_outcome_refusal": {
+      "outcome": "SCORE_UNVERIFIED",
+      "why": "absent: no attempt with a record",
+      "closure": {
+        "metrics": "REFUSED",
+        "inference": "REFUSED",
+        "regime": "REFUSED",
+        "scope": "REFUSED"
+      }
+    },
+    "scope": "same conserved AE result, only parent outcome absent as on first completion; no fitting"
+  },
+  "local_claims_without_accounting": {
+    "status": "GOVERNED",
+    "problems": [],
+    "real_campaign_created": false,
+    "terminal_payload_present": false,
+    "actor_or_resource_present": false,
+    "reconciliation_lists_present": false,
+    "terminal_status": "NOT_A_REAL_STATUS"
+  },
+  "runner_failure_population": {
+    "registered": [
+      "R0_s1",
+      "R1_s1",
+      "R2_s1",
+      "ae_s1",
+      "controls",
+      "pilot_ae",
+      "pilot_fit",
+      "prepare"
+    ],
+    "reported": [
+      "pilot_ae"
+    ],
+    "population_reconciliations": {
+      "prepare": {
+        "http": 200,
+        "missing_units": [
+          "prepare"
+        ]
+      },
+      "pilot_ae": {
+        "http": 200,
+        "missing_units": []
+      },
+      "pilot_fit": {
+        "http": 200,
+        "missing_units": [
+          "pilot_fit"
+        ]
+      },
+      "ae_s1": {
+        "http": 200,
+        "missing_units": [
+          "ae_s1"
+        ]
+      },
+      "R0_s1": {
+        "http": 200,
+        "missing_units": [
+          "R0_s1"
+        ]
+      },
+      "R1_s1": {
+        "http": 200,
+        "missing_units": [
+          "R1_s1"
+        ]
+      },
+      "R2_s1": {
+        "http": 200,
+        "missing_units": [
+          "R2_s1"
+        ]
+      },
+      "controls": {
+        "http": 200,
+        "missing_units": [
+          "controls"
+        ]
+      }
+    },
+    "summary": {
+      "per_unit": {
+        "pilot_ae": {
+          "delivered": true,
+          "terminal_accepted": true,
+          "reconciled": true
+        }
+      },
+      "units_incomplete": [],
+      "transfer": {
+        "transferred_units": 1,
+        "cache_reused_units": 7,
+        "bytes_first_transfer": 323204
+      },
+      "all_units_governed": true,
+      "rule": "delivered before working, terminal accepted, campaign reconciled: all three or the unit is named"
+    },
+    "terminal_receipts_persisted": false,
+    "scope": "actual runner, disposable HTTP governance and DuckDB; costly child replaced by failed fixture"
+  },
+  "empty_report_summary": {
+    "per_unit": {},
+    "units_incomplete": [],
+    "transfer": {
+      "transferred_units": 1,
+      "cache_reused_units": 7,
+      "bytes_first_transfer": 323204
+    },
+    "all_units_governed": true,
+    "rule": "delivered before working, terminal accepted, campaign reconciled: all three or the unit is named"
+  },
+  "accepted_unit_closer_status": "HISTORICAL_UNGOVERNED",
+  "noise_floor_check_without_fitting": {
+    "published_copy_r2": 0.8393348745378771,
+    "recomputed_copy": {
+      "mae": 0.33697349541113303,
+      "rmse": 0.4198657313887686,
+      "r2": 0.8393348745378771
+    },
+    "conditional_mean": {
+      "mae": 0.3284885331186146,
+      "rmse": 0.4084352326770666,
+      "r2": 0.8479637480673851
+    },
+    "theoretical_bayes_mse": 0.17256880733944951,
+    "theoretical_copy_mse": 0.18,
+    "published_snr": 3.3333333333333335,
+    "target_power_snr": 11.11111111111111,
+    "scope": "known Gaussian generator; observed noisy-input Bayes rule, not latent-oracle access or a fit"
+  },
+  "broker_margin_probe": {
+    "submissions": [
+      {
+        "order_ref": 1,
+        "role": "entry",
+        "units": 0.008,
+        "decided_at_bar": 0,
+        "submitted_at_bar": 1,
+        "submitted_at": "2024-01-01T01:00:00+00:00"
+      }
+    ],
+    "events": [
+      {
+        "order_ref": 1,
+        "status": "Submitted",
+        "bar_index": 2,
+        "time": "2024-01-01T02:00:00+00:00"
+      },
+      {
+        "order_ref": 1,
+        "status": "Margin",
+        "bar_index": 2,
+        "time": "2024-01-01T02:00:00+00:00"
+      }
+    ],
+    "fills": [],
+    "final": {
+      "equity": 1.0,
+      "units": 0.0,
+      "commission_paid": 0.0,
+      "open_orders": 0,
+      "terminal_status": {
+        "1": "Margin"
+      },
+      "terminal_status_bridge": {
+        "1": "Margin"
+      }
+    },
+    "decisions": [
+      {
+        "env_bar": 0,
+        "reason": "OPEN_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {}
+      },
+      {
+        "env_bar": 1,
+        "reason": "ALREADY_LONG",
+        "price": 1000.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 2,
+        "reason": "ALREADY_LONG",
+        "price": 1000.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 3,
+        "reason": "ALREADY_LONG",
+        "price": 1000.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 4,
+        "reason": "ALREADY_LONG",
+        "price": 1000.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 5,
+        "reason": "ALREADY_LONG",
+        "price": 1000.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 6,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 7,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 8,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 9,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 10,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 11,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 12,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 13,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 14,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 15,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 16,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 17,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 18,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 19,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 20,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 21,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 22,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 23,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 24,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 25,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 26,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 27,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 28,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      },
+      {
+        "env_bar": 29,
+        "reason": "ALREADY_LONG",
+        "price": 100.0,
+        "units_before": 0.0,
+        "broker_terminal_status": {
+          "1": "Margin"
+        }
+      }
+    ]
+  }
+}
