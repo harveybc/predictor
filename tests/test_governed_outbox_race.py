@@ -1,9 +1,15 @@
-"""RP32: the outbox race of an earlier round, reproduced on a fixture. Two concurrent processes were given
-the SAME terminal outbox directory; one moved an envelope to sent/ while the other was flushing it, and the
-loser died with FileNotFoundError. The fixture reproduces exactly that, then proves what the accounting is
-after it: every terminal reaches the server AT LEAST once and lands in sent/ EXACTLY once (no loss, no
-duplicate unit in the accounting), and the operational rule that follows — never share one outbox between two
-concurrent processes — is stated by the third test, which shows a private outbox per process has no race."""
+"""RP32/RP55: two concurrent processes on ONE terminal outbox.
+
+RP32 characterised the race: one process moved an envelope to sent/ while the other was flushing it, and the
+loser died with FileNotFoundError. That is no longer a characterisation but a repaired defect — it killed the
+E1 successor run mid-flight in RP55 — so the first rule below now states the guarantee instead of the damage:
+the flush of a spool is serialised, and an envelope another flusher already delivered is reported as such,
+never as a failure and never as a crash.
+
+What the accounting must be afterwards is unchanged: every terminal reaches the server AT LEAST once and lands
+in sent/ EXACTLY once (no loss, no duplicate unit in the accounting). The operational rule still holds and is
+what the E1 runner does — a private spool per unit, stated by the third test.
+"""
 import importlib.util
 import json
 import multiprocessing as mp
@@ -85,14 +91,19 @@ def _run_pair(tmp_path, root_a, root_b):
     return [json.loads((tmp_path / f"out{k}.json").read_text()) for k in (0, 1)], received
 
 
-def test_RP32_two_processes_on_one_outbox_race_and_the_loser_dies_on_a_missing_envelope(tmp_path):
+def test_RP55_two_processes_on_one_outbox_no_longer_race_and_neither_dies(tmp_path):
+    """The repair of the defect this file used to characterise: neither process dies, neither reports a
+    FileNotFoundError, and between them every envelope is sent exactly once."""
     root = tmp_path / "shared"
     _fill(root)
     results, received = _run_pair(tmp_path, root, root)                 # THE SAME directory for both
     errors = [r["error"] for r in results if not r["ok"]]
     failures = [f for r in results if r["ok"] for f in r.get("failures", {}).values()]
-    assert errors or failures, f"the race did not occur in this run: {results}"
-    assert any("FileNotFoundError" in e for e in errors + failures), f"a different failure: {errors + failures}"
+    assert not errors, f"a flusher died on a shared spool: {errors}"
+    assert not failures, f"a flush reported a failure on a shared spool: {failures}"
+    assert sum(r["sent"] for r in results) == N, results
+    assert all(r["pending"] == 0 for r in results), results
+    assert len(list((root / "sent").glob("*.json"))) == N
 
 
 def test_RP32_after_the_race_no_terminal_is_lost_and_none_is_duplicated_in_the_accounting(tmp_path):
