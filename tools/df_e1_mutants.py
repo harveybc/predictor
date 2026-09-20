@@ -81,7 +81,7 @@ MUTANTS = [
      "the same instant spelled two ways reads as an inversion"),
     ("M14_the_first_report_file_wins", "tools/df_e1_pilot.py",
      "    complete = [(p, d) for p, d in candidates if d.get(\"stopped\") in (None, \"\")]",
-     "    complete = [candidates[0]] if candidates else []",
+     "    complete = [(p, d) for p, d in candidates if p.name == \"REPORT.json\"]",
      "tests/test_df_e1_governing_report.py", "test_RP55_the_report_of_the_run_that_finished_governs",
      "the table can describe an aborted attempt of the same root"),
     ("M15_one_spool_for_every_unit", "tools/df_e1_governed.py",

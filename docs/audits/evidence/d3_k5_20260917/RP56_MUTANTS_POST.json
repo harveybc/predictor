@@ -1,0 +1,53 @@
+{
+ "schema": "df_e1_mutants.v1",
+ "mutants": [
+  {
+   "mutant": "M11_deliveries_written_without_the_lock",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "concurrent children can erase each other's deliveries",
+   "test": "tests/test_df_e1_receipt_concurrency.py::test_RP55_concurrent_children_never_erase_each_others_deliveries",
+   "returncode": 1,
+   "tail": "1 failed, 7 deselected in 0.53s"
+  },
+  {
+   "mutant": "M12_terminals_written_without_the_lock",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "concurrent children can erase each other's accepted terminals",
+   "test": "tests/test_df_e1_receipt_concurrency.py::test_RP55_concurrent_children_never_erase_each_others_terminals",
+   "returncode": 1,
+   "tail": "1 failed, 7 deselected in 0.54s"
+  },
+  {
+   "mutant": "M13_chronology_compared_as_text",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "the same instant spelled two ways reads as an inversion",
+   "test": "tests/test_df_e1_chronology.py::test_RP55_the_same_instant_spelled_two_ways_is_not_a_violation",
+   "returncode": 1,
+   "tail": "1 failed, 4 deselected in 0.49s"
+  },
+  {
+   "mutant": "M14_the_first_report_file_wins",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "the table can describe an aborted attempt of the same root",
+   "test": "tests/test_df_e1_governing_report.py::test_RP55_the_report_of_the_run_that_finished_governs",
+   "returncode": 1,
+   "tail": "1 failed, 3 deselected in 1.11s"
+  },
+  {
+   "mutant": "M15_one_spool_for_every_unit",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "parallel children share one spool and flush each other's envelopes",
+   "test": "tests/test_df_e1_governed_route.py::test_RP51_a_destination_that_goes_down_and_comes_back_loses_no_terminal",
+   "returncode": 1,
+   "tail": "1 failed, 11 deselected in 2.86s"
+  }
+ ],
+ "killed": 5,
+ "total": 5,
+ "rule": "every mutation removes one guard; the named test must fail (killed = true). A survivor is an untested guard."
+}
