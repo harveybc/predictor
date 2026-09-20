@@ -1,0 +1,199 @@
+{
+  "reviewed_commit": "f588400a9b3cd6d59c4549cc9829f5bb7957e140",
+  "scope": "temporary orchestration fixtures plus real offline RL broker; no scientific training",
+  "historical_originals": {
+    "files_checked": 131,
+    "differences": [],
+    "scope": "current hashes and sizes vs RP34 frozen manifest; not a fresh inference replay"
+  },
+  "empty_files_governance": {
+    "before": "HISTORICAL_UNGOVERNED",
+    "after": "GOVERNED",
+    "facts": {
+      "local_terminal_document": false,
+      "campaign_proposal": null,
+      "delivery_receipt": true,
+      "accepted_terminal_receipt": true,
+      "reading": "a governed delivery and an accepted terminal exist for this unit"
+    }
+  },
+  "cached_runner_without_governance": {
+    "prepared": true,
+    "children_dispatched": 1,
+    "delivery_checks": 0,
+    "registrations": 0,
+    "terminal_reports": 0,
+    "local_terminals": 1,
+    "stopped": "COST_PILOT_FAILED: pilot_ae RESOURCE_EXCEEDED",
+    "child_was_stubbed": true
+  },
+  "route_download_only": {
+    "calls": [
+      "register",
+      "download",
+      "register-ranged"
+    ],
+    "delivered_bytes_verified": true,
+    "refusals_hold": true,
+    "terminal_or_reconcile_called": false,
+    "transport_was_stubbed": true
+  },
+  "adoption_restart_exception": {
+    "config_restored": false,
+    "receipt_written": false,
+    "backup_preserved": true,
+    "production_touched": false
+  },
+  "failed_adoption_exit_code": 0,
+  "distant_lag_counterexample": {
+    "declared_solvable_by_seven": false,
+    "last_sample_copy_r2": 1.0,
+    "scope": "counterexample to universal diagnostic label, not a household result"
+  },
+  "diagnostic_updates_arithmetic": [
+    {
+      "requested": 400,
+      "batches_per_epoch": 63,
+      "actual_if_fit_completes": 441
+    },
+    {
+      "requested": 1600,
+      "batches_per_epoch": 63,
+      "actual_if_fit_completes": 1638
+    }
+  ],
+  "real_broker_size_latency": [
+    {
+      "controller_fraction": 0.1,
+      "latency_bars": 1,
+      "decision": {
+        "decision_time": "2024-01-01T00:00:00+00:00",
+        "order_time": "2024-01-01T00:00:00+00:00",
+        "expected_fill_time": "2024-01-01T01:00:00+00:00",
+        "week_start": "2024-01-01T00:00:00+00:00",
+        "new_week": false,
+        "model": "m0",
+        "proposal": 1,
+        "equity": 1.0,
+        "price": 100.0,
+        "reserved_cash": 0.0,
+        "fallback": "last_valid_or_flat",
+        "size_units": 0.001,
+        "notional": 0.1,
+        "action": 1,
+        "reason": "OPEN_LONG",
+        "source": "MODEL_INFERENCE",
+        "model_selected": "m0",
+        "env_bar": 0,
+        "equity_after": 1.0,
+        "units_before": 0.0,
+        "units_after": 0.0,
+        "commission_paid": 0.0,
+        "open_orders_after": 0,
+        "terminated": false
+      },
+      "first_fill": {
+        "decision_bar": 0,
+        "fill_bar": 1,
+        "observed_at_env_bar": 0,
+        "decision_time": "2024-01-01T00:00:00+00:00",
+        "fill_time": "2024-01-01T01:00:00+00:00",
+        "fill_price": 100.0,
+        "close_at_decision": 100.0,
+        "units_before": 0.0,
+        "units_after": 0.005,
+        "entry_price": 100.0
+      },
+      "broker_config_position_size": 0.005,
+      "actual_units": 0.005
+    },
+    {
+      "controller_fraction": 0.8,
+      "latency_bars": 1,
+      "decision": {
+        "decision_time": "2024-01-01T00:00:00+00:00",
+        "order_time": "2024-01-01T00:00:00+00:00",
+        "expected_fill_time": "2024-01-01T01:00:00+00:00",
+        "week_start": "2024-01-01T00:00:00+00:00",
+        "new_week": false,
+        "model": "m0",
+        "proposal": 1,
+        "equity": 1.0,
+        "price": 100.0,
+        "reserved_cash": 0.0,
+        "fallback": "last_valid_or_flat",
+        "size_units": 0.008,
+        "notional": 0.8,
+        "action": 1,
+        "reason": "OPEN_LONG",
+        "source": "MODEL_INFERENCE",
+        "model_selected": "m0",
+        "env_bar": 0,
+        "equity_after": 1.0,
+        "units_before": 0.0,
+        "units_after": 0.0,
+        "commission_paid": 0.0,
+        "open_orders_after": 0,
+        "terminated": false
+      },
+      "first_fill": {
+        "decision_bar": 0,
+        "fill_bar": 1,
+        "observed_at_env_bar": 0,
+        "decision_time": "2024-01-01T00:00:00+00:00",
+        "fill_time": "2024-01-01T01:00:00+00:00",
+        "fill_price": 100.0,
+        "close_at_decision": 100.0,
+        "units_before": 0.0,
+        "units_after": 0.005,
+        "entry_price": 100.0
+      },
+      "broker_config_position_size": 0.005,
+      "actual_units": 0.005
+    },
+    {
+      "controller_fraction": 0.1,
+      "latency_bars": 3,
+      "decision": {
+        "decision_time": "2024-01-01T00:00:00+00:00",
+        "order_time": "2024-01-01T00:00:00+00:00",
+        "expected_fill_time": "2024-01-01T03:00:00+00:00",
+        "week_start": "2024-01-01T00:00:00+00:00",
+        "new_week": false,
+        "model": "m0",
+        "proposal": 1,
+        "equity": 1.0,
+        "price": 100.0,
+        "reserved_cash": 0.0,
+        "fallback": "last_valid_or_flat",
+        "size_units": 0.001,
+        "notional": 0.1,
+        "action": 1,
+        "reason": "OPEN_LONG",
+        "source": "MODEL_INFERENCE",
+        "model_selected": "m0",
+        "env_bar": 0,
+        "equity_after": 1.0,
+        "units_before": 0.0,
+        "units_after": 0.0,
+        "commission_paid": 0.0,
+        "open_orders_after": 0,
+        "terminated": false
+      },
+      "first_fill": {
+        "decision_bar": 0,
+        "fill_bar": 1,
+        "observed_at_env_bar": 0,
+        "decision_time": "2024-01-01T00:00:00+00:00",
+        "fill_time": "2024-01-01T01:00:00+00:00",
+        "fill_price": 100.0,
+        "close_at_decision": 100.0,
+        "units_before": 0.0,
+        "units_after": 0.005,
+        "entry_price": 100.0
+      },
+      "broker_config_position_size": 0.005,
+      "actual_units": 0.005
+    }
+  ]
+}

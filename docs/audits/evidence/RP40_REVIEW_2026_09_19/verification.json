@@ -1,0 +1,47 @@
+{
+  "reviewed_commit": "f588400a9b3cd6d59c4549cc9829f5bb7957e140",
+  "recorded_at_utc": "2026-09-20T03:06:24Z",
+  "review_local_date": "2026-09-19",
+  "python_environment": "trading-stack, Python 3.12",
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "TF_NUM_INTEROP_THREADS": "1",
+    "TF_NUM_INTRAOP_THREADS": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "focused_tests": {
+    "command": "python -m pytest -q tests/test_df_e1_loader.py tests/test_df_e1_pretraining.py tests/test_df_e1_pilot.py tests/test_e3_weekly_runtime.py",
+    "passed": 56,
+    "failed": 0,
+    "warnings": 144,
+    "elapsed_seconds": 38.30,
+    "exit_code": 0,
+    "full_suite_rerun": false,
+    "scope": "existing tests, including bounded synthetic ML fits; independent counterexamples are recorded separately"
+  },
+  "reproducer": {
+    "command": "python docs/audits/evidence/RP40_REVIEW_2026_09_19/reproduce.py --repo . --out docs/audits/evidence/RP40_REVIEW_2026_09_19/results.json",
+    "exit_code": 0,
+    "production_mutation": false,
+    "scientific_training": false,
+    "real_offline_broker": true
+  },
+  "operational_read": {
+    "method": "systemctl --user show allowlisted state fields, healthz GET and configured lake ids only",
+    "services": {
+      "crispdm-data-gov.service": {"active": "active", "substate": "running", "NRestarts": 0},
+      "crispdm-data-lake-financial.service": {"active": "active", "substate": "running", "NRestarts": 0},
+      "crispdm-data-warehouse-olap.service": {"active": "active", "substate": "running", "NRestarts": 0},
+      "crispdm-data-lake-synthetic.service": {"active": "active", "substate": "running", "NRestarts": 0},
+      "crispdm-olap-loader-duckdb.service": {"active": "active", "substate": "running", "NRestarts": 0}
+    },
+    "health_http": {"5055": 200, "5056": 200, "5057": 200, "5058": 200},
+    "configured_lake_ids": ["financial_files", "olap_cube", "predictor_examples", "governance_smoke"],
+    "active_catalogue_queried": false,
+    "warehouse_content_reconciled": false,
+    "loader_progress_measured": false,
+    "adoption_performed": false
+  }
+}

@@ -4,14 +4,16 @@ Actualizado: 2026-09-19. Responsable del programa y revision: Musashi.
 Ejecucion delegada: Satoshi. Estado: E0-DEV, etapa ARCH y piloto E1 EJECUTADOS;
 PILOTO E1 NO GOBERNADO, revision ML con correcciones, sin confirmacion.
 
-**Vigente:** [RP33-RP40](../handoffs/MUSASHI_PROGRAM_RP33_RP40_2026_09_19.md).
-[Dictamen RP25-RP32](../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md):
-el piloto household produjo errores reproducibles pero ejecuto fuera de data-gov;
-conservarlo como historico no gobernado, no fingir entregas retrospectivas.
-Reparar verificacion del cierre, mascaras de validacion AE, soporte del receptor
-y adopcion antes de un sucesor E1 realmente gobernado. R0/R1/R2 ya nombran los
-regimenes correctos; no hay ganador. El controlador RL aun requiere integracion
-con modelo/entorno/broker reales. E0 no se repite por estos defectos.
+**Vigente:** [RP41-RP48](../handoffs/MUSASHI_PROGRAM_RP41_RP48_2026_09_19.md).
+[Dictamen RP33-RP40](../audits/work_plan/MUSASHI_RP33_RP40_REVIEW_2026_09_19.md):
+mascara estable/restauracion pasan sus pruebas; 131 originales intactos. El
+sucesor E1 no se ha ejecutado. El reinicio no es el unico pendiente: runner sin
+cierre gobernado efectivo, clasificacion por archivos vacios, recuperacion del
+adoptador incompleta y cantidades/tiempos RL no ejecutados segun el controlador.
+Corregir esos caminos, separar diagnostico de alcance de capacidad aprendida,
+adoptar el recurso acotado y entonces ejecutar household DEV R0/R1/R2. No hay
+ganador ni confirmacion; el piloto anterior sigue historico no gobernado.
+No hay nueva decision del owner para el desarrollo autorizado. No repetir E0.
 [13D](program_v3/13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md)
 resuelve el escenario de simulacion: capital real y exposicion no bloquean DEV.
 

@@ -1212,3 +1212,26 @@ sin cambiar cronologia, corregir ML y ejecutar sucesor E1 condicionado a tests.
 Integracion semanal/RL por separado, sin live ni entrenamiento RL esta ronda.
 No hay permiso cientifico pendiente del owner para este registro tecnico.
 H-CORE, seis propuestas y frentes preservados; no repetir toda E0.
+
+### Revision RP33-RP40 y orden RP41-RP48 (19-sep)
+
+Revision de `f588400`: 56 pruebas focales pasan; las nuevas sondas reproducen
+cinco hallazgos en adopcion, runner, clasificacion gobernada, integracion RL y
+alcance del diagnostico ML. Los 131 archivos historicos conservan hash/tamano.
+No repetir el programa; conservar las mediciones y arreglar sus caminos reales.
+
+[Dictamen](../audits/work_plan/MUSASHI_RP33_RP40_REVIEW_2026_09_19.md) y
+[orden vigente RP41-RP48](../handoffs/MUSASHI_PROGRAM_RP41_RP48_2026_09_19.md).
+No se ejecuto el adoptador: un timeout en su primer reinicio deja configuracion
+cambiada sin recibo; su sonda no cierra campana. El piloto tampoco envia sus
+terminales desde run, y dos archivos vacios bastan para etiquetar GOVERNED.
+Adopcion y nueva ejecucion quedan condicionadas a correcciones tecnicas, no a
+otra autorizacion del owner. La secuencia exige ensayo y cierre por contenido.
+
+En RL, dos cantidades decididas diferentes producen una posicion fija en el
+broker real offline; reparar sizing/latencia/eventos antes de evaluar negocio.
+Las mejoras de mascara y restauracion quedan al alcance de sus tests. El rezago
+lejano no prueba imposibilidad para un receptor corto en datos correlacionados.
+H-CORE y RL cientifico conservan dependencias. Cinco servicios active/running,
+NRestarts=0 y cuatro healthz200 leidos por Musashi; no se midio progreso del
+loader ni se concilio el cubo en este turno. Cero reinicios/escrituras productivas.
