@@ -22,6 +22,7 @@ A local document with the terminal schema is not a terminal: nothing here writes
 from __future__ import annotations
 
 import argparse
+import fcntl
 import hashlib
 import importlib.util
 import json
@@ -62,6 +63,40 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
+class _Lock:
+    """One writer at a time for a receipt file. Children run in parallel and each was rewriting the
+    whole file from its own copy, so the last writer erased the other units' deliveries."""
+
+    def __init__(self, path: Path):
+        self.path = Path(str(path) + ".lock")
+
+    def __enter__(self):
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.handle = open(self.path, "w")
+        fcntl.flock(self.handle, fcntl.LOCK_EX)
+        return self
+
+    def __exit__(self, *exc):
+        fcntl.flock(self.handle, fcntl.LOCK_UN)
+        self.handle.close()
+        return False
+
+
+def _merge_write(path: Path, unit_id: str, entry: dict, base: dict) -> dict:
+    """Re-read, merge THIS unit, write atomically, all while holding the lock."""
+    with _Lock(path):
+        doc = json.loads(path.read_text()) if path.is_file() else base
+        doc.setdefault("units", {})[unit_id] = entry
+        doc["transfer"] = {"transferred_units": sum(1 for u in doc["units"].values() if not u.get("cached")),
+                           "cache_reused_units": sum(1 for u in doc["units"].values() if u.get("cached")),
+                           "bytes_first_transfer": next((u.get("bytes") for u in doc["units"].values()
+                                                         if not u.get("cached")), None)}
+        tmp = Path(str(path) + ".tmp")
+        tmp.write_text(json.dumps(doc, indent=1, default=str))
+        os.replace(tmp, path)
+        return doc
+
+
 def acquire(*, run_id: str, root: Path, lake: str, resource: str, unit_id: str = "prepare", role: str = "panel",
             gov_url: str = DEFAULT_GOV, api_key_file: Path, design_sha256: str,
             cache_dir: Path | None = None, expect_sha256: str | None = None, units: list | None = None) -> dict:
@@ -81,8 +116,10 @@ def acquire(*, run_id: str, root: Path, lake: str, resource: str, unit_id: str =
         "order": "each unit's campaign is registered BEFORE it reads anything; its delivery is verified before it runs"}
     if doc.get("design_sha256") != design_sha256 or doc.get("resource") != resource:
         raise SystemExit("REFUSED: this root already holds deliveries of another design or resource")
-    if unit_id in doc["units"]:
-        return doc
+    with _Lock(receipt_path):                    # another child may have acquired it a moment ago
+        current = json.loads(receipt_path.read_text()) if receipt_path.is_file() else doc
+    if unit_id in (current.get("units") or {}):
+        return current
     code_identity = GR.strict_code_identity(REPO)
     key = f"{run_id}-{unit_id}-data"
     token = Path(api_key_file).read_text().strip()
@@ -111,20 +148,16 @@ def acquire(*, run_id: str, root: Path, lake: str, resource: str, unit_id: str =
         raise SystemExit("REFUSED: the delivered bytes on disk are not the ones the stream declared")
     if expect_sha256 and on_disk != expect_sha256:
         raise SystemExit(f"REFUSED: the delivered panel {on_disk} is not the characterised {expect_sha256}")
-    doc["units"][unit_id] = {"campaign_key": key, "campaign_sha256": sha, "code_identity": code_identity,
-                             "at": now_iso(), "host": os.uname().nodename,
-                             "delivery_id": info.get("delivery_id"), "sha256": info["sha256"],
-                             "bytes": info.get("bytes"), "cached": bool(info.get("cached")),
-                             "verification_state": info.get("verification_state"),
-                             "availability_use": info.get("availability_use"),
-                             "availability_label": info.get("availability_label"),
-                             "availability_contract_sha256": info.get("availability_contract_sha256"),
-                             "path": str(path), "bytes_on_disk_sha256": on_disk}
-    doc["transfer"] = {"transferred_units": sum(1 for u in doc["units"].values() if not u["cached"]),
-                       "cache_reused_units": sum(1 for u in doc["units"].values() if u["cached"]),
-                       "bytes_first_transfer": next((u["bytes"] for u in doc["units"].values() if not u["cached"]), None)}
-    receipt_path.write_text(json.dumps(doc, indent=1, default=str))
-    return doc
+    entry = {"campaign_key": key, "campaign_sha256": sha, "code_identity": code_identity,
+             "at": now_iso(), "host": os.uname().nodename,
+             "delivery_id": info.get("delivery_id"), "sha256": info["sha256"],
+             "bytes": info.get("bytes"), "cached": bool(info.get("cached")),
+             "verification_state": info.get("verification_state"),
+             "availability_use": info.get("availability_use"),
+             "availability_label": info.get("availability_label"),
+             "availability_contract_sha256": info.get("availability_contract_sha256"),
+             "path": str(path), "bytes_on_disk_sha256": on_disk}
+    return _merge_write(receipt_path, unit_id, entry, doc)
 
 
 def require_delivery(root: Path, design: dict, unit_id: str = "prepare") -> dict:

@@ -40,8 +40,26 @@ def now_iso() -> str:
 
 def record_accepted(root: Path, unit_id: str, *, campaign_sha256: str, campaign_key: str, terminal: dict,
                     receipt: dict, reconciliation: dict, design_sha256: str, started_at: str | None = None) -> dict:
-    """Persist ONE accepted terminal, from the client's own receipt."""
+    """Persist ONE accepted terminal, from the client's own receipt, under a lock: children run in
+    parallel and a whole-file rewrite would erase the units that closed a moment earlier."""
+    import fcntl
     path = Path(root) / "TERMINAL_RECEIPTS.json"
+    lock = Path(str(path) + ".lock")
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    handle = open(lock, "w")
+    fcntl.flock(handle, fcntl.LOCK_EX)
+    try:
+        return _record_locked(path, unit_id, campaign_sha256=campaign_sha256, campaign_key=campaign_key,
+                              terminal=terminal, receipt=receipt, reconciliation=reconciliation,
+                              design_sha256=design_sha256, started_at=started_at)
+    finally:
+        fcntl.flock(handle, fcntl.LOCK_UN)
+        handle.close()
+
+
+def _record_locked(path: Path, unit_id: str, *, campaign_sha256: str, campaign_key: str, terminal: dict,
+                   receipt: dict, reconciliation: dict, design_sha256: str, started_at: str | None) -> dict:
+    import os
     doc = json.loads(path.read_text()) if path.is_file() else {"schema": SCHEMA, "design_sha256": design_sha256,
                                                                "units": {}}
     if doc.get("design_sha256") != design_sha256:
@@ -57,7 +75,9 @@ def record_accepted(root: Path, unit_id: str, *, campaign_sha256: str, campaign_
         "source": "the governance client's own answer when it accepted this terminal",
     }
     doc["updated_at"] = now_iso()
-    path.write_text(json.dumps(doc, indent=1, default=str))
+    tmp = Path(str(path) + ".tmp")
+    tmp.write_text(json.dumps(doc, indent=1, default=str))
+    os.replace(tmp, path)
     return doc["units"][unit_id]
 
 
