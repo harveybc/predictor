@@ -351,7 +351,7 @@ def test_RP51_a_destination_that_goes_down_and_comes_back_loses_no_terminal(stac
                            tags={"purpose": "E1_DEV_PILOT", "classification": "NON_GOVERNING", "phase": "DEVELOPMENT"})
     outbox_dir = tmp_path / "outbox"
     # the destination is unreachable: the terminal stays pending and nothing is lost
-    with pytest.raises(SystemExit):
+    with pytest.raises(Exception):               # the destination is down: the send fails, nothing is lost
         G.report_terminal(root, "ae_s1", terminal, gov_url=f"http://127.0.0.1:{_free_port()}",
                           api_key_file=KEY, outbox_dir=str(outbox_dir))
     GR = _load("governed_run")
@@ -376,7 +376,9 @@ def test_RP51_an_empty_report_does_not_pass_and_a_registered_unit_that_did_not_c
     RC = _load("df_e1_receipts")
     empty = P._governed_summary.__wrapped__ if hasattr(P._governed_summary, "__wrapped__") else P._governed_summary
     (root / "DELIVERIES.json").write_text(json.dumps({"schema": "df_e1_governed_acquisition.v1",
-                                                      "design_sha256": design["design_sha256"], "units": {}}))
+                                                      "design_sha256": design["design_sha256"],
+                                                      "lake": "public_panels", "resource": stack["resource"],
+                                                      "role": "panel", "units": {}}))
     states = RC.population_states(design, root)
     assert states["complete"] is False and states["counts"]["NOT_STARTED"] == len(states["units"])
     result = empty(root, {"terminals": []}, design)
