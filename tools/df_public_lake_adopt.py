@@ -703,7 +703,8 @@ def _cube_token() -> str | None:
         return None
     for line in env.read_text().splitlines():
         if line.startswith("DATA_GOV_LAKE_TOKEN="):
-            return line.split("=", 1)[1].strip()
+            # systemd environment files quote values; the token is what is INSIDE the quotes
+            return line.split("=", 1)[1].strip().strip('"').strip("'")
     return None
 
 
