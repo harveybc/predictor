@@ -716,7 +716,9 @@ def _rehearsal_binding(rehearsal: Path, host_path: Path, after_cfg: dict) -> dic
         return {"accepted": False, "why": f"the rehearsal receipt is unreadable: {exc}"}
     bound = report.get("binding") or {}
     now = rehearsal_binding(None, after_cfg)
-    differences = [k for k, v in now.items() if bound.get(k) != v]
+    # the repository's HEAD is recorded but does not bind: committing the rehearsal's own receipt moves it
+    comparable = {k: v for k, v in now.items() if k != "repository_head"}
+    differences = [k for k, v in comparable.items() if bound.get(k) != v]
     return {"accepted": not differences and bool(report.get("route_ok")),
             "why": ("the rehearsal did not pass" if not report.get("route_ok") else
                     f"the rehearsal differs in {differences}" if differences else "bound"),
@@ -750,13 +752,20 @@ def rehearsal_binding(_unused, after_cfg: dict) -> dict:
     deployed = HOME / ".venvs/store-hosts/lib/python3.12/site-packages/financial_data_store/inventory.py"
     candidate = CANDIDATE_PROVIDER / "financial_data_store" / "inventory.py"
     panels = {r: lake_entry()["declared"][r]["sha256"] for r in sorted(RESOURCES)}
+    # RP55: the binding is over the code that DOES this work, file by file. Binding to the repository's
+    # HEAD made a rehearsal expire the moment its own receipt was committed, which is an accident of
+    # bookkeeping rather than a change in what runs.
+    serving = {name: sha_file(REPO / "tools" / name) for name in
+               ("df_public_lake_adopt.py", "df_e1_governed.py", "df_e1_pilot.py", "df_e1_close.py",
+                "df_e1_receipts.py", "governed_run.py")}
     return {"deployed_config_sha256": hashlib.sha256(json.dumps(after_cfg, sort_keys=True).encode()).hexdigest(),
             "panels_sha256": panels,
             # the code that ANSWERS the delivery in the rehearsed route, and the build currently installed
             "serving_provider_sha256": sha_file(candidate) if candidate.is_file() else None,
             "serving_provider_path": str(candidate),
             "installed_provider_sha256": sha_file(deployed) if deployed.is_file() else None,
-            "code_identity": GR.strict_code_identity(REPO)["value"]}
+            "serving_tools_sha256": serving,
+            "repository_head": GR.strict_code_identity(REPO)["value"]}
 
 
 def main(argv=None) -> int:
