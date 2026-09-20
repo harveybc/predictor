@@ -726,7 +726,7 @@ def _closure_verdict(attempt_dir: Path, job: dict, score: dict) -> tuple:
         return None, {"outcome": "SCORE_UNVERIFIED", "why": f"the run's register is unreadable: {exc}"[:200]}
     if register["problems"]:
         return None, {"outcome": "SCORE_UNVERIFIED", "why": f"the run's register refuses: {register['problems'][:2]}"}
-    verdict = CL.verify_unit(register, job["cell_id"], do_replay=False)
+    verdict = CL.verify_unit(register, job["cell_id"], do_replay=False, judging=True)
     if verdict["metrics"] != CL.VERIFIED or verdict["problems"]:
         return None, {"outcome": "SCORE_UNVERIFIED", "why": "; ".join(verdict["problems"][:3]) or "metrics refused",
                       "closure": {k: verdict[k] for k in ("metrics", "inference", "regime", "scope")}}
@@ -756,21 +756,24 @@ def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seco
     prior = attempt_dir / "outcome.json"
     if prior.is_file():
         recorded = json.loads(prior.read_text())
-        refusal = H._job_binding_refusal(attempt_dir, job)
+        refusal = _job_binding_refusal(attempt_dir, job)
         score = None
         if refusal is None and recorded.get("status") == "COMPLETED":
             result = json.loads((attempt_dir / "result.json").read_text()) if (attempt_dir / "result.json").is_file() else None
             score, refusal = verified_unit(attempt_dir, result, recorded.get("verified"))
-            if score is not None:                      # the SAME verdict on resume, recorded again
+            if score is not None:                      # the SAME verdict on resume ...
                 score, refusal = _closure_verdict(attempt_dir, job, score)
-                _record_verdict(prior, recorded, score, refusal, phase="RESUME")
+            # ... and it is recorded whichever way it went: a unit that no longer verifies must not
+            # keep the verdict it had when its files were intact
+            _record_verdict(prior, recorded, score, refusal, phase="RESUME")
         history = dict(recorded.get("summary") or {})
         if refusal is not None:
             return {"outcome": "SCORE_UNVERIFIED", "reason": refusal["why"], "cost": history.get("cost", {}),
                     "score": None, "resumed": True, "refusal": refusal}
         return {**history, "score": score, "resumed": True}
     job_file = attempt_dir / "job.json"
-    job_file.write_text(json.dumps({**job, "attempt_dir": str(attempt_dir)}, default=H._jsonable))
+    job_file.write_text(json.dumps({**job, "attempt_dir": str(attempt_dir),
+                                    "job_identity": job_identity(job, attempt_dir)}, default=H._jsonable))
     started_at = _now()
     task = IR.Task(argv=[sys.executable, "-B", str(HERE / "df_e1_pilot.py"), "--worker", str(job_file)], name=f"e1-{job['cell_id']}",
                    attempt_dir=attempt_dir, assigned_bytes=assigned_bytes, wall_seconds=wall_seconds, cpu_seconds=cpu_seconds,
@@ -803,6 +806,41 @@ def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seco
     _record_verdict(prior, record, score, refusal, phase="FRESH",
                     outcome=summary["outcome"], summary={k: v for k, v in summary.items() if k != "score"})
     return summary
+
+
+def job_identity(job: dict, attempt_dir: Path) -> dict:
+    """RP50: what makes two jobs the SAME job, independent of where the run lives.
+
+    Absolute paths are not part of it: a worker holds its own copy of DATA and of the donor's weights,
+    so binding on them refused every legitimate resume on another host (and every copy of a run). What
+    identifies the job is the cell, its seed and regime, its update ceiling, the DATA it consumes by
+    DIGEST, the design by digest, and the donor by name."""
+    out = {"kind": job.get("kind"), "cell_id": job.get("cell_id"), "seed": job.get("seed"),
+           "regime": job.get("regime"), "max_updates": job.get("max_updates"), "role": job.get("role"),
+           "data_sha256": job.get("data_sha256"),
+           "design_sha256": (job.get("design") or {}).get("design_sha256")}
+    donor = job.get("pretrained_npz")
+    if donor:
+        out["donor"] = "/".join(Path(donor).parts[-2:])
+    return out
+
+
+def _job_binding_refusal(attempt_dir: Path, job: dict):
+    """The recorded attempt is the attempt of THIS job — compared by identity, not by path."""
+    path = Path(attempt_dir) / "job.json"
+    if not path.is_file():
+        return {"outcome": "SCORE_UNVERIFIED", "why": "the attempt records no job to bind to"}
+    try:
+        recorded = json.loads(path.read_text())
+    except ValueError:
+        return {"outcome": "SCORE_UNVERIFIED", "why": "the attempt's recorded job is not JSON"}
+    stored = recorded.get("job_identity") or job_identity(recorded, attempt_dir)
+    now = job_identity(job, attempt_dir)
+    differing = [k for k in set(stored) | set(now) if stored.get(k) != now.get(k)]
+    if differing:
+        return {"outcome": "SCORE_UNVERIFIED",
+                "why": f"the job differs from the recorded attempt's job ({sorted(differing)}); nothing is reused"}
+    return None
 
 
 def _now() -> str:

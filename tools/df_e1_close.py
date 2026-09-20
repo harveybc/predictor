@@ -212,7 +212,11 @@ def replay(root: Path, cell_id: str, weights: Path, origins: np.ndarray, seed: i
 
 # --- per-unit verdict -----------------------------------------------------------------------------
 
-def verify_unit(reg: dict, cell_id: str, *, do_replay: bool = True, work: Path | None = None) -> dict:
+def verify_unit(reg: dict, cell_id: str, *, do_replay: bool = True, work: Path | None = None,
+                judging: bool = False) -> dict:
+    """`judging=True` is the verdict being taken right now by the runner for THIS attempt: its parent
+    record is necessarily still PENDING_VERDICT, and that is the one case where a pending record is
+    not a refusal. Every other reader — a later closure, a resume, an audit — refuses it."""
     root = reg["root"]
     cell = reg["cells_by_id"].get(cell_id)
     entry = {"cell_id": cell_id, "metrics": NOT_ATTEMPTED, "inference": NOT_ATTEMPTED, "regime": NOT_ATTEMPTED,
@@ -233,7 +237,7 @@ def verify_unit(reg: dict, cell_id: str, *, do_replay: bool = True, work: Path |
     result = json.loads((attempt / "result.json").read_text()) if (attempt / "result.json").is_file() else {}
     entry["facts"]["phases"] = outcome.get("phases")
     entry["facts"]["score_state"] = outcome.get("score_state", "LEGACY_NO_STATE")
-    if outcome.get("score_state") == "PENDING_VERDICT":
+    if outcome.get("score_state") == "PENDING_VERDICT" and not judging:
         # RP50: a parent record that was never judged is not a score. It is a record of an attempt.
         entry.update(metrics=REFUSED, inference=REFUSED, regime=REFUSED)
         prob("the attempt's parent record exists but its verdict was never recorded (score_state PENDING_VERDICT)")
@@ -272,6 +276,7 @@ def verify_unit(reg: dict, cell_id: str, *, do_replay: bool = True, work: Path |
             parts = Path(job["pretrained_npz"]).parts
             job["pretrained_npz"] = "/".join(parts[-2:])
         diff = [k for k, v in want.items() if job.get(k) != v]
+        entry["facts"]["job_identity"] = job.get("job_identity")
         entry["facts"]["job_fields_differing"] = diff
         if diff:
             prob(f"the job the attempt ran under differs from the design's: {diff}")

@@ -64,7 +64,7 @@ def run(tmp_path_factory):
     root.mkdir()
     (root / "DESIGN.json").write_text(json.dumps(design, indent=1))
     data = P.prepare(design, root)
-    return {"tmp": tmp, "root": root, "design": design, "data": data, "panel": panel}
+    return {"tmp": tmp, "root": root, "design": design, "data": data, "panel": panel, "completed": None}
 
 
 def _job(run, cell_id, **over):
@@ -78,6 +78,22 @@ def _job(run, cell_id, **over):
         job["pretrained_npz"] = str(run["root"] / "attempts" / cell["depends_on"] / "detector_pretrained.npz")
     job.update(over)
     return job
+
+
+def _completed(run, tmp_path):
+    """A root whose R0_s1 attempt really ran, built once and reused: the dependent rules must not
+    depend on the ORDER in which the rules above happened to run."""
+    if run.get("completed") is None:
+        base = run["tmp"] / "completed-root"
+        shutil.copytree(run["root"], base)
+        job = _job(run, "R0_s1", data_npz=str(base / "DATA.npz"))
+        out = P.run_isolated(job, attempt_dir=base / "attempts" / "R0_s1", assigned_bytes=3 << 30,
+                             wall_seconds=900, cpu_seconds=900)
+        assert out["outcome"] == "COMPLETED", out.get("refusal")
+        run["completed"] = base
+    root = tmp_path / "copy"
+    shutil.copytree(run["completed"], root)
+    return root
 
 
 @pytest.mark.parametrize("cell_id", ["ae_s1", "R0_s1"])
@@ -104,8 +120,7 @@ def test_RP50_the_first_child_of_a_fresh_run_reaches_a_verified_outcome(run, cel
 
 
 def test_RP50_a_provisional_parent_record_is_never_read_as_a_score(run, tmp_path):
-    root = tmp_path / "provisional"
-    shutil.copytree(run["root"], root)
+    root = _completed(run, tmp_path)
     attempt = root / "attempts" / "R0_s1"
     record = json.loads((attempt / "outcome.json").read_text())
     record["score_state"] = "PENDING_VERDICT"
@@ -117,12 +132,12 @@ def test_RP50_a_provisional_parent_record_is_never_read_as_a_score(run, tmp_path
 
 
 def test_RP50_the_unit_survives_a_reload_and_a_resume_with_the_same_verdict(run, tmp_path):
-    root = tmp_path / "resume"
-    shutil.copytree(run["root"], root)
+    root = _completed(run, tmp_path)
     attempt = root / "attempts" / "R0_s1"
     first = json.loads((attempt / "outcome.json").read_text())
     job = json.loads((attempt / "job.json").read_text())
     job.pop("attempt_dir", None)
+    job["data_npz"] = str(root / "DATA.npz")
     again = P.run_isolated(job, attempt_dir=attempt, assigned_bytes=3 << 30, wall_seconds=900, cpu_seconds=900)
     assert again["resumed"] and again["outcome"] == "COMPLETED" and again["score"] is not None
     record = json.loads((attempt / "outcome.json").read_text())
@@ -135,11 +150,9 @@ def test_RP50_the_unit_survives_a_reload_and_a_resume_with_the_same_verdict(run,
 
 @pytest.mark.parametrize("case", ["altered_score", "incomplete_result", "child_failure"])
 def test_RP50_a_broken_child_is_refused_with_its_cost(run, tmp_path, case):
-    root = tmp_path / case
-    shutil.copytree(run["root"], root)
+    root = _completed(run, tmp_path)
     attempt = root / "attempts" / "R0_s1"
-    job = json.loads((attempt / "job.json").read_text())
-    job.pop("attempt_dir", None)
+    job = _job(run, "R0_s1", data_npz=str(root / "DATA.npz"))
     if case == "altered_score":
         body = json.loads((attempt / "cell.json").read_text())
         body["scores"]["validation"]["model"]["mae_mean"] = 999.0
@@ -167,8 +180,7 @@ def test_RP50_a_broken_child_is_refused_with_its_cost(run, tmp_path, case):
 def test_RP50_the_worker_works_from_its_delivery_alone(run, tmp_path):
     """Portability: with the design's original panel path gone, a run that holds its delivered bytes
     still registers and verifies. Nothing is read from the coordinator's paths."""
-    root = tmp_path / "portable"
-    shutil.copytree(run["root"], root)
+    root = _completed(run, tmp_path)
     delivered = root / "delivered.parquet"
     shutil.copy2(run["panel"], delivered)
     (root / "DELIVERIES.json").write_text(json.dumps({
