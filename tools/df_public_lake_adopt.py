@@ -160,6 +160,31 @@ def lake_entry() -> dict:
     return {"entry": entry, "declared": declared}
 
 
+#: RP41: what the DEPLOYED external provider cannot do, measured rather than assumed. Its
+#: `governed_download` parses `available_time_column` unconditionally (financial_data_store/inventory.py),
+#: so a panel whose labels are local wall-clock strings in `%d/%m/%Y %H:%M:%S` is refused with
+#: "unparseable time column"; and when a holdout is declared it refuses the whole resource as well
+#: ("spans holdout: request a range"), which is the opposite of an archive's semantics. Declaring the
+#: resource `untimed` does not reach that path. The correction belongs in that provider — honour
+#: `untimed` in `governed_download` by delivering AS_IS with an UNDECLARED scope and refusing every
+#: range — and its source is not the branch this checkout has, so it is named here with its evidence
+#: instead of being worked around silently.
+EXTERNAL_HOST_DIVERGENCE = {
+    "component": "financial_data_store (the provider the deployed financial and synthetic lake hosts run)",
+    "deployed_digest": None,
+    "cannot": ["deliver a resource whose availability labels are not ISO8601 (refuses: unparseable time column)",
+               "deliver a whole resource under a holdout (refuses: spans holdout: request a range)"],
+    "consequence": "the two panels cannot be served by the deployed external host as a retrospective archive",
+    "correction": ("in financial_data_store.governed_download: when the resource is declared `untimed`, deliver AS_IS "
+                   "with scope UNDECLARED and refuse every date range explicitly; the archive's holdout then needs no "
+                   "time parsing at all"),
+    "where": "the financial-data repository's store package; the deployed build does not match the branch checked out here",
+    "until_then": ("the bounded publication uses data-gov's own files_lake, which implements the UNDECLARED scope and "
+                   "serves these bytes; the route through it is exercised whole, and this divergence is reported so the "
+                   "parity with the external host is not claimed"),
+}
+
+
 def lake_host_config(*, port: int, state_dir: Path, token_file: Path | None = None) -> dict:
     """The configuration of an EXTERNAL data-lake host serving the two panels — the same service and
     provider the financial and synthetic lakes run, not a files_lake embedded in data-gov."""
@@ -407,11 +432,7 @@ def rehearse(out_path: Path, *, keep: bool = False, lake_port: int | None = None
                  operator_config_path=str(work / "pending.json"))
     cfg_path = work / "stack.json"
     cfg_path.write_text(json.dumps(stack, indent=1))
-    # the configuration that would actually be DEPLOYED (production ports), for the binding
-    deployed = json.loads(json.dumps(cfg))
-    deployed["lakes"] = [l for l in deployed["lakes"] if l.get("lake_id") != LAKE_ID] + [lake_entry_http(LAKE_HOST_PORT, None)]
-    deployed["policies"] = [p for p in deployed["policies"] if p.get("lake") != LAKE_ID] + policy_entries(
-        ["predictor", "satoshi-gamma", "satoshi-dragon"])
+
     report = {"schema": "df_public_lake_rehearsal.v2", "at": now_iso(), "work": str(work),
               "ports": {"data_gov": port, "lake_host": lake_port, "warehouse": cube_port},
               "stack": "disposable data-gov + disposable EXTERNAL lake host + disposable DuckDB warehouse",
@@ -440,6 +461,31 @@ def rehearse(out_path: Path, *, keep: bool = False, lake_port: int | None = None
         status, lakes, _ = http_json(f"{url}/api/v1/lakes", token)
         report["lakes"] = {"http": status, "raw": str(lakes)[:400]}
         built = lake_entry()
+        # --- the external host, probed directly: this is where the divergence is MEASURED ----------
+        probe = sorted(RESOURCES)[0]
+        direct = http_json(f"http://127.0.0.1:{lake_port}/api/v2/download?resource={probe}&role=panel", lake_token)
+        report["external_host_probe"] = {"http": direct[0], "body": direct[1],
+                                         "divergence": EXTERNAL_HOST_DIVERGENCE,
+                                         "provider_sha256": rehearsal_binding(host_path, {})["provider_sha256"]}
+        report["external_host_serves_the_archive"] = direct[0] == 200
+        # --- the route that IS adopted: data-gov's own files_lake over the same bytes ---------------
+        embedded = json.loads(json.dumps(stack))
+        embedded["lakes"] = [l for l in embedded["lakes"] if l.get("lake_id") != LAKE_ID] + [lake_entry()["entry"]]
+        embedded_path = work / "stack.embedded.json"
+        embedded_path.write_text(json.dumps(embedded, indent=1))
+        procs["data_gov"].terminate()
+        procs["data_gov"].wait(timeout=30)
+        logs["data_gov"].close()
+        logs["data_gov_embedded"] = open(work / "data_gov_embedded.log", "w")
+        procs["data_gov"] = subprocess.Popen([str(PYTHON), "-m", "app.main", "--load_config", str(embedded_path)],
+                                             cwd=str(GOV_APP), stdout=logs["data_gov_embedded"],
+                                             stderr=subprocess.STDOUT,
+                                             env={**os.environ, "PYTHONPATH": str(GOV_APP),
+                                                  "DATA_GOV_LAKE_TOKEN": lake_token})
+        if not _service_healthy(url, tries=120):
+            report["startup_failed"] = {"data_gov_embedded": (work / "data_gov_embedded.log").read_text()[-2000:]}
+            out_path.write_text(json.dumps(report, indent=1, default=str))
+            raise SystemExit(f"REFUSED: the disposable data-gov did not come up with the embedded lake; see {out_path}")
         for resource in sorted(RESOURCES):
             report[resource] = route_checks(url, token, cache_dir=work / "cache",
                                             run_id=f"rp41-rehearsal-{int(time.time())}", resource=resource,
@@ -447,7 +493,7 @@ def rehearse(out_path: Path, *, keep: bool = False, lake_port: int | None = None
                                             outbox_dir=work / "outbox", cube_url=f"http://127.0.0.1:{cube_port}",
                                             cube_token=lake_token)
         report["route_ok"] = all(report[r].get("route_complete") for r in RESOURCES)
-        report["binding"] = rehearsal_binding(host_path, deployed)
+        report["binding"] = rehearsal_binding(embedded_path, deployed_embedded(cfg))
     finally:
         for name, proc in procs.items():
             proc.terminate()
@@ -509,17 +555,14 @@ def adopt(state_dir: Path, *, principals: list, rehearsal: Path | None = None, l
     shutil.copy2(RUNTIME_CONFIG, backup)
     token = API_KEY_FILE.read_text().strip()
     lake_token = hashlib.sha256((str(state_dir) + "public-panels").encode()).hexdigest()
-    host_cfg = lake_host_config(port=lake_port, state_dir=state_dir)
-    host_path = state_dir / "public-panels.host.json"
-    host_path.write_text(json.dumps(host_cfg, indent=1))
-    after_cfg = json.loads(json.dumps(cfg))
-    after_cfg["lakes"] = [l for l in after_cfg["lakes"] if l.get("lake_id") != LAKE_ID] + [lake_entry_http(lake_port, lake_token)]
-    after_cfg["policies"] = [p for p in after_cfg["policies"] if p.get("lake") != LAKE_ID] + policy_entries(principals)
+    after_cfg = deployed_embedded(cfg, principals)
+    host_path = state_dir / "deployed.data-gov.json"
+    host_path.write_text(json.dumps(after_cfg, indent=1))
     additive = config_is_additive(cfg, after_cfg)
     receipt = {"schema": "df_public_lake_adoption.v2", "at": now_iso(), "host": os.uname().nodename,
-               "service": SERVICE, "lake_host_unit": LAKE_HOST_UNIT, "config": str(RUNTIME_CONFIG),
+               "service": SERVICE, "config": str(RUNTIME_CONFIG), "external_host_divergence": EXTERNAL_HOST_DIVERGENCE,
                "backup": str(backup), "backup_sha256": sha_file(backup), "before": before_inventory,
-               "change": additive, "lake_host_config": str(host_path), "lake_host_config_sha256": sha_file(host_path),
+               "change": additive, "deployed_config": str(host_path), "deployed_config_sha256": sha_file(host_path),
                "restore": f"cp {backup} {RUNTIME_CONFIG} && systemctl --user restart {SERVICE}",
                "declared": lake_entry()["declared"], "adopted": False,
                "binding": _rehearsal_binding(rehearsal, host_path, after_cfg) if rehearsal else
@@ -535,35 +578,6 @@ def adopt(state_dir: Path, *, principals: list, rehearsal: Path | None = None, l
         return receipt
     ok = False
     try:
-        # 1. the external lake host, started with its own environment and configuration
-        unit_env = state_dir / "public-panels.service.env"
-        unit_env.write_text(f"DATA_GOV_LAKE_TOKEN={lake_token}\n")
-        unit_file = HOME / ".config/systemd/user" / LAKE_HOST_UNIT
-        unit_file.write_text(f"""[Unit]
-Description=Governed store service (public panels, {lake_port})
-After=network.target
-
-[Service]
-Type=simple
-WorkingDirectory={state_dir}
-EnvironmentFile={unit_env}
-ExecStart={LAKE_HOST_PYTHON} -m data_lake_service.main --load_config {host_path}
-MemoryMax=2G
-MemorySwapMax=0
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=default.target
-""")
-        receipt["lake_host_unit_file"] = str(unit_file)
-        run(["systemctl", "--user", "daemon-reload"], timeout=120)
-        started = run(["systemctl", "--user", "start", LAKE_HOST_UNIT], timeout=180)
-        receipt["lake_host_start"] = {"returncode": started.returncode, "stderr": started.stderr[-300:]}
-        receipt["lake_host_healthy"] = _service_healthy(f"http://127.0.0.1:{lake_port}")
-        if started.returncode != 0 or not receipt["lake_host_healthy"]:
-            raise RuntimeError("the public-panels lake host did not come up")
-        # 2. data-gov learns about it
         tmp = RUNTIME_CONFIG.with_suffix(".json.rp41.tmp")
         tmp.write_text(json.dumps(after_cfg, indent=1))
         os.replace(tmp, RUNTIME_CONFIG)
@@ -574,7 +588,6 @@ WantedBy=default.target
             raise RuntimeError(f"the data-gov restart returned {restarted.returncode}")
         if not _service_healthy(GOV_URL):
             raise RuntimeError("data-gov did not answer /healthz after the restart")
-        # 3. the acceptance: the whole route, on the service that is now running
         built = lake_entry()
         receipt["post_check"] = {}
         for resource in sorted(RESOURCES):
@@ -594,14 +607,6 @@ WantedBy=default.target
     finally:
         receipt["adopted"] = bool(ok)
         if not ok:
-            try:
-                run(["systemctl", "--user", "stop", LAKE_HOST_UNIT], timeout=120)
-                unit = HOME / ".config/systemd/user" / LAKE_HOST_UNIT
-                if unit.is_file():
-                    unit.unlink()
-                run(["systemctl", "--user", "daemon-reload"], timeout=120)
-            except BaseException as exc:                       # noqa: BLE001
-                receipt["lake_host_stop_error"] = f"{type(exc).__name__}: {exc}"[:200]
             _restore(backup, receipt)
         receipt_path.write_text(json.dumps(receipt, indent=1, default=str))
     return receipt
@@ -632,6 +637,14 @@ def _rehearsal_binding(rehearsal: Path, host_path: Path, after_cfg: dict) -> dic
                     "the rehearsal did not pass" if not report.get("route_ok") else "bound"),
             "rehearsal": str(rehearsal), "expected": now, "rehearsed": bound,
             "route_ok": report.get("route_ok")}
+
+
+def deployed_embedded(cfg: dict, principals=("predictor", "satoshi-gamma", "satoshi-dragon")) -> dict:
+    """The configuration that would actually be deployed: the in-process files_lake over the panels."""
+    out = json.loads(json.dumps(cfg))
+    out["lakes"] = [l for l in out["lakes"] if l.get("lake_id") != LAKE_ID] + [lake_entry()["entry"]]
+    out["policies"] = [p for p in out["policies"] if p.get("lake") != LAKE_ID] + policy_entries(list(principals))
+    return out
 
 
 def rehearsal_binding(host_path: Path, after_cfg: dict) -> dict:
