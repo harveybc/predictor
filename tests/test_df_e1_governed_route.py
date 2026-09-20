@@ -232,6 +232,9 @@ def test_RP42_the_real_runner_acquires_registers_and_reports_every_unit(stack, t
                 "score": {"kind": job["kind"], "cell_id": job["cell_id"], "seed": job["seed"],
                           "scores": {"validation": {"model": {"mase_mean": 0.9, "mae_mean": 0.5, "status": "MEDIDO"}}},
                           "training": {"updates": 1, "stop_reason": "UPDATE_BUDGET"},
+                          "pretraining": {"updates": 1, "stop_reason": "UPDATE_BUDGET",
+                                          "reconstruction_val_mse_masked": 0.1},
+                          "detector_sha256": "0" * 64,
                           "parameters": {"trainable": 1, "total": 1, "frozen": 0}, "cost": {"fit_seconds": 1.0}}}
     monkeypatch.setattr(P, "run_isolated", fake_isolated)
     monkeypatch.setattr(P, "_closure_verdict", lambda attempt_dir, job, score: (score, None))
