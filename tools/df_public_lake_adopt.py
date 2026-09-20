@@ -594,7 +594,7 @@ def adopt(state_dir: Path, *, principals: list, rehearsal: Path | None = None, l
     token = API_KEY_FILE.read_text().strip()
     lake_token = hashlib.sha256((str(state_dir) + "public-panels").encode()).hexdigest()
     # RP49/RP55: what is adopted is what was REHEARSED — data-gov reaching the EXTERNAL lake host
-    after_cfg = deployed_external(cfg, principals, port=lake_port)
+    after_cfg = deployed_external(cfg, principals, port=lake_port, token=lake_token)
     host_cfg = lake_host_config(port=lake_port, state_dir=state_dir)
     host_path = state_dir / "public-panels.host.json"
     host_path.write_text(json.dumps(host_cfg, indent=1))
@@ -727,10 +727,11 @@ def _rehearsal_binding(rehearsal: Path, host_path: Path, after_cfg: dict) -> dic
 
 
 def deployed_external(cfg: dict, principals=("predictor", "satoshi-gamma", "satoshi-dragon"),
-                      port: int = LAKE_HOST_PORT) -> dict:
-    """The configuration that would actually be deployed: data-gov reaching the EXTERNAL lake host."""
+                      port: int = LAKE_HOST_PORT, token: str | None = None) -> dict:
+    """The configuration that would actually be deployed: data-gov reaching the EXTERNAL lake host.
+    The service token travels in the configuration data-gov loads, and is excluded from the binding."""
     out = json.loads(json.dumps(cfg))
-    out["lakes"] = [l for l in out["lakes"] if l.get("lake_id") != LAKE_ID] + [lake_entry_http(port, None)]
+    out["lakes"] = [l for l in out["lakes"] if l.get("lake_id") != LAKE_ID] + [lake_entry_http(port, token)]
     out["policies"] = [p for p in out["policies"] if p.get("lake") != LAKE_ID] + policy_entries(list(principals))
     return out
 
@@ -755,6 +756,10 @@ def rehearsal_binding(_unused, after_cfg: dict) -> dict:
     # RP55: the binding is over the code that DOES this work, file by file. Binding to the repository's
     # HEAD made a rehearsal expire the moment its own receipt was committed, which is an accident of
     # bookkeeping rather than a change in what runs.
+    # a credential is not a contract: the token is written into the configuration but never digested
+    after_cfg = json.loads(json.dumps(after_cfg or {}))
+    for lake in after_cfg.get("lakes", []) or []:
+        lake.pop("lake_service_token", None)
     serving = {name: sha_file(REPO / "tools" / name) for name in
                ("df_public_lake_adopt.py", "df_e1_governed.py", "df_e1_pilot.py", "df_e1_close.py",
                 "df_e1_receipts.py", "governed_run.py")}
