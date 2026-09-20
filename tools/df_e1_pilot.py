@@ -1161,13 +1161,47 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
 
 # --- close --------------------------------------------------------------------------------------------------
 
+def _governing_report(root: Path, design: dict):
+    """The report of the run that actually finished — not merely the first file named REPORT.json.
+
+    A report is written once, so a run that resumes a root where an earlier attempt stopped writes
+    REPORT.<epoch>.json beside it. Taking REPORT.json therefore published the ABORTED attempt's
+    report of a root whose run had since completed. The rule: among this design's reports, the one
+    that ended without stopping governs; if several did, that is a conflict and the closure refuses;
+    if none did, the latest attempt is read and the choice says so out loud."""
+    candidates = []
+    for path in sorted(root.glob("REPORT*.json")):
+        if path.name == "REPORT.pilot.json":              # only the cost pilot, never the run
+            continue
+        try:
+            doc = json.loads(path.read_text())
+        except ValueError:
+            continue
+        if doc.get("design_sha256") not in (None, design["design_sha256"]):
+            continue
+        candidates.append((path, doc))
+    if not candidates:
+        raise SystemExit("REFUSED: no REPORT in the root")
+    complete = [(p, d) for p, d in candidates if d.get("stopped") in (None, "")]
+    if len(complete) > 1:
+        names = ", ".join(p.name for p, _ in complete)
+        raise SystemExit(f"REFUSED: this root holds {len(complete)} reports of a run that finished ({names}): "
+                         "which run the table describes is not decidable")
+    if complete:
+        path, doc = complete[0]
+        choice = {"file": path.name, "why": "the only report of a run that ended without stopping",
+                  "others": [p.name for p, _ in candidates if p != path]}
+    else:
+        path, doc = max(candidates, key=lambda item: item[0].stat().st_mtime)
+        choice = {"file": path.name, "why": "no run in this root finished; the latest attempt is read",
+                  "stopped": doc.get("stopped"), "others": [p.name for p, _ in candidates if p != path]}
+    return path, doc, choice
+
+
 def close(root: Path) -> dict:
     root = Path(root)
     design = json.loads((root / "DESIGN.json").read_text())
-    reports = [root / "REPORT.json"] if (root / "REPORT.json").is_file() else sorted(root.glob("REPORT*.json"))
-    if not reports:
-        raise SystemExit("REFUSED: no REPORT in the root")
-    report = json.loads(reports[-1].read_text())          # the full run's report governs; REPORT.pilot.json is only the cost pilot
+    report_path, report, report_choice = _governing_report(root, design)
     cells = {}
     for c in design["cells"] + design["pilots"]:
         p = root / "attempts" / c["cell_id"] / "cell.json"
@@ -1234,7 +1268,7 @@ def close(root: Path) -> dict:
                   "spent_cpu_seconds_root": spent_cpu(root), "reading": "same task budget per regime (fit CPU); total cost = fit + the AE of the seed for R1/R2 (reported apart)"}
     doc = {"schema": "df_e1_pilot_results.v1", "design_sha256": design["design_sha256"], "run_id": report["run_id"], "stopped": report.get("stopped"), "task": design["task"],
            "dev": design["dev_subpartition"], "data": report["data"]["coverage"], "denominator": report["data"]["mase_denominator_persistence_h"], "cells": table, "ae": ae_by_seed,
-           "controls": controls, "means": means, "paired": pdiff, "identity": identity, "costs": cost_total, "projection": report.get("projection"), "cost_pilot": report.get("cost_pilot"),
+           "report_file": report_choice, "controls": controls, "means": means, "paired": pdiff, "identity": identity, "costs": cost_total, "projection": report.get("projection"), "cost_pilot": report.get("cost_pilot"),
            "verified_units": {k: v["verified"] for k, v in cells.items()}, "governance": design["governance"], "host": report.get("host"),
            "reading_rules": ["development pilot: no H1 confirmation, no model selection, no benchmark substitute", "BUDGET_LIMITED / truncated curves are not evidence against pre-training",
                              "no row or task was chosen after seeing regime results (design sealed before outcomes)"]}
