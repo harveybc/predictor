@@ -214,7 +214,7 @@ def test_RP34_the_originals_were_never_written(originals):
 
 # --- RP43 (dictum F3): GOVERNED is a set of facts, not two file names ------------------------------
 
-def _receipts(root: Path, *, units, design_sha, campaign="c" * 64, delivery="d" * 32, terminal="t" * 64,
+def _receipts(root: Path, *, units, design_sha, campaign="c" * 64, delivery="d" * 32, terminal="a1" * 32,
               at="2026-09-19T16:00:00Z", accepted="2026-09-19T17:00:00Z", recon=None, drop=()):
     deliveries = {"schema": "df_e1_governed_acquisition.v1", "design_sha256": design_sha, "lake": "public_panels",
                   "resource": "uci_235_individual_household_power/panel.parquet", "units": {}}
@@ -224,7 +224,7 @@ def _receipts(root: Path, *, units, design_sha, campaign="c" * 64, delivery="d" 
                  "sha256": "p" * 64, "at": at, "host": "omega", "code_identity": {"kind": "git_commit", "value": "a" * 40},
                  "cached": False, "verification_state": "VERIFIED_TRANSFER"}
         accepted_entry = {"campaign_sha256": campaign, "terminal_sha256": terminal, "accepted_at": accepted,
-                    "status": "COMPLETED",
+                    "status": "COMPLETED", "work_started_at": "2026-09-19T16:30:00Z",
                     "reconciliation": recon if recon is not None else {"http": 200, "missing_units": [],
                                                                        "accounting_only": [], "lake_only": []}}
         for key in drop:
@@ -318,3 +318,71 @@ def test_RP43_run_isolated_and_the_closure_share_one_verification(tmp_path):
     out = P.run_isolated(job, attempt_dir=attempt, assigned_bytes=1 << 30, wall_seconds=60, cpu_seconds=60)
     assert out["outcome"] == "SCORE_UNVERIFIED" and out["score"] is None
     assert "mae_mean" in json.dumps(out.get("refusal") or {})
+
+
+# --- RP52: the positive is what RP50-RP51 produced, not a JSON this test wrote ----------------------
+
+def test_RP52_the_governed_positive_is_the_product_of_the_real_route(tmp_path):
+    """A unit accepted by the services, with the receipt the client persisted, closes as GOVERNED —
+    and the same closure refuses every forged variant of that receipt."""
+    produced = Path(__file__).resolve().parent.parent / "docs/audits/evidence/d3_k5_20260917/RP51"
+    receipts = produced / "TERMINAL_RECEIPTS.json"
+    deliveries = produced / "DELIVERIES.json"
+    if not receipts.is_file() or not deliveries.is_file():
+        pytest.skip("the produced receipts of the governed run are not in the evidence directory")
+    root = _copy(tmp_path)
+    design_sha = json.loads((root / "DESIGN.json").read_text())["design_sha256"]
+    for name, path in (("DELIVERIES.json", deliveries), ("TERMINAL_RECEIPTS.json", receipts)):
+        doc = json.loads(path.read_text())
+        doc["design_sha256"] = design_sha                      # the same receipts, bound to this run's design
+        (root / name).write_text(json.dumps(doc))
+    doc = _close(root)
+    governed = [c for c, u in doc["units"].items() if u["governance"] == C.GOVERNED]
+    assert governed, "no unit closed as governed from the produced receipts"
+
+
+@pytest.mark.parametrize("case,expect", [
+    ("impossible_state", "impossible state"),
+    ("forged_digest", "no digest the service could have returned"),
+    ("missing_lists", "does not list"),
+    ("delivery_after_work", "did not precede the work"),
+    ("accepted_before_work", "accepted before the work started"),
+])
+def test_RP52_a_receipt_that_contradicts_the_chronology_or_the_payload_is_refused(tmp_path, case, expect):
+    root = _copy(tmp_path)
+    design = json.loads((root / "DESIGN.json").read_text())
+    units = [c["cell_id"] for c in design["cells"]]
+    _receipts(root, units=units, design_sha=design["design_sha256"])
+    data = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())
+    for unit in data["units"]:
+        entry = data["units"][unit]
+        if case == "impossible_state":
+            entry["status"] = "NOT_A_REAL_STATUS"
+        elif case == "forged_digest":
+            entry["terminal_sha256"] = "not-a-digest"
+        elif case == "missing_lists":
+            entry["reconciliation"] = {"http": 200}
+        elif case == "delivery_after_work":
+            entry["work_started_at"] = "2020-01-01T00:00:00Z"
+        else:
+            entry["work_started_at"] = "2026-09-19T18:00:00Z"
+            entry["accepted_at"] = "2026-09-19T17:00:00Z"
+    (root / "TERMINAL_RECEIPTS.json").write_text(json.dumps(data))
+    doc = _close(root)
+    unit = doc["units"]["R0_s1"]
+    assert unit["governance"] == C.HISTORICAL
+    assert any(expect in p for p in unit["facts"]["governance"]["problems"]), unit["facts"]["governance"]["problems"]
+
+
+def test_RP52_a_local_recomputation_never_promotes_an_imported_history(tmp_path):
+    root = _copy(tmp_path)
+    design = json.loads((root / "DESIGN.json").read_text())
+    units = [c["cell_id"] for c in design["cells"]]
+    _receipts(root, units=units, design_sha=design["design_sha256"])
+    # an import receipt beside them does not change what the units were when they ran
+    (root / "RETROSPECTIVE_IMPORT.json").write_text(json.dumps({"mode": "RETROSPECTIVE_IMPORT_UNGOVERNED_AT_EXECUTION",
+                                                               "imported_at": "2026-09-20T00:00:00Z"}))
+    doc = _close(root)
+    for unit in doc["units"].values():
+        assert "RETROSPECTIVE" in unit["facts"]["governance"]["import_scope"]
+    assert doc["units"]["R0_s1"]["facts"]["governance"]["reading"]

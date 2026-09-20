@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import re
 import importlib.util
 import json
 import os
@@ -49,6 +50,8 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
 SCHEMA = "df_e1_close.v1"
 VERIFIED, REFUSED, NOT_APPLICABLE, NOT_ATTEMPTED = "VERIFIED", "REFUSED", "NOT_APPLICABLE", "NOT_ATTEMPTED"
+#: the only states a governed terminal may carry (the governed schema's own)
+TERMINAL_STATES = ("COMPLETED", "FAILED", "INCONCLUSIVE", "REFUSED")
 HISTORICAL = "HISTORICAL_UNGOVERNED"
 GOVERNED = "GOVERNED"
 #: the declared tolerance of the fresh-process reload, in the target's own units (kW)
@@ -529,6 +532,16 @@ def _governance(root: Path, cell_id: str, rec: dict) -> tuple:
             missing = [k for k in required if unit_terminal.get(k) in (None, "", [], {})]
             if missing:
                 prob(f"the accepted terminal of {cell_id!r} lacks {missing}")
+            if unit_terminal.get("status") not in TERMINAL_STATES:
+                prob(f"the accepted terminal of {cell_id!r} carries an impossible state "
+                     f"{unit_terminal.get('status')!r}")
+            if not isinstance(unit_terminal.get("terminal_sha256"), str) or \
+                    not re.fullmatch(r"[0-9a-f]{64}", str(unit_terminal.get("terminal_sha256"))):
+                prob(f"the accepted terminal of {cell_id!r} carries no digest the service could have returned")
+            recon_lists = unit_terminal.get("reconciliation") or {}
+            for key in ("missing_units", "accounting_only", "lake_only"):
+                if key not in recon_lists:
+                    prob(f"the reconciliation of {cell_id!r} does not list {key}")
             recon = unit_terminal.get("reconciliation") or {}
             if recon.get("http") != 200 or recon.get("missing_units") or recon.get("accounting_only") or recon.get("lake_only"):
                 prob(f"the reconciliation of {cell_id!r} is absent, incomplete or unsuccessful: {recon}")
@@ -536,10 +549,17 @@ def _governance(root: Path, cell_id: str, rec: dict) -> tuple:
                 prob("the accepted terminal belongs to another campaign than the delivery")
             facts["terminal_receipt"] = {k: unit_terminal.get(k) for k in
                                          ("campaign_sha256", "terminal_sha256", "accepted_at", "status", "reconciliation")}
-            # chronology: the delivery precedes the work, the terminal follows it
-            if unit_delivery and unit_delivery.get("at") and unit_terminal.get("accepted_at"):
-                if unit_terminal["accepted_at"] < unit_delivery["at"]:
+            # RP52: the chronology in BOTH directions. The delivery precedes the START of the work,
+            # not merely the acceptance that came later, and the terminal follows the work.
+            started = unit_terminal.get("work_started_at") or unit_terminal.get("started_at")
+            if unit_delivery and unit_delivery.get("at"):
+                if started and started < unit_delivery["at"]:
+                    prob(f"the work of {cell_id!r} started at {started} but its delivery is stamped "
+                         f"{unit_delivery['at']}: the delivery did not precede the work")
+                if unit_terminal.get("accepted_at") and unit_terminal["accepted_at"] < unit_delivery["at"]:
                     prob("the terminal was accepted before the delivery it consumed")
+            if started and unit_terminal.get("accepted_at") and unit_terminal["accepted_at"] < started:
+                prob("the terminal was accepted before the work started")
     governed = bool(facts["delivery_receipt"] and facts["terminal_receipt"] and not facts["problems"])
     facts["reading"] = ("this unit was delivered, registered and closed under governance, and its campaign reconciles"
                         if governed else
