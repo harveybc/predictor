@@ -207,6 +207,18 @@ def run_weekly(env, controller, bars, *, config: dict, bar_step: timedelta, feat
         except C.IncompatibleProposal as exc:
             refusals.append({"env_bar": env_bar, "time": bar_time.isoformat(), "why": str(exc)})
             decided = {"model": None, "proposal": None, "source": "REFUSED"}
+        # RP53: an order that ended WITHOUT a fill — Margin, Rejected, Canceled, Expired — releases the
+        # state as surely as a fill does. The previous version released it only on fills, so after a real
+        # margin rejection the controller stayed ALREADY_LONG with the broker flat and never traded again.
+        if outstanding.get("awaiting_fill") and outstanding.get("order_refs"):
+            statuses = _terminal_statuses(env)
+            ended = {ref: statuses.get(str(ref)) for ref in outstanding["order_refs"] if str(ref) in statuses}
+            unfilled = {ref: st for ref, st in ended.items() if st != "Completed"}
+            if unfilled:
+                outstanding.update(awaiting_fill=False, ended_without_fill=unfilled)
+                refusals.append({"env_bar": env_bar, "time": bar_time.isoformat(),
+                                 "why": f"the broker ended the order without a fill: {unfilled}",
+                                 "released": True})
         # the state the controller decides on includes what it already sent and what the broker holds
         pending_long = any(o["action"] == C.LONG for o in queue) or bool(broker_open) or bool(outstanding.get("awaiting_fill"))
         effective_units = units if units else (1.0 if pending_long else 0.0)
@@ -241,10 +253,16 @@ def run_weekly(env, controller, bars, *, config: dict, bar_step: timedelta, feat
             env_action = 1 if submitted["action"] == C.LONG else 3
             outstanding.update(awaiting_fill=True, **{k: v for k, v in submitted.items() if k != "action"})
             outstanding["action"] = submitted["action"]
+            outstanding["submitted_at_bar"] = env_bar
+            outstanding["order_refs"] = []                 # filled in below from the plugin's submissions
         record.update(submitted_now=bool(submitted), env_action=env_action,
                       queued_orders=[{k: (v.isoformat() if hasattr(v, "isoformat") else v) for k, v in o.items()}
                                      for o in queue])
+        before_submissions = len(getattr(plugin, "submissions", []) or [])
         obs, reward, terminated, truncated, info = env.step(int(env_action))
+        if submitted:                                     # the broker's own references for what was just sent
+            outstanding["order_refs"] = [int(x["order_ref"]) for x in
+                                         (getattr(plugin, "submissions", []) or [])[before_submissions:]]
         after_units = float(info.get("position_units") or 0.0)
         # --- fills, from the broker's own completed-order evidence -----------------------------------
         for fill in _completed_fills(env):
@@ -269,6 +287,7 @@ def run_weekly(env, controller, bars, *, config: dict, bar_step: timedelta, feat
                                                         and abs(executed - decided_units) <= 1e-9 + 1e-6 * max(1.0, decided_units)),
                           "source": "BROKER_EXECUTION_EVENT"})
             outstanding["awaiting_fill"] = False
+            outstanding["ended_without_fill"] = None
         record.update(equity_after=float(info.get("equity")), units_before=units, units_after=after_units,
                       commission_paid=float(info.get("commission_paid") or 0.0),
                       open_orders_after=int(info.get("open_order_count") or 0),
@@ -285,6 +304,10 @@ def run_weekly(env, controller, bars, *, config: dict, bar_step: timedelta, feat
                        "refusals": list(getattr(plugin, "refusals", []))},
             "equity_path": equity_path, "queue_at_end": [{k: (v.isoformat() if hasattr(v, "isoformat") else v)
                                                           for k, v in o.items()} for o in queue],
+            "orders": {"last_outstanding": {k: (v.isoformat() if hasattr(v, "isoformat") else v)
+                                            for k, v in outstanding.items()},
+                       "release_rule": "an order's state is released by the broker's own terminal verdict — a fill, or "
+                                       "a Margin/Rejected/Canceled/Expired without one — never by elapsed time"},
             "final": {"equity": equity_path[-1], "units": float(info.get("position_units") or 0.0),
                       "commission_paid": float(info.get("commission_paid") or 0.0),
                       "open_orders": int(info.get("open_order_count") or 0),

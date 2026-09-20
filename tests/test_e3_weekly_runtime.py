@@ -275,3 +275,87 @@ def test_RP45_mutants_of_the_production_path_fail_the_same_acceptance(tmp_path, 
         assert out["final"]["terminal_status"]
         with pytest.raises(AssertionError):
             assert not out["fills"]
+
+
+# --- RP53 (dictum F5): an order's life ends by the broker's verdict, fill or not ---------------------
+
+class _LongFromBar:
+    """Flat until the given decision, then long: the position must be FLAT when the price jumps, so
+    the order that follows is one the equity cannot fund and the broker refuses it."""
+
+    def __init__(self, first_long, name="stepper"):
+        self.first_long, self.name, self.seen = int(first_long), name, 0
+
+    def decide(self, features):
+        self.seen += 1
+        return C.LONG if self.seen > self.first_long else C.HOLD
+
+
+def _margin_frame(n=120):
+    """Prices that make the broker refuse: a jump the equity cannot fund, then a return."""
+    idx = pd.date_range("2024-01-01", periods=n, freq="h")
+    close = np.full(n, 100.0)
+    close[10:20] = 1000.0
+    op = np.concatenate([[100.0], close[:-1]])
+    return pd.DataFrame({"DATE_TIME": idx.strftime("%Y-%m-%d %H:%M:%S"), "OPEN": op,
+                         "HIGH": np.maximum(op, close), "LOW": np.minimum(op, close),
+                         "CLOSE": close, "VOLUME": 1000.0})
+
+
+def test_RP53_an_order_the_broker_ends_without_a_fill_releases_the_state(tmp_path):
+    """The dictum's probe: a Margin verdict left the controller ALREADY_LONG for the rest of the
+    episode with the broker flat. It must trade again once the price allows it."""
+    frame = _margin_frame()
+    env, cfg = _env(tmp_path, frame)
+    ctrl = C.WeeklyLongFlatController([_release(0, model=_LongFromBar(9, "stepper"))],
+                                      size_fraction=0.9, latency_bars=RT.MINIMUM_LATENCY_BARS)
+    out = RT.run_weekly(env, ctrl, _bars(frame), config=cfg, bar_step=HOUR, max_steps=40)
+    statuses = set(out["final"]["terminal_status"].values())
+    assert statuses - {"Completed"}, f"the broker never refused an order: {statuses}"
+    released = [r for r in out["refusals"] if r.get("released")]
+    assert released, "the state was never released by a terminal verdict without a fill"
+    # after the refusal, the controller decides again and the broker executes
+    after = [r for r in out["records"] if r["env_bar"] >= released[0]["env_bar"]]
+    assert any(r["reason"] == "OPEN_LONG" for r in after), "no new decision after the broker's refusal"
+    assert any(f["fill_bar"] > released[0]["env_bar"] for f in out["fills"]), "no execution after the refusal"
+    # the refused order and the one that followed are both accounted for by the broker's own verdicts
+    verdicts = out["final"]["terminal_status"]
+    assert "Margin" in verdicts.values() and "Completed" in verdicts.values() and len(verdicts) >= 2
+    assert "never by elapsed time" in out["orders"]["release_rule"]
+
+
+def test_RP53_no_double_order_and_no_imaginary_position_after_a_refusal(tmp_path):
+    frame = _margin_frame()
+    env, cfg = _env(tmp_path, frame)
+    ctrl = C.WeeklyLongFlatController([_release(0, model=_LongFromBar(9, "stepper"))],
+                                      size_fraction=0.9, latency_bars=RT.MINIMUM_LATENCY_BARS)
+    out = RT.run_weekly(env, ctrl, _bars(frame), config=cfg, bar_step=HOUR, max_steps=40)
+    opens = [r for r in out["records"] if r["reason"] == "OPEN_LONG"]
+    fills = out["fills"]
+    # every order that was sent is accounted for by a broker verdict, and no two are outstanding at once
+    assert len(opens) <= len(out["final"]["terminal_status"])
+    for record in out["records"]:
+        assert not (record["reason"] == "OPEN_LONG" and record["units_before"] > 0), "ordered while already long"
+    assert all(f["quantity_matches_decision"] for f in fills)
+
+
+def test_RP53_a_pending_order_crosses_the_week_boundary_with_a_late_release_and_opposite_models(tmp_path):
+    """A decision taken before Monday, still outstanding when the week changes, with the next week's
+    model released LATE and proposing the opposite action."""
+    frame = _frame(WEEK_BARS + 60, slope=0.0002, gap=0.0)
+    env, cfg = _env(tmp_path, frame)
+    long_model, flat_model = RT.ConstantModel(C.LONG, "long"), RT.ConstantModel(C.CLOSE, "flat")
+    releases = [_release(0, model=long_model, name="w0"),
+                _release(1, model=flat_model, late_hours=6, name="w1_late")]
+    ctrl = C.WeeklyLongFlatController(releases, latency_bars=4)
+    out = RT.run_weekly(env, ctrl, _bars(frame), config=cfg, bar_step=HOUR, max_steps=WEEK_BARS + 30)
+    assert ctrl.state.misses and ctrl.state.misses[0]["model"] == "w1_late"
+    boundary = next(i for i, r in enumerate(out["records"]) if r["new_week"])
+    before, after = out["records"][boundary - 1], out["records"][boundary]
+    assert after["units_before"] == before["units_after"]
+    assert abs(after["equity"] - before["equity_after"]) < 1e-9
+    # the late model only acts from its release, and then it is the one deciding
+    acting = {r["model"] for r in out["records"][boundary:] if r["model"]}
+    assert "w0" in acting and "w1_late" in acting
+    late_release = next(r for r in out["records"] if r["model"] == "w1_late")
+    assert datetime.fromisoformat(late_release["bar_time"]) >= releases[1].release
