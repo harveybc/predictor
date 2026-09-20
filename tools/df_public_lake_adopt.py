@@ -37,6 +37,7 @@ import sys
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -356,13 +357,17 @@ def route_checks(gov_url: str, token: str, *, cache_dir: Path, run_id: str, reso
                                   and not rbody.get("accounting_only") and not rbody.get("lake_only"))
     # --- the warehouse, by content -------------------------------------------------------------------
     if cube_url:
-        query = {"sql": "SELECT unit_id, status FROM main.gov_terminal WHERE campaign_sha256 = ? ORDER BY unit_id LIMIT 10",
-                 "params": [sha]}
-        qstatus, qbody, _ = http_json(f"{cube_url}/api/v1/query", cube_token, method="POST", body=query)
+        sql = ("SELECT unit_id, status FROM main.gov_terminal "
+               f"WHERE campaign_sha256 = '{sha}' ORDER BY unit_id LIMIT 10")
+        qstatus, qbody, _ = http_json(f"{cube_url}/api/v1/query?sql={urllib.parse.quote(sql)}", cube_token)
         rows = (qbody or {}).get("rows") or []
-        out["warehouse"] = {"http": qstatus, "rows": rows,
-                            "both_units_present": {str(r[0]) for r in rows} >= {unit, probe_unit} if rows else False,
-                            "probe_recorded_as_failed": any(str(r[0]) == probe_unit and str(r[1]) == "FAILED" for r in rows)}
+        def _cell(row, key, index):
+            return str(row.get(key) if isinstance(row, dict) else row[index])
+        units_seen = {_cell(r, "unit_id", 0) for r in rows}
+        out["warehouse"] = {"http": qstatus, "rows": rows[:10], "query": sql,
+                            "both_units_present": units_seen >= {unit, probe_unit},
+                            "probe_recorded_as_failed": any(_cell(r, "unit_id", 0) == probe_unit
+                                                            and _cell(r, "status", 1) == "FAILED" for r in rows)}
     # --- the refusals ---------------------------------------------------------------------------------
     ranged_key = key + "-ranged"
     gov_r = GR.GovHttp(gov_url, token, ranged_key)
