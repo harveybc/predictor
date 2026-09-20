@@ -1,17 +1,19 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
-Actualizado: 2026-09-19. Responsable del programa y revision: Musashi.
+Actualizado: 2026-09-20. Responsable del programa y revision: Musashi.
 Ejecucion delegada: Satoshi. Estado: E0-DEV, etapa ARCH y piloto E1 EJECUTADOS;
 PILOTO E1 NO GOBERNADO, revision ML con correcciones, sin confirmacion.
 
-**Vigente:** [RP41-RP48](../handoffs/MUSASHI_PROGRAM_RP41_RP48_2026_09_19.md).
-[Dictamen RP33-RP40](../audits/work_plan/MUSASHI_RP33_RP40_REVIEW_2026_09_19.md):
-mascara estable/restauracion pasan sus pruebas; 131 originales intactos. El
-sucesor E1 no se ha ejecutado. El reinicio no es el unico pendiente: runner sin
-cierre gobernado efectivo, clasificacion por archivos vacios, recuperacion del
-adoptador incompleta y cantidades/tiempos RL no ejecutados segun el controlador.
-Corregir esos caminos, separar diagnostico de alcance de capacidad aprendida,
-adoptar el recurso acotado y entonces ejecutar household DEV R0/R1/R2. No hay
+**Vigente:** [RP49-RP56](../handoffs/MUSASHI_PROGRAM_RP49_RP56_2026_09_20.md).
+[Dictamen RP41-RP48](../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md):
+74 pruebas focales pasan; 131 originales intactos. El sucesor E1 no se ha
+ejecutado. Nuevas sondas demuestran circularidad al verificar el primer hijo,
+siete de ocho campanas abiertas declaradas gobernadas, y recibos locales sin
+prueba de contabilidad. El ensayo citado no esta publicado y el proveedor
+propuesto no es el externo ordenado. RL transmite cantidad/latencia, pero un
+rechazo Margin deja posicion ficticia en el controlador. Corregir esos caminos
+y la referencia analitica de ruido; ensayar un entrenamiento nuevo completo,
+adoptar el recurso acotado y ejecutar household DEV R0/R1/R2. No hay
 ganador ni confirmacion; el piloto anterior sigue historico no gobernado.
 No hay nueva decision del owner para el desarrollo autorizado. No repetir E0.
 [13D](program_v3/13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md)
@@ -221,10 +223,10 @@ demuestra por si solo ausencia de sobreajuste ni selecciona por el test.
 | Orden | Trabajo / responsable ejecutor Satoshi | Dependencia y salida |
 |---|---|---|
 | Ejecutado, revision parcial | Piloto multivariado RP1-RP8 | 66 celdas y 3 pilotos; conservar efectos descriptivos, no aceptacion confirmatoria |
-| Ahora A | RP33-RP34: adopcion de paneles, importacion historica y cierre E1/E0 | Campana/entregas antes de trabajo nuevo; conservar y reverificar resultados, sin reentrenar E0 |
-| Ahora B | RP35-RP38: dominios, stopping AE, adecuacion y sucesor E1 | Validacion fija, contexto realmente consumido, modelos comparables y piloto gobernado antes de reservas |
+| Ahora A | RP49-RP52: proveedor externo, primer hijo real y cierre completo | Ensayo publicado, campana/entrega antes de trabajo, recibos canonicos y poblacion exacta; historia intacta |
+| Ahora B | RP54-RP55: referencia ML, adopcion y sucesor E1 | Referencia Bayes observacional, validacion fija, contexto adecuado y R0/R1/R2 pareados; primer entrenamiento completo sin mocks |
 | E0, antes de elegir | MOD-ARCH-COMPARE: ARCH-A/B/C y ARCH-0 en el modular propio | Efectos descriptivos recalculados; aceptacion compuesta pendiente de RP26, sin ganador universal |
-| Paralelo C | RP39: integrar controlador, inferencia y broker reales | Release/fallback, gaps/latencia, cash/equity, costos y pendientes; pruebas offline, no entrenamiento RL aun |
+| Paralelo C | RP53: terminales sin fill y siguiente decision real | Rechazo/cancelacion, pendientes cruzando semana y estado segun broker; no entrenamiento RL aun |
 | Despues D | E1 publico: desarrollar perfiles, seleccion, contextos, R0/R1/R2 y comparadores | Piloto de mecanismos y datos admisibles; fijar procedimiento, margenes, precision y presupuestos antes de reservas |
 | Despues D, extension | MOD-FROZEN-PREFIX y MOD-CORE-PRETRAIN: hipotesis H-CORE del owner | Comparacion R0/R1/R2 y receptor adecuado completados; fijar/materializar prefijo; nucleo desde cero vs preentrenado ajustable vs congelado, con cabezales y costo total |
 | Despues E | E0-CONF H2/H3 y E2 H1 en reservas independientes | Reglas E1 fijadas y revision ML; no reutilizar test de diagnosticos anteriores |

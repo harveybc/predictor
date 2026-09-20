@@ -29,9 +29,9 @@ python docs/audits/evidence/RP48_REVIEW_2026_09_20/reproduce.py --repo . --out /
 
 ## F1. Alto: el primer hijo se verifica antes de tener su registro padre
 
-En [df_e1_pilot.py](../../../tools/df_e1_pilot.py), `run_isolated` llama
+En [df_e1_pilot.py](https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/tools/df_e1_pilot.py#L718), `run_isolated` llama
 `_closure_verdict` antes de escribir `outcome.json` (lineas 736 y 774 de la base).
-En [df_e1_close.py](../../../tools/df_e1_close.py), `verify_unit` exige ese archivo
+En [df_e1_close.py](https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/tools/df_e1_close.py#L198), `verify_unit` exige ese archivo
 para encontrar un intento verificable (lineas 198-211).
 
 Con el mismo resultado AE conservado en una copia: con outcome acepta; retirando
@@ -77,7 +77,7 @@ existente contra payloads canonicos, sin fabricar un verificador paralelo.
 
 ## F5. Alto: RL queda bloqueado despues de un rechazo real del broker
 
-En [e3_weekly_runtime.py](../../../tools/e3_weekly_runtime.py), el estado pendiente
+En [e3_weekly_runtime.py](https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/tools/e3_weekly_runtime.py), el estado pendiente
 se libera por fills, pero no por los estados terminales sin fill. Sonda real:
 precio inicial 100, salto a 1000, vuelta a 100; una orden recibe `Margin`.
 El broker queda plano, sin orden abierta y con patrimonio 1, pero el controlador
@@ -88,7 +88,7 @@ eso no basta para declarar correcto el ciclo completo de una orden.
 ## F6. Medio: la referencia de ruido no es el suelo irreducible
 
 La nueva tarea de innovacion separa informacion independiente y redundante, una
-mejora real del diagnostico. Pero en [df_e1_innovation.py](../../../tools/df_e1_innovation.py)
+mejora real del diagnostico. Pero en [df_e1_innovation.py](https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/tools/df_e1_innovation.py)
 el supuesto suelo copia la observacion ruidosa del rezago. Para el generador
 declarado, z=u+e_x, y=a*u+e_y, Var(u)=1 y varianzas de ruido sigma^2, el predictor
 de minima MSE con entrada observada es a*z/(1+sigma^2), no a*z.
