@@ -285,6 +285,58 @@ def config_is_additive(before: dict, after: dict) -> dict:
 
 # --- the route (used by the rehearsal and against the live service) -------------------------------
 
+def _load_tool(name: str):
+    import importlib.util as _u
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = _u.spec_from_file_location(name, REPO / "tools" / f"{name}.py")
+    mod = _u.module_from_spec(spec)
+    sys.modules[name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _warehouse_content(cube_url: str, token: str, campaign_sha256: str, sent: dict) -> dict:
+    """RP49: reconcile the warehouse BY CONTENT, through the existing canonical reader — the terminal
+    row and ALL its child tables (metrics, datasets, artifacts) — against the payloads this route
+    actually sent. A matching unit id and status is not a reconciliation."""
+    CL = _load_tool("df_mod_e0_close")
+    try:
+        found = CL.warehouse_terminals(cube_url, token, campaign_sha256)
+    except Exception as exc:                                     # noqa: BLE001
+        return {"error": f"{type(exc).__name__}: {exc}"[:200], "content_matches": False}
+    current = found["current"]
+    per_unit = {}
+    for unit_id, payload in sent.items():
+        row = current.get(unit_id)
+        if row is None:
+            per_unit[unit_id] = {"present": False, "why": "no terminal row for this unit"}
+            continue
+        want_metrics = sorted(CL._metric_key(m) for m in (payload.get("metrics") or []))
+        got_metrics = sorted(CL._metric_key(m) for m in (row.get("metrics") or []))
+        costs = row.get("costs_json")
+        costs = json.loads(costs) if isinstance(costs, str) else (costs or {})
+        tags = row.get("tags_json")
+        tags = json.loads(tags) if isinstance(tags, str) else (tags or {})
+        per_unit[unit_id] = {
+            "present": True, "status_matches": str(row.get("status")) == str(payload.get("status")),
+            "metrics_match": want_metrics == got_metrics,
+            "metric_rows": {"sent": len(payload.get("metrics") or []), "stored": len(row.get("metrics") or [])},
+            "costs_match": all(abs(float(costs.get(k, 0.0)) - float((payload.get("costs") or {}).get(k, 0.0))) < 1e-9
+                               for k in ("wall_seconds", "cpu_seconds")),
+            "tags_match": all(str(tags.get(k)) == str(v) for k, v in (payload.get("tags") or {}).items()
+                              if k in ("purpose", "classification", "phase", "lake", "resource")),
+            "artifacts_stored": len(row.get("artifacts") or []),
+            "terminal_sha256": row.get("terminal_sha256"), "generation": row.get("generation"),
+        }
+    matches = all(v.get("present") and v.get("status_matches") and v.get("metrics_match")
+                  and v.get("costs_match") and v.get("tags_match") for v in per_unit.values())
+    return {"per_unit": per_unit, "content_matches": bool(matches),
+            "rows_all_generations": found["rows_all_generations"],
+            "reader": "tools/df_mod_e0_close.warehouse_terminals (the canonical reader: terminal row plus its "
+                      "metric, dataset and artifact children)"}
+
+
 def route_checks(gov_url: str, token: str, *, cache_dir: Path, run_id: str, resource: str,
                  expect_sha: str, lake: str = LAKE_ID, outbox_dir: Path | None = None,
                  cube_url: str | None = None, cube_token: str | None = None) -> dict:
