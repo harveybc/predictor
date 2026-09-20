@@ -1,0 +1,369 @@
+{
+ "schema": "df_e1_innovation_diagnostic.v1",
+ "declared": {
+  "realisations": 6000,
+  "window": 60,
+  "distant_lag": 50,
+  "short_support": 7,
+  "channels": 7,
+  "amplitude": 1.0,
+  "noise": 0.3,
+  "seed": 20260920,
+  "split": "BY REALISATION: a window belongs to exactly one split, so no innovation crosses it",
+  "known_solution": "read channel 0 at the innovation's position and scale by the amplitude",
+  "short_receiver_information": "none in the recovery task by construction; present in the redundant one"
+ },
+ "innovation_position": 9,
+ "snr": {
+  "amplitude_ratio": 3.3333333333333335,
+  "power_ratio": 11.111111111111112,
+  "power_ratio_db": 10.457574905606752,
+  "definition": "amplitude_ratio = a / s; power_ratio = (a / s)^2; dB = 10 log10(power_ratio)",
+  "note": "the earlier field named `snr` was the AMPLITUDE ratio; the power ratio is its square"
+ },
+ "reference_levels": {
+  "assumptions": {
+   "u": "N(0, 1)",
+   "e_x": "N(0, 0.3^2) on the innovation's channel",
+   "e_y": "N(0, 0.3^2) on the target",
+   "amplitude": 1.0,
+   "independence": "u, e_x and e_y are mutually independent",
+   "units": "MSE in the target's own squared units; R2 against Var(y)"
+  },
+  "closed_form": {
+   "latent_oracle_mse": 0.09,
+   "bayes_on_observed_input_mse": 0.17256880733944951,
+   "copy_reference_mse": 0.18,
+   "bayes_coefficient": 0.9174311926605504,
+   "variance_of_y": 1.09,
+   "latent_oracle_r2": 0.9174311926605505,
+   "bayes_on_observed_input_r2": 0.8416799932665601,
+   "copy_reference_r2": 0.8348623853211009
+  },
+  "monte_carlo": {
+   "latent_oracle_mse": 0.09002521213440763,
+   "bayes_on_observed_input_mse": 0.1724169319883142,
+   "copy_reference_mse": 0.1798566007151848,
+   "realisations": 400000,
+   "seed": 20260920,
+   "note": "a Monte Carlo draw of the declared generator; NO model was trained to produce it"
+  },
+  "agreement_max_abs_diff": 0.00015187535113531103,
+  "reading": "the copy reference is not the irreducible level: the Bayes predictor on the observed input beats it, and the latent oracle beats them both. A receiver that reaches the copy level has not reached the floor, and one that beats it has not done anything impossible"
+ },
+ "tasks": {
+  "recovery": {
+   "short_receiver_has_information": false,
+   "copy_reference_r2": 0.8393348745378771,
+   "bayes_on_observed_input_r2": 0.8479637481387347,
+   "latent_oracle_r2": 0.9197773428987802,
+   "reference_note": "finite-sample values on THIS evaluation set; the population levels are in `reference_levels.closed_form`",
+   "linear_full_window": {
+    "mae": 0.3465883941852088,
+    "rmse": 0.43222422478254263,
+    "r2": 0.8297375156834405
+   },
+   "linear_short_support": {
+    "mae": 0.8421637224890373,
+    "rmse": 1.0521811806857972,
+    "r2": -0.008978279833622205
+   },
+   "mean_of_train": {
+    "mae": 0.8379641755977494,
+    "rmse": 1.0475650452287995,
+    "r2": -0.00014450934596288434
+   },
+   "label_independent_control": {
+    "mae": 0.8927067118797333,
+    "rmse": 1.1158948615766582,
+    "r2": -0.13487312970950338
+   },
+   "receivers": {
+    "conv3": {
+     "per_seed": [
+      {
+       "artifacts": "/tmp/rp54_artifacts/recovery_conv3_seed1",
+       "requested_updates": 1500,
+       "observed_updates": 1518,
+       "observed_optimizer_iterations": 1518,
+       "epochs_run": 23,
+       "steps_per_epoch": 66,
+       "budget_note": "epochs are whole, so the loop runs ceil(requested / steps) * steps updates: the OBSERVED count is what this diagnostic reports",
+       "final_train_loss": 1.013471007347107,
+       "cpu_seconds": 18.31,
+       "parameters": 4591,
+       "declared_reach": 7,
+       "mae": 0.8770363690742999,
+       "rmse": 1.0978224761057147,
+       "r2": -0.09841130444344515
+      },
+      {
+       "artifacts": "/tmp/rp54_artifacts/recovery_conv3_seed2",
+       "requested_updates": 1500,
+       "observed_updates": 1518,
+       "observed_optimizer_iterations": 1518,
+       "epochs_run": 23,
+       "steps_per_epoch": 66,
+       "budget_note": "epochs are whole, so the loop runs ceil(requested / steps) * steps updates: the OBSERVED count is what this diagnostic reports",
+       "final_train_loss": 0.9972715377807617,
+       "cpu_seconds": 18.07,
+       "parameters": 4591,
+       "declared_reach": 7,
+       "mae": 0.8923081818822849,
+       "rmse": 1.1179974061210949,
+       "r2": -0.1391537646122507
+      },
+      {
+       "artifacts": "/tmp/rp54_artifacts/recovery_conv3_seed3",
+       "requested_updates": 1500,
+       "observed_updates": 1518,
+       "observed_optimizer_iterations": 1518,
+       "epochs_run": 23,
+       "steps_per_epoch": 66,
+       "budget_note": "epochs are whole, so the loop runs ceil(requested / steps) * steps updates: the OBSERVED count is what this diagnostic reports",
+       "final_train_loss": 0.9794233441352844,
+       "cpu_seconds": 18.05,
+       "parameters": 4591,
+       "declared_reach": 7,
+       "mae": 0.8918527953915109,
+       "rmse": 1.116467947153795,
+       "r2": -0.13603909337018827
+      }
+     ],
+     "r2_mean": -0.12453472080862804,
+     "r2_min": -0.1391537646122507,
+     "r2_max": -0.09841130444344515,
+     "cpu_seconds": 54.43
+    },
+    "tcn_w": {
+     "per_seed": [
+      {
+       "artifacts": "/tmp/rp54_artifacts/recovery_tcn_w_seed1",
+       "requested_updates": 1500,
+       "observed_updates": 1518,
+       "observed_optimizer_iterations": 1518,
+       "epochs_run": 23,
+       "steps_per_epoch": 66,
+       "budget_note": "epochs are whole, so the loop runs ceil(requested / steps) * steps updates: the OBSERVED count is what this diagnostic reports",
+       "final_train_loss": 0.14761127531528473,
+       "cpu_seconds": 24.09,
+       "parameters": 8127,
+       "declared_reach": 60,
+       "mae": 0.39838109552756595,
+       "rmse": 0.5057382032071642,
+       "r2": 0.7668946289400856
+      },
+      {
+       "artifacts": "/tmp/rp54_artifacts/recovery_tcn_w_seed2",
+       "requested_updates": 1500,
+       "observed_updates": 1518,
+       "observed_optimizer_iterations": 1518,
+       "epochs_run": 23,
+       "steps_per_epoch": 66,
+       "budget_note": "epochs are whole, so the loop runs ceil(requested / steps) * steps updates: the OBSERVED count is what this diagnostic reports",
+       "final_train_loss": 0.12361162155866623,
+       "cpu_seconds": 24.23,
+       "parameters": 8127,
+       "declared_reach": 60,
+       "mae": 0.4154614102850578,
+       "rmse": 0.523732866558577,
+       "r2": 0.7500112786720489
+      },
+      {
+       "artifacts": "/tmp/rp54_artifacts/recovery_tcn_w_seed3",
+       "requested_updates": 1500,
+       "observed_updates": 1518,
+       "observed_optimizer_iterations": 1518,
+       "epochs_run": 23,
+       "steps_per_epoch": 66,
+       "budget_note": "epochs are whole, so the loop runs ceil(requested / steps) * steps updates: the OBSERVED count is what this diagnostic reports",
+       "final_train_loss": 0.12248711287975311,
+       "cpu_seconds": 24.14,
+       "parameters": 8127,
+       "declared_reach": 60,
+       "mae": 0.4234828087069531,
+       "rmse": 0.5273692274345901,
+       "r2": 0.7465278041728007
+      }
+     ],
+     "r2_mean": 0.7544779039283117,
+     "r2_min": 0.7465278041728007,
+     "r2_max": 0.7668946289400856,
+     "cpu_seconds": 72.46000000000001
+    }
+   }
+  },
+  "redundant": {
+   "short_receiver_has_information": true,
+   "copy_reference_r2": 0.8393348745378771,
+   "bayes_on_observed_input_r2": 0.8479637481387347,
+   "latent_oracle_r2": 0.9197773428987802,
+   "reference_note": "finite-sample values on THIS evaluation set; the population levels are in `reference_levels.closed_form`",
+   "linear_full_window": {
+    "mae": 0.31241870397559846,
+    "rmse": 0.3852218139972066,
+    "r2": 0.8647546002710477
+   },
+   "linear_short_support": {
+    "mae": 0.3400869687092866,
+    "rmse": 0.4213885202308784,
+    "r2": 0.8381673454324641
+   },
+   "mean_of_train": {
+    "mae": 0.8379641755977494,
+    "rmse": 1.0475650452287995,
+    "r2": -0.00014450934596288434
+   },
+   "label_independent_control": {
+    "mae": 0.8946054817342917,
+    "rmse": 1.1184918364003509,
+    "r2": -0.14016156061346363
+   },
+   "receivers": {
+    "conv3": {
+     "per_seed": [
+      {
+       "artifacts": "/tmp/rp54_artifacts/redundant_conv3_seed1",
+       "requested_updates": 1500,
+       "observed_updates": 1518,
+       "observed_optimizer_iterations": 1518,
+       "epochs_run": 23,
+       "steps_per_epoch": 66,
+       "budget_note": "epochs are whole, so the loop runs ceil(requested / steps) * steps updates: the OBSERVED count is what this diagnostic reports",
+       "final_train_loss": 0.16293534636497498,
+       "cpu_seconds": 18.94,
+       "parameters": 4591,
+       "declared_reach": 7,
+       "mae": 0.3523546335229008,
+       "rmse": 0.43924733465457866,
+       "r2": 0.8241594523748742
+      },
+      {
+       "artifacts": "/tmp/rp54_artifacts/redundant_conv3_seed2",
+       "requested_updates": 1500,
+       "observed_updates": 1518,
+       "observed_optimizer_iterations": 1518,
+       "epochs_run": 23,
+       "steps_per_epoch": 66,
+       "budget_note": "epochs are whole, so the loop runs ceil(requested / steps) * steps updates: the OBSERVED count is what this diagnostic reports",
+       "final_train_loss": 0.16061931848526,
+       "cpu_seconds": 18.15,
+       "parameters": 4591,
+       "declared_reach": 7,
+       "mae": 0.3519023794209929,
+       "rmse": 0.43874439896108886,
+       "r2": 0.824561894694511
+      },
+      {
+       "artifacts": "/tmp/rp54_artifacts/redundant_conv3_seed3",
+       "requested_updates": 1500,
+       "observed_updates": 1518,
+       "observed_optimizer_iterations": 1518,
+       "epochs_run": 23,
+       "steps_per_epoch": 66,
+       "budget_note": "epochs are whole, so the loop runs ceil(requested / steps) * steps updates: the OBSERVED count is what this diagnostic reports",
+       "final_train_loss": 0.1607455611228943,
+       "cpu_seconds": 18.15,
+       "parameters": 4591,
+       "declared_reach": 7,
+       "mae": 0.3553681812791357,
+       "rmse": 0.4417009040499323,
+       "r2": 0.8221895282662243
+      }
+     ],
+     "r2_mean": 0.8236369584452032,
+     "r2_min": 0.8221895282662243,
+     "r2_max": 0.824561894694511,
+     "cpu_seconds": 55.239999999999995
+    },
+    "tcn_w": {
+     "per_seed": [
+      {
+       "artifacts": "/tmp/rp54_artifacts/redundant_tcn_w_seed1",
+       "requested_updates": 1500,
+       "observed_updates": 1518,
+       "observed_optimizer_iterations": 1518,
+       "epochs_run": 23,
+       "steps_per_epoch": 66,
+       "budget_note": "epochs are whole, so the loop runs ceil(requested / steps) * steps updates: the OBSERVED count is what this diagnostic reports",
+       "final_train_loss": 0.09803953766822815,
+       "cpu_seconds": 23.72,
+       "parameters": 8127,
+       "declared_reach": 60,
+       "mae": 0.35049619585640573,
+       "rmse": 0.43709261470079136,
+       "r2": 0.8258803863216202
+      },
+      {
+       "artifacts": "/tmp/rp54_artifacts/redundant_tcn_w_seed2",
+       "requested_updates": 1500,
+       "observed_updates": 1518,
+       "observed_optimizer_iterations": 1518,
+       "epochs_run": 23,
+       "steps_per_epoch": 66,
+       "budget_note": "epochs are whole, so the loop runs ceil(requested / steps) * steps updates: the OBSERVED count is what this diagnostic reports",
+       "final_train_loss": 0.09950684010982513,
+       "cpu_seconds": 24.39,
+       "parameters": 8127,
+       "declared_reach": 60,
+       "mae": 0.37394245708036006,
+       "rmse": 0.4650981295873405,
+       "r2": 0.8028531039352361
+      },
+      {
+       "artifacts": "/tmp/rp54_artifacts/redundant_tcn_w_seed3",
+       "requested_updates": 1500,
+       "observed_updates": 1518,
+       "observed_optimizer_iterations": 1518,
+       "epochs_run": 23,
+       "steps_per_epoch": 66,
+       "budget_note": "epochs are whole, so the loop runs ceil(requested / steps) * steps updates: the OBSERVED count is what this diagnostic reports",
+       "final_train_loss": 0.09145303815603256,
+       "cpu_seconds": 23.85,
+       "parameters": 8127,
+       "declared_reach": 60,
+       "mae": 0.367336405561777,
+       "rmse": 0.459676746889316,
+       "r2": 0.8074223741930202
+      }
+     ],
+     "r2_mean": 0.8120519548166255,
+     "r2_min": 0.8028531039352361,
+     "r2_max": 0.8258803863216202,
+     "cpu_seconds": 71.96000000000001
+    }
+   }
+  }
+ },
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "verdict": {
+  "short_receiver_fails_the_recovery_task": true,
+  "short_receiver_solves_the_redundant_task": true,
+  "long_receiver_solves_the_recovery_task": true,
+  "linear_short_support_fails_recovery": true,
+  "linear_full_window_solves_recovery": true,
+  "label_independent_control_no_better_than_the_mean": true,
+  "label_independent_control_r2": -0.13487312970950338,
+  "reading": "This says the SHORT receiver lacks the information IN THIS TASK, where the innovation is independent of its support by construction, and that it can use the same innovation when the series carries it inside that support. It does not say a short receiver fails on every correlated series, and it is not a claim about the household task, whose diagnostic stays empirical and DEV-scoped.",
+  "if_the_redundant_task_also_fails": "the measurement is about the optimiser or the budget, not the information, and no information claim may be made from it"
+ },
+ "host": "dragon",
+ "provenance": {
+  "scope": "DIAGNOSTIC, DEVELOPMENT: a synthetic generator declared before it ran, not an experiment on governed data; it carries no campaign and no terminal, and none is invented for it",
+  "artifacts_directory": "/tmp/rp54_artifacts",
+  "report": "/tmp/rp54_innovation_dragon.json",
+  "kept": [
+   "the generator's declared parameters and seed",
+   "per-seed observed optimiser iterations",
+   "the split by realisation",
+   "the closed-form and Monte Carlo reference levels",
+   "the evaluation arrays and per-receiver weights"
+  ],
+  "not_kept": [],
+  "earlier_run": "the 2026-09-20 run on WORKER_A stored metrics without arrays or weights; its scope is historical diagnostic, and no receipt is claimed for it"
+ }
+}
