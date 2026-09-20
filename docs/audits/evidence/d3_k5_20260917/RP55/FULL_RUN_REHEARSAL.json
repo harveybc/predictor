@@ -1,0 +1,325 @@
+{
+ "schema": "df_e1_full_rehearsal.v1",
+ "at": "2026-09-20T18:19:02Z",
+ "work": "/tmp/rp55-full-dv5l6hd_",
+ "host": "omega",
+ "panel": {
+  "synthetic": true,
+  "sha256": "d2ae0edc11735600ab9724f243a993efdad26cef913c88502a73da5bb2b96be1",
+  "declared": "a software fixture, not governed data"
+ },
+ "ports": {
+  "lake": 33721,
+  "cube": 57943,
+  "gov": 49293
+ },
+ "positive": {
+  "stopped": "PILOT_ONLY",
+  "governance": {
+   "population": {
+    "prepare": "CLOSED",
+    "pilot_ae": "CLOSED",
+    "pilot_fit": "CLOSED",
+    "ae_s1": "NOT_STARTED",
+    "R0_s1": "NOT_STARTED",
+    "R1_s1": "NOT_STARTED",
+    "R2_s1": "NOT_STARTED",
+    "controls": "NOT_STARTED"
+   },
+   "reasons": {},
+   "counts": {
+    "NOT_STARTED": 5,
+    "RUNNING": 0,
+    "CLOSED": 3,
+    "BLOCKED": 0,
+    "PENDING": 0
+   },
+   "units_incomplete": [
+    "R0_s1",
+    "R1_s1",
+    "R2_s1",
+    "ae_s1",
+    "controls"
+   ],
+   "transfer": {
+    "transferred_units": 1,
+    "cache_reused_units": 2,
+    "bytes_first_transfer": 534466
+   },
+   "all_units_governed": false,
+   "receipts_file": "/tmp/rp55-full-dv5l6hd_/run/TERMINAL_RECEIPTS.json",
+   "rule": "the population is the sealed design's enumeration; a registered unit that is not closed is PENDING and named, never absorbed into a total"
+  },
+  "terminals": [
+   {
+    "unit_id": "prepare",
+    "status": "COMPLETED",
+    "outcome": "COMPLETED",
+    "cost": {
+     "cpu_seconds": 0.106
+    },
+    "governed": true,
+    "terminal_sent": 1,
+    "terminal_pending": 0,
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "terminal_sha256": "87f953914a9ca1ad9fcd7ae40ff8ef7921d92be1bd7dfa6b62eedb0eebd0e3bb"
+   },
+   {
+    "unit_id": "pilot_ae",
+    "status": "COMPLETED",
+    "outcome": "COMPLETED",
+    "cost": {
+     "cpu_seconds": 10.8,
+     "wall_seconds": 10.852,
+     "peak_rss_bytes": 803192832,
+     "cgroup_memory_peak": 390778880,
+     "started_at": "2026-09-20T18:19:04+00:00",
+     "ended_at": "2026-09-20T18:19:15+00:00",
+     "host": "omega"
+    },
+    "resumed": false,
+    "governed": true,
+    "delivery_id": "1b71675430b840d79d8634fae7d0d2a6",
+    "campaign_sha256": "b8474a9f8ee363fe8b655b4cfbc77a1b01cf97f2942f9a3cbea0450c297962c2",
+    "terminal_sha256": "002650e3da2670d9e634f257c16e42613021dac27fc46e5b462a579a5fe4ce8b",
+    "terminal_sent": 1,
+    "terminal_pending": 0,
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    }
+   },
+   {
+    "unit_id": "pilot_fit",
+    "status": "COMPLETED",
+    "outcome": "COMPLETED",
+    "cost": {
+     "cpu_seconds": 10.955,
+     "wall_seconds": 11.049,
+     "peak_rss_bytes": 858324992,
+     "cgroup_memory_peak": 444723200,
+     "started_at": "2026-09-20T18:19:15+00:00",
+     "ended_at": "2026-09-20T18:19:26+00:00",
+     "host": "omega"
+    },
+    "resumed": false,
+    "governed": true,
+    "delivery_id": "46c11eb86a03436ba3cae68c43621bd9",
+    "campaign_sha256": "ec6ae66fe0e733be83e792caf2f5c9b9b5a285e3793c410364292ed1375495d1",
+    "terminal_sha256": "10aecc0942c8c57e5ef89186cda918ced6dd4e15721f80fca5ba943445d5f8c8",
+    "terminal_sent": 1,
+    "terminal_pending": 0,
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    }
+   }
+  ],
+  "cpu_seconds": 0.24,
+  "receipts": {
+   "schema": "df_e1_terminal_receipts.v1",
+   "design_sha256": "28f870f80737031235d31b2b3b583f47159d813ff25d7abc5cf3dfb713703a8d",
+   "units": {
+    "prepare": {
+     "campaign_key": "rp55-positive-prepare-data",
+     "campaign_sha256": "68f5de2f95f9e78ae894f8d6a1a835d7a28a7c905d1f52854a9d6e3cd5ff9cf1",
+     "terminal_sha256": "87f953914a9ca1ad9fcd7ae40ff8ef7921d92be1bd7dfa6b62eedb0eebd0e3bb",
+     "generation": 1,
+     "status": "COMPLETED",
+     "accepted_at": "2026-09-20T18:19:04Z",
+     "work_started_at": "2026-09-20T18:19:03Z",
+     "started_at": "2026-09-20T18:19:03Z",
+     "finished_at": "2026-09-20T18:19:03Z",
+     "metrics": 1,
+     "deliveries": [
+      "3d988b68aaa549a99f4fa713fcee1803"
+     ],
+     "reconciliation": {
+      "http": 200,
+      "missing_units": [],
+      "accounting_only": [],
+      "lake_only": []
+     },
+     "source": "the governance client's own answer when it accepted this terminal"
+    },
+    "pilot_ae": {
+     "campaign_key": "rp55-positive-pilot_ae-data",
+     "campaign_sha256": "b8474a9f8ee363fe8b655b4cfbc77a1b01cf97f2942f9a3cbea0450c297962c2",
+     "terminal_sha256": "002650e3da2670d9e634f257c16e42613021dac27fc46e5b462a579a5fe4ce8b",
+     "generation": 1,
+     "status": "COMPLETED",
+     "accepted_at": "2026-09-20T18:19:15Z",
+     "work_started_at": "2026-09-20T18:19:04+00:00",
+     "started_at": "2026-09-20T18:19:04Z",
+     "finished_at": "2026-09-20T18:19:15Z",
+     "metrics": 6,
+     "deliveries": [
+      "1b71675430b840d79d8634fae7d0d2a6"
+     ],
+     "reconciliation": {
+      "http": 200,
+      "missing_units": [],
+      "accounting_only": [],
+      "lake_only": []
+     },
+     "source": "the governance client's own answer when it accepted this terminal"
+    },
+    "pilot_fit": {
+     "campaign_key": "rp55-positive-pilot_fit-data",
+     "campaign_sha256": "ec6ae66fe0e733be83e792caf2f5c9b9b5a285e3793c410364292ed1375495d1",
+     "terminal_sha256": "10aecc0942c8c57e5ef89186cda918ced6dd4e15721f80fca5ba943445d5f8c8",
+     "generation": 1,
+     "status": "COMPLETED",
+     "accepted_at": "2026-09-20T18:19:26Z",
+     "work_started_at": "2026-09-20T18:19:15+00:00",
+     "started_at": "2026-09-20T18:19:15Z",
+     "finished_at": "2026-09-20T18:19:26Z",
+     "metrics": 9,
+     "deliveries": [
+      "46c11eb86a03436ba3cae68c43621bd9"
+     ],
+     "reconciliation": {
+      "http": 200,
+      "missing_units": [],
+      "accounting_only": [],
+      "lake_only": []
+     },
+     "source": "the governance client's own answer when it accepted this terminal"
+    }
+   },
+   "updated_at": "2026-09-20T18:19:26Z"
+  },
+  "warehouse": {
+   "prepare": {
+    "present": true,
+    "terminal_sha256": "87f953914a9ca1ad9fcd7ae40ff8ef7921d92be1bd7dfa6b62eedb0eebd0e3bb",
+    "matches_receipt": true
+   },
+   "pilot_ae": {
+    "present": true,
+    "terminal_sha256": "002650e3da2670d9e634f257c16e42613021dac27fc46e5b462a579a5fe4ce8b",
+    "matches_receipt": true
+   },
+   "pilot_fit": {
+    "present": true,
+    "terminal_sha256": "10aecc0942c8c57e5ef89186cda918ced6dd4e15721f80fca5ba943445d5f8c8",
+    "matches_receipt": true
+   }
+  },
+  "closure": {
+   "verdict": "PARTIAL",
+   "counts": {
+    "declared": 7,
+    "verified": 2,
+    "refused": 5,
+    "metrics_verified": 2,
+    "inference_verified": 0,
+    "regime_verified": 1
+   },
+   "governed_units": 0
+  },
+  "ok": true
+ },
+ "failure": {
+  "stopped": "COST_PILOT_FAILED: pilot_ae RESOURCE_EXCEEDED",
+  "population": {
+   "prepare": "CLOSED",
+   "pilot_ae": "CLOSED",
+   "pilot_fit": "NOT_STARTED",
+   "ae_s1": "NOT_STARTED",
+   "R0_s1": "NOT_STARTED",
+   "R1_s1": "NOT_STARTED",
+   "R2_s1": "NOT_STARTED",
+   "controls": "NOT_STARTED"
+  },
+  "reasons": {},
+  "counts": {
+   "NOT_STARTED": 6,
+   "RUNNING": 0,
+   "CLOSED": 2,
+   "BLOCKED": 0,
+   "PENDING": 0
+  },
+  "all_units_governed": false,
+  "terminals": [
+   {
+    "unit_id": "prepare",
+    "status": "COMPLETED",
+    "outcome": "COMPLETED",
+    "cost": {
+     "cpu_seconds": 0.047
+    },
+    "governed": true,
+    "terminal_sent": 1,
+    "terminal_pending": 0,
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "terminal_sha256": "950c90bb7ee1f679bf33d281aa3ec4e7b8fc67f03b0c3348a14ad8a773526c14"
+   },
+   {
+    "unit_id": "pilot_ae",
+    "status": "FAILED",
+    "outcome": "RESOURCE_EXCEEDED",
+    "cost": {
+     "cpu_seconds": 0.288,
+     "wall_seconds": 0.428,
+     "peak_rss_bytes": 118976512,
+     "cgroup_memory_peak": 33681408,
+     "started_at": "2026-09-20T18:19:26+00:00",
+     "ended_at": "2026-09-20T18:19:26+00:00",
+     "host": "omega"
+    },
+    "resumed": false,
+    "governed": true,
+    "delivery_id": "eadeee6d0efc492c91d6eda485d2534a",
+    "campaign_sha256": "f3c3316fa4781bf64460bc209faf274fba4f6a72c7e7641df1f70dd7bb70687e",
+    "terminal_sha256": "47c50c2862bd00ca8bb4ad1de3e65cef624c6816a66cd7d3ad5c7c4ad6881a25",
+    "terminal_sent": 1,
+    "terminal_pending": 0,
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    }
+   }
+  ],
+  "ok": true
+ },
+ "ok": true,
+ "lake_log_tail": "\n127.0.0.1 - - [20/Sep/2026 13:19:15] \"GET /api/v2/download?resource=uci_235_individual_household_power/panel.parquet HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:19:26] \"GET /api/v2/download?resource=uci_235_individual_household_power/panel.parquet HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:19:26] \"GET /api/v2/download?resource=uci_235_individual_household_power/panel.parquet HTTP/1.1\" 200 -\n",
+ "cube_log_tail": "0.0.1 - - [20/Sep/2026 13:19:26] \"\u001b[35m\u001b[1mPOST /api/v2/terminals HTTP/1.1\u001b[0m\" 201 -\n127.0.0.1 - - [20/Sep/2026 13:19:26] \"GET /api/v2/terminals?campaign_sha256=f3c3316fa4781bf64460bc209faf274fba4f6a72c7e7641df1f70dd7bb70687e HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:19:26] \"GET /api/v2/terminals?campaign_sha256=f3c3316fa4781bf64460bc209faf274fba4f6a72c7e7641df1f70dd7bb70687e HTTP/1.1\" 200 -\n",
+ "gov_log_tail": "81bf64460bc209faf274fba4f6a72c7e7641df1f70dd7bb70687e/units/pilot_ae/terminal HTTP/1.1\u001b[0m\" 201 -\n127.0.0.1 - - [20/Sep/2026 13:19:26] \"GET /api/v2/campaigns/f3c3316fa4781bf64460bc209faf274fba4f6a72c7e7641df1f70dd7bb70687e/reconcile HTTP/1.1\" 200 -\n127.0.0.1 - - [20/Sep/2026 13:19:26] \"GET /api/v2/campaigns/f3c3316fa4781bf64460bc209faf274fba4f6a72c7e7641df1f70dd7bb70687e/reconcile HTTP/1.1\" 200 -\n",
+ "restoration": {
+  "lake": {
+   "returncode": -15,
+   "still_answering": false
+  },
+  "cube": {
+   "returncode": -15,
+   "still_answering": false
+  },
+  "gov": {
+   "returncode": -15,
+   "still_answering": false
+  },
+  "production_untouched": {
+   "crispdm-data-gov.service": "active",
+   "crispdm-data-warehouse-olap.service": "active"
+  },
+  "all_stopped": true
+ }
+}
