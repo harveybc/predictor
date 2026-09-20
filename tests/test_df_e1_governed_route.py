@@ -333,3 +333,90 @@ def test_RP38_a_units_terminal_reaches_the_accounting_and_the_campaign_reconcile
     rec = out["reconciliation"]
     assert rec["http"] == 200 and not rec["accounting_only"] and not rec["lake_only"]
     assert "ae_s1" not in (rec["missing_units"] or [])
+
+
+# --- RP51: receipts, population and recovery, over the real HTTP stack -------------------------------
+
+def test_RP51_a_destination_that_goes_down_and_comes_back_loses_no_terminal(stack, tmp_path, monkeypatch):
+    """The outbox keeps what the service refused, and a second flush closes the unit."""
+    root = tmp_path / "recovering"
+    design = _design(stack, root)
+    G.acquire(run_id="rp51-down", root=root, lake="public_panels", resource=stack["resource"], unit_id="ae_s1",
+              gov_url=stack["url"], api_key_file=KEY, design_sha256=design["design_sha256"],
+              cache_dir=root / "cache", expect_sha256=stack["digest"])
+    R = _load("df_utility_run")
+    terminal = R._terminal(status="COMPLETED", reason=None, cost={"wall_seconds": 1.0, "cpu_seconds": 1.0},
+                           metrics=[R._metric("e1.mase_validation", 0.9, "mase", split="validation", horizon=10)],
+                           started=R.now_iso(), finished=R.now_iso(),
+                           tags={"purpose": "E1_DEV_PILOT", "classification": "NON_GOVERNING", "phase": "DEVELOPMENT"})
+    outbox_dir = tmp_path / "outbox"
+    # the destination is unreachable: the terminal stays pending and nothing is lost
+    with pytest.raises(SystemExit):
+        G.report_terminal(root, "ae_s1", terminal, gov_url=f"http://127.0.0.1:{_free_port()}",
+                          api_key_file=KEY, outbox_dir=str(outbox_dir))
+    GR = _load("governed_run")
+    pending = GR.TerminalOutbox(outbox_dir).status()["pending"]
+    assert len(pending) == 1 and pending[0]["unit_id"] == "ae_s1"
+    assert not (root / "TERMINAL_RECEIPTS.json").is_file(), "a receipt was written for a terminal nobody accepted"
+    # the destination returns: the SAME envelope is accepted, once
+    again = G.report_terminal(root, "ae_s1", terminal, gov_url=stack["url"], api_key_file=KEY,
+                              outbox_dir=str(outbox_dir))
+    assert again["flushed"]["sent"] == 1 and again["flushed"]["pending"] == 0
+    assert again["persisted_receipt"]["terminal_sha256"] and not again["reconciliation"]["missing_units"]
+    third = G.report_terminal(root, "ae_s1", terminal, gov_url=stack["url"], api_key_file=KEY,
+                              outbox_dir=str(outbox_dir))
+    assert third["flushed"]["sent"] in (0, 1) and third["flushed"]["pending"] == 0     # idempotent, never duplicated
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    assert list(receipts) == ["ae_s1"]
+
+
+def test_RP51_an_empty_report_does_not_pass_and_a_registered_unit_that_did_not_close_is_named(stack, tmp_path):
+    root = tmp_path / "empty"
+    design = _design(stack, root)
+    RC = _load("df_e1_receipts")
+    empty = P._governed_summary.__wrapped__ if hasattr(P._governed_summary, "__wrapped__") else P._governed_summary
+    (root / "DELIVERIES.json").write_text(json.dumps({"schema": "df_e1_governed_acquisition.v1",
+                                                      "design_sha256": design["design_sha256"], "units": {}}))
+    states = RC.population_states(design, root)
+    assert states["complete"] is False and states["counts"]["NOT_STARTED"] == len(states["units"])
+    result = empty(root, {"terminals": []}, design)
+    assert result["all_units_governed"] is False and result["units_incomplete"]
+    # a unit whose campaign exists but never closed is PENDING, with its reason
+    G.acquire(run_id="rp51-pending", root=root, lake="public_panels", resource=stack["resource"], unit_id="pilot_ae",
+              gov_url=stack["url"], api_key_file=KEY, design_sha256=design["design_sha256"],
+              cache_dir=root / "cache", expect_sha256=stack["digest"])
+    states = RC.population_states(design, root)
+    assert states["units"]["pilot_ae"] == RC.PENDING and "registered" in states["reasons"]["pilot_ae"]
+    assert states["counts"]["PENDING"] == 1
+
+
+def test_RP51_the_last_unit_of_a_run_is_closed_like_any_other(stack, tmp_path, monkeypatch):
+    root = tmp_path / "last-unit"
+    design = _design(stack, root)
+
+    def fake_isolated(job, *, attempt_dir, assigned_bytes, wall_seconds, cpu_seconds):
+        Path(attempt_dir).mkdir(parents=True, exist_ok=True)
+        (Path(attempt_dir) / "job.json").write_text(json.dumps({**job, "attempt_dir": str(attempt_dir)}, default=str))
+        return {"outcome": "COMPLETED", "reason": "", "cost": {"cpu_seconds": 1.0, "wall_seconds": 1.0, "host": "test"},
+                "score": {"kind": job["kind"], "cell_id": job["cell_id"], "seed": job["seed"],
+                          "regime": job.get("regime", "R0"), "detector_unchanged": False,
+                          "gradient_proof": {"detector_receives_gradient": True},
+                          "initial_checkpoint": {"full_digest": "0" * 64},
+                          "regime_setup": {"detector_digest_after_setup": "0" * 64},
+                          "scores": {"validation": {"model": {"mase_mean": 0.9, "mae_mean": 0.5, "status": "MEDIDO"}}},
+                          "training": {"updates": 1, "stop_reason": "UPDATE_BUDGET",
+                                       "censoring": {"verdict": "STOPPED_ON_VALIDATION"}},
+                          "pretraining": {"updates": 1, "stop_reason": "UPDATE_BUDGET",
+                                          "reconstruction_val_mse_masked": 0.1},
+                          "detector_sha256": "0" * 64,
+                          "parameters": {"trainable": 1, "total": 1, "frozen": 0}, "cost": {"fit_seconds": 1.0}}}
+    monkeypatch.setattr(P, "run_isolated", fake_isolated)
+    monkeypatch.setattr(P, "_closure_verdict", lambda attempt_dir, job, score: (score, None))
+    report = _run_governed(stack, root, design, pilot_only=True, run_id="rp51-last")
+    result = report["governance_result"]
+    closed = [u for u, s in result["population"].items() if s == "CLOSED"]
+    assert set(closed) >= {"prepare", "pilot_ae", "pilot_fit"}
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    assert set(receipts) == set(closed)
+    last = report["terminals"][-1]
+    assert last["terminal_sent"] == 1 and last["terminal_pending"] == 0 and last["terminal_sha256"]
