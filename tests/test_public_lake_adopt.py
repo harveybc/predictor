@@ -46,6 +46,13 @@ def sandbox(tmp_path, monkeypatch):
         return subprocess.CompletedProcess(argv, 0, stdout="", stderr="")
     monkeypatch.setattr(A, "run", fake_run)
     monkeypatch.setattr(A, "_service_healthy", lambda url, tries=120: True)
+    # the unit file of the disposable lake host goes into the sandbox, never into the user's units
+    units = tmp_path / "systemd"
+    units.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(A, "HOME", tmp_path)
+    (tmp_path / ".config/systemd/user").mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(A, "service_state", lambda unit: {"ActiveState": "active", "SubState": "running",
+                                                          "NRestarts": "0", "returncode": 0})
     monkeypatch.setattr(A, "inventory", lambda: {"services": {"crispdm-data-gov.service": {"ActiveState": "active"}},
                                                  "public_panel_lake_registered": True, "lakes": [], "at": "now"})
     monkeypatch.setattr(A, "route_checks", lambda *a, **kw: {"route_complete": True, "delivered_bytes_verified": True,
@@ -55,7 +62,7 @@ def sandbox(tmp_path, monkeypatch):
 
 def _rehearsal(tmp_path, sandbox, *, ok=True, bind=True, principals=("predictor",)):
     cfg = json.loads(sandbox["config"].read_text())
-    deployed = A.deployed_embedded(cfg, principals)
+    deployed = A.deployed_external(cfg, principals, port=A.LAKE_HOST_PORT)
     path = tmp_path / f"REHEARSAL-{ok}-{bind}.json"
     binding = (A.rehearsal_binding(None, deployed) if bind else
                {"code_identity": "0" * 40, "deployed_config_sha256": "0" * 64,
