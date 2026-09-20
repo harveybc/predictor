@@ -1,0 +1,218 @@
+{
+ "schema": "df_public_lake_inventory.v1",
+ "at": "2026-09-20T18:26:07Z",
+ "host": "omega",
+ "runtime_config": {
+  "path": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json",
+  "sha256": "e09b1850fb300134c247a114ae7b4558cf0691e11d53137cf8aba10654396161"
+ },
+ "lakes": [
+  {
+   "plugin": "http_lake",
+   "lake_id": "financial_files",
+   "kind": "lake",
+   "engine": "files_inventory",
+   "base_url": "http://127.0.0.1:5056"
+  },
+  {
+   "plugin": "http_lake",
+   "lake_id": "olap_cube",
+   "kind": "warehouse",
+   "engine": "sql_olap",
+   "base_url": "http://127.0.0.1:5057"
+  },
+  {
+   "plugin": "files_lake",
+   "lake_id": "predictor_examples",
+   "kind": "lake",
+   "engine": "files_inventory",
+   "root_path": "/home/harveybc/Documents/GitHub/predictor/examples/data_downsampled"
+  },
+  {
+   "plugin": "http_lake",
+   "lake_id": "governance_smoke",
+   "kind": "lake",
+   "engine": "files_inventory",
+   "base_url": "http://127.0.0.1:5058"
+  },
+  {
+   "plugin": "http_lake",
+   "lake_id": "public_panels",
+   "kind": "lake",
+   "engine": "files_inventory",
+   "base_url": "http://127.0.0.1:5059"
+  }
+ ],
+ "policies": [
+  {
+   "principal": "*",
+   "lake": "financial_files",
+   "verbs": [
+    "discover",
+    "coverage",
+    "read",
+    "download"
+   ],
+   "deny_from": "2025-01-01"
+  },
+  {
+   "principal": "*",
+   "lake": "olap_cube",
+   "verbs": [
+    "discover",
+    "query",
+    "write_metrics",
+    "write_terminal"
+   ],
+   "require_lineage": true,
+   "deny_from": "2025-01-01"
+  },
+  {
+   "principal": "*",
+   "lake": "predictor_examples",
+   "verbs": [
+    "discover",
+    "coverage",
+    "read",
+    "download"
+   ],
+   "deny_from": "2025-01-01"
+  },
+  {
+   "principal": "predictor",
+   "lake": "governance_smoke",
+   "verbs": [
+    "download"
+   ]
+  },
+  {
+   "principal": "satoshi-gamma",
+   "lake": "governance_smoke",
+   "verbs": [
+    "discover",
+    "coverage",
+    "read",
+    "download"
+   ]
+  },
+  {
+   "principal": "satoshi-dragon",
+   "lake": "governance_smoke",
+   "verbs": [
+    "discover",
+    "coverage",
+    "read",
+    "download"
+   ]
+  },
+  {
+   "principal": "predictor",
+   "lake": "public_panels",
+   "verbs": [
+    "discover",
+    "coverage",
+    "read",
+    "download"
+   ],
+   "deny_from": "2006-12-16"
+  },
+  {
+   "principal": "satoshi-gamma",
+   "lake": "public_panels",
+   "verbs": [
+    "discover",
+    "coverage",
+    "read",
+    "download"
+   ],
+   "deny_from": "2006-12-16"
+  },
+  {
+   "principal": "satoshi-dragon",
+   "lake": "public_panels",
+   "verbs": [
+    "discover",
+    "coverage",
+    "read",
+    "download"
+   ],
+   "deny_from": "2006-12-16"
+  }
+ ],
+ "principals": [
+  "doin",
+  "harvey",
+  "heuristic-strategy",
+  "musashi",
+  "predictor",
+  "satoshi-dragon",
+  "satoshi-gamma"
+ ],
+ "accounting_db": "/home/harveybc/Documents/GitHub/data-gov/var/accounting.db",
+ "services": {
+  "crispdm-data-gov.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-gov.service",
+   "NRestarts": "0",
+   "ExecMainStartTimestamp": "Sun 2026-09-20 13:25:42 -05",
+   "returncode": 0
+  },
+  "crispdm-data-lake-financial.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-lake-financial.service",
+   "NRestarts": "0",
+   "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+   "returncode": 0
+  },
+  "crispdm-data-warehouse-olap.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-warehouse-olap.service",
+   "NRestarts": "0",
+   "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+   "returncode": 0
+  },
+  "crispdm-data-lake-synthetic.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-lake-synthetic.service",
+   "NRestarts": "0",
+   "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+   "returncode": 0
+  },
+  "crispdm-olap-loader-duckdb.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-olap-loader-duckdb.service",
+   "NRestarts": "0",
+   "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+   "returncode": 0
+  }
+ },
+ "ports": [
+  {
+   "port": 5055,
+   "open": true
+  },
+  {
+   "port": 5056,
+   "open": true
+  },
+  {
+   "port": 5057,
+   "open": true
+  },
+  {
+   "port": 5058,
+   "open": true
+  }
+ ],
+ "public_panels_present": {
+  "uci_235_individual_household_power/panel.parquet": true,
+  "uci_321_electricityloaddiagrams20112014/panel.parquet": true
+ },
+ "public_panel_lake_registered": true,
+ "note": "read-only inventory; no service was started, stopped or configured by this command"
+}

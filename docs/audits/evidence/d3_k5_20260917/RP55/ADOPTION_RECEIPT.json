@@ -1,0 +1,1285 @@
+{
+ "schema": "df_public_lake_adoption.v2",
+ "at": "2026-09-20T18:25:39Z",
+ "host": "omega",
+ "service": "crispdm-data-gov.service",
+ "config": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json",
+ "external_host_divergence": {
+  "component": "financial_data_store (the provider the deployed financial and synthetic lake hosts run)",
+  "deployed_cannot": [
+   "deliver a resource whose availability labels are not ISO8601 (refuses: unparseable time column)",
+   "deliver a whole resource under a holdout (refuses: spans holdout: request a range)"
+  ],
+  "correction": "financial_data_store.governed_download now honours `untimed`: the archive is delivered AS_IS with an UNDECLARED scope and every date range over it is refused by its own contract, with no time parsing on that path",
+  "where": "financial-data, branch satoshi/archive-retrospective-provider-20260920 (re-based on the deployed build, because no branch of that repository matched it)",
+  "status": "CORRECTED_AND_REHEARSED: the route below runs through the EXTERNAL host with the corrected provider on its PYTHONPATH; installing that build into the store-hosts venv is part of the adoption"
+ },
+ "backup": "/home/harveybc/.local/state/crispdm-data-foundation/satoshi-public-lake-adoption-20260920T182539Z/5055.runtime.backup.json",
+ "backup_sha256": "a5acc87295ac511ae4da18b51b276a904d769a0934bf327c55d76eb33aaab963",
+ "before": {
+  "schema": "df_public_lake_inventory.v1",
+  "at": "2026-09-20T18:25:39Z",
+  "host": "omega",
+  "runtime_config": {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json",
+   "sha256": "a5acc87295ac511ae4da18b51b276a904d769a0934bf327c55d76eb33aaab963"
+  },
+  "lakes": [
+   {
+    "plugin": "http_lake",
+    "lake_id": "financial_files",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "base_url": "http://127.0.0.1:5056"
+   },
+   {
+    "plugin": "http_lake",
+    "lake_id": "olap_cube",
+    "kind": "warehouse",
+    "engine": "sql_olap",
+    "base_url": "http://127.0.0.1:5057"
+   },
+   {
+    "plugin": "files_lake",
+    "lake_id": "predictor_examples",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "root_path": "/home/harveybc/Documents/GitHub/predictor/examples/data_downsampled"
+   },
+   {
+    "plugin": "http_lake",
+    "lake_id": "governance_smoke",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "base_url": "http://127.0.0.1:5058"
+   }
+  ],
+  "policies": [
+   {
+    "principal": "*",
+    "lake": "financial_files",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2025-01-01"
+   },
+   {
+    "principal": "*",
+    "lake": "olap_cube",
+    "verbs": [
+     "discover",
+     "query",
+     "write_metrics",
+     "write_terminal"
+    ],
+    "require_lineage": true,
+    "deny_from": "2025-01-01"
+   },
+   {
+    "principal": "*",
+    "lake": "predictor_examples",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2025-01-01"
+   },
+   {
+    "principal": "predictor",
+    "lake": "governance_smoke",
+    "verbs": [
+     "download"
+    ]
+   },
+   {
+    "principal": "satoshi-gamma",
+    "lake": "governance_smoke",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ]
+   },
+   {
+    "principal": "satoshi-dragon",
+    "lake": "governance_smoke",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ]
+   }
+  ],
+  "principals": [
+   "doin",
+   "harvey",
+   "heuristic-strategy",
+   "musashi",
+   "predictor",
+   "satoshi-dragon",
+   "satoshi-gamma"
+  ],
+  "accounting_db": "/home/harveybc/Documents/GitHub/data-gov/var/accounting.db",
+  "services": {
+   "crispdm-data-gov.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-gov.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Sun 2026-09-20 13:23:36 -05",
+    "returncode": 0
+   },
+   "crispdm-data-lake-financial.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-lake-financial.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   },
+   "crispdm-data-warehouse-olap.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-warehouse-olap.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   },
+   "crispdm-data-lake-synthetic.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-lake-synthetic.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   },
+   "crispdm-olap-loader-duckdb.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-olap-loader-duckdb.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   }
+  },
+  "ports": [
+   {
+    "port": 5055,
+    "open": true
+   },
+   {
+    "port": 5056,
+    "open": true
+   },
+   {
+    "port": 5057,
+    "open": true
+   },
+   {
+    "port": 5058,
+    "open": true
+   }
+  ],
+  "public_panels_present": {
+   "uci_235_individual_household_power/panel.parquet": true,
+   "uci_321_electricityloaddiagrams20112014/panel.parquet": true
+  },
+  "public_panel_lake_registered": false,
+  "note": "read-only inventory; no service was started, stopped or configured by this command"
+ },
+ "change": {
+  "previous_lakes_unchanged": true,
+  "lakes_added": [
+   "public_panels"
+  ],
+  "other_policies_unchanged": true,
+  "everything_else_unchanged": true,
+  "additive": true
+ },
+ "deployed_config": "/home/harveybc/.local/state/crispdm-data-foundation/satoshi-public-lake-adoption-20260920T182539Z/public-panels.host.json",
+ "deployed_config_sha256": "5d1f0782ec5ebe82b2327ad9330a312a1f670a1f0a05b2b58ff8c256b5073f12",
+ "restore": "cp /home/harveybc/.local/state/crispdm-data-foundation/satoshi-public-lake-adoption-20260920T182539Z/5055.runtime.backup.json /home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json && systemctl --user restart crispdm-data-gov.service",
+ "declared": {
+  "uci_235_individual_household_power/panel.parquet": {
+   "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "rows": 2075259,
+   "columns": 7,
+   "producer": "https://archive.ics.uci.edu/dataset/235/individual+household+electric+power+consumption",
+   "parser": "uci_235",
+   "parse_rule": "sep ';', missing '?' or empty",
+   "timestamp_format": "%d/%m/%Y %H:%M:%S",
+   "units_declared": {
+    "Global_active_power": "kW",
+    "Global_intensity": "A",
+    "Global_reactive_power": "kW",
+    "Sub_metering_1": "Wh",
+    "Sub_metering_2": "Wh",
+    "Sub_metering_3": "Wh",
+    "Voltage": "V"
+   },
+   "licence": "OPEN_ATTRIBUTION (CC-BY-4.0), as the catalogue of this family records it",
+   "roles": {
+    "targets": [
+     "Global_active_power"
+    ],
+    "features": [
+     "Global_reactive_power",
+     "Voltage",
+     "Global_intensity",
+     "Sub_metering_1",
+     "Sub_metering_2",
+     "Sub_metering_3"
+    ],
+    "metadata": [
+     "timestamp_label"
+    ],
+    "controls": "persistence, seasonal naive (daily)"
+   },
+   "use_class": "ARCHIVE/DEV",
+   "availability": "UNDECLARED: the labels are data, not evidence of publication time; no completion lag, no point-in-time and no live-equivalent eligibility",
+   "time_zone": "UNKNOWN in the producer's contract (household); Portuguese wall clock stated by the producer (electricity) \u2014 neither is evidence of availability"
+  },
+  "uci_321_electricityloaddiagrams20112014/panel.parquet": {
+   "dataset_id": "public.uci.321.electricityloaddiagrams20112014",
+   "sha256": "7cf225c4869e88abcb12b7fd274d532756e41fedbe3094ebc805cc803fc6a6a8",
+   "bytes": 41944864,
+   "rows": 140256,
+   "columns": 370,
+   "producer": "https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014",
+   "parser": "uci_321",
+   "parse_rule": "sep ';', quoted label index, DECIMAL_COMMA",
+   "timestamp_format": "%Y-%m-%d %H:%M:%S",
+   "units_declared": {
+    "MT_001": "kW",
+    "MT_002": "kW",
+    "MT_003": "kW",
+    "MT_004": "kW",
+    "MT_005": "kW",
+    "MT_006": "kW",
+    "MT_007": "kW",
+    "MT_008": "kW",
+    "MT_009": "kW",
+    "MT_010": "kW",
+    "MT_011": "kW",
+    "MT_012": "kW",
+    "MT_013": "kW",
+    "MT_014": "kW",
+    "MT_015": "kW",
+    "MT_016": "kW",
+    "MT_017": "kW",
+    "MT_018": "kW",
+    "MT_019": "kW",
+    "MT_020": "kW",
+    "MT_021": "kW",
+    "MT_022": "kW",
+    "MT_023": "kW",
+    "MT_024": "kW",
+    "MT_025": "kW",
+    "MT_026": "kW",
+    "MT_027": "kW",
+    "MT_028": "kW",
+    "MT_029": "kW",
+    "MT_030": "kW",
+    "MT_031": "kW",
+    "MT_032": "kW",
+    "MT_033": "kW",
+    "MT_034": "kW",
+    "MT_035": "kW",
+    "MT_036": "kW",
+    "MT_037": "kW",
+    "MT_038": "kW",
+    "MT_039": "kW",
+    "MT_040": "kW",
+    "MT_041": "kW",
+    "MT_042": "kW",
+    "MT_043": "kW",
+    "MT_044": "kW",
+    "MT_045": "kW",
+    "MT_046": "kW",
+    "MT_047": "kW",
+    "MT_048": "kW",
+    "MT_049": "kW",
+    "MT_050": "kW",
+    "MT_051": "kW",
+    "MT_052": "kW",
+    "MT_053": "kW",
+    "MT_054": "kW",
+    "MT_055": "kW",
+    "MT_056": "kW",
+    "MT_057": "kW",
+    "MT_058": "kW",
+    "MT_059": "kW",
+    "MT_060": "kW",
+    "MT_061": "kW",
+    "MT_062": "kW",
+    "MT_063": "kW",
+    "MT_064": "kW",
+    "MT_065": "kW",
+    "MT_066": "kW",
+    "MT_067": "kW",
+    "MT_068": "kW",
+    "MT_069": "kW",
+    "MT_070": "kW",
+    "MT_071": "kW",
+    "MT_072": "kW",
+    "MT_073": "kW",
+    "MT_074": "kW",
+    "MT_075": "kW",
+    "MT_076": "kW",
+    "MT_077": "kW",
+    "MT_078": "kW",
+    "MT_079": "kW",
+    "MT_080": "kW",
+    "MT_081": "kW",
+    "MT_082": "kW",
+    "MT_083": "kW",
+    "MT_084": "kW",
+    "MT_085": "kW",
+    "MT_086": "kW",
+    "MT_087": "kW",
+    "MT_088": "kW",
+    "MT_089": "kW",
+    "MT_090": "kW",
+    "MT_091": "kW",
+    "MT_092": "kW",
+    "MT_093": "kW",
+    "MT_094": "kW",
+    "MT_095": "kW",
+    "MT_096": "kW",
+    "MT_097": "kW",
+    "MT_098": "kW",
+    "MT_099": "kW",
+    "MT_100": "kW",
+    "MT_101": "kW",
+    "MT_102": "kW",
+    "MT_103": "kW",
+    "MT_104": "kW",
+    "MT_105": "kW",
+    "MT_106": "kW",
+    "MT_107": "kW",
+    "MT_108": "kW",
+    "MT_109": "kW",
+    "MT_110": "kW",
+    "MT_111": "kW",
+    "MT_112": "kW",
+    "MT_113": "kW",
+    "MT_114": "kW",
+    "MT_115": "kW",
+    "MT_116": "kW",
+    "MT_117": "kW",
+    "MT_118": "kW",
+    "MT_119": "kW",
+    "MT_120": "kW",
+    "MT_121": "kW",
+    "MT_122": "kW",
+    "MT_123": "kW",
+    "MT_124": "kW",
+    "MT_125": "kW",
+    "MT_126": "kW",
+    "MT_127": "kW",
+    "MT_128": "kW",
+    "MT_129": "kW",
+    "MT_130": "kW",
+    "MT_131": "kW",
+    "MT_132": "kW",
+    "MT_133": "kW",
+    "MT_134": "kW",
+    "MT_135": "kW",
+    "MT_136": "kW",
+    "MT_137": "kW",
+    "MT_138": "kW",
+    "MT_139": "kW",
+    "MT_140": "kW",
+    "MT_141": "kW",
+    "MT_142": "kW",
+    "MT_143": "kW",
+    "MT_144": "kW",
+    "MT_145": "kW",
+    "MT_146": "kW",
+    "MT_147": "kW",
+    "MT_148": "kW",
+    "MT_149": "kW",
+    "MT_150": "kW",
+    "MT_151": "kW",
+    "MT_152": "kW",
+    "MT_153": "kW",
+    "MT_154": "kW",
+    "MT_155": "kW",
+    "MT_156": "kW",
+    "MT_157": "kW",
+    "MT_158": "kW",
+    "MT_159": "kW",
+    "MT_160": "kW",
+    "MT_161": "kW",
+    "MT_162": "kW",
+    "MT_163": "kW",
+    "MT_164": "kW",
+    "MT_165": "kW",
+    "MT_166": "kW",
+    "MT_167": "kW",
+    "MT_168": "kW",
+    "MT_169": "kW",
+    "MT_170": "kW",
+    "MT_171": "kW",
+    "MT_172": "kW",
+    "MT_173": "kW",
+    "MT_174": "kW",
+    "MT_175": "kW",
+    "MT_176": "kW",
+    "MT_177": "kW",
+    "MT_178": "kW",
+    "MT_179": "kW",
+    "MT_180": "kW",
+    "MT_181": "kW",
+    "MT_182": "kW",
+    "MT_183": "kW",
+    "MT_184": "kW",
+    "MT_185": "kW",
+    "MT_186": "kW",
+    "MT_187": "kW",
+    "MT_188": "kW",
+    "MT_189": "kW",
+    "MT_190": "kW",
+    "MT_191": "kW",
+    "MT_192": "kW",
+    "MT_193": "kW",
+    "MT_194": "kW",
+    "MT_195": "kW",
+    "MT_196": "kW",
+    "MT_197": "kW",
+    "MT_198": "kW",
+    "MT_199": "kW",
+    "MT_200": "kW",
+    "MT_201": "kW",
+    "MT_202": "kW",
+    "MT_203": "kW",
+    "MT_204": "kW",
+    "MT_205": "kW",
+    "MT_206": "kW",
+    "MT_207": "kW",
+    "MT_208": "kW",
+    "MT_209": "kW",
+    "MT_210": "kW",
+    "MT_211": "kW",
+    "MT_212": "kW",
+    "MT_213": "kW",
+    "MT_214": "kW",
+    "MT_215": "kW",
+    "MT_216": "kW",
+    "MT_217": "kW",
+    "MT_218": "kW",
+    "MT_219": "kW",
+    "MT_220": "kW",
+    "MT_221": "kW",
+    "MT_222": "kW",
+    "MT_223": "kW",
+    "MT_224": "kW",
+    "MT_225": "kW",
+    "MT_226": "kW",
+    "MT_227": "kW",
+    "MT_228": "kW",
+    "MT_229": "kW",
+    "MT_230": "kW",
+    "MT_231": "kW",
+    "MT_232": "kW",
+    "MT_233": "kW",
+    "MT_234": "kW",
+    "MT_235": "kW",
+    "MT_236": "kW",
+    "MT_237": "kW",
+    "MT_238": "kW",
+    "MT_239": "kW",
+    "MT_240": "kW",
+    "MT_241": "kW",
+    "MT_242": "kW",
+    "MT_243": "kW",
+    "MT_244": "kW",
+    "MT_245": "kW",
+    "MT_246": "kW",
+    "MT_247": "kW",
+    "MT_248": "kW",
+    "MT_249": "kW",
+    "MT_250": "kW",
+    "MT_251": "kW",
+    "MT_252": "kW",
+    "MT_253": "kW",
+    "MT_254": "kW",
+    "MT_255": "kW",
+    "MT_256": "kW",
+    "MT_257": "kW",
+    "MT_258": "kW",
+    "MT_259": "kW",
+    "MT_260": "kW",
+    "MT_261": "kW",
+    "MT_262": "kW",
+    "MT_263": "kW",
+    "MT_264": "kW",
+    "MT_265": "kW",
+    "MT_266": "kW",
+    "MT_267": "kW",
+    "MT_268": "kW",
+    "MT_269": "kW",
+    "MT_270": "kW",
+    "MT_271": "kW",
+    "MT_272": "kW",
+    "MT_273": "kW",
+    "MT_274": "kW",
+    "MT_275": "kW",
+    "MT_276": "kW",
+    "MT_277": "kW",
+    "MT_278": "kW",
+    "MT_279": "kW",
+    "MT_280": "kW",
+    "MT_281": "kW",
+    "MT_282": "kW",
+    "MT_283": "kW",
+    "MT_284": "kW",
+    "MT_285": "kW",
+    "MT_286": "kW",
+    "MT_287": "kW",
+    "MT_288": "kW",
+    "MT_289": "kW",
+    "MT_290": "kW",
+    "MT_291": "kW",
+    "MT_292": "kW",
+    "MT_293": "kW",
+    "MT_294": "kW",
+    "MT_295": "kW",
+    "MT_296": "kW",
+    "MT_297": "kW",
+    "MT_298": "kW",
+    "MT_299": "kW",
+    "MT_300": "kW",
+    "MT_301": "kW",
+    "MT_302": "kW",
+    "MT_303": "kW",
+    "MT_304": "kW",
+    "MT_305": "kW",
+    "MT_306": "kW",
+    "MT_307": "kW",
+    "MT_308": "kW",
+    "MT_309": "kW",
+    "MT_310": "kW",
+    "MT_311": "kW",
+    "MT_312": "kW",
+    "MT_313": "kW",
+    "MT_314": "kW",
+    "MT_315": "kW",
+    "MT_316": "kW",
+    "MT_317": "kW",
+    "MT_318": "kW",
+    "MT_319": "kW",
+    "MT_320": "kW",
+    "MT_321": "kW",
+    "MT_322": "kW",
+    "MT_323": "kW",
+    "MT_324": "kW",
+    "MT_325": "kW",
+    "MT_326": "kW",
+    "MT_327": "kW",
+    "MT_328": "kW",
+    "MT_329": "kW",
+    "MT_330": "kW",
+    "MT_331": "kW",
+    "MT_332": "kW",
+    "MT_333": "kW",
+    "MT_334": "kW",
+    "MT_335": "kW",
+    "MT_336": "kW",
+    "MT_337": "kW",
+    "MT_338": "kW",
+    "MT_339": "kW",
+    "MT_340": "kW",
+    "MT_341": "kW",
+    "MT_342": "kW",
+    "MT_343": "kW",
+    "MT_344": "kW",
+    "MT_345": "kW",
+    "MT_346": "kW",
+    "MT_347": "kW",
+    "MT_348": "kW",
+    "MT_349": "kW",
+    "MT_350": "kW",
+    "MT_351": "kW",
+    "MT_352": "kW",
+    "MT_353": "kW",
+    "MT_354": "kW",
+    "MT_355": "kW",
+    "MT_356": "kW",
+    "MT_357": "kW",
+    "MT_358": "kW",
+    "MT_359": "kW",
+    "MT_360": "kW",
+    "MT_361": "kW",
+    "MT_362": "kW",
+    "MT_363": "kW",
+    "MT_364": "kW",
+    "MT_365": "kW",
+    "MT_366": "kW",
+    "MT_367": "kW",
+    "MT_368": "kW",
+    "MT_369": "kW",
+    "MT_370": "kW"
+   },
+   "licence": "OPEN_ATTRIBUTION (CC-BY-4.0), as the catalogue of this family records it",
+   "roles": {
+    "targets": "every client column (kW)",
+    "features": "the same columns (lagged) plus calendar (hour, weekday, DST flag) derived from the timestamp",
+    "metadata": [
+     "timestamp_label"
+    ],
+    "controls": "seasonal naive (daily and weekly), persistence"
+   },
+   "use_class": "ARCHIVE/DEV",
+   "availability": "UNDECLARED: the labels are data, not evidence of publication time; no completion lag, no point-in-time and no live-equivalent eligibility",
+   "time_zone": "UNKNOWN in the producer's contract (household); Portuguese wall clock stated by the producer (electricity) \u2014 neither is evidence of availability"
+  }
+ },
+ "adopted": true,
+ "binding": {
+  "accepted": true,
+  "why": "bound",
+  "rehearsal": "docs/audits/evidence/d3_k5_20260917/RP49/REHEARSAL_EXTERNAL_HOST.json",
+  "expected": {
+   "deployed_config_sha256": "b2a210cee5703bd78b5389d0df360d4f07a1502f15828d5aeed2e8b3ea2100ca",
+   "panels_sha256": {
+    "uci_235_individual_household_power/panel.parquet": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "uci_321_electricityloaddiagrams20112014/panel.parquet": "7cf225c4869e88abcb12b7fd274d532756e41fedbe3094ebc805cc803fc6a6a8"
+   },
+   "serving_provider_sha256": "c184664e83df08f5b696a1dda553addf7075fda9af8131d37be333ed68949e73",
+   "serving_provider_path": "/home/harveybc/Documents/GitHub/financial-data/store/src/financial_data_store/inventory.py",
+   "installed_provider_sha256": "3ea4ab5533405a044f71eacabe5d57dde9addf0244af4fbc8bdfd9918acb6a87",
+   "serving_tools_sha256": {
+    "df_public_lake_adopt.py": "4bf5ff64e8d4b930ee5efdfa2d0eaa4fb9bb79f5015fe8da90817d2de5371ff9",
+    "df_e1_governed.py": "4a017748b2cd0fe9fba3ea3515a29b6bcb3df5055343168ded8d9416d7b78ddc",
+    "df_e1_pilot.py": "176bd32792d268cc8a81835d3e67bd1221737ec7ea2ee832baf5280b433a9c6f",
+    "df_e1_close.py": "839efc222525b9026a5d8ae6553838ad7d9026506f3638571ef3e94d124f6f27",
+    "df_e1_receipts.py": "89eeee8d1a88e0109a520f51285005d2c61d796bc462f68d9b27b429704df3f9",
+    "governed_run.py": "5ac809f9503f8943599b9f0498eaa955f724a3f43cf860358cc414252914bbe0"
+   },
+   "repository_head": "f4cd82e84afcc64030f9868c0ee34c41b6ece867"
+  },
+  "rehearsed": {
+   "deployed_config_sha256": "b2a210cee5703bd78b5389d0df360d4f07a1502f15828d5aeed2e8b3ea2100ca",
+   "panels_sha256": {
+    "uci_235_individual_household_power/panel.parquet": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "uci_321_electricityloaddiagrams20112014/panel.parquet": "7cf225c4869e88abcb12b7fd274d532756e41fedbe3094ebc805cc803fc6a6a8"
+   },
+   "serving_provider_sha256": "c184664e83df08f5b696a1dda553addf7075fda9af8131d37be333ed68949e73",
+   "serving_provider_path": "/home/harveybc/Documents/GitHub/financial-data/store/src/financial_data_store/inventory.py",
+   "installed_provider_sha256": "3ea4ab5533405a044f71eacabe5d57dde9addf0244af4fbc8bdfd9918acb6a87",
+   "serving_tools_sha256": {
+    "df_public_lake_adopt.py": "4bf5ff64e8d4b930ee5efdfa2d0eaa4fb9bb79f5015fe8da90817d2de5371ff9",
+    "df_e1_governed.py": "4a017748b2cd0fe9fba3ea3515a29b6bcb3df5055343168ded8d9416d7b78ddc",
+    "df_e1_pilot.py": "176bd32792d268cc8a81835d3e67bd1221737ec7ea2ee832baf5280b433a9c6f",
+    "df_e1_close.py": "839efc222525b9026a5d8ae6553838ad7d9026506f3638571ef3e94d124f6f27",
+    "df_e1_receipts.py": "89eeee8d1a88e0109a520f51285005d2c61d796bc462f68d9b27b429704df3f9",
+    "governed_run.py": "5ac809f9503f8943599b9f0498eaa955f724a3f43cf860358cc414252914bbe0"
+   },
+   "repository_head": "ac8f4a8e78cf6f5febbc0b40bab8cc38c0d99bf5"
+  },
+  "route_ok": true
+ },
+ "lake_host_unit": "crispdm-data-lake-public-panels.service",
+ "lake_host_unit_file": "/home/harveybc/.config/systemd/user/crispdm-data-lake-public-panels.service",
+ "lake_host_start": {
+  "returncode": 0,
+  "stderr": ""
+ },
+ "lake_host_healthy": true,
+ "config_written_sha256": "e09b1850fb300134c247a114ae7b4558cf0691e11d53137cf8aba10654396161",
+ "restart": {
+  "returncode": 0,
+  "stderr": ""
+ },
+ "post_check": {
+  "uci_235_individual_household_power/panel.parquet": {
+   "campaign_http": 201,
+   "campaign_sha256": "5f70fe9bbb0faf9f49da5fb43406a53ace953df7cc090e4f17ff88968b89edfe",
+   "campaign_key": "rp46-adopt-1789928743-uci_235_individual_household_power-lake-route",
+   "units_registered": [
+    "route-1",
+    "route-probe-that-fails"
+   ],
+   "download": {
+    "http": 200,
+    "verification_state": "VERIFIED_CACHE",
+    "bytes": 10890295,
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "cached": true,
+    "availability_use": "UNDECLARED",
+    "availability_label": "UNKNOWN",
+    "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+    "delivery_id": "0acf22fc08b9402cb03b4f3a2ed9e518",
+    "path": "/home/harveybc/.cache/data-gov/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet"
+   },
+   "cache_reuse": {
+    "second_unit_cached": true,
+    "same_digest": true
+   },
+   "bytes_match_characterised": true,
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "delivered_bytes_verified": true,
+   "availability_stays_undeclared": true,
+   "terminals": {
+    "sent": 2,
+    "pending": 0,
+    "failures": {},
+    "units": {
+     "route-1": {
+      "status": "COMPLETED",
+      "payload": {
+       "schema": "governed_terminal.v1",
+       "generation": 1,
+       "status": "COMPLETED",
+       "reason": null,
+       "started_at": "2026-09-20T18:25:44Z",
+       "finished_at": "2026-09-20T18:25:44Z",
+       "costs": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": 0.0
+       },
+       "deliveries": [
+        "0acf22fc08b9402cb03b4f3a2ed9e518"
+       ],
+       "artifacts": [],
+       "metrics": [
+        {
+         "metric": "lake.delivered_bytes",
+         "split": "development",
+         "horizon": 1,
+         "unit": "bytes",
+         "value": 10890295.0,
+         "std_dev": null,
+         "min_value": null,
+         "max_value": null
+        }
+       ],
+       "tags": {
+        "purpose": "PUBLIC_LAKE_ROUTE",
+        "classification": "NON_GOVERNING",
+        "phase": "DEVELOPMENT",
+        "lake": "public_panels",
+        "resource": "uci_235_individual_household_power/panel.parquet"
+       }
+      }
+     },
+     "route-probe-that-fails": {
+      "status": "FAILED",
+      "payload": {
+       "schema": "governed_terminal.v1",
+       "generation": 1,
+       "status": "FAILED",
+       "reason": "route probe: deliberate failure after its delivery, closed so the campaign has no open unit",
+       "started_at": "2026-09-20T18:25:44Z",
+       "finished_at": "2026-09-20T18:25:44Z",
+       "costs": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": 0.0
+       },
+       "deliveries": [
+        "dc5106624d604a7582bbd8f3e5997f93"
+       ],
+       "artifacts": [],
+       "metrics": [],
+       "tags": {
+        "purpose": "PUBLIC_LAKE_ROUTE",
+        "classification": "NON_GOVERNING",
+        "phase": "DEVELOPMENT",
+        "lake": "public_panels",
+        "resource": "uci_235_individual_household_power/panel.parquet"
+       }
+      }
+     }
+    }
+   },
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "campaign_closed": true,
+   "warehouse": {
+    "per_unit": {
+     "route-1": {
+      "present": true,
+      "status_matches": true,
+      "metrics_match": true,
+      "metric_rows": {
+       "sent": 1,
+       "stored": 1
+      },
+      "costs_match": true,
+      "tags_match": true,
+      "artifacts_stored": 0,
+      "terminal_sha256": "3b058a4b563de6b2f71e1883f3be80b2b4a38dd4e116f37c288fdedf081beb8e",
+      "generation": 1
+     },
+     "route-probe-that-fails": {
+      "present": true,
+      "status_matches": true,
+      "metrics_match": true,
+      "metric_rows": {
+       "sent": 0,
+       "stored": 0
+      },
+      "costs_match": true,
+      "tags_match": true,
+      "artifacts_stored": 0,
+      "terminal_sha256": "f284799bbf757f4dba2b5054397758267ece098ce283460ba08c7ed25e9a6e40",
+      "generation": 1
+     }
+    },
+    "content_matches": true,
+    "rows_all_generations": 2,
+    "reader": "tools/df_mod_e0_close.warehouse_terminals (the canonical reader: terminal row plus its metric, dataset and artifact children)"
+   },
+   "ranged_request": {
+    "campaign_http": 403,
+    "campaign_body": {
+     "error": "holdout"
+    },
+    "download_http": 400,
+    "body": {
+     "error": "invalid campaign_sha256"
+    },
+    "refused_at": "CAMPAIGN_REGISTRATION",
+    "refused": true,
+    "semantics": "retrospective archive: its rows' availability was never observed, so the archive is withheld from its own first day and only whole-resource AS_IS delivery is possible",
+    "holdout_start": "2006-12-16"
+   },
+   "undeclared_resource": {
+    "http": 403,
+    "body": {
+     "error": "dataset request is not declared by campaign"
+    }
+   },
+   "download_without_campaign": {
+    "http": 400,
+    "body": {
+     "error": "invalid campaign_sha256"
+    }
+   },
+   "refusals_hold": true,
+   "route_complete": true
+  },
+  "uci_321_electricityloaddiagrams20112014/panel.parquet": {
+   "campaign_http": 201,
+   "campaign_sha256": "841b38dd86aebba9e5d2df4705ebdc14d4ad393aaa6cb60785f0250b420e9a16",
+   "campaign_key": "rp46-adopt-1789928744-uci_321_electricityloaddiagrams20112014-lake-route",
+   "units_registered": [
+    "route-1",
+    "route-probe-that-fails"
+   ],
+   "download": {
+    "http": 200,
+    "verification_state": "VERIFIED_CACHE",
+    "bytes": 41944864,
+    "sha256": "7cf225c4869e88abcb12b7fd274d532756e41fedbe3094ebc805cc803fc6a6a8",
+    "cached": true,
+    "availability_use": "UNDECLARED",
+    "availability_label": "UNKNOWN",
+    "availability_contract_sha256": "e2824b6eb94721bf01cd4087c6b99b14100cba797e4f52dda01c2cb3666e786f",
+    "delivery_id": "0551fa84d5ef4e63a7f21a63d78d23de",
+    "path": "/home/harveybc/.cache/data-gov/public_panels/7cf225c4869e88abcb12b7fd274d532756e41fedbe3094ebc805cc803fc6a6a8.parquet"
+   },
+   "cache_reuse": {
+    "second_unit_cached": true,
+    "same_digest": true
+   },
+   "bytes_match_characterised": true,
+   "bytes_on_disk_sha256": "7cf225c4869e88abcb12b7fd274d532756e41fedbe3094ebc805cc803fc6a6a8",
+   "delivered_bytes_verified": true,
+   "availability_stays_undeclared": true,
+   "terminals": {
+    "sent": 2,
+    "pending": 0,
+    "failures": {},
+    "units": {
+     "route-1": {
+      "status": "COMPLETED",
+      "payload": {
+       "schema": "governed_terminal.v1",
+       "generation": 1,
+       "status": "COMPLETED",
+       "reason": null,
+       "started_at": "2026-09-20T18:25:45Z",
+       "finished_at": "2026-09-20T18:25:45Z",
+       "costs": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": 0.0
+       },
+       "deliveries": [
+        "0551fa84d5ef4e63a7f21a63d78d23de"
+       ],
+       "artifacts": [],
+       "metrics": [
+        {
+         "metric": "lake.delivered_bytes",
+         "split": "development",
+         "horizon": 1,
+         "unit": "bytes",
+         "value": 41944864.0,
+         "std_dev": null,
+         "min_value": null,
+         "max_value": null
+        }
+       ],
+       "tags": {
+        "purpose": "PUBLIC_LAKE_ROUTE",
+        "classification": "NON_GOVERNING",
+        "phase": "DEVELOPMENT",
+        "lake": "public_panels",
+        "resource": "uci_321_electricityloaddiagrams20112014/panel.parquet"
+       }
+      }
+     },
+     "route-probe-that-fails": {
+      "status": "FAILED",
+      "payload": {
+       "schema": "governed_terminal.v1",
+       "generation": 1,
+       "status": "FAILED",
+       "reason": "route probe: deliberate failure after its delivery, closed so the campaign has no open unit",
+       "started_at": "2026-09-20T18:25:45Z",
+       "finished_at": "2026-09-20T18:25:45Z",
+       "costs": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": 0.0
+       },
+       "deliveries": [
+        "f45f88366ad145cfb2793bf790cbef70"
+       ],
+       "artifacts": [],
+       "metrics": [],
+       "tags": {
+        "purpose": "PUBLIC_LAKE_ROUTE",
+        "classification": "NON_GOVERNING",
+        "phase": "DEVELOPMENT",
+        "lake": "public_panels",
+        "resource": "uci_321_electricityloaddiagrams20112014/panel.parquet"
+       }
+      }
+     }
+    }
+   },
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "campaign_closed": true,
+   "warehouse": {
+    "per_unit": {
+     "route-1": {
+      "present": true,
+      "status_matches": true,
+      "metrics_match": true,
+      "metric_rows": {
+       "sent": 1,
+       "stored": 1
+      },
+      "costs_match": true,
+      "tags_match": true,
+      "artifacts_stored": 0,
+      "terminal_sha256": "bd98bf88f0b824f954e9c3522922903898153b083724f8108b6dbc5a3f3f3b89",
+      "generation": 1
+     },
+     "route-probe-that-fails": {
+      "present": true,
+      "status_matches": true,
+      "metrics_match": true,
+      "metric_rows": {
+       "sent": 0,
+       "stored": 0
+      },
+      "costs_match": true,
+      "tags_match": true,
+      "artifacts_stored": 0,
+      "terminal_sha256": "31b9887fe67aaba1c6055faf77f87033da6f4477851c7b1baccb2cf8897ff378",
+      "generation": 1
+     }
+    },
+    "content_matches": true,
+    "rows_all_generations": 2,
+    "reader": "tools/df_mod_e0_close.warehouse_terminals (the canonical reader: terminal row plus its metric, dataset and artifact children)"
+   },
+   "ranged_request": {
+    "campaign_http": 403,
+    "campaign_body": {
+     "error": "holdout"
+    },
+    "download_http": 400,
+    "body": {
+     "error": "invalid campaign_sha256"
+    },
+    "refused_at": "CAMPAIGN_REGISTRATION",
+    "refused": true,
+    "semantics": "retrospective archive: its rows' availability was never observed, so the archive is withheld from its own first day and only whole-resource AS_IS delivery is possible",
+    "holdout_start": "2006-12-16"
+   },
+   "undeclared_resource": {
+    "http": 403,
+    "body": {
+     "error": "dataset request is not declared by campaign"
+    }
+   },
+   "download_without_campaign": {
+    "http": 400,
+    "body": {
+     "error": "invalid campaign_sha256"
+    }
+   },
+   "refusals_hold": true,
+   "route_complete": true
+  }
+ },
+ "after": {
+  "schema": "df_public_lake_inventory.v1",
+  "at": "2026-09-20T18:25:45Z",
+  "host": "omega",
+  "runtime_config": {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json",
+   "sha256": "e09b1850fb300134c247a114ae7b4558cf0691e11d53137cf8aba10654396161"
+  },
+  "lakes": [
+   {
+    "plugin": "http_lake",
+    "lake_id": "financial_files",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "base_url": "http://127.0.0.1:5056"
+   },
+   {
+    "plugin": "http_lake",
+    "lake_id": "olap_cube",
+    "kind": "warehouse",
+    "engine": "sql_olap",
+    "base_url": "http://127.0.0.1:5057"
+   },
+   {
+    "plugin": "files_lake",
+    "lake_id": "predictor_examples",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "root_path": "/home/harveybc/Documents/GitHub/predictor/examples/data_downsampled"
+   },
+   {
+    "plugin": "http_lake",
+    "lake_id": "governance_smoke",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "base_url": "http://127.0.0.1:5058"
+   },
+   {
+    "plugin": "http_lake",
+    "lake_id": "public_panels",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "base_url": "http://127.0.0.1:5059"
+   }
+  ],
+  "policies": [
+   {
+    "principal": "*",
+    "lake": "financial_files",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2025-01-01"
+   },
+   {
+    "principal": "*",
+    "lake": "olap_cube",
+    "verbs": [
+     "discover",
+     "query",
+     "write_metrics",
+     "write_terminal"
+    ],
+    "require_lineage": true,
+    "deny_from": "2025-01-01"
+   },
+   {
+    "principal": "*",
+    "lake": "predictor_examples",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2025-01-01"
+   },
+   {
+    "principal": "predictor",
+    "lake": "governance_smoke",
+    "verbs": [
+     "download"
+    ]
+   },
+   {
+    "principal": "satoshi-gamma",
+    "lake": "governance_smoke",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ]
+   },
+   {
+    "principal": "satoshi-dragon",
+    "lake": "governance_smoke",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ]
+   },
+   {
+    "principal": "predictor",
+    "lake": "public_panels",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2006-12-16"
+   },
+   {
+    "principal": "satoshi-gamma",
+    "lake": "public_panels",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2006-12-16"
+   },
+   {
+    "principal": "satoshi-dragon",
+    "lake": "public_panels",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2006-12-16"
+   }
+  ],
+  "principals": [
+   "doin",
+   "harvey",
+   "heuristic-strategy",
+   "musashi",
+   "predictor",
+   "satoshi-dragon",
+   "satoshi-gamma"
+  ],
+  "accounting_db": "/home/harveybc/Documents/GitHub/data-gov/var/accounting.db",
+  "services": {
+   "crispdm-data-gov.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-gov.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Sun 2026-09-20 13:25:42 -05",
+    "returncode": 0
+   },
+   "crispdm-data-lake-financial.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-lake-financial.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   },
+   "crispdm-data-warehouse-olap.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-warehouse-olap.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   },
+   "crispdm-data-lake-synthetic.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-lake-synthetic.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   },
+   "crispdm-olap-loader-duckdb.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-olap-loader-duckdb.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   }
+  },
+  "ports": [
+   {
+    "port": 5055,
+    "open": true
+   },
+   {
+    "port": 5056,
+    "open": true
+   },
+   {
+    "port": 5057,
+    "open": true
+   },
+   {
+    "port": 5058,
+    "open": true
+   }
+  ],
+  "public_panels_present": {
+   "uci_235_individual_household_power/panel.parquet": true,
+   "uci_321_electricityloaddiagrams20112014/panel.parquet": true
+  },
+  "public_panel_lake_registered": true,
+  "note": "read-only inventory; no service was started, stopped or configured by this command"
+ },
+ "effective_identity": {
+  "lake_host_unit_state": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "FragmentPath": "/home/harveybc/.config/systemd/user/crispdm-data-lake-public-panels.service",
+   "NRestarts": "0",
+   "ExecMainStartTimestamp": "Sun 2026-09-20 13:25:41 -05",
+   "returncode": 0
+  },
+  "serving_provider_sha256": "c184664e83df08f5b696a1dda553addf7075fda9af8131d37be333ed68949e73",
+  "config_on_disk_sha256": "e09b1850fb300134c247a114ae7b4558cf0691e11d53137cf8aba10654396161",
+  "lakes_now": [
+   "financial_files",
+   "olap_cube",
+   "predictor_examples",
+   "governance_smoke",
+   "public_panels"
+  ]
+ }
+}
