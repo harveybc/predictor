@@ -52,6 +52,13 @@ def _load(name: str):
 
 C = _load("e3_weekly_controller")
 
+#: The environment's INHERENT latency, in bars, from the decision bar to the execution bar: the action
+#: decided on bar b is applied while the strategy processes bar b+1 and the broker fills it at that
+#: bar's open, which the clock and the broker's own execution instant both report as bar b+2. It is a
+#: property of this deployed environment, not a choice, so a shorter contract is refused rather than
+#: relabelled, and a longer one is produced by holding the order.
+MINIMUM_LATENCY_BARS = 2
+
 #: what this simulator's broker does not define, declared instead of pretended
 UNSUPPORTED = {"partial_fill": "this broker emits only terminal aggregate fills and raises on a residual size",
                "order_cancellation_by_caller": "the runtime never cancels; a pending order ends by the broker's own verdict"}
@@ -71,21 +78,22 @@ def _utc(ts) -> datetime:
 def check_execution_contract(env, config: dict, controller, *, bar_step: timedelta) -> dict:
     """Refuse, before any bar, a contract this environment cannot execute."""
     problems = []
-    mode = str(config.get("action_space_mode") or "")
-    fractional = bool(config.get("fractional_position_sizing"))
-    unit = float(config.get("position_size") or 0.0)
-    if mode != "continuous" or not fractional:
-        problems.append("the environment is not in continuous/fractional mode, so a decided quantity cannot be "
-                        f"transmitted (action_space_mode={mode!r}, fractional_position_sizing={fractional})")
-    if unit <= 0:
-        problems.append(f"the environment's unit (position_size) is {unit!r}")
-    if controller.latency_bars < 1:
-        problems.append("a latency below one bar cannot be executed by an environment that fills at the next bar")
-    contract = {"environment_unit": unit, "fill_rule": "the broker fills at the next bar's open",
+    plugin = getattr(env, "strategy_plugin", None)
+    if plugin is None or not callable(getattr(plugin, "apply_action", None)):
+        problems.append("the environment carries no execution plugin, so the decided quantity would never reach the "
+                        "broker and its own position_size would size the order instead")
+    if controller.latency_bars < MINIMUM_LATENCY_BARS:
+        problems.append(f"a latency of {controller.latency_bars} bar(s) cannot be executed: this environment applies the "
+                        f"action while processing the following bar and the broker fills it at that bar's open, so the "
+                        f"minimum executable latency is {MINIMUM_LATENCY_BARS} bars")
+    contract = {"execution_channel": "tools/e3_weekly_strategy.WeeklyExecutionPlugin: strategy.buy(size=decided units)",
+                "fill_rule": "the broker fills at the next bar's open",
                 "latency_bars_contracted": controller.latency_bars,
-                "latency_implementation": ("the order is held and submitted at the (k-1)th bar after the decision, "
-                                           "so the fill lands k bars after it"),
-                "quantity_channel": "the fraction of the environment's unit travels in the continuous action",
+                "latency_minimum_bars": MINIMUM_LATENCY_BARS,
+                "latency_implementation": (f"the environment costs {MINIMUM_LATENCY_BARS} bars by itself; a longer contract "
+                                           f"is produced by holding the order the remaining bars before submitting it"),
+                "environment_position_size": float(config.get("position_size") or 0.0),
+                "environment_position_size_note": "not used to size anything here: the plugin places the decided units",
                 "unsupported": dict(UNSUPPORTED), "problems": problems}
     if problems:
         raise ExecutionContractRefused("REFUSED: " + "; ".join(problems))
@@ -93,20 +101,38 @@ def check_execution_contract(env, config: dict, controller, *, bar_step: timedel
 
 
 def _bar_time(env):
-    """The environment's own clock for the current bar, read from its data feed."""
-    strategy = getattr(env, "_strategy_instance", None)
-    data = getattr(strategy, "data", None)
-    if data is None:
+    """The environment's own clock for the current bar: the timestamp its DATA FEED published to the
+    execution plugin on that bar. A bar counter is not a clock and is refused."""
+    plugin = getattr(env, "strategy_plugin", None)
+    clock = list(getattr(plugin, "clock", []) or [])
+    if not clock:
         return None
-    try:
-        return _utc(data.datetime.datetime(0))
-    except Exception:
-        return None
+    return _utc(datetime.fromisoformat(clock[-1]["time"]))
+
+
+def _bar_index(env) -> int:
+    """The bar the strategy is on, from backtrader's own count (published with the clock)."""
+    plugin = getattr(env, "strategy_plugin", None)
+    clock = list(getattr(plugin, "clock", []) or [])
+    return int(clock[-1]["bar_index"]) if clock else -1
 
 
 def _completed_fills(env) -> list:
-    strategy = getattr(env, "_strategy_instance", None)
-    return list(getattr(strategy, "_completed_fills", []) or [])
+    plugin = getattr(env, "strategy_plugin", None)
+    return list(getattr(plugin, "fills", []) or [])
+
+
+def _index_of_time(bars, iso_time) -> int | None:
+    """Where the execution instant falls in the data the environment is reading."""
+    stamp = datetime.fromisoformat(iso_time)
+    try:
+        index = list(bars.index) if hasattr(bars, "index") else list(bars["DATE_TIME"])
+    except Exception:
+        return None
+    for position, value in enumerate(index):
+        if _utc(value) == stamp:
+            return position
+    return None
 
 
 def _open_orders(info: dict) -> tuple:
@@ -119,17 +145,27 @@ def run_weekly(env, controller, bars, *, config: dict, bar_step: timedelta, feat
     """One continuous episode on the real environment, with the quantity transmitted and every
     execution fact observed."""
     contract = check_execution_contract(env, config, controller, bar_step=bar_step)
-    unit = contract["environment_unit"]
+    plugin = env.strategy_plugin
     obs, info = env.reset()
+    # The environment publishes its bar timestamp when an action is applied, so the first bar is a
+    # declared CLOCK SYNCHRONISATION step: a hold, which is also what the controller decides before
+    # any model is released. It places no order, and the episode's decisions start at the next bar.
+    if not list(getattr(plugin, "clock", []) or []):
+        obs, _, terminated, truncated, info = env.step(0)
+        contract["clock_synchronisation"] = {"bars_consumed": 1, "action": "hold",
+                                             "why": "the environment publishes its clock when an action is applied",
+                                             "orders_placed": len(getattr(plugin, "submissions", []))}
+        if contract["clock_synchronisation"]["orders_placed"]:
+            raise ExecutionContractRefused("REFUSED: the clock synchronisation step placed an order")
     records, fills, refusals, clock = [], [], [], []
     equity_path = [float(info.get("equity"))]
     queue = []                      # orders decided but not yet submitted (the contracted latency)
     outstanding = {}                # what the runtime knows about the order it last submitted
-    seen_fill_refs = {int(f["order_ref"]) for f in _completed_fills(env)}
+    seen_fill_refs = set()
     steps = 0
     previous_time = None
     while max_steps is None or steps < max_steps:
-        env_bar = int(info.get("bar_index") or 0) - 1
+        env_bar = _bar_index(env)
         bar_time = _bar_time(env)
         if bar_time is None:
             raise ExecutionContractRefused("REFUSED: the environment publishes no bar timestamp; a bar counter is not a clock")
@@ -175,28 +211,26 @@ def run_weekly(env, controller, bars, *, config: dict, bar_step: timedelta, feat
             queue.append({"decided_at_bar": env_bar, "decided_at": bar_time, "action": record["action"],
                           "units": float(record.get("size_units") or 0.0),
                           "notional": float(record.get("notional") or 0.0),
-                          "submit_at_bar": env_bar + max(0, controller.latency_bars - 1)})
+                          "submit_at_bar": env_bar + max(0, controller.latency_bars - MINIMUM_LATENCY_BARS)})
         submit = [o for o in queue if o["submit_at_bar"] <= env_bar]
         queue = [o for o in queue if o["submit_at_bar"] > env_bar]
-        env_action = 0.0
+        env_action = 0
         submitted = None
         if submit:
             submitted = submit[0]
-            if submitted["action"] == C.LONG:
-                fraction = submitted["units"] / unit if unit > 0 else 0.0
-                if not math.isfinite(fraction) or fraction <= 0 or fraction > 1 + 1e-12:
-                    raise ExecutionContractRefused(
-                        f"REFUSED: the decided quantity {submitted['units']} is not expressible as a fraction of the "
-                        f"environment's unit {unit} (fraction {fraction})")
-                env_action = float(fraction)          # continuous + fractional: direction and magnitude in one value
-            else:
-                env_action = 0.0                      # flat target: the fractional path closes the position
+            if submitted["action"] == C.LONG and not (submitted["units"] > 0 and math.isfinite(submitted["units"])):
+                raise ExecutionContractRefused(
+                    f"REFUSED: a long was decided with size {submitted['units']!r}, which the broker cannot execute")
+            # the DECIDED quantity goes to the plugin, which places exactly it; the action carries the direction
+            plugin.next_order = {"action": submitted["action"], "units": submitted["units"],
+                                 "decided_at_bar": submitted["decided_at_bar"]}
+            env_action = 1 if submitted["action"] == C.LONG else 3
             outstanding.update(awaiting_fill=True, **{k: v for k, v in submitted.items() if k != "action"})
             outstanding["action"] = submitted["action"]
         record.update(submitted_now=bool(submitted), env_action=env_action,
                       queued_orders=[{k: (v.isoformat() if hasattr(v, "isoformat") else v) for k, v in o.items()}
                                      for o in queue])
-        obs, reward, terminated, truncated, info = env.step(env_action)
+        obs, reward, terminated, truncated, info = env.step(int(env_action))
         after_units = float(info.get("position_units") or 0.0)
         # --- fills, from the broker's own completed-order evidence -----------------------------------
         for fill in _completed_fills(env):
@@ -204,15 +238,19 @@ def run_weekly(env, controller, bars, *, config: dict, bar_step: timedelta, feat
             if ref in seen_fill_refs:
                 continue
             seen_fill_refs.add(ref)
-            decided_for = outstanding if outstanding.get("awaiting_fill") else {}
-            decided_units = decided_for.get("units")
-            executed = abs(float(fill["size"]))
-            fills.append({"order_ref": ref, "executed_price": float(fill["price"]), "executed_size": executed,
-                          "signed_size": float(fill["size"]), "commission": float(fill["commission"]),
-                          "fill_bar": int(fill["bar_index"]) - 1,
-                          "decided_at_bar": decided_for.get("decided_at_bar"), "decided_units": decided_units,
-                          "decision_time": (decided_for.get("decided_at").isoformat()
-                                            if hasattr(decided_for.get("decided_at"), "isoformat") else None),
+            executed = abs(float(fill["executed_size"]))
+            decided_units = fill.get("decided_units")
+            # the bar of the fill is the bar of its EXECUTION instant, looked up in the clock the
+            # environment published; the notification's own bar is kept beside it, not in its place
+            executed_time = fill.get("executed_time")
+            fill_bar = next((c["env_bar"] for c in clock if c["time"] == executed_time), None)
+            if fill_bar is None and executed_time is not None:
+                fill_bar = _index_of_time(bars, executed_time)
+            fills.append({"order_ref": ref, "executed_price": float(fill["executed_price"]), "executed_size": executed,
+                          "signed_size": float(fill["executed_size"]), "commission": float(fill["commission"]),
+                          "fill_bar": fill_bar, "fill_time": executed_time, "notified_at_bar": fill.get("notified_at_bar"),
+                          "notified_at": fill.get("notified_at"), "role": fill.get("role"),
+                          "decided_at_bar": fill.get("decided_at_bar"), "decided_units": decided_units,
                           "quantity_matches_decision": (decided_units is not None
                                                         and abs(executed - decided_units) <= 1e-9 + 1e-6 * max(1.0, decided_units)),
                           "source": "BROKER_EXECUTION_EVENT"})
@@ -229,6 +267,8 @@ def run_weekly(env, controller, bars, *, config: dict, bar_step: timedelta, feat
             break
     env.close()
     return {"contract": contract, "records": records, "fills": fills, "refusals": refusals, "clock": clock,
+            "plugin": {"submissions": list(getattr(plugin, "submissions", [])), "events": list(getattr(plugin, "events", [])),
+                       "refusals": list(getattr(plugin, "refusals", []))},
             "equity_path": equity_path, "queue_at_end": [{k: (v.isoformat() if hasattr(v, "isoformat") else v)
                                                           for k, v in o.items()} for o in queue],
             "final": {"equity": equity_path[-1], "units": float(info.get("position_units") or 0.0),

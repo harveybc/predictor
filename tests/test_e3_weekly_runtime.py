@@ -43,6 +43,7 @@ Metrics = _load("default_metrics", GYMFX / "metrics_plugins").Plugin
 
 C = _load("e3_weekly_controller", HERE.parent / "tools")
 RT = _load("e3_weekly_runtime", HERE.parent / "tools")
+SP = _load("e3_weekly_strategy", HERE.parent / "tools")
 
 UTC = timezone.utc
 T0 = datetime(2024, 1, 1, tzinfo=UTC)                 # a Monday
@@ -59,19 +60,20 @@ def _frame(n_bars, *, start="2024-01-01 00:00:00", slope=0.001, base=100.0, gap=
                          "CLOSE": close, "VOLUME": 1000.0})
 
 
-def _env(tmp_path, frame, *, commission=0.001, cash=1.0, window=8, fractional=True, mode="continuous"):
-    """The environment configured so a DECIDED quantity can be transmitted: its unit is the whole
-    equity at the first price, and the action carries the fraction of that unit."""
+def _env(tmp_path, frame, *, commission=0.001, cash=1.0, window=8, plugin=True):
+    """The environment with the execution plugin through which a DECIDED quantity reaches the broker.
+    `plugin=False` is the previous wiring, where the environment would size the order itself."""
+    tmp_path = Path(tmp_path)
+    tmp_path.mkdir(parents=True, exist_ok=True)
     csv = tmp_path / "bars.csv"
     frame.to_csv(csv, index=False)
     price0 = float(frame["OPEN"].iloc[0])
     config = {"input_data_file": str(csv), "date_column": "DATE_TIME", "price_column": "CLOSE", "window_size": window,
               "initial_cash": cash, "position_size": cash / price0, "min_equity": cash * 0.01, "env_mode": "training",
               "commission": commission, "slippage_perc": 0.0, "leverage": 1.0, "feature_columns": [],
-              "feature_binary_columns": [], "timeframe": "1h",
-              "action_space_mode": mode, "fractional_position_sizing": fractional,
-              "continuous_action_threshold": 0.01}
-    env = GymFxEnv(config, DataFeed(config), Broker(config), None, Preprocessor(config), Reward(config), Metrics(config))
+              "feature_binary_columns": [], "timeframe": "1h"}
+    execution = SP.WeeklyExecutionPlugin() if plugin else None
+    env = GymFxEnv(config, DataFeed(config), Broker(config), execution, Preprocessor(config), Reward(config), Metrics(config))
     return env, config
 
 
@@ -91,18 +93,18 @@ def test_RP45_the_quantity_the_controller_decides_is_the_quantity_the_broker_exe
     """The dictum's table: 0.1 decided / 0.005 executed, 0.8 decided / 0.005 executed."""
     frame = _frame(120, slope=0.0, gap=0.0)
     env, cfg = _env(tmp_path / str(fraction), frame)
-    ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], size_fraction=fraction)
+    ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], size_fraction=fraction, latency_bars=RT.MINIMUM_LATENCY_BARS)
     out = RT.run_weekly(env, ctrl, _bars(frame), config=cfg, bar_step=HOUR, max_steps=30)
     assert out["fills"], "the broker executed nothing"
     fill = out["fills"][0]
     assert fill["source"] == "BROKER_EXECUTION_EVENT" and isinstance(fill["order_ref"], int)
-    assert fill["decided_units"] == pytest.approx(fraction * 1.0 / 100.0, rel=1e-9)
+    assert fill["decided_units"] == pytest.approx(fraction * 1.0 / 100.0, rel=1e-9)   # fraction of equity at price 100
     assert fill["executed_size"] == pytest.approx(fill["decided_units"], rel=1e-6), (fraction, fill)
     assert fill["quantity_matches_decision"]
     assert fill["commission"] == pytest.approx(cfg["commission"] * fill["executed_price"] * fill["executed_size"], rel=1e-6)
 
 
-@pytest.mark.parametrize("latency", [1, 2, 3])
+@pytest.mark.parametrize("latency", [2, 3, 4])
 def test_RP45_the_contracted_latency_is_executed_not_relabelled(tmp_path, latency):
     frame = _frame(120, slope=0.0, gap=0.0)
     env, cfg = _env(tmp_path / str(latency), frame)
@@ -114,42 +116,48 @@ def test_RP45_the_contracted_latency_is_executed_not_relabelled(tmp_path, latenc
     expected = datetime.fromisoformat(decision["expected_fill_time"])
     assert expected == datetime.fromisoformat(decision["bar_time"]) + latency * HOUR
     # and the bar the broker filled on is the bar the clock says it is
-    assert out["clock"][fill["fill_bar"]]["time"] == expected.isoformat()
+    assert next(c for c in out["clock"] if c["env_bar"] == fill["fill_bar"])["time"] == expected.isoformat()
+    assert fill["fill_time"] == expected.isoformat()
+
+
+def test_RP45_a_latency_this_environment_cannot_execute_is_refused_before_the_episode(tmp_path):
+    frame = _frame(60, slope=0.0, gap=0.0)
+    env, cfg = _env(tmp_path, frame)
+    ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], latency_bars=1)
+    with pytest.raises(RT.ExecutionContractRefused, match="minimum executable latency"):
+        RT.run_weekly(env, ctrl, _bars(frame), config=cfg, bar_step=HOUR, max_steps=5)
+    assert RT.MINIMUM_LATENCY_BARS == 2
 
 
 def test_RP45_an_environment_that_cannot_execute_the_contract_is_refused_before_the_episode(tmp_path):
     frame = _frame(60, slope=0.0, gap=0.0)
-    env, cfg = _env(tmp_path, frame, fractional=False)
-    ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))])
-    with pytest.raises(RT.ExecutionContractRefused, match="continuous/fractional"):
+    env, cfg = _env(tmp_path, frame, plugin=False)
+    ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], latency_bars=RT.MINIMUM_LATENCY_BARS)
+    with pytest.raises(RT.ExecutionContractRefused, match="no execution plugin"):
         RT.run_weekly(env, ctrl, _bars(frame), config=cfg, bar_step=HOUR, max_steps=5)
     env.close()
-    (tmp_path / "b").mkdir()
     env2, cfg2 = _env(tmp_path / "b", frame)
-    ctrl2 = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], size_fraction=1.0)
-    bad = dict(cfg2, position_size=cfg2["position_size"] / 10.0)          # the unit is smaller than the decision
-    with pytest.raises(RT.ExecutionContractRefused, match="not expressible as a fraction"):
-        RT.run_weekly(env2, ctrl2, _bars(frame), config=bad, bar_step=HOUR, max_steps=10)
+    ctrl2 = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], size_fraction=1.0, latency_bars=RT.MINIMUM_LATENCY_BARS)
+    out = RT.run_weekly(env2, ctrl2, _bars(frame), config=cfg2, bar_step=HOUR, max_steps=10)
+    assert out["contract"]["environment_position_size_note"].startswith("not used")
 
 
 def test_RP45_the_clock_is_the_environments_and_an_inconsistent_one_refuses(tmp_path):
     frame = _frame(80, slope=0.0, gap=0.0)
     env, cfg = _env(tmp_path, frame)
-    ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.HOLD, "hold"))])
+    ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.HOLD, "hold"))], latency_bars=RT.MINIMUM_LATENCY_BARS)
     out = RT.run_weekly(env, ctrl, _bars(frame), config=cfg, bar_step=HOUR, max_steps=20)
     times = [datetime.fromisoformat(c["time"]) for c in out["clock"]]
     assert times == sorted(times) and len(set(times)) == len(times)
     assert times[0] == _bars(frame).index[out["clock"][0]["env_bar"]].to_pydatetime()
     # a frame whose dates disagree with the environment's own feed is refused, not reconciled
-    (tmp_path / "b").mkdir()
     env2, cfg2 = _env(tmp_path / "b", frame)
     shifted = _bars(frame).copy()
     shifted.index = shifted.index + timedelta(days=7)
-    ctrl2 = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.HOLD, "hold"))])
+    ctrl2 = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.HOLD, "hold"))], latency_bars=RT.MINIMUM_LATENCY_BARS)
     with pytest.raises(RT.ExecutionContractRefused, match="says"):
         RT.run_weekly(env2, ctrl2, shifted, config=cfg2, bar_step=HOUR, max_steps=5)
     # a constant counter with the appearance of a clock is refused
-    (tmp_path / "c").mkdir()
     env3, cfg3 = _env(tmp_path / "c", frame)
     import e3_weekly_runtime as R
     original = R._bar_time
@@ -191,7 +199,7 @@ def test_RP45_a_pending_order_ends_by_the_brokers_verdict_and_survives_a_week_ch
 def test_RP45_partial_fills_are_declared_out_of_scope_rather_than_pretended(tmp_path):
     frame = _frame(40, slope=0.0, gap=0.0)
     env, cfg = _env(tmp_path, frame)
-    ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))])
+    ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], latency_bars=RT.MINIMUM_LATENCY_BARS)
     out = RT.run_weekly(env, ctrl, _bars(frame), config=cfg, bar_step=HOUR, max_steps=10)
     assert "partial_fill" in out["contract"]["unsupported"]
     assert all(f["executed_size"] > 0 for f in out["fills"])
@@ -200,12 +208,11 @@ def test_RP45_partial_fills_are_declared_out_of_scope_rather_than_pretended(tmp_
 def test_RP45_the_fallback_and_opposite_models_still_govern_with_the_real_quantities(tmp_path):
     frame = _frame(WEEK_BARS + 20, slope=0.0, gap=0.0)
     env, cfg = _env(tmp_path, frame)
-    ctrl = C.WeeklyLongFlatController([_release(1, model=RT.ConstantModel(C.LONG, "week1_long"), name="w1")])
+    ctrl = C.WeeklyLongFlatController([_release(1, model=RT.ConstantModel(C.LONG, "week1_long"), name="w1")], latency_bars=RT.MINIMUM_LATENCY_BARS)
     out = RT.run_weekly(env, ctrl, _bars(frame), config=cfg, bar_step=HOUR, max_steps=WEEK_BARS - 10)
     assert not out["fills"] and out["final"]["units"] == 0
-    (tmp_path / "b").mkdir()
     env2, cfg2 = _env(tmp_path / "b", frame)
-    ctrl2 = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "week0_long"), name="w0")])
+    ctrl2 = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "week0_long"), name="w0")], latency_bars=RT.MINIMUM_LATENCY_BARS)
     out2 = RT.run_weekly(env2, ctrl2, _bars(frame), config=cfg2, bar_step=HOUR, max_steps=WEEK_BARS - 10)
     assert out2["fills"] and out2["final"]["units"] > 0
 
@@ -213,12 +220,11 @@ def test_RP45_the_fallback_and_opposite_models_still_govern_with_the_real_quanti
 def test_RP45_a_short_proposal_and_a_foreign_model_never_reach_the_broker(tmp_path):
     frame = _frame(60, slope=0.0, gap=0.0)
     env, cfg = _env(tmp_path, frame)
-    ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.SHORT, "shorty"))])
+    ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.SHORT, "shorty"))], latency_bars=RT.MINIMUM_LATENCY_BARS)
     out = RT.run_weekly(env, ctrl, _bars(frame), config=cfg, bar_step=HOUR, max_steps=20)
     assert not out["fills"] and ctrl.state.refused_proposals and out["final"]["units"] == 0
-    (tmp_path / "b").mkdir()
     env2, cfg2 = _env(tmp_path / "b", frame)
-    ctrl2 = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.CLOSE, "flat"), name="m0")])
+    ctrl2 = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.CLOSE, "flat"), name="m0")], latency_bars=RT.MINIMUM_LATENCY_BARS)
     out2 = RT.run_weekly(env2, ctrl2, _bars(frame), config=cfg2, bar_step=HOUR, max_steps=20,
                          external=lambda i, info: (C.LONG, "someone_elses_model"))
     assert out2["refusals"] and not out2["fills"]
@@ -232,31 +238,31 @@ def test_RP45_mutants_of_the_production_path_fail_the_same_acceptance(tmp_path, 
     bars = _bars(frame)
     if mutant == "direction_only":
         env, cfg = _env(tmp_path, frame)
-        ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], size_fraction=0.1)
-        bad = dict(cfg, fractional_position_sizing=False, action_space_mode="discrete")
-        with pytest.raises(RT.ExecutionContractRefused):          # sending only a direction is refused, not silently sized
-            RT.run_weekly(env, ctrl, bars, config=bad, bar_step=HOUR, max_steps=10)
+        ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], size_fraction=0.1, latency_bars=RT.MINIMUM_LATENCY_BARS)
+        env.strategy_plugin = None                                 # the mutation: no execution channel
+        with pytest.raises(RT.ExecutionContractRefused):           # sending only a direction is refused, not silently sized
+            RT.run_weekly(env, ctrl, bars, config=cfg, bar_step=HOUR, max_steps=10)
     elif mutant == "latency_ignored":
         env, cfg = _env(tmp_path, frame)
-        ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], latency_bars=3)
-        monkeypatch.setattr(ctrl, "latency_bars", 3, raising=False)
-        import e3_weekly_runtime as R
-        original = R.run_weekly
-        out = original(env, ctrl, bars, config=cfg, bar_step=HOUR, max_steps=30)
-        fill = out["fills"][0]
-        with pytest.raises(AssertionError):                       # the mutated claim: filled one bar later
-            assert fill["fill_bar"] - fill["decided_at_bar"] == 1
-    elif mutant == "fill_from_open":
-        env, cfg = _env(tmp_path, frame)
-        ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], latency_bars=2)
+        ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], latency_bars=4)
         out = RT.run_weekly(env, ctrl, bars, config=cfg, bar_step=HOUR, max_steps=30)
         fill = out["fills"][0]
-        inferred = float(frame["OPEN"].iloc[fill["decided_at_bar"] + 1])
+        with pytest.raises(AssertionError):                       # the mutated claim: the environment's own minimum
+            assert fill["fill_bar"] - fill["decided_at_bar"] == RT.MINIMUM_LATENCY_BARS
+    elif mutant == "fill_from_open":
+        env, cfg = _env(tmp_path, frame)
+        ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.LONG, "long"))], latency_bars=3)
+        frame2 = _frame(120, slope=0.002, gap=0.003)                # prices that move, so the two differ
+        bars2 = _bars(frame2)
+        env, cfg = _env(tmp_path / "moving", frame2)
+        out = RT.run_weekly(env, ctrl, bars2, config=cfg, bar_step=HOUR, max_steps=30)
+        fill = out["fills"][0]
+        inferred = float(frame2["OPEN"].iloc[fill["decided_at_bar"] + 1])
         with pytest.raises(AssertionError):                       # the old reconstruction disagrees with the event
             assert fill["executed_price"] == pytest.approx(inferred, rel=1e-12)
     elif mutant == "clock_from_counter":
         env, cfg = _env(tmp_path, frame)
-        ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.HOLD, "hold"))])
+        ctrl = C.WeeklyLongFlatController([_release(0, model=RT.ConstantModel(C.HOLD, "hold"))], latency_bars=RT.MINIMUM_LATENCY_BARS)
         import e3_weekly_runtime as R
         monkeypatch.setattr(R, "_bar_time", lambda e: None)
         with pytest.raises(RT.ExecutionContractRefused, match="not a clock"):
