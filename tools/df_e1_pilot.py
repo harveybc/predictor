@@ -209,13 +209,24 @@ def prepare(design: dict, root: Path) -> dict:
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     data_json, data_npz = root / "DATA.json", root / "DATA.npz"
+    access = design.get("data_access", "LOCAL_CHARACTERISED_FILE")
     if data_json.is_file():
         rec = json.loads(data_json.read_text())
         if rec["design_sha256"] != design["design_sha256"] or sha_file(data_npz) != rec["data_sha256"]:
             raise SystemExit("REFUSED: DATA in this root belongs to another design or was altered")
+        if access == "GOVERNED_DELIVERY":
+            # RP42: a cached DATA file is not a licence to skip the delivery. The bytes it was built
+            # from must still be the ones this run was delivered, now.
+            G = _load("df_e1_governed")
+            delivered = G.require_delivery(root, design)["delivery"]
+            if delivered.get("sha256") != rec.get("panel_sha256"):
+                raise G.GovernanceUnavailable(
+                    f"REFUSED: the cached DATA came from {rec.get('panel_sha256')} but this run was delivered "
+                    f"{delivered.get('sha256')}")
+            rec["delivery_recheck"] = {"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                                       "delivery_id": delivered.get("delivery_id")}
         return rec
     t0 = time.process_time()
-    access = design.get("data_access", "LOCAL_CHARACTERISED_FILE")
     delivery = None
     if access == "GOVERNED_DELIVERY":
         G = _load("df_e1_governed")
@@ -673,6 +684,9 @@ def worker_main(job_file: Path) -> int:
 # --- verification, terminals, coordinator --------------------------------------------------------------------
 
 def verified_unit(attempt_dir: Path, result: dict, verified: dict) -> tuple:
+    """RP43: kept as the thin bytes-and-schema gate ONLY; the scientific verdict is the closure's
+    (tools/df_e1_close.py), which run_isolated calls below so a resumed or fresh unit is judged by the
+    same code that closes it. Nothing here decides that a score may be consumed."""
     name = (result or {}).get("output_file")
     path = Path(attempt_dir) / str(name)
     if not name or not path.is_file():
@@ -701,6 +715,24 @@ def verified_unit(attempt_dir: Path, result: dict, verified: dict) -> tuple:
     return rec, None
 
 
+def _closure_verdict(attempt_dir: Path, job: dict, score: dict) -> tuple:
+    """RP43: the SAME verification the closure runs, applied the moment a unit finishes or is resumed,
+    so a score is never consumed on a weaker check than the one that will judge it later."""
+    CL = _load("df_e1_close")
+    root = Path(attempt_dir).parent.parent
+    try:
+        register = CL.register(root)
+    except BaseException as exc:                                # noqa: BLE001
+        return None, {"outcome": "SCORE_UNVERIFIED", "why": f"the run's register is unreadable: {exc}"[:200]}
+    if register["problems"]:
+        return None, {"outcome": "SCORE_UNVERIFIED", "why": f"the run's register refuses: {register['problems'][:2]}"}
+    verdict = CL.verify_unit(register, job["cell_id"], do_replay=False)
+    if verdict["metrics"] != CL.VERIFIED or verdict["problems"]:
+        return None, {"outcome": "SCORE_UNVERIFIED", "why": "; ".join(verdict["problems"][:3]) or "metrics refused",
+                      "closure": {k: verdict[k] for k in ("metrics", "inference", "regime", "scope")}}
+    return score, None
+
+
 def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seconds: float, cpu_seconds: float) -> dict:
     H = _load("df_utility_harness")
     IR = _load("df_isolated_runner")
@@ -714,6 +746,8 @@ def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seco
         if refusal is None and recorded.get("status") == "COMPLETED":
             result = json.loads((attempt_dir / "result.json").read_text()) if (attempt_dir / "result.json").is_file() else None
             score, refusal = verified_unit(attempt_dir, result, recorded.get("verified"))
+            if score is not None:
+                score, refusal = _closure_verdict(attempt_dir, job, score)
         history = dict(recorded.get("summary") or {})
         if refusal is not None:
             return {"outcome": "SCORE_UNVERIFIED", "reason": refusal["why"], "cost": history.get("cost", {}), "score": None, "resumed": True, "refusal": refusal}
@@ -734,9 +768,30 @@ def run_isolated(job: dict, *, attempt_dir: Path, assigned_bytes: int, wall_seco
         summary = {"outcome": "RESOURCE_EXCEEDED" if status == "RESOURCE_EXCEEDED" else "UNCERTAIN", "reason": reason, "cost": cost, "score": None}
     else:
         score, refusal = verified_unit(attempt_dir, result, verified)
+        if score is not None:
+            score, refusal = _closure_verdict(attempt_dir, job, score)
         summary = {"outcome": "COMPLETED" if score else "SCORE_UNVERIFIED", "reason": reason, "cost": cost, "score": score, **({"refusal": refusal} if refusal else {})}
     prior.write_text(json.dumps({"status": status, "verified": verified, "summary": {k: v for k, v in summary.items() if k != "score"}}, default=H._jsonable))
     return summary
+
+
+def _governed_summary(root: Path, report: dict) -> dict:
+    """What the governed run can claim: every unit delivered, every terminal accepted, every campaign
+    reconciled. A unit missing any of the three is named."""
+    deliveries = json.loads((Path(root) / "DELIVERIES.json").read_text())
+    per_unit = {}
+    for record in report["terminals"]:
+        unit = record["unit_id"]
+        rec = record.get("reconciliation") or {}
+        per_unit[unit] = {"delivered": unit in (deliveries.get("units") or {}),
+                          "terminal_accepted": bool(record.get("terminal_sent")) and not record.get("terminal_pending"),
+                          "reconciled": bool(rec.get("http") == 200 and not rec.get("missing_units")
+                                             and not rec.get("accounting_only") and not rec.get("lake_only"))}
+    incomplete = sorted(u for u, v in per_unit.items() if not all(v.values()))
+    return {"per_unit": per_unit, "units_incomplete": incomplete,
+            "transfer": deliveries.get("transfer"),
+            "all_units_governed": not incomplete,
+            "rule": "delivered before working, terminal accepted, campaign reconciled: all three or the unit is named"}
 
 
 def _terminal(unit_id: str, out: dict, design: dict, tags: dict) -> dict:
@@ -781,9 +836,15 @@ def spent_cpu(root: Path) -> float:
     return DEV.spent_cpu(root)
 
 
-def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_spent: float, parallel: int = 1, pilot_only: bool = False, trace=print) -> dict:
+def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_spent: float, parallel: int = 1,
+        pilot_only: bool = False, trace=print, gov_url: str | None = None, api_key_file: Path | None = None,
+        lake: str = "public_panels", resource: str | None = None, outbox_dir: str | None = None) -> dict:
+    """RP42: when the design's `data_access` is GOVERNED_DELIVERY this is the ONLY path: every unit's
+    campaign is registered and its delivery verified BEFORE it reads or computes anything, and every
+    unit ends with a terminal that reaches the accounting. Nothing writes a local terminal document."""
     campaign = _load("df_d3_campaign")
     GR = _load("governed_run")
+    G = _load("df_e1_governed")
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     if (root / "DESIGN.json").is_file():
@@ -792,6 +853,18 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
     else:
         campaign.write_once(root / "DESIGN.json", design)
     code_identity = GR.strict_code_identity(REPO)
+    governed = design.get("data_access") == "GOVERNED_DELIVERY"
+    resource = resource or f"{design['family'].replace('uci_235', 'uci_235_individual_household_power').replace('uci_321', 'uci_321_electricityloaddiagrams20112014')}/panel.parquet"
+    if governed:
+        if not api_key_file:
+            raise G.GovernanceUnavailable("REFUSED: a governed run needs the service key; nothing is prepared")
+        units = ["prepare"] + [c["cell_id"] for c in design["pilots"] + design["cells"]]
+        for unit_id in units:                       # the campaign of EVERY unit, before any of them works
+            G.acquire(run_id=run_id, root=root, lake=lake, resource=resource, unit_id=unit_id,
+                      gov_url=gov_url or G.DEFAULT_GOV, api_key_file=api_key_file,
+                      design_sha256=design["design_sha256"], cache_dir=Path(root) / "cache",
+                      expect_sha256=design["governed_bytes"]["sha256"])
+        trace(json.dumps({"event": "acquired", "units": len(units), "resource": resource}), flush=True)
     data = prepare(design, root)
     budgets = design["budget"]
     report = {"schema": "df_e1_pilot_report.v1", "run_id": run_id, "design_sha256": design["design_sha256"], "code_identity": code_identity, "data": data,
@@ -813,15 +886,38 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
         resumed = (attempt / "outcome.json").is_file()
         if not resumed and spent() + need > cap_seconds:
             raise SystemExit(f"CPU_CAP_EXHAUSTED: spent {spent():.0f} s + next child up to {need:.0f} s exceeds {cap_seconds:.0f} s")
-        trace(json.dumps({"event": "child", "unit": c["cell_id"], "resumed": resumed}), flush=True)
+        delivery = None
+        if governed:
+            # this unit's OWN delivery, verified now: a cached DATA file never skips this
+            delivery = G.require_delivery(root, design, c["cell_id"])["delivery"]
+            if delivery.get("sha256") != data["panel_sha256"]:
+                raise G.GovernanceUnavailable(
+                    f"REFUSED: unit {c['cell_id']} was delivered {delivery.get('sha256')} but the prepared data came "
+                    f"from {data['panel_sha256']}")
+        trace(json.dumps({"event": "child", "unit": c["cell_id"], "resumed": resumed,
+                          "delivery": (delivery or {}).get("delivery_id")}), flush=True)
         out = run_isolated(job_for(c), attempt_dir=attempt, assigned_bytes=int(budgets["task_memory_bytes"]), wall_seconds=float(budgets["wall_seconds"]),
                            cpu_seconds=int(budgets["cpu_seconds"]))
         trace(json.dumps({"event": "child-done", "unit": c["cell_id"], "outcome": out["outcome"], "cpu": out["cost"].get("cpu_seconds")}), flush=True)
         term = _terminal(c["cell_id"], out, design, {"role": c.get("role", "CELL"), "kind": c["kind"], "seed": str(c["seed"]), **({"regime": c["regime"]} if "regime" in c else {})})
-        tpath = tdir / f"{c['cell_id']}.json"
-        if not tpath.exists():
-            tpath.write_text(json.dumps({"unit_id": c["cell_id"], "campaign": "SEE CAMPAIGN_PROPOSAL.json", "terminal": term}, indent=1, default=str))
-        report["terminals"].append({"unit_id": c["cell_id"], "status": term["status"], "outcome": out["outcome"], "cost": out["cost"], "resumed": out.get("resumed", False)})
+        record = {"unit_id": c["cell_id"], "status": term["status"], "outcome": out["outcome"], "cost": out["cost"],
+                  "resumed": out.get("resumed", False)}
+        if governed:
+            reported = G.report_terminal(root, c["cell_id"], term, gov_url=gov_url or G.DEFAULT_GOV,
+                                         api_key_file=api_key_file, outbox_dir=outbox_dir)
+            record.update(governed=True, delivery_id=(delivery or {}).get("delivery_id"),
+                          campaign_sha256=reported.get("campaign_sha256"),
+                          terminal_sent=reported["flushed"]["sent"], terminal_pending=reported["flushed"]["pending"],
+                          reconciliation=reported["reconciliation"])
+            if reported["flushed"]["pending"] or reported["flushed"]["failures"]:
+                raise SystemExit(f"REFUSED: the terminal of {c['cell_id']} was not accepted: {reported['flushed']['failures']}")
+        else:
+            tpath = tdir / f"{c['cell_id']}.json"
+            if not tpath.exists():
+                tpath.write_text(json.dumps({"unit_id": c["cell_id"], "campaign": "NOT SUBMITTED: this run is not governed",
+                                             "terminal": term}, indent=1, default=str))
+            record.update(governed=False)
+        report["terminals"].append(record)
         return out
 
     def summary(out):
@@ -907,6 +1003,10 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
         pending = later
     report["stopped"] = stop
     report["spent_cpu_seconds"] = spent()
+    if governed:
+        report["governance_result"] = _governed_summary(root, report)
+        campaign.write_once(root / ("REPORT.json" if not (root / "REPORT.json").exists() else f"REPORT.{int(time.time())}.json"), report)
+        return report
     proposal = {"schema": "governed_campaign.v1", "campaign_key": f"{run_id}-e1-household-dev-pilot", "classification": "NON_GOVERNING", "project": "predictor",
                 "code_identity": code_identity, "config_sha256": design["design_sha256"], "input_mode": "DATASETS", "synthetic_spec_sha256": None,
                 "units": [c["cell_id"] for c in design["pilots"] + design["cells"]],
@@ -1031,6 +1131,11 @@ def main(argv=None) -> int:
     ap.add_argument("--cpu-cap-seconds", type=float, default=14400.0)
     ap.add_argument("--already-spent", type=float, default=0.0)
     ap.add_argument("--parallel", type=int, default=1)
+    ap.add_argument("--gov-url", default=None)
+    ap.add_argument("--api-key-file", type=Path, default=None)
+    ap.add_argument("--lake", default="public_panels")
+    ap.add_argument("--resource", default=None)
+    ap.add_argument("--outbox-dir", default=None)
     a = ap.parse_args(argv)
     if a.worker is not None:
         return worker_main(a.worker)
@@ -1050,7 +1155,9 @@ def main(argv=None) -> int:
         rec = prepare(design, a.root)
         print(json.dumps({k: v for k, v in rec.items() if k != "scaler"}, indent=1))
         return 0
-    report = run(design, root=a.root, run_id=a.run_id, cap_seconds=a.cpu_cap_seconds, already_spent=a.already_spent, parallel=a.parallel, pilot_only=a.pilot_only)
+    report = run(design, root=a.root, run_id=a.run_id, cap_seconds=a.cpu_cap_seconds, already_spent=a.already_spent,
+                 parallel=a.parallel, pilot_only=a.pilot_only, gov_url=a.gov_url, api_key_file=a.api_key_file,
+                 lake=a.lake, resource=a.resource, outbox_dir=a.outbox_dir)
     print(json.dumps({"stopped": report["stopped"], "spent": report.get("spent_cpu_seconds"), "projection": {k: v for k, v in (report.get("projection") or {}).items() if k != "per_cell"},
                       "cells": {k: {kk: v.get(kk) for kk in ("outcome", "mase_validation", "updates", "stop_reason")} for k, v in report["cells"].items()}}, indent=1, default=str))
     return 0 if report["stopped"] is None else 2

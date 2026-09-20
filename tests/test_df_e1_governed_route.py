@@ -209,6 +209,90 @@ def test_RP38_the_campaign_precedes_the_data_and_the_run_consumes_the_delivered_
         G.require_delivery(root, design, "R0_s1")
 
 
+def _run_governed(stack, root, design, **kw):
+    """The REAL runner entry point, against the disposable governance stack."""
+    return P.run(design, root=root, run_id=kw.pop("run_id", "rp42-run"), cap_seconds=kw.pop("cap", 600.0),
+                 already_spent=0.0, gov_url=stack["url"], api_key_file=KEY, lake="public_panels",
+                 resource=stack["resource"], outbox_dir=str(root / "outbox"), trace=lambda *a, **k: None, **kw)
+
+
+def test_RP42_the_real_runner_acquires_registers_and_reports_every_unit(stack, tmp_path, monkeypatch):
+    """The dictum's probe on the real run measured 1 dispatch, 0 delivery checks, 0 registrations, 0
+    reports and 1 local terminal. Here the same entry point is driven with the expensive child
+    replaced by a deterministic one, and every unit must be delivered, registered and reported."""
+    root = tmp_path / "governed-run"
+    design = _design(stack, root)
+    calls = {"children": []}
+
+    def fake_isolated(job, *, attempt_dir, assigned_bytes, wall_seconds, cpu_seconds):
+        calls["children"].append(job["cell_id"])
+        Path(attempt_dir).mkdir(parents=True, exist_ok=True)
+        (Path(attempt_dir) / "job.json").write_text(json.dumps({**job, "attempt_dir": str(attempt_dir)}, default=str))
+        return {"outcome": "COMPLETED", "reason": "", "cost": {"cpu_seconds": 1.0, "wall_seconds": 1.0, "host": "test"},
+                "score": {"kind": job["kind"], "cell_id": job["cell_id"], "seed": job["seed"],
+                          "scores": {"validation": {"model": {"mase_mean": 0.9, "mae_mean": 0.5, "status": "MEDIDO"}}},
+                          "training": {"updates": 1, "stop_reason": "UPDATE_BUDGET"},
+                          "parameters": {"trainable": 1, "total": 1, "frozen": 0}, "cost": {"fit_seconds": 1.0}}}
+    monkeypatch.setattr(P, "run_isolated", fake_isolated)
+    monkeypatch.setattr(P, "_closure_verdict", lambda attempt_dir, job, score: (score, None))
+    report = _run_governed(stack, root, design, pilot_only=True)
+    delivered = json.loads((root / "DELIVERIES.json").read_text())["units"]
+    assert "prepare" in delivered and set(delivered) >= {c["cell_id"] for c in design["pilots"]}
+    assert calls["children"], "no child ran"
+    for record in report["terminals"]:
+        assert record["governed"] and record["terminal_sent"] == 1 and record["terminal_pending"] == 0
+        assert not record["reconciliation"]["missing_units"]
+    assert not (root / "TERMINALS").exists() or not list((root / "TERMINALS").glob("*.json"))
+    assert not (root / "CAMPAIGN_PROPOSAL.json").exists()
+
+
+def test_RP42_a_unit_without_its_own_delivery_or_with_a_foreign_one_does_not_run(stack, tmp_path, monkeypatch):
+    root = tmp_path / "missing-delivery"
+    design = _design(stack, root)
+    G.acquire(run_id="rp42-partial", root=root, lake="public_panels", resource=stack["resource"], unit_id="prepare",
+              gov_url=stack["url"], api_key_file=KEY, design_sha256=design["design_sha256"],
+              cache_dir=root / "cache", expect_sha256=stack["digest"])
+    data = P.prepare(design, root)
+    with pytest.raises(G.GovernanceUnavailable, match="has no governed delivery of its own"):
+        G.require_delivery(root, design, "pilot_ae")
+    # a receipt from ANOTHER run does not serve this one
+    foreign = json.loads((root / "DELIVERIES.json").read_text())
+    foreign["design_sha256"] = "0" * 64
+    (root / "DELIVERIES.json").write_text(json.dumps(foreign))
+    with pytest.raises(SystemExit, match="belongs to another design"):
+        G.require_delivery(root, design, "prepare")
+
+
+def test_RP42_cached_data_does_not_skip_the_delivery_check(stack, tmp_path):
+    root = tmp_path / "cached"
+    design = _design(stack, root)
+    G.acquire(run_id="rp42-cached", root=root, lake="public_panels", resource=stack["resource"], unit_id="prepare",
+              gov_url=stack["url"], api_key_file=KEY, design_sha256=design["design_sha256"],
+              cache_dir=root / "cache", expect_sha256=stack["digest"])
+    first = P.prepare(design, root)
+    assert (root / "DATA.npz").is_file()
+    again = P.prepare(design, root)
+    assert again["delivery_recheck"]["delivery_id"] == json.loads((root / "DELIVERIES.json").read_text())["units"]["prepare"]["delivery_id"]
+    (root / "DELIVERIES.json").unlink()
+    with pytest.raises(G.GovernanceUnavailable, match="no governed delivery"):
+        P.prepare(design, root)
+
+
+def test_RP42_a_child_that_really_fails_still_closes_its_unit(stack, tmp_path, monkeypatch):
+    root = tmp_path / "failing-child"
+    design = _design(stack, root)
+
+    def failing(job, *, attempt_dir, assigned_bytes, wall_seconds, cpu_seconds):
+        Path(attempt_dir).mkdir(parents=True, exist_ok=True)
+        return {"outcome": "RESOURCE_EXCEEDED", "reason": "CPU_TIME_LIMIT", "score": None,
+                "cost": {"cpu_seconds": 2.0, "wall_seconds": 2.0, "host": "test"}}
+    monkeypatch.setattr(P, "run_isolated", failing)
+    report = _run_governed(stack, root, design, pilot_only=True, run_id="rp42-fail")
+    assert report["stopped"] and "COST_PILOT_FAILED" in report["stopped"]
+    assert report["terminals"] and all(r["governed"] and r["status"] == "FAILED" for r in report["terminals"])
+    assert all(not r["reconciliation"]["missing_units"] for r in report["terminals"])
+
+
 def test_RP38_a_units_terminal_reaches_the_accounting_and_the_campaign_reconciles(stack, tmp_path):
     root = tmp_path / "terminal"
     design = _design(stack, root)
