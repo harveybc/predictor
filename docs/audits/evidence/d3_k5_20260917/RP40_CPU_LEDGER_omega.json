@@ -467,11 +467,18 @@
    "cpu_seconds": 4.662,
    "wall_seconds": 4.715,
    "memory_peak": "97.8M"
+  },
+  {
+   "unit": "crispdm-rp40-suite-1789860789-3506973.scope",
+   "at": "Sep 19 19:05:42",
+   "cpu_seconds": 3037.398,
+   "wall_seconds": 1953.595,
+   "memory_peak": "6.5G"
   }
  ],
- "cpu_seconds_total": 935.409,
+ "cpu_seconds_total": 3972.807,
  "ceiling_seconds": 14400.0,
- "remaining_seconds": 13464.591,
+ "remaining_seconds": 10427.193,
  "within_ceiling": true,
  "note": "systemd accounting of the transient unit (all its children); units still running are not listed"
 }

@@ -167,7 +167,37 @@ this is **not** a completed E3.
 
 ## RP40 — closure
 
-Tests, budget, hosts and my own defects are in the table below. Plan and state updated;
+**Tests.** `pytest tests docs/tres_temas_entrevista/program_v3/test_check_plan.py olap/store/tests --continue-on-collection-errors`:
+**2 300 passed, 40 skipped, 3 failed, 8 errors** in 32 min 24 s
+([`RP40_FULL_SUITE_SUMMARY.txt`](../evidence/d3_k5_20260917/RP40_FULL_SUITE_SUMMARY.txt)). The 3 failures
+(`tests/integration_tests/test_configuration_handling.py`) and the 8 collection errors are the stale legacy
+tests AGENTS.md documents; they are unchanged by this round and touch none of its code. The skips are
+environment-gated and named in the summary: two storage rules of the retrospective import need `duckdb_engine`,
+which this interpreter does not carry, and the same storage path is exercised instead against a disposable
+warehouse service, whose report is the evidence. Every RP33–RP39 rule passes: closure 17, loader 30 (13 of them
+new domain rules), pre-training 5, receiver and pilot 5, governed route 5, weekly runtime 15, weekly controller
+8, retrospective import 9, effects and composition 26.
+
+**Budget.** Systemd ledger on omega since this order
+([`RP40_CPU_LEDGER_omega.json`](../evidence/d3_k5_20260917/RP40_CPU_LEDGER_omega.json)): **3 973 CPU s** over 65
+transient units (the PRE reproduction, the lake rehearsals, the repaired closure with its fresh-process replays,
+the retrospective import and its cube rehearsal, the receiver diagnostics at two budgets, the governed route,
+the runtime tests, the full suite and this closure) of the 14 400 s authorised, leaving **10 427 s** unused. No
+new training ran on the real panel: the only fits this round are the bounded receiver diagnostics RP37
+authorises and the tests' own tiny fixtures.
+
+**Hosts.** All work ran on omega (load 0.5, 20 GiB available at close, tree clean). The workers were not used:
+the only distributable work of this round would have been the successor pilot's seeds, and that pilot did not
+run. Workers are synced to the closing commit after this table.
+
+**Defects of my own this round**, all fixed and in the history: the closure's first version compared parameter
+counts against an unconfigured reload, so R1 units were refused for a regime the replay had not applied; the
+closure's early refusals returned before the verdict was assembled; a block replacement dropped
+`require_delivery` from the governed module; the first governed campaign shape used one campaign for every unit,
+which data-gov cannot complete; the first rehearsal wrote its report inside the repository and dirtied the
+checkout the code identity requires; and three RP37 mutants were too weak on their first run and were corrected.
+
+Plan and state updated;
 `check_plan` passes 21/21 with `scientific_approval` false, the five fronts, six proposals, weekly E3 and
 H-CORE unchanged.
 
