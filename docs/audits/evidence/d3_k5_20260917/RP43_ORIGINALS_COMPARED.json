@@ -1,0 +1,8 @@
+{
+ "schema": "df_e1_pilot_freeze_compare.v1",
+ "frozen_files": 131,
+ "present_now": 131,
+ "changed_or_missing": [],
+ "added_since_the_freeze": [],
+ "reading": "the historical originals are unchanged; anything added is closure output, named here"
+}
