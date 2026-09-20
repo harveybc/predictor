@@ -1,0 +1,22 @@
+{
+ "schema": "df_public_lake_adoption_blocked.v2",
+ "at": "2026-09-20",
+ "round": "RP41-RP48",
+ "what_was_attempted": "RP46: adopt the bounded public-panel resource with the repaired adopter and the bound rehearsal",
+ "exact_command": "python tools/df_public_lake_adopt.py adopt --state-dir ~/.local/state/crispdm-data-foundation/satoshi-public-lake-adoption-<UTC> --rehearsal docs/audits/evidence/d3_k5_20260917/RP46/REHEARSAL.json",
+ "exact_operations": [
+  "write /home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json (backup taken first, restore command recorded in the receipt)",
+  "systemctl --user restart crispdm-data-gov.service"
+ ],
+ "refused_by": "the execution environment's auto-mode classifier, category Modify Shared Resources",
+ "refusal_is": "a tool-environment permission denial. It is NOT a refusal by data-gov, NOT a missing owner authorisation, and NOT a scientific decision. It also does not excuse any of the code defects the dictum found, which were repaired and tested this round.",
+ "not_worked_around": "no alternative path was used to change any service or configuration; nothing was written to the production configuration and no service was started, stopped or restarted",
+ "what_is_ready_now": {
+  "adopter": "tools/df_public_lake_adopt.py with every mutation inside the recovery block, the receipt written whatever happens, a rollback that verifies the service and records a FAILED rollback, and a CLI that exits non-zero when it did not adopt (tests/test_public_lake_adopt.py, 11 rules)",
+  "rehearsal": "docs/audits/evidence/d3_k5_20260917/RP46/REHEARSAL.json — the whole route on three disposable hosts: campaign registered before any read, delivery verified, BOTH units closed with terminals (including a probe that then fails), campaign reconciled with nothing missing, and the terminals read back from a DuckDB warehouse by content",
+  "binding": "the adoption refuses unless the rehearsal's binding matches the deployed configuration content, the panels' digests, the provider package and this code identity",
+  "external_host_divergence": "measured, not assumed: the deployed financial_data_store refuses these panels with 'unparseable time column' and, under a holdout, refuses the whole resource; the correction belongs in that provider and is named in the receipt"
+ },
+ "consequence_declared": "RP47 (the successor E1 pilot) was NOT executed: its prerequisite is this adoption, and the order forbids running the pilot outside governance. Nothing was trained on the real panel this round.",
+ "what_unblocks_it": "one approval of that single command (or a Bash allow rule for it); everything it needs is implemented, rehearsed and bound."
+}
