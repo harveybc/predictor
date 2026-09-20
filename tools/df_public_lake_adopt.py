@@ -349,7 +349,7 @@ def route_checks(gov_url: str, token: str, *, cache_dir: Path, run_id: str, reso
                                  "lake": lake, "resource": resource})
         body["deliveries"] = [deliveries[unit_id]["delivery_id"]]
         outbox.put({"campaign_sha256": sha, "unit_id": unit_id, "terminal": body})
-        terminals[unit_id] = {"status": state, "terminal_sha256": None}
+        terminals[unit_id] = {"status": state, "payload": body}
     flushed = GR._send_pending(gov, outbox)
     out["terminals"] = {"sent": flushed["sent"], "pending": flushed["pending"], "failures": flushed["failures"],
                         "units": terminals}
@@ -360,17 +360,8 @@ def route_checks(gov_url: str, token: str, *, cache_dir: Path, run_id: str, reso
                                   and not rbody.get("accounting_only") and not rbody.get("lake_only"))
     # --- the warehouse, by content -------------------------------------------------------------------
     if cube_url:
-        sql = ("SELECT unit_id, status FROM main.gov_terminal "
-               f"WHERE campaign_sha256 = '{sha}' ORDER BY unit_id LIMIT 10")
-        qstatus, qbody, _ = http_json(f"{cube_url}/api/v1/query?sql={urllib.parse.quote(sql)}", cube_token)
-        rows = (qbody or {}).get("rows") or []
-        def _cell(row, key, index):
-            return str(row.get(key) if isinstance(row, dict) else row[index])
-        units_seen = {_cell(r, "unit_id", 0) for r in rows}
-        out["warehouse"] = {"http": qstatus, "rows": rows[:10], "query": sql,
-                            "both_units_present": units_seen >= {unit, probe_unit},
-                            "probe_recorded_as_failed": any(_cell(r, "unit_id", 0) == probe_unit
-                                                            and _cell(r, "status", 1) == "FAILED" for r in rows)}
+        out["warehouse"] = _warehouse_content(cube_url, cube_token, sha, {unit: terminals[unit]["payload"],
+                                                                          probe_unit: terminals[probe_unit]["payload"]})
     # --- the refusals ---------------------------------------------------------------------------------
     ranged_key = key + "-ranged"
     gov_r = GR.GovHttp(gov_url, token, ranged_key)
@@ -396,7 +387,7 @@ def route_checks(gov_url: str, token: str, *, cache_dir: Path, run_id: str, reso
                             and out["download_without_campaign"]["http"] >= 400)
     out["route_complete"] = bool(out["delivered_bytes_verified"] and out["refusals_hold"] and out["campaign_closed"]
                                  and out["availability_stays_undeclared"] and not out["terminals"]["pending"]
-                                 and (out.get("warehouse", {}).get("both_units_present", True)))
+                                 and (out.get("warehouse", {}).get("content_matches", True)))
     return out
 
 
