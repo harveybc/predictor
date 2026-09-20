@@ -198,7 +198,10 @@ def rehearse(out_path: Path, *, keep: bool = False) -> dict:
         bad_root = work / "run-failure"
         bad = seal_small(panel_root / resource, digest, root=bad_root)
         bad_design = json.loads(json.dumps(bad))
-        bad_design["pilots"][0]["max_updates"] = -1            # an impossible budget: the child refuses
+        # a REAL failure of the real path: the child is given less memory than TensorFlow needs, so it
+        # is killed by its own cgroup and the runner sees RESOURCE_EXCEEDED
+        bad_design["budget"] = {**bad_design["budget"], "task_memory_bytes": 48 << 20, "wall_seconds": 120.0,
+                                "cpu_seconds": 120}
         bad_design.pop("design_sha256")
         bad_design["design_sha256"] = E.sha_obj(bad_design)
         shutil.rmtree(bad_root)
