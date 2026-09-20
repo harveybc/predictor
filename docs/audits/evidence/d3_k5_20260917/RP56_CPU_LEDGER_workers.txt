@@ -1,0 +1,28 @@
+# RP56 — cost per host: what is measured, and what is not
+
+omega (coordinator)
+  Measured by systemd accounting of every transient unit of this round, from the base commit's
+  timestamp (2026-09-20 03:26) to the close:
+      6 676.35 CPU seconds, 138 units, ceiling 14 400, within ceiling
+  Detail per unit: RP56_CPU_LEDGER_omega.json. The E1 successor run inside it is 2 535.504 s as the
+  run's own root accounts it, and the full suite is 1 973.9 s of wall time in one unit.
+
+dragon (WORKER_A) and gamma (WORKER_B)
+  NOT measurable by this ledger, and I will not estimate it. `tools/df_cpu_ledger.py` reads
+  "Consumed X CPU time" lines that systemd writes when a transient scope ends; both workers'
+  journals hold ZERO such lines for any crispdm unit in this window (checked over ssh at the close
+  of the round), because their jobs did not run inside a crispdm-run scope — that wrapper is
+  enforced by a hook on omega, not on them.
+
+  What did run there is still identified by its own evidence: RP54's diagnostic records
+  `"host": "dragon"` (RP54/INNOVATION_WITH_REFERENCES_dragon.json) and the RP53 weekly-runtime work
+  was carried out for WORKER_B. Their reports do not carry a CPU figure, so this round reports the
+  workers' cost as UNMEASURED rather than inventing one.
+
+  The consequence is a real gap in the accounting and it belongs to me, not to the hosts: a job that
+  must be costed has to run inside an accounted scope. The fix is to route worker jobs through the
+  same wrapper; it is not done in this round.
+
+Backlog measured at the close: the four duplicated `prepare` envelopes in the shared outbox remain
+pending (their adjudication was refused by the environment's classifier), and no other terminal is
+pending anywhere: every unit of the E1 run is in `sent/` and in the warehouse.
