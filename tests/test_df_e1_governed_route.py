@@ -250,6 +250,13 @@ def test_RP42_the_real_runner_acquires_registers_and_reports_every_unit(stack, t
     for record in report["terminals"]:
         assert record["governed"] and record["terminal_sent"] == 1 and record["terminal_pending"] == 0
         assert not record["reconciliation"]["missing_units"]
+        assert record["terminal_sha256"], "the service's own terminal digest was not kept"
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())
+    assert receipts["schema"] == "df_e1_terminal_receipts.v1"
+    assert set(receipts["units"]) >= {"prepare"} | {c["cell_id"] for c in design["pilots"]}
+    for unit, receipt in receipts["units"].items():
+        assert receipt["terminal_sha256"] and receipt["accepted_at"] and receipt["campaign_sha256"]
+        assert receipt["reconciliation"]["http"] == 200 and not receipt["reconciliation"]["missing_units"]
     assert not (root / "TERMINALS").exists() or not list((root / "TERMINALS").glob("*.json"))
     assert not (root / "CAMPAIGN_PROPOSAL.json").exists()
 
@@ -297,8 +304,16 @@ def test_RP42_a_child_that_really_fails_still_closes_its_unit(stack, tmp_path, m
     monkeypatch.setattr(P, "run_isolated", failing)
     report = _run_governed(stack, root, design, pilot_only=True, run_id="rp42-fail")
     assert report["stopped"] and "COST_PILOT_FAILED" in report["stopped"]
-    assert report["terminals"] and all(r["governed"] and r["status"] == "FAILED" for r in report["terminals"])
+    assert report["terminals"] and all(r["governed"] for r in report["terminals"])
+    assert {r["unit_id"] for r in report["terminals"]} >= {"prepare", "pilot_ae"}
+    assert any(r["status"] == "FAILED" for r in report["terminals"])       # the child that failed closed too
     assert all(not r["reconciliation"]["missing_units"] for r in report["terminals"])
+    # RP51: the population is named, and the units that never ran are not absorbed into a total
+    result = report["governance_result"]
+    assert result["all_units_governed"] is False and result["units_incomplete"]
+    assert result["population"]["prepare"] == "CLOSED" and result["population"]["pilot_ae"] == "CLOSED"
+    assert all(result["population"][c["cell_id"]] == "NOT_STARTED" for c in design["cells"])
+    assert result["counts"]["PENDING"] == 0, result["reasons"]
 
 
 def test_RP38_a_units_terminal_reaches_the_accounting_and_the_campaign_reconciles(stack, tmp_path):
