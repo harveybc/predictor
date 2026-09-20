@@ -164,4 +164,5 @@ def test_RP41_the_archive_holdout_is_the_archives_own_first_day(tmp_path):
     entry = A.lake_entry()["entry"]
     assert entry["holdout_start"] == A.HOLDOUT_START and sorted(entry["include_globs"]) == sorted(A.RESOURCES)
     assert all("availability" not in c for c in entry["resource_contracts"].values())
-    assert A.EXTERNAL_HOST_DIVERGENCE["correction"].startswith("in financial_data_store.governed_download")
+    assert "governed_download" in A.EXTERNAL_HOST_DIVERGENCE["correction"]
+    assert A.EXTERNAL_HOST_DIVERGENCE["status"].startswith("CORRECTED_AND_REHEARSED")
