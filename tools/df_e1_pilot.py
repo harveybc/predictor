@@ -824,7 +824,8 @@ def _terminal(unit_id: str, out: dict, design: dict, tags: dict) -> dict:
                 add(f"e1.{k}.mase_validation", rec["scores"]["validation"][k]["mase_mean"], "mase")
                 add(f"e1.{k}.mae_validation", rec["scores"]["validation"][k]["mae_mean"], "mae")
         elif rec["kind"] == "ae":
-            add("e1.ae.reconstruction_val_mse_masked", rec["pretraining"]["reconstruction_val_mse_masked"], "mse")
+            add("e1.ae.reconstruction_val_mse_masked",
+                (rec.get("pretraining") or {}).get("reconstruction_val_mse_masked"), "mse")
     return R._terminal(status=status, reason=reason, cost=cost, metrics=rows, started=cost.get("started_at") or R.now_iso(), finished=cost.get("ended_at") or R.now_iso(),
                        tags={"purpose": "E1_DEV_PILOT", "proposal": "P-E1", "grants": "NONE", "classification": "NON_GOVERNING", "phase": "DEVELOPMENT",
                              "outcome": str(out["outcome"]), "design_sha256": design["design_sha256"], "unit_id": unit_id, "family": design["family"],
