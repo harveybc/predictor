@@ -8,7 +8,7 @@
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "RP41_RP48_REVIEWED_FRESH_RUN_AND_POPULATION_CORRECTIONS_ORDERED_RP49_RP56",
+  "handoff_status": "RP49_RP56_EXECUTED_E1_SUCCESSOR_RUN_CLOSED_AND_GOVERNED_READY_FOR_REVIEW",
   "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
   "architecture_comparison": {
     "reference": "ARCH-A",
@@ -24,10 +24,10 @@
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
-    "RP49-RP52: reproduce RP48 findings; repair external provider acceptance, fresh-child verification ordering, complete population closure and authoritative receipts",
-    "RP53-RP54 on available workers: real broker terminal-without-fill recovery and analytic ML noise references/provenance; offline only",
-    "RP55: real fresh-process training through disposable external host and DuckDB before controlled adoption; then bounded prospective E1 successor with paired regimes/seeds",
-    "RP56: population/content reconciliation and one complete return within aggregate 14400 CPU seconds; no new owner decision or blanket restart"
+    "One review of RP49-RP56; nothing in this round is externally reviewed yet",
+    "One environment permission is needed to adjudicate four duplicated 'prepare' envelopes left pending in the shared outbox (the classifier refused it); the run itself is complete without it",
+    "MOD-FROZEN-PREFIX and H-CORE stay after E1 and a verified frozen prefix; weekly RL and forecasting fronts continue unchanged",
+    "No new global governance or verifier system; no confirmatory reserve from these three seeds"
   ],
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
@@ -157,7 +157,7 @@
     {
       "id": "MOD-E1",
       "owner": "Satoshi",
-      "status": "EXECUTED",
+      "status": "VERIFIED",
       "depends_on": [
         "MOD-E0-DEV",
         "MOD-ARCH-COMPARE"
@@ -170,11 +170,36 @@
         "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
         "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md",
         "../../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md",
-        "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md"
+        "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md",
+        "../../audits/evidence/d3_k5_20260917/RP55/E1_SUCCESSOR_ML_SHEET.md",
+        "../../audits/evidence/d3_k5_20260917/RP55/E1_SUCCESSOR_CLOSE.json",
+        "../../audits/evidence/d3_k5_20260917/RP55/E1_SUCCESSOR_RESULTS.json",
+        "../../audits/evidence/d3_k5_20260917/RP56_WAREHOUSE_CONTENT_CHECK.json"
       ],
-      "next_action": "RP49-RP52/RP54-RP55: fix fresh-child circular verification and population closure, validate external-provider route; then adopt and execute bounded prospective successor; historical pilot remains ungoverned",
+      "next_action": "Await review; do not retouch cells or re-run seeds to move a difference",
       "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan",
-      "adoption": "HISTORICAL_UNGOVERNED_DEV_PILOT_NOT_ACCEPTED"
+      "adoption": "HISTORICAL_UNGOVERNED_DEV_PILOT_NOT_ACCEPTED",
+      "status_detail": {
+        "IMPLEMENTED": "the governed E1 route, its receipts, its closure and its repair tools",
+        "EXECUTED": "run satoshi-e1-successor-20260920 on omega: 16 units, 2535.504 CPU seconds of a 11000 second cap",
+        "VERIFIED": "closure ALL_VERIFIED with a fresh-process replay; 15/15 VERIFIED_AND_GOVERNED; 16/16 units matched in the warehouse by content",
+        "EXTERNALLY_REVIEWED": "NOT YET: no reviewer has seen this round"
+      },
+      "result": {
+        "means_mase_validation": {
+          "R0": 0.8874951608271097,
+          "R1": 0.9034055940628739,
+          "R2": 0.8967950632932982
+        },
+        "paired": {
+          "R1_minus_R0": 0.015910433235764354,
+          "R2_minus_R0": 0.009299902466188578,
+          "R2_minus_R1": -0.006610530769575777
+        },
+        "linear_ridge_control": 0.8851672468675469,
+        "censoring": "4 of 9 fits stopped at the update ceiling and are CENSORED_BY_BUDGET: their comparison is a lower bound",
+        "reading": "development evidence on one task, one household slice and three seeds: modular pretraining did not help and a competent linear control beats all three regime means; no H1 confirmation and no equivalence"
+      }
     },
     {
       "id": "MOD-FROZEN-PREFIX",
@@ -293,7 +318,7 @@
       "deliverable": "H1 allocation, H2 learning and H3 manipulation utility in simulation"
     }
   ],
-  "state_semantics": "Stage refers to successor acceptance. EXECUTED is not scientific acceptance. Historical scope preserved. Reviewer ran independent disposable HTTP/DuckDB and offline real-broker probes, not production reconciliation or new fits. Documentary PASS grants no scientific approval.",
+  "state_semantics": "Stage refers to successor acceptance. EXECUTED is not scientific acceptance. Historical scope preserved. Reviewer ran independent disposable HTTP/DuckDB and offline real-broker probes, not production reconciliation or new fits. Documentary PASS grants no scientific approval. IMPLEMENTED means the code and its rules exist; EXECUTED means a run happened with measured cost; VERIFIED means an independent closure recomputed it from arrays and a fresh-process replay and the warehouse matched by content; EXTERNALLY_REVIEWED means a reviewer outside this execution has judged it, which no part of RP49-RP56 has yet.",
   "review": {
     "reviewed_revision": "f83d63566309258b8c0aacddb6aba031c89ab7e0",
     "disposition": "CHANGES_REQUIRED_BEFORE_ADOPTION_AND_E1",
@@ -371,7 +396,7 @@
       "fresh_weight_replay": {
         "model": "R0_s1",
         "rows": 64,
-        "max_abs_difference": 8.934663142667887e-8,
+        "max_abs_difference": 8.934663142667887e-08,
         "scope": "one restored model on first 64 validation windows only"
       },
       "counterexamples": "../../audits/evidence/RP32_REVIEW_2026_09_19/results.json",
@@ -472,5 +497,23 @@
   "execution_governance": {
     "new_runs": "REGISTER_AND_DELIVER_BEFORE_DATA_PREPARATION_OR_FIT",
     "historical_import": "SEPARATE_RETROSPECTIVE_EVIDENCE"
+  },
+  "e1_successor_run": {
+    "run_id": "satoshi-e1-successor-20260920",
+    "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+    "host": "omega",
+    "units": 16,
+    "closed": 16,
+    "governed": 15,
+    "cpu_seconds": 2535.504,
+    "cap_seconds": 11000.0,
+    "report": "REPORT.1789931301.json (the aborted attempt's REPORT.json is preserved beside it)",
+    "defects_found_and_repaired_during_it": [
+      "concurrent receipt writes erased units",
+      "one shared terminal spool flushed by every child",
+      "an already accepted prepare terminal rebuilt on each resume",
+      "chronology compared as text",
+      "the aborted report chosen for the table"
+    ]
   }
 }

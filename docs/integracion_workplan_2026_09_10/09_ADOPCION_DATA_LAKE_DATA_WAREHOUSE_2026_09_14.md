@@ -1257,3 +1257,30 @@ es su suelo irreducible: corregir referencia y scope sin remedir toda la histori
 131 originales intactos; cinco servicios activos, NRestarts=0 y cuatro healthz200.
 Esta lectura de salud no es medicion del avance ni reconciliacion productiva.
 No se reinicio ni escribio produccion en esta revision.
+
+### Ejecucion RP49-RP56: adopcion consumida y sucesor E1 corrido (20-sep)
+
+El recurso publico adoptado en RP55 se uso en produccion: la corrida
+`satoshi-e1-successor-20260920` recibio el panel del host externo
+`public_panels` por data-gov, con entrega verificada por unidad, terminal
+aceptado y campana conciliada. Diecisiete unidades declaradas por el diseno
+sellado `143abb57`: dieciseis cerradas, quince celdas `VERIFIED_AND_GOVERNED` y
+`prepare` cerrada como unidad propia. El cubo coincide **por contenido** con los
+recibos del cliente en las dieciseis
+([RP56_WAREHOUSE_CONTENT_CHECK](../audits/evidence/d3_k5_20260917/RP56_WAREHOUSE_CONTENT_CHECK.json)).
+
+Costo medido 2 535.5 s de CPU de un tope de 11 000 s. No se reinicio ningun
+servicio sano ni se cambio un checkout servido para esta corrida.
+
+Cinco defectos propios de la ruta aparecieron **al ejecutarla de verdad** y estan
+reparados con mutantes que los reabren: escrituras concurrentes de recibos que se
+borraban entre si, un unico outbox que cada hijo vaciaba por los demas, el
+terminal de `prepare` reconstruido en cada reanudacion contra la generacion ya
+aceptada, la cronologia comparada como texto y la tabla leyendo el informe del
+intento abortado. La reparacion de una raiz danada copia lo que el servicio ya
+tiene registrado y **nunca inventa un terminal**.
+
+Queda pendiente una sola operacion: adjudicar cuatro sobres duplicados de
+`prepare` en el outbox compartido. El clasificador del entorno la rechazo
+("Logging/Audit Tampering"); no se eludio. Los sobres siguen visibles en
+`pending/` con su sidecar de fallo y no bloquean ninguna corrida.
