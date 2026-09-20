@@ -91,9 +91,19 @@ def _tasks(Xs: np.ndarray, Y: np.ndarray, origins: np.ndarray, W: int, h: int, j
     far = x[:, far_index, j].astype(np.float64)                     # solvable only with the whole window
     noise = rng.normal(size=origins.size)                           # solvable by nobody
     return {"near_lag": {"y": near, "known_solution": "copy the last input row of the target channel",
-                         "solvable_by_seven_sample_receiver": True, "row_needed": W - 1},
+                         "row_needed": W - 1,
+                         "short_receiver_claim": "REACHABLE: the row it needs is inside any receiver's support"},
             "distant_lag": {"y": far, "known_solution": f"copy input row {far_index} of the target channel",
-                            "solvable_by_seven_sample_receiver": False, "row_needed": far_index},
+                            "row_needed": far_index,
+                            # RP44 (dictum F5): POSITION alone decides nothing. On a series that is
+                            # correlated, periodic or redundant across channels, a short receiver can
+                            # recover this target from its own support — a constant-within-window
+                            # series makes copying the last sample exact. What this task measures is
+                            # therefore EMPIRICAL on THIS series, never a general impossibility. The
+                            # constructed independent-innovation claim lives in df_e1_innovation.py.
+                            "short_receiver_claim": ("UNDECIDED BY POSITION: on these real, correlated series the "
+                                                     "short receiver may or may not infer the target from its own "
+                                                     "support; the measurement below is empirical and DEV-scoped")},
             "unpredictable": {"y": noise, "known_solution": "none: the target is independent of the inputs",
                               "solvable_by_seven_sample_receiver": False, "row_needed": None}}, x
 
@@ -167,7 +177,11 @@ def verdict(doc: dict) -> dict:
     full = t["distant_lag"]["tcn_w"]["r2"]
     near_ok = all(t["near_lag"][c]["r2"] is not None and t["near_lag"][c]["r2"] > 0.9 for c in ("conv3", "tcn_w"))
     noise_ok = all((t["unpredictable"][c]["r2"] or 0) < 0.1 for c in ("conv3", "tcn_w", "linear_full_window"))
-    return {"seven_sample_receiver_fails_the_distant_lag": bool(seven is not None and seven < 0.5),
+    return {"seven_sample_receiver_fails_this_distant_lag_on_these_series": bool(seven is not None and seven < 0.5),
+            "scope": ("EMPIRICAL, on the household DEV windows and this budget: it is not a claim that a short "
+                      "receiver fails at any budget, nor that the information is unreachable from its support. "
+                      "Position does not decide reachability (dictum F5); the constructed claim is in "
+                      "df_e1_innovation.py, whose task makes the innovation independent of the short support."),
             "full_window_receiver_solves_it": bool(full is not None and full > 0.9),
             "both_solve_the_near_lag": bool(near_ok),
             "nobody_solves_the_unpredictable_task": bool(noise_ok),
@@ -175,7 +189,12 @@ def verdict(doc: dict) -> dict:
             "cost_ratio_parameters": (doc["reach"]["tcn_w"]["parameters"] / doc["reach"]["conv3"]["parameters"]),
             "rule": "a receiver is adequate for a task when it CAN use the support the task needs, shown on a "
                     "diagnostic whose answer is known. Fitting the budget is not adequacy, and a core is never "
-                    "chosen by which one makes a regime win on the published validation."}
+                    "chosen by which one makes a regime win on the published validation.",
+            "budget_errata": ("RP44: this tool asked for N updates but ran whole epochs, so with 4 000 windows and "
+                              "batch 64 (63 batches per epoch) a request of 400 ran 441 updates and one of 1 600 ran "
+                              "1 638. The stored results are kept and only their budget label is corrected; the "
+                              "historical runs did not save an optimiser counter, so the corrected figures are the "
+                              "loop's arithmetic, not a re-measurement, and nothing was refitted to change the prose.")}
 
 
 def main(argv=None) -> int:
