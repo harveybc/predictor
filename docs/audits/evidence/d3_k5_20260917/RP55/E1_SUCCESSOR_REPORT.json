@@ -1,0 +1,1292 @@
+{
+ "already_spent_seconds": 250.0,
+ "cap_seconds": 11000.0,
+ "cells": {
+  "R0_s1": {
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 3,
+    "budget_reached": false,
+    "epochs": 6,
+    "improvement_since_best": 0.051329612731933594,
+    "stopped_by": "EARLY_STOPPING",
+    "updates_used_of_ceiling": [
+     3762,
+     4000
+    ],
+    "validation_slope_last_third": 0.02467966079711914,
+    "validation_slope_last_two": 0.007476925849914551,
+    "verdict": "STOPPED_ON_VALIDATION"
+   },
+   "cost": {
+    "cgroup_memory_peak": 545492992,
+    "cpu_seconds": 406.681,
+    "ended_at": "2026-09-20T18:34:22+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 958988288,
+    "started_at": "2026-09-20T18:28:40+00:00",
+    "wall_seconds": 342.331
+   },
+   "detector_receives_gradient": true,
+   "detector_unchanged": false,
+   "initial_full_digest": "30b20e4ccae45f5983f59bbababc91f88d0d9a6da17864d0784d2d912e95eb54",
+   "mae_validation": 0.5524983663230361,
+   "mase_validation": 0.8965322309244448,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 8127,
+    "trainable": 8127
+   },
+   "phases": {
+    "cpu_seconds_process": 405.484,
+    "fit_seconds": 391.16,
+    "inference_seconds": 5.362,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.005
+   },
+   "regime": "R0",
+   "resumed": true,
+   "seed": 1,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 3762
+  },
+  "R0_s2": {
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 5,
+    "budget_reached": true,
+    "epochs": 7,
+    "improvement_since_best": 0.08042818307876587,
+    "stopped_by": "UPDATE_BUDGET",
+    "updates_used_of_ceiling": [
+     4000,
+     4000
+    ],
+    "validation_slope_last_third": 0.05945032835006714,
+    "validation_slope_last_two": 0.03653973340988159,
+    "verdict": "CENSORED_BY_BUDGET"
+   },
+   "cost": {
+    "cgroup_memory_peak": 551038976,
+    "cpu_seconds": 366.897,
+    "ended_at": "2026-09-20T18:43:30+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 963874816,
+    "started_at": "2026-09-20T18:38:24+00:00",
+    "wall_seconds": 306.766
+   },
+   "detector_receives_gradient": true,
+   "detector_unchanged": false,
+   "initial_full_digest": "b3cf9687c1dd1ed8c5e45eeae9b7574902bc857ac4a06a07c72e05677e2421de",
+   "mae_validation": 0.5502789229728504,
+   "mase_validation": 0.8929307677900018,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 8127,
+    "trainable": 8127
+   },
+   "phases": {
+    "cpu_seconds_process": 365.719,
+    "fit_seconds": 351.537,
+    "inference_seconds": 5.325,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.004
+   },
+   "regime": "R0",
+   "resumed": true,
+   "seed": 2,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 4000
+  },
+  "R0_s3": {
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 1,
+    "budget_reached": false,
+    "epochs": 4,
+    "improvement_since_best": 0.05382436513900757,
+    "stopped_by": "EARLY_STOPPING",
+    "updates_used_of_ceiling": [
+     2508,
+     4000
+    ],
+    "validation_slope_last_third": 0.04105132818222046,
+    "validation_slope_last_two": 0.03845924139022827,
+    "verdict": "STOPPED_ON_VALIDATION"
+   },
+   "cost": {
+    "cgroup_memory_peak": 544030720,
+    "cpu_seconds": 218.847,
+    "ended_at": "2026-09-20T18:41:56+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 957345792,
+    "started_at": "2026-09-20T18:38:54+00:00",
+    "wall_seconds": 182.839
+   },
+   "detector_receives_gradient": true,
+   "detector_unchanged": false,
+   "initial_full_digest": "d1c7a6e314e88765f0204ea22ffb543aaf8d908cabe074089be07cf21fc05ba9",
+   "mae_validation": 0.5380102124684585,
+   "mase_validation": 0.8730224837668821,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 8127,
+    "trainable": 8127
+   },
+   "phases": {
+    "cpu_seconds_process": 217.743,
+    "fit_seconds": 209.488,
+    "inference_seconds": 3.017,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.002
+   },
+   "regime": "R0",
+   "resumed": true,
+   "seed": 3,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 2508
+  },
+  "R1_s1": {
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 3,
+    "budget_reached": false,
+    "epochs": 6,
+    "improvement_since_best": 0.0286715030670166,
+    "stopped_by": "EARLY_STOPPING",
+    "updates_used_of_ceiling": [
+     3762,
+     4000
+    ],
+    "validation_slope_last_third": -0.01577812433242798,
+    "validation_slope_last_two": 0.01126718521118164,
+    "verdict": "STOPPED_ON_VALIDATION"
+   },
+   "cost": {
+    "cgroup_memory_peak": 518868992,
+    "cpu_seconds": 158.559,
+    "ended_at": "2026-09-20T19:03:27+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 932343808,
+    "started_at": "2026-09-20T19:01:29+00:00",
+    "wall_seconds": 117.743
+   },
+   "detector_receives_gradient": false,
+   "detector_unchanged": true,
+   "initial_full_digest": "30b20e4ccae45f5983f59bbababc91f88d0d9a6da17864d0784d2d912e95eb54",
+   "mae_validation": 0.5599806716461382,
+   "mase_validation": 0.9086736747596948,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 2896,
+    "total": 8127,
+    "trainable": 5231
+   },
+   "phases": {
+    "cpu_seconds_process": 157.5,
+    "fit_seconds": 144.71,
+    "inference_seconds": 3.584,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.021
+   },
+   "regime": "R1",
+   "resumed": false,
+   "seed": 1,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 3762
+  },
+  "R1_s2": {
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 5,
+    "budget_reached": true,
+    "epochs": 7,
+    "improvement_since_best": 0.05370098352432251,
+    "stopped_by": "UPDATE_BUDGET",
+    "updates_used_of_ceiling": [
+     4000,
+     4000
+    ],
+    "validation_slope_last_third": 0.03736758232116699,
+    "validation_slope_last_two": 0.05229997634887695,
+    "verdict": "CENSORED_BY_BUDGET"
+   },
+   "cost": {
+    "cgroup_memory_peak": 522084352,
+    "cpu_seconds": 171.35,
+    "ended_at": "2026-09-20T19:04:05+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 934875136,
+    "started_at": "2026-09-20T19:01:59+00:00",
+    "wall_seconds": 125.685
+   },
+   "detector_receives_gradient": false,
+   "detector_unchanged": true,
+   "initial_full_digest": "b3cf9687c1dd1ed8c5e45eeae9b7574902bc857ac4a06a07c72e05677e2421de",
+   "mae_validation": 0.5447235416877055,
+   "mase_validation": 0.8839161196375496,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 2896,
+    "total": 8127,
+    "trainable": 5231
+   },
+   "phases": {
+    "cpu_seconds_process": 170.252,
+    "fit_seconds": 160.48,
+    "inference_seconds": 3.789,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.015
+   },
+   "regime": "R1",
+   "resumed": false,
+   "seed": 2,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 4000
+  },
+  "R1_s3": {
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 4,
+    "budget_reached": true,
+    "epochs": 7,
+    "improvement_since_best": 0.034322261810302734,
+    "stopped_by": "UPDATE_BUDGET",
+    "updates_used_of_ceiling": [
+     4000,
+     4000
+    ],
+    "validation_slope_last_third": 0.034322261810302734,
+    "validation_slope_last_two": 0.0005377531051635742,
+    "verdict": "CENSORED_BY_BUDGET"
+   },
+   "cost": {
+    "cgroup_memory_peak": 520790016,
+    "cpu_seconds": 176.091,
+    "ended_at": "2026-09-20T19:06:14+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 933994496,
+    "started_at": "2026-09-20T19:04:05+00:00",
+    "wall_seconds": 128.892
+   },
+   "detector_receives_gradient": false,
+   "detector_unchanged": true,
+   "initial_full_digest": "d1c7a6e314e88765f0204ea22ffb543aaf8d908cabe074089be07cf21fc05ba9",
+   "mae_validation": 0.5654982544530414,
+   "mase_validation": 0.9176269877913773,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 2896,
+    "total": 8127,
+    "trainable": 5231
+   },
+   "phases": {
+    "cpu_seconds_process": 174.973,
+    "fit_seconds": 165.31,
+    "inference_seconds": 3.669,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.013
+   },
+   "regime": "R1",
+   "resumed": false,
+   "seed": 3,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 4000
+  },
+  "R2_s1": {
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 2,
+    "budget_reached": false,
+    "epochs": 5,
+    "improvement_since_best": 0.03684043884277344,
+    "stopped_by": "EARLY_STOPPING",
+    "updates_used_of_ceiling": [
+     3135,
+     4000
+    ],
+    "validation_slope_last_third": 0.01755470037460327,
+    "validation_slope_last_two": -0.015192925930023193,
+    "verdict": "STOPPED_ON_VALIDATION"
+   },
+   "cost": {
+    "cgroup_memory_peak": 545902592,
+    "cpu_seconds": 270.118,
+    "ended_at": "2026-09-20T19:05:15+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 959201280,
+    "started_at": "2026-09-20T19:01:29+00:00",
+    "wall_seconds": 225.963
+   },
+   "detector_receives_gradient": true,
+   "detector_unchanged": false,
+   "initial_full_digest": "30b20e4ccae45f5983f59bbababc91f88d0d9a6da17864d0784d2d912e95eb54",
+   "mae_validation": 0.54226553502109,
+   "mase_validation": 0.8799275427751168,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 8127,
+    "trainable": 8127
+   },
+   "phases": {
+    "cpu_seconds_process": 268.956,
+    "fit_seconds": 257.303,
+    "inference_seconds": 2.983,
+    "metrics_seconds": 0.001,
+    "reuse_seconds": 0.021
+   },
+   "regime": "R2",
+   "resumed": false,
+   "seed": 1,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 3135
+  },
+  "R2_s2": {
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 6,
+    "budget_reached": true,
+    "epochs": 7,
+    "improvement_since_best": 0.050515174865722656,
+    "stopped_by": "UPDATE_BUDGET",
+    "updates_used_of_ceiling": [
+     4000,
+     4000
+    ],
+    "validation_slope_last_third": 0.03217262029647827,
+    "validation_slope_last_two": 0.050515174865722656,
+    "verdict": "CENSORED_BY_BUDGET"
+   },
+   "cost": {
+    "cgroup_memory_peak": 545140736,
+    "cpu_seconds": 336.189,
+    "ended_at": "2026-09-20T19:08:06+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 958304256,
+    "started_at": "2026-09-20T19:03:27+00:00",
+    "wall_seconds": 279.09
+   },
+   "detector_receives_gradient": true,
+   "detector_unchanged": false,
+   "initial_full_digest": "b3cf9687c1dd1ed8c5e45eeae9b7574902bc857ac4a06a07c72e05677e2421de",
+   "mae_validation": 0.5692441953122259,
+   "mase_validation": 0.9237054794577801,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 8127,
+    "trainable": 8127
+   },
+   "phases": {
+    "cpu_seconds_process": 335.104,
+    "fit_seconds": 326.868,
+    "inference_seconds": 3.022,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.013
+   },
+   "regime": "R2",
+   "resumed": false,
+   "seed": 2,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 4000
+  },
+  "R2_s3": {
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 1,
+    "budget_reached": false,
+    "epochs": 4,
+    "improvement_since_best": 0.05154454708099365,
+    "stopped_by": "EARLY_STOPPING",
+    "updates_used_of_ceiling": [
+     2508,
+     4000
+    ],
+    "validation_slope_last_third": 0.01849353313446045,
+    "validation_slope_last_two": 0.030176520347595215,
+    "verdict": "STOPPED_ON_VALIDATION"
+   },
+   "cost": {
+    "cgroup_memory_peak": 541954048,
+    "cpu_seconds": 223.092,
+    "ended_at": "2026-09-20T19:08:21+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 955469824,
+    "started_at": "2026-09-20T19:05:15+00:00",
+    "wall_seconds": 186.312
+   },
+   "detector_receives_gradient": true,
+   "detector_unchanged": false,
+   "initial_full_digest": "d1c7a6e314e88765f0204ea22ffb543aaf8d908cabe074089be07cf21fc05ba9",
+   "mae_validation": 0.5464712891060197,
+   "mase_validation": 0.8867521676469975,
+   "outcome": "COMPLETED",
+   "parameters": {
+    "frozen": 0,
+    "total": 8127,
+    "trainable": 8127
+   },
+   "phases": {
+    "cpu_seconds_process": 221.844,
+    "fit_seconds": 210.373,
+    "inference_seconds": 5.808,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.013
+   },
+   "regime": "R2",
+   "resumed": false,
+   "seed": 3,
+   "stop_reason": "EARLY_STOPPING",
+   "updates": 2508
+  },
+  "ae_s1": {
+   "cost": {
+    "cgroup_memory_peak": 404910080,
+    "cpu_seconds": 46.852,
+    "ended_at": "2026-09-20T18:29:15+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 815923200,
+    "started_at": "2026-09-20T18:28:40+00:00",
+    "wall_seconds": 34.913
+   },
+   "detector_sha256": "ba48c58a7a1a81cf1637479b1e80a433a9babbc8f4a6e8f4385cace5cae896fc",
+   "outcome": "COMPLETED",
+   "phases": {
+    "cpu_seconds_process": 45.95,
+    "metrics_seconds": 1.287,
+    "pretrain_seconds": 37.614
+   },
+   "reconstruction": 0.1969364732503891,
+   "resumed": true,
+   "seed": 1,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1500
+  },
+  "ae_s2": {
+   "cost": {
+    "cgroup_memory_peak": 406286336,
+    "cpu_seconds": 43.236,
+    "ended_at": "2026-09-20T18:29:41+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 817373184,
+    "started_at": "2026-09-20T18:29:10+00:00",
+    "wall_seconds": 31.287
+   },
+   "detector_sha256": "3cf3fbcc59ccb45ef73408825e955d8fad8ab00481d3f84f35845c551abb8c13",
+   "outcome": "COMPLETED",
+   "phases": {
+    "cpu_seconds_process": 42.385,
+    "metrics_seconds": 1.249,
+    "pretrain_seconds": 37.152
+   },
+   "reconstruction": 0.1931588500738144,
+   "resumed": true,
+   "seed": 2,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1500
+  },
+  "ae_s3": {
+   "cost": {
+    "cgroup_memory_peak": 405110784,
+    "cpu_seconds": 47.068,
+    "ended_at": "2026-09-20T18:38:59+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 816046080,
+    "started_at": "2026-09-20T18:38:24+00:00",
+    "wall_seconds": 35.123
+   },
+   "detector_sha256": "c1fe72ca69ec1efd310dc08e55e1fab82b9bc39d84de0d5ea0be0f278e583909",
+   "outcome": "COMPLETED",
+   "phases": {
+    "cpu_seconds_process": 46.205,
+    "metrics_seconds": 1.24,
+    "pretrain_seconds": 37.877
+   },
+   "reconstruction": 0.1918870359659195,
+   "resumed": true,
+   "seed": 3,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1500
+  },
+  "controls": {
+   "controls": {
+    "linear_reach": {
+     "mae": 0.5454945633272991,
+     "mase": 0.8851672468675469
+    },
+    "linear_ridge": {
+     "mae": 0.5454945633272991,
+     "mase": 0.8851672468675469
+    },
+    "persistence": {
+     "mae": 0.6173720558882235,
+     "mase": 1.0018019605369508
+    },
+    "seasonal_naive_daily": {
+     "mae": 0.7316592814371257,
+     "mase": 1.1872544207304976
+    }
+   },
+   "cost": {
+    "cgroup_memory_peak": 430837760,
+    "cpu_seconds": 4.851,
+    "ended_at": "2026-09-20T18:39:04+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 831008768,
+    "started_at": "2026-09-20T18:38:59+00:00",
+    "wall_seconds": 5.031
+   },
+   "outcome": "COMPLETED",
+   "phases": {
+    "cpu_seconds_process": 4.122,
+    "fit_seconds": 0.593,
+    "metrics_seconds": 0.001
+   },
+   "resumed": true
+  }
+ },
+ "code_identity": {
+  "kind": "git_commit",
+  "value": "0607b56d19b967cad868a94012ab895db1ca83cd"
+ },
+ "cost_pilot": {
+  "pilot_ae": {
+   "cgroup_memory_peak": 411033600,
+   "cost": {
+    "cgroup_memory_peak": 411033600,
+    "cpu_seconds": 20.435,
+    "ended_at": "2026-09-20T18:27:05+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 809201664,
+    "started_at": "2026-09-20T18:26:48+00:00",
+    "wall_seconds": 17.287
+   },
+   "cpu_seconds": 20.435,
+   "detector_sha256": "58e3994fb9d082cf3238d3cd7c0621ed1055c769cb6b0c44e15e8a135a19fc48",
+   "fit_seconds": 10.974,
+   "outcome": "COMPLETED",
+   "overhead_seconds": 9.460999999999999,
+   "peak_rss_bytes": 809201664,
+   "phases": {
+    "cpu_seconds_process": 19.395,
+    "metrics_seconds": 1.556,
+    "pretrain_seconds": 10.974
+   },
+   "reconstruction": 0.22914402186870575,
+   "resumed": true,
+   "seconds_per_update": 0.03658,
+   "seed": 1,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 300
+  },
+  "pilot_fit": {
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 1,
+    "budget_reached": true,
+    "epochs": 1,
+    "improvement_since_best": 0.0,
+    "stopped_by": "UPDATE_BUDGET",
+    "updates_used_of_ceiling": [
+     300,
+     300
+    ],
+    "validation_slope_last_third": null,
+    "validation_slope_last_two": null,
+    "verdict": "CENSORED_BY_BUDGET"
+   },
+   "cgroup_memory_peak": 540127232,
+   "cost": {
+    "cgroup_memory_peak": 540127232,
+    "cpu_seconds": 45.238,
+    "ended_at": "2026-09-20T18:27:45+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 953368576,
+    "started_at": "2026-09-20T18:27:05+00:00",
+    "wall_seconds": 39.735
+   },
+   "cpu_seconds": 45.238,
+   "detector_receives_gradient": true,
+   "detector_unchanged": false,
+   "fit_seconds": 34.532,
+   "initial_full_digest": "30b20e4ccae45f5983f59bbababc91f88d0d9a6da17864d0784d2d912e95eb54",
+   "mae_validation": 0.5515746830729668,
+   "mase_validation": 0.8950333815968651,
+   "outcome": "COMPLETED",
+   "overhead_seconds": 10.706000000000003,
+   "parameters": {
+    "frozen": 0,
+    "total": 8127,
+    "trainable": 8127
+   },
+   "peak_rss_bytes": 953368576,
+   "phases": {
+    "cpu_seconds_process": 44.034,
+    "fit_seconds": 34.532,
+    "inference_seconds": 3.772,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.002
+   },
+   "regime": "R0",
+   "resumed": true,
+   "seconds_per_update": 0.11510666666666665,
+   "seed": 1,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 300
+  }
+ },
+ "data": {
+  "campaign_sha256": "7b0d587c4d586600efe2c77a315ee548b03f10f33d46acd74640a6342afa4b1f",
+  "contract_sha256": "9f4c972043be998150cd09dafaceaf05ed5e9d4e6c9efef4263a8c29d6d53027",
+  "coverage": {
+   "common_evaluation_set": 10020,
+   "validation_admissible": 10020,
+   "with_finite_daily_lookup": 10020,
+   "with_finite_label": 10020
+  },
+  "cpu_seconds": 1.908,
+  "data_access": "GOVERNED_DELIVERY",
+  "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+  "delivery": {
+   "at": "2026-09-20T18:26:45Z",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "availability_label": "UNKNOWN",
+   "availability_use": "UNDECLARED",
+   "bytes": 10890295,
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "cached": false,
+   "campaign_key": "satoshi-e1-successor-20260920-prepare-data",
+   "campaign_sha256": "7b0d587c4d586600efe2c77a315ee548b03f10f33d46acd74640a6342afa4b1f",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "d47c86c305b7b17cba030e48d48ac9e8f935fb71"
+   },
+   "delivery_id": "6a8026ca9dd747ee9b1d95d51db5dca5",
+   "host": "omega",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "verification_state": "VERIFIED_TRANSFER"
+  },
+  "delivery_recheck": {
+   "at": "2026-09-20T19:01:28Z",
+   "delivery_id": "6a8026ca9dd747ee9b1d95d51db5dca5"
+  },
+  "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+  "enumerator": {
+   "train": {
+    "admissible": 40081,
+    "masked_inputs": 0,
+    "origins": 40141,
+    "support_physical_seconds": 2404860,
+    "targets_valid_all": 40080,
+    "targets_valid_any": 40080,
+    "targets_valid_per_column": {
+     "Global_active_power": 40080
+    },
+    "withdrawn_grid": 0,
+    "withdrawn_non_finite_inputs": 60
+   },
+   "validation": {
+    "admissible": 10020,
+    "masked_inputs": 0,
+    "origins": 10020,
+    "support_physical_seconds": 601200,
+    "targets_valid_all": 10020,
+    "targets_valid_any": 10020,
+    "targets_valid_per_column": {
+     "Global_active_power": 10020
+    },
+    "withdrawn_grid": 0,
+    "withdrawn_non_finite_inputs": 0
+   }
+  },
+  "grid_rows_not_ok": 0,
+  "horizon": 60,
+  "input_columns": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3",
+   "Global_active_power"
+  ],
+  "input_rows_non_finite": 1,
+  "mase_denominator_persistence_h": 0.6162615768463073,
+  "memory_preflight": {
+   "batch_window_bytes": 107520,
+   "cap_bytes": 1073741824,
+   "policy": "windows are gathered per batch from the scaled slice; only the train tensor for the scaler is materialised once, here",
+   "slice_bytes": 1411200,
+   "train_tensor_bytes_for_scaler": 134672160
+  },
+  "p": 7,
+  "panel_rows": 2075259,
+  "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "scaler": {
+   "fitted_on": "train windows only",
+   "mean": [
+    0.16394039569874333,
+    241.13327788719684,
+    3.979902281204715,
+    1.2482722486963898,
+    0.8695229659938625,
+    6.320571675690061,
+    0.926139629748496
+   ],
+   "n_rows": 2404860,
+   "sd": [
+    0.12462470429263597,
+    2.20610330333974,
+    3.8047190184746955,
+    6.578895446497683,
+    3.6476937059712364,
+    8.382971207465904,
+    0.9125164391265214
+   ]
+  },
+  "schema": "df_e1_pilot_data.v1",
+  "slice_rows": [
+   1412361,
+   1462761
+  ],
+  "target_channel": 6,
+  "train_origins_with_label": 40080,
+  "window": 60
+ },
+ "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+ "governance": {
+  "disposition": "LOCAL_TERMINALS_PUBLIC_PANEL_NOT_A_LAKE_RESOURCE",
+  "missing_object": "one lake registration of public_panels_c126_v2 in data-gov (config + service restart: an owner action)",
+  "what_is_recorded": "governed_terminal.v1 documents per unit in the run root + CAMPAIGN_PROPOSAL.json",
+  "why": "the deployed data-gov serves no lake holding the public panels; DATASETS campaigns complete units only through deliveries of every declared dataset; SYNTHETIC would misdeclare real bytes"
+ },
+ "governance_result": {
+  "all_units_governed": true,
+  "counts": {
+   "BLOCKED": 0,
+   "CLOSED": 16,
+   "NOT_STARTED": 0,
+   "PENDING": 0,
+   "RUNNING": 0
+  },
+  "population": {
+   "R0_s1": "CLOSED",
+   "R0_s2": "CLOSED",
+   "R0_s3": "CLOSED",
+   "R1_s1": "CLOSED",
+   "R1_s2": "CLOSED",
+   "R1_s3": "CLOSED",
+   "R2_s1": "CLOSED",
+   "R2_s2": "CLOSED",
+   "R2_s3": "CLOSED",
+   "ae_s1": "CLOSED",
+   "ae_s2": "CLOSED",
+   "ae_s3": "CLOSED",
+   "controls": "CLOSED",
+   "pilot_ae": "CLOSED",
+   "pilot_fit": "CLOSED",
+   "prepare": "CLOSED"
+  },
+  "reasons": {},
+  "receipts_file": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3/TERMINAL_RECEIPTS.json",
+  "rule": "the population is the sealed design's enumeration; a registered unit that is not closed is PENDING and named, never absorbed into a total",
+  "transfer": {
+   "bytes_first_transfer": 10890295,
+   "cache_reused_units": 15,
+   "transferred_units": 1
+  },
+  "units_incomplete": []
+ },
+ "host": "omega",
+ "parallel": 3,
+ "projection": {
+  "assumption": "every unit at its full update ceiling (early stopping only lowers it); per-update cost from the pilot of its kind; overhead per child from the pilots",
+  "cap_seconds": 11000.0,
+  "fits": true,
+  "headroom": 0.25,
+  "per_cell": {
+   "R0_s1": 471.13266666666664,
+   "R0_s2": 471.13266666666664,
+   "R0_s3": 471.13266666666664,
+   "R1_s1": 471.13266666666664,
+   "R1_s2": 471.13266666666664,
+   "R1_s3": 471.13266666666664,
+   "R2_s1": 471.13266666666664,
+   "R2_s2": 471.13266666666664,
+   "R2_s3": 471.13266666666664,
+   "ae_s1": 64.331,
+   "ae_s2": 64.331,
+   "ae_s3": 64.331,
+   "controls": 21.412000000000006
+  },
+  "projected_remaining_cpu_seconds": 2826.796,
+  "projected_with_headroom": 3533.495,
+  "remaining_cells": 6,
+  "spent_so_far": 1450.105
+ },
+ "run_id": "satoshi-e1-successor-20260920",
+ "schema": "df_e1_pilot_report.v1",
+ "spent_cpu_seconds": 2785.5039999999995,
+ "stopped": null,
+ "terminals": [
+  {
+   "cost": {
+    "cpu_seconds": 1.908
+   },
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": true,
+   "terminal_sent": 0,
+   "terminal_sha256": "153580f335cabba28b6c3d346906151ba88f2c68e8c339bc324066056503db00",
+   "unit_id": "prepare"
+  },
+  {
+   "campaign_sha256": "ee25fe496ea991aa51ff2c3d8014fb3fa01d9877b0fd64b4e67d74ca0fa41f21",
+   "cost": {
+    "cgroup_memory_peak": 411033600,
+    "cpu_seconds": 20.435,
+    "ended_at": "2026-09-20T18:27:05+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 809201664,
+    "started_at": "2026-09-20T18:26:48+00:00",
+    "wall_seconds": 17.287
+   },
+   "delivery_id": "787714dfc35643e39295a106eeaac9e3",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": true,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": true,
+   "terminal_sent": 0,
+   "terminal_sha256": "d23fa4b5593ea140b6a2e69058db563437ea221f8b05fcf05bf47e0211585471",
+   "terminal_sha256_reused": "d23fa4b5593ea140b6a2e69058db563437ea221f8b05fcf05bf47e0211585471",
+   "unit_id": "pilot_ae"
+  },
+  {
+   "campaign_sha256": "455dd08ac0cac935a43c512de59f80dfb15832d94747c1336c0772f37f71337f",
+   "cost": {
+    "cgroup_memory_peak": 540127232,
+    "cpu_seconds": 45.238,
+    "ended_at": "2026-09-20T18:27:45+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 953368576,
+    "started_at": "2026-09-20T18:27:05+00:00",
+    "wall_seconds": 39.735
+   },
+   "delivery_id": "514b3512891448939def663fc85eead5",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": true,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": true,
+   "terminal_sent": 0,
+   "terminal_sha256": "dda558541a214735f3c8253288ac2ebefba3ecd9b0b20fbaae5f275afe4b931d",
+   "terminal_sha256_reused": "dda558541a214735f3c8253288ac2ebefba3ecd9b0b20fbaae5f275afe4b931d",
+   "unit_id": "pilot_fit"
+  },
+  {
+   "campaign_sha256": "e26fb30b5c497b4c3d0dad5a4716b08d6202406c58bb5900b83af51e76719eae",
+   "cost": {
+    "cgroup_memory_peak": 545492992,
+    "cpu_seconds": 406.681,
+    "ended_at": "2026-09-20T18:34:22+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 958988288,
+    "started_at": "2026-09-20T18:28:40+00:00",
+    "wall_seconds": 342.331
+   },
+   "delivery_id": "e09ce4c3189e4f03baaf97cdcf9fa0dd",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": true,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": true,
+   "terminal_sent": 0,
+   "terminal_sha256": "e9473e4224a43583430b43ea988f467dc9d02a988db80fbdd6c2c101ec3ba1ed",
+   "terminal_sha256_reused": "e9473e4224a43583430b43ea988f467dc9d02a988db80fbdd6c2c101ec3ba1ed",
+   "unit_id": "R0_s1"
+  },
+  {
+   "campaign_sha256": "7968ca829fa363d75312e508d49677c63d7aa9d73411777c0c4f50fe5879e2e9",
+   "cost": {
+    "cgroup_memory_peak": 404910080,
+    "cpu_seconds": 46.852,
+    "ended_at": "2026-09-20T18:29:15+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 815923200,
+    "started_at": "2026-09-20T18:28:40+00:00",
+    "wall_seconds": 34.913
+   },
+   "delivery_id": "1b98888c042c4dc9b028f74a1d3eb7b1",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": true,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": true,
+   "terminal_sent": 0,
+   "terminal_sha256": "ad8028228f4e8152c7930799b3d0587b4fdb1c13f5d37d95fac940de1704e967",
+   "terminal_sha256_reused": "ad8028228f4e8152c7930799b3d0587b4fdb1c13f5d37d95fac940de1704e967",
+   "unit_id": "ae_s1"
+  },
+  {
+   "campaign_sha256": "56212e9fe2439098dfb5eac3fa5624560d6361ad23cce6036440f04f434c77a9",
+   "cost": {
+    "cgroup_memory_peak": 406286336,
+    "cpu_seconds": 43.236,
+    "ended_at": "2026-09-20T18:29:41+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 817373184,
+    "started_at": "2026-09-20T18:29:10+00:00",
+    "wall_seconds": 31.287
+   },
+   "delivery_id": "bf2077955b7d45dc9a739889cc2f3a26",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": true,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": true,
+   "terminal_sent": 0,
+   "terminal_sha256": "7554f13ab81eb01079c7ce3a0174eb7d9beed792671ede03fdfdb276dcf931d6",
+   "terminal_sha256_reused": "7554f13ab81eb01079c7ce3a0174eb7d9beed792671ede03fdfdb276dcf931d6",
+   "unit_id": "ae_s2"
+  },
+  {
+   "campaign_sha256": "58424e9afec1e5ada93c67b4dcfb8c43914671c5bd9cdc99cd47b2fe7e94cc18",
+   "cost": {
+    "cgroup_memory_peak": 551038976,
+    "cpu_seconds": 366.897,
+    "ended_at": "2026-09-20T18:43:30+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 963874816,
+    "started_at": "2026-09-20T18:38:24+00:00",
+    "wall_seconds": 306.766
+   },
+   "delivery_id": "bfc7d876a43a4e8a9157502fd50882c0",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": true,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": true,
+   "terminal_sent": 0,
+   "terminal_sha256": "b68516463669356dfaa0509de07d74dad2f67c1a65830d047ac4bee909748cc5",
+   "terminal_sha256_reused": "b68516463669356dfaa0509de07d74dad2f67c1a65830d047ac4bee909748cc5",
+   "unit_id": "R0_s2"
+  },
+  {
+   "campaign_sha256": "4e1676c735bb42957a773342c29d0bc91406070b46040adc91ea5ea476aee6e3",
+   "cost": {
+    "cgroup_memory_peak": 544030720,
+    "cpu_seconds": 218.847,
+    "ended_at": "2026-09-20T18:41:56+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 957345792,
+    "started_at": "2026-09-20T18:38:54+00:00",
+    "wall_seconds": 182.839
+   },
+   "delivery_id": "472babb2830b414da0cb897421fb6f11",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": true,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": true,
+   "terminal_sent": 0,
+   "terminal_sha256": "72358dd6e2359d6035735bc0d7b72472a585670c9d96dba47dd51f4475aa6771",
+   "terminal_sha256_reused": "72358dd6e2359d6035735bc0d7b72472a585670c9d96dba47dd51f4475aa6771",
+   "unit_id": "R0_s3"
+  },
+  {
+   "campaign_sha256": "3045e48418ea59ad585710e8106e538396942a049c88da4ddf49653b2c7cb3bd",
+   "cost": {
+    "cgroup_memory_peak": 405110784,
+    "cpu_seconds": 47.068,
+    "ended_at": "2026-09-20T18:38:59+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 816046080,
+    "started_at": "2026-09-20T18:38:24+00:00",
+    "wall_seconds": 35.123
+   },
+   "delivery_id": "886db107dc48454887a07e64e2bc2983",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": true,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": false,
+   "terminal_sent": 1,
+   "terminal_sha256": "ee6b988e1e9ce308b7e6752d55d7cda2f8e51a2cd8d2b8fb15d0bb514752eeb0",
+   "terminal_sha256_reused": "ee6b988e1e9ce308b7e6752d55d7cda2f8e51a2cd8d2b8fb15d0bb514752eeb0",
+   "unit_id": "ae_s3"
+  },
+  {
+   "campaign_sha256": "ca13b4e1cd05d8e28412da011fa8b257b6024b0a871e63426bc979548dfac42d",
+   "cost": {
+    "cgroup_memory_peak": 430837760,
+    "cpu_seconds": 4.851,
+    "ended_at": "2026-09-20T18:39:04+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 831008768,
+    "started_at": "2026-09-20T18:38:59+00:00",
+    "wall_seconds": 5.031
+   },
+   "delivery_id": "bc7361340edf4592a9de3adb10560941",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": true,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": true,
+   "terminal_sent": 0,
+   "terminal_sha256": "785ffa2214e38bb02e84661ee514138f57eb9701c31820525416ad5e964b892d",
+   "terminal_sha256_reused": "785ffa2214e38bb02e84661ee514138f57eb9701c31820525416ad5e964b892d",
+   "unit_id": "controls"
+  },
+  {
+   "campaign_sha256": "d0af4b757c840457c3bafbb20dfd908c31d94bfb2f6fc0cf917b4d73bc111fef",
+   "cost": {
+    "cgroup_memory_peak": 518868992,
+    "cpu_seconds": 158.559,
+    "ended_at": "2026-09-20T19:03:27+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 932343808,
+    "started_at": "2026-09-20T19:01:29+00:00",
+    "wall_seconds": 117.743
+   },
+   "delivery_id": "96683b2fd5024a78a6587245b2be876e",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": false,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": false,
+   "terminal_sent": 1,
+   "terminal_sha256": "c54ec4e563d558fc63c75cab756ae7b5dac88ae01a06376200ed118856156b65",
+   "terminal_sha256_reused": "c54ec4e563d558fc63c75cab756ae7b5dac88ae01a06376200ed118856156b65",
+   "unit_id": "R1_s1"
+  },
+  {
+   "campaign_sha256": "8129eb8f5a485e4f63ffdbb4db715a657458dc12b9ffcfbae147982647eeaf4f",
+   "cost": {
+    "cgroup_memory_peak": 522084352,
+    "cpu_seconds": 171.35,
+    "ended_at": "2026-09-20T19:04:05+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 934875136,
+    "started_at": "2026-09-20T19:01:59+00:00",
+    "wall_seconds": 125.685
+   },
+   "delivery_id": "2c2eb69083e24385ab1ce4c9ec5abd5b",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": false,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": false,
+   "terminal_sent": 1,
+   "terminal_sha256": "619decf72149cc2ac016e9090ce6756131148261c878cea7cdd12b275149b182",
+   "terminal_sha256_reused": "619decf72149cc2ac016e9090ce6756131148261c878cea7cdd12b275149b182",
+   "unit_id": "R1_s2"
+  },
+  {
+   "campaign_sha256": "3ec3a68e1b21906f144f7e9517e82e1a3a1d302cc2e187cc92cdbee372cb6d51",
+   "cost": {
+    "cgroup_memory_peak": 545902592,
+    "cpu_seconds": 270.118,
+    "ended_at": "2026-09-20T19:05:15+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 959201280,
+    "started_at": "2026-09-20T19:01:29+00:00",
+    "wall_seconds": 225.963
+   },
+   "delivery_id": "c7ee51dcbb3540308a7cb2cb908da265",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": false,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": false,
+   "terminal_sent": 1,
+   "terminal_sha256": "9fe6aa1e72c3b8b33f4f8539aca41c636e027922c48ae79c17b12a7c35d2c9c6",
+   "terminal_sha256_reused": "9fe6aa1e72c3b8b33f4f8539aca41c636e027922c48ae79c17b12a7c35d2c9c6",
+   "unit_id": "R2_s1"
+  },
+  {
+   "campaign_sha256": "d8438177726912b33f042b3072ca02d6882dc3d2f7470960e77c4b1178929be2",
+   "cost": {
+    "cgroup_memory_peak": 520790016,
+    "cpu_seconds": 176.091,
+    "ended_at": "2026-09-20T19:06:14+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 933994496,
+    "started_at": "2026-09-20T19:04:05+00:00",
+    "wall_seconds": 128.892
+   },
+   "delivery_id": "6970c92d1eb749bcba0dfec3b385e46b",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": false,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": false,
+   "terminal_sent": 1,
+   "terminal_sha256": "967ee6dccd675267303b05bb96d9d6068dcef96d886e0497784fec484929360d",
+   "terminal_sha256_reused": "967ee6dccd675267303b05bb96d9d6068dcef96d886e0497784fec484929360d",
+   "unit_id": "R1_s3"
+  },
+  {
+   "campaign_sha256": "7ef178019a0516bbe3eb41065f2cdab87edffe0c43ea8954dcd8ae0144848fc5",
+   "cost": {
+    "cgroup_memory_peak": 545140736,
+    "cpu_seconds": 336.189,
+    "ended_at": "2026-09-20T19:08:06+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 958304256,
+    "started_at": "2026-09-20T19:03:27+00:00",
+    "wall_seconds": 279.09
+   },
+   "delivery_id": "eedb23965b0c4cb7a22f764d6f501d4e",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": false,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": false,
+   "terminal_sent": 1,
+   "terminal_sha256": "3abfac2c4e912ffb1093bad41d1533825acf53e6be31f86a61a2e316febb48d0",
+   "terminal_sha256_reused": "3abfac2c4e912ffb1093bad41d1533825acf53e6be31f86a61a2e316febb48d0",
+   "unit_id": "R2_s2"
+  },
+  {
+   "campaign_sha256": "00de32dbfe5bbb5ed01e2141d419db991b08d6a75175436023b9dad059754a8c",
+   "cost": {
+    "cgroup_memory_peak": 541954048,
+    "cpu_seconds": 223.092,
+    "ended_at": "2026-09-20T19:08:21+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 955469824,
+    "started_at": "2026-09-20T19:05:15+00:00",
+    "wall_seconds": 186.312
+   },
+   "delivery_id": "9f181d7c4f054cfba413c8a65504d065",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": false,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": false,
+   "terminal_sent": 1,
+   "terminal_sha256": "b2e1e2ffdd922fe0f9cbfccf095eb5ad6df5517e1fd294a4f01c3f2ca9dd265e",
+   "terminal_sha256_reused": "b2e1e2ffdd922fe0f9cbfccf095eb5ad6df5517e1fd294a4f01c3f2ca9dd265e",
+   "unit_id": "R2_s3"
+  }
+ ]
+}

@@ -1,0 +1,112 @@
+{
+ "root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3",
+ "restore": {
+  "ae_s1": {
+   "campaign_key": "satoshi-e1-successor-20260920-ae_s1-data",
+   "campaign_sha256": "7968ca829fa363d75312e508d49677c63d7aa9d73411777c0c4f50fe5879e2e9",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "8221a6291d1b8fb2b58591c9afbef7655d49f140"
+   },
+   "at": "2026-09-20T18:28:40Z",
+   "host": "omega",
+   "delivery_id": "1b98888c042c4dc9b028f74a1d3eb7b1",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "restored": "restored from the governance service's own accounting record after a client-side receipt loss"
+  },
+  "R0_s1": {
+   "campaign_key": "satoshi-e1-successor-20260920-R0_s1-data",
+   "campaign_sha256": "e26fb30b5c497b4c3d0dad5a4716b08d6202406c58bb5900b83af51e76719eae",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "8221a6291d1b8fb2b58591c9afbef7655d49f140"
+   },
+   "at": "2026-09-20T18:28:40Z",
+   "host": "omega",
+   "delivery_id": "e09ce4c3189e4f03baaf97cdcf9fa0dd",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "restored": "restored from the governance service's own accounting record after a client-side receipt loss"
+  },
+  "R0_s2": {
+   "campaign_key": "satoshi-e1-successor-20260920-R0_s2-data",
+   "campaign_sha256": "58424e9afec1e5ada93c67b4dcfb8c43914671c5bd9cdc99cd47b2fe7e94cc18",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "b2fe9f63c5ad6bbc12b108665e2499f8a82ba818"
+   },
+   "at": "2026-09-20T18:38:23Z",
+   "host": "omega",
+   "delivery_id": "bfc7d876a43a4e8a9157502fd50882c0",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "restored": "restored from the governance service's own accounting record after a client-side receipt loss"
+  },
+  "ae_s3": {
+   "campaign_key": "satoshi-e1-successor-20260920-ae_s3-data",
+   "campaign_sha256": "3045e48418ea59ad585710e8106e538396942a049c88da4ddf49653b2c7cb3bd",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "b2fe9f63c5ad6bbc12b108665e2499f8a82ba818"
+   },
+   "at": "2026-09-20T18:38:23Z",
+   "host": "omega",
+   "delivery_id": "886db107dc48454887a07e64e2bc2983",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "restored": "restored from the governance service's own accounting record after a client-side receipt loss"
+  }
+ },
+ "already_present": [
+  "prepare",
+  "pilot_ae",
+  "pilot_fit",
+  "ae_s2",
+  "R0_s3",
+  "controls"
+ ],
+ "unknown_to_the_service": [
+  "R1_s1",
+  "R2_s1",
+  "R1_s2",
+  "R2_s2",
+  "R1_s3",
+  "R2_s3"
+ ],
+ "refused": {},
+ "terminals_the_service_already_holds": {
+  "ae_s1": [],
+  "R0_s1": [],
+  "R0_s2": [],
+  "ae_s3": []
+ },
+ "rule": "a delivery is copied from the service's record; a terminal is never written here",
+ "applied_at": "2026-09-20T18:54:51Z",
+ "applied": [
+  "R0_s1",
+  "R0_s2",
+  "ae_s1",
+  "ae_s3"
+ ]
+}

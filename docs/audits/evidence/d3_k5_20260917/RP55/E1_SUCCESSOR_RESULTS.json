@@ -1,0 +1,879 @@
+{
+ "schema": "df_e1_pilot_results.v1",
+ "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+ "run_id": "satoshi-e1-successor-20260920",
+ "stopped": null,
+ "task": {
+  "id": "W60_h60",
+  "window_steps": 60,
+  "horizon_steps": 60,
+  "context_physical_seconds": 3540,
+  "horizon_physical_seconds": 3600,
+  "purge": 120,
+  "model_reach_steps": 60,
+  "model_reach_physical_seconds": 3600,
+  "reach_measured_by": "perturbation and gradient per input row (tools/df_e1_receiver.py), not asserted",
+  "reach_note": "ARCH-A with the sequence fusion depends on the last `model_reach_steps` samples of the window (branch 5 + core 3 - 1); the window is the declared context, the reach is what the prediction can depend on (RP28: full real reach declared)",
+  "target": [
+   "Global_active_power"
+  ],
+  "features": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3"
+  ],
+  "target_history_as_feature": true,
+  "family_usable_windows": {
+   "train": 1440653,
+   "validation": 305221,
+   "test": 298224
+  }
+ },
+ "dev": {
+  "rows": [
+   1412361,
+   1462761
+  ],
+  "rows_note": "the last 28 days of the family's train split and the first 7 days of its validation split (family train end row 1452681); test rows never read",
+  "train_days": 28,
+  "validation_days": 7,
+  "splits_within_slice": {
+   "train": 0.8,
+   "validation": 0.2
+  },
+  "purge_between_splits": 120
+ },
+ "data": {
+  "common_evaluation_set": 10020,
+  "validation_admissible": 10020,
+  "with_finite_daily_lookup": 10020,
+  "with_finite_label": 10020
+ },
+ "denominator": 0.6162615768463073,
+ "cells": {
+  "R0_s1": {
+   "regime": "R0",
+   "seed": 1,
+   "mase": 0.8965322309244448,
+   "mae": 0.5524983663230361,
+   "updates": 3762,
+   "epochs": 6,
+   "stop": "EARLY_STOPPING",
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 3,
+    "budget_reached": false,
+    "epochs": 6,
+    "improvement_since_best": 0.051329612731933594,
+    "stopped_by": "EARLY_STOPPING",
+    "updates_used_of_ceiling": [
+     3762,
+     4000
+    ],
+    "validation_slope_last_third": 0.02467966079711914,
+    "validation_slope_last_two": 0.007476925849914551,
+    "verdict": "STOPPED_ON_VALIDATION"
+   },
+   "best_epoch": 3,
+   "curve_val": [
+    0.765623152256012,
+    0.7270731925964355,
+    0.7179271578788757,
+    0.7445771098136902,
+    0.7617798447608948,
+    0.7692567706108093
+   ],
+   "curve_train": [
+    0.8787745833396912,
+    0.7375243902206421,
+    0.7120715379714966,
+    0.693044126033783,
+    0.6606433391571045,
+    0.6272920370101929
+   ],
+   "phases": {
+    "cpu_seconds_process": 405.484,
+    "fit_seconds": 391.16,
+    "inference_seconds": 5.362,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.005
+   },
+   "child_cpu": 406.681,
+   "peak_rss": 958988288,
+   "cgroup_peak": 545492992,
+   "detector_unchanged": false,
+   "detector_gradient": true,
+   "initial_full_digest": "30b20e4ccae45f5983f59bbababc91f88d0d9a6da17864d0784d2d912e95eb54",
+   "detector_after_setup": "8b9567a5e9d0cc673a728dcd241ca0dc8e68816c95e6d86d6c86e8a7b6fee084",
+   "params_trainable": 8127,
+   "pretrained_sha256": null
+  },
+  "R1_s1": {
+   "regime": "R1",
+   "seed": 1,
+   "mase": 0.9086736747596948,
+   "mae": 0.5599806716461382,
+   "updates": 3762,
+   "epochs": 6,
+   "stop": "EARLY_STOPPING",
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 3,
+    "budget_reached": false,
+    "epochs": 6,
+    "improvement_since_best": 0.0286715030670166,
+    "stopped_by": "EARLY_STOPPING",
+    "updates_used_of_ceiling": [
+     3762,
+     4000
+    ],
+    "validation_slope_last_third": -0.01577812433242798,
+    "validation_slope_last_two": 0.01126718521118164,
+    "verdict": "STOPPED_ON_VALIDATION"
+   },
+   "best_epoch": 3,
+   "curve_val": [
+    0.7590721249580383,
+    0.7306540012359619,
+    0.7205308675765991,
+    0.7649804949760437,
+    0.7379351854324341,
+    0.7492023706436157
+   ],
+   "curve_train": [
+    0.9612694382667542,
+    0.734335720539093,
+    0.7109949588775635,
+    0.6890204548835754,
+    0.6617333889007568,
+    0.6383484601974487
+   ],
+   "phases": {
+    "cpu_seconds_process": 157.5,
+    "fit_seconds": 144.71,
+    "inference_seconds": 3.584,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.021
+   },
+   "child_cpu": 158.559,
+   "peak_rss": 932343808,
+   "cgroup_peak": 518868992,
+   "detector_unchanged": true,
+   "detector_gradient": false,
+   "initial_full_digest": "30b20e4ccae45f5983f59bbababc91f88d0d9a6da17864d0784d2d912e95eb54",
+   "detector_after_setup": "a0b1f2edc202116ac0a70208741a4ddaecc2d1ede534ea36a729b5b55e9fd893",
+   "params_trainable": 5231,
+   "pretrained_sha256": "ba48c58a7a1a81cf1637479b1e80a433a9babbc8f4a6e8f4385cace5cae896fc"
+  },
+  "R2_s1": {
+   "regime": "R2",
+   "seed": 1,
+   "mase": 0.8799275427751168,
+   "mae": 0.54226553502109,
+   "updates": 3135,
+   "epochs": 5,
+   "stop": "EARLY_STOPPING",
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 2,
+    "budget_reached": false,
+    "epochs": 5,
+    "improvement_since_best": 0.03684043884277344,
+    "stopped_by": "EARLY_STOPPING",
+    "updates_used_of_ceiling": [
+     3135,
+     4000
+    ],
+    "validation_slope_last_third": 0.01755470037460327,
+    "validation_slope_last_two": -0.015192925930023193,
+    "verdict": "STOPPED_ON_VALIDATION"
+   },
+   "best_epoch": 2,
+   "curve_val": [
+    0.7673321962356567,
+    0.7293906211853027,
+    0.7486763596534729,
+    0.7814239859580994,
+    0.7662310600280762
+   ],
+   "curve_train": [
+    0.9545350670814514,
+    0.7351281642913818,
+    0.7123671174049377,
+    0.6904680132865906,
+    0.6562371850013733
+   ],
+   "phases": {
+    "cpu_seconds_process": 268.956,
+    "fit_seconds": 257.303,
+    "inference_seconds": 2.983,
+    "metrics_seconds": 0.001,
+    "reuse_seconds": 0.021
+   },
+   "child_cpu": 270.118,
+   "peak_rss": 959201280,
+   "cgroup_peak": 545902592,
+   "detector_unchanged": false,
+   "detector_gradient": true,
+   "initial_full_digest": "30b20e4ccae45f5983f59bbababc91f88d0d9a6da17864d0784d2d912e95eb54",
+   "detector_after_setup": "a0b1f2edc202116ac0a70208741a4ddaecc2d1ede534ea36a729b5b55e9fd893",
+   "params_trainable": 8127,
+   "pretrained_sha256": "ba48c58a7a1a81cf1637479b1e80a433a9babbc8f4a6e8f4385cace5cae896fc"
+  },
+  "R0_s2": {
+   "regime": "R0",
+   "seed": 2,
+   "mase": 0.8929307677900018,
+   "mae": 0.5502789229728504,
+   "updates": 4000,
+   "epochs": 7,
+   "stop": "UPDATE_BUDGET",
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 5,
+    "budget_reached": true,
+    "epochs": 7,
+    "improvement_since_best": 0.08042818307876587,
+    "stopped_by": "UPDATE_BUDGET",
+    "updates_used_of_ceiling": [
+     4000,
+     4000
+    ],
+    "validation_slope_last_third": 0.05945032835006714,
+    "validation_slope_last_two": 0.03653973340988159,
+    "verdict": "CENSORED_BY_BUDGET"
+   },
+   "best_epoch": 5,
+   "curve_val": [
+    0.7626002430915833,
+    0.7541024088859558,
+    0.7667643427848816,
+    0.7655408978462219,
+    0.7445630431175232,
+    0.7884514927864075,
+    0.8249912261962891
+   ],
+   "curve_train": [
+    0.9208920001983643,
+    0.7421742677688599,
+    0.7024160027503967,
+    0.6812084317207336,
+    0.6501762866973877,
+    0.6354519128799438,
+    0.612377941608429
+   ],
+   "phases": {
+    "cpu_seconds_process": 365.719,
+    "fit_seconds": 351.537,
+    "inference_seconds": 5.325,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.004
+   },
+   "child_cpu": 366.897,
+   "peak_rss": 963874816,
+   "cgroup_peak": 551038976,
+   "detector_unchanged": false,
+   "detector_gradient": true,
+   "initial_full_digest": "b3cf9687c1dd1ed8c5e45eeae9b7574902bc857ac4a06a07c72e05677e2421de",
+   "detector_after_setup": "615d28656f50f862fa0543711eb8a835793251daaad5113bfc64c7871bed0f94",
+   "params_trainable": 8127,
+   "pretrained_sha256": null
+  },
+  "R1_s2": {
+   "regime": "R1",
+   "seed": 2,
+   "mase": 0.8839161196375496,
+   "mae": 0.5447235416877055,
+   "updates": 4000,
+   "epochs": 7,
+   "stop": "UPDATE_BUDGET",
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 5,
+    "budget_reached": true,
+    "epochs": 7,
+    "improvement_since_best": 0.05370098352432251,
+    "stopped_by": "UPDATE_BUDGET",
+    "updates_used_of_ceiling": [
+     4000,
+     4000
+    ],
+    "validation_slope_last_third": 0.03736758232116699,
+    "validation_slope_last_two": 0.05229997634887695,
+    "verdict": "CENSORED_BY_BUDGET"
+   },
+   "best_epoch": 5,
+   "curve_val": [
+    0.7770071625709534,
+    0.7450730204582214,
+    0.7519295811653137,
+    0.7531261444091797,
+    0.7367927432060242,
+    0.7381937503814697,
+    0.7904937267303467
+   ],
+   "curve_train": [
+    1.6853258609771729,
+    0.7545793652534485,
+    0.7204049229621887,
+    0.7014076709747314,
+    0.6847375631332397,
+    0.6699657440185547,
+    0.6642643809318542
+   ],
+   "phases": {
+    "cpu_seconds_process": 170.252,
+    "fit_seconds": 160.48,
+    "inference_seconds": 3.789,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.015
+   },
+   "child_cpu": 171.35,
+   "peak_rss": 934875136,
+   "cgroup_peak": 522084352,
+   "detector_unchanged": true,
+   "detector_gradient": false,
+   "initial_full_digest": "b3cf9687c1dd1ed8c5e45eeae9b7574902bc857ac4a06a07c72e05677e2421de",
+   "detector_after_setup": "fb0e8dd691a39ad1452fdbebd748858fa9addabc6be383ff8bfb073d570796c4",
+   "params_trainable": 5231,
+   "pretrained_sha256": "3cf3fbcc59ccb45ef73408825e955d8fad8ab00481d3f84f35845c551abb8c13"
+  },
+  "R2_s2": {
+   "regime": "R2",
+   "seed": 2,
+   "mase": 0.9237054794577801,
+   "mae": 0.5692441953122259,
+   "updates": 4000,
+   "epochs": 7,
+   "stop": "UPDATE_BUDGET",
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 6,
+    "budget_reached": true,
+    "epochs": 7,
+    "improvement_since_best": 0.050515174865722656,
+    "stopped_by": "UPDATE_BUDGET",
+    "updates_used_of_ceiling": [
+     4000,
+     4000
+    ],
+    "validation_slope_last_third": 0.03217262029647827,
+    "validation_slope_last_two": 0.050515174865722656,
+    "verdict": "CENSORED_BY_BUDGET"
+   },
+   "best_epoch": 6,
+   "curve_val": [
+    0.7628118991851807,
+    0.7626067399978638,
+    0.772236168384552,
+    0.7574562430381775,
+    0.7446594834327698,
+    0.7391136884689331,
+    0.7896288633346558
+   ],
+   "curve_train": [
+    1.4425071477890015,
+    0.7457753419876099,
+    0.7177512049674988,
+    0.7016104459762573,
+    0.6847977638244629,
+    0.6646016836166382,
+    0.6591874361038208
+   ],
+   "phases": {
+    "cpu_seconds_process": 335.104,
+    "fit_seconds": 326.868,
+    "inference_seconds": 3.022,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.013
+   },
+   "child_cpu": 336.189,
+   "peak_rss": 958304256,
+   "cgroup_peak": 545140736,
+   "detector_unchanged": false,
+   "detector_gradient": true,
+   "initial_full_digest": "b3cf9687c1dd1ed8c5e45eeae9b7574902bc857ac4a06a07c72e05677e2421de",
+   "detector_after_setup": "fb0e8dd691a39ad1452fdbebd748858fa9addabc6be383ff8bfb073d570796c4",
+   "params_trainable": 8127,
+   "pretrained_sha256": "3cf3fbcc59ccb45ef73408825e955d8fad8ab00481d3f84f35845c551abb8c13"
+  },
+  "R0_s3": {
+   "regime": "R0",
+   "seed": 3,
+   "mase": 0.8730224837668821,
+   "mae": 0.5380102124684585,
+   "updates": 2508,
+   "epochs": 4,
+   "stop": "EARLY_STOPPING",
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 1,
+    "budget_reached": false,
+    "epochs": 4,
+    "improvement_since_best": 0.05382436513900757,
+    "stopped_by": "EARLY_STOPPING",
+    "updates_used_of_ceiling": [
+     2508,
+     4000
+    ],
+    "validation_slope_last_third": 0.04105132818222046,
+    "validation_slope_last_two": 0.03845924139022827,
+    "verdict": "STOPPED_ON_VALIDATION"
+   },
+   "best_epoch": 1,
+   "curve_val": [
+    0.7271406054496765,
+    0.7399136424064636,
+    0.7425057291984558,
+    0.7809649705886841
+   ],
+   "curve_train": [
+    0.8633435964584351,
+    0.7408432960510254,
+    0.7121220231056213,
+    0.6808407306671143
+   ],
+   "phases": {
+    "cpu_seconds_process": 217.743,
+    "fit_seconds": 209.488,
+    "inference_seconds": 3.017,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.002
+   },
+   "child_cpu": 218.847,
+   "peak_rss": 957345792,
+   "cgroup_peak": 544030720,
+   "detector_unchanged": false,
+   "detector_gradient": true,
+   "initial_full_digest": "d1c7a6e314e88765f0204ea22ffb543aaf8d908cabe074089be07cf21fc05ba9",
+   "detector_after_setup": "1117b8d9ca1b0a66f9eecc6370f2173a05a9e48bc18e9e4e54bbfe3aaf717df5",
+   "params_trainable": 8127,
+   "pretrained_sha256": null
+  },
+  "R1_s3": {
+   "regime": "R1",
+   "seed": 3,
+   "mase": 0.9176269877913773,
+   "mae": 0.5654982544530414,
+   "updates": 4000,
+   "epochs": 7,
+   "stop": "UPDATE_BUDGET",
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 4,
+    "budget_reached": true,
+    "epochs": 7,
+    "improvement_since_best": 0.034322261810302734,
+    "stopped_by": "UPDATE_BUDGET",
+    "updates_used_of_ceiling": [
+     4000,
+     4000
+    ],
+    "validation_slope_last_third": 0.034322261810302734,
+    "validation_slope_last_two": 0.0005377531051635742,
+    "verdict": "CENSORED_BY_BUDGET"
+   },
+   "best_epoch": 4,
+   "curve_val": [
+    0.769269585609436,
+    0.7783003449440002,
+    0.8327457308769226,
+    0.7548788189888,
+    0.7786912322044373,
+    0.7886633276939392,
+    0.7892010807991028
+   ],
+   "curve_train": [
+    1.3178237676620483,
+    0.7456992268562317,
+    0.7131984829902649,
+    0.6839651465415955,
+    0.6675147414207458,
+    0.64345383644104,
+    0.6094945073127747
+   ],
+   "phases": {
+    "cpu_seconds_process": 174.973,
+    "fit_seconds": 165.31,
+    "inference_seconds": 3.669,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.013
+   },
+   "child_cpu": 176.091,
+   "peak_rss": 933994496,
+   "cgroup_peak": 520790016,
+   "detector_unchanged": true,
+   "detector_gradient": false,
+   "initial_full_digest": "d1c7a6e314e88765f0204ea22ffb543aaf8d908cabe074089be07cf21fc05ba9",
+   "detector_after_setup": "f0cf4826642405e126b7f48a94197faec93542c2146e340eb7d590adac903a5c",
+   "params_trainable": 5231,
+   "pretrained_sha256": "c1fe72ca69ec1efd310dc08e55e1fab82b9bc39d84de0d5ea0be0f278e583909"
+  },
+  "R2_s3": {
+   "regime": "R2",
+   "seed": 3,
+   "mase": 0.8867521676469975,
+   "mae": 0.5464712891060197,
+   "updates": 2508,
+   "epochs": 4,
+   "stop": "EARLY_STOPPING",
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 1,
+    "budget_reached": false,
+    "epochs": 4,
+    "improvement_since_best": 0.05154454708099365,
+    "stopped_by": "EARLY_STOPPING",
+    "updates_used_of_ceiling": [
+     2508,
+     4000
+    ],
+    "validation_slope_last_third": 0.01849353313446045,
+    "validation_slope_last_two": 0.030176520347595215,
+    "verdict": "STOPPED_ON_VALIDATION"
+   },
+   "best_epoch": 1,
+   "curve_val": [
+    0.7271423935890198,
+    0.760193407535553,
+    0.7485104203224182,
+    0.7786869406700134
+   ],
+   "curve_train": [
+    1.1748110055923462,
+    0.7462269067764282,
+    0.7184960842132568,
+    0.6970303058624268
+   ],
+   "phases": {
+    "cpu_seconds_process": 221.844,
+    "fit_seconds": 210.373,
+    "inference_seconds": 5.808,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.013
+   },
+   "child_cpu": 223.092,
+   "peak_rss": 955469824,
+   "cgroup_peak": 541954048,
+   "detector_unchanged": false,
+   "detector_gradient": true,
+   "initial_full_digest": "d1c7a6e314e88765f0204ea22ffb543aaf8d908cabe074089be07cf21fc05ba9",
+   "detector_after_setup": "f0cf4826642405e126b7f48a94197faec93542c2146e340eb7d590adac903a5c",
+   "params_trainable": 8127,
+   "pretrained_sha256": "c1fe72ca69ec1efd310dc08e55e1fab82b9bc39d84de0d5ea0be0f278e583909"
+  }
+ },
+ "ae": {
+  "1": {
+   "updates": 1500,
+   "stop": "UPDATE_BUDGET",
+   "reconstruction": 0.1969364732503891,
+   "phases": {
+    "cpu_seconds_process": 45.95,
+    "metrics_seconds": 1.287,
+    "pretrain_seconds": 37.614
+   },
+   "child_cpu": 46.852,
+   "detector_sha256": "ba48c58a7a1a81cf1637479b1e80a433a9babbc8f4a6e8f4385cace5cae896fc",
+   "curve_val": [
+    0.21549537777900696,
+    0.1969364732503891,
+    0.1999865621328354
+   ]
+  },
+  "2": {
+   "updates": 1500,
+   "stop": "UPDATE_BUDGET",
+   "reconstruction": 0.1931588500738144,
+   "phases": {
+    "cpu_seconds_process": 42.385,
+    "metrics_seconds": 1.249,
+    "pretrain_seconds": 37.152
+   },
+   "child_cpu": 43.236,
+   "detector_sha256": "3cf3fbcc59ccb45ef73408825e955d8fad8ab00481d3f84f35845c551abb8c13",
+   "curve_val": [
+    0.2090185135602951,
+    0.1931588500738144,
+    0.19901753962039948
+   ]
+  },
+  "3": {
+   "updates": 1500,
+   "stop": "UPDATE_BUDGET",
+   "reconstruction": 0.1918870359659195,
+   "phases": {
+    "cpu_seconds_process": 46.205,
+    "metrics_seconds": 1.24,
+    "pretrain_seconds": 37.877
+   },
+   "child_cpu": 47.068,
+   "detector_sha256": "c1fe72ca69ec1efd310dc08e55e1fab82b9bc39d84de0d5ea0be0f278e583909",
+   "curve_val": [
+    0.2231016308069229,
+    0.19295215606689453,
+    0.1918870359659195
+   ]
+  }
+ },
+ "report_file": {
+  "file": "REPORT.1789931301.json",
+  "why": "the only report of a run that ended without stopping",
+  "others": [
+   "REPORT.json"
+  ]
+ },
+ "controls": {
+  "persistence": {
+   "mase": 1.0018019605369508,
+   "mae": 0.6173720558882235
+  },
+  "seasonal_naive_daily": {
+   "mase": 1.1872544207304976,
+   "mae": 0.7316592814371257
+  },
+  "linear_ridge": {
+   "mase": 0.8851672468675469,
+   "mae": 0.5454945633272991
+  },
+  "linear_reach": {
+   "mase": 0.8851672468675469,
+   "mae": 0.5454945633272991
+  },
+  "phases": {
+   "cpu_seconds_process": 4.122,
+   "fit_seconds": 0.593,
+   "metrics_seconds": 0.001
+  }
+ },
+ "means": {
+  "R0": {
+   "n": 3,
+   "mase_mean": 0.8874951608271097,
+   "mase_sd": 0.012662401831580532
+  },
+  "R1": {
+   "n": 3,
+   "mase_mean": 0.9034055940628739,
+   "mase_sd": 0.017461963337275458
+  },
+  "R2": {
+   "n": 3,
+   "mase_mean": 0.8967950632932982,
+   "mase_sd": 0.023553593139257638
+  }
+ },
+ "paired": {
+  "R1_minus_R0": {
+   "n": 3,
+   "mean": 0.015910433235764354,
+   "per_seed": {
+    "1": 0.012141443835250065,
+    "2": -0.009014648152452231,
+    "3": 0.04460450402449523
+   },
+   "min": -0.009014648152452231,
+   "max": 0.04460450402449523
+  },
+  "R2_minus_R0": {
+   "n": 3,
+   "mean": 0.009299902466188578,
+   "per_seed": {
+    "1": -0.01660468814932803,
+    "2": 0.030774711667778343,
+    "3": 0.013729683880115418
+   },
+   "min": -0.01660468814932803,
+   "max": 0.030774711667778343
+  },
+  "R2_minus_R1": {
+   "n": 3,
+   "mean": -0.006610530769575777,
+   "per_seed": {
+    "1": -0.028746131984578094,
+    "2": 0.039789359820230574,
+    "3": -0.03087482014437981
+   },
+   "min": -0.03087482014437981,
+   "max": 0.039789359820230574
+  }
+ },
+ "identity": {
+  "1": {
+   "shared_initial_checkpoint": true,
+   "R1_R2_same_imported_detector": true,
+   "R0_detector_is_the_random_initial": true,
+   "R1_detector_frozen": true,
+   "R0_R2_detector_learns": true
+  },
+  "2": {
+   "shared_initial_checkpoint": true,
+   "R1_R2_same_imported_detector": true,
+   "R0_detector_is_the_random_initial": true,
+   "R1_detector_frozen": true,
+   "R0_R2_detector_learns": true
+  },
+  "3": {
+   "shared_initial_checkpoint": true,
+   "R1_R2_same_imported_detector": true,
+   "R0_detector_is_the_random_initial": true,
+   "R1_detector_frozen": true,
+   "R0_R2_detector_learns": true
+  }
+ },
+ "costs": {
+  "ae_cpu": 137.156,
+  "fit_cpu_by_regime": {
+   "R0": 992.425,
+   "R1": 506.0,
+   "R2": 829.399
+  },
+  "pilot_cpu": 65.673,
+  "controls_cpu": 4.851,
+  "spent_cpu_seconds_root": 2535.5039999999995,
+  "reading": "same task budget per regime (fit CPU); total cost = fit + the AE of the seed for R1/R2 (reported apart)"
+ },
+ "projection": {
+  "assumption": "every unit at its full update ceiling (early stopping only lowers it); per-update cost from the pilot of its kind; overhead per child from the pilots",
+  "cap_seconds": 11000.0,
+  "fits": true,
+  "headroom": 0.25,
+  "per_cell": {
+   "R0_s1": 471.13266666666664,
+   "R0_s2": 471.13266666666664,
+   "R0_s3": 471.13266666666664,
+   "R1_s1": 471.13266666666664,
+   "R1_s2": 471.13266666666664,
+   "R1_s3": 471.13266666666664,
+   "R2_s1": 471.13266666666664,
+   "R2_s2": 471.13266666666664,
+   "R2_s3": 471.13266666666664,
+   "ae_s1": 64.331,
+   "ae_s2": 64.331,
+   "ae_s3": 64.331,
+   "controls": 21.412000000000006
+  },
+  "projected_remaining_cpu_seconds": 2826.796,
+  "projected_with_headroom": 3533.495,
+  "remaining_cells": 6,
+  "spent_so_far": 1450.105
+ },
+ "cost_pilot": {
+  "pilot_ae": {
+   "cgroup_memory_peak": 411033600,
+   "cost": {
+    "cgroup_memory_peak": 411033600,
+    "cpu_seconds": 20.435,
+    "ended_at": "2026-09-20T18:27:05+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 809201664,
+    "started_at": "2026-09-20T18:26:48+00:00",
+    "wall_seconds": 17.287
+   },
+   "cpu_seconds": 20.435,
+   "detector_sha256": "58e3994fb9d082cf3238d3cd7c0621ed1055c769cb6b0c44e15e8a135a19fc48",
+   "fit_seconds": 10.974,
+   "outcome": "COMPLETED",
+   "overhead_seconds": 9.460999999999999,
+   "peak_rss_bytes": 809201664,
+   "phases": {
+    "cpu_seconds_process": 19.395,
+    "metrics_seconds": 1.556,
+    "pretrain_seconds": 10.974
+   },
+   "reconstruction": 0.22914402186870575,
+   "resumed": true,
+   "seconds_per_update": 0.03658,
+   "seed": 1,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 300
+  },
+  "pilot_fit": {
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 1,
+    "budget_reached": true,
+    "epochs": 1,
+    "improvement_since_best": 0.0,
+    "stopped_by": "UPDATE_BUDGET",
+    "updates_used_of_ceiling": [
+     300,
+     300
+    ],
+    "validation_slope_last_third": null,
+    "validation_slope_last_two": null,
+    "verdict": "CENSORED_BY_BUDGET"
+   },
+   "cgroup_memory_peak": 540127232,
+   "cost": {
+    "cgroup_memory_peak": 540127232,
+    "cpu_seconds": 45.238,
+    "ended_at": "2026-09-20T18:27:45+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 953368576,
+    "started_at": "2026-09-20T18:27:05+00:00",
+    "wall_seconds": 39.735
+   },
+   "cpu_seconds": 45.238,
+   "detector_receives_gradient": true,
+   "detector_unchanged": false,
+   "fit_seconds": 34.532,
+   "initial_full_digest": "30b20e4ccae45f5983f59bbababc91f88d0d9a6da17864d0784d2d912e95eb54",
+   "mae_validation": 0.5515746830729668,
+   "mase_validation": 0.8950333815968651,
+   "outcome": "COMPLETED",
+   "overhead_seconds": 10.706000000000003,
+   "parameters": {
+    "frozen": 0,
+    "total": 8127,
+    "trainable": 8127
+   },
+   "peak_rss_bytes": 953368576,
+   "phases": {
+    "cpu_seconds_process": 44.034,
+    "fit_seconds": 34.532,
+    "inference_seconds": 3.772,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.002
+   },
+   "regime": "R0",
+   "resumed": true,
+   "seconds_per_update": 0.11510666666666665,
+   "seed": 1,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 300
+  }
+ },
+ "verified_units": {
+  "ae_s1": true,
+  "R0_s1": true,
+  "R1_s1": true,
+  "R2_s1": true,
+  "ae_s2": true,
+  "R0_s2": true,
+  "R1_s2": true,
+  "R2_s2": true,
+  "ae_s3": true,
+  "R0_s3": true,
+  "R1_s3": true,
+  "R2_s3": true,
+  "controls": true,
+  "pilot_ae": true,
+  "pilot_fit": true
+ },
+ "governance": {
+  "disposition": "LOCAL_TERMINALS_PUBLIC_PANEL_NOT_A_LAKE_RESOURCE",
+  "why": "the deployed data-gov serves no lake holding the public panels; DATASETS campaigns complete units only through deliveries of every declared dataset; SYNTHETIC would misdeclare real bytes",
+  "missing_object": "one lake registration of public_panels_c126_v2 in data-gov (config + service restart: an owner action)",
+  "what_is_recorded": "governed_terminal.v1 documents per unit in the run root + CAMPAIGN_PROPOSAL.json"
+ },
+ "host": "omega",
+ "reading_rules": [
+  "development pilot: no H1 confirmation, no model selection, no benchmark substitute",
+  "BUDGET_LIMITED / truncated curves are not evidence against pre-training",
+  "no row or task was chosen after seeing regime results (design sealed before outcomes)"
+ ]
+}

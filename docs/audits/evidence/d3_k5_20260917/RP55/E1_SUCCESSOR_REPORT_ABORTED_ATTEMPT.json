@@ -1,0 +1,431 @@
+{
+ "already_spent_seconds": 250.0,
+ "cap_seconds": 11000.0,
+ "cells": {
+  "ae_s2": {
+   "cost": {
+    "cgroup_memory_peak": 406286336,
+    "cpu_seconds": 43.236,
+    "ended_at": "2026-09-20T18:29:41+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 817373184,
+    "started_at": "2026-09-20T18:29:10+00:00",
+    "wall_seconds": 31.287
+   },
+   "detector_sha256": "3cf3fbcc59ccb45ef73408825e955d8fad8ab00481d3f84f35845c551abb8c13",
+   "outcome": "COMPLETED",
+   "phases": {
+    "cpu_seconds_process": 42.385,
+    "metrics_seconds": 1.249,
+    "pretrain_seconds": 37.152
+   },
+   "reconstruction": 0.1931588500738144,
+   "resumed": true,
+   "seed": 2,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 1500
+  }
+ },
+ "code_identity": {
+  "kind": "git_commit",
+  "value": "b2fe9f63c5ad6bbc12b108665e2499f8a82ba818"
+ },
+ "cost_pilot": {
+  "pilot_ae": {
+   "cgroup_memory_peak": 411033600,
+   "cost": {
+    "cgroup_memory_peak": 411033600,
+    "cpu_seconds": 20.435,
+    "ended_at": "2026-09-20T18:27:05+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 809201664,
+    "started_at": "2026-09-20T18:26:48+00:00",
+    "wall_seconds": 17.287
+   },
+   "cpu_seconds": 20.435,
+   "detector_sha256": "58e3994fb9d082cf3238d3cd7c0621ed1055c769cb6b0c44e15e8a135a19fc48",
+   "fit_seconds": 10.974,
+   "outcome": "COMPLETED",
+   "overhead_seconds": 9.460999999999999,
+   "peak_rss_bytes": 809201664,
+   "phases": {
+    "cpu_seconds_process": 19.395,
+    "metrics_seconds": 1.556,
+    "pretrain_seconds": 10.974
+   },
+   "reconstruction": 0.22914402186870575,
+   "resumed": true,
+   "seconds_per_update": 0.03658,
+   "seed": 1,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 300
+  },
+  "pilot_fit": {
+   "censoring": {
+    "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+    "best_epoch": 1,
+    "budget_reached": true,
+    "epochs": 1,
+    "improvement_since_best": 0.0,
+    "stopped_by": "UPDATE_BUDGET",
+    "updates_used_of_ceiling": [
+     300,
+     300
+    ],
+    "validation_slope_last_third": null,
+    "validation_slope_last_two": null,
+    "verdict": "CENSORED_BY_BUDGET"
+   },
+   "cgroup_memory_peak": 540127232,
+   "cost": {
+    "cgroup_memory_peak": 540127232,
+    "cpu_seconds": 45.238,
+    "ended_at": "2026-09-20T18:27:45+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 953368576,
+    "started_at": "2026-09-20T18:27:05+00:00",
+    "wall_seconds": 39.735
+   },
+   "cpu_seconds": 45.238,
+   "detector_receives_gradient": true,
+   "detector_unchanged": false,
+   "fit_seconds": 34.532,
+   "initial_full_digest": "30b20e4ccae45f5983f59bbababc91f88d0d9a6da17864d0784d2d912e95eb54",
+   "mae_validation": 0.5515746830729668,
+   "mase_validation": 0.8950333815968651,
+   "outcome": "COMPLETED",
+   "overhead_seconds": 10.706000000000003,
+   "parameters": {
+    "frozen": 0,
+    "total": 8127,
+    "trainable": 8127
+   },
+   "peak_rss_bytes": 953368576,
+   "phases": {
+    "cpu_seconds_process": 44.034,
+    "fit_seconds": 34.532,
+    "inference_seconds": 3.772,
+    "metrics_seconds": 0.0,
+    "reuse_seconds": 0.002
+   },
+   "regime": "R0",
+   "resumed": true,
+   "seconds_per_update": 0.11510666666666665,
+   "seed": 1,
+   "stop_reason": "UPDATE_BUDGET",
+   "updates": 300
+  }
+ },
+ "data": {
+  "campaign_sha256": "7b0d587c4d586600efe2c77a315ee548b03f10f33d46acd74640a6342afa4b1f",
+  "contract_sha256": "9f4c972043be998150cd09dafaceaf05ed5e9d4e6c9efef4263a8c29d6d53027",
+  "coverage": {
+   "common_evaluation_set": 10020,
+   "validation_admissible": 10020,
+   "with_finite_daily_lookup": 10020,
+   "with_finite_label": 10020
+  },
+  "cpu_seconds": 1.908,
+  "data_access": "GOVERNED_DELIVERY",
+  "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+  "delivery": {
+   "at": "2026-09-20T18:26:45Z",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "availability_label": "UNKNOWN",
+   "availability_use": "UNDECLARED",
+   "bytes": 10890295,
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "cached": false,
+   "campaign_key": "satoshi-e1-successor-20260920-prepare-data",
+   "campaign_sha256": "7b0d587c4d586600efe2c77a315ee548b03f10f33d46acd74640a6342afa4b1f",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "d47c86c305b7b17cba030e48d48ac9e8f935fb71"
+   },
+   "delivery_id": "6a8026ca9dd747ee9b1d95d51db5dca5",
+   "host": "omega",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "verification_state": "VERIFIED_TRANSFER"
+  },
+  "delivery_recheck": {
+   "at": "2026-09-20T18:38:23Z",
+   "delivery_id": "6a8026ca9dd747ee9b1d95d51db5dca5"
+  },
+  "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+  "enumerator": {
+   "train": {
+    "admissible": 40081,
+    "masked_inputs": 0,
+    "origins": 40141,
+    "support_physical_seconds": 2404860,
+    "targets_valid_all": 40080,
+    "targets_valid_any": 40080,
+    "targets_valid_per_column": {
+     "Global_active_power": 40080
+    },
+    "withdrawn_grid": 0,
+    "withdrawn_non_finite_inputs": 60
+   },
+   "validation": {
+    "admissible": 10020,
+    "masked_inputs": 0,
+    "origins": 10020,
+    "support_physical_seconds": 601200,
+    "targets_valid_all": 10020,
+    "targets_valid_any": 10020,
+    "targets_valid_per_column": {
+     "Global_active_power": 10020
+    },
+    "withdrawn_grid": 0,
+    "withdrawn_non_finite_inputs": 0
+   }
+  },
+  "grid_rows_not_ok": 0,
+  "horizon": 60,
+  "input_columns": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3",
+   "Global_active_power"
+  ],
+  "input_rows_non_finite": 1,
+  "mase_denominator_persistence_h": 0.6162615768463073,
+  "memory_preflight": {
+   "batch_window_bytes": 107520,
+   "cap_bytes": 1073741824,
+   "policy": "windows are gathered per batch from the scaled slice; only the train tensor for the scaler is materialised once, here",
+   "slice_bytes": 1411200,
+   "train_tensor_bytes_for_scaler": 134672160
+  },
+  "p": 7,
+  "panel_rows": 2075259,
+  "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "scaler": {
+   "fitted_on": "train windows only",
+   "mean": [
+    0.16394039569874333,
+    241.13327788719684,
+    3.979902281204715,
+    1.2482722486963898,
+    0.8695229659938625,
+    6.320571675690061,
+    0.926139629748496
+   ],
+   "n_rows": 2404860,
+   "sd": [
+    0.12462470429263597,
+    2.20610330333974,
+    3.8047190184746955,
+    6.578895446497683,
+    3.6476937059712364,
+    8.382971207465904,
+    0.9125164391265214
+   ]
+  },
+  "schema": "df_e1_pilot_data.v1",
+  "slice_rows": [
+   1412361,
+   1462761
+  ],
+  "target_channel": 6,
+  "train_origins_with_label": 40080,
+  "window": 60
+ },
+ "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+ "governance": {
+  "disposition": "LOCAL_TERMINALS_PUBLIC_PANEL_NOT_A_LAKE_RESOURCE",
+  "missing_object": "one lake registration of public_panels_c126_v2 in data-gov (config + service restart: an owner action)",
+  "what_is_recorded": "governed_terminal.v1 documents per unit in the run root + CAMPAIGN_PROPOSAL.json",
+  "why": "the deployed data-gov serves no lake holding the public panels; DATASETS campaigns complete units only through deliveries of every declared dataset; SYNTHETIC would misdeclare real bytes"
+ },
+ "governance_result": {
+  "all_units_governed": false,
+  "counts": {
+   "BLOCKED": 0,
+   "CLOSED": 6,
+   "NOT_STARTED": 6,
+   "PENDING": 0,
+   "RUNNING": 4
+  },
+  "population": {
+   "R0_s1": "RUNNING",
+   "R0_s2": "RUNNING",
+   "R0_s3": "CLOSED",
+   "R1_s1": "NOT_STARTED",
+   "R1_s2": "NOT_STARTED",
+   "R1_s3": "NOT_STARTED",
+   "R2_s1": "NOT_STARTED",
+   "R2_s2": "NOT_STARTED",
+   "R2_s3": "NOT_STARTED",
+   "ae_s1": "RUNNING",
+   "ae_s2": "CLOSED",
+   "ae_s3": "RUNNING",
+   "controls": "CLOSED",
+   "pilot_ae": "CLOSED",
+   "pilot_fit": "CLOSED",
+   "prepare": "CLOSED"
+  },
+  "reasons": {},
+  "receipts_file": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3/TERMINAL_RECEIPTS.json",
+  "rule": "the population is the sealed design's enumeration; a registered unit that is not closed is PENDING and named, never absorbed into a total",
+  "transfer": {
+   "bytes_first_transfer": 10890295,
+   "cache_reused_units": 5,
+   "transferred_units": 1
+  },
+  "units_incomplete": [
+   "R0_s1",
+   "R0_s2",
+   "R1_s1",
+   "R1_s2",
+   "R1_s3",
+   "R2_s1",
+   "R2_s2",
+   "R2_s3",
+   "ae_s1",
+   "ae_s3"
+  ]
+ },
+ "host": "omega",
+ "parallel": 3,
+ "projection": {
+  "assumption": "every unit at its full update ceiling (early stopping only lowers it); per-update cost from the pilot of its kind; overhead per child from the pilots",
+  "cap_seconds": 11000.0,
+  "fits": true,
+  "headroom": 0.25,
+  "per_cell": {
+   "R0_s1": 471.13266666666664,
+   "R0_s2": 471.13266666666664,
+   "R0_s3": 471.13266666666664,
+   "R1_s1": 471.13266666666664,
+   "R1_s2": 471.13266666666664,
+   "R1_s3": 471.13266666666664,
+   "R2_s1": 471.13266666666664,
+   "R2_s2": 471.13266666666664,
+   "R2_s3": 471.13266666666664,
+   "ae_s1": 64.331,
+   "ae_s2": 64.331,
+   "ae_s3": 64.331,
+   "controls": 21.412000000000006
+  },
+  "projected_remaining_cpu_seconds": 3854.804333333333,
+  "projected_with_headroom": 4818.505416666666,
+  "remaining_cells": 10,
+  "spent_so_far": 812.4419999999999
+ },
+ "run_id": "satoshi-e1-successor-20260920",
+ "schema": "df_e1_pilot_report.v1",
+ "spent_cpu_seconds": 1450.105,
+ "stopped": "REFUSED: unit 'R0_s2' has no delivery, so it has no terminal to report",
+ "terminals": [
+  {
+   "cost": {
+    "cpu_seconds": 1.908
+   },
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "status": "COMPLETED",
+   "terminal_pending": 3,
+   "terminal_sent": 0,
+   "terminal_sha256": null,
+   "unit_id": "prepare"
+  },
+  {
+   "campaign_sha256": "ee25fe496ea991aa51ff2c3d8014fb3fa01d9877b0fd64b4e67d74ca0fa41f21",
+   "cost": {
+    "cgroup_memory_peak": 411033600,
+    "cpu_seconds": 20.435,
+    "ended_at": "2026-09-20T18:27:05+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 809201664,
+    "started_at": "2026-09-20T18:26:48+00:00",
+    "wall_seconds": 17.287
+   },
+   "delivery_id": "787714dfc35643e39295a106eeaac9e3",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": true,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": true,
+   "terminal_sent": 0,
+   "terminal_sha256": "d23fa4b5593ea140b6a2e69058db563437ea221f8b05fcf05bf47e0211585471",
+   "terminal_sha256_reused": "d23fa4b5593ea140b6a2e69058db563437ea221f8b05fcf05bf47e0211585471",
+   "unit_id": "pilot_ae"
+  },
+  {
+   "campaign_sha256": "455dd08ac0cac935a43c512de59f80dfb15832d94747c1336c0772f37f71337f",
+   "cost": {
+    "cgroup_memory_peak": 540127232,
+    "cpu_seconds": 45.238,
+    "ended_at": "2026-09-20T18:27:45+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 953368576,
+    "started_at": "2026-09-20T18:27:05+00:00",
+    "wall_seconds": 39.735
+   },
+   "delivery_id": "514b3512891448939def663fc85eead5",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": true,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": true,
+   "terminal_sent": 0,
+   "terminal_sha256": "dda558541a214735f3c8253288ac2ebefba3ecd9b0b20fbaae5f275afe4b931d",
+   "terminal_sha256_reused": "dda558541a214735f3c8253288ac2ebefba3ecd9b0b20fbaae5f275afe4b931d",
+   "unit_id": "pilot_fit"
+  },
+  {
+   "campaign_sha256": "56212e9fe2439098dfb5eac3fa5624560d6361ad23cce6036440f04f434c77a9",
+   "cost": {
+    "cgroup_memory_peak": 406286336,
+    "cpu_seconds": 43.236,
+    "ended_at": "2026-09-20T18:29:41+00:00",
+    "host": "omega",
+    "peak_rss_bytes": 817373184,
+    "started_at": "2026-09-20T18:29:10+00:00",
+    "wall_seconds": 31.287
+   },
+   "delivery_id": "bf2077955b7d45dc9a739889cc2f3a26",
+   "governed": true,
+   "outcome": "COMPLETED",
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "resumed": true,
+   "status": "COMPLETED",
+   "terminal_pending": 0,
+   "terminal_reused": true,
+   "terminal_sent": 0,
+   "terminal_sha256": "7554f13ab81eb01079c7ce3a0174eb7d9beed792671ede03fdfdb276dcf931d6",
+   "terminal_sha256_reused": "7554f13ab81eb01079c7ce3a0174eb7d9beed792671ede03fdfdb276dcf931d6",
+   "unit_id": "ae_s2"
+  }
+ ]
+}
