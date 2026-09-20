@@ -998,14 +998,26 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
         record = {"unit_id": c["cell_id"], "status": term["status"], "outcome": out["outcome"], "cost": out["cost"],
                   "resumed": out.get("resumed", False)}
         if governed:
-            reported = G.report_terminal(root, c["cell_id"], term, gov_url=gov_url or G.DEFAULT_GOV,
-                                         api_key_file=api_key_file, outbox_dir=outbox_dir,
-                                         started_at=(out.get("cost") or {}).get("started_at"))
+            # a unit whose terminal the service already accepted is CLOSED: reporting it again would be
+            # a second generation of the same fact, which governance rightly refuses
+            RC = _load("df_e1_receipts")
+            already = RC.population_states(design, root)["units"].get(c["cell_id"])
+            if already == RC.CLOSED:
+                existing = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"][c["cell_id"]]
+                reported = {"flushed": {"sent": 0, "pending": 0, "failures": {}}, "receipt": existing,
+                            "campaign_sha256": existing["campaign_sha256"],
+                            "reconciliation": existing["reconciliation"], "reused": True}
+            else:
+                reported = G.report_terminal(root, c["cell_id"], term, gov_url=gov_url or G.DEFAULT_GOV,
+                                             api_key_file=api_key_file, outbox_dir=outbox_dir,
+                                             started_at=(out.get("cost") or {}).get("started_at"))
             record.update(governed=True, delivery_id=(delivery or {}).get("delivery_id"),
                           campaign_sha256=reported.get("campaign_sha256"),
                           terminal_sha256=(reported.get("receipt") or {}).get("terminal_sha256"),
                           terminal_sent=reported["flushed"]["sent"], terminal_pending=reported["flushed"]["pending"],
+                          terminal_sha256_reused=(reported.get("receipt") or {}).get("terminal_sha256"),
                           reconciliation=reported["reconciliation"])
+            record["terminal_reused"] = bool(reported.get("reused"))
             if reported["flushed"]["pending"] or reported["flushed"]["failures"]:
                 raise SystemExit(f"REFUSED: the terminal of {c['cell_id']} was not accepted: {reported['flushed']['failures']}")
         else:
