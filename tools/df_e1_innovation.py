@@ -203,7 +203,12 @@ def verdict(doc: dict) -> dict:
         "long_receiver_solves_the_recovery_task": bool(long_rec is not None and long_rec > 0.5),
         "linear_short_support_fails_recovery": bool((rec["linear_short_support"]["r2"] or 0) < 0.1),
         "linear_full_window_solves_recovery": bool((rec["linear_full_window"]["r2"] or 0) > 0.5),
-        "label_independent_control_is_at_chance": bool(abs(rec["label_independent_control"]["r2"] or 0) < 0.1),
+        # shuffled labels must not beat the mean; a NEGATIVE R2 is the expected shape of that control
+        # (a fitted model on independent labels is worse than predicting the mean), so the rule is
+        # "no better than the mean", never "close to zero".
+        "label_independent_control_no_better_than_the_mean": bool(
+            (rec["label_independent_control"]["r2"] or 0) <= (rec["mean_of_train"]["r2"] or 0) + 0.05),
+        "label_independent_control_r2": rec["label_independent_control"]["r2"],
         "reading": ("This says the SHORT receiver lacks the information IN THIS TASK, where the innovation is "
                     "independent of its support by construction, and that it can use the same innovation when the "
                     "series carries it inside that support. It does not say a short receiver fails on every "
