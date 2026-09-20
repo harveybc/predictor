@@ -608,6 +608,13 @@ def adopt(state_dir: Path, *, principals: list, rehearsal: Path | None = None, l
                "declared": lake_entry()["declared"], "adopted": False,
                "binding": _rehearsal_binding(rehearsal, host_path, after_cfg) if rehearsal else
                           {"accepted": False, "why": "no rehearsal receipt was supplied"}}
+    if any(l.get("lake_id") == LAKE_ID for l in cfg["lakes"]):
+        # the resource is already served by this configuration: re-adopting would replace a live entry
+        receipt["refused"] = (f"{LAKE_ID!r} is already a lake of the deployed configuration: this resource was "
+                              "adopted already, and an adoption never writes over a live entry")
+        receipt["already_adopted"] = True
+        receipt_path.write_text(json.dumps(receipt, indent=1, default=str))
+        return receipt
     if not additive["additive"]:
         receipt["refused"] = f"the change is not additive: {additive}"
         receipt_path.write_text(json.dumps(receipt, indent=1, default=str))

@@ -32,12 +32,25 @@ pytestmark = pytest.mark.skipif(not A.RUNTIME_CONFIG.is_file(),
                                 reason="the deployed data-gov configuration is not present here")
 
 
+def _before_adoption(cfg: dict) -> dict:
+    """The deployed configuration as it stood BEFORE this resource was adopted.
+
+    These rules describe the adoption itself, so they must not depend on whether the host has
+    already been adopted — which it now has. The lake and its policies are removed from the copy;
+    nothing else is touched, and the real file is never written.
+    """
+    cfg = json.loads(json.dumps(cfg))
+    cfg["lakes"] = [l for l in cfg["lakes"] if l.get("lake_id") != A.LAKE_ID]
+    cfg["policies"] = [p for p in cfg["policies"] if p.get("lake") != A.LAKE_ID]
+    return cfg
+
+
 @pytest.fixture
 def sandbox(tmp_path, monkeypatch):
     """A copy of the configuration and a service that does nothing: the adopter must never reach the
     real one in these rules."""
     config = tmp_path / "5055.runtime.json"
-    config.write_text(A.RUNTIME_CONFIG.read_text())
+    config.write_text(json.dumps(_before_adoption(json.loads(A.RUNTIME_CONFIG.read_text())), indent=1))
     monkeypatch.setattr(A, "RUNTIME_CONFIG", config)
     calls = []
 
@@ -166,3 +179,22 @@ def test_RP41_the_archive_holdout_is_the_archives_own_first_day(tmp_path):
     assert all("availability" not in c for c in entry["resource_contracts"].values())
     assert "governed_download" in A.EXTERNAL_HOST_DIVERGENCE["correction"]
     assert A.EXTERNAL_HOST_DIVERGENCE["status"].startswith("CORRECTED_AND_REHEARSED")
+
+
+def test_RP56_a_configuration_that_already_serves_the_resource_is_not_adopted_again(tmp_path, monkeypatch):
+    """After the real adoption, the deployed configuration carries this lake. Adopting again would
+    write over a live entry with a new service token, so it is refused, said plainly, and nothing is
+    touched: no service call, no changed configuration, and a receipt that records the refusal."""
+    config = tmp_path / "5055.runtime.json"
+    config.write_text(A.RUNTIME_CONFIG.read_text())            # a COPY of the adopted configuration
+    before = config.read_text()
+    monkeypatch.setattr(A, "RUNTIME_CONFIG", config)
+    calls = []
+    monkeypatch.setattr(A, "run", lambda argv, **kw: calls.append(list(argv)))
+    monkeypatch.setattr(A, "inventory", lambda: {"services": {}, "public_panel_lake_registered": True, "lakes": []})
+    state = tmp_path / "state"
+    receipt = A.adopt(state, principals=["predictor"], rehearsal=None)
+    assert receipt["adopted"] is False and receipt.get("already_adopted") is True
+    assert "already" in receipt["refused"]
+    assert config.read_text() == before and calls == []
+    assert json.loads((state / "RECEIPT.json").read_text())["refused"] == receipt["refused"]
