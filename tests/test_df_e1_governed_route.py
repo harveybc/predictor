@@ -355,7 +355,10 @@ def test_RP51_a_destination_that_goes_down_and_comes_back_loses_no_terminal(stac
         G.report_terminal(root, "ae_s1", terminal, gov_url=f"http://127.0.0.1:{_free_port()}",
                           api_key_file=KEY, outbox_dir=str(outbox_dir))
     GR = _load("governed_run")
-    pending = GR.TerminalOutbox(outbox_dir).status()["pending"]
+    # each unit reports through its own spool, so parallel children never flush each other's envelopes
+    spool = outbox_dir / "units" / "ae_s1"
+    assert not list((outbox_dir / "pending").glob("*.json")) if (outbox_dir / "pending").is_dir() else True
+    pending = GR.TerminalOutbox(spool).status()["pending"]
     assert len(pending) == 1 and pending[0]["unit_id"] == "ae_s1"
     assert not (root / "TERMINAL_RECEIPTS.json").is_file(), "a receipt was written for a terminal nobody accepted"
     # the destination returns: the SAME envelope is accepted, once
