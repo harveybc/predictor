@@ -53,18 +53,13 @@ def sandbox(tmp_path, monkeypatch):
     return {"config": config, "calls": calls, "before": config.read_text()}
 
 
-def _rehearsal(tmp_path, sandbox, *, ok=True, bind=True):
+def _rehearsal(tmp_path, sandbox, *, ok=True, bind=True, principals=("predictor",)):
     cfg = json.loads(sandbox["config"].read_text())
-    deployed = A.deployed_embedded(cfg)
-    path = tmp_path / "REHEARSAL.json"
-    if bind:
-        # the binding must be taken over the SAME bytes the adoption will write
-        state_copy = tmp_path / "deployed.json"
-        state_copy.write_text(json.dumps(deployed, indent=1))
-        binding = A.rehearsal_binding(state_copy, deployed)
-    else:
-        binding = {"code_identity": "0" * 40, "lake_host_config_sha256": "0" * 64,
-                   "data_gov_config_sha256": "0" * 64, "provider_sha256": None}
+    deployed = A.deployed_embedded(cfg, principals)
+    path = tmp_path / f"REHEARSAL-{ok}-{bind}.json"
+    binding = (A.rehearsal_binding(None, deployed) if bind else
+               {"code_identity": "0" * 40, "deployed_config_sha256": "0" * 64,
+                "panels_sha256": {}, "provider_sha256": None})
     path.write_text(json.dumps({"route_ok": ok, "binding": binding}))
     return path
 

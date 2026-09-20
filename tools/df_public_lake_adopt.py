@@ -471,7 +471,7 @@ def rehearse(out_path: Path, *, keep: bool = False, lake_port: int | None = None
         direct = http_json(f"http://127.0.0.1:{lake_port}/api/v2/download?resource={probe}&role=panel", lake_token)
         report["external_host_probe"] = {"http": direct[0], "body": direct[1],
                                          "divergence": EXTERNAL_HOST_DIVERGENCE,
-                                         "provider_sha256": rehearsal_binding(host_path, {})["provider_sha256"]}
+                                         "provider_sha256": rehearsal_binding(None, {})["provider_sha256"]}
         report["external_host_serves_the_archive"] = direct[0] == 200
         # --- the route that IS adopted: data-gov's own files_lake over the same bytes ---------------
         embedded = json.loads(json.dumps(stack))
@@ -498,7 +498,7 @@ def rehearse(out_path: Path, *, keep: bool = False, lake_port: int | None = None
                                             outbox_dir=work / "outbox", cube_url=f"http://127.0.0.1:{cube_port}",
                                             cube_token=lake_token)
         report["route_ok"] = all(report[r].get("route_complete") for r in RESOURCES)
-        report["binding"] = rehearsal_binding(embedded_path, deployed_embedded(cfg))
+        report["binding"] = rehearsal_binding(None, deployed_embedded(cfg))
     finally:
         for name, proc in procs.items():
             proc.terminate()
@@ -635,11 +635,11 @@ def _rehearsal_binding(rehearsal: Path, host_path: Path, after_cfg: dict) -> dic
     except Exception as exc:                                    # noqa: BLE001
         return {"accepted": False, "why": f"the rehearsal receipt is unreadable: {exc}"}
     bound = report.get("binding") or {}
-    now = rehearsal_binding(host_path, after_cfg)
+    now = rehearsal_binding(None, after_cfg)
     differences = [k for k, v in now.items() if bound.get(k) != v]
     return {"accepted": not differences and bool(report.get("route_ok")),
-            "why": (f"the rehearsal differs in {differences}" if differences else
-                    "the rehearsal did not pass" if not report.get("route_ok") else "bound"),
+            "why": ("the rehearsal did not pass" if not report.get("route_ok") else
+                    f"the rehearsal differs in {differences}" if differences else "bound"),
             "rehearsal": str(rehearsal), "expected": now, "rehearsed": bound,
             "route_ok": report.get("route_ok")}
 
@@ -652,13 +652,16 @@ def deployed_embedded(cfg: dict, principals=("predictor", "satoshi-gamma", "sato
     return out
 
 
-def rehearsal_binding(host_path: Path, after_cfg: dict) -> dict:
-    """The bytes an adoption and its rehearsal must share."""
+def rehearsal_binding(_unused, after_cfg: dict) -> dict:
+    """What an adoption and its rehearsal must share: the CONTENT that will be deployed, the provider
+    package behind the lake host and the code identity of this checkout. Paths and disposable ports
+    are not part of it — the bytes that will run are."""
     sys.path.insert(0, str(REPO / "tools"))
     import governed_run as GR
     provider = HOME / ".venvs/store-hosts/lib/python3.12/site-packages/financial_data_store/inventory.py"
-    return {"lake_host_config_sha256": sha_file(Path(host_path)),
-            "data_gov_config_sha256": hashlib.sha256(json.dumps(after_cfg, sort_keys=True).encode()).hexdigest(),
+    panels = {r: lake_entry()["declared"][r]["sha256"] for r in sorted(RESOURCES)}
+    return {"deployed_config_sha256": hashlib.sha256(json.dumps(after_cfg, sort_keys=True).encode()).hexdigest(),
+            "panels_sha256": panels,
             "provider_sha256": sha_file(provider) if provider.is_file() else None,
             "code_identity": GR.strict_code_identity(REPO)["value"]}
 
