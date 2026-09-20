@@ -180,12 +180,39 @@ worked around. The refusal is the environment's, not data-gov's and not the owne
 excuse any defect, and it blocks nothing: the envelopes remain visible in `pending/` with their
 failure sidecars, and the run is complete without them. **This is the one thing I will ask for.**
 
+### PRE / POST
+
+[`RP49_RP56_PRE_POST.txt`](../evidence/d3_k5_20260917/RP49_RP56_PRE_POST.txt) sets the reviewer's
+frozen outputs against this code: local claims fall to `HISTORICAL_UNGOVERNED` with their reasons
+named, the failing runner leaves two registered units both closed and six named `NOT_STARTED`
+instead of eight registered with seven open and `all_units_governed: true`, an empty report no longer
+passes as a total, and the unit the services really accepted closes `GOVERNED`. Two things are
+reported rather than dressed up: the reviewer's script **no longer runs unmodified** (the population
+now needs the sealed design, so `_governed_summary` takes it — two lines marked `# ADAPTED`, nothing
+else touched), and the `fresh_child_verification_order` probe is **unchanged**, because it calls the
+closure directly and cannot see a repair that is about the order `run_isolated` does things in; what
+shows that repair is `tests/test_df_e1_first_child.py`. 131 historical originals: 0 changed.
+
 ## Costs and scope
 
-Round CPU is inside the 14 400-second ceiling, per host, in
-[`RP56_CPU_LEDGER_omega.json`](../evidence/d3_k5_20260917/RP56_CPU_LEDGER_omega.json); the full suite
-with its commands, environment and explained skips is in
-[`RP56_FULL_SUITE_SUMMARY.txt`](../evidence/d3_k5_20260917/RP56_FULL_SUITE_SUMMARY.txt). No GPU, no
+The full suite, its command, its environment and every skip explained:
+[`RP56_FULL_SUITE_SUMMARY.txt`](../evidence/d3_k5_20260917/RP56_FULL_SUITE_SUMMARY.txt) —
+**3 failed, 2 289 passed, 39 skipped, 8 collection errors**, where the 3 failures and 8 errors are
+the repository's documented stale legacy suite (AGENTS.md) and no work of this round touches them.
+Two of my own changes broke rules that had to be corrected rather than excused: the eight adoption
+rules that copied a configuration which is now adopted (they build the pre-adoption configuration
+explicitly, and a new rule pins the state the host is in), and the RP32 rule that *characterised*
+the outbox race, which now states the guarantee the repair gives.
+
+Cost per host: omega **6 676.35 CPU seconds** of the 14 400 ceiling
+([`RP56_CPU_LEDGER_omega.json`](../evidence/d3_k5_20260917/RP56_CPU_LEDGER_omega.json)). The two
+workers' cost is **UNMEASURED and declared so**
+([`RP56_CPU_LEDGER_workers.txt`](../evidence/d3_k5_20260917/RP56_CPU_LEDGER_workers.txt)): their
+jobs did not run inside an accounted scope, so no figure exists and I will not estimate one. That
+gap is mine, and the fix — routing worker jobs through the same wrapper — is not done in this round.
+Backlog at the close: the four duplicated `prepare` envelopes, nothing else pending anywhere.
+
+No GPU, no
 live, no venue, no scientific RL training and no confirmatory reserve; E0 was not repeated and the
 historical pilot was not retrained; no healthy service was restarted for an unrelated block and no
 served checkout was changed. Synthetic fixtures are declared as such wherever they appear.
