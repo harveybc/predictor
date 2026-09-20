@@ -593,9 +593,12 @@ def adopt(state_dir: Path, *, principals: list, rehearsal: Path | None = None, l
     shutil.copy2(RUNTIME_CONFIG, backup)
     token = API_KEY_FILE.read_text().strip()
     lake_token = hashlib.sha256((str(state_dir) + "public-panels").encode()).hexdigest()
-    after_cfg = deployed_embedded(cfg, principals)
-    host_path = state_dir / "deployed.data-gov.json"
-    host_path.write_text(json.dumps(after_cfg, indent=1))
+    # RP49/RP55: what is adopted is what was REHEARSED — data-gov reaching the EXTERNAL lake host
+    after_cfg = deployed_external(cfg, principals, port=lake_port)
+    host_cfg = lake_host_config(port=lake_port, state_dir=state_dir)
+    host_path = state_dir / "public-panels.host.json"
+    host_path.write_text(json.dumps(host_cfg, indent=1))
+    (state_dir / "deployed.data-gov.json").write_text(json.dumps(after_cfg, indent=1))
     additive = config_is_additive(cfg, after_cfg)
     receipt = {"schema": "df_public_lake_adoption.v2", "at": now_iso(), "host": os.uname().nodename,
                "service": SERVICE, "config": str(RUNTIME_CONFIG), "external_host_divergence": EXTERNAL_HOST_DIVERGENCE,
@@ -616,6 +619,36 @@ def adopt(state_dir: Path, *, principals: list, rehearsal: Path | None = None, l
         return receipt
     ok = False
     try:
+        # 1. the external lake host: its own unit, its own environment, the corrected provider
+        unit_env = state_dir / "public-panels.service.env"
+        unit_env.write_text(f"DATA_GOV_LAKE_TOKEN={lake_token}\nPYTHONPATH={CANDIDATE_PROVIDER}\n")
+        unit_file = HOME / ".config/systemd/user" / LAKE_HOST_UNIT
+        unit_file.write_text(f"""[Unit]
+Description=Governed store service (public panels, {lake_port})
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory={state_dir}
+EnvironmentFile={unit_env}
+ExecStart={LAKE_HOST_PYTHON} -m data_lake_service.main --load_config {host_path}
+MemoryMax=2G
+MemorySwapMax=0
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+""")
+        receipt["lake_host_unit"] = LAKE_HOST_UNIT
+        receipt["lake_host_unit_file"] = str(unit_file)
+        run(["systemctl", "--user", "daemon-reload"], timeout=120)
+        started = run(["systemctl", "--user", "start", LAKE_HOST_UNIT], timeout=180)
+        receipt["lake_host_start"] = {"returncode": started.returncode, "stderr": started.stderr[-300:]}
+        receipt["lake_host_healthy"] = _service_healthy(f"http://127.0.0.1:{lake_port}")
+        if started.returncode != 0 or not receipt["lake_host_healthy"]:
+            raise RuntimeError("the public-panels lake host did not come up")
+        # 2. data-gov learns about it
         tmp = RUNTIME_CONFIG.with_suffix(".json.rp41.tmp")
         tmp.write_text(json.dumps(after_cfg, indent=1))
         os.replace(tmp, RUNTIME_CONFIG)
@@ -634,6 +667,11 @@ def adopt(state_dir: Path, *, principals: list, rehearsal: Path | None = None, l
                 resource=resource, expect_sha=built["declared"][resource]["sha256"],
                 cube_url="http://127.0.0.1:5057", cube_token=_cube_token())
         receipt["after"] = inventory()
+        receipt["effective_identity"] = {
+            "lake_host_unit_state": service_state(LAKE_HOST_UNIT),
+            "serving_provider_sha256": rehearsal_binding(None, after_cfg)["serving_provider_sha256"],
+            "config_on_disk_sha256": sha_file(RUNTIME_CONFIG),
+            "lakes_now": [l.get("lake_id") for l in json.loads(RUNTIME_CONFIG.read_text())["lakes"]]}
         ok = bool(all(v.get("route_complete") for v in receipt["post_check"].values())
                   and receipt["after"]["public_panel_lake_registered"]
                   and all(receipt["after"]["services"][u]["ActiveState"] == "active" for u in receipt["after"]["services"]))
@@ -645,6 +683,15 @@ def adopt(state_dir: Path, *, principals: list, rehearsal: Path | None = None, l
     finally:
         receipt["adopted"] = bool(ok)
         if not ok:
+            try:
+                run(["systemctl", "--user", "stop", LAKE_HOST_UNIT], timeout=120)
+                unit = HOME / ".config/systemd/user" / LAKE_HOST_UNIT
+                if unit.is_file():
+                    unit.unlink()
+                run(["systemctl", "--user", "daemon-reload"], timeout=120)
+                receipt["lake_host_removed"] = True
+            except BaseException as exc:                      # noqa: BLE001
+                receipt["lake_host_stop_error"] = f"{type(exc).__name__}: {exc}"[:200]
             _restore(backup, receipt)
         receipt_path.write_text(json.dumps(receipt, indent=1, default=str))
     return receipt
