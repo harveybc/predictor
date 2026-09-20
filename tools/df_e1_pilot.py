@@ -1054,6 +1054,8 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
         report["cost_pilot"][c["cell_id"]] = summary(out)
         if rec is None:
             report.update(stopped=f"COST_PILOT_FAILED: {c['cell_id']} {out['outcome']}", spent_cpu_seconds=spent())
+            if governed:
+                report["governance_result"] = _governed_summary(root, report, design)
             campaign.write_once(root / "REPORT.json", report)
             return report
         cpu = float(out["cost"].get("cpu_seconds") or rec["cost"]["cpu_seconds_process"])
@@ -1076,10 +1078,14 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
     if not report["projection"]["fits"]:
         campaign.write_once(root / "PLAN.json", {"schema": "df_e1_pilot_plan.v1", "verdict": "BUDGET_LIMITED_NOT_LAUNCHED", "projection": report["projection"], "measured": measured})
         report.update(stopped="BUDGET_LIMITED_NOT_LAUNCHED", spent_cpu_seconds=spent())
+        if governed:
+            report["governance_result"] = _governed_summary(root, report, design)
         campaign.write_once(root / "REPORT.json", report)
         return report
     if pilot_only:
         report.update(stopped="PILOT_ONLY", spent_cpu_seconds=spent())
+        if governed:
+            report["governance_result"] = _governed_summary(root, report, design)
         campaign.write_once(root / "REPORT.pilot.json", report)
         return report
     # --- the units in waves (dependencies respected) ---
