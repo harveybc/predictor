@@ -144,10 +144,10 @@ rehearsal exercises instead). New this round: adopter 11, governed route and run
 weekly runtime 18, weekly controller 8.
 
 **Work by host.** omega: RP41, RP42, RP43, RP46 and the closure, 48 transient units, **3 387 CPU s**.
-WORKER_A (dragon): the RP44 innovation diagnostic, 6 fits over 3 seeds and 2 tasks, **1 231 CPU s** on its
-own host, evidence collected and verified here. WORKER_B (gamma): the RP45 acceptance battery, 26 rules,
+WORKER_A (dragon): the RP44 innovation diagnostic, 12 fits over 3 seeds, 2 cores and 2 tasks, **252 CPU s**
+of fitting on its own host, evidence collected and verified here. WORKER_B (gamma): the RP45 acceptance battery, 26 rules,
 twice (before and after the repair of the terminal-status source, which is what its first run exposed).
-Round total **4 618 CPU s** of the 14 400 authorised. Both workers ended idle (load 0.2 and 0.3) and are
+Round total **3 639 CPU s** of the 14 400 authorised (omega 3 387, dragon 252, gamma's battery under a second). Both workers ended idle (load 0.2 and 0.3) and are
 synced to the closing commit.
 
 **Defects of my own this round**, all fixed and in the history: the first rehearsal bound to a file path
