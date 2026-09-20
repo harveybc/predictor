@@ -865,23 +865,22 @@ def _record_verdict(path: Path, record: dict, score, refusal, *, phase: str, out
     path.write_text(json.dumps(record, default=H._jsonable))
 
 
-def _governed_summary(root: Path, report: dict) -> dict:
-    """What the governed run can claim: every unit delivered, every terminal accepted, every campaign
-    reconciled. A unit missing any of the three is named."""
+def _governed_summary(root: Path, report: dict, design: dict) -> dict:
+    """RP51: the state of the WHOLE population, derived from the design and the persisted receipts —
+    never from the list of terminals that happen to be in this report. A registered unit that did not
+    close is PENDING and named."""
+    RC = _load("df_e1_receipts")
     deliveries = json.loads((Path(root) / "DELIVERIES.json").read_text())
-    per_unit = {}
-    for record in report["terminals"]:
-        unit = record["unit_id"]
-        rec = record.get("reconciliation") or {}
-        per_unit[unit] = {"delivered": unit in (deliveries.get("units") or {}),
-                          "terminal_accepted": bool(record.get("terminal_sent")) and not record.get("terminal_pending"),
-                          "reconciled": bool(rec.get("http") == 200 and not rec.get("missing_units")
-                                             and not rec.get("accounting_only") and not rec.get("lake_only"))}
-    incomplete = sorted(u for u, v in per_unit.items() if not all(v.values()))
-    return {"per_unit": per_unit, "units_incomplete": incomplete,
-            "transfer": deliveries.get("transfer"),
-            "all_units_governed": not incomplete,
-            "rule": "delivered before working, terminal accepted, campaign reconciled: all three or the unit is named"}
+    states = RC.population_states(design, root)
+    for record in report.get("terminals", []):
+        if record.get("blocked_by"):
+            RC.mark_blocked(states, record["unit_id"], record["blocked_by"])
+    incomplete = sorted(u for u, s in states["units"].items() if s != RC.CLOSED)
+    return {"population": states["units"], "reasons": states["reasons"], "counts": states["counts"],
+            "units_incomplete": incomplete, "transfer": deliveries.get("transfer"),
+            "all_units_governed": bool(states["complete"]),
+            "receipts_file": str(Path(root) / "TERMINAL_RECEIPTS.json"),
+            "rule": states["rule"]}
 
 
 def _terminal(unit_id: str, out: dict, design: dict, tags: dict) -> dict:
@@ -949,13 +948,14 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
     if governed:
         if not api_key_file:
             raise G.GovernanceUnavailable("REFUSED: a governed run needs the service key; nothing is prepared")
-        units = ["prepare"] + [c["cell_id"] for c in design["pilots"] + design["cells"]]
-        for unit_id in units:                       # the campaign of EVERY unit, before any of them works
-            G.acquire(run_id=run_id, root=root, lake=lake, resource=resource, unit_id=unit_id,
-                      gov_url=gov_url or G.DEFAULT_GOV, api_key_file=api_key_file,
-                      design_sha256=design["design_sha256"], cache_dir=Path(root) / "cache",
-                      expect_sha256=design["governed_bytes"]["sha256"])
-        trace(json.dumps({"event": "acquired", "units": len(units), "resource": resource}), flush=True)
+        # RP51: a unit's campaign is registered JUST BEFORE that unit works, not for the whole design
+        # up front — a failure then leaves no campaign open that nobody will ever close. The only
+        # campaign registered here is the one for the preparation, which is about to happen.
+        G.acquire(run_id=run_id, root=root, lake=lake, resource=resource, unit_id="prepare",
+                  gov_url=gov_url or G.DEFAULT_GOV, api_key_file=api_key_file,
+                  design_sha256=design["design_sha256"], cache_dir=Path(root) / "cache",
+                  expect_sha256=design["governed_bytes"]["sha256"])
+        trace(json.dumps({"event": "acquired", "unit": "prepare", "resource": resource}), flush=True)
     data = prepare(design, root)
     budgets = design["budget"]
     report = {"schema": "df_e1_pilot_report.v1", "run_id": run_id, "design_sha256": design["design_sha256"], "code_identity": code_identity, "data": data,
@@ -979,7 +979,11 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
             raise SystemExit(f"CPU_CAP_EXHAUSTED: spent {spent():.0f} s + next child up to {need:.0f} s exceeds {cap_seconds:.0f} s")
         delivery = None
         if governed:
-            # this unit's OWN delivery, verified now: a cached DATA file never skips this
+            # this unit's campaign and delivery, taken NOW, immediately before it works
+            G.acquire(run_id=run_id, root=root, lake=lake, resource=resource, unit_id=c["cell_id"],
+                      gov_url=gov_url or G.DEFAULT_GOV, api_key_file=api_key_file,
+                      design_sha256=design["design_sha256"], cache_dir=Path(root) / "cache",
+                      expect_sha256=design["governed_bytes"]["sha256"])
             delivery = G.require_delivery(root, design, c["cell_id"])["delivery"]
             if delivery.get("sha256") != data["panel_sha256"]:
                 raise G.GovernanceUnavailable(
@@ -995,9 +999,11 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
                   "resumed": out.get("resumed", False)}
         if governed:
             reported = G.report_terminal(root, c["cell_id"], term, gov_url=gov_url or G.DEFAULT_GOV,
-                                         api_key_file=api_key_file, outbox_dir=outbox_dir)
+                                         api_key_file=api_key_file, outbox_dir=outbox_dir,
+                                         started_at=(out.get("cost") or {}).get("started_at"))
             record.update(governed=True, delivery_id=(delivery or {}).get("delivery_id"),
                           campaign_sha256=reported.get("campaign_sha256"),
+                          terminal_sha256=(reported.get("receipt") or {}).get("terminal_sha256"),
                           terminal_sent=reported["flushed"]["sent"], terminal_pending=reported["flushed"]["pending"],
                           reconciliation=reported["reconciliation"])
             if reported["flushed"]["pending"] or reported["flushed"]["failures"]:
@@ -1025,6 +1031,21 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
         elif rec and rec["kind"] == "controls":
             s.update(controls={k: {"mase": rec["scores"]["validation"][k]["mase_mean"], "mae": rec["scores"]["validation"][k]["mae_mean"]} for k in CONTROLS}, phases=rec["cost"])
         return s
+    if governed:
+        prep_terminal = _load("df_utility_run")._terminal(
+            status="COMPLETED", reason=None,
+            cost={"wall_seconds": float(data.get("cpu_seconds") or 0.0), "cpu_seconds": float(data.get("cpu_seconds") or 0.0)},
+            metrics=[_load("df_utility_run")._metric("e1.prepare.windows", float(data["coverage"]["common_evaluation_set"]), "count")],
+            started=_now(), finished=_now(),
+            tags={"purpose": "E1_DEV_PILOT", "classification": "NON_GOVERNING", "phase": "DEVELOPMENT",
+                  "unit": "prepare", "design_sha256": design["design_sha256"]})
+        prep = G.report_terminal(root, "prepare", prep_terminal, gov_url=gov_url or G.DEFAULT_GOV,
+                                 api_key_file=api_key_file, outbox_dir=outbox_dir, started_at=_now())
+        report["terminals"].append({"unit_id": "prepare", "status": "COMPLETED", "outcome": "COMPLETED",
+                                    "cost": {"cpu_seconds": data.get("cpu_seconds")}, "governed": True,
+                                    "terminal_sent": prep["flushed"]["sent"], "terminal_pending": prep["flushed"]["pending"],
+                                    "reconciliation": prep["reconciliation"],
+                                    "terminal_sha256": (prep.get("receipt") or {}).get("terminal_sha256")})
     # --- cost pilot ---
     measured = {}
     for c in design["pilots"]:
@@ -1095,7 +1116,7 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
     report["stopped"] = stop
     report["spent_cpu_seconds"] = spent()
     if governed:
-        report["governance_result"] = _governed_summary(root, report)
+        report["governance_result"] = _governed_summary(root, report, design)
         campaign.write_once(root / ("REPORT.json" if not (root / "REPORT.json").exists() else f"REPORT.{int(time.time())}.json"), report)
         return report
     proposal = {"schema": "governed_campaign.v1", "campaign_key": f"{run_id}-e1-household-dev-pilot", "classification": "NON_GOVERNING", "project": "predictor",

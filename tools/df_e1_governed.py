@@ -150,7 +150,7 @@ def require_delivery(root: Path, design: dict, unit_id: str = "prepare") -> dict
 
 
 def report_terminal(root: Path, unit_id: str, terminal: dict, *, gov_url: str = DEFAULT_GOV,
-                    api_key_file: Path, outbox_dir: str | None = None) -> dict:
+                    api_key_file: Path, outbox_dir: str | None = None, started_at: str | None = None) -> dict:
     """Terminal -> outbox -> accounting, under THIS unit's own campaign and delivery."""
     GR = _load("governed_run")
     doc = json.loads((Path(root) / "DELIVERIES.json").read_text())
@@ -161,11 +161,28 @@ def report_terminal(root: Path, unit_id: str, terminal: dict, *, gov_url: str = 
     outbox = GR.TerminalOutbox(Path(os.path.expanduser(outbox_dir or GR.DEFAULT_OUTBOX)).resolve())
     body = {**terminal, "deliveries": sorted({unit["delivery_id"]})}
     outbox.put({"campaign_sha256": unit["campaign_sha256"], "unit_id": unit_id, "terminal": body})
-    flushed = GR._send_pending(gov, outbox)
+    receipts = {}
+
+    def sender(envelope):
+        status, receipt = gov.report_terminal(envelope["campaign_sha256"], envelope["unit_id"], envelope["terminal"])
+        if status not in (200, 201):
+            raise GR.GovernedRunError(f"terminal refused: http {status} {receipt.get('error', '')}".strip())
+        GR._require_reconciled(gov, envelope["campaign_sha256"], envelope["unit_id"], before_run=False)
+        receipts[envelope["unit_id"]] = receipt          # the SERVICE's own answer, kept for the receipt file
+        return receipt
+    flushed = outbox.flush(sender)
     status, rbody = gov.reconcile_campaign(unit["campaign_sha256"])
-    return {"flushed": flushed, "campaign_sha256": unit["campaign_sha256"],
-            "reconciliation": {"http": status, "missing_units": rbody.get("missing_units"),
-                               "accounting_only": rbody.get("accounting_only"), "lake_only": rbody.get("lake_only")}}
+    reconciliation = {"http": status, "missing_units": rbody.get("missing_units"),
+                      "accounting_only": rbody.get("accounting_only"), "lake_only": rbody.get("lake_only")}
+    persisted = None
+    if receipts.get(unit_id):                            # RP51: persist it from the client's own answer
+        RC = _load("df_e1_receipts")
+        persisted = RC.record_accepted(root, unit_id, campaign_sha256=unit["campaign_sha256"],
+                                       campaign_key=unit["campaign_key"], terminal=body,
+                                       receipt=receipts[unit_id], reconciliation=reconciliation,
+                                       design_sha256=doc["design_sha256"], started_at=started_at)
+    return {"flushed": flushed, "campaign_sha256": unit["campaign_sha256"], "receipt": receipts.get(unit_id),
+            "persisted_receipt": persisted, "reconciliation": reconciliation}
 
 
 def main(argv=None) -> int:
