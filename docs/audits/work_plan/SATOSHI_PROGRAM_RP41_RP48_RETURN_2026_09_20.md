@@ -134,7 +134,29 @@ are ready; the run is one approval away.
 
 ## RP48 — closure
 
-Tests, budget, hosts and my own defects are in the table below. Plan and state updated at each stage.
+**Tests.** `pytest tests docs/tres_temas_entrevista/program_v3/test_check_plan.py olap/store/tests --continue-on-collection-errors`
+on omega: **2 329 passed, 40 skipped, 3 failed, 8 errors** in 33 min 09 s
+([`RP48_FULL_SUITE_SUMMARY.txt`](../evidence/d3_k5_20260917/RP48_FULL_SUITE_SUMMARY.txt)). The 3 failures
+(`tests/integration_tests/test_configuration_handling.py`) and the 8 collection errors are the stale legacy
+tests AGENTS.md documents; they are unchanged by this round. The 40 skips are environment-gated and named in
+the summary (two storage rules need `duckdb_engine`, which this interpreter lacks and which the warehouse
+rehearsal exercises instead). New this round: adopter 11, governed route and runner probes 9, closure 28,
+weekly runtime 18, weekly controller 8.
+
+**Work by host.** omega: RP41, RP42, RP43, RP46 and the closure, 48 transient units, **3 387 CPU s**.
+WORKER_A (dragon): the RP44 innovation diagnostic, 6 fits over 3 seeds and 2 tasks, **1 231 CPU s** on its
+own host, evidence collected and verified here. WORKER_B (gamma): the RP45 acceptance battery, 26 rules,
+twice (before and after the repair of the terminal-status source, which is what its first run exposed).
+Round total **4 618 CPU s** of the 14 400 authorised. Both workers ended idle (load 0.2 and 0.3) and are
+synced to the closing commit.
+
+**Defects of my own this round**, all fixed and in the history: the first rehearsal bound to a file path
+and a disposable port instead of the content that would run; the terminal statuses were read from a bridge
+field that WORKER_B's environment does not carry, which its first run exposed; the probe child in the RP42
+tests lacked fields a real record has; and the innovation diagnostic's label control asserted "close to
+zero" when the correct statement is "no better than the mean".
+
+Plan and state updated at each stage.
 
 ## Request
 
