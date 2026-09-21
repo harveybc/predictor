@@ -2,19 +2,23 @@
 
 Actualizado: 2026-09-20. Responsable del programa y revision: Musashi.
 Ejecucion delegada: Satoshi. Estado: E0-DEV, etapa ARCH y piloto E1 EJECUTADOS;
-PILOTO E1 NO GOBERNADO, revision ML con correcciones, sin confirmacion.
+piloto historico no gobernado y SUCESOR E1 EJECUTADO; sin confirmacion.
 
-**Vigente:** [RP49-RP56](../handoffs/MUSASHI_PROGRAM_RP49_RP56_2026_09_20.md).
-[Dictamen RP41-RP48](../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md):
-74 pruebas focales pasan; 131 originales intactos. El sucesor E1 no se ha
-ejecutado. Nuevas sondas demuestran circularidad al verificar el primer hijo,
-siete de ocho campanas abiertas declaradas gobernadas, y recibos locales sin
-prueba de contabilidad. El ensayo citado no esta publicado y el proveedor
-propuesto no es el externo ordenado. RL transmite cantidad/latencia, pero un
-rechazo Margin deja posicion ficticia en el controlador. Corregir esos caminos
-y la referencia analitica de ruido; ensayar un entrenamiento nuevo completo,
-adoptar el recurso acotado y ejecutar household DEV R0/R1/R2. No hay
-ganador ni confirmacion; el piloto anterior sigue historico no gobernado.
+**Vigente:** [RP57-RP64](../handoffs/MUSASHI_PROGRAM_RP57_RP64_2026_09_20.md).
+[Revision ML y comparadores](../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md):
+el sucesor SI se ejecuto en RP55. Musashi recomputo nueve fits sobre 10 020
+origenes conservados, con naive/ridge sobre filas iguales. R0 MAE 0.546929 kW
+vs persistencia 0.617372 (+11.41%); ridge 0.545495 (+11.64%).
+Evaluados en log1p(kW), R0 0.266344 vs naive 0.279127 (+4.58%).
+No son porcentajes de aciertos ni replicas de un entrenamiento logaritmico.
+El cociente historico usa persistencia h60, no MASE convencional m1.
+Corregir presentacion/etiqueta sin cambiar la propuesta; diagnosticar datos,
+objetivo, stopping, contexto, volumen y arquitectura antes de repetir R0/R1/R2.
+TCN propia adaptada no equivale a replica del articulo; referencia independiente
+obligatoria. No asumir que mas epocas mejoran validacion.
+RP56 declara cierre gobernado; esta revision verifica arrays locales, no reemplaza
+la auditoria completa de adopcion/warehouse. Historicos conservados, sin ganador
+universal ni confirmacion.
 No hay nueva decision del owner para el desarrollo autorizado. No repetir E0.
 [13D](program_v3/13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md)
 resuelve el escenario de simulacion: capital real y exposicion no bloquean DEV.
@@ -223,10 +227,10 @@ demuestra por si solo ausencia de sobreajuste ni selecciona por el test.
 | Orden | Trabajo / responsable ejecutor Satoshi | Dependencia y salida |
 |---|---|---|
 | Ejecutado, revision parcial | Piloto multivariado RP1-RP8 | 66 celdas y 3 pilotos; conservar efectos descriptivos, no aceptacion confirmatoria |
-| Ahora A | RP49-RP52: proveedor externo, primer hijo real y cierre completo | Ensayo publicado, campana/entrega antes de trabajo, recibos canonicos y poblacion exacta; historia intacta |
-| Ahora B | RP54-RP55: referencia ML, adopcion y sucesor E1 | Referencia Bayes observacional, validacion fija, contexto adecuado y R0/R1/R2 pareados; primer entrenamiento completo sin mocks |
+| Ahora A | RP57-RP59: comparadores, antecedentes antiguos y auditoria de datos | Naive/lineal/modelo por filas y escalas identicas; no inferir log1p ni unidades por magnitud |
+| Ahora B | RP60-RP63: diagnostico ML y referencia de literatura | Loss/monitor, curvas, capacidad, contexto y volumen por separado; ejecutar fase acotada antes de repetir pretraining |
 | E0, antes de elegir | MOD-ARCH-COMPARE: ARCH-A/B/C y ARCH-0 en el modular propio | Efectos descriptivos recalculados; aceptacion compuesta pendiente de RP26, sin ganador universal |
-| Paralelo C | RP53: terminales sin fill y siguiente decision real | Rechazo/cancelacion, pendientes cruzando semana y estado segun broker; no entrenamiento RL aun |
+| Paralelo C | Aceptacion RL offline de RP53 conservada para revision | RP56 reporta reparacion de terminales sin fill; no aceptacion cientifica ni entrenamiento RL por ese hecho |
 | Despues D | E1 publico: desarrollar perfiles, seleccion, contextos, R0/R1/R2 y comparadores | Piloto de mecanismos y datos admisibles; fijar procedimiento, margenes, precision y presupuestos antes de reservas |
 | Despues D, extension | MOD-FROZEN-PREFIX y MOD-CORE-PRETRAIN: hipotesis H-CORE del owner | Comparacion R0/R1/R2 y receptor adecuado completados; fijar/materializar prefijo; nucleo desde cero vs preentrenado ajustable vs congelado, con cabezales y costo total |
 | Despues E | E0-CONF H2/H3 y E2 H1 en reservas independientes | Reglas E1 fijadas y revision ML; no reutilizar test de diagnosticos anteriores |
