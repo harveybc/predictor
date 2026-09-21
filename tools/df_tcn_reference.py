@@ -95,9 +95,11 @@ def weight_normalised_conv(tf):
         def call(self, x):
             norm = tf.sqrt(tf.reduce_sum(tf.square(self.v), axis=[0, 1]) + 1e-12)
             kernel = self.v * (self.g / norm)
-            y = tf.nn.conv1d(x, kernel, stride=1, padding="VALID",
-                             dilations=self.dilation_rate)
-            return tf.nn.bias_add(y, self.b)
+            # keras.ops.conv, the operation Conv1D itself uses: tf.nn.conv1d has no CPU gradient for
+            # a dilation above one, and this port must run on CPU like everything else in the round
+            y = tf.keras.ops.conv(x, kernel, strides=1, padding="valid",
+                                  dilation_rate=self.dilation_rate)
+            return y + self.b
 
         def get_config(self):
             return {**super().get_config(), "filters": self.filters,
