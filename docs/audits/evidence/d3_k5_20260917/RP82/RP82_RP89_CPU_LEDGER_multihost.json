@@ -3,9 +3,9 @@
  "since": "2026-09-21 12:50",
  "hosts": {
   "omega": {
-   "cpu_seconds_total": 1668.507,
-   "units": 36,
-   "source": "systemd user journal, scopes matching rp82..rp89"
+   "cpu_seconds_total": 5191.03,
+   "units": 37,
+   "source": "systemd user journal, scopes matching rp82..rp89 (closing suite included)"
   },
   "dragon": {
    "units": [
@@ -42,9 +42,9 @@
    "cpu_seconds_total": 249.202
   }
  },
- "aggregate_cpu_seconds": 2137.303,
+ "aggregate_cpu_seconds": 5659.826,
  "ceiling_seconds": 14400,
- "remaining_seconds": 12262.697,
+ "remaining_seconds": 8740.174,
  "within_ceiling": true,
- "note": "closing suite added later"
+ "note": "final: includes the closing full suite on omega"
 }

@@ -123,7 +123,8 @@ block interval on dependent controls (with the negative certification at 26/2). 
 cells' fresh-process replay (in-process reload only); the 31 preserved rows' preparation bytes; anything financial on real
 data (nothing ran). Full suite on the clean checkout: [RP89_FULL_SUITE_SUMMARY.txt](../evidence/d3_k5_20260917/RP82/RP89_FULL_SUITE_SUMMARY.txt).
 CPU: [RP82_RP89_CPU_LEDGER_multihost.json](../evidence/d3_k5_20260917/RP82/RP82_RP89_CPU_LEDGER_multihost.json)
-(aggregate before the closing suite 2 137 s: omega 1 668.5, dragon 219.6, gamma 249.2; the suite is added in the summary).
+(aggregate **5,659.8 s of 14 400** including the closing full suite: omega 5,191.0, dragon 219.6, gamma 249.2). Full suite on the clean
+checkout 64c6205: 2 469 passed, 39 skipped, 0 xfailed, 3 failed + 8 collection errors = the documented legacy set.
 Pending independent work: the financial cost pilot once the resource contract exists; a fresh-process replay of the RP72
 cells if their scope must be raised; the coverage-certified regime for financial intervals (more DEV weeks or a block
 length with a granted certificate); Q2 long-context questions (unchanged, budget-limited).
