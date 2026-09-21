@@ -555,3 +555,22 @@ es su suelo irreducible: corregir referencia y scope sin remedir toda la histori
 131 originales intactos; cinco servicios activos, NRestarts=0 y cuatro healthz200.
 Esta lectura de salud no es medicion del avance ni reconciliacion productiva.
 No se reinicio ni escribio produccion en esta revision.
+
+### RP56 recibido: E1 ejecutado; diagnostico ML RP57-RP64 (20-sep)
+
+El sucesor `satoshi-e1-successor-20260920` SI se ejecuto. Satoshi reporta
+16/16 unidades cerradas y 15 celdas gobernadas. Musashi reviso los arrays locales:
+nueve fits, 10 020 origenes identicos; MAE y referencia h60 coinciden con registros.
+R0 mejora 11.41% respecto al naive en kW y 4.58% al evaluar ambos en log1p(kW).
+No reentrenamiento ni prueba de la contabilidad viva en este chequeo.
+
+[Revision ML](../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md),
+[orden RP57-RP64](../handoffs/MUSASHI_PROGRAM_RP57_RP64_2026_09_20.md).
+Se implemento reporte de comparadores con 14 pruebas; no sustituye el cierre.
+Corregir variante MASE mal nombrada, recuperar escala/procedencia de los
+experimentos antiguos, auditar target/datos/loss/stopping y contrastar una
+implementacion neuronal independiente. No aumentar epocas a ciegas ni elegir
+otra tarea porque el pretraining no gano. R0/R1/R2 y reservas siguen su contrato.
+Satoshi integra tablas por escala y sus referencias en el warehouse existente,
+como reanalisis identificado. No borrar historia ni atribuir mejoras a un simple
+cambio de escala. Costos de todos los hosts medidos en la proxima ronda.

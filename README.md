@@ -23,8 +23,8 @@ its hypotheses have already been confirmed.
   feature engineering, representation learning, optimization and evaluation.
 - [Related proposals and earlier formulations](docs/tres_temas_entrevista/README.md).
 - [Current research plan](docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md),
-  [latest ML review](docs/audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md)
-  and [active execution orders](docs/handoffs/MUSASHI_PROGRAM_RP49_RP56_2026_09_20.md).
+  [latest ML review](docs/audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md)
+  and [active execution orders](docs/handoffs/MUSASHI_PROGRAM_RP57_RP64_2026_09_20.md).
 - [Data governance](https://github.com/harveybc/data-gov): dataset receipts,
   experiment provenance and results in an analytical warehouse.
 

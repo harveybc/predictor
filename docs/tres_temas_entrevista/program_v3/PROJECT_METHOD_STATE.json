@@ -8,7 +8,7 @@
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "RP41_RP48_REVIEWED_FRESH_RUN_AND_POPULATION_CORRECTIONS_ORDERED_RP49_RP56",
+  "handoff_status": "E1_SUCCESSOR_EXECUTED_LOCAL_METRICS_REVIEWED_RP57_RP64_ML_DIAGNOSIS_ORDERED",
   "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
   "architecture_comparison": {
     "reference": "ARCH-A",
@@ -24,19 +24,19 @@
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
-    "RP49-RP52: reproduce RP48 findings; repair external provider acceptance, fresh-child verification ordering, complete population closure and authoritative receipts",
-    "RP53-RP54 on available workers: real broker terminal-without-fill recovery and analytic ML noise references/provenance; offline only",
-    "RP55: real fresh-process training through disposable external host and DuckDB before controlled adoption; then bounded prospective E1 successor with paired regimes/seeds",
-    "RP56: population/content reconciliation and one complete return within aggregate 14400 CPU seconds; no new owner decision or blanket restart"
+    "RP57-RP58: baseline-first multi-scale reports and recovery of historical log1p/naive evidence, never infer scale from a small MAE",
+    "RP59-RP61: data/target/inverse/time audit, loss/stopping diagnosis and faithful independent neural reference from primary literature",
+    "RP62-RP63: predeclared bounded DEV diagnostic separating training, information, volume and architecture; then paired pretraining only when justified",
+    "RP64: by-content governed ingestion, per-host observed cost and one complete return; aggregate 14400 CPU seconds; no new owner authorization"
   ],
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
     "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-    "orders": "../../handoffs/MUSASHI_PROGRAM_RP49_RP56_2026_09_20.md",
+    "orders": "../../handoffs/MUSASHI_PROGRAM_RP57_RP64_2026_09_20.md",
     "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-    "external_review": "../../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md",
+    "external_review": "../../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md",
     "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-    "return": "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md"
+    "return": "https://github.com/harveybc/predictor/blob/de88764/docs/audits/work_plan/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md"
   },
   "proposal_coverage": {
     "P-MOD": [
@@ -170,11 +170,13 @@
         "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
         "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md",
         "../../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md",
-        "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md"
+        "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md",
+        "../../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md",
+        "https://github.com/harveybc/predictor/blob/de88764/docs/audits/work_plan/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md"
       ],
-      "next_action": "RP49-RP52/RP54-RP55: fix fresh-child circular verification and population closure, validate external-provider route; then adopt and execute bounded prospective successor; historical pilot remains ungoverned",
+      "next_action": "RP57-RP64: baseline comparisons, historical lineage, data/target/training audit and independent neural reference; controlled DEV diagnosis before another pretraining contrast",
       "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan",
-      "adoption": "HISTORICAL_UNGOVERNED_DEV_PILOT_NOT_ACCEPTED"
+      "adoption": "SUCCESSOR_EXECUTED_LOCAL_METRICS_RECOMPUTED_FULL_GOVERNANCE_REVIEW_NOT_REPEATED"
     },
     {
       "id": "MOD-FROZEN-PREFIX",
@@ -225,7 +227,7 @@
         "../../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md",
         "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md"
       ],
-      "next_action": "RP53: quantity and latency reach the real broker; handle terminal nonfill events and next decision, including actual weekly pending orders; 13D unchanged",
+      "next_action": "RP56 reports offline nonfill repair; preserve for external acceptance, not scientific RL. Weekly forecasting/RL remains mandatory after data and E1 prerequisites",
       "deliverable": "Observations/targets/actions, availability, weekly cycle, cost and data gaps"
     },
     {
@@ -244,7 +246,7 @@
         "../../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md",
         "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md"
       ],
-      "next_action": "RP53 offline acceptance: Margin leaves false ALREADY_LONG with flat broker; repair state from actual order events. Scientific weekly RL remains required after E1 and data prerequisites",
+      "next_action": "RP56 reports offline nonfill repair; preserve for external acceptance, not scientific RL. Weekly forecasting/RL remains mandatory after data and E1 prerequisites",
       "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost"
     },
     {
@@ -293,46 +295,61 @@
       "deliverable": "H1 allocation, H2 learning and H3 manipulation utility in simulation"
     }
   ],
-  "state_semantics": "Stage refers to successor acceptance. EXECUTED is not scientific acceptance. Historical scope preserved. Reviewer ran independent disposable HTTP/DuckDB and offline real-broker probes, not production reconciliation or new fits. Documentary PASS grants no scientific approval.",
+  "state_semantics": "EXECUTED is not external scientific acceptance. Local metric review confirms same rows/targets and saved errors, not full governed closure. Historical evidence preserved. Documentary PASS grants no scientific approval.",
   "review": {
-    "reviewed_revision": "f83d63566309258b8c0aacddb6aba031c89ab7e0",
-    "disposition": "CHANGES_REQUIRED_BEFORE_ADOPTION_AND_E1",
-    "counterexamples": "../../audits/evidence/RP48_REVIEW_2026_09_20/results.json",
-    "findings": [
-      "FRESH_CHILD_VERIFICATION_ORDER",
-      "OPEN_POPULATION_REPORTED_GOVERNED",
-      "LOCAL_CLAIMS_AND_CHRONOLOGY",
-      "MISSING_REHEARSAL_AND_PROVIDER_DIVERGENCE",
-      "RL_TERMINAL_NONFILL_STATE",
-      "NOISE_FLOOR_AND_DIAGNOSTIC_PROVENANCE"
-    ],
-    "original_files_checked": 131,
-    "original_files_changed": 0,
+    "reviewed_revision": "de88764",
+    "disposition": "METRIC_COMPARISON_REPAIRED_ML_CAUSES_REQUIRE_CONTROLLED_DIAGNOSIS",
+    "counterexamples": "../../audits/evidence/ML_BASELINE_REVIEW_2026_09_20/results.json",
+    "scope": "Preserved local DATA/arrays/records and old published CSV; no fresh weights replay, fitting or independent live warehouse reconciliation",
+    "models": 9,
+    "evaluation_origins": 10020,
+    "sources_unchanged": true,
     "focused_tests": {
-      "passed": 74,
-      "seconds": 25.94,
+      "passed": 14,
       "full_suite_rerun": false
     },
-    "disposable_http_probe": {
-      "registered": 8,
-      "closed": 1,
-      "open": 7,
-      "summary_claims_all_governed": true,
-      "scope": "actual runner/services, failed costly child fixture"
-    },
-    "live_health": {
-      "active_services": 5,
-      "automatic_restarts": 0,
-      "healthz_200": 4,
-      "scope": "health only, not content or progress"
-    },
-    "live_warehouse_rechecked_by_reviewer": false,
-    "catalog_activation_performed": false,
     "scientific_confirmation": false,
-    "owner_input_required_for_current_order": false,
-    "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D"
+    "owner_input_required_for_current_order": false
   },
   "review_history": [
+    {
+      "reviewed_revision": "f83d63566309258b8c0aacddb6aba031c89ab7e0",
+      "disposition": "CHANGES_REQUIRED_BEFORE_ADOPTION_AND_E1",
+      "counterexamples": "../../audits/evidence/RP48_REVIEW_2026_09_20/results.json",
+      "findings": [
+        "FRESH_CHILD_VERIFICATION_ORDER",
+        "OPEN_POPULATION_REPORTED_GOVERNED",
+        "LOCAL_CLAIMS_AND_CHRONOLOGY",
+        "MISSING_REHEARSAL_AND_PROVIDER_DIVERGENCE",
+        "RL_TERMINAL_NONFILL_STATE",
+        "NOISE_FLOOR_AND_DIAGNOSTIC_PROVENANCE"
+      ],
+      "original_files_checked": 131,
+      "original_files_changed": 0,
+      "focused_tests": {
+        "passed": 74,
+        "seconds": 25.94,
+        "full_suite_rerun": false
+      },
+      "disposable_http_probe": {
+        "registered": 8,
+        "closed": 1,
+        "open": 7,
+        "summary_claims_all_governed": true,
+        "scope": "actual runner/services, failed costly child fixture"
+      },
+      "live_health": {
+        "active_services": 5,
+        "automatic_restarts": 0,
+        "healthz_200": 4,
+        "scope": "health only, not content or progress"
+      },
+      "live_warehouse_rechecked_by_reviewer": false,
+      "catalog_activation_performed": false,
+      "scientific_confirmation": false,
+      "owner_input_required_for_current_order": false,
+      "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D"
+    },
     {
       "reviewed_revision": "f588400a9b3cd6d59c4549cc9829f5bb7957e140",
       "disposition": "REVISIONS_REQUIRED_BEFORE_PUBLIC_LAKE_ADOPTION_AND_E1_RUN",
@@ -472,5 +489,18 @@
   "execution_governance": {
     "new_runs": "REGISTER_AND_DELIVER_BEFORE_DATA_PREPARATION_OR_FIT",
     "historical_import": "SEPARATE_RETROSPECTIVE_EVIDENCE"
+  },
+  "e1_successor_run": {
+    "run_id": "satoshi-e1-successor-20260920",
+    "units_reported_by_producer": 16,
+    "governed_cells_reported_by_producer": 15,
+    "reviewer_local_metrics": {
+      "n": 10020,
+      "R0_MAE_kW": 0.5469291672547817,
+      "naive_MAE_kW": 0.6173720558882235,
+      "ridge_MAE_kW": 0.5454945633272991,
+      "R0_skill_percent": 11.410119386128436
+    },
+    "live_warehouse_rechecked_by_reviewer": false
   }
 }
