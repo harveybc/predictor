@@ -4,7 +4,15 @@ Actualizado: 2026-09-21. Responsable del programa y revision: Musashi.
 Ejecucion delegada: Satoshi. Estado: E0-DEV, etapa ARCH y piloto E1 EJECUTADOS;
 piloto historico no gobernado y SUCESOR E1 EJECUTADO; sin confirmacion.
 
-**Vigente:** [preparacion fase 2 y FIN-LOSS-OPT](../handoffs/MUSASHI_POST_HUBER_PHASE2_2026_09_21.md).
+**Vigente:** [RP66-RP73: correcciones y referencia emparejada](../handoffs/MUSASHI_POST_HUBER_RP66_RP73_2026_09_21.md).
+**Revision de 4ef9f71:** [dictamen ejecutado](../audits/work_plan/MUSASHI_POST_HUBER_REVIEW_2026_09_21.md).
+Historicos preservados; contrato y tabla no aceptados como verificadores suficientes.
+Antes de medir: corregir el alcance 67 vs 60, frecuencia de validacion al variar
+volumen, escala comun, horizonte financiero por timestamps y deltas Huber cero.
+RP72 autoriza condicionalmente un bloque DEV acotado de referencia GRU adaptada
+frente al modular, despues de sus pruebas y piloto de costo, sin nueva consulta
+al owner. Fase 2 por bloques completos despues; finanzas cientificas, reserva y
+reproduccion completa del articulo siguen pendientes de sus revisiones especificas.
 **Regla transversal desde 21-sep:** [contrato de comparabilidad con literatura](PROGRAM_METRICS_CONTRACT_v1.md#adicion-obligatoria-comparabilidad-con-literatura-2026-09-21)
 obligatorio para TODOS los dominios, incluido finanzas. Antes de entrenamiento
 cientifico: target/transformacion/metrica y protocolo de referencia fijados;
@@ -14,18 +22,19 @@ los runners: pendiente de Satoshi, tarea BENCHMARK-CONTRACTS; no declarada hecha
 **Cierre obligatorio, incluido el actual:** tabla en el mensaje al owner con
 error del modelo, metrica/escala, naive en las mismas filas, mejora relativa y
 valor comparable de literatura con fuente; por tarea/horizonte/split. Punto 14
-de las ordenes vigentes. Si falta una referencia comparable, declararla pendiente
+de las ordenes anteriores, mantenido en RP73. Si falta una referencia comparable, declararla pendiente
 con razon; nunca sustituirla por cifras incompatibles ni inventadas.
 RP57-RP64 y el factorial electrico Huber/AdamW estan ejecutados y preservados.
 **Adicion aprobada:** [comparacion financiera obligatoria de losses y optimizers](program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md).
 No hay loss ganadora para trading; no descartar mejoras normalizadas de 1e-5/1e-6
 por pequenas. No buscar el OLAP antiguo ni repetir heuristic-strategy como requisito.
-**Comparacion electrica obligatoria:** el punto 12 de la orden vigente prepara
+**Comparacion electrica obligatoria:** el punto 12 de la orden anterior preparo
 una referencia reproducible UCI 235 y nuestro modelo bajo identicos target,
 horizonte, particiones, transformacion y metrica publicada, con ingenuo sobre
 las mismas filas. Entregables: matriz de protocolo, configuracion reproducible,
 tests y presupuesto. MAE_z complementa, no sustituye esa metrica. La preparacion
-no equivale a haber ejecutado la reproduccion ni autoriza entrenamiento nuevo.
+no equivale a haber ejecutado la reproduccion. La autorizacion limitada nueva
+es RP72, no la etiqueta de un contrato ni el documento de preparacion.
 
 Antecedente de [RP57-RP64](../handoffs/MUSASHI_PROGRAM_RP57_RP64_2026_09_20.md):
 [Revision ML y comparadores](../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md):

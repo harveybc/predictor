@@ -8,7 +8,7 @@
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "POST_HUBER_PACKET_DELIVERED_PHASE2_SEALED_FIN_LOSS_OPT_DESIGNED_BENCHMARK_CONTRACTS_PARTIAL_READY_FOR_REVIEW",
+  "handoff_status": "POST_HUBER_REVIEW_CORRECTIONS_REQUIRED_RP66_RP73_CONDITIONAL_MATCHED_DEV_AUTHORIZED",
   "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
   "architecture_comparison": {
     "reference": "ARCH-A",
@@ -47,20 +47,22 @@
     "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
   },
   "next_allowed_actions": [
-    "One review of the RP65 packet (phase-2 design, FIN-LOSS-OPT design, benchmark contracts, household literature benchmark preparation, closure table)",
-    "After review: phase-2 cost pilot then campaign under governance; the Gasparin reproduction and the matched-domain re-execution only after their acceptance tests pass",
-    "FIN-LOSS-OPT stays NOT_STARTED until its runner exists, its five xfail rules pass, and the financial causality gates are passed",
-    "Route worker jobs through the accounted wrapper before assigning seeds to dragon/gamma"
+    "Execute RP66-RP73 against Musashi's frozen probes; bind scored artifacts and exact populations to terminals and runtime benchmark contracts before claiming comparability",
+    "Correct phase-2 ML support, fixed-update validation, common evaluation scale and identity-derived counts; implement real feature-path tests and seal successors before outcomes",
+    "RP72 conditionally authorizes the complete paired household modular versus adapted literature-GRU DEV block after acceptance and measured cost under the 14400 aggregate CPU-second ceiling; no renewed owner permission",
+    "Then execute complete phase-2 question blocks only if pre-score costs fit, in fixed Q1/Q2/Q3 priority; preserve unrun blocks without score claims",
+    "Repair financial elapsed-time horizons, residual-scale delta handling and explicit candidate population; implement FL01-FL08 via real runner calls instead of unconditional xfails; scientific financial campaign not authorized yet",
+    "Use accounted worker wrappers before scientific dispatch; retain no reserve, no live, no historical retraining for evidence repair, no old OLAP search"
   ],
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
     "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-    "orders": "../../handoffs/MUSASHI_POST_HUBER_PHASE2_2026_09_21.md",
+    "orders": "../../handoffs/MUSASHI_POST_HUBER_RP66_RP73_2026_09_21.md",
     "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
     "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-    "external_review": "../../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md",
+    "external_review": "../../audits/work_plan/MUSASHI_POST_HUBER_REVIEW_2026_09_21.md",
     "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-    "return": "https://github.com/harveybc/predictor/blob/de88764/docs/audits/work_plan/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md",
+    "return": "https://github.com/harveybc/predictor/blob/4ef9f71/docs/audits/work_plan/SATOSHI_POST_HUBER_PACKET_RETURN_2026_09_21.md",
     "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
     "benchmark_registry": "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
     "fin_loss_opt_design": "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
@@ -206,7 +208,7 @@
         "../../audits/work_plan/SATOSHI_PROGRAM_RP57_RP64_RETURN_2026_09_21.md",
         "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json"
       ],
-      "next_action": "Phase 2 sealed (6b475094, 27 cells, Q1 calendar / Q2 daily context / Q3 volume with factorial separation of window depth): review, then cost pilot; R0/R1/R2 only afterwards with the aligned objective common to every arm",
+      "next_action": "RP68 corrects draft 6b475094 (support 67 not 60, stopping cadence, scale/counts); RP69/RP72 prioritize an adapted literature GRU against the same-task modular baseline, then budgeted complete phase-2 blocks; preserve historic fits",
       "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan",
       "adoption": "SUCCESSOR_EXECUTED_LOCAL_METRICS_RECOMPUTED_FULL_GOVERNANCE_REVIEW_NOT_REPEATED"
     },
@@ -327,13 +329,13 @@
         "../../audits/evidence/d3_k5_20260917/RP65/ENTRY_POINT_COVERAGE_INVENTORY.json",
         "tests/test_df_benchmark_contract.py"
       ],
-      "next_action": "Enforce require() in the next campaigns' runners as they are written (phase 2, FIN-LOSS-OPT, the Gasparin reproduction); the legacy plugin/app path stays inventoried until a campaign uses it",
+      "next_action": "RP66/RP67: repair real execution/metric binding; contract presence in two runners was insufficient, as demonstrated by accepted foreign targets and changed scales; inventory untouched legacy routes honestly",
       "deliverable": "Versioned target/transform/metric/split/reference contracts, reproduction or matched-domain comparisons, real-entry-point refusal tests and governed result linkage; documentary adoption is not runtime enforcement",
       "status_detail": {
         "IMPLEMENTED": "tools/df_benchmark_contract.py: versioned contract, comparability decided from identity fields, affine re-expression with refusal, require() refusal; registry with four sources read at origin",
-        "ENFORCED_AT_RUNTIME": "2 of 37 real training entry points call require() before any fit (df_e1_phase1, df_e1_huber); phase-2 and FIN-LOSS-OPT designs embed the contract; the legacy plugin/app path and the RL runner are INVENTORIED, NOT enforced",
+        "ENFORCED_AT_RUNTIME": "2 of 37 real entry points call require(), but Musashi's 4ef9f71 review demonstrates insufficient field validation and no actual-task binding; presence checking is NOT accepted comparability enforcement",
         "NOT_CLAIMED": "all-domain runtime enforcement",
-        "STATUS_WORD": "'DESIGNED' is the validator's word; the detail above is the truth: runtime enforcement is PARTIAL (2 of 37 entry points)"
+        "STATUS_WORD": "DESIGNED; implementation exists with demonstrated gaps, corrections RP66/RP67 required before new comparable results"
       }
     },
     {
@@ -349,10 +351,10 @@
         "../../audits/evidence/d3_k5_20260917/RP65/FIN_LOSS_OPT_DESIGN_SEALED.json",
         "tests/test_fin_loss_opt_acceptance.py"
       ],
-      "next_action": "Design FL01-FL08 and the governed financial MAE/Huber x Adam/AdamW experiment now; execute after financial data/causality and reviewed design/resource gates, before financial forecasting recipe selection; no historical OLAP search or heuristic rerun prerequisite",
+      "next_action": "RP70/RP71 correct step/hour mapping and degenerate/rounded deltas, enumerate the actual search/receivers, implement real runner acceptance; synthetic fixtures authorized, financial scientific execution remains pending design review",
       "deliverable": "Paired normalized error and naive skill by horizon/fold/model, precision for 1e-5/1e-6 effects, tuned and default recipes, temporal uncertainty, cost and full warehouse closure; no profit guarantee",
       "status_detail": {
-        "DESIGNED": "protocol, task frozen from the governed EURUSD 1h resource, causal delta candidates, equal bounded search, FL01-FL08 (11 green, 5 xfail strict naming the absent runner)",
+        "DESIGNED": "draft protocol preserved; review found ambiguous physical horizons, zero deltas and unenumerated search; five strict xfails are unconditional placeholders, not implementation-sensitive acceptance",
         "NOT_STARTED": "no fit, no campaign; designing is not evidence of a winner"
       }
     },
@@ -368,6 +370,17 @@
   ],
   "state_semantics": "EXECUTED is not external scientific acceptance. Local metric review confirms same rows/targets and saved errors, not full governed closure. Historical evidence preserved. Documentary PASS grants no scientific approval.",
   "review": {
+    "reviewed_revision": "4ef9f71",
+    "disposition": "CORRECTIONS_REQUIRED_BOUNDED_NEXT_EXECUTION_CONDITIONAL",
+    "counterexamples": "../../audits/evidence/POST_HUBER_REVIEW_2026_09_21/results.json",
+    "scope": "real validator calls, temporary synthetic report fixtures, real model gradient without fit, independent primary-paper inspection; no new scientific measurement or live warehouse reconciliation",
+    "focused_tests": {"passed": 61, "xfailed": 5, "full_suite_rerun": false},
+    "scientific_confirmation": false,
+    "owner_input_required_for_current_order": false,
+    "next_orders": "../../handoffs/MUSASHI_POST_HUBER_RP66_RP73_2026_09_21.md"
+  },
+  "review_history": [
+    {
     "reviewed_revision": "de88764",
     "disposition": "METRIC_COMPARISON_REPAIRED_ML_CAUSES_REQUIRE_CONTROLLED_DIAGNOSIS",
     "counterexamples": "../../audits/evidence/ML_BASELINE_REVIEW_2026_09_20/results.json",
@@ -381,8 +394,7 @@
     },
     "scientific_confirmation": false,
     "owner_input_required_for_current_order": false
-  },
-  "review_history": [
+    },
     {
       "reviewed_revision": "f83d63566309258b8c0aacddb6aba031c89ab7e0",
       "disposition": "CHANGES_REQUIRED_BEFORE_ADOPTION_AND_E1",
