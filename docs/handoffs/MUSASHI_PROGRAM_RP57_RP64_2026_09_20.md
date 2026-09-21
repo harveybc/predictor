@@ -46,9 +46,34 @@ comparar al reporte local y conservar la diferencia exacta si no coincide.
 
 Inventariar configs efectivas, commits productores, CSV/arrays, transformaciones
 de x/y y su orden, inverse, baseline, horizon en tiempo fisico, entrenamiento,
-validacion y test. Primero el TCN NEAT localizado y luego las corridas con MAE
-cerca de 0.02 y naive cerca de 0.018. No atribuirlas al log1p por su magnitud:
+validacion y test. Prioridad corregida por el owner: localizar la corrida valida
+de FASE 3 que recuerda como unica mejora, y separar el antecedente de error
+anormalmente bajo (~0.001) causado por fuga wavelet. El CSV TCN NEAT citado por
+Musashi NO esta identificado como la corrida valida y NO es un benchmark
+aceptado. El owner sospecha que pertenece a la era afectada; no afirmar la
+correspondencia sin reconstruirla. No atribuir log1p al target por la magnitud:
 el champion localizado declara log1p FEATURES, no prueba ese target historico.
+
+Crear dos linajes separados: antes del arreglo causal y despues. Vincular por
+run/config efectivo/commit/dataset/artefactos; no por nombre de carpeta, fecha
+de modificacion o flag actual use_wavelets=false. Una columna precomputada puede
+portar la fuga aunque el entrenamiento ya no ejecute wavelets. Archivar afectados
+como INVALID_CAUSAL_LEAK cuando se demuestra, y sospechosos como
+CAUSALITY_UNVERIFIED; no usarlos para seleccionar modelos ni como rendimiento
+de referencia. La declaracion del owner se registra como OWNER_REPORTED hasta
+ligarla a identidades exactas; tampoco prueba por si sola validez del sucesor.
+
+Para cada entrada transformada, ejecutar la configuracion/productor real desde
+bytes previos a descomponer. Congelar estado ajustado solo en train y comparar
+la representacion consumida al decidir en t con acceso solo a informacion
+disponible hasta t, frente al procesamiento completo. Alterar/agregar/eliminar
+observaciones disponibles DESPUES de t no puede cambiar esa representacion.
+Probar bordes, padding, nivel/filtro, downsampling, reconstruccion y alineacion
+de indices; incluir impulsos futuros, huecos y camino multicanal real.
+No confundir un calculo centrado dentro de una ventana pasada enteramente
+disponible con acceso a datos posteriores a la decision. Declarar el retardo
+efectivo de cada salida. Un control deliberadamente no causal debe ser detectado
+por las MISMAS pruebas; comparar siempre modelo y naive con target e ids iguales.
 
 Congelar la tabla de resultados ya publicada antes de elegir filas. Reconstruir
 metricas cuando hay predicciones/labels/ids; si faltan, PUBLISHED_SUMMARY_ONLY
@@ -65,6 +90,10 @@ Para household, recorrer bytes -> roles -> tiempos -> split -> scaler -> ventana
 fisicos, periodicidad/missing/DST, autocorrelacion train, unidades, ceros y picos,
 colas/distribucion por split, grano del scaler (filas vs ventanas repetidas).
 Perturbacion futura no cambia train ni features pasadas; no cerrar huecos.
+Reusar las pruebas de configuracion completa de RP58 tambien para cualquier
+preprocesamiento nuevo; la bateria de un operador aislado no concede causalidad
+a todo el pipeline. Una mejora extraordinaria activa estas comprobaciones,
+pero ni un score muy bueno prueba fuga ni uno cercano al naive prueba ausencia.
 
 Graficar periodos seleccionados por regla previa, no solo los mejores:
 verdad/naive/lineal/modelo en kW y log, error por hora/dia, nivel y magnitud
