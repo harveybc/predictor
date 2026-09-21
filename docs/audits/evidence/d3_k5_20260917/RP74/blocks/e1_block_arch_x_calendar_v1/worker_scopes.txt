@@ -1,0 +1,4 @@
+crispdm-rp79-prepare-1790002414-106467.scope: Consumed 525ms CPU time over 2.006s wall clock time, 435.6M memory peak.
+crispdm-rp79-exec-1790002416-106489.scope: Consumed 8min 28ms CPU time over 7min 6.388s wall clock time, 840.6M memory peak.
+crispdm-rp79-prepare-1790002402-2225722.scope: Consumed 573ms CPU time over 3.812s wall clock time, 490.3M memory peak.
+crispdm-rp79-exec-1790002405-2225747.scope: Consumed 7min 3.698s CPU time over 5min 8.956s wall clock time, 1.4G memory peak.

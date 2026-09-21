@@ -1,0 +1,27 @@
+{
+ "schema": "df_e1_block_merge.v1",
+ "into": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_arch_x_calendar_v1",
+ "units": {
+  "calendar_s3": {
+   "from": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_arch_x_calendar_v1_from_gamma",
+   "host": "gamma"
+  },
+  "gru_adapted_w60_s3": {
+   "from": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_arch_x_calendar_v1_from_gamma",
+   "host": "gamma"
+  },
+  "gru_calendar_w60_s3": {
+   "from": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_arch_x_calendar_v1_from_gamma",
+   "host": "gamma"
+  },
+  "modular_w60_s3": {
+   "from": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_arch_x_calendar_v1_from_gamma",
+   "host": "gamma"
+  },
+  "randomised_calendar_control_s3": {
+   "from": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_arch_x_calendar_v1_from_gamma",
+   "host": "gamma"
+  }
+ },
+ "problems": []
+}

@@ -1,0 +1,127 @@
+{
+ "arm_spec": {
+  "arm": "gru_calendar_w60",
+  "crop": null,
+  "dilations": null,
+  "family": "gru",
+  "features": "calendar",
+  "role": "the adapted GRU with the same 4 calendar channels appended to its 7 inputs (+600 parameters: 3 x 50 x 4)",
+  "train_days": 28,
+  "window": 60
+ },
+ "arrays_sha256": "21d35b5a4e81c4a98b754ef7107c8006a8458ca5eaab2a7858ec8a25a2d2f129",
+ "assignment": [
+  0,
+  1,
+  0,
+  2,
+  2,
+  2,
+  0,
+  3,
+  3,
+  3,
+  3
+ ],
+ "cell": {
+  "arm": "gru_calendar_w60",
+  "cell_id": "pilot_gru_calendar_w60",
+  "max_updates": 200,
+  "patience_events": 3,
+  "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+  "role": "COST_PILOT",
+  "seed": 1,
+  "validate_every_updates": 50
+ },
+ "channels": 11,
+ "cost": {
+  "accounting": "seconds_per_update = TRAIN-UPDATE CPU only (validation, restore, setup and replay apart; RP77/A6)",
+  "cpu_seconds": 12.645717834,
+  "final_predict_and_replay_cpu_seconds": 1.7308712439999994,
+  "host": "omega",
+  "peak_rss_bytes": 764690432,
+  "restore_cpu_seconds": 0.6888851270000007,
+  "seconds_per_update": 0.020266315155000002,
+  "seconds_per_validation_event": 0.7586098147499998,
+  "setup_cpu_seconds": 3.1272595229999998,
+  "train_update_cpu_seconds": 4.053263031,
+  "validation_cpu_seconds": 3.034439258999999,
+  "wall_seconds": 12.653157980996184
+ },
+ "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+ "final_weights_sha256": "5dc2caabc2eeff1d38aa910aa3535fe3a70adb339fa608b1411990fc4a911c9a",
+ "initial_weights_sha256": "98f706e6b76e1746efbc6819dc9e15aec0eca8ff7a3822428b6d41619cbb8e88",
+ "parameters": 9501,
+ "pilot": true,
+ "population": {
+  "evaluation_is_common_dev_set": false,
+  "evaluation_origins": 9899,
+  "train_origins": 30061
+ },
+ "reload_max_error": 0.0,
+ "schema": "df_e1_block_cell.v1",
+ "scores": {
+  "mae_kw": 0.537734019289801,
+  "mae_z": 0.5892869390983582,
+  "naive_mae_kw": 0.6759967673502374,
+  "rmse_kw": 0.9236031953204498,
+  "rows": 9899,
+  "skill_vs_naive": 0.20453167047291776
+ },
+ "target_mean": 0.926139629748496,
+ "target_sd": 0.9125164391265214,
+ "training": {
+  "best_event": 4,
+  "best_update": 200,
+  "best_val_mae_scaled": 0.5892869387748368,
+  "censoring": {
+   "rule": "reaching the update ceiling is censoring wherever the best checkpoint fell and whether or not patience expired on the same update; early stopping never claims convergence",
+   "verdict": "CENSORED_BY_BUDGET"
+  },
+  "cpu": {
+   "loop_total_seconds": 7.776587417,
+   "restore_seconds": 0.6888851270000007,
+   "train_update_seconds": 4.053263031,
+   "validation_seconds": 3.034439258999999
+  },
+  "events": [
+   {
+    "train_loss_mean_since_last": 0.5995976305007935,
+    "update": 50,
+    "val_mae_scaled": 0.6076840287814076
+   },
+   {
+    "train_loss_mean_since_last": 0.543900882601738,
+    "update": 100,
+    "val_mae_scaled": 0.6284008827512763
+   },
+   {
+    "train_loss_mean_since_last": 0.5634504574537277,
+    "update": 150,
+    "val_mae_scaled": 0.5922711194379836
+   },
+   {
+    "train_loss_mean_since_last": 0.5090992432832718,
+    "update": 200,
+    "val_mae_scaled": 0.5892869387748368
+   }
+  ],
+  "fit_cpu_seconds": 7.776587417,
+  "min_delta": 0.0,
+  "optimizer_iterations": 200,
+  "patience_events": 3,
+  "restore_verified": true,
+  "restored_val_mae_scaled": 0.5892869387748368,
+  "stop_reason": "UPDATE_BUDGET",
+  "triggers": {
+   "budget_reached": true,
+   "patience_expired": false
+  },
+  "updates": 200,
+  "updates_are_optimizer_iterations": true,
+  "validate_every_updates": 50,
+  "validation_cpu_seconds": 3.034439258999999,
+  "validation_events": 4
+ },
+ "weights_file_sha256": "6adf8a1a41aa0a3eeb60d034febfed0f0f2bf2d4fd2b45d0132fb1064f69d10d"
+}

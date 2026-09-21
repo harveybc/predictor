@@ -1,0 +1,93 @@
+{
+ "artifacts": [
+  {
+   "bytes": 476658,
+   "role": "predictions",
+   "sha256": "4093d5b80fb42adc7097bb01037d8b9e5f26a12e95b94837970ac79cb11f786e"
+  },
+  {
+   "bytes": 129632,
+   "role": "weights",
+   "sha256": "1584403c9ceb2988501f5bf8e7db3b9eb5d24349066374b4a492c9f673d2dc55"
+  },
+  {
+   "bytes": 3625,
+   "role": "record",
+   "sha256": "1f596407c9fc5c338b87ed4ece42a0a51c342be6ff7d1943730c65ba482b6ba6"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 12.432774101,
+  "wall_seconds": 13.347059331019409
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T14:50:45Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.5463359360309972
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_z",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.5987135273463793
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.naive_mae_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.6759967673502374
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.rmse_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.9297682761481257
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.skill_vs_naive",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.19180688071554386
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T14:50:31Z",
+ "status": "COMPLETED",
+ "tags": {
+  "arm": "gru_adapted_w60",
+  "classification": "NON_GOVERNING",
+  "contract_sha256": "18de862d05c1af653e8ffbb74d6e68a31081c2f07c4d8d0153834fd0be306b4a",
+  "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_ARCH_X_CALENDAR",
+  "role": "COST_PILOT",
+  "seed": "1",
+  "unit": "pilot_gru_adapted_w60"
+ }
+}

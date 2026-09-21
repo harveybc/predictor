@@ -8,7 +8,7 @@
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "RP73_REVIEWED_CHANGES_REQUIRED_RP74_RP81_ISSUED_NEW_MEASUREMENTS_PRESERVED",
+ "handoff_status": "RP74_RP81_EXECUTED_ARCH_X_CALENDAR_TIER2_CLOSED_ON_THREE_HOSTS_AWAITING_MUSASHI_REVIEW",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -47,13 +47,11 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "RP74: repair independently anchored artifact custody and complete reference-result verification; reverify without refitting",
-  "RP75-RP76: financial finite-window population, paired seed selection, supported temporal inference and epsilon-path acceptance",
-  "RP77: ceiling-trigger precedence and nonduplicated validation CPU; profile before prescribing Q2 optimizations",
-  "RP78: accounted governed worker acceptance using version-pinned isolated checkouts",
-  "RP79: conditional complete 15-cell household DEV architecture-by-calendar block with patience 10, unchanged cadence and cost gate",
-  "RP80: complete the repaired financial design for review; no real financial scientific campaign yet",
-  "RP81: content reconciliation, qualified historical scope, comparable closure table and single final return"
+  "Musashi review of the RP74-RP81 return",
+  "cheap context contrasts (daily lag, exact crop) under tier 2 if budget allows",
+  "separate-process weight replay per cell at closure",
+  "financial design v3 review, then a train-only cost pilot on the real bars before any scientific fit",
+  "Q2 long-window arms only under a declared lower ceiling or a measured cheaper forward pass (not a gather change)"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
@@ -371,11 +369,11 @@
  ],
  "state_semantics": "EXECUTED is not external scientific acceptance. Local metric review confirms same rows/targets and saved errors, not full governed closure. Historical evidence preserved. Documentary PASS grants no scientific approval.",
  "review": {
-  "reviewed_revision": "4ef9f71",
-  "disposition": "CORRECTIONS_REQUIRED_BOUNDED_NEXT_EXECUTION_CONDITIONAL",
-  "executed_by": "Satoshi RP66-RP73 (this state)",
-  "counterexamples": "../../audits/evidence/POST_HUBER_REVIEW_2026_09_21/results.json",
-  "post": "../../audits/evidence/d3_k5_20260917/RP66/REVIEW_REPRODUCED_POST.json"
+  "reviewed_revision": "1880caa",
+  "disposition": "CHANGES_REQUIRED; preserve measurements",
+  "executed_by": "Satoshi RP74-RP81 (this state)",
+  "counterexamples": "../../audits/evidence/RP73_MUSASHI_REVIEW_2026_09_21/results.json",
+  "post": "../../audits/evidence/d3_k5_20260917/RP74/REVIEW_REPRODUCED_POST.json"
  },
  "review_history": [
   {
@@ -709,12 +707,90 @@
  "rp73_external_review": {
   "revision": "1880caa",
   "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
-  "findings": ["A1_UNANCHORED_RECORD", "A2_PREPARE_ONLY_REFERENCE", "A3_NONFINITE_FINANCIAL_WINDOW", "A4_SELECTION_AND_UNCERTAINTY", "A5_CEILING_CENSORING", "A6_COST_DOUBLE_COUNT"],
+  "findings": [
+   "A1_UNANCHORED_RECORD",
+   "A2_PREPARE_ONLY_REFERENCE",
+   "A3_NONFINITE_FINANCIAL_WINDOW",
+   "A4_SELECTION_AND_UNCERTAINTY",
+   "A5_CEILING_CENSORING",
+   "A6_COST_DOUBLE_COUNT"
+  ],
   "new_forecasts_independently_checked": 18,
   "array_check_discrepancies": 0,
   "live_warehouse_requeried_by_this_review": false,
   "focused_tests": "85 passed, 2 FL08 deselected; full repository suite not rerun",
   "evidence": "../../audits/evidence/RP73_MUSASHI_REVIEW_2026_09_21",
   "publication": "1880caa pushed; isolated checked-out revision on both workers; no running checkout switched"
+ },
+ "rp74_rp81": {
+  "return": "../../audits/work_plan/SATOSHI_RP74_RP81_RETURN_2026_09_21.md",
+  "pre": "../../audits/evidence/d3_k5_20260917/RP74_PRE/REVIEW_REPRODUCED_PRE.json",
+  "post": "../../audits/evidence/d3_k5_20260917/RP74/REVIEW_REPRODUCED_POST.json",
+  "closure_table": "../../audits/evidence/d3_k5_20260917/RP74/CLOSURE_TABLE_RP81.json (64 rows: 45 ACCEPTED_ARTIFACT_CHAIN verified, 19 METRIC_ANCHORED preserved, 0 problems)",
+  "custody_rule": "verified = clean arrays + accepted artifact chain in the warehouse's canonical payload; history without artifact rows is preserved as METRIC_ANCHORED, never promoted",
+  "comparator_rule": "VERIFIED_COMPARATOR needs a sealed design digest, a named reference arm, every seed accepted and every forecast verified through the closure table",
+  "arch_x_calendar_tier2": {
+   "state": "EXECUTED_CLOSED_VERIFIED_3_HOSTS",
+   "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+   "hosts": {
+    "seed1": "omega",
+    "seed2": "dragon",
+    "seed3": "gamma"
+   },
+   "mae_z_mean_sd_ddof1": {
+    "modular_w60": [
+     0.539087465425902,
+     0.0013305335194186557
+    ],
+    "gru_adapted_w60": [
+     0.5289929887869544,
+     0.002374334260668047
+    ],
+    "calendar": [
+     0.49265368213429894,
+     0.008862015330485024
+    ],
+    "gru_calendar_w60": [
+     0.4798379201299228,
+     0.003816481335350469
+    ],
+    "randomised_calendar_control": [
+     0.5446140832033518,
+     0.005809784349451513
+    ]
+   },
+   "persistence_mae_z": 0.6765599274892891,
+   "sd_train": 0.9125164391265214,
+   "contrasts_mean": {
+    "gru_minus_modular_original": -0.010094476638947655,
+    "gru_minus_modular_calendar": -0.0128157620043761,
+    "calendar_minus_original_modular": -0.046433783291603116,
+    "calendar_minus_original_gru": -0.049155068657031564,
+    "calendar_minus_control_modular": -0.05196040106905283,
+    "control_minus_original_modular": 0.005526617777449709,
+    "interaction_arch_x_calendar": -0.002721285365428446
+   },
+   "censored_fits": 7,
+   "informed_by_prior_dev": true,
+   "confirmatory": false
+  },
+  "q2": "BUDGET_LIMITED on retained evidence; recost 111 000 s; forward/backward dominates (gather 0.06 %); no optimization prescribed",
+  "financial": {
+   "state": "DESIGNED_NOT_STARTED; population = consumed tensors; selection configuration-level with paired seeds; block interval with declared support and measured coverage (26-week caveat)",
+   "design": "../../audits/evidence/d3_k5_20260917/RP74/FIN_LOSS_OPT_DESIGN_SEALED_v3.json",
+   "populations": {
+    "A": 4,
+    "B": 12,
+    "C": 4,
+    "D": 6
+   }
+  },
+  "workers": {
+   "dragon": "accounted wrapper installed (user level); RP78 probe and seed-2 block executed and reconciled",
+   "gamma": "same; seed-3 block",
+   "network": "temporary reverse ssh tunnel from the coordinator session; no service touched"
+  },
+  "reads_of_reserved_test_rows": 0,
+  "production_reconfiguration": "none"
  }
 }

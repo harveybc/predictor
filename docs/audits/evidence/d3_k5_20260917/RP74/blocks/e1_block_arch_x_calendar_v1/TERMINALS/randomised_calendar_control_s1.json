@@ -1,0 +1,93 @@
+{
+ "artifacts": [
+  {
+   "bytes": 482466,
+   "role": "predictions",
+   "sha256": "5ed2399d49dfb3b8032aa17e838e908e13f9cb6bc1ef83b286bdb30d135e7d23"
+  },
+  {
+   "bytes": 278064,
+   "role": "weights",
+   "sha256": "7f78e5c6e150c423368a3f1304f276b058ff8239146004115aa70b0a7d1bd838"
+  },
+  {
+   "bytes": 5764,
+   "role": "record",
+   "sha256": "4f7ebd15466d7d6d738196962132cca7e291730d214e34fd0e2c31b93a2a1924"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 202.43968195099998,
+  "wall_seconds": 155.14479082502658
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T14:57:44Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.49173913682834375
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_z",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.5388824965159489
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.naive_mae_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.6173720558882235
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.rmse_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.7857228037357384
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.skill_vs_naive",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.20349628374275797
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T14:55:09Z",
+ "status": "COMPLETED",
+ "tags": {
+  "arm": "randomised_calendar_control",
+  "classification": "NON_GOVERNING",
+  "contract_sha256": "18de862d05c1af653e8ffbb74d6e68a31081c2f07c4d8d0153834fd0be306b4a",
+  "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_ARCH_X_CALENDAR",
+  "role": "ARM",
+  "seed": "1",
+  "unit": "randomised_calendar_control_s1"
+ }
+}

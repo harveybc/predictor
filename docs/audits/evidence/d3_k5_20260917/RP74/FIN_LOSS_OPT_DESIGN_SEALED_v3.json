@@ -1,0 +1,946 @@
+{
+ "acceptance": [
+  {
+   "id": "FL01",
+   "requirement": "real factorial",
+   "state": "executable: enumerated candidates, real loss/optimizer components",
+   "test": "tests/test_fin_loss_opt_acceptance.py::test_FL01_*"
+  },
+  {
+   "id": "FL02",
+   "requirement": "fair comparison",
+   "state": "executable: identical pairs per fold, elapsed-time targets, metric oracle",
+   "test": "tests/test_fin_loss_opt_acceptance.py::test_FL02_*"
+  },
+  {
+   "id": "FL03",
+   "requirement": "no leak",
+   "state": "executable: fold-change isolation of scaler, sigma, deltas and pairs; leaky control fails",
+   "test": "tests/test_fin_loss_opt_acceptance.py::test_FL03_*"
+  },
+  {
+   "id": "FL04",
+   "requirement": "marginal precision",
+   "state": "executable: 1e-6 through arrays, json, terminal and the disposable warehouse",
+   "test": "tests/test_fin_loss_opt_acceptance.py::test_FL04_*"
+  },
+  {
+   "id": "FL05",
+   "requirement": "observed training",
+   "state": "executable: optimizer iterations, events, min_delta 0, float64 floor",
+   "test": "tests/test_fin_loss_opt_acceptance.py::test_FL05_*"
+  },
+  {
+   "id": "FL06",
+   "requirement": "hyperparameters",
+   "state": "executable: deltas from train pairs, full precision, declared fallbacks, 12 per family",
+   "test": "tests/test_fin_loss_opt_acceptance.py::test_FL06_*"
+  },
+  {
+   "id": "FL07",
+   "requirement": "statistical inference",
+   "state": "executable: both signs, moving-block interval over folds, multiplicity declared",
+   "test": "tests/test_fin_loss_opt_acceptance.py::test_FL07_*"
+  },
+  {
+   "id": "FL08",
+   "requirement": "complete closure",
+   "state": "executable: governance before reading, terminal artifacts in the warehouse, tamper detected",
+   "test": "tests/test_fin_loss_opt_acceptance.py::test_FL08_*"
+  }
+ ],
+ "benchmark_contract": {
+  "checkpoint_selection": "common monitor, restore best",
+  "comparability": {
+   "comparator_state": "PLANNED_REFERENCE",
+   "declared_contrast": [],
+   "fields_that_differ": [],
+   "mode": "NOT_COMPARABLE",
+   "ours_sha256": "85bc719dd3226e9afe7c40db7722c8e27b72426c56b2a472155098dc9f8aa137",
+   "reference_evidence": {
+    "state": "PLANNED_REFERENCE",
+    "why": "no literature reference has been re-executed on this task; no contract of another work is registered"
+   },
+   "resolution": "a re-execution of a reference method under THIS contract, CLOSED under this digest (MATCHED_DOMAIN_COMPARISON); never a published number from another protocol",
+   "theirs_sha256": null,
+   "why": "no literature reference has been re-executed on this task; no contract of another work is registered"
+  },
+  "contract_sha256": "85bc719dd3226e9afe7c40db7722c8e27b72426c56b2a472155098dc9f8aa137",
+  "dataset_id": "financial_files:market_data/forex/g10/eurusd/1h.parquet",
+  "estimand": null,
+  "horizon_seconds": 21600,
+  "horizon_steps": 6,
+  "input_window_steps": 60,
+  "metric_aggregation": "per horizon, fold, seed and arm; paired by origin",
+  "metric_formula": "MAE_z = mean|yhat-y|/sd_train per horizon and fold; RMSE_z; skill = 1 - MAE_z_model/MAE_z_naive",
+  "metric_scale": "z_train",
+  "missing_policy": "non-finite bars withdrawn; weekend/holiday gaps kept; an origin whose elapsed-time target bar is absent is excluded with reason",
+  "naive_baseline": "persistence: the origin's close, on identical origins",
+  "notes": [
+   "no literature reference bound: NOT_COMPARABLE until a matched re-execution exists"
+  ],
+  "permitted_inputs": "OHLCV of the served bars (5 channels), window 60",
+  "reference_method": null,
+  "replicas": "paired seeds within host blocks",
+  "resolution_seconds": 3600,
+  "scaler_fit_population": "train rows of the fold, shared by every arm of the fold",
+  "schema": "benchmark_contract.v2",
+  "source": {
+   "coverage": "129 873 rows, 2005-01-03 01:00 .. 2025-12-31 16:00, time column 'datetime'",
+   "holdout": "deny_from 2025-01-01; reserve never read",
+   "kind": "OURS_DESIGNED",
+   "state": "DESIGNED, NOT_STARTED"
+  },
+  "split_rule": "weekly walk-forward folds (Monday 00:00 UTC .. Sunday 23:00 UTC); DEV = the last 26 weeks before 2025-01-01",
+  "target": "close",
+  "target_construction": "hourly bar close as served; the target of an origin is the bar whose timestamp is origin + h hours ELAPSED (tools/df_fin_task.map_targets); an origin without that exact bar is excluded and counted",
+  "target_transform": "zscore_train",
+  "task_id": "fx.eurusd.1h.FIN-LOSS-OPT.h6h",
+  "tuning_budget": "equal enumerated candidates per loss family",
+  "varying_factors": [],
+  "version": "2"
+ },
+ "candidates": {
+  "A_fixed_default": [
+   {
+    "delta": null,
+    "id": "A_mae_adam",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "A_fixed_default",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": null,
+    "id": "A_mae_adamw",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "A_fixed_default",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "delta_z": 1.0,
+     "kind": "fixed"
+    },
+    "id": "A_huber_adam",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "A_fixed_default",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "delta_z": 1.0,
+     "kind": "fixed"
+    },
+    "id": "A_huber_adamw",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "A_fixed_default",
+    "weight_decay": 0.004
+   }
+  ],
+  "B_equal_budget_lr": [
+   {
+    "delta": null,
+    "id": "B_mae_adam_lr0.0005",
+    "loss": "mae",
+    "lr": 0.0005,
+    "optimizer": "adam",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": null,
+    "id": "B_mae_adam_lr0.001",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": null,
+    "id": "B_mae_adam_lr0.003",
+    "loss": "mae",
+    "lr": 0.003,
+    "optimizer": "adam",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": null,
+    "id": "B_mae_adamw_lr0.0005",
+    "loss": "mae",
+    "lr": 0.0005,
+    "optimizer": "adamw",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": null,
+    "id": "B_mae_adamw_lr0.001",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": null,
+    "id": "B_mae_adamw_lr0.003",
+    "loss": "mae",
+    "lr": 0.003,
+    "optimizer": "adamw",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "B_huber_adam_lr0.0005",
+    "loss": "huber",
+    "lr": 0.0005,
+    "optimizer": "adam",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "B_huber_adam_lr0.001",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "B_huber_adam_lr0.003",
+    "loss": "huber",
+    "lr": 0.003,
+    "optimizer": "adam",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "B_huber_adamw_lr0.0005",
+    "loss": "huber",
+    "lr": 0.0005,
+    "optimizer": "adamw",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "B_huber_adamw_lr0.001",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "B_huber_adamw_lr0.003",
+    "loss": "huber",
+    "lr": 0.003,
+    "optimizer": "adamw",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.004
+   }
+  ],
+  "C_decay_factor": [
+   {
+    "delta": null,
+    "id": "C_mae_adamw_wd0.001",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "C_decay_factor",
+    "weight_decay": 0.001
+   },
+   {
+    "delta": null,
+    "id": "C_mae_adamw_wd0.01",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "C_decay_factor",
+    "weight_decay": 0.01
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "C_huber_adamw_wd0.001",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "C_decay_factor",
+    "weight_decay": 0.001
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "C_huber_adamw_wd0.01",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "C_decay_factor",
+    "weight_decay": 0.01
+   }
+  ],
+  "D_delta_factor": [
+   {
+    "delta": {
+     "fraction": 0.25,
+     "kind": "scale_fraction"
+    },
+    "id": "D_huber_adam_d0.25s",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "D_delta_factor",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "fraction": 0.5,
+     "kind": "scale_fraction"
+    },
+    "id": "D_huber_adam_d0.5s",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "D_delta_factor",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "fraction": 2.0,
+     "kind": "scale_fraction"
+    },
+    "id": "D_huber_adam_d2s",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "D_delta_factor",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "fraction": 0.25,
+     "kind": "scale_fraction"
+    },
+    "id": "D_huber_adamw_d0.25s",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "D_delta_factor",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "fraction": 0.5,
+     "kind": "scale_fraction"
+    },
+    "id": "D_huber_adamw_d0.5s",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "D_delta_factor",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "fraction": 2.0,
+     "kind": "scale_fraction"
+    },
+    "id": "D_huber_adamw_d2s",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "D_delta_factor",
+    "weight_decay": 0.004
+   }
+  ],
+  "budget_per_fit": "the recipe's update ceiling and cadence, identical for every candidate; observed updates recorded per cell",
+  "defaults": [
+   {
+    "delta": null,
+    "id": "A_mae_adam",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "A_fixed_default",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": null,
+    "id": "A_mae_adamw",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "A_fixed_default",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "delta_z": 1.0,
+     "kind": "fixed"
+    },
+    "id": "A_huber_adam",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "A_fixed_default",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "delta_z": 1.0,
+     "kind": "fixed"
+    },
+    "id": "A_huber_adamw",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "A_fixed_default",
+    "weight_decay": 0.004
+   }
+  ],
+  "equal_budget_per_loss_optimizer_cell": {
+   "huber_adam": 3,
+   "huber_adamw": 3,
+   "mae_adam": 3,
+   "mae_adamw": 3
+  },
+  "huber": [
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "B_huber_adam_lr0.0005",
+    "loss": "huber",
+    "lr": 0.0005,
+    "optimizer": "adam",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "B_huber_adam_lr0.001",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "B_huber_adam_lr0.003",
+    "loss": "huber",
+    "lr": 0.003,
+    "optimizer": "adam",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "B_huber_adamw_lr0.0005",
+    "loss": "huber",
+    "lr": 0.0005,
+    "optimizer": "adamw",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "B_huber_adamw_lr0.001",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "B_huber_adamw_lr0.003",
+    "loss": "huber",
+    "lr": 0.003,
+    "optimizer": "adamw",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "delta_z": 1.0,
+     "kind": "fixed"
+    },
+    "id": "A_huber_adam",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "A_fixed_default",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "delta_z": 1.0,
+     "kind": "fixed"
+    },
+    "id": "A_huber_adamw",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "A_fixed_default",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "C_huber_adamw_wd0.001",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "C_decay_factor",
+    "weight_decay": 0.001
+   },
+   {
+    "delta": {
+     "fraction": 1.0,
+     "kind": "scale_fraction"
+    },
+    "id": "C_huber_adamw_wd0.01",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "C_decay_factor",
+    "weight_decay": 0.01
+   },
+   {
+    "delta": {
+     "fraction": 0.25,
+     "kind": "scale_fraction"
+    },
+    "id": "D_huber_adam_d0.25s",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "D_delta_factor",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "fraction": 0.5,
+     "kind": "scale_fraction"
+    },
+    "id": "D_huber_adam_d0.5s",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "D_delta_factor",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "fraction": 2.0,
+     "kind": "scale_fraction"
+    },
+    "id": "D_huber_adam_d2s",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "D_delta_factor",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": {
+     "fraction": 0.25,
+     "kind": "scale_fraction"
+    },
+    "id": "D_huber_adamw_d0.25s",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "D_delta_factor",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "fraction": 0.5,
+     "kind": "scale_fraction"
+    },
+    "id": "D_huber_adamw_d0.5s",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "D_delta_factor",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": {
+     "fraction": 2.0,
+     "kind": "scale_fraction"
+    },
+    "id": "D_huber_adamw_d2s",
+    "loss": "huber",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "D_delta_factor",
+    "weight_decay": 0.004
+   }
+  ],
+  "identifiability": "the same 3 learning rates for every (loss, optimizer) cell: the optimizer contrast is not confounded with the size of its tuning budget; decay and delta move in their own declared populations",
+  "mae": [
+   {
+    "delta": null,
+    "id": "B_mae_adam_lr0.0005",
+    "loss": "mae",
+    "lr": 0.0005,
+    "optimizer": "adam",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": null,
+    "id": "B_mae_adam_lr0.001",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": null,
+    "id": "B_mae_adam_lr0.003",
+    "loss": "mae",
+    "lr": 0.003,
+    "optimizer": "adam",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": null,
+    "id": "B_mae_adamw_lr0.0005",
+    "loss": "mae",
+    "lr": 0.0005,
+    "optimizer": "adamw",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": null,
+    "id": "B_mae_adamw_lr0.001",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": null,
+    "id": "B_mae_adamw_lr0.003",
+    "loss": "mae",
+    "lr": 0.003,
+    "optimizer": "adamw",
+    "population": "B_equal_budget_lr",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": null,
+    "id": "A_mae_adam",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adam",
+    "population": "A_fixed_default",
+    "weight_decay": 0.0
+   },
+   {
+    "delta": null,
+    "id": "A_mae_adamw",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "A_fixed_default",
+    "weight_decay": 0.004
+   },
+   {
+    "delta": null,
+    "id": "C_mae_adamw_wd0.001",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "C_decay_factor",
+    "weight_decay": 0.001
+   },
+   {
+    "delta": null,
+    "id": "C_mae_adamw_wd0.01",
+    "loss": "mae",
+    "lr": 0.001,
+    "optimizer": "adamw",
+    "population": "C_decay_factor",
+    "weight_decay": 0.01
+   }
+  ],
+  "per_family_equal_budget": 6,
+  "selection_scope": "configuration-level selection INSIDE population B (validation MAE_z averaged over seeds); A is reported as the fixed-default 2x2 contrast; C and D are reported as factors; no selection across populations",
+  "totals": {
+   "A": 4,
+   "B": 12,
+   "C": 4,
+   "D": 6,
+   "all": 26
+  }
+ },
+ "cost_envelope": {
+  "basis": "synthetic acceptance on the compact receiver (W60, 5 channels): ~0.02-0.06 s per update on omega class CPUs; a 1500-update cell with 15 validation events on ~120 validation pairs costs well under 60 s; the real task's population per fold (52 weeks x 120 bars) makes an update cost comparable",
+  "per_horizon_per_receiver": "26 fits x 3 seeds x 26 folds = 2 028 cells -> a train-only cost pilot on the real bars decides the fold count and receiver per round; NOT authorised until the design is reviewed",
+  "rule": "pilot first, projection with validation counted once, never shrink the population after scores"
+ },
+ "delta_rules": "Huber deltas in z from the admissible train pairs; every rule is declared and every candidate is finite and > 0.",
+ "design_sha256": "50ea9f4d579addb835a155147f40ee650ddfbde55421468f30e87d014d8f35d9",
+ "hosts": {
+  "blocks": "all candidates of a (fold, seed) on one host; workers proven with an accounted bounded governed child (RP78)",
+  "no_padding": true
+ },
+ "provenance": {
+  "adam": "Kingma & Ba 2015 (installed Keras defaults beta_1 0.9, beta_2 0.999, epsilon 1e-7)",
+  "adamw": "Loshchilov & Hutter 2019 decoupled weight decay (Keras AdamW; biases excluded from decay \u2014 our declaration)",
+  "adaptations_marked": true,
+  "electricity_does_not_choose_the_financial_loss": true,
+  "huber": "Huber 1964; delta in standardised units from the admissible train residual scale \u2014 our construction",
+  "no_universal_claims": [
+   "Huber wins at small residuals",
+   "AdamW depends only on parameter count"
+  ]
+ },
+ "purpose": "FIN_LOSS_OPT",
+ "receivers": {
+  "compact_modular": {
+   "assignment": [
+    0,
+    0,
+    0,
+    0,
+    1
+   ],
+   "channels": 5,
+   "core": "tcn_w, 16 filters, kernel 3",
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "groups": "price (OHLC) | volume",
+   "head": "Dense(p) increment over the last observation; the target channel (close) is read out",
+   "input_columns": [
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume"
+   ],
+   "parameters": 6229,
+   "reach_declared": 60,
+   "window": 60
+  },
+  "larger_business_receiver": {
+   "assignment": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    2,
+    2,
+    2,
+    2
+   ],
+   "channels": 9,
+   "core": "tcn_w, 16 filters, kernel 3",
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64
+   ],
+   "groups": "price | volume | calendar",
+   "head": "as compact",
+   "input_columns": [
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "hour_sin",
+    "hour_cos",
+    "weekday_sin",
+    "weekday_cos"
+   ],
+   "parameters": 9857,
+   "reach_declared": 144,
+   "window": 144
+  },
+  "rule": "both receivers run every candidate; no candidate is compared across receivers; width, depth and inputs are frozen here"
+ },
+ "recipe": {
+  "batch": 64,
+  "max_updates": 1500,
+  "min_delta": 0.0,
+  "monitor": "validation MAE in scaled units (MAE_z with the fold's train sigma)",
+  "patience_events": 3,
+  "restore_best": true,
+  "validate_every_updates": 100
+ },
+ "reporting": {
+  "inference": "paired by fold (week) between each family's validation-selected candidate; moving-block bootstrap interval; multiplicity = candidates compared per family, declared; no best-test",
+  "precision": "predictions and targets saved without rounding; metrics in float64; the float64 floor at the observed MAE_z recorded per cell; min_delta 0",
+  "resolvable": "differences down to the float64 floor at ~0.5 (about 1e-16) survive arrays, json and the warehouse; what is DISTINGUISHABLE by inference is bounded by the fold-to-fold spread, reported, not assumed",
+  "scale": "MAE_z = mean|yhat-y|/sigma_train per fold, shared by every candidate of the fold; original units secondarily"
+ },
+ "resolution": "planted 1e-5/1e-6 differences survive prediction, inversion, serialization, terminal and warehouse bit-for-bit (FL04/FL08); the float64 floor (np.spacing) is a representation bound only \u2014 stochastic training variation (seeds) and sampling uncertainty (folds) are reported apart and bound what is DISTINGUISHABLE",
+ "runner": "tools/df_fin_runner.py (prepare / execute / close); acceptance FL01-FL08 on synthetic bars through the disposable stack",
+ "schema": "fin_loss_opt_design.v3",
+ "selection_and_replication": {
+  "declared_before_running": true,
+  "populations": "A fixed-default 2x2 reported as a contrast; B equal-budget LR (3 LRs for EVERY loss x optimizer cell) is where selection happens; C decay and D delta are declared factors; no selection across populations",
+  "scheme": "CONFIGURATION-LEVEL: a candidate's validation MAE_z in a fold is the mean over the declared seeds; a configuration is complete only with every seed present; the seeds are then RETAINED as paired replicates for the development-test contrast (one difference series per seed); never best-of-seeds",
+  "seeds": [
+   1,
+   2,
+   3
+  ]
+ },
+ "state": "DESIGNED_NOT_STARTED",
+ "stop_rule": "validation every 100 observed optimizer updates, patience 3 events, min_delta 0, restore best, ceiling 1500 updates; both triggers recorded; reaching the ceiling is CENSORED whatever the best event",
+ "task": {
+  "availability": {
+   "declared": "a bar's label is the time it is complete (lake contract: event time = available time); the decision at t reads labels <= t only",
+   "not_established_by_the_file": [
+    "intrabar finality",
+    "producer publication delay",
+    "timezone of the labels",
+    "release cutoffs",
+    "historical availability"
+   ],
+   "rule": "recorded as limitations; nothing about the producer is invented"
+  },
+  "coverage_read_from_the_lake": {
+   "read_at": "2026-09-21 via /api/v1/coverage (re-read this round)",
+   "rows": 129873,
+   "t_max": "2025-12-31 16:00:00",
+   "t_min": "2005-01-03 01:00:00"
+  },
+  "folds": {
+   "dev": "the last 26 complete weeks strictly before the reserve",
+   "history_window_candidates_weeks": [
+    52,
+    104,
+    208
+   ],
+   "identities": "derived at prepare from the delivered bars (tools/df_fin_task.dev_folds), recorded per fold",
+   "primary_history_weeks": 52,
+   "purge": "the horizon in hours between train targets and validation origins, and between validation targets and test origins",
+   "scheme": "weekly walk-forward by week identity (Monday 00:00 .. Sunday 23:00 on the label's clock)",
+   "validation": "the week before the test week"
+  },
+  "horizons": {
+   "h6": {
+    "hours": 6,
+    "mapping": "ELAPSED TIME: the bar labelled exactly origin + hours; absent -> excluded with reason (weekend, holiday, missing intraday bar); never the next retained row",
+    "why": "one quarter of a trading day at this resolution; declared before any score"
+   },
+   "h72": {
+    "hours": 72,
+    "mapping": "ELAPSED TIME: the bar labelled exactly origin + hours; absent -> excluded with reason (weekend, holiday, missing intraday bar); never the next retained row",
+    "why": "about three days of elapsed time; declared before any score"
+   }
+  },
+  "input_window": "the last W RETAINED bars ending at the origin (row identity; declared \u2014 the window is not an elapsed-time span; W retained bars and W elapsed hours are different things and only the target uses elapsed time)",
+  "lake": "financial_files",
+  "missing_policy": "declared and IMPLEMENTED on the consumed tensors (tools/df_fin_task.admissible_pairs): a pair is admissible only when every input role is finite on every one of its W window rows, its origin and label are finite, and every window row is available at the origin; excluded pairs are counted by reason; no imputation, no implicit zero; a fold whose split has fewer than the declared minimum admissible pairs produces NO score",
+  "naive": "persistence: the origin's close, on identical pairs",
+  "population_rule": "ONE shared admissible population per fold and split for every candidate; the train-only input scaler, the target sigma and the Huber residual scale are derived from the SAME admissible train pairs",
+  "reserve": {
+   "policy": "deny_from 2025-01-01 on financial_files",
+   "rule": "never read; deliveries are bounded ranges before it"
+  },
+  "resource": "market_data/forex/g10/eurusd/1h.parquet",
+  "target": {
+   "column": "close",
+   "construction": "hourly bar close as served",
+   "transform_for_evaluation": "zscore with the fold's train sigma"
+  },
+  "time_column": "datetime",
+  "timestamps": "labels are interpreted on the delivered producer contract: a UTC-offset-aware column is converted only under the declared rule timestamp_interpretation=UTC_OFFSET_AWARE, never stripped; an available-time column, when the contract provides one, governs which rows an origin may read (a late arrival withdraws the origins it would leak into)",
+  "what_the_archive_can_support": [
+   "retrospective elapsed-time forecasting error on served bars",
+   "paired loss/optimizer contrasts on identical pairs",
+   "DEV-fold sensitivity at 1e-5/1e-6 through the real path"
+  ],
+  "what_the_archive_cannot_support": [
+   "observed availability, completion lag or point-in-time eligibility (availability is UNDECLARED: the label is the basis and the record says so)",
+   "intrabar finality or producer revisions",
+   "trading return or profit",
+   "a universal loss/optimizer claim"
+  ]
+ },
+ "uncertainty": {
+  "coverage_validated": "dependent AR(1) synthetic controls (tests): 26 folds / block 4 / rho 0.3 -> adequate; 104 folds / block 8 / rho 0.6 -> adequate; 26 folds / block 4 / rho 0.6 -> ~0.69, ANTI-CONSERVATIVE: at 26 DEV weeks the interval is reported with this caveat and the sign counts and sample SD (ddof=1) are the primary reading",
+  "method": "moving-block bootstrap of the paired difference over CALENDAR fold positions (missing folds stay gaps; a block never straddles a gap); minimum support = 5 complete blocks and 2 x block length folds, else DESCRIPTIVE",
+  "never": "seeds or overlapping windows treated as independent weeks; a nominal interval from one block"
+ },
+ "what_this_is_not": "not a run, not a winner, not a trading loss; the household factorial selects nothing financial"
+}

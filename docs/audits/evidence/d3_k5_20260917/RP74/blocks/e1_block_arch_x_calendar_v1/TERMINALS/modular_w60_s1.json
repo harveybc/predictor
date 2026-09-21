@@ -1,0 +1,93 @@
+{
+ "artifacts": [
+  {
+   "bytes": 482466,
+   "role": "predictions",
+   "sha256": "78bb9690afaaca6d1228300eaa7f9ea2e5a0d52421ba30d09d282e381d6a8768"
+  },
+  {
+   "bytes": 231872,
+   "role": "weights",
+   "sha256": "103c58f52c5cd7d31ab3554877952ab4a40d64f289caf499f13f20fe973b45c0"
+  },
+  {
+   "bytes": 5397,
+   "role": "record",
+   "sha256": "0465fed1a27e958a87b243bb4a69abca6ce6de9ab25c9216dfbea9535ac5d3f2"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 169.81216437400002,
+  "wall_seconds": 131.66175426502014
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T14:54:45Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.4925572709410765
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_z",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.539779065692846
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.naive_mae_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.6173720558882235
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.rmse_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.7889825913305599
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.skill_vs_naive",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.20217109562494517
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T14:52:33Z",
+ "status": "COMPLETED",
+ "tags": {
+  "arm": "modular_w60",
+  "classification": "NON_GOVERNING",
+  "contract_sha256": "18de862d05c1af653e8ffbb74d6e68a31081c2f07c4d8d0153834fd0be306b4a",
+  "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_ARCH_X_CALENDAR",
+  "role": "ARM",
+  "seed": "1",
+  "unit": "modular_w60_s1"
+ }
+}

@@ -1,0 +1,45 @@
+{
+ "artifacts": [
+  {
+   "bytes": 6525996,
+   "role": "data",
+   "sha256": "21db01e6f9d4784738a3a819931dc73fc29dede9b1ead95160252f153f78bdc6"
+  },
+  {
+   "bytes": 5584,
+   "role": "record",
+   "sha256": "306e47f00d109eae09d94012aef84bc869adf97650ee25cc5e4e25805df7f7c2"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 0.8648647340000001,
+  "wall_seconds": 0.8648607759999999
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T14:50:31Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.common_evaluation_rows",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "rows",
+   "value": 10020.0
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T14:50:30Z",
+ "status": "COMPLETED",
+ "tags": {
+  "classification": "NON_GOVERNING",
+  "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_ARCH_X_CALENDAR",
+  "role": "PREPARATION",
+  "unit": "prepare"
+ }
+}

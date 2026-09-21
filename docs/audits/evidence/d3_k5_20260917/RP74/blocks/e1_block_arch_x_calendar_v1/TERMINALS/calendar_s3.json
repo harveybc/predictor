@@ -1,0 +1,93 @@
+{
+ "artifacts": [
+  {
+   "bytes": 482466,
+   "role": "predictions",
+   "sha256": "61e5d3fcc700c288984dd3b023e601a1d651ae8ca512634841281632b93a318a"
+  },
+  {
+   "bytes": 278064,
+   "role": "weights",
+   "sha256": "f4fe1556a102b0478c927c72557d912389f74e9bdb5e95d53dbe7be19a9a8be1"
+  },
+  {
+   "bytes": 5406,
+   "role": "record",
+   "sha256": "861cdf4bee0b2dc8406b28236af4a0f888e761a237532c0f506b867d9babf6e7"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 144.53106757700002,
+  "wall_seconds": 123.36192167701665
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T14:58:08Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.4550684186732936
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_z",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.4986961321035422
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.naive_mae_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.6173720558882235
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.rmse_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.7193130704811882
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.skill_vs_naive",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.2628943692331862
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T14:56:04Z",
+ "status": "COMPLETED",
+ "tags": {
+  "arm": "calendar",
+  "classification": "NON_GOVERNING",
+  "contract_sha256": "18de862d05c1af653e8ffbb74d6e68a31081c2f07c4d8d0153834fd0be306b4a",
+  "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_ARCH_X_CALENDAR",
+  "role": "ARM",
+  "seed": "3",
+  "unit": "calendar_s3"
+ }
+}

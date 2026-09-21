@@ -1,0 +1,188 @@
+{
+ "arm_spec": {
+  "arm": "gru_adapted_w60",
+  "crop": null,
+  "dilations": null,
+  "family": "gru",
+  "features": "base",
+  "role": "ARM",
+  "train_days": 28,
+  "window": 60
+ },
+ "arrays_sha256": "7b90d779cb2fb296f3ea4791c75550489c9909db7ed8f48c3138e0e9fc6a617e",
+ "assignment": [
+  0,
+  1,
+  0,
+  2,
+  2,
+  2,
+  0
+ ],
+ "cell": {
+  "arm": "gru_adapted_w60",
+  "cell_id": "gru_adapted_w60_s2",
+  "seed": 2
+ },
+ "channels": 7,
+ "cost": {
+  "accounting": "seconds_per_update = TRAIN-UPDATE CPU only (validation, restore, setup and replay apart; RP77/A6)",
+  "cpu_seconds": 38.693160934,
+  "final_predict_and_replay_cpu_seconds": 0.8782879649999984,
+  "host": "dragon",
+  "peak_rss_bytes": 775872512,
+  "restore_cpu_seconds": 0.3763642649999994,
+  "seconds_per_update": 0.007703748936666669,
+  "seconds_per_validation_event": 0.39076972516666636,
+  "setup_cpu_seconds": 2.666157387,
+  "train_update_cpu_seconds": 27.73349617200001,
+  "validation_cpu_seconds": 7.033855052999995,
+  "wall_seconds": 40.24481349007692
+ },
+ "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+ "final_weights_sha256": "4a83907c49ea07b65e42903e007deec48c3ad40b885af32891c86d2306f9808f",
+ "initial_weights_sha256": "bd907c8b7e739ad3e973ca85b746ae0c7f2685e8da089bed2a67496deae4f5fd",
+ "parameters": 8901,
+ "pilot": false,
+ "population": {
+  "evaluation_is_common_dev_set": true,
+  "evaluation_origins": 10020,
+  "train_origins": 40080
+ },
+ "reload_max_error": 0.0,
+ "schema": "df_e1_block_cell.v1",
+ "scores": {
+  "mae_kw": 0.48386048118386543,
+  "mae_z": 0.5302485088893589,
+  "naive_mae_kw": 0.6173720558882235,
+  "rmse_kw": 0.7960127693227674,
+  "rows": 10020,
+  "skill_vs_naive": 0.21625788441667115
+ },
+ "target_mean": 0.926139629748496,
+ "target_sd": 0.9125164391265214,
+ "training": {
+  "best_event": 8,
+  "best_update": 1600,
+  "best_val_mae_scaled": 0.530248508851082,
+  "censoring": {
+   "rule": "reaching the update ceiling is censoring wherever the best checkpoint fell and whether or not patience expired on the same update; early stopping never claims convergence",
+   "verdict": "STOPPED_ON_VALIDATION"
+  },
+  "cpu": {
+   "loop_total_seconds": 35.143715490000005,
+   "restore_seconds": 0.3763642649999994,
+   "train_update_seconds": 27.73349617200001,
+   "validation_seconds": 7.033855052999995
+  },
+  "events": [
+   {
+    "train_loss_mean_since_last": 0.5748188741505146,
+    "update": 200,
+    "val_mae_scaled": 0.5593324543469299
+   },
+   {
+    "train_loss_mean_since_last": 0.5488289660215377,
+    "update": 400,
+    "val_mae_scaled": 0.554014156722513
+   },
+   {
+    "train_loss_mean_since_last": 0.5562574718892574,
+    "update": 600,
+    "val_mae_scaled": 0.5470789110486697
+   },
+   {
+    "train_loss_mean_since_last": 0.5463726754486561,
+    "update": 800,
+    "val_mae_scaled": 0.5419849591229079
+   },
+   {
+    "train_loss_mean_since_last": 0.5468157242238522,
+    "update": 1000,
+    "val_mae_scaled": 0.5775624521909246
+   },
+   {
+    "train_loss_mean_since_last": 0.5423844228684902,
+    "update": 1200,
+    "val_mae_scaled": 0.560556373062024
+   },
+   {
+    "train_loss_mean_since_last": 0.5372812879085541,
+    "update": 1400,
+    "val_mae_scaled": 0.5382846960378486
+   },
+   {
+    "train_loss_mean_since_last": 0.5331728947162628,
+    "update": 1600,
+    "val_mae_scaled": 0.530248508851082
+   },
+   {
+    "train_loss_mean_since_last": 0.532549358010292,
+    "update": 1800,
+    "val_mae_scaled": 0.530867251408581
+   },
+   {
+    "train_loss_mean_since_last": 0.518830219656229,
+    "update": 2000,
+    "val_mae_scaled": 0.534971099114487
+   },
+   {
+    "train_loss_mean_since_last": 0.516859770566225,
+    "update": 2200,
+    "val_mae_scaled": 0.5370221686297367
+   },
+   {
+    "train_loss_mean_since_last": 0.5271649266779422,
+    "update": 2400,
+    "val_mae_scaled": 0.5346027268098431
+   },
+   {
+    "train_loss_mean_since_last": 0.5056364248692989,
+    "update": 2600,
+    "val_mae_scaled": 0.5320670624159253
+   },
+   {
+    "train_loss_mean_since_last": 0.5088612316548824,
+    "update": 2800,
+    "val_mae_scaled": 0.5448834396946847
+   },
+   {
+    "train_loss_mean_since_last": 0.5126374356448651,
+    "update": 3000,
+    "val_mae_scaled": 0.5401823196740227
+   },
+   {
+    "train_loss_mean_since_last": 0.524418972581625,
+    "update": 3200,
+    "val_mae_scaled": 0.5343850363860838
+   },
+   {
+    "train_loss_mean_since_last": 0.5116673974692821,
+    "update": 3400,
+    "val_mae_scaled": 0.5348418367325566
+   },
+   {
+    "train_loss_mean_since_last": 0.5056243896484375,
+    "update": 3600,
+    "val_mae_scaled": 0.5512032338876989
+   }
+  ],
+  "fit_cpu_seconds": 35.143715490000005,
+  "min_delta": 0.0,
+  "optimizer_iterations": 3600,
+  "patience_events": 10,
+  "restore_verified": true,
+  "restored_val_mae_scaled": 0.530248508851082,
+  "stop_reason": "EARLY_STOPPING",
+  "triggers": {
+   "budget_reached": false,
+   "patience_expired": true
+  },
+  "updates": 3600,
+  "updates_are_optimizer_iterations": true,
+  "validate_every_updates": 200,
+  "validation_cpu_seconds": 7.033855052999995,
+  "validation_events": 18
+ },
+ "weights_file_sha256": "2597fda6052c00c7a9e3251d3090f2b64d8825488b5d419bf0b06405561fb318"
+}

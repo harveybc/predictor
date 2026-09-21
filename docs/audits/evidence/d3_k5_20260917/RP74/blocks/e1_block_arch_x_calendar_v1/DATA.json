@@ -1,0 +1,1 @@
+{"input_columns": ["Global_reactive_power", "Voltage", "Global_intensity", "Sub_metering_1", "Sub_metering_2", "Sub_metering_3", "Global_active_power"], "target_channel": 6, "derived_from": "BLOCK_DATA.npz at closure; origins are block-local (row_offset gives the panel row)"}

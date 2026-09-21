@@ -1,0 +1,455 @@
+{
+ "schema": "rp81_reconciliation_by_content.v1",
+ "read_only": true,
+ "campaigns": [
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "prepare",
+   "campaign": "aa5c7034100d",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "prepare"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "pilot_gru_adapted_w60",
+   "campaign": "5e035ffa0c13",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "pilot_gru_adapted_w60"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "pilot_modular_w60",
+   "campaign": "35314303468e",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "pilot_modular_w60"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "pilot_calendar",
+   "campaign": "24eb9d6c3a8e",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "pilot_calendar"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "pilot_gru_calendar_w60",
+   "campaign": "9bfa620c5673",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "pilot_gru_calendar_w60"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "pilot_randomised_calendar_control",
+   "campaign": "2ab08ee6a141",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "pilot_randomised_calendar_control"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "gru_adapted_w60_s1",
+   "campaign": "17a7b53680f0",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "gru_adapted_w60_s1"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "modular_w60_s1",
+   "campaign": "e6d9160452e4",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "modular_w60_s1"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "calendar_s1",
+   "campaign": "3c829d6d39c4",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "calendar_s1"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "gru_calendar_w60_s1",
+   "campaign": "1d8bd9f61440",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "gru_calendar_w60_s1"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "randomised_calendar_control_s1",
+   "campaign": "85a892e60988",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "randomised_calendar_control_s1"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "calendar_s2",
+   "campaign": "19ebd475d0b1",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "calendar_s2"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "gru_adapted_w60_s2",
+   "campaign": "af13c178b375",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "gru_adapted_w60_s2"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "gru_calendar_w60_s2",
+   "campaign": "6b13e0f9a86e",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "gru_calendar_w60_s2"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "modular_w60_s2",
+   "campaign": "cd0560b4ab06",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "modular_w60_s2"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "randomised_calendar_control_s2",
+   "campaign": "3ceef82ae41b",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "randomised_calendar_control_s2"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "calendar_s3",
+   "campaign": "204bcf4297c5",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "calendar_s3"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "gru_adapted_w60_s3",
+   "campaign": "d35f78c21290",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "gru_adapted_w60_s3"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "gru_calendar_w60_s3",
+   "campaign": "82415c21f6c9",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "gru_calendar_w60_s3"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "modular_w60_s3",
+   "campaign": "73a91e1e311e",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "modular_w60_s3"
+   ]
+  },
+  {
+   "run": "arch_x_calendar_coordinator",
+   "unit": "randomised_calendar_control_s3",
+   "campaign": "147bd1a8c121",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "randomised_calendar_control_s3"
+   ]
+  },
+  {
+   "run": "arch_from_dragon",
+   "unit": "prepare",
+   "campaign": "1500b387832c",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "prepare"
+   ]
+  },
+  {
+   "run": "arch_from_dragon",
+   "unit": "gru_adapted_w60_s2",
+   "campaign": "af13c178b375",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "gru_adapted_w60_s2"
+   ]
+  },
+  {
+   "run": "arch_from_dragon",
+   "unit": "modular_w60_s2",
+   "campaign": "cd0560b4ab06",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "modular_w60_s2"
+   ]
+  },
+  {
+   "run": "arch_from_dragon",
+   "unit": "gru_calendar_w60_s2",
+   "campaign": "6b13e0f9a86e",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "gru_calendar_w60_s2"
+   ]
+  },
+  {
+   "run": "arch_from_dragon",
+   "unit": "calendar_s2",
+   "campaign": "19ebd475d0b1",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "calendar_s2"
+   ]
+  },
+  {
+   "run": "arch_from_dragon",
+   "unit": "randomised_calendar_control_s2",
+   "campaign": "3ceef82ae41b",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "randomised_calendar_control_s2"
+   ]
+  },
+  {
+   "run": "arch_from_gamma",
+   "unit": "prepare",
+   "campaign": "976a33b1b403",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "prepare"
+   ]
+  },
+  {
+   "run": "arch_from_gamma",
+   "unit": "modular_w60_s3",
+   "campaign": "73a91e1e311e",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "modular_w60_s3"
+   ]
+  },
+  {
+   "run": "arch_from_gamma",
+   "unit": "gru_adapted_w60_s3",
+   "campaign": "d35f78c21290",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "gru_adapted_w60_s3"
+   ]
+  },
+  {
+   "run": "arch_from_gamma",
+   "unit": "calendar_s3",
+   "campaign": "204bcf4297c5",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "calendar_s3"
+   ]
+  },
+  {
+   "run": "arch_from_gamma",
+   "unit": "gru_calendar_w60_s3",
+   "campaign": "82415c21f6c9",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "gru_calendar_w60_s3"
+   ]
+  },
+  {
+   "run": "arch_from_gamma",
+   "unit": "randomised_calendar_control_s3",
+   "campaign": "147bd1a8c121",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "randomised_calendar_control_s3"
+   ]
+  },
+  {
+   "run": "dev_matched_v1_abandoned",
+   "unit": "pilot_modular_w60",
+   "campaign": "8845ed6556de",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "population_of_campaign": [
+    "pilot_modular_w60"
+   ]
+  },
+  {
+   "run": "dev_matched_v1_abandoned",
+   "unit": "prepare",
+   "campaign": "4ed4c87e19df",
+   "in_warehouse": true,
+   "status": "FAILED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": null,
+   "population_of_campaign": [
+    "prepare"
+   ]
+  },
+  {
+   "run": "rp78_probe_gamma",
+   "unit": "gamma-bounded-child",
+   "campaign": "baea6a657687",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "population_of_campaign": [
+    "gamma-bounded-child"
+   ]
+  },
+  {
+   "run": "rp78_probe_dragon",
+   "unit": "dragon-bounded-child",
+   "campaign": "247618f8f31b",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "population_of_campaign": [
+    "dragon-bounded-child"
+   ]
+  }
+ ],
+ "summary": {
+  "campaigns": 37,
+  "problems": 0,
+  "failed_terminals_preserved": [
+   "prepare@dev_matched_v1_abandoned"
+  ]
+ }
+}
