@@ -1331,3 +1331,13 @@ La calibracion del mecanismo, sobre la serie de la misma familia: wavelet causal
 -5.42%, DWT de serie completa +6.00%, reconstruccion +5.14%, suavizador centrado
 +46.76%. El denoising wavelet NO reproduce la magnitud publicada; el filtrado
 centrado es la familia que se le acerca, y 96% queda por encima incluso de eso.
+
+### Paquete post-Huber (21-sep): sin nueva medicion, contratos y disenos
+
+Ninguna corrida nueva. La tabla de cierre para el owner se genera desde los tres roots verificados
+(sucesor RP55, fase 1 RP63, factorial Huber/AdamW de Musashi) contra el warehouse por contenido:
+31 filas, 31/31 digests coincidentes, unidades sin pronostico nombradas y omitidas
+([RP65/CLOSURE_TABLE.md](../audits/evidence/d3_k5_20260917/RP65/CLOSURE_TABLE.md)). Los dos runners de
+las proximas campanas rechazan un diseno sin contrato de benchmark; los 35 puntos de entrada restantes
+quedan inventariados, no forzados. Los rasgos wavelet precomputados que sirve el lago financiero
+(`features/trading_asset_features/*/wavelet.parquet`) no se consumen hasta pasar la bateria causal.

@@ -405,3 +405,27 @@ Satoshi debe incorporar esta revision a su work plan y publicar retorno completo
 sin pedir "continua" por cada paso. Musashi revisara tanto la adecuacion ML como
 la implementacion y los resultados; no se atribuye revision a Satoshi en nombre
 de Musashi. La orden publicada no prueba que Satoshi ya la este ejecutando.
+
+### Entrega de Satoshi, paquete post-Huber (21-sep): preparacion, no ejecucion
+
+- **Fase 2 sellada** (`6b475094…`, 27 celdas, `SEALED_NOT_EXECUTED`): calendario, contexto diario y
+  volumen como preguntas separadas; el confundido ventana/profundidad **medido** (W=60: 5 bloques,
+  8 127 parametros; W=1440: 10 bloques, 12 047) y separado factorialmente (canal de rezago diario,
+  ventana larga con profundidad propia, ventana larga con profundidad fija, ventana corta con nucleo
+  profundo); control de calendario permutado con la misma capacidad; conteo de filas/ventanas/
+  etiquetas/exposicion por separado; adecuacion sin afirmar convergencia. Diez reglas de aceptacion.
+- **FIN-LOSS-OPT disenado** (`0df0ca76…`, `DESIGNED_NOT_STARTED`): tarea congelada desde el recurso
+  gobernado EURUSD 1h, horizontes 6 h / 72 h declarados, pliegues semanales, MAE_z, delta de Huber
+  desde una escala residual causal de train, busqueda acotada e igual por familia; FL01–FL08 con 11
+  reglas verdes y 5 `xfail` estrictos que nombran el runner ausente. No hay ganador financiero.
+- **BENCHMARK-CONTRACTS parcial**: contrato versionado, comparabilidad decidida por campos, rechazo
+  sin contrato en los dos runners de las proximas campanas (2 de 37 puntos de entrada reales);
+  inventario de cobertura publicado; NO se declara cumplimiento en todos los dominios.
+- **Benchmark bibliografico UCI 235**: cuatro fuentes leidas en su origen; ninguna es comparable con
+  la tarea de 60 minutos (Gasparin 2019: 15 min, 96 pasos, sin naive; Saad Saoud 2022: SWT sobre la
+  serie completa, CAUSALITY_UNVERIFIED; Vaygan 2021: horizonte no declarado; Kim & Cho 2019: de pago).
+  Configuracion de reproduccion de Gasparin declarada y costeada; no ejecutada.
+- **Tabla de cierre** generada desde artefactos verificados y el warehouse (31 filas, 31/31 digests),
+  con NO_NEW_MEASUREMENT y NOT_COMPARABLE con razon y comparacion pendiente en cada fila.
+- Correcciones publicadas junto al retorno RP57–RP64 (RP63 cambio perdida y monitor; etiquetas
+  barajadas no son cota; el salto de persistencia ya existe en `tcn_w`).

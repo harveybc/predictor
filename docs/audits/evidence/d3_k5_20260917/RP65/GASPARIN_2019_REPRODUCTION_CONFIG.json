@@ -1,0 +1,48 @@
+{
+ "schema": "literature_reproduction_config.v1",
+ "state": "DECLARED_NOT_EXECUTED",
+ "lane": "REPRODUCTION",
+ "source": {
+  "citation": "Gasparin, Lukovic, Alippi. Deep Learning for Time Series Forecasting: The Electric Load Case. arXiv:1907.09207 (2019); CAAI Transactions on Intelligence Technology 7(1), 2022, doi:10.1049/cit2.12060",
+  "read_at": "arXiv PDF v1: Section 7.1 (metrics), 7.2 (IHEPC use case), Table 3 (sample sizes), Table 4 (best configurations), Table 5 (results)",
+  "code_revision": "NOT PUBLIC: no repository is named in the paper and none was found; the reproduction is from the text and tables"
+ },
+ "data": {
+  "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+  "governed_bytes_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "lake": "public_panels",
+  "resource": "uci_235_individual_household_power/panel.parquet",
+  "target": "Global_active_power",
+  "inputs": "historical load values only (Sec. 7.2: 'using only historical load values')",
+  "resample": {"rule": "mean of the 15 one-minute rows per slot", "resolution_seconds": 900, "why": "Sec. 7.2: resampled at 15 minutes"},
+  "missing": {"rule": "same time slot mean across years", "population": "TRAIN YEARS ONLY (declared here; the paper says 'across the different years' without stating the split-side, so a train-only rule is the causal reading and any other reading is labelled FORENSIC)"},
+  "split": {"test": "the last year of measurements: 35040 = 365 x 96 windows (Table 3)", "train": "103301 windows (Table 3)", "validation": "one month set aside every five (Sec. 7.2)"},
+  "expected_counts_check": {"test_windows": 35040, "train_windows": 103301, "rule": "a count check on the same bytes BEFORE any model; a mismatch stops the reproduction and is reported"}
+ },
+ "task": {"input_window_steps": 384, "input_window_physical": "4 days", "horizon_steps": 96, "horizon_physical": "1 day", "strategy": "MIMO (Sec. 6, Sec. 7.4)"},
+ "models": {
+  "GRU_MIMO": {"L": 1, "n_H": 50, "lambda_l2": 0.0005, "dropout": 0.0, "source": "Table 4, IHEPC column"},
+  "TCN": {"L": 8, "n_H": 50, "lambda_l2": 0.005, "dropout": 0.1, "kernel_k": 2, "filters_M": 32, "dilation": "2^l per layer", "source": "Table 4, IHEPC column"},
+  "LSTM_MIMO": {"L": 1, "n_H": 20, "lambda_l2": 0.001, "dropout": 0.0, "source": "Table 4"},
+  "ours_under_their_contract": {"model": "ARCH-A modular core tcn_w with a 96-step MIMO head", "window": 384, "channels": 1, "note": "a MATCHED entry inside the reproduction lane; its result is compared with the RE-EXECUTED references, not with Table 5"}
+ },
+ "training": {"loss": "MSE (eq. 21)", "optimizer": "not stated per model; Adam declared here as the installed default and recorded as an adaptation", "repeats": 10, "selection": "best configuration on validation, one evaluation on test", "framework_in_paper": "Keras 2.12 / TensorFlow", "framework_here": "Keras 3.15 / TensorFlow 2.21 (recorded as an adaptation)"},
+ "metrics": {
+  "MAE": "mean over N test pairs and the 96 steps of |yhat - y| (Sec. 7.1)",
+  "RMSE": "sqrt of the mean over pairs and steps of (yhat - y)^2",
+  "NRMSE_percent": "RMSE / (ymax_train - ymin_train) * 100",
+  "R2": "mean over windows of 1 - RSS/TSS (Sec. 7.1)",
+  "added_here": {"naive": "persistence at 96 steps on identical rows (the paper reports none)", "MAE_z": "MAE / sd of the train target (complementary column, separate row from the paper's metric)"}
+ },
+ "published_reference_values_kw": {"GRU_MIMO": {"RMSE": "0.75 +- 0.00", "MAE": "0.52 +- 0.00"}, "TCN": {"RMSE": "0.76 +- 0.008", "MAE": "0.54 +- 0.00"}, "LSTM_MIMO": {"RMSE": "0.75 +- 0.00", "MAE": "0.53 +- 0.00"}, "use": "reported beside the reproduction's own numbers as PUBLISHED; the discrepancy is declared, exact reproduction is never asserted without the missing pieces (optimizer, seeds, code)"},
+ "acceptance_before_any_fit": [
+  "resample count check reproduces Table 3 (35040 test, 103301 train)",
+  "imputation uses train-year statistics only; a test-year rule is labelled FORENSIC",
+  "metric formulas reproduce the paper's on a synthetic fixture with known values",
+  "persistence naive computed on identical rows",
+  "prefix invariance of the resampled series and of every input window"
+ ],
+ "cost_plan": {"pilot": "200 updates per model, one seed, measures seconds per update on the resampled series", "projection_rule": "10 repeats x 3 models x measured cost; must fit the round ceiling with 2000 s reserved for closure", "hosts": "one host per model family unless the workers run inside the accounted wrapper"},
+ "governance": "campaign and delivery per unit before any read; terminals through the outbox; closure by content in the warehouse; the contract id travels in the terminal tags",
+ "authorisation": "this configuration does not authorise training; the campaign runs only after review of the RP65 packet"
+}

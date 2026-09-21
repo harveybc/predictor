@@ -113,9 +113,25 @@ def seal(source_run: Path, *, max_updates: int = 4000, batch: int = 64, patience
                           "an arm that stops at the update ceiling is CENSORED: what it would reach "
                           "with more budget is unknown, in either direction",
                           "no cell is removed after its score is seen"],
+        # BENCHMARK-CONTRACTS: the task's contract travels with the design, and comparability is
+        # decided from its fields BEFORE any score; the runner refuses a design without it
+        "benchmark_contract": _benchmark_contract(),
     }
     design["design_sha256"] = E.sha_obj(design)
     return design
+
+
+def _benchmark_contract() -> dict:
+    """The household task's versioned contract and its decided comparability, embedded in the design."""
+    B = _module("df_benchmark_contract")
+    from dataclasses import asdict
+    ours = B.household_ours()
+    theirs = B.gasparin_2019()
+    body = asdict(ours)
+    body.update(schema=B.SCHEMA, contract_sha256=ours.sha256(),
+                comparability={**B.decide(ours, theirs), "against": "gasparin_2019",
+                               "rule": "decided from the identity fields, never from a score"})
+    return body
 
 
 def _arm_model(arm: str, design: dict, data: dict, seed: int):
@@ -220,6 +236,8 @@ def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, max_updates
 def run(design: dict, *, root: Path, run_id: str, source_run: Path, gov_url: str, api_key_file: Path,
         lake: str, resource: str, cost_pilot_only: bool = False, cap_seconds: float = 8000.0,
         outbox_dir: str | None = None) -> dict:
+    # no contract, no run: the refusal lives in the runner, before any acquisition or fit
+    _module("df_benchmark_contract").require(design, purpose="the phase-1 diagnostic training")
     G = _module("df_e1_governed")
     U = _module("df_utility_run")
     root = Path(root)

@@ -1,0 +1,495 @@
+{
+ "acceptance_before_runner_changes": [
+  "tests/test_df_e1_calendar.py",
+  "tests/test_df_e1_phase2_acceptance.py",
+  "the causal battery's negative controls stay DETECTED",
+  "governance before consumption, observed update counts, per-cell artifacts, outbox and warehouse content checks unchanged from phase 1"
+ ],
+ "benchmark_contract": {
+  "checkpoint_selection": "best validation, patience 3, restored",
+  "comparability": {
+   "against": "gasparin_2019",
+   "fields_that_differ": [
+    "target_construction",
+    "resolution_seconds",
+    "horizon_steps",
+    "split_rule",
+    "missing_policy",
+    "target_transform",
+    "scaler_fit_population",
+    "metric_formula",
+    "metric_aggregation"
+   ],
+   "mode": "NOT_COMPARABLE",
+   "ours_sha256": "6c8c9ff7be91d4d7edf853c4a94b530aadcce49219845457c9499e2f5b3d9168",
+   "resolution": "a re-execution of the reference method under OUR contract on the same rows (MATCHED_DOMAIN_COMPARISON), or an exact reproduction of THEIR protocol (REPRODUCTION); never their published number in our comparison column",
+   "theirs_sha256": "330d7a26e4e3af93e9ba494acc7850b9b1c2d11b79ebb1bcf711656c5f1d94fb",
+   "why": "identity fields differ: ['target_construction', 'resolution_seconds', 'horizon_steps', 'split_rule', 'missing_policy', 'target_transform', 'scaler_fit_population', 'metric_formula', 'metric_aggregation']; a published score under another protocol is not a comparator"
+  },
+  "contract_sha256": "6c8c9ff7be91d4d7edf853c4a94b530aadcce49219845457c9499e2f5b3d9168",
+  "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+  "horizon_seconds": 3600,
+  "horizon_steps": 60,
+  "input_window_steps": 60,
+  "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+  "metric_formula": "MAE = mean |yhat - y| over the common evaluation set, in kW; MAE_z = MAE / sd_train",
+  "metric_scale": "kW (and z with sd_train 0.9125164391265214)",
+  "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+  "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+  "notes": [],
+  "reference_method": null,
+  "replicas": "3 paired seeds; development, not confirmation",
+  "resolution_seconds": 60,
+  "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+  "schema": "benchmark_contract.v1",
+  "source": {
+   "contract_sha256": "9f4c972043be998150cd09dafaceaf05ed5e9d4e6c9efef4263a8c29d6d53027",
+   "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+   "kind": "OURS",
+   "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+  },
+  "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test rows 1763969..2075259 never read",
+  "target": "Global_active_power",
+  "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+  "target_transform": "zscore_train",
+  "task_id": "uci_235.W60_h60.DEV_28d_7d",
+  "tuning_budget": "none: declared settings",
+  "version": "1"
+ },
+ "capacity_measured_at_seal": {
+  "W1440_p7": {
+   "blocks": 10,
+   "channels": 7,
+   "core_reach": 1440,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512
+   ],
+   "model_reach": 1440,
+   "parameters": 12047,
+   "window": 1440
+  },
+  "W60_p11_calendar": {
+   "channels": 11,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "parameters": 9915,
+   "window": 60
+  },
+  "W60_p7": {
+   "blocks": 5,
+   "channels": 7,
+   "core_reach": 60,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "model_reach": 60,
+   "parameters": 8127,
+   "window": 60
+  },
+  "W60_p8_daily_lag": {
+   "channels": 8,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "parameters": 9672,
+   "window": 60
+  }
+ },
+ "cells": [
+  {
+   "arm": "Q1.0_baseline",
+   "cell_id": "Q1.0_baseline_s1",
+   "question": "Q1",
+   "seed": 1
+  },
+  {
+   "arm": "Q1.0_baseline",
+   "cell_id": "Q1.0_baseline_s2",
+   "question": "Q1",
+   "seed": 2
+  },
+  {
+   "arm": "Q1.0_baseline",
+   "cell_id": "Q1.0_baseline_s3",
+   "question": "Q1",
+   "seed": 3
+  },
+  {
+   "arm": "Q1.a_calendar",
+   "cell_id": "Q1.a_calendar_s1",
+   "question": "Q1",
+   "seed": 1
+  },
+  {
+   "arm": "Q1.a_calendar",
+   "cell_id": "Q1.a_calendar_s2",
+   "question": "Q1",
+   "seed": 2
+  },
+  {
+   "arm": "Q1.a_calendar",
+   "cell_id": "Q1.a_calendar_s3",
+   "question": "Q1",
+   "seed": 3
+  },
+  {
+   "arm": "Q1.b_permuted_calendar_control",
+   "cell_id": "Q1.b_permuted_calendar_control_s1",
+   "question": "Q1",
+   "seed": 1
+  },
+  {
+   "arm": "Q1.b_permuted_calendar_control",
+   "cell_id": "Q1.b_permuted_calendar_control_s2",
+   "question": "Q1",
+   "seed": 2
+  },
+  {
+   "arm": "Q1.b_permuted_calendar_control",
+   "cell_id": "Q1.b_permuted_calendar_control_s3",
+   "question": "Q1",
+   "seed": 3
+  },
+  {
+   "arm": "Q2.a_daily_lag_channel",
+   "cell_id": "Q2.a_daily_lag_channel_s1",
+   "question": "Q2",
+   "seed": 1
+  },
+  {
+   "arm": "Q2.a_daily_lag_channel",
+   "cell_id": "Q2.a_daily_lag_channel_s2",
+   "question": "Q2",
+   "seed": 2
+  },
+  {
+   "arm": "Q2.a_daily_lag_channel",
+   "cell_id": "Q2.a_daily_lag_channel_s3",
+   "question": "Q2",
+   "seed": 3
+  },
+  {
+   "arm": "Q2.b_long_window_own_depth",
+   "cell_id": "Q2.b_long_window_own_depth_s1",
+   "question": "Q2",
+   "seed": 1
+  },
+  {
+   "arm": "Q2.b_long_window_own_depth",
+   "cell_id": "Q2.b_long_window_own_depth_s2",
+   "question": "Q2",
+   "seed": 2
+  },
+  {
+   "arm": "Q2.b_long_window_own_depth",
+   "cell_id": "Q2.b_long_window_own_depth_s3",
+   "question": "Q2",
+   "seed": 3
+  },
+  {
+   "arm": "Q2.c_long_window_fixed_depth",
+   "cell_id": "Q2.c_long_window_fixed_depth_s1",
+   "question": "Q2",
+   "seed": 1
+  },
+  {
+   "arm": "Q2.c_long_window_fixed_depth",
+   "cell_id": "Q2.c_long_window_fixed_depth_s2",
+   "question": "Q2",
+   "seed": 2
+  },
+  {
+   "arm": "Q2.c_long_window_fixed_depth",
+   "cell_id": "Q2.c_long_window_fixed_depth_s3",
+   "question": "Q2",
+   "seed": 3
+  },
+  {
+   "arm": "Q2.d_short_window_deep_core",
+   "cell_id": "Q2.d_short_window_deep_core_s1",
+   "question": "Q2",
+   "seed": 1
+  },
+  {
+   "arm": "Q2.d_short_window_deep_core",
+   "cell_id": "Q2.d_short_window_deep_core_s2",
+   "question": "Q2",
+   "seed": 2
+  },
+  {
+   "arm": "Q2.d_short_window_deep_core",
+   "cell_id": "Q2.d_short_window_deep_core_s3",
+   "question": "Q2",
+   "seed": 3
+  },
+  {
+   "arm": "Q3.2_train_56d",
+   "cell_id": "Q3.2_train_56d_s1",
+   "question": "Q3",
+   "seed": 1
+  },
+  {
+   "arm": "Q3.2_train_56d",
+   "cell_id": "Q3.2_train_56d_s2",
+   "question": "Q3",
+   "seed": 2
+  },
+  {
+   "arm": "Q3.2_train_56d",
+   "cell_id": "Q3.2_train_56d_s3",
+   "question": "Q3",
+   "seed": 3
+  },
+  {
+   "arm": "Q3.3_train_112d",
+   "cell_id": "Q3.3_train_112d_s1",
+   "question": "Q3",
+   "seed": 1
+  },
+  {
+   "arm": "Q3.3_train_112d",
+   "cell_id": "Q3.3_train_112d_s2",
+   "question": "Q3",
+   "seed": 2
+  },
+  {
+   "arm": "Q3.3_train_112d",
+   "cell_id": "Q3.3_train_112d_s3",
+   "question": "Q3",
+   "seed": 3
+  }
+ ],
+ "confound": {
+  "statement": "core_dilations(W) derives depth from the window: W=1440 gives 10 blocks and 12047 parameters against 5 and 8127 at W=60; a longer window is information AND model, and Q2 separates them factorially"
+ },
+ "design_sha256": "6b47509400ef5e7be9427f11b5e801d6affcc109d781c67d67fbf20d8406d8c4",
+ "held_constant": [
+  "architecture family (ARCH-A branches, tcn_w core) except where the question moves it",
+  "training recipe (continuity reference)",
+  "forecast task W60_h60",
+  "validation population",
+  "scaler grain (train windows)",
+  "three paired seeds",
+  "no pretraining"
+ ],
+ "phase": "DEVELOPMENT",
+ "pilot_cost_plan": {
+  "ceiling": "14 400 aggregate CPU seconds per round including closure; reserve 2 000 for closure",
+  "per_arm": "one 200-update pilot per arm on seed 1 measures seconds per update; W=1440 arms are projected from their own pilot, never from W=60",
+  "pilot_updates": 200,
+  "reference": "phase-1 measured 0.130 s/update at W=60 for the core recipe (omega)",
+  "stop_rule": "BUDGET_LIMITED before any outcome if projection exceeds the ceiling; no cell cut after a score"
+ },
+ "purpose": "E1_DIAGNOSTIC_PHASE_2",
+ "questions": {
+  "Q1_calendar": {
+   "acceptance": [
+    "prefix invariance through tools/df_e1_calendar.py (future values and future timestamps change nothing before them)",
+    "a shift-minus-one calendar control fails the same test",
+    "numeric/missing/unparseable/absent timestamp refused",
+    "parameter delta measured and matched by Q1.b"
+   ],
+   "arms": {
+    "Q1.0_baseline": {
+     "channels": "the 7 declared",
+     "parameters": 8127,
+     "window": 60
+    },
+    "Q1.a_calendar": {
+     "channels": "+4: hour and weekday sin/cos from the row's own label (tools/df_e1_calendar.py)",
+     "parameters": 9915,
+     "window": 60
+    },
+    "Q1.b_permuted_calendar_control": {
+     "channels": "+4: the same four channels, permuted across rows by a seed-fixed permutation",
+     "parameters": 9915,
+     "why": "same capacity, no calendar information",
+     "window": 60
+    }
+   },
+   "calendar_declaration": {
+    "clock": "NAIVE_WALL_CLOCK",
+    "dst": "none inside the DEV slice (2009-08-23..09-27, measured in RP59); reported per slice, never assumed",
+    "known_at_decision": "each row's features read that row's label only",
+    "publication": "static archive, no revision",
+    "timezone": "UNKNOWN (local French time presumed)"
+   }
+  },
+  "Q2_daily_context": {
+   "acceptance": [
+    "the lag channel's sample identity t+h-1440 <= t is asserted for the horizon",
+    "prefix invariance of the lag channel (a future perturbation leaves it unchanged)",
+    "the clamped-depth builder reproduces W=60's dilations at W=1440 and its reach is measured",
+    "parameter counts of every arm are recorded at seal or at pilot, never assumed"
+   ],
+   "arms": {
+    "Q2.0_baseline": {
+     "parameters": 8127,
+     "window": 60
+    },
+    "Q2.a_daily_lag_channel": {
+     "availability": {
+      "available_at_decision": true,
+      "channel": "y(t + h - 1440)",
+      "delayed_observation_rule": "if the panel published a row later than its label, the lag would have to be taken from the PUBLICATION time; this archive declares no delay (UNKNOWN), so the wall-clock label is used and said so",
+      "horizon": 60,
+      "lag": 1440,
+      "reading": "the label is y(t+60); one day before it is row t+60-1440 = t-1380, which is at or before the origin t",
+      "sample_index_relative_to_origin": -1380
+     },
+     "channels": "+1: y(t+h-1440)",
+     "parameters": 9672,
+     "window": 60
+    },
+    "Q2.b_long_window_own_depth": {
+     "dilations": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64,
+      128,
+      256,
+      512
+     ],
+     "parameters": 12047,
+     "reach": 1440,
+     "window": 1440
+    },
+    "Q2.c_long_window_fixed_depth": {
+     "dilations": [
+      1,
+      2,
+      4,
+      8,
+      16
+     ],
+     "parameters": "measured at pilot (a clamped-depth builder is a runner change gated by its acceptance test)",
+     "reach": "60 of 1440: the history is in the window but beyond the core's reach \u2014 a null for seeing without reaching",
+     "window": 1440
+    },
+    "Q2.d_short_window_deep_core": {
+     "dilations": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64,
+      128,
+      256,
+      512
+     ],
+     "parameters": "measured at pilot (same builder change)",
+     "reach": "capped at 60 by the window",
+     "window": 60
+    }
+   },
+   "train_side_evidence_for_a_daily_period": {
+    "autocorrelation_1440_min": 0.31718580057541035,
+    "autocorrelation_60_min": 0.4030024231300615,
+    "reading": "a daily component exists in train but is weaker than the hourly one; 24 h is a hypothesis to test, not an assumed period",
+    "source": "E1_TASKS uci_235 train_only_periodicities (train span only)",
+    "source_autocorr": "RP59 data audit, consumed train rows",
+    "spectral_share_12h": 0.10105418574133604,
+    "spectral_share_24h": 0.0674807313099007
+   }
+  },
+  "Q3_volume": {
+   "acceptance": [
+    "rows, windows, labels and exposure counted apart",
+    "the evaluation origins are byte-identical across volume arms",
+    "the scaler of each arm is recorded and differs as stated"
+   ],
+   "arms": {
+    "Q3.1_train_28d": {
+     "evaluation": "FIXED: the same 7-day DEV validation week",
+     "history": "grown BACKWARDS from the current DEV train span",
+     "train_days": 28
+    },
+    "Q3.2_train_56d": {
+     "evaluation": "FIXED: the same 7-day DEV validation week",
+     "history": "grown BACKWARDS from the current DEV train span",
+     "train_days": 56
+    },
+    "Q3.3_train_112d": {
+     "evaluation": "FIXED: the same 7-day DEV validation week",
+     "history": "grown BACKWARDS from the current DEV train span",
+     "train_days": 112
+    }
+   },
+   "counting": {
+    "distinct_windows": 40081,
+    "labels": 40081,
+    "mean_exposures_per_raw_row": 47.71547619047619,
+    "reading": "consecutive windows overlap by W-1 rows; a row inside the span is seen up to W times; distinct windows are NOT independent observations",
+    "unique_raw_rows_in_train_span": 50400
+   },
+   "prior_history": "the family train span holds 1 452 681 rows before the DEV slice; 112 days need 161 280, available; if a later arm needed more than the span, a successor task and common evaluation are declared before any score",
+   "scaler_rule": "train-only scaler re-fitted per volume arm; its mean/sd reported per arm so a changed raw-unit objective is never hidden inside a volume-only comparison; a Huber delta in standardised units would change with the scaler and is NOT used in this phase"
+  }
+ },
+ "reading_rules": [
+  "three seeds on one task are development evidence",
+  "R0/R1/R2 return only after Q1-Q3 with the adequate objective common to every arm",
+  "no pretraining moved in this phase"
+ ],
+ "recipe": {
+  "batch": 64,
+  "learning_rate": 0.003,
+  "loss": "mae",
+  "max_updates": 4000,
+  "monitor": "val_mae",
+  "optimizer": "adam",
+  "patience_epochs": 3,
+  "restore_best": true,
+  "role": "HOUSEHOLD CONTINUITY REFERENCE (MAE+Adam); it selects no trading loss \u2014 FIN-LOSS-OPT does"
+ },
+ "resource_assignment": {
+  "blocks": "all arms of one seed on ONE host (seed = block), so optimiser and feature choice are never confounded with CPU; seeds 1/2/3 -> omega/dragon/gamma only if every host runs the same wrapper and environment (workers currently run no crispdm-run scope: fix that first or run all seeds on omega)",
+  "no_padding": "no cell is repeated merely to occupy a machine"
+ },
+ "schema": "df_e1_phase2_design.v1",
+ "source_run": {
+  "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+  "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+  "evaluation_origins": 10020,
+  "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3"
+ },
+ "state": "SEALED_NOT_EXECUTED",
+ "training_adequacy": {
+  "ceiling_policy": "a fit whose best epoch is within one epoch of the ceiling is CENSORED; a pre-declared second tier (8 000 updates) may be run for the SAME cells only if declared before the first tier's scores are read; more windows under a fixed budget are not more training",
+  "claims": "finite-budget comparisons only; no convergence claim from a ceiling",
+  "learning_curves": "train and validation loss per epoch, saved per cell",
+  "observed_in_phase_1_and_the_factorial": "7 of 12 factorial fits and 4 of 9 phase-1 fits stopped at 4 000 updates",
+  "patience": 3,
+  "restore_check": "restored predictions must reproduce the best validation MAE (as df_e1_huber does)",
+  "validation_cadence": "every epoch"
+ }
+}

@@ -8,7 +8,7 @@
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "HOUSEHOLD_FACTORIAL_PRESERVED_PHASE2_AND_FINANCIAL_LOSS_DESIGN_NEXT",
+  "handoff_status": "POST_HUBER_PACKET_DELIVERED_PHASE2_SEALED_FIN_LOSS_OPT_DESIGNED_BENCHMARK_CONTRACTS_PARTIAL_READY_FOR_REVIEW",
   "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
   "architecture_comparison": {
     "reference": "ARCH-A",
@@ -26,24 +26,31 @@
   "literature_comparability": {
     "scope": "ALL_DOMAINS_INCLUDING_FINANCE",
     "required_before": "NEW_SCIENTIFIC_TRAINING",
-    "modes": ["REPRODUCTION", "MATCHED_DOMAIN_COMPARISON"],
+    "modes": [
+      "REPRODUCTION",
+      "MATCHED_DOMAIN_COMPARISON"
+    ],
     "unmatched_published_scores_are_comparators": false
   },
   "closure_reporting": {
     "scope": "CURRENT_AND_ALL_FUTURE_ORDER_SETS",
-    "required_columns": ["task_horizon_split", "metric_and_scale", "model_error", "naive_error", "skill_vs_naive", "literature_value_and_source", "comparability_status"],
+    "required_columns": [
+      "task_horizon_split",
+      "metric_and_scale",
+      "model_error",
+      "naive_error",
+      "skill_vs_naive",
+      "literature_value_and_source",
+      "comparability_status"
+    ],
     "missing_comparator": "EXPLICIT_NOT_COMPARABLE_WITH_REASON_NO_INVENTED_VALUE",
     "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
   },
   "next_allowed_actions": [
-    "Implement BENCHMARK-CONTRACTS for upcoming real entry points, with all-domain coverage inventory and target/transform/metric/protocol validation under PROGRAM_METRICS_CONTRACT_v1.md; no comparable scientific run without its contract",
-    "Design mandatory FIN-LOSS-OPT under FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md: MAE/Huber x Adam/AdamW, fine tuning and marginal-error precision; no financial winner from electricity",
-    "Stop historical OLAP/branch searches; heuristic-strategy/noise reruns are not prerequisites of FIN-LOSS-OPT",
-    "Consume Musashi's completed Huber/AdamW 12-cell comparison and exact warehouse closure, docs/audits/work_plan/MUSASHI_HUBER_ADAMW_RESULTS_2026_09_21.md; do not repeat it",
-    "Prepare the controlled phase-2 design and acceptance tests under docs/handoffs/MUSASHI_POST_HUBER_PHASE2_2026_09_21.md; no scientific training until that design is ready",
-    "Phase 2 of the diagnostic: input information (calendar sin/cos, daily context) and train volume, one factor at a time, after the temporal and availability checks; R0/R1/R2 return only with the adequate objective common to every arm",
-    "The phase-3 lineage stays UNBOUND until the producer of the decomposed inputs is reachable; no legacy table is a benchmark and none is declared a leak on a score",
-    "No reserve, no confirmatory claim from three seeds on one task"
+    "One review of the RP65 packet (phase-2 design, FIN-LOSS-OPT design, benchmark contracts, household literature benchmark preparation, closure table)",
+    "After review: phase-2 cost pilot then campaign under governance; the Gasparin reproduction and the matched-domain re-execution only after their acceptance tests pass",
+    "FIN-LOSS-OPT stays NOT_STARTED until its runner exists, its five xfail rules pass, and the financial causality gates are passed",
+    "Route worker jobs through the accounted wrapper before assigning seeds to dragon/gamma"
   ],
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
@@ -53,7 +60,12 @@
     "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
     "external_review": "../../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md",
     "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-    "return": "https://github.com/harveybc/predictor/blob/de88764/docs/audits/work_plan/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md"
+    "return": "https://github.com/harveybc/predictor/blob/de88764/docs/audits/work_plan/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md",
+    "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
+    "benchmark_registry": "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
+    "fin_loss_opt_design": "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
+    "household_literature_benchmark": "../../audits/evidence/d3_k5_20260917/RP65/HOUSEHOLD_LITERATURE_BENCHMARK.md",
+    "closure_table": "../../audits/evidence/d3_k5_20260917/RP65/CLOSURE_TABLE.md"
   },
   "proposal_coverage": {
     "P-MOD": [
@@ -191,9 +203,10 @@
         "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md",
         "../../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md",
         "https://github.com/harveybc/predictor/blob/de88764/docs/audits/work_plan/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md",
-        "../../audits/work_plan/SATOSHI_PROGRAM_RP57_RP64_RETURN_2026_09_21.md"
+        "../../audits/work_plan/SATOSHI_PROGRAM_RP57_RP64_RETURN_2026_09_21.md",
+        "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json"
       ],
-      "next_action": "Phase 2 of the diagnostic (inputs, then volume) with the aligned objective; R0/R1/R2 only afterwards, same weights and shared AE",
+      "next_action": "Phase 2 sealed (6b475094, 27 cells, Q1 calendar / Q2 daily context / Q3 volume with factorial separation of window depth): review, then cost pilot; R0/R1/R2 only afterwards with the aligned objective common to every arm",
       "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan",
       "adoption": "SUCCESSOR_EXECUTED_LOCAL_METRICS_RECOMPUTED_FULL_GOVERNANCE_REVIEW_NOT_REPEATED"
     },
@@ -307,20 +320,41 @@
     {
       "id": "BENCHMARK-CONTRACTS",
       "owner": "Satoshi",
-      "status": "NOT_STARTED",
+      "status": "DESIGNED",
       "depends_on": [],
-      "evidence": [],
-      "next_action": "Build the all-domain literature protocol registry and runner coverage inventory; test and implement missing checks before next scientific training, including finance; classify historical comparability without blanket reruns",
-      "deliverable": "Versioned target/transform/metric/split/reference contracts, reproduction or matched-domain comparisons, real-entry-point refusal tests and governed result linkage; documentary adoption is not runtime enforcement"
+      "evidence": [
+        "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
+        "../../audits/evidence/d3_k5_20260917/RP65/ENTRY_POINT_COVERAGE_INVENTORY.json",
+        "tests/test_df_benchmark_contract.py"
+      ],
+      "next_action": "Enforce require() in the next campaigns' runners as they are written (phase 2, FIN-LOSS-OPT, the Gasparin reproduction); the legacy plugin/app path stays inventoried until a campaign uses it",
+      "deliverable": "Versioned target/transform/metric/split/reference contracts, reproduction or matched-domain comparisons, real-entry-point refusal tests and governed result linkage; documentary adoption is not runtime enforcement",
+      "status_detail": {
+        "IMPLEMENTED": "tools/df_benchmark_contract.py: versioned contract, comparability decided from identity fields, affine re-expression with refusal, require() refusal; registry with four sources read at origin",
+        "ENFORCED_AT_RUNTIME": "2 of 37 real training entry points call require() before any fit (df_e1_phase1, df_e1_huber); phase-2 and FIN-LOSS-OPT designs embed the contract; the legacy plugin/app path and the RL runner are INVENTORIED, NOT enforced",
+        "NOT_CLAIMED": "all-domain runtime enforcement",
+        "STATUS_WORD": "'DESIGNED' is the validator's word; the detail above is the truth: runtime enforcement is PARTIAL (2 of 37 entry points)"
+      }
     },
     {
       "id": "FIN-LOSS-OPT",
       "owner": "Satoshi",
-      "status": "NOT_STARTED",
-      "depends_on": ["BUSINESS-CONTRACT", "BENCHMARK-CONTRACTS"],
-      "evidence": [],
+      "status": "DESIGNED",
+      "depends_on": [
+        "BUSINESS-CONTRACT",
+        "BENCHMARK-CONTRACTS"
+      ],
+      "evidence": [
+        "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
+        "../../audits/evidence/d3_k5_20260917/RP65/FIN_LOSS_OPT_DESIGN_SEALED.json",
+        "tests/test_fin_loss_opt_acceptance.py"
+      ],
       "next_action": "Design FL01-FL08 and the governed financial MAE/Huber x Adam/AdamW experiment now; execute after financial data/causality and reviewed design/resource gates, before financial forecasting recipe selection; no historical OLAP search or heuristic rerun prerequisite",
-      "deliverable": "Paired normalized error and naive skill by horizon/fold/model, precision for 1e-5/1e-6 effects, tuned and default recipes, temporal uncertainty, cost and full warehouse closure; no profit guarantee"
+      "deliverable": "Paired normalized error and naive skill by horizon/fold/model, precision for 1e-5/1e-6 effects, tuned and default recipes, temporal uncertainty, cost and full warehouse closure; no profit guarantee",
+      "status_detail": {
+        "DESIGNED": "protocol, task frozen from the governed EURUSD 1h resource, causal delta candidates, equal bounded search, FL01-FL08 (11 green, 5 xfail strict naming the absent runner)",
+        "NOT_STARTED": "no fit, no campaign; designing is not evidence of a winner"
+      }
     },
     {
       "id": "INC-SIMULATION",

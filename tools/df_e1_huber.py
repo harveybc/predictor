@@ -86,6 +86,8 @@ def seal(source):
 
 
 def validate(d):
+    # BENCHMARK-CONTRACTS: a factorial without the task's contract is refused before its digest is even read
+    P._module("df_benchmark_contract").require(d, purpose="the loss/optimizer factorial")
     E = P._module("df_mod_e0")
     if d["schema"] != "df_e1_huber_design.v1" or E.sha_obj(
             {k: v for k, v in d.items() if k != "design_sha256"}) != d["design_sha256"]:

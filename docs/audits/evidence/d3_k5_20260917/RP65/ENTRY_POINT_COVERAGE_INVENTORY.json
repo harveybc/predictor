@@ -1,0 +1,689 @@
+{
+ "schema": "entry_point_coverage_inventory.v1",
+ "rule": "a real entry point that trains a model for a comparable scientific result must call df_benchmark_contract.require before any fit; documentary adoption is not runtime enforcement",
+ "entries": [
+  {
+   "file": "app/arima_optimizer.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "app/plugins/predictor_plugin_cnn.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/binary/binary_base.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/binary/predictor_plugin_binary_ann.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/binary/predictor_plugin_binary_cnn.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/binary/predictor_plugin_binary_logistic.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/binary/predictor_plugin_binary_lstm.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/binary/predictor_plugin_binary_mimo.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/binary/predictor_plugin_binary_n_beats.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/binary/predictor_plugin_binary_tcn.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/binary/predictor_plugin_binary_tft.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/binary/predictor_plugin_binary_transformer.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/common/base.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/direction/predictor_plugin_direction_ann.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/direction/predictor_plugin_direction_cnn.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/direction/predictor_plugin_direction_logistic.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/direction/predictor_plugin_direction_lstm.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/direction/predictor_plugin_direction_mimo.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/direction/predictor_plugin_direction_n_beats.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/direction/predictor_plugin_direction_tcn.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/direction/predictor_plugin_direction_tft.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/direction/predictor_plugin_direction_transformer.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_ann.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_ann_best.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_base.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_cnn.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_cnn_best.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_cnn_candidate_lt.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_cnn_candidate_st.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_cnn_prev.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_cnncandidate_2.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_composite.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_lstm.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_lstm_best.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_lstm_prev.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_mimo.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_n_beats.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_prophet.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_tcn.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_tft.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_transformer.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/predictor_plugin_transformer_prev.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "predictor_plugins/stl_mimo_predictor.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "legacy financial (plugin/app)"
+  },
+  {
+   "file": "tools/df_adequacy_models.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_c146_incident.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_causal_battery.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_causal_lineage.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_consumption_gate.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_contract.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_coverage.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_cpu_ledger.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_d2_unit_worker.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_d3_acceptance.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_d3_matrix.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_d3_unit_worker.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_dispatch.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_e1_huber.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": true,
+   "calls_benchmark_contract_require": true,
+   "domain": "household/E1"
+  },
+  {
+   "file": "tools/df_e1_innovation.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "household/E1"
+  },
+  {
+   "file": "tools/df_e1_phase1.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": true,
+   "calls_benchmark_contract_require": true,
+   "domain": "household/E1"
+  },
+  {
+   "file": "tools/df_e1_pilot.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": true,
+   "calls_benchmark_contract_require": false,
+   "domain": "household/E1"
+  },
+  {
+   "file": "tools/df_e1_receiver.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "household/E1"
+  },
+  {
+   "file": "tools/df_e1_regimes.py",
+   "real_entry_point": false,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "household/E1"
+  },
+  {
+   "file": "tools/df_guard_probes.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_host_capacity.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_lab_evaluation.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_leak_signature.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_mod_e0.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "household/E1"
+  },
+  {
+   "file": "tools/df_operator_measure.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_seed_tape.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_snr.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_successor_designs.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/df_utility_harness.py",
+   "real_entry_point": true,
+   "trains_a_model": true,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/flow_v3_coverage.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/flow_v3_gate.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": true,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/governed_run.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": true,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/incident_evidence_reconcile.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/lake_semantic_contract.py",
+   "real_entry_point": false,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/olap_consistency_watch.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/olap_duckdb_migrate.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/panel_inventory_scan.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/per_variable_design_v5.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/terminal_evidence_scope.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/verify_lake_terminals.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  },
+  {
+   "file": "tools/verify_lake_terminals_v3.py",
+   "real_entry_point": true,
+   "trains_a_model": false,
+   "governed_route": false,
+   "calls_benchmark_contract_require": false,
+   "domain": "diagnostic/utility"
+  }
+ ],
+ "counts": {
+  "files_with_fit_or_compile": 84,
+  "real_entry_points": 37,
+  "entry_points_calling_require": 2,
+  "governed_route": 5
+ },
+ "covered_now": [
+  "tools/df_e1_huber.py",
+  "tools/df_e1_phase1.py"
+ ],
+ "scope": "the check is enforced in the two runners the next campaigns use (df_e1_phase1, df_e1_huber) and inherited by df_e1_phase2_design; the legacy plugin/app path and the RL runner are INVENTORIED, NOT enforced \u2014 stated, not claimed"
+}

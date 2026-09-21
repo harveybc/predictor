@@ -1,0 +1,223 @@
+{
+ "acceptance": [
+  {
+   "id": "FL01",
+   "requirement": "real factorial",
+   "state": "GREEN (mechanism) / runner pending",
+   "test": "tests/test_fin_loss_opt_acceptance.py::test_FL01_*"
+  },
+  {
+   "id": "FL02",
+   "requirement": "fair comparison",
+   "state": "GREEN on the household factorial; financial pairing pending",
+   "test": "::test_FL02_*"
+  },
+  {
+   "id": "FL03",
+   "requirement": "no leak",
+   "state": "GREEN (prefix invariance, leaky control fails) / fold-change rule xfail",
+   "test": "::test_FL03_*"
+  },
+  {
+   "id": "FL04",
+   "requirement": "marginal precision",
+   "state": "GREEN arrays+json / terminal+warehouse xfail",
+   "test": "::test_FL04_*"
+  },
+  {
+   "id": "FL05",
+   "requirement": "observed training",
+   "state": "GREEN on the household factorial / min_delta+floor xfail",
+   "test": "::test_FL05_*"
+  },
+  {
+   "id": "FL06",
+   "requirement": "hyperparameters",
+   "state": "GREEN (delta from causal train scale; grid declared)",
+   "test": "::test_FL06_*"
+  },
+  {
+   "id": "FL07",
+   "requirement": "statistical inference",
+   "state": "GREEN (both signs kept) / temporal blocks xfail",
+   "test": "::test_FL07_*"
+  },
+  {
+   "id": "FL08",
+   "requirement": "complete closure",
+   "state": "GREEN on the household factorial / financial delivery xfail",
+   "test": "::test_FL08_*"
+  }
+ ],
+ "benchmark_contract": {
+  "checkpoint_selection": "common monitor, restore best",
+  "comparability": {
+   "fields_that_differ": [
+    "reference_method"
+   ],
+   "mode": "NOT_COMPARABLE",
+   "resolution": "a re-execution of a reference method under this contract (MATCHED_DOMAIN_COMPARISON) is the planned comparison",
+   "why": "no literature reference re-executed on this task yet"
+  },
+  "contract_sha256": "51f0f95e3fe39cde04efc5e1daa6e1e09f5cb17394fa58b714fcd96108cf0ef7",
+  "dataset_id": "financial_files:market_data/forex/g10/eurusd/1h.parquet",
+  "horizon_seconds": null,
+  "horizon_steps": null,
+  "input_window_steps": null,
+  "metric_aggregation": "per horizon, fold, seed and arm; paired",
+  "metric_formula": "MAE_z = mean|yhat-y|/sd_train per horizon and fold; RMSE_z; skill = 1 - MAE_z_model/MAE_z_naive",
+  "metric_scale": "z (fold train sigma); original units secondarily",
+  "missing_policy": "non-finite bars withdrawn; weekend gaps kept as gaps (no fill)",
+  "naive_baseline": "persistence at the horizon on identical rows",
+  "notes": [
+   "no literature reference bound yet: NOT_COMPARABLE until a matched re-execution exists"
+  ],
+  "reference_method": null,
+  "replicas": "paired seeds within host blocks",
+  "resolution_seconds": 3600,
+  "scaler_fit_population": "train rows of the fold, shared by every arm",
+  "schema": "benchmark_contract.v1",
+  "source": {
+   "coverage": "129 873 rows, 2005-01-03 01:00 .. 2025-12-31 16:00, time column 'datetime'",
+   "holdout": "deny_from 2025-01-01 (policy); reserve never read",
+   "kind": "OURS_DESIGNED",
+   "state": "DESIGNED, NOT_STARTED"
+  },
+  "split_rule": "weekly walk-forward folds; retraining weekly; reserve from 2025-01-01 unread",
+  "target": "close",
+  "target_construction": "hourly bar close, as served; horizons declared by the task before scoring",
+  "target_transform": "zscore_train (per fold)",
+  "task_id": "fx.eurusd.1h.FIN-LOSS-OPT",
+  "tuning_budget": "equal, declared per loss family; defaults arm explicit",
+  "version": "1"
+ },
+ "design_sha256": "0df0ca76c73b6c1306765ba13f3b2005c3c18ac80cb8d5ed9bd620dcc6156c82",
+ "hosts": {
+  "blocks": "all four recipes of a (seed, horizon) on one host; seeds spread across hosts only when the wrapper and environment are identical",
+  "no_padding": true
+ },
+ "purpose": "FIN_LOSS_OPT",
+ "receivers": {
+  "compact_modular": {
+   "channels": "OHLC + volume proxy (5)",
+   "core": "tcn_w",
+   "parameters": 5037,
+   "reach": 60,
+   "window": 60
+  },
+  "larger_business_receiver": {
+   "channels": "the business configs' feature sets (phase 3/4 window 144)",
+   "core": "tcn_w with width chosen by a declared rule at pilot",
+   "parameters": "measured at pilot; capacity declared, not required to reach a million",
+   "reach": 144,
+   "window": 144
+  },
+  "rule": "both receivers run every recipe; no recipe is compared across receivers"
+ },
+ "recipes": [
+  "mae_adam",
+  "mae_adamw",
+  "huber_adam",
+  "huber_adamw"
+ ],
+ "reporting": {
+  "inference": "paired by week/origin and seed; intervals respecting temporal blocks; multiplicity declared",
+  "precision": "predictions and targets saved without rounding; metrics accumulated in float64 and cross-checked by an independent calculator; dtype, reload and backend variation recorded",
+  "scale": "MAE_z = mean|yhat-y|/sigma_train per fold, shared by every arm; RMSE_z; skill = 1 - MAE_z_model/MAE_z_naive; original units secondarily"
+ },
+ "schema": "fin_loss_opt_design.v1",
+ "search": {
+  "budget_per_loss_family": 12,
+  "budget_unit": "DEV fits per family per horizon (equal, declared)",
+  "decay_note": "the cumulative product of (1 - lr_t*decay) describes shrinkage due to decay ONLY; it orients candidates with width, data and duration and is not an optimal-value formula; muP scaling rules do not transfer to a network without that parameterisation",
+  "defaults_arm": {
+   "adam": {
+    "beta_1": 0.9,
+    "beta_2": 0.999,
+    "epsilon": 1e-07,
+    "lr": 0.001
+   },
+   "adamw": {
+    "beta_1": 0.9,
+    "beta_2": 0.999,
+    "epsilon": 1e-07,
+    "lr": 0.001,
+    "weight_decay": 0.004
+   },
+   "huber": {
+    "delta_z": 1.0
+   },
+   "note": "the installed version's explicit defaults; not the owner's historical optimum, which is not recovered"
+  },
+  "delta": "from delta_candidates() per fold",
+  "families": [
+   "mae",
+   "huber"
+  ],
+  "learning_rates": [
+   0.0005,
+   0.001,
+   0.003
+  ],
+  "optimizers": [
+   "adam",
+   "adamw"
+  ],
+  "selection": "validation MAE_z on DEV folds only; the reserve is never queried",
+  "weight_decays_adamw": [
+   0.0,
+   0.001,
+   0.004,
+   0.01
+  ],
+  "weight_groups_adamw": "decay applied to kernels; bias and normalisation parameters excluded (declared)"
+ },
+ "state": "DESIGNED_NOT_STARTED",
+ "task": {
+  "coverage_read_from_the_lake": {
+   "read_at": "2026-09-21 via /api/v1/coverage",
+   "rows": 129873,
+   "t_max": "2025-12-31 16:00:00",
+   "t_min": "2005-01-03 01:00:00",
+   "time_column": "datetime"
+  },
+  "folds": {
+   "dev_folds": "the last 26 weeks before 2025-01-01 as DEV; the reserve stays closed",
+   "history_window_candidates_weeks": [
+    52,
+    104,
+    208
+   ],
+   "retraining": "weekly",
+   "scheme": "weekly walk-forward",
+   "week": "Monday 00:00 UTC .. Sunday 23:00 UTC (the 13C definition)",
+   "why_candidates": "four years is the owner's antecedent, not a minimum; 52/104/208 weeks are declared candidates judged by regime coverage and learning curves on DEV folds only"
+  },
+  "horizons": {
+   "long": {
+    "hours": 72,
+    "steps": 72,
+    "why": "the recalled ~3 days becomes 72 hourly steps; both are declared BEFORE any score and are not recovered configs"
+   },
+   "short": {
+    "hours": 6,
+    "steps": 6,
+    "why": "the owner's recalled 6 h is an antecedent; 6 hourly steps is declared here as the short horizon and justified as one quarter of a trading day at this resolution"
+   }
+  },
+  "lake": "financial_files",
+  "missing_policy": "non-finite bars withdrawn; weekend gaps stay gaps",
+  "naive": "persistence at each horizon on identical rows",
+  "reserve": {
+   "policy": "deny_from 2025-01-01 on financial_files",
+   "rule": "never read; no selection query"
+  },
+  "resource": "market_data/forex/g10/eurusd/1h.parquet",
+  "target": {
+   "column": "close",
+   "construction": "hourly bar close as served",
+   "transform_for_evaluation": "zscore_train per fold"
+  }
+ },
+ "what_this_is_not": "not a run, not a winner, not a trading loss; the household factorial is a preserved antecedent (12 fits, one task) and selects nothing financial"
+}
