@@ -399,14 +399,15 @@ def fx_eurusd_1h_ours() -> BenchmarkContract:
         source={"kind": "OURS_DESIGNED", "coverage": "129 873 rows, 2005-01-03 01:00 .. 2025-12-31 16:00, time column 'datetime'",
                 "holdout": "deny_from 2025-01-01; reserve never read", "state": "DESIGNED, NOT_STARTED"},
         target="close", target_construction="hourly bar close as served; the target of an origin is the bar whose timestamp is "
-                                             "origin + 6 h ELAPSED; an origin without that exact bar is excluded and counted",
+                                             "origin + h hours ELAPSED (tools/df_fin_task.map_targets); an origin without that exact "
+                                             "bar is excluded and counted",
         resolution_seconds=3600, horizon_steps=6, horizon_seconds=21600, input_window_steps=60,
         split_rule="weekly walk-forward folds (Monday 00:00 UTC .. Sunday 23:00 UTC); DEV = the last 26 weeks before 2025-01-01",
         missing_policy="non-finite bars withdrawn; weekend/holiday gaps kept; an origin whose elapsed-time target bar is absent is excluded with reason",
         target_transform="zscore_train", scaler_fit_population="train rows of the fold, shared by every arm of the fold",
         metric_formula="MAE_z = mean|yhat-y|/sd_train per horizon and fold; RMSE_z; skill = 1 - MAE_z_model/MAE_z_naive",
         metric_scale="z_train", metric_aggregation="per horizon, fold, seed and arm; paired by origin",
-        naive_baseline="persistence: the origin's close, on identical origins", permitted_inputs="OHLC of the served bars, window 60",
+        naive_baseline="persistence: the origin's close, on identical origins", permitted_inputs="OHLCV of the served bars (5 channels), window 60",
         reference_method=None, tuning_budget="equal enumerated candidates per loss family", checkpoint_selection="common monitor, restore best",
         replicas="paired seeds within host blocks", notes=["no literature reference bound: NOT_COMPARABLE until a matched re-execution exists"])
 

@@ -525,12 +525,13 @@ def evaluate_mae(model, ds) -> float:
 
 
 def fit_by_updates(model, train, val, *, max_updates: int, validate_every: int, patience: int, lr: float, seed: int,
-                   loss: str = "mae", min_delta: float = 0.0) -> dict:
+                   loss="mae", min_delta: float = 0.0, optimizer=None) -> dict:
     """The loop: one optimizer update per batch, validation every `validate_every` OBSERVED updates, patience in
-    validation events, restore the best weights; the ceiling is CENSORING wherever the best event fell."""
+    validation events, restore the best weights; the ceiling is CENSORING wherever the best event fell.
+    The monitor is the validation MAE of the predictions (scaled units), whatever loss the arm trains on."""
     tf = _module("df_mod_e0")._tf()
     tf.keras.utils.set_random_seed(int(seed))
-    opt = tf.keras.optimizers.Adam(learning_rate=lr)
+    opt = optimizer if optimizer is not None else tf.keras.optimizers.Adam(learning_rate=lr)
     model.compile(optimizer=opt, loss=loss)
     updates, i, events = 0, 0, []
     best, best_weights, best_event = math.inf, model.get_weights(), 0
