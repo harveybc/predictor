@@ -1,0 +1,69 @@
+{
+ "schema": "df_leak_signature.v1",
+ "at": "2026-09-21T03:53:11Z",
+ "series": "examples/data/phase_3/base_d5.csv",
+ "column": "CLOSE",
+ "rows_used": 7652,
+ "window": 24,
+ "horizon_steps": 6,
+ "seed": 1,
+ "updates": 600,
+ "results": [
+  {
+   "representation": "RAW",
+   "channels": 1,
+   "train_rows": 6098,
+   "evaluation_rows": 1525,
+   "head": "change over the horizon, zero-initialised: no change = the naive",
+   "mae": 0.0018635673881912365,
+   "naive_mae": 0.0018591147540983589,
+   "mae_skill_percent_vs_naive": -0.23950291842189664
+  },
+  {
+   "representation": "TRAILING_WAVELET",
+   "channels": 5,
+   "train_rows": 6048,
+   "evaluation_rows": 1512,
+   "head": "change over the horizon, zero-initialised: no change = the naive",
+   "mae": 0.0019579678665817314,
+   "naive_mae": 0.0018573346560846543,
+   "mae_skill_percent_vs_naive": -5.418151767501955
+  },
+  {
+   "representation": "WHOLE_SERIES_DWT",
+   "channels": 5,
+   "train_rows": 6098,
+   "evaluation_rows": 1525,
+   "head": "change over the horizon, zero-initialised: no change = the naive",
+   "mae": 0.001747539467393966,
+   "naive_mae": 0.0018591147540983589,
+   "mae_skill_percent_vs_naive": 6.001527687219344
+  },
+  {
+   "representation": "WHOLE_SERIES_RECONSTRUCTION",
+   "channels": 3,
+   "train_rows": 6098,
+   "evaluation_rows": 1525,
+   "head": "change over the horizon, zero-initialised: no change = the naive",
+   "mae": 0.001763538886811574,
+   "naive_mae": 0.0018591147540983589,
+   "mae_skill_percent_vs_naive": 5.14093425788219
+  },
+  {
+   "representation": "CENTRED_SMOOTHER",
+   "channels": 3,
+   "train_rows": 6098,
+   "evaluation_rows": 1525,
+   "head": "change over the horizon, zero-initialised: no change = the naive",
+   "mae": 0.0009897326824084725,
+   "naive_mae": 0.0018591147540983589,
+   "mae_skill_percent_vs_naive": 46.76322802416373
+  }
+ ],
+ "signature": {
+  "leaking_minus_causal_skill_points": 10.559086025384145,
+  "leaking_skill": 5.14093425788219,
+  "causal_skill": -5.418151767501955
+ },
+ "scope": "one series, one seed, one model: this CALIBRATES what a known leak does, and classifies no historical run. The mechanism used here is a named negative control of tools/df_causal_battery.py (full_series_dwt_as_time_row), which detects it by prefix equality."
+}

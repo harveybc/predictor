@@ -1,0 +1,133 @@
+{
+ "all_pass": false,
+ "battery_scope": "MECHANICS_SAMPLE",
+ "cases": {
+  "constant": [
+   100,
+   2
+  ],
+  "gaps": [
+   100,
+   2
+  ],
+  "large": [
+   600,
+   2
+  ],
+  "multivariate": [
+   100,
+   3
+  ],
+  "nan_blocks": [
+   100,
+   2
+  ],
+  "nan_isolated": [
+   100,
+   2
+  ],
+  "scale_1e-12": [
+   100,
+   2
+  ],
+  "scale_1e12": [
+   100,
+   2
+  ],
+  "univariate": [
+   100,
+   1
+  ]
+ },
+ "code_sha256": "118e4017dca7320aa843dc08ddb68651804c8e138cce154c5edcbd18004e8586",
+ "code_sha256s": {
+  "tests/df_causal_reference.py": "6580e713626e3a6c37881f6f79ed1ab81464522e05ad1e33604f7f80ad59a602",
+  "tools/df_causal_battery.py": "d8371ca8435560d2cb1c28decbc85b2fe034c1034510d21181ddb867697c3b92",
+  "tools/df_guard_probes.py": "0411f26d21d0eb4f693ac83c5ba77e9e0f3e414ff9f44dddef301c305c455104",
+  "tools/df_operators.py": "669d5cdb3a49e7cd79a067e01f8c871ba8371321430fe06601bd2875bb2b8106",
+  "tools/df_snapshot.py": "d0f82d492af90a924df2a4d3c07e722650dcfaa0035dae0f00a7decccfbe5d46",
+  "tools/df_snr.py": "a5ad155f82456ee315badfa0916d11d370755e5e8600381d503b8b94a8e0d955",
+  "tools/df_synthetic_contract.py": "a3c56fb09b6cc83ba97aa7ace2d5070b5ac1b8da3aeecedf53a97cd3e3b4065e"
+ },
+ "counts_per_test_class_and_outcome": {
+  "BATCH_STEP_CHUNK_RESTART": {
+   "MECHANICS_SAMPLE": 252
+  },
+  "FIT_MODE": {
+   "PASS": 28
+  },
+  "NEGATIVE_CONTROL": {
+   "DETECTED": 10
+  },
+  "PREFIX_ALL_T": {
+   "MECHANICS_SAMPLE": 252
+  },
+  "REFERENCE_EQUALITY": {
+   "MECHANICS_SAMPLE": 252
+  },
+  "SNAPSHOT_REFUSAL": {
+   "PASS": 16
+  },
+  "SUFFIX_ADVERSARIAL": {
+   "MECHANICS_SAMPLE": 252
+  }
+ },
+ "failures": [],
+ "guard_mutation_evidence": "not produced by this battery; see tools/df_structural_mutation.py",
+ "mechanics_sample": 3,
+ "mechanics_sample_rows": 1008,
+ "peak_rss_bytes": 126111744,
+ "reference_tolerance": {
+  "butterworth2_lowpass": [
+   "BITWISE",
+   "same transposed direct-form II recursion"
+  ],
+  "causal_decomposition": [
+   "BITWISE",
+   "same trend/seasonal recursion; phase centre summed left to right"
+  ],
+  "ewma": [
+   "BITWISE",
+   "same scalar recursion a*x + (1-a)*level"
+  ],
+  "fir_sinc_lowpass": [
+   "BITWISE",
+   "terms accumulated oldest-first with the fitted taps"
+  ],
+  "identity": [
+   "BITWISE",
+   "copy of the last sample"
+  ],
+  "local_level_kalman": [
+   "BITWISE",
+   "same scalar recursion and predict-only step"
+  ],
+  "local_linear_trend_kalman": [
+   "BITWISE",
+   "same scalar recursion and predict-only step"
+  ],
+  "trailing_haar_threshold": [
+   "BITWISE",
+   "pair means by powers of two; same soft threshold"
+  ],
+  "trailing_hampel": [
+   "BITWISE",
+   "odd-window medians are input values; same comparison"
+  ],
+  "trailing_mean": [
+   "BITWISE",
+   "sum accumulated oldest-first, then divided by the window"
+  ],
+  "trailing_median": [
+   "BITWISE",
+   "odd window: the middle order statistic is an input value"
+  ]
+ },
+ "rows": {
+  "df_fact_causal_test": 1062,
+  "df_fact_naming_isolation_decision": 3
+ },
+ "run_id": "c167_mechanics_sample_118e4017dca7320aa843dc08",
+ "schema": "crispdm.data_foundation.causal_battery_summary.v2",
+ "wall_seconds": 33.6
+}
