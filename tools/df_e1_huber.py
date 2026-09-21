@@ -73,11 +73,14 @@ def seal(source):
              factors_held=["model", "data", "rows", "scaler", "seeds", "monitor", "learning_rate",
                            "batch", "update_ceiling", "early_stopping_patience"],
              resource_limits={"child_cpu_seconds": 1800, "campaign_cpu_seconds": 14400,
-                              "parallel_children": 2},
+                              "parallel_children": 4},
              source_code={name: P.sha_file(HERE/name) for name in
                           ("df_e1_huber.py", "df_e1_phase1.py", "df_e1_pilot.py", "df_mod_e0.py",
                            "df_e1_governed.py")})
     d["training"]["monitor"] = "val_mae"
+    d["graph"]["loss"] = "per-arm recipe; common validation MAE monitor"
+    d["graph"]["optimizer"] = "per-arm Adam or AdamW recipe"
+    d["graph"]["regimes"] = {"R0": "random detector, trainable; no pretraining in this factorial"}
     d["design_sha256"] = P._module("df_mod_e0").sha_obj(d)
     return d
 
@@ -172,11 +175,20 @@ def child(root, unit):
     write(out/"cell.json", record)
 
 
+def governance_modules():
+    # The legacy dynamic loader publishes modules before executing their bodies.
+    # Complete its imports on the parent thread, before simultaneous deliveries.
+    G = P._module("df_e1_governed")
+    G._load("governed_run")
+    G._load("df_e1_receipts")
+    return G, P._module("df_utility_run")
+
+
 def execute(a):
     root = a.root
     d = json.loads((root/"DESIGN.json").read_text())
     validate(d)
-    G, U = P._module("df_e1_governed"), P._module("df_utility_run")
+    G, U = governance_modules()
 
     def one(cell):
         unit = cell["cell_id"]
@@ -227,13 +239,14 @@ def execute(a):
         return ok
 
     # Batches bound concurrency and stop the next batch if the previous one fails.
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        for start in range(0, len(d["cells"]), 2):
-            if not all(list(pool.map(one, d["cells"][start:start+2]))):
+    workers = d["resource_limits"]["parallel_children"]
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for start in range(0, len(d["cells"]), workers):
+            if not all(list(pool.map(one, d["cells"][start:start+workers]))):
                 raise ValueError("failed child; remaining cells not started")
             spent = sum(json.loads(p.read_text())["cpu_seconds"] for p in (root/"attempts").glob("*/cell.json"))
-            if spent > 10800 and start+2 < len(d["cells"]):
-                raise ValueError("insufficient remaining CPU allowance for two worst-case children")
+            if spent > 14400-workers*1800 and start+workers < len(d["cells"]):
+                raise ValueError("insufficient remaining CPU allowance for next worst-case batch")
 
 
 def close(a):

@@ -59,3 +59,12 @@ def test_partial_or_nonfinite_score_refuses(prediction):
 def test_empty_score_refuses():
     with pytest.raises(ValueError):
         H.metrics(np.array([]), np.array([]), np.array([]), 1.)
+
+
+def test_governance_dependencies_fully_loaded_before_parallel_work():
+    import sys
+    G, U = H.governance_modules()
+    assert callable(sys.modules["governed_run"].strict_code_identity)
+    assert callable(sys.modules["df_e1_receipts"].record_accepted)
+    assert callable(G.acquire)
+    assert callable(U._terminal)
