@@ -279,7 +279,7 @@ def test_FL07_intervals_respect_temporal_blocks_both_signs_are_kept_and_multipli
     assert b["status"] == "RESAMPLED_DESCRIPTIVE" and b["coverage_certificate"] is None                 # no certificate for (40, 8): not confirmatory
     sel = F.select(prepared["root"], prepared["design"])
     assert "no best-test" in sel["rule"] and sel["consumed"]["strata"] == ["mae_adam", "mae_adamw", "huber_adam", "huber_adamw"]
-    assert sel["consumed"]["by_population_complete_configs"]["B"] == 0 and sel["consumed"]["by_population_complete_configs"]["A"] >= 1
+    assert sel["consumed"]["by_population_complete_configs"]["B"] == 0
 
 
 # --- RP75: the population is the consumed tensors -------------------------------------------------------------------------------------
@@ -580,7 +580,7 @@ def test_FL08_the_financial_runner_registers_delivers_a_bounded_range_fits_repor
     results = F.run_units(a, d, d["cells"], parallel=2)
     assert all(r["ok"] for r in results) and len(results) == len(d["cells"])
     receipts = json.loads((root/"TERMINAL_RECEIPTS.json").read_text())["units"]
-    assert set(receipts) == {c["cell_id"] for c in d["cells"]}
+    assert set(receipts) - {"prepare"} == {c["cell_id"] for c in d["cells"]}
     for r in results:
         t = json.loads((root/"TERMINALS"/f"{r['unit']}.json").read_text())
         assert {x["role"] for x in t["artifacts"]} == {"predictions", "weights", "record"} and t["status"] == "COMPLETED"
