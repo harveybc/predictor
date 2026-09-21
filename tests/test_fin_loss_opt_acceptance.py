@@ -279,7 +279,8 @@ def test_FL07_intervals_respect_temporal_blocks_both_signs_are_kept_and_multipli
     assert b["status"] == "RESAMPLED_DESCRIPTIVE" and b["coverage_certificate"] is None                 # no certificate for (40, 8): not confirmatory
     sel = F.select(prepared["root"], prepared["design"])
     assert "no best-test" in sel["rule"] and sel["consumed"]["strata"] == ["mae_adam", "mae_adamw", "huber_adam", "huber_adamw"]
-    assert sel["consumed"]["by_population_complete_configs"]["A"] == 2 and sel["consumed"]["by_population_complete_configs"]["B"] == 0
+    n_a = sum(1 for c in prepared["design"]["cells"] if (prepared["root"]/"attempts"/c["cell_id"]/"cell.json").is_file() and c["fold"] == 0)
+    assert sel["consumed"]["by_population_complete_configs"]["A"] == n_a and sel["consumed"]["by_population_complete_configs"]["B"] == 0
 
 
 # --- RP75: the population is the consumed tensors -------------------------------------------------------------------------------------
@@ -572,11 +573,11 @@ def test_FL08_the_financial_runner_registers_delivers_a_bounded_range_fits_repor
     (root/"DESIGN.json").write_text(json.dumps(d))
     a = SimpleNamespace(root=root, run_id="fl08-route", gov_url=stack["url"], api_key_file=KEY, warehouse_url=stack["cube_url"],
                         warehouse_token_file=stack["token_file"])
-    doc = F.acquire(a, d, "prepare")
-    unit = doc["units"]["prepare"]
+    rec = F.run_prepare(a, d)                                                       # the real prepare path: delivery, preparation, prepare terminal
+    unit = json.loads((root/"DELIVERIES.json").read_text())["units"]["prepare"]
     assert unit["range"] == d["source"]["range"] and unit["campaign_sha256"]
-    rec = F.prepare(d, root)
     assert rec["delivered_sha256"] == unit["sha256"] and rec["bars"] == len(bars)
+    assert "prepare" in json.loads((root/"TERMINAL_RECEIPTS.json").read_text())["units"]
     results = F.run_units(a, d, d["cells"], parallel=2)
     assert all(r["ok"] for r in results) and len(results) == len(d["cells"])
     receipts = json.loads((root/"TERMINAL_RECEIPTS.json").read_text())["units"]
@@ -586,6 +587,8 @@ def test_FL08_the_financial_runner_registers_delivers_a_bounded_range_fits_repor
         assert {x["role"] for x in t["artifacts"]} == {"predictions", "weights", "record"} and t["status"] == "COMPLETED"
     report = F.close(a)
     assert report["verified"] and report["problems"] == [] and len(report["rows"]) == len(d["cells"])
+    assert report["verification"]["preparation_custody"]["class"] == "PREPARATION_ACCEPTED_ARTIFACT" and set(report["verification"]["verified_units"]) == {c["cell_id"] for c in d["cells"]}
+    assert report["consumed"]["strata"] and report["selection"][0]["A_fixed_default"]
     # FL04, the terminal and warehouse legs: two units whose metric values differ by 1e-6 keep that difference in the cube
     C = _load("df_mod_e0_close")
     vals = {}

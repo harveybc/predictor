@@ -631,6 +631,35 @@ def close(a) -> dict:
     return report
 
 
+def run_prepare(a, design: dict) -> dict:
+    """Acquire the prepare unit's bounded-range delivery, prepare, and close the prepare unit with a terminal whose artifacts
+    are the prepared data's digests (the accepted preparation evidence the verifier binds to)."""
+    validate(design)
+    G, U = governance_modules()
+    root = Path(a.root)
+    started = U._z(U.now_iso())
+    acquire(a, design, "prepare")
+    t0 = time.process_time()
+    try:
+        rec = prepare(design, root)
+    except BaseException as exc:
+        G.report_failed(root, "prepare", f"prepare refused: {str(exc)[:200]}", gov_url=a.gov_url, api_key_file=a.api_key_file)
+        raise
+    terminal = U._terminal(status="COMPLETED", reason=None, cost={"wall_seconds": time.process_time()-t0, "cpu_seconds": time.process_time()-t0},
+                           metrics=[U._metric("fin.bars", rec["bars"], "rows", split="prepare", horizon=int(design["horizon"]["hours"]))],
+                           started=started, finished=U._z(U.now_iso()),
+                           tags={"purpose": design["purpose"], "classification": "NON_GOVERNING", "phase": "DEVELOPMENT", "unit": "prepare",
+                                 "role": "PREPARATION", "design_sha256": design["design_sha256"]})
+    terminal["artifacts"] = [{"role": r, "sha256": sha_file(root/f), "bytes": (root/f).stat().st_size} for r, f in (("data", "FIN_DATA.npz"), ("record", "FIN_DATA.json"))]
+    (root/"TERMINALS").mkdir(exist_ok=True)
+    (root/"TERMINALS"/"prepare.json").write_text(json.dumps(terminal, indent=1, default=str))
+    reported = G.report_terminal(root, "prepare", terminal, gov_url=a.gov_url, api_key_file=a.api_key_file, outbox_dir=str(root/"outbox"), started_at=started)
+    if reported["flushed"]["pending"] or reported["flushed"]["failures"]:
+        raise FinRefusal(f"REFUSED: the prepare terminal was not accepted: {reported['flushed']['failures']}")
+    print(json.dumps({k: v for k, v in rec.items() if k in ("bars", "mapping")}, indent=1, default=str))
+    return rec
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("command", choices=["prepare", "execute", "child", "close"])
@@ -647,28 +676,7 @@ def main(argv=None) -> int:
         child(a.root, a.unit)
         return 0
     if a.command == "prepare":
-        validate(design)
-        G, U = governance_modules()
-        started = U._z(U.now_iso())
-        acquire(a, design, "prepare")
-        t0 = time.process_time()
-        try:
-            rec = prepare(design, a.root)
-        except BaseException as exc:
-            G.report_failed(a.root, "prepare", f"prepare refused: {str(exc)[:200]}", gov_url=a.gov_url, api_key_file=a.api_key_file)
-            raise
-        terminal = U._terminal(status="COMPLETED", reason=None, cost={"wall_seconds": time.process_time()-t0, "cpu_seconds": time.process_time()-t0},
-                               metrics=[U._metric("fin.bars", rec["bars"], "rows", split="prepare", horizon=int(design["horizon"]["hours"]))],
-                               started=started, finished=U._z(U.now_iso()),
-                               tags={"purpose": design["purpose"], "classification": "NON_GOVERNING", "phase": "DEVELOPMENT", "unit": "prepare",
-                                     "role": "PREPARATION", "design_sha256": design["design_sha256"]})
-        terminal["artifacts"] = [{"role": r, "sha256": sha_file(a.root/f), "bytes": (a.root/f).stat().st_size} for r, f in (("data", "FIN_DATA.npz"), ("record", "FIN_DATA.json"))]
-        (a.root/"TERMINALS").mkdir(exist_ok=True)
-        (a.root/"TERMINALS"/"prepare.json").write_text(json.dumps(terminal, indent=1, default=str))
-        reported = G.report_terminal(a.root, "prepare", terminal, gov_url=a.gov_url, api_key_file=a.api_key_file, outbox_dir=str(a.root/"outbox"), started_at=started)
-        if reported["flushed"]["pending"] or reported["flushed"]["failures"]:
-            raise FinRefusal(f"REFUSED: the prepare terminal was not accepted: {reported['flushed']['failures']}")
-        print(json.dumps({k: v for k, v in rec.items() if k in ("bars", "mapping")}, indent=1, default=str))
+        run_prepare(a, design)
         return 0
     if a.command == "execute":
         validate(design)
