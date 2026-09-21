@@ -188,12 +188,19 @@ before any financial fit if the served schema differs.
 
 ## Tests, CPU, objects
 
-Full suite on the committed checkout: see [RP73_FULL_SUITE_SUMMARY.txt](../evidence/d3_k5_20260917/RP66/RP73_FULL_SUITE_SUMMARY.txt)
-(counts and the documented stale legacy errors/failures). New or rewritten this round: benchmark contract
-24, closure table 21, block 14, GRU 4, phase-2 acceptance 8, FL 13 — 84 rules, no xfail left.
-CPU (omega, systemd scopes, parent+child): [RP66_RP73_CPU_LEDGER_omega.json](../evidence/d3_k5_20260917/RP66/RP66_RP73_CPU_LEDGER_omega.json)
-— within the 14 400 s ceiling with the 2 000 s closure reserve; the Q2 pilots (2 260 s) were the largest
-single cost. Consumed sources: the article (arXiv 1907.09207) Table 4/5 and Sections 6–7 as before; the
+Full suite on the clean checkout d0237f0 (37 min 24 s): **2 442 passed, 39 skipped (stated reasons), 0 xfailed**;
+3 failed + 8 collection errors are the repository's documented stale legacy suite (the same set as RP65);
+one further failure was a stale constant in the phase-2 acceptance test (33 cells before Q2 gained its own
+baseline arm; 36 now) — fixed in the closing commit and re-run green (8 passed):
+[RP73_FULL_SUITE_SUMMARY.txt](../evidence/d3_k5_20260917/RP66/RP73_FULL_SUITE_SUMMARY.txt). New or rewritten
+this round: benchmark contract 24, closure table 21, block 14, GRU 4, phase-2 acceptance 8, FL 13 — 84 rules,
+no xfail left. CPU (omega, systemd scopes, parent+child, 38 scopes since 05:00):
+[RP66_RP73_CPU_LEDGER_omega.json](../evidence/d3_k5_20260917/RP66/RP66_RP73_CPU_LEDGER_omega.json) —
+**9 033 s of 14 400**, within the ceiling with the 2 000 s closure reserve; the Q2 pilots (2 260 s) and the two
+full-suite runs (≈2 850 s, the first one aborted at 26 % because I wrote documents into the tree while it ran,
+which the governed-route rules refuse) were the largest costs. Push and worker sync were DENIED by the
+auto-mode classifier at the end of this session: the branch is committed locally at the closing commit and
+not pushed; the workers are not synced — the owner's action, stated, not worked around. Consumed sources: the article (arXiv 1907.09207) Table 4/5 and Sections 6–7 as before; the
 lake's coverage endpoint (re-read: 129 873 rows, 2005-01-03 01:00 .. 2025-12-31 16:00, `datetime`).
 Remaining objects: Q2 (budget successor above); the cadence tier; the original-protocol lane; the financial
 scientific campaign (authorisation pending); the workers' accounted wrapper.

@@ -98,7 +98,7 @@ def test_volume_keeps_the_common_scaler_and_counts_from_identities(design):
 
 def test_every_cell_belongs_to_one_block_and_seeds_are_paired(design):
     cells = design["cells"]
-    assert len(cells) == 3*(2+2+5+2)
+    assert len(cells) == 3*(2+2+6+2)                       # Q2 carries its own modular_w60 baseline (common train intersection)
     for name, b in design["blocks"].items():
         by_seed = {}
         for c in b["cells"]:

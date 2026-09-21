@@ -1,0 +1,31 @@
+# RP66-RP73 — full suite
+# command:  python -m pytest tests -q --continue-on-collection-errors -p no:cacheprovider -W ignore::DeprecationWarning
+# python:   ~/anaconda3/envs/trading-stack/bin/python (3.12), host omega, CUDA_VISIBLE_DEVICES="" (no GPU)
+# cgroup:   crispdm-run -m 12G -t 5400 -n rp73-suite; clean checkout at d0237f0 (the governed-route rules refuse a dirty tree)
+#
+# 2 442 passed, 39 skipped (stated reasons, as in RP65), 0 xfailed (the five FL xfails are now executable and green).
+# 3 failed + 8 collection errors = the repository's documented stale legacy suite (AGENTS.md; identical set to RP65).
+# 1 failed = tests/test_df_e1_phase2_acceptance.py::test_every_cell_belongs_to_one_block_and_seeds_are_paired: a stale constant
+#   (33 cells) after Q2 gained its own baseline arm (36 cells); fixed in the closing commit and re-run: 8 passed in 161.58 s.
+#
+# --- raw tail of the run ---
+tests/unit_tests/test_characterization_binding_c39_c41.py::test_a_non_finite_value_never_leaves_as_an_identifiable_number
+  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/numpy/_core/function_base.py:163: RuntimeWarning: invalid value encountered in multiply
+    y *= step
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration_tests/test_configuration_handling.py::test_load_default_config
+FAILED tests/integration_tests/test_configuration_handling.py::test_save_config
+FAILED tests/integration_tests/test_configuration_handling.py::test_configure_with_args
+FAILED tests/test_df_e1_phase2_acceptance.py::test_every_cell_belongs_to_one_block_and_seeds_are_paired
+ERROR tests/integration_tests/test_data_processing.py
+ERROR tests/integration_tests/test_plugin_loading.py
+ERROR tests/unit_tests/test_config_handler.py
+ERROR tests/unit_tests/test_data_handler.py
+ERROR tests/unit_tests/test_data_processor.py
+ERROR tests/unit_tests/test_encoder_plugin_ann.py
+ERROR tests/unit_tests/test_main.py
+ERROR tests/unit_tests/test_plugin_loader.py
+4 failed, 2442 passed, 39 skipped, 10 warnings, 8 errors in 2244.73s (0:37:24)
+exit=1

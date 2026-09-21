@@ -243,11 +243,46 @@
    "cpu_seconds": 1.973,
    "wall_seconds": 2.013,
    "memory_peak": "74.8M"
+  },
+  {
+   "unit": "crispdm-rp73-seal-p2-1789993265-1674543.scope",
+   "at": "Sep 21 07:22:16",
+   "cpu_seconds": 70.765,
+   "wall_seconds": 70.584,
+   "memory_peak": "940.6M"
+  },
+  {
+   "unit": "crispdm-rp73-seal-fin-1789993336-1681403.scope",
+   "at": "Sep 21 07:22:20",
+   "cpu_seconds": 4.248,
+   "wall_seconds": 4.314,
+   "memory_peak": "291.9M"
+  },
+  {
+   "unit": "crispdm-rp73-suite-1789993235-1673961.scope",
+   "at": "Sep 21 07:27:13",
+   "cpu_seconds": 355.297,
+   "wall_seconds": 398.551,
+   "memory_peak": "1.8G"
+  },
+  {
+   "unit": "crispdm-rp73-suite-1789993676-1688906.scope",
+   "at": "Sep 21 08:05:32",
+   "cpu_seconds": 3332.94,
+   "wall_seconds": 2256.158,
+   "memory_peak": "7.5G"
+  },
+  {
+   "unit": "crispdm-rp73-p2fix-1789995968-1805032.scope",
+   "at": "Sep 21 08:08:52",
+   "cpu_seconds": 164.12,
+   "wall_seconds": 163.585,
+   "memory_peak": "1G"
   }
  ],
- "cpu_seconds_total": 5105.582,
+ "cpu_seconds_total": 9032.952,
  "ceiling_seconds": 14400.0,
- "remaining_seconds": 9294.418,
+ "remaining_seconds": 5367.048,
  "within_ceiling": true,
  "note": "systemd accounting of the transient unit (all its children); units still running are not listed"
 }
