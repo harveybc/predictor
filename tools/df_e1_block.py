@@ -72,6 +72,8 @@ ARMS = {
     "modular_w60":            {"family": "modular", "window": 60,   "features": "base"},
     "gru_adapted_w60":        {"family": "gru",     "window": 60,   "features": "base"},
     "calendar":               {"family": "modular", "window": 60,   "features": "calendar"},
+    "gru_calendar_w60":       {"family": "gru",     "window": 60,   "features": "calendar",
+                               "role": "the adapted GRU with the same 4 calendar channels appended to its 7 inputs (+600 parameters: 3 x 50 x 4)"},
     "randomised_calendar_control": {"family": "modular", "window": 60, "features": "randomised_calendar",
                                "role": "CAPACITY_CONTROL: the same 4 channels built from each row's label plus a per-row random offset "
                                        "drawn from a hash of (seed, panel row id): deterministic, prefix-stable, no calendar information; "
@@ -99,6 +101,14 @@ BLOCKS = {
                     "why": "a long window or a lag withdraws the train origins whose support reaches a non-finite padded row; every arm of "
                            "this block, the baseline included, trains on the SAME origins so context is never conflated with volume"},
     "Q3_VOLUME":   {"arms": ["volume_56d", "volume_112d"], "question": "more history with the evaluation, scaler and cadence FIXED"},
+    "ARCH_X_CALENDAR": {"arms": ["modular_w60", "gru_adapted_w60", "calendar", "gru_calendar_w60", "randomised_calendar_control"],
+                        "question": "architecture {modular, adapted GRU} x inputs {original 7, original + real calendar}, three paired seeds "
+                                    "(12 cells), plus the modular randomised-calendar control (3 cells): an architecture difference separated "
+                                    "from an input-information difference, with the equal-capacity calendar check retained",
+                        "primary_factorial": ["modular_w60", "gru_adapted_w60", "calendar", "gru_calendar_w60"],
+                        "secondary_control": ["randomised_calendar_control"],
+                        "informed_by": "prior DEV results (DEV_MATCHED, Q1, Q3 of RP72) and the stopping behaviour they showed; NOT confirmatory",
+                        "tier": "TIER2"},
 }
 RECIPE = {"loss": "mae", "optimizer": "adam", "learning_rate": 0.003, "batch": 64, "max_updates": 4000,
           "validate_every_updates": 200, "patience_events": 3, "restore_best": True, "min_delta": 0.0,
@@ -110,6 +120,14 @@ PILOT = {"max_updates": 200, "validate_every_updates": 50, "patience_events": 3,
                        "train days; the DEV validation is never read by a pilot"}
 LIMITS = {"child_cpu_seconds": 3600, "child_wall_seconds": 4800, "parallel_children": 3, "campaign_cpu_seconds": 14400,
           "closure_reserve_seconds": 2000}
+
+RECIPE_TIER2 = {**RECIPE, "patience_events": 10,
+                "role": "HOUSEHOLD DEV SENSITIVITY TIER (RP79): the same cadence (every 200 observed updates), ceiling (4 000) and monitor; "
+                        "patience 10 events = 2 000 non-improving updates, approximately the former three passes (~1 881); no per-arm "
+                        "patience or budget tuning; no promise that longer patience improves error",
+                "checkpoint_opportunities": 20}
+TIERS = {"TIER1": {"recipe": RECIPE, "why": "RP66-RP73 blocks: patience 3 events (600 non-improving updates)"},
+         "TIER2": {"recipe": RECIPE_TIER2, "why": "RP79: patience 10 events (2 000 non-improving updates); informed by prior DEV behaviour"}}
 
 
 class BlockRefusal(SystemExit):
@@ -156,6 +174,8 @@ def seal(block: str, *, source_run: Path = SOURCE_RUN, seeds=SEEDS, reuse: dict 
     `contract` replaces the household registry contract ONLY for tests on synthetic panels (recorded as such)."""
     if block not in BLOCKS:
         raise BlockRefusal(f"REFUSED: unknown block {block!r}")
+    if recipe is None and BLOCKS[block].get("tier"):
+        recipe, tier = TIERS[BLOCKS[block]["tier"]]["recipe"], BLOCKS[block]["tier"] + ": " + TIERS[BLOCKS[block]["tier"]]["why"]
     B = _module("df_benchmark_contract")
     src_design = json.loads((Path(source_run)/"DESIGN.json").read_text())
     data_json = json.loads((Path(source_run)/"DATA.json").read_text())
@@ -191,7 +211,9 @@ def seal(block: str, *, source_run: Path = SOURCE_RUN, seeds=SEEDS, reuse: dict 
                  "reading": "the panel is read from lo (pad + the widest volume tier before the DEV train span) to hi; origins are "
                             "enumerated inside [train span, validation week] from row identities; padded rows are support only"},
         "arms": arms, "seeds": list(seeds), "recipe": recipe or RECIPE, "pilot": PILOT, "limits": limits or LIMITS,
-        "tier": tier or "RECIPE v1 (patience 3 events)",
+        "tier": tier or "TIER1: " + TIERS["TIER1"]["why"],
+        "factorial": {k: BLOCKS[block][k] for k in ("primary_factorial", "secondary_control", "informed_by") if k in BLOCKS[block]},
+        "capacity": capacity(arms, src_design["graph"]["assignment"], len(data_json["input_columns"]), int(data_json["target_channel"])),
         "contract_source": "REGISTRY household_W60_h60" if contract is None else "DECLARED_OVERRIDE (synthetic test panel)",
         "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels "
                        "mean 0 / sd 1; the lag channel takes the target's scaler; one evaluation sigma = the target's train sd",
@@ -234,6 +256,24 @@ def reuse_record(root: Path) -> dict:
 def code_drift(design: dict) -> dict:
     """Which scientific source files differ now from the ones the design was sealed with."""
     return {name: {"sealed": digest, "now": sha_file(HERE/name)} for name, digest in design["source_code"].items() if sha_file(HERE/name) != digest}
+
+
+def capacity(arms: list, assignment: list, p: int, j: int) -> dict:
+    """Parameters per arm, built; how added channels change each architecture's parameter count is stated, not assumed."""
+    out = {}
+    for a in arms:
+        extra = {"calendar": 4, "randomised_calendar": 4, "daily_lag": 1}.get(a["features"], 0)
+        asg = list(assignment) + ([max(assignment)+1]*4 if extra == 4 else [assignment[j]] if extra == 1 else [])
+        out[a["arm"]] = {"channels": p+extra, "parameters": n_params(build_model(a, asg, p+extra, j, 1))}
+    for a in arms:
+        base = next((b for b in arms if b["family"] == a["family"] and b["features"] == "base" and b["window"] == a["window"]), None)
+        if base and a["arm"] != base["arm"]:
+            out[a["arm"]]["parameter_delta_vs_base_inputs"] = out[a["arm"]]["parameters"] - out[base["arm"]]["parameters"]
+            out[a["arm"]]["how"] = ("a 4-channel calendar group adds one ARCH-A branch (detector + adapter) and 4 head/skip rows" if a["family"] == "modular"
+                                    else "4 input columns add 3 x units x 4 GRU kernel rows; the recurrent kernel, biases and readout are unchanged")
+    out["initialization"] = ("every arm is built after set_random_seed(seed): arms of one seed are paired by seed, not weight-identical in their "
+                             "shared parts (a wider input changes the shapes and the draw order); the initial weights digest is recorded per cell")
+    return out
 
 
 def validate(design: dict, *, strict_code: bool = True) -> dict:
@@ -959,11 +999,59 @@ def cmd_execute(a):
     design = json.loads((Path(a.root)/"DESIGN.json").read_text())
     validate(design)
     load_data(a.root, design)
-    pilot = json.loads((Path(a.root)/"REPORT.pilot.json").read_text())
+    if a.decision_from:
+        pilot = json.loads((Path(a.decision_from)/"REPORT.pilot.json").read_text())   # a worker executes under the coordinator's pilot decision
+    else:
+        pilot = json.loads((Path(a.root)/"REPORT.pilot.json").read_text())
     if pilot["decision"] != "EXECUTE":
         raise BlockRefusal("REFUSED: the cost pilot did not project inside the ceiling")
-    run_units(a, design, design["cells"], parallel=LIMITS["parallel_children"])
-    print(json.dumps({"spent_cpu_seconds": spent_cpu(a.root)}))
+    cells = [c for c in design["cells"] if not a.seeds or c["seed"] in a.seeds]           # a host block = the cells of its seeds
+    run_units(a, design, cells, parallel=a.parallel or LIMITS["parallel_children"])
+    print(json.dumps({"host": os.uname().nodename, "cells": [c["cell_id"] for c in cells], "spent_cpu_seconds": spent_cpu(a.root)}))
+
+
+def merge(into: Path, sources: list) -> dict:
+    """Bring the cells a worker ran into the coordinator's root: attempts, terminal payloads, receipts and deliveries per unit,
+    verified against the terminal's artifact digests; the prepared data must be byte-identical (the portability check)."""
+    import shutil
+    into = Path(into)
+    design = json.loads((into/"DESIGN.json").read_text())
+    here = json.loads((into/"BLOCK_DATA.json").read_text())
+    out = {"schema": "df_e1_block_merge.v1", "into": str(into), "units": {}, "problems": []}
+    for src in sources:
+        src = Path(src)
+        d2 = json.loads((src/"DESIGN.json").read_text())
+        if d2["design_sha256"] != design["design_sha256"]:
+            out["problems"].append(f"{src}: another design"); continue
+        there = json.loads((src/"BLOCK_DATA.json").read_text())
+        if there["data_sha256"] != here["data_sha256"]:
+            out["problems"].append(f"{src}: the prepared data differ (portability): {there['data_sha256'][:12]} vs {here['data_sha256'][:12]}"); continue
+        rc_src = json.loads((src/"TERMINAL_RECEIPTS.json").read_text()).get("units", {}) if (src/"TERMINAL_RECEIPTS.json").is_file() else {}
+        dl_src = json.loads((src/"DELIVERIES.json").read_text()) if (src/"DELIVERIES.json").is_file() else {"units": {}}
+        rc_path, dl_path = into/"TERMINAL_RECEIPTS.json", into/"DELIVERIES.json"
+        rc = json.loads(rc_path.read_text()) if rc_path.is_file() else {"schema": "df_e1_terminal_receipts.v1", "units": {}}
+        dl = json.loads(dl_path.read_text()) if dl_path.is_file() else {"schema": dl_src.get("schema"), "units": {}}
+        for tpath in sorted((src/"TERMINALS").glob("*.json")):
+            unit = tpath.stem
+            if unit == "prepare" or not (src/"attempts"/unit/"cell.json").is_file():
+                continue
+            terminal = json.loads(tpath.read_text())
+            arts = {x["role"]: x["sha256"] for x in terminal.get("artifacts", [])}
+            ok = all(sha_file(src/"attempts"/unit/f) == arts.get(r) for r, f in (("predictions", "arrays.npz"), ("record", "cell.json"), ("weights", "weights.weights.h5")))
+            if not ok or unit not in rc_src:
+                out["problems"].append(f"{unit}: artifacts do not match the terminal or no receipt"); continue
+            if (into/"attempts"/unit).exists():
+                out["problems"].append(f"{unit}: already present in the coordinator root; not overwritten"); continue
+            shutil.copytree(src/"attempts"/unit, into/"attempts"/unit)
+            (into/"TERMINALS").mkdir(exist_ok=True)
+            shutil.copy2(tpath, into/"TERMINALS"/f"{unit}.json")
+            rc["units"][unit] = rc_src[unit]
+            if unit in dl_src.get("units", {}):
+                dl["units"][unit] = dl_src["units"][unit]
+            out["units"][unit] = {"from": str(src), "host": json.loads((src/"attempts"/unit/"cell.json").read_text())["cost"].get("host")}
+        rc_path.write_text(json.dumps(rc, indent=1)); dl_path.write_text(json.dumps(dl, indent=1, default=str))
+    (into/"MERGE.json").write_text(json.dumps(out, indent=1))
+    return out
 
 
 # --- closure -------------------------------------------------------------------------------------------------------
@@ -1080,7 +1168,11 @@ def close(a) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "pilot", "execute", "child", "close", "recost", "scan", "profile"])
+    ap.add_argument("command", choices=["seal", "prepare", "pilot", "execute", "child", "close", "recost", "scan", "profile", "merge"])
+    ap.add_argument("--seeds", type=int, nargs="*", default=None, help="execute only the cells of these seeds (a host block)")
+    ap.add_argument("--parallel", type=int, default=None)
+    ap.add_argument("--decision-from", type=Path, default=None, help="the coordinator root whose REPORT.pilot.json authorises execution")
+    ap.add_argument("--from", dest="sources", type=Path, action="append", default=[])
     ap.add_argument("--arm")
     ap.add_argument("--batches", type=int, default=5)
     ap.add_argument("--block")
@@ -1105,6 +1197,8 @@ def main(argv=None) -> int:
     if a.command == "child":
         child(a.root, a.unit)
         return 0
+    if a.command == "merge":
+        out = merge(a.root, a.sources); print(json.dumps({"units": list(out["units"]), "problems": out["problems"]}, indent=1)); return 0 if not out["problems"] else 1
     if a.command == "recost":
         print(json.dumps({k: v for k, v in recost(a.root).items() if k != "corrected_projection"} | {"corrected_total": recost(a.root)["corrected_projection"]["total_at_ceiling_seconds"]}, indent=1)); return 0
     if a.command == "scan":

@@ -71,7 +71,7 @@ def _contract():
                      source={"kind": "SYNTHETIC_TEST"})
 
 
-def _design(frame, *, candidates=("default_mae_adam", "default_huber_adam"), dev_weeks=2, history_weeks=4, recipe=TINY, receiver="compact_modular"):
+def _design(frame, *, candidates=("A_mae_adam", "A_huber_adam"), dev_weeks=2, history_weeks=4, recipe=TINY, receiver="compact_modular"):
     days = frame["datetime"].dt.strftime("%Y-%m-%d")
     return F.seal(lake="financial_files", resource=RESOURCE, time_column="datetime", holdout=HOLDOUT, range_from=days.iloc[0], range_to=days.iloc[-1],
                   receiver=receiver, dev_weeks=dev_weeks, history_weeks=history_weeks, candidate_ids=candidates, seeds=(1,), recipe=recipe,
@@ -95,21 +95,21 @@ def prepared(bars, tmp_path_factory):
 
 # --- FL01 real factorial -------------------------------------------------------------------------------------------------------
 
-def test_FL01_the_candidates_are_enumerated_twelve_per_family_with_the_defaults_apart_and_the_components_are_real():
+def test_FL01_the_candidates_are_enumerated_with_identifiable_factors_and_the_components_are_real():
     a = T.candidate_allocation()
-    assert len(a["mae"]) == len(a["huber"]) == a["per_family"] == 12 and len(a["defaults"]) == 4
-    ids = [c["id"] for c in a["mae"] + a["huber"] + a["defaults"]]
-    assert len(set(ids)) == 28 and all(c["loss"] == "mae" for c in a["mae"]) and all(c["loss"] == "huber" for c in a["huber"])
-    assert {c["optimizer"] for c in a["mae"]} == {"adam", "adamw"} and all(c["delta"] for c in a["huber"])
+    assert a["totals"] == {"A": 4, "B": 12, "C": 4, "D": 6, "all": 26}
+    assert a["equal_budget_per_loss_optimizer_cell"] == {"mae_adam": 3, "mae_adamw": 3, "huber_adam": 3, "huber_adamw": 3}     # Musashi's 3/9 vs 6/6 gone
+    ids = [c["id"] for pop in ("A_fixed_default", "B_equal_budget_lr", "C_decay_factor", "D_delta_factor") for c in a[pop]]
+    assert len(set(ids)) == 26 and {c["lr"] for c in a["B_equal_budget_lr"]} == set(T.LEARNING_RATES)
+    assert all(c["optimizer"] == "adamw" for c in a["C_decay_factor"]) and all(c["loss"] == "huber" for c in a["D_delta_factor"])
     tf = E._tf()
-    loss, opt = F.components(a["huber"][1], 0.37, tf)
-    assert isinstance(loss, tf.keras.losses.Huber) and isinstance(opt, tf.keras.optimizers.AdamW)
-    # the delta is real: Huber(delta) on a residual of 1.0 is delta*(1 - delta/2), not 0.5 (MSE) nor 1.0 (MAE)
+    loss, opt = F.components(a["D_delta_factor"][1], 0.37, tf)
+    assert isinstance(loss, tf.keras.losses.Huber) and type(opt).__name__ == "Adam"
     assert float(loss(np.zeros((1, 1)), np.ones((1, 1)))) == pytest.approx(0.37*(1-0.37/2), abs=1e-6)
-    loss, opt = F.components(a["mae"][0], None, tf)
-    assert isinstance(loss, tf.keras.losses.MeanAbsoluteError) and type(opt).__name__ == "Adam"
+    loss, opt = F.components(a["A_fixed_default"][1], None, tf)
+    assert isinstance(loss, tf.keras.losses.MeanAbsoluteError) and isinstance(opt, tf.keras.optimizers.AdamW)
     with pytest.raises(F.FinRefusal, match="not identifiable"):
-        F.components(a["huber"][0], None, tf)
+        F.components(a["B_equal_budget_lr"][6], None, tf)
 
 
 def test_FL01_decoupled_weight_decay_really_decays_on_a_zero_gradient():
@@ -211,7 +211,7 @@ def test_FL04_a_1e_6_difference_in_MAE_z_survives_arrays_json_and_recomputation_
 
 def test_FL05_updates_are_the_optimizers_own_events_are_on_cadence_and_the_floor_resolves_1e_6(prepared):
     d, data, rec = prepared["design"], prepared["data"], prepared["rec"]
-    cell = next(c for c in d["cells"] if c["fold"] == 1 and c["candidate_id"] == "default_mae_adam")
+    cell = next(c for c in d["cells"] if c["fold"] == 1 and c["candidate_id"] == "A_mae_adam")
     r = F.run_cell(d, data, rec, cell, prepared["root"]/"attempts"/cell["cell_id"])
     tr = r["training"]
     assert tr["updates"] == tr["optimizer_iterations"] == 12 and [e["update"] for e in tr["events"]] == [4, 8, 12]
@@ -250,13 +250,13 @@ def test_FL06_huber_deltas_come_from_the_admissible_train_pairs_at_full_precisio
     assert T.delta_candidates(y2, pairs["train"], sigma=sigma) == d
     # resolution of a candidate's delta in a fold
     a = T.candidate_allocation()
-    assert T.resolve_delta(a["huber"][0], d) == pytest.approx(d["scale_z"]*0.5) and T.resolve_delta(a["defaults"][2], d) == 1.0
-    assert T.resolve_delta(a["huber"][0], flat) is None and T.resolve_delta(a["mae"][0], d) is None
+    assert T.resolve_delta(a["D_delta_factor"][1], d) == pytest.approx(d["scale_z"]*0.5) and T.resolve_delta(a["A_fixed_default"][2], d) == 1.0
+    assert T.resolve_delta(a["D_delta_factor"][1], flat) is None and T.resolve_delta(a["A_fixed_default"][0], d) is None
 
 
 def test_FL06_lr_and_decay_candidates_are_bounded_enumerated_and_the_receivers_are_frozen():
     a = T.candidate_allocation()
-    assert all(0 < c["lr"] <= 0.01 for c in a["mae"] + a["huber"]) and "declared" in a["trade_off"]
+    assert all(0 < c["lr"] <= 0.01 for c in a["mae"] + a["huber"]) and "not confounded" in a["identifiability"]
     r = T.receivers()
     assert r["compact_modular"]["parameters"] > 0 and r["larger_business_receiver"]["parameters"] > r["compact_modular"]["parameters"]
     assert r["larger_business_receiver"]["channels"] == 9 and len(r["larger_business_receiver"]["input_columns"]) == 9

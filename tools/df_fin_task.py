@@ -268,30 +268,44 @@ def delta_candidates(y: np.ndarray, train_pairs: dict, *, sigma: float, fraction
 # --- the enumerated candidate population ----------------------------------------------------------------------------------------
 
 def candidate_allocation() -> dict:
-    """Exactly 12 DEV fits per loss family per (receiver, horizon, fold, seed); the defaults are a separate population."""
-    mae, huber = [], []
-    for lr in LEARNING_RATES:
-        mae.append({"id": f"mae_adam_lr{lr:g}", "loss": "mae", "optimizer": "adam", "lr": lr, "weight_decay": 0.0, "delta": None})
-        for wd in WEIGHT_DECAYS:
-            mae.append({"id": f"mae_adamw_lr{lr:g}_wd{wd:g}", "loss": "mae", "optimizer": "adamw", "lr": lr, "weight_decay": wd, "delta": None})
-    for lr in (0.001, 0.003):
-        for f in (0.5, 1.0, 2.0):
-            huber.append({"id": f"huber_adam_lr{lr:g}_d{f:g}s", "loss": "huber", "optimizer": "adam", "lr": lr, "weight_decay": 0.0,
-                          "delta": {"kind": "scale_fraction", "fraction": f}})
-            huber.append({"id": f"huber_adamw_lr{lr:g}_wd0.004_d{f:g}s", "loss": "huber", "optimizer": "adamw", "lr": lr, "weight_decay": 0.004,
-                          "delta": {"kind": "scale_fraction", "fraction": f}})
-    defaults = [{"id": "default_mae_adam", "loss": "mae", "optimizer": "adam", "lr": DEFAULTS["adam"]["lr"], "weight_decay": 0.0, "delta": None},
-                {"id": "default_mae_adamw", "loss": "mae", "optimizer": "adamw", "lr": DEFAULTS["adamw"]["lr"], "weight_decay": DEFAULTS["adamw"]["weight_decay"], "delta": None},
-                {"id": "default_huber_adam", "loss": "huber", "optimizer": "adam", "lr": DEFAULTS["adam"]["lr"], "weight_decay": 0.0,
-                 "delta": {"kind": "fixed", "delta_z": DEFAULTS["huber"]["delta_z"]}},
-                {"id": "default_huber_adamw", "loss": "huber", "optimizer": "adamw", "lr": DEFAULTS["adamw"]["lr"], "weight_decay": DEFAULTS["adamw"]["weight_decay"],
-                 "delta": {"kind": "fixed", "delta_z": DEFAULTS["huber"]["delta_z"]}}]
-    assert len(mae) == 12 and len(huber) == 12 and len({c["id"] for c in mae+huber+defaults}) == 28
-    return {"per_family": 12, "mae": mae, "huber": huber, "defaults": defaults,
-            "trade_off": "the Huber family spends its 12 on 2 LR x 3 deltas x {adam, adamw@0.004}; the MAE family on 3 LR x {adam, 3 decays}: "
-                         "equal fit counts and observed budgets, NOT identical LR/decay coverage — declared",
-            "budget_per_fit": "the recipe's update ceiling and cadence, identical for every candidate; observed updates are recorded per cell",
-            "selection": "validation MAE_z of the fold (never the test week); every candidate's test score is retained, no best-test"}
+    """The enumerated population per (receiver, horizon, fold, seed), RP76/RP80: factors kept identifiable.
+      A. fixed-default 2x2: {MAE, Huber} x {Adam, AdamW} at the installed defaults (4 fits) — the contrast the owner asked for;
+      B. equal-budget LR tuning: EVERY (loss, optimizer) cell gets the SAME 3 learning rates (12 fits) — an optimizer comparison
+         at equal opportunity, decay fixed at the AdamW default, delta fixed at 1 x scale;
+      C. decay factor (AdamW only): 2 extra decays x 2 losses at the default LR (4 fits) — a declared factor, not tuning of one optimizer;
+      D. delta factor (Huber only): 3 scale fractions x 2 optimizers at the default LR (6 fits) — a declared factor.
+    26 fits; nothing is selected across populations A-D; selection (configuration level) happens inside B."""
+    A = [{"id": "A_mae_adam", "population": "A_fixed_default", "loss": "mae", "optimizer": "adam", "lr": DEFAULTS["adam"]["lr"], "weight_decay": 0.0, "delta": None},
+         {"id": "A_mae_adamw", "population": "A_fixed_default", "loss": "mae", "optimizer": "adamw", "lr": DEFAULTS["adamw"]["lr"], "weight_decay": DEFAULTS["adamw"]["weight_decay"], "delta": None},
+         {"id": "A_huber_adam", "population": "A_fixed_default", "loss": "huber", "optimizer": "adam", "lr": DEFAULTS["adam"]["lr"], "weight_decay": 0.0, "delta": {"kind": "fixed", "delta_z": DEFAULTS["huber"]["delta_z"]}},
+         {"id": "A_huber_adamw", "population": "A_fixed_default", "loss": "huber", "optimizer": "adamw", "lr": DEFAULTS["adamw"]["lr"], "weight_decay": DEFAULTS["adamw"]["weight_decay"], "delta": {"kind": "fixed", "delta_z": DEFAULTS["huber"]["delta_z"]}}]
+    B = []
+    for loss in ("mae", "huber"):
+        for opt in ("adam", "adamw"):
+            for lr in LEARNING_RATES:
+                B.append({"id": f"B_{loss}_{opt}_lr{lr:g}", "population": "B_equal_budget_lr", "loss": loss, "optimizer": opt, "lr": lr,
+                          "weight_decay": DEFAULTS["adamw"]["weight_decay"] if opt == "adamw" else 0.0,
+                          "delta": {"kind": "scale_fraction", "fraction": 1.0} if loss == "huber" else None})
+    C = [{"id": f"C_{loss}_adamw_wd{wd:g}", "population": "C_decay_factor", "loss": loss, "optimizer": "adamw", "lr": DEFAULTS["adamw"]["lr"], "weight_decay": wd,
+          "delta": {"kind": "scale_fraction", "fraction": 1.0} if loss == "huber" else None}
+         for loss in ("mae", "huber") for wd in (0.001, 0.01)]
+    D = [{"id": f"D_huber_{opt}_d{f:g}s", "population": "D_delta_factor", "loss": "huber", "optimizer": opt, "lr": DEFAULTS[opt]["lr"],
+          "weight_decay": DEFAULTS["adamw"]["weight_decay"] if opt == "adamw" else 0.0, "delta": {"kind": "scale_fraction", "fraction": f}}
+         for opt in ("adam", "adamw") for f in (0.25, 0.5, 2.0)]
+    ids = [c["id"] for c in A+B+C+D]
+    assert len(ids) == len(set(ids)) == 26
+    per_cell = {f"{l}_{o}": sum(1 for c in B if c["loss"] == l and c["optimizer"] == o) for l in ("mae", "huber") for o in ("adam", "adamw")}
+    assert set(per_cell.values()) == {3}
+    return {"A_fixed_default": A, "B_equal_budget_lr": B, "C_decay_factor": C, "D_delta_factor": D,
+            "totals": {"A": len(A), "B": len(B), "C": len(C), "D": len(D), "all": 26},
+            "equal_budget_per_loss_optimizer_cell": per_cell,
+            "selection_scope": "configuration-level selection INSIDE population B (validation MAE_z averaged over seeds); A is reported as the "
+                               "fixed-default 2x2 contrast; C and D are reported as factors; no selection across populations",
+            "identifiability": "the same 3 learning rates for every (loss, optimizer) cell: the optimizer contrast is not confounded with the "
+                               "size of its tuning budget; decay and delta move in their own declared populations",
+            "budget_per_fit": "the recipe's update ceiling and cadence, identical for every candidate; observed updates recorded per cell",
+            "mae": B[:6] + [A[0], A[1]] + C[:2], "huber": B[6:] + [A[2], A[3]] + C[2:] + D,      # by loss family, for callers that list by family
+            "defaults": A, "per_family_equal_budget": 6}
 
 
 def resolve_delta(candidate: dict, deltas: dict) -> float | None:

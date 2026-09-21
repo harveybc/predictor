@@ -421,3 +421,48 @@ def test_the_design_refuses_an_unknown_block_or_arm_and_binds_to_the_source(worl
     stale = {**d, "seeds": [9]}
     with pytest.raises(K.BlockRefusal, match="digest"):
         K.validate(stale)
+
+
+# --- RP79: architecture x calendar block, tier 2, per-host blocks and merge -------------------------------------------------------------
+
+def test_RP79_the_arch_x_calendar_block_seals_the_15_cells_under_tier2_with_measured_parameter_deltas(world):
+    d = _design("ARCH_X_CALENDAR", world["source"], seeds=(1, 2, 3))
+    assert len(d["cells"]) == 15 and d["recipe"]["patience_events"] == 10 and d["recipe"]["validate_every_updates"] == 200 and d["recipe"]["max_updates"] == 4000
+    assert d["tier"].startswith("TIER2") and "NOT confirmatory" in d["factorial"]["informed_by"]
+    assert set(d["factorial"]["primary_factorial"]) == {"modular_w60", "gru_adapted_w60", "calendar", "gru_calendar_w60"}
+    cap = d["capacity"]
+    assert cap["calendar"]["parameter_delta_vs_base_inputs"] == cap["calendar"]["parameters"] - cap["modular_w60"]["parameters"] > 0
+    assert cap["gru_calendar_w60"]["parameter_delta_vs_base_inputs"] == 3*50*4 and cap["gru_adapted_w60"]["parameters"] == 8901
+    assert cap["randomised_calendar_control"]["parameters"] == cap["calendar"]["parameters"] and "paired by seed" in cap["initialization"]
+    m = K.build_model(K.arm_spec("gru_calendar_w60"), ASSIGNMENT + [3]*4, 11, 6, 1)
+    assert K.n_params(m) == cap["gru_calendar_w60"]["parameters"]
+
+
+def test_RP79_a_host_block_runs_only_its_seeds_and_merge_verifies_artifacts_and_identical_prepared_data(world, tmp_path):
+    d = _design("DEV_MATCHED", world["source"], seeds=(1, 2), recipe={"max_updates": 4, "validate_every_updates": 2, "patience_events": 3})
+    roots = {}
+    for host in ("coord", "worker"):
+        root = tmp_path/host
+        K.prepare(d, root, frame=world["frame"])
+        (root/"DESIGN.json").write_text(json.dumps(d))
+        roots[host] = root
+    data = K.load_data(roots["worker"], d)
+    receipts = {"units": {}}
+    for cell in [c for c in d["cells"] if c["seed"] == 2]:                         # the worker's seed block
+        rec = K.run_cell(d, data, cell, roots["worker"]/"attempts"/cell["cell_id"], pilot=False)
+        (roots["worker"]/"TERMINALS").mkdir(exist_ok=True)
+        (roots["worker"]/"TERMINALS"/f"{cell['cell_id']}.json").write_text(json.dumps({"status": "COMPLETED", "artifacts": [
+            {"role": r, "sha256": K.sha_file(roots["worker"]/"attempts"/cell["cell_id"]/f), "bytes": 1} for r, f in (("predictions", "arrays.npz"), ("weights", "weights.weights.h5"), ("record", "cell.json"))]}))
+        receipts["units"][cell["cell_id"]] = {"campaign_sha256": "w"*64, "terminal_sha256": "t"*64}
+    (roots["worker"]/"TERMINAL_RECEIPTS.json").write_text(json.dumps(receipts))
+    out = K.merge(roots["coord"], [roots["worker"]])
+    assert out["problems"] == [] and set(out["units"]) == {"modular_w60_s2", "gru_adapted_w60_s2"}
+    assert json.loads((roots["coord"]/"TERMINAL_RECEIPTS.json").read_text())["units"].keys() == out["units"].keys()
+    # a tampered artifact is not merged, and different prepared data refuse the whole source
+    (roots["worker"]/"attempts"/"modular_w60_s2"/"arrays.npz").write_bytes(b"0")
+    (roots["coord"]/"attempts"/"modular_w60_s2").rename(roots["coord"]/"attempts"/"gone")
+    out2 = K.merge(roots["coord"], [roots["worker"]])
+    assert any("do not match the terminal" in p for p in out2["problems"])
+    other = json.loads((roots["worker"]/"BLOCK_DATA.json").read_text()); other["data_sha256"] = "0"*64
+    (roots["worker"]/"BLOCK_DATA.json").write_text(json.dumps(other))
+    assert any("portability" in p for p in K.merge(roots["coord"], [roots["worker"]])["problems"])

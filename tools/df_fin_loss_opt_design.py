@@ -108,7 +108,7 @@ def main(argv=None) -> int:
     _module("df_d3_campaign").write_once(a.seal, d)
     print(json.dumps({"design_sha256": d["design_sha256"], "state": d["state"],
                       "horizons": {k: v["hours"] for k, v in d["task"]["horizons"].items()},
-                      "candidates_per_family": d["candidates"]["per_family"],
+                      "candidate_populations": d["candidates"]["totals"],
                       "receivers": {k: v.get("parameters") for k, v in d["receivers"].items() if isinstance(v, dict)}}, indent=1))
     return 0
 

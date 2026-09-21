@@ -74,12 +74,12 @@ def sha_obj(obj) -> str:
 
 def seal(*, lake: str, resource: str, time_column: str, holdout: str, range_from: str, range_to: str,
          receiver: str = "compact_modular", horizon: str = "h6", dev_weeks: int = 2, history_weeks: int = 4,
-         candidate_ids: tuple = ("default_mae_adam", "default_huber_adam"), seeds=(1,), recipe: dict | None = None,
+         candidate_ids: tuple = ("A_mae_adam", "A_huber_adam"), seeds=(1,), recipe: dict | None = None,
          contract=None, purpose: str = "FIN_LOSS_OPT_ACCEPTANCE", columns: list | None = None) -> dict:
     T = _module("df_fin_task")
     B = _module("df_benchmark_contract")
     alloc = T.candidate_allocation()
-    by_id = {c["id"]: c for c in alloc["mae"] + alloc["huber"] + alloc["defaults"]}
+    by_id = {c["id"]: c for c in alloc["A_fixed_default"] + alloc["B_equal_budget_lr"] + alloc["C_decay_factor"] + alloc["D_delta_factor"]}
     unknown = [c for c in candidate_ids if c not in by_id]
     if unknown:
         raise FinRefusal(f"REFUSED: unknown candidates {unknown}")
