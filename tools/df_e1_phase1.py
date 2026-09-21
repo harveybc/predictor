@@ -122,16 +122,12 @@ def seal(source_run: Path, *, max_updates: int = 4000, batch: int = 64, patience
 
 
 def _benchmark_contract() -> dict:
-    """The household task's versioned contract and its decided comparability, embedded in the design."""
+    """The household task's typed contract and its comparability, decided from fields (RP67)."""
     B = _module("df_benchmark_contract")
-    from dataclasses import asdict
     ours = B.household_ours()
-    theirs = B.gasparin_2019()
-    body = asdict(ours)
-    body.update(schema=B.SCHEMA, contract_sha256=ours.sha256(),
-                comparability={**B.decide(ours, theirs), "against": "gasparin_2019",
-                               "rule": "decided from the identity fields, never from a score"})
-    return body
+    decision = {**B.decide(ours, B.gasparin_2019()), "against": "gasparin_2019",
+                "rule": "decided from the identity fields, never from a score"}
+    return ours.to_design_block(comparability=decision)
 
 
 def _arm_model(arm: str, design: dict, data: dict, seed: int):
@@ -236,8 +232,11 @@ def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, max_updates
 def run(design: dict, *, root: Path, run_id: str, source_run: Path, gov_url: str, api_key_file: Path,
         lake: str, resource: str, cost_pilot_only: bool = False, cap_seconds: float = 8000.0,
         outbox_dir: str | None = None) -> dict:
-    # no contract, no run: the refusal lives in the runner, before any acquisition or fit
-    _module("df_benchmark_contract").require(design, purpose="the phase-1 diagnostic training")
+    # no contract, no run: the refusal lives in the runner, before any acquisition or fit — and the
+    # contract must BIND to the data this run will actually consume (RP67), not only to itself
+    B = _module("df_benchmark_contract")
+    contract = B.require(design, purpose="the phase-1 diagnostic training")
+    B.bind(contract, json.loads((Path(source_run)/"DATA.json").read_text()), purpose="the phase-1 diagnostic training")
     G = _module("df_e1_governed")
     U = _module("df_utility_run")
     root = Path(root)

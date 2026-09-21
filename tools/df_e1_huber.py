@@ -86,8 +86,12 @@ def seal(source):
 
 
 def validate(d):
-    # BENCHMARK-CONTRACTS: a factorial without the task's contract is refused before its digest is even read
-    P._module("df_benchmark_contract").require(d, purpose="the loss/optimizer factorial")
+    # BENCHMARK-CONTRACTS (RP67): the contract is typed, its own digest recomputes, and it BINDS to the
+    # prepared data this factorial consumes; a foreign target/horizon with a re-digested outer design refuses here
+    B = P._module("df_benchmark_contract")
+    contract = B.require(d, purpose="the loss/optimizer factorial")
+    source_root = Path(d["source_run"]["root"])
+    B.bind(contract, json.loads((source_root/"DATA.json").read_text()), purpose="the loss/optimizer factorial")
     E = P._module("df_mod_e0")
     if d["schema"] != "df_e1_huber_design.v1" or E.sha_obj(
             {k: v for k, v in d.items() if k != "design_sha256"}) != d["design_sha256"]:

@@ -149,11 +149,10 @@ def seal() -> dict:
     B = _module("df_benchmark_contract")
     E = _module("df_mod_e0")
     ours = B.fx_eurusd_1h_ours()
-    contract = asdict(ours) | {"schema": B.SCHEMA, "contract_sha256": ours.sha256(),
-                               "comparability": {"mode": "NOT_COMPARABLE", "why": "no literature reference re-executed "
-                                                 "on this task yet", "resolution": "a re-execution of a reference method "
-                                                 "under this contract (MATCHED_DOMAIN_COMPARISON) is the planned comparison",
-                                                 "fields_that_differ": ["reference_method"]}}
+    # the typed block (RP67): no literature contract exists for this task, so the decision is NOT_COMPARABLE with a
+    # PLANNED reference to be re-executed under this contract; never a paper's number
+    contract = ours.to_design_block(comparability=B.planned_reference(
+        ours, why="no literature reference has been re-executed on this task; no contract of another work is registered"))
     design = {"schema": SCHEMA, "purpose": "FIN_LOSS_OPT", "state": "DESIGNED_NOT_STARTED",
               "task": task_freeze(), "recipes": ["mae_adam", "mae_adamw", "huber_adam", "huber_adamw"],
               "search": search_grid(), "receivers": receivers(), "benchmark_contract": contract,

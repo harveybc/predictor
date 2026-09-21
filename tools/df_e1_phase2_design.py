@@ -124,8 +124,8 @@ def seal(source_run: Path) -> dict:
               "patience_epochs": 3, "restore_best": True, "max_updates": 4000,
               "role": "HOUSEHOLD CONTINUITY REFERENCE (MAE+Adam); it selects no trading loss — FIN-LOSS-OPT does"}
     ours = B.household_ours()
-    contract = asdict(ours) | {"schema": B.SCHEMA, "contract_sha256": ours.sha256(),
-                               "comparability": {**B.decide(ours, B.gasparin_2019()), "against": "gasparin_2019"}}
+    # the typed block (RP67): validated, digested and decided from fields; the runner's require()+bind() refuse otherwise
+    contract = ours.to_design_block(comparability={**B.decide(ours, B.gasparin_2019()), "against": "gasparin_2019"})
     design = {
         "schema": SCHEMA, "purpose": "E1_DIAGNOSTIC_PHASE_2", "phase": "DEVELOPMENT", "state": "SEALED_NOT_EXECUTED",
         "source_run": {"root": str(source), "design_sha256": src["design_sha256"],
