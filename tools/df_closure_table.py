@@ -67,6 +67,10 @@ def _module(name: str):
     return mod
 
 
+def sha_obj(obj) -> str:
+    return _module("df_mod_e0").sha_obj(obj)
+
+
 def sha_file(path: Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as fh:
@@ -105,7 +109,72 @@ def unit_roles(design: dict) -> dict:
     return roles
 
 
+def _block_data(root: Path) -> dict:
+    """A block's prepared data (BLOCK_DATA.npz) in the DATA layout the verifier scores against."""
+    with np.load(root/"BLOCK_DATA.npz", allow_pickle=False) as z:
+        d = {k: z[k] for k in z.files}
+    return {"Y": d["Y"], "eval_origins": d["common_eval"], "horizon": d["horizon"], "target_channel": d["target_channel"],
+            "scaler_sd": d["scaler_sd"], "scaler_mean": d["scaler_mean"], "row_offset": d.get("row_offset")}
+
+
+def preparation_custody(root: Path, design: dict, *, warehouse=None) -> dict:
+    """RP82: the prepared data, its scaler and its evaluation identities are read from the preparation's OWN evidence
+    (BLOCK_DATA for blocks) and bound to the ACCEPTED prepare terminal when the warehouse is read; a closure-time DATA.npz or
+    a scaler edited on disk is never the denominator. History without an accepted preparation artifact gets an explicit
+    weaker scope, never invented custody."""
+    root = Path(root)
+    out = {"class": "PREPARATION_LOCAL_ONLY", "why": "no accepted preparation artifact known", "source": None}
+    if (root/"BLOCK_DATA.npz").is_file() and (root/"BLOCK_DATA.json").is_file():
+        rec = json.loads((root/"BLOCK_DATA.json").read_text())
+        sha = sha_file(root/"BLOCK_DATA.npz")
+        out.update(source=str(root/"BLOCK_DATA.npz"), sha256=sha, local_record_sha256=rec.get("data_sha256"),
+                   design_of_record=rec.get("design_sha256"))
+        if rec.get("data_sha256") != sha:
+            out.update({"class": "PREPARATION_CHANGED", "why": "BLOCK_DATA.npz differs from its own preparation record"})
+            return out
+        if rec.get("design_sha256") != design.get("design_sha256"):
+            out.update({"class": "PREPARATION_OF_ANOTHER_DESIGN", "why": "the prepared data belongs to another design"})
+            return out
+        receipts = (json.loads((root/"TERMINAL_RECEIPTS.json").read_text()) or {}).get("units") or {} if (root/"TERMINAL_RECEIPTS.json").is_file() else {}
+        prep = receipts.get("prepare")
+        if warehouse is not None and prep:
+            held = warehouse(prep["campaign_sha256"]) or {}
+            row = (held.get("current") or {}).get("prepare") or {}
+            acc = {a.get("role"): a.get("sha256") for a in row.get("artifacts") or []}
+            if row.get("terminal_sha256") == prep.get("terminal_sha256") and row.get("status") == "COMPLETED" and acc.get("data") == sha:
+                out.update({"class": "PREPARATION_ACCEPTED_ARTIFACT", "why": "the accepted prepare terminal carries the digest of the prepared data read",
+                            "accepted_config_sha256": row.get("config_sha256")})
+                if row.get("config_sha256") not in (None, design.get("design_sha256")):
+                    out.update({"class": "PREPARATION_OF_ANOTHER_CONFIGURATION", "why": "the accepted prepare terminal names another configuration"})
+            elif row:
+                out.update({"class": "PREPARATION_NOT_ACCEPTED", "why": f"the accepted prepare terminal does not anchor these bytes (status {row.get('status')}, "
+                                                                          f"data artifact {str(acc.get('data'))[:12]} vs {sha[:12]})"})
+            else:
+                out.update({"class": "PREPARATION_NOT_ACCEPTED", "why": "no accepted prepare terminal in the warehouse for this campaign"})
+        elif prep:
+            out.update({"class": "PREPARATION_LOCAL_ONLY", "why": "warehouse not read: the preparation record checks locally only"})
+        return out
+    src = (design.get("source_run") or {}).get("root")
+    data_json = root/"DATA.json" if (root/"DATA.json").is_file() and (root/"DATA.npz").is_file() else (Path(src)/"DATA.json" if src else None)
+    if data_json and data_json.is_file():
+        rec = json.loads(data_json.read_text())
+        npz = data_json.with_name("DATA.npz")
+        sha = sha_file(npz) if npz.is_file() else None
+        out.update(source=str(npz), sha256=sha, local_record_sha256=rec.get("data_sha256"))
+        if rec.get("data_sha256") and rec["data_sha256"] != sha:
+            out.update({"class": "PREPARATION_CHANGED", "why": "DATA.npz differs from its own preparation record"})
+        else:
+            out.update({"class": "PREPARATION_LOCAL_ONLY", "why": "historical preparation: its record is local; no accepted artifact anchors these bytes (scope stated)"})
+    return out
+
+
 def _source_data(root: Path, design: dict) -> tuple:
+    if (root/"BLOCK_DATA.npz").is_file():
+        meta = json.loads((root/"BLOCK_DATA.json").read_text()) if (root/"BLOCK_DATA.json").is_file() else {}
+        if "input_columns" not in meta:
+            local = json.loads((root/"DATA.json").read_text()) if (root/"DATA.json").is_file() else {}
+            meta["input_columns"] = (design.get("source_run") or {}).get("input_columns") or local.get("input_columns")
+        return _block_data(root), meta, root/"BLOCK_DATA.npz"
     data = root/"DATA.npz"
     data_json = root/"DATA.json"
     if not data.is_file():
@@ -117,6 +186,22 @@ def _source_data(root: Path, design: dict) -> tuple:
         d = {k: z[k] for k in z.files}
     meta = json.loads(data_json.read_text()) if data_json.is_file() else {}
     return d, meta, data
+
+
+def denominator_check(design: dict, data: dict, registry: dict) -> dict:
+    """The normalized metric's denominator is checked against the CONTRACT (an anchor independent of any local file)."""
+    j = int(data["target_channel"][0])
+    sd = float(data["scaler_sd"][j])
+    block = design.get("benchmark_contract") or {}
+    src = block.get("source") or {}
+    contract_sd = src.get("sd_train")
+    if contract_sd is None and design.get("benchmark_contract") is None and "uci_235" in json.dumps(design.get("source_run") or design.get("task") or ""):
+        ours = ((registry or {}).get("ours") or {}).get("household_W60_h60") or {}
+        contract_sd = (ours.get("source") or {}).get("sd_train")                # a household design without its own contract: the registry's
+    out = {"sd_used": sd, "contract_sd_train": contract_sd}
+    if contract_sd is not None:
+        out["equal_to_contract"] = abs(float(contract_sd)-sd) <= 1e-9
+    return out
 
 
 def _arrays(path: Path) -> list:
@@ -204,9 +289,24 @@ def verify_unit(root: Path, design: dict, unit: str, role: str, receipt: dict, d
             custody = {"class": "NO_ACCEPTED_TERMINAL", "why": "the accepted payload is absent"}
         else:
             wh.update(terminal_in_warehouse=True, digest_matches_receipt=row.get("terminal_sha256") == receipt.get("terminal_sha256"),
-                      status=row.get("status"), artifact_rows=len(row.get("artifacts") or []))
+                      status=row.get("status"), artifact_rows=len(row.get("artifacts") or []), accepted_config_sha256=row.get("config_sha256"))
             if not wh["digest_matches_receipt"]:
                 problems.append(f"{unit}: the warehouse terminal digest differs from the client's receipt")
+            # RP83: the accepted payload names the configuration and the cell it measured; the design must be that one
+            if row.get("config_sha256") and row.get("config_sha256") != design.get("design_sha256"):
+                problems.append(f"{unit}: the accepted terminal was reported under configuration {str(row.get('config_sha256'))[:12]}, "
+                                f"not this design {str(design.get('design_sha256'))[:12]}")
+            tags = row.get("tags") or row.get("tags_json") or {}
+            if isinstance(tags, str):
+                try:
+                    tags = json.loads(tags)
+                except Exception:
+                    tags = {}
+            cell = next((c for c in (design.get("cells") or []) + (design.get("pilots") or []) if c.get("cell_id") == unit), {})
+            for key in ("arm", "seed"):
+                if key in tags and cell.get(key) is not None and str(tags[key]) != str(cell[key]):
+                    problems.append(f"{unit}: the accepted terminal's {key} is {tags[key]!r}, the design says {cell[key]!r}: IDENTITY")
+            wh["accepted_tags_checked"] = [k for k in ("arm", "seed") if k in tags]
             if row.get("status") != "COMPLETED":
                 problems.append(f"{unit}: the warehouse terminal is {row.get('status')}, not COMPLETED")
             wh_pred = next((a for a in row.get("artifacts") or [] if a.get("role") == "predictions"), None)
@@ -343,6 +443,52 @@ def _registry_cache() -> dict:
     return _REG
 
 
+def design_identity(design: dict) -> dict:
+    """RP83: a sealed design's digest must RECOMPUTE from its content; a relabeled design with the old digest is refused."""
+    if "design_sha256" not in design:
+        return {"recomputes": None, "why": "no design digest"}
+    body = {k: v for k, v in design.items() if k != "design_sha256"}
+    ok = sha_obj(body) == design["design_sha256"]
+    return {"recomputes": ok, "design_sha256": design["design_sha256"]}
+
+
+def verify_run(root: Path, *, label: str, registry: dict, warehouse=None) -> dict:
+    """THE authoritative verification a closure consumes: rows, preparation custody, design identity, denominator."""
+    root = Path(root)
+    design = json.loads((root/"DESIGN.json").read_text())
+    ident = design_identity(design)
+    prep = preparation_custody(root, design, warehouse=warehouse)
+    rows = rows_from_run(root, label=label, registry=registry, warehouse=warehouse)
+    data, _, _ = _source_data(root, design)
+    denom = denominator_check(design, data, registry)
+    run_problems = []
+    strict = design.get("schema") in STRICT_CHAIN_SCHEMAS
+    if ident["recomputes"] is False and (strict or design.get("schema", "").startswith("df_")):     # sealed designs must recompute; a bare fixture has no seal
+        run_problems.append(f"{label}: the design digest does not recompute from the design's content (relabeled or edited)")
+    if prep["class"] in ("PREPARATION_CHANGED", "PREPARATION_OF_ANOTHER_DESIGN", "PREPARATION_OF_ANOTHER_CONFIGURATION", "PREPARATION_NOT_ACCEPTED"):
+        run_problems.append(f"{label}: preparation custody {prep['class']}: {prep['why']}")
+    if strict and warehouse is not None and prep["class"] != "PREPARATION_ACCEPTED_ARTIFACT":
+        run_problems.append(f"{label}: a new result needs its prepared data anchored by the accepted prepare terminal; custody is {prep['class']}")
+    if denom.get("equal_to_contract") is False:
+        run_problems.append(f"{label}: the normalized denominator on disk ({denom['sd_used']}) is not the contract's sd_train ({denom['contract_sd_train']}): SCALE")
+    for r in rows:
+        r["preparation_custody"] = prep["class"]
+        r["denominator"] = denom
+        r["design_identity"] = ident
+        if run_problems:
+            r["problems"] = list(r.get("problems") or []) + run_problems
+            r["verified"] = False
+            r["preserved_with_qualified_scope"] = False
+        elif r.get("verified") and prep["class"] != "PREPARATION_ACCEPTED_ARTIFACT":
+            r["verified"] = False                                        # arrays anchored, preparation not: PRESERVED, not verified
+            r["preserved_with_qualified_scope"] = True
+            r["custody"] = {**r["custody"], "preparation": prep["class"], "scope": "ARRAYS_ANCHORED_PREPARATION_NOT_ACCEPTED"}
+    return {"design_sha256": design.get("design_sha256"), "design_identity": ident, "preparation_custody": prep, "denominator": denom,
+            "rows": rows, "problems": run_problems + [p for r in rows for p in (r.get("problems") or [])],
+            "verified_units": sorted({r["unit"] for r in rows if r.get("verified")}),
+            "unverified_units": sorted({r["unit"] for r in rows if not r.get("verified")})}
+
+
 def rows_from_run(root: Path, *, label: str, registry: dict, warehouse=None) -> list:
     root = Path(root)
     _REG.clear(); _REG.update(registry)
@@ -369,6 +515,118 @@ def rows_from_run(root: Path, *, label: str, registry: dict, warehouse=None) -> 
         r["run"] = label
         r["units_not_scored_by_role"] = skipped
     return rows
+
+
+# --- the financial runner's layout: the same authority, per fold and split -----------------------------------------------
+
+def verify_fin_run(root: Path, *, warehouse=None) -> dict:
+    """RP82 for tools/df_fin_runner.py: every cell's arrays are bound to the accepted artifact chain, its pairs to the fold's
+    admissible population in FIN_DATA (itself anchored by the accepted prepare terminal), its metrics recomputed with the
+    fold's train sigma, its accepted configuration and tags to the design cell; identity comes from records, not names."""
+    root = Path(root)
+    design = json.loads((root/"DESIGN.json").read_text())
+    ident = design_identity(design)
+    receipts = (json.loads((root/"TERMINAL_RECEIPTS.json").read_text()) or {}).get("units") or {} if (root/"TERMINAL_RECEIPTS.json").is_file() else {}
+    problems = []
+    if ident["recomputes"] is False:
+        problems.append("the design digest does not recompute from its content")
+    # preparation custody
+    prep = {"class": "PREPARATION_LOCAL_ONLY", "why": "warehouse not read"}
+    rec = json.loads((root/"FIN_DATA.json").read_text())
+    sha = sha_file(root/"FIN_DATA.npz")
+    if rec.get("data_sha256") != sha or rec.get("design_sha256") != design.get("design_sha256"):
+        prep = {"class": "PREPARATION_CHANGED", "why": "FIN_DATA differs from its record or belongs to another design"}
+    elif warehouse is not None and "prepare" in receipts:
+        row = ((warehouse(receipts["prepare"]["campaign_sha256"]) or {}).get("current") or {}).get("prepare") or {}
+        acc = {a.get("role"): a.get("sha256") for a in row.get("artifacts") or []}
+        if row.get("terminal_sha256") == receipts["prepare"].get("terminal_sha256") and row.get("status") == "COMPLETED" and acc.get("data") == sha \
+                and row.get("config_sha256") in (None, design.get("design_sha256")):
+            prep = {"class": "PREPARATION_ACCEPTED_ARTIFACT", "why": "the accepted prepare terminal carries the digest of FIN_DATA read"}
+        else:
+            prep = {"class": "PREPARATION_NOT_ACCEPTED", "why": "the accepted prepare terminal does not anchor these bytes"}
+    if prep["class"] not in ("PREPARATION_ACCEPTED_ARTIFACT", "PREPARATION_LOCAL_ONLY"):
+        problems.append(f"preparation custody {prep['class']}: {prep['why']}")
+    with np.load(root/"FIN_DATA.npz", allow_pickle=False) as z:
+        data = {k: z[k] for k in z.files}
+    H = _module("df_e1_huber")
+    rows = []
+    for cell in design["cells"]:
+        unit = cell["cell_id"]
+        p_, folder = [], root/"attempts"/unit
+        k = int(cell["fold"])
+        fold = rec["folds"][k] if k < len(rec["folds"]) else {}
+        if fold.get("status") != "SCORABLE":
+            rows.append({"unit": unit, "fold": k, "status": "FOLD_NOT_SCORABLE", "verified": False, "problems": []})
+            continue
+        if not (folder/"arrays.npz").is_file() or not (folder/"cell.json").is_file():
+            p_.append(f"{unit}: a registered cell has no arrays or record — missing, not absent")
+            rows.append({"unit": unit, "fold": k, "verified": False, "problems": p_}); continue
+        record = json.loads((folder/"cell.json").read_text())
+        if record.get("design_sha256") != design.get("design_sha256") or (record.get("cell") or {}).get("candidate_id") != cell["candidate_id"] \
+                or int((record.get("cell") or {}).get("seed", -1)) != int(cell["seed"]) or int((record.get("cell") or {}).get("fold", -1)) != k:
+            p_.append(f"{unit}: the record's identity (design, candidate, seed, fold) contradicts the design cell")
+        arrays_sha, record_sha = sha_file(folder/"arrays.npz"), sha_file(folder/"cell.json")
+        custody = {"class": "UNCHECKED"}
+        receipt = receipts.get(unit)
+        if receipt is None:
+            p_.append(f"{unit}: no accepted terminal receipt")
+        elif warehouse is not None:
+            row = ((warehouse(receipt["campaign_sha256"]) or {}).get("current") or {}).get(unit)
+            if not row:
+                p_.append(f"{unit}: the warehouse holds NO terminal for this unit"); custody = {"class": "NO_ACCEPTED_TERMINAL"}
+            else:
+                acc = {a.get("role"): a.get("sha256") for a in row.get("artifacts") or []}
+                if row.get("terminal_sha256") != receipt.get("terminal_sha256") or row.get("status") != "COMPLETED":
+                    p_.append(f"{unit}: the accepted terminal digest/status disagrees with the receipt")
+                if row.get("config_sha256") and row.get("config_sha256") != design.get("design_sha256"):
+                    p_.append(f"{unit}: reported under another configuration")
+                tags = row.get("tags") or row.get("tags_json") or {}
+                if isinstance(tags, str):
+                    try:
+                        tags = json.loads(tags)
+                    except Exception:
+                        tags = {}
+                for key, want in (("candidate", cell["candidate_id"]), ("seed", cell["seed"]), ("fold", cell["fold"])):
+                    if key in tags and str(tags[key]) != str(want):
+                        p_.append(f"{unit}: the accepted terminal's {key} is {tags[key]!r}, the design says {want!r}: IDENTITY")
+                if acc.get("predictions") == arrays_sha and acc.get("record") == record_sha and not p_:
+                    custody = {"class": "ACCEPTED_ARTIFACT_CHAIN"}
+                else:
+                    if acc.get("predictions") != arrays_sha:
+                        p_.append(f"{unit}: the arrays on disk are not the accepted predictions artifact: CHANGED ARRAYS")
+                    if acc.get("record") != record_sha:
+                        p_.append(f"{unit}: the record on disk is not the accepted record artifact: CHANGED RECORD")
+                    custody = {"class": "UNANCHORED"}
+        scores = {}
+        with np.load(folder/"arrays.npz", allow_pickle=False) as z:
+            sigma = float(data[f"f{k}_target_mean_sigma"][1])
+            if abs(sigma-float(fold.get("sigma_train", sigma))) > 1e-12 or abs(sigma-float(record.get("sigma_train", sigma))) > 1e-12:
+                p_.append(f"{unit}: the fold's sigma in FIN_DATA, its record and the cell's record disagree: SCALE")
+            for split in ("validation", "test"):
+                o, t = data[f"f{k}_{split}_origins"], data[f"f{k}_{split}_targets"]
+                if not (np.array_equal(z[f"{split}_origins"], o) and np.array_equal(z[f"{split}_targets"], t)):
+                    p_.append(f"{unit}: {split} pairs are not the fold's admissible population")
+                    continue
+                y_expected, naive_expected = data["y"][t], data["y"][o]
+                if not (np.array_equal(z[f"{split}_y"], y_expected) and np.array_equal(z[f"{split}_naive"], naive_expected)):
+                    p_.append(f"{unit}: {split} labels/naive are not the fold's")
+                    continue
+                pred = np.asarray(z[f"{split}_pred"], dtype=np.float64)
+                if not np.isfinite(pred).all() or pred.size == 0:
+                    p_.append(f"{unit}: {split} predictions non-finite or empty"); continue
+                sc = H.metrics(pred, y_expected, naive_expected, sigma)
+                stored = (record.get("scores") or {}).get(split) or {}
+                if stored and abs(float(stored.get("mae_z", np.nan))-sc["mae_z"]) > 1e-12:
+                    p_.append(f"{unit}: the record's {split} MAE_z is not the one recomputed from the arrays")
+                scores[split] = sc
+            if not np.allclose(z["validation_pred"], z["validation_reload_pred"], rtol=1e-6, atol=1e-6):
+                p_.append(f"{unit}: reload parity")
+        verified = not p_ and custody["class"] == "ACCEPTED_ARTIFACT_CHAIN" and prep["class"] == "PREPARATION_ACCEPTED_ARTIFACT" and not problems
+        rows.append({"unit": unit, "fold": k, "candidate_id": cell["candidate_id"], "seed": cell["seed"], "scores": scores, "custody": custody,
+                     "verified": verified, "problems": p_})
+    return {"design_sha256": design.get("design_sha256"), "design_identity": ident, "preparation_custody": prep, "rows": rows,
+            "problems": problems + [q for r in rows for q in r["problems"]],
+            "verified_units": sorted(r["unit"] for r in rows if r["verified"]), "unverified_units": sorted(r["unit"] for r in rows if not r["verified"])}
 
 
 # --- validation and rendering ---------------------------------------------------------------------------
@@ -443,10 +701,12 @@ def markdown(table: dict) -> str:
 
 
 def build(runs: list, *, registry: dict, warehouse=None, no_new_measurement: bool) -> dict:
-    rows = []
+    rows, runs_meta = [], {}
     for spec in runs:
         root, _, label = spec.partition(":")
-        rows += rows_from_run(Path(root).expanduser(), label=label or Path(root).name, registry=registry, warehouse=warehouse)
+        v = verify_run(Path(root).expanduser(), label=label or Path(root).name, registry=registry, warehouse=warehouse)
+        rows += v["rows"]
+        runs_meta[label or Path(root).name] = {k: v[k] for k in ("design_sha256", "design_identity", "preparation_custody", "denominator")}
     table = {"schema": SCHEMA, "at": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
              "no_new_measurement": bool(no_new_measurement), "rows": rows,
              "chain": ["registered design -> unit role", "attempt + terminal payload", "artifact digests (arrays -> terminal/record)",
@@ -458,12 +718,15 @@ def build(runs: list, *, registry: dict, warehouse=None, no_new_measurement: boo
                                      "comparison column; NOT_COMPARABLE carries its reason and the planned matched comparison",
                        "missing_forecast": "a registered forecast unit without arrays or without a warehouse terminal is a problem, "
                                            "whatever NO_NEW_MEASUREMENT says about the round"}}
+    table["runs"] = runs_meta
     table["problems"] = validate(table)
     table["verified_rows"] = sum(1 for r in rows if r.get("verified"))
     table["preserved_qualified_rows"] = sum(1 for r in rows if r.get("preserved_with_qualified_scope"))
     table["custody_classes"] = {c: sum(1 for r in rows if (r.get("custody") or {}).get("class") == c)
                                 for c in sorted({(r.get("custody") or {}).get("class") for r in rows})}
-    table["custody_rule"] = ("verified = clean arrays AND accepted artifact chain (predictions + record digests in the warehouse's canonical payload); "
+    table["preparation_classes"] = {c: sum(1 for r in rows if r.get("preparation_custody") == c) for c in sorted({r.get("preparation_custody") for r in rows})}
+    table["custody_rule"] = ("verified = clean arrays AND accepted artifact chain (predictions + record digests in the warehouse's canonical payload) AND "
+                             "the prepared data anchored by the accepted prepare terminal AND the denominator equal to the contract's sd_train; "
                              "METRIC_ANCHORED = a historical score equal to the metric the accepted terminal carries, arrays not independently "
                              "anchored (preserved, qualified); UNANCHORED/UNCHECKED = nothing accepted anchors the score (a problem for new results)")
     return table
@@ -490,7 +753,7 @@ def main(argv=None) -> int:
     if a.markdown:
         a.markdown.write_text(markdown(table))
     print(json.dumps({"rows": len(table["rows"]), "verified_rows": table["verified_rows"], "preserved_qualified_rows": table["preserved_qualified_rows"],
-                      "custody_classes": table["custody_classes"],
+                      "custody_classes": table["custody_classes"], "preparation_classes": table["preparation_classes"],
                       "problems": table["problems"][:20], "no_new_measurement": table["no_new_measurement"]}, indent=1))
     return 0 if not table["problems"] else 1
 

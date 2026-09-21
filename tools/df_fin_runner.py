@@ -432,23 +432,35 @@ def run_units(a, design, units, *, parallel: int) -> list:
 # --- selection and inference over temporal blocks ------------------------------------------------------------------------
 
 MIN_BLOCKS = 5                       # declared minimum resampling support: distinct complete blocks
+COVERAGE_CERTIFICATES = {}           # (n_positions, block_len) -> measured null coverage at 95 % nominal (RP85: predeclared, filled by tests/evidence)
 
 
 def block_bootstrap(values, *, block_len: int, n_boot: int = 2000, seed: int = 0, min_blocks: int = MIN_BLOCKS) -> dict:
-    """Moving-block bootstrap of the mean over CALENDAR positions (RP76/A4): `values` is indexed by fold position with
-    NaN where a fold is missing, so surviving folds never become adjacent weeks; a block that spans a gap is not a block.
-    With fewer than `min_blocks` distinct complete blocks the result is DESCRIPTIVE (no interval), never a certainty."""
+    """Moving-block bootstrap of the mean over CALENDAR positions (RP76/RP85). ESTIMAND: the mean paired effect over the
+    USABLE week population = the observed weeks that can enter at least one complete block. An observed week that cannot
+    enter any block is a NAMED support limitation: the result is then DESCRIPTIVE over all observed weeks (no interval),
+    never an interval over a silently different population. Fewer than `min_blocks` complete blocks -> DESCRIPTIVE too."""
     v = np.asarray(values, dtype=np.float64)
     present = np.isfinite(v)
     n_present = int(present.sum())
     L = max(1, int(block_len))
     starts = [s0 for s0 in range(v.size-L+1) if present[s0:s0+L].all()]
-    desc = {"mean": float(v[present].mean()) if n_present else None, "n_folds_present": n_present, "n_positions": int(v.size),
-            "block_len": L, "complete_blocks": len(starts),
+    covered = np.zeros(v.size, dtype=bool)
+    for s0 in starts:
+        covered[s0:s0+L] = True
+    isolated = [int(i) for i in np.flatnonzero(present & ~covered)]
+    desc = {"estimand": "mean paired effect over the usable week population (weeks that can enter a complete block)",
+            "mean_all_observed_weeks": float(v[present].mean()) if n_present else None, "n_folds_present": n_present, "n_positions": int(v.size),
+            "block_len": L, "complete_blocks": len(starts), "isolated_observed_weeks": isolated,
             "signs": {"positive": int((v[present] > 0).sum()), "negative": int((v[present] < 0).sum()), "zero": int((v[present] == 0).sum())},
             "sample_sd_ddof1": float(v[present].std(ddof=1)) if n_present > 1 else None}
+    if isolated:
+        return {**desc, "mean": desc["mean_all_observed_weeks"], "interval_95": None, "status": "INSUFFICIENT_SUPPORT_ISOLATED_WEEKS",
+                "why": f"observed weeks at positions {isolated} count in the mean but could enter no complete block of length {L}; "
+                       "an interval over the remaining weeks would estimate another population",
+                "reading": "descriptive only over all observed weeks"}
     if len(starts) < min_blocks or n_present < 2*L:
-        return {**desc, "interval_95": None, "status": "INSUFFICIENT_RESAMPLING_SUPPORT",
+        return {**desc, "mean": desc["mean_all_observed_weeks"], "interval_95": None, "status": "INSUFFICIENT_RESAMPLING_SUPPORT",
                 "why": f"{len(starts)} complete blocks of length {L} over {n_present} folds; at least {min_blocks} blocks and 2 x block length are required",
                 "reading": "descriptive only: mean, signs and sample SD; no coverage is claimed"}
     rng = np.random.default_rng(seed)
@@ -458,78 +470,123 @@ def block_bootstrap(values, *, block_len: int, n_boot: int = 2000, seed: int = 0
         pick = rng.choice(starts, size=k, replace=True)
         sample = np.concatenate([v[s0:s0+L] for s0 in pick])[:n_present]
         means.append(sample.mean())
-    return {**desc, "interval_95": [float(np.quantile(means, .025)), float(np.quantile(means, .975))], "status": "RESAMPLED",
-            "n_boot": n_boot, "reading": "a moving-block percentile interval over calendar positions; coverage was validated on dependent "
-                                        "synthetic null and positive controls (tests), not assumed from the word 'block'"}
+    cert = COVERAGE_CERTIFICATES.get((int(v.size), L))
+    return {**desc, "mean": desc["mean_all_observed_weeks"], "interval_95": [float(np.quantile(means, .025)), float(np.quantile(means, .975))],
+            "status": "RESAMPLED" if cert and cert.get("confirmatory") else "RESAMPLED_DESCRIPTIVE",
+            "n_boot": n_boot, "coverage_certificate": cert,
+            "reading": ("a moving-block percentile interval over calendar positions; CONFIRMATORY only where a predeclared coverage certificate "
+                        "for (positions, block length) exists (tests/evidence); otherwise a descriptive interval, not 95 % coverage")}
 
 
-def select(root: Path, design: dict) -> dict:
-    """Selection at CONFIGURATION level (RP76/A4): a candidate's validation score in a fold is the mean over the declared
-    seeds, and it is complete only when every seed and every scorable fold is present; the seeds are then retained as
-    PAIRED replicates for the test contrast (never a best-of-seeds)."""
+def select(root: Path, design: dict, *, verification: dict | None = None) -> dict:
+    """RP84 (v4). Populations are kept apart: A = four fixed defaults, REPORTED; B = the same three LRs tuned SEPARATELY within
+    EACH loss x optimizer combination, selection at configuration level (validation MAE_z averaged over the paired seeds);
+    C = decay sensitivity contrasts paired to their B anchor (same loss, AdamW, default LR); D = delta sensitivity contrasts
+    paired to their anchor (same optimizer, default LR). Nothing outside B enters B's search. A record is consumed only when
+    its identity (design, candidate, fold, seed) agrees with the design cell, its scores are finite, it is not duplicated, and —
+    when a verification is given — its custody verified."""
     root = Path(root)
-    records = {}
+    seeds = sorted(design.get("seeds") or [])
+    T = _module("df_fin_task")
+    alloc = T.candidate_allocation()
+    pops = {c["id"]: c["population"] for key in ("A_fixed_default", "B_equal_budget_lr", "C_decay_factor", "D_delta_factor") for c in alloc[key]}
+    candidates = {c["id"]: {**c, "population": c.get("population") or pops.get(c["id"], "UNKNOWN")} for c in design["candidates"]}
+    verified = None if verification is None else set(verification.get("verified_units") or [])
+    consumed, rejected, seen = {}, [], set()
     for c in design["cells"]:
         p = root/"attempts"/c["cell_id"]/"cell.json"
-        if p.is_file():
-            records[c["cell_id"]] = json.loads(p.read_text())
-    # identities come from the RECORDS (fold, candidate, seed), never from a file-name convention
-    def cid_of(r):
-        return r["candidate"].get("id") or r["candidate"]["loss"]
-    seeds = sorted(design.get("seeds") or {int(r["cell"]["seed"]) for r in records.values()})
-    by_key = {(int(r["cell"]["fold"]), cid_of(r), int(r["cell"]["seed"])): r for r in records.values()}
-    candidates = [{**c, "id": c.get("id") or c["loss"]} for c in design["candidates"]]
-    folds_rec = {}
-    if (root/"FIN_DATA.json").is_file():
-        folds_rec = {f["fold"]: f.get("status", "SCORABLE") for f in json.loads((root/"FIN_DATA.json").read_text())["folds"]}
+        if not p.is_file():
+            continue
+        r = json.loads(p.read_text())
+        cell = r.get("cell") or {}
+        cid = (r.get("candidate") or {}).get("id")
+        key = (int(cell.get("fold", -1)), cid, int(cell.get("seed", -1)))
+        why = None
+        if cid not in candidates or cid != c["candidate_id"] or int(cell.get("seed", -1)) != int(c["seed"]) or int(cell.get("fold", -1)) != int(c["fold"]) \
+                or r.get("design_sha256") not in (None, design.get("design_sha256")):
+            why = "contradictory identity (design/candidate/fold/seed)"
+        elif key in seen:
+            why = "duplicate record"
+        else:
+            v = ((r.get("scores") or {}).get("validation") or {}).get("mae_z")
+            t = ((r.get("scores") or {}).get("test") or {}).get("mae_z")
+            if not (isinstance(v, (int, float)) and math.isfinite(v)) or (t is not None and not math.isfinite(t)):
+                why = "non-finite score"
+            elif verified is not None and c["cell_id"] not in verified:
+                why = "custody not verified"
+        if why:
+            rejected.append({"unit": c["cell_id"], "why": why}); continue
+        seen.add(key)
+        consumed[key] = r
+    folds_rec = {f["fold"]: f.get("status", "SCORABLE") for f in json.loads((root/"FIN_DATA.json").read_text())["folds"]} if (root/"FIN_DATA.json").is_file() else {}
     n_folds = int(design["folds"]["dev_weeks"])
-    families = sorted({c["loss"] for c in design["candidates"]})
-    per_fold, per_config = {}, {}
+    strata = [(l, o) for l in ("mae", "huber") for o in ("adam", "adamw")]
+
+    def config(k, cid):
+        cells = {s: consumed.get((k, cid, s)) for s in seeds}
+        if not seeds or any(cells[s] is None for s in seeds):
+            return {"status": "INCOMPLETE", "seeds_present": [s for s in seeds if cells[s]]}
+        vals = [cells[s]["scores"]["validation"]["mae_z"] for s in seeds]
+        return {"status": "COMPLETE", "validation_mae_z_by_seed": {str(s): x for s, x in zip(seeds, vals)}, "validation_mean_over_seeds": float(np.mean(vals)),
+                "test_mae_z_by_seed": {str(s): (cells[s]["scores"]["test"] or {}).get("mae_z") for s in seeds}}
+
+    per_fold, counts = {}, {"A": 0, "B": 0, "C": 0, "D": 0}
     for k in range(n_folds):
         status = folds_rec.get(k, "SCORABLE")
         per_fold[k] = {"status": status}
         if status != "SCORABLE":
             per_fold[k]["why"] = "no score in this fold; its calendar position is kept as a gap"
             continue
-        for fam in families:
-            configs = {}
-            for cand in [c for c in candidates if c["loss"] == fam]:
-                cells = {s: by_key.get((k, cand["id"], s)) for s in seeds}
-                have = [s for s, r in cells.items() if r]
-                if len(have) != len(seeds):
-                    configs[cand["id"]] = {"status": "INCOMPLETE", "seeds_present": have}
-                    continue
-                vals = [cells[s]["scores"]["validation"]["mae_z"] for s in seeds]
-                tests = {s: (cells[s]["scores"]["test"] or {}).get("mae_z") for s in seeds}
-                configs[cand["id"]] = {"status": "COMPLETE", "validation_mae_z_by_seed": dict(zip(map(str, seeds), vals)),
-                                       "validation_mean_over_seeds": float(np.mean(vals)), "test_mae_z_by_seed": {str(s): t for s, t in tests.items()}}
-            complete = {cid: c for cid, c in configs.items() if c["status"] == "COMPLETE"}
+        # A: reported, never selected
+        A = {cid: config(k, cid) for cid, c in candidates.items() if c["population"] == "A_fixed_default"}
+        counts["A"] += sum(1 for a in A.values() if a["status"] == "COMPLETE")
+        # B: within each (loss, optimizer) stratum
+        B = {}
+        for l, o in strata:
+            cands = {cid: config(k, cid) for cid, c in candidates.items() if c["population"] == "B_equal_budget_lr" and c["loss"] == l and c["optimizer"] == o}
+            complete = {cid: x for cid, x in cands.items() if x["status"] == "COMPLETE"}
+            counts["B"] += len(complete)
             if not complete:
-                per_fold[k][fam] = {"status": "NOT_RUN_OR_INCOMPLETE", "configs": configs}
-                continue
+                B[f"{l}_{o}"] = {"status": "NOT_RUN_OR_INCOMPLETE", "configs": cands}; continue
             best = min(complete, key=lambda cid: complete[cid]["validation_mean_over_seeds"])
-            per_fold[k][fam] = {"selected": best, "by": "validation MAE_z averaged over the declared seeds (configuration level)",
-                                "validation_mean_over_seeds": complete[best]["validation_mean_over_seeds"],
-                                "test_mae_z_by_seed_of_selected": complete[best]["test_mae_z_by_seed"],
-                                "n_candidates_compared": len(complete), "configs": configs}
-    paired = {}
-    if len(families) == 2:
-        f0, f1 = families
+            B[f"{l}_{o}"] = {"selected": best, "by": "validation MAE_z averaged over the paired seeds, within this loss x optimizer stratum",
+                             "n_candidates_compared": len(complete), "lrs_compared": sorted(candidates[cid]["lr"] for cid in complete),
+                             "validation_mean_over_seeds": complete[best]["validation_mean_over_seeds"],
+                             "test_mae_z_by_seed_of_selected": complete[best]["test_mae_z_by_seed"], "configs": cands}
+        # C and D: paired sensitivity contrasts against their anchors (never competitors)
+        def anchor(loss, opt):
+            cid = next((c for c, x in candidates.items() if x["population"] == "B_equal_budget_lr" and x["loss"] == loss and x["optimizer"] == opt
+                        and abs(x["lr"]-T.DEFAULTS[opt]["lr"]) < 1e-12), None)
+            return cid, (config(k, cid) if cid else {"status": "INCOMPLETE"})
+        CD = {}
+        for cid, c in candidates.items():
+            if c["population"] not in ("C_decay_factor", "D_delta_factor"):
+                continue
+            me = config(k, cid)
+            a_id, a_cfg = anchor(c["loss"], c["optimizer"])
+            counts[c["population"][0]] += 1 if me["status"] == "COMPLETE" else 0
+            if me["status"] != "COMPLETE" or a_cfg.get("status") != "COMPLETE":
+                CD[cid] = {"status": "INCOMPLETE", "anchor": a_id}; continue
+            d = {s: me["test_mae_z_by_seed"][s]-a_cfg["test_mae_z_by_seed"][s] for s in me["test_mae_z_by_seed"]}
+            CD[cid] = {"status": "PAIRED_CONTRAST", "anchor": a_id, "factor": c["population"], "test_difference_by_seed": d,
+                       "validation_difference_by_seed": {s: me["validation_mae_z_by_seed"][s]-a_cfg["validation_mae_z_by_seed"][s] for s in me["validation_mae_z_by_seed"]}}
+        per_fold[k].update({"A_fixed_default": A, "B_equal_budget_lr": B, "CD_sensitivity_contrasts": CD})
+    # primary contrasts from B: loss within optimizer and optimizer within loss, paired by (fold, seed)
+    contrasts = {}
+    for name, (x, y) in {"huber_minus_mae_adam": ("huber_adam", "mae_adam"), "huber_minus_mae_adamw": ("huber_adamw", "mae_adamw"),
+                         "adamw_minus_adam_mae": ("mae_adamw", "mae_adam"), "adamw_minus_adam_huber": ("huber_adamw", "huber_adam")}.items():
         by_seed = {str(s): [] for s in seeds}
         for k in range(n_folds):
-            a, b = per_fold[k].get(f0, {}), per_fold[k].get(f1, {})
+            bx, by = (per_fold[k].get("B_equal_budget_lr") or {}).get(x, {}), (per_fold[k].get("B_equal_budget_lr") or {}).get(y, {})
             for s in seeds:
-                ta, tb = (a.get("test_mae_z_by_seed_of_selected") or {}).get(str(s)), (b.get("test_mae_z_by_seed_of_selected") or {}).get(str(s))
-                by_seed[str(s)].append(tb-ta if (ta is not None and tb is not None) else float("nan"))
-        boots = {s: block_bootstrap(np.asarray(vals), block_len=2) for s, vals in by_seed.items()}
-        paired = {"difference": f"{f1} - {f0}, test MAE_z of each fold's configuration-level selection, one series per PAIRED seed",
-                  "by_seed": {s: {"values_by_fold_position": [None if not np.isfinite(x) else x for x in vals], **boots[s]} for s, vals in by_seed.items()},
-                  "reading": "seeds are retained replicates, never selected over; the fold series keeps missing folds as gaps",
-                  "multiplicity": {"candidates_per_family": {fam: len([c for c in candidates if c["loss"] == fam]) for fam in families},
-                                   "reading": "each family's selection compared this many candidates on validation; the test difference is "
-                                              "conditional on that selection and is not a confirmatory test"}}
-    doc = {"schema": "df_fin_runner_selection.v2", "design_sha256": design["design_sha256"], "per_fold": per_fold, "paired": paired,
-           "rule": "configuration-level selection by validation MAE_z averaged over seeds; every candidate's test score retained; no best-test, no best-of-seeds"}
+                tx, ty = (bx.get("test_mae_z_by_seed_of_selected") or {}).get(str(s)), (by.get("test_mae_z_by_seed_of_selected") or {}).get(str(s))
+                by_seed[str(s)].append(tx-ty if (tx is not None and ty is not None) else float("nan"))
+        contrasts[name] = {"by_seed": {s: {"values_by_fold_position": [None if not np.isfinite(v) else v for v in vals], **block_bootstrap(np.asarray(vals), block_len=int(design.get("inference", {}).get("block_len", 2)))} for s, vals in by_seed.items()},
+                           "reading": "test MAE_z difference between the two strata's B-selected configurations, paired by fold and seed; seeds retained as replicates"}
+    doc = {"schema": "df_fin_runner_selection.v4", "design_sha256": design["design_sha256"], "per_fold": per_fold, "contrasts": contrasts,
+           "consumed": {"records": len(consumed), "by_population_complete_configs": counts, "strata": [f"{l}_{o}" for l, o in strata], "rejected": rejected},
+           "rule": "A reported; B searched within each loss x optimizer over the same LRs at configuration level; C/D paired sensitivity "
+                   "contrasts; identity from records; no best-of-seeds, no best-test, no cross-population competition"}
     (root/"SELECTION.json").write_text(json.dumps(doc, indent=1, default=str))
     return doc
 
@@ -537,57 +594,39 @@ def select(root: Path, design: dict) -> dict:
 # --- closure ----------------------------------------------------------------------------------------------------------------
 
 def close(a) -> dict:
+    """RP82: the financial closure CONSUMES tools/df_closure_table.verify_fin_run (the same authority as the table and the
+    block closure); selection runs only on verified cells; a failed closure emits no selection and no contrast."""
     root = Path(a.root)
     design = json.loads((root/"DESIGN.json").read_text())
     validate(design)
-    data, rec = load_data(root, design)
+    T = _module("df_closure_table")
     C = _module("df_mod_e0_close")
-    H = _module("df_e1_huber")
-    receipts = json.loads((root/"TERMINAL_RECEIPTS.json").read_text())["units"] if (root/"TERMINAL_RECEIPTS.json").is_file() else {}
     token = Path(a.warehouse_token_file).read_text().strip().strip('"').strip("'") if getattr(a, "warehouse_token_file", None) else None
-    problems, rows = [], []
-    for cell in design["cells"]:
-        unit = cell["cell_id"]
-        folder = root/"attempts"/unit
-        if not (folder/"cell.json").is_file():
-            problems.append(f"{unit}: no record")
-            continue
-        r = json.loads((folder/"cell.json").read_text())
-        k = cell["fold"]
-        if sha_file(folder/"arrays.npz") != r["arrays_sha256"]:
-            problems.append(f"{unit}: arrays digest mismatch")
-        with np.load(folder/"arrays.npz", allow_pickle=False) as z:
-            for split in ("validation", "test"):
-                if not (np.array_equal(z[f"{split}_origins"], data[f"f{k}_{split}_origins"]) and np.array_equal(z[f"{split}_targets"], data[f"f{k}_{split}_targets"])):
-                    problems.append(f"{unit}: {split} pairs are not the fold's")
-                if z[f"{split}_origins"].size:
-                    sc = H.metrics(z[f"{split}_pred"], z[f"{split}_y"], z[f"{split}_naive"], r["sigma_train"])
-                    if sc != r["scores"][split]:
-                        problems.append(f"{unit}: {split} record does not match arrays")
-            if not np.allclose(z["validation_pred"], z["validation_reload_pred"], rtol=1e-6, atol=1e-6):
-                problems.append(f"{unit}: reload parity")
-        if unit not in receipts:
-            problems.append(f"{unit}: no accepted terminal receipt")
-        elif token:
-            held = C.warehouse_terminals(a.warehouse_url, token, receipts[unit]["campaign_sha256"])["current"]
-            row = held.get(unit, {})
-            terminal = json.loads((root/"TERMINALS"/f"{unit}.json").read_text())
-            if row.get("terminal_sha256") != receipts[unit]["terminal_sha256"] or row.get("status") != "COMPLETED":
-                problems.append(f"{unit}: warehouse terminal digest/status")
-            if sorted((x["role"], x["sha256"], x["bytes"]) for x in row.get("artifacts", [])) != sorted((x["role"], x["sha256"], x["bytes"]) for x in terminal["artifacts"]):
-                problems.append(f"{unit}: warehouse artifacts")
-            wanted = {(m["metric"], m["split"]): m["value"] for m in terminal["metrics"]}
-            got = {(m.get("metric"), m.get("split")): m.get("value") for m in row.get("metrics", [])}
-            if any(got.get(key) != val for key, val in wanted.items()):
-                problems.append(f"{unit}: warehouse metric values differ from the terminal's (precision lost?)")
-        rows.append({**cell, "validation_mae_z": r["scores"]["validation"]["mae_z"], "test_mae_z": (r["scores"]["test"] or {}).get("mae_z"),
-                     "updates": r["training"]["updates"], "stop": r["training"]["stop_reason"], "delta_z": r["delta_z_used"]})
-    selection = select(root, design)
-    report = {"schema": "df_fin_runner_report.v1", "design_sha256": design["design_sha256"], "rows": rows, "selection": selection["per_fold"],
-              "paired": selection["paired"], "problems": problems, "verified": not problems,
+    warehouse = (lambda campaign: C.warehouse_terminals(a.warehouse_url, token, campaign)) if token else None
+    ver = T.verify_fin_run(root, warehouse=warehouse)
+    problems = list(ver["problems"])
+    if warehouse is None:
+        problems.append("closure without a warehouse read: no accepted custody, nothing is verified")
+    scorable = [r for r in ver["rows"] if r.get("status") != "FOLD_NOT_SCORABLE"]
+    verified_all = not problems and scorable and all(r["verified"] for r in scorable)
+    report = {"schema": "df_fin_runner_report.v2", "design_sha256": design["design_sha256"],
+              "verification": {k: ver[k] for k in ("design_identity", "preparation_custody", "verified_units", "unverified_units")},
+              "rows": [{"unit": r["unit"], "fold": r["fold"], "candidate_id": r.get("candidate_id"), "seed": r.get("seed"),
+                        "validation_mae_z": (r.get("scores") or {}).get("validation", {}).get("mae_z"), "test_mae_z": (r.get("scores") or {}).get("test", {}).get("mae_z"),
+                        "verified": r["verified"], "custody": r.get("custody")} for r in ver["rows"]],
+              "problems": problems, "verified": bool(verified_all),
               "scope": design["purpose"] + "; DEVELOPMENT; synthetic acceptance unless the purpose says otherwise"}
+    if verified_all:
+        selection = select(root, design, verification=ver)
+        report["selection"] = selection["per_fold"]
+        report["contrasts"] = selection["contrasts"]
+        report["consumed"] = selection["consumed"]
+    else:
+        report["selection"] = None
+        report["contrasts"] = None
+        report["reading"] = "closure FAILED: no selection, no contrast and no proposal are emitted"
     (root/"REPORT.json").write_text(json.dumps(report, indent=1, default=str))
-    if problems:
+    if not verified_all:
         raise FinRefusal(f"REFUSED: closure failed: {problems[:5]}")
     return report
 

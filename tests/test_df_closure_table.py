@@ -172,9 +172,14 @@ def synthetic_root(tmp_path):
     (root/"DESIGN.json").write_text(json.dumps({"purpose": "SYNTHETIC_FIXTURE", "design_sha256": "d"*64,
                                                 "pilots": [{"cell_id": "pilot_cost"}],
                                                 "cells": [{"cell_id": UNIT, "arm": "core_mae", "seed": 1}]}))
+    # the preparation's OWN evidence (RP82): BLOCK_DATA with its record, and an accepted prepare terminal in the stub warehouse
+    np.savez(root/"BLOCK_DATA.npz", Y=Y, common_eval=origins, horizon=np.array([H]), target_channel=np.array([0]), scaler_sd=np.array([0.5]),
+             scaler_mean=np.array([1.0]), row_offset=np.array([0]))
+    (root/"BLOCK_DATA.json").write_text(json.dumps({"design_sha256": "d"*64, "data_sha256": _sha(root/"BLOCK_DATA.npz")}))
     (root/"TERMINAL_RECEIPTS.json").write_text(json.dumps({"units": {
         UNIT: {"campaign_sha256": "c"*64, "terminal_sha256": "t"*64},
-        "pilot_cost": {"campaign_sha256": "c"*64, "terminal_sha256": "p"*64}}}))
+        "pilot_cost": {"campaign_sha256": "c"*64, "terminal_sha256": "p"*64},
+        "prepare": {"campaign_sha256": "c"*64, "terminal_sha256": "q"*64}}}))
     return {"root": root, "Y": Y, "origins": origins, "pred": pred, "sha": sha, "mae": mae}
 
 
@@ -187,7 +192,10 @@ def _wh(sha, *, status="COMPLETED", present=True, digest="t"*64, root=None, reco
         arts = [{"role": "predictions", "sha256": sha}]
         if record and root is not None and (root/"attempts"/UNIT/"cell.json").is_file():
             arts.append({"role": "record", "sha256": _sha(root/"attempts"/UNIT/"cell.json")})
-        return {"current": {UNIT: {"terminal_sha256": digest, "status": status, "artifacts": arts, "metrics": metrics or []}}}
+        current = {UNIT: {"terminal_sha256": digest, "status": status, "artifacts": arts, "metrics": metrics or []}}
+        if root is not None and (root/"BLOCK_DATA.npz").is_file():                              # the accepted prepare terminal
+            current["prepare"] = {"terminal_sha256": "q"*64, "status": "COMPLETED", "artifacts": [{"role": "data", "sha256": _sha(root/"BLOCK_DATA.npz")}]}
+        return {"current": current}
     return warehouse
 
 
@@ -208,8 +216,8 @@ def test_rows_are_recomputed_from_arrays_bound_to_the_terminal_and_the_warehouse
     assert (r["model_population"], r["naive_population"], r["model_horizon"], r["naive_horizon"]) == (N, N, H, H)
     assert r["model_scale"] == r["naive_scale"] == "kW" and r["target"] == "Global_active_power"
     assert r["binding"]["level"] == "TERMINAL_ARTIFACT" and r["binding"]["arrays_sha256"] == fx["sha"]
-    assert r["warehouse"] == {"checked": True, "terminal_in_warehouse": True, "digest_matches_receipt": True,
-                              "status": "COMPLETED", "artifact_rows": 2}
+    assert {k: r["warehouse"][k] for k in ("checked", "terminal_in_warehouse", "digest_matches_receipt", "status", "artifact_rows")} == \
+        {"checked": True, "terminal_in_warehouse": True, "digest_matches_receipt": True, "status": "COMPLETED", "artifact_rows": 2}
     assert r["custody"]["class"] == "ACCEPTED_ARTIFACT_CHAIN" and table["custody_classes"] == {"ACCEPTED_ARTIFACT_CHAIN": 1}
     assert r["record_score_checked"] and r["verified"] and r["role"] == "forecast"
     assert r["comparability_status"] == "NOT_COMPARABLE" and r["literature_value_and_source"]["placed_in_comparison_column"] is False
@@ -303,7 +311,8 @@ def test_PROBE_a_rewritten_record_and_arrays_never_certify_a_score_without_an_ac
     warehouse terminal without artifact rows and the receipt unchanged. Neither table may say verified."""
     fx = synthetic_root
     (fx["root"]/"TERMINALS"/f"{UNIT}.json").unlink()
-    no_artifacts = lambda campaign: {"current": {UNIT: {"terminal_sha256": "t"*64, "status": "COMPLETED", "artifacts": [], "metrics": []}}}
+    prep = lambda: {"terminal_sha256": "q"*64, "status": "COMPLETED", "artifacts": [{"role": "data", "sha256": _sha(fx["root"]/"BLOCK_DATA.npz")}]}
+    no_artifacts = lambda campaign: {"current": {UNIT: {"terminal_sha256": "t"*64, "status": "COMPLETED", "artifacts": [], "metrics": []}, "prepare": prep()}}
     before = _table(fx, warehouse=no_artifacts)
     assert before["rows"][0]["model_error"] > 0 and not before["rows"][0]["verified"] and before["rows"][0]["custody"]["class"] == "UNANCHORED"
     assert any("a local record is not custody" in p for p in before["problems"])
@@ -317,8 +326,9 @@ def test_a_historical_score_is_preserved_when_the_accepted_metric_anchors_it_and
     """History without artifact rows: the metric the accepted terminal carries is the only independent anchor. Equal ->
     PRESERVED with a qualified scope (never 'verified'); different -> CHANGED ARRAYS."""
     fx = synthetic_root
+    prep = lambda: {"terminal_sha256": "q"*64, "status": "COMPLETED", "artifacts": [{"role": "data", "sha256": _sha(fx["root"]/"BLOCK_DATA.npz")}]}
     anchored = lambda campaign: {"current": {UNIT: {"terminal_sha256": "t"*64, "status": "COMPLETED", "artifacts": [],
-                                                    "metrics": [{"metric": "e1.phase1.mae_validation", "split": "validation", "value": fx["mae"]}]}}}
+                                                    "metrics": [{"metric": "e1.phase1.mae_validation", "split": "validation", "value": fx["mae"]}]}, "prepare": prep()}}
     t = _table(fx, warehouse=anchored)
     r = t["rows"][0]
     assert t["problems"] == [] and not r["verified"] and r["preserved_with_qualified_scope"] and r["custody"]["class"] == "METRIC_ANCHORED"
@@ -331,8 +341,10 @@ def test_a_historical_score_is_preserved_when_the_accepted_metric_anchors_it_and
 
 def test_a_new_result_needs_the_full_accepted_chain_predictions_and_record(synthetic_root):
     fx = synthetic_root
-    d = json.loads((fx["root"]/"DESIGN.json").read_text()); d["schema"] = "df_e1_block_design.v1"
-    (fx["root"]/"DESIGN.json").write_text(json.dumps(d))
+    E = _load("df_mod_e0")
+    d = json.loads((fx["root"]/"DESIGN.json").read_text()); d["schema"] = "df_e1_block_design.v1"; d.pop("design_sha256"); d["design_sha256"] = E.sha_obj(d)
+    (fx["root"]/"DESIGN.json").write_text(json.dumps(d))                                            # a sealed design: its digest recomputes
+    (fx["root"]/"BLOCK_DATA.json").write_text(json.dumps({"design_sha256": d["design_sha256"], "data_sha256": _sha(fx["root"]/"BLOCK_DATA.npz")}))
     t = _table(fx)
     assert t["problems"] == [] and t["rows"][0]["verified"]
     t = _table(fx, warehouse=_wh(fx["sha"], root=fx["root"], record=False))            # accepted predictions, no record anchor
@@ -361,3 +373,132 @@ def test_the_cli_exits_nonzero_on_problems_and_writes_both_files(synthetic_root,
     assert table["rows"][0]["custody"]["class"] == "UNCHECKED" and table["verified_rows"] == 0     # nothing local verifies itself
     (fx["root"]/"attempts"/UNIT/"arrays.npz").unlink()
     assert T.main(["--run", f"{fx['root']}:synthetic", "--registry", str(reg), "--out", str(out), "--no-new-measurement"]) == 1
+
+
+# --- RP82/RP83: preparation custody, the denominator, design identity, accepted tags, one authority --------------------------
+
+def _block_root(tmp_path, *, seeds=(1,), with_receipts=True):
+    """A block-shaped root: BLOCK_DATA (the preparation's own evidence), a sealed design whose digest recomputes, cells with arms,
+    terminals with predictions+record artifacts, receipts incl. the prepare unit."""
+    E = _load("df_mod_e0")
+    rng = np.random.default_rng(5)
+    Y = np.abs(rng.normal(1.0, 0.5, N+2*H)); o = np.arange(H, H+N)
+    root = tmp_path/"block"; root.mkdir()
+    sd = 0.9125164391265214
+    np.savez(root/"BLOCK_DATA.npz", Y=Y, common_eval=o, horizon=np.array([H]), target_channel=np.array([0]), scaler_sd=np.array([sd]), scaler_mean=np.array([1.0]), row_offset=np.array([0]))
+    design = {"schema": "df_e1_block_design.v1", "block": "T", "cells": [{"cell_id": f"gru_s{s}", "arm": "gru", "seed": s} for s in seeds] + [{"cell_id": "mod_s1", "arm": "mod", "seed": 1}],
+              "pilots": [], "benchmark_contract": B.household_ours().to_design_block(comparability={**B.decide(B.household_ours(), B.gasparin_2019()), "comparator_state": "NONE"}),
+              "source_run": {"input_columns": ["Global_active_power"], "target_channel": 0}}
+    design["design_sha256"] = E.sha_obj(design)
+    (root/"DESIGN.json").write_text(json.dumps(design))
+    (root/"BLOCK_DATA.json").write_text(json.dumps({"design_sha256": design["design_sha256"], "data_sha256": _sha(root/"BLOCK_DATA.npz")}))
+    held = {"prepare": {"terminal_sha256": "p"*64, "status": "COMPLETED", "config_sha256": design["design_sha256"],
+                        "artifacts": [{"role": "data", "sha256": _sha(root/"BLOCK_DATA.npz")}, {"role": "record", "sha256": _sha(root/"BLOCK_DATA.json")}]}}
+    receipts = {"prepare": {"campaign_sha256": "c"*64, "terminal_sha256": "p"*64}}
+    (root/"TERMINALS").mkdir()
+    for c in design["cells"]:
+        u = c["cell_id"]; (root/"attempts"/u).mkdir(parents=True)
+        pred = Y[o+H] + rng.normal(0, 0.1, N)
+        np.savez(root/"attempts"/u/"arrays.npz", pred=pred, y=Y[o+H], naive=Y[o], origins=o, reload_pred=pred)
+        (root/"attempts"/u/"cell.json").write_text(json.dumps({"arrays_sha256": _sha(root/"attempts"/u/"arrays.npz"), "scores": {"mae_kw": float(np.mean(np.abs(pred-Y[o+H])))}}))
+        arts = [{"role": "predictions", "sha256": _sha(root/"attempts"/u/"arrays.npz")}, {"role": "record", "sha256": _sha(root/"attempts"/u/"cell.json")}]
+        (root/"TERMINALS"/f"{u}.json").write_text(json.dumps({"status": "COMPLETED", "artifacts": arts}))
+        held[u] = {"terminal_sha256": "t"*64, "status": "COMPLETED", "artifacts": arts, "config_sha256": design["design_sha256"], "tags": {"arm": c["arm"], "seed": str(c["seed"])}}
+        receipts[u] = {"campaign_sha256": "c"*64, "terminal_sha256": "t"*64}
+    if with_receipts:
+        (root/"TERMINAL_RECEIPTS.json").write_text(json.dumps({"units": receipts}))
+    return root, design, (lambda campaign: {"current": json.loads(json.dumps(held))}), Y, o
+
+
+def test_RP82_a_tenfold_scaler_on_disk_is_a_scale_problem_not_a_verified_row(tmp_path):
+    """Musashi's RP81 probe: only DATA/BLOCK_DATA scaler_sd changed; predictions, record, payloads and receipts untouched."""
+    root, design, wh, Y, o = _block_root(tmp_path)
+    ok = T.verify_run(root, label="r", registry=B.registry(), warehouse=wh)
+    assert ok["problems"] == [] and ok["preparation_custody"]["class"] == "PREPARATION_ACCEPTED_ARTIFACT" and ok["denominator"]["equal_to_contract"]
+    assert set(ok["verified_units"]) == {"gru_s1", "mod_s1"}
+    with np.load(root/"BLOCK_DATA.npz") as z:
+        d = {k: z[k] for k in z.files}
+    d["scaler_sd"] = d["scaler_sd"]*10
+    np.savez(root/"BLOCK_DATA.npz", **d)
+    bad = T.verify_run(root, label="r", registry=B.registry(), warehouse=wh)
+    assert bad["verified_units"] == [] and any("SCALE" in p for p in bad["problems"]) and any("PREPARATION_CHANGED" in p for p in bad["problems"])
+    assert all(not r["verified"] for r in bad["rows"])
+    # a closure-time DATA.npz with another scaler is never the denominator: the block's own preparation evidence is read
+    np.savez(root/"BLOCK_DATA.npz", **{**d, "scaler_sd": d["scaler_sd"]/10})
+    np.savez(root/"DATA.npz", **{**d, "scaler_sd": d["scaler_sd"]})                      # the tenfold copy, unread
+    again = T.verify_run(root, label="r", registry=B.registry(), warehouse=wh)
+    assert again["problems"] == [] and again["denominator"]["sd_used"] == pytest.approx(0.9125164391265214)
+
+
+def test_RP82_the_preparation_must_be_the_accepted_one_and_history_gets_a_weaker_scope(tmp_path):
+    root, design, wh, Y, o = _block_root(tmp_path)
+    # the accepted prepare terminal anchors OTHER bytes
+    def other_prepare(campaign):
+        h = wh(campaign); h["current"]["prepare"]["artifacts"][0]["sha256"] = "0"*64; return h
+    v = T.verify_run(root, label="r", registry=B.registry(), warehouse=other_prepare)
+    assert v["preparation_custody"]["class"] == "PREPARATION_NOT_ACCEPTED" and v["verified_units"] == []
+    # no warehouse read: arrays may check locally, nothing is verified and the preparation is LOCAL_ONLY
+    v = T.verify_run(root, label="r", registry=B.registry(), warehouse=None)
+    assert v["preparation_custody"]["class"] == "PREPARATION_LOCAL_ONLY" and v["verified_units"] == []
+    # an old-layout root (DATA.npz, no accepted preparation artifact): preserved with the weaker scope, never verified
+    old = tmp_path/"old"; old.mkdir()
+    for f in ("DESIGN.json", "TERMINAL_RECEIPTS.json"):
+        (old/f).write_text((root/f).read_text())
+    import shutil; shutil.copytree(root/"attempts", old/"attempts"); shutil.copytree(root/"TERMINALS", old/"TERMINALS")
+    with np.load(root/"BLOCK_DATA.npz") as z:
+        np.savez(old/"DATA.npz", Y=z["Y"], eval_origins=z["common_eval"], horizon=z["horizon"], target_channel=z["target_channel"], scaler_sd=z["scaler_sd"], scaler_mean=z["scaler_mean"])
+    (old/"DATA.json").write_text(json.dumps({"input_columns": ["Global_active_power"], "target_channel": 0, "data_sha256": _sha(old/"DATA.npz")}))
+    d = json.loads((old/"DESIGN.json").read_text()); d["schema"] = "historical"; (old/"DESIGN.json").write_text(json.dumps(d))
+    v = T.verify_run(old, label="old", registry=B.registry(), warehouse=wh)
+    assert v["preparation_custody"]["class"] == "PREPARATION_LOCAL_ONLY" and v["verified_units"] == []
+    assert all(r["preserved_with_qualified_scope"] and r["custody"]["scope"] == "ARRAYS_ANCHORED_PREPARATION_NOT_ACCEPTED" for r in v["rows"])
+
+
+def test_RP83_a_relabeled_design_or_accepted_tags_that_disagree_are_identity_problems(tmp_path):
+    root, design, wh, Y, o = _block_root(tmp_path)
+    forged = json.loads(json.dumps(design))
+    for c in forged["cells"]:
+        if c["arm"] == "gru":
+            c["arm"] = "UNTRAINED_REFERENCE"
+    (root/"DESIGN.json").write_text(json.dumps(forged))                                         # old digest kept: does not recompute
+    v = T.verify_run(root, label="r", registry=B.registry(), warehouse=wh)
+    assert v["design_identity"]["recomputes"] is False and any("does not recompute" in p for p in v["problems"]) and v["verified_units"] == []
+    E = _load("df_mod_e0")
+    forged.pop("design_sha256"); forged["design_sha256"] = E.sha_obj(forged)                     # consistently rehashed relabel
+    (root/"DESIGN.json").write_text(json.dumps(forged))
+    v = T.verify_run(root, label="r", registry=B.registry(), warehouse=wh)
+    assert any("IDENTITY" in p and "UNTRAINED_REFERENCE" in p for p in v["problems"])              # the accepted tags say 'gru'
+    assert any("another" in p or "not this design" in p for p in v["problems"])                    # the accepted configuration is the old digest
+    assert v["verified_units"] == []
+
+
+def test_RP83_the_reference_resolver_binds_identity_and_population_through_the_same_authority(tmp_path):
+    root, design, wh, Y, o = _block_root(tmp_path, seeds=(1, 2))
+    ours = B.replace(B.household_ours(), source={**B.household_ours().source, "evaluation_origins": N})
+    block = ours.to_design_block(comparability={**B.decide(ours, B.gasparin_2019()), "comparator_state": "NONE"})
+    E = _load("df_mod_e0")
+    d = json.loads((root/"DESIGN.json").read_text()); d["benchmark_contract"] = block; d.pop("design_sha256"); d["design_sha256"] = E.sha_obj(d)
+    (root/"DESIGN.json").write_text(json.dumps(d))
+    (root/"BLOCK_DATA.json").write_text(json.dumps({"design_sha256": d["design_sha256"], "data_sha256": _sha(root/"BLOCK_DATA.npz")}))   # prepared under the resealed design
+    def wh2(campaign):                                                                             # the accepted configuration is the resealed design
+        h = wh(campaign)
+        for u in h["current"]:
+            h["current"][u]["config_sha256"] = d["design_sha256"]
+        return h
+    assert B.reference_evidence(ours, root, reference_arm="gru", warehouse=wh2)["state"] == "VERIFIED_COMPARATOR"
+    forged = json.loads(json.dumps(d))
+    for c in forged["cells"]:
+        if c["arm"] == "gru":
+            c["arm"] = "UNTRAINED_REFERENCE"
+    (root/"DESIGN.json").write_text(json.dumps(forged))
+    assert B.reference_evidence(ours, root, reference_arm="UNTRAINED_REFERENCE", warehouse=wh2)["state"] == "PLANNED_REFERENCE"
+    forged.pop("design_sha256"); forged["design_sha256"] = E.sha_obj(forged); (root/"DESIGN.json").write_text(json.dumps(forged))
+    assert B.reference_evidence(ours, root, reference_arm="UNTRAINED_REFERENCE", warehouse=wh2)["state"] == "PLANNED_REFERENCE"
+    (root/"DESIGN.json").write_text(json.dumps(d))
+    assert B.reference_evidence(ours, root, reference_arm="gru", seeds=(1, 2, 3), warehouse=wh2)["state"] == "PLANNED_REFERENCE"     # missing seed
+    def no_tags(campaign):
+        h = wh2(campaign)
+        for u in h["current"]:
+            h["current"][u].pop("tags", None)
+        return h
+    assert B.reference_evidence(ours, root, reference_arm="gru", warehouse=no_tags)["state"] == "PLANNED_REFERENCE"                 # untagged payload

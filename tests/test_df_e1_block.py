@@ -344,7 +344,7 @@ def test_fit_by_updates_counts_the_optimizers_own_steps_validates_on_cadence_and
 
 # --- one cell, the cost pilot, the closure and the closure table -------------------------------------------------------------------
 
-def test_a_pilot_never_reads_the_dev_validation_and_a_cell_scores_on_the_common_set_readable_by_the_table(world, tmp_path):
+def test_a_pilot_never_reads_the_dev_validation_and_a_cell_scores_on_the_common_set_readable_by_the_table(world, tmp_path, monkeypatch):
     T = _load("df_closure_table")
     d = _design("DEV_MATCHED", world["source"], recipe={"max_updates": 6, "validate_every_updates": 3, "patience_events": 3})
     root = tmp_path/"root"
@@ -369,8 +369,19 @@ def test_a_pilot_never_reads_the_dev_validation_and_a_cell_scores_on_the_common_
             {"role": "predictions", "sha256": rec["arrays_sha256"], "bytes": 1}, {"role": "weights", "sha256": rec["weights_file_sha256"], "bytes": 1},
             {"role": "record", "sha256": K.sha_file(root/"attempts"/cell["cell_id"]/"cell.json"), "bytes": 1}]}))
         receipts["units"][cell["cell_id"]] = {"campaign_sha256": "c"*64, "terminal_sha256": "t"*64}
+    receipts["units"]["prepare"] = {"campaign_sha256": "c"*64, "terminal_sha256": "q"*64}
     (root/"TERMINAL_RECEIPTS.json").write_text(json.dumps(receipts))
-    report = K.close(SimpleNamespace(root=root, warehouse_token_file=None, warehouse_url=None))
+    # the accepted payloads: every cell's terminal artifacts plus the prepare terminal anchoring BLOCK_DATA (RP82)
+    def held(campaign):
+        cur = {c["cell_id"]: {"terminal_sha256": "t"*64, "status": "COMPLETED", "config_sha256": d["design_sha256"], "tags": {"arm": c["arm"], "seed": str(c["seed"])},
+                              "artifacts": json.loads((root/"TERMINALS"/f"{c['cell_id']}.json").read_text())["artifacts"]} for c in d["cells"]}
+        cur["prepare"] = {"terminal_sha256": "q"*64, "status": "COMPLETED", "config_sha256": d["design_sha256"],
+                          "artifacts": [{"role": "data", "sha256": K.sha_file(root/"BLOCK_DATA.npz")}]}
+        return {"current": cur}
+    C = _load("df_mod_e0_close")
+    monkeypatch.setattr(C, "warehouse_terminals", lambda url, token, campaign: held(campaign))
+    token = tmp_path/"tok"; token.write_text("synthetic")
+    report = K.close(SimpleNamespace(root=root, warehouse_token_file=token, warehouse_url="synthetic://", skip_replay=True))
     assert report["verified"] and set(report["summary"]) == {"modular_w60", "gru_adapted_w60"} and report["paired"]["values"]
     bl = report["baselines"]
     assert bl["persistence"]["skill_vs_naive"] == 0.0 and bl["daily_seasonal"]["rows"] == bl["train_constant"]["rows"] == data["common_eval"].size
@@ -383,8 +394,10 @@ def test_a_pilot_never_reads_the_dev_validation_and_a_cell_scores_on_the_common_
         return {"current": {c["cell_id"]: {"terminal_sha256": "t"*64, "status": "COMPLETED",
                                             "artifacts": json.loads((root/"TERMINALS"/f"{c['cell_id']}.json").read_text())["artifacts"]}
                             for c in d["cells"]}}
-    rows = T.rows_from_run(root, label="synthetic_block", registry=B.registry(), warehouse=warehouse)
+    v = T.verify_run(root, label="synthetic_block", registry=B.registry(), warehouse=held)
+    rows = v["rows"]
     assert len(rows) == 2 and all(r["verified"] and r["binding"]["level"] == "TERMINAL_ARTIFACT" and r["custody"]["class"] == "ACCEPTED_ARTIFACT_CHAIN" for r in rows)
+    assert v["preparation_custody"]["class"] == "PREPARATION_ACCEPTED_ARTIFACT" and v["denominator"]["equal_to_contract"] is not False    # the synthetic contract carries its own sd_train
     unchecked = T.rows_from_run(root, label="synthetic_block", registry=B.registry())
     assert not any(r["verified"] for r in unchecked)                                     # nothing local verifies itself
     assert {r["unit"] for r in rows} == {c["cell_id"] for c in d["cells"]}
@@ -466,3 +479,61 @@ def test_RP79_a_host_block_runs_only_its_seeds_and_merge_verifies_artifacts_and_
     other = json.loads((roots["worker"]/"BLOCK_DATA.json").read_text()); other["data_sha256"] = "0"*64
     (roots["worker"]/"BLOCK_DATA.json").write_text(json.dumps(other))
     assert any("portability" in p for p in K.merge(roots["coord"], [roots["worker"]])["problems"])
+
+
+# --- RP82/RP86: the block closure consumes the authoritative verification and replays checkpoints ---------------------------------
+
+def test_RP82_the_block_closure_refuses_substituted_predictions_and_emits_nothing_when_verification_fails(world, tmp_path, monkeypatch):
+    """Musashi's RP81 probe on a private copy: predictions replaced by truth and the local record updated; accepted payloads unchanged."""
+    d = _design("DEV_MATCHED", world["source"], recipe={"max_updates": 4, "validate_every_updates": 2, "patience_events": 3})
+    root = tmp_path/"root"
+    K.prepare(d, root, frame=world["frame"])
+    (root/"DESIGN.json").write_text(json.dumps(d))
+    data = K.load_data(root, d)
+    held = {"prepare": {"terminal_sha256": "p"*64, "status": "COMPLETED", "config_sha256": d["design_sha256"],
+                        "artifacts": [{"role": "data", "sha256": K.sha_file(root/"BLOCK_DATA.npz")}, {"role": "record", "sha256": K.sha_file(root/"BLOCK_DATA.json")}]}}
+    receipts = {"units": {"prepare": {"campaign_sha256": "c"*64, "terminal_sha256": "p"*64}}}
+    for cell in d["cells"]:
+        rec = K.run_cell(d, data, cell, root/"attempts"/cell["cell_id"], pilot=False)
+        arts = [{"role": r, "sha256": K.sha_file(root/"attempts"/cell["cell_id"]/f), "bytes": 1} for r, f in (("predictions", "arrays.npz"), ("weights", "weights.weights.h5"), ("record", "cell.json"))]
+        (root/"TERMINALS").mkdir(exist_ok=True)
+        (root/"TERMINALS"/f"{cell['cell_id']}.json").write_text(json.dumps({"status": "COMPLETED", "artifacts": arts}))
+        held[cell["cell_id"]] = {"terminal_sha256": "t"*64, "status": "COMPLETED", "artifacts": arts, "config_sha256": d["design_sha256"], "tags": {"arm": cell["arm"], "seed": str(cell["seed"])}}
+        receipts["units"][cell["cell_id"]] = {"campaign_sha256": "c"*64, "terminal_sha256": "t"*64}
+    (root/"TERMINAL_RECEIPTS.json").write_text(json.dumps(receipts))
+    C = _load("df_mod_e0_close")
+    monkeypatch.setattr(C, "warehouse_terminals", lambda url, token, campaign: {"current": json.loads(json.dumps(held))})
+    token = tmp_path/"tok"; token.write_text("synthetic")
+    args = SimpleNamespace(root=root, warehouse_token_file=token, warehouse_url="synthetic://", skip_replay=True)
+    good = K.close(args)
+    assert good["verified"] and good["summary"] and good["verification"]["preparation_custody"]["class"] == "PREPARATION_ACCEPTED_ARTIFACT"
+    # the probe
+    unit = d["cells"][0]["cell_id"]
+    with np.load(root/"attempts"/unit/"arrays.npz") as z:
+        arr = {k: z[k] for k in z.files}
+    arr["pred"] = arr["y"].copy(); arr["reload_pred"] = arr["y"].copy()
+    np.savez(root/"attempts"/unit/"arrays.npz", **arr)
+    rec = json.loads((root/"attempts"/unit/"cell.json").read_text()); rec["arrays_sha256"] = K.sha_file(root/"attempts"/unit/"arrays.npz")
+    H = _load("df_e1_huber"); rec["scores"] = H.metrics(arr["pred"], arr["y"], arr["naive"], rec["target_sd"])
+    (root/"attempts"/unit/"cell.json").write_text(json.dumps(rec))
+    with pytest.raises(K.BlockRefusal, match="closure failed"):
+        K.close(args)
+    rep = json.loads((root/"REPORT.json").read_text())
+    assert not rep["verified"] and rep["summary"] is None and rep["paired"] is None and rep["baselines"] is None
+    assert any("CHANGED ARRAYS" in p for p in rep["problems"])
+    # no warehouse read -> nothing verified
+    with pytest.raises(K.BlockRefusal):
+        K.close(SimpleNamespace(root=root, warehouse_token_file=None, warehouse_url=None, skip_replay=True))
+
+
+def test_RP86_a_fresh_process_checkpoint_replay_is_part_of_closure_for_new_cells(world, tmp_path):
+    d = _design("DEV_MATCHED", world["source"], recipe={"max_updates": 4, "validate_every_updates": 2, "patience_events": 3})
+    root = tmp_path/"root"
+    K.prepare(d, root, frame=world["frame"]); (root/"DESIGN.json").write_text(json.dumps(d))
+    data = K.load_data(root, d)
+    cell = d["cells"][1]                                                    # the GRU cell
+    K.run_cell(d, data, cell, root/"attempts"/cell["cell_id"], pilot=False)
+    r = K.replay_cell(root, cell["cell_id"])
+    assert r["allclose_1e_6"] and r["max_abs_prediction_difference"] < 1e-5 and abs(r["mae_z_replayed"]-r["mae_z_stored"]) < 1e-8
+    (root/"attempts"/cell["cell_id"]/"weights.weights.h5").write_bytes(b"not a checkpoint")
+    assert not K.replay_cell(root, cell["cell_id"])["allclose_1e_6"]

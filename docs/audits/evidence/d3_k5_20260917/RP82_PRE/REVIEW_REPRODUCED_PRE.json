@@ -1,0 +1,156 @@
+{
+  "block_closure_does_not_use_strict_table": {
+    "before_verified": true,
+    "after_verified": true,
+    "before_mae_z": 0.539779065692846,
+    "after_mae_z": 0.0,
+    "strict_table_verified": false,
+    "strict_table_problems": [
+      "modular_w60_s1: the arrays on disk (b801e371bfbb) are not the predictions artifact the terminal declared (78bb9690afaa): CHANGED ARRAYS",
+      "modular_w60_s1: the warehouse's predictions artifact digest is not the arrays on disk: CHANGED ARRAYS",
+      "modular_w60_s1: the warehouse's record artifact digest is not the record on disk: CHANGED RECORD",
+      "modular_w60_s1: a new result must be anchored by the accepted artifact chain (predictions AND record); custody is PENDING_METRIC_ANCHOR"
+    ]
+  },
+  "unanchored_evaluation_scaler": {
+    "original_mae_z": 0.539779065692846,
+    "rewritten_mae_z": 0.0539779065692846,
+    "verified": true,
+    "problems": [],
+    "predictions_record_receipt_and_warehouse_unchanged": true
+  },
+  "reference_design_relabel": {
+    "state": "VERIFIED_COMPARATOR",
+    "reference_arm": "UNTRAINED_REFERENCE",
+    "design_digest_recomputed": false,
+    "original_payloads_unchanged": true
+  },
+  "financial_populations_mixed": {
+    "mae": {
+      "selected": "A_mae_adam",
+      "n_candidates_compared": 10
+    },
+    "huber": {
+      "selected": "D_huber_adam_d0.25s",
+      "n_candidates_compared": 16
+    }
+  },
+  "bootstrap_omits_present_isolated_week": {
+    "mean": -8.181818181818182,
+    "n_folds_present": 11,
+    "n_positions": 12,
+    "block_len": 2,
+    "complete_blocks": 9,
+    "signs": {
+      "positive": 10,
+      "negative": 1,
+      "zero": 0
+    },
+    "sample_sd_ddof1": 30.45264580235412,
+    "interval_95": [
+      1.0,
+      1.0
+    ],
+    "status": "RESAMPLED",
+    "n_boot": 100,
+    "reading": "a moving-block percentile interval over calendar positions; coverage was validated on dependent synthetic null and positive controls (tests), not assumed from the word 'block'"
+  },
+  "tier_comparison_training_prefixes": [
+    {
+      "arm": "modular_w60",
+      "seed": 1,
+      "initial_weights_equal": true,
+      "max_common_prefix_validation_delta": 0.0,
+      "old_mae_z": 0.565133802590645,
+      "new_mae_z": 0.539779065692846
+    },
+    {
+      "arm": "modular_w60",
+      "seed": 2,
+      "initial_weights_equal": true,
+      "max_common_prefix_validation_delta": 0.007126843216392231,
+      "old_mae_z": 0.5678265496753134,
+      "new_mae_z": 0.5399297672448605
+    },
+    {
+      "arm": "modular_w60",
+      "seed": 3,
+      "initial_weights_equal": true,
+      "max_common_prefix_validation_delta": 0.020632043704502112,
+      "old_mae_z": 0.5711760350195302,
+      "new_mae_z": 0.5375535633399997
+    },
+    {
+      "arm": "gru_adapted_w60",
+      "seed": 1,
+      "initial_weights_equal": true,
+      "max_common_prefix_validation_delta": 0.0,
+      "old_mae_z": 0.5322381311001206,
+      "new_mae_z": 0.5304759667904917
+    },
+    {
+      "arm": "gru_adapted_w60",
+      "seed": 2,
+      "initial_weights_equal": false,
+      "max_common_prefix_validation_delta": 0.030192718980369126,
+      "old_mae_z": 0.5317849333411031,
+      "new_mae_z": 0.5302485088893589
+    },
+    {
+      "arm": "gru_adapted_w60",
+      "seed": 3,
+      "initial_weights_equal": true,
+      "max_common_prefix_validation_delta": 0.015682587382697788,
+      "old_mae_z": 0.529796155755434,
+      "new_mae_z": 0.5262544906810126
+    },
+    {
+      "arm": "calendar",
+      "seed": 1,
+      "initial_weights_equal": true,
+      "max_common_prefix_validation_delta": 0.0,
+      "old_mae_z": 0.48248040048780405,
+      "new_mae_z": 0.48248040048780405
+    },
+    {
+      "arm": "calendar",
+      "seed": 2,
+      "initial_weights_equal": true,
+      "max_common_prefix_validation_delta": 0.027941916193329808,
+      "old_mae_z": 0.47979038297349713,
+      "new_mae_z": 0.4967845138115506
+    },
+    {
+      "arm": "calendar",
+      "seed": 3,
+      "initial_weights_equal": true,
+      "max_common_prefix_validation_delta": 0.03324917424749024,
+      "old_mae_z": 0.49818639715938257,
+      "new_mae_z": 0.4986961321035422
+    },
+    {
+      "arm": "randomised_calendar_control",
+      "seed": 1,
+      "initial_weights_equal": true,
+      "max_common_prefix_validation_delta": 0.0,
+      "old_mae_z": 0.5717974464221097,
+      "new_mae_z": 0.5388824965159489
+    },
+    {
+      "arm": "randomised_calendar_control",
+      "seed": 2,
+      "initial_weights_equal": true,
+      "max_common_prefix_validation_delta": 0.03457572197938885,
+      "old_mae_z": 0.5443979336648732,
+      "new_mae_z": 0.5444607243944247
+    },
+    {
+      "arm": "randomised_calendar_control",
+      "seed": 3,
+      "initial_weights_equal": true,
+      "max_common_prefix_validation_delta": 0.03429514272510259,
+      "old_mae_z": 0.5424190445118375,
+      "new_mae_z": 0.5504990286996817
+    }
+  ]
+}

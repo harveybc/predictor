@@ -153,12 +153,18 @@ def _reference_root(tmp_path, ours, *, seeds=(1,), arm="gru", complete=True):
     rng = np.random.default_rng(0)
     n, h = ours.source["evaluation_origins"], 60
     Y = np.abs(rng.normal(1.0, 0.5, n+2*h)); o = np.arange(h, h+n)
-    np.savez(root/"DATA.npz", Y=Y, horizon=np.array([h]), target_channel=np.array([0]), scaler_sd=np.array([ours.source["sd_train"]]), eval_origins=o)
-    (root/"DATA.json").write_text(json.dumps({"input_columns": ["Global_active_power"], "target_channel": 0}))
+    np.savez(root/"BLOCK_DATA.npz", Y=Y, common_eval=o, horizon=np.array([h]), target_channel=np.array([0]), scaler_sd=np.array([ours.source["sd_train"]]),
+             scaler_mean=np.array([1.0]), row_offset=np.array([0]))
+    (root/"BLOCK_DATA.json").write_text(json.dumps({"design_sha256": "d"*64, "data_sha256": hashlib.sha256((root/"BLOCK_DATA.npz").read_bytes()).hexdigest()}))
     cells = [{"cell_id": f"{arm}_s{s}", "arm": arm, "seed": s} for s in seeds] + [{"cell_id": "modular_s1", "arm": "modular", "seed": 1}]
     block = ours.to_design_block(comparability={**B.decide(ours, B.gasparin_2019()), "comparator_state": "NONE"})
-    (root/"DESIGN.json").write_text(json.dumps({"design_sha256": "d"*64, "benchmark_contract": block, "cells": cells}))
-    receipts, held = {}, {}
+    design = {"schema": "df_e1_block_design.v1", "benchmark_contract": block, "cells": cells, "source_run": {"input_columns": ["Global_active_power"], "target_channel": 0}}
+    design["design_sha256"] = _load("df_mod_e0").sha_obj(design)                                   # a SEALED reference: its digest recomputes
+    (root/"DESIGN.json").write_text(json.dumps(design))
+    (root/"BLOCK_DATA.json").write_text(json.dumps({"design_sha256": design["design_sha256"], "data_sha256": hashlib.sha256((root/"BLOCK_DATA.npz").read_bytes()).hexdigest()}))
+    receipts = {"prepare": {"campaign_sha256": "c"*64, "terminal_sha256": "q"*64}}
+    held = {"prepare": {"terminal_sha256": "q"*64, "status": "COMPLETED", "config_sha256": design["design_sha256"],
+                        "artifacts": [{"role": "data", "sha256": hashlib.sha256((root/"BLOCK_DATA.npz").read_bytes()).hexdigest()}]}}
     for c in cells:
         if not complete and c["seed"] == seeds[-1] and c["arm"] == arm:
             continue
@@ -168,7 +174,8 @@ def _reference_root(tmp_path, ours, *, seeds=(1,), arm="gru", complete=True):
         sha = lambda f: hashlib.sha256((root/"attempts"/u/f).read_bytes()).hexdigest()
         (root/"attempts"/u/"cell.json").write_text(json.dumps({"arrays_sha256": sha("arrays.npz"), "scores": {"mae_kw": float(np.mean(np.abs(pred-Y[o+h])))}}))
         receipts[u] = {"campaign_sha256": "c"*64, "terminal_sha256": "t"*64}
-        held[u] = {"terminal_sha256": "t"*64, "status": "COMPLETED", "artifacts": [{"role": "predictions", "sha256": sha("arrays.npz")}, {"role": "record", "sha256": sha("cell.json")}]}
+        held[u] = {"terminal_sha256": "t"*64, "status": "COMPLETED", "config_sha256": design["design_sha256"], "tags": {"arm": c["arm"], "seed": str(c["seed"])},
+                   "artifacts": [{"role": "predictions", "sha256": sha("arrays.npz")}, {"role": "record", "sha256": sha("cell.json")}]}
     (root/"TERMINAL_RECEIPTS.json").write_text(json.dumps({"units": receipts}))
     return root, (lambda campaign: {"current": held})
 
@@ -202,7 +209,8 @@ def test_the_matched_lane_needs_a_named_arm_a_complete_population_and_the_accept
     def no_record(campaign):
         held = wh(campaign)["current"]
         return {"current": {u: {**r, "artifacts": [a for a in r["artifacts"] if a["role"] != "record"]} for u, r in held.items()}}
-    assert B.reference_evidence(ours, root, reference_arm="gru", warehouse=no_record)["state"] == "LOCALLY_CHECKED_REFERENCE"
+    e = B.reference_evidence(ours, root, reference_arm="gru", warehouse=no_record)
+    assert e["state"] == "PLANNED_REFERENCE" and "do not verify" in e["why"]                        # a new-result chain without its record anchor
 
 
 # --- affine re-expression ------------------------------------------------------------------------------

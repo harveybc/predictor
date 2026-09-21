@@ -1077,92 +1077,122 @@ def baselines(data: dict, design: dict) -> dict:
     return out
 
 
+def replay_cell(root: Path, unit: str) -> dict:
+    """RP86: a READ-BOUND checkpoint replay in a fresh process — rebuild the model, load the saved weights, predict the common
+    evaluation windows and compare with the stored predictions under the existing rule allclose(atol=1e-6, rtol=1e-6)."""
+    code = f"""
+import json, sys, importlib.util, numpy as np
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("df_e1_block", {str(Path(__file__).resolve())!r}); K = importlib.util.module_from_spec(spec); sys.modules["df_e1_block"] = K; spec.loader.exec_module(K)
+root = Path({str(root)!r}); unit = {unit!r}
+design = json.loads((root/"DESIGN.json").read_text()); data = K.load_data(root, design)
+rec = json.loads((root/"attempts"/unit/"cell.json").read_text()); spec_a, seed = rec["arm_spec"], int(rec["cell"]["seed"])
+X, asg = K.arm_inputs(data, spec_a, assignment=design["source_run"]["graph_assignment"])
+j, h = int(data["target_channel"][0]), int(data["horizon"][0]); m, sd = float(data["scaler_mean"][j]), float(data["scaler_sd"][j])
+ds = K.Batches(X, data["Y"], data["common_eval"], int(spec_a["window"]), h, j, int(design["recipe"]["batch"]), mean=m, sd=sd, shuffle=False, seed=seed)
+model = K.build_model(spec_a, asg, X.shape[1], j, seed); model.load_weights(root/"attempts"/unit/"weights.weights.h5")
+pred = K.predict(model, ds).astype(np.float64)*sd + m
+with np.load(root/"attempts"/unit/"arrays.npz", allow_pickle=False) as z: stored, y = z["pred"], z["y"]
+print(json.dumps({{"unit": unit, "allclose_1e_6": bool(np.allclose(pred, stored, atol=1e-6, rtol=1e-6)), "max_abs_prediction_difference": float(np.max(np.abs(pred-stored))),
+                   "mae_z_replayed": float(np.mean(np.abs(pred-y))/sd), "mae_z_stored": float(np.mean(np.abs(stored-y))/sd)}}))
+"""
+    proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=600,
+                          env={**os.environ, "CUDA_VISIBLE_DEVICES": "", "TF_CPP_MIN_LOG_LEVEL": "3", "OMP_NUM_THREADS": "1"})
+    if proc.returncode:
+        return {"unit": unit, "allclose_1e_6": False, "error": proc.stderr[-600:]}
+    return json.loads(proc.stdout.strip().splitlines()[-1])
+
+
 def close(a) -> dict:
+    """RP82: the closure CONSUMES the authoritative verification (tools/df_closure_table.verify_run) — rows, preparation
+    custody, design identity, denominator — and adds what only the block knows (reload parity, paired initial weights,
+    censoring); a failed verification emits no summary, no paired contrast and no baselines."""
     root = Path(a.root)
     design = json.loads((root/"DESIGN.json").read_text())
     validate(design, strict_code=False)
     data = load_data(root, design)
-    # the rows every verifier reads (tools/df_closure_table.py): this block's own target rows and common evaluation origins
-    if not (root/"DATA.npz").is_file():
-        np.savez(root/"DATA.npz", Y=data["Y"], eval_origins=data["common_eval"], horizon=data["horizon"], target_channel=data["target_channel"],
-                 scaler_sd=data["scaler_sd"], scaler_mean=data["scaler_mean"], row_offset=data["row_offset"])
-        (root/"DATA.json").write_text(json.dumps({"input_columns": design["source_run"]["input_columns"], "target_channel": int(data["target_channel"][0]),
-                                                  "derived_from": "BLOCK_DATA.npz at closure; origins are block-local (row_offset gives the panel row)"}))
+    T = _module("df_closure_table")
+    B = _module("df_benchmark_contract")
     C = _module("df_mod_e0_close")
-    H = _module("df_e1_huber")
-    receipts = json.loads((root/"TERMINAL_RECEIPTS.json").read_text())["units"]
-    expected = {c["cell_id"] for c in design["cells"]}
-    problems, rows, inits = [], [], {}
-    if not expected <= set(receipts):
-        problems.append(f"population: units without an accepted terminal: {sorted(expected-set(receipts))}")
-    token = Path(a.warehouse_token_file).read_text().strip().strip('"').strip("'") if a.warehouse_token_file else None
-    h, j = int(data["horizon"][0]), int(data["target_channel"][0])
-    o = data["common_eval"]
-    truth, naive = data["Y"][o+h], data["Y"][o]
+    token = Path(a.warehouse_token_file).read_text().strip().strip('"').strip("'") if getattr(a, "warehouse_token_file", None) else None
+    warehouse = (lambda campaign: C.warehouse_terminals(a.warehouse_url, token, campaign)) if token else None
+    verification = T.verify_run(root, label=root.name, registry=B.registry(), warehouse=warehouse)
+    rows_by_unit = {r["unit"]: r for r in verification["rows"]}
+    expected = [c["cell_id"] for c in design["cells"]]
+    problems = list(verification["problems"])
+    if warehouse is None:
+        problems.append("closure without a warehouse read: no accepted custody, nothing is verified")
+    missing = [u for u in expected if u not in rows_by_unit]
+    if missing:
+        problems.append(f"population: registered cells without a scored row: {missing}")
+    inits, rows, replays = {}, [], {}
+    adopted = getattr(a, "replay_evidence", None)
+    adopted_rows = {}
+    if adopted:
+        doc = json.loads(Path(adopted).read_text())
+        adopted_rows = {c["cell_id"]: c for c in doc.get("cells", []) if not c.get("problems")}
     for cell in design["cells"]:
         unit = cell["cell_id"]
         folder = root/"attempts"/unit
         if not (folder/"cell.json").is_file():
-            problems.append(f"{unit}: no record")
             continue
         rec = json.loads((folder/"cell.json").read_text())
         if rec["design_sha256"] != design["design_sha256"] or rec["cell"] != cell:
-            problems.append(f"{unit}: cell/design mismatch")
-        if sha_file(folder/"arrays.npz") != rec["arrays_sha256"]:
-            problems.append(f"{unit}: arrays digest mismatch")
+            problems.append(f"{unit}: cell/design mismatch in the record")
         with np.load(folder/"arrays.npz", allow_pickle=False) as z:
-            for name, actual, wanted in (("origins", z["origins"], o), ("y", z["y"], truth), ("naive", z["naive"], naive)):
-                if not np.array_equal(actual, wanted):
-                    problems.append(f"{unit}: {name} are not the common evaluation rows")
             if not np.allclose(z["pred"], z["reload_pred"], rtol=1e-6, atol=1e-6):
                 problems.append(f"{unit}: reload parity")
-            score = H.metrics(z["pred"], z["y"], z["naive"], rec["target_sd"])
-        if score != rec["scores"]:
-            problems.append(f"{unit}: record does not match arrays")
         inits.setdefault((cell["seed"], rec["arm_spec"]["family"], rec["channels"], rec["arm_spec"]["window"]), set()).add(rec["initial_weights_sha256"])
-        terminal = json.loads((root/"TERMINALS"/f"{unit}.json").read_text())
-        if token and unit in receipts:
-            held = C.warehouse_terminals(a.warehouse_url, token, receipts[unit]["campaign_sha256"])["current"]
-            row = held.get(unit, {})
-            if row.get("terminal_sha256") != receipts[unit]["terminal_sha256"] or row.get("status") != "COMPLETED":
-                problems.append(f"{unit}: warehouse terminal digest/status")
-            if sorted((x["role"], x["sha256"], x["bytes"]) for x in row.get("artifacts", [])) != \
-                    sorted((x["role"], x["sha256"], x["bytes"]) for x in terminal["artifacts"]):
-                problems.append(f"{unit}: warehouse artifacts")
-        rows.append({**cell, **score, "parameters": rec["parameters"], "updates": rec["training"]["updates"],
-                     "validation_events": rec["training"]["validation_events"], "best_update": rec["training"]["best_update"],
-                     "stop": rec["training"]["stop_reason"], "censoring": rec["training"]["censoring"]["verdict"],
-                     "cpu_seconds": rec["cost"]["cpu_seconds"], "peak_rss_bytes": rec["cost"]["peak_rss_bytes"],
-                     "reload_max_error": rec["reload_max_error"]})
+        # RP86: a read-bound fresh-process replay for every NEWLY measured artifact; adopted independent replays are not repeated
+        if unit in adopted_rows:
+            replays[unit] = {"adopted_from": str(adopted), **adopted_rows[unit].get("replay", {})}
+        elif not getattr(a, "skip_replay", False):
+            replays[unit] = replay_cell(root, unit)
+            if not replays[unit].get("allclose_1e_6"):
+                problems.append(f"{unit}: fresh-process checkpoint replay exceeds allclose(1e-6, 1e-6)")
+        r = rows_by_unit.get(unit)
+        rows.append({**cell, "mae_z": r["model_error_z"] if r else None, "mae_kw": r["model_error"] if r else None,
+                     "naive_mae_z": r["naive_error_z"] if r else None, "skill_vs_naive": (r["skill_vs_naive"] or {}).get("value") if r else None,
+                     "verified": bool(r and r.get("verified")), "custody": (r or {}).get("custody"), "parameters": rec["parameters"],
+                     "updates": rec["training"]["updates"], "validation_events": rec["training"]["validation_events"], "best_update": rec["training"]["best_update"],
+                     "stop": rec["training"]["stop_reason"], "triggers": rec["training"].get("triggers"), "censoring": rec["training"]["censoring"]["verdict"],
+                     "host": rec["cost"].get("host"), "cpu_seconds": rec["cost"]["cpu_seconds"], "peak_rss_bytes": rec["cost"]["peak_rss_bytes"],
+                     "reload_max_error": rec["reload_max_error"], "initial_weights_sha256": rec["initial_weights_sha256"],
+                     "environment": rec.get("environment")})
     unpaired = [k for k, v in inits.items() if len(v) != 1]
     if unpaired:
         problems.append(f"unpaired initial weights within a seed for the same graph: {unpaired}")
-    arms = sorted({r["arm"] for r in rows})
-    summary = {}
-    for arm in arms:
-        v = [r["mae_z"] for r in rows if r["arm"] == arm]
-        summary[arm] = {"n_seeds": len(v), "mean_mae_z": float(np.mean(v)), "sd_mae_z": float(np.std(v, ddof=1)) if len(v) > 1 else None,
-                        "mean_mae_kw": float(np.mean([r["mae_kw"] for r in rows if r["arm"] == arm])),
-                        "censored_fits": sum(1 for r in rows if r["arm"] == arm and r["censoring"] == "CENSORED_BY_BUDGET")}
-    paired = {}
-    if len(arms) == 2:
-        a0, a1 = arms
-        d = [next(r["mae_z"] for r in rows if r["arm"] == a1 and r["seed"] == s) -
-             next(r["mae_z"] for r in rows if r["arm"] == a0 and r["seed"] == s) for s in design["seeds"]
-             if any(r["arm"] == a1 and r["seed"] == s for r in rows) and any(r["arm"] == a0 and r["seed"] == s for r in rows)]
-        paired = {"difference": f"{a1} - {a0} in MAE_z, paired by seed", "values": d, "mean": float(np.mean(d)) if d else None,
-                  "signs": {"positive": sum(x > 0 for x in d), "negative": sum(x < 0 for x in d)},
-                  "reading": "three seeds; both signs are reported; no interval is claimed from n=3"}
-    report = {"schema": "df_e1_block_report.v1", "design_sha256": design["design_sha256"], "block": design["block"],
-              "common_evaluation_rows": int(o.size), "sigma_evaluation": float(data["scaler_sd"][j]),
-              "rows": rows, "summary": summary, "paired": paired, "baselines": baselines(data, design),
-              "problems": problems, "verified": not problems, "spent_cpu_seconds": spent_cpu(root),
+    verified_all = not problems and all(r["verified"] for r in rows) and len(rows) == len(expected)
+    report = {"schema": "df_e1_block_report.v2", "design_sha256": design["design_sha256"], "block": design["block"],
+              "verification": {k: verification[k] for k in ("design_identity", "preparation_custody", "denominator", "verified_units", "unverified_units")},
+              "common_evaluation_rows": int(data["common_eval"].size), "sigma_evaluation": verification["denominator"]["sd_used"],
+              "rows": rows, "replays": replays, "problems": problems, "verified": verified_all, "spent_cpu_seconds": spent_cpu(root),
               "closure_code_drift": code_drift(design) or "none: closed under the sealed code",
-              "scope": "DEVELOPMENT; paired seeds; one previously inspected DEV validation week; no test rows read"}
+              "scope": "DEVELOPMENT; paired seeds within host blocks; one previously inspected DEV validation week; no test rows read"}
+    if verified_all:
+        arms = sorted({r["arm"] for r in rows})
+        report["summary"] = {arm: {"n_seeds": len(v := [r["mae_z"] for r in rows if r["arm"] == arm]), "mean_mae_z": float(np.mean(v)),
+                                   "sd_mae_z_ddof1": float(np.std(v, ddof=1)) if len(v) > 1 else None,
+                                   "mean_mae_kw": float(np.mean([r["mae_kw"] for r in rows if r["arm"] == arm])),
+                                   "censored_fits": sum(1 for r in rows if r["arm"] == arm and r["censoring"] == "CENSORED_BY_BUDGET"),
+                                   "hosts": sorted({r["host"] for r in rows if r["arm"] == arm})} for arm in arms}
+        if len(arms) == 2:
+            a0, a1 = arms
+            d = [next(r["mae_z"] for r in rows if r["arm"] == a1 and r["seed"] == s) - next(r["mae_z"] for r in rows if r["arm"] == a0 and r["seed"] == s)
+                 for s in design["seeds"] if any(r["arm"] == a1 and r["seed"] == s for r in rows) and any(r["arm"] == a0 and r["seed"] == s for r in rows)]
+            report["paired"] = {"difference": f"{a1} - {a0} in MAE_z, paired by seed within host blocks", "values": d, "mean": float(np.mean(d)) if d else None,
+                                "sd_ddof1": float(np.std(d, ddof=1)) if len(d) > 1 else None, "signs": {"positive": sum(x > 0 for x in d), "negative": sum(x < 0 for x in d)},
+                                "reading": "three seed/host blocks; both signs are reported; no interval is claimed from n=3"}
+        report["baselines"] = baselines(data, design)
+    else:
+        report["summary"] = None
+        report["paired"] = None
+        report["baselines"] = None
+        report["reading"] = "closure FAILED: no verified comparator, no selected arm and no scientific proposal are emitted"
     (root/"REPORT.json").write_text(json.dumps(report, indent=1, default=str))
-    print(json.dumps({k: report[k] for k in ("summary", "paired", "baselines", "problems", "verified")}, indent=1, default=str))
-    if problems:
-        raise BlockRefusal("REFUSED: closure failed")
+    print(json.dumps({k: report[k] for k in ("summary", "paired", "problems", "verified")}, indent=1, default=str))
+    if not verified_all:
+        raise BlockRefusal(f"REFUSED: closure failed: {problems[:5]}")
     return report
 
 
@@ -1173,6 +1203,8 @@ def main(argv=None) -> int:
     ap.add_argument("--parallel", type=int, default=None)
     ap.add_argument("--decision-from", type=Path, default=None, help="the coordinator root whose REPORT.pilot.json authorises execution")
     ap.add_argument("--from", dest="sources", type=Path, action="append", default=[])
+    ap.add_argument("--replay-evidence", type=Path, default=None, help="an independent fresh-process replay to ADOPT for already-replayed cells (not repeated)")
+    ap.add_argument("--skip-replay", action="store_true", help="tests only: no fresh-process replay")
     ap.add_argument("--arm")
     ap.add_argument("--batches", type=int, default=5)
     ap.add_argument("--block")

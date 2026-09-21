@@ -275,10 +275,11 @@ def test_FL07_intervals_respect_temporal_blocks_both_signs_are_kept_and_multipli
     b = F.block_bootstrap(diffs, block_len=8, n_boot=1500, seed=1)
     width = b["interval_95"][1]-b["interval_95"][0]
     iid = np.quantile([diffs[rng.integers(0, n, n)].mean() for _ in range(1500)], [.025, .975])       # the negative control, computed here
-    assert b["status"] == "RESAMPLED" and width > (iid[1]-iid[0]) and b["signs"]["positive"] > 0 and b["signs"]["negative"] > 0
+    assert b["status"].startswith("RESAMPLED") and width > (iid[1]-iid[0]) and b["signs"]["positive"] > 0 and b["signs"]["negative"] > 0
+    assert b["status"] == "RESAMPLED_DESCRIPTIVE" and b["coverage_certificate"] is None                 # no certificate for (40, 8): not confirmatory
     sel = F.select(prepared["root"], prepared["design"])
-    assert sel["paired"]["multiplicity"]["candidates_per_family"] == {"huber": 1, "mae": 1}
-    assert "no best-test" in sel["rule"] and all(v.get("n_candidates_compared", 0) <= 1 for f in sel["per_fold"].values() for v in f.values() if isinstance(v, dict))
+    assert "no best-test" in sel["rule"] and sel["consumed"]["strata"] == ["mae_adam", "mae_adamw", "huber_adam", "huber_adamw"]
+    assert sel["consumed"]["by_population_complete_configs"]["A"] == 2 and sel["consumed"]["by_population_complete_configs"]["B"] == 0
 
 
 # --- RP75: the population is the consumed tensors -------------------------------------------------------------------------------------
@@ -395,52 +396,98 @@ def _fake_root(tmp_path, seeds, table):
     return root
 
 
-def test_RP76_selection_is_at_configuration_level_and_seeds_stay_paired_replicates(tmp_path):
-    seeds = [1, 2]
-    cands = [{"id": "mae_a", "loss": "mae"}, {"id": "mae_b", "loss": "mae"}, {"id": "huber_a", "loss": "huber"}]
-    design = {"seeds": seeds, "candidates": cands, "folds": {"dev_weeks": 1}, "design_sha256": "x",
-              "cells": [{"cell_id": f"f0_{c['id']}_s{s}", "fold": 0, "seed": s, "candidate_id": c["id"]} for c in cands for s in seeds]}
-    # Musashi's probe: mae_a has the best single SEED (0.1) but the worse configuration mean (0.5 vs 0.45)
-    table = {(0, "mae_a"): {1: (0.1, 0.4), 2: (0.9, 0.4)}, (0, "mae_b"): {1: (0.45, 0.3), 2: (0.45, 0.3)}, (0, "huber_a"): {1: (0.2, 0.2), 2: (0.3, 0.2)}}
-    root = _fake_root(tmp_path, seeds, table)
+def _all26_root(tmp_path, seeds=(1, 2, 3), *, score=None, dup=None, foreign=None, nan_unit=None):
+    """Musashi's RP81 fixture: every one of the 26 candidates with every paired seed and DISTINGUISHABLE fabricated scores."""
+    alloc = T.candidate_allocation()
+    cands = [c for key in ("A_fixed_default", "B_equal_budget_lr", "C_decay_factor", "D_delta_factor") for c in alloc[key]]
+    root = tmp_path/"sel26"; root.mkdir(parents=True)
+    cells = []
+    score = score or (lambda c, s: 0.01 if c["population"] == "D_delta_factor" else 0.1 if c["population"] == "A_fixed_default" else 0.5 + 0.01*T.LEARNING_RATES.index(c["lr"]) + (0.001 if c["optimizer"] == "adamw" else 0))
+    for c in cands:
+        for s in seeds:
+            cell = {"cell_id": f"f0_{c['id']}_s{s}", "candidate_id": c["id"], "fold": 0, "seed": s}
+            cells.append(cell)
+            folder = root/"attempts"/cell["cell_id"]; folder.mkdir(parents=True)
+            v = score(c, s); rec = {"cell": cell, "candidate": c, "scores": {"validation": {"mae_z": v}, "test": {"mae_z": v+0.1}}}
+            if nan_unit == cell["cell_id"]:
+                rec["scores"]["validation"]["mae_z"] = float("nan")
+            (folder/"cell.json").write_text(json.dumps(rec))
+    if dup:
+        cells.append({**cells[0], "cell_id": "dup_unit"}); (root/"attempts"/"dup_unit").mkdir(); (root/"attempts"/"dup_unit"/"cell.json").write_text((root/"attempts"/cells[0]["cell_id"]/"cell.json").read_text())
+    if foreign:
+        u = cells[1]["cell_id"]; rec = json.loads((root/"attempts"/u/"cell.json").read_text()); rec["cell"]["seed"] = 9; (root/"attempts"/u/"cell.json").write_text(json.dumps(rec))
+    design = {"seeds": list(seeds), "candidates": cands, "folds": {"dev_weeks": 1}, "design_sha256": "synthetic-audit", "cells": cells}
+    return root, design
+
+
+def test_RP84_the_selector_keeps_populations_apart_with_all_26_candidates_and_paired_seeds(tmp_path):
+    """Musashi's RP81 probe: A and D arms have the best fabricated validation scores; they must not enter B's search."""
+    root, design = _all26_root(tmp_path)
     sel = F.select(root, design)
-    assert sel["per_fold"][0]["mae"]["selected"] == "mae_b" and sel["per_fold"][0]["mae"]["by"].startswith("validation MAE_z averaged")
-    assert sel["paired"]["by_seed"]["1"]["values_by_fold_position"] == [pytest.approx(0.3-0.2)]      # mae - huber (families sorted), seed 1 pair
-    # an incomplete configuration (a seed missing) is never selected
-    table2 = dict(table); table2[(0, "mae_b")] = {1: (0.01, 0.3)}
-    root2 = _fake_root(tmp_path/"two", seeds, table2)
-    sel2 = F.select(root2, design)
-    assert sel2["per_fold"][0]["mae"]["selected"] == "mae_a" and sel2["per_fold"][0]["mae"]["configs"]["mae_b"]["status"] == "INCOMPLETE"
+    f0 = sel["per_fold"][0]
+    assert set(f0["B_equal_budget_lr"]) == {"mae_adam", "mae_adamw", "huber_adam", "huber_adamw"}
+    for stratum, b in f0["B_equal_budget_lr"].items():
+        assert b["n_candidates_compared"] == 3 and b["lrs_compared"] == sorted(T.LEARNING_RATES) and b["selected"].startswith("B_")
+        assert b["selected"].startswith(f"B_{stratum}_")
+    assert sel["consumed"]["by_population_complete_configs"] == {"A": 4, "B": 12, "C": 4, "D": 6} and sel["consumed"]["records"] == 78
+    assert len(f0["A_fixed_default"]) == 4 and all(x["status"] == "COMPLETE" for x in f0["A_fixed_default"].values())
+    assert all(x["status"] == "PAIRED_CONTRAST" and x["anchor"].startswith("B_") for x in f0["CD_sensitivity_contrasts"].values())
+    assert len(f0["CD_sensitivity_contrasts"]) == 10
+    assert set(sel["contrasts"]) == {"huber_minus_mae_adam", "huber_minus_mae_adamw", "adamw_minus_adam_mae", "adamw_minus_adam_huber"}
+    assert sel["contrasts"]["huber_minus_mae_adam"]["by_seed"]["1"]["status"].startswith("INSUFFICIENT")           # one fold: descriptive only
 
 
-def test_RP76_two_folds_with_block_length_two_have_insufficient_support_and_gaps_keep_their_positions():
-    b = F.block_bootstrap(np.array([-0.1, 0.3]), block_len=2, n_boot=100)
-    assert b["status"] == "INSUFFICIENT_RESAMPLING_SUPPORT" and b["interval_95"] is None and b["complete_blocks"] == 1
+def test_RP84_the_selector_rejects_duplicate_foreign_nonfinite_incomplete_and_unverified_records(tmp_path):
+    root, design = _all26_root(tmp_path, dup=True, foreign=True, nan_unit="f0_B_mae_adam_lr0.0005_s2")
+    sel = F.select(root, design)
+    why = {r["unit"]: r["why"] for r in sel["consumed"]["rejected"]}
+    assert why["dup_unit"] == "contradictory identity (design/candidate/fold/seed)" or "duplicate" in why["dup_unit"]
+    assert any("contradictory identity" in w for w in why.values()) and any("non-finite" in w for w in why.values())
+    assert sel["per_fold"][0]["B_equal_budget_lr"]["mae_adam"]["configs"]["B_mae_adam_lr0.0005"]["status"] == "INCOMPLETE"     # a seed lost to NaN
+    # custody: with a verification result, unverified units are not consumed
+    ver = {"verified_units": [c["cell_id"] for c in design["cells"] if not c["cell_id"].startswith("f0_B_huber")]}
+    sel2 = F.select(root, design, verification=ver)
+    assert all(b["status"] == "NOT_RUN_OR_INCOMPLETE" for k, b in sel2["per_fold"][0]["B_equal_budget_lr"].items() if k.startswith("huber"))
+    assert sum(1 for r in sel2["consumed"]["rejected"] if r["why"] == "custody not verified") == 18
+
+
+def test_RP85_an_isolated_observed_week_is_a_named_support_limitation_not_a_degenerate_interval():
+    """Musashi's RP81 probe: [-100, NaN, 1 x 10] with block 2 reported mean -8.18 and interval [1, 1]."""
+    b = F.block_bootstrap(np.array([-100., np.nan] + [1.]*10), block_len=2, n_boot=100)
+    assert b["status"] == "INSUFFICIENT_SUPPORT_ISOLATED_WEEKS" and b["interval_95"] is None and b["isolated_observed_weeks"] == [0]
+    assert b["mean"] == pytest.approx(-8.181818181818182) and b["signs"] == {"positive": 10, "negative": 1, "zero": 0}
+    b2 = F.block_bootstrap(np.array([-0.1, 0.3]), block_len=2, n_boot=100)
+    assert b2["status"] == "INSUFFICIENT_RESAMPLING_SUPPORT" and b2["interval_95"] is None
     v = np.array([0.1, np.nan, 0.2, 0.3, 0.4, 0.5, 0.6, np.nan, 0.7, 0.8])
     g = F.block_bootstrap(v, block_len=2, n_boot=50)
-    assert g["n_folds_present"] == 8 and g["complete_blocks"] == 5                               # blocks never straddle a gap
+    assert g["status"] == "INSUFFICIENT_SUPPORT_ISOLATED_WEEKS" and g["isolated_observed_weeks"] == [0]                       # position 0 has no partner
+    ok = F.block_bootstrap(np.arange(12, dtype=float)/100, block_len=2, n_boot=50)
+    assert ok["status"] == "RESAMPLED_DESCRIPTIVE" and ok["interval_95"] and ok["coverage_certificate"] is None              # no certificate -> descriptive
 
 
-def test_RP76_the_block_interval_is_validated_on_dependent_controls_and_its_limits_are_stated():
-    """Coverage measured, not assumed: a moving-block percentile interval on AR(1) fold effects. At 26 folds with rho 0.3 and
-    block 4 the null coverage is adequate; at 104 folds with rho 0.6 and block 8 too; the 26-fold rho 0.6 regime is
-    anti-conservative (measured ~0.69) and is declared as such in the design, never used as certainty."""
+def test_RP85_coverage_is_predeclared_measured_against_the_nominal_level_and_certified_only_where_it_holds():
+    """Predeclared assessment: nominal 0.95, Monte Carlo over dependent AR(1) fold effects, acceptance = coverage >= 0.95 - 2 MC SE
+    at the v4 call (block length 2, 26 positions, no gaps). If it fails, no certificate exists and the interval stays descriptive."""
     rng = np.random.default_rng(11)
     def ar1(n, mean, rho, sd=0.02):
         e = rng.normal(size=n); x = np.zeros(n)
         for i in range(1, n):
             x[i] = rho*x[i-1] + e[i]
         return mean + sd*x
-    def coverage(n, L, rho, sims=100):
-        cov = np.mean([(lambda b: b["interval_95"][0] <= 0 <= b["interval_95"][1])(F.block_bootstrap(ar1(n, 0.0, rho), block_len=L, n_boot=300, seed=int(rng.integers(1 << 30)))) for _ in range(sims)])
-        pw = np.mean([(lambda b: b["interval_95"][0] > 0)(F.block_bootstrap(ar1(n, 0.06, rho), block_len=L, n_boot=300, seed=int(rng.integers(1 << 30)))) for _ in range(sims)])
-        return cov, pw
-    c1, p1 = coverage(26, 4, 0.3)
-    c2, p2 = coverage(104, 8, 0.6)
-    c3, _ = coverage(26, 4, 0.6)
-    assert c1 >= 0.80 and p1 >= 0.80 and c2 >= 0.80 and p2 >= 0.80, (c1, p1, c2, p2)
-    assert c3 < 0.80                                                                           # the declared limitation, measured
-    assert "validated on dependent synthetic" in F.block_bootstrap(ar1(26, 0.0, 0.3), block_len=4, n_boot=50)["reading"]
+    def coverage(n, L, rho, sims=200):
+        return float(np.mean([(lambda b: b["interval_95"][0] <= 0 <= b["interval_95"][1])(F.block_bootstrap(ar1(n, 0.0, rho), block_len=L, n_boot=300, seed=int(rng.integers(1 << 30)))) for _ in range(sims)]))
+    sims = 200
+    mc_se = (0.95*0.05/sims)**0.5
+    results = {(26, 2, 0.3): coverage(26, 2, 0.3, sims), (26, 2, 0.6): coverage(26, 2, 0.6, sims), (104, 8, 0.6): coverage(104, 8, 0.6, sims)}
+    certified = {k: v for k, v in results.items() if v >= 0.95 - 2*mc_se}
+    # the v4 call (26 positions, block 2) does NOT reach nominal coverage on dependent effects: it must NOT be certified
+    assert (26, 2, 0.6) not in certified and (26, 2, 0.3) not in certified, results
+    F.COVERAGE_CERTIFICATES.clear()
+    for (n, L, rho), c in certified.items():
+        F.COVERAGE_CERTIFICATES[(n, L)] = {"confirmatory": True, "null_coverage": c, "rho": rho, "sims": sims, "mc_se": mc_se}
+    b = F.block_bootstrap(ar1(26, 0.0, 0.3), block_len=2, n_boot=100)
+    assert b["status"] == "RESAMPLED_DESCRIPTIVE"                                                                    # never confirmatory at 26/2
+    F.COVERAGE_CERTIFICATES.clear()
 
 
 # --- FL08 complete closure -------------------------------------------------------------------------------------------------------------------

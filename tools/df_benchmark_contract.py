@@ -176,13 +176,20 @@ def reference_evidence(ours: BenchmarkContract, reference_run: Path | None, *, r
         return {"state": "PLANNED_REFERENCE", "why": f"the reference population is incomplete: units without accepted terminal {missing}; "
                                                   f"seeds declared {want_seeds}, present {have_seeds}"}
     T = _module("df_closure_table")
-    rows = [r for r in T.rows_from_run(root, label=root.name, registry=registry(), warehouse=warehouse) if r["unit"] in units]
+    ver = T.verify_run(root, label=root.name, registry=registry(), warehouse=warehouse)
+    if ver["design_identity"].get("recomputes") is False:
+        return {"state": "PLANNED_REFERENCE", "why": "the reference design's digest does not recompute from its content (relabeled or edited design)"}
+    rows = [r for r in ver["rows"] if r["unit"] in units]
+    # RP83: the accepted payload's own tags must name THIS arm for every reference cell (a correct forecast is not its label)
+    for r in rows:
+        if "arm" not in ((r.get("warehouse") or {}).get("accepted_tags_checked") or []) and warehouse is not None:
+            return {"state": "PLANNED_REFERENCE", "why": f"{r['unit']}: the accepted terminal carries no arm tag to bind the reference identity"}
     n_expected = (ours.source or {}).get("evaluation_origins")
     bad = [f"{r['unit']}: {r['problems'] or 'custody ' + r['custody']['class']}" for r in rows
            if r["problems"] or r["model_error"] is None or (n_expected is not None and r["n_evaluated"] != n_expected)]
     if len(rows) != len(units) or bad:
         return {"state": "PLANNED_REFERENCE", "why": f"the reference forecasts do not verify: {bad or 'rows missing'}", "units": units}
-    if warehouse is None or any(r["custody"]["class"] != "ACCEPTED_ARTIFACT_CHAIN" for r in rows):
+    if warehouse is None or any(r["custody"]["class"] != "ACCEPTED_ARTIFACT_CHAIN" or not r.get("verified") for r in rows):
         return {"state": "LOCALLY_CHECKED_REFERENCE", "why": "arrays, labels, population and metrics check locally; the accepted artifact "
                                                           "chain was not read from the warehouse, so this is not a verified comparator yet",
                 "run": str(root), "design_sha256": design["design_sha256"], "units": units,
