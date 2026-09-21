@@ -8,7 +8,7 @@
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "HUBER_ADAMW_FACTORIAL_REQUIRED_BEFORE_NEXT_E1_STAGE",
+  "handoff_status": "HUBER_ADAMW_FACTORIAL_12_OF_12_VERIFIED_PHASE2_DESIGN_NEXT",
   "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
   "architecture_comparison": {
     "reference": "ARCH-A",
@@ -24,8 +24,8 @@
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
-    "User priority 2026-09-21: execute the paired MAE/Huber x Adam/AdamW DEVELOPMENT diagnostic with common validation MAE monitor; protocol docs/audits/work_plan/HUBER_ADAMW_PROTOCOL_2026_09_21.md. Do not advance to input/volume changes before this comparison closes.",
-    "One review of RP57-RP64",
+    "Consume Musashi's completed Huber/AdamW 12-cell comparison and exact warehouse closure, docs/audits/work_plan/MUSASHI_HUBER_ADAMW_RESULTS_2026_09_21.md; do not repeat it",
+    "Prepare the controlled phase-2 design and acceptance tests under docs/handoffs/MUSASHI_POST_HUBER_PHASE2_2026_09_21.md; no scientific training until that design is ready",
     "Phase 2 of the diagnostic: input information (calendar sin/cos, daily context) and train volume, one factor at a time, after the temporal and availability checks; R0/R1/R2 return only with the adequate objective common to every arm",
     "The phase-3 lineage stays UNBOUND until the producer of the decomposed inputs is reachable; no legacy table is a benchmark and none is declared a leak on a score",
     "No reserve, no confirmatory claim from three seeds on one task"
@@ -33,7 +33,7 @@
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
     "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-    "orders": "../../handoffs/MUSASHI_PROGRAM_RP57_RP64_2026_09_20.md",
+    "orders": "../../handoffs/MUSASHI_POST_HUBER_PHASE2_2026_09_21.md",
     "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
     "external_review": "../../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md",
     "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",

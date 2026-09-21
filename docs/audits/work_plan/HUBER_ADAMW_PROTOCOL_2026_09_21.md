@@ -1,6 +1,7 @@
 # Huber / AdamW diagnostic, before advancing E1
 
-Status: 11 acceptance tests pass; run pending. Initial red collection showed
+Status: completed; 12 factorial cells and live closure verified. See
+[results](MUSASHI_HUBER_ADAMW_RESULTS_2026_09_21.md). Initial red collection showed
 the runner was absent, not a reproduced historical defect. Fresh-child restore
 parity and warehouse comparisons are mandatory runtime acceptance checks.
 
