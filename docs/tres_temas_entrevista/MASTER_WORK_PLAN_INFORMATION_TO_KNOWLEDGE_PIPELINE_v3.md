@@ -5,6 +5,17 @@ Ejecucion delegada: Satoshi. Estado: E0-DEV, etapa ARCH y piloto E1 EJECUTADOS;
 piloto historico no gobernado y SUCESOR E1 EJECUTADO; sin confirmacion.
 
 **Vigente:** [preparacion fase 2 y FIN-LOSS-OPT](../handoffs/MUSASHI_POST_HUBER_PHASE2_2026_09_21.md).
+**Regla transversal desde 21-sep:** [contrato de comparabilidad con literatura](PROGRAM_METRICS_CONTRACT_v1.md#adicion-obligatoria-comparabilidad-con-literatura-2026-09-21)
+obligatorio para TODOS los dominios, incluido finanzas. Antes de entrenamiento
+cientifico: target/transformacion/metrica y protocolo de referencia fijados;
+reproduccion publicada o referencia reejecutada en la misma tarea del negocio,
+sin comparar cifras de protocolos diferentes. Implementacion transversal en
+los runners: pendiente de Satoshi, tarea BENCHMARK-CONTRACTS; no declarada hecha.
+**Cierre obligatorio, incluido el actual:** tabla en el mensaje al owner con
+error del modelo, metrica/escala, naive en las mismas filas, mejora relativa y
+valor comparable de literatura con fuente; por tarea/horizonte/split. Punto 14
+de las ordenes vigentes. Si falta una referencia comparable, declararla pendiente
+con razon; nunca sustituirla por cifras incompatibles ni inventadas.
 RP57-RP64 y el factorial electrico Huber/AdamW estan ejecutados y preservados.
 **Adicion aprobada:** [comparacion financiera obligatoria de losses y optimizers](program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md).
 No hay loss ganadora para trading; no descartar mejoras normalizadas de 1e-5/1e-6
@@ -350,6 +361,13 @@ a que E3 financiero sea viable para desarrollarlo. P-INC puede simularse sin DOI
 operativo. P-CAP no se satisface contando parametros del extractor de P-MOD.
 
 ## 8. Disciplina ML y trazabilidad utilizadas, no decorativas
+
+BENCHMARK-CONTRACTS es un requisito transversal de cada nueva campana, no una
+cola que espere a terminar electricidad. El contrato de metricas define la
+matriz de equivalencia bibliografica y los dos carriles. Historicos se clasifican
+por alcance sin borrarlos ni reentrenarlos automaticamente. El trabajo actual
+de Satoshi debe preparar e implementar los controles faltantes por entry point
+antes de proponer su siguiente entrenamiento cientifico comparable.
 
 Antes de cada campana, requisito -> test de aceptacion -> diseno de sistema ->
 componentes/integracion -> tests unitarios; despues implementacion y verificacion

@@ -98,6 +98,47 @@ a licence to run an unreviewed factorial or to change the doctoral hypotheses.
     scientific training; any matched run must be frozen/reviewed first. A
     demonstrated causal flaw in the published recipe requires a separately
     identified corrected comparison, never silent replication of leaked inputs.
+13. Apply the owner's literature-comparability requirement to ALL domains now,
+    including finance, not only the household task. Follow the new mandatory
+    section in PROGRAM_METRICS_CONTRACT_v1.md. Deliver a source-to-task protocol
+    registry, an inventory of actual runner entry points and their coverage,
+    and test-led implementation of the missing contract checks for the next
+    campaigns. Missing contracts or mismatched targets, horizons, splits,
+    transforms, metric formulas or aggregation cannot yield a comparable result.
+    Exercise the real entry points, including a no-contract refusal BEFORE
+    scientific training. Distinguish published REPRODUCTION from a literature
+    method reexecuted under MATCHED_DOMAIN_COMPARISON. Preserve native paper
+    metrics plus common normalized forecasting metrics; RL retains its own
+    reward/return/risk and execution contracts. No blanket legacy rerun: inventory
+    what existing artifacts establish and identify only the necessary matched
+    runs. Register contract identity with the result through governance/warehouse.
+    Do not declare all-domain runtime enforcement complete from documentary
+    tests or a single runner. No extra owner approval is needed for this work.
+
+14. Mandatory OWNER-FACING closure table for THIS order set and EVERY subsequent
+    set, not only in an attached artifact: task/target, horizon and split;
+    metric name, exact scale/transform; model error; naive error on identical
+    rows; skill vs naive; literature reference value with primary-source
+    section/table; comparability status. Forecasting includes the shared
+    train-only MAE_z alongside the paper's native metric when they differ;
+    never place their numeric values in the same comparison row. Report each
+    arm/horizon separately with evaluated n, seeds and uncertainty where measured.
+    For lower-is-better errors, skill = 1 - error_model/error_naive; positive
+    means improvement, not accuracy or profit. Zero naive error is UNDEFINED,
+    not an invented ratio. Label published vs independently reproduced values.
+    If no verified matched literature value exists, write NOT_COMPARABLE,
+    the exact missing protocol/evidence and the planned matched comparison;
+    do not invent a number or put an unmatched paper score in the comparison
+    column. A missing comparator remains an open deliverable, not a successful
+    benchmark closure. If this round only designs/fixes infrastructure, state
+    NO_NEW_MEASUREMENT and label any prior verified results with their run and
+    scope; do not launch training merely to fill a report. RL uses appropriate
+    matched policy baselines and outcome metrics, not a fabricated forecast MAE.
+    Generate the table from verified artifacts linked to the warehouse, not
+    manually remembered summaries; preserve full precision for marginal gains.
+    Add report acceptance tests for missing naive/reference/status, mixed scales,
+    mismatched populations/horizons and unsupported percentage claims. This
+    standing requirement is also in PROGRAM_METRICS_CONTRACT_v1.md and state.
 
 Report all points together, without requesting renewed permission for reading,
 designing or testing. Stop only for a concrete unresolved data/causality or

@@ -30,6 +30,20 @@ EXECUTION_GOVERNANCE = {
     "new_runs": "REGISTER_AND_DELIVER_BEFORE_DATA_PREPARATION_OR_FIT",
     "historical_import": "SEPARATE_RETROSPECTIVE_EVIDENCE",
 }
+LITERATURE_COMPARABILITY = {
+    "scope": "ALL_DOMAINS_INCLUDING_FINANCE",
+    "required_before": "NEW_SCIENTIFIC_TRAINING",
+    "modes": ["REPRODUCTION", "MATCHED_DOMAIN_COMPARISON"],
+    "unmatched_published_scores_are_comparators": False,
+}
+CLOSURE_REPORTING = {
+    "scope": "CURRENT_AND_ALL_FUTURE_ORDER_SETS",
+    "required_columns": ["task_horizon_split", "metric_and_scale", "model_error",
+                         "naive_error", "skill_vs_naive", "literature_value_and_source",
+                         "comparability_status"],
+    "missing_comparator": "EXPLICIT_NOT_COMPARABLE_WITH_REASON_NO_INVENTED_VALUE",
+    "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT",
+}
 
 
 def validate(state, root):
@@ -44,6 +58,10 @@ def validate(state, root):
         issues.append("learning regimes contract")
     if state.get("execution_governance") != EXECUTION_GOVERNANCE:
         issues.append("execution governance contract")
+    if state.get("literature_comparability") != LITERATURE_COMPARABILITY:
+        issues.append("literature comparability contract")
+    if state.get("closure_reporting") != CLOSURE_REPORTING:
+        issues.append("closure reporting contract")
 
     def exact_list(field, expected, label):
         values = state.get(field, [])
@@ -83,14 +101,14 @@ def validate(state, root):
             issues.append(f"{task_id}: unknown status")
         if status in {"EXECUTED", "VERIFIED", "REVIEWED"} and not task.get("evidence"):
             issues.append(f"{task_id}: evidence required")
-    required_tasks = set().union(*REQUIRED.values(), {"BUSINESS-CONTRACT"})
+    required_tasks = set().union(*REQUIRED.values(), {"BUSINESS-CONTRACT", "BENCHMARK-CONTRACTS"})
     required_tasks.add(state.get("first_experiment"))
     for task_id in sorted(required_tasks, key=str):
         if task_id not in by_id:
             issues.append(f"unknown task {task_id}")
 
     required_dependencies = {
-        "FIN-LOSS-OPT": ({"BUSINESS-CONTRACT"}, "financial loss prerequisites"),
+        "FIN-LOSS-OPT": ({"BUSINESS-CONTRACT", "BENCHMARK-CONTRACTS"}, "financial loss prerequisites"),
         "MOD-E1": ({"MOD-E0-DEV", "MOD-ARCH-COMPARE"}, "E1 prerequisites"),
         "MOD-FROZEN-PREFIX": ({"MOD-E1"}, "prefix prerequisites"),
         "MOD-CORE-PRETRAIN": ({"MOD-E1", "MOD-FROZEN-PREFIX"}, "core prerequisites"),

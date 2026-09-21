@@ -23,7 +23,20 @@
   },
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
+  "literature_comparability": {
+    "scope": "ALL_DOMAINS_INCLUDING_FINANCE",
+    "required_before": "NEW_SCIENTIFIC_TRAINING",
+    "modes": ["REPRODUCTION", "MATCHED_DOMAIN_COMPARISON"],
+    "unmatched_published_scores_are_comparators": false
+  },
+  "closure_reporting": {
+    "scope": "CURRENT_AND_ALL_FUTURE_ORDER_SETS",
+    "required_columns": ["task_horizon_split", "metric_and_scale", "model_error", "naive_error", "skill_vs_naive", "literature_value_and_source", "comparability_status"],
+    "missing_comparator": "EXPLICIT_NOT_COMPARABLE_WITH_REASON_NO_INVENTED_VALUE",
+    "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
+  },
   "next_allowed_actions": [
+    "Implement BENCHMARK-CONTRACTS for upcoming real entry points, with all-domain coverage inventory and target/transform/metric/protocol validation under PROGRAM_METRICS_CONTRACT_v1.md; no comparable scientific run without its contract",
     "Design mandatory FIN-LOSS-OPT under FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md: MAE/Huber x Adam/AdamW, fine tuning and marginal-error precision; no financial winner from electricity",
     "Stop historical OLAP/branch searches; heuristic-strategy/noise reruns are not prerequisites of FIN-LOSS-OPT",
     "Consume Musashi's completed Huber/AdamW 12-cell comparison and exact warehouse closure, docs/audits/work_plan/MUSASHI_HUBER_ADAMW_RESULTS_2026_09_21.md; do not repeat it",
@@ -292,10 +305,19 @@
       "deliverable": "Conditional utility, transfer/cost, abstention and DOIN parity"
     },
     {
+      "id": "BENCHMARK-CONTRACTS",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": [],
+      "evidence": [],
+      "next_action": "Build the all-domain literature protocol registry and runner coverage inventory; test and implement missing checks before next scientific training, including finance; classify historical comparability without blanket reruns",
+      "deliverable": "Versioned target/transform/metric/split/reference contracts, reproduction or matched-domain comparisons, real-entry-point refusal tests and governed result linkage; documentary adoption is not runtime enforcement"
+    },
+    {
       "id": "FIN-LOSS-OPT",
       "owner": "Satoshi",
       "status": "NOT_STARTED",
-      "depends_on": ["BUSINESS-CONTRACT"],
+      "depends_on": ["BUSINESS-CONTRACT", "BENCHMARK-CONTRACTS"],
       "evidence": [],
       "next_action": "Design FL01-FL08 and the governed financial MAE/Huber x Adam/AdamW experiment now; execute after financial data/causality and reviewed design/resource gates, before financial forecasting recipe selection; no historical OLAP search or heuristic rerun prerequisite",
       "deliverable": "Paired normalized error and naive skill by horizon/fold/model, precision for 1e-5/1e-6 effects, tuned and default recipes, temporal uncertainty, cost and full warehouse closure; no profit guarantee"

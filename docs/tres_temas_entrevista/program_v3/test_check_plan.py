@@ -18,6 +18,30 @@ class PlanChecks(unittest.TestCase):
     def test_actual_state(self):
         self.assertEqual(validate(self.state, ROOT), [])
 
+    def test_closure_report_applies_to_current_and_future_orders(self):
+        self.state["closure_reporting"]["scope"] = "FUTURE_ONLY"
+        self.assertIn("closure reporting contract", " ".join(validate(self.state, ROOT)))
+
+    def test_closure_report_requires_naive_and_literature(self):
+        for field in ("naive_error", "literature_value_and_source"):
+            state = copy.deepcopy(self.state)
+            state["closure_reporting"]["required_columns"].remove(field)
+            self.assertIn("closure reporting contract", " ".join(validate(state, ROOT)))
+
+    def test_literature_policy_cannot_omit_finance(self):
+        self.state["literature_comparability"]["scope"] = "PUBLIC_DATA_ONLY"
+        self.assertIn("literature comparability contract", " ".join(validate(self.state, ROOT)))
+
+    def test_unmatched_published_scores_are_not_comparators(self):
+        self.state["literature_comparability"]["unmatched_published_scores_are_comparators"] = True
+        self.assertIn("literature comparability contract", " ".join(validate(self.state, ROOT)))
+
+    def test_benchmark_contract_task_cannot_disappear(self):
+        self.state["tasks"] = [t for t in self.state["tasks"] if t["id"] != "BENCHMARK-CONTRACTS"]
+        for task in self.state["tasks"]:
+            task["depends_on"] = [d for d in task["depends_on"] if d != "BENCHMARK-CONTRACTS"]
+        self.assertIn("unknown task BENCHMARK-CONTRACTS", " ".join(validate(self.state, ROOT)))
+
     def test_financial_loss_comparison_cannot_disappear(self):
         self.state["proposal_coverage"]["P-MOD"].remove("FIN-LOSS-OPT")
         self.state["tasks"] = [t for t in self.state["tasks"] if t["id"] != "FIN-LOSS-OPT"]
