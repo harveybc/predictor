@@ -1,0 +1,100 @@
+{
+ "at": "2026-09-21T03:08:13Z",
+ "cap_seconds": 2000.0,
+ "cells": {
+  "pilot_core_mae": {
+   "arm": "core_mae",
+   "cpu_seconds": 24.895,
+   "epochs": 1,
+   "mae": 0.5637362263040153,
+   "parameters": 8127,
+   "persistence_scaled_error_horizon_train": 0.9147677666177271,
+   "seed": 1,
+   "stop": "UPDATE_BUDGET",
+   "updates": 200,
+   "verdict": "CENSORED_BY_BUDGET"
+  },
+  "pilot_core_mse": {
+   "arm": "core_mse",
+   "cpu_seconds": 25.997,
+   "epochs": 1,
+   "mae": 0.5811092384075929,
+   "parameters": 8127,
+   "persistence_scaled_error_horizon_train": 0.9429587373942652,
+   "seed": 1,
+   "stop": "UPDATE_BUDGET",
+   "updates": 200,
+   "verdict": "CENSORED_BY_BUDGET"
+  },
+  "pilot_tcn_mse": {
+   "arm": "tcn_mse",
+   "cpu_seconds": 15.064,
+   "epochs": 1,
+   "mae": 0.5515842151010107,
+   "parameters": 8061,
+   "persistence_scaled_error_horizon_train": 0.8950488491002794,
+   "seed": 1,
+   "stop": "UPDATE_BUDGET",
+   "updates": 200,
+   "verdict": "CENSORED_BY_BUDGET"
+  }
+ },
+ "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+ "design_sha256": "5cb8263d359f15008ddc0ba0a997cdafd75036b8dd5621af0d31e5f9a8a4b231",
+ "host": "omega",
+ "projection": {
+  "assumption": "every cell runs to the full ceiling; early stopping can only lower it",
+  "cells": 9,
+  "cpu_seconds_per_update_by_arm": {
+   "core_mae": 0.124475,
+   "core_mse": 0.129985,
+   "tcn_mse": 0.07532
+  },
+  "projected_cpu_seconds_per_cell_at_the_ceiling": {
+   "core_mae": 497.90000000000003,
+   "core_mse": 519.9399999999999,
+   "tcn_mse": 301.28
+  },
+  "projected_total_cpu_seconds": 3957.4,
+  "with_headroom_25_percent": 4946.7
+ },
+ "run_id": "satoshi-e1-phase1-20260921b",
+ "schema": "df_e1_phase1_report.v1",
+ "spent_cpu_seconds": 65.956,
+ "stopped": null,
+ "terminals": [
+  {
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "sent": 1,
+   "terminal_sha256": "01cacb00ab72496f9d010955b82fb2d96cdbdd5f69c3842b05636811621bd231",
+   "unit_id": "pilot_core_mse"
+  },
+  {
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "sent": 1,
+   "terminal_sha256": "62b533953f5c3de6fd5ce5f3d35b7e9d8f8a2fe1692befa80857f5262f95bb30",
+   "unit_id": "pilot_core_mae"
+  },
+  {
+   "reconciliation": {
+    "accounting_only": [],
+    "http": 200,
+    "lake_only": [],
+    "missing_units": []
+   },
+   "sent": 1,
+   "terminal_sha256": "0227dfa7c88592c016bfb2f1208caa4ccc6a8d422c5b864fb8427bf6c0ebed3c",
+   "unit_id": "pilot_tcn_mse"
+  }
+ ]
+}

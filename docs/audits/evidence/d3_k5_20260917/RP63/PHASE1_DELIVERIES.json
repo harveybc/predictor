@@ -1,0 +1,258 @@
+{
+ "schema": "df_e1_governed_acquisition.v1",
+ "at": "2026-09-21T03:08:13Z",
+ "host": "omega",
+ "run_id": "satoshi-e1-phase1-20260921b",
+ "design_sha256": "5cb8263d359f15008ddc0ba0a997cdafd75036b8dd5621af0d31e5f9a8a4b231",
+ "lake": "public_panels",
+ "resource": "uci_235_individual_household_power/panel.parquet",
+ "role": "panel",
+ "units": {
+  "pilot_core_mse": {
+   "campaign_key": "satoshi-e1-phase1-20260921b-pilot_core_mse-data",
+   "campaign_sha256": "785d812f87de62f4a81a3e017ba3e95d9d2360ae12d461dd4035c099c7b1f914",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "be1cb8cc4ada67981822a702c5742fd4602554b3"
+   },
+   "at": "2026-09-21T03:08:13Z",
+   "host": "omega",
+   "delivery_id": "aa38c9b2b4764a4b8b737786d1dcbac6",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": false,
+   "verification_state": "VERIFIED_TRANSFER",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  },
+  "pilot_core_mae": {
+   "campaign_key": "satoshi-e1-phase1-20260921b-pilot_core_mae-data",
+   "campaign_sha256": "b6cae456e4b64821a184566cb6d3dbcbf4c3860e817374bee87f4dfe8c1a06cb",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "be1cb8cc4ada67981822a702c5742fd4602554b3"
+   },
+   "at": "2026-09-21T03:08:46Z",
+   "host": "omega",
+   "delivery_id": "1a0f94856a86483483a2c9168395815e",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  },
+  "pilot_tcn_mse": {
+   "campaign_key": "satoshi-e1-phase1-20260921b-pilot_tcn_mse-data",
+   "campaign_sha256": "83e2ca54dc30d945f7ff9faacf7190b069b9c91f5460266e510fcb8495330ad2",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "be1cb8cc4ada67981822a702c5742fd4602554b3"
+   },
+   "at": "2026-09-21T03:09:11Z",
+   "host": "omega",
+   "delivery_id": "a80e44a94a6a440085dab6bb67753b97",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  },
+  "core_mse_s1": {
+   "campaign_key": "satoshi-e1-phase1-20260921b-core_mse_s1-data",
+   "campaign_sha256": "00e96f17c780893d9d2e2e5a6211a39a5ee47373d7e19dc157ece5af7447e655",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "be1cb8cc4ada67981822a702c5742fd4602554b3"
+   },
+   "at": "2026-09-21T03:09:41Z",
+   "host": "omega",
+   "delivery_id": "6cad6bc0917d4d4bbf32f0447e87a073",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  },
+  "core_mse_s2": {
+   "campaign_key": "satoshi-e1-phase1-20260921b-core_mse_s2-data",
+   "campaign_sha256": "e89fd4b6427536c673bf518da23a5f47316261ae9ec993d981520b06c5d12d89",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "be1cb8cc4ada67981822a702c5742fd4602554b3"
+   },
+   "at": "2026-09-21T03:14:08Z",
+   "host": "omega",
+   "delivery_id": "1f87880267324ef1b85027264d6ac2dd",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  },
+  "core_mse_s3": {
+   "campaign_key": "satoshi-e1-phase1-20260921b-core_mse_s3-data",
+   "campaign_sha256": "db6a0c43b61eca7ac85ac825888ed08a3c4cf9712e1876b492a0aa059e1ea8fe",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "be1cb8cc4ada67981822a702c5742fd4602554b3"
+   },
+   "at": "2026-09-21T03:18:32Z",
+   "host": "omega",
+   "delivery_id": "7f64ad8d9eee495badca7ca283618b90",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  },
+  "core_mae_s1": {
+   "campaign_key": "satoshi-e1-phase1-20260921b-core_mae_s1-data",
+   "campaign_sha256": "c22b4082b96dd7f84c65291c31519e3409569b6d1c89b6e6dd1a62416650706c",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "be1cb8cc4ada67981822a702c5742fd4602554b3"
+   },
+   "at": "2026-09-21T03:21:17Z",
+   "host": "omega",
+   "delivery_id": "be0b52bc16eb4c738de045fcf4f60de8",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  },
+  "core_mae_s2": {
+   "campaign_key": "satoshi-e1-phase1-20260921b-core_mae_s2-data",
+   "campaign_sha256": "c4048b39ce3cb8d460b9451ed721e327895e1e1710a1a7e03d312a8a9372421b",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "be1cb8cc4ada67981822a702c5742fd4602554b3"
+   },
+   "at": "2026-09-21T03:25:38Z",
+   "host": "omega",
+   "delivery_id": "7c98f552a7a840409444de5a02fdefa0",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  },
+  "core_mae_s3": {
+   "campaign_key": "satoshi-e1-phase1-20260921b-core_mae_s3-data",
+   "campaign_sha256": "f4579dd547ef2a6c5522efe2c417823bbc36a12badc63154dfd68ae71b3be19a",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "be1cb8cc4ada67981822a702c5742fd4602554b3"
+   },
+   "at": "2026-09-21T03:30:00Z",
+   "host": "omega",
+   "delivery_id": "aecd3e96814546e6abe37a59af288a9d",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  },
+  "tcn_mse_s1": {
+   "campaign_key": "satoshi-e1-phase1-20260921b-tcn_mse_s1-data",
+   "campaign_sha256": "baa80500bd70d3bc9d002fda97b4f397d69b5db3b5300c5113c983f512c9b41b",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "be1cb8cc4ada67981822a702c5742fd4602554b3"
+   },
+   "at": "2026-09-21T03:34:08Z",
+   "host": "omega",
+   "delivery_id": "1c0267fee6b140719922abd3ed9e0b2c",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  },
+  "tcn_mse_s2": {
+   "campaign_key": "satoshi-e1-phase1-20260921b-tcn_mse_s2-data",
+   "campaign_sha256": "761761aa146ade9011a0fe6c8ba61e2153122b72374d306c96ae3dcc9e0e1e5a",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "be1cb8cc4ada67981822a702c5742fd4602554b3"
+   },
+   "at": "2026-09-21T03:36:56Z",
+   "host": "omega",
+   "delivery_id": "2e5d4d662a1540308363ce68536f9253",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  },
+  "tcn_mse_s3": {
+   "campaign_key": "satoshi-e1-phase1-20260921b-tcn_mse_s3-data",
+   "campaign_sha256": "e20516c5034f1bd9836791ec39bf56f9a63b0b1006eaa061dd59d176ef754718",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "be1cb8cc4ada67981822a702c5742fd4602554b3"
+   },
+   "at": "2026-09-21T03:39:54Z",
+   "host": "omega",
+   "delivery_id": "2ad7073eded044659799ab362202c2c8",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  }
+ },
+ "order": "each unit's campaign is registered BEFORE it reads anything; its delivery is verified before it runs",
+ "transfer": {
+  "transferred_units": 1,
+  "cache_reused_units": 11,
+  "bytes_first_transfer": 10890295
+ }
+}
