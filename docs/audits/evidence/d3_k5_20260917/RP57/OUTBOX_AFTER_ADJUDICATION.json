@@ -1,0 +1,22 @@
+{
+ "schema": "outbox_adjudication_listing.v1",
+ "outbox": "/home/harveybc/.local/state/data-gov/terminal-outbox",
+ "spools": {
+  "/home/harveybc/.local/state/data-gov/terminal-outbox": {
+   "pending": [],
+   "adjudicated": 162,
+   "sent": 2393,
+   "recoverable": 0,
+   "awaiting_adjudication": 0,
+   "unresolved": 0
+  },
+  "/home/harveybc/.local/state/data-gov/terminal-outbox/units/rp57_comparison": {
+   "pending": [],
+   "adjudicated": 1,
+   "sent": 1,
+   "recoverable": 0,
+   "awaiting_adjudication": 0,
+   "unresolved": 0
+  }
+ }
+}

@@ -1,0 +1,25 @@
+{
+ "schema": "df_e1_reanalysis_publication.v1",
+ "run_id": "satoshi-e1-reanalysis-20260920b",
+ "unit": "rp57_comparison",
+ "purpose": "E1_REANALYSIS",
+ "of_run": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3",
+ "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/rp57.json",
+ "report_sha256": "848c6ccb4c2b6ea761ea52a032a1e8adf15f2a446f9386b66729dad856fff1cb",
+ "metrics_published": 192,
+ "campaign_sha256": "6396cb9d0c949f3d4652cd85fd63a250f1a948d2a29c0e0038ace7ad832be167",
+ "terminal_sha256": "18198a7dd2464e4cb2c51fdffeaaeb83c8027243ee8178efa68ea004f65de4a0",
+ "reconciliation": {
+  "http": 200,
+  "missing_units": [],
+  "accounting_only": [],
+  "lake_only": []
+ },
+ "flushed": {
+  "sent": 1,
+  "pending": 1,
+  "failures": {
+   "e735b80066c2c34ab54f4302b48605fcefbd69ab580bbaf99aeae66bcd7481c3.json": "GovernedRunError: terminal refused: http 400 invalid started_at"
+  }
+ }
+}

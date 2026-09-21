@@ -1,0 +1,3089 @@
+{
+  "scope": "LOCAL_READ_ONLY_REVIEW_OF_PRESERVED_VALIDATION_ARRAYS_NOT_NEW_TRAINING_OR_SCIENTIFIC_APPROVAL",
+  "n": 10020,
+  "window": 60,
+  "horizon": 60,
+  "scale": {
+    "target_mean": 0.926139629748496,
+    "target_sd": 0.9125164391265214,
+    "train_horizon_persistence": 0.6162615768463073,
+    "train_one_step": 0.08512377971532901,
+    "train_slice": [
+      0,
+      40260
+    ],
+    "one_step_pairs_used": 40257,
+    "one_step_pairs_excluded_nonfinite": 2,
+    "log1p_unit_convention": "log(1 + target expressed numerically in kW); existing forecasts transformed, not models trained in log space"
+  },
+  "target_quantiles": {
+    "min": 0.128,
+    "q25": 0.284,
+    "median": 0.642,
+    "q75": 1.452,
+    "max": 5.794
+  },
+  "by_scale": {
+    "raw_kW": {
+      "persistence": {
+        "n": 10020,
+        "mae": 0.6173720558882235,
+        "rmse": 0.966454889734754,
+        "bias": 0.013613572854291418,
+        "abs_error_sd": 0.7436006874197574,
+        "abs_error_median": 0.29400000000000004,
+        "abs_error_q90": 1.5822000000000007,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 0.0,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 0.0,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.0,
+              "sd_of_difference": 0.0,
+              "rows_first_better": 0,
+              "rows_equal": 10020,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 15.620279609440491,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.11428722554890221,
+              "sd_of_difference": 0.8879714952190054,
+              "rows_first_better": 5385,
+              "rows_equal": 57,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -13.176573589019934,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.07187749256092456,
+              "sd_of_difference": 0.5237812778001202,
+              "rows_first_better": 5208,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        },
+        "persistence_scaled_error_horizon_train": 1.0018019605369508,
+        "legacy_horizon_scaled_error": 1.0018019605369508,
+        "legacy_field_erratum": {
+          "field": "mase_mean",
+          "published_as": "MASE",
+          "what_it_actually_is": "the validation MAE divided by the mean absolute h-step change over the train rows consumed (h = the forecast horizon, 60 minutes)",
+          "correct_name": "persistence_scaled_error_horizon_train",
+          "version": "successor v2 names it correctly; the historical field is kept unchanged so published numbers stay readable, and this erratum travels with it",
+          "why_it_matters": "a conventional MASE uses a seasonal period m declared on its own grounds, so 0.8875 is not comparable with a published MASE of another study"
+        },
+        "conventional_mase_m1_train_slice": 7.252639132717549,
+        "conventional_mase_m1440_train_slice": 0.9337307537511494
+      },
+      "seasonal_naive_daily": {
+        "n": 10020,
+        "mae": 0.7316592814371257,
+        "rmse": 1.0890280496910867,
+        "bias": 0.10125209580838324,
+        "abs_error_sd": 0.8066732493329767,
+        "abs_error_median": 0.4240000000000001,
+        "abs_error_q90": 1.83,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": -18.51188832712476,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": -18.51188832712476,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.11428722554890221,
+              "sd_of_difference": 0.8879714952190054,
+              "rows_first_better": 4578,
+              "rows_equal": 57,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 0.0,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.0,
+              "sd_of_difference": 0.0,
+              "rows_first_better": 0,
+              "rows_equal": 10020,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -34.12769450428546,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.18616471810982677,
+              "sd_of_difference": 0.7817312737589703,
+              "rows_first_better": 4949,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        },
+        "persistence_scaled_error_horizon_train": 1.1872544207304976,
+        "legacy_horizon_scaled_error": 1.1872544207304976,
+        "legacy_field_erratum": {
+          "field": "mase_mean",
+          "published_as": "MASE",
+          "what_it_actually_is": "the validation MAE divided by the mean absolute h-step change over the train rows consumed (h = the forecast horizon, 60 minutes)",
+          "correct_name": "persistence_scaled_error_horizon_train",
+          "version": "successor v2 names it correctly; the historical field is kept unchanged so published numbers stay readable, and this erratum travels with it",
+          "why_it_matters": "a conventional MASE uses a seasonal period m declared on its own grounds, so 0.8875 is not comparable with a published MASE of another study"
+        },
+        "conventional_mase_m1_train_slice": 8.59523958973557,
+        "conventional_mase_m1440_train_slice": 1.1065819481615824
+      },
+      "R0_s1": {
+        "n": 10020,
+        "mae": 0.5524983663230361,
+        "rmse": 0.7731804692830229,
+        "bias": -0.017967289568445156,
+        "abs_error_sd": 0.5409092282173134,
+        "abs_error_median": 0.3809882082939148,
+        "abs_error_q90": 1.1891208941459657,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 10.50803789164908,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 10.50803789164908,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.06487368956518745,
+              "sd_of_difference": 0.5266633154882129,
+              "rows_first_better": 4700,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 24.48693260094803,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.17916091511408963,
+              "sd_of_difference": 0.793524791388521,
+              "rows_first_better": 5026,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -1.2839363518156066,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.007003802995737119,
+              "sd_of_difference": 0.25483243030961905,
+              "rows_first_better": 4862,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        },
+        "persistence_scaled_error_horizon_train": 0.8965322309244448,
+        "legacy_horizon_scaled_error": 0.8965322309244448,
+        "legacy_field_erratum": {
+          "field": "mase_mean",
+          "published_as": "MASE",
+          "what_it_actually_is": "the validation MAE divided by the mean absolute h-step change over the train rows consumed (h = the forecast horizon, 60 minutes)",
+          "correct_name": "persistence_scaled_error_horizon_train",
+          "version": "successor v2 names it correctly; the historical field is kept unchanged so published numbers stay readable, and this erratum travels with it",
+          "why_it_matters": "a conventional MASE uses a seasonal period m declared on its own grounds, so 0.8875 is not comparable with a published MASE of another study"
+        },
+        "conventional_mase_m1_train_slice": 6.49052906450702,
+        "conventional_mase_m1440_train_slice": 0.8356139723409981
+      },
+      "R0_s2": {
+        "n": 10020,
+        "mae": 0.5502789229728504,
+        "rmse": 0.7873927652096567,
+        "bias": -0.029809883859723857,
+        "abs_error_sd": 0.5632158835950101,
+        "abs_error_median": 0.3674335312843322,
+        "abs_error_q90": 1.2275312116622925,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 10.867536402962896,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 10.867536402962896,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.0670931329153731,
+              "sd_of_difference": 0.5573863746474058,
+              "rows_first_better": 4698,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 24.79027643960284,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.18138035846427528,
+              "sd_of_difference": 0.7981609529283414,
+              "rows_first_better": 5175,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -0.877068254607094,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.004784359645551464,
+              "sd_of_difference": 0.29300015428895343,
+              "rows_first_better": 4978,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        },
+        "persistence_scaled_error_horizon_train": 0.8929307677900018,
+        "legacy_horizon_scaled_error": 0.8929307677900018,
+        "legacy_field_erratum": {
+          "field": "mase_mean",
+          "published_as": "MASE",
+          "what_it_actually_is": "the validation MAE divided by the mean absolute h-step change over the train rows consumed (h = the forecast horizon, 60 minutes)",
+          "correct_name": "persistence_scaled_error_horizon_train",
+          "version": "successor v2 names it correctly; the historical field is kept unchanged so published numbers stay readable, and this erratum travels with it",
+          "why_it_matters": "a conventional MASE uses a seasonal period m declared on its own grounds, so 0.8875 is not comparable with a published MASE of another study"
+        },
+        "conventional_mase_m1_train_slice": 6.464455934793937,
+        "conventional_mase_m1440_train_slice": 0.8322572241815834
+      },
+      "R0_s3": {
+        "n": 10020,
+        "mae": 0.5380102124684585,
+        "rmse": 0.7781259584021524,
+        "bias": -0.043036618151850316,
+        "abs_error_sd": 0.5621890793939965,
+        "abs_error_median": 0.345529642701149,
+        "abs_error_q90": 1.179039855384827,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 12.854783863773333,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 12.854783863773333,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.07936184341976504,
+              "sd_of_difference": 0.47298304013566267,
+              "rows_first_better": 4947,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 26.467110290503193,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.19364906896866724,
+              "sd_of_difference": 0.7941172023833942,
+              "rows_first_better": 5101,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 1.3720303302729553,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.007484350858840488,
+              "sd_of_difference": 0.20377054577992962,
+              "rows_first_better": 5354,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        },
+        "persistence_scaled_error_horizon_train": 0.8730224837668821,
+        "legacy_horizon_scaled_error": 0.8730224837668821,
+        "legacy_field_erratum": {
+          "field": "mase_mean",
+          "published_as": "MASE",
+          "what_it_actually_is": "the validation MAE divided by the mean absolute h-step change over the train rows consumed (h = the forecast horizon, 60 minutes)",
+          "correct_name": "persistence_scaled_error_horizon_train",
+          "version": "successor v2 names it correctly; the historical field is kept unchanged so published numbers stay readable, and this erratum travels with it",
+          "why_it_matters": "a conventional MASE uses a seasonal period m declared on its own grounds, so 0.8875 is not comparable with a published MASE of another study"
+        },
+        "conventional_mase_m1_train_slice": 6.320328047787263,
+        "conventional_mase_m1440_train_slice": 0.8137016834868576
+      },
+      "R1_s1": {
+        "n": 10020,
+        "mae": 0.5599806716461382,
+        "rmse": 0.7745812419629764,
+        "bias": 0.07123229034168278,
+        "abs_error_sd": 0.535188128835129,
+        "abs_error_median": 0.397917839050293,
+        "abs_error_q90": 1.2364793968200685,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 9.296077413078796,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 9.296077413078796,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.057391384242085404,
+              "sd_of_difference": 0.5293631104875044,
+              "rows_first_better": 4672,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 23.464283737886337,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.17167860979098762,
+              "sd_of_difference": 0.7875457056569912,
+              "rows_first_better": 5079,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -2.655591694714543,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.014486108318839157,
+              "sd_of_difference": 0.2417298177351806,
+              "rows_first_better": 4745,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        },
+        "persistence_scaled_error_horizon_train": 0.9086736747596948,
+        "legacy_horizon_scaled_error": 0.9086736747596948,
+        "legacy_field_erratum": {
+          "field": "mase_mean",
+          "published_as": "MASE",
+          "what_it_actually_is": "the validation MAE divided by the mean absolute h-step change over the train rows consumed (h = the forecast horizon, 60 minutes)",
+          "correct_name": "persistence_scaled_error_horizon_train",
+          "version": "successor v2 names it correctly; the historical field is kept unchanged so published numbers stay readable, and this erratum travels with it",
+          "why_it_matters": "a conventional MASE uses a seasonal period m declared on its own grounds, so 0.8875 is not comparable with a published MASE of another study"
+        },
+        "conventional_mase_m1_train_slice": 6.578428184448879,
+        "conventional_mase_m1440_train_slice": 0.8469304200527185
+      },
+      "R1_s2": {
+        "n": 10020,
+        "mae": 0.5447235416877055,
+        "rmse": 0.7832732408496879,
+        "bias": -0.06437698897251826,
+        "abs_error_sd": 0.5628719678657865,
+        "abs_error_median": 0.36443784737586976,
+        "abs_error_q90": 1.2414448461055758,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 11.76737973603249,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 11.76737973603249,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.072648514200518,
+              "sd_of_difference": 0.55219706732045,
+              "rows_first_better": 4903,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 25.549561728000057,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.1869357397494202,
+              "sd_of_difference": 0.7943161496798843,
+              "rows_first_better": 5291,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 0.141343597430299,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.0007710216395934351,
+              "sd_of_difference": 0.28852224136511784,
+              "rows_first_better": 5078,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        },
+        "persistence_scaled_error_horizon_train": 0.8839161196375496,
+        "legacy_horizon_scaled_error": 0.8839161196375496,
+        "legacy_field_erratum": {
+          "field": "mase_mean",
+          "published_as": "MASE",
+          "what_it_actually_is": "the validation MAE divided by the mean absolute h-step change over the train rows consumed (h = the forecast horizon, 60 minutes)",
+          "correct_name": "persistence_scaled_error_horizon_train",
+          "version": "successor v2 names it correctly; the historical field is kept unchanged so published numbers stay readable, and this erratum travels with it",
+          "why_it_matters": "a conventional MASE uses a seasonal period m declared on its own grounds, so 0.8875 is not comparable with a published MASE of another study"
+        },
+        "conventional_mase_m1_train_slice": 6.399193545086582,
+        "conventional_mase_m1440_train_slice": 0.8238551102451332
+      },
+      "R1_s3": {
+        "n": 10020,
+        "mae": 0.5654982544530414,
+        "rmse": 0.792828635060642,
+        "bias": 0.010752798118967266,
+        "abs_error_sd": 0.5557155649439015,
+        "abs_error_median": 0.39110358190536504,
+        "abs_error_q90": 1.2460058143615729,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 8.40235655961954,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 8.40235655961954,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.051873801435182186,
+              "sd_of_difference": 0.5318297377945751,
+              "rows_first_better": 4626,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 22.710164580665293,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.1661610269840844,
+              "sd_of_difference": 0.7963919906529384,
+              "rows_first_better": 5011,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -3.667074334110265,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.020003691125742365,
+              "sd_of_difference": 0.28456993550815624,
+              "rows_first_better": 4865,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        },
+        "persistence_scaled_error_horizon_train": 0.9176269877913773,
+        "legacy_horizon_scaled_error": 0.9176269877913773,
+        "legacy_field_erratum": {
+          "field": "mase_mean",
+          "published_as": "MASE",
+          "what_it_actually_is": "the validation MAE divided by the mean absolute h-step change over the train rows consumed (h = the forecast horizon, 60 minutes)",
+          "correct_name": "persistence_scaled_error_horizon_train",
+          "version": "successor v2 names it correctly; the historical field is kept unchanged so published numbers stay readable, and this erratum travels with it",
+          "why_it_matters": "a conventional MASE uses a seasonal period m declared on its own grounds, so 0.8875 is not comparable with a published MASE of another study"
+        },
+        "conventional_mase_m1_train_slice": 6.643246532804122,
+        "conventional_mase_m1440_train_slice": 0.8552753665141547
+      },
+      "R2_s1": {
+        "n": 10020,
+        "mae": 0.54226553502109,
+        "rmse": 0.7793289174801915,
+        "bias": -0.031237536711630938,
+        "abs_error_sd": 0.5597614866171365,
+        "abs_error_median": 0.35662967312335964,
+        "abs_error_q90": 1.2286997035980227,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 12.165519989251305,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 12.165519989251305,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.07510652086713357,
+              "sd_of_difference": 0.5211587845994549,
+              "rows_first_better": 4919,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 25.88551136042836,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.18939374641603576,
+              "sd_of_difference": 0.7851192070429719,
+              "rows_first_better": 5194,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 0.5919450941019977,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.0032290283062090096,
+              "sd_of_difference": 0.2340250859933981,
+              "rows_first_better": 5315,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        },
+        "persistence_scaled_error_horizon_train": 0.8799275427751168,
+        "legacy_horizon_scaled_error": 0.8799275427751168,
+        "legacy_field_erratum": {
+          "field": "mase_mean",
+          "published_as": "MASE",
+          "what_it_actually_is": "the validation MAE divided by the mean absolute h-step change over the train rows consumed (h = the forecast horizon, 60 minutes)",
+          "correct_name": "persistence_scaled_error_horizon_train",
+          "version": "successor v2 names it correctly; the historical field is kept unchanged so published numbers stay readable, and this erratum travels with it",
+          "why_it_matters": "a conventional MASE uses a seasonal period m declared on its own grounds, so 0.8875 is not comparable with a published MASE of another study"
+        },
+        "conventional_mase_m1_train_slice": 6.370317869278534,
+        "conventional_mase_m1440_train_slice": 0.8201375522577665
+      },
+      "R2_s2": {
+        "n": 10020,
+        "mae": 0.5692441953122259,
+        "rmse": 0.7845060851020184,
+        "bias": 0.05768071331720867,
+        "abs_error_sd": 0.5398517662161881,
+        "abs_error_median": 0.42530467772483826,
+        "abs_error_q90": 1.2199552133798601,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 7.79560074301634,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 7.79560074301634,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.04812786057599766,
+              "sd_of_difference": 0.5414244750444059,
+              "rows_first_better": 4696,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 22.198185719162055,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.16241508612489988,
+              "sd_of_difference": 0.8076816280180331,
+              "rows_first_better": 5000,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -4.3537797773938625,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.023749631984926897,
+              "sd_of_difference": 0.29479807572806455,
+              "rows_first_better": 4526,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        },
+        "persistence_scaled_error_horizon_train": 0.9237054794577801,
+        "legacy_horizon_scaled_error": 0.9237054794577801,
+        "legacy_field_erratum": {
+          "field": "mase_mean",
+          "published_as": "MASE",
+          "what_it_actually_is": "the validation MAE divided by the mean absolute h-step change over the train rows consumed (h = the forecast horizon, 60 minutes)",
+          "correct_name": "persistence_scaled_error_horizon_train",
+          "version": "successor v2 names it correctly; the historical field is kept unchanged so published numbers stay readable, and this erratum travels with it",
+          "why_it_matters": "a conventional MASE uses a seasonal period m declared on its own grounds, so 0.8875 is not comparable with a published MASE of another study"
+        },
+        "conventional_mase_m1_train_slice": 6.687252342599126,
+        "conventional_mase_m1440_train_slice": 0.8609408321739527
+      },
+      "R2_s3": {
+        "n": 10020,
+        "mae": 0.5464712891060197,
+        "rmse": 0.7781268951679848,
+        "bias": 0.03816418146775393,
+        "abs_error_sd": 0.5539686110557526,
+        "abs_error_median": 0.3537015161514282,
+        "abs_error_q90": 1.2308051133155824,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 11.484285060521193,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 11.484285060521193,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.07090076678220382,
+              "sd_of_difference": 0.48384172308979156,
+              "rows_first_better": 5051,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 25.310687232363072,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.18518799233110605,
+              "sd_of_difference": 0.798849521434408,
+              "rows_first_better": 5232,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -0.17905325632634472,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.000976725778720725,
+              "sd_of_difference": 0.2610243080262055,
+              "rows_first_better": 5354,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        },
+        "persistence_scaled_error_horizon_train": 0.8867521676469975,
+        "legacy_horizon_scaled_error": 0.8867521676469975,
+        "legacy_field_erratum": {
+          "field": "mase_mean",
+          "published_as": "MASE",
+          "what_it_actually_is": "the validation MAE divided by the mean absolute h-step change over the train rows consumed (h = the forecast horizon, 60 minutes)",
+          "correct_name": "persistence_scaled_error_horizon_train",
+          "version": "successor v2 names it correctly; the historical field is kept unchanged so published numbers stay readable, and this erratum travels with it",
+          "why_it_matters": "a conventional MASE uses a seasonal period m declared on its own grounds, so 0.8875 is not comparable with a published MASE of another study"
+        },
+        "conventional_mase_m1_train_slice": 6.419725380305354,
+        "conventional_mase_m1440_train_slice": 0.8264984522926142
+      },
+      "linear_ridge": {
+        "n": 10020,
+        "mae": 0.5454945633272991,
+        "rmse": 0.7740378285266319,
+        "bias": -0.022613015569707736,
+        "abs_error_sd": 0.549181519358613,
+        "abs_error_median": 0.38169025156082176,
+        "abs_error_q90": 1.1736411179314925,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 11.642492055704256,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 11.642492055704256,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.07187749256092456,
+              "sd_of_difference": 0.5237812778001202,
+              "rows_first_better": 4812,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 25.44418185253684,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.18616471810982677,
+              "sd_of_difference": 0.7817312737589703,
+              "rows_first_better": 5071,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 0.0,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.0,
+              "sd_of_difference": 0.0,
+              "rows_first_better": 0,
+              "rows_equal": 10020,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        },
+        "persistence_scaled_error_horizon_train": 0.8851672468675469,
+        "legacy_horizon_scaled_error": 0.8851672468675469,
+        "legacy_field_erratum": {
+          "field": "mase_mean",
+          "published_as": "MASE",
+          "what_it_actually_is": "the validation MAE divided by the mean absolute h-step change over the train rows consumed (h = the forecast horizon, 60 minutes)",
+          "correct_name": "persistence_scaled_error_horizon_train",
+          "version": "successor v2 names it correctly; the historical field is kept unchanged so published numbers stay readable, and this erratum travels with it",
+          "why_it_matters": "a conventional MASE uses a seasonal period m declared on its own grounds, so 0.8875 is not comparable with a published MASE of another study"
+        },
+        "conventional_mase_m1_train_slice": 6.40825119786201,
+        "conventional_mase_m1440_train_slice": 0.8250212249240043
+      }
+    },
+    "zscore_train": {
+      "persistence": {
+        "n": 10020,
+        "mae": 0.676559927489289,
+        "rmse": 1.0591095659162737,
+        "bias": 0.01491871518207673,
+        "abs_error_sd": 0.8148901822870681,
+        "abs_error_median": 0.32218597648654157,
+        "abs_error_q90": 1.7338865714183882,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 0.0,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 0.0,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.0,
+              "sd_of_difference": 0.0,
+              "rows_first_better": 0,
+              "rows_equal": 10020,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 15.620279609440502,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.12524401824289344,
+              "sd_of_difference": 0.973101915916155,
+              "rows_first_better": 5384,
+              "rows_equal": 55,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -13.176573589019913,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.07876843581001904,
+              "sd_of_difference": 0.5739965389571435,
+              "rows_first_better": 5208,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "seasonal_naive_daily": {
+        "n": 10020,
+        "mae": 0.8018039457321824,
+        "rmse": 1.1934338966359068,
+        "bias": 0.11095920190249253,
+        "abs_error_sd": 0.8840095528636615,
+        "abs_error_median": 0.46464916336834566,
+        "abs_error_q90": 2.0054433230284725,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": -18.51188832712476,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": -18.51188832712476,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.12524401824289344,
+              "sd_of_difference": 0.973101915916155,
+              "rows_first_better": 4581,
+              "rows_equal": 55,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 0.0,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.0,
+              "sd_of_difference": 0.0,
+              "rows_first_better": 0,
+              "rows_equal": 10020,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -34.12769450428548,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.2040124540529125,
+              "sd_of_difference": 0.8566763734221148,
+              "rows_first_better": 4949,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R0_s1": {
+        "n": 10020,
+        "mae": 0.605466753949001,
+        "rmse": 0.8473057976063713,
+        "bias": -0.019689825627299158,
+        "abs_error_sd": 0.5927665574278117,
+        "abs_error_median": 0.41751380244568986,
+        "abs_error_q90": 1.303122708982882,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 10.50803789164908,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 10.50803789164908,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.07109317354028799,
+              "sd_of_difference": 0.5771548795245215,
+              "rows_first_better": 4700,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 24.48693260094803,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.1963371917831814,
+              "sd_of_difference": 0.8696005434686727,
+              "rows_first_better": 5026,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -1.2839363518156066,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.007675262269731045,
+              "sd_of_difference": 0.2792633857134121,
+              "rows_first_better": 4862,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R0_s2": {
+        "n": 10020,
+        "mae": 0.6030345310815313,
+        "rmse": 0.8628806358418754,
+        "bias": -0.03266777734794395,
+        "abs_error_sd": 0.6172117667645871,
+        "abs_error_median": 0.4026596294923156,
+        "abs_error_q90": 1.3452154493099429,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 10.867536402962873,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 10.867536402962873,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.07352539640775782,
+              "sd_of_difference": 0.6108233788981895,
+              "rows_first_better": 4698,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 24.79027643960283,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.19876941465065126,
+              "sd_of_difference": 0.8746811769137626,
+              "rows_first_better": 5175,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -0.8770682546071162,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.005243039402261227,
+              "sd_of_difference": 0.32109027489895847,
+              "rows_first_better": 4978,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R0_s3": {
+        "n": 10020,
+        "mae": 0.5895896111016394,
+        "rmse": 0.8527254140725287,
+        "bias": -0.047162567496368414,
+        "abs_error_sd": 0.616086522158587,
+        "abs_error_median": 0.37865580047182135,
+        "abs_error_q90": 1.2920751942983373,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 12.854783863773312,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 12.854783863773312,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.08697031638764967,
+              "sd_of_difference": 0.5183282402982365,
+              "rows_first_better": 4947,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 26.467110290503182,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.2122143346305431,
+              "sd_of_difference": 0.8702497493015454,
+              "rows_first_better": 5101,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 1.372030330272933,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.008201880577630638,
+              "sd_of_difference": 0.22330616418810248,
+              "rows_first_better": 5354,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R1_s1": {
+        "n": 10020,
+        "mae": 0.6136663928840149,
+        "rmse": 0.8488408632993184,
+        "bias": 0.07806137762281602,
+        "abs_error_sd": 0.5864969724243232,
+        "abs_error_median": 0.43606648821711935,
+        "abs_error_q90": 1.3550215029590598,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 9.296077413078784,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 9.296077413078784,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.06289353460527412,
+              "sd_of_difference": 0.5801135056747265,
+              "rows_first_better": 4672,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 23.464283737886337,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.18813755284816755,
+              "sd_of_difference": 0.8630482387921092,
+              "rows_first_better": 5079,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -2.655591694714543,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.01587490120474492,
+              "sd_of_difference": 0.2649046169147036,
+              "rows_first_better": 4745,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R1_s2": {
+        "n": 10020,
+        "mae": 0.5969465516797983,
+        "rmse": 0.8583661699283492,
+        "bias": -0.0705488539298439,
+        "abs_error_sd": 0.6168348796045566,
+        "abs_error_median": 0.3993767473654687,
+        "abs_error_q90": 1.3604629931860857,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 11.76737973603249,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 11.76737973603249,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.0796133758094907,
+              "sd_of_difference": 0.6051365692096725,
+              "rows_first_better": 4903,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 25.54956172800007,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.20485739405238412,
+              "sd_of_difference": 0.8704677698083109,
+              "rows_first_better": 5291,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 0.1413435974303101,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.0008449399994716531,
+              "sd_of_difference": 0.31618306147042896,
+              "rows_first_better": 5078,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R1_s3": {
+        "n": 10020,
+        "mae": 0.6197129500421356,
+        "rmse": 0.8688376461683838,
+        "bias": 0.011783676060959578,
+        "abs_error_sd": 0.6089923875517721,
+        "abs_error_median": 0.4285989436855921,
+        "abs_error_q90": 1.3654612245169786,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 8.402356559619529,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 8.402356559619529,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.056846977447153516,
+              "sd_of_difference": 0.5828166101902262,
+              "rows_first_better": 4626,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 22.710164580665293,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.18209099569004694,
+              "sd_of_difference": 0.8727426230427809,
+              "rows_first_better": 5011,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -3.6670743341102874,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.021921458362865538,
+              "sd_of_difference": 0.31185184540954913,
+              "rows_first_better": 4865,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R2_s1": {
+        "n": 10020,
+        "mae": 0.5942528942713154,
+        "rmse": 0.8540437016413429,
+        "bias": -0.034232300232894565,
+        "abs_error_sd": 0.6134261944397968,
+        "abs_error_median": 0.3908199982289991,
+        "abs_error_q90": 1.3464959653484798,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 12.165519989251294,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 12.165519989251294,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.08230703321797359,
+              "sd_of_difference": 0.5711226255806615,
+              "rows_first_better": 4919,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 25.88551136042836,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.20755105146086703,
+              "sd_of_difference": 0.8603891101342825,
+              "rows_first_better": 5194,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 0.5919450941019977,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.0035385974079545366,
+              "sd_of_difference": 0.256461227391598,
+              "rows_first_better": 5315,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R2_s2": {
+        "n": 10020,
+        "mae": 0.623818016754983,
+        "rmse": 0.8597172077830871,
+        "bias": 0.06321060185219432,
+        "abs_error_sd": 0.5916077158379138,
+        "abs_error_median": 0.46607892141860835,
+        "abs_error_q90": 1.3369131350089705,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 7.795600743016351,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 7.795600743016351,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.052741910734305876,
+              "sd_of_difference": 0.5933312013125682,
+              "rows_first_better": 4696,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 22.198185719162076,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.1779859289771993,
+              "sd_of_difference": 0.8851146054871754,
+              "rows_first_better": 5000,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -4.35377977739384,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.026026525075713163,
+              "sd_of_difference": 0.32306056426802676,
+              "rows_first_better": 4526,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R2_s3": {
+        "n": 10020,
+        "mae": 0.5988618568111636,
+        "rmse": 0.8527264406467275,
+        "bias": 0.04182300705101318,
+        "abs_error_sd": 0.6070779520268392,
+        "abs_error_median": 0.3876111168912182,
+        "abs_error_q90": 1.3488032221027528,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 11.484285060521193,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 11.484285060521193,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.07769807067812547,
+              "sd_of_difference": 0.5302279524442698,
+              "rows_first_better": 5051,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 25.310687232363072,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.20294208892101886,
+              "sd_of_difference": 0.8754357589426909,
+              "rows_first_better": 5232,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -0.17905325632634472,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.0010703651318935859,
+              "sd_of_difference": 0.28604888288485314,
+              "rows_first_better": 5354,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "linear_ridge": {
+        "n": 10020,
+        "mae": 0.59779149167927,
+        "rmse": 0.8482453524536568,
+        "bias": -0.024780940485141664,
+        "abs_error_sd": 0.6018319186493784,
+        "abs_error_median": 0.41828315106978586,
+        "abs_error_q90": 1.2861588762772589,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 11.642492055704256,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 11.642492055704256,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.07876843581001904,
+              "sd_of_difference": 0.5739965389571435,
+              "rows_first_better": 4812,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 25.44418185253685,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.2040124540529125,
+              "sd_of_difference": 0.8566763734221148,
+              "rows_first_better": 5071,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 0.0,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.0,
+              "sd_of_difference": 0.0,
+              "rows_first_better": 0,
+              "rows_equal": 10020,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      }
+    },
+    "log1p_of_kW": {
+      "persistence": {
+        "n": 10020,
+        "mae": 0.27912721257283213,
+        "rmse": 0.398189262043291,
+        "bias": 0.005249335599538603,
+        "abs_error_sd": 0.2839907332706626,
+        "abs_error_median": 0.15642019329723894,
+        "abs_error_q90": 0.6840078462418954,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 0.0,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 0.0,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.0,
+              "sd_of_difference": 0.0,
+              "rows_first_better": 0,
+              "rows_equal": 10020,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 15.644461539034726,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.05176654694243155,
+              "sd_of_difference": 0.3669319376079836,
+              "rows_first_better": 5413,
+              "rows_equal": 51,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -3.7268052353909953,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.010028774672042043,
+              "sd_of_difference": 0.21330384529541366,
+              "rows_first_better": 5204,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "seasonal_naive_daily": {
+        "n": 10020,
+        "mae": 0.3308937595152636,
+        "rmse": 0.4530493700630619,
+        "bias": 0.04154509531287865,
+        "abs_error_sd": 0.30947150074454355,
+        "abs_error_median": 0.21573106971681005,
+        "abs_error_q90": 0.7623714775728956,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": -18.545861747150205,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": -18.545861747150205,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.05176654694243155,
+              "sd_of_difference": 0.3669319376079836,
+              "rows_first_better": 4556,
+              "rows_equal": 51,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 0.0,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.0,
+              "sd_of_difference": 0.0,
+              "rows_first_better": 0,
+              "rows_equal": 10020,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -22.963835129082376,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.061795321614473604,
+              "sd_of_difference": 0.33052962747275827,
+              "rows_first_better": 4957,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R0_s1": {
+        "n": 10020,
+        "mae": 0.26963868977785316,
+        "rmse": 0.3381108031555867,
+        "bias": 0.04286000854873239,
+        "abs_error_sd": 0.2040050138672374,
+        "abs_error_median": 0.22485097236317608,
+        "abs_error_q90": 0.548025858637813,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 3.399354261277243,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 3.399354261277243,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.009488522794978952,
+              "sd_of_difference": 0.2089682843565968,
+              "rows_first_better": 4719,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 18.512005130330923,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.061255069737410496,
+              "sd_of_difference": 0.33554616973656126,
+              "rows_first_better": 5050,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -0.20076366153498615,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.0005402518770630884,
+              "sd_of_difference": 0.1165141648889529,
+              "rows_first_better": 4863,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R0_s2": {
+        "n": 10020,
+        "mae": 0.2664003175513735,
+        "rmse": 0.34058814748968247,
+        "bias": 0.03051304477836771,
+        "abs_error_sd": 0.21221604933413626,
+        "abs_error_median": 0.21524828829726433,
+        "abs_error_q90": 0.5588118890138546,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 4.559532158885382,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 4.559532158885382,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.012726895021458637,
+              "sd_of_difference": 0.22328699932007168,
+              "rows_first_better": 4712,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 19.490679442963366,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.06449344196389019,
+              "sd_of_difference": 0.3344578447741422,
+              "rows_first_better": 5195,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 1.0026518067010493,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.002698120349416594,
+              "sd_of_difference": 0.1316972161365097,
+              "rows_first_better": 4990,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R0_s3": {
+        "n": 10020,
+        "mae": 0.2629926224986577,
+        "rmse": 0.3377105636799002,
+        "bias": 0.030170587124971796,
+        "abs_error_sd": 0.21186737632573793,
+        "abs_error_median": 0.2082635367600496,
+        "abs_error_q90": 0.56505111600718,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 5.780371582353149,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 5.780371582353149,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.016134590074174435,
+              "sd_of_difference": 0.1809438567117799,
+              "rows_first_better": 4951,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 20.520525112373345,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.067901137016606,
+              "sd_of_difference": 0.33488019092304205,
+              "rows_first_better": 5113,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 2.2689895377183356,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.006105815402132396,
+              "sd_of_difference": 0.09860864750905982,
+              "rows_first_better": 5348,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R1_s1": {
+        "n": 10020,
+        "mae": 0.27434832349402544,
+        "rmse": 0.3447766148976017,
+        "bias": 0.08746418480182294,
+        "abs_error_sd": 0.208825917209508,
+        "abs_error_median": 0.23256131386619766,
+        "abs_error_q90": 0.5765688883825455,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 1.7120828294588941,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 1.7120828294588941,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.004778889078806651,
+              "sd_of_difference": 0.2207617034547239,
+              "rows_first_better": 4694,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 17.08869822872251,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.0565454360212382,
+              "sd_of_difference": 0.33544353458439563,
+              "rows_first_better": 5084,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -1.950916413409609,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.005249885593235394,
+              "sd_of_difference": 0.10761244936443395,
+              "rows_first_better": 4755,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R1_s2": {
+        "n": 10020,
+        "mae": 0.2656571843108102,
+        "rmse": 0.3468578367585205,
+        "bias": 0.011693652342159659,
+        "abs_error_sd": 0.22302821250853075,
+        "abs_error_median": 0.20627694077112896,
+        "abs_error_q90": 0.569219718395103,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 4.825766767010298,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 4.825766767010298,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.01347002826202194,
+              "sd_of_difference": 0.22426132533686258,
+              "rows_first_better": 4893,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 19.715263080216584,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.0652365752044535,
+              "sd_of_difference": 0.3387205854400079,
+              "rows_first_better": 5266,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 1.2788084601399907,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.003441253589979899,
+              "sd_of_difference": 0.14579294081905173,
+              "rows_first_better": 5075,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R1_s3": {
+        "n": 10020,
+        "mae": 0.27540094329988823,
+        "rmse": 0.3486738876371947,
+        "bias": 0.050786499006941994,
+        "abs_error_sd": 0.21385126714096442,
+        "abs_error_median": 0.22676890127367022,
+        "abs_error_q90": 0.5782447230826872,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 1.3349716921533084,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 1.3349716921533084,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.00372626927294389,
+              "sd_of_difference": 0.22696528851456393,
+              "rows_first_better": 4653,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 16.770584098252115,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.05549281621537545,
+              "sd_of_difference": 0.3380276417603166,
+              "rows_first_better": 5028,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -2.3420817483235323,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.0063025053990981555,
+              "sd_of_difference": 0.13233532836649944,
+              "rows_first_better": 4872,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R2_s1": {
+        "n": 10020,
+        "mae": 0.26244477734200605,
+        "rmse": 0.340172985061654,
+        "bias": 0.02897083026583096,
+        "abs_error_sd": 0.2164372282411783,
+        "abs_error_median": 0.20488834753219332,
+        "abs_error_q90": 0.573570236856773,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 5.976642362117657,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 5.976642362117657,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.016682435230826093,
+              "sd_of_difference": 0.20568152206181797,
+              "rows_first_better": 4935,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 20.686090385485233,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.06844898217325765,
+              "sd_of_difference": 0.3310705272106093,
+              "rows_first_better": 5186,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 2.472574947178652,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.00665366055878405,
+              "sd_of_difference": 0.11204316375605682,
+              "rows_first_better": 5318,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R2_s2": {
+        "n": 10020,
+        "mae": 0.2792233399404651,
+        "rmse": 0.3531411683828929,
+        "bias": 0.07068247787372813,
+        "abs_error_sd": 0.21621211038265226,
+        "abs_error_median": 0.23562144326521334,
+        "abs_error_q90": 0.5792785764510583,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": -0.03443855106313176,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": -0.03443855106313176,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 9.612736763300407e-05,
+              "sd_of_difference": 0.236720028350591,
+              "rows_first_better": 4726,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 15.615410713847277,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.05167041957479855,
+              "sd_of_difference": 0.3452533170380898,
+              "rows_first_better": 5014,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": -3.7625272441781377,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.010124902039675053,
+              "sd_of_difference": 0.13808782261942756,
+              "rows_first_better": 4527,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "R2_s3": {
+        "n": 10020,
+        "mae": 0.26466922736387655,
+        "rmse": 0.34190769330265386,
+        "bias": 0.06454119764684324,
+        "abs_error_sd": 0.21646188359249427,
+        "abs_error_median": 0.20875214165258238,
+        "abs_error_q90": 0.5797186343297049,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 5.179711815157784,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 5.179711815157784,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.014457985208955542,
+              "sd_of_difference": 0.19264114972196494,
+              "rows_first_better": 5063,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 20.013835331437324,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.0662245321513871,
+              "sd_of_difference": 0.3366045807611568,
+              "rows_first_better": 5241,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 1.6459443508722527,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.0044292105369134974,
+              "sd_of_difference": 0.11786557743713956,
+              "rows_first_better": 5361,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      },
+      "linear_ridge": {
+        "n": 10020,
+        "mae": 0.2690984379007901,
+        "rmse": 0.33735810940720057,
+        "bias": 0.04985536042578942,
+        "abs_error_sd": 0.20347151275842437,
+        "abs_error_median": 0.23147229873323966,
+        "abs_error_q90": 0.5571345030322125,
+        "dispersion_note": "spread of the error over rows; these rows are overlapping windows, so no iid interval is computed from them",
+        "mae_skill_percent": 3.592904675829578,
+        "skill_status": "MEASURED",
+        "versus": {
+          "persistence": {
+            "mae_skill_percent": 3.592904675829578,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.010028774672042043,
+              "sd_of_difference": 0.21330384529541366,
+              "rows_first_better": 4816,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "seasonal_naive_daily": {
+            "mae_skill_percent": 18.675275624719966,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": -0.061795321614473604,
+              "sd_of_difference": 0.33052962747275827,
+              "rows_first_better": 5063,
+              "rows_equal": 0,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          },
+          "linear_ridge": {
+            "mae_skill_percent": 0.0,
+            "status": "MEASURED",
+            "paired": {
+              "n": 10020,
+              "mean_abs_error_difference": 0.0,
+              "sd_of_difference": 0.0,
+              "rows_first_better": 0,
+              "rows_equal": 10020,
+              "reading": "negative means the first method has the smaller absolute error on average"
+            }
+          }
+        }
+      }
+    }
+  },
+  "regime_means": {
+    "R0": {
+      "raw_kW": {
+        "mae": 0.5469291672547817,
+        "rmse": 0.7795663976316107,
+        "bias": -0.030271263860006444,
+        "mae_skill_percent": 11.410119386128436,
+        "mae_sd_across_seeds": 0.00780335171939139,
+        "seeds": 3
+      },
+      "zscore_train": {
+        "mae": 0.5993636320440572,
+        "rmse": 0.8543039491735916,
+        "bias": -0.03317339015720384,
+        "mae_skill_percent": 11.410119386128422,
+        "mae_sd_across_seeds": 0.008551464263877663,
+        "seeds": 3
+      },
+      "log1p_of_kW": {
+        "mae": 0.26634387660929476,
+        "rmse": 0.33880317144172317,
+        "bias": 0.0345145468173573,
+        "mae_skill_percent": 4.579752667505258,
+        "mae_sd_across_seeds": 0.003323393108685045,
+        "seeds": 3
+      }
+    },
+    "R1": {
+      "raw_kW": {
+        "mae": 0.5567341559289617,
+        "rmse": 0.7835610392911021,
+        "bias": 0.005869366496043932,
+        "mae_skill_percent": 9.821937902910276,
+        "mae_sd_across_seeds": 0.010761137061061776,
+        "seeds": 3
+      },
+      "zscore_train": {
+        "mae": 0.6101086315353162,
+        "rmse": 0.8586815597986838,
+        "bias": 0.006432066584643899,
+        "mae_skill_percent": 9.821937902910266,
+        "mae_sd_across_seeds": 0.011792814463005816,
+        "seeds": 3
+      },
+      "log1p_of_kW": {
+        "mae": 0.2718021503682413,
+        "rmse": 0.3467694464311056,
+        "bias": 0.04998144538364153,
+        "mae_skill_percent": 2.6242737628741666,
+        "mae_sd_across_seeds": 0.005347659113963679,
+        "seeds": 3
+      }
+    },
+    "R2": {
+      "raw_kW": {
+        "mae": 0.5526603398131119,
+        "rmse": 0.7806539659167315,
+        "bias": 0.02153578602444389,
+        "mae_skill_percent": 10.481801930929613,
+        "mae_sd_across_seeds": 0.01451517444839528,
+        "seeds": 3
+      },
+      "zscore_train": {
+        "mae": 0.6056442559458207,
+        "rmse": 0.8554957833570526,
+        "bias": 0.023600436223437646,
+        "mae_skill_percent": 10.481801930929613,
+        "mae_sd_across_seeds": 0.015906753923567035,
+        "seeds": 3
+      },
+      "log1p_of_kW": {
+        "mae": 0.26877911488211587,
+        "rmse": 0.34507394891573356,
+        "bias": 0.054731501928800774,
+        "mae_skill_percent": 3.7073052087374365,
+        "mae_sd_across_seeds": 0.00911309070936074,
+        "seeds": 3
+      }
+    }
+  },
+  "training_diagnostics": {
+    "R0_s1": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 3,
+          "budget_reached": false,
+          "epochs": 6,
+          "improvement_since_best": 0.051329612731933594,
+          "stopped_by": "EARLY_STOPPING",
+          "updates_used_of_ceiling": [
+            3762,
+            4000
+          ],
+          "validation_slope_last_third": 0.02467966079711914,
+          "validation_slope_last_two": 0.007476925849914551,
+          "verdict": "STOPPED_ON_VALIDATION"
+        },
+        "curve": {
+          "train": [
+            0.8787745833396912,
+            0.7375243902206421,
+            0.7120715379714966,
+            0.693044126033783,
+            0.6606433391571045,
+            0.6272920370101929
+          ],
+          "validation": [
+            0.765623152256012,
+            0.7270731925964355,
+            0.7179271578788757,
+            0.7445771098136902,
+            0.7617798447608948,
+            0.7692567706108093
+          ]
+        },
+        "epochs": 6,
+        "fit_seconds": 391.16,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 3,
+        "restored_validation_loss": 0.7179271578788757,
+        "steps_per_epoch": 627,
+        "stop_reason": "EARLY_STOPPING",
+        "updates": 3762
+      },
+      "parameters": {
+        "frozen": 0,
+        "total": 8127,
+        "trainable": 8127
+      }
+    },
+    "R0_s2": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 5,
+          "budget_reached": true,
+          "epochs": 7,
+          "improvement_since_best": 0.08042818307876587,
+          "stopped_by": "UPDATE_BUDGET",
+          "updates_used_of_ceiling": [
+            4000,
+            4000
+          ],
+          "validation_slope_last_third": 0.05945032835006714,
+          "validation_slope_last_two": 0.03653973340988159,
+          "verdict": "CENSORED_BY_BUDGET"
+        },
+        "curve": {
+          "train": [
+            0.9208920001983643,
+            0.7421742677688599,
+            0.7024160027503967,
+            0.6812084317207336,
+            0.6501762866973877,
+            0.6354519128799438,
+            0.612377941608429
+          ],
+          "validation": [
+            0.7626002430915833,
+            0.7541024088859558,
+            0.7667643427848816,
+            0.7655408978462219,
+            0.7445630431175232,
+            0.7884514927864075,
+            0.8249912261962891
+          ]
+        },
+        "epochs": 7,
+        "fit_seconds": 351.537,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 5,
+        "restored_validation_loss": 0.7445630431175232,
+        "steps_per_epoch": 627,
+        "stop_reason": "UPDATE_BUDGET",
+        "updates": 4000
+      },
+      "parameters": {
+        "frozen": 0,
+        "total": 8127,
+        "trainable": 8127
+      }
+    },
+    "R0_s3": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 1,
+          "budget_reached": false,
+          "epochs": 4,
+          "improvement_since_best": 0.05382436513900757,
+          "stopped_by": "EARLY_STOPPING",
+          "updates_used_of_ceiling": [
+            2508,
+            4000
+          ],
+          "validation_slope_last_third": 0.04105132818222046,
+          "validation_slope_last_two": 0.03845924139022827,
+          "verdict": "STOPPED_ON_VALIDATION"
+        },
+        "curve": {
+          "train": [
+            0.8633435964584351,
+            0.7408432960510254,
+            0.7121220231056213,
+            0.6808407306671143
+          ],
+          "validation": [
+            0.7271406054496765,
+            0.7399136424064636,
+            0.7425057291984558,
+            0.7809649705886841
+          ]
+        },
+        "epochs": 4,
+        "fit_seconds": 209.488,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 1,
+        "restored_validation_loss": 0.7271406054496765,
+        "steps_per_epoch": 627,
+        "stop_reason": "EARLY_STOPPING",
+        "updates": 2508
+      },
+      "parameters": {
+        "frozen": 0,
+        "total": 8127,
+        "trainable": 8127
+      }
+    },
+    "R1_s1": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 3,
+          "budget_reached": false,
+          "epochs": 6,
+          "improvement_since_best": 0.0286715030670166,
+          "stopped_by": "EARLY_STOPPING",
+          "updates_used_of_ceiling": [
+            3762,
+            4000
+          ],
+          "validation_slope_last_third": -0.01577812433242798,
+          "validation_slope_last_two": 0.01126718521118164,
+          "verdict": "STOPPED_ON_VALIDATION"
+        },
+        "curve": {
+          "train": [
+            0.9612694382667542,
+            0.734335720539093,
+            0.7109949588775635,
+            0.6890204548835754,
+            0.6617333889007568,
+            0.6383484601974487
+          ],
+          "validation": [
+            0.7590721249580383,
+            0.7306540012359619,
+            0.7205308675765991,
+            0.7649804949760437,
+            0.7379351854324341,
+            0.7492023706436157
+          ]
+        },
+        "epochs": 6,
+        "fit_seconds": 144.71,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 3,
+        "restored_validation_loss": 0.7205308675765991,
+        "steps_per_epoch": 627,
+        "stop_reason": "EARLY_STOPPING",
+        "updates": 3762
+      },
+      "parameters": {
+        "frozen": 2896,
+        "total": 8127,
+        "trainable": 5231
+      }
+    },
+    "R1_s2": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 5,
+          "budget_reached": true,
+          "epochs": 7,
+          "improvement_since_best": 0.05370098352432251,
+          "stopped_by": "UPDATE_BUDGET",
+          "updates_used_of_ceiling": [
+            4000,
+            4000
+          ],
+          "validation_slope_last_third": 0.03736758232116699,
+          "validation_slope_last_two": 0.05229997634887695,
+          "verdict": "CENSORED_BY_BUDGET"
+        },
+        "curve": {
+          "train": [
+            1.6853258609771729,
+            0.7545793652534485,
+            0.7204049229621887,
+            0.7014076709747314,
+            0.6847375631332397,
+            0.6699657440185547,
+            0.6642643809318542
+          ],
+          "validation": [
+            0.7770071625709534,
+            0.7450730204582214,
+            0.7519295811653137,
+            0.7531261444091797,
+            0.7367927432060242,
+            0.7381937503814697,
+            0.7904937267303467
+          ]
+        },
+        "epochs": 7,
+        "fit_seconds": 160.48,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 5,
+        "restored_validation_loss": 0.7367927432060242,
+        "steps_per_epoch": 627,
+        "stop_reason": "UPDATE_BUDGET",
+        "updates": 4000
+      },
+      "parameters": {
+        "frozen": 2896,
+        "total": 8127,
+        "trainable": 5231
+      }
+    },
+    "R1_s3": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 4,
+          "budget_reached": true,
+          "epochs": 7,
+          "improvement_since_best": 0.034322261810302734,
+          "stopped_by": "UPDATE_BUDGET",
+          "updates_used_of_ceiling": [
+            4000,
+            4000
+          ],
+          "validation_slope_last_third": 0.034322261810302734,
+          "validation_slope_last_two": 0.0005377531051635742,
+          "verdict": "CENSORED_BY_BUDGET"
+        },
+        "curve": {
+          "train": [
+            1.3178237676620483,
+            0.7456992268562317,
+            0.7131984829902649,
+            0.6839651465415955,
+            0.6675147414207458,
+            0.64345383644104,
+            0.6094945073127747
+          ],
+          "validation": [
+            0.769269585609436,
+            0.7783003449440002,
+            0.8327457308769226,
+            0.7548788189888,
+            0.7786912322044373,
+            0.7886633276939392,
+            0.7892010807991028
+          ]
+        },
+        "epochs": 7,
+        "fit_seconds": 165.31,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 4,
+        "restored_validation_loss": 0.7548788189888,
+        "steps_per_epoch": 627,
+        "stop_reason": "UPDATE_BUDGET",
+        "updates": 4000
+      },
+      "parameters": {
+        "frozen": 2896,
+        "total": 8127,
+        "trainable": 5231
+      }
+    },
+    "R2_s1": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 2,
+          "budget_reached": false,
+          "epochs": 5,
+          "improvement_since_best": 0.03684043884277344,
+          "stopped_by": "EARLY_STOPPING",
+          "updates_used_of_ceiling": [
+            3135,
+            4000
+          ],
+          "validation_slope_last_third": 0.01755470037460327,
+          "validation_slope_last_two": -0.015192925930023193,
+          "verdict": "STOPPED_ON_VALIDATION"
+        },
+        "curve": {
+          "train": [
+            0.9545350670814514,
+            0.7351281642913818,
+            0.7123671174049377,
+            0.6904680132865906,
+            0.6562371850013733
+          ],
+          "validation": [
+            0.7673321962356567,
+            0.7293906211853027,
+            0.7486763596534729,
+            0.7814239859580994,
+            0.7662310600280762
+          ]
+        },
+        "epochs": 5,
+        "fit_seconds": 257.303,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 2,
+        "restored_validation_loss": 0.7293906211853027,
+        "steps_per_epoch": 627,
+        "stop_reason": "EARLY_STOPPING",
+        "updates": 3135
+      },
+      "parameters": {
+        "frozen": 0,
+        "total": 8127,
+        "trainable": 8127
+      }
+    },
+    "R2_s2": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 6,
+          "budget_reached": true,
+          "epochs": 7,
+          "improvement_since_best": 0.050515174865722656,
+          "stopped_by": "UPDATE_BUDGET",
+          "updates_used_of_ceiling": [
+            4000,
+            4000
+          ],
+          "validation_slope_last_third": 0.03217262029647827,
+          "validation_slope_last_two": 0.050515174865722656,
+          "verdict": "CENSORED_BY_BUDGET"
+        },
+        "curve": {
+          "train": [
+            1.4425071477890015,
+            0.7457753419876099,
+            0.7177512049674988,
+            0.7016104459762573,
+            0.6847977638244629,
+            0.6646016836166382,
+            0.6591874361038208
+          ],
+          "validation": [
+            0.7628118991851807,
+            0.7626067399978638,
+            0.772236168384552,
+            0.7574562430381775,
+            0.7446594834327698,
+            0.7391136884689331,
+            0.7896288633346558
+          ]
+        },
+        "epochs": 7,
+        "fit_seconds": 326.868,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 6,
+        "restored_validation_loss": 0.7391136884689331,
+        "steps_per_epoch": 627,
+        "stop_reason": "UPDATE_BUDGET",
+        "updates": 4000
+      },
+      "parameters": {
+        "frozen": 0,
+        "total": 8127,
+        "trainable": 8127
+      }
+    },
+    "R2_s3": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 1,
+          "budget_reached": false,
+          "epochs": 4,
+          "improvement_since_best": 0.05154454708099365,
+          "stopped_by": "EARLY_STOPPING",
+          "updates_used_of_ceiling": [
+            2508,
+            4000
+          ],
+          "validation_slope_last_third": 0.01849353313446045,
+          "validation_slope_last_two": 0.030176520347595215,
+          "verdict": "STOPPED_ON_VALIDATION"
+        },
+        "curve": {
+          "train": [
+            1.1748110055923462,
+            0.7462269067764282,
+            0.7184960842132568,
+            0.6970303058624268
+          ],
+          "validation": [
+            0.7271423935890198,
+            0.760193407535553,
+            0.7485104203224182,
+            0.7786869406700134
+          ]
+        },
+        "epochs": 4,
+        "fit_seconds": 210.373,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 1,
+        "restored_validation_loss": 0.7271423935890198,
+        "steps_per_epoch": 627,
+        "stop_reason": "EARLY_STOPPING",
+        "updates": 2508
+      },
+      "parameters": {
+        "frozen": 0,
+        "total": 8127,
+        "trainable": 8127
+      }
+    }
+  },
+  "paired_differences": {
+    "R1_s1_minus_R0_s1": {
+      "n": 10020,
+      "mean_abs_error_difference": 0.0074823053231020415,
+      "sd_of_difference": 0.24040226285291091,
+      "rows_first_better": 4674,
+      "rows_equal": 0,
+      "reading": "negative means the first method has the smaller absolute error on average"
+    },
+    "R1_s2_minus_R0_s2": {
+      "n": 10020,
+      "mean_abs_error_difference": -0.005555381285144898,
+      "sd_of_difference": 0.268312417400871,
+      "rows_first_better": 5279,
+      "rows_equal": 0,
+      "reading": "negative means the first method has the smaller absolute error on average"
+    },
+    "R1_s3_minus_R0_s3": {
+      "n": 10020,
+      "mean_abs_error_difference": 0.027488041984582854,
+      "sd_of_difference": 0.2867525357940321,
+      "rows_first_better": 4554,
+      "rows_equal": 0,
+      "reading": "negative means the first method has the smaller absolute error on average"
+    },
+    "R2_s1_minus_R0_s1": {
+      "n": 10020,
+      "mean_abs_error_difference": -0.010232831301946127,
+      "sd_of_difference": 0.2504673873945588,
+      "rows_first_better": 5488,
+      "rows_equal": 0,
+      "reading": "negative means the first method has the smaller absolute error on average"
+    },
+    "R2_s2_minus_R0_s2": {
+      "n": 10020,
+      "mean_abs_error_difference": 0.018965272339375432,
+      "sd_of_difference": 0.33529962559484683,
+      "rows_first_better": 4726,
+      "rows_equal": 0,
+      "reading": "negative means the first method has the smaller absolute error on average"
+    },
+    "R2_s3_minus_R0_s3": {
+      "n": 10020,
+      "mean_abs_error_difference": 0.008461076637561212,
+      "sd_of_difference": 0.226755666572909,
+      "rows_first_better": 5084,
+      "rows_equal": 0,
+      "reading": "negative means the first method has the smaller absolute error on average"
+    },
+    "R2_s1_minus_R1_s1": {
+      "n": 10020,
+      "mean_abs_error_difference": -0.017715136625048165,
+      "sd_of_difference": 0.24631720413191785,
+      "rows_first_better": 5603,
+      "rows_equal": 0,
+      "reading": "negative means the first method has the smaller absolute error on average"
+    },
+    "R2_s2_minus_R1_s2": {
+      "n": 10020,
+      "mean_abs_error_difference": 0.02452065362452033,
+      "sd_of_difference": 0.3181849353367285,
+      "rows_first_better": 4647,
+      "rows_equal": 0,
+      "reading": "negative means the first method has the smaller absolute error on average"
+    },
+    "R2_s3_minus_R1_s3": {
+      "n": 10020,
+      "mean_abs_error_difference": -0.01902696534702164,
+      "sd_of_difference": 0.285091194663105,
+      "rows_first_better": 5441,
+      "rows_equal": 0,
+      "reading": "negative means the first method has the smaller absolute error on average"
+    },
+    "R0_s1_minus_linear_ridge": {
+      "n": 10020,
+      "mean_abs_error_difference": 0.007003802995737119,
+      "sd_of_difference": 0.25483243030961905,
+      "rows_first_better": 4862,
+      "rows_equal": 0,
+      "reading": "negative means the first method has the smaller absolute error on average"
+    },
+    "R0_s2_minus_linear_ridge": {
+      "n": 10020,
+      "mean_abs_error_difference": 0.004784359645551464,
+      "sd_of_difference": 0.29300015428895343,
+      "rows_first_better": 4978,
+      "rows_equal": 0,
+      "reading": "negative means the first method has the smaller absolute error on average"
+    },
+    "R0_s3_minus_linear_ridge": {
+      "n": 10020,
+      "mean_abs_error_difference": -0.007484350858840488,
+      "sd_of_difference": 0.20377054577992962,
+      "rows_first_better": 5354,
+      "rows_equal": 0,
+      "reading": "negative means the first method has the smaller absolute error on average"
+    }
+  },
+  "temporal_blocks": {
+    "block_rows": 1440,
+    "blocks": [
+      {
+        "rows": [
+          0,
+          1440
+        ],
+        "n": 1440,
+        "mae": {
+          "persistence": 0.7619111111111111,
+          "seasonal_naive_daily": 1.0243555555555557,
+          "R0_s1": 0.6314970559830467,
+          "R0_s2": 0.6392415593912204,
+          "R0_s3": 0.6008788434482283,
+          "R1_s1": 0.5845858243556487,
+          "R1_s2": 0.631179158399999,
+          "R1_s3": 0.6033215372039211,
+          "R2_s1": 0.5957777769625187,
+          "R2_s2": 0.557493572989934,
+          "R2_s3": 0.6118162607057228,
+          "linear_ridge": 0.6030426076726272
+        },
+        "paired": {
+          "R1_s1_minus_R0_s1": -0.04691123162739807,
+          "R1_s2_minus_R0_s2": -0.008062400991221269,
+          "R1_s3_minus_R0_s3": 0.0024426937556929016,
+          "R0_s1_minus_linear_ridge": 0.028454448310419527,
+          "R0_s2_minus_linear_ridge": 0.03619895171859325,
+          "R0_s3_minus_linear_ridge": -0.0021637642243988566
+        },
+        "best": "R2_s2"
+      },
+      {
+        "rows": [
+          1440,
+          2880
+        ],
+        "n": 1440,
+        "mae": {
+          "persistence": 0.5685833333333333,
+          "seasonal_naive_daily": 0.7939972222222222,
+          "R0_s1": 0.47540171615199905,
+          "R0_s2": 0.47658107210050027,
+          "R0_s3": 0.4845700149065918,
+          "R1_s1": 0.5321601141595178,
+          "R1_s2": 0.46887067150622597,
+          "R1_s3": 0.48663383874065347,
+          "R2_s1": 0.5089169881668356,
+          "R2_s2": 0.5275881303103434,
+          "R2_s3": 0.48563130599674253,
+          "linear_ridge": 0.5198665290827236
+        },
+        "paired": {
+          "R1_s1_minus_R0_s1": 0.05675839800751871,
+          "R1_s2_minus_R0_s2": -0.007710400594274204,
+          "R1_s3_minus_R0_s3": 0.0020638238340616234,
+          "R0_s1_minus_linear_ridge": -0.04446481293072455,
+          "R0_s2_minus_linear_ridge": -0.043285456982223386,
+          "R0_s3_minus_linear_ridge": -0.03529651417613182
+        },
+        "best": "R1_s2"
+      },
+      {
+        "rows": [
+          2880,
+          4320
+        ],
+        "n": 1440,
+        "mae": {
+          "persistence": 0.6033638888888889,
+          "seasonal_naive_daily": 0.5670916666666668,
+          "R0_s1": 0.5632599463961191,
+          "R0_s2": 0.5349599537255035,
+          "R0_s3": 0.5407080731739601,
+          "R1_s1": 0.5442149045457443,
+          "R1_s2": 0.54129827703668,
+          "R1_s3": 0.5875599398510324,
+          "R2_s1": 0.519931980173952,
+          "R2_s2": 0.5758590721994638,
+          "R2_s3": 0.5574363520526224,
+          "linear_ridge": 0.5188662887165966
+        },
+        "paired": {
+          "R1_s1_minus_R0_s1": -0.019045041850374804,
+          "R1_s2_minus_R0_s2": 0.006338323311176563,
+          "R1_s3_minus_R0_s3": 0.046851866677072314,
+          "R0_s1_minus_linear_ridge": 0.04439365767952251,
+          "R0_s2_minus_linear_ridge": 0.016093665008907,
+          "R0_s3_minus_linear_ridge": 0.021841784457363497
+        },
+        "best": "linear_ridge"
+      },
+      {
+        "rows": [
+          4320,
+          5760
+        ],
+        "n": 1440,
+        "mae": {
+          "persistence": 0.6715625000000001,
+          "seasonal_naive_daily": 0.6310486111111111,
+          "R0_s1": 0.5829588176965713,
+          "R0_s2": 0.6016687556395929,
+          "R0_s3": 0.5776219722919994,
+          "R1_s1": 0.6193065880089998,
+          "R1_s2": 0.5558734417003062,
+          "R1_s3": 0.6411248452133602,
+          "R2_s1": 0.604151367038654,
+          "R2_s2": 0.6718817170436184,
+          "R2_s3": 0.5995627977295054,
+          "linear_ridge": 0.6101306973344938
+        },
+        "paired": {
+          "R1_s1_minus_R0_s1": 0.03634777031242848,
+          "R1_s2_minus_R0_s2": -0.045795313939286604,
+          "R1_s3_minus_R0_s3": 0.06350287292136086,
+          "R0_s1_minus_linear_ridge": -0.027171879637922395,
+          "R0_s2_minus_linear_ridge": -0.008461941694900945,
+          "R0_s3_minus_linear_ridge": -0.03250872504249436
+        },
+        "best": "R1_s2"
+      },
+      {
+        "rows": [
+          5760,
+          7200
+        ],
+        "n": 1440,
+        "mae": {
+          "persistence": 0.5602972222222223,
+          "seasonal_naive_daily": 0.6279194444444445,
+          "R0_s1": 0.5271272106672327,
+          "R0_s2": 0.5361339647998412,
+          "R0_s3": 0.5035583613658945,
+          "R1_s1": 0.5229159443812238,
+          "R1_s2": 0.5299976989219586,
+          "R1_s3": 0.5378196976994475,
+          "R2_s1": 0.5138038214724925,
+          "R2_s2": 0.5293670567146606,
+          "R2_s3": 0.4932463536984391,
+          "linear_ridge": 0.5462941038495871
+        },
+        "paired": {
+          "R1_s1_minus_R0_s1": -0.004211266286008882,
+          "R1_s2_minus_R0_s2": -0.006136265877882641,
+          "R1_s3_minus_R0_s3": 0.034261336333552994,
+          "R0_s1_minus_linear_ridge": -0.019166893182354424,
+          "R0_s2_minus_linear_ridge": -0.01016013904974585,
+          "R0_s3_minus_linear_ridge": -0.042735742483692614
+        },
+        "best": "R2_s3"
+      },
+      {
+        "rows": [
+          7200,
+          8640
+        ],
+        "n": 1440,
+        "mae": {
+          "persistence": 0.6247444444444444,
+          "seasonal_naive_daily": 0.7091958333333334,
+          "R0_s1": 0.570283576748603,
+          "R0_s2": 0.5626025106292631,
+          "R0_s3": 0.560323213274777,
+          "R1_s1": 0.587521430303653,
+          "R1_s2": 0.5925493342018789,
+          "R1_s3": 0.5946780146017671,
+          "R2_s1": 0.566217298275729,
+          "R2_s2": 0.6000859110189809,
+          "R2_s3": 0.5819502237005366,
+          "linear_ridge": 0.5241613147794096
+        },
+        "paired": {
+          "R1_s1_minus_R0_s1": 0.017237853555050163,
+          "R1_s2_minus_R0_s2": 0.029946823572615782,
+          "R1_s3_minus_R0_s3": 0.03435480132699013,
+          "R0_s1_minus_linear_ridge": 0.046122261969193265,
+          "R0_s2_minus_linear_ridge": 0.03844119584985354,
+          "R0_s3_minus_linear_ridge": 0.03616189849536729
+        },
+        "best": "linear_ridge"
+      },
+      {
+        "rows": [
+          8640,
+          10020
+        ],
+        "n": 1380,
+        "mae": {
+          "persistence": 0.5273927536231884,
+          "seasonal_naive_daily": 0.7695869565217393,
+          "R0_s1": 0.5154151047174481,
+          "R0_s2": 0.4986118498088657,
+          "R0_s3": 0.49668930431120634,
+          "R1_s1": 0.5278198620343554,
+          "R1_s2": 0.4910602391059848,
+          "R1_s3": 0.5048217188788497,
+          "R2_s1": 0.48465925123294196,
+          "R2_s2": 0.5203986769779868,
+          "R2_s3": 0.4934463577173758,
+          "linear_ridge": 0.49395282961775755
+        },
+        "paired": {
+          "R1_s1_minus_R0_s1": 0.012404757316907248,
+          "R1_s2_minus_R0_s2": -0.007551610702880917,
+          "R1_s3_minus_R0_s3": 0.00813241456764332,
+          "R0_s1_minus_linear_ridge": 0.021462275099690606,
+          "R0_s2_minus_linear_ridge": 0.004659020191108167,
+          "R0_s3_minus_linear_ridge": 0.002736474693448841
+        },
+        "best": "R2_s1"
+      }
+    ],
+    "reference": "persistence",
+    "rule": "contiguous blocks of the validation period; overlapping windows are not iid replicas"
+  },
+  "costs": {
+    "R0_s1": {
+      "cpu_seconds": 406.681,
+      "wall_seconds": 342.331,
+      "peak_rss_bytes": 958988288
+    },
+    "R0_s2": {
+      "cpu_seconds": 366.897,
+      "wall_seconds": 306.766,
+      "peak_rss_bytes": 963874816
+    },
+    "R0_s3": {
+      "cpu_seconds": 218.847,
+      "wall_seconds": 182.839,
+      "peak_rss_bytes": 957345792
+    },
+    "R1_s1": {
+      "cpu_seconds": 158.559,
+      "wall_seconds": 117.743,
+      "peak_rss_bytes": 932343808
+    },
+    "R1_s2": {
+      "cpu_seconds": 171.35,
+      "wall_seconds": 125.685,
+      "peak_rss_bytes": 934875136
+    },
+    "R1_s3": {
+      "cpu_seconds": 176.091,
+      "wall_seconds": 128.892,
+      "peak_rss_bytes": 933994496
+    },
+    "R2_s1": {
+      "cpu_seconds": 270.118,
+      "wall_seconds": 225.963,
+      "peak_rss_bytes": 959201280
+    },
+    "R2_s2": {
+      "cpu_seconds": 336.189,
+      "wall_seconds": 279.09,
+      "peak_rss_bytes": 958304256
+    },
+    "R2_s3": {
+      "cpu_seconds": 223.092,
+      "wall_seconds": 186.312,
+      "peak_rss_bytes": 955469824
+    },
+    "controls": {
+      "cpu_seconds": 4.851,
+      "wall_seconds": 5.031,
+      "peak_rss_bytes": 831008768
+    },
+    "ae_s1": {
+      "cpu_seconds": 46.852,
+      "amortised_over": [
+        "R1_s1",
+        "R2_s1"
+      ],
+      "note": "the auto-encoder is charged once to the two arms that share it"
+    },
+    "ae_s2": {
+      "cpu_seconds": 43.236,
+      "amortised_over": [
+        "R1_s2",
+        "R2_s2"
+      ],
+      "note": "the auto-encoder is charged once to the two arms that share it"
+    },
+    "ae_s3": {
+      "cpu_seconds": 47.068,
+      "amortised_over": [
+        "R1_s3",
+        "R2_s3"
+      ],
+      "note": "the auto-encoder is charged once to the two arms that share it"
+    }
+  },
+  "log1p_domain": {
+    "applied": true,
+    "smallest_value_seen": -0.6297212243080139
+  },
+  "scaled_error_names": {
+    "persistence_scaled_error_horizon_train": {
+      "formula": "mean(|prediction - target|) over the evaluation rows / mean(|Y[t+h] - Y[t]|) over the train origins",
+      "denominator_origin": "the train origins of THIS run, never validation or test",
+      "m": "not a seasonal period: the horizon h=60 steps",
+      "gaps": "train origins are the admissible ones; nothing is interpolated"
+    },
+    "conventional_mase_m1_train_slice": {
+      "formula": "MAE / mean(|Y[t] - Y[t-1]|) over the consumed train slice",
+      "m": 1,
+      "justification": "the one-step naive of Hyndman/Koehler",
+      "gaps": "non-finite consecutive pairs are EXCLUDED and counted, never closed up"
+    },
+    "conventional_mase_m1440_train_slice": {
+      "formula": "MAE / mean(|Y[t] - Y[t-m]|) over the consumed train slice",
+      "m": 1440,
+      "justification": "one day at one-minute sampling: household load has a daily cycle, which is an independent seasonal ground and NOT the horizon",
+      "gaps": "non-finite seasonal pairs are EXCLUDED and counted, never closed up"
+    }
+  },
+  "local_report_check": {
+    "compared": true,
+    "file": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3/RESULTS.json",
+    "cells": {
+      "R0_s1": {
+        "local_mae": 0.5524983663230361,
+        "recomputed_mae": 0.5524983663230361,
+        "difference_mae": 0.0,
+        "local_scaled": 0.8965322309244448,
+        "recomputed_scaled": 0.8965322309244448,
+        "difference_scaled": 0.0
+      },
+      "R1_s1": {
+        "local_mae": 0.5599806716461382,
+        "recomputed_mae": 0.5599806716461382,
+        "difference_mae": 0.0,
+        "local_scaled": 0.9086736747596948,
+        "recomputed_scaled": 0.9086736747596948,
+        "difference_scaled": 0.0
+      },
+      "R2_s1": {
+        "local_mae": 0.54226553502109,
+        "recomputed_mae": 0.54226553502109,
+        "difference_mae": 0.0,
+        "local_scaled": 0.8799275427751168,
+        "recomputed_scaled": 0.8799275427751168,
+        "difference_scaled": 0.0
+      },
+      "R0_s2": {
+        "local_mae": 0.5502789229728504,
+        "recomputed_mae": 0.5502789229728504,
+        "difference_mae": 0.0,
+        "local_scaled": 0.8929307677900018,
+        "recomputed_scaled": 0.8929307677900018,
+        "difference_scaled": 0.0
+      },
+      "R1_s2": {
+        "local_mae": 0.5447235416877055,
+        "recomputed_mae": 0.5447235416877055,
+        "difference_mae": 0.0,
+        "local_scaled": 0.8839161196375496,
+        "recomputed_scaled": 0.8839161196375496,
+        "difference_scaled": 0.0
+      },
+      "R2_s2": {
+        "local_mae": 0.5692441953122259,
+        "recomputed_mae": 0.5692441953122259,
+        "difference_mae": 0.0,
+        "local_scaled": 0.9237054794577801,
+        "recomputed_scaled": 0.9237054794577801,
+        "difference_scaled": 0.0
+      },
+      "R0_s3": {
+        "local_mae": 0.5380102124684585,
+        "recomputed_mae": 0.5380102124684585,
+        "difference_mae": 0.0,
+        "local_scaled": 0.8730224837668821,
+        "recomputed_scaled": 0.8730224837668821,
+        "difference_scaled": 0.0
+      },
+      "R1_s3": {
+        "local_mae": 0.5654982544530414,
+        "recomputed_mae": 0.5654982544530414,
+        "difference_mae": 0.0,
+        "local_scaled": 0.9176269877913773,
+        "recomputed_scaled": 0.9176269877913773,
+        "difference_scaled": 0.0
+      },
+      "R2_s3": {
+        "local_mae": 0.5464712891060197,
+        "recomputed_mae": 0.5464712891060197,
+        "difference_mae": 0.0,
+        "local_scaled": 0.8867521676469975,
+        "recomputed_scaled": 0.8867521676469975,
+        "difference_scaled": 0.0
+      }
+    },
+    "differences": {},
+    "identical": true,
+    "rule": "the exact difference is preserved; a mismatch is reported, never averaged away"
+  },
+  "source_sha256": {
+    "DATA.npz": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+    "attempts/R0_s1/arrays.npz": "f4741613e027ab97b8f665384a80a926003b77300e590e0e9605e3adf217aab3",
+    "attempts/R0_s1/cell.json": "48e8189925462c4e0053b8995289e98951248d360db9ae7688bd26084f5b14be",
+    "attempts/R0_s2/arrays.npz": "1b4714c89672fea10e10f1abf492c9208de83fea799a96475beb33c5efbbafb7",
+    "attempts/R0_s2/cell.json": "24ebba7570aaddf5b02c7b886331f63750d68c6172c198826a2e609869c9eac3",
+    "attempts/R0_s3/arrays.npz": "a3788af72ef50c309cc37a06477e0624a17902f4619831583b53e505df05a729",
+    "attempts/R0_s3/cell.json": "5bd36bc63b276b663e7e98d05c055acd7517c53b381d2d3281d6d72e4c089024",
+    "attempts/R1_s1/arrays.npz": "18d889f86abbd9f87d3ecdb0f697f74e89826a3bf4f0ebc12b20f1eb913307a2",
+    "attempts/R1_s1/cell.json": "8b387a40fc0be1fc3ae4026df483e40da1a6fedbcc62e1d6b83e4bcff882a5c8",
+    "attempts/R1_s2/arrays.npz": "68ed592bb5606078b3ea53573ff099de981b1b0936e00d84b1b5dfd41cd36a39",
+    "attempts/R1_s2/cell.json": "a6a750980bf4d852c2e08aa0968e6c10ba1d03fb5521e27551d8b7a400dd79f3",
+    "attempts/R1_s3/arrays.npz": "15bf66c733f56ccb84a79bbfe32c29f9d8a53ab2686ef1e6b3b86f4d94676064",
+    "attempts/R1_s3/cell.json": "553c001a4fb08a31d0652001084bac41215ad3e7d326e5fea0d1393bdc1e98cb",
+    "attempts/R2_s1/arrays.npz": "2bf0520639bd05a77bbefc374551a2b188e78083cbcdb7c240453f7b3a063f18",
+    "attempts/R2_s1/cell.json": "092d12ab11f8bcd7187348412fafb73ad38686db4f8b4d0687ba6001449e9750",
+    "attempts/R2_s2/arrays.npz": "da3bd34a1607b1a7441379193d34ef25950e5d35233820ca880a554b54f20ed9",
+    "attempts/R2_s2/cell.json": "dd8622582ee45d6c381c2317f7b1561075af9d37b79df87b302b30d451040be7",
+    "attempts/R2_s3/arrays.npz": "07b7291cd1af3adadc06f64e48e6c8a5f616bc95bd51d62415f36c0bb442637b",
+    "attempts/R2_s3/cell.json": "f7cbbc0509f491a83d71cfbe346cf24dc49183e56a8c213dce9ff17fc23520d9",
+    "attempts/controls/arrays.npz": "0370e23732bd57fd994e5491f073f336283095571f986aadbf5992b71dc21f00",
+    "attempts/controls/cell.json": "9ef1fea9fa16a1fc7106560cf01b809079a7d5635c9d66a5a0fd7812710e399f"
+  },
+  "sources_unchanged": true,
+  "legacy_summary": {
+    "file": "phase_1_tcn_neat_1d_results.csv",
+    "sha256": "0794c85cdfd4bfba83805a2b4b26ea0870474f6e3b8a9f269fc5132e83179f2a",
+    "pairs": [
+      {
+        "horizon_label": "9",
+        "model_mae": 0.003196,
+        "naive_mae": 0.003204,
+        "mae_skill_percent": 0.24968789013731785
+      },
+      {
+        "horizon_label": "12",
+        "model_mae": 0.003724,
+        "naive_mae": 0.003804,
+        "mae_skill_percent": 2.103049421661418
+      },
+      {
+        "horizon_label": "15",
+        "model_mae": 0.004387,
+        "naive_mae": 0.004336,
+        "mae_skill_percent": -1.1761992619926387
+      },
+      {
+        "horizon_label": "18",
+        "model_mae": 0.004768,
+        "naive_mae": 0.004843,
+        "mae_skill_percent": 1.5486268841627182
+      },
+      {
+        "horizon_label": "21",
+        "model_mae": 0.005118,
+        "naive_mae": 0.005279,
+        "mae_skill_percent": 3.049820041674556
+      },
+      {
+        "horizon_label": "24",
+        "model_mae": 0.005445,
+        "naive_mae": 0.005672,
+        "mae_skill_percent": 4.002115655853311
+      }
+    ],
+    "scope": "PUBLISHED_ROUNDED_SUMMARIES_ONLY; scale/row identity and producing configuration not independently reconstructed"
+  }
+}
