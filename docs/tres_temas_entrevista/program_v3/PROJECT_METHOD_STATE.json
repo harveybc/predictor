@@ -8,7 +8,7 @@
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "RP66_RP73_EXECUTED_DEV_MATCHED_Q1_Q3_CLOSED_Q2_BUDGET_LIMITED_AWAITING_MUSASHI_REVIEW",
+ "handoff_status": "RP73_REVIEWED_CHANGES_REQUIRED_RP74_RP81_ISSUED_NEW_MEASUREMENTS_PRESERVED",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -47,21 +47,23 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "Musashi review of the RP66-RP73 return (PRE/POST, closure table, blocks)",
-  "Predeclared cadence tier (patience 6 events or 400 updates per event) for the SAME DEV/Q1/Q3 cells, declared before scores",
-  "Q2 successor: W60 arms sub-block; W1440 arms after a cheaper window gather or a declared lower ceiling",
-  "Financial scientific campaign only after its specific design review; the runner and FL acceptance are ready",
-  "Workers: install the accounted wrapper before any scientific child leaves omega"
+  "RP74: repair independently anchored artifact custody and complete reference-result verification; reverify without refitting",
+  "RP75-RP76: financial finite-window population, paired seed selection, supported temporal inference and epsilon-path acceptance",
+  "RP77: ceiling-trigger precedence and nonduplicated validation CPU; profile before prescribing Q2 optimizations",
+  "RP78: accounted governed worker acceptance using version-pinned isolated checkouts",
+  "RP79: conditional complete 15-cell household DEV architecture-by-calendar block with patience 10, unchanged cadence and cost gate",
+  "RP80: complete the repaired financial design for review; no real financial scientific campaign yet",
+  "RP81: content reconciliation, qualified historical scope, comparable closure table and single final return"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_POST_HUBER_RP66_RP73_2026_09_21.md",
+  "orders": "../../handoffs/MUSASHI_RP74_RP81_2026_09_21.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
   "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-  "external_review": "../../audits/work_plan/MUSASHI_POST_HUBER_REVIEW_2026_09_21.md",
+  "external_review": "../../audits/work_plan/MUSASHI_RP66_RP73_REVIEW_2026_09_21.md",
   "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-  "return": "https://github.com/harveybc/predictor/blob/4ef9f71/docs/audits/work_plan/SATOSHI_POST_HUBER_PACKET_RETURN_2026_09_21.md",
+  "return": "https://github.com/harveybc/predictor/blob/1880caa/docs/audits/work_plan/SATOSHI_RP66_RP73_RETURN_2026_09_21.md",
   "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
   "benchmark_registry": "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
   "fin_loss_opt_design": "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
@@ -207,7 +209,7 @@
     "../../audits/work_plan/SATOSHI_PROGRAM_RP57_RP64_RETURN_2026_09_21.md",
     "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json"
    ],
-   "next_action": "RP68 corrects draft 6b475094 (support 67 not 60, stopping cadence, scale/counts); RP69/RP72 prioritize an adapted literature GRU against the same-task modular baseline, then budgeted complete phase-2 blocks; preserve historic fits",
+   "next_action": "RP74-RP79: preserve the 18 new forecast measurements checked from arrays; repair custody/stopping/cost and execute the conditional 15-cell architecture-by-calendar DEV sensitivity block",
    "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan",
    "adoption": "SUCCESSOR_EXECUTED_LOCAL_METRICS_RECOMPUTED_FULL_GOVERNANCE_REVIEW_NOT_REPEATED"
   },
@@ -328,13 +330,13 @@
     "../../audits/evidence/d3_k5_20260917/RP65/ENTRY_POINT_COVERAGE_INVENTORY.json",
     "tests/test_df_benchmark_contract.py"
    ],
-   "next_action": "RP66/RP67: repair real execution/metric binding; contract presence in two runners was insufficient, as demonstrated by accepted foreign targets and changed scales; inventory untouched legacy routes honestly",
+   "next_action": "RP74: reject prepare-only references and unanchored rewritten local records at real entry points; preserve weaker historical scope explicitly",
    "deliverable": "Versioned target/transform/metric/split/reference contracts, reproduction or matched-domain comparisons, real-entry-point refusal tests and governed result linkage; documentary adoption is not runtime enforcement",
    "status_detail": {
     "IMPLEMENTED": "tools/df_benchmark_contract.py: versioned contract, comparability decided from identity fields, affine re-expression with refusal, require() refusal; registry with four sources read at origin",
-    "ENFORCED_AT_RUNTIME": "2 of 37 real entry points call require(), but Musashi's 4ef9f71 review demonstrates insufficient field validation and no actual-task binding; presence checking is NOT accepted comparability enforcement",
+    "ENFORCED_AT_RUNTIME": "Partial implementation; RP73 audit still reproduces a VERIFIED_COMPARATOR without forecasts and a rewritten unanchored historical score passing closure",
     "NOT_CLAIMED": "all-domain runtime enforcement",
-    "STATUS_WORD": "DESIGNED; implementation exists with demonstrated gaps, corrections RP66/RP67 required before new comparable results"
+    "STATUS_WORD": "DESIGNED; implementation has remaining evidence-binding gaps, RP74 repairs required"
    }
   },
   {
@@ -350,11 +352,11 @@
     "../../audits/evidence/d3_k5_20260917/RP65/FIN_LOSS_OPT_DESIGN_SEALED.json",
     "tests/test_fin_loss_opt_acceptance.py"
    ],
-   "next_action": "RP70/RP71 correct step/hour mapping and degenerate/rounded deltas, enumerate the actual search/receivers, implement real runner acceptance; synthetic fixtures authorized, financial scientific execution remains pending design review",
+   "next_action": "RP75/RP76/RP80: repair finite consumed windows, paired-seed selection and temporal uncertainty, qualify availability and prepare the exact financial design; synthetic acceptance authorized, real scientific execution pending review",
    "deliverable": "Paired normalized error and naive skill by horizon/fold/model, precision for 1e-5/1e-6 effects, tuned and default recipes, temporal uncertainty, cost and full warehouse closure; no profit guarantee",
    "status_detail": {
-    "DESIGNED": "draft protocol preserved; review found ambiguous physical horizons, zero deltas and unenumerated search; five strict xfails are unconditional placeholders, not implementation-sensitive acceptance",
-    "NOT_STARTED": "no fit, no campaign; designing is not evidence of a winner"
+    "DESIGNED": "Executable synthetic runner exists, zero xfails; RP73 audit demonstrates 60 nonfinite consumed windows and a degenerate two-fold interval; repairs required before real data",
+    "NOT_STARTED": "no financial scientific campaign or winning recipe; synthetic fits are software acceptance only"
    }
   },
   {
@@ -637,7 +639,7 @@
   "return": "../../audits/work_plan/SATOSHI_RP66_RP73_RETURN_2026_09_21.md",
   "pre": "../../audits/evidence/d3_k5_20260917/RP66_PRE/REVIEW_REPRODUCED_PRE.json",
   "post": "../../audits/evidence/d3_k5_20260917/RP66/REVIEW_REPRODUCED_POST.json",
-  "closure_table": "../../audits/evidence/d3_k5_20260917/RP66/CLOSURE_TABLE_RP73.json (49 rows, 49 verified, 0 problems)",
+  "closure_table": "../../audits/evidence/d3_k5_20260917/RP66/CLOSURE_TABLE_RP73.json (reported 49/49; RP73 review qualifies unanchored historical rows, independently checked 18 new forecasts)",
   "blocks": {
    "DEV_MATCHED": {
     "state": "EXECUTED_CLOSED_VERIFIED",
@@ -678,7 +680,7 @@
      4.88499431543,
      4.98309256834
     ],
-    "successor": "W60 arms first (~3 200 s); W1440 arms need a cheaper gather or a declared lower ceiling"
+    "successor": "Historical projection double-counted validation; corrected arithmetic about 111000 CPU s remains over budget. Profile actual components; gather bottleneck not established. No Q2 launch authorized in RP74-RP81"
    },
    "Q3_VOLUME": {
     "state": "EXECUTED_CLOSED_VERIFIED",
@@ -703,5 +705,16 @@
   },
   "reads_of_reserved_test_rows": 0,
   "production_reconfiguration": "none"
+ },
+ "rp73_external_review": {
+  "revision": "1880caa",
+  "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
+  "findings": ["A1_UNANCHORED_RECORD", "A2_PREPARE_ONLY_REFERENCE", "A3_NONFINITE_FINANCIAL_WINDOW", "A4_SELECTION_AND_UNCERTAINTY", "A5_CEILING_CENSORING", "A6_COST_DOUBLE_COUNT"],
+  "new_forecasts_independently_checked": 18,
+  "array_check_discrepancies": 0,
+  "live_warehouse_requeried_by_this_review": false,
+  "focused_tests": "85 passed, 2 FL08 deselected; full repository suite not rerun",
+  "evidence": "../../audits/evidence/RP73_MUSASHI_REVIEW_2026_09_21",
+  "publication": "1880caa pushed; isolated checked-out revision on both workers; no running checkout switched"
  }
 }

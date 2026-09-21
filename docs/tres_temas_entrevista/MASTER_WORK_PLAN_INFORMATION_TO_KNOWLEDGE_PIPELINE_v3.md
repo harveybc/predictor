@@ -410,13 +410,13 @@ estructura documental, **no** aprueba experimentos.
 cola, responsables y alcance autorizado. [Chequeo documental](program_v3/check_plan.py)
 detecta omisiones de frentes, pasos, carriles y dependencias. No llena resultados.
 
-[Orden vigente: fase 2 y diseno financiero FIN-LOSS-OPT](../handoffs/MUSASHI_POST_HUBER_PHASE2_2026_09_21.md).
+[Orden vigente RP74-RP81: auditoria ML y continuacion acotada](../handoffs/MUSASHI_RP74_RP81_2026_09_21.md).
 Satoshi debe incorporar esta revision a su work plan y publicar retorno completo,
 sin pedir "continua" por cada paso. Musashi revisara tanto la adecuacion ML como
 la implementacion y los resultados; no se atribuye revision a Satoshi en nombre
 de Musashi. La orden publicada no prueba que Satoshi ya la este ejecutando.
 
-### Entrega de Satoshi, paquete post-Huber (21-sep): preparacion, no ejecucion
+### Historico: paquete post-Huber (21-sep): preparacion, no ejecucion
 
 - **Fase 2 sellada** (`6b475094…`, 27 celdas, `SEALED_NOT_EXECUTED`): calendario, contexto diario y
   volumen como preguntas separadas; el confundido ventana/profundidad **medido** (W=60: 5 bloques,
@@ -439,3 +439,30 @@ de Musashi. La orden publicada no prueba que Satoshi ya la este ejecutando.
   con NO_NEW_MEASUREMENT y NOT_COMPARABLE con razon y comparacion pendiente en cada fila.
 - Correcciones publicadas junto al retorno RP57–RP64 (RP63 cambio perdida y monitor; etiquetas
   barajadas no son cota; el salto de persistencia ya existe en `tcn_w`).
+
+### Revision de RP66-RP73 y continuacion RP74-RP81 (21-sep)
+
+[Dictamen de Musashi](../audits/work_plan/MUSASHI_RP66_RP73_REVIEW_2026_09_21.md):
+CHANGES_REQUIRED, mediciones conservadas. Revision `1880caa` publicada y disponible en
+checkouts aislados de ambos workers, sin cambiar sus arboles existentes ni reiniciar servicios.
+Musashi recalculo las 18 predicciones nuevas y comparo arrays, pesos y registros contra los
+artefactos de terminal publicados: 18/18, sin discrepancia. Esto no equivale a una nueva
+consulta al warehouse vivo ni a un replay independiente de pesos.
+
+- **Resultado util**: calendario MAE_z 0.486819 frente a control aleatorizado 0.552871;
+  referencia GRU adaptada 0.531273 frente a modular original 0.568045. Naive comun 0.676560.
+  Una semana DEV, tres semillas; no ranking universal ni evidencia de ganancia financiera.
+- **Evidencia**: corregir custodia de historia sin ancla independiente y comparador que acepta
+  una unidad prepare sin predicciones. No borrar ni reentrenar historia automaticamente.
+- **ML financiero**: corregir ventanas con features no finitas, seleccion que elige semillas,
+  bootstrap degenerado y contrato temporal antes de una campana cientifica financiera.
+- **Parada/costo**: presupuesto alcanzado sigue censurado aunque coincida con paciencia;
+  validacion se cuenta una vez. Q2 corregido ~111000 s sigue fuera del techo. No se ha demostrado
+  que el cuello de botella sea construir ventanas; perfilar antes de optimizar.
+- **Siguiente medicion condicional**: arquitectura {modular, GRU adaptada} por entradas
+  {originales, calendario}, 12 celdas, mas 3 controles de calendario aleatorizado; paciencia
+  10 eventos a cadencia fija de 200 updates, techo 4000, mismo train/DEV/escalador. Diseno
+  informado por DEV previo, no confirmatorio. Ejecutar completo solo si pasa aceptacion y costo.
+- FIN-LOSS-OPT sigue obligatorio, no selecciona receta desde electricidad; implementacion y
+  aceptacion sintetica se corrigen ahora y la ficha cientifica concreta vuelve a revision.
+  RL semanal, extraccion por grupos y preentrenamiento del nucleo mantienen sus dependencias.
