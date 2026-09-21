@@ -1,0 +1,93 @@
+{
+ "artifacts": [
+  {
+   "bytes": 473778,
+   "role": "predictions",
+   "sha256": "15f6bc6e58978f66da1a7cba25d49e86d909d97cbc051739d285dc74622541ba"
+  },
+  {
+   "bytes": 231872,
+   "role": "weights",
+   "sha256": "daad1027863c344a4d42e4202e4cb2a6cab751f6357a759e7915fcca33b9ca5c"
+  },
+  {
+   "bytes": 3677,
+   "role": "record",
+   "sha256": "56e43fcb002c3d8b85333d141a00f65572f6fd1bb0e30216d9ef31892dc73577"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 29.729651498000003,
+  "wall_seconds": 26.92946607398335
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T18:37:49Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.5780767701084003
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_z",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.6334973763998671
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.naive_mae_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.6735672324423214
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.rmse_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.9371554804171406
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.skill_vs_naive",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.14176827157650973
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T18:37:22Z",
+ "status": "COMPLETED",
+ "tags": {
+  "arm": "modular_w60",
+  "classification": "NON_GOVERNING",
+  "contract_sha256": "8372b4b36c769aded30d6cce2892dce6b1b82dda4dd51c23e8626b51ecaa5c4c",
+  "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_CONTEXT_DAILY_LAG",
+  "role": "COST_PILOT",
+  "seed": "1",
+  "unit": "pilot_modular_w60"
+ }
+}

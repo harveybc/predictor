@@ -1,0 +1,15 @@
+{
+ "schema": "rp88_cost_pilot_outcome.v1",
+ "status": "NOT_EXECUTED_EXTERNAL_REFUSAL",
+ "design_sha256": "777b63aa1fec1fe7fb641e11aec2ff396c7b1b63272761b80c6731cd7c2d0698",
+ "sealed_before_any_byte": true,
+ "operation": "governed ranged download of financial_files/market_data/forex/g10/eurusd/1h.parquet from 2023-06-26 to 2024-06-23 (the 52-week pre-DEV slice) under run-id satoshi-fin-cost-pilot-20260921, unit prepare",
+ "response": "REFUSED: the delivery failed (download financial_files/market_data/forex/g10/eurusd/1h.parquet: http 422 resource availability contract required); no new work starts",
+ "cause": "the financial lake declares NO resource contract (event/available time columns, timezone, frequency, optional availability block) for that resource; the files lake refuses a timed (ranged) delivery without it (lake_plugins/files_lake.py::_resource_contract)",
+ "what_it_is": "a scoped evidence deficit of the deployed lake configuration (operator/owner metadata), not something the runner may invent; no service was reconfigured",
+ "accounting": "the campaign satoshi-fin-cost-pilot-20260921-prepare-data was registered before the download and received no delivery; my tools close a unit only with a delivery, so it stays open in the accounting and is listed here",
+ "bytes_read": 0,
+ "reserve_read": false,
+ "dev_weeks_read": false,
+ "next": "once the operator declares the resource contract for the EURUSD 1h resource (columns, timezone, frequency; availability block if known), re-run the sealed cost pilot under a fresh run-id; nothing in the design changes"
+}

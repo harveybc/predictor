@@ -1,0 +1,120 @@
+{
+ "schema": "df_e1_block_data.v1",
+ "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+ "rows": {
+  "lo": 1412361,
+  "hi": 1462761,
+  "pad": 0,
+  "n": 50400
+ },
+ "input_columns": [
+  "Global_reactive_power",
+  "Voltage",
+  "Global_intensity",
+  "Sub_metering_1",
+  "Sub_metering_2",
+  "Sub_metering_3",
+  "Global_active_power"
+ ],
+ "target_channel": 6,
+ "horizon": 60,
+ "scaler": {
+  "mean": [
+   0.16394039569874333,
+   241.13327788719684,
+   3.979902281204715,
+   1.2482722486963898,
+   0.8695229659938625,
+   6.320571675690061,
+   0.926139629748496
+  ],
+  "sd": [
+   0.12462470429263597,
+   2.20610330333974,
+   3.8047190184746955,
+   6.578895446497683,
+   3.6476937059712364,
+   8.382971207465904,
+   0.9125164391265214
+  ],
+  "source": "COMMON: the source run's train-only scaler; calendar mean 0 / sd 1; lag = target scaler"
+ },
+ "sigma_evaluation": 0.9125164391265214,
+ "grid": {
+  "rows": 50400,
+  "first": "2009-08-23 12:45:00",
+  "last": "2009-09-27 12:44:00",
+  "rows_off_grid": 0,
+  "duplicated_labels": 0,
+  "span_days": 34.99930555555556,
+  "clock": "NAIVE_WALL_CLOCK",
+  "timezone": "UNKNOWN (local French time presumed by the producer; DST undocumented)",
+  "dst_note": "on a wall clock a spring transition shows as a one-hour gap and an autumn one as a repeated hour; both would appear above as off-grid rows or duplicates and are reported, not closed. None is asserted absent without this count."
+ },
+ "randomised_calendar_control": {
+  "seed": 20260921,
+  "chance_association_corr_with_true_calendar": {
+   "hour_sin": 0.0007746239825333961,
+   "hour_cos": -0.0010142571370641465,
+   "weekday_sin": 2.383009636598327e-05,
+   "weekday_cos": -0.002850838035778016
+  },
+  "reading": "finite-sample association of the control with the true clock; reported, not assumed zero"
+ },
+ "feasibility": {
+  "calendar": {
+   "train_candidates": [
+    59,
+    40200
+   ],
+   "train_admissible": 40080,
+   "validation_admissible": 10020,
+   "window": 60,
+   "needs_lag": false
+  },
+  "randomised_calendar_control": {
+   "train_candidates": [
+    59,
+    40200
+   ],
+   "train_admissible": 40080,
+   "validation_admissible": 10020,
+   "window": 60,
+   "needs_lag": false
+  }
+ },
+ "counts_from_identities": {
+  "calendar": {
+   "distinct_windows": 40080,
+   "labels": 40080,
+   "unique_support_rows": 40199,
+   "unique_train_rows_incl_targets": 40259,
+   "train_only_rows_excluding_validation_support": 40259,
+   "rows_shared_with_validation_support": 0,
+   "mean_exposures_per_support_row": 59.822383641384114,
+   "reading": "consecutive windows overlap by W-1 rows; distinct windows are NOT independent observations; validation support rows are excluded from the train-only count"
+  },
+  "randomised_calendar_control": {
+   "distinct_windows": 40080,
+   "labels": 40080,
+   "unique_support_rows": 40199,
+   "unique_train_rows_incl_targets": 40259,
+   "train_only_rows_excluding_validation_support": 40259,
+   "rows_shared_with_validation_support": 0,
+   "mean_exposures_per_support_row": 59.822383641384114,
+   "reading": "consecutive windows overlap by W-1 rows; distinct windows are NOT independent observations; validation support rows are excluded from the train-only count"
+  }
+ },
+ "common_evaluation": {
+  "n": 10020,
+  "first_row": 40320,
+  "last_row": 50339
+ },
+ "binding_to_source": {
+  "baseline_arm_checked": "calendar",
+  "train_origins_equal_source": true,
+  "common_evaluation_equals_source": true,
+  "common_evaluation_subset_of_source": true
+ },
+ "data_sha256": "9096491a020b4e06e17866bf95112ccbd337eb84f79d042773df1f68b11b812d"
+}

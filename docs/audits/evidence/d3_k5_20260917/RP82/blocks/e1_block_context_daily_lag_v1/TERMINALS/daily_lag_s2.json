@@ -1,0 +1,93 @@
+{
+ "artifacts": [
+  {
+   "bytes": 482466,
+   "role": "predictions",
+   "sha256": "51b496b2bb8c0d28fc9ae0f757fa6d705cccc32d9f6cf8b9dcc04048a465b43b"
+  },
+  {
+   "bytes": 233408,
+   "role": "weights",
+   "sha256": "ebe61fe1e2312fd0d55d3c8fc739ba26fffee35e44817512c4d7fa1ecfa2169b"
+  },
+  {
+   "bytes": 5311,
+   "role": "record",
+   "sha256": "30567d5593daf50fb97298863f805f594a1afa03eb47ee86e3175aeae387ecc3"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 105.81576696100001,
+  "wall_seconds": 88.84712375991512
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T18:40:24Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.4873638313541786
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_z",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.5340877275818645
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.naive_mae_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.6173720558882235
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.rmse_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.7657935296947461
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.skill_vs_naive",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.21058326708195418
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T18:38:40Z",
+ "status": "COMPLETED",
+ "tags": {
+  "arm": "daily_lag",
+  "classification": "NON_GOVERNING",
+  "contract_sha256": "8372b4b36c769aded30d6cce2892dce6b1b82dda4dd51c23e8626b51ecaa5c4c",
+  "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_CONTEXT_DAILY_LAG",
+  "role": "ARM",
+  "seed": "2",
+  "unit": "daily_lag_s2"
+ }
+}

@@ -1,0 +1,164 @@
+{
+ "schema": "rp89_reconciliation_by_content.v1",
+ "read_only": true,
+ "campaigns": [
+  {
+   "run": "context_daily_lag_coordinator",
+   "unit": "prepare",
+   "campaign": "0e954eb88600",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_daily_lag_coordinator",
+   "unit": "pilot_modular_w60",
+   "campaign": "5e082a4e43bb",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_daily_lag_coordinator",
+   "unit": "pilot_daily_lag",
+   "campaign": "9ea06678a256",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_daily_lag_coordinator",
+   "unit": "modular_w60_s1",
+   "campaign": "0b5beef31564",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_daily_lag_coordinator",
+   "unit": "daily_lag_s1",
+   "campaign": "fcc2fd993f10",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_daily_lag_coordinator",
+   "unit": "daily_lag_s2",
+   "campaign": "bfd79eb84c9a",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_daily_lag_coordinator",
+   "unit": "modular_w60_s2",
+   "campaign": "28731932e9da",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_daily_lag_coordinator",
+   "unit": "daily_lag_s3",
+   "campaign": "04d6c06932cd",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_daily_lag_coordinator",
+   "unit": "modular_w60_s3",
+   "campaign": "acd837561900",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_from_dragon",
+   "unit": "prepare",
+   "campaign": "9f431aaf21f8",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_from_dragon",
+   "unit": "daily_lag_s2",
+   "campaign": "bfd79eb84c9a",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_from_dragon",
+   "unit": "modular_w60_s2",
+   "campaign": "28731932e9da",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_from_gamma",
+   "unit": "prepare",
+   "campaign": "6391d88649bc",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_from_gamma",
+   "unit": "modular_w60_s3",
+   "campaign": "acd837561900",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  },
+  {
+   "run": "context_from_gamma",
+   "unit": "daily_lag_s3",
+   "campaign": "04d6c06932cd",
+   "in_warehouse": true,
+   "status": "COMPLETED",
+   "digest_matches_receipt": true,
+   "artifacts_match_local_terminal": true,
+   "config_sha256": "31e71033d935"
+  }
+ ],
+ "open_campaign_not_closable": {
+  "key": "satoshi-fin-cost-pilot-20260921-prepare-data",
+  "why": "registered before the refused download (HTTP 422 resource availability contract required); no delivery, so no terminal can be reported by the client; listed, not hidden"
+ },
+ "summary": {
+  "campaigns": 15,
+  "problems": 0
+ }
+}

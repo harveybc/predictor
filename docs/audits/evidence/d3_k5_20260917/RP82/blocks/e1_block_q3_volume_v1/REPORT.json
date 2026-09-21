@@ -1,0 +1,308 @@
+{
+ "schema": "df_e1_block_report.v2",
+ "design_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad",
+ "block": "Q3_VOLUME",
+ "paired": {
+  "difference": "volume_56d - volume_112d in MAE_z, paired by seed within host blocks",
+  "values": [
+   0.0063850680940660265,
+   1.741078239747562e-05,
+   0.003619380409408679
+  ],
+  "mean": 0.003340619761957394,
+  "sd_ddof1": 0.0031929681385252004,
+  "signs": {
+   "positive": 3,
+   "negative": 0
+  },
+  "reading": "three seed/host blocks; both signs are reported; no interval is claimed from n=3"
+ },
+ "verification": {
+  "design_identity": {
+   "recomputes": true,
+   "design_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad"
+  },
+  "preparation_custody": {
+   "class": "PREPARATION_ACCEPTED_ARTIFACT",
+   "why": "the accepted prepare terminal carries the digest of the prepared data read",
+   "source": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q3_volume_v1/BLOCK_DATA.npz",
+   "sha256": "3255efb006404cd966ee975dfc1a5057807f8d1fd99b09f6168327e8891c509e",
+   "local_record_sha256": "3255efb006404cd966ee975dfc1a5057807f8d1fd99b09f6168327e8891c509e",
+   "design_of_record": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad",
+   "accepted_config_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad"
+  },
+  "denominator": {
+   "sd_used": 0.9125164391265214,
+   "contract_sd_train": 0.9125164391265214,
+   "equal_to_contract": true
+  },
+  "verified_units": [
+   "volume_112d_s1",
+   "volume_112d_s2",
+   "volume_112d_s3",
+   "volume_56d_s1",
+   "volume_56d_s2",
+   "volume_56d_s3"
+  ],
+  "unverified_units": []
+ },
+ "common_evaluation_rows": 10020,
+ "sigma_evaluation": 0.9125164391265214,
+ "rows": [
+  {
+   "arm": "volume_56d",
+   "cell_id": "volume_56d_s1",
+   "seed": 1,
+   "mae_z": 0.5683854323606644,
+   "mae_kw": 0.5186610507891417,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.1598890072163448,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8127,
+   "updates": 1000,
+   "validation_events": 5,
+   "best_update": 400,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 55.820447507,
+   "peak_rss_bytes": 952696832,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "b9caefebdc3ca5b942f2b662f5b7ad5ba28d320034596e2f6cd188e1081b88e5",
+   "environment": null
+  },
+  {
+   "arm": "volume_112d",
+   "cell_id": "volume_112d_s1",
+   "seed": 1,
+   "mae_z": 0.5620003642665984,
+   "mae_kw": 0.5128345711883643,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.16932655714301714,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8127,
+   "updates": 1400,
+   "validation_events": 7,
+   "best_update": 800,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 72.521843401,
+   "peak_rss_bytes": 945602560,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "b9caefebdc3ca5b942f2b662f5b7ad5ba28d320034596e2f6cd188e1081b88e5",
+   "environment": null
+  },
+  {
+   "arm": "volume_56d",
+   "cell_id": "volume_56d_s2",
+   "seed": 2,
+   "mae_z": 0.5560491865740474,
+   "mae_kw": 0.5074040237117485,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.17812278856428343,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8127,
+   "updates": 1800,
+   "validation_events": 9,
+   "best_update": 1200,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 91.44496980500001,
+   "peak_rss_bytes": 1017917440,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "84f67bc65cb5084bdcd80c4bdbff5dd4cde8b270a4aedc1122a9359bdd48e201",
+   "environment": null
+  },
+  {
+   "arm": "volume_112d",
+   "cell_id": "volume_112d_s2",
+   "seed": 2,
+   "mae_z": 0.55603177579165,
+   "mae_kw": 0.5073881360865927,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.1781485228439682,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8127,
+   "updates": 1800,
+   "validation_events": 9,
+   "best_update": 1200,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 89.028224201,
+   "peak_rss_bytes": 956735488,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "84f67bc65cb5084bdcd80c4bdbff5dd4cde8b270a4aedc1122a9359bdd48e201",
+   "environment": null
+  },
+  {
+   "arm": "volume_56d",
+   "cell_id": "volume_56d_s3",
+   "seed": 3,
+   "mae_z": 0.5579632698682161,
+   "mae_kw": 0.5091506561835348,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.17529364776478062,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8127,
+   "updates": 1600,
+   "validation_events": 8,
+   "best_update": 1000,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 79.50483241500001,
+   "peak_rss_bytes": 1015775232,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "e0e2765cded881f25f19edc245d21fd2fb376f5658cd30256d3c52ef8a66ac10",
+   "environment": null
+  },
+  {
+   "arm": "volume_112d",
+   "cell_id": "volume_112d_s3",
+   "seed": 3,
+   "mae_z": 0.5543438894588074,
+   "mae_kw": 0.505847912060497,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.18064332968111896,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8127,
+   "updates": 1800,
+   "validation_events": 9,
+   "best_update": 1200,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 82.948052797,
+   "peak_rss_bytes": 943976448,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "e0e2765cded881f25f19edc245d21fd2fb376f5658cd30256d3c52ef8a66ac10",
+   "environment": null
+  }
+ ],
+ "replays": {
+  "volume_56d_s1": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "66002f4a96f7656a04a9d9a8e3361208d6e09fe0f373680223040b43e09b5f48"
+  },
+  "volume_112d_s1": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "0a7b6ceecbe3551b7f92983cf191952fcbbc6bd4541ca0e21943d5588742fcfa"
+  },
+  "volume_56d_s2": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "8bf930ae235e0cc6efe63a2a7933d3560d421f989ed2954087097ac4cfc3c87e"
+  },
+  "volume_112d_s2": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "6e4dd341c02ce7eba25104ff975cdc480d19d6b277cb52483c2ae3f7461c8d2a"
+  },
+  "volume_56d_s3": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "8d6c414e38762583c39b211370ddff7d24df72a15ebbcbd55fc885890d09a27a"
+  },
+  "volume_112d_s3": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "7c2f0c774a7ed1d00edccd64c89eca36799dadbef272aa91f903021e00b158b2"
+  }
+ },
+ "problems": [],
+ "verified": true,
+ "spent_cpu_seconds": 533.7034325440001,
+ "closure_code_drift": {
+  "df_e1_block.py": {
+   "sealed": "09a37e7e711017609953be637d3ee176c92926d0f8d332108418b826b184389c",
+   "now": "dbd27e0c22a6deb32ea96f00117cbd382e512187c2f8838629462780cbc7502d"
+  }
+ },
+ "scope": "DEVELOPMENT; paired seeds within host blocks; one previously inspected DEV validation week; no test rows read",
+ "summary": {
+  "volume_112d": {
+   "n_seeds": 3,
+   "mean_mae_z": 0.5574586765056853,
+   "sd_mae_z_ddof1": 0.004022739844480407,
+   "mean_mae_kw": 0.5086902064451513,
+   "censored_fits": 0,
+   "hosts": [
+    "omega"
+   ]
+  },
+  "volume_56d": {
+   "n_seeds": 3,
+   "mean_mae_z": 0.5607992962676427,
+   "sd_mae_z_ddof1": 0.0066391282809296175,
+   "mean_mae_kw": 0.5117385768948084,
+   "censored_fits": 0,
+   "hosts": [
+    "omega"
+   ]
+  }
+ },
+ "baselines": {
+  "persistence": {
+   "mae_kw": 0.6173720558882235,
+   "mae_z": 0.6765599274892891,
+   "rmse_kw": 0.966454889734754,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": 0.0,
+   "rows": 10020,
+   "definition": "y(t)"
+  },
+  "daily_seasonal": {
+   "mae_kw": 0.7316592814371257,
+   "mae_z": 0.8018039457321824,
+   "rmse_kw": 1.0890280496910867,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": -0.1851188832712476,
+   "rows": 10020,
+   "definition": "y(t+h-1440)"
+  },
+  "train_constant": {
+   "mae_kw": 0.7110191249038849,
+   "mae_z": 0.779185003597838,
+   "rmse_kw": 0.897470715168224,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": -0.1516866014949927,
+   "rows": 10020,
+   "definition": "mean of the train labels of the 28 d tier; computed on the common evaluation set at closure, no fit, no terminal"
+  }
+ }
+}

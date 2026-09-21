@@ -3,7 +3,14 @@
  "rp81_external_review": {
   "reviewed_commit": "bd6fcf4",
   "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
-  "findings": ["actual closure bypass", "unanchored metric scaler", "reference relabel accepted", "financial populations mixed", "bootstrap population mismatch", "cross-tier training environment confounding"],
+  "findings": [
+   "actual closure bypass",
+   "unanchored metric scaler",
+   "reference relabel accepted",
+   "financial populations mixed",
+   "bootstrap population mismatch",
+   "cross-tier training environment confounding"
+  ],
   "evidence": "../../audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/",
   "fresh_process_weight_replays": "15/15 within existing atol=rtol=1e-6; no fitting",
   "live_warehouse_requeried_by_auditor": false,
@@ -18,7 +25,7 @@
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "RP81_REVIEW_CHANGES_REQUIRED_MEASUREMENTS_PRESERVED_RP82_RP89_ISSUED",
+ "handoff_status": "RP82_RP89_EXECUTED_CONTEXT_DAILY_LAG_CLOSED_FIN_COST_PILOT_EXTERNALLY_REFUSED_AWAITING_MUSASHI_REVIEW",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -57,12 +64,11 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "RP82-RP83: bind actual closures, normalization and comparator identity to accepted evidence",
-  "RP84-RP85: financial runtime factorial and matching uncertainty population before selection",
-  "RP86: adopt fifteen independent replays and qualify cross-tier host/seed confounding",
-  "RP87: sealed cheap context contrasts under tier 2 after acceptance and complete-stage costing",
-  "RP88: financial design v4 and conditional governed train-only cost diagnostic; no scientific search",
-  "RP89: complete evidence, work-plan update and single published return"
+  "Musashi review of the RP82-RP89 return",
+  "operator: declare the resource contract (event/available time columns, timezone, frequency, availability block if known) for market_data/forex/g10/eurusd/1h.parquet; then re-run the sealed cost pilot under a fresh run-id",
+  "financial scientific allocation returns for review after the pilot's numbers",
+  "Q2 long-context questions unchanged (budget-limited)",
+  "fresh-process replay of the 18 RP72 cells only if their scope must be raised"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
@@ -380,11 +386,11 @@
  ],
  "state_semantics": "EXECUTED is not external scientific acceptance. Local metric review confirms same rows/targets and saved errors, not full governed closure. Historical evidence preserved. Documentary PASS grants no scientific approval.",
  "review": {
-  "reviewed_revision": "1880caa",
-  "disposition": "CHANGES_REQUIRED; preserve measurements",
-  "executed_by": "Satoshi RP74-RP81 (this state)",
-  "counterexamples": "../../audits/evidence/RP73_MUSASHI_REVIEW_2026_09_21/results.json",
-  "post": "../../audits/evidence/d3_k5_20260917/RP74/REVIEW_REPRODUCED_POST.json"
+  "reviewed_revision": "bd6fcf4",
+  "disposition": "CHANGES_REQUIRED; MEASUREMENTS_PRESERVED",
+  "executed_by": "Satoshi RP82-RP89 (this state)",
+  "counterexamples": "../../audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/results.json",
+  "post": "../../audits/evidence/d3_k5_20260917/RP82/REVIEW_REPRODUCED_POST.json"
  },
  "review_history": [
   {
@@ -802,6 +808,54 @@
    "network": "temporary reverse ssh tunnel from the coordinator session; no service touched"
   },
   "reads_of_reserved_test_rows": 0,
+  "production_reconfiguration": "none"
+ },
+ "rp82_rp89": {
+  "return": "../../audits/work_plan/SATOSHI_RP82_RP89_RETURN_2026_09_21.md",
+  "pre": "../../audits/evidence/d3_k5_20260917/RP82_PRE/REVIEW_REPRODUCED_PRE.json",
+  "post": "../../audits/evidence/d3_k5_20260917/RP82/REVIEW_REPRODUCED_POST.json",
+  "closure_table": "../../audits/evidence/d3_k5_20260917/RP82/CLOSURE_TABLE_RP89.json (70 rows: 39 verified with accepted preparation and contract denominator, 31 preserved qualified, 0 problems)",
+  "authority": "tools/df_closure_table.verify_run / verify_fin_run consumed by the table CLI, the block closure and the financial closure; a failed verification emits nothing scientific",
+  "context_daily_lag_tier2": {
+   "state": "EXECUTED_CLOSED_VERIFIED_3_HOSTS_WITH_FRESH_PROCESS_REPLAYS",
+   "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+   "mae_z_mean_sd_ddof1": {
+    "daily_lag": [
+     0.5338938977417748,
+     0.0042784802247021565
+    ],
+    "modular_w60": [
+     0.5416406091317078,
+     0.00455064877631524
+    ]
+   },
+   "paired_lag_minus_baseline": {
+    "values": [
+     -0.008444534463290299,
+     -0.006810765909777361,
+     -0.007984833796730983
+    ],
+    "mean": -0.007746711389932881,
+    "sd_ddof1": 0.0008425120961009579
+   },
+   "censored_fits": 5,
+   "crop_control": "inherited from modular_w60 by proved training equivalence (30 updates, loss difference 0.0, identical weights)",
+   "informed_by_prior_dev": true,
+   "confirmatory": false
+  },
+  "arch_x_calendar_reclosed": {
+   "verified": true,
+   "replays": "15 adopted from Musashi's RP81 review, not repeated",
+   "cross_tier_caveat": "seeds 2/3 changed host and prefixes; the tier change is not attributed to patience alone"
+  },
+  "financial": {
+   "selector": "v4: A reported, B within each loss x optimizer over the same 3 LRs (configuration level, paired seeds), C/D paired sensitivity contrasts; identity/custody rejections",
+   "uncertainty": "usable-population estimand; isolated weeks = named support limitation; confirmatory intervals only under a predeclared coverage certificate (none at 26 positions / block 2)",
+   "design": "../../audits/evidence/d3_k5_20260917/RP82/FIN_LOSS_OPT_DESIGN_SEALED_v4.json",
+   "cost_pilot": "SEALED (../../audits/evidence/d3_k5_20260917/RP82/fin_cost_pilot/DESIGN.json); NOT_EXECUTED: HTTP 422 'resource availability contract required' on the governed ranged download of the EURUSD 1h resource — the lake declares no resource contract for it (operator metadata); campaign satoshi-fin-cost-pilot-20260921-prepare-data left open without delivery; 0 bytes read"
+  },
+  "reads_of_reserved_test_rows": 0,
+  "dev_weeks_read_by_finance": 0,
   "production_reconfiguration": "none"
  }
 }

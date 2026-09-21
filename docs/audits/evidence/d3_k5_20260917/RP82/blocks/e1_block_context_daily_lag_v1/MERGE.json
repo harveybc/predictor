@@ -1,0 +1,15 @@
+{
+ "schema": "df_e1_block_merge.v1",
+ "into": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1",
+ "units": {
+  "daily_lag_s3": {
+   "from": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1_from_gamma",
+   "host": "gamma"
+  },
+  "modular_w60_s3": {
+   "from": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1_from_gamma",
+   "host": "gamma"
+  }
+ },
+ "problems": []
+}

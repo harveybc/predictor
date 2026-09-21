@@ -1,0 +1,35 @@
+{
+ "schema": "df_e1_block_pilot_report.v1",
+ "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+ "spent_cpu_seconds": 77.014951513,
+ "projection": {
+  "per_arm": {
+   "calendar": {
+    "seconds_per_update": 0.12142565267,
+    "seconds_per_validation_event_pilot": 1.9644002852499995,
+    "pilot_validation_rows": 9899,
+    "peak_rss_bytes": 994177024
+   },
+   "randomised_calendar_control": {
+    "seconds_per_update": 0.12172584430999998,
+    "seconds_per_validation_event_pilot": 1.9525692525000014,
+    "pilot_validation_rows": 9899,
+    "peak_rss_bytes": 993497088
+   }
+  },
+  "per_cell_at_ceiling_seconds": {
+   "calendar_s1": 525.470851630005,
+   "randomised_calendar_control_s1": 526.4321052126235,
+   "calendar_s2": 525.470851630005,
+   "randomised_calendar_control_s2": 526.4321052126235,
+   "calendar_s3": 525.470851630005,
+   "randomised_calendar_control_s3": 526.4321052126235
+  },
+  "total_at_ceiling_seconds": 3155.708870527885,
+  "with_headroom_25_percent": 3944.6360881598566,
+  "closure_reserve_seconds": 2000,
+  "assumption": "every cell runs to the ceiling with every validation event; early stopping can only lower it"
+ },
+ "fits_the_ceiling": true,
+ "decision": "EXECUTE"
+}

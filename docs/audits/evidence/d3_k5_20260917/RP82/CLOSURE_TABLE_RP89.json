@@ -1,7 +1,7 @@
 {
  "schema": "owner_closure_table.v2",
- "at": "2026-09-21T18:28:21Z",
- "no_new_measurement": true,
+ "at": "2026-09-21T18:45:16Z",
+ "no_new_measurement": false,
  "rows": [
   {
    "run": "successor_RP55",
@@ -6320,6 +6320,570 @@
     "recomputes": true,
     "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572"
    }
+  },
+  {
+   "run": "CONTEXT_DAILY_LAG_RP87",
+   "unit": "daily_lag_s1",
+   "role": "forecast",
+   "arm": "daily_lag",
+   "seed": "1",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.4909996995069284,
+   "model_error_z": 0.5380721688443476,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "target": "Global_active_power",
+   "n_evaluated": 10020,
+   "horizon_steps": 60,
+   "skill_vs_naive": {
+    "value": 0.2046940012525852,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "scope": "E1_BLOCK_CONTEXT_DAILY_LAG",
+   "binding": {
+    "level": "TERMINAL_ARTIFACT",
+    "arrays_sha256": "115f4b3fa6fb33957fbbdadc2d89677ee880daf4a21671cbc31ea567c082d5c8",
+    "record_sha256": "b4f3d11bbae0e334528922b133fdf84ed29a544b9ef0fba02783a8bcefe99b25",
+    "terminal_predictions_sha256": "115f4b3fa6fb33957fbbdadc2d89677ee880daf4a21671cbc31ea567c082d5c8"
+   },
+   "warehouse": {
+    "checked": true,
+    "terminal_in_warehouse": true,
+    "digest_matches_receipt": true,
+    "status": "COMPLETED",
+    "artifact_rows": 3,
+    "accepted_config_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+    "accepted_tags_checked": [
+     "arm",
+     "seed"
+    ]
+   },
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "record_score_checked": true,
+   "problems": [],
+   "verified": true,
+   "preserved_with_qualified_scope": false,
+   "precision_note": "values are float64 from the arrays; no rounding in this JSON",
+   "units_not_scored_by_role": [
+    {
+     "unit": "pilot_daily_lag",
+     "role": "cost_pilot",
+     "why": "not a forecast unit by its registered role"
+    },
+    {
+     "unit": "pilot_modular_w60",
+     "role": "cost_pilot",
+     "why": "not a forecast unit by its registered role"
+    },
+    {
+     "unit": "prepare",
+     "role": "preparation",
+     "why": "not a forecast unit by its registered role"
+    }
+   ],
+   "preparation_custody": "PREPARATION_ACCEPTED_ARTIFACT",
+   "denominator": {
+    "sd_used": 0.9125164391265214,
+    "contract_sd_train": 0.9125164391265214,
+    "equal_to_contract": true
+   },
+   "design_identity": {
+    "recomputes": true,
+    "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d"
+   }
+  },
+  {
+   "run": "CONTEXT_DAILY_LAG_RP87",
+   "unit": "daily_lag_s2",
+   "role": "forecast",
+   "arm": "daily_lag",
+   "seed": "2",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.4873638313541786,
+   "model_error_z": 0.5340877275818645,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "target": "Global_active_power",
+   "n_evaluated": 10020,
+   "horizon_steps": 60,
+   "skill_vs_naive": {
+    "value": 0.21058326708195418,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "scope": "E1_BLOCK_CONTEXT_DAILY_LAG",
+   "binding": {
+    "level": "TERMINAL_ARTIFACT",
+    "arrays_sha256": "51b496b2bb8c0d28fc9ae0f757fa6d705cccc32d9f6cf8b9dcc04048a465b43b",
+    "record_sha256": "30567d5593daf50fb97298863f805f594a1afa03eb47ee86e3175aeae387ecc3",
+    "terminal_predictions_sha256": "51b496b2bb8c0d28fc9ae0f757fa6d705cccc32d9f6cf8b9dcc04048a465b43b"
+   },
+   "warehouse": {
+    "checked": true,
+    "terminal_in_warehouse": true,
+    "digest_matches_receipt": true,
+    "status": "COMPLETED",
+    "artifact_rows": 3,
+    "accepted_config_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+    "accepted_tags_checked": [
+     "arm",
+     "seed"
+    ]
+   },
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "record_score_checked": true,
+   "problems": [],
+   "verified": true,
+   "preserved_with_qualified_scope": false,
+   "precision_note": "values are float64 from the arrays; no rounding in this JSON",
+   "units_not_scored_by_role": [
+    {
+     "unit": "pilot_daily_lag",
+     "role": "cost_pilot",
+     "why": "not a forecast unit by its registered role"
+    },
+    {
+     "unit": "pilot_modular_w60",
+     "role": "cost_pilot",
+     "why": "not a forecast unit by its registered role"
+    },
+    {
+     "unit": "prepare",
+     "role": "preparation",
+     "why": "not a forecast unit by its registered role"
+    }
+   ],
+   "preparation_custody": "PREPARATION_ACCEPTED_ARTIFACT",
+   "denominator": {
+    "sd_used": 0.9125164391265214,
+    "contract_sd_train": 0.9125164391265214,
+    "equal_to_contract": true
+   },
+   "design_identity": {
+    "recomputes": true,
+    "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d"
+   }
+  },
+  {
+   "run": "CONTEXT_DAILY_LAG_RP87",
+   "unit": "daily_lag_s3",
+   "role": "forecast",
+   "arm": "daily_lag",
+   "seed": "3",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.48319734445500334,
+   "model_error_z": 0.5295217967991123,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "target": "Global_active_power",
+   "n_evaluated": 10020,
+   "horizon_steps": 60,
+   "skill_vs_naive": {
+    "value": 0.21733201260653234,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "scope": "E1_BLOCK_CONTEXT_DAILY_LAG",
+   "binding": {
+    "level": "TERMINAL_ARTIFACT",
+    "arrays_sha256": "e75b2485203262fb272a4326bf572541c8976da05baf4fc01c61f09bae56904a",
+    "record_sha256": "0cee19c306a9b797d0021b1a608a2b4cb0dfaec88b827812d9b01da62d18151f",
+    "terminal_predictions_sha256": "e75b2485203262fb272a4326bf572541c8976da05baf4fc01c61f09bae56904a"
+   },
+   "warehouse": {
+    "checked": true,
+    "terminal_in_warehouse": true,
+    "digest_matches_receipt": true,
+    "status": "COMPLETED",
+    "artifact_rows": 3,
+    "accepted_config_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+    "accepted_tags_checked": [
+     "arm",
+     "seed"
+    ]
+   },
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "record_score_checked": true,
+   "problems": [],
+   "verified": true,
+   "preserved_with_qualified_scope": false,
+   "precision_note": "values are float64 from the arrays; no rounding in this JSON",
+   "units_not_scored_by_role": [
+    {
+     "unit": "pilot_daily_lag",
+     "role": "cost_pilot",
+     "why": "not a forecast unit by its registered role"
+    },
+    {
+     "unit": "pilot_modular_w60",
+     "role": "cost_pilot",
+     "why": "not a forecast unit by its registered role"
+    },
+    {
+     "unit": "prepare",
+     "role": "preparation",
+     "why": "not a forecast unit by its registered role"
+    }
+   ],
+   "preparation_custody": "PREPARATION_ACCEPTED_ARTIFACT",
+   "denominator": {
+    "sd_used": 0.9125164391265214,
+    "contract_sd_train": 0.9125164391265214,
+    "equal_to_contract": true
+   },
+   "design_identity": {
+    "recomputes": true,
+    "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d"
+   }
+  },
+  {
+   "run": "CONTEXT_DAILY_LAG_RP87",
+   "unit": "modular_w60_s1",
+   "role": "forecast",
+   "arm": "modular_w60",
+   "seed": "1",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.4987054760254513,
+   "model_error_z": 0.5465167033076379,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "target": "Global_active_power",
+   "n_evaluated": 10020,
+   "horizon_steps": 60,
+   "skill_vs_naive": {
+    "value": 0.19221242479471257,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "scope": "E1_BLOCK_CONTEXT_DAILY_LAG",
+   "binding": {
+    "level": "TERMINAL_ARTIFACT",
+    "arrays_sha256": "e275910c518d7ef26de2513196ed3dde9bc8cb9b1fff15866ae01cd504a07109",
+    "record_sha256": "8b447e807dd15f948dee9526c13d5be9fd501df3ed9c5f7c3debca671d589544",
+    "terminal_predictions_sha256": "e275910c518d7ef26de2513196ed3dde9bc8cb9b1fff15866ae01cd504a07109"
+   },
+   "warehouse": {
+    "checked": true,
+    "terminal_in_warehouse": true,
+    "digest_matches_receipt": true,
+    "status": "COMPLETED",
+    "artifact_rows": 3,
+    "accepted_config_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+    "accepted_tags_checked": [
+     "arm",
+     "seed"
+    ]
+   },
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "record_score_checked": true,
+   "problems": [],
+   "verified": true,
+   "preserved_with_qualified_scope": false,
+   "precision_note": "values are float64 from the arrays; no rounding in this JSON",
+   "units_not_scored_by_role": [
+    {
+     "unit": "pilot_daily_lag",
+     "role": "cost_pilot",
+     "why": "not a forecast unit by its registered role"
+    },
+    {
+     "unit": "pilot_modular_w60",
+     "role": "cost_pilot",
+     "why": "not a forecast unit by its registered role"
+    },
+    {
+     "unit": "prepare",
+     "role": "preparation",
+     "why": "not a forecast unit by its registered role"
+    }
+   ],
+   "preparation_custody": "PREPARATION_ACCEPTED_ARTIFACT",
+   "denominator": {
+    "sd_used": 0.9125164391265214,
+    "contract_sd_train": 0.9125164391265214,
+    "equal_to_contract": true
+   },
+   "design_identity": {
+    "recomputes": true,
+    "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d"
+   }
+  },
+  {
+   "run": "CONTEXT_DAILY_LAG_RP87",
+   "unit": "modular_w60_s2",
+   "role": "forecast",
+   "arm": "modular_w60",
+   "seed": "2",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.49357876720989297,
+   "model_error_z": 0.5408984934916419,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "target": "Global_active_power",
+   "n_evaluated": 10020,
+   "horizon_steps": 60,
+   "skill_vs_naive": {
+    "value": 0.20051650782967023,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "scope": "E1_BLOCK_CONTEXT_DAILY_LAG",
+   "binding": {
+    "level": "TERMINAL_ARTIFACT",
+    "arrays_sha256": "c3a3952fbecab17dde815321a76a84409f6e9ffb90f8a3b274ae06aa52134f90",
+    "record_sha256": "7e5b6c1db501ad47cf62295e4237e3eeda8ee8a65f50c633b07f5556d69f7f92",
+    "terminal_predictions_sha256": "c3a3952fbecab17dde815321a76a84409f6e9ffb90f8a3b274ae06aa52134f90"
+   },
+   "warehouse": {
+    "checked": true,
+    "terminal_in_warehouse": true,
+    "digest_matches_receipt": true,
+    "status": "COMPLETED",
+    "artifact_rows": 3,
+    "accepted_config_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+    "accepted_tags_checked": [
+     "arm",
+     "seed"
+    ]
+   },
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "record_score_checked": true,
+   "problems": [],
+   "verified": true,
+   "preserved_with_qualified_scope": false,
+   "precision_note": "values are float64 from the arrays; no rounding in this JSON",
+   "units_not_scored_by_role": [
+    {
+     "unit": "pilot_daily_lag",
+     "role": "cost_pilot",
+     "why": "not a forecast unit by its registered role"
+    },
+    {
+     "unit": "pilot_modular_w60",
+     "role": "cost_pilot",
+     "why": "not a forecast unit by its registered role"
+    },
+    {
+     "unit": "prepare",
+     "role": "preparation",
+     "why": "not a forecast unit by its registered role"
+    }
+   ],
+   "preparation_custody": "PREPARATION_ACCEPTED_ARTIFACT",
+   "denominator": {
+    "sd_used": 0.9125164391265214,
+    "contract_sd_train": 0.9125164391265214,
+    "equal_to_contract": true
+   },
+   "design_identity": {
+    "recomputes": true,
+    "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d"
+   }
+  },
+  {
+   "run": "CONTEXT_DAILY_LAG_RP87",
+   "unit": "modular_w60_s3",
+   "role": "forecast",
+   "arm": "modular_w60",
+   "seed": "3",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.49048363655821337,
+   "model_error_z": 0.5375066305958432,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "target": "Global_active_power",
+   "n_evaluated": 10020,
+   "horizon_steps": 60,
+   "skill_vs_naive": {
+    "value": 0.20552990392066528,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "scope": "E1_BLOCK_CONTEXT_DAILY_LAG",
+   "binding": {
+    "level": "TERMINAL_ARTIFACT",
+    "arrays_sha256": "a242b16f52302e1990dd3c62687dfa5e4dddcba2b7b61d1ccbc4fe0314e36b9d",
+    "record_sha256": "ae88b331eb3623ac29e0ad2e961b2fe833b824acdbe136b246f2f2519f06918e",
+    "terminal_predictions_sha256": "a242b16f52302e1990dd3c62687dfa5e4dddcba2b7b61d1ccbc4fe0314e36b9d"
+   },
+   "warehouse": {
+    "checked": true,
+    "terminal_in_warehouse": true,
+    "digest_matches_receipt": true,
+    "status": "COMPLETED",
+    "artifact_rows": 3,
+    "accepted_config_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+    "accepted_tags_checked": [
+     "arm",
+     "seed"
+    ]
+   },
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "record_score_checked": true,
+   "problems": [],
+   "verified": true,
+   "preserved_with_qualified_scope": false,
+   "precision_note": "values are float64 from the arrays; no rounding in this JSON",
+   "units_not_scored_by_role": [
+    {
+     "unit": "pilot_daily_lag",
+     "role": "cost_pilot",
+     "why": "not a forecast unit by its registered role"
+    },
+    {
+     "unit": "pilot_modular_w60",
+     "role": "cost_pilot",
+     "why": "not a forecast unit by its registered role"
+    },
+    {
+     "unit": "prepare",
+     "role": "preparation",
+     "why": "not a forecast unit by its registered role"
+    }
+   ],
+   "preparation_custody": "PREPARATION_ACCEPTED_ARTIFACT",
+   "denominator": {
+    "sd_used": 0.9125164391265214,
+    "contract_sd_train": 0.9125164391265214,
+    "equal_to_contract": true
+   },
+   "design_identity": {
+    "recomputes": true,
+    "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d"
+   }
   }
  ],
  "chain": [
@@ -6474,17 +7038,38 @@
     "contract_sd_train": 0.9125164391265214,
     "equal_to_contract": true
    }
+  },
+  "CONTEXT_DAILY_LAG_RP87": {
+   "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+   "design_identity": {
+    "recomputes": true,
+    "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d"
+   },
+   "preparation_custody": {
+    "class": "PREPARATION_ACCEPTED_ARTIFACT",
+    "why": "the accepted prepare terminal carries the digest of the prepared data read",
+    "source": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1/BLOCK_DATA.npz",
+    "sha256": "c162ba9ba2672eb11c88d262c9b1f627e8e58aa8d7603a3ca2c78844ccb2711f",
+    "local_record_sha256": "c162ba9ba2672eb11c88d262c9b1f627e8e58aa8d7603a3ca2c78844ccb2711f",
+    "design_of_record": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+    "accepted_config_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d"
+   },
+   "denominator": {
+    "sd_used": 0.9125164391265214,
+    "contract_sd_train": 0.9125164391265214,
+    "equal_to_contract": true
+   }
   }
  },
  "problems": [],
- "verified_rows": 33,
+ "verified_rows": 39,
  "preserved_qualified_rows": 31,
  "custody_classes": {
-  "ACCEPTED_ARTIFACT_CHAIN": 45,
+  "ACCEPTED_ARTIFACT_CHAIN": 51,
   "METRIC_ANCHORED": 19
  },
  "preparation_classes": {
-  "PREPARATION_ACCEPTED_ARTIFACT": 33,
+  "PREPARATION_ACCEPTED_ARTIFACT": 39,
   "PREPARATION_LOCAL_ONLY": 31
  },
  "custody_rule": "verified = clean arrays AND accepted artifact chain (predictions + record digests in the warehouse's canonical payload) AND the prepared data anchored by the accepted prepare terminal AND the denominator equal to the contract's sd_train; METRIC_ANCHORED = a historical score equal to the metric the accepted terminal carries, arrays not independently anchored (preserved, qualified); UNANCHORED/UNCHECKED = nothing accepted anchors the score (a problem for new results)"

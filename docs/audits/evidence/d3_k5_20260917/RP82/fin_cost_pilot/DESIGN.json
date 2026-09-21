@@ -1,0 +1,697 @@
+{
+ "schema": "df_fin_cost_pilot_design.v1",
+ "purpose": "FIN_LOSS_OPT_COST_PILOT",
+ "phase": "DEVELOPMENT",
+ "state": "SEALED_NOT_EXECUTED",
+ "source": {
+  "lake": "financial_files",
+  "resource": "market_data/forex/g10/eurusd/1h.parquet",
+  "time_column": "datetime",
+  "holdout": "2025-01-01",
+  "range": {
+   "from": "2023-06-26",
+   "to": "2024-06-23"
+  },
+  "columns": [
+   "open",
+   "high",
+   "low",
+   "close",
+   "volume"
+  ],
+  "target": "close",
+  "dev_start": "2024-06-24",
+  "rule": "pre-DEV training slice only; internal purged validation = the last week of the slice; DEV and reserve never read"
+ },
+ "receivers": {
+  "compact_modular": {
+   "window": 60,
+   "input_columns": [
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume"
+   ],
+   "channels": 5,
+   "assignment": [
+    0,
+    0,
+    0,
+    0,
+    1
+   ],
+   "groups": "price (OHLC) | volume",
+   "core": "tcn_w, 16 filters, kernel 3",
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "parameters": 6229,
+   "reach_declared": 60,
+   "head": "Dense(p) increment over the last observation; the target channel (close) is read out"
+  },
+  "larger_business_receiver": {
+   "window": 144,
+   "input_columns": [
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "hour_sin",
+    "hour_cos",
+    "weekday_sin",
+    "weekday_cos"
+   ],
+   "channels": 9,
+   "assignment": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    2,
+    2,
+    2,
+    2
+   ],
+   "groups": "price | volume | calendar",
+   "core": "tcn_w, 16 filters, kernel 3",
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64
+   ],
+   "parameters": 9857,
+   "reach_declared": 144,
+   "head": "as compact"
+  }
+ },
+ "horizons": {
+  "h6": {
+   "hours": 6,
+   "why": "one quarter of a trading day at this resolution; declared before any score"
+  },
+  "h72": {
+   "hours": 72,
+   "why": "about three days of elapsed time; declared before any score"
+  }
+ },
+ "recipe": {
+  "max_updates": 200,
+  "validate_every_updates": 50,
+  "patience_events": 3,
+  "batch": 64,
+  "min_delta": 0.0,
+  "purpose": "COST_DIAGNOSTIC_TRAIN_ONLY: seconds, memory and samples; NOT adequacy, convergence or a winner"
+ },
+ "configs": [
+  {
+   "config_id": "compact_modular__h6__A_mae_adam",
+   "receiver": "compact_modular",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_mae_adam",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": null
+   }
+  },
+  {
+   "config_id": "compact_modular__h6__A_mae_adamw",
+   "receiver": "compact_modular",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_mae_adamw",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": null
+   }
+  },
+  {
+   "config_id": "compact_modular__h6__A_huber_adam",
+   "receiver": "compact_modular",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_huber_adam",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "config_id": "compact_modular__h6__A_huber_adamw",
+   "receiver": "compact_modular",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_huber_adamw",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "config_id": "compact_modular__h72__A_mae_adam",
+   "receiver": "compact_modular",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_mae_adam",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": null
+   }
+  },
+  {
+   "config_id": "compact_modular__h72__A_mae_adamw",
+   "receiver": "compact_modular",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_mae_adamw",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": null
+   }
+  },
+  {
+   "config_id": "compact_modular__h72__A_huber_adam",
+   "receiver": "compact_modular",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_huber_adam",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "config_id": "compact_modular__h72__A_huber_adamw",
+   "receiver": "compact_modular",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_huber_adamw",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "config_id": "larger_business_receiver__h6__A_mae_adam",
+   "receiver": "larger_business_receiver",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_mae_adam",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": null
+   }
+  },
+  {
+   "config_id": "larger_business_receiver__h6__A_mae_adamw",
+   "receiver": "larger_business_receiver",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_mae_adamw",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": null
+   }
+  },
+  {
+   "config_id": "larger_business_receiver__h6__A_huber_adam",
+   "receiver": "larger_business_receiver",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_huber_adam",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "config_id": "larger_business_receiver__h6__A_huber_adamw",
+   "receiver": "larger_business_receiver",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_huber_adamw",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "config_id": "larger_business_receiver__h72__A_mae_adam",
+   "receiver": "larger_business_receiver",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_mae_adam",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": null
+   }
+  },
+  {
+   "config_id": "larger_business_receiver__h72__A_mae_adamw",
+   "receiver": "larger_business_receiver",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_mae_adamw",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": null
+   }
+  },
+  {
+   "config_id": "larger_business_receiver__h72__A_huber_adam",
+   "receiver": "larger_business_receiver",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_huber_adam",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "config_id": "larger_business_receiver__h72__A_huber_adamw",
+   "receiver": "larger_business_receiver",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_huber_adamw",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  }
+ ],
+ "cells": [
+  {
+   "cell_id": "compact_modular__h6__A_mae_adam",
+   "config_id": "compact_modular__h6__A_mae_adam",
+   "receiver": "compact_modular",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_mae_adam",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": null
+   }
+  },
+  {
+   "cell_id": "compact_modular__h6__A_mae_adamw",
+   "config_id": "compact_modular__h6__A_mae_adamw",
+   "receiver": "compact_modular",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_mae_adamw",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": null
+   }
+  },
+  {
+   "cell_id": "compact_modular__h6__A_huber_adam",
+   "config_id": "compact_modular__h6__A_huber_adam",
+   "receiver": "compact_modular",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_huber_adam",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "cell_id": "compact_modular__h6__A_huber_adamw",
+   "config_id": "compact_modular__h6__A_huber_adamw",
+   "receiver": "compact_modular",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_huber_adamw",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "cell_id": "compact_modular__h72__A_mae_adam",
+   "config_id": "compact_modular__h72__A_mae_adam",
+   "receiver": "compact_modular",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_mae_adam",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": null
+   }
+  },
+  {
+   "cell_id": "compact_modular__h72__A_mae_adamw",
+   "config_id": "compact_modular__h72__A_mae_adamw",
+   "receiver": "compact_modular",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_mae_adamw",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": null
+   }
+  },
+  {
+   "cell_id": "compact_modular__h72__A_huber_adam",
+   "config_id": "compact_modular__h72__A_huber_adam",
+   "receiver": "compact_modular",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_huber_adam",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "cell_id": "compact_modular__h72__A_huber_adamw",
+   "config_id": "compact_modular__h72__A_huber_adamw",
+   "receiver": "compact_modular",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_huber_adamw",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "cell_id": "larger_business_receiver__h6__A_mae_adam",
+   "config_id": "larger_business_receiver__h6__A_mae_adam",
+   "receiver": "larger_business_receiver",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_mae_adam",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": null
+   }
+  },
+  {
+   "cell_id": "larger_business_receiver__h6__A_mae_adamw",
+   "config_id": "larger_business_receiver__h6__A_mae_adamw",
+   "receiver": "larger_business_receiver",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_mae_adamw",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": null
+   }
+  },
+  {
+   "cell_id": "larger_business_receiver__h6__A_huber_adam",
+   "config_id": "larger_business_receiver__h6__A_huber_adam",
+   "receiver": "larger_business_receiver",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_huber_adam",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "cell_id": "larger_business_receiver__h6__A_huber_adamw",
+   "config_id": "larger_business_receiver__h6__A_huber_adamw",
+   "receiver": "larger_business_receiver",
+   "horizon": "h6",
+   "candidate": {
+    "id": "A_huber_adamw",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "cell_id": "larger_business_receiver__h72__A_mae_adam",
+   "config_id": "larger_business_receiver__h72__A_mae_adam",
+   "receiver": "larger_business_receiver",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_mae_adam",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": null
+   }
+  },
+  {
+   "cell_id": "larger_business_receiver__h72__A_mae_adamw",
+   "config_id": "larger_business_receiver__h72__A_mae_adamw",
+   "receiver": "larger_business_receiver",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_mae_adamw",
+    "population": "A_fixed_default",
+    "loss": "mae",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": null
+   }
+  },
+  {
+   "cell_id": "larger_business_receiver__h72__A_huber_adam",
+   "config_id": "larger_business_receiver__h72__A_huber_adam",
+   "receiver": "larger_business_receiver",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_huber_adam",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  },
+  {
+   "cell_id": "larger_business_receiver__h72__A_huber_adamw",
+   "config_id": "larger_business_receiver__h72__A_huber_adamw",
+   "receiver": "larger_business_receiver",
+   "horizon": "h72",
+   "candidate": {
+    "id": "A_huber_adamw",
+    "population": "A_fixed_default",
+    "loss": "huber",
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.004,
+    "delta": {
+     "kind": "fixed",
+     "delta_z": 1.0
+    }
+   }
+  }
+ ],
+ "history_alternatives_weeks": [
+  52,
+  104,
+  208
+ ],
+ "benchmark_contract": {
+  "task_id": "fx.eurusd.1h.FIN-LOSS-OPT.h6h",
+  "dataset_id": "financial_files:market_data/forex/g10/eurusd/1h.parquet",
+  "source": {
+   "kind": "OURS_DESIGNED",
+   "coverage": "129 873 rows, 2005-01-03 01:00 .. 2025-12-31 16:00, time column 'datetime'",
+   "holdout": "deny_from 2025-01-01; reserve never read",
+   "state": "DESIGNED, NOT_STARTED"
+  },
+  "target": "close",
+  "target_construction": "hourly bar close as served; the target of an origin is the bar whose timestamp is origin + h hours ELAPSED (tools/df_fin_task.map_targets); an origin without that exact bar is excluded and counted",
+  "resolution_seconds": 3600,
+  "horizon_steps": 6,
+  "horizon_seconds": 21600,
+  "input_window_steps": 60,
+  "split_rule": "weekly walk-forward folds (Monday 00:00 UTC .. Sunday 23:00 UTC); DEV = the last 26 weeks before 2025-01-01",
+  "missing_policy": "non-finite bars withdrawn; weekend/holiday gaps kept; an origin whose elapsed-time target bar is absent is excluded with reason",
+  "target_transform": "zscore_train",
+  "scaler_fit_population": "train rows of the fold, shared by every arm of the fold",
+  "metric_formula": "MAE_z = mean|yhat-y|/sd_train per horizon and fold; RMSE_z; skill = 1 - MAE_z_model/MAE_z_naive",
+  "metric_scale": "z_train",
+  "metric_aggregation": "per horizon, fold, seed and arm; paired by origin",
+  "naive_baseline": "persistence: the origin's close, on identical origins",
+  "permitted_inputs": "OHLCV of the served bars (5 channels), window 60",
+  "reference_method": null,
+  "tuning_budget": "equal enumerated candidates per loss family",
+  "checkpoint_selection": "common monitor, restore best",
+  "replicas": "paired seeds within host blocks",
+  "varying_factors": [],
+  "estimand": null,
+  "version": "2",
+  "notes": [
+   "no literature reference bound: NOT_COMPARABLE until a matched re-execution exists"
+  ],
+  "schema": "benchmark_contract.v2",
+  "contract_sha256": "85bc719dd3226e9afe7c40db7722c8e27b72426c56b2a472155098dc9f8aa137",
+  "comparability": {
+   "mode": "NOT_COMPARABLE",
+   "why": "cost diagnostic; no comparator involved",
+   "fields_that_differ": [],
+   "declared_contrast": [],
+   "comparator_state": "PLANNED_REFERENCE",
+   "reference_evidence": {
+    "state": "PLANNED_REFERENCE",
+    "why": "cost diagnostic; no comparator involved"
+   },
+   "ours_sha256": "85bc719dd3226e9afe7c40db7722c8e27b72426c56b2a472155098dc9f8aa137",
+   "theirs_sha256": null,
+   "resolution": "a re-execution of a reference method under THIS contract, CLOSED under this digest (MATCHED_DOMAIN_COMPARISON); never a published number from another protocol"
+  }
+ },
+ "source_code": {
+  "df_fin_runner.py": "da7c8d6e0e06a59c57c2cb1dc8b381565ff855a891e70528d3945e8ac606d21d",
+  "df_fin_task.py": "b59dca0abbea985808aa498b9e049ad7d5fea17544571f6f6f4887a8db347fb2",
+  "df_e1_block.py": "21004c24b003025f59fef0b6082097da3431aaa7c25cd86d110dcad7d195287b",
+  "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c",
+  "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6"
+ },
+ "what_this_is_not": "not a scientific comparison, not model adequacy, not a winner; 200 observed updates per configuration",
+ "design_sha256": "777b63aa1fec1fe7fb641e11aec2ff396c7b1b63272761b80c6731cd7c2d0698"
+}

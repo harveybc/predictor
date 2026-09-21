@@ -1,0 +1,308 @@
+{
+ "schema": "df_e1_block_report.v2",
+ "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
+ "block": "DEV_MATCHED",
+ "paired": {
+  "difference": "modular_w60 - gru_adapted_w60 in MAE_z, paired by seed within host blocks",
+  "values": [
+   0.032895671490524414,
+   0.036041616334210325,
+   0.04137987926409614
+  ],
+  "mean": 0.036772389029610296,
+  "sd_ddof1": 0.004289051985642088,
+  "signs": {
+   "positive": 3,
+   "negative": 0
+  },
+  "reading": "three seed/host blocks; both signs are reported; no interval is claimed from n=3"
+ },
+ "verification": {
+  "design_identity": {
+   "recomputes": true,
+   "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344"
+  },
+  "preparation_custody": {
+   "class": "PREPARATION_ACCEPTED_ARTIFACT",
+   "why": "the accepted prepare terminal carries the digest of the prepared data read",
+   "source": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_dev_matched_v2/BLOCK_DATA.npz",
+   "sha256": "7bd5c5ba57e759cf585fafdb93c056c670c232b9f6b564f5c4ee7cf0b6cd0d38",
+   "local_record_sha256": "7bd5c5ba57e759cf585fafdb93c056c670c232b9f6b564f5c4ee7cf0b6cd0d38",
+   "design_of_record": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
+   "accepted_config_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344"
+  },
+  "denominator": {
+   "sd_used": 0.9125164391265214,
+   "contract_sd_train": 0.9125164391265214,
+   "equal_to_contract": true
+  },
+  "verified_units": [
+   "gru_adapted_w60_s1",
+   "gru_adapted_w60_s2",
+   "gru_adapted_w60_s3",
+   "modular_w60_s1",
+   "modular_w60_s2",
+   "modular_w60_s3"
+  ],
+  "unverified_units": []
+ },
+ "common_evaluation_rows": 10020,
+ "sigma_evaluation": 0.9125164391265214,
+ "rows": [
+  {
+   "arm": "modular_w60",
+   "cell_id": "modular_w60_s1",
+   "seed": 1,
+   "mae_z": 0.565133802590645,
+   "mae_kw": 0.5156938851700459,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.1646951295388509,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8127,
+   "updates": 1000,
+   "validation_events": 5,
+   "best_update": 400,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 61.857547444,
+   "peak_rss_bytes": 1013080064,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "b9caefebdc3ca5b942f2b662f5b7ad5ba28d320034596e2f6cd188e1081b88e5",
+   "environment": null
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "cell_id": "gru_adapted_w60_s1",
+   "seed": 1,
+   "mae_z": 0.5322381311001206,
+   "mae_kw": 0.4856760441588367,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.21331709213808447,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8901,
+   "updates": 2000,
+   "validation_events": 10,
+   "best_update": 1400,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 52.140146648,
+   "peak_rss_bytes": 779124736,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "2848dde115e02a07d00eee1002e548fddf578e5dde9b799bbb1994472c1aed35",
+   "environment": null
+  },
+  {
+   "arm": "modular_w60",
+   "cell_id": "modular_w60_s2",
+   "seed": 2,
+   "mae_z": 0.5678265496753134,
+   "mae_kw": 0.5181510611512158,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.16071507252503814,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8127,
+   "updates": 1000,
+   "validation_events": 5,
+   "best_update": 400,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 57.863134494,
+   "peak_rss_bytes": 1013436416,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "84f67bc65cb5084bdcd80c4bdbff5dd4cde8b270a4aedc1122a9359bdd48e201",
+   "environment": null
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "cell_id": "gru_adapted_w60_s2",
+   "seed": 2,
+   "mae_z": 0.5317849333411031,
+   "mae_kw": 0.48526249375355796,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.2139869481857214,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8901,
+   "updates": 2400,
+   "validation_events": 12,
+   "best_update": 1800,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 54.103489769,
+   "peak_rss_bytes": 779493376,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "b92acfabd39f8fb5c21ffa82af7efbc371d6ac1f096f61424a364858017889d4",
+   "environment": null
+  },
+  {
+   "arm": "modular_w60",
+   "cell_id": "modular_w60_s3",
+   "seed": 3,
+   "mae_z": 0.5711760350195302,
+   "mae_kw": 0.5212075215904269,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.15576431323805717,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8127,
+   "updates": 1000,
+   "validation_events": 5,
+   "best_update": 400,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 53.644159676,
+   "peak_rss_bytes": 1014009856,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "e0e2765cded881f25f19edc245d21fd2fb376f5658cd30256d3c52ef8a66ac10",
+   "environment": null
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "cell_id": "gru_adapted_w60_s3",
+   "seed": 3,
+   "mae_z": 0.529796155755434,
+   "mae_kw": 0.48344770151286853,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.2169264920529579,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8901,
+   "updates": 2000,
+   "validation_events": 10,
+   "best_update": 1400,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 45.274108686999995,
+   "peak_rss_bytes": 778747904,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "8047cd7bb14c83ad168c7618d0ef3ec16a851f5a073443279755d4bd6b2979c4",
+   "environment": null
+  }
+ ],
+ "replays": {
+  "modular_w60_s1": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "c37878fefdc7afddc94e2edec4aecd7dc953c85d3dd24e64b6fb875e7b4062b4"
+  },
+  "gru_adapted_w60_s1": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "c723dfedb1cca7a11f80800b5d1b2e819adbbb4262a3ac22750b8afc57cd281c"
+  },
+  "modular_w60_s2": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "05727db5ad8be2b9ddec59af190a5a5ebfd2529e2a8a9759d40fd5799de64873"
+  },
+  "gru_adapted_w60_s2": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "ebc0d3d79a420d9360626cb9bbb16a8f49c9c4194122dac89eb9cc5957cdd34c"
+  },
+  "modular_w60_s3": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "7b5ea7642324b0c13f2cc76a47ccf44c3e5b5f50cddc3646bc02c47d3bb600e8"
+  },
+  "gru_adapted_w60_s3": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "8e241e6d7117c18b6bf2b3d0e74c5b5a73510567406c6e7d0b42c3b85429078e"
+  }
+ },
+ "problems": [],
+ "verified": true,
+ "spent_cpu_seconds": 373.504281321,
+ "closure_code_drift": {
+  "df_e1_block.py": {
+   "sealed": "51f7eb46ea44a830c501138bb05b3818008ca36f441af4b8c86c56294111b6b3",
+   "now": "dbd27e0c22a6deb32ea96f00117cbd382e512187c2f8838629462780cbc7502d"
+  }
+ },
+ "scope": "DEVELOPMENT; paired seeds within host blocks; one previously inspected DEV validation week; no test rows read",
+ "summary": {
+  "gru_adapted_w60": {
+   "n_seeds": 3,
+   "mean_mae_z": 0.5312730733988859,
+   "sd_mae_z_ddof1": 0.0012989654908230766,
+   "mean_mae_kw": 0.4847954131417544,
+   "censored_fits": 0,
+   "hosts": [
+    "omega"
+   ]
+  },
+  "modular_w60": {
+   "n_seeds": 3,
+   "mean_mae_z": 0.5680454624284962,
+   "sd_mae_z_ddof1": 0.003027058849163215,
+   "mean_mae_kw": 0.5183508226372294,
+   "censored_fits": 0,
+   "hosts": [
+    "omega"
+   ]
+  }
+ },
+ "baselines": {
+  "persistence": {
+   "mae_kw": 0.6173720558882235,
+   "mae_z": 0.6765599274892891,
+   "rmse_kw": 0.966454889734754,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": 0.0,
+   "rows": 10020,
+   "definition": "y(t)"
+  },
+  "daily_seasonal": {
+   "mae_kw": 0.7316592814371257,
+   "mae_z": 0.8018039457321824,
+   "rmse_kw": 1.0890280496910867,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": -0.1851188832712476,
+   "rows": 10020,
+   "definition": "y(t+h-1440)"
+  },
+  "train_constant": {
+   "mae_kw": 0.7110191249038849,
+   "mae_z": 0.779185003597838,
+   "rmse_kw": 0.897470715168224,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": -0.1516866014949927,
+   "rows": 10020,
+   "definition": "mean of the train labels of the 28 d tier; computed on the common evaluation set at closure, no fit, no terminal"
+  }
+ }
+}

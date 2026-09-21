@@ -1,0 +1,137 @@
+{
+ "modular_w60_s1": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "modular_w60_s1",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 0.0,
+  "mae_z_replayed": 0.539779065692846,
+  "mae_z_stored": 0.539779065692846,
+  "weights_file_sha256": "103c58f52c5cd7d31ab3554877952ab4a40d64f289caf499f13f20fe973b45c0"
+ },
+ "gru_adapted_w60_s1": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "gru_adapted_w60_s1",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 0.0,
+  "mae_z_replayed": 0.5304759667904917,
+  "mae_z_stored": 0.5304759667904917,
+  "weights_file_sha256": "92a1256bdfbafdbae3b9ce7e6f8e452cf994722396454ae9c05ad6cae09558f9"
+ },
+ "calendar_s1": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "calendar_s1",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 0.0,
+  "mae_z_replayed": 0.48248040048780405,
+  "mae_z_stored": 0.48248040048780405,
+  "weights_file_sha256": "d2f5a9752d3ac90903bbed564c305f57bfd05a1808d16061b213cb050688f67a"
+ },
+ "gru_calendar_w60_s1": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "gru_calendar_w60_s1",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 0.0,
+  "mae_z_replayed": 0.4802670775276601,
+  "mae_z_stored": 0.4802670775276601,
+  "weights_file_sha256": "370b63cfcee00efd1674fb62f702a061f72a94d15583d2c0111b6ead1f2c07cb"
+ },
+ "randomised_calendar_control_s1": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "randomised_calendar_control_s1",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 0.0,
+  "mae_z_replayed": 0.5388824965159489,
+  "mae_z_stored": 0.5388824965159489,
+  "weights_file_sha256": "7f78e5c6e150c423368a3f1304f276b058ff8239146004115aa70b0a7d1bd838"
+ },
+ "modular_w60_s2": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "modular_w60_s2",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 2.1756087287272408e-07,
+  "mae_z_replayed": 0.5399297669779186,
+  "mae_z_stored": 0.5399297672448605,
+  "weights_file_sha256": "659158cbf1facad3606446aadcd421e313ce87019ea071a4f5ab22142e474169"
+ },
+ "gru_adapted_w60_s2": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "gru_adapted_w60_s2",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 3.263413093090861e-07,
+  "mae_z_replayed": 0.5302485093351297,
+  "mae_z_stored": 0.5302485088893589,
+  "weights_file_sha256": "2597fda6052c00c7a9e3251d3090f2b64d8825488b5d419bf0b06405561fb318"
+ },
+ "calendar_s2": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "calendar_s2",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 2.1756087287272408e-07,
+  "mae_z_replayed": 0.49678451421661085,
+  "mae_z_stored": 0.4967845138115506,
+  "weights_file_sha256": "ed73797b0b0512333ad2171e01453ebd95baed2cfcb1551022d84f2430d565f0"
+ },
+ "gru_calendar_w60_s2": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "gru_calendar_w60_s2",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 2.1756087287272408e-07,
+  "mae_z_replayed": 0.4834216829746413,
+  "mae_z_stored": 0.4834216828755605,
+  "weights_file_sha256": "1e3e1ce3696bdeb153ae9f4284712c109dcc3a89282d22284500b35cc20df5d2"
+ },
+ "randomised_calendar_control_s2": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "randomised_calendar_control_s2",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 1.6317065476556536e-07,
+  "mae_z_replayed": 0.5444607260438974,
+  "mae_z_stored": 0.5444607243944247,
+  "weights_file_sha256": "74ab37d9376c2e03f371e3cedfcf755a46976a7520469ca08e27d1224adcfe66"
+ },
+ "modular_w60_s3": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "modular_w60_s3",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 1.3053652370142999e-06,
+  "mae_z_replayed": 0.5375535640543856,
+  "mae_z_stored": 0.5375535633399997,
+  "weights_file_sha256": "a55a8e9bb95592c454a1cd4c3fbc6a5f0e96a7fd7a3a6cdd88a392354fa1b22f"
+ },
+ "gru_adapted_w60_s3": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "gru_adapted_w60_s3",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 2.1756087287272408e-07,
+  "mae_z_replayed": 0.5262544915063763,
+  "mae_z_stored": 0.5262544906810126,
+  "weights_file_sha256": "ee7db791ad6393022b4f70628e5b557a598c72cc7cbb2dbd360956e617d8c323"
+ },
+ "calendar_s3": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "calendar_s3",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 1.3665542323293423e-06,
+  "mae_z_replayed": 0.4986961306740272,
+  "mae_z_stored": 0.4986961321035422,
+  "weights_file_sha256": "f4fe1556a102b0478c927c72557d912389f74e9bdb5e95d53dbe7be19a9a8be1"
+ },
+ "gru_calendar_w60_s3": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "gru_calendar_w60_s3",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 1.2509750187961188e-06,
+  "mae_z_replayed": 0.47582500007317385,
+  "mae_z_stored": 0.4758249999865479,
+  "weights_file_sha256": "59e5b1f0cdf2d8ffaed9bfa3f2e5fdc6bed1f5d40b9798d131aa5397ffcfe8b5"
+ },
+ "randomised_calendar_control_s3": {
+  "adopted_from": "docs/audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/replay.json",
+  "unit": "randomised_calendar_control_s3",
+  "allclose_1e_6": true,
+  "max_abs_prediction_difference": 1.2781701279607205e-06,
+  "mae_z_replayed": 0.5504990285088164,
+  "mae_z_stored": 0.5504990286996817,
+  "weights_file_sha256": "58740f6918ae1ae7798821d5c396f6b27a26338df60616534c74580e394c48af"
+ }
+}

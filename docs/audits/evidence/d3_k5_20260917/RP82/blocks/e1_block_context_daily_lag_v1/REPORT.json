@@ -1,0 +1,343 @@
+{
+ "schema": "df_e1_block_report.v2",
+ "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+ "block": "CONTEXT_DAILY_LAG",
+ "paired": {
+  "difference": "modular_w60 - daily_lag in MAE_z, paired by seed within host blocks",
+  "values": [
+   0.008444534463290299,
+   0.006810765909777361,
+   0.007984833796730983
+  ],
+  "mean": 0.007746711389932881,
+  "sd_ddof1": 0.000842512096100958,
+  "signs": {
+   "positive": 3,
+   "negative": 0
+  },
+  "reading": "three seed/host blocks; both signs are reported; no interval is claimed from n=3"
+ },
+ "verification": {
+  "design_identity": {
+   "recomputes": true,
+   "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d"
+  },
+  "preparation_custody": {
+   "class": "PREPARATION_ACCEPTED_ARTIFACT",
+   "why": "the accepted prepare terminal carries the digest of the prepared data read",
+   "source": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1/BLOCK_DATA.npz",
+   "sha256": "c162ba9ba2672eb11c88d262c9b1f627e8e58aa8d7603a3ca2c78844ccb2711f",
+   "local_record_sha256": "c162ba9ba2672eb11c88d262c9b1f627e8e58aa8d7603a3ca2c78844ccb2711f",
+   "design_of_record": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+   "accepted_config_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d"
+  },
+  "denominator": {
+   "sd_used": 0.9125164391265214,
+   "contract_sd_train": 0.9125164391265214,
+   "equal_to_contract": true
+  },
+  "verified_units": [
+   "daily_lag_s1",
+   "daily_lag_s2",
+   "daily_lag_s3",
+   "modular_w60_s1",
+   "modular_w60_s2",
+   "modular_w60_s3"
+  ],
+  "unverified_units": []
+ },
+ "common_evaluation_rows": 10020,
+ "sigma_evaluation": 0.9125164391265214,
+ "rows": [
+  {
+   "arm": "modular_w60",
+   "cell_id": "modular_w60_s1",
+   "seed": 1,
+   "mae_z": 0.5465167033076379,
+   "mae_kw": 0.4987054760254513,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.19221242479471257,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8127,
+   "updates": 4000,
+   "validation_events": 20,
+   "best_update": 2800,
+   "stop": "UPDATE_BUDGET",
+   "triggers": {
+    "budget_reached": true,
+    "patience_expired": false
+   },
+   "censoring": "CENSORED_BY_BUDGET",
+   "host": "omega",
+   "cpu_seconds": 179.374957665,
+   "peak_rss_bytes": 1017716736,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "b9caefebdc3ca5b942f2b662f5b7ad5ba28d320034596e2f6cd188e1081b88e5",
+   "environment": null
+  },
+  {
+   "arm": "daily_lag",
+   "cell_id": "daily_lag_s1",
+   "seed": 1,
+   "mae_z": 0.5380721688443476,
+   "mae_kw": 0.4909996995069284,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.2046940012525852,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8208,
+   "updates": 4000,
+   "validation_events": 20,
+   "best_update": 2600,
+   "stop": "UPDATE_BUDGET",
+   "triggers": {
+    "budget_reached": true,
+    "patience_expired": false
+   },
+   "censoring": "CENSORED_BY_BUDGET",
+   "host": "omega",
+   "cpu_seconds": 180.253771817,
+   "peak_rss_bytes": 1019944960,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "0f6b46da2c89defb349bd69a104f95b8ac259c8fb6aa64d732929138c133afa3",
+   "environment": null
+  },
+  {
+   "arm": "modular_w60",
+   "cell_id": "modular_w60_s2",
+   "seed": 2,
+   "mae_z": 0.5408984934916419,
+   "mae_kw": 0.49357876720989297,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.20051650782967023,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8127,
+   "updates": 4000,
+   "validation_events": 20,
+   "best_update": 2400,
+   "stop": "UPDATE_BUDGET",
+   "triggers": {
+    "budget_reached": true,
+    "patience_expired": false
+   },
+   "censoring": "CENSORED_BY_BUDGET",
+   "host": "dragon",
+   "cpu_seconds": 111.50832524,
+   "peak_rss_bytes": 1015230464,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "84f67bc65cb5084bdcd80c4bdbff5dd4cde8b270a4aedc1122a9359bdd48e201",
+   "environment": null
+  },
+  {
+   "arm": "daily_lag",
+   "cell_id": "daily_lag_s2",
+   "seed": 2,
+   "mae_z": 0.5340877275818645,
+   "mae_kw": 0.4873638313541786,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.21058326708195418,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8208,
+   "updates": 3800,
+   "validation_events": 19,
+   "best_update": 1800,
+   "stop": "EARLY_STOPPING",
+   "triggers": {
+    "budget_reached": false,
+    "patience_expired": true
+   },
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "dragon",
+   "cpu_seconds": 105.81576696100001,
+   "peak_rss_bytes": 1018515456,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "f9c474649f5607e9471d8c3dcba0cf4a18a301a11faa37151bcf6f3609f23a9d",
+   "environment": null
+  },
+  {
+   "arm": "modular_w60",
+   "cell_id": "modular_w60_s3",
+   "seed": 3,
+   "mae_z": 0.5375066305958432,
+   "mae_kw": 0.49048363655821337,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.20552990392066528,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8127,
+   "updates": 4000,
+   "validation_events": 20,
+   "best_update": 4000,
+   "stop": "UPDATE_BUDGET",
+   "triggers": {
+    "budget_reached": true,
+    "patience_expired": false
+   },
+   "censoring": "CENSORED_BY_BUDGET",
+   "host": "gamma",
+   "cpu_seconds": 122.486381847,
+   "peak_rss_bytes": 1027080192,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "e0e2765cded881f25f19edc245d21fd2fb376f5658cd30256d3c52ef8a66ac10",
+   "environment": null
+  },
+  {
+   "arm": "daily_lag",
+   "cell_id": "daily_lag_s3",
+   "seed": 3,
+   "mae_z": 0.5295217967991123,
+   "mae_kw": 0.48319734445500334,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.21733201260653234,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 8208,
+   "updates": 4000,
+   "validation_events": 20,
+   "best_update": 3600,
+   "stop": "UPDATE_BUDGET",
+   "triggers": {
+    "budget_reached": true,
+    "patience_expired": false
+   },
+   "censoring": "CENSORED_BY_BUDGET",
+   "host": "gamma",
+   "cpu_seconds": 124.262180462,
+   "peak_rss_bytes": 1029976064,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "7fc47852dea4ddeb85d0770ef25d578ce14f4da86085982d0cd3c95ad954a9e8",
+   "environment": null
+  }
+ ],
+ "replays": {
+  "modular_w60_s1": {
+   "unit": "modular_w60_s1",
+   "allclose_1e_6": true,
+   "max_abs_prediction_difference": 0.0,
+   "mae_z_replayed": 0.5465167033076379,
+   "mae_z_stored": 0.5465167033076379,
+   "weights_file_sha256": "7fa2644a606f8f8a9b064e2e70a7d8322d392034cd88e146e7c478c32ebc38d1"
+  },
+  "daily_lag_s1": {
+   "unit": "daily_lag_s1",
+   "allclose_1e_6": true,
+   "max_abs_prediction_difference": 0.0,
+   "mae_z_replayed": 0.5380721688443476,
+   "mae_z_stored": 0.5380721688443476,
+   "weights_file_sha256": "0c00a8c9c13eaf24cf99b22350fcd25fa267f95e8e121d05ffd43333e9c207dc"
+  },
+  "modular_w60_s2": {
+   "unit": "modular_w60_s2",
+   "allclose_1e_6": true,
+   "max_abs_prediction_difference": 2.1756087287272408e-07,
+   "mae_z_replayed": 0.5408984939679921,
+   "mae_z_stored": 0.5408984934916419,
+   "weights_file_sha256": "9f4f524eba958594732f9a3152ad5a3e2953b0a51f2a09be022a7281fc8469a5"
+  },
+  "daily_lag_s2": {
+   "unit": "daily_lag_s2",
+   "allclose_1e_6": true,
+   "max_abs_prediction_difference": 2.1756087287272408e-07,
+   "mae_z_replayed": 0.5340877263401941,
+   "mae_z_stored": 0.5340877275818645,
+   "weights_file_sha256": "ebe61fe1e2312fd0d55d3c8fc739ba26fffee35e44817512c4d7fa1ecfa2169b"
+  },
+  "modular_w60_s3": {
+   "unit": "modular_w60_s3",
+   "allclose_1e_6": true,
+   "max_abs_prediction_difference": 1.1965848005779378e-06,
+   "mae_z_replayed": 0.537506630882118,
+   "mae_z_stored": 0.5375066305958432,
+   "weights_file_sha256": "44dbc60871876c2a1ffe347fb37f43dd09b4dfafc7b4cff0fdcd7c2e40766987"
+  },
+  "daily_lag_s3": {
+   "unit": "daily_lag_s3",
+   "allclose_1e_6": true,
+   "max_abs_prediction_difference": 1.4141456732286173e-06,
+   "mae_z_replayed": 0.5295217969792887,
+   "mae_z_stored": 0.5295217967991123,
+   "weights_file_sha256": "0b4a4ad7b78ce6b5b196dbc8e0c21d90a85c308e50d3eea8e5b60763cc4d9c28"
+  }
+ },
+ "problems": [],
+ "verified": true,
+ "spent_cpu_seconds": 883.306794664,
+ "closure_code_drift": "none: closed under the sealed code",
+ "scope": "DEVELOPMENT; paired seeds within host blocks; one previously inspected DEV validation week; no test rows read",
+ "summary": {
+  "daily_lag": {
+   "n_seeds": 3,
+   "mean_mae_z": 0.5338938977417748,
+   "sd_mae_z_ddof1": 0.0042784802247021565,
+   "mean_mae_kw": 0.4871869584387034,
+   "censored_fits": 2,
+   "hosts": [
+    "dragon",
+    "gamma",
+    "omega"
+   ]
+  },
+  "modular_w60": {
+   "n_seeds": 3,
+   "mean_mae_z": 0.5416406091317078,
+   "sd_mae_z_ddof1": 0.00455064877631524,
+   "mean_mae_kw": 0.4942559599311858,
+   "censored_fits": 3,
+   "hosts": [
+    "dragon",
+    "gamma",
+    "omega"
+   ]
+  }
+ },
+ "baselines": {
+  "persistence": {
+   "mae_kw": 0.6173720558882235,
+   "mae_z": 0.6765599274892891,
+   "rmse_kw": 0.966454889734754,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": 0.0,
+   "rows": 10020,
+   "definition": "y(t)"
+  },
+  "daily_seasonal": {
+   "mae_kw": 0.7316592814371257,
+   "mae_z": 0.8018039457321824,
+   "rmse_kw": 1.0890280496910867,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": -0.1851188832712476,
+   "rows": 10020,
+   "definition": "y(t+h-1440)"
+  },
+  "train_constant": {
+   "mae_kw": 0.7109454842838062,
+   "mae_z": 0.7791043030022968,
+   "rmse_kw": 0.8975281742321886,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": -0.1515673207154753,
+   "rows": 10020,
+   "definition": "mean of the train labels of the 28 d tier; computed on the common evaluation set at closure, no fit, no terminal"
+  }
+ }
+}

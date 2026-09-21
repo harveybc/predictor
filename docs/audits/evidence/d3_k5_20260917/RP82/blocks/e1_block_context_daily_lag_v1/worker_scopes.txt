@@ -1,0 +1,4 @@
+crispdm-rp87-exec-1790016019-208551.scope: Consumed 4min 8.669s CPU time over 3min 33.115s wall clock time, 726.5M memory peak.
+crispdm-rp87-prepare-1790015905-2272102.scope: Consumed 566ms CPU time over 14.431s wall clock time, 496.4M memory peak.
+crispdm-rp87-exec-1790015920-2272210.scope: Consumed 3min 39.028s CPU time over 1min 50.531s wall clock time, 1.6G memory peak.
+crispdm-rp87-prepare-1790015917-207555.scope: Consumed 533ms CPU time over 1.505s wall clock time, 435.6M memory peak.

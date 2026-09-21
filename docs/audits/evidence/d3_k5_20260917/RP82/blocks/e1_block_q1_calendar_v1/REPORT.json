@@ -1,0 +1,308 @@
+{
+ "schema": "df_e1_block_report.v2",
+ "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+ "block": "Q1_CALENDAR",
+ "paired": {
+  "difference": "randomised_calendar_control - calendar in MAE_z, paired by seed within host blocks",
+  "values": [
+   0.08931704593430567,
+   0.06460755069137608,
+   0.04423264735245497
+  ],
+  "mean": 0.0660524146593789,
+  "sd_ddof1": 0.022576901310550127,
+  "signs": {
+   "positive": 3,
+   "negative": 0
+  },
+  "reading": "three seed/host blocks; both signs are reported; no interval is claimed from n=3"
+ },
+ "verification": {
+  "design_identity": {
+   "recomputes": true,
+   "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f"
+  },
+  "preparation_custody": {
+   "class": "PREPARATION_ACCEPTED_ARTIFACT",
+   "why": "the accepted prepare terminal carries the digest of the prepared data read",
+   "source": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q1_calendar_v1/BLOCK_DATA.npz",
+   "sha256": "9096491a020b4e06e17866bf95112ccbd337eb84f79d042773df1f68b11b812d",
+   "local_record_sha256": "9096491a020b4e06e17866bf95112ccbd337eb84f79d042773df1f68b11b812d",
+   "design_of_record": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+   "accepted_config_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f"
+  },
+  "denominator": {
+   "sd_used": 0.9125164391265214,
+   "contract_sd_train": 0.9125164391265214,
+   "equal_to_contract": true
+  },
+  "verified_units": [
+   "calendar_s1",
+   "calendar_s2",
+   "calendar_s3",
+   "randomised_calendar_control_s1",
+   "randomised_calendar_control_s2",
+   "randomised_calendar_control_s3"
+  ],
+  "unverified_units": []
+ },
+ "common_evaluation_rows": 10020,
+ "sigma_evaluation": 0.9125164391265214,
+ "rows": [
+  {
+   "arm": "calendar",
+   "cell_id": "calendar_s1",
+   "seed": 1,
+   "mae_z": 0.48248040048780405,
+   "mae_kw": 0.4402712970014689,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.28686228538795266,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 9915,
+   "updates": 2400,
+   "validation_events": 12,
+   "best_update": 1800,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 137.654320203,
+   "peak_rss_bytes": 1089531904,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "387b97e18fdbfbbba4437552131191c10f8e26f26d8eb55708b2182ad7bf1426",
+   "environment": null
+  },
+  {
+   "arm": "randomised_calendar_control",
+   "cell_id": "randomised_calendar_control_s1",
+   "seed": 1,
+   "mae_z": 0.5717974464221097,
+   "mae_kw": 0.5217745697107414,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.15484582637927202,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 9915,
+   "updates": 800,
+   "validation_events": 4,
+   "best_update": 200,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 65.435465185,
+   "peak_rss_bytes": 1087602688,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "387b97e18fdbfbbba4437552131191c10f8e26f26d8eb55708b2182ad7bf1426",
+   "environment": null
+  },
+  {
+   "arm": "calendar",
+   "cell_id": "calendar_s2",
+   "seed": 2,
+   "mae_z": 0.47979038297349713,
+   "mae_kw": 0.4378166117981256,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.2908383079175304,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 9915,
+   "updates": 3600,
+   "validation_events": 18,
+   "best_update": 3000,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 193.867610733,
+   "peak_rss_bytes": 1091735552,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "eb66d34e280e2204db7b84aa39782ee99e4bb46d65e67e7aa62fa6014e26cee9",
+   "environment": null
+  },
+  {
+   "arm": "randomised_calendar_control",
+   "cell_id": "randomised_calendar_control_s2",
+   "seed": 2,
+   "mae_z": 0.5443979336648732,
+   "mae_kw": 0.4967720638957063,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.19534410545843062,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 9915,
+   "updates": 2400,
+   "validation_events": 12,
+   "best_update": 1800,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 135.476693273,
+   "peak_rss_bytes": 1080066048,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "eb66d34e280e2204db7b84aa39782ee99e4bb46d65e67e7aa62fa6014e26cee9",
+   "environment": null
+  },
+  {
+   "arm": "calendar",
+   "cell_id": "calendar_s3",
+   "seed": 3,
+   "mae_z": 0.49818639715938257,
+   "mae_kw": 0.4546032771571507,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.2636477909530496,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 9915,
+   "updates": 2600,
+   "validation_events": 13,
+   "best_update": 2000,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 142.33253815900002,
+   "peak_rss_bytes": 1077993472,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "a513068cb7d7e6657c96dd9600b5979b53acd7df8eea6b2a59cbdcecb27c2f27",
+   "environment": null
+  },
+  {
+   "arm": "randomised_calendar_control",
+   "cell_id": "randomised_calendar_control_s3",
+   "seed": 3,
+   "mae_z": 0.5424190445118375,
+   "mae_kw": 0.49496629501235206,
+   "naive_mae_z": 0.6765599274892891,
+   "skill_vs_naive": 0.19826903357289838,
+   "verified": true,
+   "custody": {
+    "class": "ACCEPTED_ARTIFACT_CHAIN",
+    "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"
+   },
+   "parameters": 9915,
+   "updates": 3400,
+   "validation_events": 17,
+   "best_update": 2800,
+   "stop": "EARLY_STOPPING",
+   "triggers": null,
+   "censoring": "STOPPED_ON_VALIDATION",
+   "host": "omega",
+   "cpu_seconds": 188.58217546499998,
+   "peak_rss_bytes": 1090662400,
+   "reload_max_error": 0.0,
+   "initial_weights_sha256": "a513068cb7d7e6657c96dd9600b5979b53acd7df8eea6b2a59cbdcecb27c2f27",
+   "environment": null
+  }
+ ],
+ "replays": {
+  "calendar_s1": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "a42a8f105de24324e7f61bbe5383f768289b56187f552fcb4ea6522f41a996a3"
+  },
+  "randomised_calendar_control_s1": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "2f363186e2ac9942abfd8f30bbdae5f2e2e93f67109f9b2a64ecf34e8df41118"
+  },
+  "calendar_s2": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "9a149a081ccd1fc1099f5aad6e6cad3f007fe4831e999032cf2207a7709532da"
+  },
+  "randomised_calendar_control_s2": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "51f47cbb260a0c6bc0a49fe6ddc29137789665b8589be2c62201e568ec2bfd66"
+  },
+  "calendar_s3": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "0ad638c12d27d50ffe4ad3186a58473a5385c04895d804d85edef8c1ed716c1e"
+  },
+  "randomised_calendar_control_s3": {
+   "skipped": true,
+   "scope": "in-process reload parity only; no fresh-process replay for this closure",
+   "weights_file_sha256": "00a0d826d34f20373e760a087be874ed7fb3dd1c14c307d405d267df64580e7b"
+  }
+ },
+ "problems": [],
+ "verified": true,
+ "spent_cpu_seconds": 940.363754531,
+ "closure_code_drift": {
+  "df_e1_block.py": {
+   "sealed": "798711c4d99b0939335b7624089784f6caa4a74382e261fcf0e6fa34c7a92600",
+   "now": "dbd27e0c22a6deb32ea96f00117cbd382e512187c2f8838629462780cbc7502d"
+  }
+ },
+ "scope": "DEVELOPMENT; paired seeds within host blocks; one previously inspected DEV validation week; no test rows read",
+ "summary": {
+  "calendar": {
+   "n_seeds": 3,
+   "mean_mae_z": 0.4868190602068945,
+   "sd_mae_z_ddof1": 0.009935859831960624,
+   "mean_mae_kw": 0.44423039531891506,
+   "censored_fits": 0,
+   "hosts": [
+    "omega"
+   ]
+  },
+  "randomised_calendar_control": {
+   "n_seeds": 3,
+   "mean_mae_z": 0.5528714748662735,
+   "sd_mae_z_ddof1": 0.016420210110386597,
+   "mean_mae_kw": 0.5045043095395999,
+   "censored_fits": 0,
+   "hosts": [
+    "omega"
+   ]
+  }
+ },
+ "baselines": {
+  "persistence": {
+   "mae_kw": 0.6173720558882235,
+   "mae_z": 0.6765599274892891,
+   "rmse_kw": 0.966454889734754,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": 0.0,
+   "rows": 10020,
+   "definition": "y(t)"
+  },
+  "daily_seasonal": {
+   "mae_kw": 0.7316592814371257,
+   "mae_z": 0.8018039457321824,
+   "rmse_kw": 1.0890280496910867,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": -0.1851188832712476,
+   "rows": 10020,
+   "definition": "y(t+h-1440)"
+  },
+  "train_constant": {
+   "mae_kw": 0.7110191249038849,
+   "mae_z": 0.779185003597838,
+   "rmse_kw": 0.897470715168224,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": -0.1516866014949927,
+   "rows": 10020,
+   "definition": "mean of the train labels of the 28 d tier; computed on the common evaluation set at closure, no fit, no terminal"
+  }
+ }
+}

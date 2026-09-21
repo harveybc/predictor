@@ -1,0 +1,234 @@
+{
+ "schema": "df_e1_governed_acquisition.v1",
+ "at": "2026-09-21T18:37:03Z",
+ "host": "omega",
+ "run_id": "satoshi-e1-block-ctxlag-omega-20260921",
+ "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+ "lake": "public_panels",
+ "resource": "uci_235_individual_household_power/panel.parquet",
+ "role": "panel",
+ "units": {
+  "prepare": {
+   "campaign_key": "satoshi-e1-block-ctxlag-omega-20260921-prepare-data",
+   "campaign_sha256": "0e954eb886001a36557e33059f90a2141f9b32519c6f57766be37e4d39148247",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "447ac80e2fdd49bdb951fa416ecfde66b2ee8503"
+   },
+   "at": "2026-09-21T18:37:03Z",
+   "host": "omega",
+   "delivery_id": "6a20e461627c411486495b4b8cdba82d",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": false,
+   "verification_state": "VERIFIED_TRANSFER",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "range": {
+    "from": null,
+    "to": null
+   }
+  },
+  "pilot_daily_lag": {
+   "campaign_key": "satoshi-e1-block-ctxlag-omega-20260921-pilot_daily_lag-data",
+   "campaign_sha256": "9ea06678a256986dee5f4b3de0c1956e1e3ca17064c8f7c4be55fb4c6e765338",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "447ac80e2fdd49bdb951fa416ecfde66b2ee8503"
+   },
+   "at": "2026-09-21T18:37:22Z",
+   "host": "omega",
+   "delivery_id": "31abb35f28ad4c34b53036c151b7eecd",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "range": {
+    "from": null,
+    "to": null
+   }
+  },
+  "pilot_modular_w60": {
+   "campaign_key": "satoshi-e1-block-ctxlag-omega-20260921-pilot_modular_w60-data",
+   "campaign_sha256": "5e082a4e43bbda3cb32190fd3ceb41b71bf07ebf52b91febbaddbb0fd19ca91d",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "447ac80e2fdd49bdb951fa416ecfde66b2ee8503"
+   },
+   "at": "2026-09-21T18:37:22Z",
+   "host": "omega",
+   "delivery_id": "909bff34a1d248f7ac6ffde0bb469552",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "range": {
+    "from": null,
+    "to": null
+   }
+  },
+  "modular_w60_s1": {
+   "campaign_key": "satoshi-e1-block-ctxlag-omega-20260921-modular_w60_s1-data",
+   "campaign_sha256": "0b5beef3156484660a19e5eeac295df03a7158ca3e8a859087e0e2eb2eeec800",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "447ac80e2fdd49bdb951fa416ecfde66b2ee8503"
+   },
+   "at": "2026-09-21T18:38:03Z",
+   "host": "omega",
+   "delivery_id": "0219fd46e4aa48818a646cc10f4df1a5",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "range": {
+    "from": null,
+    "to": null
+   }
+  },
+  "daily_lag_s1": {
+   "campaign_key": "satoshi-e1-block-ctxlag-omega-20260921-daily_lag_s1-data",
+   "campaign_sha256": "fcc2fd993f1066e07174468c082c5f4f8380a75396ac276f500c2c9a1973eab7",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "447ac80e2fdd49bdb951fa416ecfde66b2ee8503"
+   },
+   "at": "2026-09-21T18:38:03Z",
+   "host": "omega",
+   "delivery_id": "0708597cca734ca6b72e9088a8e5f5d9",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "range": {
+    "from": null,
+    "to": null
+   }
+  },
+  "daily_lag_s2": {
+   "campaign_key": "satoshi-e1-block-ctxlag-dragon-20260921-daily_lag_s2-data",
+   "campaign_sha256": "bfd79eb84c9a17fc7e0dd150a6608895adf970d3dc24dfc0e36e3d5fe6992662",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "447ac80e2fdd49bdb951fa416ecfde66b2ee8503"
+   },
+   "at": "2026-09-21T18:38:55Z",
+   "host": "dragon",
+   "delivery_id": "6387811462284a34b5db198f1c928077",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "range": {
+    "from": null,
+    "to": null
+   }
+  },
+  "modular_w60_s2": {
+   "campaign_key": "satoshi-e1-block-ctxlag-dragon-20260921-modular_w60_s2-data",
+   "campaign_sha256": "28731932e9da6d8b84c7d65d26de380e098bee1c12a3e7f75b1805f834d29788",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "447ac80e2fdd49bdb951fa416ecfde66b2ee8503"
+   },
+   "at": "2026-09-21T18:38:55Z",
+   "host": "dragon",
+   "delivery_id": "a949317d595942f3bf44b7faea27ce8d",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "range": {
+    "from": null,
+    "to": null
+   }
+  },
+  "daily_lag_s3": {
+   "campaign_key": "satoshi-e1-block-ctxlag-gamma-20260921-daily_lag_s3-data",
+   "campaign_sha256": "04d6c06932cd5fd4eb960de12bd6d06130d06b1160d5793397bb3d22bdb2204b",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "447ac80e2fdd49bdb951fa416ecfde66b2ee8503"
+   },
+   "at": "2026-09-21T18:42:06Z",
+   "host": "gamma",
+   "delivery_id": "4f6b40d64bbf46f28034e4e4a53f5393",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "range": {
+    "from": null,
+    "to": null
+   }
+  },
+  "modular_w60_s3": {
+   "campaign_key": "satoshi-e1-block-ctxlag-gamma-20260921-modular_w60_s3-data",
+   "campaign_sha256": "acd837561900642701c147c865b94312c3e7651c72ae41c2d774e05a2a07a5a7",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "447ac80e2fdd49bdb951fa416ecfde66b2ee8503"
+   },
+   "at": "2026-09-21T18:40:20Z",
+   "host": "gamma",
+   "delivery_id": "e1791c03398047b29a42084840c865a3",
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "bytes": 10890295,
+   "cached": true,
+   "verification_state": "VERIFIED_CACHE",
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_context_daily_lag_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+   "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "range": {
+    "from": null,
+    "to": null
+   }
+  }
+ },
+ "order": "each unit's campaign is registered BEFORE it reads anything; its delivery is verified before it runs",
+ "transfer": {
+  "transferred_units": 1,
+  "cache_reused_units": 4,
+  "bytes_first_transfer": 10890295
+ }
+}

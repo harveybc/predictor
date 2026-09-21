@@ -1,0 +1,124 @@
+{
+ "arm_spec": {
+  "arm": "daily_lag",
+  "crop": null,
+  "dilations": null,
+  "family": "modular",
+  "features": "daily_lag",
+  "role": "ARM",
+  "train_days": 28,
+  "window": 60
+ },
+ "arrays_sha256": "f1f67a9e8b5f550505a790a682cae9a8b2dd097d8d28610e0df089ef806d064d",
+ "assignment": [
+  0,
+  1,
+  0,
+  2,
+  2,
+  2,
+  0,
+  0
+ ],
+ "cell": {
+  "arm": "daily_lag",
+  "cell_id": "pilot_daily_lag",
+  "max_updates": 200,
+  "patience_events": 3,
+  "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+  "role": "COST_PILOT",
+  "seed": 1,
+  "validate_every_updates": 50
+ },
+ "channels": 8,
+ "cost": {
+  "accounting": "seconds_per_update = TRAIN-UPDATE CPU only (validation, restore, setup and replay apart; RP77/A6)",
+  "cpu_seconds": 29.875759174000002,
+  "final_predict_and_replay_cpu_seconds": 7.216932155000002,
+  "host": "omega",
+  "peak_rss_bytes": 933269504,
+  "restore_cpu_seconds": 1.3116886949999973,
+  "seconds_per_update": 0.05908469860499999,
+  "seconds_per_validation_event": 1.5418051580000003,
+  "setup_cpu_seconds": 3.344974015,
+  "train_update_cpu_seconds": 11.816939720999999,
+  "validation_cpu_seconds": 6.167220632000001,
+  "wall_seconds": 25.743602378992364
+ },
+ "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+ "final_weights_sha256": "2a754b1abf7a9ccc7e18511e5a614c88a3a5ca60f770c9baf6f884fe28d1f7e7",
+ "initial_weights_sha256": "0f6b46da2c89defb349bd69a104f95b8ac259c8fb6aa64d732929138c133afa3",
+ "parameters": 8208,
+ "pilot": true,
+ "population": {
+  "evaluation_is_common_dev_set": false,
+  "evaluation_origins": 9839,
+  "train_origins": 30061
+ },
+ "reload_max_error": 0.0,
+ "schema": "df_e1_block_cell.v1",
+ "scores": {
+  "mae_kw": 0.5320040556212575,
+  "mae_z": 0.5830076399834531,
+  "naive_mae_kw": 0.6735672324423214,
+  "rmse_kw": 0.8773744155762336,
+  "rows": 9839,
+  "skill_vs_naive": 0.21016933425897644
+ },
+ "target_mean": 0.926139629748496,
+ "target_sd": 0.9125164391265214,
+ "training": {
+  "best_event": 4,
+  "best_update": 200,
+  "best_val_mae_scaled": 0.5830076395567629,
+  "censoring": {
+   "rule": "reaching the update ceiling is censoring wherever the best checkpoint fell and whether or not patience expired on the same update; early stopping never claims convergence",
+   "verdict": "CENSORED_BY_BUDGET"
+  },
+  "cpu": {
+   "loop_total_seconds": 19.295849047999997,
+   "restore_seconds": 1.3116886949999973,
+   "train_update_seconds": 11.816939720999999,
+   "validation_seconds": 6.167220632000001
+  },
+  "events": [
+   {
+    "train_loss_mean_since_last": 0.7742025339603424,
+    "update": 50,
+    "val_mae_scaled": 0.682750062794261
+   },
+   {
+    "train_loss_mean_since_last": 0.5570189791917801,
+    "update": 100,
+    "val_mae_scaled": 0.6230464048736131
+   },
+   {
+    "train_loss_mean_since_last": 0.5723717033863067,
+    "update": 150,
+    "val_mae_scaled": 0.6076168837603401
+   },
+   {
+    "train_loss_mean_since_last": 0.5178894263505935,
+    "update": 200,
+    "val_mae_scaled": 0.5830076395567629
+   }
+  ],
+  "fit_cpu_seconds": 19.295849047999997,
+  "min_delta": 0.0,
+  "optimizer_iterations": 200,
+  "patience_events": 3,
+  "restore_verified": true,
+  "restored_val_mae_scaled": 0.5830076395567629,
+  "stop_reason": "UPDATE_BUDGET",
+  "triggers": {
+   "budget_reached": true,
+   "patience_expired": false
+  },
+  "updates": 200,
+  "updates_are_optimizer_iterations": true,
+  "validate_every_updates": 50,
+  "validation_cpu_seconds": 6.167220632000001,
+  "validation_events": 4
+ },
+ "weights_file_sha256": "c3ef0c868c9cbd02d24b2ebd27acf14443e151cfc3eb5720fee23fc96dbd8983"
+}

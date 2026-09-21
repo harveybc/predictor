@@ -1,0 +1,50 @@
+{
+ "schema": "cpu_ledger_multihost.v1",
+ "since": "2026-09-21 12:50",
+ "hosts": {
+  "omega": {
+   "cpu_seconds_total": 1668.507,
+   "units": 36,
+   "source": "systemd user journal, scopes matching rp82..rp89"
+  },
+  "dragon": {
+   "units": [
+    {
+     "unit": "rp87-prepare-1790015905-2272102",
+     "cpu_seconds": 0.566,
+     "wall_seconds": 14.431,
+     "memory_peak": "496.4M"
+    },
+    {
+     "unit": "rp87-exec-1790015920-2272210",
+     "cpu_seconds": 219.028,
+     "wall_seconds": 110.531,
+     "memory_peak": "1.6G"
+    }
+   ],
+   "cpu_seconds_total": 219.594
+  },
+  "gamma": {
+   "units": [
+    {
+     "unit": "rp87-exec-1790016019-208551",
+     "cpu_seconds": 248.669,
+     "wall_seconds": 213.115,
+     "memory_peak": "726.5M"
+    },
+    {
+     "unit": "rp87-prepare-1790015917-207555",
+     "cpu_seconds": 0.533,
+     "wall_seconds": 1.505,
+     "memory_peak": "435.6M"
+    }
+   ],
+   "cpu_seconds_total": 249.202
+  }
+ },
+ "aggregate_cpu_seconds": 2137.303,
+ "ceiling_seconds": 14400,
+ "remaining_seconds": 12262.697,
+ "within_ceiling": true,
+ "note": "closing suite added later"
+}

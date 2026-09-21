@@ -1,0 +1,45 @@
+{
+ "artifacts": [
+  {
+   "bytes": 5442246,
+   "role": "data",
+   "sha256": "c162ba9ba2672eb11c88d262c9b1f627e8e58aa8d7603a3ca2c78844ccb2711f"
+  },
+  {
+   "bytes": 3741,
+   "role": "record",
+   "sha256": "a702996f31d30c2805a1c5e0e1d42a40da43d542f569930c3207e267b37e5f8b"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 1.00268642,
+  "wall_seconds": 1.002682222
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T18:37:04Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.common_evaluation_rows",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "rows",
+   "value": 10020.0
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T18:37:03Z",
+ "status": "COMPLETED",
+ "tags": {
+  "classification": "NON_GOVERNING",
+  "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_CONTEXT_DAILY_LAG",
+  "role": "PREPARATION",
+  "unit": "prepare"
+ }
+}

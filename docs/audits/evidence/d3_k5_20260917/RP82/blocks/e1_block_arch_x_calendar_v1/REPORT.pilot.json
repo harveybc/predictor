@@ -1,0 +1,78 @@
+{
+ "schema": "df_e1_block_pilot_report.v1",
+ "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+ "spent_cpu_seconds": 132.726760052,
+ "projection": {
+  "per_arm": {
+   "modular_w60": {
+    "seconds_per_update": 0.05837742061500001,
+    "seconds_per_validation_event_pilot": 1.6146493754999995,
+    "restore_seconds_pilot": 1.270349238999998,
+    "setup_seconds_pilot": 3.387890807,
+    "pilot_validation_rows": 9899,
+    "peak_rss_bytes": 943001600,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "gru_adapted_w60": {
+    "seconds_per_update": 0.019820443405,
+    "seconds_per_validation_event_pilot": 0.74383120525,
+    "restore_seconds_pilot": 0.6927922899999999,
+    "setup_seconds_pilot": 3.2088927810000003,
+    "pilot_validation_rows": 9899,
+    "peak_rss_bytes": 762437632,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "calendar": {
+    "seconds_per_update": 0.07372991160999998,
+    "seconds_per_validation_event_pilot": 2.05155491075,
+    "restore_seconds_pilot": 1.660486586000001,
+    "setup_seconds_pilot": 6.638172325,
+    "pilot_validation_rows": 9899,
+    "peak_rss_bytes": 996823040,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "gru_calendar_w60": {
+    "seconds_per_update": 0.020266315155000002,
+    "seconds_per_validation_event_pilot": 0.7586098147499998,
+    "restore_seconds_pilot": 0.6888851270000007,
+    "setup_seconds_pilot": 3.1272595229999998,
+    "pilot_validation_rows": 9899,
+    "peak_rss_bytes": 764690432,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "randomised_calendar_control": {
+    "seconds_per_update": 0.07332499298000002,
+    "seconds_per_validation_event_pilot": 2.0067598194999996,
+    "restore_seconds_pilot": 1.6166670060000001,
+    "setup_seconds_pilot": 3.365052259,
+    "pilot_validation_rows": 9899,
+    "peak_rss_bytes": 996827136,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   }
+  },
+  "per_cell_at_ceiling_seconds": {
+   "modular_w60_s1": 270.8711700166697,
+   "gru_adapted_w60_s1": 98.25039488649348,
+   "calendar_s1": 344.7712423134411,
+   "gru_calendar_w60_s1": 100.24747881038459,
+   "randomised_calendar_control_s1": 338.9272396783353,
+   "modular_w60_s2": 270.8711700166697,
+   "gru_adapted_w60_s2": 98.25039488649348,
+   "calendar_s2": 344.7712423134411,
+   "gru_calendar_w60_s2": 100.24747881038459,
+   "randomised_calendar_control_s2": 338.9272396783353,
+   "modular_w60_s3": 270.8711700166697,
+   "gru_adapted_w60_s3": 98.25039488649348,
+   "calendar_s3": 344.7712423134411,
+   "gru_calendar_w60_s3": 100.24747881038459,
+   "randomised_calendar_control_s3": 338.9272396783353
+  },
+  "total_at_ceiling_seconds": 3459.2025771159724,
+  "with_headroom_25_percent": 4324.003221394965,
+  "closure_reserve_seconds": 2000,
+  "accounting": "train-update rate x ceiling + validation events (scaled to the evaluation rows) + restore + setup, each once",
+  "assumption": "every cell runs to the ceiling with every validation event; early stopping can only lower it"
+ },
+ "fits_the_ceiling": true,
+ "decision": "EXECUTE"
+}
