@@ -472,7 +472,8 @@ def _fit_batched(model, train_ds, val_ds, *, max_updates, patience, lr, seed) ->
                           "updates_used_of_ceiling": [int(counter.updates), int(max_updates)],
                           "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a "
                                                 "non-improving slope over the last third; a run that stopped at the update "
-                                                "ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+                                                "ceiling is CENSORED: its budget ran out before its validation curve settled, so what it "
+                                                "would reach with more budget is UNKNOWN — not bounded, in either direction",
                           "verdict": ("CENSORED_BY_BUDGET" if counter.budget_stop else
                                       "STOPPED_ON_VALIDATION" if es.stopped_epoch else "EPOCH_BUDGET_REACHED")},
             "fit_seconds": round(fit_s, 3)}

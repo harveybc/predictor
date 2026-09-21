@@ -62,10 +62,20 @@ three seeds.
 
 ## 4. Target, baseline and denominator
 
-MAE is the mean absolute error on the 10 020 validation windows. MASE divides it by the
-**train-only** naive denominator **0.6162615768463073** (mean absolute one-step change over the DEV
-train rows). The scaler is fitted on train rows only. Controls are fitted on the same DEV train and
-evaluated on the same windows.
+MAE is the mean absolute error on the 10 020 validation windows. The ratio this programme published
+as "MASE" divides it by the **train-only** denominator **0.6162615768463073**, which is the mean
+absolute change over the HORIZON, `mean |Y[t+60] − Y[t]|`, on the DEV train origins.
+
+(Corrected in RP57/RP60. An earlier wording of this sheet called that denominator the mean absolute
+**one-step** change. It is not: the one-step value on the same train slice is **0.0851237797**
+over 40 257 finite pairs, with 2 non-finite pairs excluded and no gap closed. The quantity is
+therefore a **persistence-scaled error at the horizon**, not a conventional MASE, whose seasonal
+period m is declared on its own grounds. `tools/forecast_comparison.py` reports it under its correct
+name together with conventional MASE at m = 1 and m = 1440.)
+
+The scaler is fitted on train windows only — that grain is part of its identity, and RP59 measured
+the difference against the row grain at 0.0017 in scaled units. Controls are fitted on the same DEV
+train and evaluated on the same windows.
 
 ## 5. Optimisation and early stopping
 
@@ -75,7 +85,10 @@ with patience 3 epochs and restores the best checkpoint. The AE budget is 1 500 
 
 **Censoring criterion, declared before the run**: a fit is adequate for comparison when it stopped
 by EARLY_STOPPING with a non-improving slope over the last third; a fit that stopped at the update
-ceiling is **CENSORED** and its comparison is a lower bound on what that arm could reach.
+ceiling is **CENSORED**: its budget ran out before its validation curve settled, so what it would
+reach with more budget is **unknown**. (Corrected in RP60: an earlier wording called it a lower bound
+on the reachable error. There is no such guarantee — more budget can lower the error, leave it where
+it is, or raise it through overfitting. The censoring says what was explored, not what is reachable.)
 
 ## 6. What the run observed
 
@@ -92,8 +105,8 @@ ceiling is **CENSORED** and its comparison is a lower bound on what that arm cou
 | R2_s3 | 0.8868 | 0.5465 | 2 508 / 4 000 | 4 | 1 | EARLY_STOPPING | STOPPED_ON_VALIDATION |
 
 **Convergence is NOT declared.** Four of the nine fits reached the update ceiling, and in each of
-them the best checkpoint is at or near the last epoch, so their MASE is a lower bound on what the
-arm could reach with more budget. Two seeds are therefore mixed-censoring across regimes, and the
+them the best checkpoint is at or near the last epoch, so their budget ran out while the validation
+curve was still moving. What they would reach with more budget is unknown, in either direction. Two seeds are therefore mixed-censoring across regimes, and the
 means below are read with that limitation stated, not hidden.
 
 ### Means and paired differences (validation MASE)
@@ -141,7 +154,9 @@ Three seeds on one task in one 35-day slice of one household are **development e
 not confirm H1, do not establish equivalence, and are not a confirmatory reserve. The reading they
 support is narrow and negative: on this task, with this budget, modular pretraining did not help —
 R1 and R2 sit above R0 on average — and a competent linear control (0.8852) is better than all three
-regime means. Four censored fits make even that reading a lower bound for those arms.
+regime means. Four censored fits make that reading weaker still for those arms: their budget ran out
+while the validation curve was still moving, so their error is what was explored, not what is
+reachable.
 
 Every unit of this run closed GOVERNED: campaign and verified delivery before the work, accepted
 terminal after it, campaign reconciled (`E1_SUCCESSOR_CLOSE.json`, 15/15 `VERIFIED_AND_GOVERNED`).
