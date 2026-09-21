@@ -1,0 +1,62 @@
+{
+ "schema": "rp78_worker_probe_receipt.v1",
+ "host": "gamma",
+ "run_id": "rp78-worker-probe-gamma-1790001584",
+ "unit": "gamma-bounded-child",
+ "root": "/home/<user>/.local/state/crispdm-data-foundation/rp78_probe_gamma/rp78-worker-probe-gamma-1790001584",
+ "code_identity": {
+  "kind": "git_commit",
+  "value": "26a1e070274213aee6fb617204f01723c2c18762"
+ },
+ "campaign_sha256": "baea6a6576875181cb0c3f59d8f475f7e889403fd4cfdc4da50932079177e8ab",
+ "delivery": {
+  "delivery_id": "b41291f9d1bd417ba76b41e482fdeea0",
+  "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+  "bytes": 228801,
+  "cached": false,
+  "verification_state": "VERIFIED_TRANSFER",
+  "availability_use": "OFFLINE_DAY_GRANULAR"
+ },
+ "fit": {
+  "parameters": 4091,
+  "val_mae_before": 3.1086410659147643,
+  "val_mae_after": 0.07075306057397808,
+  "updates": 200,
+  "optimizer_iterations": 200,
+  "stop_reason": "UPDATE_BUDGET",
+  "cpu": {
+   "train_update_seconds": 1.8003739650000008,
+   "validation_seconds": 0.27994984099999964,
+   "restore_seconds": 0.014014775999999785,
+   "loop_total_seconds": 2.0943385820000002
+  },
+  "learned": true
+ },
+ "cost": {
+  "wall_seconds": 7.388501295004971,
+  "cpu_seconds": 4.27729,
+  "cpu_seconds_self": 4.262676,
+  "cpu_seconds_children": 0.014613999999999999,
+  "peak_rss_bytes": 822116352
+ },
+ "terminal_sha256": "65c392e4ecf32284ae43307e942f81c69316d38048415ff46a3c36fc76edb3c7",
+ "flushed": {
+  "sent": 1,
+  "pending": 0,
+  "failures": {}
+ },
+ "reconciliation": {
+  "http": 200,
+  "missing_units": [],
+  "accounting_only": [],
+  "lake_only": []
+ },
+ "environment": {
+  "python": "3.12.13",
+  "numpy": "2.5.1",
+  "tensorflow": "2.21.0",
+  "machine": "x86_64",
+  "kernel": "7.0.0-31-generic"
+ },
+ "wrapper_scope_hint": "run under crispdm-run: the journal's scope line (Consumed CPU / memory peak) is the wrapper's accounting"
+}

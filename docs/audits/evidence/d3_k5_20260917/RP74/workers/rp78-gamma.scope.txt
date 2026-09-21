@@ -1,0 +1,1 @@
+crispdm-rp78-probe-1790001584-99731.scope: Consumed 4.758s CPU time over 8.311s wall clock time, 476.1M memory peak.
