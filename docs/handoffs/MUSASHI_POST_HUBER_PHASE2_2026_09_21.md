@@ -77,6 +77,27 @@ a licence to run an unreviewed factorial or to change the doctoral hypotheses.
     contrasts, freeze the chosen recipe and use it equally in method/controls.
     Do not repeat the completed household factorial; do not infer profits from
     a tiny error improvement alone. No heuristic-strategy rerun is required here.
+12. Mandatory household literature benchmark preparation, not just a generic
+    metric policy: select a reproducible primary-source reference for UCI 235
+    Individual Household Electric Power Consumption. Produce a protocol matrix
+    with exact target, sampling/aggregation, input window, forecast horizon,
+    dates/split populations, missing-data treatment, target transformation and
+    scaler-fit population, published metric formula/scale/aggregation, model,
+    tuning budget and checkpoint selection. Cite the paper section/table and
+    code revision. Do not substitute Electricity/ETTh or a one-minute forecast
+    for our 60-minute-ahead task while claiming an equivalent benchmark.
+    Design a reference-model reproduction and our model under that SAME
+    contract, with identical evaluation rows and naive baseline. Retain the
+    paper's metric as the primary reproduction column; shared MAE_z and naive
+    skill are additional columns, not replacements. Re-express preserved scores
+    only if target, evaluation population and transform parameters support an
+    exact conversion; otherwise mark NOT_COMPARABLE and specify the required
+    matched run. No ranking from unmatched published numbers. Deliver the
+    comparison matrix, executable reproduction config, acceptance tests and
+    costed run plan in this packet. This preparation does not authorize fresh
+    scientific training; any matched run must be frozen/reviewed first. A
+    demonstrated causal flaw in the published recipe requires a separately
+    identified corrected comparison, never silent replication of leaked inputs.
 
 Report all points together, without requesting renewed permission for reading,
 designing or testing. Stop only for a concrete unresolved data/causality or

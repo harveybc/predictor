@@ -9,6 +9,12 @@ RP57-RP64 y el factorial electrico Huber/AdamW estan ejecutados y preservados.
 **Adicion aprobada:** [comparacion financiera obligatoria de losses y optimizers](program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md).
 No hay loss ganadora para trading; no descartar mejoras normalizadas de 1e-5/1e-6
 por pequenas. No buscar el OLAP antiguo ni repetir heuristic-strategy como requisito.
+**Comparacion electrica obligatoria:** el punto 12 de la orden vigente prepara
+una referencia reproducible UCI 235 y nuestro modelo bajo identicos target,
+horizonte, particiones, transformacion y metrica publicada, con ingenuo sobre
+las mismas filas. Entregables: matriz de protocolo, configuracion reproducible,
+tests y presupuesto. MAE_z complementa, no sustituye esa metrica. La preparacion
+no equivale a haber ejecutado la reproduccion ni autoriza entrenamiento nuevo.
 
 Antecedente de [RP57-RP64](../handoffs/MUSASHI_PROGRAM_RP57_RP64_2026_09_20.md):
 [Revision ML y comparadores](../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md):
