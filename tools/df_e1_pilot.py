@@ -1159,6 +1159,19 @@ def run(design: dict, *, root: Path, run_id: str, cap_seconds: float, already_sp
     return report
 
 
+SCALED_ERROR_ERRATUM = {
+    "field": "mase",
+    "published_as": "MASE",
+    "correct_name": "persistence_scaled_error_horizon_train",
+    "what_it_is": "validation MAE / mean(|Y[t+h] - Y[t]|) over the train origins, h = the horizon",
+    "what_it_is_not": "a conventional MASE, which scales by a naive of a DECLARED seasonal period m",
+    "version": "successor v2 emits both names; the historical field is unchanged so published numbers "
+               "stay readable, and this erratum travels with it",
+    "conventional_values": "tools/forecast_comparison.py reports MASE with m = 1 and with m = 1440 "
+                           "(one day at one-minute sampling), each with its support and gap treatment",
+}
+
+
 # --- close --------------------------------------------------------------------------------------------------
 
 def _governing_report(root: Path, design: dict):
@@ -1220,7 +1233,9 @@ def close(root: Path) -> dict:
             k = f"{r}_s{s}"
             if k in cells and cells[k]["verified"]:
                 rec = cells[k]["rec"]
-                table[k] = {"regime": r, "seed": s, "mase": rec["scores"]["validation"]["model"]["mase_mean"], "mae": rec["scores"]["validation"]["model"]["mae_mean"],
+                table[k] = {"regime": r, "seed": s, "mase": rec["scores"]["validation"]["model"]["mase_mean"],
+                        "persistence_scaled_error_horizon_train": rec["scores"]["validation"]["model"]["mase_mean"],
+                        "mae": rec["scores"]["validation"]["model"]["mae_mean"],
                             "updates": rec["training"]["updates"], "epochs": rec["training"]["epochs"], "stop": rec["training"]["stop_reason"], "censoring": rec["training"]["censoring"],
                             "best_epoch": rec["training"]["restored_checkpoint_epoch"], "curve_val": rec["training"]["curve"]["validation"], "curve_train": rec["training"]["curve"]["train"],
                             "phases": rec["cost"], "child_cpu": cells[k]["outcome"]["summary"]["cost"].get("cpu_seconds"), "peak_rss": cells[k]["outcome"]["summary"]["cost"].get("peak_rss_bytes"),
@@ -1267,6 +1282,7 @@ def close(root: Path) -> dict:
                   "controls_cpu": (cells["controls"]["outcome"]["summary"]["cost"].get("cpu_seconds") if "controls" in cells else None),
                   "spent_cpu_seconds_root": spent_cpu(root), "reading": "same task budget per regime (fit CPU); total cost = fit + the AE of the seed for R1/R2 (reported apart)"}
     doc = {"schema": "df_e1_pilot_results.v1", "design_sha256": design["design_sha256"], "run_id": report["run_id"], "stopped": report.get("stopped"), "task": design["task"],
+           "scaled_error_erratum": SCALED_ERROR_ERRATUM,
            "dev": design["dev_subpartition"], "data": report["data"]["coverage"], "denominator": report["data"]["mase_denominator_persistence_h"], "cells": table, "ae": ae_by_seed,
            "report_file": report_choice, "controls": controls, "means": means, "paired": pdiff, "identity": identity, "costs": cost_total, "projection": report.get("projection"), "cost_pilot": report.get("cost_pilot"),
            "verified_units": {k: v["verified"] for k, v in cells.items()}, "governance": design["governance"], "host": report.get("host"),
@@ -1274,7 +1290,13 @@ def close(root: Path) -> dict:
                              "no row or task was chosen after seeing regime results (design sealed before outcomes)"]}
     (root / "RESULTS.json").write_text(json.dumps(doc, indent=1, default=float))
     lines = [f"# E1 household DEV pilot — results (run {report['run_id']})", "", f"Task {design['task']['id']}: context {design['task']['context_physical_seconds']} s, horizon {design['task']['horizon_physical_seconds']} s, model reach {design['task']['model_reach_physical_seconds']} s. "
-             f"DEV rows {design['dev_subpartition']['rows']}. Common evaluation set {report['data']['coverage']['common_evaluation_set']} origins. MASE denominator (persistence h, train) {report['data']['mase_denominator_persistence_h']:.4f} kW.", "",
+             f"DEV rows {design['dev_subpartition']['rows']}. Common evaluation set {report['data']['coverage']['common_evaluation_set']} origins. "
+             f"Scaled error denominator (persistence at the horizon, train origins) {report['data']['mase_denominator_persistence_h']:.4f} kW.",
+             "",
+             "The column published as MASE is the MAE divided by the mean absolute h-step change over the train "
+             "origins: a PERSISTENCE-SCALED ERROR AT THE HORIZON, not a conventional MASE, whose seasonal period m "
+             "is declared on its own grounds. The historical name is kept so published numbers stay readable; "
+             "tools/forecast_comparison.py reports both, and a conventional MASE with m = 1 and m = 1440.", "",
              "| unit | regime | seed | MASE | MAE (kW) | updates | epochs | stop | best epoch | censoring | fit s | child CPU s | peak RSS MB |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for k, v in table.items():
         if "mase" in v:
