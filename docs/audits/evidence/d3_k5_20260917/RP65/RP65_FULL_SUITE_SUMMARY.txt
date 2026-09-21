@@ -1,0 +1,253 @@
+# Post-Huber packet — full suite
+# command:  python -m pytest tests -q --continue-on-collection-errors
+# python:   ~/anaconda3/envs/trading-stack/bin/python (3.12), host omega, CUDA_VISIBLE_DEVICES="" (no GPU)
+# cgroup:   crispdm-run -m 12G -t 5400 -n post-suite; clean checkout at 9833137 (the governed-route rules refuse a dirty tree)
+#
+# 2 396 passed, up from 2 323 at the close of RP57-RP64: this packet adds 73 rules (benchmark contract 17,
+#   calendar 7, closure table 14, phase-2 acceptance 10, FL01-FL08 16 of which 5 are strict xfail naming
+#   the absent financial runner, Musashi's factorial 12 merged from his branch, minus none removed).
+# 5 xfailed: FL03 fold-change invariance, FL04 terminal/warehouse round trip, FL05 min_delta/numeric floor,
+#   FL07 temporal-block intervals, FL08 governance before the first financial bar — each names the runner
+#   that does not exist yet; strict, so they turn red the day it does.
+# 39 skipped, each with its stated reason (6 at import: duckdb absent from THIS interpreter; the rest for
+#   something this host does not have: systemd user scope, PG credentials, store-hosts interpreter,
+#   deployed provider, custodied data roots). No skip hides a failure of this packet's work.
+# 3 failed and 8 collection errors are the repository's documented stale legacy suite (AGENTS.md:
+#   app.autoencoder_manager, load_encoder_decoder_plugins, merge_config no longer exist); untouched here.
+# revision: 98331376c87dd2f93d0c0e05fbc3df8743024a01
+
+FFFs.ssss...............sss............sssssss..ssssssssssss............ [  2%]
+........................................................................ [  5%]
+........................................................................ [  8%]
+........................................................................ [ 11%]
+........................................................................ [ 14%]
+........................................................................ [ 17%]
+........................................................................ [ 20%]
+........................................................................ [ 23%]
+........................................................................ [ 26%]
+.............s.................s........................................ [ 29%]
+........................................................................ [ 32%]
+........................................................................ [ 35%]
+........................................................................ [ 38%]
+........................................................................ [ 41%]
+........................................................................ [ 44%]
+........................................................................ [ 47%]
+........................................................................ [ 50%]
+........................................................................ [ 53%]
+........................................................................ [ 56%]
+........................................................................ [ 59%]
+........................................................................ [ 62%]
+........................................................................ [ 64%]
+........................................................................ [ 67%]
+................................................................x.x.x... [ 70%]
+x.x..................................................................... [ 73%]
+..................................s..................................... [ 76%]
+........................................................................ [ 79%]
+.....................................ss................................. [ 82%]
+.............................................................s.......... [ 85%]
+........................................................................ [ 88%]
+........................................................................ [ 91%]
+........................................................................ [ 94%]
+........................................................................ [ 97%]
+.............................................................            [100%]
+==================================== ERRORS ====================================
+_______ ERROR collecting tests/integration_tests/test_data_processing.py _______
+ImportError while importing test module '/home/harveybc/Documents/GitHub/predictor/tests/integration_tests/test_data_processing.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../anaconda3/envs/trading-stack/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/integration_tests/test_data_processing.py:5: in <module>
+    from app.autoencoder_manager import AutoencoderManager
+E   ModuleNotFoundError: No module named 'app.autoencoder_manager'
+_______ ERROR collecting tests/integration_tests/test_plugin_loading.py ________
+ImportError while importing test module '/home/harveybc/Documents/GitHub/predictor/tests/integration_tests/test_plugin_loading.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../anaconda3/envs/trading-stack/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/integration_tests/test_plugin_loading.py:2: in <module>
+    from app.plugin_loader import load_plugin, load_encoder_decoder_plugins
+E   ImportError: cannot import name 'load_encoder_decoder_plugins' from 'app.plugin_loader' (/home/harveybc/Documents/GitHub/predictor/app/plugin_loader.py)
+___________ ERROR collecting tests/unit_tests/test_config_handler.py ___________
+ImportError while importing test module '/home/harveybc/Documents/GitHub/predictor/tests/unit_tests/test_config_handler.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../anaconda3/envs/trading-stack/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/unit_tests/test_config_handler.py:5: in <module>
+    from app.config_handler import load_config, save_config, merge_config, save_debug_info, load_remote_config, save_remote_config, log_remote_data
+E   ImportError: cannot import name 'merge_config' from 'app.config_handler' (/home/harveybc/Documents/GitHub/predictor/app/config_handler.py)
+____________ ERROR collecting tests/unit_tests/test_data_handler.py ____________
+ImportError while importing test module '/home/harveybc/Documents/GitHub/predictor/tests/unit_tests/test_data_handler.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../anaconda3/envs/trading-stack/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/unit_tests/test_data_handler.py:6: in <module>
+    from app.data_handler import load_csv, write_csv, sliding_window
+E   ImportError: cannot import name 'sliding_window' from 'app.data_handler' (/home/harveybc/Documents/GitHub/predictor/app/data_handler.py)
+___________ ERROR collecting tests/unit_tests/test_data_processor.py ___________
+ImportError while importing test module '/home/harveybc/Documents/GitHub/predictor/tests/unit_tests/test_data_processor.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../anaconda3/envs/trading-stack/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/unit_tests/test_data_processor.py:5: in <module>
+    from app.data_processor import process_data, train_autoencoder
+app/data_processor.py:16: in <module>
+    from plugin_loader import load_plugin
+E   ModuleNotFoundError: No module named 'plugin_loader'
+_________ ERROR collecting tests/unit_tests/test_encoder_plugin_ann.py _________
+ImportError while importing test module '/home/harveybc/Documents/GitHub/predictor/tests/unit_tests/test_encoder_plugin_ann.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../anaconda3/envs/trading-stack/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/unit_tests/test_encoder_plugin_ann.py:4: in <module>
+    from app.plugins.encoder_plugin_ann import Plugin
+E   ModuleNotFoundError: No module named 'app.plugins.encoder_plugin_ann'
+________________ ERROR collecting tests/unit_tests/test_main.py ________________
+ImportError while importing test module '/home/harveybc/Documents/GitHub/predictor/tests/unit_tests/test_main.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../anaconda3/envs/trading-stack/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/unit_tests/test_main.py:3: in <module>
+    from app.main import main
+app/main.py:55: in <module>
+    from config_merger import merge_config, process_unknown_args
+E   ModuleNotFoundError: No module named 'config_merger'
+___________ ERROR collecting tests/unit_tests/test_plugin_loader.py ____________
+ImportError while importing test module '/home/harveybc/Documents/GitHub/predictor/tests/unit_tests/test_plugin_loader.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../anaconda3/envs/trading-stack/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/unit_tests/test_plugin_loader.py:2: in <module>
+    from app.plugin_loader import load_plugin, load_encoder_decoder_plugins, get_plugin_params
+E   ImportError: cannot import name 'load_encoder_decoder_plugins' from 'app.plugin_loader' (/home/harveybc/Documents/GitHub/predictor/app/plugin_loader.py)
+=================================== FAILURES ===================================
+___________________________ test_load_default_config ___________________________
+
+default_config = {'use_normalization_json': 'examples\\config\\phase_2_normalizer_debug_out.json', 'x_train_file': 'examples\\data\\pha...\\phase_2\\exp_4\\normalized_d2.csv', 'x_validation_file': 'examples\\data\\phase_3\\phase_3_encoder_eval_d3.csv', ...}
+
+    def test_load_default_config(default_config):
+        with patch('builtins.open', mock_open(read_data=json.dumps(default_config))):
+>           loaded_config = config_handler.load_config(DEFAULT_VALUES['config_load_path'])
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'config_load_path'
+
+tests/integration_tests/test_configuration_handling.py:13: KeyError
+_______________________________ test_save_config _______________________________
+
+default_config = {'use_normalization_json': 'examples\\config\\phase_2_normalizer_debug_out.json', 'x_train_file': 'examples\\data\\pha...\\phase_2\\exp_4\\normalized_d2.csv', 'x_validation_file': 'examples\\data\\phase_3\\phase_3_encoder_eval_d3.csv', ...}
+
+    def test_save_config(default_config):
+        m = mock_open()
+        with patch('builtins.open', m):
+>           config_handler.save_config(default_config, DEFAULT_VALUES['config_save_path'])
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'config_save_path'
+
+tests/integration_tests/test_configuration_handling.py:19: KeyError
+___________________________ test_configure_with_args ___________________________
+
+default_config = {'use_normalization_json': 'examples\\config\\phase_2_normalizer_debug_out.json', 'x_train_file': 'examples\\data\\pha...\\phase_2\\exp_4\\normalized_d2.csv', 'x_validation_file': 'examples\\data\\phase_3\\phase_3_encoder_eval_d3.csv', ...}
+
+    def test_configure_with_args(default_config):
+        args = {
+            'csv_input_path': './new_input.csv',
+            'csv_output_path': './new_output.csv',
+            'epochs': 20,
+            'quiet_mode': True
+        }
+>       updated_config = config_handler.configure_with_args(default_config, args)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'app.config_handler' has no attribute 'configure_with_args'
+
+tests/integration_tests/test_configuration_handling.py:31: AttributeError
+=============================== warnings summary ===============================
+tests/test_df_adequacy.py: 23 warnings
+tests/test_df_e1_pilot.py: 114 warnings
+tests/test_df_e1_pretraining.py: 30 warnings
+tests/test_df_e1_regimes.py: 100 warnings
+tests/test_df_mod_e0.py: 648 warnings
+tests/test_df_mod_e0_arch.py: 4 warnings
+tests/test_df_mod_e0_close.py: 1584 warnings
+tests/test_df_mod_e0_replay.py: 40 warnings
+  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/keras/src/backend/tensorflow/core.py:172: DeprecationWarning: __array__ implementation doesn't accept a copy keyword, so passing copy=False failed. __array__ must implement 'dtype' and 'copy' keyword arguments. To learn more, see the migration guide https://numpy.org/devdocs/numpy_2_0_migration_guide.html#adapting-to-changes-in-the-copy-keyword
+    return np.array(x)
+
+tests/test_governed_outbox_race.py::test_RP55_two_processes_on_one_outbox_no_longer_race_and_neither_dies
+tests/test_governed_outbox_race.py::test_RP55_two_processes_on_one_outbox_no_longer_race_and_neither_dies
+tests/test_governed_outbox_race.py::test_RP32_after_the_race_no_terminal_is_lost_and_none_is_duplicated_in_the_accounting
+tests/test_governed_outbox_race.py::test_RP32_after_the_race_no_terminal_is_lost_and_none_is_duplicated_in_the_accounting
+tests/test_governed_outbox_race.py::test_RP32_a_private_outbox_per_process_has_no_race
+tests/test_governed_outbox_race.py::test_RP32_a_private_outbox_per_process_has_no_race
+  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=1416751) is multi-threaded, use of fork() may lead to deadlocks in the child.
+    self.pid = os.fork()
+
+tests/unit_tests/test_characterization_binding_c39_c41.py::test_a_non_finite_value_never_leaves_as_an_identifiable_number
+  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+    ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+
+tests/unit_tests/test_characterization_binding_c39_c41.py::test_a_non_finite_value_never_leaves_as_an_identifiable_number
+  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/numpy/_core/_methods.py:168: RuntimeWarning: overflow encountered in reduce
+    arrmean = umr_sum(arr, axis, dtype, keepdims=True, where=where)
+
+tests/unit_tests/test_characterization_binding_c39_c41.py::test_a_non_finite_value_never_leaves_as_an_identifiable_number
+  /home/harveybc/Documents/GitHub/predictor/olap/characterization.py:330: RuntimeWarning: overflow encountered in subtract
+    np.abs(finite - np.median(finite)))),
+
+tests/unit_tests/test_characterization_binding_c39_c41.py::test_a_non_finite_value_never_leaves_as_an_identifiable_number
+  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:4608: RuntimeWarning: overflow encountered in scalar subtract
+    diff_b_a = b - a
+
+tests/unit_tests/test_characterization_binding_c39_c41.py::test_a_non_finite_value_never_leaves_as_an_identifiable_number
+  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/numpy/_core/_methods.py:188: RuntimeWarning: invalid value encountered in subtract
+    x = um.subtract(arr, arrmean, out=...)
+
+tests/unit_tests/test_characterization_binding_c39_c41.py::test_a_non_finite_value_never_leaves_as_an_identifiable_number
+  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:3036: RuntimeWarning: invalid value encountered in divide
+    c /= stddev[:, None]
+
+tests/unit_tests/test_characterization_binding_c39_c41.py::test_a_non_finite_value_never_leaves_as_an_identifiable_number
+  /home/harveybc/Documents/GitHub/predictor/olap/characterization.py:393: RuntimeWarning: overflow encountered in subtract
+    d = b[keep] - a[keep]
+
+tests/unit_tests/test_characterization_binding_c39_c41.py::test_a_non_finite_value_never_leaves_as_an_identifiable_number
+  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/numpy/_core/_methods.py:168: RuntimeWarning: invalid value encountered in reduce
+    arrmean = umr_sum(arr, axis, dtype, keepdims=True, where=where)
+
+tests/unit_tests/test_characterization_binding_c39_c41.py::test_a_non_finite_value_never_leaves_as_an_identifiable_number
+  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/numpy/_core/function_base.py:141: RuntimeWarning: overflow encountered in subtract
+    delta = np.subtract(stop, start, dtype=type(dt))
+
+tests/unit_tests/test_characterization_binding_c39_c41.py::test_a_non_finite_value_never_leaves_as_an_identifiable_number
+  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/numpy/_core/function_base.py:163: RuntimeWarning: invalid value encountered in multiply
+    y *= step
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration_tests/test_configuration_handling.py::test_load_default_config
+FAILED tests/integration_tests/test_configuration_handling.py::test_save_config
+FAILED tests/integration_tests/test_configuration_handling.py::test_configure_with_args
+ERROR tests/integration_tests/test_data_processing.py
+ERROR tests/integration_tests/test_plugin_loading.py
+ERROR tests/unit_tests/test_config_handler.py
+ERROR tests/unit_tests/test_data_handler.py
+ERROR tests/unit_tests/test_data_processor.py
+ERROR tests/unit_tests/test_encoder_plugin_ann.py
+ERROR tests/unit_tests/test_main.py
+ERROR tests/unit_tests/test_plugin_loader.py
+3 failed, 2396 passed, 39 skipped, 5 xfailed, 2559 warnings, 8 errors in 1998.05s (0:33:18)
+exit=1
