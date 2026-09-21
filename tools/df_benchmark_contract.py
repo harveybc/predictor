@@ -31,7 +31,7 @@ import argparse
 import hashlib
 import json
 import math
-from dataclasses import dataclass, field, asdict, fields
+from dataclasses import dataclass, field, asdict, fields, replace
 from pathlib import Path
 
 SCHEMA = "benchmark_contract.v2"

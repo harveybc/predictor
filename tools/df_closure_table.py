@@ -242,8 +242,9 @@ def verify_unit(root: Path, design: dict, unit: str, role: str, receipt: dict, d
         naive_mae = float(np.mean(np.abs(naive-y))) if clean else None
         # --- independent metric against the record's own score, when it carries one --------------------
         if clean and record:
-            scores = ((record.get("scores") or {}).get("validation") or {}).get("model") or {}
-            stored = scores.get("mae_kw", scores.get("mae_mean"))
+            flat = record.get("scores") or {}
+            nested = (flat.get("validation") or {}).get("model") or {}
+            stored = nested.get("mae_kw", nested.get("mae_mean", flat.get("mae_kw")))
             if a["arm"] is None and isinstance(stored, (int, float)) and abs(stored-model_mae) > 1e-9:
                 p.append(f"{unit}: the recomputed MAE {model_mae:.9f} differs from the record's {stored:.9f}")
                 clean = False

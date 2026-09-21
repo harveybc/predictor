@@ -99,7 +99,8 @@ def _merge_write(path: Path, unit_id: str, entry: dict, base: dict) -> dict:
 
 def acquire(*, run_id: str, root: Path, lake: str, resource: str, unit_id: str = "prepare", role: str = "panel",
             gov_url: str = DEFAULT_GOV, api_key_file: Path, design_sha256: str,
-            cache_dir: Path | None = None, expect_sha256: str | None = None, units: list | None = None) -> dict:
+            cache_dir: Path | None = None, expect_sha256: str | None = None, units: list | None = None,
+            start: str | None = None, end: str | None = None) -> dict:
     """One campaign and one delivery PER UNIT (the shape data-gov completes: a delivery binds to
     campaign, actor and unit, so a unit without its own verified delivery cannot complete).
 
@@ -127,7 +128,7 @@ def acquire(*, run_id: str, root: Path, lake: str, resource: str, unit_id: str =
     campaign = {"schema": "governed_campaign.v1", "campaign_key": key, "classification": "NON_GOVERNING",
                 "project": "predictor", "code_identity": code_identity, "config_sha256": design_sha256,
                 "input_mode": "DATASETS", "synthetic_spec_sha256": None, "units": [unit_id],
-                "datasets": [{"lake": lake, "resource": resource, "role": role, "from": None, "to": None}],
+                "datasets": [{"lake": lake, "resource": resource, "role": role, "from": start, "to": end}],
                 "terminal_lake": "olap_cube"}
     try:
         status, body = gov.submit_campaign(campaign)
@@ -139,7 +140,7 @@ def acquire(*, run_id: str, root: Path, lake: str, resource: str, unit_id: str =
     sha = body["campaign_sha256"]
     try:
         http, info = gov.governed_download(sha, unit_id, lake, resource, role,
-                                           str(cache_dir or (Path.home() / ".cache/data-gov")))
+                                           str(cache_dir or (Path.home() / ".cache/data-gov")), start=start, end=end)
     except GR.GovernedRunError as exc:
         raise GovernanceUnavailable(f"REFUSED: the delivery failed ({exc}); no new work starts") from None
     path = Path(info["path"])
@@ -156,7 +157,7 @@ def acquire(*, run_id: str, root: Path, lake: str, resource: str, unit_id: str =
              "availability_use": info.get("availability_use"),
              "availability_label": info.get("availability_label"),
              "availability_contract_sha256": info.get("availability_contract_sha256"),
-             "path": str(path), "bytes_on_disk_sha256": on_disk}
+             "path": str(path), "bytes_on_disk_sha256": on_disk, "range": {"from": start, "to": end}}
     return _merge_write(receipt_path, unit_id, entry, doc)
 
 
