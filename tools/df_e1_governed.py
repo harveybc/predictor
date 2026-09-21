@@ -220,9 +220,33 @@ def report_terminal(root: Path, unit_id: str, terminal: dict, *, gov_url: str = 
             "persisted_receipt": persisted, "reconciliation": reconciliation}
 
 
+def report_failed(root: Path, unit_id: str, reason: str, *, gov_url: str, api_key_file: Path,
+                  outbox_dir: str | None = None) -> dict:
+    """Close a unit that will never produce a result, with a FAILED terminal that says why.
+
+    A registered campaign whose unit never closes stays PENDING for ever, and the population rule
+    then names it for ever. When the work genuinely cannot be completed — the process died, or the
+    fact was published under a successor campaign — the honest end is a terminal with status FAILED
+    carrying the reason, not silence and not a COMPLETED terminal for work that did not happen.
+    """
+    U = _load("df_utility_run")
+    started = U._z(U.now_iso())
+    terminal = U._terminal(status="FAILED", reason=reason,
+                           cost={"wall_seconds": 0.0, "cpu_seconds": 0.0}, metrics=[],
+                           started=started, finished=U._z(U.now_iso()),
+                           tags={"unit": unit_id, "classification": "NON_GOVERNING",
+                                 "phase": "DEVELOPMENT", "closed_as": "FAILED",
+                                 "reading": "this unit produced no result; the terminal records that "
+                                            "fact so its campaign stops being an open one"})
+    return report_terminal(root, unit_id, terminal, gov_url=gov_url, api_key_file=api_key_file,
+                           outbox_dir=outbox_dir, started_at=started)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["acquire", "check"])
+    ap.add_argument("command", choices=["acquire", "check", "fail"])
+    ap.add_argument("--unit")
+    ap.add_argument("--reason")
     ap.add_argument("--run-id", default=None)
     ap.add_argument("--root", type=Path, required=True)
     ap.add_argument("--design", type=Path, default=None)
@@ -234,6 +258,15 @@ def main(argv=None) -> int:
     ap.add_argument("--cache-dir", type=Path, default=None)
     a = ap.parse_args(argv)
     design = json.loads(a.design.read_text()) if a.design else json.loads((a.root / "DESIGN.json").read_text())
+    if a.command == "fail":
+        if not (a.unit and a.reason):
+            raise SystemExit("REFUSED: a FAILED terminal names its unit and its reason")
+        out = report_failed(a.root, a.unit, a.reason, gov_url=a.gov_url, api_key_file=a.api_key_file)
+        print(json.dumps({"unit": a.unit, "campaign_sha256": out["campaign_sha256"],
+                          "terminal_sha256": (out.get("receipt") or {}).get("terminal_sha256"),
+                          "reconciliation": out["reconciliation"], "sent": out["flushed"]["sent"]},
+                         indent=1, default=str))
+        return 0 if out["flushed"]["sent"] else 1
     if a.command == "check":
         print(json.dumps(require_delivery(a.root, design), indent=1, default=str))
         return 0
