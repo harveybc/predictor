@@ -660,9 +660,154 @@ def run_prepare(a, design: dict) -> dict:
     return rec
 
 
+# --- RP88: the train-only cost diagnostic -----------------------------------------------------------------------------
+
+COST_PILOT = {"max_updates": 200, "validate_every_updates": 50, "patience_events": 3, "batch": 64, "min_delta": 0.0,
+              "purpose": "COST_DIAGNOSTIC_TRAIN_ONLY: seconds, memory and samples; NOT adequacy, convergence or a winner"}
+
+
+def seal_cost_pilot(*, lake: str, resource: str, time_column: str, holdout: str, range_from: str, range_to: str, dev_start: str,
+                    receivers=("compact_modular", "larger_business_receiver"), horizons=("h6", "h72"), columns: list | None = None,
+                    contract=None, purpose: str = "FIN_LOSS_OPT_COST_PILOT") -> dict:
+    """The pre-DEV training slice, the receivers, the horizons and the four fixed-default recipes, sealed BEFORE any byte is read.
+    The slice ends before `dev_start` (the first DEV week): the DEV weeks and the reserve are never read by the pilot."""
+    T = _module("df_fin_task")
+    B = _module("df_benchmark_contract")
+    if not (range_to < dev_start):
+        raise FinRefusal("REFUSED: the cost pilot's slice must end before the first DEV week")
+    alloc = T.candidate_allocation()
+    recv = T.receivers()
+    ours = contract if contract is not None else B.fx_eurusd_1h_ours()
+    configs = [{"config_id": f"{r}__{h}__{c['id']}", "receiver": r, "horizon": h, "candidate": c}
+               for r in receivers for h in horizons for c in alloc["A_fixed_default"]]
+    design = {"schema": "df_fin_cost_pilot_design.v1", "purpose": purpose, "phase": "DEVELOPMENT", "state": "SEALED_NOT_EXECUTED",
+              "source": {"lake": lake, "resource": resource, "time_column": time_column, "holdout": holdout, "range": {"from": range_from, "to": range_to},
+                         "columns": columns or T.INPUT_COLUMNS, "target": T.TARGET, "dev_start": dev_start,
+                         "rule": "pre-DEV training slice only; internal purged validation = the last week of the slice; DEV and reserve never read"},
+              "receivers": {r: recv[r] for r in receivers}, "horizons": {h: T.HORIZONS[h] for h in horizons},
+              "recipe": COST_PILOT, "configs": configs, "cells": [{"cell_id": c["config_id"], **c} for c in configs],
+              "history_alternatives_weeks": [52, 104, 208],
+              "benchmark_contract": ours.to_design_block(comparability=B.planned_reference(ours, why="cost diagnostic; no comparator involved")),
+              "source_code": {n: sha_file(HERE/n) for n in ("df_fin_runner.py", "df_fin_task.py", "df_e1_block.py", "df_mod_e0.py", "df_e1_governed.py")},
+              "what_this_is_not": "not a scientific comparison, not model adequacy, not a winner; 200 observed updates per configuration"}
+    design["design_sha256"] = sha_obj(design)
+    return design
+
+
+def cost_pilot(design: dict, root: Path, *, frame=None, delivered: dict | None = None) -> dict:
+    """RP88: on the delivered pre-DEV slice, for every (receiver, horizon, default recipe): setup, warm-up, train updates, validation,
+    replay and peak RSS measured SEPARATELY; usable examples counted from the admissible populations; projections for the full
+    scientific allocation are arithmetic on these measurements (declared as such)."""
+    import pandas as pd
+    T = _module("df_fin_task")
+    K = _module("df_e1_block")
+    E = _module("df_mod_e0")
+    tf = E._tf()
+    root = Path(root)
+    root.mkdir(parents=True, exist_ok=True)
+    src = design["source"]
+    if frame is None:
+        G = _module("df_e1_governed")
+        delivered = G.require_delivery(root, design, "prepare")["delivery"]
+        frame = pd.read_parquet(delivered["path"])
+    try:
+        bars = T.parse_bars(frame, time_column=src["time_column"], holdout=src["holdout"], columns=src["columns"], target=src["target"])
+    except T.TaskRefusal as exc:
+        doc = {"schema": "df_fin_cost_pilot.v1", "design_sha256": design["design_sha256"], "status": "REFUSED_AT_SCHEMA", "reason": str(exc)[:400],
+               "served_columns": list(frame.columns), "rows": int(len(frame)), "reading": "the served schema differs from the declared one: the design is "
+               "amended before any fit; nothing was measured"}
+        (root/"COST_PILOT.json").write_text(json.dumps(doc, indent=1, default=str))
+        return doc
+    ts, X, y = bars["ts_ns"], bars["X"], bars["y"]
+    limit = np.datetime64(src["dev_start"]).astype("datetime64[ns]").astype(np.int64)
+    if ts.max() >= limit:
+        raise FinRefusal("REFUSED: the delivered slice reaches the DEV weeks")
+    val_start = T.week_start_ns(int(ts.max())) if T.week_start_ns(int(ts.max())) > ts.min() else int(ts.max())
+    R = design["recipe"]
+    results, cpu0 = [], time.process_time()
+    for cfg in design["configs"]:
+        recv = design["receivers"][cfg["receiver"]]
+        hours = design["horizons"][cfg["horizon"]]["hours"]
+        W = int(recv["window"])
+        m = T.map_targets(ts, y, hours=hours)
+        purge = hours*T.HOUR_NS
+        train_keep = (ts[m["targets"]] < val_start - purge)
+        val_keep = (ts[m["origins"]] >= val_start)
+        tr_p = T.admissible_pairs(bars, m["origins"][train_keep], m["targets"][train_keep], W=W)
+        va_p = T.admissible_pairs(bars, m["origins"][val_keep], m["targets"][val_keep], W=W)
+        Xc = X if recv["channels"] == 5 else np.concatenate([X, calendar_of(ts)], axis=1)
+        entry = {"config_id": cfg["config_id"], "receiver": cfg["receiver"], "horizon": cfg["horizon"], "candidate": cfg["candidate"]["id"],
+                 "samples": {"train_pairs": tr_p["n"], "validation_pairs": va_p["n"], "train_excluded": tr_p["excluded"], "bars": bars["n"]}}
+        if tr_p["n"] < 2*R["batch"] or va_p["n"] < 8:
+            entry.update(status="INSUFFICIENT_SAMPLES"); results.append(entry); continue
+        t0 = time.process_time()
+        support = np.zeros(ts.size, dtype=bool)
+        for w in range(W):
+            support[tr_p["origins"]-w] = True
+        mean, sd = Xc[support].mean(axis=0), np.where(Xc[support].std(axis=0) > 0, Xc[support].std(axis=0), 1.0)
+        y_mean, sigma = float(y[support].mean()), float(y[support].std())
+        deltas = T.delta_candidates(y, tr_p, sigma=sigma)
+        Xs = ((Xc-mean)/sd).astype(np.float32); yz = (y-y_mean)/sigma
+        delta_z = T.resolve_delta(cfg["candidate"], deltas)
+        try:
+            loss, opt = components(cfg["candidate"], delta_z, tf)
+        except FinRefusal as exc:
+            entry.update(status="NOT_IDENTIFIABLE", reason=str(exc)[:200]); results.append(entry); continue
+        tr = PairBatches(Xs, yz, tr_p["origins"], tr_p["targets"], W, int(R["batch"]), shuffle=True, seed=1)
+        va = PairBatches(Xs, yz, va_p["origins"], va_p["targets"], W, int(R["batch"]), shuffle=False, seed=1)
+        model = K.build_modular(recv["assignment"], W, Xc.shape[1], bars["target_channel"], 1)
+        setup = time.process_time()-t0
+        model.compile(optimizer=opt, loss=loss)
+        t0 = time.process_time(); xb, yb = tr[0]; model.train_on_batch(xb, yb); warm = time.process_time()-t0      # graph tracing, measured apart
+        model = K.build_modular(recv["assignment"], W, Xc.shape[1], bars["target_channel"], 1)                      # a fresh model for the timed loop
+        loss, opt = components(cfg["candidate"], delta_z, tf)
+        rss0 = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        training = K.fit_by_updates(model, tr, va, max_updates=int(R["max_updates"]), validate_every=int(R["validate_every_updates"]),
+                                    patience=int(R["patience_events"]), lr=float(cfg["candidate"]["lr"]), seed=1, loss=loss, min_delta=0.0, optimizer=opt)
+        t0 = time.process_time(); K.predict(model, va); replay = time.process_time()-t0
+        cpu = training["cpu"]
+        entry.update(status="MEASURED", parameters=K.n_params(model), delta_z=delta_z,
+                     cpu={"setup_seconds": setup, "warm_up_seconds": warm, "train_update_seconds": cpu["train_update_seconds"], "validation_seconds": cpu["validation_seconds"],
+                          "restore_seconds": cpu["restore_seconds"], "replay_predict_seconds": replay, "updates": training["updates"], "validation_events": training["validation_events"],
+                          "seconds_per_update": cpu["train_update_seconds"]/max(1, training["updates"]),
+                          "validation_seconds_per_event": cpu["validation_seconds"]/max(1, training["validation_events"]),
+                          "validation_seconds_per_sample": cpu["validation_seconds"]/max(1, training["validation_events"]*va_p["n"])},
+                     peak_rss_bytes=int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)*1024, stop=training["stop_reason"], triggers=training["triggers"],
+                     val_mae_z_first_last=[training["events"][0]["val_mae_scaled"], training["events"][-1]["val_mae_scaled"]] if training["events"] else None)
+        results.append(entry)
+    measured = [r for r in results if r["status"] == "MEASURED"]
+    # projections: arithmetic on the measurements, for the scientific recipe (RECIPE) and the 26-population allocation
+    proj = {}
+    for r in measured:
+        events = math.ceil(RECIPE["max_updates"]/RECIPE["validate_every_updates"])
+        per_cell = r["cpu"]["seconds_per_update"]*RECIPE["max_updates"] + r["cpu"]["validation_seconds_per_event"]*events + r["cpu"]["setup_seconds"] + r["cpu"]["warm_up_seconds"] + r["cpu"]["replay_predict_seconds"]
+        proj[r["config_id"]] = {"seconds_per_full_cell_at_ceiling": per_cell}
+    by_rh = {}
+    for r in measured:
+        by_rh.setdefault((r["receiver"], r["horizon"]), []).append(proj[r["config_id"]]["seconds_per_full_cell_at_ceiling"])
+    allocation = {}
+    for (rc, hz), secs in by_rh.items():
+        mean_cell = float(np.mean(secs))
+        for folds in (26,):
+            for hist in design["history_alternatives_weeks"]:
+                n_cells = 26*3*folds
+                allocation[f"{rc}__{hz}__folds{folds}__history{hist}w"] = {"cells": n_cells, "mean_seconds_per_cell": mean_cell, "cpu_seconds_at_ceiling": mean_cell*n_cells,
+                                                                            "usable_train_pairs_estimate": int(np.mean([r["samples"]["train_pairs"] for r in measured if r["receiver"] == rc and r["horizon"] == hz])*hist/52),
+                                                                            "history_note": "pairs scale linearly with history weeks from the delivered 52-week slice: an ESTIMATE, not a count"}
+    doc = {"schema": "df_fin_cost_pilot.v1", "design_sha256": design["design_sha256"], "status": "MEASURED" if measured else "NOTHING_MEASURED",
+           "slice": {"bars": bars["n"], "first": str(np.datetime64(int(ts.min()), "ns"))[:16], "last": str(np.datetime64(int(ts.max()), "ns"))[:16],
+                     "internal_validation_from": str(np.datetime64(val_start, "ns"))[:16], "availability": bars["availability"]},
+           "configs": results, "projection_per_config": proj, "scientific_allocation_projection": allocation,
+           "total_pilot_cpu_seconds": time.process_time()-cpu0,
+           "reading": "cost, memory and samples of 200 observed updates per configuration on the pre-DEV slice; no adequacy, convergence or winner; "
+                      "a patience of 300 updates is not adequate training because the dataset is large — adequacy is judged by learning curves in the scientific run"}
+    (root/"COST_PILOT.json").write_text(json.dumps(doc, indent=1, default=str))
+    return doc
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["prepare", "execute", "child", "close"])
+    ap.add_argument("command", choices=["prepare", "execute", "child", "close", "cost-pilot"])
     ap.add_argument("--root", type=Path, required=True)
     ap.add_argument("--unit")
     ap.add_argument("--run-id")
@@ -672,6 +817,28 @@ def main(argv=None) -> int:
     ap.add_argument("--warehouse-token-file", type=Path)
     a = ap.parse_args(argv)
     design = json.loads((a.root/"DESIGN.json").read_text())
+    if a.command == "cost-pilot":
+        # the prepare unit's delivery (bounded range) and one terminal for the whole diagnostic, with the measured cost
+        G, U = governance_modules()
+        started = U._z(U.now_iso())
+        acquire(a, design, "prepare")
+        t0 = time.process_time()
+        try:
+            doc = cost_pilot(design, a.root)
+        except BaseException as exc:
+            G.report_failed(a.root, "prepare", f"cost pilot refused: {str(exc)[:200]}", gov_url=a.gov_url, api_key_file=a.api_key_file)
+            raise
+        ru = resource.getrusage(resource.RUSAGE_SELF)
+        terminal = U._terminal(status="COMPLETED", reason=None, cost={"wall_seconds": time.process_time()-t0, "cpu_seconds": ru.ru_utime+ru.ru_stime},
+                               metrics=[U._metric("fin.cost_pilot.configs_measured", sum(1 for c in doc.get("configs", []) if c.get("status") == "MEASURED"), "configs", split="train_only", horizon=0)],
+                               started=started, finished=U._z(U.now_iso()),
+                               tags={"purpose": design["purpose"], "classification": "NON_GOVERNING", "phase": "DEVELOPMENT", "unit": "prepare", "role": "COST_PILOT",
+                                     "design_sha256": design["design_sha256"], "status": doc.get("status")})
+        terminal["artifacts"] = [{"role": "record", "sha256": sha_file(a.root/"COST_PILOT.json"), "bytes": (a.root/"COST_PILOT.json").stat().st_size}]
+        (a.root/"TERMINALS").mkdir(exist_ok=True); (a.root/"TERMINALS"/"prepare.json").write_text(json.dumps(terminal, indent=1, default=str))
+        reported = G.report_terminal(a.root, "prepare", terminal, gov_url=a.gov_url, api_key_file=a.api_key_file, outbox_dir=str(a.root/"outbox"), started_at=started)
+        print(json.dumps({"status": doc.get("status"), "configs": len(doc.get("configs", [])), "cpu": doc.get("total_pilot_cpu_seconds"), "sent": reported["flushed"]["sent"]}))
+        return 0
     if a.command == "child":
         child(a.root, a.unit)
         return 0

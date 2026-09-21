@@ -490,6 +490,36 @@ def test_RP85_coverage_is_predeclared_measured_against_the_nominal_level_and_cer
     F.COVERAGE_CERTIFICATES.clear()
 
 
+# --- RP88: the train-only cost diagnostic ----------------------------------------------------------------------------------
+
+def test_RP88_the_cost_pilot_measures_cost_memory_and_samples_apart_on_a_pre_dev_slice_and_never_reads_dev(tmp_path):
+    bars = _bars(n_weeks=12, seed=4)
+    days = bars["datetime"].dt.strftime("%Y-%m-%d")
+    dev_start = "2024-03-18"                                                              # weeks from here are DEV: the pilot must stop before
+    pre = bars[bars["datetime"] < pd.Timestamp(dev_start)]
+    d = F.seal_cost_pilot(lake="financial_files", resource=RESOURCE, time_column="datetime", holdout=HOLDOUT, range_from=days.iloc[0], range_to="2024-03-17",
+                          dev_start=dev_start, receivers=("compact_modular",), horizons=("h6", "h72"), contract=_contract())
+    assert len(d["configs"]) == 8 and d["recipe"]["max_updates"] == 200 and d["state"] == "SEALED_NOT_EXECUTED"
+    with pytest.raises(F.FinRefusal, match="end before the first DEV week"):
+        F.seal_cost_pilot(lake="financial_files", resource=RESOURCE, time_column="datetime", holdout=HOLDOUT, range_from=days.iloc[0], range_to="2024-03-25", dev_start=dev_start, contract=_contract())
+    d["recipe"] = {**d["recipe"], "max_updates": 8, "validate_every_updates": 4}; d["design_sha256"] = F.sha_obj({k: v for k, v in d.items() if k != "design_sha256"})
+    root = tmp_path/"cp"; root.mkdir()
+    doc = F.cost_pilot(d, root, frame=pre)
+    assert doc["status"] == "MEASURED" and doc["slice"]["last"] < dev_start
+    m = [c for c in doc["configs"] if c["status"] == "MEASURED"]
+    assert m and all(set(c["cpu"]) >= {"setup_seconds", "warm_up_seconds", "train_update_seconds", "validation_seconds", "replay_predict_seconds", "seconds_per_update", "validation_seconds_per_sample"} for c in m)
+    assert all(c["samples"]["train_pairs"] > 0 and c["samples"]["validation_pairs"] > 0 and c["peak_rss_bytes"] > 0 for c in m)
+    assert all(c["cpu"]["updates"] == 8 and c["stop"] in ("UPDATE_BUDGET", "UPDATE_BUDGET+EARLY_STOPPING") for c in m)
+    assert doc["scientific_allocation_projection"] and all("ESTIMATE" in v["history_note"] for v in doc["scientific_allocation_projection"].values())
+    assert "not adequate training" in doc["reading"]
+    # the DEV weeks are never read: a slice reaching them refuses
+    with pytest.raises(F.FinRefusal, match="reaches the DEV weeks"):
+        F.cost_pilot(d, tmp_path/"cp2", frame=bars)
+    # a served schema that lacks a declared column is REFUSED_AT_SCHEMA with the served columns, not measured
+    doc2 = F.cost_pilot(d, tmp_path/"cp3", frame=pre.drop(columns=["volume"]))
+    assert doc2["status"] == "REFUSED_AT_SCHEMA" and "volume" not in doc2["served_columns"]
+
+
 # --- FL08 complete closure -------------------------------------------------------------------------------------------------------------------
 
 def _free_port():

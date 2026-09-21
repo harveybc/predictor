@@ -1,0 +1,156 @@
+{
+  "scope": "POST on the repaired tree; typed refusals recorded",
+  "block_closure_does_not_use_strict_table": {
+    "before": {
+      "outcome": "RETURNED",
+      "verified": true
+    },
+    "after": {
+      "outcome": "REFUSED",
+      "exception": "BlockRefusal",
+      "message": "REFUSED: closure failed: ['modular_w60_s1: the arrays on disk (b801e371bfbb) are not the predictions artifact the terminal declared (78bb9690afaa): CHANGED ARRAYS', \"modular_w60_s1: the warehouse's predictions artifact digest is not the arrays on disk: CHANGED ARRAYS\", \"modular_w60_s1: the warehouse's record artifact digest is not the record on disk: CHANGED RECORD\", 'modular_w60_s1: a new result "
+    },
+    "report_after": {
+      "verified": false,
+      "summary": null,
+      "paired": null,
+      "problems": [
+        "modular_w60_s1: the arrays on disk (b801e371bfbb) are not the predictions artifact the terminal declared (78bb9690afaa): CHANGED ARRAYS",
+        "modular_w60_s1: the warehouse's predictions artifact digest is not the arrays on disk: CHANGED ARRAYS",
+        "modular_w60_s1: the warehouse's record artifact digest is not the record on disk: CHANGED RECORD"
+      ]
+    }
+  },
+  "unanchored_evaluation_scaler_via_DATA.npz": {
+    "rewritten_mae_z": 0.539779065692846,
+    "verified": true,
+    "problems": [],
+    "preparation_custody": "PREPARATION_ACCEPTED_ARTIFACT",
+    "denominator": {
+      "sd_used": 0.9125164391265214,
+      "contract_sd_train": 0.9125164391265214,
+      "equal_to_contract": true
+    }
+  },
+  "unanchored_evaluation_scaler_via_BLOCK_DATA.npz": {
+    "rewritten_mae_z": 0.0539779065692846,
+    "verified": false,
+    "problems": [
+      "fixture: preparation custody PREPARATION_CHANGED: BLOCK_DATA.npz differs from its own preparation record",
+      "fixture: a new result needs its prepared data anchored by the accepted prepare terminal; custody is PREPARATION_CHANGED",
+      "fixture: the normalized denominator on disk (9.125164391265214) is not the contract's sd_train (0.9125164391265214): SCALE"
+    ],
+    "preparation_custody": "PREPARATION_CHANGED",
+    "denominator": {
+      "sd_used": 9.125164391265214,
+      "contract_sd_train": 0.9125164391265214,
+      "equal_to_contract": false
+    }
+  },
+  "reference_design_relabel": {
+    "state": "PLANNED_REFERENCE",
+    "why": "the reference design's digest does not recompute from its content (relabeled or edited design)"
+  },
+  "reference_design_relabel_consistently_rehashed": {
+    "state": "PLANNED_REFERENCE",
+    "why": "the reference forecasts do not verify: ['gru_adapted_w60_s1: [\\'gru_adapted_w60_s1: the accepted terminal was reported under configuration f4e616f68d70, not this design 00477beb2bd6\\', \"gru_adapted_w60_s1: the accepted terminal\\'s arm is \\'gru_adapted_w60\\', the design says \\'UNTRAINED_REFERENCE\\': IDENTITY\", \\'block: preparation custody PREPARATION_OF_ANOTHER_DESIGN: the prepared data belongs to another design\\', \\'block: a new result needs its prepared data anchored by the accepted prepare terminal; custody is PREPARATION_OF_ANOTHER_DESIGN\\']', 'gru_adapted_w60_s2: [\\'gru_adapted_w60_s2: the accepted terminal was reported under configuration f4e616f68d70, not this design 00477beb2bd6\\', \"gru_adapted_w60_s2: the accepted terminal\\'s arm is \\'gru_adapted_w60\\', the design says \\'UNTRAINED_REFERENCE\\': IDENTITY\", \\'block: preparation custody PREPARATION_OF_ANOTHER_DESIGN: the prepared data belongs to another design\\', \\'block: a new result needs its prepared data anchored by the accepted prepare terminal; custody is PREPARATION_OF_ANOTHER_DESIGN\\']', 'gru_adapted_w60_s3: [\\'gru_adapted_w60_s3: the accepted terminal was reported under configuration f4e616f68d70, not this design 00477beb2bd6\\', \"gru_adapted_w60_s3: the accepted terminal\\'s arm is \\'gru_adapted_w60\\', the design says \\'UNTRAINED_REFERENCE\\': IDENTITY\", \\'block: preparation custody PREPARATION_OF_ANOTHER_DESIGN: the prepared data belongs to another design\\', \\'block: a new result needs its prepared data anchored by the accepted prepare terminal; custody is PREPARATION_OF_ANOTHER_DESIGN\\']']",
+    "units": [
+      "gru_adapted_w60_s1",
+      "gru_adapted_w60_s2",
+      "gru_adapted_w60_s3"
+    ]
+  },
+  "reference_genuine": {
+    "state": "VERIFIED_COMPARATOR",
+    "run": "/tmp/rp82-post-h3j_ipp2/block",
+    "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+    "reference_arm": "gru_adapted_w60",
+    "units": [
+      "gru_adapted_w60_s1",
+      "gru_adapted_w60_s2",
+      "gru_adapted_w60_s3"
+    ],
+    "seeds": [
+      1,
+      2,
+      3
+    ],
+    "n_evaluated": 10020,
+    "custody": "ACCEPTED_ARTIFACT_CHAIN for every forecast; metrics derived independently from the arrays"
+  },
+  "financial_populations_mixed": {
+    "B_strata": {
+      "mae_adam": {
+        "selected": "B_mae_adam_lr0.0005",
+        "n_candidates_compared": 3,
+        "lrs_compared": [
+          0.0005,
+          0.001,
+          0.003
+        ]
+      },
+      "mae_adamw": {
+        "selected": "B_mae_adamw_lr0.0005",
+        "n_candidates_compared": 3,
+        "lrs_compared": [
+          0.0005,
+          0.001,
+          0.003
+        ]
+      },
+      "huber_adam": {
+        "selected": "B_huber_adam_lr0.0005",
+        "n_candidates_compared": 3,
+        "lrs_compared": [
+          0.0005,
+          0.001,
+          0.003
+        ]
+      },
+      "huber_adamw": {
+        "selected": "B_huber_adamw_lr0.0005",
+        "n_candidates_compared": 3,
+        "lrs_compared": [
+          0.0005,
+          0.001,
+          0.003
+        ]
+      }
+    },
+    "A_reported_not_selected": [
+      "A_huber_adam",
+      "A_huber_adamw",
+      "A_mae_adam",
+      "A_mae_adamw"
+    ],
+    "CD_contrasts": 10,
+    "consumed": {
+      "A": 4,
+      "B": 12,
+      "C": 4,
+      "D": 6
+    }
+  },
+  "bootstrap_omits_present_isolated_week": {
+    "estimand": "mean paired effect over the usable week population (weeks that can enter a complete block)",
+    "mean_all_observed_weeks": -8.181818181818182,
+    "n_folds_present": 11,
+    "n_positions": 12,
+    "block_len": 2,
+    "complete_blocks": 9,
+    "isolated_observed_weeks": [
+      0
+    ],
+    "signs": {
+      "positive": 10,
+      "negative": 1,
+      "zero": 0
+    },
+    "sample_sd_ddof1": 30.45264580235412,
+    "mean": -8.181818181818182,
+    "interval_95": null,
+    "status": "INSUFFICIENT_SUPPORT_ISOLATED_WEEKS",
+    "why": "observed weeks at positions [0] count in the mean but could enter no complete block of length 2; an interval over the remaining weeks would estimate another population",
+    "reading": "descriptive only over all observed weeks"
+  }
+}

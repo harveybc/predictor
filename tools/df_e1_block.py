@@ -101,6 +101,24 @@ BLOCKS = {
                     "why": "a long window or a lag withdraws the train origins whose support reaches a non-finite padded row; every arm of "
                            "this block, the baseline included, trains on the SAME origins so context is never conflated with volume"},
     "Q3_VOLUME":   {"arms": ["volume_56d", "volume_112d"], "question": "more history with the evaluation, scaler and cadence FIXED"},
+    "CONTEXT_DAILY_LAG": {"arms": ["modular_w60", "daily_lag"],
+                          "question": "does a causal daily-lag channel y(t+h-1440) add predictive information to the W60 receiver, without paying for "
+                                      "W1440 or changing receiver depth? (RP87; scoped as THIS feature addition, not an abstract information-only effect)",
+                          "train_population": "COMMON_INTERSECTION",
+                          "why": "the lag withdraws the train origins whose lag row is non-finite; both arms train on the SAME origins",
+                          "primary_factorial": ["modular_w60", "daily_lag"],
+                          "inherited_control": {"arm": "long_window_crop60", "inherits_from": "modular_w60",
+                                                "declaration": "the exact-crop control is the SAME computation as modular_w60 (the W1440 input cropped to its last 60 rows "
+                                                               "before the extractor: identical initial weights, identical tensors, identical training prefix — proved by "
+                                                               "tests/test_df_e1_block.py::test_RP87_the_exact_crop_control_is_training_equivalent...); it inherits the "
+                                                               "baseline's measurement and is NOT fitted again",
+                                                "capacity": "8 127 parameters, equal to modular_w60; the lag arm has 8 208 (+81: one more input column in the group-0 detector, one head row, one skip row; measured at seal)"},
+                          "lag_declaration": {"channel": "y(t + h - 1440) at origin t, i.e. the target's value at the panel row labelled 1440 minutes before the LABEL row t+h",
+                                              "refers_to_timestamp": "label(t) + h - 1440 minutes = label(t) - 1380 minutes: a row 23 hours BEFORE the decision",
+                                              "availability": "at every decision t the row t-1380 is in the past by construction (h=60 <= 1440); the runner reads it from the "
+                                                              "padded panel rows and withdraws the origin when it is non-finite; no centered interpolation, no future fill",
+                                              "not_live_evidence": "the archive declares no publication delay; UNKNOWN is not zero delay (stated)"},
+                          "informed_by": "prior DEV results (RP72, RP79); NOT confirmatory", "tier": "TIER2"},
     "ARCH_X_CALENDAR": {"arms": ["modular_w60", "gru_adapted_w60", "calendar", "gru_calendar_w60", "randomised_calendar_control"],
                         "question": "architecture {modular, adapted GRU} x inputs {original 7, original + real calendar}, three paired seeds "
                                     "(12 cells), plus the modular randomised-calendar control (3 cells): an architecture difference separated "
@@ -212,7 +230,7 @@ def seal(block: str, *, source_run: Path = SOURCE_RUN, seeds=SEEDS, reuse: dict 
                             "enumerated inside [train span, validation week] from row identities; padded rows are support only"},
         "arms": arms, "seeds": list(seeds), "recipe": recipe or RECIPE, "pilot": PILOT, "limits": limits or LIMITS,
         "tier": tier or "TIER1: " + TIERS["TIER1"]["why"],
-        "factorial": {k: BLOCKS[block][k] for k in ("primary_factorial", "secondary_control", "informed_by") if k in BLOCKS[block]},
+        "factorial": {k: BLOCKS[block][k] for k in ("primary_factorial", "secondary_control", "informed_by", "inherited_control", "lag_declaration") if k in BLOCKS[block]},
         "capacity": capacity(arms, src_design["graph"]["assignment"], len(data_json["input_columns"]), int(data_json["target_channel"])),
         "contract_source": "REGISTRY household_W60_h60" if contract is None else "DECLARED_OVERRIDE (synthetic test panel)",
         "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels "
@@ -256,6 +274,34 @@ def reuse_record(root: Path) -> dict:
 def code_drift(design: dict) -> dict:
     """Which scientific source files differ now from the ones the design was sealed with."""
     return {name: {"sealed": digest, "now": sha_file(HERE/name)} for name, digest in design["source_code"].items() if sha_file(HERE/name) != digest}
+
+
+def training_equivalence(data: dict, design: dict, *, updates: int = 20, seed: int = 1) -> dict:
+    """RP87: the exact-crop control (W1440 input cropped to its last 60 rows) trained on the SAME origins with the SAME seed must
+    follow the SAME training prefix as modular_w60 (batch losses and weights); measured, not assumed from shapes."""
+    tf = _module("df_mod_e0")._tf()
+    R = design["recipe"]
+    j, h = int(data["target_channel"][0]), int(data["horizon"][0])
+    m, sd = float(data["scaler_mean"][j]), float(data["scaler_sd"][j])
+    X, asg = arm_inputs(data, arm_spec("modular_w60"), assignment=design["source_run"]["graph_assignment"])
+    origins = data.get("train_origins__modular_w60", data[[k for k in data if k.startswith("train_origins__")][0]])
+    origins = origins[origins >= 1439]                                      # both windows must fit
+    out = {}
+    for name, spec in (("modular_w60", arm_spec("modular_w60")), ("crop60", arm_spec("long_window_crop60"))):
+        tr = Batches(X, data["Y"], origins, int(spec["window"]), h, j, int(R["batch"]), mean=m, sd=sd, shuffle=True, seed=seed)
+        model = build_model(spec, asg, X.shape[1], j, seed)
+        tf.keras.utils.set_random_seed(seed)
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=float(R["learning_rate"])), loss=R["loss"])
+        losses = []
+        for i in range(updates):
+            xb, yb = tr[i % len(tr)]
+            losses.append(float(model.train_on_batch(xb, yb, return_dict=True)["loss"]))
+        out[name] = {"initial_weights": None, "losses": losses, "final_weights_sha256": weight_hash(model), "parameters": n_params(model)}
+    a, b = out["modular_w60"], out["crop60"]
+    diff = max(abs(x-y) for x, y in zip(a["losses"], b["losses"]))
+    return {"updates": updates, "origins": int(origins.size), "max_abs_loss_difference": diff, "final_weights_equal": a["final_weights_sha256"] == b["final_weights_sha256"],
+            "equivalent": diff <= 1e-6 and a["final_weights_sha256"] == b["final_weights_sha256"], "losses_modular": a["losses"], "losses_crop": b["losses"],
+            "reading": "identical batch losses and identical weights after the same updates on the same rows: the crop control is the baseline's computation"}
 
 
 def capacity(arms: list, assignment: list, p: int, j: int) -> dict:
@@ -1130,7 +1176,14 @@ def close(a) -> dict:
     adopted_rows = {}
     if adopted:
         doc = json.loads(Path(adopted).read_text())
-        adopted_rows = {c["cell_id"]: c for c in doc.get("cells", []) if not c.get("problems")}
+        adopted_rows = {c["cell_id"]: {"adopted_from": str(adopted), **(c.get("replay") or {})} for c in doc.get("cells", []) if not c.get("problems")}
+    # RP86: a replay already recorded for the SAME checkpoint bytes is not repeated (REPLAYS.json keyed by unit + weights digest)
+    prior = json.loads((root/"REPLAYS.json").read_text()) if (root/"REPLAYS.json").is_file() else {}
+    for unit, rep in prior.items():
+        if unit not in adopted_rows and rep.get("weights_file_sha256") and (root/"attempts"/unit/"cell.json").is_file():
+            if json.loads((root/"attempts"/unit/"cell.json").read_text()).get("weights_file_sha256") == rep["weights_file_sha256"]:
+                adopted_rows[unit] = {"adopted_from": "REPLAYS.json (same checkpoint bytes)", **{k: v for k, v in rep.items() if k != "weights_file_sha256"}}
+    report_paired = None
     for cell in design["cells"]:
         unit = cell["cell_id"]
         folder = root/"attempts"/unit
@@ -1145,11 +1198,14 @@ def close(a) -> dict:
         inits.setdefault((cell["seed"], rec["arm_spec"]["family"], rec["channels"], rec["arm_spec"]["window"]), set()).add(rec["initial_weights_sha256"])
         # RP86: a read-bound fresh-process replay for every NEWLY measured artifact; adopted independent replays are not repeated
         if unit in adopted_rows:
-            replays[unit] = {"adopted_from": str(adopted), **adopted_rows[unit].get("replay", {})}
+            replays[unit] = adopted_rows[unit]
         elif not getattr(a, "skip_replay", False):
             replays[unit] = replay_cell(root, unit)
-            if not replays[unit].get("allclose_1e_6"):
-                problems.append(f"{unit}: fresh-process checkpoint replay exceeds allclose(1e-6, 1e-6)")
+        else:
+            replays[unit] = {"skipped": True, "scope": "in-process reload parity only; no fresh-process replay for this closure"}
+        if unit in replays and "allclose_1e_6" in replays[unit] and not replays[unit].get("allclose_1e_6"):
+            problems.append(f"{unit}: fresh-process checkpoint replay exceeds allclose(1e-6, 1e-6)")
+        replays[unit]["weights_file_sha256"] = rec.get("weights_file_sha256")
         r = rows_by_unit.get(unit)
         rows.append({**cell, "mae_z": r["model_error_z"] if r else None, "mae_kw": r["model_error"] if r else None,
                      "naive_mae_z": r["naive_error_z"] if r else None, "skill_vs_naive": (r["skill_vs_naive"] or {}).get("value") if r else None,
@@ -1163,7 +1219,8 @@ def close(a) -> dict:
     if unpaired:
         problems.append(f"unpaired initial weights within a seed for the same graph: {unpaired}")
     verified_all = not problems and all(r["verified"] for r in rows) and len(rows) == len(expected)
-    report = {"schema": "df_e1_block_report.v2", "design_sha256": design["design_sha256"], "block": design["block"],
+    (root/"REPLAYS.json").write_text(json.dumps({u: r for u, r in replays.items() if "allclose_1e_6" in r}, indent=1, default=str))
+    report = {"schema": "df_e1_block_report.v2", "design_sha256": design["design_sha256"], "block": design["block"], "paired": None,
               "verification": {k: verification[k] for k in ("design_identity", "preparation_custody", "denominator", "verified_units", "unverified_units")},
               "common_evaluation_rows": int(data["common_eval"].size), "sigma_evaluation": verification["denominator"]["sd_used"],
               "rows": rows, "replays": replays, "problems": problems, "verified": verified_all, "spent_cpu_seconds": spent_cpu(root),
@@ -1198,7 +1255,8 @@ def close(a) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "pilot", "execute", "child", "close", "recost", "scan", "profile", "merge"])
+    ap.add_argument("command", choices=["seal", "prepare", "pilot", "execute", "child", "close", "recost", "scan", "profile", "merge", "equivalence"])
+    ap.add_argument("--updates", type=int, default=20)
     ap.add_argument("--seeds", type=int, nargs="*", default=None, help="execute only the cells of these seeds (a host block)")
     ap.add_argument("--parallel", type=int, default=None)
     ap.add_argument("--decision-from", type=Path, default=None, help="the coordinator root whose REPORT.pilot.json authorises execution")
@@ -1229,6 +1287,10 @@ def main(argv=None) -> int:
     if a.command == "child":
         child(a.root, a.unit)
         return 0
+    if a.command == "equivalence":
+        design = json.loads((a.root/"DESIGN.json").read_text()); data = load_data(a.root, design)
+        doc = training_equivalence(data, design, updates=a.updates); (a.root/"EQUIVALENCE.json").write_text(json.dumps(doc, indent=1))
+        print(json.dumps({k: doc[k] for k in ("updates", "origins", "max_abs_loss_difference", "final_weights_equal", "equivalent")})); return 0 if doc["equivalent"] else 1
     if a.command == "merge":
         out = merge(a.root, a.sources); print(json.dumps({"units": list(out["units"]), "problems": out["problems"]}, indent=1)); return 0 if not out["problems"] else 1
     if a.command == "recost":

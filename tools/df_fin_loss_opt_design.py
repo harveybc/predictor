@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SCHEMA = "fin_loss_opt_design.v3"
+SCHEMA = "fin_loss_opt_design.v4"
 
 
 def _module(name: str):
@@ -100,14 +100,20 @@ def seal() -> dict:
               "delta_rules": T.delta_candidates.__doc__.strip(),
               "recipe": _module("df_fin_runner").RECIPE, "benchmark_contract": contract,
               "runner": "tools/df_fin_runner.py (prepare / execute / close); acceptance FL01-FL08 on synthetic bars through the disposable stack",
-              "selection_and_replication": {"scheme": "CONFIGURATION-LEVEL: a candidate's validation MAE_z in a fold is the mean over the declared seeds; "
-                                                       "a configuration is complete only with every seed present; the seeds are then RETAINED as paired "
-                                                       "replicates for the development-test contrast (one difference series per seed); never best-of-seeds",
+              "selection_and_replication": {"scheme": "v4 (RP84): A = four fixed defaults REPORTED, never selected; B = the SAME three LRs tuned SEPARATELY within "
+                                                       "EACH loss x optimizer stratum at configuration level (validation MAE_z averaged over the paired seeds; a "
+                                                       "configuration is complete only with every seed); C (AdamW decay) and D (Huber delta) are PAIRED sensitivity "
+                                                       "contrasts against their default-LR B anchor, never competitors; seeds retained as paired replicates; identity "
+                                                       "(design, candidate, fold, seed) from records; duplicates, foreign, non-finite, incomplete and unverified records rejected",
                                             "seeds": [1, 2, 3], "declared_before_running": True,
-                                            "populations": "A fixed-default 2x2 reported as a contrast; B equal-budget LR (3 LRs for EVERY loss x optimizer "
-                                                           "cell) is where selection happens; C decay and D delta are declared factors; no selection across populations"},
-              "uncertainty": {"method": "moving-block bootstrap of the paired difference over CALENDAR fold positions (missing folds stay gaps; a block never "
-                                        "straddles a gap); minimum support = 5 complete blocks and 2 x block length folds, else DESCRIPTIVE",
+                                            "primary_contrasts": ["huber - mae within adam", "huber - mae within adamw", "adamw - adam within mae", "adamw - adam within huber"],
+                                            "runtime": "tools/df_fin_runner.select v4, consumed counts and strata reported per closure"},
+              "uncertainty": {"method": "moving-block bootstrap of the paired difference over CALENDAR fold positions (RP85): the ESTIMAND is the mean effect over "
+                                        "the usable week population (weeks that can enter a complete block); an observed week that can enter no block is a NAMED "
+                                        "support limitation (INSUFFICIENT_SUPPORT_ISOLATED_WEEKS, descriptive over all observed weeks, no interval); minimum support "
+                                        "= 5 complete blocks and 2 x block length folds, else DESCRIPTIVE; an interval is CONFIRMATORY only under a predeclared "
+                                        "coverage certificate for (positions, block length) measured against the nominal 0.95 with Monte Carlo error — none exists "
+                                        "for 26 positions / block 2, so financial intervals there are descriptive",
                               "coverage_validated": "dependent AR(1) synthetic controls (tests): 26 folds / block 4 / rho 0.3 -> adequate; 104 folds / block 8 / "
                                                     "rho 0.6 -> adequate; 26 folds / block 4 / rho 0.6 -> ~0.69, ANTI-CONSERVATIVE: at 26 DEV weeks the interval is "
                                                     "reported with this caveat and the sign counts and sample SD (ddof=1) are the primary reading",
@@ -125,6 +131,12 @@ def seal() -> dict:
                             "resolvable": "differences down to the float64 floor at ~0.5 (about 1e-16) survive arrays, json and the warehouse; "
                                           "what is DISTINGUISHABLE by inference is bounded by the fold-to-fold spread, reported, not assumed"},
               "hosts": {"blocks": "all candidates of a (fold, seed) on one host; workers proven with an accounted bounded governed child (RP78)", "no_padding": True},
+              "cost_pilot": {"what": "RP88 train-only cost diagnostic (tools/df_fin_runner.py cost-pilot): the pre-DEV training slice sealed before any byte, "
+                                     "2 receivers x 2 horizons x 4 fixed defaults, 200 observed updates each, warm-up/updates/validation/setup/replay/RSS measured apart, "
+                                     "usable examples counted; internal purged validation = the last week of the slice; DEV weeks and the reserve never read",
+                             "cap": "2 000 CPU seconds inside the aggregate budget", "output": "COST_PILOT.json + a governed terminal carrying its digest",
+                             "then": "the scientific allocation (26 candidates x 3 seeds x folds per receiver/horizon, history 52/104/208 weeks) is projected from "
+                                     "the measured costs and usable examples and RETURNED FOR REVIEW; no full search or scientific test scoring in this round"},
               "cost_envelope": {"basis": "synthetic acceptance on the compact receiver (W60, 5 channels): ~0.02-0.06 s per update on omega class CPUs; "
                                          "a 1500-update cell with 15 validation events on ~120 validation pairs costs well under 60 s; the real task's "
                                          "population per fold (52 weeks x 120 bars) makes an update cost comparable",

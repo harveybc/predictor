@@ -537,3 +537,28 @@ def test_RP86_a_fresh_process_checkpoint_replay_is_part_of_closure_for_new_cells
     assert r["allclose_1e_6"] and r["max_abs_prediction_difference"] < 1e-5 and abs(r["mae_z_replayed"]-r["mae_z_stored"]) < 1e-8
     (root/"attempts"/cell["cell_id"]/"weights.weights.h5").write_bytes(b"not a checkpoint")
     assert not K.replay_cell(root, cell["cell_id"])["allclose_1e_6"]
+
+
+# --- RP87: the daily-lag context block and the inherited exact-crop control ------------------------------------------------------------
+
+def test_RP87_the_exact_crop_control_is_training_equivalent_to_the_baseline_and_the_block_declares_the_lag(world, tmp_path):
+    d = _design("CONTEXT_DAILY_LAG", world["source"], seeds=(1,))
+    assert d["train_population"] == "COMMON_INTERSECTION" and d["tier"].startswith("TIER2") and [a["arm"] for a in d["arms"]] == ["modular_w60", "daily_lag"]
+    lag = d["factorial"]["lag_declaration"]
+    assert "1380 minutes" in lag["refers_to_timestamp"] and "no centered interpolation" in lag["availability"] and "UNKNOWN is not zero delay" in lag["not_live_evidence"]
+    inh = d["factorial"]["inherited_control"]
+    assert inh["arm"] == "long_window_crop60" and inh["inherits_from"] == "modular_w60"
+    assert d["capacity"]["daily_lag"]["parameters"] - d["capacity"]["modular_w60"]["parameters"] == 81 and d["capacity"]["daily_lag"]["parameter_delta_vs_base_inputs"] == 81
+    K.prepare(d, tmp_path/"r", frame=world["frame"])
+    data = K.load_data(tmp_path/"r", d)
+    eq = K.training_equivalence(data, d, updates=6)
+    assert eq["equivalent"] and eq["final_weights_equal"] and eq["max_abs_loss_difference"] <= 1e-6
+    # a NON-equivalent pair (the lag arm) fails the same check: the proof is behavioural, not a shape argument
+    tf = E._tf()
+    X, asg = K.arm_inputs(data, K.arm_spec("daily_lag"), assignment=ASSIGNMENT)
+    o = data["train_origins__daily_lag"][data["train_origins__daily_lag"] >= 1439]
+    tr = K.Batches(X, data["Y"], o, 60, 60, 6, 64, mean=float(data["scaler_mean"][6]), sd=float(data["scaler_sd"][6]), shuffle=True, seed=1)
+    m = K.build_model(K.arm_spec("daily_lag"), asg, 8, 6, 1); tf.keras.utils.set_random_seed(1)
+    m.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.003), loss="mae")
+    losses = [float(m.train_on_batch(*tr[i], return_dict=True)["loss"]) for i in range(6)]
+    assert max(abs(x-y) for x, y in zip(losses, eq["losses_modular"])) > 1e-6
