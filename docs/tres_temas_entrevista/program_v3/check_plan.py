@@ -6,7 +6,8 @@ from pathlib import Path
 
 REQUIRED = {
     "P-MOD": {"MOD-E0-DEV", "MOD-ARCH-COMPARE", "MOD-E1",
-              "MOD-FROZEN-PREFIX", "MOD-CORE-PRETRAIN", "MOD-CONF", "MOD-E3"},
+              "MOD-FROZEN-PREFIX", "MOD-CORE-PRETRAIN", "MOD-CONF", "MOD-E3",
+              "FIN-LOSS-OPT"},
     "P-L2": {"L2-PUBLIC-RL"},
     "P-CAP": {"CAP-CALIBRATION"},
     "P-PRE": {"PRE-NOISE"},
@@ -61,7 +62,7 @@ def validate(state, root):
             issues.append(f"proposal coverage {proposal}")
 
     documents = state.get("documents", {})
-    for name in ("master", "metrics", "orders", "core_pretraining"):
+    for name in ("master", "metrics", "orders", "core_pretraining", "financial_loss_policy"):
         path = documents.get(name)
         if not path or not (root / path).is_file():
             issues.append(f"missing document {name}")
@@ -89,6 +90,7 @@ def validate(state, root):
             issues.append(f"unknown task {task_id}")
 
     required_dependencies = {
+        "FIN-LOSS-OPT": ({"BUSINESS-CONTRACT"}, "financial loss prerequisites"),
         "MOD-E1": ({"MOD-E0-DEV", "MOD-ARCH-COMPARE"}, "E1 prerequisites"),
         "MOD-FROZEN-PREFIX": ({"MOD-E1"}, "prefix prerequisites"),
         "MOD-CORE-PRETRAIN": ({"MOD-E1", "MOD-FROZEN-PREFIX"}, "core prerequisites"),

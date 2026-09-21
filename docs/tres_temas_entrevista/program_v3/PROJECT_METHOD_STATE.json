@@ -8,7 +8,7 @@
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "HUBER_ADAMW_FACTORIAL_12_OF_12_VERIFIED_PHASE2_DESIGN_NEXT",
+  "handoff_status": "HOUSEHOLD_FACTORIAL_PRESERVED_PHASE2_AND_FINANCIAL_LOSS_DESIGN_NEXT",
   "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
   "architecture_comparison": {
     "reference": "ARCH-A",
@@ -24,6 +24,8 @@
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
+    "Design mandatory FIN-LOSS-OPT under FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md: MAE/Huber x Adam/AdamW, fine tuning and marginal-error precision; no financial winner from electricity",
+    "Stop historical OLAP/branch searches; heuristic-strategy/noise reruns are not prerequisites of FIN-LOSS-OPT",
     "Consume Musashi's completed Huber/AdamW 12-cell comparison and exact warehouse closure, docs/audits/work_plan/MUSASHI_HUBER_ADAMW_RESULTS_2026_09_21.md; do not repeat it",
     "Prepare the controlled phase-2 design and acceptance tests under docs/handoffs/MUSASHI_POST_HUBER_PHASE2_2026_09_21.md; no scientific training until that design is ready",
     "Phase 2 of the diagnostic: input information (calendar sin/cos, daily context) and train volume, one factor at a time, after the temporal and availability checks; R0/R1/R2 return only with the adequate objective common to every arm",
@@ -34,6 +36,7 @@
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
     "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
     "orders": "../../handoffs/MUSASHI_POST_HUBER_PHASE2_2026_09_21.md",
+    "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
     "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
     "external_review": "../../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md",
     "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
@@ -47,6 +50,7 @@
       "MOD-FROZEN-PREFIX",
       "MOD-CORE-PRETRAIN",
       "MOD-CONF",
+      "FIN-LOSS-OPT",
       "MOD-E3"
     ],
     "P-L2": [
@@ -286,6 +290,15 @@
       "evidence": [],
       "next_action": "Reuse T0-T2/D3 within scope; design per-variable/public transfer with adequate receivers",
       "deliverable": "Conditional utility, transfer/cost, abstention and DOIN parity"
+    },
+    {
+      "id": "FIN-LOSS-OPT",
+      "owner": "Satoshi",
+      "status": "NOT_STARTED",
+      "depends_on": ["BUSINESS-CONTRACT"],
+      "evidence": [],
+      "next_action": "Design FL01-FL08 and the governed financial MAE/Huber x Adam/AdamW experiment now; execute after financial data/causality and reviewed design/resource gates, before financial forecasting recipe selection; no historical OLAP search or heuristic rerun prerequisite",
+      "deliverable": "Paired normalized error and naive skill by horizon/fold/model, precision for 1e-5/1e-6 effects, tuned and default recipes, temporal uncertainty, cost and full warehouse closure; no profit guarantee"
     },
     {
       "id": "INC-SIMULATION",

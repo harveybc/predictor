@@ -18,6 +18,20 @@ class PlanChecks(unittest.TestCase):
     def test_actual_state(self):
         self.assertEqual(validate(self.state, ROOT), [])
 
+    def test_financial_loss_comparison_cannot_disappear(self):
+        self.state["proposal_coverage"]["P-MOD"].remove("FIN-LOSS-OPT")
+        self.state["tasks"] = [t for t in self.state["tasks"] if t["id"] != "FIN-LOSS-OPT"]
+        self.assertIn("unknown task FIN-LOSS-OPT", " ".join(validate(self.state, ROOT)))
+
+    def test_financial_loss_policy_must_exist(self):
+        self.state["documents"]["financial_loss_policy"] = "missing.md"
+        self.assertIn("missing document financial_loss_policy", " ".join(validate(self.state, ROOT)))
+
+    def test_financial_loss_requires_business_contract(self):
+        task = next(t for t in self.state["tasks"] if t["id"] == "FIN-LOSS-OPT")
+        task["depends_on"] = []
+        self.assertIn("financial loss prerequisites", " ".join(validate(self.state, ROOT)))
+
     def test_missing_proposal(self):
         del self.state["proposal_coverage"]["P-L2"]
         self.assertIn("proposal coverage", " ".join(validate(self.state, ROOT)))

@@ -1,10 +1,16 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
-Actualizado: 2026-09-20. Responsable del programa y revision: Musashi.
+Actualizado: 2026-09-21. Responsable del programa y revision: Musashi.
 Ejecucion delegada: Satoshi. Estado: E0-DEV, etapa ARCH y piloto E1 EJECUTADOS;
 piloto historico no gobernado y SUCESOR E1 EJECUTADO; sin confirmacion.
 
-**Vigente:** [RP57-RP64](../handoffs/MUSASHI_PROGRAM_RP57_RP64_2026_09_20.md).
+**Vigente:** [preparacion fase 2 y FIN-LOSS-OPT](../handoffs/MUSASHI_POST_HUBER_PHASE2_2026_09_21.md).
+RP57-RP64 y el factorial electrico Huber/AdamW estan ejecutados y preservados.
+**Adicion aprobada:** [comparacion financiera obligatoria de losses y optimizers](program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md).
+No hay loss ganadora para trading; no descartar mejoras normalizadas de 1e-5/1e-6
+por pequenas. No buscar el OLAP antiguo ni repetir heuristic-strategy como requisito.
+
+Antecedente de [RP57-RP64](../handoffs/MUSASHI_PROGRAM_RP57_RP64_2026_09_20.md):
 [Revision ML y comparadores](../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md):
 el sucesor SI se ejecuto en RP55. Musashi recomputo nueve fits sobre 10 020
 origenes conservados, con naive/ridge sobre filas iguales. R0 MAE 0.546929 kW
@@ -300,6 +306,18 @@ admisibles suficientes. No usar los mismos runs para ajustar y afirmar transfere
 
 ## 7. Negocio, RL y modelos de referencia
 
+**FIN-LOSS-OPT es obligatorio antes de fijar la receta de forecasting financiero.**
+Su [contrato](program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md) exige el
+factorial MAE/Huber x Adam/AdamW, defaults identificados y tuning acotado,
+receptores/contextos adecuados, validacion semanal y sensibilidad numerica a
+mejoras marginales. Diseno en paralelo a E1; ejecucion al cumplir los contratos
+financieros, no condicionada a un ganador electrico. Estado: NO EJECUTADO.
+MAE_z/RMSE_z y skill frente al ingenuo se reportan por horizonte y fold, con
+escala train compartida, valores completos e incertidumbre pareada. La mejora
+economica reportada por el owner motiva esta precision, no garantiza beneficios.
+No requiere repetir la estrategia heuristica; tampoco reemplaza la evaluacion
+RL E3 ni cambia el estimando confirmatorio de las propuestas.
+
 Forecasting publico E1/E2 conserva las referencias de la propuesta: ingenuos,
 estadistico multivariado pertinente, DLinear, PatchTST, iTransformer, DUET y uno
 entre MTST/Pathformer/TimeMixer elegido antes de resultados de desarrollo. No
@@ -358,7 +376,7 @@ estructura documental, **no** aprueba experimentos.
 cola, responsables y alcance autorizado. [Chequeo documental](program_v3/check_plan.py)
 detecta omisiones de frentes, pasos, carriles y dependencias. No llena resultados.
 
-[Orden vigente RP1-RP8 para Satoshi](../handoffs/MUSASHI_PROGRAM_RESTART_RP1_RP8_2026_09_18.md).
+[Orden vigente: fase 2 y diseno financiero FIN-LOSS-OPT](../handoffs/MUSASHI_POST_HUBER_PHASE2_2026_09_21.md).
 Satoshi debe incorporar esta revision a su work plan y publicar retorno completo,
 sin pedir "continua" por cada paso. Musashi revisara tanto la adecuacion ML como
 la implementacion y los resultados; no se atribuye revision a Satoshi en nombre

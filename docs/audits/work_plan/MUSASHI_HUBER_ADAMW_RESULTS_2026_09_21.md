@@ -109,3 +109,13 @@ and terminal remain intact. The scientific recipe was not changed by the fix.
    household experiment neither reproduces nor invalidates that historical run.
 6. Input information and then volume remain next, with explicit receptive-field,
    sample-size, stopping and baseline controls. No return to R0/R1/R2 yet.
+
+## Owner disposition, 2026-09-21 (additive)
+
+The continuity reference above applies only to the household diagnostic.
+No default loss is selected for trading. The owner requires the independent
+[FIN-LOSS-OPT comparison](../../tres_temas_entrevista/program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md)
+with fine tuning and explicit measurement of marginal normalized improvements.
+The interim suggestion to generalize MAE+AdamW is superseded. These measured
+results and their limitations remain unchanged. No historical OLAP search or
+heuristic-strategy rerun is a prerequisite of that comparison.
