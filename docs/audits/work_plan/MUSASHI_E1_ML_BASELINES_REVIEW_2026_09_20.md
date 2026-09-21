@@ -38,6 +38,14 @@ La propuesta doctoral mantiene MASE convencional y sus metricas complementarias.
 
 ## Antecedente antiguo localizado
 
+**Aclaracion posterior del owner (20-sep):** la unica mejora valida que recuerda
+fue en fase 3, despues de corregir una fuga causal en la descomposicion wavelet
+de una entrada; antes hubo un error anormalmente bajo (~0.001). Sospecha que el
+CSV citado aqui pertenece a una ejecucion afectada. NO he establecido esa
+identidad. Los numeros siguientes son transcripcion/comparacion aritmetica de
+un resumen, no evidencia aceptada de capacidad predictiva. Disposicion:
+CAUSALITY_UNVERIFIED, no apto como benchmark hasta reconstruir ambos linajes.
+
 `examples/results/phase_1_daily/phase_1_tcn_neat_1d_results.csv` contiene:
 
 | Horizonte rotulado | MAE test | Naive MAE test | Mejora desde resumen redondeado |

@@ -20,6 +20,9 @@ RP56 declara cierre gobernado; esta revision verifica arrays locales, no reempla
 la auditoria completa de adopcion/warehouse. Historicos conservados, sin ganador
 universal ni confirmacion.
 No hay nueva decision del owner para el desarrollo autorizado. No repetir E0.
+Antecedentes financieros: el owner identifica una mejora valida en fase 3 y
+un resultado anterior afectado por fuga wavelet. RP58 debe separar ambos por
+linaje. El TCN NEAT antes citado es CAUSALITY_UNVERIFIED, no benchmark aceptado.
 [13D](program_v3/13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md)
 resuelve el escenario de simulacion: capital real y exposicion no bloquean DEV.
 

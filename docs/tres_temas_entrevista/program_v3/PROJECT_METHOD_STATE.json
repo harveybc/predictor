@@ -24,7 +24,7 @@
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
-    "RP57-RP58: baseline-first multi-scale reports and recovery of historical log1p/naive evidence, never infer scale from a small MAE",
+    "RP57-RP58: baseline-first reports; prioritize phase-3 pre/post wavelet-fix lineage. Previously cited TCN CSV is causality-unverified, not an accepted performance benchmark",
     "RP59-RP61: data/target/inverse/time audit, loss/stopping diagnosis and faithful independent neural reference from primary literature",
     "RP62-RP63: predeclared bounded DEV diagnostic separating training, information, volume and architecture; then paired pretraining only when justified",
     "RP64: by-content governed ingestion, per-host observed cost and one complete return; aggregate 14400 CPU seconds; no new owner authorization"
@@ -502,5 +502,12 @@
       "R0_skill_percent": 11.410119386128436
     },
     "live_warehouse_rechecked_by_reviewer": false
+  },
+  "historical_forecasting_notice": {
+    "source": "OWNER_CLARIFICATION_2026_09_20",
+    "owner_report": "One valid improvement in phase 3 after correcting a causal wavelet-input leak; an earlier extraordinarily low MAE around 0.001 was invalid",
+    "exact_run_mapping": "NOT_YET_ESTABLISHED",
+    "previously_cited_tcn_csv_status": "CAUSALITY_UNVERIFIED_NOT_AN_ACCEPTED_BENCHMARK",
+    "required_action": "RP58: reconstruct pre/post correction lineage and end-to-end decision-time causality before reference use; keep numeric summaries without scientific promotion"
   }
 }
