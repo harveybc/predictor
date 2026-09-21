@@ -93,8 +93,11 @@ BLOCKS = {
                                                                        "inputs, split, transform and monitoring schedule"},
     "Q1_CALENDAR": {"arms": ["calendar", "randomised_calendar_control"], "question": "does the wall-clock position add information at h60? "
                                                                           "baseline modular_w60 reused from DEV_MATCHED when its contract matches"},
-    "Q2_CONTEXT":  {"arms": ["daily_lag", "long_window_own_depth", "long_window_crop60", "long_window_local_support_67",
-                             "short_window_deep_core"], "question": "information beyond the hour, separated from depth and from padding"},
+    "Q2_CONTEXT":  {"arms": ["modular_w60", "daily_lag", "long_window_own_depth", "long_window_crop60", "long_window_local_support_67",
+                             "short_window_deep_core"], "question": "information beyond the hour, separated from depth and from padding",
+                    "train_population": "COMMON_INTERSECTION",
+                    "why": "a long window or a lag withdraws the train origins whose support reaches a non-finite padded row; every arm of "
+                           "this block, the baseline included, trains on the SAME origins so context is never conflated with volume"},
     "Q3_VOLUME":   {"arms": ["volume_56d", "volume_112d"], "question": "more history with the evaluation, scaler and cadence FIXED"},
 }
 RECIPE = {"loss": "mae", "optimizer": "adam", "learning_rate": 0.003, "batch": 64, "max_updates": 4000,
@@ -177,6 +180,8 @@ def seal(block: str, *, source_run: Path = SOURCE_RUN, seeds=SEEDS, reuse: dict 
     design = {
         "schema": SCHEMA, "purpose": f"E1_BLOCK_{block}", "block": block, "phase": "DEVELOPMENT",
         "state": "SEALED_NOT_EXECUTED", "question": BLOCKS[block]["question"],
+        "train_population": BLOCKS[block].get("train_population", "PER_ARM_ADMISSIBLE"),
+        "train_population_why": BLOCKS[block].get("why", "every arm of this block admits the same origins by construction (W60, 28 d, base inputs)"),
         "source_run": {"root": str(source_run), "design_sha256": src_design["design_sha256"],
                        "data_sha256": data_json["data_sha256"], "panel_sha256": data_json["panel_sha256"],
                        "slice_rows": [lo, hi], "train_end_row": train_end, "evaluation_origins": data_json["enumerator"]["validation"]["admissible"],
@@ -330,6 +335,11 @@ def counts_from_identities(train_origins: np.ndarray, eval_origins: np.ndarray, 
                        "support rows are excluded from the train-only count"}
 
 
+def feasibility_train_before(arm: str, ts_ns, inputs_finite, label_finite, train_end_local: int) -> np.ndarray:
+    """The W60/28 d baseline's own admissible train origins (before any block-level intersection): the binding to the source."""
+    return admissible_origins(ts_ns, inputs_finite, label_finite, W=W0, h=H0, lo=train_end_local - 28*DAY + W0 - 1, hi=train_end_local - (W0+H0))
+
+
 def prepare(design: dict, root: Path, *, frame=None) -> dict:
     """Read the delivered panel rows the block declares, build every channel, enumerate every arm's origins from
     row identities, derive the COMMON evaluation mask, apply the COMMON scaler — before any score.
@@ -382,6 +392,16 @@ def prepare(design: dict, root: Path, *, frame=None) -> dict:
         origins[a["arm"]] = {"train": train, "validation": val}
         feasibility[a["arm"]] = {"train_candidates": [t_lo + W0 - 1, train_end_local - (W0+H0)], "train_admissible": int(train.size),
                                  "validation_admissible": int(val.size), "window": W, "needs_lag": need_lag}
+    # a block whose arms withdraw different train origins (long windows, lags over padded rows) trains EVERY arm on the
+    # intersection, so context is never conflated with volume; the per-arm admissible counts stay recorded above
+    train_common = None
+    if design.get("train_population") == "COMMON_INTERSECTION":
+        for a in design["arms"]:
+            t = origins[a["arm"]]["train"]
+            train_common = t if train_common is None else np.intersect1d(train_common, t)
+        for a in design["arms"]:
+            feasibility[a["arm"]]["train_admissible_before_intersection"] = int(origins[a["arm"]]["train"].size)
+            origins[a["arm"]]["train"] = train_common
     # the COMMON evaluation set: admissible for every arm, finite label, finite daily lookup — as the source did
     common = None
     for a in design["arms"]:
@@ -397,9 +417,13 @@ def prepare(design: dict, root: Path, *, frame=None) -> dict:
     base = next((a for a in design["arms"] if a["window"] == W0 and a["train_days"] == 28 and a["features"] in ("base", "calendar", "randomised_calendar")), None)
     binding = {"baseline_arm_checked": base["arm"] if base else None}
     if base is not None:
-        binding["train_origins_equal_source"] = bool(np.array_equal(origins[base["arm"]]["train"], src_train))
+        base_train = origins[base["arm"]]["train"] if train_common is None else feasibility_train_before(base["arm"], ts_ns, inputs_finite, label_finite, train_end_local)
+        binding["train_origins_equal_source"] = bool(np.array_equal(base_train, src_train))
         if not binding["train_origins_equal_source"]:
             raise BlockRefusal("REFUSED: the block's enumeration does not reproduce the source run's train origins")
+        if train_common is not None:
+            binding["common_train_origins"] = int(train_common.size)
+            binding["common_train_subset_of_source"] = bool(np.isin(train_common, src_train).all())
     if not np.array_equal(src_Y, Y[src["slice_rows"][0]-lo: src["slice_rows"][1]-lo], equal_nan=True):
         raise BlockRefusal("REFUSED: the target rows are not the source run's")
     binding["common_evaluation_equals_source"] = bool(np.array_equal(common, src_eval))

@@ -190,6 +190,27 @@ def test_future_values_and_labels_do_not_reach_earlier_windows_features_or_label
     assert b["binding_to_source"]["common_evaluation_equals_source"]                  # its own source saw the same gaps
 
 
+def test_a_context_block_trains_every_arm_on_the_common_train_intersection_and_still_binds_to_the_source(world, tmp_path):
+    """A NaN inside the padded rows withdraws long-window (and lag) train origins but not W60 ones: the block trains
+    EVERY arm, the baseline included, on the intersection, records the per-arm counts before it, and the baseline's
+    own enumeration still reproduces the source (the binding)."""
+    d = _design("Q2_CONTEXT", world["source"])
+    assert d["train_population"] == "COMMON_INTERSECTION" and "modular_w60" in [a["arm"] for a in d["arms"]]
+    frame2 = world["frame"].copy()
+    frame2.loc[world["lo"] - 200, "Voltage"] = np.nan                                           # a non-finite row in the pad
+    rec = K.prepare(d, tmp_path/"r", frame=frame2)
+    with np.load(tmp_path/"r"/"BLOCK_DATA.npz") as z:
+        trains = {a["arm"]: z[f"train_origins__{a['arm']}"] for a in d["arms"]}
+    sizes = {k: v.size for k, v in trains.items()}
+    assert len(set(sizes.values())) == 1                                                        # one train population for the block
+    before = {a: rec["feasibility"][a]["train_admissible_before_intersection"] for a in trains}
+    assert before["modular_w60"] > before["long_window_own_depth"] and before["modular_w60"] > sizes["modular_w60"]
+    assert rec["binding_to_source"]["train_origins_equal_source"] and rec["binding_to_source"]["common_train_subset_of_source"]
+    assert rec["binding_to_source"]["common_train_origins"] == sizes["modular_w60"]
+    for v in trains.values():
+        assert np.array_equal(v, trains["modular_w60"])
+
+
 def test_the_common_evaluation_mask_is_the_intersection_across_arms(world, tmp_path):
     d = _design("Q2_CONTEXT", world["source"])
     frame2 = world["frame"].copy()
