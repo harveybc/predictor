@@ -455,7 +455,11 @@ def _fit_batched(model, train_ds, val_ds, *, max_updates, patience, lr, seed) ->
     va = [float(v) for v in hist.history["val_loss"]]
     stop = "UPDATE_BUDGET" if counter.budget_stop else ("EARLY_STOPPING" if es.stopped_epoch else "EPOCH_BUDGET")
     restored = float(model.evaluate(val_ds, verbose=0))
-    return {"updates": int(counter.updates), "epochs": len(va), "steps_per_epoch": steps, "max_epochs_allowed": max_epochs, "max_updates": int(max_updates),
+    # RP60: the counted updates must BE the optimiser's own step count, not a proxy for it
+    iterations = int(model.optimizer.iterations.numpy()) if hasattr(model.optimizer, "iterations") else None
+    return {"updates": int(counter.updates), "optimizer_iterations": iterations,
+            "updates_are_optimizer_iterations": (iterations is None or iterations == counter.updates),
+            "epochs": len(va), "steps_per_epoch": steps, "max_epochs_allowed": max_epochs, "max_updates": int(max_updates),
             "curve": {"train": [float(v) for v in hist.history["loss"]], "validation": va}, "stop_reason": stop,
             "restored_checkpoint_epoch": int(np.argmin(va)) + 1, "restored_validation_loss": restored,
             "restore_verified": bool(abs(restored - min(va)) <= 1e-4 * max(1.0, abs(min(va)))),

@@ -1,0 +1,367 @@
+{
+ "schema": "df_e1_optimisation_probe.v1",
+ "at": "2026-09-21T02:52:44Z",
+ "root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3",
+ "route": {
+  "largest_difference_from_the_panel_value": 2.1628627777658949e-07,
+  "reproduces_persistence": true,
+  "matches_the_stored_control": true,
+  "mae_through_the_route": 0.6173720561051231,
+  "mae_of_the_control": 0.6173720558882235,
+  "identical_metric": true,
+  "reading": "the scaling, its inverse and the metric agree end to end; a failure here would invalidate every number the run reports"
+ },
+ "curves": {
+  "R0_s1": {
+   "epochs": 6,
+   "validation_curve": [
+    0.765623152256012,
+    0.7270731925964355,
+    0.7179271578788757,
+    0.7445771098136902,
+    0.7617798447608948,
+    0.7692567706108093
+   ],
+   "train_curve": [
+    0.8787745833396912,
+    0.7375243902206421,
+    0.7120715379714966,
+    0.693044126033783,
+    0.6606433391571045,
+    0.6272920370101929
+   ],
+   "best_epoch_by_curve": 3,
+   "recorded_restored_epoch": 3,
+   "agree": true,
+   "restored_validation_loss": 0.7179271578788757,
+   "best_value_on_the_curve": 0.7179271578788757,
+   "restore_verified": true,
+   "train_minus_validation_at_the_end": -0.14196473360061646,
+   "validation_rose_after_the_best": 0.051329612731933594,
+   "updates": 3762,
+   "optimizer_iterations": null,
+   "stop_reason": "EARLY_STOPPING"
+  },
+  "R0_s2": {
+   "epochs": 7,
+   "validation_curve": [
+    0.7626002430915833,
+    0.7541024088859558,
+    0.7667643427848816,
+    0.7655408978462219,
+    0.7445630431175232,
+    0.7884514927864075,
+    0.8249912261962891
+   ],
+   "train_curve": [
+    0.9208920001983643,
+    0.7421742677688599,
+    0.7024160027503967,
+    0.6812084317207336,
+    0.6501762866973877,
+    0.6354519128799438,
+    0.612377941608429
+   ],
+   "best_epoch_by_curve": 5,
+   "recorded_restored_epoch": 5,
+   "agree": true,
+   "restored_validation_loss": 0.7445630431175232,
+   "best_value_on_the_curve": 0.7445630431175232,
+   "restore_verified": true,
+   "train_minus_validation_at_the_end": -0.2126132845878601,
+   "validation_rose_after_the_best": 0.08042818307876587,
+   "updates": 4000,
+   "optimizer_iterations": null,
+   "stop_reason": "UPDATE_BUDGET"
+  },
+  "R0_s3": {
+   "epochs": 4,
+   "validation_curve": [
+    0.7271406054496765,
+    0.7399136424064636,
+    0.7425057291984558,
+    0.7809649705886841
+   ],
+   "train_curve": [
+    0.8633435964584351,
+    0.7408432960510254,
+    0.7121220231056213,
+    0.6808407306671143
+   ],
+   "best_epoch_by_curve": 1,
+   "recorded_restored_epoch": 1,
+   "agree": true,
+   "restored_validation_loss": 0.7271406054496765,
+   "best_value_on_the_curve": 0.7271406054496765,
+   "restore_verified": true,
+   "train_minus_validation_at_the_end": -0.10012423992156982,
+   "validation_rose_after_the_best": 0.05382436513900757,
+   "updates": 2508,
+   "optimizer_iterations": null,
+   "stop_reason": "EARLY_STOPPING"
+  },
+  "R1_s1": {
+   "epochs": 6,
+   "validation_curve": [
+    0.7590721249580383,
+    0.7306540012359619,
+    0.7205308675765991,
+    0.7649804949760437,
+    0.7379351854324341,
+    0.7492023706436157
+   ],
+   "train_curve": [
+    0.9612694382667542,
+    0.734335720539093,
+    0.7109949588775635,
+    0.6890204548835754,
+    0.6617333889007568,
+    0.6383484601974487
+   ],
+   "best_epoch_by_curve": 3,
+   "recorded_restored_epoch": 3,
+   "agree": true,
+   "restored_validation_loss": 0.7205308675765991,
+   "best_value_on_the_curve": 0.7205308675765991,
+   "restore_verified": true,
+   "train_minus_validation_at_the_end": -0.11085391044616699,
+   "validation_rose_after_the_best": 0.0286715030670166,
+   "updates": 3762,
+   "optimizer_iterations": null,
+   "stop_reason": "EARLY_STOPPING"
+  },
+  "R1_s2": {
+   "epochs": 7,
+   "validation_curve": [
+    0.7770071625709534,
+    0.7450730204582214,
+    0.7519295811653137,
+    0.7531261444091797,
+    0.7367927432060242,
+    0.7381937503814697,
+    0.7904937267303467
+   ],
+   "train_curve": [
+    1.6853258609771729,
+    0.7545793652534485,
+    0.7204049229621887,
+    0.7014076709747314,
+    0.6847375631332397,
+    0.6699657440185547,
+    0.6642643809318542
+   ],
+   "best_epoch_by_curve": 5,
+   "recorded_restored_epoch": 5,
+   "agree": true,
+   "restored_validation_loss": 0.7367927432060242,
+   "best_value_on_the_curve": 0.7367927432060242,
+   "restore_verified": true,
+   "train_minus_validation_at_the_end": -0.12622934579849243,
+   "validation_rose_after_the_best": 0.05370098352432251,
+   "updates": 4000,
+   "optimizer_iterations": null,
+   "stop_reason": "UPDATE_BUDGET"
+  },
+  "R1_s3": {
+   "epochs": 7,
+   "validation_curve": [
+    0.769269585609436,
+    0.7783003449440002,
+    0.8327457308769226,
+    0.7548788189888,
+    0.7786912322044373,
+    0.7886633276939392,
+    0.7892010807991028
+   ],
+   "train_curve": [
+    1.3178237676620483,
+    0.7456992268562317,
+    0.7131984829902649,
+    0.6839651465415955,
+    0.6675147414207458,
+    0.64345383644104,
+    0.6094945073127747
+   ],
+   "best_epoch_by_curve": 4,
+   "recorded_restored_epoch": 4,
+   "agree": true,
+   "restored_validation_loss": 0.7548788189888,
+   "best_value_on_the_curve": 0.7548788189888,
+   "restore_verified": true,
+   "train_minus_validation_at_the_end": -0.17970657348632812,
+   "validation_rose_after_the_best": 0.034322261810302734,
+   "updates": 4000,
+   "optimizer_iterations": null,
+   "stop_reason": "UPDATE_BUDGET"
+  },
+  "R2_s1": {
+   "epochs": 5,
+   "validation_curve": [
+    0.7673321962356567,
+    0.7293906211853027,
+    0.7486763596534729,
+    0.7814239859580994,
+    0.7662310600280762
+   ],
+   "train_curve": [
+    0.9545350670814514,
+    0.7351281642913818,
+    0.7123671174049377,
+    0.6904680132865906,
+    0.6562371850013733
+   ],
+   "best_epoch_by_curve": 2,
+   "recorded_restored_epoch": 2,
+   "agree": true,
+   "restored_validation_loss": 0.7293906211853027,
+   "best_value_on_the_curve": 0.7293906211853027,
+   "restore_verified": true,
+   "train_minus_validation_at_the_end": -0.10999387502670288,
+   "validation_rose_after_the_best": 0.03684043884277344,
+   "updates": 3135,
+   "optimizer_iterations": null,
+   "stop_reason": "EARLY_STOPPING"
+  },
+  "R2_s2": {
+   "epochs": 7,
+   "validation_curve": [
+    0.7628118991851807,
+    0.7626067399978638,
+    0.772236168384552,
+    0.7574562430381775,
+    0.7446594834327698,
+    0.7391136884689331,
+    0.7896288633346558
+   ],
+   "train_curve": [
+    1.4425071477890015,
+    0.7457753419876099,
+    0.7177512049674988,
+    0.7016104459762573,
+    0.6847977638244629,
+    0.6646016836166382,
+    0.6591874361038208
+   ],
+   "best_epoch_by_curve": 6,
+   "recorded_restored_epoch": 6,
+   "agree": true,
+   "restored_validation_loss": 0.7391136884689331,
+   "best_value_on_the_curve": 0.7391136884689331,
+   "restore_verified": true,
+   "train_minus_validation_at_the_end": -0.13044142723083496,
+   "validation_rose_after_the_best": 0.050515174865722656,
+   "updates": 4000,
+   "optimizer_iterations": null,
+   "stop_reason": "UPDATE_BUDGET"
+  },
+  "R2_s3": {
+   "epochs": 4,
+   "validation_curve": [
+    0.7271423935890198,
+    0.760193407535553,
+    0.7485104203224182,
+    0.7786869406700134
+   ],
+   "train_curve": [
+    1.1748110055923462,
+    0.7462269067764282,
+    0.7184960842132568,
+    0.6970303058624268
+   ],
+   "best_epoch_by_curve": 1,
+   "recorded_restored_epoch": 1,
+   "agree": true,
+   "restored_validation_loss": 0.7271423935890198,
+   "best_value_on_the_curve": 0.7271423935890198,
+   "restore_verified": true,
+   "train_minus_validation_at_the_end": -0.08165663480758667,
+   "validation_rose_after_the_best": 0.05154454708099365,
+   "updates": 2508,
+   "optimizer_iterations": null,
+   "stop_reason": "EARLY_STOPPING"
+  },
+  "pilot_fit": {
+   "epochs": 1,
+   "validation_curve": [
+    0.7397658824920654
+   ],
+   "train_curve": [
+    0.9999860525131226
+   ],
+   "best_epoch_by_curve": 1,
+   "recorded_restored_epoch": 1,
+   "agree": true,
+   "restored_validation_loss": 0.7397658824920654,
+   "best_value_on_the_curve": 0.7397658824920654,
+   "restore_verified": true,
+   "train_minus_validation_at_the_end": 0.26022017002105713,
+   "validation_rose_after_the_best": 0.0,
+   "updates": 300,
+   "optimizer_iterations": null,
+   "stop_reason": "UPDATE_BUDGET"
+  }
+ },
+ "capacity": {
+  "subset_windows": 256,
+  "update_ceiling": 400,
+  "counted_updates": 400,
+  "optimizer_iterations": 400,
+  "updates_are_optimizer_iterations": true,
+  "loss_on_the_subset_before": 6.993788719177246,
+  "loss_on_the_subset_after": 0.005536708049476147,
+  "reduction_factor": 1263.1673291567108,
+  "can_fit_what_it_sees": true,
+  "scope": "capacity on data the model also evaluates on; this says the optimiser can move the graph, and says NOTHING about generalisation"
+ },
+ "shuffled_labels": {
+  "train_windows": 4096,
+  "update_ceiling": 600,
+  "evaluation_rows": 2048,
+  "with_true_labels": {
+   "mae": 0.7921982993542916,
+   "correlation_with_truth": 0.2586419084225086,
+   "sd_of_predictions": 0.6369436383247375,
+   "mae_before_any_update": 1.8935158089521575,
+   "restored_epoch": 1,
+   "epochs": 10,
+   "updates": 600
+  },
+  "with_scrambled_labels": {
+   "mae": 0.7124332798733376,
+   "correlation_with_truth": 0.28633108380231986,
+   "sd_of_predictions": 0.321223646402359,
+   "mae_before_any_update": 1.8935158089521575,
+   "restored_epoch": 6,
+   "epochs": 10,
+   "updates": 600
+  },
+  "gap_in_mae": -0.07976501948095405,
+  "persistence_on_these_rows": 0.755244140625,
+  "train_mean_on_these_rows": 0.8396051740646362,
+  "verdict": "SUSPECT: scrambling the labels barely changed the score",
+  "why_it_still_beats_a_constant": "the selection restores the best validation checkpoint, which on scrambled labels is an early, partly-fitted state; its output still follows the recent level of its own input, and that alone beats a constant here. An untrained network does not: its predictions are far too wide (measured above as mae_before_any_update).",
+  "scope": "a negative control on the TRAIN labels only; the evaluation labels are untouched"
+ },
+ "order": "route first, then capacity, then the negative control; a hyper-parameter sweep before these pass would be measuring the wrong thing",
+ "shuffled_labels_full_scale": {
+  "train_windows": 40080,
+  "update_ceiling": 4000,
+  "with_scrambled_labels": {
+   "mae": 0.6015421143728339,
+   "correlation_with_truth": 0.4396036901126653,
+   "sd_of_predictions": 0.2743934690952301,
+   "mae_before_any_update": 1.5974282218473161,
+   "restored_epoch": 6,
+   "epochs": 7,
+   "updates": 4000
+  },
+  "the_runs_own_true_label_fit": {
+   "unit": "R0_s1",
+   "mae": 0.5524983663230361
+  },
+  "gap_in_mae": 0.04904374804979783,
+  "persistence": 0.6173720558882235,
+  "verdict": "SUSPECT: scrambling the labels barely changed the score",
+  "scope": "one seed at full train scale; the evaluation labels are untouched"
+ }
+}
