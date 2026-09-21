@@ -3,9 +3,9 @@
  "since": "2026-09-21 08:55",
  "hosts": {
   "omega": {
-   "cpu_seconds_total": 1831.253,
-   "units": 28,
-   "source": "systemd user journal, scopes matching rp74..rp81"
+   "cpu_seconds_total": 5193.302,
+   "units": 30,
+   "source": "systemd user journal, scopes matching rp74..rp81 (closing suite included)"
   },
   "dragon": {
    "units": [
@@ -54,9 +54,9 @@
    "cpu_seconds_total": 485.311
   }
  },
- "aggregate_cpu_seconds": 2746.701,
+ "aggregate_cpu_seconds": 6108.75,
  "ceiling_seconds": 14400,
- "remaining_seconds": 11653.299,
+ "remaining_seconds": 8291.25,
  "within_ceiling": true,
- "note": "the full-suite run at closure is added to this ledger in the return; worker CPU comes from their journals' scope lines (wrapper accounting, parent+children)"
+ "note": "final: includes the closing full suite on omega"
 }

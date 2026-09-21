@@ -1,0 +1,30 @@
+# RP74-RP81 — full suite
+# command:  python -m pytest tests -q --continue-on-collection-errors -p no:cacheprovider -W ignore::DeprecationWarning
+# python:   ~/anaconda3/envs/trading-stack/bin/python (3.12), host omega, CUDA_VISIBLE_DEVICES="" (no GPU)
+# cgroup:   crispdm-run -m 12G -t 5400 -n rp81-suite; clean checkout at 47693d7 (the governed-route rules refuse a dirty tree)
+#
+# 2 460 passed, 39 skipped (stated reasons: duckdb absent from this interpreter at import, hosts/keys absent, etc.), 0 xfailed.
+# 3 failed + 8 collection errors = the repository's documented stale legacy suite (AGENTS.md), the identical set to RP65 and RP73.
+# New/rewritten rules this round: contract 33, closure table 31, block 16, GRU 4, phase-2 8, FL 24 (collected).
+#
+# --- raw tail of the run ---
+
+tests/unit_tests/test_characterization_binding_c39_c41.py::test_a_non_finite_value_never_leaves_as_an_identifiable_number
+  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/numpy/_core/function_base.py:163: RuntimeWarning: invalid value encountered in multiply
+    y *= step
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration_tests/test_configuration_handling.py::test_load_default_config
+FAILED tests/integration_tests/test_configuration_handling.py::test_save_config
+FAILED tests/integration_tests/test_configuration_handling.py::test_configure_with_args
+ERROR tests/integration_tests/test_data_processing.py
+ERROR tests/integration_tests/test_plugin_loading.py
+ERROR tests/unit_tests/test_config_handler.py
+ERROR tests/unit_tests/test_data_handler.py
+ERROR tests/unit_tests/test_data_processor.py
+ERROR tests/unit_tests/test_encoder_plugin_ann.py
+ERROR tests/unit_tests/test_main.py
+ERROR tests/unit_tests/test_plugin_loader.py
+3 failed, 2460 passed, 39 skipped, 10 warnings, 8 errors in 2274.56s (0:37:54)
+exit=1

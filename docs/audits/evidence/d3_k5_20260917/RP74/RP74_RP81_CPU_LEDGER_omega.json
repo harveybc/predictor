@@ -208,11 +208,25 @@
    "cpu_seconds": 8.181,
    "wall_seconds": 8.219,
    "memory_peak": "289.8M"
+  },
+  {
+   "unit": "crispdm-rp81-count-1790003145-1920307.scope",
+   "at": "Sep 21 10:05:47",
+   "cpu_seconds": 2.036,
+   "wall_seconds": 2.116,
+   "memory_peak": "74.1M"
+  },
+  {
+   "unit": "crispdm-rp81-suite-1790003171-1921159.scope",
+   "at": "Sep 21 10:44:18",
+   "cpu_seconds": 3360.013,
+   "wall_seconds": 2286.72,
+   "memory_peak": "4.3G"
   }
  ],
- "cpu_seconds_total": 1831.253,
+ "cpu_seconds_total": 5193.302,
  "ceiling_seconds": 14400.0,
- "remaining_seconds": 12568.747,
+ "remaining_seconds": 9206.698,
  "within_ceiling": true,
  "note": "systemd accounting of the transient unit (all its children); units still running are not listed"
 }

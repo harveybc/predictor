@@ -165,8 +165,8 @@ any financial measurement (none exists). Tests (collected rules): contract 33, c
 (0 xfail; FL08 and the governed route on the disposable stack green on the clean tree); full-suite command and
 counts in [RP81_FULL_SUITE_SUMMARY.txt](../evidence/d3_k5_20260917/RP74/RP81_FULL_SUITE_SUMMARY.txt). CPU:
 [RP74_RP81_CPU_LEDGER_multihost.json](../evidence/d3_k5_20260917/RP74/RP74_RP81_CPU_LEDGER_multihost.json) —
-aggregate before the closing suite 2 746.7 s (omega 1 831.3, dragon 430.1, gamma 485.3) of 14 400; the closing
-suite is added in the summary file. Pending independent work: the cheap context contrasts under tier 2; a
+aggregate **6,108.7 s of 14 400** including the closing full suite (omega 5,193.3, dragon 430.1, gamma 485.3); the
+full suite on the clean checkout 47693d7: 2 460 passed, 39 skipped, 0 xfailed, 3 failed + 8 collection errors = the documented legacy set. Pending independent work: the cheap context contrasts under tier 2; a
 separate-process replay per cell at closure; the financial design review and its cost pilot; the RP72 abandoned
 root's cache cleanup (no data in use).
 
