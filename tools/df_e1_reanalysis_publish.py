@@ -85,7 +85,7 @@ def publish(report_path: Path, run_root: Path, state_root: Path, *, run_id: str,
     design = {"schema": "df_e1_reanalysis.v1", "design_sha256": run_design["design_sha256"],
               "purpose": PURPOSE, "of_run": str(run_root), "pilots": [], "cells": [{"cell_id": UNIT}]}
     (state_root / "DESIGN.json").write_text(json.dumps(design, indent=1))
-    started = U._z(__import__("datetime").datetime.now(__import__("datetime").timezone.utc))
+    started = U._z(U.now_iso())            # the service's instant form, not str(datetime)
     G.acquire(run_id=run_id, root=state_root, lake=lake, resource=resource, unit_id=UNIT,
               gov_url=gov_url, api_key_file=api_key_file, design_sha256=design["design_sha256"],
               cache_dir=state_root / "cache", expect_sha256=run_design["governed_bytes"]["sha256"])
@@ -93,7 +93,7 @@ def publish(report_path: Path, run_root: Path, state_root: Path, *, run_id: str,
         status="COMPLETED", reason=None,
         cost={"wall_seconds": 0.0, "cpu_seconds": 0.0},
         metrics=metrics_of(report),
-        started=started, finished=U._z(__import__("datetime").datetime.now(__import__("datetime").timezone.utc)),
+        started=started, finished=U._z(U.now_iso()),
         tags={"purpose": PURPOSE, "classification": "NON_GOVERNING", "phase": "DEVELOPMENT",
               "unit": UNIT, "design_sha256": design["design_sha256"], "new_training": "false",
               "of_run": str(run_root), "report_sha256": G.sha_file(Path(report_path)),
