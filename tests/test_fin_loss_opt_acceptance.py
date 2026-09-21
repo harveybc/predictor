@@ -28,7 +28,7 @@ KEY = Path.home() / ".local/state/crispdm-data-foundation/satoshi-store-hosts-20
 RUNTIME = Path.home() / ".local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json"
 STACK_AVAILABLE = (GOV_APP / "app" / "main.py").is_file() and KEY.is_file() and RUNTIME.is_file()
 RESOURCE = "market_data/synthetic/eurusd_1h.parquet"
-HOLDOUT = "2026-01-01"
+HOLDOUT = "2024-05-20"          # the Monday after the last synthetic bar: folds are anchored at the reserve
 
 
 def _load(name):
@@ -103,7 +103,9 @@ def test_FL01_the_candidates_are_enumerated_twelve_per_family_with_the_defaults_
     assert {c["optimizer"] for c in a["mae"]} == {"adam", "adamw"} and all(c["delta"] for c in a["huber"])
     tf = E._tf()
     loss, opt = F.components(a["huber"][1], 0.37, tf)
-    assert isinstance(loss, tf.keras.losses.Huber) and loss.delta == pytest.approx(0.37) and isinstance(opt, tf.keras.optimizers.AdamW)
+    assert isinstance(loss, tf.keras.losses.Huber) and isinstance(opt, tf.keras.optimizers.AdamW)
+    # the delta is real: Huber(delta) on a residual of 1.0 is delta*(1 - delta/2), not 0.5 (MSE) nor 1.0 (MAE)
+    assert float(loss(np.zeros((1, 1)), np.ones((1, 1)))) == pytest.approx(0.37*(1-0.37/2), abs=1e-6)
     loss, opt = F.components(a["mae"][0], None, tf)
     assert isinstance(loss, tf.keras.losses.MeanAbsoluteError) and type(opt).__name__ == "Adam"
     with pytest.raises(F.FinRefusal, match="not identifiable"):
@@ -234,8 +236,11 @@ def test_FL06_huber_deltas_come_from_the_admissible_train_pairs_at_full_precisio
     y = np.r_[np.zeros(900), np.ones(100)]
     o = np.arange(0, 990); t = o + 6
     z = T.delta_candidates(y, {"origins": o, "targets": t}, sigma=float(np.std(y)))
-    assert z["status"] in ("MEASURED", "FALLBACK_FIXED_GRID") and all(c["delta_z"] > 0 for c in z["candidates"])
-    assert z["status"] == "MEASURED" and z["scale_origin"].startswith("first positive residual quantile")
+    assert z["status"] == "FALLBACK_FIXED_GRID" and "ZERO_RESIDUAL_SCALE" in z["reason"]                     # 6 of 990 residuals are non-zero: no quantile
+    assert all(c["delta_z"] > 0 for c in z["candidates"]) and all(np.isfinite(c["delta_z"]) for c in z["candidates"])
+    y3 = np.where(np.arange(1000) % 3 == 0, 1.0, 0.0)                                                        # a third of the residuals move
+    z3 = T.delta_candidates(y3, {"origins": o, "targets": t}, sigma=float(np.std(y3)))
+    assert z3["status"] == "MEASURED" and z3["scale_origin"].startswith("first positive residual quantile") and z3["scale_z"] > 0
     flat = T.delta_candidates(np.ones(1000), {"origins": o, "targets": t}, sigma=0.0)
     assert flat["status"] == "NONIDENTIFIABLE" and flat["candidates"] == []
     few = T.delta_candidates(p["y"], {"origins": o[:20], "targets": t[:20]}, sigma=sigma)
