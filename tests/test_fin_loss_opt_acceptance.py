@@ -597,9 +597,13 @@ def test_FL08_the_financial_runner_registers_delivers_a_bounded_range_fits_repor
         vals[r["unit"]] = {m["metric"]: m["value"] for m in held[r["unit"]]["metrics"]}
         local = {m["metric"]: m["value"] for m in json.loads((root/"TERMINALS"/f"{r['unit']}.json").read_text())["metrics"]}
         assert vals[r["unit"]] == local                                                # bit-for-bit, no rounding on the way
-    # negative control: a tampered artifact digest is caught at closure
-    t_path = root/"TERMINALS"/f"{results[0]['unit']}.json"
-    t = json.loads(t_path.read_text()); t["artifacts"][0]["sha256"] = "0"*64; t_path.write_text(json.dumps(t))
+    # negative control: substituted prediction bytes on disk (the local terminal file is not custody) are caught by the accepted chain
+    u = results[0]["unit"]
+    with np.load(root/"attempts"/u/"arrays.npz") as z:
+        arr = {k: z[k] for k in z.files}
+    arr["validation_pred"] = arr["validation_y"].copy(); arr["validation_reload_pred"] = arr["validation_y"].copy()
+    np.savez(root/"attempts"/u/"arrays.npz", **arr)
     with pytest.raises(F.FinRefusal, match="closure failed"):
         F.close(a)
-    assert any("warehouse artifacts" in p for p in json.loads((root/"REPORT.json").read_text())["problems"])
+    rep = json.loads((root/"REPORT.json").read_text())
+    assert any("CHANGED ARRAYS" in p for p in rep["problems"]) and rep["selection"] is None and not rep["verified"]
