@@ -207,6 +207,24 @@ def seal(block: str, *, source_run: Path = SOURCE_RUN, seeds=SEEDS, reuse: dict 
     return design
 
 
+def reuse_record(root: Path) -> dict:
+    """The baseline reused from a CLOSED block: its design digest, recipe and the accepted terminals of modular_w60.
+    Reuse is legitimate only when the complete contract matches (rows, inputs, scaler, recipe, cadence, seeds)."""
+    root = Path(root)
+    d = json.loads((root/"DESIGN.json").read_text())
+    rep = json.loads((root/"REPORT.json").read_text())
+    receipts = json.loads((root/"TERMINAL_RECEIPTS.json").read_text())["units"]
+    if not rep.get("verified"):
+        raise BlockRefusal("REFUSED: the block to reuse from is not closed and verified")
+    if d["recipe"] != RECIPE or d["source_run"]["data_sha256"] != json.loads((Path(d["source_run"]["root"])/"DATA.json").read_text())["data_sha256"]:
+        raise BlockRefusal("REFUSED: the baseline's recipe or rows differ; it cannot be reused")
+    units = {c["cell_id"]: {"terminal_sha256": receipts[c["cell_id"]]["terminal_sha256"], "campaign_sha256": receipts[c["cell_id"]]["campaign_sha256"]}
+             for c in d["cells"] if c["arm"] == "modular_w60"}
+    return {"baseline_arm": "modular_w60", "run_root": str(root), "block": d["block"], "design_sha256": d["design_sha256"],
+            "recipe": d["recipe"], "seeds": d["seeds"], "units": units,
+            "rule": "reused because rows, inputs, scaler, recipe, cadence and seeds are identical; the baseline is NOT re-trained"}
+
+
 def validate(design: dict) -> dict:
     """The design, checked against its own digest, its arms, the code and the prepared source it binds to."""
     B = _module("df_benchmark_contract")
@@ -931,9 +949,10 @@ def main(argv=None) -> int:
     ap.add_argument("--resource", default=RESOURCE)
     ap.add_argument("--warehouse-url", default="http://127.0.0.1:5057")
     ap.add_argument("--warehouse-token-file", type=Path)
+    ap.add_argument("--reuse-from", type=Path, help="a CLOSED block root whose modular_w60 cells are this block's baseline (contract must match)")
     a = ap.parse_args(argv)
     if a.command == "seal":
-        d = seal(a.block, source_run=a.source_run)
+        d = seal(a.block, source_run=a.source_run, reuse=reuse_record(a.reuse_from) if a.reuse_from else None)
         write(a.out, d)
         print(json.dumps({"design_sha256": d["design_sha256"], "block": d["block"], "cells": len(d["cells"]), "pilots": len(d["pilots"])}, indent=1))
         return 0
