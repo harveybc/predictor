@@ -238,7 +238,7 @@ def test_FL06_huber_deltas_come_from_the_admissible_train_pairs_at_full_precisio
     z = T.delta_candidates(y, {"origins": o, "targets": t}, sigma=float(np.std(y)))
     assert z["status"] == "FALLBACK_FIXED_GRID" and "ZERO_RESIDUAL_SCALE" in z["reason"]                     # 6 of 990 residuals are non-zero: no quantile
     assert all(c["delta_z"] > 0 for c in z["candidates"]) and all(np.isfinite(c["delta_z"]) for c in z["candidates"])
-    y3 = np.where(np.arange(1000) % 3 == 0, 1.0, 0.0)                                                        # a third of the residuals move
+    y3 = np.where(np.arange(1000) % 5 == 0, 1.0, 0.0)                                                        # 40 % of the 6-step residuals move
     z3 = T.delta_candidates(y3, {"origins": o, "targets": t}, sigma=float(np.std(y3)))
     assert z3["status"] == "MEASURED" and z3["scale_origin"].startswith("first positive residual quantile") and z3["scale_z"] > 0
     flat = T.delta_candidates(np.ones(1000), {"origins": o, "targets": t}, sigma=0.0)
