@@ -1,6 +1,6 @@
 {
   "schema": "research_program_method_state.v1",
-  "updated_on": "2026-09-20",
+  "updated_on": "2026-09-21",
   "current_stage": "acceptance_test_design",
   "completed_stages": [
     "discovery",
@@ -8,7 +8,7 @@
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "E1_SUCCESSOR_EXECUTED_LOCAL_METRICS_REVIEWED_RP57_RP64_ML_DIAGNOSIS_ORDERED",
+  "handoff_status": "RP57_RP64_EXECUTED_OBJECTIVE_IS_THE_LEVER_LEGACY_TABLES_CAUSALITY_UNVERIFIED_READY_FOR_REVIEW",
   "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
   "architecture_comparison": {
     "reference": "ARCH-A",
@@ -24,10 +24,10 @@
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
-    "RP57-RP58: baseline-first reports; prioritize phase-3 pre/post wavelet-fix lineage. Previously cited TCN CSV is causality-unverified, not an accepted performance benchmark",
-    "RP59-RP61: data/target/inverse/time audit, loss/stopping diagnosis and faithful independent neural reference from primary literature",
-    "RP62-RP63: predeclared bounded DEV diagnostic separating training, information, volume and architecture; then paired pretraining only when justified",
-    "RP64: by-content governed ingestion, per-host observed cost and one complete return; aggregate 14400 CPU seconds; no new owner authorization"
+    "One review of RP57-RP64",
+    "Phase 2 of the diagnostic: input information (calendar sin/cos, daily context) and train volume, one factor at a time, after the temporal and availability checks; R0/R1/R2 return only with the adequate objective common to every arm",
+    "The phase-3 lineage stays UNBOUND until the producer of the decomposed inputs is reachable; no legacy table is a benchmark and none is declared a leak on a score",
+    "No reserve, no confirmatory claim from three seeds on one task"
   ],
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
@@ -172,9 +172,10 @@
         "../../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md",
         "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md",
         "../../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md",
-        "https://github.com/harveybc/predictor/blob/de88764/docs/audits/work_plan/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md"
+        "https://github.com/harveybc/predictor/blob/de88764/docs/audits/work_plan/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md",
+        "../../audits/work_plan/SATOSHI_PROGRAM_RP57_RP64_RETURN_2026_09_21.md"
       ],
-      "next_action": "RP57-RP64: baseline comparisons, historical lineage, data/target/training audit and independent neural reference; controlled DEV diagnosis before another pretraining contrast",
+      "next_action": "Phase 2 of the diagnostic (inputs, then volume) with the aligned objective; R0/R1/R2 only afterwards, same weights and shared AE",
       "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan",
       "adoption": "SUCCESSOR_EXECUTED_LOCAL_METRICS_RECOMPUTED_FULL_GOVERNANCE_REVIEW_NOT_REPEATED"
     },
@@ -388,7 +389,7 @@
       "fresh_weight_replay": {
         "model": "R0_s1",
         "rows": 64,
-        "max_abs_difference": 8.934663142667887e-8,
+        "max_abs_difference": 8.934663142667887e-08,
         "scope": "one restored model on first 64 validation windows only"
       },
       "counterexamples": "../../audits/evidence/RP32_REVIEW_2026_09_19/results.json",
@@ -509,5 +510,49 @@
     "exact_run_mapping": "NOT_YET_ESTABLISHED",
     "previously_cited_tcn_csv_status": "CAUSALITY_UNVERIFIED_NOT_AN_ACCEPTED_BENCHMARK",
     "required_action": "RP58: reconstruct pre/post correction lineage and end-to-end decision-time causality before reference use; keep numeric summaries without scientific promotion"
+  },
+  "ml_diagnosis_rp57_rp64": {
+    "objective_alignment": {
+      "status": "DEMONSTRATED",
+      "mae_loss": 0.4978,
+      "mse_loss": 0.5469,
+      "sd": [
+        0.0002,
+        0.0078
+      ],
+      "reading": "training and selecting on the measure the question is judged by is worth 0.049 kW on three paired seeds"
+    },
+    "architecture": {
+      "status": "DEMONSTRATED_SMALL",
+      "reference_tcn": 0.5359,
+      "ours": 0.5469,
+      "reading": "the reference block, parameter-matched at 8061 vs 8127, is worth 0.011 kW at the same objective"
+    },
+    "label_information": {
+      "status": "MEASURED",
+      "scrambled_labels": 0.6015,
+      "true_labels": 0.5525,
+      "reading": "the entire advantage attributable to learning the input-label mapping is 0.049 kW; the R0/R1/R2 differences compared earlier (0.01) live inside that band"
+    },
+    "legacy_benchmarks": {
+      "status": "CAUSALITY_UNVERIFIED",
+      "tables": 167,
+      "unverified": 114,
+      "flagged_over_50_percent_skill": 85,
+      "phase_3_family_skill": "96-97% at 1-6h on an FX price",
+      "lineages": "BOTH UNBOUND: the producer of the decomposed inputs is not in this repository",
+      "leak_signature": {
+        "trailing_wavelet": -5.42,
+        "whole_series_dwt": 6.0,
+        "whole_series_reconstruction": 5.14,
+        "centred_smoother": 46.76,
+        "reading": "wavelet denoising over the whole series does not reproduce the published magnitude; centred filtering is the family that approaches it"
+      },
+      "usable_as_benchmark": false
+    },
+    "transformation_state": {
+      "status": "REPAIRED",
+      "what": "stl_norm decided whether to denormalize by inspecting each prediction's distribution; the space is now declared by the contract"
+    }
   }
 }

@@ -1303,3 +1303,31 @@ otra tarea porque el pretraining no gano. R0/R1/R2 y reservas siguen su contrato
 Satoshi integra tablas por escala y sus referencias en el warehouse existente,
 como reanalisis identificado. No borrar historia ni atribuir mejoras a un simple
 cambio de escala. Costos de todos los hosts medidos en la proxima ronda.
+
+### Ejecucion RP57-RP64: reanalisis en el cubo y tablas heredadas sin causalidad (21-sep)
+
+La tabla de comparadores del sucesor E1 entro al warehouse existente como
+**reanalisis identificado**: 192 filas de metrica bajo `E1_REANALYSIS`,
+`new_training: false`, campana conciliada y verificada por contenido
+([RP57](../audits/evidence/d3_k5_20260917/RP57/REANALYSIS_PUBLICATION.json)).
+No sustituye los terminales del run que recomputa ni certifica la contabilidad
+de RP56.
+
+El outbox quedo en **cero pendientes**: los cuatro sobres duplicados de
+`prepare` y dos mas se adjudicaron por el procedimiento aditivo, movidos sin
+cambios junto a una disposicion de escritura unica. La operacion que el entorno
+rechazo en RP56 como script suelto SI paso por una herramienta con proposito
+declarado, de modo que ese punto abierto queda cerrado. Las dos campanas que
+murieron a mitad de vuelo se cerraron con terminal **FAILED** y su razon.
+
+Inventario heredado: 167 tablas publicadas, **114 CAUSALITY_UNVERIFIED**, 85 con
+mejora >=50% sobre el naive y la familia de fase 3 en **96-97% a una-seis horas**
+sobre un precio de divisas, declarando wavelet/STL/multi-tapper y con sus
+entradas ausentes en su propio commit productor. Ambos linajes quedan UNBOUND:
+el productor de esas entradas no esta en este repositorio. Ninguna tabla
+heredada es benchmark y ninguna se declara fuga por su puntaje.
+
+La calibracion del mecanismo, sobre la serie de la misma familia: wavelet causal
+-5.42%, DWT de serie completa +6.00%, reconstruccion +5.14%, suavizador centrado
++46.76%. El denoising wavelet NO reproduce la magnitud publicada; el filtrado
+centrado es la familia que se le acerca, y 96% queda por encima incluso de eso.
