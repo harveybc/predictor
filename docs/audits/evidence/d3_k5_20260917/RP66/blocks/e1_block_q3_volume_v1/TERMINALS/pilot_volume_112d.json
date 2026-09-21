@@ -1,0 +1,93 @@
+{
+ "artifacts": [
+  {
+   "bytes": 476658,
+   "role": "predictions",
+   "sha256": "7cbc97dff888be9115f3454f3cd7bad97b7cfbd8ded90bcfc7fb0bc3ea6edd8f"
+  },
+  {
+   "bytes": 231872,
+   "role": "weights",
+   "sha256": "298f422b5b8ae66f75528305ad5c4dddd43d2f86a10301aae2e0b0996383d39e"
+  },
+  {
+   "bytes": 3006,
+   "role": "record",
+   "sha256": "7c2bbd32bb43580a3c3408642583c8f2eca9bd841a4385dbc94918c7d4753ed2"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 31.288833678,
+  "wall_seconds": 28.680301936983597
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T12:13:38Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.5754625524970092
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_z",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.6306325319989339
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.naive_mae_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.6759967673502374
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.rmse_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.9211630799572651
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.skill_vs_naive",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.14871996392423714
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T12:13:09Z",
+ "status": "COMPLETED",
+ "tags": {
+  "arm": "volume_112d",
+  "classification": "NON_GOVERNING",
+  "contract_sha256": "62c51165a492863a6345883caff1dd3de1347d926cfdbdbc9963b3a1b2741d81",
+  "design_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_Q3_VOLUME",
+  "role": "COST_PILOT",
+  "seed": "1",
+  "unit": "pilot_volume_112d"
+ }
+}

@@ -47,7 +47,7 @@
     "state": "DESIGNED, NOT_STARTED"
    },
    "target": "close",
-   "target_construction": "hourly bar close as served; the target of an origin is the bar whose timestamp is origin + 6 h ELAPSED; an origin without that exact bar is excluded and counted",
+   "target_construction": "hourly bar close as served; the target of an origin is the bar whose timestamp is origin + h hours ELAPSED (tools/df_fin_task.map_targets); an origin without that exact bar is excluded and counted",
    "resolution_seconds": 3600,
    "horizon_steps": 6,
    "horizon_seconds": 21600,
@@ -60,7 +60,7 @@
    "metric_scale": "z_train",
    "metric_aggregation": "per horizon, fold, seed and arm; paired by origin",
    "naive_baseline": "persistence: the origin's close, on identical origins",
-   "permitted_inputs": "OHLC of the served bars, window 60",
+   "permitted_inputs": "OHLCV of the served bars (5 channels), window 60",
    "reference_method": null,
    "tuning_budget": "equal enumerated candidates per loss family",
    "checkpoint_selection": "common monitor, restore best",

@@ -73,7 +73,7 @@ def test_PROBE_a_null_contract_is_refused():
 def test_PROBE_unknown_placeholders_never_match_as_proof():
     k = B.kim_cho_2019()
     d = B.decide(k, replace(k, task_id="another-unknown-paper"))
-    assert d["mode"] == "NOT_COMPARABLE" and "unknown identity fields" in d["why"]
+    assert d["mode"] == "NOT_COMPARABLE" and "unknown identity fields" in d["why"] and d["reference_evidence"]["state"] == "NONE"
 
 
 # --- typed validity ----------------------------------------------------------------------------------

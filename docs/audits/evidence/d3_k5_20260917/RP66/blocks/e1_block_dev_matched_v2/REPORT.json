@@ -1,0 +1,198 @@
+{
+ "schema": "df_e1_block_report.v1",
+ "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
+ "block": "DEV_MATCHED",
+ "common_evaluation_rows": 10020,
+ "sigma_evaluation": 0.9125164391265214,
+ "rows": [
+  {
+   "arm": "modular_w60",
+   "cell_id": "modular_w60_s1",
+   "seed": 1,
+   "mae_kw": 0.5156938851700459,
+   "mae_z": 0.565133802590645,
+   "rmse_kw": 0.820765445622172,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": 0.1646951295388509,
+   "rows": 10020,
+   "parameters": 8127,
+   "updates": 1000,
+   "validation_events": 5,
+   "best_update": 400,
+   "stop": "EARLY_STOPPING",
+   "censoring": "STOPPED_ON_VALIDATION",
+   "cpu_seconds": 61.857547444,
+   "peak_rss_bytes": 1013080064,
+   "reload_max_error": 0.0
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "cell_id": "gru_adapted_w60_s1",
+   "seed": 1,
+   "mae_kw": 0.4856760441588367,
+   "mae_z": 0.5322381311001206,
+   "rmse_kw": 0.8160335401702642,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": 0.21331709213808447,
+   "rows": 10020,
+   "parameters": 8901,
+   "updates": 2000,
+   "validation_events": 10,
+   "best_update": 1400,
+   "stop": "EARLY_STOPPING",
+   "censoring": "STOPPED_ON_VALIDATION",
+   "cpu_seconds": 52.140146648,
+   "peak_rss_bytes": 779124736,
+   "reload_max_error": 0.0
+  },
+  {
+   "arm": "modular_w60",
+   "cell_id": "modular_w60_s2",
+   "seed": 2,
+   "mae_kw": 0.5181510611512158,
+   "mae_z": 0.5678265496753134,
+   "rmse_kw": 0.8041148716098839,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": 0.16071507252503814,
+   "rows": 10020,
+   "parameters": 8127,
+   "updates": 1000,
+   "validation_events": 5,
+   "best_update": 400,
+   "stop": "EARLY_STOPPING",
+   "censoring": "STOPPED_ON_VALIDATION",
+   "cpu_seconds": 57.863134494,
+   "peak_rss_bytes": 1013436416,
+   "reload_max_error": 0.0
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "cell_id": "gru_adapted_w60_s2",
+   "seed": 2,
+   "mae_kw": 0.48526249375355796,
+   "mae_z": 0.5317849333411031,
+   "rmse_kw": 0.797404018547201,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": 0.2139869481857214,
+   "rows": 10020,
+   "parameters": 8901,
+   "updates": 2400,
+   "validation_events": 12,
+   "best_update": 1800,
+   "stop": "EARLY_STOPPING",
+   "censoring": "STOPPED_ON_VALIDATION",
+   "cpu_seconds": 54.103489769,
+   "peak_rss_bytes": 779493376,
+   "reload_max_error": 0.0
+  },
+  {
+   "arm": "modular_w60",
+   "cell_id": "modular_w60_s3",
+   "seed": 3,
+   "mae_kw": 0.5212075215904269,
+   "mae_z": 0.5711760350195302,
+   "rmse_kw": 0.8173158723037912,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": 0.15576431323805717,
+   "rows": 10020,
+   "parameters": 8127,
+   "updates": 1000,
+   "validation_events": 5,
+   "best_update": 400,
+   "stop": "EARLY_STOPPING",
+   "censoring": "STOPPED_ON_VALIDATION",
+   "cpu_seconds": 53.644159676,
+   "peak_rss_bytes": 1014009856,
+   "reload_max_error": 0.0
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "cell_id": "gru_adapted_w60_s3",
+   "seed": 3,
+   "mae_kw": 0.48344770151286853,
+   "mae_z": 0.529796155755434,
+   "rmse_kw": 0.8070931324354056,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": 0.2169264920529579,
+   "rows": 10020,
+   "parameters": 8901,
+   "updates": 2000,
+   "validation_events": 10,
+   "best_update": 1400,
+   "stop": "EARLY_STOPPING",
+   "censoring": "STOPPED_ON_VALIDATION",
+   "cpu_seconds": 45.274108686999995,
+   "peak_rss_bytes": 778747904,
+   "reload_max_error": 0.0
+  }
+ ],
+ "summary": {
+  "gru_adapted_w60": {
+   "n_seeds": 3,
+   "mean_mae_z": 0.5312730733988859,
+   "sd_mae_z": 0.0012989654908230766,
+   "mean_mae_kw": 0.4847954131417544,
+   "censored_fits": 0
+  },
+  "modular_w60": {
+   "n_seeds": 3,
+   "mean_mae_z": 0.5680454624284962,
+   "sd_mae_z": 0.003027058849163215,
+   "mean_mae_kw": 0.5183508226372294,
+   "censored_fits": 0
+  }
+ },
+ "paired": {
+  "difference": "modular_w60 - gru_adapted_w60 in MAE_z, paired by seed",
+  "values": [
+   0.032895671490524414,
+   0.036041616334210325,
+   0.04137987926409614
+  ],
+  "mean": 0.036772389029610296,
+  "signs": {
+   "positive": 3,
+   "negative": 0
+  },
+  "reading": "three seeds; both signs are reported; no interval is claimed from n=3"
+ },
+ "baselines": {
+  "persistence": {
+   "mae_kw": 0.6173720558882235,
+   "mae_z": 0.6765599274892891,
+   "rmse_kw": 0.966454889734754,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": 0.0,
+   "rows": 10020,
+   "definition": "y(t)"
+  },
+  "daily_seasonal": {
+   "mae_kw": 0.7316592814371257,
+   "mae_z": 0.8018039457321824,
+   "rmse_kw": 1.0890280496910867,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": -0.1851188832712476,
+   "rows": 10020,
+   "definition": "y(t+h-1440)"
+  },
+  "train_constant": {
+   "mae_kw": 0.7110191249038849,
+   "mae_z": 0.779185003597838,
+   "rmse_kw": 0.897470715168224,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": -0.1516866014949927,
+   "rows": 10020,
+   "definition": "mean of the train labels of the 28 d tier; computed on the common evaluation set at closure, no fit, no terminal"
+  }
+ },
+ "problems": [],
+ "verified": true,
+ "spent_cpu_seconds": 373.504281321,
+ "closure_code_drift": {
+  "df_e1_block.py": {
+   "sealed": "51f7eb46ea44a830c501138bb05b3818008ca36f441af4b8c86c56294111b6b3",
+   "now": "b243db058a373400a8a5a2d38d332dca733d8d205b00d6dee9b04068e0c2d1da"
+  }
+ },
+ "scope": "DEVELOPMENT; paired seeds; one previously inspected DEV validation week; no test rows read"
+}

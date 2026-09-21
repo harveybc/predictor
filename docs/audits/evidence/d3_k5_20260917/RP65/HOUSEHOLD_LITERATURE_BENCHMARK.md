@@ -69,3 +69,10 @@ scientific training and waits for review of this packet.
   forensic diagnostics only and must be identified as such, never as a corrected comparison.
 - Kim & Cho's protocol cannot be transcribed from the abstract; its numbers exist here only as
   re‑executed by a third party and are recorded, not used.
+
+## Correction dated 2026-09-21 (RP69) — preserved text above, corrected here
+
+- The TCN row of Table 4 has **no n_H**: the line "TCN (L=8, n_H=50, k=2, M=32, …)" above transcribed a value the article does not give. The TCN's width is M=32 filters with kernel 2 and L=8 (RP66/GASPARIN_2019_REPRODUCTION_CONFIG.json v2).
+- "Table 3 sample sizes" are the article's SAMPLE counts, not an enumeration of admissible windows; a count match is not proof of reproduction.
+- The article is NOT fully specified (optimizer, LR, batch, epochs, initialization, regularized tensors, split dates, imputation population, seeds, code are unknown); any statement above that calls it the "only fully specified" source is withdrawn.
+- The matched-domain lane (§3) is now MEASURED for the GRU family: tools/df_gru_reference.py adapted to our contract, executed as block DEV_MATCHED (SATOSHI_RP66_RP73_RETURN_2026_09_21.md): GRU adapted MAE_z 0.531273 vs modular 0.568045, persistence 0.676560, 3 paired seeds. The TCN re-execution under our contract is not run.

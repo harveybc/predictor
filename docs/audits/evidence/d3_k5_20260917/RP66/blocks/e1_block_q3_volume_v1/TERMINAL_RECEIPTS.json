@@ -1,0 +1,205 @@
+{
+ "schema": "df_e1_terminal_receipts.v1",
+ "design_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad",
+ "units": {
+  "prepare": {
+   "campaign_key": "satoshi-e1-block-q3-20260921-prepare-data",
+   "campaign_sha256": "52ba778d0cb61a5f3fd4e732e31dfc4ed21cf09ca45d7c4eca8648e6d94c4a8e",
+   "terminal_sha256": "8debf3b3d3c8b899da383383817c4e619ab2c0a95dc1a78697e6900b5465d02d",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-21T12:13:09Z",
+   "work_started_at": "2026-09-21T12:13:06Z",
+   "started_at": "2026-09-21T12:13:06Z",
+   "finished_at": "2026-09-21T12:13:08Z",
+   "metrics": 1,
+   "deliveries": [
+    "84ed6f549e314ffab1a1691cedec5253"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "pilot_volume_56d": {
+   "campaign_key": "satoshi-e1-block-q3-20260921-pilot_volume_56d-data",
+   "campaign_sha256": "9fef85fdcc37c3c7d9ea579c86bc3368c535e17acfee6c856e4a3f924387260b",
+   "terminal_sha256": "ed349a8d02d919e04af8c39be22cd05038754ce9f8b939ba1ddf971301f04653",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-21T12:13:38Z",
+   "work_started_at": "2026-09-21T12:13:09Z",
+   "started_at": "2026-09-21T12:13:09Z",
+   "finished_at": "2026-09-21T12:13:38Z",
+   "metrics": 5,
+   "deliveries": [
+    "1ebe3439b38a4155a3471c22f803118c"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "pilot_volume_112d": {
+   "campaign_key": "satoshi-e1-block-q3-20260921-pilot_volume_112d-data",
+   "campaign_sha256": "a513309b4b7b92f3471d302a1163316501cb12d9e719eb764d36944de22d68de",
+   "terminal_sha256": "d27c2e7e732ddcf2abe2d25389ff1d2998e4b88c4efa7a75020064ea9d4975ee",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-21T12:13:38Z",
+   "work_started_at": "2026-09-21T12:13:09Z",
+   "started_at": "2026-09-21T12:13:09Z",
+   "finished_at": "2026-09-21T12:13:38Z",
+   "metrics": 5,
+   "deliveries": [
+    "e694ecee69e1465f9419d48e7f83e94f"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "volume_112d_s1": {
+   "campaign_key": "satoshi-e1-block-q3-20260921-volume_112d_s1-data",
+   "campaign_sha256": "b15fc39577a2c5ee37d22aed4ef858cdeb7d7c7a7c5fe24eaa6fe7192781b747",
+   "terminal_sha256": "eb9ea9009da9205c8045e6fd4b3f25329fca1ed939cc1b6faea4ba8bce641efe",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-21T12:14:50Z",
+   "work_started_at": "2026-09-21T12:13:50Z",
+   "started_at": "2026-09-21T12:13:50Z",
+   "finished_at": "2026-09-21T12:14:50Z",
+   "metrics": 5,
+   "deliveries": [
+    "81400c6d37824695b89302fe23dabf31"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "volume_56d_s2": {
+   "campaign_key": "satoshi-e1-block-q3-20260921-volume_56d_s2-data",
+   "campaign_sha256": "2c0d6a6449d87611e015cadcbc431fc5d955c9bfde77d0bf284d3cb288ec7c16",
+   "terminal_sha256": "1d9a70d31fbb7294ac8047f999aa4fb3a1bdcd58ad51686951a6d862d3a814af",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-21T12:15:05Z",
+   "work_started_at": "2026-09-21T12:13:50Z",
+   "started_at": "2026-09-21T12:13:50Z",
+   "finished_at": "2026-09-21T12:15:05Z",
+   "metrics": 5,
+   "deliveries": [
+    "6ec9b8bacbf642dd8c52c31877446438"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "volume_56d_s1": {
+   "campaign_key": "satoshi-e1-block-q3-20260921-volume_56d_s1-data",
+   "campaign_sha256": "a59f29239e29b3291bbe5b3ad3a4d62d539d2cefa77ecb7c8e42ce77528059ad",
+   "terminal_sha256": "db02b9417dac0237c4c1d54f1771bb857db5d901e80c94637e878b008adeecfa",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-21T12:15:07Z",
+   "work_started_at": "2026-09-21T12:13:50Z",
+   "started_at": "2026-09-21T12:13:50Z",
+   "finished_at": "2026-09-21T12:15:07Z",
+   "metrics": 5,
+   "deliveries": [
+    "4e362598cd994a449bc27e9a8322362c"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "volume_56d_s3": {
+   "campaign_key": "satoshi-e1-block-q3-20260921-volume_56d_s3-data",
+   "campaign_sha256": "3089171fd5bc7c5d1fe752ca3f171f4fa8c5e1cabf064aefd7e2adec5df6ac9a",
+   "terminal_sha256": "fc19a69fbc15c74e689b096a4c54d8b25bcbd5266514715e3ca19c6efddd8754",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-21T12:16:11Z",
+   "work_started_at": "2026-09-21T12:15:07Z",
+   "started_at": "2026-09-21T12:15:07Z",
+   "finished_at": "2026-09-21T12:16:11Z",
+   "metrics": 5,
+   "deliveries": [
+    "b2a0040d0a274b37ac569c8794d58217"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "volume_112d_s3": {
+   "campaign_key": "satoshi-e1-block-q3-20260921-volume_112d_s3-data",
+   "campaign_sha256": "e2ea72eafaa83515f7562c27f6d24bb72915f5a8d1f11feedfe4c92c6181000a",
+   "terminal_sha256": "a064e6c03a1f9ad5fd58d0ee0d9a4d63889247ad13da9e9cf6fc573e86be1cd0",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-21T12:16:12Z",
+   "work_started_at": "2026-09-21T12:15:07Z",
+   "started_at": "2026-09-21T12:15:07Z",
+   "finished_at": "2026-09-21T12:16:12Z",
+   "metrics": 5,
+   "deliveries": [
+    "615facc560da48ae97c803fe50f925c5"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "volume_112d_s2": {
+   "campaign_key": "satoshi-e1-block-q3-20260921-volume_112d_s2-data",
+   "campaign_sha256": "db23027ff7e5d12b43b348d7e2ff451aefdf6df014707f744ed61cdeb78e0447",
+   "terminal_sha256": "1bf55b4cb94a3cde586b1d5899e5d2ea7f3039f0a627bac86abd7f76b991d317",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-21T12:16:48Z",
+   "work_started_at": "2026-09-21T12:15:07Z",
+   "started_at": "2026-09-21T12:15:07Z",
+   "finished_at": "2026-09-21T12:16:48Z",
+   "metrics": 5,
+   "deliveries": [
+    "6ae54926588441e1b19512fe3f26ea2e"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  }
+ },
+ "updated_at": "2026-09-21T12:16:48Z"
+}

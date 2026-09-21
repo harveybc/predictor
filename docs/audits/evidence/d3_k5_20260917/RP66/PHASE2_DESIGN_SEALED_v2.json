@@ -1,0 +1,926 @@
+{
+ "benchmark_contract": {
+  "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+  "comparability": {
+   "against": "gasparin_2019",
+   "comparator_state": "NONE",
+   "declared_contrast": [],
+   "fields_that_differ": [
+    "target_transform"
+   ],
+   "mode": "NOT_COMPARABLE",
+   "ours_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+   "resolution": "read the primary source (or its code) and fill the field; a placeholder is not a protocol",
+   "rule": "the adapted GRU is measured under OUR contract; Table 5 stays in the source notes",
+   "theirs_sha256": "972d9470a6661a3ef8088d350d37e1c8a09e084bd94e2fbcba5b36ebdae494e4",
+   "why": "unknown identity fields cannot match as proof: ['target_transform']"
+  },
+  "contract_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+  "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+  "estimand": null,
+  "horizon_seconds": 3600,
+  "horizon_steps": 60,
+  "input_window_steps": 60,
+  "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+  "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+  "metric_scale": "z_train",
+  "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+  "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+  "notes": [],
+  "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+  "reference_method": null,
+  "replicas": "3 paired seeds; development",
+  "resolution_seconds": 60,
+  "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+  "schema": "benchmark_contract.v2",
+  "source": {
+   "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+   "evaluation_origins": 10020,
+   "kind": "OURS",
+   "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "sd_train": 0.9125164391265214,
+   "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+  },
+  "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+  "target": "Global_active_power",
+  "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+  "target_transform": "zscore_train",
+  "task_id": "uci_235.W60_h60.DEV_28d_7d",
+  "tuning_budget": "none: declared settings",
+  "varying_factors": [],
+  "version": "2"
+ },
+ "blocks": {
+  "DEV_MATCHED": {
+   "arms": [
+    "modular_w60",
+    "gru_adapted_w60"
+   ],
+   "block_design_sha256": "4e674fb6e1cfc6647e56b71d6bd7b26b947374b97a2c2c66afca09381aab0e50",
+   "cells": [
+    {
+     "arm": "modular_w60",
+     "cell_id": "modular_w60_s1",
+     "seed": 1
+    },
+    {
+     "arm": "gru_adapted_w60",
+     "cell_id": "gru_adapted_w60_s1",
+     "seed": 1
+    },
+    {
+     "arm": "modular_w60",
+     "cell_id": "modular_w60_s2",
+     "seed": 2
+    },
+    {
+     "arm": "gru_adapted_w60",
+     "cell_id": "gru_adapted_w60_s2",
+     "seed": 2
+    },
+    {
+     "arm": "modular_w60",
+     "cell_id": "modular_w60_s3",
+     "seed": 3
+    },
+    {
+     "arm": "gru_adapted_w60",
+     "cell_id": "gru_adapted_w60_s3",
+     "seed": 3
+    }
+   ],
+   "pilots": [
+    "pilot_modular_w60",
+    "pilot_gru_adapted_w60"
+   ],
+   "question": "matched architecture comparison: the modular continuity model against the adapted literature GRU on identical rows, inputs, split, transform and monitoring schedule",
+   "reuse": "modular_w60 of DEV_MATCHED is the baseline of Q1/Q2/Q3 when its complete contract (rows, inputs, scaler, recipe, cadence, seeds) matches; otherwise the baseline is run inside the block",
+   "rows": {
+    "hi": 1462761,
+    "lo": 1412361,
+    "pad_rows": 0,
+    "reading": "the panel is read from lo (pad + the widest volume tier before the DEV train span) to hi; origins are enumerated inside [train span, validation week] from row identities; padded rows are support only",
+    "train_end": 1452681,
+    "widest_train_days": 28
+   },
+   "state": "SEALED_NOT_EXECUTED"
+  },
+  "Q1_CALENDAR": {
+   "arms": [
+    "calendar",
+    "randomised_calendar_control"
+   ],
+   "block_design_sha256": "9ffda920f1d3eb097ad9a3dde3a916f7188bc4ec27d534fd1805892eabb321db",
+   "cells": [
+    {
+     "arm": "calendar",
+     "cell_id": "calendar_s1",
+     "seed": 1
+    },
+    {
+     "arm": "randomised_calendar_control",
+     "cell_id": "randomised_calendar_control_s1",
+     "seed": 1
+    },
+    {
+     "arm": "calendar",
+     "cell_id": "calendar_s2",
+     "seed": 2
+    },
+    {
+     "arm": "randomised_calendar_control",
+     "cell_id": "randomised_calendar_control_s2",
+     "seed": 2
+    },
+    {
+     "arm": "calendar",
+     "cell_id": "calendar_s3",
+     "seed": 3
+    },
+    {
+     "arm": "randomised_calendar_control",
+     "cell_id": "randomised_calendar_control_s3",
+     "seed": 3
+    }
+   ],
+   "pilots": [
+    "pilot_calendar",
+    "pilot_randomised_calendar_control"
+   ],
+   "question": "does the wall-clock position add information at h60? baseline modular_w60 reused from DEV_MATCHED when its contract matches",
+   "reuse": "modular_w60 of DEV_MATCHED is the baseline of Q1/Q2/Q3 when its complete contract (rows, inputs, scaler, recipe, cadence, seeds) matches; otherwise the baseline is run inside the block",
+   "rows": {
+    "hi": 1462761,
+    "lo": 1412361,
+    "pad_rows": 0,
+    "reading": "the panel is read from lo (pad + the widest volume tier before the DEV train span) to hi; origins are enumerated inside [train span, validation week] from row identities; padded rows are support only",
+    "train_end": 1452681,
+    "widest_train_days": 28
+   },
+   "state": "SEALED_NOT_EXECUTED"
+  },
+  "Q2_CONTEXT": {
+   "arms": [
+    "modular_w60",
+    "daily_lag",
+    "long_window_own_depth",
+    "long_window_crop60",
+    "long_window_local_support_67",
+    "short_window_deep_core"
+   ],
+   "block_design_sha256": "f84a743bae5f9a4116527c6138f2a060a40299e0cdece9a98718ada47fc3f39d",
+   "cells": [
+    {
+     "arm": "modular_w60",
+     "cell_id": "modular_w60_s1",
+     "seed": 1
+    },
+    {
+     "arm": "daily_lag",
+     "cell_id": "daily_lag_s1",
+     "seed": 1
+    },
+    {
+     "arm": "long_window_own_depth",
+     "cell_id": "long_window_own_depth_s1",
+     "seed": 1
+    },
+    {
+     "arm": "long_window_crop60",
+     "cell_id": "long_window_crop60_s1",
+     "seed": 1
+    },
+    {
+     "arm": "long_window_local_support_67",
+     "cell_id": "long_window_local_support_67_s1",
+     "seed": 1
+    },
+    {
+     "arm": "short_window_deep_core",
+     "cell_id": "short_window_deep_core_s1",
+     "seed": 1
+    },
+    {
+     "arm": "modular_w60",
+     "cell_id": "modular_w60_s2",
+     "seed": 2
+    },
+    {
+     "arm": "daily_lag",
+     "cell_id": "daily_lag_s2",
+     "seed": 2
+    },
+    {
+     "arm": "long_window_own_depth",
+     "cell_id": "long_window_own_depth_s2",
+     "seed": 2
+    },
+    {
+     "arm": "long_window_crop60",
+     "cell_id": "long_window_crop60_s2",
+     "seed": 2
+    },
+    {
+     "arm": "long_window_local_support_67",
+     "cell_id": "long_window_local_support_67_s2",
+     "seed": 2
+    },
+    {
+     "arm": "short_window_deep_core",
+     "cell_id": "short_window_deep_core_s2",
+     "seed": 2
+    },
+    {
+     "arm": "modular_w60",
+     "cell_id": "modular_w60_s3",
+     "seed": 3
+    },
+    {
+     "arm": "daily_lag",
+     "cell_id": "daily_lag_s3",
+     "seed": 3
+    },
+    {
+     "arm": "long_window_own_depth",
+     "cell_id": "long_window_own_depth_s3",
+     "seed": 3
+    },
+    {
+     "arm": "long_window_crop60",
+     "cell_id": "long_window_crop60_s3",
+     "seed": 3
+    },
+    {
+     "arm": "long_window_local_support_67",
+     "cell_id": "long_window_local_support_67_s3",
+     "seed": 3
+    },
+    {
+     "arm": "short_window_deep_core",
+     "cell_id": "short_window_deep_core_s3",
+     "seed": 3
+    }
+   ],
+   "pilots": [
+    "pilot_modular_w60",
+    "pilot_daily_lag",
+    "pilot_long_window_own_depth",
+    "pilot_long_window_crop60",
+    "pilot_long_window_local_support_67",
+    "pilot_short_window_deep_core"
+   ],
+   "question": "information beyond the hour, separated from depth and from padding",
+   "reuse": "modular_w60 of DEV_MATCHED is the baseline of Q1/Q2/Q3 when its complete contract (rows, inputs, scaler, recipe, cadence, seeds) matches; otherwise the baseline is run inside the block",
+   "rows": {
+    "hi": 1462761,
+    "lo": 1410981,
+    "pad_rows": 1380,
+    "reading": "the panel is read from lo (pad + the widest volume tier before the DEV train span) to hi; origins are enumerated inside [train span, validation week] from row identities; padded rows are support only",
+    "train_end": 1452681,
+    "widest_train_days": 28
+   },
+   "state": "SEALED_NOT_EXECUTED"
+  },
+  "Q3_VOLUME": {
+   "arms": [
+    "volume_56d",
+    "volume_112d"
+   ],
+   "block_design_sha256": "a0126976ed1b0d60e72cec49bfe1194459c9c4a3550fcad46cd72068ddb74ef5",
+   "cells": [
+    {
+     "arm": "volume_56d",
+     "cell_id": "volume_56d_s1",
+     "seed": 1
+    },
+    {
+     "arm": "volume_112d",
+     "cell_id": "volume_112d_s1",
+     "seed": 1
+    },
+    {
+     "arm": "volume_56d",
+     "cell_id": "volume_56d_s2",
+     "seed": 2
+    },
+    {
+     "arm": "volume_112d",
+     "cell_id": "volume_112d_s2",
+     "seed": 2
+    },
+    {
+     "arm": "volume_56d",
+     "cell_id": "volume_56d_s3",
+     "seed": 3
+    },
+    {
+     "arm": "volume_112d",
+     "cell_id": "volume_112d_s3",
+     "seed": 3
+    }
+   ],
+   "pilots": [
+    "pilot_volume_56d",
+    "pilot_volume_112d"
+   ],
+   "question": "more history with the evaluation, scaler and cadence FIXED",
+   "reuse": "modular_w60 of DEV_MATCHED is the baseline of Q1/Q2/Q3 when its complete contract (rows, inputs, scaler, recipe, cadence, seeds) matches; otherwise the baseline is run inside the block",
+   "rows": {
+    "hi": 1462761,
+    "lo": 1291401,
+    "pad_rows": 0,
+    "reading": "the panel is read from lo (pad + the widest volume tier before the DEV train span) to hi; origins are enumerated inside [train span, validation week] from row identities; padded rows are support only",
+    "train_end": 1452681,
+    "widest_train_days": 112
+   },
+   "state": "SEALED_NOT_EXECUTED"
+  }
+ },
+ "calendar": {
+  "acceptance": "tests/test_df_e1_block.py: prefix stability of both, distinctness, the shift-minus-one leak fails",
+  "control": "randomised_calendar_control: the same four channels from the label plus a per-row random offset hashed from (seed, panel row id) \u2014 deterministic, prefix-stable, same capacity; its finite-sample association with the true clock is measured at prepare and reported, not declared zero",
+  "honest": "hour/weekday sin-cos from each row's own label (tools/df_e1_calendar.py); NAIVE_WALL_CLOCK, timezone UNKNOWN, DST reported per slice"
+ },
+ "capacity_and_reach_measured_at_seal": {
+  "calendar": {
+   "channels": 11,
+   "crop": null,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "family": "modular",
+   "parameters": 9915,
+   "role": "ARM",
+   "window": 60
+  },
+  "daily_lag": {
+   "channels": 8,
+   "crop": null,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "family": "modular",
+   "parameters": 8208,
+   "role": "ARM",
+   "window": 60
+  },
+  "gru_adapted_w60": {
+   "channels": 7,
+   "crop": null,
+   "dilations": null,
+   "family": "gru",
+   "parameters": 8901,
+   "reach_measured": {
+    "perturbation_max_abs_change_at_row": {
+     "0": 3.725290298461914e-09,
+     "59": 0.3154638707637787
+    },
+    "reach_by_gradient": 37,
+    "windows": 2
+   },
+   "role": "ARM",
+   "window": 60
+  },
+  "long_window_crop60": {
+   "channels": 7,
+   "crop": 60,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "family": "modular",
+   "parameters": 8127,
+   "reach_measured": {
+    "perturbation_max_abs_change_at_row": {
+     "1372": 0.0,
+     "1373": 0.0,
+     "1379": 0.0,
+     "1380": 2.091799736022949,
+     "1439": 3.246964454650879
+    },
+    "reach_by_gradient": 60,
+    "windows": 2
+   },
+   "role": "EXACT_INFORMATION_NULL: the raw input is cropped to its last 60 rows before the extractor",
+   "window": 1440
+  },
+  "long_window_local_support_67": {
+   "channels": 7,
+   "crop": null,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "family": "modular",
+   "parameters": 8127,
+   "reach_measured": {
+    "perturbation_max_abs_change_at_row": {
+     "1372": 0.0,
+     "1373": 0.10191059112548828,
+     "1379": 0.7866873741149902,
+     "1380": 2.118403434753418,
+     "1439": 3.141655445098877
+    },
+    "reach_by_gradient": 67,
+    "windows": 2
+   },
+   "role": "EXTRA_CONTEXT_67_SAMPLES (measured): NOT a null; the clamped core still reaches branch 5 + core 63 - 1 = 67 raw samples",
+   "window": 1440
+  },
+  "long_window_own_depth": {
+   "channels": 7,
+   "crop": null,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512
+   ],
+   "family": "modular",
+   "parameters": 12047,
+   "reach_measured": {
+    "perturbation_max_abs_change_at_row": {
+     "1372": 51.31101989746094,
+     "1373": 13.483243942260742,
+     "1379": 3.083315849304199,
+     "1380": 3.6105475425720215,
+     "1439": 41.823123931884766
+    },
+    "reach_by_gradient": 1440,
+    "windows": 2
+   },
+   "role": "ARM",
+   "window": 1440
+  },
+  "modular_w60": {
+   "channels": 7,
+   "crop": null,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "family": "modular",
+   "parameters": 8127,
+   "reach_measured": {
+    "perturbation_max_abs_change_at_row": {
+     "0": 1.4307814836502075,
+     "59": 7.263669013977051
+    },
+    "reach_by_gradient": 60,
+    "windows": 2
+   },
+   "role": "ARM",
+   "window": 60
+  },
+  "randomised_calendar_control": {
+   "channels": 11,
+   "crop": null,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "family": "modular",
+   "parameters": 9915,
+   "role": "CAPACITY_CONTROL: the same 4 channels built from each row's label plus a per-row random offset drawn from a hash of (seed, panel row id): deterministic, prefix-stable, no calendar information; its finite-sample association with the true clock is measured, not assumed zero",
+   "window": 60
+  },
+  "short_window_deep_core": {
+   "channels": 7,
+   "crop": null,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512
+   ],
+   "family": "modular",
+   "parameters": 12047,
+   "reach_measured": {
+    "perturbation_max_abs_change_at_row": {
+     "0": 1.5941896438598633,
+     "59": 43.52973175048828
+    },
+    "reach_by_gradient": 60,
+    "windows": 2
+   },
+   "role": "ARM",
+   "window": 60
+  },
+  "volume_112d": {
+   "channels": 7,
+   "crop": null,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "family": "modular",
+   "parameters": 8127,
+   "reach_measured": {
+    "perturbation_max_abs_change_at_row": {
+     "0": 1.4307814836502075,
+     "59": 7.263669013977051
+    },
+    "reach_by_gradient": 60,
+    "windows": 2
+   },
+   "role": "ARM",
+   "window": 60
+  },
+  "volume_56d": {
+   "channels": 7,
+   "crop": null,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "family": "modular",
+   "parameters": 8127,
+   "reach_measured": {
+    "perturbation_max_abs_change_at_row": {
+     "0": 1.4307814836502075,
+     "59": 7.263669013977051
+    },
+    "reach_by_gradient": 60,
+    "windows": 2
+   },
+   "role": "ARM",
+   "window": 60
+  }
+ },
+ "cells": [
+  {
+   "arm": "modular_w60",
+   "block": "DEV_MATCHED",
+   "cell_id": "modular_w60_s1",
+   "seed": 1
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "block": "DEV_MATCHED",
+   "cell_id": "gru_adapted_w60_s1",
+   "seed": 1
+  },
+  {
+   "arm": "modular_w60",
+   "block": "DEV_MATCHED",
+   "cell_id": "modular_w60_s2",
+   "seed": 2
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "block": "DEV_MATCHED",
+   "cell_id": "gru_adapted_w60_s2",
+   "seed": 2
+  },
+  {
+   "arm": "modular_w60",
+   "block": "DEV_MATCHED",
+   "cell_id": "modular_w60_s3",
+   "seed": 3
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "block": "DEV_MATCHED",
+   "cell_id": "gru_adapted_w60_s3",
+   "seed": 3
+  },
+  {
+   "arm": "calendar",
+   "block": "Q1_CALENDAR",
+   "cell_id": "calendar_s1",
+   "seed": 1
+  },
+  {
+   "arm": "randomised_calendar_control",
+   "block": "Q1_CALENDAR",
+   "cell_id": "randomised_calendar_control_s1",
+   "seed": 1
+  },
+  {
+   "arm": "calendar",
+   "block": "Q1_CALENDAR",
+   "cell_id": "calendar_s2",
+   "seed": 2
+  },
+  {
+   "arm": "randomised_calendar_control",
+   "block": "Q1_CALENDAR",
+   "cell_id": "randomised_calendar_control_s2",
+   "seed": 2
+  },
+  {
+   "arm": "calendar",
+   "block": "Q1_CALENDAR",
+   "cell_id": "calendar_s3",
+   "seed": 3
+  },
+  {
+   "arm": "randomised_calendar_control",
+   "block": "Q1_CALENDAR",
+   "cell_id": "randomised_calendar_control_s3",
+   "seed": 3
+  },
+  {
+   "arm": "modular_w60",
+   "block": "Q2_CONTEXT",
+   "cell_id": "modular_w60_s1",
+   "seed": 1
+  },
+  {
+   "arm": "daily_lag",
+   "block": "Q2_CONTEXT",
+   "cell_id": "daily_lag_s1",
+   "seed": 1
+  },
+  {
+   "arm": "long_window_own_depth",
+   "block": "Q2_CONTEXT",
+   "cell_id": "long_window_own_depth_s1",
+   "seed": 1
+  },
+  {
+   "arm": "long_window_crop60",
+   "block": "Q2_CONTEXT",
+   "cell_id": "long_window_crop60_s1",
+   "seed": 1
+  },
+  {
+   "arm": "long_window_local_support_67",
+   "block": "Q2_CONTEXT",
+   "cell_id": "long_window_local_support_67_s1",
+   "seed": 1
+  },
+  {
+   "arm": "short_window_deep_core",
+   "block": "Q2_CONTEXT",
+   "cell_id": "short_window_deep_core_s1",
+   "seed": 1
+  },
+  {
+   "arm": "modular_w60",
+   "block": "Q2_CONTEXT",
+   "cell_id": "modular_w60_s2",
+   "seed": 2
+  },
+  {
+   "arm": "daily_lag",
+   "block": "Q2_CONTEXT",
+   "cell_id": "daily_lag_s2",
+   "seed": 2
+  },
+  {
+   "arm": "long_window_own_depth",
+   "block": "Q2_CONTEXT",
+   "cell_id": "long_window_own_depth_s2",
+   "seed": 2
+  },
+  {
+   "arm": "long_window_crop60",
+   "block": "Q2_CONTEXT",
+   "cell_id": "long_window_crop60_s2",
+   "seed": 2
+  },
+  {
+   "arm": "long_window_local_support_67",
+   "block": "Q2_CONTEXT",
+   "cell_id": "long_window_local_support_67_s2",
+   "seed": 2
+  },
+  {
+   "arm": "short_window_deep_core",
+   "block": "Q2_CONTEXT",
+   "cell_id": "short_window_deep_core_s2",
+   "seed": 2
+  },
+  {
+   "arm": "modular_w60",
+   "block": "Q2_CONTEXT",
+   "cell_id": "modular_w60_s3",
+   "seed": 3
+  },
+  {
+   "arm": "daily_lag",
+   "block": "Q2_CONTEXT",
+   "cell_id": "daily_lag_s3",
+   "seed": 3
+  },
+  {
+   "arm": "long_window_own_depth",
+   "block": "Q2_CONTEXT",
+   "cell_id": "long_window_own_depth_s3",
+   "seed": 3
+  },
+  {
+   "arm": "long_window_crop60",
+   "block": "Q2_CONTEXT",
+   "cell_id": "long_window_crop60_s3",
+   "seed": 3
+  },
+  {
+   "arm": "long_window_local_support_67",
+   "block": "Q2_CONTEXT",
+   "cell_id": "long_window_local_support_67_s3",
+   "seed": 3
+  },
+  {
+   "arm": "short_window_deep_core",
+   "block": "Q2_CONTEXT",
+   "cell_id": "short_window_deep_core_s3",
+   "seed": 3
+  },
+  {
+   "arm": "volume_56d",
+   "block": "Q3_VOLUME",
+   "cell_id": "volume_56d_s1",
+   "seed": 1
+  },
+  {
+   "arm": "volume_112d",
+   "block": "Q3_VOLUME",
+   "cell_id": "volume_112d_s1",
+   "seed": 1
+  },
+  {
+   "arm": "volume_56d",
+   "block": "Q3_VOLUME",
+   "cell_id": "volume_56d_s2",
+   "seed": 2
+  },
+  {
+   "arm": "volume_112d",
+   "block": "Q3_VOLUME",
+   "cell_id": "volume_112d_s2",
+   "seed": 2
+  },
+  {
+   "arm": "volume_56d",
+   "block": "Q3_VOLUME",
+   "cell_id": "volume_56d_s3",
+   "seed": 3
+  },
+  {
+   "arm": "volume_112d",
+   "block": "Q3_VOLUME",
+   "cell_id": "volume_112d_s3",
+   "seed": 3
+  }
+ ],
+ "context_control": {
+  "daily_lag": {
+   "available_at_decision": true,
+   "channel": "y(t + h - 1440)",
+   "delayed_observation_rule": "this archive declares no publication delay (UNKNOWN is not zero delay: it is undeclared); the wall-clock label is used and said so; the household task stays retrospective/offline and is no evidence of live availability",
+   "horizon": 60,
+   "lag": 1440,
+   "reading": "the label is y(t+60); one day before it is row t+60-1440 = t-1380, which is at or before the origin t",
+   "sample_index_relative_to_origin": -1380
+  },
+  "exact_information_null": "long_window_crop60: raw input cropped to its last 60 rows BEFORE the extractor; paired weights with modular_w60 (same seed -> same initial weights), equal outputs on the same rows, same left padding",
+  "extra_context_arm": "long_window_local_support_67: the W60 dilations at W=1440 reach 67 raw samples (measured above); it is declared as extra context, never as a null",
+  "long_short_x_shallow_deep": {
+   "long_deep": "long_window_own_depth",
+   "long_shallow_support67": "long_window_local_support_67",
+   "reading": "the contrast stays identifiable: window and depth move separately; padding is equalised by the crop arm",
+   "short_deep": "short_window_deep_core",
+   "short_shallow": "modular_w60"
+  }
+ },
+ "design_sha256": "0dcb92b9c05ad14324a77a21b0a41a5eabe70b811321edbd17a6294e74e330fa",
+ "execution_priority": [
+  "DEV_MATCHED",
+  "Q1_CALENDAR",
+  "Q2_CONTEXT",
+  "Q3_VOLUME"
+ ],
+ "held_constant": [
+  "forecast task W60/h60 on the successor rows",
+  "the COMMON train-only scaler (28 d, W60 windows) and one evaluation sigma",
+  "the common evaluation set derived at prepare",
+  "the continuity recipe with validation in observed updates",
+  "three paired seeds",
+  "no pretraining"
+ ],
+ "limits": {
+  "campaign_cpu_seconds": 14400,
+  "child_cpu_seconds": 3600,
+  "child_wall_seconds": 4800,
+  "closure_reserve_seconds": 2000,
+  "parallel_children": 3
+ },
+ "literature_comparator": {
+  "baselines": [
+   "persistence",
+   "daily seasonal persistence",
+   "train-only constant"
+  ],
+  "module": "tools/df_gru_reference.py",
+  "published_values": "Table 5 stays in the source notes (RP66/GASPARIN_2019_REPRODUCTION_CONFIG.json); never in the comparison column",
+  "what": "GRU-MIMO family of Gasparin 2019 adapted to our one 60-min target and the modular arm's inputs under the continuity recipe; article facts, adaptations and unknowns kept apart"
+ },
+ "phase": "DEVELOPMENT",
+ "pilot": {
+  "max_updates": 200,
+  "patience_events": 3,
+  "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+  "validate_every_updates": 50
+ },
+ "purpose": "E1_DIAGNOSTIC_PHASE_2_SUCCESSOR",
+ "reading_rules": [
+  "three seeds on one task are development evidence",
+  "unrun blocks stay NOT_EXECUTED, never 'no effect'",
+  "no cell is removed after its score is seen",
+  "no adequacy margin, cell or epoch is changed from partial outcomes"
+ ],
+ "recipe": {
+  "batch": 64,
+  "checkpoint_opportunities": 20,
+  "learning_rate": 0.003,
+  "loss": "mae",
+  "max_updates": 4000,
+  "min_delta": 0.0,
+  "monitor": "validation MAE in scaled units (equals MAE_z with the common sigma)",
+  "optimizer": "adam",
+  "patience_events": 3,
+  "restore_best": true,
+  "role": "HOUSEHOLD CONTINUITY REFERENCE (MAE+Adam) with validation in OBSERVED updates; it selects no trading loss",
+  "validate_every_updates": 200
+ },
+ "resource_assignment": {
+  "blocks": "all arms of one seed on ONE host; workers only after their wrapper records parent+child CPU and peak memory",
+  "no_padding": "no cell is repeated to occupy a machine"
+ },
+ "runner": "tools/df_e1_block.py (features, enumeration, scaling, cadence, governance, closure) \u2014 tested through the consumer in tests/test_df_e1_block.py",
+ "schema": "df_e1_phase2_design.v2",
+ "source_run": {
+  "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+  "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+  "evaluation_origins": 10020,
+  "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3"
+ },
+ "state": "SEALED_NOT_EXECUTED",
+ "supersedes": {
+  "cells_v1": 27,
+  "v1": "docs/audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
+  "why": "Musashi's post-Huber review, findings 3 and 5 (measured 67-sample reach; cadence in epochs; volume counts and refitted scalers)"
+ },
+ "training_adequacy": {
+  "ceiling_policy": "a fit that reaches 4 000 updates is CENSORED wherever its best event fell",
+  "checkpoint_opportunities": 20,
+  "claims": "finite-budget comparisons only; no convergence claim from a ceiling",
+  "patience": 3,
+  "patience_unit": "validation events",
+  "restore_check": "restored predictions reproduce the best validation event",
+  "validation_cadence": "every 200 observed optimizer updates"
+ },
+ "volume": {
+  "cadence": "validation every 200 observed updates, patience 3 events, 20 opportunities \u2014 identical across tiers",
+  "counts": "unique support rows, train-only rows (validation support excluded), labels, windows, exposures from row identities at prepare (tests/test_df_e1_block.py::test_volume_tiers_grow_backwards...)",
+  "evaluation": "FIXED: the same DEV validation origins, byte-identical across tiers",
+  "extension": "a second update tier (8 000) is a predeclared new budget tier for the SAME cells, declared before the first tier's scores are read; never a claim of convergence or of an error improvement",
+  "scaler": "COMMON (the 28 d baseline's); a refit-scaler variant is a SEPARATE factor, NOT_RUN in this phase",
+  "tiers_days": [
+   28,
+   56,
+   112
+  ]
+ }
+}

@@ -1,0 +1,118 @@
+{
+ "arm_spec": {
+  "arm": "short_window_deep_core",
+  "crop": null,
+  "dilations": [
+   1,
+   2,
+   4,
+   8,
+   16,
+   32,
+   64,
+   128,
+   256,
+   512
+  ],
+  "family": "modular",
+  "features": "base",
+  "role": "ARM",
+  "train_days": 28,
+  "window": 60
+ },
+ "arrays_sha256": "0e03884768f81fcc8d24573ec0c7383c283e9ea9d5ce80d999d924260f4fb2d5",
+ "assignment": [
+  0,
+  1,
+  0,
+  2,
+  2,
+  2,
+  0
+ ],
+ "cell": {
+  "arm": "short_window_deep_core",
+  "cell_id": "pilot_short_window_deep_core",
+  "max_updates": 200,
+  "patience_events": 3,
+  "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+  "role": "COST_PILOT",
+  "seed": 1,
+  "validate_every_updates": 50
+ },
+ "channels": 7,
+ "cost": {
+  "cpu_seconds": 41.909186678,
+  "host": "omega",
+  "peak_rss_bytes": 966275072,
+  "seconds_per_update": 0.15997470141,
+  "seconds_per_validation_event": 2.5459037357499996,
+  "wall_seconds": 33.1517736199894
+ },
+ "design_sha256": "6d1aaecaf27c581c709a745a4f976c2e9dcc05594815b2ee1a9747595f4398b1",
+ "final_weights_sha256": "72a2c39d002ce6945be18567e787f1590647e86be7fb62f93c0e274bb1d827fa",
+ "initial_weights_sha256": "9d7edff6f2487f325bbb5d695926f49aad715f285423022cc1b98834f2b561dc",
+ "parameters": 12047,
+ "pilot": true,
+ "population": {
+  "evaluation_is_common_dev_set": false,
+  "evaluation_origins": 9899,
+  "train_origins": 30061
+ },
+ "reload_max_error": 0.0,
+ "schema": "df_e1_block_cell.v1",
+ "scores": {
+  "mae_kw": 0.584453357275631,
+  "mae_z": 0.6404852912404309,
+  "naive_mae_kw": 0.6759967673502374,
+  "rmse_kw": 0.9464017670855039,
+  "rows": 9899,
+  "skill_vs_naive": 0.13541989325398252
+ },
+ "target_mean": 0.926139629748496,
+ "target_sd": 0.9125164391265214,
+ "training": {
+  "best_event": 4,
+  "best_update": 200,
+  "best_val_mae_scaled": 0.6404852907976847,
+  "censoring": {
+   "rule": "reaching the update ceiling is censoring wherever the best checkpoint fell; what more budget would reach is unknown in either direction",
+   "verdict": "CENSORED_BY_BUDGET"
+  },
+  "events": [
+   {
+    "train_loss_mean_since_last": 1.0199133533239364,
+    "update": 50,
+    "val_mae_scaled": 0.702828721870116
+   },
+   {
+    "train_loss_mean_since_last": 0.5916812032461166,
+    "update": 100,
+    "val_mae_scaled": 0.7176537069732
+   },
+   {
+    "train_loss_mean_since_last": 0.595457581281662,
+    "update": 150,
+    "val_mae_scaled": 0.6614938632619025
+   },
+   {
+    "train_loss_mean_since_last": 0.5403781187534332,
+    "update": 200,
+    "val_mae_scaled": 0.6404852907976847
+   }
+  ],
+  "fit_cpu_seconds": 31.994940282,
+  "min_delta": 0.0,
+  "optimizer_iterations": 200,
+  "patience_events": 3,
+  "restore_verified": true,
+  "restored_val_mae_scaled": 0.6404852907976847,
+  "stop_reason": "UPDATE_BUDGET",
+  "updates": 200,
+  "updates_are_optimizer_iterations": true,
+  "validate_every_updates": 50,
+  "validation_cpu_seconds": 10.183614942999998,
+  "validation_events": 4
+ },
+ "weights_file_sha256": "a25bf83af4db836fe59355b72fdd56099d4e50d43ae31195255c33c9623bce4e"
+}

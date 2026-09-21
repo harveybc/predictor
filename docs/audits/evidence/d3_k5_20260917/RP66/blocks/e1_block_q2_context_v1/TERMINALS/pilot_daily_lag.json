@@ -1,0 +1,93 @@
+{
+ "artifacts": [
+  {
+   "bytes": 473778,
+   "role": "predictions",
+   "sha256": "f1f67a9e8b5f550505a790a682cae9a8b2dd097d8d28610e0df089ef806d064d"
+  },
+  {
+   "bytes": 233408,
+   "role": "weights",
+   "sha256": "c3ef0c868c9cbd02d24b2ebd27acf14443e151cfc3eb5720fee23fc96dbd8983"
+  },
+  {
+   "bytes": 3017,
+   "role": "record",
+   "sha256": "358330a1deac966ee4a461d7af66304b4fba13239d0330b156be8eda74ee4caa"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 29.641615411,
+  "wall_seconds": 27.125511480960995
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T11:47:50Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.5320040556212575
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_z",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.5830076399834531
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.naive_mae_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.6735672324423214
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.rmse_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.8773744155762336
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.skill_vs_naive",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.21016933425897644
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T11:47:22Z",
+ "status": "COMPLETED",
+ "tags": {
+  "arm": "daily_lag",
+  "classification": "NON_GOVERNING",
+  "contract_sha256": "ddf26de62a9fa18cc026bbe23871c697df6770a7b127cab395b8921b17446a3f",
+  "design_sha256": "6d1aaecaf27c581c709a745a4f976c2e9dcc05594815b2ee1a9747595f4398b1",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_Q2_CONTEXT",
+  "role": "COST_PILOT",
+  "seed": "1",
+  "unit": "pilot_daily_lag"
+ }
+}

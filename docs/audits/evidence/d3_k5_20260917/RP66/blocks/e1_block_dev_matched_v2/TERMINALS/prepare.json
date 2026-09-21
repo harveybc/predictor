@@ -1,0 +1,45 @@
+{
+ "artifacts": [
+  {
+   "bytes": 5321790,
+   "role": "data",
+   "sha256": "7bd5c5ba57e759cf585fafdb93c056c670c232b9f6b564f5c4ee7cf0b6cd0d38"
+  },
+  {
+   "bytes": 3571,
+   "role": "record",
+   "sha256": "b99da7facfb6804a0c07bf43181e26eaca6edca38c5a251601f058382edcd540"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 1.453972078,
+  "wall_seconds": 1.453965345
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T11:36:31Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.common_evaluation_rows",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "rows",
+   "value": 10020.0
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T11:36:29Z",
+ "status": "COMPLETED",
+ "tags": {
+  "classification": "NON_GOVERNING",
+  "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_DEV_MATCHED",
+  "role": "PREPARATION",
+  "unit": "prepare"
+ }
+}

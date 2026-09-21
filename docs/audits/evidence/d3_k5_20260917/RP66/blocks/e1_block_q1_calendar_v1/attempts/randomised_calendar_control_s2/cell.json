@@ -1,0 +1,146 @@
+{
+ "arm_spec": {
+  "arm": "randomised_calendar_control",
+  "crop": null,
+  "dilations": null,
+  "family": "modular",
+  "features": "randomised_calendar",
+  "role": "CAPACITY_CONTROL: the same 4 channels built from each row's label plus a per-row random offset drawn from a hash of (seed, panel row id): deterministic, prefix-stable, no calendar information; its finite-sample association with the true clock is measured, not assumed zero",
+  "train_days": 28,
+  "window": 60
+ },
+ "arrays_sha256": "75bc5558e4d7814567725e96e7141dcfe7446e3e2cd8e7dbb3814d95555c5cb0",
+ "assignment": [
+  0,
+  1,
+  0,
+  2,
+  2,
+  2,
+  0,
+  3,
+  3,
+  3,
+  3
+ ],
+ "cell": {
+  "arm": "randomised_calendar_control",
+  "cell_id": "randomised_calendar_control_s2",
+  "seed": 2
+ },
+ "channels": 11,
+ "cost": {
+  "cpu_seconds": 135.476693273,
+  "host": "omega",
+  "peak_rss_bytes": 1080066048,
+  "seconds_per_update": 0.05231394692416667,
+  "seconds_per_validation_event": 1.5795935530833367,
+  "wall_seconds": 105.23986725200666
+ },
+ "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+ "final_weights_sha256": "3eac423490fcb452d2068d786401bd3f07393a7613285e0988a7c4fe705f0cad",
+ "initial_weights_sha256": "eb66d34e280e2204db7b84aa39782ee99e4bb46d65e67e7aa62fa6014e26cee9",
+ "parameters": 9915,
+ "pilot": false,
+ "population": {
+  "evaluation_is_common_dev_set": true,
+  "evaluation_origins": 10020,
+  "train_origins": 40080
+ },
+ "reload_max_error": 0.0,
+ "schema": "df_e1_block_cell.v1",
+ "scores": {
+  "mae_kw": 0.4967720638957063,
+  "mae_z": 0.5443979336648732,
+  "naive_mae_kw": 0.6173720558882235,
+  "rmse_kw": 0.7830923445859178,
+  "rows": 10020,
+  "skill_vs_naive": 0.19534410545843062
+ },
+ "target_mean": 0.926139629748496,
+ "target_sd": 0.9125164391265214,
+ "training": {
+  "best_event": 9,
+  "best_update": 1800,
+  "best_val_mae_scaled": 0.5443979335939065,
+  "censoring": {
+   "rule": "reaching the update ceiling is censoring wherever the best checkpoint fell; what more budget would reach is unknown in either direction",
+   "verdict": "STOPPED_ON_VALIDATION"
+  },
+  "events": [
+   {
+    "train_loss_mean_since_last": 0.750297993272543,
+    "update": 200,
+    "val_mae_scaled": 0.582166973686105
+   },
+   {
+    "train_loss_mean_since_last": 0.5600395676493645,
+    "update": 400,
+    "val_mae_scaled": 0.566478791422891
+   },
+   {
+    "train_loss_mean_since_last": 0.5579997207224369,
+    "update": 600,
+    "val_mae_scaled": 0.5603787513013637
+   },
+   {
+    "train_loss_mean_since_last": 0.5487877362966538,
+    "update": 800,
+    "val_mae_scaled": 0.5687905585603136
+   },
+   {
+    "train_loss_mean_since_last": 0.543008368909359,
+    "update": 1000,
+    "val_mae_scaled": 0.5793434946468525
+   },
+   {
+    "train_loss_mean_since_last": 0.538109180033207,
+    "update": 1200,
+    "val_mae_scaled": 0.5585108401537073
+   },
+   {
+    "train_loss_mean_since_last": 0.5344366030395031,
+    "update": 1400,
+    "val_mae_scaled": 0.5562038947188178
+   },
+   {
+    "train_loss_mean_since_last": 0.5361604286730289,
+    "update": 1600,
+    "val_mae_scaled": 0.5599848555106095
+   },
+   {
+    "train_loss_mean_since_last": 0.5308675880730153,
+    "update": 1800,
+    "val_mae_scaled": 0.5443979335939065
+   },
+   {
+    "train_loss_mean_since_last": 0.515773050636053,
+    "update": 2000,
+    "val_mae_scaled": 0.5542145392504063
+   },
+   {
+    "train_loss_mean_since_last": 0.5148050718009471,
+    "update": 2200,
+    "val_mae_scaled": 0.552615771699997
+   },
+   {
+    "train_loss_mean_since_last": 0.5222662097215652,
+    "update": 2400,
+    "val_mae_scaled": 0.58400775490798
+   }
+  ],
+  "fit_cpu_seconds": 125.553472618,
+  "min_delta": 0.0,
+  "optimizer_iterations": 2400,
+  "patience_events": 3,
+  "restore_verified": true,
+  "restored_val_mae_scaled": 0.5443979335939065,
+  "stop_reason": "EARLY_STOPPING",
+  "updates": 2400,
+  "updates_are_optimizer_iterations": true,
+  "validate_every_updates": 200,
+  "validation_cpu_seconds": 18.95512263700004,
+  "validation_events": 12
+ },
+ "weights_file_sha256": "51f47cbb260a0c6bc0a49fe6ddc29137789665b8589be2c62201e568ec2bfd66"
+}

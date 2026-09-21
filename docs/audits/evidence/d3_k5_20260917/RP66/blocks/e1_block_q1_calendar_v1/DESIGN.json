@@ -1,0 +1,296 @@
+{
+ "arms": [
+  {
+   "arm": "calendar",
+   "crop": null,
+   "dilations": null,
+   "family": "modular",
+   "features": "calendar",
+   "role": "ARM",
+   "train_days": 28,
+   "window": 60
+  },
+  {
+   "arm": "randomised_calendar_control",
+   "crop": null,
+   "dilations": null,
+   "family": "modular",
+   "features": "randomised_calendar",
+   "role": "CAPACITY_CONTROL: the same 4 channels built from each row's label plus a per-row random offset drawn from a hash of (seed, panel row id): deterministic, prefix-stable, no calendar information; its finite-sample association with the true clock is measured, not assumed zero",
+   "train_days": 28,
+   "window": 60
+  }
+ ],
+ "baselines": {
+  "daily_seasonal": "y(t+h-1440)",
+  "persistence": "y(t)",
+  "train_constant": "mean of the train labels of the 28 d tier; computed on the common evaluation set at closure, no fit, no terminal"
+ },
+ "benchmark_contract": {
+  "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+  "comparability": {
+   "against": "the block's own baseline under one declared estimand",
+   "comparator_state": "NONE",
+   "declared_contrast": [
+    "permitted_inputs"
+   ],
+   "fields_that_differ": [],
+   "mode": "REPRODUCTION",
+   "ours_sha256": "497a01eeacc2f1b46afba5c7d700775638da86100f55b53bc7f07de6fdf9354f",
+   "reference_evidence": {
+    "state": "PLANNED_REFERENCE",
+    "why": "no reference run root was given"
+   },
+   "resolution": null,
+   "theirs_sha256": "1f827a24c8c0b0eb7469fc5254c744cf48d787cdc062a81a8113352ada839c92",
+   "why": "every identity field matches (contrast declared on ['permitted_inputs']); the paper's metric is reported first"
+  },
+  "contract_sha256": "497a01eeacc2f1b46afba5c7d700775638da86100f55b53bc7f07de6fdf9354f",
+  "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+  "estimand": "does the wall-clock position add information at h60? baseline modular_w60 reused from DEV_MATCHED when its contract matches",
+  "horizon_seconds": 3600,
+  "horizon_steps": 60,
+  "input_window_steps": 60,
+  "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+  "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+  "metric_scale": "z_train",
+  "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+  "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+  "notes": [],
+  "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+  "reference_method": null,
+  "replicas": "3 paired seeds; development",
+  "resolution_seconds": 60,
+  "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+  "schema": "benchmark_contract.v2",
+  "source": {
+   "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+   "evaluation_origins": 10020,
+   "kind": "OURS",
+   "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "sd_train": 0.9125164391265214,
+   "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+  },
+  "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+  "target": "Global_active_power",
+  "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+  "target_transform": "zscore_train",
+  "task_id": "uci_235.W60_h60.DEV_28d_7d",
+  "tuning_budget": "none: declared settings",
+  "varying_factors": [
+   "permitted_inputs"
+  ],
+  "version": "2"
+ },
+ "block": "Q1_CALENDAR",
+ "cells": [
+  {
+   "arm": "calendar",
+   "cell_id": "calendar_s1",
+   "seed": 1
+  },
+  {
+   "arm": "randomised_calendar_control",
+   "cell_id": "randomised_calendar_control_s1",
+   "seed": 1
+  },
+  {
+   "arm": "calendar",
+   "cell_id": "calendar_s2",
+   "seed": 2
+  },
+  {
+   "arm": "randomised_calendar_control",
+   "cell_id": "randomised_calendar_control_s2",
+   "seed": 2
+  },
+  {
+   "arm": "calendar",
+   "cell_id": "calendar_s3",
+   "seed": 3
+  },
+  {
+   "arm": "randomised_calendar_control",
+   "cell_id": "randomised_calendar_control_s3",
+   "seed": 3
+  }
+ ],
+ "common_evaluation_rule": "the intersection over the block's arms of admissible validation origins, with a finite label and a finite daily lookup, derived at prepare BEFORE any score; every arm scores on it",
+ "contract_source": "REGISTRY household_W60_h60",
+ "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+ "limits": {
+  "campaign_cpu_seconds": 14400,
+  "child_cpu_seconds": 3600,
+  "child_wall_seconds": 4800,
+  "closure_reserve_seconds": 2000,
+  "parallel_children": 3
+ },
+ "phase": "DEVELOPMENT",
+ "pilot": {
+  "max_updates": 200,
+  "patience_events": 3,
+  "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+  "validate_every_updates": 50
+ },
+ "pilots": [
+  {
+   "arm": "calendar",
+   "cell_id": "pilot_calendar",
+   "max_updates": 200,
+   "patience_events": 3,
+   "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+   "role": "COST_PILOT",
+   "seed": 1,
+   "validate_every_updates": 50
+  },
+  {
+   "arm": "randomised_calendar_control",
+   "cell_id": "pilot_randomised_calendar_control",
+   "max_updates": 200,
+   "patience_events": 3,
+   "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+   "role": "COST_PILOT",
+   "seed": 1,
+   "validate_every_updates": 50
+  }
+ ],
+ "purpose": "E1_BLOCK_Q1_CALENDAR",
+ "question": "does the wall-clock position add information at h60? baseline modular_w60 reused from DEV_MATCHED when its contract matches",
+ "reading_rules": [
+  "three seeds on one task are development evidence",
+  "a fit that reached the update ceiling is CENSORED wherever its best checkpoint fell",
+  "no cell is removed after its score is seen",
+  "a published number under another protocol never enters the comparison column"
+ ],
+ "recipe": {
+  "batch": 64,
+  "checkpoint_opportunities": 20,
+  "learning_rate": 0.003,
+  "loss": "mae",
+  "max_updates": 4000,
+  "min_delta": 0.0,
+  "monitor": "validation MAE in scaled units (equals MAE_z with the common sigma)",
+  "optimizer": "adam",
+  "patience_events": 3,
+  "restore_best": true,
+  "role": "HOUSEHOLD CONTINUITY REFERENCE (MAE+Adam) with validation in OBSERVED updates; it selects no trading loss",
+  "validate_every_updates": 200
+ },
+ "reuse": {
+  "baseline_arm": "modular_w60",
+  "block": "DEV_MATCHED",
+  "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
+  "recipe": {
+   "batch": 64,
+   "checkpoint_opportunities": 20,
+   "learning_rate": 0.003,
+   "loss": "mae",
+   "max_updates": 4000,
+   "min_delta": 0.0,
+   "monitor": "validation MAE in scaled units (equals MAE_z with the common sigma)",
+   "optimizer": "adam",
+   "patience_events": 3,
+   "restore_best": true,
+   "role": "HOUSEHOLD CONTINUITY REFERENCE (MAE+Adam) with validation in OBSERVED updates; it selects no trading loss",
+   "validate_every_updates": 200
+  },
+  "rule": "reused because rows, inputs, scaler, recipe, cadence and seeds are identical; the baseline is NOT re-trained",
+  "run_root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_dev_matched_v2",
+  "seeds": [
+   1,
+   2,
+   3
+  ],
+  "units": {
+   "modular_w60_s1": {
+    "campaign_sha256": "f4768f10b53719a9fbab5f730fd5833e067100e1c4b7e8112e562ee57c717fbc",
+    "terminal_sha256": "116f24061f2d50cbca9915be3352c37f45e8336c9fd13a7e63143ffd8b100736"
+   },
+   "modular_w60_s2": {
+    "campaign_sha256": "74c55e90462d84fe96a64b34180d0f71625d29a2bfee37d7609578bfb4ebff64",
+    "terminal_sha256": "e4483179e4900c7efc290f9dfc16c97716dd590393dfe262716080cbb1a89a4f"
+   },
+   "modular_w60_s3": {
+    "campaign_sha256": "e80ddc9a92086a89b32f19bd24effb709c40f298826dc3104601f1a01476b355",
+    "terminal_sha256": "f3c218e54aedfbd4be4efb756508fe8d49fc5b97d11e57fd1c1800788625a101"
+   }
+  }
+ },
+ "rows": {
+  "hi": 1462761,
+  "lo": 1412361,
+  "pad_rows": 0,
+  "reading": "the panel is read from lo (pad + the widest volume tier before the DEV train span) to hi; origins are enumerated inside [train span, validation week] from row identities; padded rows are support only",
+  "train_end": 1452681,
+  "widest_train_days": 28
+ },
+ "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels mean 0 / sd 1; the lag channel takes the target's scaler; one evaluation sigma = the target's train sd",
+ "schema": "df_e1_block_design.v1",
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "source_code": {
+  "df_e1_block.py": "798711c4d99b0939335b7624089784f6caa4a74382e261fcf0e6fa34c7a92600",
+  "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+  "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+  "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+  "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+  "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+ },
+ "source_run": {
+  "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+  "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+  "evaluation_origins": 10020,
+  "graph_assignment": [
+   0,
+   1,
+   0,
+   2,
+   2,
+   2,
+   0
+  ],
+  "input_columns": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3",
+   "Global_active_power"
+  ],
+  "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3",
+  "scaler": {
+   "fitted_on": "train windows only",
+   "mean": [
+    0.16394039569874333,
+    241.13327788719684,
+    3.979902281204715,
+    1.2482722486963898,
+    0.8695229659938625,
+    6.320571675690061,
+    0.926139629748496
+   ],
+   "n_rows": 2404860,
+   "sd": [
+    0.12462470429263597,
+    2.20610330333974,
+    3.8047190184746955,
+    6.578895446497683,
+    3.6476937059712364,
+    8.382971207465904,
+    0.9125164391265214
+   ]
+  },
+  "slice_rows": [
+   1412361,
+   1462761
+  ],
+  "target_channel": 6,
+  "train_end_row": 1452681
+ },
+ "state": "SEALED_NOT_EXECUTED"
+}

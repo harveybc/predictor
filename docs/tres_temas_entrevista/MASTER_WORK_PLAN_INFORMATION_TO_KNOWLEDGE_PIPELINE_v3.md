@@ -5,6 +5,7 @@ Ejecucion delegada: Satoshi. Estado: E0-DEV, etapa ARCH y piloto E1 EJECUTADOS;
 piloto historico no gobernado y SUCESOR E1 EJECUTADO; sin confirmacion.
 
 **Vigente:** [RP66-RP73: correcciones y referencia emparejada](../handoffs/MUSASHI_POST_HUBER_RP66_RP73_2026_09_21.md).
+**Ejecutado por Satoshi (21-sep, pendiente de revision):** [retorno RP66-RP73](../audits/work_plan/SATOSHI_RP66_RP73_RETURN_2026_09_21.md): contratos tipados enlazados al runtime, tabla de cierre por contenido (49/49), bloque DEV emparejado ejecutado y cerrado (GRU adaptada 0.5313 MAE_z vs modular 0.5680, persistencia 0.6766; 3/3 semillas), Q1 calendario (0.4868 vs control 0.5529) y Q3 volumen (112 d 0.5575, 56 d 0.5608, 28 d 0.5680) ejecutados y cerrados; Q2 NOT_EXECUTED por limite medido (4.9 s/actualizacion en W=1440); finanzas: tarea por tiempo transcurrido y runner gobernado con FL01-FL08 ejecutables sobre datos sinteticos, sin campana cientifica.
 **Revision de 4ef9f71:** [dictamen ejecutado](../audits/work_plan/MUSASHI_POST_HUBER_REVIEW_2026_09_21.md).
 Historicos preservados; contrato y tabla no aceptados como verificadores suficientes.
 Antes de medir: corregir el alcance 67 vs 60, frecuencia de validacion al variar

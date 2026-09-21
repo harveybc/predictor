@@ -1,0 +1,111 @@
+{
+ "arm_spec": {
+  "arm": "calendar",
+  "crop": null,
+  "dilations": null,
+  "family": "modular",
+  "features": "calendar",
+  "role": "ARM",
+  "train_days": 28,
+  "window": 60
+ },
+ "arrays_sha256": "f9b6486a2f5b7d33f2d2344b913baef7679e45c44691e2166b6d80b897d21b35",
+ "assignment": [
+  0,
+  1,
+  0,
+  2,
+  2,
+  2,
+  0,
+  3,
+  3,
+  3,
+  3
+ ],
+ "cell": {
+  "arm": "calendar",
+  "cell_id": "pilot_calendar",
+  "max_updates": 200,
+  "patience_events": 3,
+  "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+  "role": "COST_PILOT",
+  "seed": 1,
+  "validate_every_updates": 50
+ },
+ "channels": 11,
+ "cost": {
+  "cpu_seconds": 38.384527712,
+  "host": "omega",
+  "peak_rss_bytes": 994177024,
+  "seconds_per_update": 0.12142565267,
+  "seconds_per_validation_event": 1.9644002852499995,
+  "wall_seconds": 33.32700858399039
+ },
+ "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+ "final_weights_sha256": "e0402f7a42d7ae6e1623f0e16e041b3676abbc0275d944a984dd9f875bae745f",
+ "initial_weights_sha256": "387b97e18fdbfbbba4437552131191c10f8e26f26d8eb55708b2182ad7bf1426",
+ "parameters": 9915,
+ "pilot": true,
+ "population": {
+  "evaluation_is_common_dev_set": false,
+  "evaluation_origins": 9899,
+  "train_origins": 30061
+ },
+ "reload_max_error": 0.0,
+ "schema": "df_e1_block_cell.v1",
+ "scores": {
+  "mae_kw": 0.5653717643894328,
+  "mae_z": 0.6195743332915928,
+  "naive_mae_kw": 0.6759967673502374,
+  "rmse_kw": 0.895090283048252,
+  "rows": 9899,
+  "skill_vs_naive": 0.16364723664941605
+ },
+ "target_mean": 0.926139629748496,
+ "target_sd": 0.9125164391265214,
+ "training": {
+  "best_event": 3,
+  "best_update": 150,
+  "best_val_mae_scaled": 0.6195743329682505,
+  "censoring": {
+   "rule": "reaching the update ceiling is censoring wherever the best checkpoint fell; what more budget would reach is unknown in either direction",
+   "verdict": "CENSORED_BY_BUDGET"
+  },
+  "events": [
+   {
+    "train_loss_mean_since_last": 0.7350474530458451,
+    "update": 50,
+    "val_mae_scaled": 0.6427378859219709
+   },
+   {
+    "train_loss_mean_since_last": 0.5618373364210129,
+    "update": 100,
+    "val_mae_scaled": 0.6693234231599089
+   },
+   {
+    "train_loss_mean_since_last": 0.5595647019147872,
+    "update": 150,
+    "val_mae_scaled": 0.6195743329682505
+   },
+   {
+    "train_loss_mean_since_last": 0.510203194618225,
+    "update": 200,
+    "val_mae_scaled": 0.6256765911116599
+   }
+  ],
+  "fit_cpu_seconds": 24.285130534,
+  "min_delta": 0.0,
+  "optimizer_iterations": 200,
+  "patience_events": 3,
+  "restore_verified": true,
+  "restored_val_mae_scaled": 0.6195743329682505,
+  "stop_reason": "UPDATE_BUDGET",
+  "updates": 200,
+  "updates_are_optimizer_iterations": true,
+  "validate_every_updates": 50,
+  "validation_cpu_seconds": 7.857601140999998,
+  "validation_events": 4
+ },
+ "weights_file_sha256": "b48db8f8982d2ab56888d979b0e7f476b9d4a613aeccf36770e5fc73e868f716"
+}

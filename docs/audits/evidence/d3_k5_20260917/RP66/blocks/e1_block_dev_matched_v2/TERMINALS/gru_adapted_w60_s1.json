@@ -1,0 +1,93 @@
+{
+ "artifacts": [
+  {
+   "bytes": 482466,
+   "role": "predictions",
+   "sha256": "feb0317bad53debd94ae0c24fc9d2c48b580deb7993ebfc2a2040963cf1539f2"
+  },
+  {
+   "bytes": 129632,
+   "role": "weights",
+   "sha256": "c723dfedb1cca7a11f80800b5d1b2e819adbbb4262a3ac22750b8afc57cd281c"
+  },
+  {
+   "bytes": 3490,
+   "role": "record",
+   "sha256": "516e17419d9aa3a5596061c4d2a71584f6d745e94a49cb44b75a0b7af7a45576"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 52.140146648,
+  "wall_seconds": 53.33560477901483
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T11:38:11Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.4856760441588367
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_z",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.5322381311001206
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.naive_mae_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.6173720558882235
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.rmse_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.8160335401702642
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.skill_vs_naive",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.21331709213808447
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T11:37:18Z",
+ "status": "COMPLETED",
+ "tags": {
+  "arm": "gru_adapted_w60",
+  "classification": "NON_GOVERNING",
+  "contract_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+  "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_DEV_MATCHED",
+  "role": "ARM",
+  "seed": "1",
+  "unit": "gru_adapted_w60_s1"
+ }
+}

@@ -1,0 +1,107 @@
+{
+ "arm_spec": {
+  "arm": "volume_56d",
+  "crop": null,
+  "dilations": null,
+  "family": "modular",
+  "features": "base",
+  "role": "ARM",
+  "train_days": 56,
+  "window": 60
+ },
+ "arrays_sha256": "7b25efefbc743ba1aa75767b494043d6cfb4c75daf98660fd42a0989ce4cc7e1",
+ "assignment": [
+  0,
+  1,
+  0,
+  2,
+  2,
+  2,
+  0
+ ],
+ "cell": {
+  "arm": "volume_56d",
+  "cell_id": "pilot_volume_56d",
+  "max_updates": 200,
+  "patience_events": 3,
+  "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+  "role": "COST_PILOT",
+  "seed": 1,
+  "validate_every_updates": 50
+ },
+ "channels": 7,
+ "cost": {
+  "cpu_seconds": 31.14622874,
+  "host": "omega",
+  "peak_rss_bytes": 952434688,
+  "seconds_per_update": 0.09478121153,
+  "seconds_per_validation_event": 1.5131061737500007,
+  "wall_seconds": 27.152196213020943
+ },
+ "design_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad",
+ "final_weights_sha256": "c07c16cb0d160cbe31baf597060ff10abf4acd7ca1286c58381d9d924462d2c6",
+ "initial_weights_sha256": "b9caefebdc3ca5b942f2b662f5b7ad5ba28d320034596e2f6cd188e1081b88e5",
+ "parameters": 8127,
+ "pilot": true,
+ "population": {
+  "evaluation_is_common_dev_set": false,
+  "evaluation_origins": 9899,
+  "train_origins": 69371
+ },
+ "reload_max_error": 0.0,
+ "schema": "df_e1_block_cell.v1",
+ "scores": {
+  "mae_kw": 0.588545408361741,
+  "mae_z": 0.6449696499989722,
+  "naive_mae_kw": 0.6759967673502374,
+  "rmse_kw": 0.9526620805949194,
+  "rows": 9899,
+  "skill_vs_naive": 0.12936653429762246
+ },
+ "target_mean": 0.926139629748496,
+ "target_sd": 0.9125164391265214,
+ "training": {
+  "best_event": 4,
+  "best_update": 200,
+  "best_val_mae_scaled": 0.6449696495418096,
+  "censoring": {
+   "rule": "reaching the update ceiling is censoring wherever the best checkpoint fell; what more budget would reach is unknown in either direction",
+   "verdict": "CENSORED_BY_BUDGET"
+  },
+  "events": [
+   {
+    "train_loss_mean_since_last": 0.8046673667430878,
+    "update": 50,
+    "val_mae_scaled": 0.7208031607311349
+   },
+   {
+    "train_loss_mean_since_last": 0.4782437229156494,
+    "update": 100,
+    "val_mae_scaled": 0.6877805578875941
+   },
+   {
+    "train_loss_mean_since_last": 0.4660239809751511,
+    "update": 150,
+    "val_mae_scaled": 0.6482678333586722
+   },
+   {
+    "train_loss_mean_since_last": 0.49369456589221955,
+    "update": 200,
+    "val_mae_scaled": 0.6449696495418096
+   }
+  ],
+  "fit_cpu_seconds": 18.956242306,
+  "min_delta": 0.0,
+  "optimizer_iterations": 200,
+  "patience_events": 3,
+  "restore_verified": true,
+  "restored_val_mae_scaled": 0.6449696495418096,
+  "stop_reason": "UPDATE_BUDGET",
+  "updates": 200,
+  "updates_are_optimizer_iterations": true,
+  "validate_every_updates": 50,
+  "validation_cpu_seconds": 6.052424695000003,
+  "validation_events": 4
+ },
+ "weights_file_sha256": "6fdf2eaab95a76d35146d6879b38d80cfce840042ead12d4282686a04f50303e"
+}

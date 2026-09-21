@@ -1,0 +1,106 @@
+{
+ "arm_spec": {
+  "arm": "randomised_calendar_control",
+  "crop": null,
+  "dilations": null,
+  "family": "modular",
+  "features": "randomised_calendar",
+  "role": "CAPACITY_CONTROL: the same 4 channels built from each row's label plus a per-row random offset drawn from a hash of (seed, panel row id): deterministic, prefix-stable, no calendar information; its finite-sample association with the true clock is measured, not assumed zero",
+  "train_days": 28,
+  "window": 60
+ },
+ "arrays_sha256": "8d88dad620500ab6a93ad0c1bd7b67beb153e69772ba00a42ca6c1f0f6d2944a",
+ "assignment": [
+  0,
+  1,
+  0,
+  2,
+  2,
+  2,
+  0,
+  3,
+  3,
+  3,
+  3
+ ],
+ "cell": {
+  "arm": "randomised_calendar_control",
+  "cell_id": "randomised_calendar_control_s1",
+  "seed": 1
+ },
+ "channels": 11,
+ "cost": {
+  "cpu_seconds": 65.435465185,
+  "host": "omega",
+  "peak_rss_bytes": 1087602688,
+  "seconds_per_update": 0.06857159582375,
+  "seconds_per_validation_event": 2.268077248749999,
+  "wall_seconds": 54.25733704701997
+ },
+ "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+ "final_weights_sha256": "d842335a5b81e7dacb07de47dee13368d1b438aba45064ae64689274bcb02762",
+ "initial_weights_sha256": "387b97e18fdbfbbba4437552131191c10f8e26f26d8eb55708b2182ad7bf1426",
+ "parameters": 9915,
+ "pilot": false,
+ "population": {
+  "evaluation_is_common_dev_set": true,
+  "evaluation_origins": 10020,
+  "train_origins": 40080
+ },
+ "reload_max_error": 0.0,
+ "schema": "df_e1_block_cell.v1",
+ "scores": {
+  "mae_kw": 0.5217745697107414,
+  "mae_z": 0.5717974464221097,
+  "naive_mae_kw": 0.6173720558882235,
+  "rmse_kw": 0.8208539979213073,
+  "rows": 10020,
+  "skill_vs_naive": 0.15484582637927202
+ },
+ "target_mean": 0.926139629748496,
+ "target_sd": 0.9125164391265214,
+ "training": {
+  "best_event": 1,
+  "best_update": 200,
+  "best_val_mae_scaled": 0.5717974465989839,
+  "censoring": {
+   "rule": "reaching the update ceiling is censoring wherever the best checkpoint fell; what more budget would reach is unknown in either direction",
+   "verdict": "STOPPED_ON_VALIDATION"
+  },
+  "events": [
+   {
+    "train_loss_mean_since_last": 0.6496343567967415,
+    "update": 200,
+    "val_mae_scaled": 0.5717974465989839
+   },
+   {
+    "train_loss_mean_since_last": 0.5717704533040524,
+    "update": 400,
+    "val_mae_scaled": 0.5806043873041703
+   },
+   {
+    "train_loss_mean_since_last": 0.5521974819898605,
+    "update": 600,
+    "val_mae_scaled": 0.5937053954978604
+   },
+   {
+    "train_loss_mean_since_last": 0.5356512142717839,
+    "update": 800,
+    "val_mae_scaled": 0.5747933609134838
+   }
+  ],
+  "fit_cpu_seconds": 54.857276659,
+  "min_delta": 0.0,
+  "optimizer_iterations": 800,
+  "patience_events": 3,
+  "restore_verified": true,
+  "restored_val_mae_scaled": 0.5717974465989839,
+  "stop_reason": "EARLY_STOPPING",
+  "updates": 800,
+  "updates_are_optimizer_iterations": true,
+  "validate_every_updates": 200,
+  "validation_cpu_seconds": 9.072308994999997,
+  "validation_events": 4
+ },
+ "weights_file_sha256": "2f363186e2ac9942abfd8f30bbdae5f2e2e93f67109f9b2a64ecf34e8df41118"
+}

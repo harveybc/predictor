@@ -1,0 +1,93 @@
+{
+ "artifacts": [
+  {
+   "bytes": 410418,
+   "role": "predictions",
+   "sha256": "129a92e69d214c02780c78e432819f08ddb586948e59845cb04cc21207a3ae8d"
+  },
+  {
+   "bytes": 233704,
+   "role": "weights",
+   "sha256": "22a5da9de868d3c0e34fc9c10767caba8370ee6b9a2a3fe9348f8ef0cc626dcd"
+  },
+  {
+   "bytes": 3119,
+   "role": "record",
+   "sha256": "6ab74112017b1acdbce5464922ee89925243c6735e80f881150ec6e9cba90764"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 31.754505021,
+  "wall_seconds": 29.585630575020332
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T11:47:52Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.5849931105870487
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_z",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.641076791062543
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.naive_mae_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.6665648550299331
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.rmse_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.9438175269443138
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.skill_vs_naive",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.12237630566229196
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T11:47:22Z",
+ "status": "COMPLETED",
+ "tags": {
+  "arm": "long_window_crop60",
+  "classification": "NON_GOVERNING",
+  "contract_sha256": "ddf26de62a9fa18cc026bbe23871c697df6770a7b127cab395b8921b17446a3f",
+  "design_sha256": "6d1aaecaf27c581c709a745a4f976c2e9dcc05594815b2ee1a9747595f4398b1",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_Q2_CONTEXT",
+  "role": "COST_PILOT",
+  "seed": "1",
+  "unit": "pilot_long_window_crop60"
+ }
+}

@@ -1,0 +1,253 @@
+{
+ "schema": "cpu_ledger.v1",
+ "host": "omega",
+ "since": "2026-09-21 05:00",
+ "match": [
+  "rp66",
+  "rp68",
+  "rp71",
+  "rp72",
+  "rp73",
+  "close-",
+  "q2-",
+  "q1-"
+ ],
+ "units": [
+  {
+   "unit": "crispdm-rp66-pre-1789986715-1566927.scope",
+   "at": "Sep 21 05:32:06",
+   "cpu_seconds": 10.451,
+   "wall_seconds": 10.522,
+   "memory_peak": "445.2M"
+  },
+  {
+   "unit": "crispdm-rp66-tests-1789987634-1579939.scope",
+   "at": "Sep 21 05:47:25",
+   "cpu_seconds": 10.797,
+   "wall_seconds": 10.83,
+   "memory_peak": "307.9M"
+  },
+  {
+   "unit": "crispdm-rp66-tests2-1789987772-1582122.scope",
+   "at": "Sep 21 05:49:44",
+   "cpu_seconds": 11.495,
+   "wall_seconds": 11.623,
+   "memory_peak": "315.6M"
+  },
+  {
+   "unit": "crispdm-rp68-tests-1789988785-1596589.scope",
+   "at": "Sep 21 06:06:39",
+   "cpu_seconds": 14.411,
+   "wall_seconds": 13.93,
+   "memory_peak": "314.5M"
+  },
+  {
+   "unit": "crispdm-rp68-tests-1789988816-1599060.scope",
+   "at": "Sep 21 06:08:42",
+   "cpu_seconds": 109.34,
+   "wall_seconds": 106.22999999999999,
+   "memory_peak": "1.1G"
+  },
+  {
+   "unit": "crispdm-rp68-t1-1789988940-1603535.scope",
+   "at": "Sep 21 06:09:02",
+   "cpu_seconds": 1.825,
+   "wall_seconds": 1.918,
+   "memory_peak": "72.7M"
+  },
+  {
+   "unit": "crispdm-rp68-t2-1789988976-1604070.scope",
+   "at": "Sep 21 06:09:41",
+   "cpu_seconds": 4.819,
+   "wall_seconds": 4.917,
+   "memory_peak": "517.8M"
+  },
+  {
+   "unit": "crispdm-rp68-t3-1789988989-1604200.scope",
+   "at": "Sep 21 06:09:55",
+   "cpu_seconds": 5.842,
+   "wall_seconds": 5.918,
+   "memory_peak": "527.5M"
+  },
+  {
+   "unit": "crispdm-rp68-tests-1789989007-1604624.scope",
+   "at": "Sep 21 06:11:53",
+   "cpu_seconds": 109.006,
+   "wall_seconds": 106.03399999999999,
+   "memory_peak": "1.1G"
+  },
+  {
+   "unit": "crispdm-rp68-t4-1789989120-1609079.scope",
+   "at": "Sep 21 06:12:06",
+   "cpu_seconds": 5.504,
+   "wall_seconds": 5.516,
+   "memory_peak": "526.7M"
+  },
+  {
+   "unit": "crispdm-rp68-tests-1789989136-1609537.scope",
+   "at": "Sep 21 06:14:04",
+   "cpu_seconds": 110.661,
+   "wall_seconds": 107.541,
+   "memory_peak": "1.1G"
+  },
+  {
+   "unit": "crispdm-rp68-p2-1789989514-1617360.scope",
+   "at": "Sep 21 06:21:18",
+   "cpu_seconds": 164.54500000000002,
+   "wall_seconds": 164.007,
+   "memory_peak": "1G"
+  },
+  {
+   "unit": "crispdm-rp71-fl-1789990230-1629665.scope",
+   "at": "Sep 21 06:30:42",
+   "cpu_seconds": 12.711,
+   "wall_seconds": 12.828,
+   "memory_peak": "444.8M"
+  },
+  {
+   "unit": "crispdm-rp71-fl-1789990261-1630012.scope",
+   "at": "Sep 21 06:31:11",
+   "cpu_seconds": 9.445,
+   "wall_seconds": 9.523,
+   "memory_peak": "299.5M"
+  },
+  {
+   "unit": "crispdm-rp71-fl-1789990280-1630464.scope",
+   "at": "Sep 21 06:32:00",
+   "cpu_seconds": 40.192,
+   "wall_seconds": 40.266,
+   "memory_peak": "648.5M"
+  },
+  {
+   "unit": "crispdm-rp71-fl-1789990348-1631528.scope",
+   "at": "Sep 21 06:33:33",
+   "cpu_seconds": 89.19,
+   "wall_seconds": 64.99,
+   "memory_peak": "1.5G"
+  },
+  {
+   "unit": "crispdm-rp71-fl06-1789990441-1632893.scope",
+   "at": "Sep 21 06:34:11",
+   "cpu_seconds": 9.385,
+   "wall_seconds": 9.421,
+   "memory_peak": "306.1M"
+  },
+  {
+   "unit": "crispdm-rp72-prepare-1789990466-1633384.scope",
+   "at": "Sep 21 06:34:28",
+   "cpu_seconds": 1.931,
+   "wall_seconds": 2.014,
+   "memory_peak": "414.9M"
+  },
+  {
+   "unit": "crispdm-rp72-pilot-1789990485-1633735.scope",
+   "at": "Sep 21 06:35:18",
+   "cpu_seconds": 36.55,
+   "wall_seconds": 32.448,
+   "memory_peak": "528.9M"
+  },
+  {
+   "unit": "crispdm-rp72-prepare2-1789990589-1635141.scope",
+   "at": "Sep 21 06:36:31",
+   "cpu_seconds": 2.0,
+   "wall_seconds": 2.213,
+   "memory_peak": "416M"
+  },
+  {
+   "unit": "crispdm-rp72-pilot2-1789990591-1635198.scope",
+   "at": "Sep 21 06:37:02",
+   "cpu_seconds": 51.95,
+   "wall_seconds": 30.949,
+   "memory_peak": "847.3M"
+  },
+  {
+   "unit": "crispdm-rp72-execute-1789990638-1635854.scope",
+   "at": "Sep 21 06:39:57",
+   "cpu_seconds": 333.765,
+   "wall_seconds": 159.381,
+   "memory_peak": "1.3G"
+  },
+  {
+   "unit": "crispdm-rp72-q1-prepare-1789990848-1639140.scope",
+   "at": "Sep 21 06:40:50",
+   "cpu_seconds": 1.818,
+   "wall_seconds": 2.015,
+   "memory_peak": "416.3M"
+  },
+  {
+   "unit": "crispdm-rp72-q1-pilot-1789990850-1639203.scope",
+   "at": "Sep 21 06:41:25",
+   "cpu_seconds": 80.491,
+   "wall_seconds": 35.651,
+   "memory_peak": "1.1G"
+  },
+  {
+   "unit": "crispdm-rp72-q1-execute-1789990897-1639903.scope",
+   "at": "Sep 21 06:47:05",
+   "cpu_seconds": 874.925,
+   "wall_seconds": 327.539,
+   "memory_peak": "1.9G"
+  },
+  {
+   "unit": "crispdm-rp72-q2-prepare-1789991240-1644784.scope",
+   "at": "Sep 21 06:47:22",
+   "cpu_seconds": 2.007,
+   "wall_seconds": 2.112,
+   "memory_peak": "417.3M"
+  },
+  {
+   "unit": "crispdm-rp72-q2-pilot-1789991242-1644827.scope",
+   "at": "Sep 21 07:10:46",
+   "cpu_seconds": 2279.784,
+   "wall_seconds": 1404.089,
+   "memory_peak": "9.3G"
+  },
+  {
+   "unit": "crispdm-rp68-tests3-1789992678-1663977.scope",
+   "at": "Sep 21 07:12:51",
+   "cpu_seconds": 93.386,
+   "wall_seconds": 93.425,
+   "memory_peak": "1.1G"
+  },
+  {
+   "unit": "crispdm-rp72-q3-prepare-1789992785-1665770.scope",
+   "at": "Sep 21 07:13:09",
+   "cpu_seconds": 3.062,
+   "wall_seconds": 3.213,
+   "memory_peak": "457.2M"
+  },
+  {
+   "unit": "crispdm-rp72-q3-pilot-1789992789-1665844.scope",
+   "at": "Sep 21 07:13:38",
+   "cpu_seconds": 66.098,
+   "wall_seconds": 29.345,
+   "memory_peak": "1G"
+  },
+  {
+   "unit": "crispdm-rp72-q3-execute-1789992830-1666428.scope",
+   "at": "Sep 21 07:16:48",
+   "cpu_seconds": 481.497,
+   "wall_seconds": 178.289,
+   "memory_peak": "1.5G"
+  },
+  {
+   "unit": "crispdm-rp66-post2-1789993072-1670007.scope",
+   "at": "Sep 21 07:19:07",
+   "cpu_seconds": 74.726,
+   "wall_seconds": 74.497,
+   "memory_peak": "1G"
+  },
+  {
+   "unit": "crispdm-rp73-suite-1789993206-1673690.scope",
+   "at": "Sep 21 07:20:08",
+   "cpu_seconds": 1.973,
+   "wall_seconds": 2.013,
+   "memory_peak": "74.8M"
+  }
+ ],
+ "cpu_seconds_total": 5105.582,
+ "ceiling_seconds": 14400.0,
+ "remaining_seconds": 9294.418,
+ "within_ceiling": true,
+ "note": "systemd accounting of the transient unit (all its children); units still running are not listed"
+}

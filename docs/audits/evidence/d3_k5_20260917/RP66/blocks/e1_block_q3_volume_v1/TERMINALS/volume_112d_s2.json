@@ -1,0 +1,93 @@
+{
+ "artifacts": [
+  {
+   "bytes": 482466,
+   "role": "predictions",
+   "sha256": "bd0c6e60cc32ca85e3789f3b8f2770993a0af79e67079e387d2249f18573082f"
+  },
+  {
+   "bytes": 231872,
+   "role": "weights",
+   "sha256": "6e4dd341c02ce7eba25104ff975cdc480d19d6b277cb52483c2ae3f7461c8d2a"
+  },
+  {
+   "bytes": 3365,
+   "role": "record",
+   "sha256": "5440710d5f970888b948c7d8ed58361eb484fc26efece3df9bb35d68a7dc6de0"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 89.028224201,
+  "wall_seconds": 71.13626554596703
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T12:16:48Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.5073881360865927
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_z",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.55603177579165
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.naive_mae_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.6173720558882235
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.rmse_kw",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.8272537379294806
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.skill_vs_naive",
+   "min_value": null,
+   "split": "validation",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.1781485228439682
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T12:15:07Z",
+ "status": "COMPLETED",
+ "tags": {
+  "arm": "volume_112d",
+  "classification": "NON_GOVERNING",
+  "contract_sha256": "62c51165a492863a6345883caff1dd3de1347d926cfdbdbc9963b3a1b2741d81",
+  "design_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_Q3_VOLUME",
+  "role": "ARM",
+  "seed": "2",
+  "unit": "volume_112d_s2"
+ }
+}

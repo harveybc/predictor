@@ -178,6 +178,7 @@ def decide(ours: BenchmarkContract, theirs: BenchmarkContract, *, reference_run:
     if unknown:
         return {"mode": "NOT_COMPARABLE", "why": f"unknown identity fields cannot match as proof: {sorted(set(unknown))}",
                 "fields_that_differ": sorted(set(unknown)), "declared_contrast": [], "comparator_state": "NONE",
+                "reference_evidence": {"state": "NONE", "why": "an unknown protocol has no reference lane; read the source first"},
                 "ours_sha256": ours.sha256(), "theirs_sha256": theirs.sha256(),
                 "resolution": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"}
     declared = set(ours.varying_factors) & set(theirs.varying_factors)

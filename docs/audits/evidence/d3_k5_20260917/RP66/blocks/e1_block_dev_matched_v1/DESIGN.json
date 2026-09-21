@@ -1,0 +1,252 @@
+{
+ "arms": [
+  {
+   "arm": "modular_w60",
+   "crop": null,
+   "dilations": null,
+   "family": "modular",
+   "features": "base",
+   "role": "ARM",
+   "train_days": 28,
+   "window": 60
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "crop": null,
+   "dilations": null,
+   "family": "gru",
+   "features": "base",
+   "role": "ARM",
+   "train_days": 28,
+   "window": 60
+  }
+ ],
+ "baselines": {
+  "daily_seasonal": "y(t+h-1440)",
+  "persistence": "y(t)",
+  "train_constant": "mean of the train labels of the 28 d tier; computed on the common evaluation set at closure, no fit, no terminal"
+ },
+ "benchmark_contract": {
+  "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+  "comparability": {
+   "against": "gasparin_2019",
+   "comparator_state": "NONE",
+   "declared_contrast": [],
+   "fields_that_differ": [
+    "target_transform"
+   ],
+   "mode": "NOT_COMPARABLE",
+   "ours_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+   "resolution": "read the primary source (or its code) and fill the field; a placeholder is not a protocol",
+   "rule": "the adapted GRU is measured under OUR contract; Table 5 stays in the source notes",
+   "theirs_sha256": "972d9470a6661a3ef8088d350d37e1c8a09e084bd94e2fbcba5b36ebdae494e4",
+   "why": "unknown identity fields cannot match as proof: ['target_transform']"
+  },
+  "contract_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+  "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+  "estimand": null,
+  "horizon_seconds": 3600,
+  "horizon_steps": 60,
+  "input_window_steps": 60,
+  "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+  "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+  "metric_scale": "z_train",
+  "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+  "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+  "notes": [],
+  "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+  "reference_method": null,
+  "replicas": "3 paired seeds; development",
+  "resolution_seconds": 60,
+  "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+  "schema": "benchmark_contract.v2",
+  "source": {
+   "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+   "evaluation_origins": 10020,
+   "kind": "OURS",
+   "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "sd_train": 0.9125164391265214,
+   "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+  },
+  "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+  "target": "Global_active_power",
+  "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+  "target_transform": "zscore_train",
+  "task_id": "uci_235.W60_h60.DEV_28d_7d",
+  "tuning_budget": "none: declared settings",
+  "varying_factors": [],
+  "version": "2"
+ },
+ "block": "DEV_MATCHED",
+ "cells": [
+  {
+   "arm": "modular_w60",
+   "cell_id": "modular_w60_s1",
+   "seed": 1
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "cell_id": "gru_adapted_w60_s1",
+   "seed": 1
+  },
+  {
+   "arm": "modular_w60",
+   "cell_id": "modular_w60_s2",
+   "seed": 2
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "cell_id": "gru_adapted_w60_s2",
+   "seed": 2
+  },
+  {
+   "arm": "modular_w60",
+   "cell_id": "modular_w60_s3",
+   "seed": 3
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "cell_id": "gru_adapted_w60_s3",
+   "seed": 3
+  }
+ ],
+ "common_evaluation_rule": "the intersection over the block's arms of admissible validation origins, with a finite label and a finite daily lookup, derived at prepare BEFORE any score; every arm scores on it",
+ "contract_source": "REGISTRY household_W60_h60",
+ "design_sha256": "6f35d165bb96cea8d134f959980bf30df5d28879261ceadd73aef55cfd6c4019",
+ "limits": {
+  "campaign_cpu_seconds": 14400,
+  "child_cpu_seconds": 3600,
+  "child_wall_seconds": 4800,
+  "closure_reserve_seconds": 2000,
+  "parallel_children": 3
+ },
+ "phase": "DEVELOPMENT",
+ "pilot": {
+  "max_updates": 200,
+  "patience_events": 3,
+  "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+  "validate_every_updates": 50
+ },
+ "pilots": [
+  {
+   "arm": "modular_w60",
+   "cell_id": "pilot_modular_w60",
+   "max_updates": 200,
+   "patience_events": 3,
+   "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+   "role": "COST_PILOT",
+   "seed": 1,
+   "validate_every_updates": 50
+  },
+  {
+   "arm": "gru_adapted_w60",
+   "cell_id": "pilot_gru_adapted_w60",
+   "max_updates": 200,
+   "patience_events": 3,
+   "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+   "role": "COST_PILOT",
+   "seed": 1,
+   "validate_every_updates": 50
+  }
+ ],
+ "purpose": "E1_BLOCK_DEV_MATCHED",
+ "question": "matched architecture comparison: the modular continuity model against the adapted literature GRU on identical rows, inputs, split, transform and monitoring schedule",
+ "reading_rules": [
+  "three seeds on one task are development evidence",
+  "a fit that reached the update ceiling is CENSORED wherever its best checkpoint fell",
+  "no cell is removed after its score is seen",
+  "a published number under another protocol never enters the comparison column"
+ ],
+ "recipe": {
+  "batch": 64,
+  "checkpoint_opportunities": 20,
+  "learning_rate": 0.003,
+  "loss": "mae",
+  "max_updates": 4000,
+  "min_delta": 0.0,
+  "monitor": "validation MAE in scaled units (equals MAE_z with the common sigma)",
+  "optimizer": "adam",
+  "patience_events": 3,
+  "restore_best": true,
+  "role": "HOUSEHOLD CONTINUITY REFERENCE (MAE+Adam) with validation in OBSERVED updates; it selects no trading loss",
+  "validate_every_updates": 200
+ },
+ "reuse": {},
+ "rows": {
+  "hi": 1462761,
+  "lo": 1412361,
+  "pad_rows": 0,
+  "reading": "the panel is read from lo (pad + the widest volume tier before the DEV train span) to hi; origins are enumerated inside [train span, validation week] from row identities; padded rows are support only",
+  "train_end": 1452681,
+  "widest_train_days": 28
+ },
+ "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels mean 0 / sd 1; the lag channel takes the target's scaler; one evaluation sigma = the target's train sd",
+ "schema": "df_e1_block_design.v1",
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "source_code": {
+  "df_e1_block.py": "54bbf09a74e81a8af891d24ba5ca148eba3d7854be03d48bcf18d125f7b5fa04",
+  "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+  "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+  "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+  "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+  "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+ },
+ "source_run": {
+  "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+  "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+  "evaluation_origins": 10020,
+  "graph_assignment": [
+   0,
+   1,
+   0,
+   2,
+   2,
+   2,
+   0
+  ],
+  "input_columns": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3",
+   "Global_active_power"
+  ],
+  "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3",
+  "scaler": {
+   "fitted_on": "train windows only",
+   "mean": [
+    0.16394039569874333,
+    241.13327788719684,
+    3.979902281204715,
+    1.2482722486963898,
+    0.8695229659938625,
+    6.320571675690061,
+    0.926139629748496
+   ],
+   "n_rows": 2404860,
+   "sd": [
+    0.12462470429263597,
+    2.20610330333974,
+    3.8047190184746955,
+    6.578895446497683,
+    3.6476937059712364,
+    8.382971207465904,
+    0.9125164391265214
+   ]
+  },
+  "slice_rows": [
+   1412361,
+   1462761
+  ],
+  "target_channel": 6,
+  "train_end_row": 1452681
+ },
+ "state": "SEALED_NOT_EXECUTED"
+}

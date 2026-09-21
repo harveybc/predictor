@@ -1,0 +1,108 @@
+{
+ "arm_spec": {
+  "arm": "daily_lag",
+  "crop": null,
+  "dilations": null,
+  "family": "modular",
+  "features": "daily_lag",
+  "role": "ARM",
+  "train_days": 28,
+  "window": 60
+ },
+ "arrays_sha256": "f1f67a9e8b5f550505a790a682cae9a8b2dd097d8d28610e0df089ef806d064d",
+ "assignment": [
+  0,
+  1,
+  0,
+  2,
+  2,
+  2,
+  0,
+  0
+ ],
+ "cell": {
+  "arm": "daily_lag",
+  "cell_id": "pilot_daily_lag",
+  "max_updates": 200,
+  "patience_events": 3,
+  "population": "TRAIN_SUBSET: trains on train origins before the last 7 train days (purged W+h); validates on the last 7 train days; the DEV validation is never read by a pilot",
+  "role": "COST_PILOT",
+  "seed": 1,
+  "validate_every_updates": 50
+ },
+ "channels": 8,
+ "cost": {
+  "cpu_seconds": 29.641615411,
+  "host": "omega",
+  "peak_rss_bytes": 933163008,
+  "seconds_per_update": 0.09568232754499999,
+  "seconds_per_validation_event": 1.6107759094999996,
+  "wall_seconds": 25.756398710014764
+ },
+ "design_sha256": "6d1aaecaf27c581c709a745a4f976c2e9dcc05594815b2ee1a9747595f4398b1",
+ "final_weights_sha256": "2a754b1abf7a9ccc7e18511e5a614c88a3a5ca60f770c9baf6f884fe28d1f7e7",
+ "initial_weights_sha256": "0f6b46da2c89defb349bd69a104f95b8ac259c8fb6aa64d732929138c133afa3",
+ "parameters": 8208,
+ "pilot": true,
+ "population": {
+  "evaluation_is_common_dev_set": false,
+  "evaluation_origins": 9839,
+  "train_origins": 30061
+ },
+ "reload_max_error": 0.0,
+ "schema": "df_e1_block_cell.v1",
+ "scores": {
+  "mae_kw": 0.5320040556212575,
+  "mae_z": 0.5830076399834531,
+  "naive_mae_kw": 0.6735672324423214,
+  "rmse_kw": 0.8773744155762336,
+  "rows": 9839,
+  "skill_vs_naive": 0.21016933425897644
+ },
+ "target_mean": 0.926139629748496,
+ "target_sd": 0.9125164391265214,
+ "training": {
+  "best_event": 4,
+  "best_update": 200,
+  "best_val_mae_scaled": 0.5830076395567629,
+  "censoring": {
+   "rule": "reaching the update ceiling is censoring wherever the best checkpoint fell; what more budget would reach is unknown in either direction",
+   "verdict": "CENSORED_BY_BUDGET"
+  },
+  "events": [
+   {
+    "train_loss_mean_since_last": 0.7742025339603424,
+    "update": 50,
+    "val_mae_scaled": 0.682750062794261
+   },
+   {
+    "train_loss_mean_since_last": 0.5570189791917801,
+    "update": 100,
+    "val_mae_scaled": 0.6230464048736131
+   },
+   {
+    "train_loss_mean_since_last": 0.5723717033863067,
+    "update": 150,
+    "val_mae_scaled": 0.6076168837603401
+   },
+   {
+    "train_loss_mean_since_last": 0.5178894263505935,
+    "update": 200,
+    "val_mae_scaled": 0.5830076395567629
+   }
+  ],
+  "fit_cpu_seconds": 19.136465508999997,
+  "min_delta": 0.0,
+  "optimizer_iterations": 200,
+  "patience_events": 3,
+  "restore_verified": true,
+  "restored_val_mae_scaled": 0.5830076395567629,
+  "stop_reason": "UPDATE_BUDGET",
+  "updates": 200,
+  "updates_are_optimizer_iterations": true,
+  "validate_every_updates": 50,
+  "validation_cpu_seconds": 6.443103637999998,
+  "validation_events": 4
+ },
+ "weights_file_sha256": "c3ef0c868c9cbd02d24b2ebd27acf14443e151cfc3eb5720fee23fc96dbd8983"
+}

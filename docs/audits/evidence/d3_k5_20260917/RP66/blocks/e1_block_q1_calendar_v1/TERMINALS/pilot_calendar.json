@@ -1,0 +1,93 @@
+{
+ "artifacts": [
+  {
+   "bytes": 476658,
+   "role": "predictions",
+   "sha256": "f9b6486a2f5b7d33f2d2344b913baef7679e45c44691e2166b6d80b897d21b35"
+  },
+  {
+   "bytes": 278064,
+   "role": "weights",
+   "sha256": "b48db8f8982d2ab56888d979b0e7f476b9d4a613aeccf36770e5fc73e868f716"
+  },
+  {
+   "bytes": 3015,
+   "role": "record",
+   "sha256": "1fc2856f1a68960b3f791ccf4a986d079238a53b7d22394c22497d475e9145a5"
+  }
+ ],
+ "costs": {
+  "cpu_seconds": 38.384527712,
+  "wall_seconds": 34.80061952199321
+ },
+ "deliveries": [],
+ "finished_at": "2026-09-21T11:41:25Z",
+ "generation": 1,
+ "metrics": [
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.5653717643894328
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.mae_z",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.6195743332915928
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.naive_mae_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.6759967673502374
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.rmse_kw",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "kW",
+   "value": 0.895090283048252
+  },
+  {
+   "horizon": 60,
+   "max_value": null,
+   "metric": "e1.block.skill_vs_naive",
+   "min_value": null,
+   "split": "train_subset_pilot",
+   "std_dev": null,
+   "unit": "dimensionless",
+   "value": 0.16364723664941605
+  }
+ ],
+ "reason": null,
+ "schema": "governed_terminal.v1",
+ "started_at": "2026-09-21T11:40:50Z",
+ "status": "COMPLETED",
+ "tags": {
+  "arm": "calendar",
+  "classification": "NON_GOVERNING",
+  "contract_sha256": "497a01eeacc2f1b46afba5c7d700775638da86100f55b53bc7f07de6fdf9354f",
+  "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+  "phase": "DEVELOPMENT",
+  "purpose": "E1_BLOCK_Q1_CALENDAR",
+  "role": "COST_PILOT",
+  "seed": "1",
+  "unit": "pilot_calendar"
+ }
+}
