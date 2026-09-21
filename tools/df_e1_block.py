@@ -675,16 +675,31 @@ def _terminal_for(a, design, unit, cell, started, ok, rec, exit_code, wall):
     return terminal
 
 
-def run_units(a, design, units, *, parallel: int) -> list:
+def governance_modules():
+    """The legacy dynamic loader publishes a module before executing its body: complete the governance imports on
+    the parent thread BEFORE children acquire in parallel (the huber runner learned this the hard way)."""
     G = _module("df_e1_governed")
-    U = _module("df_utility_run")
+    G._load("governed_run")
+    G._load("df_e1_receipts")
+    return G, _module("df_utility_run")
+
+
+def run_units(a, design, units, *, parallel: int) -> list:
+    G, U = governance_modules()
     root = Path(a.root)
     results = []
 
     def one(cell):
         unit = cell["cell_id"]
-        if (root/"TERMINALS"/f"{unit}.json").exists():
-            raise BlockRefusal(f"REFUSED: {unit} already has a terminal; experiments are not silently repeated")
+        term_path, rec_path = root/"TERMINALS"/f"{unit}.json", root/"attempts"/unit/"cell.json"
+        if term_path.exists():
+            # an accepted, recorded unit is REUSED, never re-trained to repair a receipt; anything else is a refusal
+            receipts = json.loads((root/"TERMINAL_RECEIPTS.json").read_text()).get("units", {}) if (root/"TERMINAL_RECEIPTS.json").is_file() else {}
+            held = json.loads(term_path.read_text())
+            if held.get("status") == "COMPLETED" and rec_path.is_file() and unit in receipts:
+                print(json.dumps({"unit": unit, "reused": True}), flush=True)
+                return {"unit": unit, "ok": True, "record": json.loads(rec_path.read_text()), "terminal_sha256": receipts[unit].get("terminal_sha256"), "reused": True}
+            raise BlockRefusal(f"REFUSED: {unit} already has a terminal that is not an accepted COMPLETED record; experiments are not silently repeated")
         started = U._z(U.now_iso())
         _acquire(a, design, unit)
         wall = time.monotonic()
@@ -751,8 +766,28 @@ def projection(design: dict, pilots: list) -> dict:
 def cmd_prepare(a):
     design = json.loads((Path(a.root)/"DESIGN.json").read_text())
     validate(design)
+    G, U = governance_modules()
+    root = Path(a.root)
+    started = U._z(U.now_iso())
     _acquire(a, design, "prepare")
-    rec = prepare(design, a.root)
+    t0 = time.process_time()
+    try:
+        rec = prepare(design, root)
+    except BaseException as exc:
+        G.report_failed(root, "prepare", f"prepare refused: {str(exc)[:200]}", gov_url=a.gov_url, api_key_file=a.api_key_file)
+        raise
+    # the prepare unit closes like any other: a COMPLETED terminal with the prepared data's digests as artifacts
+    terminal = U._terminal(status="COMPLETED", reason=None, cost={"wall_seconds": time.process_time()-t0, "cpu_seconds": time.process_time()-t0},
+                           metrics=[U._metric("e1.block.common_evaluation_rows", rec["common_evaluation"]["n"], "rows", split="validation", horizon=H0)],
+                           started=started, finished=U._z(U.now_iso()),
+                           tags={"purpose": design["purpose"], "classification": "NON_GOVERNING", "phase": "DEVELOPMENT", "unit": "prepare",
+                                 "role": "PREPARATION", "design_sha256": design["design_sha256"]})
+    terminal["artifacts"] = [{"role": r, "sha256": sha_file(root/f), "bytes": (root/f).stat().st_size} for r, f in (("data", "BLOCK_DATA.npz"), ("record", "BLOCK_DATA.json"))]
+    (root/"TERMINALS").mkdir(exist_ok=True)
+    write(root/"TERMINALS"/"prepare.json", terminal)
+    reported = G.report_terminal(root, "prepare", terminal, gov_url=a.gov_url, api_key_file=a.api_key_file, outbox_dir=str(root/"outbox"), started_at=started)
+    if reported["flushed"]["pending"] or reported["flushed"]["failures"]:
+        raise BlockRefusal(f"REFUSED: the prepare terminal was not accepted: {reported['flushed']['failures']}")
     print(json.dumps({k: rec[k] for k in ("common_evaluation", "binding_to_source", "feasibility")}, indent=1))
 
 

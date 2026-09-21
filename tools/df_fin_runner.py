@@ -356,9 +356,15 @@ def terminal_for(design, unit, cell, started, ok, rec, exit_code, wall, root: Pa
     return terminal
 
 
-def run_units(a, design, units, *, parallel: int) -> list:
+def governance_modules():
     G = _module("df_e1_governed")
-    U = _module("df_utility_run")
+    G._load("governed_run")                     # complete the governance imports on the parent thread before parallel children
+    G._load("df_e1_receipts")
+    return G, _module("df_utility_run")
+
+
+def run_units(a, design, units, *, parallel: int) -> list:
+    G, U = governance_modules()
     root = Path(a.root)
     results = []
 
@@ -532,8 +538,27 @@ def main(argv=None) -> int:
         return 0
     if a.command == "prepare":
         validate(design)
+        G, U = governance_modules()
+        started = U._z(U.now_iso())
         acquire(a, design, "prepare")
-        print(json.dumps({k: v for k, v in prepare(design, a.root).items() if k in ("bars", "mapping")}, indent=1, default=str))
+        t0 = time.process_time()
+        try:
+            rec = prepare(design, a.root)
+        except BaseException as exc:
+            G.report_failed(a.root, "prepare", f"prepare refused: {str(exc)[:200]}", gov_url=a.gov_url, api_key_file=a.api_key_file)
+            raise
+        terminal = U._terminal(status="COMPLETED", reason=None, cost={"wall_seconds": time.process_time()-t0, "cpu_seconds": time.process_time()-t0},
+                               metrics=[U._metric("fin.bars", rec["bars"], "rows", split="prepare", horizon=int(design["horizon"]["hours"]))],
+                               started=started, finished=U._z(U.now_iso()),
+                               tags={"purpose": design["purpose"], "classification": "NON_GOVERNING", "phase": "DEVELOPMENT", "unit": "prepare",
+                                     "role": "PREPARATION", "design_sha256": design["design_sha256"]})
+        terminal["artifacts"] = [{"role": r, "sha256": sha_file(a.root/f), "bytes": (a.root/f).stat().st_size} for r, f in (("data", "FIN_DATA.npz"), ("record", "FIN_DATA.json"))]
+        (a.root/"TERMINALS").mkdir(exist_ok=True)
+        (a.root/"TERMINALS"/"prepare.json").write_text(json.dumps(terminal, indent=1, default=str))
+        reported = G.report_terminal(a.root, "prepare", terminal, gov_url=a.gov_url, api_key_file=a.api_key_file, outbox_dir=str(a.root/"outbox"), started_at=started)
+        if reported["flushed"]["pending"] or reported["flushed"]["failures"]:
+            raise FinRefusal(f"REFUSED: the prepare terminal was not accepted: {reported['flushed']['failures']}")
+        print(json.dumps({k: v for k, v in rec.items() if k in ("bars", "mapping")}, indent=1, default=str))
         return 0
     if a.command == "execute":
         validate(design)
