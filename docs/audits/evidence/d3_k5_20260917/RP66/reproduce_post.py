@@ -19,7 +19,6 @@ ROOT = Path(__file__).resolve().parents[5]
 sys.path.insert(0, str(ROOT/"tools"))
 import df_benchmark_contract as B
 import df_closure_table as C
-import df_fin_loss_opt_design as F
 
 
 def refused(fn):
@@ -123,16 +122,33 @@ def probes():
         t = table(wh_full(sha))
         out["missing_prediction_file"] = {"rows": len(t["rows"]), "problems": t["problems"], "verified_rows": t["verified_rows"]}
 
-    # RP70 probes (financial): recorded as they stand on this tree; repaired in the RP70 block
+    # RP70 probes (financial), against the executable task module (tools/df_fin_task.py)
+    T = __import__("df_fin_task")
     y = np.r_[np.zeros(900), np.ones(100)]
-    try:
-        delta = F.delta_candidates(y, train_end=999, horizon=6)
-        out["positive_sd_zero_residual_scale"] = {"status": delta["status"], "sd_train": delta["sd_train"],
-                                                  "candidate_deltas": [c["delta_z"] for c in delta["candidates"]]}
-    except Exception as exc:
-        out["positive_sd_zero_residual_scale"] = {"exception": type(exc).__name__, "message": str(exc)[:300]}
-    tf = F.task_freeze()
-    out["row_horizon_is_not_elapsed_time"] = {"short_horizon_declaration": tf["horizons"].get("short")}
+    o = np.arange(0, 990)
+    z = T.delta_candidates(y, {"origins": o, "targets": o+6}, sigma=float(np.std(y)))
+    out["positive_sd_zero_residual_scale"] = {"status": z["status"], "reason": z.get("reason"), "sd_train": float(np.std(y)),
+                                              "candidate_deltas": [c["delta_z"] for c in z["candidates"]],
+                                              "all_positive_finite": all(np.isfinite(c["delta_z"]) and c["delta_z"] > 0 for c in z["candidates"])}
+    import pandas as pd
+    ts = pd.date_range("2024-01-01", periods=14*24, freq="h")
+    ts = ts[ts.dayofweek < 5]                                                          # weekend absent
+    ts_ns = ts.to_numpy().astype("datetime64[ns]").astype(np.int64)
+    m = T.map_targets(ts_ns, np.arange(ts_ns.size, dtype=float), hours=6)
+    fri = int(np.flatnonzero((ts.dayofweek == 4) & (ts.hour == 23))[0])
+    out["row_horizon_is_not_elapsed_time"] = {"fixture": "hourly weekday bars, weekend absent", "last_friday_23": str(ts[fri]),
+                                              "mapped_as_origin": bool(np.isin(fri, m["origins"])),
+                                              "reason_if_excluded": "NO_BAR_AT_ORIGIN_PLUS_H",
+                                              "excluded_counts": m["excluded"], "declared_short_horizon": T.HORIZONS["h6"]}
+    K = __import__("df_e1_block")
+    out["volume_validation_cadence"] = {"validate_every_observed_updates": K.RECIPE["validate_every_updates"], "patience_events": K.RECIPE["patience_events"],
+                                        "max_updates": K.RECIPE["max_updates"], "checkpoint_opportunities_every_arm_and_tier": K.RECIPE["checkpoint_opportunities"],
+                                        "counts": "from row identities at prepare (tests/test_df_e1_block.py::test_volume_tiers_grow_backwards...)",
+                                        "scaler": "COMMON source scaler for every tier; refit variant a separate factor, NOT_RUN"}
+    caps = __import__("df_e1_phase2_design").capacity_and_reach([0, 1, 0, 2, 2, 2, 0], 7, 6)
+    out["measured_clamped_reach"] = {"long_window_local_support_67": caps["long_window_local_support_67"]["reach_measured"],
+                                     "long_window_crop60_exact_null": caps["long_window_crop60"]["reach_measured"],
+                                     "reading": "the clamped arm is declared EXTRA CONTEXT (67); the exact information null is the crop (60)"}
     return out
 
 

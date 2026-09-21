@@ -29,14 +29,10 @@
     "mae_before": null,
     "mae_after": null,
     "problems_before": [
-      "post-huber-audit-uet3yp6s/arm_s1: a terminal exists for a unit the design does not register",
-      "post-huber-audit-uet3yp6s/arm_s1: missing model_population",
-      "post-huber-audit-uet3yp6s/arm_s1: missing naive_population"
+      "post-huber-audit-572idvah/arm_s1: a terminal exists for a unit the design does not register"
     ],
     "problems_after": [
-      "post-huber-audit-uet3yp6s/arm_s1: a terminal exists for a unit the design does not register",
-      "post-huber-audit-uet3yp6s/arm_s1: missing model_population",
-      "post-huber-audit-uet3yp6s/arm_s1: missing naive_population"
+      "post-huber-audit-572idvah/arm_s1: a terminal exists for a unit the design does not register"
     ],
     "verified_rows": [
       0,
@@ -48,8 +44,8 @@
     "mae_after": null,
     "problems_before": [],
     "problems_after": [
-      "post-huber-audit-uet3yp6s/arm_s1: the arrays on disk (1e667c23c8b7) are not the predictions artifact the terminal declared (6c3e04a9fdcd): CHANGED ARRAYS",
-      "post-huber-audit-uet3yp6s/arm_s1: the warehouse's predictions artifact digest is not the arrays on disk"
+      "post-huber-audit-572idvah/arm_s1: the arrays on disk (1e667c23c8b7) are not the predictions artifact the terminal declared (6c3e04a9fdcd): CHANGED ARRAYS",
+      "post-huber-audit-572idvah/arm_s1: the warehouse's predictions artifact digest is not the arrays on disk"
     ],
     "binding": [
       "TERMINAL_ARTIFACT",
@@ -61,36 +57,76 @@
     ]
   },
   "warehouse_missing_terminal_problems": [
-    "post-huber-audit-uet3yp6s/arm_s1: the warehouse holds NO terminal for this unit under campaign aaaaaaaaaaaa"
+    "post-huber-audit-572idvah/arm_s1: the warehouse holds NO terminal for this unit under campaign aaaaaaaaaaaa"
   ],
   "nonfinite_prediction_problems": [
-    "post-huber-audit-uet3yp6s/arm_s1: 4 non-finite predictions"
+    "post-huber-audit-572idvah/arm_s1: 4 non-finite predictions"
   ],
   "missing_prediction_file": {
     "rows": 1,
     "problems": [
-      "post-huber-audit-uet3yp6s/arm_s1: a declared forecast unit has no arrays.npz \u2014 an expected forecast is missing, not absent",
-      "post-huber-audit-uet3yp6s/arm_s1: missing model_population",
-      "post-huber-audit-uet3yp6s/arm_s1: missing naive_population"
+      "post-huber-audit-572idvah/arm_s1: a declared forecast unit has no arrays.npz \u2014 an expected forecast is missing, not absent"
     ],
     "verified_rows": 0
   },
   "positive_sd_zero_residual_scale": {
-    "status": "MEASURED",
+    "status": "FALLBACK_FIXED_GRID",
+    "reason": "ZERO_RESIDUAL_SCALE (no positive residual quantile)",
     "sd_train": 0.30000000000000004,
     "candidate_deltas": [
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.0
-    ]
+      0.1,
+      0.5,
+      1.0,
+      2.0
+    ],
+    "all_positive_finite": true
   },
   "row_horizon_is_not_elapsed_time": {
-    "short_horizon_declaration": {
-      "steps": 6,
+    "fixture": "hourly weekday bars, weekend absent",
+    "last_friday_23": "2024-01-05 23:00:00",
+    "mapped_as_origin": false,
+    "reason_if_excluded": "NO_BAR_AT_ORIGIN_PLUS_H",
+    "excluded_counts": {
+      "NO_BAR_AT_ORIGIN_PLUS_H": 12,
+      "NONFINITE_TARGET": 0,
+      "NONFINITE_ORIGIN": 0
+    },
+    "declared_short_horizon": {
       "hours": 6,
-      "why": "the owner's recalled 6 h is an antecedent; 6 hourly steps is declared here as the short horizon and justified as one quarter of a trading day at this resolution"
+      "why": "one quarter of a trading day at this resolution; declared before any score"
     }
+  },
+  "volume_validation_cadence": {
+    "validate_every_observed_updates": 200,
+    "patience_events": 3,
+    "max_updates": 4000,
+    "checkpoint_opportunities_every_arm_and_tier": 20,
+    "counts": "from row identities at prepare (tests/test_df_e1_block.py::test_volume_tiers_grow_backwards...)",
+    "scaler": "COMMON source scaler for every tier; refit variant a separate factor, NOT_RUN"
+  },
+  "measured_clamped_reach": {
+    "long_window_local_support_67": {
+      "reach_by_gradient": 67,
+      "perturbation_max_abs_change_at_row": {
+        "1372": 0.0,
+        "1373": 0.10191059112548828,
+        "1379": 0.7866873741149902,
+        "1380": 2.118403434753418,
+        "1439": 3.141655445098877
+      },
+      "windows": 2
+    },
+    "long_window_crop60_exact_null": {
+      "reach_by_gradient": 60,
+      "perturbation_max_abs_change_at_row": {
+        "1372": 0.0,
+        "1373": 0.0,
+        "1379": 0.0,
+        "1380": 2.091799736022949,
+        "1439": 3.246964454650879
+      },
+      "windows": 2
+    },
+    "reading": "the clamped arm is declared EXTRA CONTEXT (67); the exact information null is the crop (60)"
   }
 }

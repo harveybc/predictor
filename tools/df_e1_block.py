@@ -230,8 +230,14 @@ def reuse_record(root: Path) -> dict:
             "rule": "reused because rows, inputs, scaler, recipe, cadence and seeds are identical; the baseline is NOT re-trained"}
 
 
-def validate(design: dict) -> dict:
-    """The design, checked against its own digest, its arms, the code and the prepared source it binds to."""
+def code_drift(design: dict) -> dict:
+    """Which scientific source files differ now from the ones the design was sealed with."""
+    return {name: {"sealed": digest, "now": sha_file(HERE/name)} for name, digest in design["source_code"].items() if sha_file(HERE/name) != digest}
+
+
+def validate(design: dict, *, strict_code: bool = True) -> dict:
+    """The design, checked against its own digest, its arms, the code and the prepared source it binds to.
+    `strict_code=False` is for CLOSURE only: fits already ran under the sealed code; the closure records the drift."""
     B = _module("df_benchmark_contract")
     body = {k: v for k, v in design.items() if k != "design_sha256"}
     if design.get("schema") != SCHEMA or sha_obj(body) != design.get("design_sha256"):
@@ -239,9 +245,9 @@ def validate(design: dict) -> dict:
     for a in design["arms"]:
         if arm_spec(a["arm"]) != a:
             raise BlockRefusal(f"REFUSED: arm {a['arm']} differs from the registry")
-    for name, digest in design["source_code"].items():
-        if sha_file(HERE/name) != digest:
-            raise BlockRefusal(f"REFUSED: scientific source changed: {name}")
+    drift = code_drift(design)
+    if drift and strict_code:
+        raise BlockRefusal(f"REFUSED: scientific source changed: {sorted(drift)}")
     contract = B.require(design, purpose=f"the {design['block']} block")
     B.bind(contract, json.loads((Path(design["source_run"]["root"])/"DATA.json").read_text()), purpose=f"the {design['block']} block")
     return contract
@@ -867,8 +873,13 @@ def baselines(data: dict, design: dict) -> dict:
     Y, o = data["Y"], data["common_eval"]
     sd = float(data["scaler_sd"][j])
     y, naive = Y[o+h], Y[o]
-    base_arm = next(a["arm"] for a in design["arms"] if a["train_days"] == 28)
-    train_o = data[f"train_origins__{base_arm}"]
+    base_arm = next((a["arm"] for a in design["arms"] if a["train_days"] == 28), None)
+    if base_arm is not None:
+        train_o = data[f"train_origins__{base_arm}"]
+    else:                                                   # no 28 d arm in this block: the 28 d tier IS the source run's train origins
+        src = design["source_run"]
+        with np.load(Path(src["root"])/"DATA.npz", allow_pickle=False) as z:
+            train_o = z["train_origins"] + (src["slice_rows"][0] - int(data["row_offset"][0]))
     const = float(np.mean(Y[train_o+h]))
     out = {}
     for name, pred in (("persistence", naive), ("daily_seasonal", Y[o+h-DAY]), ("train_constant", np.full(o.size, const))):
@@ -879,8 +890,14 @@ def baselines(data: dict, design: dict) -> dict:
 def close(a) -> dict:
     root = Path(a.root)
     design = json.loads((root/"DESIGN.json").read_text())
-    validate(design)
+    validate(design, strict_code=False)
     data = load_data(root, design)
+    # the rows every verifier reads (tools/df_closure_table.py): this block's own target rows and common evaluation origins
+    if not (root/"DATA.npz").is_file():
+        np.savez(root/"DATA.npz", Y=data["Y"], eval_origins=data["common_eval"], horizon=data["horizon"], target_channel=data["target_channel"],
+                 scaler_sd=data["scaler_sd"], scaler_mean=data["scaler_mean"], row_offset=data["row_offset"])
+        (root/"DATA.json").write_text(json.dumps({"input_columns": design["source_run"]["input_columns"], "target_channel": int(data["target_channel"][0]),
+                                                  "derived_from": "BLOCK_DATA.npz at closure; origins are block-local (row_offset gives the panel row)"}))
     C = _module("df_mod_e0_close")
     H = _module("df_e1_huber")
     receipts = json.loads((root/"TERMINAL_RECEIPTS.json").read_text())["units"]
@@ -950,6 +967,7 @@ def close(a) -> dict:
               "common_evaluation_rows": int(o.size), "sigma_evaluation": float(data["scaler_sd"][j]),
               "rows": rows, "summary": summary, "paired": paired, "baselines": baselines(data, design),
               "problems": problems, "verified": not problems, "spent_cpu_seconds": spent_cpu(root),
+              "closure_code_drift": code_drift(design) or "none: closed under the sealed code",
               "scope": "DEVELOPMENT; paired seeds; one previously inspected DEV validation week; no test rows read"}
     (root/"REPORT.json").write_text(json.dumps(report, indent=1, default=str))
     print(json.dumps({k: report[k] for k in ("summary", "paired", "baselines", "problems", "verified")}, indent=1, default=str))
