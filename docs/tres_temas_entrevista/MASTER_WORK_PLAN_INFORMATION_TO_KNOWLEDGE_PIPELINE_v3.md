@@ -467,3 +467,31 @@ consulta al warehouse vivo ni a un replay independiente de pesos.
 - FIN-LOSS-OPT sigue obligatorio, no selecciona receta desde electricidad; implementacion y
   aceptacion sintetica se corrigen ahora y la ficha cientifica concreta vuelve a revision.
   RL semanal, extraccion por grupos y preentrenamiento del nucleo mantienen sus dependencias.
+
+### Revision RP74-RP81 y continuacion RP82-RP89 (21-sep)
+
+[Dictamen](../audits/work_plan/MUSASHI_RP74_RP81_REVIEW_2026_09_21.md) y
+[ordenes activas](../handoffs/MUSASHI_RP82_RP89_2026_09_21.md):
+CHANGES_REQUIRED, sin reinicio general de experimentos. Musashi reprodujo las
+15 celdas nuevas desde pesos en procesos separados y recalculo errores: todas
+pasan la tolerancia existente. No fue una consulta nueva al warehouse vivo.
+
+- **Informacion util**: GRU+calendario MAE_z 0.479838 vs GRU 0.528993;
+  modular+calendario 0.492654 vs modular 0.539087; naive comun 0.676560.
+  Calendario mejora en ambos receptores y los tres bloques semilla/host.
+  Comparador = nuestra GRU adaptada, no el valor publicado de otra tarea.
+- **Alcance ML**: 7/15 censuradas, una semana DEV informada por resultados previos.
+  No ganador universal ni beneficio financiero. Comparar tiers no aisla paciencia:
+  las trayectorias de semillas 2/3 cambiaron antes de la parada al cambiar de host.
+- **Prioridad RP82-RP85**: cierre real, identidad del escalador y comparador;
+  selector financiero que ejecute A/B/C/D y no mezcle 10 vs 16 candidatos;
+  incertidumbre sobre la misma poblacion que el estimando. Contraejemplos
+  ejecutables conservados, no afirmaciones inferidas solo de inspeccion.
+- **Siguiente pregunta experimental**: rezago diario causal en el receptor W60
+  con receta tier 2 y poblacion comun, no ventana W1440 de costo no autorizado.
+  Medicion condicional a aceptacion y presupuesto completo; reutilizar evidencia
+  solo por equivalencia comprobada. No repetir el bloque de 15 por rutina.
+- **Finanzas**: v4 con factorial, temporalidad y presupuesto adecuados; piloto
+  gobernado de costo solo en train bajo RP88. Huber/MAE y Adam/AdamW obligatorios,
+  sin eleccion desde electricidad; sin busqueda financiera completa ni reserva.
+  RL semanal y preentrenamiento de extractor/nucleo conservan sus dependencias.

@@ -1,5 +1,15 @@
 {
  "schema": "research_program_method_state.v1",
+ "rp81_external_review": {
+  "reviewed_commit": "bd6fcf4",
+  "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
+  "findings": ["actual closure bypass", "unanchored metric scaler", "reference relabel accepted", "financial populations mixed", "bootstrap population mismatch", "cross-tier training environment confounding"],
+  "evidence": "../../audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/",
+  "fresh_process_weight_replays": "15/15 within existing atol=rtol=1e-6; no fitting",
+  "live_warehouse_requeried_by_auditor": false,
+  "historical_satoshi_return": "Preserved below as reported; this external review qualifies its closure/comparator/financial guarantees",
+  "owner_action_required": false
+ },
  "updated_on": "2026-09-21",
  "current_stage": "acceptance_test_design",
  "completed_stages": [
@@ -8,7 +18,7 @@
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "RP74_RP81_EXECUTED_ARCH_X_CALENDAR_TIER2_CLOSED_ON_THREE_HOSTS_AWAITING_MUSASHI_REVIEW",
+ "handoff_status": "RP81_REVIEW_CHANGES_REQUIRED_MEASUREMENTS_PRESERVED_RP82_RP89_ISSUED",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -47,21 +57,22 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "Musashi review of the RP74-RP81 return",
-  "cheap context contrasts (daily lag, exact crop) under tier 2 if budget allows",
-  "separate-process weight replay per cell at closure",
-  "financial design v3 review, then a train-only cost pilot on the real bars before any scientific fit",
-  "Q2 long-window arms only under a declared lower ceiling or a measured cheaper forward pass (not a gather change)"
+  "RP82-RP83: bind actual closures, normalization and comparator identity to accepted evidence",
+  "RP84-RP85: financial runtime factorial and matching uncertainty population before selection",
+  "RP86: adopt fifteen independent replays and qualify cross-tier host/seed confounding",
+  "RP87: sealed cheap context contrasts under tier 2 after acceptance and complete-stage costing",
+  "RP88: financial design v4 and conditional governed train-only cost diagnostic; no scientific search",
+  "RP89: complete evidence, work-plan update and single published return"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_RP74_RP81_2026_09_21.md",
+  "orders": "../../handoffs/MUSASHI_RP82_RP89_2026_09_21.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
   "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-  "external_review": "../../audits/work_plan/MUSASHI_RP66_RP73_REVIEW_2026_09_21.md",
+  "external_review": "../../audits/work_plan/MUSASHI_RP74_RP81_REVIEW_2026_09_21.md",
   "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-  "return": "https://github.com/harveybc/predictor/blob/1880caa/docs/audits/work_plan/SATOSHI_RP66_RP73_RETURN_2026_09_21.md",
+  "return": "https://github.com/harveybc/predictor/blob/bd6fcf4/docs/audits/work_plan/SATOSHI_RP74_RP81_RETURN_2026_09_21.md",
   "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
   "benchmark_registry": "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
   "fin_loss_opt_design": "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
@@ -207,7 +218,7 @@
     "../../audits/work_plan/SATOSHI_PROGRAM_RP57_RP64_RETURN_2026_09_21.md",
     "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json"
    ],
-   "next_action": "RP74-RP79: preserve the 18 new forecast measurements checked from arrays; repair custody/stopping/cost and execute the conditional 15-cell architecture-by-calendar DEV sensitivity block",
+   "next_action": "RP82/RP83/RP86/RP87: preserve fifteen independently replayed architecture/calendar cells; bind normalized evidence, qualify tier confounding and conditionally measure inexpensive daily context",
    "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan",
    "adoption": "SUCCESSOR_EXECUTED_LOCAL_METRICS_RECOMPUTED_FULL_GOVERNANCE_REVIEW_NOT_REPEATED"
   },
@@ -328,13 +339,13 @@
     "../../audits/evidence/d3_k5_20260917/RP65/ENTRY_POINT_COVERAGE_INVENTORY.json",
     "tests/test_df_benchmark_contract.py"
    ],
-   "next_action": "RP74: reject prepare-only references and unanchored rewritten local records at real entry points; preserve weaker historical scope explicitly",
+   "next_action": "RP82/RP83: reject perfect-prediction substitution, changed reporting sigma and renamed untrained comparator through the actual closures",
    "deliverable": "Versioned target/transform/metric/split/reference contracts, reproduction or matched-domain comparisons, real-entry-point refusal tests and governed result linkage; documentary adoption is not runtime enforcement",
    "status_detail": {
     "IMPLEMENTED": "tools/df_benchmark_contract.py: versioned contract, comparability decided from identity fields, affine re-expression with refusal, require() refusal; registry with four sources read at origin",
     "ENFORCED_AT_RUNTIME": "Partial implementation; RP73 audit still reproduces a VERIFIED_COMPARATOR without forecasts and a rewritten unanchored historical score passing closure",
     "NOT_CLAIMED": "all-domain runtime enforcement",
-    "STATUS_WORD": "DESIGNED; implementation has remaining evidence-binding gaps, RP74 repairs required"
+    "STATUS_WORD": "DESIGNED; RP81 review reproduced remaining normalization, closure and comparator identity gaps"
    }
   },
   {
@@ -350,7 +361,7 @@
     "../../audits/evidence/d3_k5_20260917/RP65/FIN_LOSS_OPT_DESIGN_SEALED.json",
     "tests/test_fin_loss_opt_acceptance.py"
    ],
-   "next_action": "RP75/RP76/RP80: repair finite consumed windows, paired-seed selection and temporal uncertainty, qualify availability and prepare the exact financial design; synthetic acceptance authorized, real scientific execution pending review",
+   "next_action": "RP84/RP85/RP88: enforce declared factorial in runtime, align uncertainty population, seal v4 and conditionally measure train-only real-data cost; no scientific selection authorized",
    "deliverable": "Paired normalized error and naive skill by horizon/fold/model, precision for 1e-5/1e-6 effects, tuned and default recipes, temporal uncertainty, cost and full warehouse closure; no profit guarantee",
    "status_detail": {
     "DESIGNED": "Executable synthetic runner exists, zero xfails; RP73 audit demonstrates 60 nonfinite consumed windows and a degenerate two-fold interval; repairs required before real data",

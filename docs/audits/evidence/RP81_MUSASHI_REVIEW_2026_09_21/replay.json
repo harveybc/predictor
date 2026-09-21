@@ -1,0 +1,263 @@
+{
+  "scope": "Read-only artifact checks plus one fresh inference process per retained RP79 cell.\n\nNo training, service changes, new source download or final-holdout access.\nTolerance is the existing runner's allclose(atol=rtol=1e-6), not chosen from replay results.\n",
+  "cells": [
+    {
+      "arm": "modular_w60",
+      "cell_id": "modular_w60_s1",
+      "seed": 1,
+      "mae_z": 0.539779065692846,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.20217109562494529,
+      "n": 10020,
+      "replay": {
+        "unit": "modular_w60_s1",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 0.0,
+        "mae_z_replayed": 0.539779065692846,
+        "mae_z_stored": 0.539779065692846
+      },
+      "problems": []
+    },
+    {
+      "arm": "gru_adapted_w60",
+      "cell_id": "gru_adapted_w60_s1",
+      "seed": 1,
+      "mae_z": 0.5304759667904917,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.21592168670248368,
+      "n": 10020,
+      "replay": {
+        "unit": "gru_adapted_w60_s1",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 0.0,
+        "mae_z_replayed": 0.5304759667904917,
+        "mae_z_stored": 0.5304759667904917
+      },
+      "problems": []
+    },
+    {
+      "arm": "calendar",
+      "cell_id": "calendar_s1",
+      "seed": 1,
+      "mae_z": 0.48248040048780405,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.28686228538795266,
+      "n": 10020,
+      "replay": {
+        "unit": "calendar_s1",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 0.0,
+        "mae_z_replayed": 0.48248040048780405,
+        "mae_z_stored": 0.48248040048780405
+      },
+      "problems": []
+    },
+    {
+      "arm": "gru_calendar_w60",
+      "cell_id": "gru_calendar_w60_s1",
+      "seed": 1,
+      "mae_z": 0.4802670775276601,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.29013372206372146,
+      "n": 10020,
+      "replay": {
+        "unit": "gru_calendar_w60_s1",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 0.0,
+        "mae_z_replayed": 0.4802670775276601,
+        "mae_z_stored": 0.4802670775276601
+      },
+      "problems": []
+    },
+    {
+      "arm": "randomised_calendar_control",
+      "cell_id": "randomised_calendar_control_s1",
+      "seed": 1,
+      "mae_z": 0.5388824965159489,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.20349628374275808,
+      "n": 10020,
+      "replay": {
+        "unit": "randomised_calendar_control_s1",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 0.0,
+        "mae_z_replayed": 0.5388824965159489,
+        "mae_z_stored": 0.5388824965159489
+      },
+      "problems": []
+    },
+    {
+      "arm": "modular_w60",
+      "cell_id": "modular_w60_s2",
+      "seed": 2,
+      "mae_z": 0.5399297672448605,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.20194834883505808,
+      "n": 10020,
+      "replay": {
+        "unit": "modular_w60_s2",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 2.1756087287272408e-07,
+        "mae_z_replayed": 0.5399297669779186,
+        "mae_z_stored": 0.5399297672448605
+      },
+      "problems": []
+    },
+    {
+      "arm": "gru_adapted_w60",
+      "cell_id": "gru_adapted_w60_s2",
+      "seed": 2,
+      "mae_z": 0.5302485088893589,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.21625788441667126,
+      "n": 10020,
+      "replay": {
+        "unit": "gru_adapted_w60_s2",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 3.263413093090861e-07,
+        "mae_z_replayed": 0.5302485093351297,
+        "mae_z_stored": 0.5302485088893589
+      },
+      "problems": []
+    },
+    {
+      "arm": "calendar",
+      "cell_id": "calendar_s2",
+      "seed": 2,
+      "mae_z": 0.4967845138115506,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.26571986659760394,
+      "n": 10020,
+      "replay": {
+        "unit": "calendar_s2",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 2.1756087287272408e-07,
+        "mae_z_replayed": 0.49678451421661085,
+        "mae_z_stored": 0.4967845138115506
+      },
+      "problems": []
+    },
+    {
+      "arm": "gru_calendar_w60",
+      "cell_id": "gru_calendar_w60_s2",
+      "seed": 2,
+      "mae_z": 0.4834216828755605,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.2854710082083397,
+      "n": 10020,
+      "replay": {
+        "unit": "gru_calendar_w60_s2",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 2.1756087287272408e-07,
+        "mae_z_replayed": 0.4834216829746413,
+        "mae_z_stored": 0.4834216828755605
+      },
+      "problems": []
+    },
+    {
+      "arm": "randomised_calendar_control",
+      "cell_id": "randomised_calendar_control_s2",
+      "seed": 2,
+      "mae_z": 0.5444607243944247,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.1952512966369201,
+      "n": 10020,
+      "replay": {
+        "unit": "randomised_calendar_control_s2",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 1.6317065476556536e-07,
+        "mae_z_replayed": 0.5444607260438974,
+        "mae_z_stored": 0.5444607243944247
+      },
+      "problems": []
+    },
+    {
+      "arm": "modular_w60",
+      "cell_id": "modular_w60_s3",
+      "seed": 3,
+      "mae_z": 0.5375535633399997,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.20546053424290345,
+      "n": 10020,
+      "replay": {
+        "unit": "modular_w60_s3",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 1.3053652370142999e-06,
+        "mae_z_replayed": 0.5375535640543856,
+        "mae_z_stored": 0.5375535633399997
+      },
+      "problems": []
+    },
+    {
+      "arm": "gru_adapted_w60",
+      "cell_id": "gru_adapted_w60_s3",
+      "seed": 3,
+      "mae_z": 0.5262544906810126,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.22216130560090852,
+      "n": 10020,
+      "replay": {
+        "unit": "gru_adapted_w60_s3",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 2.1756087287272408e-07,
+        "mae_z_replayed": 0.5262544915063763,
+        "mae_z_stored": 0.5262544906810126
+      },
+      "problems": []
+    },
+    {
+      "arm": "calendar",
+      "cell_id": "calendar_s3",
+      "seed": 3,
+      "mae_z": 0.4986961321035422,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.2628943692331862,
+      "n": 10020,
+      "replay": {
+        "unit": "calendar_s3",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 1.3665542323293423e-06,
+        "mae_z_replayed": 0.4986961306740272,
+        "mae_z_stored": 0.4986961321035422
+      },
+      "problems": []
+    },
+    {
+      "arm": "gru_calendar_w60",
+      "cell_id": "gru_calendar_w60_s3",
+      "seed": 3,
+      "mae_z": 0.4758249999865479,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.2966994043641745,
+      "n": 10020,
+      "replay": {
+        "unit": "gru_calendar_w60_s3",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 1.2509750187961188e-06,
+        "mae_z_replayed": 0.47582500007317385,
+        "mae_z_stored": 0.4758249999865479
+      },
+      "problems": []
+    },
+    {
+      "arm": "randomised_calendar_control",
+      "cell_id": "randomised_calendar_control_s3",
+      "seed": 3,
+      "mae_z": 0.5504990286996817,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.18632628636079407,
+      "n": 10020,
+      "replay": {
+        "unit": "randomised_calendar_control_s3",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 1.2781701279607205e-06,
+        "mae_z_replayed": 0.5504990285088164,
+        "mae_z_stored": 0.5504990286996817
+      },
+      "problems": []
+    }
+  ],
+  "live_warehouse_queried": false,
+  "all_passed": true,
+  "n": 15
+}
