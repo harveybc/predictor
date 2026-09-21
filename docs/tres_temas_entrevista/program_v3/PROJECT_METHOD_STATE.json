@@ -8,7 +8,7 @@
   ],
   "program_owner": "Musashi",
   "execution_owner": "Satoshi",
-  "handoff_status": "RP57_RP64_EXECUTED_OBJECTIVE_IS_THE_LEVER_LEGACY_TABLES_CAUSALITY_UNVERIFIED_READY_FOR_REVIEW",
+  "handoff_status": "HUBER_ADAMW_FACTORIAL_REQUIRED_BEFORE_NEXT_E1_STAGE",
   "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
   "architecture_comparison": {
     "reference": "ARCH-A",
@@ -24,6 +24,7 @@
   "first_experiment": "MOD-E0-DEV",
   "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
   "next_allowed_actions": [
+    "User priority 2026-09-21: execute the paired MAE/Huber x Adam/AdamW DEVELOPMENT diagnostic with common validation MAE monitor; protocol docs/audits/work_plan/HUBER_ADAMW_PROTOCOL_2026_09_21.md. Do not advance to input/volume changes before this comparison closes.",
     "One review of RP57-RP64",
     "Phase 2 of the diagnostic: input information (calendar sin/cos, daily context) and train volume, one factor at a time, after the temporal and availability checks; R0/R1/R2 return only with the adequate objective common to every arm",
     "The phase-3 lineage stays UNBOUND until the producer of the decomposed inputs is reachable; no legacy table is a benchmark and none is declared a leak on a score",
