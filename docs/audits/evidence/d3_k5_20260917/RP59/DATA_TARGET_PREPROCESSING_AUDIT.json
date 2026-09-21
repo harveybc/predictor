@@ -1,0 +1,395 @@
+{
+ "schema": "df_e1_data_audit.v1",
+ "at": "2026-09-21T02:39:26Z",
+ "root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3",
+ "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+ "bytes": {
+  "delivered_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "prepared_from_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "identical": true,
+  "bytes": 10890295,
+  "rows_in_panel": 2075259
+ },
+ "roles": {
+  "input_columns": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3",
+   "Global_active_power"
+  ],
+  "target_column": "Global_active_power",
+  "target_channel": 6,
+  "unit_of_target": "kW (the archive's Global_active_power is a minute-average active power)",
+  "columns_in_the_panel": [
+   "timestamp_label",
+   "Global_active_power",
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3"
+  ],
+  "columns_not_consumed": [
+   "timestamp_label"
+  ]
+ },
+ "times": {
+  "known": true,
+  "column": "timestamp_label",
+  "unparseable_labels": 0,
+  "modal_step_seconds": 60.0,
+  "rows_at_the_modal_step": 50399,
+  "other_steps_seen": {},
+  "duplicated_stamps": 0,
+  "first": "2009-08-23 12:45:00",
+  "last": "2009-09-27 12:44:00",
+  "rows_present": 50400,
+  "rows_expected_on_a_perfect_grid": 50400,
+  "missing_minutes": 0,
+  "timezone_declared": "NAIVE_WALL_CLOCK",
+  "daylight_saving_note": "wall-clock labels with no zone: a spring transition appears as a one-hour gap and an autumn one as a repeated hour. Both are reported above as steps and duplicates; neither is closed up.",
+  "consumed_slice_rows": [
+   1412361,
+   1462761
+  ]
+ },
+ "split": {
+  "train_origins": 40080,
+  "evaluation_origins": 10020,
+  "window": 60,
+  "horizon": 60,
+  "train_rows_touched": [
+   0,
+   40259
+  ],
+  "evaluation_rows_touched": [
+   40261,
+   50399
+  ],
+  "rows_touched_by_both": 0,
+  "purge_declared": null,
+  "gap_between_last_train_row_and_first_evaluation_row": 1,
+  "reading": "a window of w rows ending at the origin, a label h rows after it; the two spans must not touch, and the gap above is what separates them"
+ },
+ "scaler": {
+  "declared_in_DATA_json": {
+   "mean": [
+    0.16394039569874333,
+    241.13327788719684,
+    3.979902281204715,
+    1.2482722486963898,
+    0.8695229659938625,
+    6.320571675690061,
+    0.926139629748496
+   ],
+   "sd": [
+    0.12462470429263597,
+    2.20610330333974,
+    3.8047190184746955,
+    6.578895446497683,
+    3.6476937059712364,
+    8.382971207465904,
+    0.9125164391265214
+   ],
+   "fitted_on": "train windows only",
+   "n_rows": 2404860
+  },
+  "grain_the_scaled_slice_is_centred_on": "windows",
+  "largest_absolute_mean_of_the_scaled_train_inputs": {
+   "rows": 0.001648878840008473,
+   "windows": 2.3650967854329808e-05
+  },
+  "largest_absolute_sd_minus_one": {
+   "rows": 0.001416018087618598,
+   "windows": 5.55181890533607e-05
+  },
+  "difference_between_the_grains_in_scaled_units": {
+   "mean": 0.001669919988868725,
+   "sd": 0.0014052851942971678
+  },
+  "interior_rows_counted_up_to": 60.0,
+  "reading": "the window grain weights a row by how many train windows contain it, so the interior of the slice counts up to W times; the difference above is what that choice is worth on THIS data, in scaled units",
+  "evaluation_rows_were_not_used": true,
+  "caveat": "this measures the scaler by its EFFECT; the run's own record states the grain it declared, and both are reported side by side"
+ },
+ "label": {
+  "label_is": "Y[origin + 60] over the consumed slice",
+  "Y_equals_the_panel_column": true,
+  "rows_compared": 50399,
+  "non_finite_rows_in_the_slice": 1,
+  "first_labels": [
+   1.598,
+   1.586,
+   1.594
+  ],
+  "first_origins": [
+   40320,
+   40321,
+   40322
+  ],
+  "checked_element_by_element": true
+ },
+ "future_perturbation": {
+  "perturbed_rows": [
+   20100,
+   20299
+  ],
+  "origin_examined": 20099,
+  "its_window_unchanged": true,
+  "origins_that_legitimately_see_the_perturbation": [
+   20101,
+   20102,
+   20103
+  ],
+  "reading": "a window ends AT its origin, so a change after it cannot reach it. Origins that come later do see it, which is correct and is not a leak.",
+  "no_gap_was_closed": true
+ },
+ "distribution": {
+  "train": {
+   "n": 40080,
+   "mean": 0.9268057884231538,
+   "sd": 0.9122469406399951,
+   "quantiles": {
+    "min": 0.13,
+    "q01": 0.136,
+    "q25": 0.282,
+    "median": 0.446,
+    "q75": 1.39,
+    "q99": 4.238419999999999,
+    "max": 7.826
+   },
+   "zeros": 0,
+   "share_zero": 0.0,
+   "above_q99_of_train": {
+    "rows": 401,
+    "share": 0.01000499001996008,
+    "threshold_kW": 4.238419999999999
+   }
+  },
+  "validation": {
+   "n": 10020,
+   "mean": 0.9992758483033931,
+   "sd": 0.8945846206105973,
+   "quantiles": {
+    "min": 0.128,
+    "q01": 0.132,
+    "q25": 0.284,
+    "median": 0.642,
+    "q75": 1.452,
+    "q99": 4.005239999999998,
+    "max": 5.794
+   },
+   "zeros": 0,
+   "share_zero": 0.0,
+   "above_q99_of_train": {
+    "rows": 72,
+    "share": 0.00718562874251497,
+    "threshold_kW": 4.238419999999999
+   }
+  }
+ },
+ "autocorrelation": {
+  "train_rows_used": 40199,
+  "autocorrelation_by_lag_minutes": {
+   "1": 0.9633449780917276,
+   "60": 0.4030024231300615,
+   "1440": 0.31718580057541035,
+   "10080": 0.2655930481297192
+  },
+  "reading": "measured on the consumed train rows; the daily lag is 1440 minutes"
+ },
+ "error_shape": {
+  "rule": "rows are bucketed by |y(t+h) - y(t)|, the move the forecast has to follow, and by the hour of day of the ORIGIN; buckets are quantiles of the change, fixed before any model's error is read",
+  "change_quantiles_kW": [
+   0.0,
+   0.08800000000000006,
+   0.29400000000000004,
+   0.966,
+   1.5822000000000007,
+   4.968
+  ],
+  "models": {
+   "R0_s1": {
+    "mae": 0.5524983663230361,
+    "by_change_bucket": {
+     "q0": {
+      "rows": 2505,
+      "share_of_rows": 0.25,
+      "mean_abs_error": 0.2969068528107778,
+      "share_of_total_error": 0.13434738947136615,
+      "change_range_kW": [
+       0.0,
+       0.08800000000000006
+      ]
+     },
+     "q1": {
+      "rows": 2503,
+      "share_of_rows": 0.2498003992015968,
+      "mean_abs_error": 0.324887179904588,
+      "share_of_total_error": 0.14689083657524524,
+      "change_range_kW": [
+       0.08800000000000006,
+       0.29400000000000004
+      ]
+     },
+     "q2": {
+      "rows": 2504,
+      "share_of_rows": 0.2499001996007984,
+      "mean_abs_error": 0.47251472614300893,
+      "share_of_total_error": 0.21372284802090136,
+      "change_range_kW": [
+       0.29400000000000004,
+       0.966
+      ]
+     },
+     "q3": {
+      "rows": 1506,
+      "share_of_rows": 0.1502994011976048,
+      "mean_abs_error": 0.8631381046531368,
+      "share_of_total_error": 0.2348045680995763,
+      "change_range_kW": [
+       0.966,
+       1.5822000000000007
+      ]
+     },
+     "q4": {
+      "rows": 1002,
+      "share_of_rows": 0.1,
+      "mean_abs_error": 1.4930404122703804,
+      "share_of_total_error": 0.2702343578329109,
+      "change_range_kW": [
+       1.5822000000000007,
+       4.968
+      ]
+     }
+    },
+    "by_hour_of_day": {
+     "0": 0.619360513884113,
+     "1": 0.5428897700962566,
+     "2": 0.5152271851936976,
+     "3": 0.4753628294229508,
+     "4": 0.4546916013286227,
+     "5": 0.6147031591517584,
+     "6": 1.0711536240413075,
+     "7": 0.6674939263979593,
+     "8": 0.7321647057226726,
+     "9": 0.6299319013845353,
+     "10": 0.4050898654824211,
+     "11": 0.3474110696894782,
+     "12": 0.3300341494861104,
+     "13": 0.35618056854236696,
+     "14": 0.3424694755968594,
+     "15": 0.3483019819498062,
+     "16": 0.5064259133600053,
+     "17": 1.1379181377751486,
+     "18": 0.4583116326746487,
+     "19": 0.3470260910062563,
+     "20": 0.4589875564064299,
+     "21": 0.5557782721099399,
+     "22": 0.7927935648253988,
+     "23": 0.5498791178743044
+    }
+   },
+   "linear_ridge": {
+    "mae": 0.5454945633272991,
+    "by_change_bucket": {
+     "q0": {
+      "rows": 2505,
+      "share_of_rows": 0.25,
+      "mean_abs_error": 0.3096530381067903,
+      "share_of_total_error": 0.14191389746307936,
+      "change_range_kW": [
+       0.0,
+       0.08800000000000006
+      ]
+     },
+     "q1": {
+      "rows": 2503,
+      "share_of_rows": 0.2498003992015968,
+      "mean_abs_error": 0.30079937043040783,
+      "share_of_total_error": 0.13774619925592305,
+      "change_range_kW": [
+       0.08800000000000006,
+       0.29400000000000004
+      ]
+     },
+     "q2": {
+      "rows": 2504,
+      "share_of_rows": 0.2499001996007984,
+      "mean_abs_error": 0.44073935974486844,
+      "share_of_total_error": 0.20191008559343926,
+      "change_range_kW": [
+       0.29400000000000004,
+       0.966
+      ]
+     },
+     "q3": {
+      "rows": 1506,
+      "share_of_rows": 0.1502994011976048,
+      "mean_abs_error": 0.8882458701252535,
+      "share_of_total_error": 0.24473721897750386,
+      "change_range_kW": [
+       0.966,
+       1.5822000000000007
+      ]
+     },
+     "q4": {
+      "rows": 1002,
+      "share_of_rows": 0.1,
+      "mean_abs_error": 1.4929782461925478,
+      "share_of_total_error": 0.2736925987100543,
+      "change_range_kW": [
+       1.5822000000000007,
+       4.968
+      ]
+     }
+    },
+    "by_hour_of_day": {
+     "0": 0.629387857021563,
+     "1": 0.5850707298003512,
+     "2": 0.6267126466691623,
+     "3": 0.4551496466917256,
+     "4": 0.3716058594522626,
+     "5": 0.555486036812961,
+     "6": 1.1904062199065006,
+     "7": 0.7024794750504928,
+     "8": 0.6793636785777741,
+     "9": 0.6297625416980069,
+     "10": 0.3917607171022566,
+     "11": 0.358620658949726,
+     "12": 0.3528160665285049,
+     "13": 0.4254537203127765,
+     "14": 0.34896272495388986,
+     "15": 0.38484315506365846,
+     "16": 0.5095874849839707,
+     "17": 1.112029990947003,
+     "18": 0.4752079304597756,
+     "19": 0.27085122936769396,
+     "20": 0.36441276574184134,
+     "21": 0.4622557339796399,
+     "22": 0.6546008126746337,
+     "23": 0.5566330494059566
+    }
+   }
+  },
+  "reading": "for R0_s1, the bucket q4 (1.582\u20134.968 kW of movement) holds 10.0% of the rows and 27.0% of the total absolute error. This says where the error is, NOT that it is irreducible."
+ },
+ "claims_no_irreducible_floor": "a model failing on some rows is not evidence that those rows are unpredictable; no floor is asserted here",
+ "figures": {
+  "rule": "declared before any error was read: the FIRST full day of the evaluation period, the MIDDLE full day, and the LAST full day. Not the best days, not the worst.",
+  "files": [
+   "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/rp59_figs/period_first_kW.png",
+   "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/rp59_figs/period_first_log1p.png",
+   "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/rp59_figs/period_middle_kW.png",
+   "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/rp59_figs/period_middle_log1p.png",
+   "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/rp59_figs/period_last_kW.png",
+   "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/rp59_figs/period_last_log1p.png",
+   "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/rp59_figs/error_by_hour.png"
+  ]
+ }
+}
