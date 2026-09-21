@@ -1,0 +1,943 @@
+{
+  "scope": "LOCAL_READ_ONLY_REVIEW_OF_PRESERVED_VALIDATION_ARRAYS_NOT_NEW_TRAINING_OR_SCIENTIFIC_APPROVAL",
+  "n": 10020,
+  "window": 60,
+  "horizon": 60,
+  "scale": {
+    "target_mean": 0.926139629748496,
+    "target_sd": 0.9125164391265214,
+    "train_horizon_persistence": 0.6162615768463073,
+    "train_one_step": 0.08512377971532901,
+    "train_slice": [
+      0,
+      40260
+    ],
+    "one_step_pairs_used": 40257,
+    "one_step_pairs_excluded_nonfinite": 2,
+    "log1p_unit_convention": "log(1 + target expressed numerically in kW); existing forecasts transformed, not models trained in log space"
+  },
+  "target_quantiles": {
+    "min": 0.128,
+    "q25": 0.284,
+    "median": 0.642,
+    "q75": 1.452,
+    "max": 5.794
+  },
+  "by_scale": {
+    "raw_kW": {
+      "persistence": {
+        "n": 10020,
+        "mae": 0.6173720558882235,
+        "rmse": 0.966454889734754,
+        "bias": 0.013613572854291418,
+        "mae_skill_percent": 0.0,
+        "skill_status": "MEASURED",
+        "legacy_horizon_scaled_error": 1.0018019605369508,
+        "conventional_mase_m1_train_slice": 7.252639132717549
+      },
+      "seasonal_naive_daily": {
+        "n": 10020,
+        "mae": 0.7316592814371257,
+        "rmse": 1.0890280496910867,
+        "bias": 0.10125209580838324,
+        "mae_skill_percent": -18.51188832712476,
+        "skill_status": "MEASURED",
+        "legacy_horizon_scaled_error": 1.1872544207304976,
+        "conventional_mase_m1_train_slice": 8.59523958973557
+      },
+      "R0_s1": {
+        "n": 10020,
+        "mae": 0.5524983663230361,
+        "rmse": 0.7731804692830229,
+        "bias": -0.017967289568445156,
+        "mae_skill_percent": 10.50803789164908,
+        "skill_status": "MEASURED",
+        "legacy_horizon_scaled_error": 0.8965322309244448,
+        "conventional_mase_m1_train_slice": 6.49052906450702
+      },
+      "R0_s2": {
+        "n": 10020,
+        "mae": 0.5502789229728504,
+        "rmse": 0.7873927652096567,
+        "bias": -0.029809883859723857,
+        "mae_skill_percent": 10.867536402962896,
+        "skill_status": "MEASURED",
+        "legacy_horizon_scaled_error": 0.8929307677900018,
+        "conventional_mase_m1_train_slice": 6.464455934793937
+      },
+      "R0_s3": {
+        "n": 10020,
+        "mae": 0.5380102124684585,
+        "rmse": 0.7781259584021524,
+        "bias": -0.043036618151850316,
+        "mae_skill_percent": 12.854783863773333,
+        "skill_status": "MEASURED",
+        "legacy_horizon_scaled_error": 0.8730224837668821,
+        "conventional_mase_m1_train_slice": 6.320328047787263
+      },
+      "R1_s1": {
+        "n": 10020,
+        "mae": 0.5599806716461382,
+        "rmse": 0.7745812419629764,
+        "bias": 0.07123229034168278,
+        "mae_skill_percent": 9.296077413078796,
+        "skill_status": "MEASURED",
+        "legacy_horizon_scaled_error": 0.9086736747596948,
+        "conventional_mase_m1_train_slice": 6.578428184448879
+      },
+      "R1_s2": {
+        "n": 10020,
+        "mae": 0.5447235416877055,
+        "rmse": 0.7832732408496879,
+        "bias": -0.06437698897251826,
+        "mae_skill_percent": 11.76737973603249,
+        "skill_status": "MEASURED",
+        "legacy_horizon_scaled_error": 0.8839161196375496,
+        "conventional_mase_m1_train_slice": 6.399193545086582
+      },
+      "R1_s3": {
+        "n": 10020,
+        "mae": 0.5654982544530414,
+        "rmse": 0.792828635060642,
+        "bias": 0.010752798118967266,
+        "mae_skill_percent": 8.40235655961954,
+        "skill_status": "MEASURED",
+        "legacy_horizon_scaled_error": 0.9176269877913773,
+        "conventional_mase_m1_train_slice": 6.643246532804122
+      },
+      "R2_s1": {
+        "n": 10020,
+        "mae": 0.54226553502109,
+        "rmse": 0.7793289174801915,
+        "bias": -0.031237536711630938,
+        "mae_skill_percent": 12.165519989251305,
+        "skill_status": "MEASURED",
+        "legacy_horizon_scaled_error": 0.8799275427751168,
+        "conventional_mase_m1_train_slice": 6.370317869278534
+      },
+      "R2_s2": {
+        "n": 10020,
+        "mae": 0.5692441953122259,
+        "rmse": 0.7845060851020184,
+        "bias": 0.05768071331720867,
+        "mae_skill_percent": 7.79560074301634,
+        "skill_status": "MEASURED",
+        "legacy_horizon_scaled_error": 0.9237054794577801,
+        "conventional_mase_m1_train_slice": 6.687252342599126
+      },
+      "R2_s3": {
+        "n": 10020,
+        "mae": 0.5464712891060197,
+        "rmse": 0.7781268951679848,
+        "bias": 0.03816418146775393,
+        "mae_skill_percent": 11.484285060521193,
+        "skill_status": "MEASURED",
+        "legacy_horizon_scaled_error": 0.8867521676469975,
+        "conventional_mase_m1_train_slice": 6.419725380305354
+      },
+      "linear_ridge": {
+        "n": 10020,
+        "mae": 0.5454945633272991,
+        "rmse": 0.7740378285266319,
+        "bias": -0.022613015569707736,
+        "mae_skill_percent": 11.642492055704256,
+        "skill_status": "MEASURED",
+        "legacy_horizon_scaled_error": 0.8851672468675469,
+        "conventional_mase_m1_train_slice": 6.40825119786201
+      }
+    },
+    "zscore_train": {
+      "persistence": {
+        "n": 10020,
+        "mae": 0.676559927489289,
+        "rmse": 1.0591095659162737,
+        "bias": 0.01491871518207673,
+        "mae_skill_percent": 0.0,
+        "skill_status": "MEASURED"
+      },
+      "seasonal_naive_daily": {
+        "n": 10020,
+        "mae": 0.8018039457321824,
+        "rmse": 1.1934338966359068,
+        "bias": 0.11095920190249253,
+        "mae_skill_percent": -18.51188832712476,
+        "skill_status": "MEASURED"
+      },
+      "R0_s1": {
+        "n": 10020,
+        "mae": 0.605466753949001,
+        "rmse": 0.8473057976063713,
+        "bias": -0.019689825627299158,
+        "mae_skill_percent": 10.50803789164908,
+        "skill_status": "MEASURED"
+      },
+      "R0_s2": {
+        "n": 10020,
+        "mae": 0.6030345310815313,
+        "rmse": 0.8628806358418754,
+        "bias": -0.03266777734794395,
+        "mae_skill_percent": 10.867536402962873,
+        "skill_status": "MEASURED"
+      },
+      "R0_s3": {
+        "n": 10020,
+        "mae": 0.5895896111016394,
+        "rmse": 0.8527254140725287,
+        "bias": -0.047162567496368414,
+        "mae_skill_percent": 12.854783863773312,
+        "skill_status": "MEASURED"
+      },
+      "R1_s1": {
+        "n": 10020,
+        "mae": 0.6136663928840149,
+        "rmse": 0.8488408632993184,
+        "bias": 0.07806137762281602,
+        "mae_skill_percent": 9.296077413078784,
+        "skill_status": "MEASURED"
+      },
+      "R1_s2": {
+        "n": 10020,
+        "mae": 0.5969465516797983,
+        "rmse": 0.8583661699283492,
+        "bias": -0.0705488539298439,
+        "mae_skill_percent": 11.76737973603249,
+        "skill_status": "MEASURED"
+      },
+      "R1_s3": {
+        "n": 10020,
+        "mae": 0.6197129500421356,
+        "rmse": 0.8688376461683838,
+        "bias": 0.011783676060959578,
+        "mae_skill_percent": 8.402356559619529,
+        "skill_status": "MEASURED"
+      },
+      "R2_s1": {
+        "n": 10020,
+        "mae": 0.5942528942713154,
+        "rmse": 0.8540437016413429,
+        "bias": -0.034232300232894565,
+        "mae_skill_percent": 12.165519989251294,
+        "skill_status": "MEASURED"
+      },
+      "R2_s2": {
+        "n": 10020,
+        "mae": 0.623818016754983,
+        "rmse": 0.8597172077830871,
+        "bias": 0.06321060185219432,
+        "mae_skill_percent": 7.795600743016351,
+        "skill_status": "MEASURED"
+      },
+      "R2_s3": {
+        "n": 10020,
+        "mae": 0.5988618568111636,
+        "rmse": 0.8527264406467275,
+        "bias": 0.04182300705101318,
+        "mae_skill_percent": 11.484285060521193,
+        "skill_status": "MEASURED"
+      },
+      "linear_ridge": {
+        "n": 10020,
+        "mae": 0.59779149167927,
+        "rmse": 0.8482453524536568,
+        "bias": -0.024780940485141664,
+        "mae_skill_percent": 11.642492055704256,
+        "skill_status": "MEASURED"
+      }
+    },
+    "log1p_of_kW": {
+      "persistence": {
+        "n": 10020,
+        "mae": 0.27912721257283213,
+        "rmse": 0.398189262043291,
+        "bias": 0.005249335599538603,
+        "mae_skill_percent": 0.0,
+        "skill_status": "MEASURED"
+      },
+      "seasonal_naive_daily": {
+        "n": 10020,
+        "mae": 0.3308937595152636,
+        "rmse": 0.4530493700630619,
+        "bias": 0.04154509531287865,
+        "mae_skill_percent": -18.545861747150205,
+        "skill_status": "MEASURED"
+      },
+      "R0_s1": {
+        "n": 10020,
+        "mae": 0.26963868977785316,
+        "rmse": 0.3381108031555867,
+        "bias": 0.04286000854873239,
+        "mae_skill_percent": 3.399354261277243,
+        "skill_status": "MEASURED"
+      },
+      "R0_s2": {
+        "n": 10020,
+        "mae": 0.2664003175513735,
+        "rmse": 0.34058814748968247,
+        "bias": 0.03051304477836771,
+        "mae_skill_percent": 4.559532158885382,
+        "skill_status": "MEASURED"
+      },
+      "R0_s3": {
+        "n": 10020,
+        "mae": 0.2629926224986577,
+        "rmse": 0.3377105636799002,
+        "bias": 0.030170587124971796,
+        "mae_skill_percent": 5.780371582353149,
+        "skill_status": "MEASURED"
+      },
+      "R1_s1": {
+        "n": 10020,
+        "mae": 0.27434832349402544,
+        "rmse": 0.3447766148976017,
+        "bias": 0.08746418480182294,
+        "mae_skill_percent": 1.7120828294588941,
+        "skill_status": "MEASURED"
+      },
+      "R1_s2": {
+        "n": 10020,
+        "mae": 0.2656571843108102,
+        "rmse": 0.3468578367585205,
+        "bias": 0.011693652342159659,
+        "mae_skill_percent": 4.825766767010298,
+        "skill_status": "MEASURED"
+      },
+      "R1_s3": {
+        "n": 10020,
+        "mae": 0.27540094329988823,
+        "rmse": 0.3486738876371947,
+        "bias": 0.050786499006941994,
+        "mae_skill_percent": 1.3349716921533084,
+        "skill_status": "MEASURED"
+      },
+      "R2_s1": {
+        "n": 10020,
+        "mae": 0.26244477734200605,
+        "rmse": 0.340172985061654,
+        "bias": 0.02897083026583096,
+        "mae_skill_percent": 5.976642362117657,
+        "skill_status": "MEASURED"
+      },
+      "R2_s2": {
+        "n": 10020,
+        "mae": 0.2792233399404651,
+        "rmse": 0.3531411683828929,
+        "bias": 0.07068247787372813,
+        "mae_skill_percent": -0.03443855106313176,
+        "skill_status": "MEASURED"
+      },
+      "R2_s3": {
+        "n": 10020,
+        "mae": 0.26466922736387655,
+        "rmse": 0.34190769330265386,
+        "bias": 0.06454119764684324,
+        "mae_skill_percent": 5.179711815157784,
+        "skill_status": "MEASURED"
+      },
+      "linear_ridge": {
+        "n": 10020,
+        "mae": 0.2690984379007901,
+        "rmse": 0.33735810940720057,
+        "bias": 0.04985536042578942,
+        "mae_skill_percent": 3.592904675829578,
+        "skill_status": "MEASURED"
+      }
+    }
+  },
+  "regime_means": {
+    "R0": {
+      "raw_kW": {
+        "mae": 0.5469291672547817,
+        "rmse": 0.7795663976316107,
+        "bias": -0.030271263860006444,
+        "mae_skill_percent": 11.410119386128436
+      },
+      "zscore_train": {
+        "mae": 0.5993636320440572,
+        "rmse": 0.8543039491735916,
+        "bias": -0.03317339015720384,
+        "mae_skill_percent": 11.410119386128422
+      },
+      "log1p_of_kW": {
+        "mae": 0.26634387660929476,
+        "rmse": 0.33880317144172317,
+        "bias": 0.0345145468173573,
+        "mae_skill_percent": 4.579752667505258
+      }
+    },
+    "R1": {
+      "raw_kW": {
+        "mae": 0.5567341559289617,
+        "rmse": 0.7835610392911021,
+        "bias": 0.005869366496043932,
+        "mae_skill_percent": 9.821937902910276
+      },
+      "zscore_train": {
+        "mae": 0.6101086315353162,
+        "rmse": 0.8586815597986838,
+        "bias": 0.006432066584643899,
+        "mae_skill_percent": 9.821937902910266
+      },
+      "log1p_of_kW": {
+        "mae": 0.2718021503682413,
+        "rmse": 0.3467694464311056,
+        "bias": 0.04998144538364153,
+        "mae_skill_percent": 2.6242737628741666
+      }
+    },
+    "R2": {
+      "raw_kW": {
+        "mae": 0.5526603398131119,
+        "rmse": 0.7806539659167315,
+        "bias": 0.02153578602444389,
+        "mae_skill_percent": 10.481801930929613
+      },
+      "zscore_train": {
+        "mae": 0.6056442559458207,
+        "rmse": 0.8554957833570526,
+        "bias": 0.023600436223437646,
+        "mae_skill_percent": 10.481801930929613
+      },
+      "log1p_of_kW": {
+        "mae": 0.26877911488211587,
+        "rmse": 0.34507394891573356,
+        "bias": 0.054731501928800774,
+        "mae_skill_percent": 3.7073052087374365
+      }
+    }
+  },
+  "training_diagnostics": {
+    "R0_s1": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 3,
+          "budget_reached": false,
+          "epochs": 6,
+          "improvement_since_best": 0.051329612731933594,
+          "stopped_by": "EARLY_STOPPING",
+          "updates_used_of_ceiling": [
+            3762,
+            4000
+          ],
+          "validation_slope_last_third": 0.02467966079711914,
+          "validation_slope_last_two": 0.007476925849914551,
+          "verdict": "STOPPED_ON_VALIDATION"
+        },
+        "curve": {
+          "train": [
+            0.8787745833396912,
+            0.7375243902206421,
+            0.7120715379714966,
+            0.693044126033783,
+            0.6606433391571045,
+            0.6272920370101929
+          ],
+          "validation": [
+            0.765623152256012,
+            0.7270731925964355,
+            0.7179271578788757,
+            0.7445771098136902,
+            0.7617798447608948,
+            0.7692567706108093
+          ]
+        },
+        "epochs": 6,
+        "fit_seconds": 391.16,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 3,
+        "restored_validation_loss": 0.7179271578788757,
+        "steps_per_epoch": 627,
+        "stop_reason": "EARLY_STOPPING",
+        "updates": 3762
+      },
+      "parameters": {
+        "frozen": 0,
+        "total": 8127,
+        "trainable": 8127
+      }
+    },
+    "R0_s2": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 5,
+          "budget_reached": true,
+          "epochs": 7,
+          "improvement_since_best": 0.08042818307876587,
+          "stopped_by": "UPDATE_BUDGET",
+          "updates_used_of_ceiling": [
+            4000,
+            4000
+          ],
+          "validation_slope_last_third": 0.05945032835006714,
+          "validation_slope_last_two": 0.03653973340988159,
+          "verdict": "CENSORED_BY_BUDGET"
+        },
+        "curve": {
+          "train": [
+            0.9208920001983643,
+            0.7421742677688599,
+            0.7024160027503967,
+            0.6812084317207336,
+            0.6501762866973877,
+            0.6354519128799438,
+            0.612377941608429
+          ],
+          "validation": [
+            0.7626002430915833,
+            0.7541024088859558,
+            0.7667643427848816,
+            0.7655408978462219,
+            0.7445630431175232,
+            0.7884514927864075,
+            0.8249912261962891
+          ]
+        },
+        "epochs": 7,
+        "fit_seconds": 351.537,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 5,
+        "restored_validation_loss": 0.7445630431175232,
+        "steps_per_epoch": 627,
+        "stop_reason": "UPDATE_BUDGET",
+        "updates": 4000
+      },
+      "parameters": {
+        "frozen": 0,
+        "total": 8127,
+        "trainable": 8127
+      }
+    },
+    "R0_s3": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 1,
+          "budget_reached": false,
+          "epochs": 4,
+          "improvement_since_best": 0.05382436513900757,
+          "stopped_by": "EARLY_STOPPING",
+          "updates_used_of_ceiling": [
+            2508,
+            4000
+          ],
+          "validation_slope_last_third": 0.04105132818222046,
+          "validation_slope_last_two": 0.03845924139022827,
+          "verdict": "STOPPED_ON_VALIDATION"
+        },
+        "curve": {
+          "train": [
+            0.8633435964584351,
+            0.7408432960510254,
+            0.7121220231056213,
+            0.6808407306671143
+          ],
+          "validation": [
+            0.7271406054496765,
+            0.7399136424064636,
+            0.7425057291984558,
+            0.7809649705886841
+          ]
+        },
+        "epochs": 4,
+        "fit_seconds": 209.488,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 1,
+        "restored_validation_loss": 0.7271406054496765,
+        "steps_per_epoch": 627,
+        "stop_reason": "EARLY_STOPPING",
+        "updates": 2508
+      },
+      "parameters": {
+        "frozen": 0,
+        "total": 8127,
+        "trainable": 8127
+      }
+    },
+    "R1_s1": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 3,
+          "budget_reached": false,
+          "epochs": 6,
+          "improvement_since_best": 0.0286715030670166,
+          "stopped_by": "EARLY_STOPPING",
+          "updates_used_of_ceiling": [
+            3762,
+            4000
+          ],
+          "validation_slope_last_third": -0.01577812433242798,
+          "validation_slope_last_two": 0.01126718521118164,
+          "verdict": "STOPPED_ON_VALIDATION"
+        },
+        "curve": {
+          "train": [
+            0.9612694382667542,
+            0.734335720539093,
+            0.7109949588775635,
+            0.6890204548835754,
+            0.6617333889007568,
+            0.6383484601974487
+          ],
+          "validation": [
+            0.7590721249580383,
+            0.7306540012359619,
+            0.7205308675765991,
+            0.7649804949760437,
+            0.7379351854324341,
+            0.7492023706436157
+          ]
+        },
+        "epochs": 6,
+        "fit_seconds": 144.71,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 3,
+        "restored_validation_loss": 0.7205308675765991,
+        "steps_per_epoch": 627,
+        "stop_reason": "EARLY_STOPPING",
+        "updates": 3762
+      },
+      "parameters": {
+        "frozen": 2896,
+        "total": 8127,
+        "trainable": 5231
+      }
+    },
+    "R1_s2": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 5,
+          "budget_reached": true,
+          "epochs": 7,
+          "improvement_since_best": 0.05370098352432251,
+          "stopped_by": "UPDATE_BUDGET",
+          "updates_used_of_ceiling": [
+            4000,
+            4000
+          ],
+          "validation_slope_last_third": 0.03736758232116699,
+          "validation_slope_last_two": 0.05229997634887695,
+          "verdict": "CENSORED_BY_BUDGET"
+        },
+        "curve": {
+          "train": [
+            1.6853258609771729,
+            0.7545793652534485,
+            0.7204049229621887,
+            0.7014076709747314,
+            0.6847375631332397,
+            0.6699657440185547,
+            0.6642643809318542
+          ],
+          "validation": [
+            0.7770071625709534,
+            0.7450730204582214,
+            0.7519295811653137,
+            0.7531261444091797,
+            0.7367927432060242,
+            0.7381937503814697,
+            0.7904937267303467
+          ]
+        },
+        "epochs": 7,
+        "fit_seconds": 160.48,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 5,
+        "restored_validation_loss": 0.7367927432060242,
+        "steps_per_epoch": 627,
+        "stop_reason": "UPDATE_BUDGET",
+        "updates": 4000
+      },
+      "parameters": {
+        "frozen": 2896,
+        "total": 8127,
+        "trainable": 5231
+      }
+    },
+    "R1_s3": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 4,
+          "budget_reached": true,
+          "epochs": 7,
+          "improvement_since_best": 0.034322261810302734,
+          "stopped_by": "UPDATE_BUDGET",
+          "updates_used_of_ceiling": [
+            4000,
+            4000
+          ],
+          "validation_slope_last_third": 0.034322261810302734,
+          "validation_slope_last_two": 0.0005377531051635742,
+          "verdict": "CENSORED_BY_BUDGET"
+        },
+        "curve": {
+          "train": [
+            1.3178237676620483,
+            0.7456992268562317,
+            0.7131984829902649,
+            0.6839651465415955,
+            0.6675147414207458,
+            0.64345383644104,
+            0.6094945073127747
+          ],
+          "validation": [
+            0.769269585609436,
+            0.7783003449440002,
+            0.8327457308769226,
+            0.7548788189888,
+            0.7786912322044373,
+            0.7886633276939392,
+            0.7892010807991028
+          ]
+        },
+        "epochs": 7,
+        "fit_seconds": 165.31,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 4,
+        "restored_validation_loss": 0.7548788189888,
+        "steps_per_epoch": 627,
+        "stop_reason": "UPDATE_BUDGET",
+        "updates": 4000
+      },
+      "parameters": {
+        "frozen": 2896,
+        "total": 8127,
+        "trainable": 5231
+      }
+    },
+    "R2_s1": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 2,
+          "budget_reached": false,
+          "epochs": 5,
+          "improvement_since_best": 0.03684043884277344,
+          "stopped_by": "EARLY_STOPPING",
+          "updates_used_of_ceiling": [
+            3135,
+            4000
+          ],
+          "validation_slope_last_third": 0.01755470037460327,
+          "validation_slope_last_two": -0.015192925930023193,
+          "verdict": "STOPPED_ON_VALIDATION"
+        },
+        "curve": {
+          "train": [
+            0.9545350670814514,
+            0.7351281642913818,
+            0.7123671174049377,
+            0.6904680132865906,
+            0.6562371850013733
+          ],
+          "validation": [
+            0.7673321962356567,
+            0.7293906211853027,
+            0.7486763596534729,
+            0.7814239859580994,
+            0.7662310600280762
+          ]
+        },
+        "epochs": 5,
+        "fit_seconds": 257.303,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 2,
+        "restored_validation_loss": 0.7293906211853027,
+        "steps_per_epoch": 627,
+        "stop_reason": "EARLY_STOPPING",
+        "updates": 3135
+      },
+      "parameters": {
+        "frozen": 0,
+        "total": 8127,
+        "trainable": 8127
+      }
+    },
+    "R2_s2": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 6,
+          "budget_reached": true,
+          "epochs": 7,
+          "improvement_since_best": 0.050515174865722656,
+          "stopped_by": "UPDATE_BUDGET",
+          "updates_used_of_ceiling": [
+            4000,
+            4000
+          ],
+          "validation_slope_last_third": 0.03217262029647827,
+          "validation_slope_last_two": 0.050515174865722656,
+          "verdict": "CENSORED_BY_BUDGET"
+        },
+        "curve": {
+          "train": [
+            1.4425071477890015,
+            0.7457753419876099,
+            0.7177512049674988,
+            0.7016104459762573,
+            0.6847977638244629,
+            0.6646016836166382,
+            0.6591874361038208
+          ],
+          "validation": [
+            0.7628118991851807,
+            0.7626067399978638,
+            0.772236168384552,
+            0.7574562430381775,
+            0.7446594834327698,
+            0.7391136884689331,
+            0.7896288633346558
+          ]
+        },
+        "epochs": 7,
+        "fit_seconds": 326.868,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 6,
+        "restored_validation_loss": 0.7391136884689331,
+        "steps_per_epoch": 627,
+        "stop_reason": "UPDATE_BUDGET",
+        "updates": 4000
+      },
+      "parameters": {
+        "frozen": 0,
+        "total": 8127,
+        "trainable": 8127
+      }
+    },
+    "R2_s3": {
+      "training": {
+        "censoring": {
+          "adequacy_criterion": "a fit is adequate for comparison when it stopped by EARLY_STOPPING with a non-improving slope over the last third; a run that stopped at the update ceiling is CENSORED and its comparison is a lower bound on what the arm could reach",
+          "best_epoch": 1,
+          "budget_reached": false,
+          "epochs": 4,
+          "improvement_since_best": 0.05154454708099365,
+          "stopped_by": "EARLY_STOPPING",
+          "updates_used_of_ceiling": [
+            2508,
+            4000
+          ],
+          "validation_slope_last_third": 0.01849353313446045,
+          "validation_slope_last_two": 0.030176520347595215,
+          "verdict": "STOPPED_ON_VALIDATION"
+        },
+        "curve": {
+          "train": [
+            1.1748110055923462,
+            0.7462269067764282,
+            0.7184960842132568,
+            0.6970303058624268
+          ],
+          "validation": [
+            0.7271423935890198,
+            0.760193407535553,
+            0.7485104203224182,
+            0.7786869406700134
+          ]
+        },
+        "epochs": 4,
+        "fit_seconds": 210.373,
+        "max_epochs_allowed": 7,
+        "max_updates": 4000,
+        "restore_verified": true,
+        "restored_checkpoint_epoch": 1,
+        "restored_validation_loss": 0.7271423935890198,
+        "steps_per_epoch": 627,
+        "stop_reason": "EARLY_STOPPING",
+        "updates": 2508
+      },
+      "parameters": {
+        "frozen": 0,
+        "total": 8127,
+        "trainable": 8127
+      }
+    }
+  },
+  "source_sha256": {
+    "DATA.npz": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+    "attempts/R0_s1/arrays.npz": "f4741613e027ab97b8f665384a80a926003b77300e590e0e9605e3adf217aab3",
+    "attempts/R0_s1/cell.json": "48e8189925462c4e0053b8995289e98951248d360db9ae7688bd26084f5b14be",
+    "attempts/R0_s2/arrays.npz": "1b4714c89672fea10e10f1abf492c9208de83fea799a96475beb33c5efbbafb7",
+    "attempts/R0_s2/cell.json": "24ebba7570aaddf5b02c7b886331f63750d68c6172c198826a2e609869c9eac3",
+    "attempts/R0_s3/arrays.npz": "a3788af72ef50c309cc37a06477e0624a17902f4619831583b53e505df05a729",
+    "attempts/R0_s3/cell.json": "5bd36bc63b276b663e7e98d05c055acd7517c53b381d2d3281d6d72e4c089024",
+    "attempts/R1_s1/arrays.npz": "18d889f86abbd9f87d3ecdb0f697f74e89826a3bf4f0ebc12b20f1eb913307a2",
+    "attempts/R1_s1/cell.json": "8b387a40fc0be1fc3ae4026df483e40da1a6fedbcc62e1d6b83e4bcff882a5c8",
+    "attempts/R1_s2/arrays.npz": "68ed592bb5606078b3ea53573ff099de981b1b0936e00d84b1b5dfd41cd36a39",
+    "attempts/R1_s2/cell.json": "a6a750980bf4d852c2e08aa0968e6c10ba1d03fb5521e27551d8b7a400dd79f3",
+    "attempts/R1_s3/arrays.npz": "15bf66c733f56ccb84a79bbfe32c29f9d8a53ab2686ef1e6b3b86f4d94676064",
+    "attempts/R1_s3/cell.json": "553c001a4fb08a31d0652001084bac41215ad3e7d326e5fea0d1393bdc1e98cb",
+    "attempts/R2_s1/arrays.npz": "2bf0520639bd05a77bbefc374551a2b188e78083cbcdb7c240453f7b3a063f18",
+    "attempts/R2_s1/cell.json": "092d12ab11f8bcd7187348412fafb73ad38686db4f8b4d0687ba6001449e9750",
+    "attempts/R2_s2/arrays.npz": "da3bd34a1607b1a7441379193d34ef25950e5d35233820ca880a554b54f20ed9",
+    "attempts/R2_s2/cell.json": "dd8622582ee45d6c381c2317f7b1561075af9d37b79df87b302b30d451040be7",
+    "attempts/R2_s3/arrays.npz": "07b7291cd1af3adadc06f64e48e6c8a5f616bc95bd51d62415f36c0bb442637b",
+    "attempts/R2_s3/cell.json": "f7cbbc0509f491a83d71cfbe346cf24dc49183e56a8c213dce9ff17fc23520d9",
+    "attempts/controls/arrays.npz": "0370e23732bd57fd994e5491f073f336283095571f986aadbf5992b71dc21f00",
+    "attempts/controls/cell.json": "9ef1fea9fa16a1fc7106560cf01b809079a7d5635c9d66a5a0fd7812710e399f"
+  },
+  "sources_unchanged": true,
+  "legacy_summary": {
+    "file": "phase_1_tcn_neat_1d_results.csv",
+    "sha256": "0794c85cdfd4bfba83805a2b4b26ea0870474f6e3b8a9f269fc5132e83179f2a",
+    "pairs": [
+      {
+        "horizon_label": "9",
+        "model_mae": 0.003196,
+        "naive_mae": 0.003204,
+        "mae_skill_percent": 0.24968789013731785
+      },
+      {
+        "horizon_label": "12",
+        "model_mae": 0.003724,
+        "naive_mae": 0.003804,
+        "mae_skill_percent": 2.103049421661418
+      },
+      {
+        "horizon_label": "15",
+        "model_mae": 0.004387,
+        "naive_mae": 0.004336,
+        "mae_skill_percent": -1.1761992619926387
+      },
+      {
+        "horizon_label": "18",
+        "model_mae": 0.004768,
+        "naive_mae": 0.004843,
+        "mae_skill_percent": 1.5486268841627182
+      },
+      {
+        "horizon_label": "21",
+        "model_mae": 0.005118,
+        "naive_mae": 0.005279,
+        "mae_skill_percent": 3.049820041674556
+      },
+      {
+        "horizon_label": "24",
+        "model_mae": 0.005445,
+        "naive_mae": 0.005672,
+        "mae_skill_percent": 4.002115655853311
+      }
+    ],
+    "scope": "PUBLISHED_ROUNDED_SUMMARIES_ONLY; scale/row identity and producing configuration not independently reconstructed"
+  }
+}
