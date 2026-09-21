@@ -1,0 +1,20 @@
+{
+ "schema": "df_e1_block_profile.v1",
+ "arm": "long_window_own_depth",
+ "window": 1440,
+ "channels": 7,
+ "batch": 64,
+ "batches": 5,
+ "per_batch": {
+  "gather_seconds_per_batch": 0.0016042006000077436,
+  "forward_backward_seconds_per_batch": 2.65897428720001,
+  "predict_seconds_per_batch": 4.584560271999999,
+  "build_seconds": 6.423058687
+ },
+ "share_of_a_train_update": {
+  "gather": 0.0006029518044153724,
+  "forward_backward": 0.9993970481955846
+ },
+ "parameters": 12047,
+ "reading": "a measurement of where one update's CPU goes; it prescribes no optimization"
+}

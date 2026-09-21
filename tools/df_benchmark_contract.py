@@ -30,13 +30,15 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 import math
 from dataclasses import dataclass, field, asdict, fields, replace
 from pathlib import Path
 
+HERE = Path(__file__).resolve().parent
 SCHEMA = "benchmark_contract.v2"
 MODES = ("REPRODUCTION", "MATCHED_DOMAIN_COMPARISON", "NOT_COMPARABLE")
-COMPARATOR_STATES = ("PLANNED_REFERENCE", "VERIFIED_COMPARATOR", "NONE")
+COMPARATOR_STATES = ("PLANNED_REFERENCE", "LOCALLY_CHECKED_REFERENCE", "VERIFIED_COMPARATOR", "NONE")
 TRANSFORMS = ("none", "zscore_train", "log1p", "minmax_train", "swt_whole_series", "unknown")
 SCALES = ("native", "z_train", "log1p", "minmax", "percent", "unknown")
 # a difference in any of these, outside a declared contrast, makes two results non-comparable
@@ -142,29 +144,68 @@ class BenchmarkContract:
 
 # --- comparability, decided from fields ---------------------------------------------------------------
 
-def reference_evidence(ours: BenchmarkContract, reference_run: Path | None) -> dict:
-    """What a MATCHED lane needs: a closed reference run whose design carries THIS contract digest."""
+def reference_evidence(ours: BenchmarkContract, reference_run: Path | None, *, reference_arm: str | None = None,
+                       warehouse=None, seeds: tuple | None = None) -> dict:
+    """What a MATCHED lane needs (RP74/A2): a CLOSED reference run whose sealed design carries THIS contract digest,
+    whose reference ARM is named, whose forecast population is COMPLETE (every declared seed), and whose every
+    forecast is anchored by the accepted artifact chain and scored independently (tools/df_closure_table.py). A
+    contract hash plus any COMPLETED unit is preparation, not a comparator; without a warehouse read the state is
+    LOCALLY_CHECKED_REFERENCE, never VERIFIED_COMPARATOR."""
     if reference_run is None:
         return {"state": "PLANNED_REFERENCE", "why": "no reference run root was given"}
     root = Path(reference_run)
-    design = root/"DESIGN.json"
-    receipts = root/"TERMINAL_RECEIPTS.json"
-    if not design.is_file() or not receipts.is_file():
+    design_path, receipts_path = root/"DESIGN.json", root/"TERMINAL_RECEIPTS.json"
+    if not design_path.is_file() or not receipts_path.is_file():
         return {"state": "PLANNED_REFERENCE", "why": f"{root} holds no sealed design with accepted terminals"}
-    d = json.loads(design.read_text())
-    block = d.get("benchmark_contract") or {}
+    design = json.loads(design_path.read_text())
+    block = design.get("benchmark_contract") or {}
     if block.get("contract_sha256") != ours.sha256():
-        return {"state": "PLANNED_REFERENCE",
-                "why": f"the reference run's contract {str(block.get('contract_sha256'))[:12]} is not ours {ours.sha256()[:12]}"}
-    units = json.loads(receipts.read_text()).get("units") or {}
-    ref_units = [u for u, r in units.items() if r.get("status") == "COMPLETED"]
-    if not ref_units:
-        return {"state": "PLANNED_REFERENCE", "why": "the reference run has no COMPLETED accepted terminal"}
-    return {"state": "VERIFIED_COMPARATOR", "run": str(root), "design_sha256": d.get("design_sha256"),
-            "units": sorted(ref_units)}
+        return {"state": "PLANNED_REFERENCE", "why": f"the reference run's contract {str(block.get('contract_sha256'))[:12]} is not ours {ours.sha256()[:12]}"}
+    if not isinstance(design.get("design_sha256"), str) or len(design["design_sha256"]) != 64:
+        return {"state": "PLANNED_REFERENCE", "why": "the reference run has no sealed design digest"}
+    cells = [c for c in design.get("cells") or [] if isinstance(c, dict) and c.get("arm")]
+    arms = sorted({c["arm"] for c in cells})
+    if reference_arm is None or reference_arm not in arms:
+        return {"state": "PLANNED_REFERENCE", "why": f"the reference ARM must be named and registered in the design; registered arms: {arms}"}
+    units = [c["cell_id"] for c in cells if c["arm"] == reference_arm]
+    want_seeds = sorted(set(seeds) if seeds else {c["seed"] for c in cells if c["arm"] == reference_arm})
+    have_seeds = sorted({c["seed"] for c in cells if c["arm"] == reference_arm})
+    receipts = (json.loads(receipts_path.read_text()) or {}).get("units") or {}
+    missing = [u for u in units if u not in receipts]
+    if missing or have_seeds != want_seeds:
+        return {"state": "PLANNED_REFERENCE", "why": f"the reference population is incomplete: units without accepted terminal {missing}; "
+                                                  f"seeds declared {want_seeds}, present {have_seeds}"}
+    T = _module("df_closure_table")
+    rows = [r for r in T.rows_from_run(root, label=root.name, registry=registry(), warehouse=warehouse) if r["unit"] in units]
+    n_expected = (ours.source or {}).get("evaluation_origins")
+    bad = [f"{r['unit']}: {r['problems'] or 'custody ' + r['custody']['class']}" for r in rows
+           if r["problems"] or r["model_error"] is None or (n_expected is not None and r["n_evaluated"] != n_expected)]
+    if len(rows) != len(units) or bad:
+        return {"state": "PLANNED_REFERENCE", "why": f"the reference forecasts do not verify: {bad or 'rows missing'}", "units": units}
+    if warehouse is None or any(r["custody"]["class"] != "ACCEPTED_ARTIFACT_CHAIN" for r in rows):
+        return {"state": "LOCALLY_CHECKED_REFERENCE", "why": "arrays, labels, population and metrics check locally; the accepted artifact "
+                                                          "chain was not read from the warehouse, so this is not a verified comparator yet",
+                "run": str(root), "design_sha256": design["design_sha256"], "units": units,
+                "derived_mae_z": {r["unit"]: r["model_error_z"] for r in rows}}
+    return {"state": "VERIFIED_COMPARATOR", "run": str(root), "design_sha256": design["design_sha256"], "reference_arm": reference_arm,
+            "units": units, "seeds": have_seeds, "n_evaluated": rows[0]["n_evaluated"],
+            "derived_mae_z": {r["unit"]: r["model_error_z"] for r in rows},
+            "custody": "ACCEPTED_ARTIFACT_CHAIN for every forecast; metrics derived independently from the arrays"}
 
 
-def decide(ours: BenchmarkContract, theirs: BenchmarkContract, *, reference_run: Path | None = None) -> dict:
+def _module(name: str):
+    import importlib.util
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(name, HERE / f"{name}.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def decide(ours: BenchmarkContract, theirs: BenchmarkContract, *, reference_run: Path | None = None,
+           reference_arm: str | None = None, warehouse=None) -> dict:
     """Comparability from the FIELDS, before any number is read. A boolean never opens a lane."""
     for c, who in ((ours, "ours"), (theirs, "theirs")):
         bad = c.validate()
@@ -185,7 +226,7 @@ def decide(ours: BenchmarkContract, theirs: BenchmarkContract, *, reference_run:
     if ours.varying_factors and theirs.varying_factors and ours.estimand != theirs.estimand:
         declared = set()
     differ = [k for k in IDENTITY_FIELDS if ours.identity()[k] != theirs.identity()[k] and k not in declared]
-    evidence = reference_evidence(ours, reference_run)
+    evidence = reference_evidence(ours, reference_run, reference_arm=reference_arm, warehouse=warehouse)
     if not differ:
         mode, why = "REPRODUCTION", ("every identity field matches" + (f" (contrast declared on {sorted(declared)})" if declared else "")
                                      + "; the paper's metric is reported first")

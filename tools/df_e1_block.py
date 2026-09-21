@@ -151,7 +151,7 @@ def arm_spec(arm: str) -> dict:
 
 
 def seal(block: str, *, source_run: Path = SOURCE_RUN, seeds=SEEDS, reuse: dict | None = None, contract=None,
-         limits: dict | None = None) -> dict:
+         limits: dict | None = None, recipe: dict | None = None, tier: str | None = None) -> dict:
     """The block, sealed by content: arms, seeds, recipe, rows, scaler identity and the benchmark contract.
     `contract` replaces the household registry contract ONLY for tests on synthetic panels (recorded as such)."""
     if block not in BLOCKS:
@@ -190,7 +190,8 @@ def seal(block: str, *, source_run: Path = SOURCE_RUN, seeds=SEEDS, reuse: dict 
         "rows": {"lo": lo - max_days*DAY + 28*DAY - pad, "pad_rows": pad, "widest_train_days": max_days, "train_end": train_end, "hi": hi,
                  "reading": "the panel is read from lo (pad + the widest volume tier before the DEV train span) to hi; origins are "
                             "enumerated inside [train span, validation week] from row identities; padded rows are support only"},
-        "arms": arms, "seeds": list(seeds), "recipe": RECIPE, "pilot": PILOT, "limits": limits or LIMITS,
+        "arms": arms, "seeds": list(seeds), "recipe": recipe or RECIPE, "pilot": PILOT, "limits": limits or LIMITS,
+        "tier": tier or "RECIPE v1 (patience 3 events)",
         "contract_source": "REGISTRY household_W60_h60" if contract is None else "DECLARED_OVERRIDE (synthetic test panel)",
         "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels "
                        "mean 0 / sd 1; the lag channel takes the target's scaler; one evaluation sigma = the target's train sd",
@@ -583,7 +584,7 @@ def fit_by_updates(model, train, val, *, max_updates: int, validate_every: int, 
     model.compile(optimizer=opt, loss=loss)
     updates, i, events = 0, 0, []
     best, best_weights, best_event = math.inf, model.get_weights(), 0
-    running, stop = [], None
+    running, patience_expired = [], False
     t_fit, t_val = time.process_time(), 0.0
     while updates < max_updates:
         x, y = train[i]
@@ -603,29 +604,36 @@ def fit_by_updates(model, train, val, *, max_updates: int, validate_every: int, 
             if v < best - min_delta:
                 best, best_weights, best_event = v, model.get_weights(), len(events)
             elif len(events)-best_event >= patience:
-                stop = "EARLY_STOPPING"
+                patience_expired = True
                 break
     iterations = int(opt.iterations.numpy())
-    if stop is None:
-        stop = "UPDATE_BUDGET"
+    budget_reached = updates >= max_updates                      # true whatever branch broke the loop (RP77/A5)
+    triggers = {"budget_reached": bool(budget_reached), "patience_expired": bool(patience_expired)}
+    stop = "+".join([n for n, on in (("UPDATE_BUDGET", budget_reached), ("EARLY_STOPPING", patience_expired)) if on]) or "LOOP_ENDED"
+    t_r = time.process_time()
     model.set_weights(best_weights)
     restored = evaluate_mae(model, val)
+    t_restore = time.process_time()-t_r
+    fit_cpu = time.process_time()-t_fit
     return {"updates": updates, "optimizer_iterations": iterations, "updates_are_optimizer_iterations": iterations == updates,
             "validate_every_updates": validate_every, "validation_events": len(events), "events": events,
             "best_event": best_event, "best_update": events[best_event-1]["update"] if best_event else None,
             "best_val_mae_scaled": best, "restored_val_mae_scaled": restored,
             "restore_verified": bool(abs(restored-best) <= 1e-6*max(1.0, abs(best))),
-            "stop_reason": stop, "patience_events": patience, "min_delta": min_delta,
-            "censoring": {"verdict": "CENSORED_BY_BUDGET" if stop == "UPDATE_BUDGET" else "STOPPED_ON_VALIDATION",
-                          "rule": "reaching the update ceiling is censoring wherever the best checkpoint fell; what more budget "
-                                  "would reach is unknown in either direction"},
-            "fit_cpu_seconds": time.process_time()-t_fit, "validation_cpu_seconds": t_val}
+            "stop_reason": stop, "triggers": triggers, "patience_events": patience, "min_delta": min_delta,
+            "censoring": {"verdict": "CENSORED_BY_BUDGET" if budget_reached else "STOPPED_ON_VALIDATION",
+                          "rule": "reaching the update ceiling is censoring wherever the best checkpoint fell and whether or not "
+                                  "patience expired on the same update; early stopping never claims convergence"},
+            "cpu": {"train_update_seconds": fit_cpu - t_val - t_restore, "validation_seconds": t_val, "restore_seconds": t_restore,
+                    "loop_total_seconds": fit_cpu},
+            "fit_cpu_seconds": fit_cpu, "validation_cpu_seconds": t_val}
 
 
 # --- one cell (child process) ------------------------------------------------------------------------------------
 
 def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, pilot: bool) -> dict:
     cpu0, wall0 = time.process_time(), time.monotonic()
+    setup0 = time.process_time()
     spec = next(a for a in design["arms"] if a["arm"] == cell["arm"])
     R = design["recipe"]
     W, h, j = int(spec["window"]), int(data["horizon"][0]), int(data["target_channel"][0])
@@ -649,8 +657,10 @@ def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, pilot: bool
     va = Batches(X, Y, eval_o, W, h, j, int(R["batch"]), mean=m, sd=sd, shuffle=False, seed=seed)
     model = build_model(spec, assignment, p, j, seed)
     initial = weight_hash(model)
+    setup_cpu = time.process_time()-setup0
     training = fit_by_updates(model, tr, va, max_updates=max_updates, validate_every=every, patience=patience,
                               lr=float(R["learning_rate"]), seed=seed, loss=R["loss"], min_delta=float(R["min_delta"]))
+    replay0 = time.process_time()
     pred = predict(model, va).astype(np.float64)*sd + m
     y, naive = Y[eval_o+h], Y[eval_o]
     H = _module("df_e1_huber")
@@ -673,8 +683,12 @@ def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, pilot: bool
               "final_weights_sha256": weight_hash(model), "training": training, "scores": score,
               "target_mean": m, "target_sd": sd, "reload_max_error": float(np.max(np.abs(pred-reload_pred))),
               "cost": {"cpu_seconds": time.process_time()-cpu0, "wall_seconds": time.monotonic()-wall0,
-                       "seconds_per_update": training["fit_cpu_seconds"]/max(1, training["updates"]),
+                       "setup_cpu_seconds": setup_cpu, "train_update_cpu_seconds": training["cpu"]["train_update_seconds"],
+                       "validation_cpu_seconds": training["cpu"]["validation_seconds"], "restore_cpu_seconds": training["cpu"]["restore_seconds"],
+                       "final_predict_and_replay_cpu_seconds": time.process_time()-replay0,
+                       "seconds_per_update": training["cpu"]["train_update_seconds"]/max(1, training["updates"]),
                        "seconds_per_validation_event": training["validation_cpu_seconds"]/max(1, training["validation_events"]),
+                       "accounting": "seconds_per_update = TRAIN-UPDATE CPU only (validation, restore, setup and replay apart; RP77/A6)",
                        "peak_rss_bytes": int(ru.ru_maxrss)*1024, "host": os.uname().nodename},
               "arrays_sha256": sha_file(out_dir/"arrays.npz"), "weights_file_sha256": sha_file(out_dir/"weights.weights.h5")}
     write(out_dir/"cell.json", record)
@@ -788,27 +802,115 @@ def spent_cpu(root: Path) -> float:
     return float(sum(json.loads(p.read_text())["cost"]["cpu_seconds"] for p in (Path(root)/"attempts").glob("*/cell.json")))
 
 
+def pilot_costs(rec: dict) -> dict:
+    """Per-arm unit costs from a pilot record, validation counted ONCE (RP77/A6): the train-update rate is the loop CPU
+    minus validation and restore; old records without the split are re-derived from fit minus validation."""
+    tr, cost = rec["training"], rec["cost"]
+    cpu = tr.get("cpu") or {"train_update_seconds": tr["fit_cpu_seconds"]-tr["validation_cpu_seconds"],
+                            "validation_seconds": tr["validation_cpu_seconds"], "restore_seconds": 0.0}
+    return {"seconds_per_update": cpu["train_update_seconds"]/max(1, tr["updates"]),
+            "seconds_per_validation_event_pilot": tr["validation_cpu_seconds"]/max(1, tr["validation_events"]),
+            "restore_seconds_pilot": cpu.get("restore_seconds", 0.0), "setup_seconds_pilot": cost.get("setup_cpu_seconds", 0.0),
+            "pilot_validation_rows": rec["population"]["evaluation_origins"], "peak_rss_bytes": cost["peak_rss_bytes"],
+            "accounting": "train-update CPU / updates; validation per event; restore and setup once"}
+
+
 def projection(design: dict, pilots: list) -> dict:
-    """What the block would cost at the ceiling, from each arm's OWN pilot; the ceiling is never assumed reached early."""
+    """What the block would cost at the ceiling, from each arm's OWN pilot; validation counted once, restore and setup
+    once per cell; the ceiling is never assumed reached early."""
     R = design["recipe"]
     events = math.ceil(R["max_updates"]/R["validate_every_updates"])
-    per_arm = {}
-    for r in pilots:
-        rec = r["record"]
-        per_arm[rec["cell"]["arm"]] = {"seconds_per_update": rec["cost"]["seconds_per_update"],
-                                       "seconds_per_validation_event_pilot": rec["cost"]["seconds_per_validation_event"],
-                                       "pilot_validation_rows": rec["population"]["evaluation_origins"],
-                                       "peak_rss_bytes": rec["cost"]["peak_rss_bytes"]}
+    per_arm = {r["record"]["cell"]["arm"]: pilot_costs(r["record"]) for r in pilots}
     n_eval = design["source_run"]["evaluation_origins"]
     cells = {}
     for c in design["cells"]:
         pa = per_arm[c["arm"]]
         val_scale = n_eval/max(1, pa["pilot_validation_rows"])
-        cells[c["cell_id"]] = pa["seconds_per_update"]*R["max_updates"] + pa["seconds_per_validation_event_pilot"]*val_scale*events
+        cells[c["cell_id"]] = (pa["seconds_per_update"]*R["max_updates"] + pa["seconds_per_validation_event_pilot"]*val_scale*events
+                               + pa["restore_seconds_pilot"]*val_scale + pa["setup_seconds_pilot"])
     total = sum(cells.values())
     return {"per_arm": per_arm, "per_cell_at_ceiling_seconds": cells, "total_at_ceiling_seconds": total,
             "with_headroom_25_percent": total*1.25, "closure_reserve_seconds": LIMITS["closure_reserve_seconds"],
+            "accounting": "train-update rate x ceiling + validation events (scaled to the evaluation rows) + restore + setup, each once",
             "assumption": "every cell runs to the ceiling with every validation event; early stopping can only lower it"}
+
+
+def recost(root: Path) -> dict:
+    """Recalculate a retained pilot report with the corrected accounting; the old report is preserved."""
+    root = Path(root)
+    design = json.loads((root/"DESIGN.json").read_text())
+    old = json.loads((root/"REPORT.pilot.json").read_text())
+    pilots = [{"record": json.loads((root/"attempts"/c["cell_id"]/"cell.json").read_text())} for c in design["pilots"]
+              if (root/"attempts"/c["cell_id"]/"cell.json").is_file()]
+    proj = projection(design, pilots)
+    doc = {"schema": "df_e1_block_pilot_report.corrected.v1", "design_sha256": design["design_sha256"], "corrected_on": "2026-09-21 (RP77/A6)",
+           "old_total_at_ceiling_seconds": old["projection"]["total_at_ceiling_seconds"], "corrected_projection": proj,
+           "old_decision": old["decision"], "decision_unchanged": (proj["with_headroom_25_percent"] + LIMITS["closure_reserve_seconds"] <= LIMITS["campaign_cpu_seconds"]) == (old["decision"] == "EXECUTE"),
+           "reading": "arithmetic correction of a retained pilot, not a new measurement; validation was counted inside the update rate and again per event"}
+    (root/"REPORT.pilot.corrected.json").write_text(json.dumps(doc, indent=1, default=str))
+    return doc
+
+
+def scan_stops(root: Path) -> dict:
+    """Re-derive both stop triggers from every retained cell's saved events; corrections are written beside the records,
+    the records themselves are never rewritten and nothing is retrained (RP77/A5)."""
+    root = Path(root)
+    design = json.loads((root/"DESIGN.json").read_text())
+    out = {"schema": "df_e1_block_stop_corrections.v1", "design_sha256": design["design_sha256"], "units": {}, "corrected": []}
+    for c in design["pilots"] + design["cells"]:
+        p = root/"attempts"/c["cell_id"]/"cell.json"
+        if not p.is_file():
+            continue
+        r = json.loads(p.read_text())
+        tr = r["training"]
+        ceiling = int(c.get("max_updates", design["recipe"]["max_updates"]))
+        patience = int(tr.get("patience_events", 0))
+        events = tr.get("events") or []
+        best = int(tr.get("best_event") or 0)
+        budget = tr["updates"] >= ceiling
+        expired = bool(events) and (len(events)-best >= patience) and not (tr.get("stop_reason") == "UPDATE_BUDGET" and len(events)-best < patience)
+        verdict = "CENSORED_BY_BUDGET" if budget else "STOPPED_ON_VALIDATION"
+        entry = {"updates": tr["updates"], "ceiling": ceiling, "events": len(events), "best_event": best, "patience": patience,
+                 "recorded_stop_reason": tr.get("stop_reason"), "recorded_verdict": tr["censoring"]["verdict"],
+                 "derived_triggers": {"budget_reached": bool(budget), "patience_expired": bool(expired)}, "derived_verdict": verdict}
+        if verdict != tr["censoring"]["verdict"] or (budget and expired and "+" not in str(tr.get("stop_reason"))):
+            out["corrected"].append(c["cell_id"])
+            entry["correction"] = "both triggers apply; the recorded metadata named one"
+        out["units"][c["cell_id"]] = entry
+    (root/"STOP_CORRECTIONS.json").write_text(json.dumps(out, indent=1))
+    return out
+
+
+def profile(root: Path, arm: str, *, batches: int = 5, seed: int = 1) -> dict:
+    """Where the CPU goes for one arm on the prepared data: window gather, forward+backward, validation predict, build —
+    measured separately, so no bottleneck is asserted from a total (RP77/A6)."""
+    root = Path(root)
+    design = json.loads((root/"DESIGN.json").read_text())
+    validate(design, strict_code=False)
+    data = load_data(root, design)
+    spec = next(a for a in design["arms"] if a["arm"] == arm)
+    R = design["recipe"]
+    W, h, j = int(spec["window"]), int(data["horizon"][0]), int(data["target_channel"][0])
+    X, assignment = arm_inputs(data, spec, assignment=design["source_run"]["graph_assignment"])
+    m, sd = float(data["scaler_mean"][j]), float(data["scaler_sd"][j])
+    tr = Batches(X, data["Y"], data[f"train_origins__{arm}"], W, h, j, int(R["batch"]), mean=m, sd=sd, shuffle=True, seed=seed)
+    t0 = time.process_time(); model = build_model(spec, assignment, X.shape[1], j, seed); t_build = time.process_time()-t0
+    tf = _module("df_mod_e0")._tf()
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=float(R["learning_rate"])), loss=R["loss"])
+    xb, yb = tr[0]; model.train_on_batch(xb, yb)                                        # warm-up (graph tracing) excluded
+    t_gather = t_step = t_pred = 0.0
+    for i in range(1, batches+1):
+        t0 = time.process_time(); xb, yb = tr[i]; t_gather += time.process_time()-t0
+        t0 = time.process_time(); model.train_on_batch(xb, yb); t_step += time.process_time()-t0
+        t0 = time.process_time(); model.predict_on_batch(xb); t_pred += time.process_time()-t0
+    per = {"gather_seconds_per_batch": t_gather/batches, "forward_backward_seconds_per_batch": t_step/batches,
+           "predict_seconds_per_batch": t_pred/batches, "build_seconds": t_build}
+    total = per["gather_seconds_per_batch"]+per["forward_backward_seconds_per_batch"]
+    doc = {"schema": "df_e1_block_profile.v1", "arm": arm, "window": W, "channels": int(X.shape[1]), "batch": int(R["batch"]), "batches": batches,
+           "per_batch": per, "share_of_a_train_update": {"gather": per["gather_seconds_per_batch"]/total, "forward_backward": per["forward_backward_seconds_per_batch"]/total},
+           "parameters": n_params(model), "reading": "a measurement of where one update's CPU goes; it prescribes no optimization"}
+    (root/f"PROFILE_{arm}.json").write_text(json.dumps(doc, indent=1))
+    return doc
 
 
 def cmd_prepare(a):
@@ -978,7 +1080,9 @@ def close(a) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "pilot", "execute", "child", "close"])
+    ap.add_argument("command", choices=["seal", "prepare", "pilot", "execute", "child", "close", "recost", "scan", "profile"])
+    ap.add_argument("--arm")
+    ap.add_argument("--batches", type=int, default=5)
     ap.add_argument("--block")
     ap.add_argument("--out", type=Path)
     ap.add_argument("--source-run", type=Path, default=SOURCE_RUN)
@@ -1001,6 +1105,12 @@ def main(argv=None) -> int:
     if a.command == "child":
         child(a.root, a.unit)
         return 0
+    if a.command == "recost":
+        print(json.dumps({k: v for k, v in recost(a.root).items() if k != "corrected_projection"} | {"corrected_total": recost(a.root)["corrected_projection"]["total_at_ceiling_seconds"]}, indent=1)); return 0
+    if a.command == "scan":
+        out = scan_stops(a.root); print(json.dumps({"units": len(out["units"]), "corrected": out["corrected"]})); return 0
+    if a.command == "profile":
+        print(json.dumps(profile(a.root, a.arm, batches=a.batches), indent=1)); return 0
     if a.command == "prepare":
         cmd_prepare(a)
         return 0

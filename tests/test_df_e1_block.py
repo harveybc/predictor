@@ -324,7 +324,8 @@ def test_fit_by_updates_counts_the_optimizers_own_steps_validates_on_cadence_and
     r = K.fit_by_updates(model, tr, va, max_updates=30, validate_every=10, patience=3, lr=0.01, seed=1)
     assert r["updates"] == 30 == r["optimizer_iterations"] and r["updates_are_optimizer_iterations"]
     assert [e["update"] for e in r["events"]] == [10, 20, 30] and r["validation_events"] == 3
-    assert r["stop_reason"] == "UPDATE_BUDGET" and r["censoring"]["verdict"] == "CENSORED_BY_BUDGET"
+    assert r["stop_reason"] == "UPDATE_BUDGET" and r["censoring"]["verdict"] == "CENSORED_BY_BUDGET" and r["triggers"] == {"budget_reached": True, "patience_expired": False}
+    assert r["cpu"]["train_update_seconds"] > 0 and r["cpu"]["validation_seconds"] >= 0 and r["cpu"]["restore_seconds"] >= 0
     assert r["restore_verified"] and r["best_val_mae_scaled"] == min(e["val_mae_scaled"] for e in r["events"])
     # a ceiling reached with the best checkpoint EARLY is still censored
     model2 = tf.keras.Model(inp, out)
@@ -334,6 +335,11 @@ def test_fit_by_updates_counts_the_optimizers_own_steps_validates_on_cadence_and
     model3 = tf.keras.Model(inp, out)
     r3 = K.fit_by_updates(model3, tr, va, max_updates=1000, validate_every=10, patience=2, lr=0.0, seed=1)
     assert r3["stop_reason"] == "EARLY_STOPPING" and r3["validation_events"] == 3 and r3["updates"] == 30
+    # Musashi's RP73 probe: patience expiring ON the last allowed update is still the ceiling -> both triggers, CENSORED
+    model4 = tf.keras.Model(inp, out)
+    r4 = K.fit_by_updates(model4, tr, va, max_updates=30, validate_every=10, patience=2, lr=0.0, seed=1)
+    assert r4["triggers"] == {"budget_reached": True, "patience_expired": True} and r4["stop_reason"] == "UPDATE_BUDGET+EARLY_STOPPING"
+    assert r4["censoring"]["verdict"] == "CENSORED_BY_BUDGET"
 
 
 # --- one cell, the cost pilot, the closure and the closure table -------------------------------------------------------------------
@@ -373,8 +379,14 @@ def test_a_pilot_never_reads_the_dev_validation_and_a_cell_scores_on_the_common_
     np.savez(root/"DATA.npz", Y=data["Y"], horizon=data["horizon"], target_channel=data["target_channel"], scaler_sd=data["scaler_sd"],
              eval_origins=data["common_eval"])
     (root/"DATA.json").write_text(json.dumps({"input_columns": COLS}))
-    rows = T.rows_from_run(root, label="synthetic_block", registry=B.registry())
-    assert len(rows) == 2 and all(r["verified"] and r["binding"]["level"] == "TERMINAL_ARTIFACT" for r in rows)
+    def warehouse(campaign):                                            # the accepted payload: what the terminals declared
+        return {"current": {c["cell_id"]: {"terminal_sha256": "t"*64, "status": "COMPLETED",
+                                            "artifacts": json.loads((root/"TERMINALS"/f"{c['cell_id']}.json").read_text())["artifacts"]}
+                            for c in d["cells"]}}
+    rows = T.rows_from_run(root, label="synthetic_block", registry=B.registry(), warehouse=warehouse)
+    assert len(rows) == 2 and all(r["verified"] and r["binding"]["level"] == "TERMINAL_ARTIFACT" and r["custody"]["class"] == "ACCEPTED_ARTIFACT_CHAIN" for r in rows)
+    unchecked = T.rows_from_run(root, label="synthetic_block", registry=B.registry())
+    assert not any(r["verified"] for r in unchecked)                                     # nothing local verifies itself
     assert {r["unit"] for r in rows} == {c["cell_id"] for c in d["cells"]}
     assert rows[0]["units_not_scored_by_role"][0]["role"] in ("cost_pilot", "preparation")
 

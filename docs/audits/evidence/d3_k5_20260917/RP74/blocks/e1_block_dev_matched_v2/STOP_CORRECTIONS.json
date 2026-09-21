@@ -1,0 +1,119 @@
+{
+ "schema": "df_e1_block_stop_corrections.v1",
+ "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
+ "units": {
+  "pilot_modular_w60": {
+   "updates": 200,
+   "ceiling": 200,
+   "events": 4,
+   "best_event": 3,
+   "patience": 3,
+   "recorded_stop_reason": "UPDATE_BUDGET",
+   "recorded_verdict": "CENSORED_BY_BUDGET",
+   "derived_triggers": {
+    "budget_reached": true,
+    "patience_expired": false
+   },
+   "derived_verdict": "CENSORED_BY_BUDGET"
+  },
+  "pilot_gru_adapted_w60": {
+   "updates": 200,
+   "ceiling": 200,
+   "events": 4,
+   "best_event": 4,
+   "patience": 3,
+   "recorded_stop_reason": "UPDATE_BUDGET",
+   "recorded_verdict": "CENSORED_BY_BUDGET",
+   "derived_triggers": {
+    "budget_reached": true,
+    "patience_expired": false
+   },
+   "derived_verdict": "CENSORED_BY_BUDGET"
+  },
+  "modular_w60_s1": {
+   "updates": 1000,
+   "ceiling": 4000,
+   "events": 5,
+   "best_event": 2,
+   "patience": 3,
+   "recorded_stop_reason": "EARLY_STOPPING",
+   "recorded_verdict": "STOPPED_ON_VALIDATION",
+   "derived_triggers": {
+    "budget_reached": false,
+    "patience_expired": true
+   },
+   "derived_verdict": "STOPPED_ON_VALIDATION"
+  },
+  "gru_adapted_w60_s1": {
+   "updates": 2000,
+   "ceiling": 4000,
+   "events": 10,
+   "best_event": 7,
+   "patience": 3,
+   "recorded_stop_reason": "EARLY_STOPPING",
+   "recorded_verdict": "STOPPED_ON_VALIDATION",
+   "derived_triggers": {
+    "budget_reached": false,
+    "patience_expired": true
+   },
+   "derived_verdict": "STOPPED_ON_VALIDATION"
+  },
+  "modular_w60_s2": {
+   "updates": 1000,
+   "ceiling": 4000,
+   "events": 5,
+   "best_event": 2,
+   "patience": 3,
+   "recorded_stop_reason": "EARLY_STOPPING",
+   "recorded_verdict": "STOPPED_ON_VALIDATION",
+   "derived_triggers": {
+    "budget_reached": false,
+    "patience_expired": true
+   },
+   "derived_verdict": "STOPPED_ON_VALIDATION"
+  },
+  "gru_adapted_w60_s2": {
+   "updates": 2400,
+   "ceiling": 4000,
+   "events": 12,
+   "best_event": 9,
+   "patience": 3,
+   "recorded_stop_reason": "EARLY_STOPPING",
+   "recorded_verdict": "STOPPED_ON_VALIDATION",
+   "derived_triggers": {
+    "budget_reached": false,
+    "patience_expired": true
+   },
+   "derived_verdict": "STOPPED_ON_VALIDATION"
+  },
+  "modular_w60_s3": {
+   "updates": 1000,
+   "ceiling": 4000,
+   "events": 5,
+   "best_event": 2,
+   "patience": 3,
+   "recorded_stop_reason": "EARLY_STOPPING",
+   "recorded_verdict": "STOPPED_ON_VALIDATION",
+   "derived_triggers": {
+    "budget_reached": false,
+    "patience_expired": true
+   },
+   "derived_verdict": "STOPPED_ON_VALIDATION"
+  },
+  "gru_adapted_w60_s3": {
+   "updates": 2000,
+   "ceiling": 4000,
+   "events": 10,
+   "best_event": 7,
+   "patience": 3,
+   "recorded_stop_reason": "EARLY_STOPPING",
+   "recorded_verdict": "STOPPED_ON_VALIDATION",
+   "derived_triggers": {
+    "budget_reached": false,
+    "patience_expired": true
+   },
+   "derived_verdict": "STOPPED_ON_VALIDATION"
+  }
+ },
+ "corrected": []
+}

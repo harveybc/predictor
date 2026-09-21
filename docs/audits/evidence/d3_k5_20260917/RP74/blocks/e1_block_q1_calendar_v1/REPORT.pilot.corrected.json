@@ -1,0 +1,44 @@
+{
+ "schema": "df_e1_block_pilot_report.corrected.v1",
+ "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+ "corrected_on": "2026-09-21 (RP77/A6)",
+ "old_total_at_ceiling_seconds": 3155.708870527885,
+ "corrected_projection": {
+  "per_arm": {
+   "calendar": {
+    "seconds_per_update": 0.082137646965,
+    "seconds_per_validation_event_pilot": 1.9644002852499995,
+    "restore_seconds_pilot": 0.0,
+    "setup_seconds_pilot": 0.0,
+    "pilot_validation_rows": 9899,
+    "peak_rss_bytes": 994177024,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "randomised_calendar_control": {
+    "seconds_per_update": 0.08267445925999997,
+    "seconds_per_validation_event_pilot": 1.9525692525000014,
+    "restore_seconds_pilot": 0.0,
+    "setup_seconds_pilot": 0.0,
+    "pilot_validation_rows": 9899,
+    "peak_rss_bytes": 993497088,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   }
+  },
+  "per_cell_at_ceiling_seconds": {
+   "calendar_s1": 368.318828810005,
+   "randomised_calendar_control_s1": 370.22656501262344,
+   "calendar_s2": 368.318828810005,
+   "randomised_calendar_control_s2": 370.22656501262344,
+   "calendar_s3": 368.318828810005,
+   "randomised_calendar_control_s3": 370.22656501262344
+  },
+  "total_at_ceiling_seconds": 2215.6361814678853,
+  "with_headroom_25_percent": 2769.5452268348567,
+  "closure_reserve_seconds": 2000,
+  "accounting": "train-update rate x ceiling + validation events (scaled to the evaluation rows) + restore + setup, each once",
+  "assumption": "every cell runs to the ceiling with every validation event; early stopping can only lower it"
+ },
+ "old_decision": "EXECUTE",
+ "decision_unchanged": true,
+ "reading": "arithmetic correction of a retained pilot, not a new measurement; validation was counted inside the update rate and again per event"
+}

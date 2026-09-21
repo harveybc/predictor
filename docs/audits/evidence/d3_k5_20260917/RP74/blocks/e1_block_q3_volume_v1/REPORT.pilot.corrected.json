@@ -1,0 +1,44 @@
+{
+ "schema": "df_e1_block_pilot_report.corrected.v1",
+ "design_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad",
+ "corrected_on": "2026-09-21 (RP77/A6)",
+ "old_total_at_ceiling_seconds": 2468.337383842881,
+ "corrected_projection": {
+  "per_arm": {
+   "volume_56d": {
+    "seconds_per_update": 0.06451908805499999,
+    "seconds_per_validation_event_pilot": 1.5131061737500007,
+    "restore_seconds_pilot": 0.0,
+    "setup_seconds_pilot": 0.0,
+    "pilot_validation_rows": 9899,
+    "peak_rss_bytes": 952434688,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "volume_112d": {
+    "seconds_per_update": 0.064805236455,
+    "seconds_per_validation_event_pilot": 1.5342622500000003,
+    "restore_seconds_pilot": 0.0,
+    "setup_seconds_pilot": 0.0,
+    "pilot_validation_rows": 9899,
+    "peak_rss_bytes": 952446976,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   }
+  },
+  "per_cell_at_ceiling_seconds": {
+   "volume_56d_s1": 288.70838345744824,
+   "volume_112d_s1": 290.2812705901788,
+   "volume_56d_s2": 288.70838345744824,
+   "volume_112d_s2": 290.2812705901788,
+   "volume_56d_s3": 288.70838345744824,
+   "volume_112d_s3": 290.2812705901788
+  },
+  "total_at_ceiling_seconds": 1736.968962142881,
+  "with_headroom_25_percent": 2171.2112026786012,
+  "closure_reserve_seconds": 2000,
+  "accounting": "train-update rate x ceiling + validation events (scaled to the evaluation rows) + restore + setup, each once",
+  "assumption": "every cell runs to the ceiling with every validation event; early stopping can only lower it"
+ },
+ "old_decision": "EXECUTE",
+ "decision_unchanged": true,
+ "reading": "arithmetic correction of a retained pilot, not a new measurement; validation was counted inside the update rate and again per event"
+}

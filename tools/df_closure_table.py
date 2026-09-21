@@ -49,6 +49,8 @@ REQUIRED = ("task_horizon_split", "metric_and_scale", "model_error", "naive_erro
             "literature_value_and_source", "comparability_status", "model_population", "naive_population",
             "model_horizon", "naive_horizon", "model_scale", "naive_scale", "binding")
 FORECAST_ROLES = ("forecast", "control_forecast")
+STRICT_CHAIN_SCHEMAS = ("df_e1_block_design.v1", "df_fin_runner_design.v1")          # new results: the full accepted chain or a problem
+QUALIFIED_CUSTODY = ("METRIC_ANCHORED", "ACCEPTED_PREDICTIONS_NO_RECORD_ANCHOR")     # preserved history, scope stated, never 'verified'
 
 
 class TableRefusal(ValueError):
@@ -169,9 +171,11 @@ def verify_unit(root: Path, design: dict, unit: str, role: str, receipt: dict, d
                      data, meta, None, None, None)]
     arrays_sha = sha_file(arrays_path)
     record = _record(attempt)
+    record_sha = sha_file(attempt/"cell.json") if (attempt/"cell.json").is_file() else None
     terminal = _terminal_payload(root, unit)
-    # --- artifact binding: arrays -> terminal (or record) -----------------------------------------------
-    binding = {"level": "NOT_BOUND", "arrays_sha256": arrays_sha}
+    strict_chain = design.get("schema") in STRICT_CHAIN_SCHEMAS
+    # --- local descriptors (a local file is never custody by itself) ------------------------------------
+    binding = {"level": "NOT_BOUND", "arrays_sha256": arrays_sha, "record_sha256": record_sha}
     term_pred = next((a for a in (terminal or {}).get("artifacts") or [] if a.get("role") == "predictions"), None)
     if term_pred:
         binding["level"] = "TERMINAL_ARTIFACT"
@@ -185,26 +189,42 @@ def verify_unit(root: Path, design: dict, unit: str, role: str, receipt: dict, d
         if record["arrays_sha256"] != arrays_sha:
             problems.append(f"{unit}: the arrays on disk are not the ones the record digested: CHANGED ARRAYS")
     else:
-        problems.append(f"{unit}: neither the terminal nor the record carries a digest of the arrays: the scored "
-                        f"arrays are NOT BOUND to the accepted terminal (binding level NOT_BOUND)")
-    # --- warehouse: terminal present with the receipt's digest; artifact rows equal to the local ones ----
+        problems.append(f"{unit}: neither the terminal nor the record carries a digest of the arrays: the scored arrays are NOT BOUND "
+                        f"(binding level NOT_BOUND)")
+    # --- custody: the ACCEPTED canonical payload (warehouse) -> artifact rows -> the bytes actually read -----
     wh = {"checked": warehouse is not None}
+    custody = {"class": "UNCHECKED", "why": "no warehouse read: local descriptors only; nothing is verified end to end"}
+    wh_metrics = []
     if warehouse is not None:
         held = warehouse(receipt["campaign_sha256"]) or {}
         row = (held.get("current") or {}).get(unit)
         if row is None:
             problems.append(f"{unit}: the warehouse holds NO terminal for this unit under campaign {receipt['campaign_sha256'][:12]}")
             wh.update(terminal_in_warehouse=False)
+            custody = {"class": "NO_ACCEPTED_TERMINAL", "why": "the accepted payload is absent"}
         else:
             wh.update(terminal_in_warehouse=True, digest_matches_receipt=row.get("terminal_sha256") == receipt.get("terminal_sha256"),
                       status=row.get("status"), artifact_rows=len(row.get("artifacts") or []))
             if not wh["digest_matches_receipt"]:
                 problems.append(f"{unit}: the warehouse terminal digest differs from the client's receipt")
-            wh_pred = next((a for a in row.get("artifacts") or [] if a.get("role") == "predictions"), None)
-            if wh_pred and wh_pred.get("sha256") != arrays_sha:
-                problems.append(f"{unit}: the warehouse's predictions artifact digest is not the arrays on disk")
             if row.get("status") != "COMPLETED":
                 problems.append(f"{unit}: the warehouse terminal is {row.get('status')}, not COMPLETED")
+            wh_pred = next((a for a in row.get("artifacts") or [] if a.get("role") == "predictions"), None)
+            wh_rec = next((a for a in row.get("artifacts") or [] if a.get("role") == "record"), None)
+            wh_metrics = row.get("metrics") or []
+            if wh_pred and wh_pred.get("sha256") != arrays_sha:
+                problems.append(f"{unit}: the warehouse's predictions artifact digest is not the arrays on disk: CHANGED ARRAYS")
+            if wh_rec and record_sha and wh_rec.get("sha256") != record_sha:
+                problems.append(f"{unit}: the warehouse's record artifact digest is not the record on disk: CHANGED RECORD")
+            if wh_pred and wh_rec and wh_pred.get("sha256") == arrays_sha and wh_rec.get("sha256") == record_sha \
+                    and wh["digest_matches_receipt"] and row.get("status") == "COMPLETED":
+                custody = {"class": "ACCEPTED_ARTIFACT_CHAIN", "why": "accepted terminal -> predictions and record artifact digests -> the bytes read"}
+            elif wh_pred and wh_pred.get("sha256") == arrays_sha and wh["digest_matches_receipt"]:
+                custody = {"class": "ACCEPTED_PREDICTIONS_NO_RECORD_ANCHOR", "why": "the accepted payload anchors the arrays but not the record"}
+            else:
+                custody = {"class": "PENDING_METRIC_ANCHOR", "why": "the accepted payload carries no artifact rows; only a metric it accepted can anchor the score"}
+            if strict_chain and custody["class"] != "ACCEPTED_ARTIFACT_CHAIN":
+                problems.append(f"{unit}: a new result must be anchored by the accepted artifact chain (predictions AND record); custody is {custody['class']}")
     rows = []
     for a in found:
         arm = a["arm"] or unit.rsplit("_s", 1)[0]
@@ -240,6 +260,24 @@ def verify_unit(root: Path, design: dict, unit: str, role: str, receipt: dict, d
         clean = not p and truth is not None and naive is not None
         model_mae = float(np.mean(np.abs(pred-y))) if clean else None
         naive_mae = float(np.mean(np.abs(naive-y))) if clean else None
+        # --- custody of a row without artifact rows: only a metric the accepted payload carries can anchor it ---
+        row_custody = dict(custody)
+        if clean and row_custody["class"] == "PENDING_METRIC_ANCHOR":
+            anchors = [m for m in wh_metrics if "mae" in str(m.get("metric", "")).lower() and "naive" not in str(m.get("metric", "")).lower()
+                       and str(m.get("split", "")) == "validation" and isinstance(m.get("value"), (int, float))]
+            hit = [m for m in anchors if abs(float(m["value"])-model_mae) <= 1e-9]
+            if hit:
+                row_custody = {"class": "METRIC_ANCHORED", "why": f"the accepted terminal's metric {hit[0]['metric']} equals the MAE recomputed "
+                                                                 "from the arrays (1e-9); the array bytes themselves have no accepted digest",
+                               "scope": "SCORE_PRESERVED_ARRAYS_NOT_INDEPENDENTLY_ANCHORED"}
+            elif anchors:
+                p.append(f"{unit}: the accepted terminal's validation MAE ({anchors[0]['value']}) is not the MAE recomputed from the arrays ({model_mae}): CHANGED ARRAYS or record")
+                row_custody = {"class": "UNANCHORED", "why": "the accepted metric disagrees with the arrays"}
+            else:
+                p.append(f"{unit}: no accepted artifact or metric anchors these arrays: a local record is not custody")
+                row_custody = {"class": "UNANCHORED", "why": "no accepted anchor"}
+        elif row_custody["class"] == "PENDING_METRIC_ANCHOR":
+            row_custody = {"class": "UNANCHORED", "why": "the arrays could not be scored cleanly, so no metric anchor applies"}
         # --- independent metric against the record's own score, when it carries one --------------------
         if clean and record:
             flat = record.get("scores") or {}
@@ -250,7 +288,7 @@ def verify_unit(root: Path, design: dict, unit: str, role: str, receipt: dict, d
                 clean = False
         rows.append(_row(root, design, unit, role, arm, receipt, p, data, meta,
                          model_mae if clean else None, naive_mae if clean else None,
-                         {"binding": binding, "warehouse": wh, "n": int(y.size), "target": target_name,
+                         {"binding": binding, "warehouse": wh, "custody": row_custody, "n": int(y.size), "target": target_name,
                           "record_score_checked": bool(record and a["arm"] is None)}))
     return rows
 
@@ -285,8 +323,13 @@ def _row(root, design, unit, role, arm, receipt, problems, data, meta, model_mae
            "scope": design.get("purpose") or design.get("what_this_is") or "DEVELOPMENT",
            "binding": (extra or {}).get("binding", {"level": "NOT_BOUND"}),
            "warehouse": (extra or {}).get("warehouse", {"checked": False}),
+           "custody": (extra or {}).get("custody", {"class": "UNCHECKED", "why": "no row was scored"}),
            "record_score_checked": (extra or {}).get("record_score_checked", False),
-           "problems": problems, "verified": not problems,
+           "problems": problems,
+           # verified = clean AND anchored end to end by the accepted artifact chain; a metric-anchored historical
+           # row is PRESERVED with its weaker scope, never promoted; nothing local certifies itself
+           "verified": (not problems) and ((extra or {}).get("custody") or {}).get("class") == "ACCEPTED_ARTIFACT_CHAIN",
+           "preserved_with_qualified_scope": (not problems) and ((extra or {}).get("custody") or {}).get("class") in QUALIFIED_CUSTODY,
            "precision_note": "values are float64 from the arrays; no rounding in this JSON"}
     return row
 
@@ -387,8 +430,10 @@ def markdown(table: dict) -> str:
         me = "—" if r["model_error"] is None else f"{r['model_error']:.6f} kW (z {r['model_error_z']:.6f})"
         ne = "—" if r["naive_error"] is None else f"{r['naive_error']:.6f} kW (n={r['n_evaluated']})"
         ver = "yes" if r.get("verified") else "NO: " + "; ".join(r.get("problems") or [])[:120]
+        cust = (r.get("custody") or {}).get("class", "UNCHECKED")
+        ver = ver if r.get("verified") else (f"PRESERVED ({cust})" if r.get("preserved_with_qualified_scope") else f"NO ({cust}): " + "; ".join(r.get("problems") or [])[:120])
         lines.append(f"| {r['task_horizon_split'][:60]}… | {r['metric_and_scale'][:36]}… | {r['run']} · {r['arm']} · s{r['seed']} | "
-                     f"{r['binding'].get('level')} | {me} | {ne} | {skill_txt} | {lit_txt} | {r['comparability_status']} | {ver} |")
+                     f"{r['binding'].get('level')} / {cust} | {me} | {ne} | {skill_txt} | {lit_txt} | {r['comparability_status']} | {ver} |")
     lines += ["", "skill = 1 − error_model / error_naive on identical rows and horizon; positive means a smaller error, not accuracy "
               "or profit. kW and z never share a comparison. Binding: TERMINAL_ARTIFACT = arrays digest in the accepted terminal; "
               "RECORD_DIGEST = digest in the unit's record only; NOT_BOUND = no digest links the arrays to the terminal (reported, "
@@ -415,6 +460,12 @@ def build(runs: list, *, registry: dict, warehouse=None, no_new_measurement: boo
                                            "whatever NO_NEW_MEASUREMENT says about the round"}}
     table["problems"] = validate(table)
     table["verified_rows"] = sum(1 for r in rows if r.get("verified"))
+    table["preserved_qualified_rows"] = sum(1 for r in rows if r.get("preserved_with_qualified_scope"))
+    table["custody_classes"] = {c: sum(1 for r in rows if (r.get("custody") or {}).get("class") == c)
+                                for c in sorted({(r.get("custody") or {}).get("class") for r in rows})}
+    table["custody_rule"] = ("verified = clean arrays AND accepted artifact chain (predictions + record digests in the warehouse's canonical payload); "
+                             "METRIC_ANCHORED = a historical score equal to the metric the accepted terminal carries, arrays not independently "
+                             "anchored (preserved, qualified); UNANCHORED/UNCHECKED = nothing accepted anchors the score (a problem for new results)")
     return table
 
 
@@ -438,7 +489,8 @@ def main(argv=None) -> int:
     a.out.write_text(json.dumps(table, indent=1, default=str))
     if a.markdown:
         a.markdown.write_text(markdown(table))
-    print(json.dumps({"rows": len(table["rows"]), "verified_rows": table["verified_rows"],
+    print(json.dumps({"rows": len(table["rows"]), "verified_rows": table["verified_rows"], "preserved_qualified_rows": table["preserved_qualified_rows"],
+                      "custody_classes": table["custody_classes"],
                       "problems": table["problems"][:20], "no_new_measurement": table["no_new_measurement"]}, indent=1))
     return 0 if not table["problems"] else 1
 

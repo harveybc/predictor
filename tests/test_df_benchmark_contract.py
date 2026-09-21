@@ -144,19 +144,65 @@ def test_a_declared_contrast_under_one_estimand_stays_comparable_within_it():
     assert B.decide(ours, other)["mode"] == "NOT_COMPARABLE"
 
 
-def test_the_matched_lane_needs_a_closed_reference_run_under_our_digest(tmp_path):
+def _reference_root(tmp_path, ours, *, seeds=(1,), arm="gru", complete=True):
+    """A closed reference run in the runners' layout: sealed design with our contract, cells of a named arm, receipts,
+    arrays + record per cell, the DATA the table reads, and a warehouse stub with the accepted artifact chain."""
+    import hashlib
+    import numpy as np
+    root = tmp_path/"ref"; root.mkdir()
+    rng = np.random.default_rng(0)
+    n, h = ours.source["evaluation_origins"], 60
+    Y = np.abs(rng.normal(1.0, 0.5, n+2*h)); o = np.arange(h, h+n)
+    np.savez(root/"DATA.npz", Y=Y, horizon=np.array([h]), target_channel=np.array([0]), scaler_sd=np.array([ours.source["sd_train"]]), eval_origins=o)
+    (root/"DATA.json").write_text(json.dumps({"input_columns": ["Global_active_power"], "target_channel": 0}))
+    cells = [{"cell_id": f"{arm}_s{s}", "arm": arm, "seed": s} for s in seeds] + [{"cell_id": "modular_s1", "arm": "modular", "seed": 1}]
+    block = ours.to_design_block(comparability={**B.decide(ours, B.gasparin_2019()), "comparator_state": "NONE"})
+    (root/"DESIGN.json").write_text(json.dumps({"design_sha256": "d"*64, "benchmark_contract": block, "cells": cells}))
+    receipts, held = {}, {}
+    for c in cells:
+        if not complete and c["seed"] == seeds[-1] and c["arm"] == arm:
+            continue
+        u = c["cell_id"]; (root/"attempts"/u).mkdir(parents=True)
+        pred = Y[o+h] + rng.normal(0, 0.1, n)
+        np.savez(root/"attempts"/u/"arrays.npz", pred=pred, y=Y[o+h], naive=Y[o], origins=o)
+        sha = lambda f: hashlib.sha256((root/"attempts"/u/f).read_bytes()).hexdigest()
+        (root/"attempts"/u/"cell.json").write_text(json.dumps({"arrays_sha256": sha("arrays.npz"), "scores": {"mae_kw": float(np.mean(np.abs(pred-Y[o+h])))}}))
+        receipts[u] = {"campaign_sha256": "c"*64, "terminal_sha256": "t"*64}
+        held[u] = {"terminal_sha256": "t"*64, "status": "COMPLETED", "artifacts": [{"role": "predictions", "sha256": sha("arrays.npz")}, {"role": "record", "sha256": sha("cell.json")}]}
+    (root/"TERMINAL_RECEIPTS.json").write_text(json.dumps({"units": receipts}))
+    return root, (lambda campaign: {"current": held})
+
+
+def test_PROBE_a_contract_hash_plus_a_prepare_receipt_is_preparation_not_a_comparator(tmp_path):
+    """Musashi's RP73 probe: DESIGN with only the matching contract hash and one prepare: COMPLETED receipt."""
+    ours = B.household_ours()
+    ref = tmp_path/"reference"; ref.mkdir()
+    (ref/"DESIGN.json").write_text(json.dumps({"benchmark_contract": {"contract_sha256": ours.sha256()}}))
+    (ref/"TERMINAL_RECEIPTS.json").write_text(json.dumps({"units": {"prepare": {"status": "COMPLETED"}}}))
+    out = B.reference_evidence(ours, ref, reference_arm="gru")
+    assert out["state"] == "PLANNED_REFERENCE" and "design digest" in out["why"]
+
+
+def test_the_matched_lane_needs_a_named_arm_a_complete_population_and_the_accepted_chain(tmp_path):
     ours, theirs = _twin()
+    ours = replace(ours, source={**ours.source, "evaluation_origins": 400})
     theirs = replace(theirs, horizon_steps=96, horizon_seconds=96*60)
     assert B.decide(ours, theirs, reference_run=tmp_path)["comparator_state"] == "PLANNED_REFERENCE"
-    root = tmp_path/"ref"
-    root.mkdir()
-    block = ours.to_design_block(comparability={**B.decide(ours, theirs), "comparator_state": "NONE"})
-    (root/"DESIGN.json").write_text(json.dumps({"design_sha256": "d"*64, "benchmark_contract": block}))
-    (root/"TERMINAL_RECEIPTS.json").write_text(json.dumps({"units": {"gru_s1": {"status": "COMPLETED"}}}))
-    d = B.decide(ours, theirs, reference_run=root)
+    root, wh = _reference_root(tmp_path, ours, seeds=(1, 2))
+    assert B.reference_evidence(ours, root)["state"] == "PLANNED_REFERENCE"                                   # no arm named
+    assert B.reference_evidence(ours, root, reference_arm="gru")["state"] == "LOCALLY_CHECKED_REFERENCE"      # no warehouse read
+    d = B.decide(ours, theirs, reference_run=root, reference_arm="gru", warehouse=wh)
     assert d["mode"] == "MATCHED_DOMAIN_COMPARISON" and d["comparator_state"] == "VERIFIED_COMPARATOR"
-    (root/"TERMINAL_RECEIPTS.json").write_text(json.dumps({"units": {"gru_s1": {"status": "FAILED"}}}))
-    assert B.decide(ours, theirs, reference_run=root)["comparator_state"] == "PLANNED_REFERENCE"
+    assert set(d["reference_evidence"]["derived_mae_z"]) == {"gru_s1", "gru_s2"} and d["reference_evidence"]["n_evaluated"] == 400
+    # a partial population (one seed without an accepted forecast) is not a comparator
+    root2, wh2 = _reference_root(tmp_path/"p", ours, seeds=(1, 2), complete=False) if (tmp_path/"p").mkdir() is None else (None, None)
+    e = B.reference_evidence(ours, root2, reference_arm="gru", warehouse=wh2)
+    assert e["state"] == "PLANNED_REFERENCE" and "incomplete" in e["why"]
+    # the accepted chain missing its record anchor is not a comparator either
+    def no_record(campaign):
+        held = wh(campaign)["current"]
+        return {"current": {u: {**r, "artifacts": [a for a in r["artifacts"] if a["role"] != "record"]} for u, r in held.items()}}
+    assert B.reference_evidence(ours, root, reference_arm="gru", warehouse=no_record)["state"] == "LOCALLY_CHECKED_REFERENCE"
 
 
 # --- affine re-expression ------------------------------------------------------------------------------

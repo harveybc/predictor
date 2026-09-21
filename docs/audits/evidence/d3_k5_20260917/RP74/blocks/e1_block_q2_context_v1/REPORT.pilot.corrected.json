@@ -1,0 +1,80 @@
+{
+ "schema": "df_e1_block_pilot_report.corrected.v1",
+ "design_sha256": "6d1aaecaf27c581c709a745a4f976c2e9dcc05594815b2ee1a9747595f4398b1",
+ "corrected_on": "2026-09-21 (RP77/A6)",
+ "old_total_at_ceiling_seconds": 127579.07407863038,
+ "corrected_projection": {
+  "per_arm": {
+   "daily_lag": {
+    "seconds_per_update": 0.06346680935499999,
+    "seconds_per_validation_event_pilot": 1.6107759094999996,
+    "restore_seconds_pilot": 0.0,
+    "setup_seconds_pilot": 0.0,
+    "pilot_validation_rows": 9839,
+    "peak_rss_bytes": 933163008,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "long_window_own_depth": {
+    "seconds_per_update": 4.165195682185,
+    "seconds_per_validation_event_pilot": 35.989931662250015,
+    "restore_seconds_pilot": 0.0,
+    "setup_seconds_pilot": 0.0,
+    "pilot_validation_rows": 8519,
+    "peak_rss_bytes": 8458399744,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "long_window_crop60": {
+    "seconds_per_update": 0.06672908184000002,
+    "seconds_per_validation_event_pilot": 1.9111645027499993,
+    "restore_seconds_pilot": 0.0,
+    "setup_seconds_pilot": 0.0,
+    "pilot_validation_rows": 8519,
+    "peak_rss_bytes": 931528704,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "long_window_local_support_67": {
+    "seconds_per_update": 4.4426690375749995,
+    "seconds_per_validation_event_pilot": 27.021176538250018,
+    "restore_seconds_pilot": 0.0,
+    "setup_seconds_pilot": 0.0,
+    "pilot_validation_rows": 8519,
+    "peak_rss_bytes": 10279276544,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "short_window_deep_core": {
+    "seconds_per_update": 0.10905662669500002,
+    "seconds_per_validation_event_pilot": 2.5459037357499996,
+    "restore_seconds_pilot": 0.0,
+    "setup_seconds_pilot": 0.0,
+    "pilot_validation_rows": 9899,
+    "peak_rss_bytes": 966275072,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   }
+  },
+  "per_cell_at_ceiling_seconds": {
+   "daily_lag_s1": 286.67539803223696,
+   "long_window_own_depth_s1": 17507.405842381846,
+   "long_window_crop60_s1": 311.8743466522996,
+   "long_window_local_support_67_s1": 18406.319274876274,
+   "short_window_deep_core_s1": 487.7669763874655,
+   "daily_lag_s2": 286.67539803223696,
+   "long_window_own_depth_s2": 17507.405842381846,
+   "long_window_crop60_s2": 311.8743466522996,
+   "long_window_local_support_67_s2": 18406.319274876274,
+   "short_window_deep_core_s2": 487.7669763874655,
+   "daily_lag_s3": 286.67539803223696,
+   "long_window_own_depth_s3": 17507.405842381846,
+   "long_window_crop60_s3": 311.8743466522996,
+   "long_window_local_support_67_s3": 18406.319274876274,
+   "short_window_deep_core_s3": 487.7669763874655
+  },
+  "total_at_ceiling_seconds": 111000.12551499036,
+  "with_headroom_25_percent": 138750.15689373796,
+  "closure_reserve_seconds": 2000,
+  "accounting": "train-update rate x ceiling + validation events (scaled to the evaluation rows) + restore + setup, each once",
+  "assumption": "every cell runs to the ceiling with every validation event; early stopping can only lower it"
+ },
+ "old_decision": "BUDGET_LIMITED_BEFORE_ANY_OUTCOME",
+ "decision_unchanged": true,
+ "reading": "arithmetic correction of a retained pilot, not a new measurement; validation was counted inside the update rate and again per event"
+}

@@ -72,18 +72,42 @@ def _module(name: str):
 
 # --- bars -----------------------------------------------------------------------------------------------------
 
-def parse_bars(frame, *, time_column: str = TIME_COLUMN, holdout: str = HOLDOUT, columns: list = INPUT_COLUMNS, target: str = TARGET) -> dict:
-    """The bars as served: strictly increasing labels, declared columns present, nothing at or after the reserve."""
+def _instants(series, *, name: str, timestamp_interpretation: str | None) -> np.ndarray:
+    """Labels as int64 ns. A tz-aware column is interpreted ONLY under a declared rule (UTC_OFFSET_AWARE converts to UTC);
+    an offset is never discarded silently (RP75)."""
     import pandas as pd
+    ts = pd.to_datetime(series) if not pd.api.types.is_datetime64_any_dtype(series) else series
+    if getattr(ts.dt, "tz", None) is not None:
+        if timestamp_interpretation != "UTC_OFFSET_AWARE":
+            raise TaskRefusal(f"REFUSED: {name!r} carries a UTC offset and the design declares no interpretation "
+                              "(timestamp_interpretation='UTC_OFFSET_AWARE' converts to UTC); an offset is not discarded")
+        ts = ts.dt.tz_convert("UTC").dt.tz_localize(None)
+    if ts.isna().any():
+        raise TaskRefusal(f"REFUSED: {int(ts.isna().sum())} labels of {name!r} are missing or unparseable")
+    return ts.to_numpy().astype("datetime64[ns]").astype(np.int64)
+
+
+def parse_bars(frame, *, time_column: str = TIME_COLUMN, holdout: str = HOLDOUT, columns: list = INPUT_COLUMNS, target: str = TARGET,
+               available_time_column: str | None = None, timestamp_interpretation: str | None = None, availability: dict | None = None) -> dict:
+    """The bars as served: strictly increasing labels, declared columns present, nothing at or after the reserve.
+    `available_time_column` (from the delivered producer contract) gives each bar's availability instant; without it the
+    label is used AND the record says the basis is the archive label, never observed availability."""
     if time_column not in frame.columns:
         raise TaskRefusal(f"REFUSED: the time column {time_column!r} is absent")
     missing = [c for c in columns if c not in frame.columns]
     if missing:
         raise TaskRefusal(f"REFUSED: declared input columns absent from the resource: {missing}")
-    ts = pd.to_datetime(frame[time_column]) if not pd.api.types.is_datetime64_any_dtype(frame[time_column]) else frame[time_column]
-    if getattr(ts.dt, "tz", None) is not None:
-        ts = ts.dt.tz_localize(None)
-    ts_ns = ts.to_numpy().astype("datetime64[ns]").astype(np.int64)
+    ts_ns = _instants(frame[time_column], name=time_column, timestamp_interpretation=timestamp_interpretation)
+    if available_time_column and available_time_column != time_column:
+        if available_time_column not in frame.columns:
+            raise TaskRefusal(f"REFUSED: the declared available-time column {available_time_column!r} is absent")
+        avail_ns = _instants(frame[available_time_column], name=available_time_column, timestamp_interpretation=timestamp_interpretation)
+        if (avail_ns < ts_ns).any():
+            raise TaskRefusal("REFUSED: a bar is declared available BEFORE its own label; the producer contract is inconsistent")
+        basis = "PRODUCER_AVAILABLE_TIME_COLUMN"
+    else:
+        avail_ns = ts_ns.copy()
+        basis = "ARCHIVE_LABEL_AS_AVAILABLE (UNDECLARED availability: no point-in-time or live inference is drawn)"
     if ts_ns.size == 0:
         raise TaskRefusal("REFUSED: no bars")
     d = np.diff(ts_ns)
@@ -93,12 +117,43 @@ def parse_bars(frame, *, time_column: str = TIME_COLUMN, holdout: str = HOLDOUT,
     if ts_ns.max() >= limit:
         raise TaskRefusal(f"REFUSED: bars at or after the reserve {holdout} were delivered; the reserve is never read")
     X = frame[columns].to_numpy(dtype=np.float64)
-    return {"ts_ns": ts_ns, "X": X, "y": frame[target].to_numpy(dtype=np.float64), "columns": list(columns), "target": target,
+    return {"ts_ns": ts_ns, "avail_ns": avail_ns, "X": X, "y": frame[target].to_numpy(dtype=np.float64), "columns": list(columns), "target": target,
             "target_channel": columns.index(target), "n": int(ts_ns.size),
-            "availability": {"rule": "a bar's label is the time it is complete (lake contract: event time = available time)",
+            "availability": {"basis": basis, "delivery_contract": availability or {"availability_use": "UNDECLARED"},
                              "not_established_by_the_file": ["intrabar finality", "producer publication delay", "timezone of the labels",
                                                              "release cutoffs of the producer"],
-                             "decision_rule": "the decision at t reads bars with label <= t only"}}
+                             "decision_rule": "the decision at t reads bars whose AVAILABLE instant is <= t (label when no availability is declared)",
+                             "scope": "archive-only evidence; a hardcoded sentence is not an availability contract"}}
+
+
+def admissible_pairs(bars: dict, origins: np.ndarray, targets: np.ndarray, *, W: int) -> dict:
+    """The pairs whose CONSUMED support meets the missingness policy: W retained bars ending at the origin, every input role
+    finite on every window row, finite origin and label, and every window row AVAILABLE at the origin (RP75/A3)."""
+    X, y, ts, avail = bars["X"], bars["y"], bars["ts_ns"], bars["avail_ns"]
+    n = X.shape[0]
+    row_ok = np.isfinite(X).all(axis=1)
+    c_ok = np.concatenate([[0], np.cumsum(row_ok)])
+    o, t = np.asarray(origins, dtype=np.int64), np.asarray(targets, dtype=np.int64)
+    reasons = {}
+    keep = o >= W-1
+    reasons["WINDOW_BEFORE_FIRST_BAR"] = int((~keep).sum())
+    win_fin = np.zeros(o.size, dtype=bool)
+    win_fin[keep] = (c_ok[o[keep]+1] - c_ok[o[keep]-W+1]) == W
+    reasons["NONFINITE_INPUT_IN_WINDOW"] = int((keep & ~win_fin).sum())
+    lab_fin = np.isfinite(y[t]) & np.isfinite(y[o])
+    reasons["NONFINITE_LABEL_OR_ORIGIN"] = int((keep & win_fin & ~lab_fin).sum())
+    # availability: the latest availability instant among the window rows must not exceed the origin's label
+    late = np.zeros(o.size, dtype=bool)
+    if not np.array_equal(avail, ts):
+        cm = np.maximum.accumulate(avail)                                  # monotone envelope is not enough for windows: check exactly
+        for i in np.flatnonzero(keep & win_fin & lab_fin):
+            late[i] = avail[o[i]-W+1:o[i]+1].max() > ts[o[i]]
+    reasons["ROW_NOT_AVAILABLE_AT_ORIGIN"] = int(late.sum())
+    ok = keep & win_fin & lab_fin & ~late
+    return {"origins": o[ok], "targets": t[ok], "n": int(ok.sum()), "excluded": reasons, "candidates": int(o.size),
+            "policy": "declared missingness: no imputation; a window with any non-finite input role, a non-finite label/origin or a row "
+                      "not yet available at the origin is excluded with its reason"}
+
 
 
 def map_targets(ts_ns: np.ndarray, y: np.ndarray, *, hours: int) -> dict:

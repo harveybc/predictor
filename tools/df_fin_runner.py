@@ -144,7 +144,14 @@ def prepare(design: dict, root: Path, *, frame=None) -> dict:
             raise FinRefusal("REFUSED: the delivered range is not the design's")
         delivered_sha = delivered["sha256"]
         frame = pd.read_parquet(delivered["path"])
-    bars = T.parse_bars(frame, time_column=src["time_column"], holdout=src["holdout"], columns=src["columns"], target=src["target"])
+    delivery_meta = None
+    if frame is not None and delivered_sha is None:
+        delivery_meta = {"availability_use": "SYNTHETIC_FIXTURE_UNDECLARED"}
+    else:
+        delivery_meta = {k: delivered.get(k) for k in ("availability_use", "availability_label", "availability_contract_sha256")}
+    bars = T.parse_bars(frame, time_column=src["time_column"], holdout=src["holdout"], columns=src["columns"], target=src["target"],
+                        available_time_column=src.get("available_time_column"), timestamp_interpretation=src.get("timestamp_interpretation"),
+                        availability=delivery_meta)
     ts, X, y = bars["ts_ns"], bars["X"], bars["y"]
     hours = int(design["horizon"]["hours"])
     mapping = T.map_targets(ts, y, hours=hours)
@@ -157,32 +164,46 @@ def prepare(design: dict, root: Path, *, frame=None) -> dict:
     if cal is not None:
         payload["calendar"] = cal
     rec_folds = []
+    min_pairs = int(design.get("folds", {}).get("min_pairs_per_split", 32))
     for f in folds:
         pairs = T.fold_pairs(f, ts, mapping)
         lo, hi = f["bounds_ns"]["train"]
-        train_rows = (ts >= lo) & (ts < hi) & np.isfinite(X).all(axis=1) & np.isfinite(y)
-        if train_rows.sum() < W+1:
-            raise FinRefusal(f"REFUSED: fold {f['fold']} has too few train bars for a window of {W}")
-        mean, sd = X[train_rows].mean(axis=0), X[train_rows].std(axis=0)
-        sd = np.where(sd > 0, sd, 1.0)
-        y_mean, sigma = float(y[train_rows].mean()), float(y[train_rows].std())
-        deltas = T.delta_candidates(y, pairs["train"], sigma=sigma)
         k = f["fold"]
+        admissible, excluded = {}, {}
         for split in ("train", "validation", "test"):
-            o, t = pairs[split]["origins"], pairs[split]["targets"]
-            keep = o >= W-1
-            payload[f"f{k}_{split}_origins"], payload[f"f{k}_{split}_targets"] = o[keep], t[keep]
+            a = T.admissible_pairs(bars, pairs[split]["origins"], pairs[split]["targets"], W=W)      # the CONSUMED support, per pair
+            admissible[split], excluded[split] = a, a["excluded"]
+        if any(admissible[sp]["n"] < min_pairs for sp in ("train", "validation", "test")):
+            rec_folds.append({**f, "status": "INSUFFICIENT_POPULATION", "pairs": {sp: admissible[sp]["n"] for sp in admissible},
+                              "excluded": excluded, "why": f"a split has fewer than {min_pairs} admissible pairs; the fold produces NO score"})
+            continue
+        # the scaler and sigma come from the ADMISSIBLE train pairs' support rows only (finite by construction)
+        tr_o = admissible["train"]["origins"]
+        support = np.zeros(ts.size, dtype=bool)
+        for w in range(W):
+            support[tr_o - w] = True
+        mean, sd = X[support].mean(axis=0), X[support].std(axis=0)
+        sd = np.where(sd > 0, sd, 1.0)
+        y_mean, sigma = float(y[support].mean()), float(y[support].std())
+        deltas = T.delta_candidates(y, admissible["train"], sigma=sigma)                              # the SAME admissible train population
+        for split in ("train", "validation", "test"):
+            payload[f"f{k}_{split}_origins"], payload[f"f{k}_{split}_targets"] = admissible[split]["origins"], admissible[split]["targets"]
         payload[f"f{k}_scaler_mean"], payload[f"f{k}_scaler_sd"] = mean, sd
         payload[f"f{k}_target_mean_sigma"] = np.array([y_mean, sigma])
-        rec_folds.append({**f, "pairs": {s: int(payload[f'f{k}_{s}_origins'].size) for s in ("train", "validation", "test")},
-                          "train_bars": int(train_rows.sum()), "scaler": {"mean": mean.tolist(), "sd": sd.tolist(), "fitted_on": "train bars of the fold"},
-                          "target_mean": y_mean, "sigma_train": sigma, "deltas": deltas})
+        rec_folds.append({**f, "status": "SCORABLE", "pairs": {sp: admissible[sp]["n"] for sp in admissible}, "excluded": excluded,
+                          "train_support_rows": int(support.sum()), "scaler": {"mean": mean.tolist(), "sd": sd.tolist(), "fitted_on": "support rows of the admissible train pairs"},
+                          "target_mean": y_mean, "sigma_train": sigma, "deltas": deltas,
+                          "population_rule": "one shared admissible population per split for every candidate of the fold"})
+    scorable = [f for f in rec_folds if f.get("status") == "SCORABLE"]
+    if not scorable:
+        raise FinRefusal("REFUSED: no fold has a sufficient admissible population; nothing is scored")
     np.savez(root/"FIN_DATA.npz", **payload)
     # the typed contract binds to what was actually prepared (fold 0's scaler stands for the population's sd domain)
+    first = scorable[0]
     data_json = {"input_columns": bars["columns"], "target_channel": bars["target_channel"], "horizon": hours, "window": W,
-                 "panel_sha256": delivered_sha, "scaler": {"sd": rec_folds[0]["scaler"]["sd"]},
-                 "enumerator": {"validation": {"admissible": rec_folds[0]["pairs"]["validation"]}}}
-    data_json["scaler"]["sd"][bars["target_channel"]] = rec_folds[0]["sigma_train"]
+                 "panel_sha256": delivered_sha, "scaler": {"sd": list(first["scaler"]["sd"])},
+                 "enumerator": {"validation": {"admissible": first["pairs"]["validation"]}}}
+    data_json["scaler"]["sd"][bars["target_channel"]] = first["sigma_train"]
     B.bind(contract, data_json, purpose="the financial factorial")
     rec = {"schema": SCHEMA_DATA, "design_sha256": design["design_sha256"], "delivered_sha256": delivered_sha, "bars": bars["n"],
            "availability": bars["availability"], "mapping": {k: v for k, v in mapping.items() if k not in ("origins", "targets")},
@@ -220,7 +241,10 @@ class PairBatches:
         sel = self.perm[i*self.batch:(i+1)*self.batch]
         o = self.o[sel]
         idx = o[:, None] - self.W + 1 + np.arange(self.W)[None, :]
-        return self.Xs[idx], self.yz[self.t[sel]].astype(np.float32)[:, None]
+        x, yz = self.Xs[idx], self.yz[self.t[sel]].astype(np.float32)[:, None]
+        if not (np.isfinite(x).all() and np.isfinite(yz).all()):            # the last line: a non-finite tensor never reaches the model
+            raise FinRefusal("REFUSED: a consumed window or label is not finite; the admissible population was not applied")
+        return x, yz
 
     def on_epoch_end(self):
         self.epoch += 1
@@ -257,6 +281,8 @@ def run_cell(design: dict, data: dict, rec: dict, cell: dict, out_dir: Path) -> 
     k, seed = int(cell["fold"]), int(cell["seed"])
     cand = next(c for c in design["candidates"] if c["id"] == cell["candidate_id"])
     fold = rec["folds"][k]
+    if fold.get("status") != "SCORABLE":
+        raise FinRefusal(f"REFUSED: fold {k} is {fold.get('status')}: it produces no score")
     R = design["recipe"]
     recv = design["receiver"]
     W, j = int(recv["window"]), int(data["target_channel"][0])
@@ -405,60 +431,105 @@ def run_units(a, design, units, *, parallel: int) -> list:
 
 # --- selection and inference over temporal blocks ------------------------------------------------------------------------
 
-def block_bootstrap(values: np.ndarray, *, block_len: int, n_boot: int = 2000, seed: int = 0) -> dict:
-    """Moving-block bootstrap of the mean over consecutive folds (temporal blocks); an iid resample beside it for the record."""
+MIN_BLOCKS = 5                       # declared minimum resampling support: distinct complete blocks
+
+
+def block_bootstrap(values, *, block_len: int, n_boot: int = 2000, seed: int = 0, min_blocks: int = MIN_BLOCKS) -> dict:
+    """Moving-block bootstrap of the mean over CALENDAR positions (RP76/A4): `values` is indexed by fold position with
+    NaN where a fold is missing, so surviving folds never become adjacent weeks; a block that spans a gap is not a block.
+    With fewer than `min_blocks` distinct complete blocks the result is DESCRIPTIVE (no interval), never a certainty."""
     v = np.asarray(values, dtype=np.float64)
-    n = v.size
+    present = np.isfinite(v)
+    n_present = int(present.sum())
+    L = max(1, int(block_len))
+    starts = [s0 for s0 in range(v.size-L+1) if present[s0:s0+L].all()]
+    desc = {"mean": float(v[present].mean()) if n_present else None, "n_folds_present": n_present, "n_positions": int(v.size),
+            "block_len": L, "complete_blocks": len(starts),
+            "signs": {"positive": int((v[present] > 0).sum()), "negative": int((v[present] < 0).sum()), "zero": int((v[present] == 0).sum())},
+            "sample_sd_ddof1": float(v[present].std(ddof=1)) if n_present > 1 else None}
+    if len(starts) < min_blocks or n_present < 2*L:
+        return {**desc, "interval_95": None, "status": "INSUFFICIENT_RESAMPLING_SUPPORT",
+                "why": f"{len(starts)} complete blocks of length {L} over {n_present} folds; at least {min_blocks} blocks and 2 x block length are required",
+                "reading": "descriptive only: mean, signs and sample SD; no coverage is claimed"}
     rng = np.random.default_rng(seed)
-    if n < 2:
-        return {"mean": float(v.mean()) if n else None, "interval_95": None, "n": int(n), "block_len": int(block_len), "why": "fewer than two blocks"}
-    L = max(1, min(block_len, n))
-    starts = np.arange(n-L+1)
+    k = math.ceil(n_present/L)
     means = []
     for _ in range(n_boot):
-        pick = rng.choice(starts, size=math.ceil(n/L), replace=True)
-        sample = np.concatenate([v[s:s+L] for s in pick])[:n]
+        pick = rng.choice(starts, size=k, replace=True)
+        sample = np.concatenate([v[s0:s0+L] for s0 in pick])[:n_present]
         means.append(sample.mean())
-    iid = [v[rng.integers(0, n, n)].mean() for _ in range(n_boot)]
-    return {"mean": float(v.mean()), "n": int(n), "block_len": int(L), "interval_95": [float(np.quantile(means, .025)), float(np.quantile(means, .975))],
-            "iid_interval_95_for_the_record": [float(np.quantile(iid, .025)), float(np.quantile(iid, .975))],
-            "signs": {"positive": int((v > 0).sum()), "negative": int((v < 0).sum()), "zero": int((v == 0).sum())},
-            "reading": "a moving-block interval respects the week-to-week dependence; both signs are reported; n is the number of folds"}
+    return {**desc, "interval_95": [float(np.quantile(means, .025)), float(np.quantile(means, .975))], "status": "RESAMPLED",
+            "n_boot": n_boot, "reading": "a moving-block percentile interval over calendar positions; coverage was validated on dependent "
+                                        "synthetic null and positive controls (tests), not assumed from the word 'block'"}
 
 
 def select(root: Path, design: dict) -> dict:
+    """Selection at CONFIGURATION level (RP76/A4): a candidate's validation score in a fold is the mean over the declared
+    seeds, and it is complete only when every seed and every scorable fold is present; the seeds are then retained as
+    PAIRED replicates for the test contrast (never a best-of-seeds)."""
     root = Path(root)
     records = {}
     for c in design["cells"]:
         p = root/"attempts"/c["cell_id"]/"cell.json"
         if p.is_file():
             records[c["cell_id"]] = json.loads(p.read_text())
+    # identities come from the RECORDS (fold, candidate, seed), never from a file-name convention
+    def cid_of(r):
+        return r["candidate"].get("id") or r["candidate"]["loss"]
+    seeds = sorted(design.get("seeds") or {int(r["cell"]["seed"]) for r in records.values()})
+    by_key = {(int(r["cell"]["fold"]), cid_of(r), int(r["cell"]["seed"])): r for r in records.values()}
+    candidates = [{**c, "id": c.get("id") or c["loss"]} for c in design["candidates"]]
+    folds_rec = {}
+    if (root/"FIN_DATA.json").is_file():
+        folds_rec = {f["fold"]: f.get("status", "SCORABLE") for f in json.loads((root/"FIN_DATA.json").read_text())["folds"]}
+    n_folds = int(design["folds"]["dev_weeks"])
     families = sorted({c["loss"] for c in design["candidates"]})
-    per_fold = {}
-    for k in range(int(design["folds"]["dev_weeks"])):
-        per_fold[k] = {}
+    per_fold, per_config = {}, {}
+    for k in range(n_folds):
+        status = folds_rec.get(k, "SCORABLE")
+        per_fold[k] = {"status": status}
+        if status != "SCORABLE":
+            per_fold[k]["why"] = "no score in this fold; its calendar position is kept as a gap"
+            continue
         for fam in families:
-            rows = [(cid, r) for cid, r in records.items() if r["cell"]["fold"] == k and r["candidate"]["loss"] == fam]
-            if not rows:
-                per_fold[k][fam] = {"status": "NOT_RUN"}
+            configs = {}
+            for cand in [c for c in candidates if c["loss"] == fam]:
+                cells = {s: by_key.get((k, cand["id"], s)) for s in seeds}
+                have = [s for s, r in cells.items() if r]
+                if len(have) != len(seeds):
+                    configs[cand["id"]] = {"status": "INCOMPLETE", "seeds_present": have}
+                    continue
+                vals = [cells[s]["scores"]["validation"]["mae_z"] for s in seeds]
+                tests = {s: (cells[s]["scores"]["test"] or {}).get("mae_z") for s in seeds}
+                configs[cand["id"]] = {"status": "COMPLETE", "validation_mae_z_by_seed": dict(zip(map(str, seeds), vals)),
+                                       "validation_mean_over_seeds": float(np.mean(vals)), "test_mae_z_by_seed": {str(s): t for s, t in tests.items()}}
+            complete = {cid: c for cid, c in configs.items() if c["status"] == "COMPLETE"}
+            if not complete:
+                per_fold[k][fam] = {"status": "NOT_RUN_OR_INCOMPLETE", "configs": configs}
                 continue
-            best = min(rows, key=lambda x: x[1]["scores"]["validation"]["mae_z"])
-            per_fold[k][fam] = {"selected": best[0], "by": "validation MAE_z", "validation_mae_z": best[1]["scores"]["validation"]["mae_z"],
-                                "test_mae_z_of_selected": (best[1]["scores"]["test"] or {}).get("mae_z"),
-                                "all_candidates_test_mae_z": {cid: (r["scores"]["test"] or {}).get("mae_z") for cid, r in rows},
-                                "n_candidates_compared": len(rows)}
+            best = min(complete, key=lambda cid: complete[cid]["validation_mean_over_seeds"])
+            per_fold[k][fam] = {"selected": best, "by": "validation MAE_z averaged over the declared seeds (configuration level)",
+                                "validation_mean_over_seeds": complete[best]["validation_mean_over_seeds"],
+                                "test_mae_z_by_seed_of_selected": complete[best]["test_mae_z_by_seed"],
+                                "n_candidates_compared": len(complete), "configs": configs}
     paired = {}
     if len(families) == 2:
         f0, f1 = families
-        diffs = [per_fold[k][f1]["test_mae_z_of_selected"] - per_fold[k][f0]["test_mae_z_of_selected"] for k in per_fold
-                 if per_fold[k][f0].get("test_mae_z_of_selected") is not None and per_fold[k][f1].get("test_mae_z_of_selected") is not None]
-        paired = {"difference": f"{f1} - {f0}, test MAE_z of each fold's validation-selected candidate", "values": diffs,
-                  **block_bootstrap(np.asarray(diffs), block_len=2),
-                  "multiplicity": {"candidates_per_family": {fam: len([c for c in design["candidates"] if c["loss"] == fam]) for fam in families},
+        by_seed = {str(s): [] for s in seeds}
+        for k in range(n_folds):
+            a, b = per_fold[k].get(f0, {}), per_fold[k].get(f1, {})
+            for s in seeds:
+                ta, tb = (a.get("test_mae_z_by_seed_of_selected") or {}).get(str(s)), (b.get("test_mae_z_by_seed_of_selected") or {}).get(str(s))
+                by_seed[str(s)].append(tb-ta if (ta is not None and tb is not None) else float("nan"))
+        boots = {s: block_bootstrap(np.asarray(vals), block_len=2) for s, vals in by_seed.items()}
+        paired = {"difference": f"{f1} - {f0}, test MAE_z of each fold's configuration-level selection, one series per PAIRED seed",
+                  "by_seed": {s: {"values_by_fold_position": [None if not np.isfinite(x) else x for x in vals], **boots[s]} for s, vals in by_seed.items()},
+                  "reading": "seeds are retained replicates, never selected over; the fold series keeps missing folds as gaps",
+                  "multiplicity": {"candidates_per_family": {fam: len([c for c in candidates if c["loss"] == fam]) for fam in families},
                                    "reading": "each family's selection compared this many candidates on validation; the test difference is "
                                               "conditional on that selection and is not a confirmatory test"}}
-    doc = {"schema": "df_fin_runner_selection.v1", "design_sha256": design["design_sha256"], "per_fold": per_fold, "paired": paired,
-           "rule": "selection by validation MAE_z only; every candidate's test score retained; no best-test"}
+    doc = {"schema": "df_fin_runner_selection.v2", "design_sha256": design["design_sha256"], "per_fold": per_fold, "paired": paired,
+           "rule": "configuration-level selection by validation MAE_z averaged over seeds; every candidate's test score retained; no best-test, no best-of-seeds"}
     (root/"SELECTION.json").write_text(json.dumps(doc, indent=1, default=str))
     return doc
 

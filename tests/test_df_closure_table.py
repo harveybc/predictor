@@ -178,18 +178,22 @@ def synthetic_root(tmp_path):
     return {"root": root, "Y": Y, "origins": origins, "pred": pred, "sha": sha, "mae": mae}
 
 
-def _wh(sha, *, status="COMPLETED", present=True, digest="t"*64):
+def _wh(sha, *, status="COMPLETED", present=True, digest="t"*64, root=None, record=True, metrics=None):
+    """The ACCEPTED canonical payload the warehouse would return: predictions + record artifact digests (the record's
+    digest is read from the fixture at call time, as the accepted payload would have recorded it)."""
     def warehouse(campaign):
         if not present:
             return {"current": {}}
-        return {"current": {UNIT: {"terminal_sha256": digest, "status": status,
-                                   "artifacts": [{"role": "predictions", "sha256": sha}]}}}
+        arts = [{"role": "predictions", "sha256": sha}]
+        if record and root is not None and (root/"attempts"/UNIT/"cell.json").is_file():
+            arts.append({"role": "record", "sha256": _sha(root/"attempts"/UNIT/"cell.json")})
+        return {"current": {UNIT: {"terminal_sha256": digest, "status": status, "artifacts": arts, "metrics": metrics or []}}}
     return warehouse
 
 
 def _table(fx, warehouse=None, sha=None):
     return T.build([f"{fx['root']}:synthetic"], registry=B.registry(),
-                   warehouse=warehouse or _wh(sha or fx["sha"]), no_new_measurement=True)
+                   warehouse=warehouse or _wh(sha or fx["sha"], root=fx["root"]), no_new_measurement=True)
 
 
 def test_rows_are_recomputed_from_arrays_bound_to_the_terminal_and_the_warehouse(synthetic_root):
@@ -205,7 +209,8 @@ def test_rows_are_recomputed_from_arrays_bound_to_the_terminal_and_the_warehouse
     assert r["model_scale"] == r["naive_scale"] == "kW" and r["target"] == "Global_active_power"
     assert r["binding"]["level"] == "TERMINAL_ARTIFACT" and r["binding"]["arrays_sha256"] == fx["sha"]
     assert r["warehouse"] == {"checked": True, "terminal_in_warehouse": True, "digest_matches_receipt": True,
-                              "status": "COMPLETED", "artifact_rows": 1}
+                              "status": "COMPLETED", "artifact_rows": 2}
+    assert r["custody"]["class"] == "ACCEPTED_ARTIFACT_CHAIN" and table["custody_classes"] == {"ACCEPTED_ARTIFACT_CHAIN": 1}
     assert r["record_score_checked"] and r["verified"] and r["role"] == "forecast"
     assert r["comparability_status"] == "NOT_COMPARABLE" and r["literature_value_and_source"]["placed_in_comparison_column"] is False
     assert r["units_not_scored_by_role"] == [{"unit": "pilot_cost", "role": "cost_pilot", "why": "not a forecast unit by its registered role"},
@@ -224,16 +229,16 @@ def test_PROBE_changed_predictions_under_the_same_receipt_are_a_problem(syntheti
     assert r["model_error"] is None and not r["verified"]
     assert any("CHANGED ARRAYS" in p for p in after["problems"]) and after["verified_rows"] == 0
     assert any("warehouse's predictions artifact digest" in p for p in after["problems"])
-    assert "| NO:" in T.markdown(after)
+    assert "| NO (" in T.markdown(after)
 
 
 def test_PROBE_a_missing_warehouse_terminal_is_a_problem(synthetic_root):
     fx = synthetic_root
-    t = _table(fx, warehouse=_wh(fx["sha"], present=False))
-    assert any("holds NO terminal" in p for p in t["problems"]) and t["verified_rows"] == 0
-    t = _table(fx, warehouse=_wh(fx["sha"], digest="x"*64))
+    t = _table(fx, warehouse=_wh(fx["sha"], present=False, root=fx["root"]))
+    assert any("holds NO terminal" in p for p in t["problems"]) and t["verified_rows"] == 0 and t["rows"][0]["custody"]["class"] == "NO_ACCEPTED_TERMINAL"
+    t = _table(fx, warehouse=_wh(fx["sha"], digest="x"*64, root=fx["root"]))
     assert any("digest differs from the client's receipt" in p for p in t["problems"])
-    t = _table(fx, warehouse=_wh(fx["sha"], status="FAILED"))
+    t = _table(fx, warehouse=_wh(fx["sha"], status="FAILED", root=fx["root"]))
     assert any("not COMPLETED" in p for p in t["problems"])
 
 
@@ -285,12 +290,54 @@ def test_labels_origins_and_record_score_identities_are_checked(synthetic_root):
 
 def test_binding_levels_record_digest_and_not_bound(synthetic_root):
     fx = synthetic_root
-    (fx["root"]/"TERMINALS"/f"{UNIT}.json").unlink()
+    (fx["root"]/"TERMINALS"/f"{UNIT}.json").unlink()                                  # the local terminal file is gone: custody is the warehouse's
     t = _table(fx)
-    assert t["rows"][0]["binding"]["level"] == "RECORD_DIGEST" and t["problems"] == []
+    assert t["rows"][0]["binding"]["level"] == "RECORD_DIGEST" and t["problems"] == [] and t["rows"][0]["verified"]
     (fx["root"]/"attempts"/UNIT/"cell.json").unlink()
     t = _table(fx)
-    assert t["rows"][0]["binding"]["level"] == "NOT_BOUND" and any("NOT BOUND" in p for p in t["problems"])
+    assert t["rows"][0]["binding"]["level"] == "NOT_BOUND" and any("NOT BOUND" in p for p in t["problems"]) and not t["rows"][0]["verified"]
+
+
+def test_PROBE_a_rewritten_record_and_arrays_never_certify_a_score_without_an_accepted_anchor(synthetic_root):
+    """Musashi's RP73 counterexample: predictions AND their local record rewritten, the local terminal removed, the
+    warehouse terminal without artifact rows and the receipt unchanged. Neither table may say verified."""
+    fx = synthetic_root
+    (fx["root"]/"TERMINALS"/f"{UNIT}.json").unlink()
+    no_artifacts = lambda campaign: {"current": {UNIT: {"terminal_sha256": "t"*64, "status": "COMPLETED", "artifacts": [], "metrics": []}}}
+    before = _table(fx, warehouse=no_artifacts)
+    assert before["rows"][0]["model_error"] > 0 and not before["rows"][0]["verified"] and before["rows"][0]["custody"]["class"] == "UNANCHORED"
+    assert any("a local record is not custody" in p for p in before["problems"])
+    perfect = fx["Y"][fx["origins"]+H]
+    sha = _write_arrays(fx["root"], perfect, perfect, fx["origins"], Y=fx["Y"]); _bind(fx["root"], UNIT, sha, mae=0.0, terminal=False)
+    after = _table(fx, warehouse=no_artifacts)
+    assert after["rows"][0]["model_error"] == 0.0 and not after["rows"][0]["verified"] and after["verified_rows"] == 0 and after["problems"]
+
+
+def test_a_historical_score_is_preserved_when_the_accepted_metric_anchors_it_and_refused_when_it_disagrees(synthetic_root):
+    """History without artifact rows: the metric the accepted terminal carries is the only independent anchor. Equal ->
+    PRESERVED with a qualified scope (never 'verified'); different -> CHANGED ARRAYS."""
+    fx = synthetic_root
+    anchored = lambda campaign: {"current": {UNIT: {"terminal_sha256": "t"*64, "status": "COMPLETED", "artifacts": [],
+                                                    "metrics": [{"metric": "e1.phase1.mae_validation", "split": "validation", "value": fx["mae"]}]}}}
+    t = _table(fx, warehouse=anchored)
+    r = t["rows"][0]
+    assert t["problems"] == [] and not r["verified"] and r["preserved_with_qualified_scope"] and r["custody"]["class"] == "METRIC_ANCHORED"
+    assert t["preserved_qualified_rows"] == 1 and "PRESERVED (METRIC_ANCHORED)" in T.markdown(t)
+    perfect = fx["Y"][fx["origins"]+H]
+    sha = _write_arrays(fx["root"], perfect, perfect, fx["origins"], Y=fx["Y"]); _bind(fx["root"], UNIT, sha, mae=0.0)
+    t = _table(fx, warehouse=anchored)
+    assert any("not the MAE recomputed from the arrays" in p for p in t["problems"]) and t["rows"][0]["custody"]["class"] == "UNANCHORED"
+
+
+def test_a_new_result_needs_the_full_accepted_chain_predictions_and_record(synthetic_root):
+    fx = synthetic_root
+    d = json.loads((fx["root"]/"DESIGN.json").read_text()); d["schema"] = "df_e1_block_design.v1"
+    (fx["root"]/"DESIGN.json").write_text(json.dumps(d))
+    t = _table(fx)
+    assert t["problems"] == [] and t["rows"][0]["verified"]
+    t = _table(fx, warehouse=_wh(fx["sha"], root=fx["root"], record=False))            # accepted predictions, no record anchor
+    assert any("must be anchored by the accepted artifact chain" in p for p in t["problems"]) and not t["rows"][0]["verified"]
+    assert t["rows"][0]["custody"]["class"] == "ACCEPTED_PREDICTIONS_NO_RECORD_ANCHOR"
 
 
 def test_the_pilot_phase1_layout_is_read_and_the_naive_is_persistence_on_identical_origins(synthetic_root):
@@ -311,5 +358,6 @@ def test_the_cli_exits_nonzero_on_problems_and_writes_both_files(synthetic_root,
                    "--no-new-measurement"]) == 0
     table = json.loads(out.read_text())
     assert table["schema"] == T.SCHEMA and table["rows"][0]["warehouse"] == {"checked": False}
+    assert table["rows"][0]["custody"]["class"] == "UNCHECKED" and table["verified_rows"] == 0     # nothing local verifies itself
     (fx["root"]/"attempts"/UNIT/"arrays.npz").unlink()
     assert T.main(["--run", f"{fx['root']}:synthetic", "--registry", str(reg), "--out", str(out), "--no-new-measurement"]) == 1

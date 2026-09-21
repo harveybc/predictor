@@ -1,0 +1,158 @@
+{
+  "reference_without_model_or_predictions": {
+    "state": "PLANNED_REFERENCE",
+    "units": null,
+    "has_design_digest": false,
+    "expected": "not VERIFIED_COMPARATOR"
+  },
+  "unanchored_record_rewrite": {
+    "before_mae": 0.08047815706486044,
+    "after_mae": 0.0,
+    "before_verified": false,
+    "after_verified": false,
+    "problems": [
+      "synthetic/core_mae_s1: no accepted artifact or metric anchors these arrays: a local record is not custody"
+    ],
+    "warehouse_and_receipt_unchanged": true,
+    "expected": "no end-to-end verified score from a mutable unanchored record"
+  },
+  "financial_nonfinite_window": {
+    "retained_affected_train_windows": 0,
+    "tensor_contains_nan": false,
+    "expected": "typed refusal or exclusion before model input; common population across arms"
+  },
+  "two_fold_bootstrap": {
+    "mean": 0.09999999999999999,
+    "n_folds_present": 2,
+    "n_positions": 2,
+    "block_len": 2,
+    "complete_blocks": 1,
+    "signs": {
+      "positive": 1,
+      "negative": 1,
+      "zero": 0
+    },
+    "sample_sd_ddof1": 0.28284271247461906,
+    "interval_95": null,
+    "status": "INSUFFICIENT_RESAMPLING_SUPPORT",
+    "why": "1 complete blocks of length 2 over 2 folds; at least 5 blocks and 2 x block length are required",
+    "reading": "descriptive only: mean, signs and sample SD; no coverage is claimed"
+  },
+  "selection_chooses_replica": {
+    "status": "SCORABLE",
+    "huber": {
+      "selected": "huber",
+      "by": "validation MAE_z averaged over the declared seeds (configuration level)",
+      "validation_mean_over_seeds": 0.25,
+      "test_mae_z_by_seed_of_selected": {
+        "1": 0.2,
+        "2": 0.2
+      },
+      "n_candidates_compared": 1,
+      "configs": {
+        "huber": {
+          "status": "COMPLETE",
+          "validation_mae_z_by_seed": {
+            "1": 0.2,
+            "2": 0.3
+          },
+          "validation_mean_over_seeds": 0.25,
+          "test_mae_z_by_seed": {
+            "1": 0.2,
+            "2": 0.2
+          }
+        }
+      }
+    },
+    "mae": {
+      "selected": "mae",
+      "by": "validation MAE_z averaged over the declared seeds (configuration level)",
+      "validation_mean_over_seeds": 0.5,
+      "test_mae_z_by_seed_of_selected": {
+        "1": 0.4,
+        "2": 0.4
+      },
+      "n_candidates_compared": 1,
+      "configs": {
+        "mae": {
+          "status": "COMPLETE",
+          "validation_mae_z_by_seed": {
+            "1": 0.1,
+            "2": 0.9
+          },
+          "validation_mean_over_seeds": 0.5,
+          "test_mae_z_by_seed": {
+            "1": 0.4,
+            "2": 0.4
+          }
+        }
+      }
+    }
+  },
+  "training_loop": {
+    "updates": 4,
+    "optimizer_iterations": 4,
+    "stop_reason": "UPDATE_BUDGET+EARLY_STOPPING",
+    "censoring": {
+      "verdict": "CENSORED_BY_BUDGET",
+      "rule": "reaching the update ceiling is censoring wherever the best checkpoint fell and whether or not patience expired on the same update; early stopping never claims convergence"
+    },
+    "events": [
+      {
+        "update": 1,
+        "val_mae_scaled": 1.0,
+        "train_loss_mean_since_last": 4.0
+      },
+      {
+        "update": 2,
+        "val_mae_scaled": 1.0,
+        "train_loss_mean_since_last": 0.0
+      },
+      {
+        "update": 3,
+        "val_mae_scaled": 1.0,
+        "train_loss_mean_since_last": 0.0
+      },
+      {
+        "update": 4,
+        "val_mae_scaled": 1.0,
+        "train_loss_mean_since_last": 0.0
+      }
+    ],
+    "expected_batch_losses": [
+      4.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "expected_budget_status": "CENSORED_BY_BUDGET at update 4"
+  },
+  "q2_cost_double_count": {
+    "reported_projection": 127579.07407863038,
+    "validation_counted_once_projection": 111000.12551499036,
+    "still_above_14400": true,
+    "per_arm": {
+      "daily_lag": {
+        "training_plus_overhead_per_update": 0.06346680935499999,
+        "corrected_per_cell": 286.67539803223696
+      },
+      "long_window_crop60": {
+        "training_plus_overhead_per_update": 0.06672908184000002,
+        "corrected_per_cell": 311.8743466522996
+      },
+      "long_window_local_support_67": {
+        "training_plus_overhead_per_update": 4.4426690375749995,
+        "corrected_per_cell": 18406.319274876274
+      },
+      "long_window_own_depth": {
+        "training_plus_overhead_per_update": 4.165195682185,
+        "corrected_per_cell": 17507.405842381846
+      },
+      "short_window_deep_core": {
+        "training_plus_overhead_per_update": 0.10905662669500002,
+        "corrected_per_cell": 487.7669763874655
+      }
+    },
+    "scope": "arithmetic correction, not a new cost measurement or execution authorization"
+  }
+}
