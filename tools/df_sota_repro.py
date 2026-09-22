@@ -1089,6 +1089,126 @@ def profile_eval(design: dict, *, data_path: Path, work: Path, horizon: int, che
     return prof
 
 
+# --- RP103: authorized deletion of prediction arrays after verified metrics ---------------------------------------------------------
+
+def _readers_of(path: Path) -> list:
+    """Processes holding or transferring the file: fuser on the path plus any rsync/scp/cp command line naming it."""
+    out = []
+    try:
+        r = subprocess.run(["fuser", str(path)], capture_output=True, text=True, timeout=20)
+        if r.stdout.strip():
+            out.append(f"fuser: {r.stdout.strip()}")
+    except Exception:                                               # noqa: BLE001
+        pass
+    try:
+        r = subprocess.run(["pgrep", "-fa", f"(rsync|scp|cp|tar) .*{path.name}"], capture_output=True, text=True, timeout=20)
+        for line in r.stdout.strip().splitlines():
+            if str(path.parent.name) in line or str(path) in line:
+                out.append(f"transfer: {line[:120]}")
+    except Exception:                                               # noqa: BLE001
+        pass
+    return out
+
+
+def inventory_predictions(roots: list) -> list:
+    inv = []
+    for root in roots:
+        root = Path(root)
+        for f in sorted(root.glob("attempts/*/arrays.npz")):
+            st = f.stat(); vfs = os.statvfs(f)
+            inv.append({"path": str(f), "root": str(root), "unit": f.parent.name, "bytes": st.st_size, "sha256": sha_file(f), "filesystem_id": f"{os.stat(f).st_dev}",
+                        "readers": _readers_of(f)})
+    return inv
+
+
+def deletion_gate(root: Path, unit: str) -> dict:
+    """Every condition the retention document names, checked from persisted evidence: a closure REPORT whose row for the unit is
+    verified (custody accepted, catalog recomputed and read back, independent check) or historically verified; the catalog on disk
+    with the reported digest; cross-device failure diagnostics preserved when the replay history holds a failure; no reader."""
+    root = Path(root); folder = root / "attempts" / unit
+    reasons = []
+    report_path = root / "REPORT.json"
+    if not report_path.is_file():
+        return {"pass": False, "reasons": ["no closure REPORT.json"]}
+    report = json.loads(report_path.read_text())
+    row = next((r for r in report["verification"]["rows"] if r["unit"] == unit), None)
+    if row is None:
+        reasons.append("the unit has no row in the closure report")
+    else:
+        if not row.get("verified"):
+            reasons.append(f"the closure did not verify the unit: {row.get('problems') or row.get('status')}")
+        if (row.get("custody") or {}).get("class") != "ACCEPTED_ARTIFACT_CHAIN":
+            reasons.append("custody is not the accepted artifact chain")
+        rc = row.get("recomputed") or {}
+        if not (rc.get("metrics_vault_recomputed") and rc.get("metrics_vault_read_back_equal")):
+            reasons.append("the metric catalog was not recomputed and read back at closure")
+        vp = folder / "METRICS_VAULT.json"
+        if not vp.is_file() or sha_file(vp) != rc.get("metrics_vault_sha256"):
+            reasons.append("the catalog on disk is not the one the closure reported")
+        else:
+            v = json.loads(vp.read_text())
+            if v.get("schema") != VAULT_SCHEMA:
+                reasons.append(f"catalog schema {v.get('schema')} is not {VAULT_SCHEMA}")
+            ic = v.get("independent_check") or {}
+            if not ic or abs((ic.get("global_vs_author") or {}).get("mae", 1)) > 1e-6:
+                reasons.append("the catalog's independent check is absent or failed")
+            if any(c.get("state") == "UNDEFINED" for k, c in (v.get("catalog") or {}).items() if k in ("errors", "matched_baselines")):
+                reasons.append("required errors or baselines are UNDEFINED")
+    hist = json.loads((root / "REPLAYS.json").read_text()).get(unit, {}) if (root / "REPLAYS.json").is_file() else {}
+    if any(not e.get("allclose_rule") for e in hist.values()) and not (folder / "ROUTE_TRACE.json").is_file():
+        reasons.append("a replay failure is recorded and its route-level diagnostic is not preserved")
+    if not (folder / "cell.json").is_file() or not (folder / "checkpoint.pth").is_file():
+        reasons.append("record or checkpoint missing (they are preserved, never deleted)")
+    arrays = folder / "arrays.npz"
+    if not arrays.is_file():
+        reasons.append("no prediction array to delete")
+    else:
+        readers = _readers_of(arrays)
+        if readers:
+            reasons.append(f"active readers/transfers: {readers}")
+        rec = json.loads((folder / "cell.json").read_text()) if (folder / "cell.json").is_file() else {}
+        if sha_file(arrays) != rec.get("arrays_sha256"):
+            reasons.append("the arrays on disk are not the record's arrays")
+    return {"pass": not reasons, "reasons": reasons, "report_sha256": sha_file(report_path)}
+
+
+def delete_predictions(root: Path, units: list, *, extra_roots: list | None = None, dry_run: bool = False) -> dict:
+    """The owner's authorized deletion (2026-09-22): inventory every copy under the given roots, pass the gate per unit, delete the
+    inventoried arrays (including the final copy), record per-path receipts with the bytes the filesystem actually reclaimed, and
+    leave a PREDICTIONS_DELETED.json beside each record so the closure reports the dated historical verification."""
+    root = Path(root); roots = [root] + [Path(x) for x in (extra_roots or [])]
+    receipt = {"schema": "df_sota_deletion_receipt.v1", "at": now_iso(), "host": socket.gethostname(), "root": str(root), "dry_run": dry_run, "units": {}, "paths": []}
+    inv = inventory_predictions(roots)
+    for unit in units:
+        gate = deletion_gate(root, unit)
+        copies = [x for x in inv if x["unit"] == unit]
+        entry = {"gate": gate, "copies_inventoried": copies, "deleted": []}
+        if gate["pass"] and not dry_run:
+            rec = json.loads((root / "attempts" / unit / "cell.json").read_text())
+            for c in copies:
+                path = Path(c["path"])
+                if c["readers"]:
+                    entry["deleted"].append({"path": c["path"], "deleted": False, "why": f"readers {c['readers']}"}); continue
+                before = os.statvfs(path); free_before = before.f_bavail * before.f_frsize
+                path.unlink()
+                after = os.statvfs(path.parent); free_after = after.f_bavail * after.f_frsize
+                entry["deleted"].append({"path": c["path"], "deleted": True, "bytes": c["bytes"], "sha256": c["sha256"], "filesystem_id": c["filesystem_id"],
+                                         "reclaimed_bytes_fs_delta": free_after - free_before, "at": now_iso()})
+            marker = {"schema": "df_sota_predictions_deleted.v1", "unit": unit, "deleted_at": now_iso(), "arrays_sha256": rec.get("arrays_sha256"), "pred_sha256": rec.get("pred_sha256"),
+                      "closure_report_sha256": gate["report_sha256"], "verified_at_deletion": True, "authorization": "owner 2026-09-22 (retention document); Musashi RP98-RP105 RP103",
+                      "paths_deleted": [d["path"] for d in entry["deleted"] if d["deleted"]], "reading": "metrics verified before authorized deletion; the arrays' hash records their former identity and cannot reconstruct them; no current replay is possible"}
+            write_atomic(root / "attempts" / unit / "PREDICTIONS_DELETED.json", json.dumps(marker, indent=1))
+            entry["marker"] = marker
+        receipt["units"][unit] = entry
+        receipt["paths"] += entry["deleted"]
+    receipt["reclaimed_bytes_by_filesystem"] = {}
+    for d in receipt["paths"]:
+        if d.get("deleted"):
+            receipt["reclaimed_bytes_by_filesystem"][d["filesystem_id"]] = receipt["reclaimed_bytes_by_filesystem"].get(d["filesystem_id"], 0) + d["reclaimed_bytes_fs_delta"]
+    write_atomic(root / f"DELETION_RECEIPT.{int(time.time())}.json", json.dumps(receipt, indent=1, default=str))
+    return receipt
+
+
 # --- RP96: verification and the RP97 table ----------------------------------------------------------------------------------------
 
 def replay_code_sha256() -> str:
@@ -1099,7 +1219,7 @@ def replay_code_sha256() -> str:
     return hashlib.sha256("\n".join(parts).encode()).hexdigest()
 
 
-def replay_cell(root: Path, design: dict, unit: str, *, data_path: Path, device: str = "cpu") -> dict:
+def replay_cell(root: Path, design: dict, unit: str, *, data_path: Path, device: str = "cpu", author_metric_budget: int | None = None) -> dict:
     """Fresh process: the author's test(test=1) reloads the checkpoint through the author's own path and scores; the captured
     predictions are compared with the stored ones under the frozen replay rule."""
     cell = next(c for c in design["cells"] if c["cell_id"] == unit)
@@ -1116,7 +1236,8 @@ if {device == "cpu"!r}:
     # map_location, so a checkpoint saved from CUDA cannot be read on a CPU-only replay; placement only, no arithmetic changes
     _load = torch.load
     torch.load = functools.partial(_load, map_location=torch.device("cpu"))
-res = M.main_like_run_py(cell["argv"], seed=cell["seed"], data_dir=Path({str(data_path.parent)!r}), data_name={data_path.name!r}, work=work, gpu=0, use_gpu={device != "cpu"}, train=False)
+res = M.main_like_run_py(cell["argv"], seed=cell["seed"], data_dir=Path({str(data_path.parent)!r}), data_name={data_path.name!r}, work=work, gpu=0, use_gpu={device != "cpu"}, train=False,
+                         bounded=True, author_metric_budget_bytes={author_metric_budget!r})
 with np.load(folder/"arrays.npz") as z: stored = z["pred"]
 rep = np.asarray(res["preds"], dtype=np.float32)
 rule = design["lock"]["replay_rule"]
@@ -1134,8 +1255,11 @@ if str(res["device"]).startswith("cuda") and gpu:
 print(json.dumps({{"unit": unit, "device": res["device"], "device_uuid": dev_uuid, "device_name": (gpu[0].get("name") if gpu and str(res["device"]).startswith("cuda") else "cpu"),
                    "max_abs_prediction_difference": max_abs, "allclose_rule": allclose, "finite": finite, "shape_equal": shape_equal,
                    "exact_equal_elements": n_exact, "elements": n_total, "exact_equal_fraction": (n_exact / n_total) if n_total else None,
-                   "replayed_author_metric": res["author_metric"], "true_sha256_replayed": M.sha_array(np.asarray(res["trues"], dtype=np.float32)), "shape": list(rep.shape),
+                   "replayed_author_metric": res["author_metric"], "replayed_author_metric_state": res.get("author_metric_state"), "replayed_metric_float64": res.get("independent_metric_float64"),
+                   "true_sha256_replayed": res["bounded"]["finalized"]["true_sha256"], "shape": list(rep.shape),
                    "rule": {{"atol": rule["atol"], "rtol": rule["rtol"]}}}}))
+for tmp in (res["bounded"]["preds_path"], res["bounded"]["trues_path"]):
+    Path(tmp).unlink(missing_ok=True)
 shutil.rmtree(work, ignore_errors=True)
 """
     env = {**os.environ, "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS", "4")}
@@ -1364,7 +1488,7 @@ def write_atomic(path: Path, text: str) -> None:
 
 
 def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None, replay: bool = True, replay_device: str = "cpu",
-                    replay_units: list | None = None) -> dict:
+                    replay_units: list | None = None, author_metric_budget: int | None = None) -> dict:
     root = Path(root)
     design = json.loads((root / "DESIGN.json").read_text())
     validate(design)
@@ -1397,6 +1521,21 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
     rows, cache = [], {}
     for cell in design["cells"]:
         unit, folder, p_ = cell["cell_id"], root / "attempts" / cell["cell_id"], []
+        deleted = folder / "PREDICTIONS_DELETED.json"
+        if not (folder / "arrays.npz").is_file() and deleted.is_file() and (folder / "cell.json").is_file():
+            # RP103: the arrays were deleted under the owner's authorization AFTER their metrics were verified; the record and the
+            # deletion receipt say when and under which closure. Not a current replay, not a missing artifact.
+            dd = json.loads(deleted.read_text()); record = json.loads((folder / "cell.json").read_text())
+            ok_receipt = dd.get("arrays_sha256") == record.get("arrays_sha256") and dd.get("closure_report_sha256") and dd.get("deleted_at")
+            basis_metric, basis = metric_of(record)
+            rows.append({"unit": unit, "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")}, "verified": False,
+                         "verified_historically": bool(ok_receipt and dd.get("verified_at_deletion")), "status": "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION" if ok_receipt else "DELETED_WITHOUT_VALID_RECEIPT",
+                         "author_metric_float32": basis_metric, "metric_basis": basis, "custody": {"class": "HISTORICAL: arrays deleted under authorization; digests retained"},
+                         "deletion": dd, "training": record.get("training"), "cost": record.get("cost"), "n_parameters": record.get("n_parameters"), "device": record.get("device"),
+                         "replay": {"skipped": True, "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt"},
+                         "problems": ([] if ok_receipt else [f"{unit}: predictions absent and the deletion receipt does not bind to the record: DELETED_WITHOUT_VALID_RECEIPT"]),
+                         "task_id": disp["task_id"], "disposition": disp["disposition"]})
+            continue
         if not (folder / "cell.json").is_file() or not (folder / "arrays.npz").is_file() or not (folder / "checkpoint.pth").is_file():
             rows.append({"unit": unit, "cell": cell, "verified": False, "status": "MISSING", "problems": [f"{unit}: a registered cell has no record, arrays or checkpoint — missing, not absent"]}); continue
         record = json.loads((folder / "cell.json").read_text())
@@ -1469,8 +1608,14 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             DF = importlib.import_module("data_provider.data_factory")
             _, test_loader = DF.data_provider(args, "test")
             trues = np.concatenate([b[1][:, -args.pred_len:, :].float().numpy().astype(np.float32) for b in test_loader], axis=0)
-            mae32, mse32 = MET.metric(preds, trues)[:2]
-            recomputed = {"author_float32": {"mae": float(mae32), "mse": float(mse32)}, "independent_float64": float64_metrics(preds, trues)}
+            recomputed = {"independent_float64": float64_metrics(preds, trues)}
+            need = 3 * int(preds.nbytes)
+            if author_metric_budget is None or need <= author_metric_budget:
+                mae32, mse32 = MET.metric(preds, trues)[:2]
+                recomputed["author_float32"] = {"mae": float(mae32), "mse": float(mse32)}
+            else:
+                recomputed["author_float32"] = None
+                recomputed["author_float32_state"] = f"NOT_EXECUTED_WITHIN_BUDGET at closure (needs ~{need} bytes of temporaries)"
             del trues
             vault_path = folder / "METRICS_VAULT.json"
             # RP99 (Musashi RP97 #1): a persisted vault is never trusted from disk — the catalog is RECOMPUTED from the accepted
@@ -1488,8 +1633,9 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             if fresh is not None:
                 if fresh["identity"]["true_sha256_consumed"] != record.get("true_sha256"):
                     p_.append(f"{unit}: the catalog's consumed targets are not the record's targets: TARGETS")
-                fresh["independent_check"] = {"author_metric_float32": record["author_metric_float32"],
-                                              "global_vs_author": {"mae": fresh["global"]["mae"] - record["author_metric_float32"]["mae"], "mse": fresh["global"]["mse"] - record["author_metric_float32"]["mse"]},
+                basis_metric, basis = metric_of(record)
+                fresh["independent_check"] = {"record_metric": basis_metric, "record_metric_basis": basis,
+                                              "global_vs_author": {"mae": fresh["global"]["mae"] - basis_metric["mae"], "mse": fresh["global"]["mse"] - basis_metric["mse"]},
                                               "per_step_mean_vs_global": {"mae": float(np.mean(fresh["per_step"]["mae"])) - fresh["global"]["mae"], "mse": float(np.mean(fresh["per_step"]["mse"])) - fresh["global"]["mse"]},
                                               "per_channel_mean_vs_global": {"mae": float(np.mean(fresh["per_channel"]["mae"])) - fresh["global"]["mae"]},
                                               "naive_vs_closure": {"mae": fresh["global"]["naive_mae"] - (derived or {}).get("naive", {}).get("mae", float("nan"))},
@@ -1512,12 +1658,19 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                 recomputed["metrics_vault_read_back_equal"] = vault_equal(json.loads(vault_path.read_text()), fresh)
                 if not recomputed["metrics_vault_read_back_equal"]:
                     p_.append(f"{unit}: the published catalog does not read back equal to the recomputed one")
-            if abs(float(mae32) - record["author_metric_float32"]["mae"]) > 0 or abs(float(mse32) - record["author_metric_float32"]["mse"]) > 0:
-                p_.append(f"{unit}: the author's metric recomputed from the arrays is not the record's: METRIC")
-            if abs(recomputed["independent_float64"]["mae"] - record["author_metric_float32"]["mae"]) > 1e-6 or abs(recomputed["independent_float64"]["mse"] - record["author_metric_float32"]["mse"]) > 1e-6:
-                p_.append(f"{unit}: the independent float64 metric differs from the author's by more than 1e-6: REDUCTION")
+            basis_metric, basis = metric_of(record)
+            if basis_metric is None:
+                p_.append(f"{unit}: the record carries no metric at all")
+            if record.get("author_metric_float32") and recomputed.get("author_float32") is not None:
+                if abs(recomputed["author_float32"]["mae"] - record["author_metric_float32"]["mae"]) > 0 or abs(recomputed["author_float32"]["mse"] - record["author_metric_float32"]["mse"]) > 0:
+                    p_.append(f"{unit}: the author's metric recomputed from the arrays is not the record's: METRIC")
+            if basis_metric is not None and (abs(recomputed["independent_float64"]["mae"] - basis_metric["mae"]) > 1e-6 or abs(recomputed["independent_float64"]["mse"] - basis_metric["mse"]) > 1e-6):
+                p_.append(f"{unit}: the independent float64 metric differs from the record's ({basis}) by more than 1e-6: REDUCTION")
+            recomputed["metric_basis"] = basis
+        basis_metric, basis = metric_of(record)
         rows.append({"unit": unit, "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")}, "custody": custody,
-                     "author_metric_float32": record["author_metric_float32"], "recomputed": recomputed, "derived": derived,
+                     "author_metric_float32": basis_metric, "metric_basis": basis, "author_metric_state": record.get("author_metric_state"),
+                     "recomputed": recomputed, "derived": derived,
                      "training": record.get("training"), "cost": record.get("cost"), "n_parameters": record.get("n_parameters"), "device": record.get("device"),
                      "verified": not p_ and custody["class"] == "ACCEPTED_ARTIFACT_CHAIN" and prep["class"] == "PREPARATION_ACCEPTED_ARTIFACT" and not problems and data_path is not None,
                      "problems": p_, "task_id": disp["task_id"], "disposition": disp["disposition"]})
@@ -1538,8 +1691,9 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                 continue
             ident = {"checkpoint_sha256": sha_file(folder / "checkpoint.pth"), "arrays_sha256": sha_file(folder / "arrays.npz"), "design_sha256": design["design_sha256"],
                      "replay_code_sha256": replay_code_sha256(), "author_files": source_digests(), "device_requested": replay_device}
-            rep = replay_cell(root, design, unit, data_path=data_path, device=replay_device)
+            rep = replay_cell(root, design, unit, data_path=data_path, device=replay_device, author_metric_budget=author_metric_budget)
             rep["identity"] = ident
+            rep["path"] = "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line"
             rep["environment"] = environment()
             # the four properties are kept apart: which device actually replayed, and whether it is the device that trained the cell
             actual = rep.get("device_uuid")
@@ -1552,7 +1706,10 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                                      f"max|delta| {rep.get('max_abs_prediction_difference')}, finite {rep.get('finite')}, shape_equal {rep.get('shape_equal')}, error {str(rep.get('error') or '')[-160:]}")
             elif rep.get("true_sha256_replayed") != r["derived"]["true_sha256"]:
                 r["problems"].append(f"{unit}: the replay's targets differ from the derived targets")
-            elif abs(rep["replayed_author_metric"]["mae"] - r["author_metric_float32"]["mae"]) > 1e-5 or abs(rep["replayed_author_metric"]["mse"] - r["author_metric_float32"]["mse"]) > 1e-5:
+            elif (rep.get("replayed_author_metric") or rep.get("replayed_metric_float64")) is None:
+                r["problems"].append(f"{unit}: the replay produced no metric")
+            elif abs((rep.get("replayed_author_metric") or rep["replayed_metric_float64"])["mae"] - r["author_metric_float32"]["mae"]) > 1e-5 or \
+                    abs((rep.get("replayed_author_metric") or rep["replayed_metric_float64"])["mse"] - r["author_metric_float32"]["mse"]) > 1e-5:
                 r["problems"].append(f"{unit}: the metric of the replayed predictions differs from the stored one by more than 1e-5")
             r["replay"] = {k: v for k, v in rep.items() if k not in ("identity", "environment")}
             r["same_device_repeatability"] = ("PASS" if ok and same_device else ("FAIL" if same_device else "NOT_TESTED_ON_THIS_DEVICE"))
@@ -1570,7 +1727,16 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                              "without map_location; a CUDA-trained checkpoint is otherwise unreadable on CPU", "effect": "tensor placement only; the frozen replay rule "
                              "(CPU, atol/rtol 1e-4, metric within 1e-5) is unchanged"},
             "problems": problems + [q for r in rows for q in r["problems"]] + ([f"author files drifted from the sealed digests: {sorted(drift)}"] if drift else []),
-            "verified_units": sorted(r["unit"] for r in rows if r["verified"]), "unverified_units": sorted(r["unit"] for r in rows if not r["verified"])}
+            "verified_units": sorted(r["unit"] for r in rows if r["verified"]), "unverified_units": sorted(r["unit"] for r in rows if not r["verified"]),
+            "historically_verified_units": sorted(r["unit"] for r in rows if r.get("verified_historically"))}
+
+
+def metric_of(record: dict) -> tuple:
+    """(metric dict, basis): the author's float32 reduction when it was executed; otherwise the independent float64 reduction,
+    labelled as such (the difference between the two was <= 2.1e-8 on every cell where both exist; never assumed bitwise)."""
+    if record.get("author_metric_float32"):
+        return record["author_metric_float32"], "author_float32"
+    return record.get("independent_metric_float64"), "independent_float64 (author float32 reduction NOT executed within the memory budget)"
 
 
 def rows_for_table(root: Path, ver: dict, design: dict, *, label: str) -> list:
@@ -1630,7 +1796,7 @@ def table(design: dict, ver: dict) -> dict:
     by_seed = {}                                                    # seed -> horizon -> verified metrics (for the within-seed average)
     for h in design["horizons"]:
         cells = [r for r in ver["rows"] if r["cell"]["horizon"] == h]
-        ok = [r for r in cells if r["verified"]]
+        ok = [r for r in cells if r["verified"] or r.get("verified_historically")]
         expected = [c["cell_id"] for c in design["cells"] if c["horizon"] == h]
         row = {"dataset_protocol": f"ECL official processed (TSL), L={design['seq_len']}, T={h}, split 7/1/2, normalized space", "model_revision": f"TimeFilter @ {PINNED_COMMIT[:12]}",
                "horizon": h, "published": pub["per_horizon"][str(h)], "seeds_expected": expected, "seeds_verified": [r["unit"] for r in ok],
@@ -1640,6 +1806,8 @@ def table(design: dict, ver: dict) -> dict:
             row[m] = agreement(pub["per_horizon"][str(h)], vals, m)
         for r in ok:
             by_seed.setdefault(r["cell"]["seed"], {})[h] = r["author_metric_float32"]
+        row["historically_verified_seeds"] = [r["unit"] for r in ok if r.get("verified_historically")]
+        row["metric_basis"] = sorted({r.get("metric_basis", "author_float32") for r in ok})
         row["per_seed"] = {str(r["cell"]["seed"]): {"mse": r["author_metric_float32"]["mse"], "mae": r["author_metric_float32"]["mae"],
                                                     "difference_mse": r["author_metric_float32"]["mse"] - pub["per_horizon"][str(h)]["mse"],
                                                     "difference_mae": r["author_metric_float32"]["mae"] - pub["per_horizon"][str(h)]["mae"]} for r in ok}
@@ -1724,7 +1892,8 @@ def close(a, design: dict) -> dict:
     warehouse = (lambda campaign: C.warehouse_terminals(a.warehouse_url, token, campaign)) if token else None
     data_path = Path(a.data_path) if getattr(a, "data_path", None) else (delivered_file(root, design, None) if (root / "DELIVERIES.json").is_file() else None)
     ver = verify_sota_run(root, warehouse=warehouse, data_path=data_path, replay=not getattr(a, "skip_replay", False), replay_device=getattr(a, "replay_device", "cpu"),
-                          replay_units=getattr(a, "replay_units", None))
+                          replay_units=getattr(a, "replay_units", None),
+                          author_metric_budget=(int(a.author_metric_budget_gib * 2 ** 30) if getattr(a, "author_metric_budget_gib", None) else None))
     if warehouse is None:
         ver["problems"].append("closure without a warehouse read: no accepted custody, nothing is verified")
         for r in ver["rows"]:
@@ -1745,7 +1914,9 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions"])
+    ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
+    ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--checkpoint", type=Path, default=None, help="profile-eval: a trained checkpoint (else an untrained model, memory only)")
     ap.add_argument("--horizon", type=int, default=None, help="profile-eval: which horizon's cell arguments")
     ap.add_argument("--windows", type=int, nargs="*", default=None, help="route-trace: window indices (else the most discrepant on CPU)")
@@ -1776,6 +1947,11 @@ def main(argv=None) -> int:
         print(json.dumps(design["lock"], indent=1, default=str)); return 0
     if a.command == "merge":
         out = merge(a.root, a.source); print(json.dumps(out, indent=1)); return 0 if not out["problems"] else 1
+    if a.command == "delete-predictions":
+        rec = delete_predictions(a.root, a.units or [c["cell_id"] for c in design["cells"]], extra_roots=a.extra_roots, dry_run=a.dry_run)
+        print(json.dumps({u: {"gate": e["gate"]["pass"], "reasons": e["gate"]["reasons"], "deleted": [d for d in e["deleted"] if d.get("deleted")].__len__(), "copies": len(e["copies_inventoried"])}
+                          for u, e in rec["units"].items()}, indent=1)); print(json.dumps({"reclaimed_bytes_by_filesystem": rec["reclaimed_bytes_by_filesystem"]}))
+        return 0 if all(e["gate"]["pass"] for e in rec["units"].values()) else 1
     if a.command == "route-trace":
         path = Path(a.data_path) if a.data_path else delivered_file(a.root, design, None)
         rep = route_trace(a.root, design, a.unit, data_path=path, windows=a.windows, gpu=a.gpu)

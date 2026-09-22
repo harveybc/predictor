@@ -547,3 +547,67 @@ def test_RP101_the_bounded_adapter_refuses_incomplete_extra_or_missing_populatio
     monkeypatch.setattr(exp, "_get_data", real_get)
     with pytest.raises(R.SotaRefusal, match="no checkpoint"):
         R.bounded_test(exp, cell["setting"], work)
+
+
+# --- RP103: the authorized deletion lifecycle, and the metric basis when the author's reduction was not executed ------------------
+
+def test_RP103_the_deletion_gate_refuses_unverified_or_altered_cells_and_a_passed_deletion_leaves_a_dated_historical_verification(world, tmp_path):
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
+    (root / "REPORT.json").unlink(missing_ok=True)
+    assert R.deletion_gate(root, unit)["reasons"] == ["no closure REPORT.json"]
+    a = SimpleNamespace(root=root, warehouse_token_file=None, warehouse_url=None, data_path=world["data"], skip_replay=True, replay_device="cpu")
+    R.close(a, json.loads((root / "DESIGN.json").read_text()))                                             # no warehouse: nothing verified -> gate refuses
+    g = R.deletion_gate(root, unit); assert not g["pass"] and any("did not verify" in x for x in g["reasons"])
+    # a verified closure (stub warehouse), then the gate passes; a dry run deletes nothing
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tok"; tok.write_text("synthetic")
+        a2 = SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False, replay_device="cpu")
+        rep = R.close(a2, json.loads((root / "DESIGN.json").read_text()))
+    assert rep["verified"] and R.deletion_gate(root, unit)["pass"]
+    dry = R.delete_predictions(root, [unit], dry_run=True)
+    assert (folder / "arrays.npz").is_file() and dry["units"][unit]["copies_inventoried"][0]["sha256"] == json.loads((folder / "cell.json").read_text())["arrays_sha256"]
+    # an altered catalog on disk closes the gate
+    vp = folder / "METRICS_VAULT.json"; original = vp.read_bytes(); v = json.loads(original); v["global"]["mae"] = 5.0; vp.write_text(json.dumps(v))
+    assert any("not the one the closure reported" in x for x in R.deletion_gate(root, unit)["reasons"]); vp.write_bytes(original)
+    # a copy in a staging root is inventoried and deleted too; receipts carry bytes and filesystem deltas
+    staging = tmp_path / "staging"; (staging / "attempts" / unit).mkdir(parents=True); import shutil; shutil.copy2(folder / "arrays.npz", staging / "attempts" / unit / "arrays.npz")
+    size = (folder / "arrays.npz").stat().st_size
+    rec = R.delete_predictions(root, [unit], extra_roots=[staging])
+    assert rec["units"][unit]["gate"]["pass"] and len([d for d in rec["paths"] if d["deleted"]]) == 2 and sum(d["bytes"] for d in rec["paths"]) == 2 * size
+    assert not (folder / "arrays.npz").exists() and not (staging / "attempts" / unit / "arrays.npz").exists() and (folder / "PREDICTIONS_DELETED.json").is_file()
+    assert (folder / "checkpoint.pth").is_file() and (folder / "cell.json").is_file() and vp.is_file() and list(root.glob("DELETION_RECEIPT.*.json"))
+    assert rec["reclaimed_bytes_by_filesystem"]
+    # the closure afterwards: a dated historical verification, never a current replay, never "missing"
+    ver = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=True)
+    row = ver["rows"][0]
+    assert row["status"] == "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION" and row["verified"] is False and row["verified_historically"] and ver["problems"] == []
+    assert row["replay"]["skipped"] and "deleted" in row["replay"]["why"] and ver["historically_verified_units"] == [unit]
+    t = R.table(json.loads((root / "DESIGN.json").read_text()), ver)
+    assert t["rows"][0]["historically_verified_seeds"] == [unit] and t["rows"][0]["mse"]["n_seeds"] == 1
+    # without a valid receipt, missing arrays are a problem
+    (folder / "PREDICTIONS_DELETED.json").write_text(json.dumps({"arrays_sha256": "0" * 64, "closure_report_sha256": "x", "deleted_at": "now"}))
+    bad = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)
+    assert bad["rows"][0]["status"] == "DELETED_WITHOUT_VALID_RECEIPT" and bad["problems"]
+    (folder / "PREDICTIONS_DELETED.json").unlink()
+    gone = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)
+    assert gone["rows"][0]["status"] == "MISSING" and any("missing, not absent" in p for p in gone["problems"])
+
+
+def test_RP101_a_record_without_the_authors_float32_reduction_verifies_on_its_float64_basis_and_says_so(world, tmp_path):
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
+    rec = json.loads((folder / "cell.json").read_text()); rec["author_metric_float32"] = None; rec["author_metric_state"] = "NOT_EXECUTED_WITHIN_BUDGET: test"
+    (folder / "cell.json").write_text(json.dumps(rec))
+    held = json.loads(json.dumps(world["held"]))
+    held[unit]["artifacts"] = [a if a["role"] != "record" else {**a, "sha256": R.sha_file(folder / "cell.json")} for a in held[unit]["artifacts"]]
+    (root / "TERMINALS" / f"{unit}.json").write_text(json.dumps({"status": "COMPLETED", "artifacts": held[unit]["artifacts"]}))
+    ver = R.verify_sota_run(root, warehouse=lambda c: {"current": json.loads(json.dumps(held))}, data_path=world["data"], replay=True)
+    row = ver["rows"][0]
+    assert row["verified"] and row["metric_basis"].startswith("independent_float64") and row["author_metric_float32"] == rec["independent_metric_float64"]
+    assert row["replay"]["path"].startswith("fresh process") and row["replay"]["replayed_metric_float64"] and row["replay"]["true_sha256_replayed"] == rec["true_sha256"]
+    t = R.table(json.loads((root / "DESIGN.json").read_text()), ver)
+    assert t["rows"][0]["metric_basis"] == [row["metric_basis"]]
+    # at closure with a tiny author-metric budget the author reduction is reported NOT executed and the float64 basis stands
+    ver2 = R.verify_sota_run(root, warehouse=lambda c: {"current": json.loads(json.dumps(held))}, data_path=world["data"], replay=False, author_metric_budget=1)
+    assert ver2["rows"][0]["verified"] and ver2["rows"][0]["recomputed"]["author_float32"] is None and "NOT_EXECUTED" in ver2["rows"][0]["recomputed"]["author_float32_state"]
