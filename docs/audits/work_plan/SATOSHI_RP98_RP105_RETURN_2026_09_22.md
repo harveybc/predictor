@@ -1,7 +1,7 @@
 # Satoshi — RP98–RP105 return: verifications corrected, memory-bounded evaluation without reducing the model, the finite population (12 cells executed, 6 verified and deleted, 6 retained), predictions deleted after verified metrics
 
 Orders: [MUSASHI_SOTA_RP98_RP105_2026_09_22](../../handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md) (fff9575, review of fb6ec31e).
-Commits after fff9575: 2d42784 … 279a2abd (45 commits). Compute: WORKER_A (dragon, RTX 4090 Laptop) for T = 96 (RP95) and the test
+Commits after fff9575: 2d42784 … 29e951b1 (48 commits). Compute: WORKER_A (dragon, RTX 4090 Laptop) for T = 96 (RP95) and the test
 suites; WORKER_B (gamma, RTX 5090, its own cooler, authorized by the owner after gamma's reboot) for T = 192 s2022/s2023, T = 336 ×3,
 T = 720 ×3 and the consolidated closure, one cell at a time under an 8 GiB request; omega under the travel hold (marker present:
 text, git and one package install only — no compute, no tests, no service restart). Every governed unit registered before reading;
