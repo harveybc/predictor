@@ -417,7 +417,7 @@ def capture_metric(exp_module, captured: Captured):
 
 
 def main_like_run_py(argv: list, *, seed: int, data_dir: Path, data_name: str, work: Path, gpu: int = 0, use_gpu: bool | None = None,
-                     log: Path | None = None, train: bool = True) -> dict:
+                     log: Path | None = None, train: bool = True, bounded: bool = False, author_metric_budget_bytes: int | None = None) -> dict:
     """run.py's `__main__` for one invocation: seeds, parse, Exp, train, test — the author's code path, in the author's cwd layout."""
     author_env()
     fix_seeds(seed)
@@ -439,17 +439,94 @@ def main_like_run_py(argv: list, *, seed: int, data_dir: Path, data_name: str, w
                 print(">>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>".format(setting))
                 exp.train(setting)
             print(">>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<".format(setting))
-            exp.test(setting, test=0 if train else 1)
+            bounded_out = None
+            if bounded:
+                bounded_out = bounded_test(exp, setting, work, author_metric_budget_bytes=author_metric_budget_bytes)
+            else:
+                exp.test(setting, test=0 if train else 1)
             import torch
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
     finally:
         os.chdir(cwd)
         exp_module.metric = original
+    base = {"args": vars(args), "setting": setting, "wall_seconds": time.time() - t0, "cpu_seconds": time.process_time() - c0,
+            "checkpoint": work / "checkpoints" / setting / "checkpoint.pth", "n_parameters": int(sum(p.numel() for p in exp.model.parameters())), "device": str(exp.device)}
+    if bounded_out is not None:
+        return {**base, "preds": bounded_out["preds"], "trues": bounded_out["trues"], "author_metric": bounded_out["author_metric"],
+                "author_metric_state": bounded_out["author_metric_state"], "independent_metric_float64": bounded_out["independent_metric_float64"],
+                "bounded": {k: bounded_out[k] for k in ("finalized", "adapter", "preds_path", "trues_path")}}
     mae, mse = float(captured.value[0]), float(captured.value[1])
-    return {"args": vars(args), "setting": setting, "preds": captured.preds, "trues": captured.trues, "author_metric": {"mae": mae, "mse": mse},
-            "wall_seconds": time.time() - t0, "cpu_seconds": time.process_time() - c0, "checkpoint": work / "checkpoints" / setting / "checkpoint.pth",
-            "n_parameters": int(sum(p.numel() for p in exp.model.parameters())), "device": str(exp.device)}
+    return {**base, "preds": captured.preds, "trues": captured.trues, "author_metric": {"mae": mae, "mse": mse}, "author_metric_state": "EXECUTED: the author's test()"}
+
+
+BOUNDED_ADAPTER_VERSION = "df_sota_bounded_eval.v1"
+
+
+def bounded_test(exp, setting: str, work: Path, *, author_metric_budget_bytes: int | None = None) -> dict:
+    """RP101: the author's test() with its accumulation replaced by disk-backed buffers — same model, weights, loader, batches,
+    order, dtype and slicing as `Exp_Long_Term_Forecast.test()`; predictions and targets stream into float32 .npy memmaps
+    under `work` instead of Python lists (the author keeps three full lists and concatenates them: ~4x the arrays in RAM),
+    inputs are not retained (they are unused by the author's scorer), targets are hash-streamed. The author's `metric()`
+    (float32, full arrays) is then evaluated on the memmaps when its temporaries fit `author_metric_budget_bytes`; the
+    streaming float64 reduction is always computed. Nothing about the forward pass changes; the adapter's source digest is
+    recorded with every cell that used it (an adapter is not an unmodified author implementation)."""
+    import torch
+    from numpy.lib.format import open_memmap
+    test_data, test_loader = exp._get_data(flag="test")
+    n_windows = len(test_data)
+    checkpoint = Path(exp.args.checkpoints) / setting / "checkpoint.pth"
+    if not checkpoint.is_file():
+        raise SotaRefusal(f"REFUSED: no checkpoint to evaluate at {checkpoint}")
+    exp.model.load_state_dict(torch.load(checkpoint, map_location=exp.device))     # the author's test(test=1) reload, on the same device
+    preds_path, trues_path = work / "bounded_preds.npy", work / "bounded_trues.npy"
+    preds = trues = None
+    true_hash = hashlib.sha256()
+    f_dim = -1 if exp.args.features == "MS" else 0
+    n_seen, batches = 0, []
+    exp.model.eval()
+    with torch.no_grad():
+        for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(test_loader):
+            batch_x = batch_x.float().to(exp.device)
+            batch_y = batch_y.float().to(exp.device)
+            outputs, _ = exp.model(batch_x, exp.masks, is_training=False)
+            outputs = outputs[:, -exp.args.pred_len:, :]
+            batch_y = batch_y[:, -exp.args.pred_len:, :].to(exp.device)
+            outputs = outputs.detach().cpu().numpy()
+            batch_y = batch_y.detach().cpu().numpy()
+            outputs = outputs[:, :, f_dim:]
+            batch_y = batch_y[:, :, f_dim:]
+            if preds is None:
+                shape = (n_windows, outputs.shape[1], outputs.shape[2])
+                preds = open_memmap(preds_path, mode="w+", dtype=np.float32, shape=shape)
+                trues = open_memmap(trues_path, mode="w+", dtype=np.float32, shape=shape)
+            b = outputs.shape[0]
+            if n_seen + b > n_windows:
+                raise SotaRefusal(f"REFUSED: the loader yielded more windows ({n_seen + b}+) than the dataset declares ({n_windows})")
+            preds[n_seen:n_seen + b] = outputs.astype(np.float32, copy=False)
+            trues[n_seen:n_seen + b] = batch_y.astype(np.float32, copy=False)
+            true_hash.update(memoryview(np.ascontiguousarray(batch_y.astype(np.float32, copy=False))).cast("B"))
+            batches.append(b); n_seen += b
+    if n_seen != n_windows:
+        raise SotaRefusal(f"REFUSED: the loader yielded {n_seen} windows, the dataset declares {n_windows}: INCOMPLETE POPULATION")
+    preds.flush(); trues.flush()
+    finalized = {"windows": n_seen, "batches": len(batches), "batch_sizes": {"first": batches[0], "last": batches[-1], "distinct": sorted(set(batches))},
+                 "true_sha256": true_hash.hexdigest(), "preds_bytes": int(preds.nbytes)}
+    # the author's reduction on the SAME function and dtype, when its temporaries (two full-size float32 arrays per metric) fit
+    need = 2 * int(preds.nbytes) + int(preds.nbytes)
+    author_metric, author_metric_state = None, None
+    if author_metric_budget_bytes is None or need <= author_metric_budget_bytes:
+        MET = importlib.import_module("utils.metrics")
+        mae, mse, rmse, mape, mspe = MET.metric(np.asarray(preds), np.asarray(trues))
+        author_metric = {"mae": float(mae), "mse": float(mse)}
+        author_metric_state = "EXECUTED: utils.metrics.metric on the memmapped float32 arrays (same function, dtype, layout)"
+    else:
+        author_metric_state = f"NOT_EXECUTED_WITHIN_BUDGET: needs ~{need} bytes of temporaries, budget {author_metric_budget_bytes}"
+    f64 = float64_metrics(preds, trues)
+    return {"preds": preds, "trues": trues, "preds_path": preds_path, "trues_path": trues_path, "finalized": finalized,
+            "author_metric": author_metric, "author_metric_state": author_metric_state, "independent_metric_float64": f64,
+            "adapter": {"version": BOUNDED_ADAPTER_VERSION, "source_sha256": hashlib.sha256(__import__("inspect").getsource(bounded_test).encode()).hexdigest(),
+                        "author_test_untouched": True, "replaces": "Exp_Long_Term_Forecast.test(): list accumulation + np.concatenate + result file; forward pass identical"}}
 
 
 def parse_author_log(text: str) -> dict:
@@ -550,7 +627,8 @@ def run_prepare(a, design: dict) -> dict:
 
 # --- a cell -----------------------------------------------------------------------------------------------------------------
 
-def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: int = 0, use_gpu: bool | None = None) -> dict:
+def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: int = 0, use_gpu: bool | None = None, bounded: bool = False,
+             author_metric_budget_bytes: int | None = None) -> dict:
     """The author's run for one cell; artifacts written under `folder`. Nothing scientific is decided here."""
     folder.mkdir(parents=True, exist_ok=True)
     work = folder / "work"
@@ -563,10 +641,19 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
     except Exception:                                           # noqa: BLE001
         pass
     res = main_like_run_py(cell["argv"], seed=cell["seed"], data_dir=data_path.parent, data_name=data_path.name, work=work, gpu=gpu, use_gpu=use_gpu,
-                           log=folder / "author_stdout.log")
+                           log=folder / "author_stdout.log", bounded=bounded, author_metric_budget_bytes=author_metric_budget_bytes)
     preds, trues = np.asarray(res["preds"], dtype=np.float32), np.asarray(res["trues"], dtype=np.float32)
     np.savez(folder / "arrays.npz", pred=preds)                    # uncompressed by the owner's decision (float32 outputs compress < 13 %)
     trues_sha = sha_array(trues)
+    if res.get("bounded"):
+        if res["bounded"]["finalized"]["true_sha256"] != trues_sha:
+            raise SotaRefusal("REFUSED: the streamed target digest and the memmapped targets disagree")
+        del trues
+        for tmp in (res["bounded"]["preds_path"], res["bounded"]["trues_path"]):
+            try:
+                Path(tmp).unlink()
+            except OSError:
+                pass
     ckpt = folder / "checkpoint.pth"
     shutil.copy2(res["checkpoint"], ckpt)
     ru1 = resource.getrusage(resource.RUSAGE_SELF)
@@ -578,11 +665,12 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
     except Exception:                                           # noqa: BLE001
         pass
     # independent float64 metric on the same arrays (the author's is float32 by construction), chunked: no full-size temporaries
-    f64 = float64_metrics(preds, trues)
+    f64 = res["independent_metric_float64"] if res.get("bounded") else float64_metrics(preds, trues)
     training = parse_author_log((folder / "author_stdout.log").read_text())
     record = {"schema": "df_sota_cell_record.v1", "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")},
               "design_sha256": design["design_sha256"], "setting": res["setting"], "effective_args": {k: v for k, v in sorted(res["args"].items())},
-              "author_metric_float32": res["author_metric"], "independent_metric_float64": f64,
+              "author_metric_float32": res["author_metric"], "author_metric_state": res.get("author_metric_state"), "independent_metric_float64": f64,
+              "evaluation_path": ({"bounded_adapter": res["bounded"]["adapter"], "finalized": res["bounded"]["finalized"]} if res.get("bounded") else {"author_test": True}),
               "shapes": {"pred": list(preds.shape), "true": list(trues.shape)}, "dtype": str(preds.dtype),
               "arrays_sha256": sha_file(folder / "arrays.npz"), "pred_sha256": sha_array(preds), "true_sha256": trues_sha, "checkpoint_sha256": sha_file(ckpt),
               "checkpoint_bytes": ckpt.stat().st_size, "n_parameters": res["n_parameters"], "device": res["device"], "training": training,
@@ -609,7 +697,8 @@ def child(a, design: dict) -> dict:
     path = delivered_file(root, design, a.unit)
     folder = root / "attempts" / a.unit
     try:
-        record = run_cell(design, cell, data_path=path, folder=folder, gpu=a.gpu, use_gpu=None if not a.cpu else False)
+        record = run_cell(design, cell, data_path=path, folder=folder, gpu=a.gpu, use_gpu=None if not a.cpu else False, bounded=bool(getattr(a, "bounded", False)),
+                          author_metric_budget_bytes=(int(a.author_metric_budget_gib * 2 ** 30) if getattr(a, "author_metric_budget_gib", None) else None))
     except BaseException as exc:
         (folder).mkdir(parents=True, exist_ok=True)
         (folder / "FAILED.json").write_text(json.dumps({"at": now_iso(), "error": f"{type(exc).__name__}: {str(exc)[:600]}"}))
@@ -648,7 +737,8 @@ def execute(a, design: dict) -> list:
         if unit in receipts and (folder / "cell.json").is_file():
             out.append({"unit": unit, "ok": True, "reused": True}); continue
         argv = [sys.executable, str(Path(__file__).resolve()), "child", "--root", str(root), "--unit", unit, "--gov-url", a.gov_url, "--api-key-file", str(a.api_key_file),
-                "--lake", a.lake, "--resource", a.resource, "--gpu", str(a.gpu)] + (["--cpu"] if a.cpu else []) + (["--run-id", a.run_id] if a.run_id else [])
+                "--lake", a.lake, "--resource", a.resource, "--gpu", str(a.gpu)] + (["--cpu"] if a.cpu else []) + (["--run-id", a.run_id] if a.run_id else []) \
+               + (["--bounded"] if getattr(a, "bounded", False) else []) + (["--author-metric-budget-gib", str(a.author_metric_budget_gib)] if getattr(a, "author_metric_budget_gib", None) else [])
         t0 = time.time()
         proc = subprocess.run(argv, capture_output=True, text=True)
         (folder).mkdir(parents=True, exist_ok=True)
@@ -1482,6 +1572,8 @@ def main(argv=None) -> int:
     ap.add_argument("--warehouse-url", default="http://127.0.0.1:5057"); ap.add_argument("--warehouse-token-file", type=Path)
     ap.add_argument("--data-path", type=Path, default=None); ap.add_argument("--skip-replay", action="store_true"); ap.add_argument("--replay-device", default="cpu")
     ap.add_argument("--replay-units", nargs="*", default=None, help="close: replay only these units on this host; the others stay UNVERIFIED (REPLAY_PENDING)")
+    ap.add_argument("--bounded", action="store_true", help="child/execute: evaluate through the disk-backed bounded adapter (RP101) instead of the author's test()")
+    ap.add_argument("--author-metric-budget-gib", type=float, default=None, help="bounded: run the author's float32 metric() only if its temporaries fit this budget")
     a = ap.parse_args(argv)
     if a.command == "seal":
         a.root.mkdir(parents=True, exist_ok=True)

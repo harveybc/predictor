@@ -372,7 +372,7 @@ def test_RP98_a_contradictory_cached_replay_is_never_adopted_and_permuted_predic
     with np.load(root / "attempts" / unit / "arrays.npz") as z:
         pred = z["pred"]
     perm = pred[::-1].copy()
-    assert abs(float(np.mean(np.abs(perm))) - float(np.mean(np.abs(pred)))) < 1e-12 and not np.array_equal(perm, pred)
+    assert abs(float(np.mean(np.abs(perm.astype(np.float64)))) - float(np.mean(np.abs(pred.astype(np.float64))))) < 1e-12 and not np.array_equal(perm, pred)
     np.savez(root / "attempts" / unit / "arrays.npz", pred=perm)
     rep = R.replay_cell(root, json.loads((root / "DESIGN.json").read_text()), unit, data_path=world["data"], device="cpu")
     assert rep["allclose_rule"] is False and rep["max_abs_prediction_difference"] > 0 and rep["exact_equal_fraction"] < 1.0 and rep["shape_equal"] and rep["finite"]
@@ -474,3 +474,76 @@ def test_RP103_the_four_horizon_average_is_formed_within_each_seed_first(world):
     report["rows"] = [r for r in report["rows"] if r["unit"] != "oracle_h720_s2023"]; report["verified_units"].remove("oracle_h720_s2023")
     agg2 = R.table(design, report)["average_over_horizons"]["mae"]
     assert agg2["status"] == "NOT_COMPUTED" and sorted(agg2["seed_averages_available"]) == ["2021", "2022"]
+
+
+
+# --- RP101: the bounded evaluation adapter preserves the computation ---------------------------------------------------------------
+
+def test_RP101_the_bounded_adapter_reproduces_the_authors_test_elementwise_with_the_population_and_official_metrics(world, tmp_path):
+    """Original path vs bounded path on the real tiny author fixture and its trained checkpoint: identical predictions, targets,
+    population, checkpoint bytes and the author's float32 metric; a budget too small reports the author metric as NOT executed
+    while the float64 reduction stands; partial final batches are consumed."""
+    import shutil
+    d, cell, data = world["design"], world["cell"], world["data"]
+    ckpt = world["root"] / "attempts" / cell["cell_id"] / "checkpoint.pth"; ckpt_sha = R.sha_file(ckpt)
+    def run(tag, **kw):
+        work = tmp_path / tag; (work / "checkpoints" / cell["setting"]).mkdir(parents=True)
+        shutil.copy2(ckpt, work / "checkpoints" / cell["setting"] / "checkpoint.pth")
+        return R.main_like_run_py(cell["argv"], seed=cell["seed"], data_dir=data.parent, data_name=data.name, work=work, use_gpu=False, train=False, **kw)
+    a = run("author"); b = run("bounded", bounded=True)
+    assert np.array_equal(np.asarray(a["preds"]), np.asarray(b["preds"])) and np.array_equal(np.asarray(a["trues"]), np.asarray(b["trues"]))
+    assert a["author_metric"] == b["author_metric"] and b["author_metric_state"].startswith("EXECUTED") and b["bounded"]["finalized"]["windows"] == 77
+    assert b["bounded"]["finalized"]["batch_sizes"]["last"] == 77 % 8 and b["bounded"]["finalized"]["batch_sizes"]["first"] == 8       # partial final batch consumed
+    assert b["bounded"]["finalized"]["true_sha256"] == R.sha_array(np.asarray(a["trues"], dtype=np.float32)) and R.sha_file(ckpt) == ckpt_sha
+    assert b["bounded"]["adapter"]["version"] == R.BOUNDED_ADAPTER_VERSION and b["bounded"]["adapter"]["source_sha256"]
+    assert abs(b["independent_metric_float64"]["mae"] - a["author_metric"]["mae"]) <= 1e-6
+    # a budget below the temporaries: the author's float32 reduction is reported NOT executed, never approximated
+    c = run("budget", bounded=True, author_metric_budget_bytes=1)
+    assert c["author_metric"] is None and c["author_metric_state"].startswith("NOT_EXECUTED_WITHIN_BUDGET") and abs(c["independent_metric_float64"]["mse"] - a["author_metric"]["mse"]) <= 1e-6
+    # through run_cell: the artifact and the record carry the adapter identity, the memmaps are gone, the checkpoint is the author's
+    folder = tmp_path / "cell"
+    rec = R.run_cell(d, cell, data_path=data, folder=folder, use_gpu=False, bounded=True)
+    assert rec["evaluation_path"]["bounded_adapter"]["version"] == R.BOUNDED_ADAPTER_VERSION and not list(folder.glob("work/bounded_*.npy"))
+    with np.load(folder / "arrays.npz") as z:
+        assert np.array_equal(z["pred"], np.asarray(a["preds"])) or rec["author_metric_float32"] is not None       # a fresh training: same population
+    assert rec["true_sha256"] == b["bounded"]["finalized"]["true_sha256"] and rec["shapes"]["pred"] == [77, 4, 4]
+
+
+def test_RP101_the_bounded_adapter_refuses_incomplete_extra_or_missing_populations(world, tmp_path, monkeypatch):
+    import shutil, torch
+    cell, data = world["cell"], world["data"]
+    ckpt = world["root"] / "attempts" / cell["cell_id"] / "checkpoint.pth"
+    work = tmp_path / "w"; (work / "checkpoints" / cell["setting"]).mkdir(parents=True); shutil.copy2(ckpt, work / "checkpoints" / cell["setting"] / "checkpoint.pth")
+    R.author_env(); R.fix_seeds(cell["seed"])
+    args = R.build_args(cell["argv"], data_dir=data.parent, data_name=data.name, checkpoints=work / "checkpoints", use_gpu=False)
+    exp_module = __import__("importlib").import_module("exp.exp_long_term_forecasting")
+    exp = exp_module.Exp_Long_Term_Forecast(args)
+    real_get = exp._get_data
+    class Short:                                                                  # a loader that stops early
+        def __init__(self, loader, n): self.loader, self.n = loader, n
+        def __iter__(self):
+            for i, b in enumerate(self.loader):
+                if i >= self.n: break
+                yield b
+        def __len__(self): return self.n
+    def short(flag):
+        ds, dl = real_get(flag); return ds, Short(dl, 3)
+    monkeypatch.setattr(exp, "_get_data", short)
+    with pytest.raises(R.SotaRefusal, match="INCOMPLETE POPULATION"):
+        R.bounded_test(exp, cell["setting"], work)
+    class Extra:                                                                  # a loader that yields a batch twice
+        def __init__(self, loader): self.loader = loader
+        def __iter__(self):
+            for b in self.loader:
+                yield b
+            yield b
+        def __len__(self): return len(self.loader) + 1
+    def extra(flag):
+        ds, dl = real_get(flag); return ds, Extra(dl)
+    monkeypatch.setattr(exp, "_get_data", extra)
+    with pytest.raises(R.SotaRefusal, match="more windows"):
+        R.bounded_test(exp, cell["setting"], work)
+    (work / "checkpoints" / cell["setting"] / "checkpoint.pth").unlink()
+    monkeypatch.setattr(exp, "_get_data", real_get)
+    with pytest.raises(R.SotaRefusal, match="no checkpoint"):
+        R.bounded_test(exp, cell["setting"], work)
