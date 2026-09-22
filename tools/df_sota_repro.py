@@ -461,8 +461,16 @@ def acquire(a, design: dict, unit: str) -> dict:
                      gov_url=a.gov_url, api_key_file=a.api_key_file, design_sha256=design["design_sha256"], expect_sha256=design["source_data"]["sha256"])
 
 
-def delivered_file(root: Path, design: dict, unit: str) -> Path:
+def delivered_file(root: Path, design: dict, unit: str | None) -> Path:
+    """The bytes delivered to `unit`; with unit None, any unit's delivery on this host whose bytes are the sealed file."""
     G, _ = governance_modules()
+    if unit is None:
+        doc = json.loads((Path(root) / "DELIVERIES.json").read_text())
+        for u, d in (doc.get("units") or {}).items():
+            if d.get("sha256") == design["source_data"]["sha256"] and Path(d["path"]).is_file():
+                unit = u; break
+        if unit is None:
+            raise SotaRefusal("REFUSED: no delivery of the sealed file on this host")
     path = Path(G.require_delivery(root, design, unit)["delivery"]["path"])
     if sha_file(path) != design["source_data"]["sha256"]:
         raise SotaRefusal("REFUSED: the delivered bytes are not the sealed official file")
@@ -630,6 +638,48 @@ def execute(a, design: dict) -> list:
     return out
 
 
+# --- merge: a worker's cells into the coordinator root (artifacts verified by digest against the worker's own terminals) ------------
+
+def merge(root: Path, source: Path) -> dict:
+    """Copy a worker's attempts, terminals and receipts into the coordinator root. Nothing is trusted from the copy itself: each
+    unit's artifacts must hash to the digests of the worker's terminal file, the design digests must be identical, and the
+    receipts merge unit by unit (a unit already present with another receipt is a problem, never overwritten)."""
+    root, source = Path(root), Path(source)
+    d0, d1 = json.loads((root / "DESIGN.json").read_text()), json.loads((source / "DESIGN.json").read_text())
+    out = {"from": str(source), "units": {}, "problems": []}
+    if d0.get("design_sha256") != d1.get("design_sha256"):
+        out["problems"].append("the worker root was sealed under another design digest"); return out
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text()) if (root / "TERMINAL_RECEIPTS.json").is_file() else {"units": {}}
+    src_receipts = (json.loads((source / "TERMINAL_RECEIPTS.json").read_text()) if (source / "TERMINAL_RECEIPTS.json").is_file() else {}).get("units") or {}
+    for folder in sorted((source / "attempts").glob("*")):
+        unit = folder.name
+        if not (folder / "cell.json").is_file():
+            continue
+        terminal_path = source / "TERMINALS" / f"{unit}.json"
+        if not terminal_path.is_file() or unit not in src_receipts:
+            out["problems"].append(f"{unit}: no terminal or receipt on the worker; not merged"); continue
+        terminal = json.loads(terminal_path.read_text())
+        acc = {a["role"]: a["sha256"] for a in terminal.get("artifacts") or []}
+        digests = {r: sha_file(folder / f) for r, f in (("predictions", "arrays.npz"), ("checkpoint", "checkpoint.pth"), ("record", "cell.json")) if (folder / f).is_file()}
+        if any(acc.get(r) != digests.get(r) for r in ("predictions", "checkpoint", "record")):
+            out["problems"].append(f"{unit}: the worker's artifacts do not hash to its terminal; not merged"); continue
+        if unit in receipts["units"] and receipts["units"][unit] != src_receipts[unit]:
+            out["problems"].append(f"{unit}: already present under another receipt; not overwritten"); continue
+        dest = root / "attempts" / unit
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(folder, dest, ignore=shutil.ignore_patterns("work", "replay_work"))
+        (root / "TERMINALS").mkdir(exist_ok=True)
+        shutil.copy2(terminal_path, root / "TERMINALS" / f"{unit}.json")
+        receipts["units"][unit] = src_receipts[unit]
+        out["units"][unit] = {"merged": True, "artifacts": digests, "host": (json.loads((folder / "cell.json").read_text()).get("cost") or {}).get("host")}
+    (root / "TERMINAL_RECEIPTS.json").write_text(json.dumps(receipts, indent=1))
+    for extra in sorted(source.glob("PREFLIGHT*.json")) + sorted(source.glob("EXECUTE.*.json")):
+        shutil.copy2(extra, root / extra.name)
+    (root / f"MERGE.{source.name}.{int(time.time())}.json").write_text(json.dumps(out, indent=1))
+    return out
+
+
 # --- preflight (RP94): bounded, no test score ---------------------------------------------------------------------------------
 
 def preflight(design: dict, *, data_path: Path, work: Path, steps: int = 20, horizons=None, gpu: int = 0, use_gpu: bool | None = None) -> dict:
@@ -782,7 +832,8 @@ def naive_and_trues(design: dict, cell: dict, data_path: Path) -> dict:
             "naive_definition": "persistence: the window's last observed value repeated over the horizon, every channel, same test windows, normalized space"}
 
 
-def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None, replay: bool = True, replay_device: str = "cpu") -> dict:
+def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None, replay: bool = True, replay_device: str = "cpu",
+                    replay_units: list | None = None) -> dict:
     root = Path(root)
     design = json.loads((root / "DESIGN.json").read_text())
     validate(design)
@@ -906,6 +957,10 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             if r["problems"] or r.get("status") == "MISSING":
                 continue
             unit = r["unit"]; folder = root / "attempts" / unit
+            if replay_units is not None and unit not in replay_units:
+                r["replay"] = {"skipped": True, "why": "REPLAY_PENDING: not replayed on this host (memory placement); the row stays UNVERIFIED until replayed"}
+                r["verified"] = False
+                continue
             ident = {"checkpoint_sha256": sha_file(folder / "checkpoint.pth"), "arrays_sha256": sha_file(folder / "arrays.npz"), "design_sha256": design["design_sha256"],
                      "replay_code_sha256": sha_file(Path(__file__).resolve()), "author_files": source_digests(), "device": replay_device}
             cached = prior.get(unit) or {}
@@ -922,7 +977,11 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                 r["problems"].append(f"{unit}: the metric of the replayed predictions differs from the stored one by more than 1e-5")
             r["replay"] = {k: v for k, v in rep.items() if k != "identity"}
             r["verified"] = r["verified"] and not r["problems"]
-        (root / "REPLAYS.json").write_text(json.dumps(replays, indent=1, default=str))
+        (root / "REPLAYS.json").write_text(json.dumps({**prior, **replays}, indent=1, default=str))
+    elif replay:
+        for r in rows:
+            if not r["problems"] and r.get("status") != "MISSING":
+                r["replay"] = {"skipped": True, "why": "REPLAY_PENDING: no data file on this host"}; r["verified"] = False
     return {"design_sha256": design["design_sha256"], "disposition": disp, "preparation_custody": prep, "source_drift_now": drift, "rows": rows,
             "problems": problems + [q for r in rows for q in r["problems"]] + ([f"author files drifted from the sealed digests: {sorted(drift)}"] if drift else []),
             "verified_units": sorted(r["unit"] for r in rows if r["verified"]), "unverified_units": sorted(r["unit"] for r in rows if not r["verified"])}
@@ -1045,8 +1104,9 @@ def close(a, design: dict) -> dict:
     C = _module("df_mod_e0_close")
     token = Path(a.warehouse_token_file).read_text().strip().strip('"').strip("'") if getattr(a, "warehouse_token_file", None) else None
     warehouse = (lambda campaign: C.warehouse_terminals(a.warehouse_url, token, campaign)) if token else None
-    data_path = Path(a.data_path) if getattr(a, "data_path", None) else (delivered_file(root, design, "prepare") if (root / "DELIVERIES.json").is_file() else None)
-    ver = verify_sota_run(root, warehouse=warehouse, data_path=data_path, replay=not getattr(a, "skip_replay", False), replay_device=getattr(a, "replay_device", "cpu"))
+    data_path = Path(a.data_path) if getattr(a, "data_path", None) else (delivered_file(root, design, None) if (root / "DELIVERIES.json").is_file() else None)
+    ver = verify_sota_run(root, warehouse=warehouse, data_path=data_path, replay=not getattr(a, "skip_replay", False), replay_device=getattr(a, "replay_device", "cpu"),
+                          replay_units=getattr(a, "replay_units", None))
     if warehouse is None:
         ver["problems"].append("closure without a warehouse read: no accepted custody, nothing is verified")
         for r in ver["rows"]:
@@ -1067,7 +1127,8 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge"])
+    ap.add_argument("--from", dest="source", type=Path, default=None, help="merge: a worker's copy of this root")
     ap.add_argument("--root", type=Path, required=True)
     ap.add_argument("--unit"); ap.add_argument("--run-id")
     ap.add_argument("--seq-len", type=int, default=96); ap.add_argument("--seeds", type=int, nargs="*", default=None)
@@ -1077,6 +1138,7 @@ def main(argv=None) -> int:
     ap.add_argument("--lake", default=LAKE); ap.add_argument("--resource", default=RESOURCE)
     ap.add_argument("--warehouse-url", default="http://127.0.0.1:5057"); ap.add_argument("--warehouse-token-file", type=Path)
     ap.add_argument("--data-path", type=Path, default=None); ap.add_argument("--skip-replay", action="store_true"); ap.add_argument("--replay-device", default="cpu")
+    ap.add_argument("--replay-units", nargs="*", default=None, help="close: replay only these units on this host; the others stay UNVERIFIED (REPLAY_PENDING)")
     a = ap.parse_args(argv)
     if a.command == "seal":
         a.root.mkdir(parents=True, exist_ok=True)
@@ -1089,6 +1151,8 @@ def main(argv=None) -> int:
     design = json.loads((a.root / "DESIGN.json").read_text())
     if a.command == "lock":
         print(json.dumps(design["lock"], indent=1, default=str)); return 0
+    if a.command == "merge":
+        out = merge(a.root, a.source); print(json.dumps(out, indent=1)); return 0 if not out["problems"] else 1
     if a.command == "prepare":
         run_prepare(a, design); return 0
     if a.command == "preflight":

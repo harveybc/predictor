@@ -466,7 +466,7 @@ def verify_run(root: Path, *, label: str, registry: dict, warehouse=None) -> dic
         R = _module("df_sota_repro")
         data_path = None
         try:
-            data_path = R.delivered_file(Path(root), design, "prepare") if (Path(root)/"DELIVERIES.json").is_file() else None
+            data_path = R.delivered_file(Path(root), design, None) if (Path(root)/"DELIVERIES.json").is_file() else None
         except BaseException:                                       # noqa: BLE001 — no delivery on this host: rows verify without derivation
             data_path = None
         ver = R.verify_sota_run(Path(root), warehouse=warehouse, data_path=data_path, replay=False)
