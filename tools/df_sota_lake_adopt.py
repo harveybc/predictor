@@ -41,10 +41,12 @@ DESCRIPTION = ("Read-only lake over the official processed public benchmarks the
 
 
 def _load_public_adopter():
-    name = "df_public_lake_adopt"
+    """A PRIVATE instance of the public-panel adopter module: rebinding its globals must never leak into the public-panel
+    adopter that other code (and its tests) use in the same process."""
+    name = "df_public_lake_adopt__sota_instance"
     if name in sys.modules:
         return sys.modules[name]
-    spec = importlib.util.spec_from_file_location(name, HERE / f"{name}.py")
+    spec = importlib.util.spec_from_file_location(name, HERE / "df_public_lake_adopt.py")
     mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod
     spec.loader.exec_module(mod)

@@ -23,7 +23,8 @@ def _load(name):
 
 
 L = _load("df_sota_lake_adopt")
-A = _load("df_public_lake_adopt")
+A = L.bind()                      # the adopter's PRIVATE instance of the public-panel procedure; the public module itself stays untouched
+P = _load("df_public_lake_adopt")
 
 pytestmark = pytest.mark.skipif(not A.RUNTIME_CONFIG.is_file() or not (L.STORE_ROOT / "BUILD_RECEIPT.json").is_file(),
                                 reason="the deployed data-gov configuration or the benchmark store is not present here")
@@ -31,7 +32,6 @@ pytestmark = pytest.mark.skipif(not A.RUNTIME_CONFIG.is_file() or not (L.STORE_R
 
 @pytest.fixture
 def sandbox(tmp_path, monkeypatch):
-    L.bind(A)
     cfg = json.loads(A.RUNTIME_CONFIG.read_text())
     cfg["lakes"] = [l for l in cfg["lakes"] if l.get("lake_id") != L.LAKE_ID]
     cfg["policies"] = [p for p in cfg["policies"] if p.get("lake") != L.LAKE_ID]
@@ -60,7 +60,6 @@ def _rehearsal(tmp_path, sandbox, *, ok=True, bind=True):
 
 
 def test_RP92_the_contract_binds_the_official_bytes_and_withholds_every_date_range():
-    L.bind(A)
     built = L.lake_entry()
     entry, declared = built["entry"], built["declared"]["thuml_tsl_electricity/electricity.csv"]
     assert entry["lake_id"] == "sota_benchmarks" and entry["untimed"] == entry["include_globs"] == ["thuml_tsl_electricity/electricity.csv"]
@@ -69,6 +68,7 @@ def test_RP92_the_contract_binds_the_official_bytes_and_withholds_every_date_ran
     assert entry["resource_contracts"]["thuml_tsl_electricity/electricity.csv"]["frequency"] == "3600s"
     assert A.LAKE_ID == "sota_benchmarks" and A.LAKE_HOST_PORT == 5060 and A.LAKE_HOST_UNIT == "crispdm-data-lake-sota-benchmarks.service"
     assert A.HOLDOUT_START == "2016-07-01" and A.policy_entries(["predictor"])[0]["deny_from"] == "2016-07-01"
+    assert P.LAKE_ID == "public_panels" and P.LAKE_HOST_PORT == 5059 and P.HOLDOUT_START == "2006-12-16"     # the public adopter is untouched
 
 
 def test_RP92_a_bound_rehearsal_adopts_additively_and_an_unbound_one_never_touches_the_configuration(tmp_path, sandbox):
