@@ -224,7 +224,8 @@ def test_RP96_the_verification_binds_arrays_checkpoint_record_targets_and_metric
     md = T.markdown(table); assert "Active reference ranking" in md and "| 1 | ecl321_official_tsl |" in md
     # the RP97 table and its markdown
     t = R.table(world["design"], ver)
-    assert t["complete"] and t["rows"][0]["mse"]["n_seeds"] == 1 and t["rows"][0]["mse"]["status"] in ("NUMERICAL_AGREEMENT", "PARTIAL_AGREEMENT", "DISAGREEMENT")
+    assert t["complete"] and t["rows"][0]["mse"]["n_seeds"] == 1 and t["rows"][0]["mse"]["status"] in ("OPERATIONAL_AGREEMENT", "OPERATIONAL_PARTIAL", "OUTSIDE_OPERATIONAL_MARGIN")
+    assert t["rows"][0]["scopes"]["same_device_repeatability"] == ["PASS"] and t["rows"][0]["per_seed"]["2021"]["mae"] == r["author_metric_float32"]["mae"]
     assert t["rows"][0]["matched_naive"]["mae"] > 0 and t["rows"][0]["training_completion"][0]["epochs_run"] == 2 and t["protocol_fidelity"]["verdict"].startswith("FAITHFUL")
     md2 = R.markdown(t); assert "| 4 |" in md2 and "Agreement rule" in md2 and t["unexecuted"] == []
 
@@ -286,14 +287,14 @@ def test_RP96_every_protocol_substitution_fails_the_actual_closure(world, tmp_pa
         assert shown and shown[0]["unit"] == unit and shown[0]["why"] and "NOT verified" in R.markdown(rep["table"])
 
 
-def test_RP96_a_replay_of_altered_checkpoint_bytes_fails_and_a_cached_replay_is_reused_only_for_identical_bytes(world, tmp_path):
+def test_RP96_a_replay_of_altered_checkpoint_bytes_fails_and_every_closure_replays_afresh(world, tmp_path):
     root = _copy(world, tmp_path)
     unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
-    (root / "REPLAYS.json").unlink(missing_ok=True)                                     # no cached replay in this copy
+    (root / "REPLAYS.json").unlink(missing_ok=True)
     first = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=True)
     assert first["rows"][0]["replay"]["allclose_rule"] and "adopted_from" not in first["rows"][0]["replay"]
     second = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=True)
-    assert "identical checkpoint" in second["rows"][0]["replay"]["adopted_from"]
+    assert "adopted_from" not in second["rows"][0]["replay"] and len(json.loads((root / "REPLAYS.json").read_text())[unit]) == 2     # a history, never an input
     # the checkpoint replaced by the same-shaped weights of ANOTHER training (different bytes): custody fails before any replay is trusted
     import torch
     sd = torch.load(folder / "checkpoint.pth")
@@ -306,30 +307,169 @@ def test_RP96_a_replay_of_altered_checkpoint_bytes_fails_and_a_cached_replay_is_
 def test_RP96_the_agreement_rule_is_frozen_and_applied_as_declared():
     pub = {"mse": 0.133, "mae": 0.230}
     ok = R.agreement(pub, [0.133, 0.140, 0.136], "mse")
-    assert ok["status"] == "NUMERICAL_AGREEMENT" and abs(ok["tolerance_agree"] - (2 * 0.005 + 0.0005)) < 1e-12 and ok["n_seeds"] == 3 and ok["sd_ddof1"] > 0
-    assert R.agreement(pub, [0.146, 0.146, 0.146], "mse")["status"] == "PARTIAL_AGREEMENT"
-    assert R.agreement(pub, [0.160, 0.160, 0.160], "mse")["status"] == "DISAGREEMENT"
+    assert ok["status"] == "OPERATIONAL_AGREEMENT" and abs(ok["tolerance_agree"] - (2 * 0.005 + 0.0005)) < 1e-12 and ok["n_seeds"] == 3 and ok["sd_ddof1"] > 0
+    assert "NOT a published per-horizon error bar" in ok["scope"]
+    assert R.agreement(pub, [0.146, 0.146, 0.146], "mse")["status"] == "OPERATIONAL_PARTIAL"
+    assert R.agreement(pub, [0.160, 0.160, 0.160], "mse")["status"] == "OUTSIDE_OPERATIONAL_MARGIN"
     assert R.agreement(pub, [], "mae")["status"] == "NO_MEASUREMENT"
     assert R.AGREEMENT["replay"]["atol"] == 1e-4 and R.AGREEMENT["std_paper"] == {"mse": 0.005, "mae": 0.006}
 
 
-def test_RP96_the_metrics_vault_is_exhaustive_consistent_with_the_author_metric_and_written_at_closure(world):
+
+
+# --- RP98/RP99/RP100/RP103: Musashi's RP97 counterexamples become refusals of the actual closure and metric path ------------------
+
+def test_RP99_the_catalog_is_recomputed_at_closure_consistent_with_the_author_metric_and_read_back(world):
     ver = R.verify_sota_run(world["root"], warehouse=_wh(world), data_path=world["data"], replay=False)
     r = ver["rows"][0]
     vp = world["root"] / "attempts" / r["unit"] / "METRICS_VAULT.json"
-    assert vp.is_file() and r["recomputed"]["metrics_vault_sha256"] == R.sha_file(vp)
+    assert vp.is_file() and r["recomputed"]["metrics_vault_sha256"] == R.sha_file(vp) and r["recomputed"]["metrics_vault_recomputed"] and r["recomputed"]["metrics_vault_read_back_equal"]
     v = json.loads(vp.read_text())
+    assert v["schema"] == R.VAULT_SCHEMA and "NaN" not in vp.read_text() and "Infinity" not in vp.read_text()
     assert abs(v["global"]["mse"] - r["author_metric_float32"]["mse"]) <= 1e-6 and abs(v["global"]["mae"] - r["author_metric_float32"]["mae"]) <= 1e-6
-    assert v["population"] == {"windows": 77, "steps": 4, "channels": 4, "elements": 77 * 4 * 4}
+    assert v["population"] == {"windows": 77, "steps": 4, "channels": 4, "elements": 77 * 16, "consumed_windows": 77}
+    assert v["identity"]["true_sha256_consumed"] == json.loads((world["root"] / "attempts" / r["unit"] / "cell.json").read_text())["true_sha256"]
+    assert v["identity"]["pred_sha256"] and v["identity"]["checkpoint_sha256"] and v["identity"]["metric_implementation_sha256"] and v["identity"]["row_order"]
     assert abs(np.mean(v["per_step"]["mse"]) - v["global"]["mse"]) <= 1e-9 and abs(np.mean(v["per_channel"]["mae"]) - v["global"]["mae"]) <= 1e-9
-    assert abs(v["global"]["naive_mae"] - r["derived"]["naive"]["mae"]) <= 1e-6                     # the same persistence (torch float32 vs numpy float64 accumulation)
-    for k in ("rmse", "mape", "mspe", "rse", "r2", "corr_pred_true", "bias", "seasonal24_mae", "skill_mae_vs_naive", "mase_vs_naive", "mutual_information_bits_pred_true_64x64"):
-        assert k in v["global"] and v["global"][k] is not None
-    assert set(v["residuals"]) >= {"mean", "var", "sd", "skewness", "kurtosis", "quantiles", "fraction_abs_gt", "histogram"} and sum(v["residuals"]["histogram"]["counts"]) == v["population"]["elements"]
-    assert len(v["per_channel"]["r2"]) == 4 and len(v["per_step"]["error_growth_mae_over_step1"]) == 4 and v["per_step"]["error_growth_mae_over_step1"][0] == 1.0
-    acf = v["autocorrelation"]["channel_mean_residual_per_step"]
-    assert len(acf["acf"]) == 4 and len(acf["acf"][0]) == len(acf["lags"]) and all(-1.0001 <= x <= 1.0001 for row in acf["acf"] for x in row if x == x)
-    assert "1" in v["autocorrelation"]["per_channel_first_step"] and len(v["autocorrelation"]["per_channel_first_step"]["1"]) == 4
-    assert v["pred_sha256"] == json.loads((world["root"] / "attempts" / r["unit"] / "cell.json").read_text())["pred_sha256"]
-    assert v["schema"] == "df_sota_metrics_vault.v2" and "quantiles" in v["estimators_and_limitations"] and "APPROXIMATE" in v["estimators_and_limitations"]["quantiles"]
-    assert "NaN" not in vp.read_text() and "Infinity" not in vp.read_text()                      # undefined is None, never a JSON NaN token
+    assert abs(v["global"]["naive_mae"] - r["derived"]["naive"]["mae"]) <= 1e-6
+    assert {c["state"] for c in v["catalog"].values()} <= {"DONE", "APPROXIMATE", "UNDEFINED", "NOT_APPLICABLE", "NOT_APPLICABLE_IN_ONE_CELL"}
+    assert v["catalog"]["quantiles"]["state"] == "APPROXIMATE" and v["catalog"]["autocorrelation"]["state"] == "DONE" and 168 in v["catalog"]["autocorrelation"]["per_channel_lags_not_applicable"]
+    assert len(v["per_window"]["mae"]) == 77 and abs(np.mean(v["per_window"]["mae"]) - v["global"]["mae"]) <= 1e-9 and v["time_blocks"][0]["n"] == 77
+    assert "mase" not in json.dumps(v["global"]) and v["global"]["mae_relative_to_test_persistence"] == v["global"]["mae"] / v["global"]["naive_mae"]
+    assert "mape_zspace" in v["global"] and "NOT physical" in v["catalog"]["percentage_errors_zspace"]["note"]
+    assert v["independent_check"]["rule"] and abs(v["independent_check"]["global_vs_author"]["mae"]) <= 1e-6
+
+
+def test_RP98_an_altered_persisted_catalog_is_rejected_preserved_and_replaced_by_the_recomputed_one(world, tmp_path):
+    """Musashi's RP97 #1: global MAE and the first per-step MAE set to 999 in the persisted vault left the unit VERIFIED."""
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]
+    vp = root / "attempts" / unit / "METRICS_VAULT.json"
+    R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)
+    vault = json.loads(vp.read_text()); vault["global"]["mae"] = 999.0; vault["per_step"]["mae"][0] = 999.0; vp.write_text(json.dumps(vault))
+    ver = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)
+    assert ver["verified_units"] == [] and any("VAULT_CHANGED" in p for p in ver["problems"])
+    rejected = sorted((root / "attempts" / unit).glob("METRICS_VAULT.rejected.*.json"))
+    assert rejected and json.loads(rejected[-1].read_text())["candidate"]["global"]["mae"] == 999.0 and "REJECTED" in json.loads(rejected[-1].read_text())["disposition"]
+    assert json.loads(vp.read_text())["global"]["mae"] != 999.0 and ver["rows"][0]["recomputed"]["metrics_vault_sha256"] == R.sha_file(vp)
+    again = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)             # the successor now verifies
+    assert again["verified_units"] == [unit]
+
+
+def test_RP98_a_contradictory_cached_replay_is_never_adopted_and_permuted_predictions_with_equal_aggregates_fail(world, tmp_path):
+    """Musashi's RP97 #2: a REPLAYS.json entry with the same identity, allclose True and max difference 999 was adopted."""
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]
+    first = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=True)
+    assert first["verified_units"] == [unit] and first["rows"][0]["replay"]["exact_equal_fraction"] == 1.0 and first["rows"][0]["replay"]["finite"] and first["rows"][0]["replay"]["shape_equal"]
+    hist = json.loads((root / "REPLAYS.json").read_text())
+    for k in hist[unit]:
+        hist[unit][k]["max_abs_prediction_difference"] = 999.0; hist[unit][k]["allclose_rule"] = True
+    (root / "REPLAYS.json").write_text(json.dumps(hist))
+    second = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=True)
+    assert second["rows"][0]["replay"]["max_abs_prediction_difference"] == 0.0 and "adopted_from" not in second["rows"][0]["replay"]
+    assert second["rows"][0]["same_device_repeatability"] == "PASS" and second["rows"][0]["cross_device_portability"] == "NOT_TESTED_ON_THIS_DEVICE"
+    # predictions permuted across windows: population aggregates unchanged, the pointwise replay comparison must fail
+    with np.load(root / "attempts" / unit / "arrays.npz") as z:
+        pred = z["pred"]
+    perm = pred[::-1].copy()
+    assert abs(float(np.mean(np.abs(perm))) - float(np.mean(np.abs(pred)))) < 1e-12 and not np.array_equal(perm, pred)
+    np.savez(root / "attempts" / unit / "arrays.npz", pred=perm)
+    rep = R.replay_cell(root, json.loads((root / "DESIGN.json").read_text()), unit, data_path=world["data"], device="cpu")
+    assert rep["allclose_rule"] is False and rep["max_abs_prediction_difference"] > 0 and rep["exact_equal_fraction"] < 1.0 and rep["shape_equal"] and rep["finite"]
+    ver = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=True)              # and the closure refuses the changed bytes first
+    assert ver["verified_units"] == [] and any("CHANGED ARRAYS" in p for p in ver["problems"])
+
+
+def test_RP99_the_catalog_refuses_short_extra_reordered_shaped_and_nonfinite_loaders_and_undefined_correlation_is_none():
+    """Musashi's RP97 #3/#4 executed on the deployed metric function."""
+    import torch
+    W, T, C = 10, 2, 1
+    x = torch.zeros((W, 24, C)); y = torch.ones((W, T, C)); pred = np.full((W, T, C), 2.0, dtype=np.float32)
+    full = R.metrics_vault(pred, [(x, y, None, None)], pred_len=T, max_lag=2)
+    assert full["global"]["mae"] == 1.0 and full["population"]["consumed_windows"] == 10
+    with pytest.raises(R.VaultRefusal, match="INCOMPLETE POPULATION"):
+        R.metrics_vault(pred, [(x[:5], y[:5], None, None)], pred_len=T, max_lag=2)
+    with pytest.raises(R.VaultRefusal, match="EXTRA ROWS"):
+        R.metrics_vault(pred, [(x, y, None, None), (x[:1], y[:1], None, None)], pred_len=T, max_lag=2)
+    with pytest.raises(R.VaultRefusal, match="does not match"):
+        R.metrics_vault(pred, [(x, torch.ones((W, T, C + 1)), None, None)], pred_len=T, max_lag=2)
+    with pytest.raises(R.VaultRefusal, match="horizon"):
+        R.metrics_vault(pred, [(x, y, None, None)], pred_len=T + 1, max_lag=2)
+    bad = pred.copy(); bad[0, 0, 0] = np.nan
+    with pytest.raises(R.VaultRefusal, match="non-finite"):
+        R.metrics_vault(bad, [(x, y, None, None)], pred_len=T, max_lag=2)
+    yb = y.clone(); yb[0, 0, 0] = float("inf")
+    with pytest.raises(R.VaultRefusal, match="non-finite"):
+        R.metrics_vault(pred, [(x, yb, None, None)], pred_len=T, max_lag=2)
+    yr = torch.arange(W * T * C, dtype=torch.float32).reshape(W, T, C)
+    a = R.metrics_vault(pred, [(x, yr, None, None)], pred_len=T, max_lag=2)
+    b = R.metrics_vault(pred, [(x, yr.flip(0), None, None)], pred_len=T, max_lag=2)
+    assert a["identity"]["true_sha256_consumed"] != b["identity"]["true_sha256_consumed"]                # order is part of the identity
+    assert full["global"]["corr_pred_true"] is None and full["per_channel"]["corr_pred_true"] == [None] and full["catalog"]["correlation_r2"]["state"] == "UNDEFINED"
+    v = R.metrics_vault(np.full((W, T, C), 2.0, dtype=np.float32), [(x, torch.randn((W, T, C)), None, None)], pred_len=T, max_lag=2)
+    assert v["per_channel"]["corr_pred_true"] == [None] and v["global"]["corr_pred_true"] is None            # constant predictions
+    pv = np.random.default_rng(0).normal(size=(W, T, C)).astype(np.float32)
+    v2 = R.metrics_vault(pv, [(x, y, None, None)], pred_len=T, max_lag=2)
+    assert v2["per_channel"]["corr_pred_true"] == [None] and v2["per_channel"]["r2"] == [None] and v2["global"]["r2"] is None   # constant targets
+
+
+def test_RP99_independent_numeric_oracles_for_every_estimator_family():
+    import torch
+    rng = np.random.default_rng(7)
+    W, T, C = 200, 3, 2
+    x = torch.tensor(rng.normal(size=(W, 30, C)).astype(np.float32)); y = torch.tensor(rng.normal(size=(W, T, C)).astype(np.float32))
+    pred = (y.numpy() + rng.normal(0, 0.5, size=(W, T, C))).astype(np.float32)
+    v = R.metrics_vault(pred, [(x[:64], y[:64], None, None), (x[64:], y[64:], None, None)], pred_len=T, max_lag=5)
+    d = pred.astype(np.float64) - y.numpy().astype(np.float64)
+    assert abs(v["global"]["mse"] - np.mean(d ** 2)) < 1e-12 and abs(v["global"]["mae"] - np.mean(np.abs(d))) < 1e-12 and abs(v["global"]["bias"] - d.mean()) < 1e-12
+    xs = x.numpy().astype(np.float64)
+    naive = np.broadcast_to(xs[:, -1:, :], d.shape); assert abs(v["global"]["naive_mae"] - np.mean(np.abs(naive - y.numpy()))) < 1e-12
+    seas = np.stack([xs[:, 30 - 24 + (k % 24), :] for k in range(T)], axis=1); assert abs(v["global"]["seasonal24_mae"] - np.mean(np.abs(seas - y.numpy()))) < 1e-12
+    flat = d.ravel(); m = flat.mean(); var = flat.var()
+    assert abs(v["residuals"]["var"] - var) < 1e-9 and abs(v["residuals"]["skewness"] - ((flat - m) ** 3).mean() / var ** 1.5) < 1e-9 and abs(v["residuals"]["kurtosis_raw"] - ((flat - m) ** 4).mean() / var ** 2) < 1e-9
+    assert abs(v["residuals"]["quantiles"]["0.5"] - np.median(flat)) <= 0.02 + 1e-12                       # histogram resolution, declared APPROXIMATE
+    assert sum(v["residuals"]["histogram"]["counts"]) + v["residuals"]["histogram"]["outside_range"] == flat.size and v["residuals"]["histogram"]["outside_range"] == 0
+    yc = y.numpy()[:, :, 0].ravel().astype(np.float64); pc = pred[:, :, 0].ravel().astype(np.float64)
+    assert abs(v["per_channel"]["corr_pred_true"][0] - np.corrcoef(pc, yc)[0, 1]) < 1e-9 and abs(v["per_channel"]["r2"][0] - (1 - ((pc - yc) ** 2).sum() / ((yc - yc.mean()) ** 2).sum())) < 1e-9
+    series = d.mean(axis=2)
+    for lag in (1, 5):
+        for k in range(T):
+            s_ = series[:, k] - series[:, k].mean(); expect = (s_[lag:] * s_[:-lag]).sum() / (s_ * s_).sum()
+            assert abs(v["autocorrelation"]["channel_mean_residual_per_step"]["acf_by_lag"][lag - 1][k] - expect) < 1e-9
+    small = R.metrics_vault(pred[:4], [(x[:4], y[:4], None, None)], pred_len=T, max_lag=5)
+    assert small["catalog"]["autocorrelation"]["lags"] == 2 and small["catalog"]["autocorrelation"]["per_channel_lags_not_applicable"] == [24, 168]
+    two = R.metrics_vault(pred[:2], [(x[:2], y[:2], None, None)], pred_len=T, max_lag=5)
+    assert two["catalog"]["autocorrelation"]["state"] == "NOT_APPLICABLE"
+    y0 = torch.zeros((W, T, C)); x0 = torch.zeros((W, 30, C)); p0 = np.zeros((W, T, C), dtype=np.float32)
+    z = R.metrics_vault(p0, [(x0, y0, None, None)], pred_len=T, max_lag=2)
+    assert z["global"]["mae_relative_to_test_persistence"] is None and z["global"]["mape_zspace"] is None and z["catalog"]["percentage_errors_zspace"]["state"] == "UNDEFINED"
+    assert z["catalog"]["percentage_errors_zspace"]["excluded_elements_abs_true_le_1e-8"] == W * T * C and z["global"]["skill_mae_vs_naive"] is None
+    big = np.full((W, T, C), 50.0, dtype=np.float32)
+    o = R.metrics_vault(big, [(x, y, None, None)], pred_len=T, max_lag=2)
+    assert o["residuals"]["histogram"]["outside_range"] == W * T * C and o["residuals"]["quantiles"] is None and o["catalog"]["quantiles"]["state"] == "UNDEFINED"
+    same = R.metrics_vault(y.numpy().copy(), [(x, y, None, None)], pred_len=T, max_lag=2)["global"]["mutual_information_bits_pred_true_64x64"]
+    indep = R.metrics_vault(rng.normal(size=(W, T, C)).astype(np.float32), [(x, y, None, None)], pred_len=T, max_lag=2)["global"]["mutual_information_bits_pred_true_64x64"]
+    assert same > indep > -1e-12
+    assert v["population"]["consumed_windows"] == W and v["time_blocks"][-1]["n"] == W - 168 and v["catalog"]["time_blocks"]["last_block_partial"]
+
+
+def test_RP103_the_four_horizon_average_is_formed_within_each_seed_first(world):
+    """Musashi's RP97 oracle: four distinct horizon errors, identical across three seeds -> seed SD 0, n_seeds 3."""
+    import copy
+    ver = R.verify_sota_run(world["root"], warehouse=_wh(world), data_path=world["data"], replay=False)
+    design = copy.deepcopy(world["design"]); report = copy.deepcopy(ver)
+    design["horizons"] = [96, 192, 336, 720]; design["seeds"] = [2021, 2022, 2023]
+    design["cells"], report["rows"], report["verified_units"] = [], [], []
+    design["lock"]["published"]["per_horizon"] = {}
+    for value, horizon in enumerate(design["horizons"], 1):
+        design["lock"]["published"]["per_horizon"][str(horizon)] = {"mae": value, "mse": value}
+        for seed in (2021, 2022, 2023):
+            cell = copy.deepcopy(world["cell"]); cell.update(cell_id=f"oracle_h{horizon}_s{seed}", horizon=horizon, seed=seed)
+            design["cells"].append(cell)
+            row = copy.deepcopy(ver["rows"][0]); row.update(unit=cell["cell_id"], cell=cell, author_metric_float32={"mae": value, "mse": value}, verified=True, problems=[])
+            report["rows"].append(row); report["verified_units"].append(cell["cell_id"])
+    design["lock"]["published"]["average"] = {"mae": 2.5, "mse": 2.5}
+    agg = R.table(design, report)["average_over_horizons"]["mae"]
+    assert agg["n_seeds"] == 3 and agg["sd_ddof1"] == 0.0 and agg["values"] == [2.5, 2.5, 2.5] and agg["seeds"] == [2021, 2022, 2023] and "within each seed" in agg["grain"]
+    report["rows"] = [r for r in report["rows"] if r["unit"] != "oracle_h720_s2023"]; report["verified_units"].remove("oracle_h720_s2023")
+    agg2 = R.table(design, report)["average_over_horizons"]["mae"]
+    assert agg2["status"] == "NOT_COMPUTED" and sorted(agg2["seed_averages_available"]) == ["2021", "2022"]

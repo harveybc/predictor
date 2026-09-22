@@ -81,11 +81,11 @@ PAPER = {
 }
 #: frozen BEFORE any test score is read (RP92/RP96): reported precision + the paper's own run-to-run dispersion
 AGREEMENT = {
-    "rule": "per horizon and for the four-horizon average, the three-seed mean of the replicated metric agrees with the published "
-            "value when |mean - published| <= 2 x std_paper + 0.0005 (rounding half-unit); PARTIAL when <= 3 x std_paper + 0.0005; "
-            "DISAGREEMENT otherwise. std_paper is the paper's std over its three runs of the four-horizon average (Table 7), applied "
-            "per horizon as the only dispersion the paper reports; the replicated seed dispersion is reported beside it and never "
-            "replaces the criterion",
+    "rule": "per horizon and for the four-horizon average (formed within each seed first), the three-seed mean of the replicated metric is in "
+            "OPERATIONAL_AGREEMENT with the published value when |mean - published| <= 2 x std_paper + 0.0005 (rounding half-unit); "
+            "OPERATIONAL_PARTIAL when <= 3 x std_paper + 0.0005; OUTSIDE_OPERATIONAL_MARGIN otherwise. std_paper is the paper's std over its "
+            "three runs of the FOUR-HORIZON AVERAGE (Table 7), borrowed per horizon as a predeclared operational margin — not a published "
+            "per-horizon error bar, not statistical equivalence; the replicated seed dispersion is reported beside it and never replaces the criterion",
     "std_paper": {"mse": 0.005, "mae": 0.006}, "rounding": 0.0005, "k_agree": 2.0, "k_partial": 3.0,
     "replay": {"device": "cpu", "atol": 1e-4, "rtol": 1e-4,
                "reading": "a GPU-trained float32 checkpoint reloaded in a fresh process through the author's test() on CPU: kernel-level "
@@ -845,9 +845,22 @@ res = M.main_like_run_py(cell["argv"], seed=cell["seed"], data_dir=Path({str(dat
 with np.load(folder/"arrays.npz") as z: stored = z["pred"]
 rep = np.asarray(res["preds"], dtype=np.float32)
 rule = design["lock"]["replay_rule"]
-d = np.abs(rep.astype(np.float64) - stored.astype(np.float64))
-print(json.dumps({{"unit": unit, "device": res["device"], "max_abs_prediction_difference": float(d.max()), "allclose_rule": bool(np.allclose(rep, stored, atol=rule["atol"], rtol=rule["rtol"])),
-                   "replayed_author_metric": res["author_metric"], "true_sha256_replayed": M.sha_array(np.asarray(res["trues"], dtype=np.float32)), "shape": list(rep.shape)}}))
+shape_equal = rep.shape == stored.shape
+finite = bool(np.isfinite(rep).all()) and bool(np.isfinite(stored).all())
+if shape_equal and finite:
+    d = np.abs(rep.astype(np.float64) - stored.astype(np.float64)); max_abs = float(d.max()); n_exact = int((rep == stored).sum()); n_total = int(rep.size)
+    allclose = bool(np.allclose(rep, stored, atol=rule["atol"], rtol=rule["rtol"]))
+else:
+    max_abs, n_exact, n_total, allclose = None, 0, int(rep.size), False
+gpu = M.gpu_state(); dev_uuid = None
+if str(res["device"]).startswith("cuda") and gpu:
+    idx = int(str(res["device"]).split(":")[-1]) if ":" in str(res["device"]) else 0
+    dev_uuid = (gpu[idx] if idx < len(gpu) else gpu[0]).get("uuid")
+print(json.dumps({{"unit": unit, "device": res["device"], "device_uuid": dev_uuid, "device_name": (gpu[0].get("name") if gpu and str(res["device"]).startswith("cuda") else "cpu"),
+                   "max_abs_prediction_difference": max_abs, "allclose_rule": allclose, "finite": finite, "shape_equal": shape_equal,
+                   "exact_equal_elements": n_exact, "elements": n_total, "exact_equal_fraction": (n_exact / n_total) if n_total else None,
+                   "replayed_author_metric": res["author_metric"], "true_sha256_replayed": M.sha_array(np.asarray(res["trues"], dtype=np.float32)), "shape": list(rep.shape),
+                   "rule": {{"atol": rule["atol"], "rtol": rule["rtol"]}}}}))
 shutil.rmtree(work, ignore_errors=True)
 """
     env = {**os.environ, "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS", "4")}
@@ -855,7 +868,7 @@ shutil.rmtree(work, ignore_errors=True)
         env["CUDA_VISIBLE_DEVICES"] = ""
     proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=7200, env=env)
     if proc.returncode:
-        return {"unit": unit, "allclose_rule": False, "error": proc.stderr[-800:]}
+        return {"unit": unit, "allclose_rule": False, "finite": None, "shape_equal": None, "device": device, "error": proc.stderr[-800:]}
     return json.loads(proc.stdout.strip().splitlines()[-1])
 
 
@@ -881,81 +894,178 @@ def naive_and_trues(design: dict, cell: dict, data_path: Path) -> dict:
             "naive_definition": "persistence: the window's last observed value repeated over the horizon, every channel, same test windows, normalized space"}
 
 
-def metrics_vault(preds: np.ndarray, test_loader, *, pred_len: int, chunk: int = 128, max_lag: int = 168) -> dict:
-    """Every metric a future analysis could want from ONE cell's predictions, so the raw arrays can be deleted afterwards
-    (owner's decision 2026-09-22). Everything is accumulated in float64 over chunks of windows: no full-size temporary.
-    Space: normalized (train-standardized) units, the space the paper reports in.
+class VaultRefusal(SotaRefusal):
+    """A metric catalog is published only from a complete, finite, correctly shaped, ordered population."""
 
-    Contents: global MSE/MAE/RMSE/MAPE/MSPE/RSE/R2/CORR/bias; per horizon step (T rows) and per channel (C rows) MSE, MAE,
-    bias, residual sd, naive persistence and 24 h seasonal naive (where the window supports it), skill; residual moments
-    (mean, var, skew, kurtosis), histogram, approximate quantiles, tail fractions, entropy; residual autocorrelation along the
-    window index (channel-mean residual per step, lags 1..max_lag; per-channel lags 1/24/168 at the first and last steps);
-    error growth by step; prediction/true correlation and mutual information (64 x 64 histogram); bias of the mean level."""
+
+VAULT_SCHEMA = "df_sota_metrics_vault.v3"
+VAULT_BLOCK_WINDOWS = 168                      # one week of hourly test windows per time block
+
+
+def _corr(py, pp, yy, p2, y2, n):
+    """Pearson correlation from sums; None (UNDEFINED) unless BOTH variances are positive."""
+    vp, vy = p2 - pp * pp / n, y2 - yy * yy / n
+    if vp <= 0 or vy <= 0:
+        return None
+    return float((py - pp * yy / n) / math.sqrt(vp * vy))
+
+
+def metrics_vault(preds: np.ndarray, test_loader, *, pred_len: int, chunk: int = 128, max_lag: int = 168, identity: dict | None = None) -> dict:
+    """The finite metric catalog of ONE cell (owner's decision 2026-09-22; retention document: required errors, matched baselines,
+    per-horizon/channel/time-block summaries, residual/information diagnostics), so the raw arrays can be deleted afterwards.
+
+    Population discipline (Musashi RP97 #3): the loader must yield EXACTLY the predictions' windows, in order, each batch of
+    shape (b, pred_len, C) and finite; the population is the COUNT CONSUMED, and the catalog refuses (typed) otherwise. Every
+    estimator carries a state — DONE / APPROXIMATE / UNDEFINED / NOT_APPLICABLE — with its parameters, excluded counts and
+    reason. Undefined is None, never zero. Space: normalized (train-standardized) units, the space the paper reports in."""
+    if preds.ndim != 3:
+        raise VaultRefusal(f"REFUSED: predictions must be (windows, steps, channels); got {preds.shape}")
     W, T, C = preds.shape
-    sums = {k: np.zeros((T, C)) for k in ("ab", "sq", "r", "nab", "nsq", "sab", "ssq")}
-    sums["y"] = np.zeros((T, C)); sums["y2"] = np.zeros((T, C)); sums["p"] = np.zeros((T, C)); sums["p2"] = np.zeros((T, C)); sums["py"] = np.zeros((T, C))
-    r3 = r4 = 0.0; n_mape = 0; mape = 0.0; mspe = 0.0
-    hist_edges = np.linspace(-20.0, 20.0, 2001); hist = np.zeros(2000)
+    if T != pred_len:
+        raise VaultRefusal(f"REFUSED: predictions have {T} steps, the cell's horizon is {pred_len}")
+    if W == 0:
+        raise VaultRefusal("REFUSED: no prediction windows")
+    if not np.isfinite(preds).all():
+        raise VaultRefusal("REFUSED: non-finite predictions")
+    Z = lambda: np.zeros((T, C))
+    S = {k: Z() for k in ("ab", "sq", "r", "nab", "nsq", "sab", "ssq", "y", "y2", "p", "p2", "py")}
+    r3 = r4 = 0.0; n_pct = 0; mape = 0.0; mspe = 0.0
+    hist_edges = np.linspace(-20.0, 20.0, 2001); hist = np.zeros(2000); n_outside = 0
     tail = {"1": 0, "2": 0, "3": 0}
-    joint = np.zeros((64, 64)); jedges = np.linspace(-6.0, 6.0, 65)
-    step_series = np.zeros((W, T)); ch_series_first = np.zeros((W, C)); ch_series_last = np.zeros((W, C))
-    w0 = 0
-    for batch_x, batch_y, _, _ in test_loader:
-        y = batch_y[:, -pred_len:, :].numpy().astype(np.float64); x = batch_x.numpy().astype(np.float64)
-        b = y.shape[0]; p = preds[w0:w0 + b].astype(np.float64); d = p - y
-        last = x[:, -1:, :]; naive = np.broadcast_to(last, y.shape)
-        L = x.shape[1]
-        seas = np.stack([x[:, L - 24 + (k % 24), :] for k in range(T)], axis=1) if L >= 24 else naive
-        sums["ab"] += np.abs(d).sum(0); sums["sq"] += (d * d).sum(0); sums["r"] += d.sum(0)
-        sums["nab"] += np.abs(naive - y).sum(0); sums["nsq"] += ((naive - y) ** 2).sum(0)
-        sums["sab"] += np.abs(seas - y).sum(0); sums["ssq"] += ((seas - y) ** 2).sum(0)
-        sums["y"] += y.sum(0); sums["y2"] += (y * y).sum(0); sums["p"] += p.sum(0); sums["p2"] += (p * p).sum(0); sums["py"] += (p * y).sum(0)
+    joint = np.zeros((64, 64)); jedges = np.linspace(-6.0, 6.0, 65); n_joint_clipped = 0
+    step_series = np.zeros((W, T)); ch_first = np.zeros((W, C)); ch_last = np.zeros((W, C))
+    per_window = {k: np.zeros(W) for k in ("mae", "mse", "naive_mae", "naive_mse", "seasonal24_mae", "seasonal24_mse")}
+    true_hash = hashlib.sha256()
+    w0 = 0; seasonal_supported = None; L_in = None
+    for batch in test_loader:
+        batch_x, batch_y = batch[0], batch[1]
+        x = np.asarray(batch_x, dtype=np.float64) if not hasattr(batch_x, "numpy") else batch_x.numpy().astype(np.float64)
+        y_all = np.asarray(batch_y) if not hasattr(batch_y, "numpy") else batch_y.numpy()
+        if y_all.ndim != 3 or y_all.shape[2] != C or y_all.shape[1] < pred_len or x.ndim != 3 or x.shape[2] != C:
+            raise VaultRefusal(f"REFUSED: a target batch of shape {tuple(y_all.shape)} / input {tuple(x.shape)} does not match predictions {(W, T, C)}")
+        y32 = y_all[:, -pred_len:, :].astype(np.float32)
+        b = y32.shape[0]
+        if w0 + b > W:
+            raise VaultRefusal(f"REFUSED: the loader yields more windows ({w0 + b}+) than the predictions ({W}): EXTRA ROWS")
+        if not np.isfinite(y32).all() or not np.isfinite(x).all():
+            raise VaultRefusal("REFUSED: non-finite targets or inputs")
+        true_hash.update(memoryview(np.ascontiguousarray(y32)).cast("B"))
+        y = y32.astype(np.float64); p = preds[w0:w0 + b].astype(np.float64); d = p - y
+        L_in = x.shape[1]
+        naive = np.broadcast_to(x[:, -1:, :], y.shape)
+        if L_in >= 24:
+            seasonal_supported = True
+            seas = np.stack([x[:, L_in - 24 + (k % 24), :] for k in range(T)], axis=1)
+        else:
+            seasonal_supported = False; seas = naive
+        S["ab"] += np.abs(d).sum(0); S["sq"] += (d * d).sum(0); S["r"] += d.sum(0)
+        nd, sd_ = naive - y, seas - y
+        S["nab"] += np.abs(nd).sum(0); S["nsq"] += (nd * nd).sum(0); S["sab"] += np.abs(sd_).sum(0); S["ssq"] += (sd_ * sd_).sum(0)
+        S["y"] += y.sum(0); S["y2"] += (y * y).sum(0); S["p"] += p.sum(0); S["p2"] += (p * p).sum(0); S["py"] += (p * y).sum(0)
         r3 += float((d ** 3).sum()); r4 += float((d ** 4).sum())
-        nz = np.abs(y) > 1e-8; n_mape += int(nz.sum()); mape += float(np.abs(d[nz] / y[nz]).sum()); mspe += float(((d[nz] / y[nz]) ** 2).sum())
-        hist += np.histogram(d, bins=hist_edges)[0]
-        for t_ in ("1", "2", "3"):
+        nz = np.abs(y) > 1e-8; n_pct += int(nz.sum()); mape += float(np.abs(d[nz] / y[nz]).sum()); mspe += float(((d[nz] / y[nz]) ** 2).sum())
+        h, _ = np.histogram(d, bins=hist_edges); hist += h; n_outside += int(d.size - h.sum())
+        for t_ in tail:
             tail[t_] += int((np.abs(d) > float(t_)).sum())
-        joint += np.histogram2d(np.clip(p.ravel(), -6, 6), np.clip(y.ravel(), -6, 6), bins=[jedges, jedges])[0]
-        step_series[w0:w0 + b] = d.mean(axis=2); ch_series_first[w0:w0 + b] = d[:, 0, :]; ch_series_last[w0:w0 + b] = d[:, -1, :]
+        pr, yr = p.ravel(), y.ravel(); n_joint_clipped += int(((np.abs(pr) > 6) | (np.abs(yr) > 6)).sum())
+        joint += np.histogram2d(np.clip(pr, -6, 6), np.clip(yr, -6, 6), bins=[jedges, jedges])[0]
+        step_series[w0:w0 + b] = d.mean(axis=2); ch_first[w0:w0 + b] = d[:, 0, :]; ch_last[w0:w0 + b] = d[:, -1, :]
+        per_window["mae"][w0:w0 + b] = np.abs(d).mean(axis=(1, 2)); per_window["mse"][w0:w0 + b] = (d * d).mean(axis=(1, 2))
+        per_window["naive_mae"][w0:w0 + b] = np.abs(nd).mean(axis=(1, 2)); per_window["naive_mse"][w0:w0 + b] = (nd * nd).mean(axis=(1, 2))
+        per_window["seasonal24_mae"][w0:w0 + b] = np.abs(sd_).mean(axis=(1, 2)); per_window["seasonal24_mse"][w0:w0 + b] = (sd_ * sd_).mean(axis=(1, 2))
         w0 += b
+    if w0 != W:
+        raise VaultRefusal(f"REFUSED: the loader consumed {w0} windows, the predictions have {W}: INCOMPLETE POPULATION")
     n = W * T * C
-    mse, mae = float(sums["sq"].sum() / n), float(sums["ab"].sum() / n)
-    ymean = float(sums["y"].sum() / n); sst = float(sums["y2"].sum() - n * ymean ** 2)
-    pmean = float(sums["p"].sum() / n)
-    cov = float(sums["py"].sum() - n * pmean * ymean); vp = float(sums["p2"].sum() - n * pmean ** 2); vy = sst
-    rmean = float(sums["r"].sum() / n); rvar = mse - rmean ** 2
+    ab_all, sq_all = float(S["ab"].sum()), float(S["sq"].sum())
+    mse, mae = sq_all / n, ab_all / n
+    ymean, pmean = float(S["y"].sum()) / n, float(S["p"].sum()) / n
+    sst = float(S["y2"].sum()) - n * ymean ** 2; ssp = float(S["p2"].sum()) - n * pmean ** 2
+    rmean = float(S["r"].sum()) / n; rvar = mse - rmean ** 2
     skew = (r3 / n - 3 * rmean * rvar - rmean ** 3) / (rvar ** 1.5) if rvar > 0 else None
     kurt = (r4 / n - 4 * rmean * r3 / n + 6 * rmean ** 2 * mse - 3 * rmean ** 4) / (rvar ** 2) if rvar > 0 else None
-    cdf = np.cumsum(hist) / max(1.0, hist.sum()); centers = (hist_edges[:-1] + hist_edges[1:]) / 2
-    quantiles = {str(q): float(centers[min(len(centers) - 1, int(np.searchsorted(cdf, q)))]) for q in (0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99, 0.999)}
-    ph = hist / max(1.0, hist.sum()); entropy_bits = float(-(ph[ph > 0] * np.log2(ph[ph > 0])).sum())
-    pj = joint / max(1.0, joint.sum()); pa, pb = pj.sum(1, keepdims=True), pj.sum(0, keepdims=True)
-    nzj = pj > 0; mi_bits = float((pj[nzj] * np.log2(pj[nzj] / (pa @ pb)[nzj])).sum())
-    def acf(series: np.ndarray, lags: int) -> list:
+    hist_total = float(hist.sum())
+    cdf = np.cumsum(hist) / hist_total if hist_total > 0 else None; centers = (hist_edges[:-1] + hist_edges[1:]) / 2
+    quantiles = ({str(q): float(centers[min(len(centers) - 1, int(np.searchsorted(cdf, q)))]) for q in (0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99, 0.999)}
+                 if cdf is not None else None)
+    ph = hist / hist_total if hist_total > 0 else None
+    entropy_bits = float(-(ph[ph > 0] * np.log2(ph[ph > 0])).sum()) if ph is not None else None
+    pj = joint / max(1.0, joint.sum()); pa, pb = pj.sum(1, keepdims=True), pj.sum(0, keepdims=True); nzj = pj > 0
+    mi_bits = float((pj[nzj] * np.log2(pj[nzj] / (pa @ pb)[nzj])).sum())
+    naive_mae, naive_mse = float(S["nab"].sum()) / n, float(S["nsq"].sum()) / n
+    seas_mae, seas_mse = float(S["sab"].sum()) / n, float(S["ssq"].sum()) / n
+    def ratio(a, b_):
+        return (a / b_) if b_ > 0 else None
+    # --- autocorrelation along consecutive windows (support: lag < W - 1) ----------------------------------------------------
+    def acf_series(series: np.ndarray, lags: int) -> list:
         s_ = series - series.mean(axis=0, keepdims=True); den = (s_ * s_).sum(axis=0)
         out = []
         for lag in range(1, lags + 1):
             num = (s_[lag:] * s_[:-lag]).sum(axis=0)
-            out.append(np.where(den > 0, num / np.where(den > 0, den, 1.0), np.nan))
+            out.append([float(num[i] / den[i]) if den[i] > 0 else None for i in range(series.shape[1])])
         return out
-    lags = min(max_lag, W - 2)
-    step_acf = np.array(acf(step_series, lags))                                    # [lags, T]
-    first_acf = {str(l): acf(ch_series_first, l)[-1].tolist() for l in (1, 24, 168) if l < W - 1}
-    last_acf = {str(l): acf(ch_series_last, l)[-1].tolist() for l in (1, 24, 168) if l < W - 1}
-    per_step = {"mse": (sums["sq"].sum(1) / (W * C)).tolist(), "mae": (sums["ab"].sum(1) / (W * C)).tolist(), "bias": (sums["r"].sum(1) / (W * C)).tolist(),
-                "naive_mse": (sums["nsq"].sum(1) / (W * C)).tolist(), "naive_mae": (sums["nab"].sum(1) / (W * C)).tolist(),
-                "seasonal24_mse": (sums["ssq"].sum(1) / (W * C)).tolist(), "seasonal24_mae": (sums["sab"].sum(1) / (W * C)).tolist()}
-    per_step["skill_mae_vs_naive"] = [1 - a / b if b > 0 else None for a, b in zip(per_step["mae"], per_step["naive_mae"])]
-    per_step["error_growth_mae_over_step1"] = [a / per_step["mae"][0] if per_step["mae"][0] > 0 else None for a in per_step["mae"]]
-    per_channel = {"mse": (sums["sq"].sum(0) / (W * T)).tolist(), "mae": (sums["ab"].sum(0) / (W * T)).tolist(), "bias": (sums["r"].sum(0) / (W * T)).tolist(),
-                   "naive_mse": (sums["nsq"].sum(0) / (W * T)).tolist(), "naive_mae": (sums["nab"].sum(0) / (W * T)).tolist(),
-                   "seasonal24_mae": (sums["sab"].sum(0) / (W * T)).tolist(),
-                   "r2": [float(1 - sq / (y2 - yy ** 2 / (W * T))) if (y2 - yy ** 2 / (W * T)) > 0 else None for sq, y2, yy in zip(sums["sq"].sum(0), sums["y2"].sum(0), sums["y"].sum(0))],
-                   "corr_pred_true": [float((py - pp * yy / (W * T)) / math.sqrt(max(1e-300, (p2 - pp ** 2 / (W * T)) * (y2 - yy ** 2 / (W * T)))))
-                                      for py, pp, yy, p2, y2 in zip(sums["py"].sum(0), sums["p"].sum(0), sums["y"].sum(0), sums["p2"].sum(0), sums["y2"].sum(0))]}
-    per_channel["skill_mae_vs_naive"] = [1 - a / b if b > 0 else None for a, b in zip(per_channel["mae"], per_channel["naive_mae"])]
+    lags = max(0, min(max_lag, W - 2))
+    step_acf = acf_series(step_series, lags) if lags > 0 else []
+    ch_acf = {}
+    for where, arr in (("first_step", ch_first), ("last_step", ch_last)):
+        ch_acf[where] = {str(l): (acf_series(arr, l)[-1] if l < W - 1 else None) for l in (1, 24, 168)}
+    # --- time blocks: weekly blocks of consecutive windows ---------------------------------------------------------------------
+    blocks = []
+    for b0 in range(0, W, VAULT_BLOCK_WINDOWS):
+        b1 = min(W, b0 + VAULT_BLOCK_WINDOWS)
+        blocks.append({"windows": [b0, b1], "n": b1 - b0, **{k: float(per_window[k][b0:b1].mean()) for k in per_window}})
+    per_step = {"mse": (S["sq"].sum(1) / (W * C)).tolist(), "mae": (S["ab"].sum(1) / (W * C)).tolist(), "bias": (S["r"].sum(1) / (W * C)).tolist(),
+                "naive_mse": (S["nsq"].sum(1) / (W * C)).tolist(), "naive_mae": (S["nab"].sum(1) / (W * C)).tolist(),
+                "seasonal24_mse": (S["ssq"].sum(1) / (W * C)).tolist(), "seasonal24_mae": (S["sab"].sum(1) / (W * C)).tolist()}
+    per_step["mae_relative_to_test_persistence"] = [ratio(a, b_) for a, b_ in zip(per_step["mae"], per_step["naive_mae"])]
+    per_step["error_growth_mae_over_step1"] = [ratio(a, per_step["mae"][0]) for a in per_step["mae"]]
+    WT = W * T
+    per_channel = {"mse": (S["sq"].sum(0) / WT).tolist(), "mae": (S["ab"].sum(0) / WT).tolist(), "bias": (S["r"].sum(0) / WT).tolist(),
+                   "naive_mse": (S["nsq"].sum(0) / WT).tolist(), "naive_mae": (S["nab"].sum(0) / WT).tolist(), "seasonal24_mae": (S["sab"].sum(0) / WT).tolist(),
+                   "r2": [float(1 - sq / (y2 - yy ** 2 / WT)) if (y2 - yy ** 2 / WT) > 0 else None for sq, y2, yy in zip(S["sq"].sum(0), S["y2"].sum(0), S["y"].sum(0))],
+                   "corr_pred_true": [_corr(py, pp, yy, p2, y2, WT) for py, pp, yy, p2, y2 in zip(S["py"].sum(0), S["p"].sum(0), S["y"].sum(0), S["p2"].sum(0), S["y2"].sum(0))]}
+    per_channel["mae_relative_to_test_persistence"] = [ratio(a, b_) for a, b_ in zip(per_channel["mae"], per_channel["naive_mae"])]
+    n_corr_undefined = sum(1 for v in per_channel["corr_pred_true"] if v is None)
+    catalog = {
+        "errors": {"state": "DONE", "estimators": ["mse", "mae", "rmse", "bias"], "population": n, "reduction": "exact float64 sums over every window x step x channel"},
+        "percentage_errors_zspace": {"state": "DONE" if n_pct == n else ("APPROXIMATE" if n_pct > 0 else "UNDEFINED"), "estimators": ["mape_zspace", "mspe_zspace"],
+                                     "excluded_elements_abs_true_le_1e-8": n - n_pct, "note": "ratios in the centered z-space, NOT physical percentage errors; diagnostic only"},
+        "matched_baselines": {"state": "DONE", "persistence": "last input value repeated over the horizon, same windows",
+                              "seasonal24": ("DONE for steps <= 24; APPROXIMATE beyond (the value 24 h before the step wraps inside the input window)" if seasonal_supported else "NOT_APPLICABLE: input window shorter than 24"),
+                              "mae_relative_to_test_persistence": "MAE / persistence MAE on the SAME test windows (not MASE: the denominator is not the training-set naive scale)"},
+        "residual_moments": {"state": "DONE" if rvar > 0 else "UNDEFINED", "estimators": ["mean", "var", "sd", "skewness", "kurtosis_raw"], "reason": None if rvar > 0 else "zero residual variance"},
+        "quantiles": {"state": "APPROXIMATE" if hist_total > 0 else "UNDEFINED", "parameters": {"bins": 2000, "range": [-20.0, 20.0], "bin_width": 0.02},
+                      "excluded_outside_range": n_outside, "note": "read from the histogram; not an exact order statistic"},
+        "entropy": {"state": "APPROXIMATE" if hist_total > 0 else "UNDEFINED", "parameters": {"bins": 2000, "range": [-20.0, 20.0]}, "excluded_outside_range": n_outside},
+        "mutual_information": {"state": "APPROXIMATE", "parameters": {"bins": [64, 64], "range": [-6.0, 6.0], "estimator": "plug-in on the joint histogram"}, "clipped_elements": n_joint_clipped},
+        "correlation_r2": {"state": "DONE" if n_corr_undefined < C else "UNDEFINED", "undefined_channels": n_corr_undefined, "rule": "Pearson needs positive variance in BOTH series; R2 needs positive true variance"},
+        "autocorrelation": {"state": "DONE" if lags > 0 else "NOT_APPLICABLE", "lags": lags, "population_windows": W, "rule": "lag L needs W > L + 1; consecutive windows overlap by construction, so no 1/sqrt(W) band is claimed; no PACF, no spectrum",
+                            "per_channel_lags_not_applicable": [l for l in (1, 24, 168) if not l < W - 1]},
+        "time_blocks": {"state": "DONE", "block_windows": VAULT_BLOCK_WINDOWS, "n_blocks": len(blocks), "last_block_partial": (W % VAULT_BLOCK_WINDOWS) != 0},
+        "per_window_series": {"state": "DONE", "length": W, "use": "paired contrasts between seeds and against the matched baselines, per window"},
+        "paired_contrasts": {"state": "NOT_APPLICABLE_IN_ONE_CELL", "note": "seed-to-seed and model-vs-baseline paired contrasts are computed at closure from the per-window series of the cells"},
+    }
+    vault = {"schema": VAULT_SCHEMA, "space": "normalized (train-standardized) units; author reduction = mean over windows x steps x channels",
+             "identity": {**(identity or {}), "true_sha256_consumed": true_hash.hexdigest(), "shape": [W, T, C], "input_window": L_in, "row_order": "the author test loader's order (shuffle=False), consumed in full",
+                          "metric_implementation_sha256": hashlib.sha256(__import__("inspect").getsource(metrics_vault).encode()).hexdigest(), "numeric": "float64 accumulation of float32 inputs"},
+             "population": {"windows": W, "steps": T, "channels": C, "elements": n, "consumed_windows": w0},
+             "catalog": catalog,
+             "global": {"mse": mse, "mae": mae, "rmse": math.sqrt(mse), "bias": rmean, "mape_zspace": (mape / n_pct) if n_pct else None, "mspe_zspace": (mspe / n_pct) if n_pct else None,
+                        "rse": math.sqrt(sq_all / sst) if sst > 0 else None, "r2": 1 - sq_all / sst if sst > 0 else None,
+                        "corr_pred_true": _corr(float(S["py"].sum()), float(S["p"].sum()), float(S["y"].sum()), float(S["p2"].sum()), float(S["y2"].sum()), n),
+                        "true_mean": ymean, "pred_mean": pmean, "true_var": sst / n, "pred_var": ssp / n,
+                        "naive_mse": naive_mse, "naive_mae": naive_mae, "seasonal24_mse": seas_mse, "seasonal24_mae": seas_mae,
+                        "skill_mae_vs_naive": (1 - mae / naive_mae) if naive_mae > 0 else None, "skill_mse_vs_naive": (1 - mse / naive_mse) if naive_mse > 0 else None,
+                        "mae_relative_to_test_persistence": ratio(mae, naive_mae), "mae_relative_to_seasonal24": ratio(mae, seas_mae),
+                        "mutual_information_bits_pred_true_64x64": mi_bits},
+             "residuals": {"mean": rmean, "var": rvar, "sd": math.sqrt(max(0.0, rvar)), "skewness": skew, "kurtosis_raw": kurt, "entropy_bits": entropy_bits,
+                           "quantiles": quantiles, "fraction_abs_gt": {k: v / n for k, v in tail.items()},
+                           "histogram": {"edges": hist_edges.tolist(), "counts": hist.astype(int).tolist(), "outside_range": n_outside}},
+             "per_step": per_step, "per_channel": per_channel,
+             "time_blocks": blocks, "per_window": {k: v.tolist() for k, v in per_window.items()},
+             "autocorrelation": {"channel_mean_residual_per_step": {"lags": list(range(1, lags + 1)), "acf_by_lag": step_acf}, "per_channel": ch_acf},
+             "joint_histogram_pred_true": {"edges": jedges.tolist(), "counts": joint.astype(int).tolist(), "clipped_elements": n_joint_clipped}}
     def clean(o):
-        """Undefined is None, never a number and never a JSON NaN token."""
         if isinstance(o, float):
             return o if math.isfinite(o) else None
         if isinstance(o, dict):
@@ -963,37 +1073,19 @@ def metrics_vault(preds: np.ndarray, test_loader, *, pred_len: int, chunk: int =
         if isinstance(o, (list, tuple)):
             return [clean(v) for v in o]
         return o
-    return clean({"schema": "df_sota_metrics_vault.v2", "space": "normalized (train-standardized) units; author reduction = mean over windows x steps x channels",
-            "population": {"windows": W, "steps": T, "channels": C, "elements": n},
-            "estimators_and_limitations": {
-                "global/per_step/per_channel errors": "exact float64 sums over the full population; MAPE/MSPE exclude |true| <= 1e-8 (population reported)",
-                "naive": "persistence = last input value repeated; seasonal24 = the input value 24 h before each step (wraps within the 96-step window for steps > 24: an approximation past step 24)",
-                "residual moments": "exact float64 power sums (mean, var, skew, kurtosis); kurtosis is raw (not excess)",
-                "quantiles": "APPROXIMATE: read from a 2000-bin histogram on [-20, 20] (bin width 0.02); residuals outside the range are not binned "
-                             "(counts sum vs population reported); not a full exact distribution",
-                "entropy": "of the same clipped 2000-bin histogram, bits; depends on the bin width",
-                "mutual_information": "APPROXIMATE: 64 x 64 joint histogram of clipped values on [-6, 6]; plug-in estimator, biased upward for small populations",
-                "autocorrelation": "sample ACF along consecutive test windows (one hour apart) of the CHANNEL-MEAN residual per step (lags 1..max_lag) and of "
-                                   "each channel's residual at the first and last steps (lags 1, 24, 168); no PACF, no spectral estimate; no confidence bands "
-                                   "(the windows overlap by construction, so the usual 1/sqrt(W) band does not apply)",
-                "r2/corr": "per channel and global, exact sums; None when the true variance is zero",
-                "uncertainty": "none per estimator: one cell is one sample; seed dispersion is reported at the table level",
-                "independent_check": "global MSE/MAE equal the author's metric() within 1e-6 and the float64 reduction (closure); per-step and per-channel "
-                                     "means average back to the global values (tests)"},
-            "global": {"mse": mse, "mae": mae, "rmse": math.sqrt(mse), "mape": mape / max(1, n_mape), "mspe": mspe / max(1, n_mape), "mape_population": n_mape,
-                       "rse": math.sqrt(float(sums["sq"].sum()) / sst) if sst > 0 else None, "r2": 1 - float(sums["sq"].sum()) / sst if sst > 0 else None,
-                       "corr_pred_true": cov / math.sqrt(vp * vy) if vp > 0 and vy > 0 else None, "bias": rmean, "true_mean": ymean, "pred_mean": pmean,
-                       "true_var": vy / n, "pred_var": vp / n, "naive_mse": float(sums["nsq"].sum() / n), "naive_mae": float(sums["nab"].sum() / n),
-                       "seasonal24_mse": float(sums["ssq"].sum() / n), "seasonal24_mae": float(sums["sab"].sum() / n),
-                       "skill_mae_vs_naive": 1 - mae / float(sums["nab"].sum() / n), "skill_mse_vs_naive": 1 - mse / float(sums["nsq"].sum() / n),
-                       "mase_vs_naive": mae / float(sums["nab"].sum() / n), "mutual_information_bits_pred_true_64x64": mi_bits},
-            "residuals": {"mean": rmean, "var": rvar, "sd": math.sqrt(max(0.0, rvar)), "skewness": skew, "kurtosis": kurt, "entropy_bits_2000bins_[-20,20]": entropy_bits,
-                          "quantiles": quantiles, "fraction_abs_gt": {k: v / n for k, v in tail.items()}, "histogram": {"edges": hist_edges.tolist(), "counts": hist.astype(int).tolist()}},
-            "per_step": per_step, "per_channel": per_channel,
-            "autocorrelation": {"reading": "residual autocorrelation along consecutive test windows (one hour apart)",
-                                "channel_mean_residual_per_step": {"lags": list(range(1, lags + 1)), "acf": step_acf.T.tolist()},
-                                "per_channel_first_step": first_acf, "per_channel_last_step": last_acf},
-            "joint_histogram_pred_true": {"edges": jedges.tolist(), "counts": joint.astype(int).tolist()}})
+    return clean(vault)
+
+
+def vault_equal(a: dict, b: dict) -> bool:
+    """Two catalogs are the same measurement when everything but their timestamps and closure notes agree."""
+    strip = lambda v: {k: x for k, x in v.items() if k not in ("at", "independent_check")}
+    return json.dumps(strip(a), sort_keys=True) == json.dumps(strip(b), sort_keys=True)
+
+
+def write_atomic(path: Path, text: str) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text)
+    os.replace(tmp, path)
 
 
 def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None, replay: bool = True, replay_device: str = "cpu",
@@ -1106,13 +1198,45 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             recomputed = {"author_float32": {"mae": float(mae32), "mse": float(mse32)}, "independent_float64": float64_metrics(preds, trues)}
             del trues
             vault_path = folder / "METRICS_VAULT.json"
-            existing = json.loads(vault_path.read_text()) if vault_path.is_file() else {}
-            if existing.get("pred_sha256") != record.get("pred_sha256") or existing.get("schema") != "df_sota_metrics_vault.v2":
-                _, test_loader = DF.data_provider(args, "test")
-                vault = metrics_vault(preds, test_loader, pred_len=args.pred_len)
-                vault.update(unit=unit, pred_sha256=record.get("pred_sha256"), design_sha256=design["design_sha256"], at=now_iso())
-                vault_path.write_text(json.dumps(vault, default=str))
-            recomputed["metrics_vault_sha256"] = sha_file(vault_path)
+            # RP99 (Musashi RP97 #1): a persisted vault is never trusted from disk — the catalog is RECOMPUTED from the accepted
+            # arrays through the author loader and compared; a differing persisted candidate is preserved with a disposition and
+            # the recomputed successor is published atomically; the digest reported is the successor's
+            _, test_loader = DF.data_provider(args, "test")
+            identity = {"unit": unit, "design_sha256": design["design_sha256"], "file_sha256": design["source_data"]["sha256"], "pred_sha256": record.get("pred_sha256"),
+                        "true_sha256_record": record.get("true_sha256"), "arrays_sha256": arrays_sha, "checkpoint_sha256": ckpt_sha, "record_sha256": record_sha,
+                        "scaler_sha256": ((json.loads((root / "BENCH_DATA.json").read_text()).get("sets") or {}).get(f"L{cell['seq_len']}_h{cell['horizon']}") or {}).get("scaler_sha256")
+                        if (root / "BENCH_DATA.json").is_file() else None, "horizon": cell["horizon"], "seq_len": cell["seq_len"], "seed": cell["seed"]}
+            try:
+                fresh = metrics_vault(preds, test_loader, pred_len=args.pred_len, identity=identity)
+            except VaultRefusal as exc:
+                p_.append(f"{unit}: metric catalog refused: {str(exc)[:160]}"); fresh = None
+            if fresh is not None:
+                if fresh["identity"]["true_sha256_consumed"] != record.get("true_sha256"):
+                    p_.append(f"{unit}: the catalog's consumed targets are not the record's targets: TARGETS")
+                fresh["independent_check"] = {"author_metric_float32": record["author_metric_float32"],
+                                              "global_vs_author": {"mae": fresh["global"]["mae"] - record["author_metric_float32"]["mae"], "mse": fresh["global"]["mse"] - record["author_metric_float32"]["mse"]},
+                                              "per_step_mean_vs_global": {"mae": float(np.mean(fresh["per_step"]["mae"])) - fresh["global"]["mae"], "mse": float(np.mean(fresh["per_step"]["mse"])) - fresh["global"]["mse"]},
+                                              "per_channel_mean_vs_global": {"mae": float(np.mean(fresh["per_channel"]["mae"])) - fresh["global"]["mae"]},
+                                              "naive_vs_closure": {"mae": fresh["global"]["naive_mae"] - (derived or {}).get("naive", {}).get("mae", float("nan"))},
+                                              "rule": "|global - author float32| <= 1e-6; per-step and per-channel means reproduce the global within 1e-9; naive equals the closure's within 1e-6"}
+                ic = fresh["independent_check"]
+                if abs(ic["global_vs_author"]["mae"]) > 1e-6 or abs(ic["global_vs_author"]["mse"]) > 1e-6 or abs(ic["per_step_mean_vs_global"]["mae"]) > 1e-9 \
+                        or abs(ic["per_channel_mean_vs_global"]["mae"]) > 1e-9 or abs(ic["naive_vs_closure"]["mae"]) > 1e-6:
+                    p_.append(f"{unit}: the recomputed catalog fails its independent check: {ic}"[:220])
+                fresh["at"] = now_iso()
+                persisted = json.loads(vault_path.read_text()) if vault_path.is_file() else None
+                if persisted is not None and not vault_equal(persisted, fresh):
+                    rejected = folder / f"METRICS_VAULT.rejected.{int(time.time())}.json"
+                    write_atomic(rejected, json.dumps({"disposition": "REJECTED: persisted catalog differs from the one recomputed from the accepted arrays at closure",
+                                                       "at": now_iso(), "candidate": persisted}, default=str))
+                    p_.append(f"{unit}: the persisted metric catalog differs from the recomputed one: VAULT_CHANGED (candidate preserved as {rejected.name})")
+                if persisted is None or not vault_equal(persisted, fresh):
+                    write_atomic(vault_path, json.dumps(fresh, default=str))
+                recomputed["metrics_vault_sha256"] = sha_file(vault_path)
+                recomputed["metrics_vault_recomputed"] = True
+                recomputed["metrics_vault_read_back_equal"] = vault_equal(json.loads(vault_path.read_text()), fresh)
+                if not recomputed["metrics_vault_read_back_equal"]:
+                    p_.append(f"{unit}: the published catalog does not read back equal to the recomputed one")
             if abs(float(mae32) - record["author_metric_float32"]["mae"]) > 0 or abs(float(mse32) - record["author_metric_float32"]["mse"]) > 0:
                 p_.append(f"{unit}: the author's metric recomputed from the arrays is not the record's: METRIC")
             if abs(recomputed["independent_float64"]["mae"] - record["author_metric_float32"]["mae"]) > 1e-6 or abs(recomputed["independent_float64"]["mse"] - record["author_metric_float32"]["mse"]) > 1e-6:
@@ -1124,32 +1248,44 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                      "problems": p_, "task_id": disp["task_id"], "disposition": disp["disposition"]})
     replays = {}
     if replay and data_path is not None:
-        prior = json.loads((root / "REPLAYS.json").read_text()) if (root / "REPLAYS.json").is_file() else {}
+        # RP100 (Musashi RP97 #2): a cached replay record is NEVER an input — every closure re-runs the fresh-process reload for the
+        # selected units on the selected device and validates the OUTPUT (finite, shape, count, full pointwise comparison, metric
+        # reductions, targets). REPLAYS.json is a history keyed by unit and device, written for the record only.
+        history = json.loads((root / "REPLAYS.json").read_text()) if (root / "REPLAYS.json").is_file() else {}
+        trained_device = lambda r_: ((r_.get("cost") or {}).get("gpu_before") or [{}])[0].get("uuid") if (r_.get("cost") or {}).get("gpu_before") else None
         for r in rows:
             if r["problems"] or r.get("status") == "MISSING":
                 continue
             unit = r["unit"]; folder = root / "attempts" / unit
             if replay_units is not None and unit not in replay_units:
-                r["replay"] = {"skipped": True, "why": "REPLAY_PENDING: not replayed on this host (memory placement); the row stays UNVERIFIED until replayed"}
+                r["replay"] = {"skipped": True, "why": "REPLAY_PENDING: not replayed on this host in this closure; the row stays UNVERIFIED until replayed"}
                 r["verified"] = False
                 continue
             ident = {"checkpoint_sha256": sha_file(folder / "checkpoint.pth"), "arrays_sha256": sha_file(folder / "arrays.npz"), "design_sha256": design["design_sha256"],
-                     "replay_code_sha256": replay_code_sha256(), "author_files": source_digests(), "device": replay_device}
-            cached = prior.get(unit) or {}
-            if cached.get("identity") == ident and "allclose_rule" in cached:
-                replays[unit] = {**cached, "adopted_from": "REPLAYS.json (identical checkpoint, arrays, design, author files and replay code, hashed now)"}
-            else:
-                replays[unit] = {**replay_cell(root, design, unit, data_path=data_path, device=replay_device), "identity": ident}
-            rep = replays[unit]
-            if not rep.get("allclose_rule"):
-                r["problems"].append(f"{unit}: fresh-process reload through the author's test() exceeds the frozen replay rule ({rep.get('error') or rep.get('max_abs_prediction_difference')})")
+                     "replay_code_sha256": replay_code_sha256(), "author_files": source_digests(), "device_requested": replay_device}
+            rep = replay_cell(root, design, unit, data_path=data_path, device=replay_device)
+            rep["identity"] = ident
+            rep["environment"] = environment()
+            # the four properties are kept apart: which device actually replayed, and whether it is the device that trained the cell
+            actual = rep.get("device_uuid")
+            same_device = bool(actual and trained_device(r) and actual == trained_device(r)) or (rep.get("device") == "cpu" and str(r.get("device", "")).startswith("cpu"))
+            rep["property"] = "same_device_repeatability" if same_device else "cross_device_portability"
+            rep["trained_on_device_uuid"] = trained_device(r)
+            ok = bool(rep.get("allclose_rule")) and rep.get("finite") is True and rep.get("shape_equal") is True
+            if not ok:
+                r["problems"].append(f"{unit}: fresh-process reload ({rep['property']}, {rep.get('device')}) fails the frozen replay rule (atol/rtol 1e-4): "
+                                     f"max|delta| {rep.get('max_abs_prediction_difference')}, finite {rep.get('finite')}, shape_equal {rep.get('shape_equal')}, error {str(rep.get('error') or '')[-160:]}")
             elif rep.get("true_sha256_replayed") != r["derived"]["true_sha256"]:
                 r["problems"].append(f"{unit}: the replay's targets differ from the derived targets")
             elif abs(rep["replayed_author_metric"]["mae"] - r["author_metric_float32"]["mae"]) > 1e-5 or abs(rep["replayed_author_metric"]["mse"] - r["author_metric_float32"]["mse"]) > 1e-5:
                 r["problems"].append(f"{unit}: the metric of the replayed predictions differs from the stored one by more than 1e-5")
-            r["replay"] = {k: v for k, v in rep.items() if k != "identity"}
+            r["replay"] = {k: v for k, v in rep.items() if k not in ("identity", "environment")}
+            r["same_device_repeatability"] = ("PASS" if ok and same_device else ("FAIL" if same_device else "NOT_TESTED_ON_THIS_DEVICE"))
+            r["cross_device_portability"] = ("PASS" if ok and not same_device else ("FAIL" if not same_device else "NOT_TESTED_ON_THIS_DEVICE"))
             r["verified"] = r["verified"] and not r["problems"]
-        (root / "REPLAYS.json").write_text(json.dumps({**prior, **replays}, indent=1, default=str))
+            history.setdefault(unit, {})[f"{rep.get('device')}:{actual or 'cpu'}@{now_iso()}"] = rep
+            replays[unit] = rep
+        write_atomic(root / "REPLAYS.json", json.dumps(history, indent=1, default=str))
     elif replay:
         for r in rows:
             if not r["problems"] and r.get("status") != "MISSING":
@@ -1203,17 +1339,20 @@ def agreement(published: dict, values: list, metric: str, rule: dict = AGREEMENT
     mean = float(np.mean(values)); sd = float(np.std(values, ddof=1)) if len(values) > 1 else None
     p = float(published[metric]); diff = mean - p
     s = rule["std_paper"][metric]; tol_a = rule["k_agree"] * s + rule["rounding"]; tol_p = rule["k_partial"] * s + rule["rounding"]
-    status = "NUMERICAL_AGREEMENT" if abs(diff) <= tol_a else ("PARTIAL_AGREEMENT" if abs(diff) <= tol_p else "DISAGREEMENT")
+    status = "OPERATIONAL_AGREEMENT" if abs(diff) <= tol_a else ("OPERATIONAL_PARTIAL" if abs(diff) <= tol_p else "OUTSIDE_OPERATIONAL_MARGIN")
     return {"status": status, "mean": mean, "sd_ddof1": sd, "values": [float(v) for v in values], "published": p, "difference": diff,
-            "tolerance_agree": tol_a, "tolerance_partial": tol_p, "n_seeds": len(values)}
+            "tolerance_agree": tol_a, "tolerance_partial": tol_p, "n_seeds": len(values),
+            "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every "
+                     "horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"}
 
 
 def table(design: dict, ver: dict) -> dict:
     """RP97: dataset/protocol, model/revision, horizon, published, replicated, difference, matched naive, seed dispersion, training
     completion, cost, agreement — normalized official metrics first; nothing unverified enters a mean."""
     pub = design["lock"]["published"]
-    rows, avg_pool = [], {"mse": [], "mae": []}
+    rows = []
     complete = True
+    by_seed = {}                                                    # seed -> horizon -> verified metrics (for the within-seed average)
     for h in design["horizons"]:
         cells = [r for r in ver["rows"] if r["cell"]["horizon"] == h]
         ok = [r for r in cells if r["verified"]]
@@ -1224,8 +1363,15 @@ def table(design: dict, ver: dict) -> dict:
         for m in ("mse", "mae"):
             vals = [r["author_metric_float32"][m] for r in ok]
             row[m] = agreement(pub["per_horizon"][str(h)], vals, m)
-            if row["verified_all"]:
-                avg_pool[m].append(row[m]["mean"])
+        for r in ok:
+            by_seed.setdefault(r["cell"]["seed"], {})[h] = r["author_metric_float32"]
+        row["per_seed"] = {str(r["cell"]["seed"]): {"mse": r["author_metric_float32"]["mse"], "mae": r["author_metric_float32"]["mae"],
+                                                    "difference_mse": r["author_metric_float32"]["mse"] - pub["per_horizon"][str(h)]["mse"],
+                                                    "difference_mae": r["author_metric_float32"]["mae"] - pub["per_horizon"][str(h)]["mae"]} for r in ok}
+        row["scopes"] = {"recipe_fidelity": "sealed author files, arguments and preparation bound (closure)" if ok else None,
+                         "same_device_repeatability": sorted({r.get("same_device_repeatability", "NOT_TESTED_ON_THIS_DEVICE") for r in ok}),
+                         "cross_device_portability": sorted({r.get("cross_device_portability", "NOT_TESTED_ON_THIS_DEVICE") for r in ok}),
+                         "published_score_agreement": {"mse": row["mse"]["status"], "mae": row["mae"]["status"]}}
         complete = complete and row["verified_all"]
         row["matched_naive"] = (ok[0]["derived"]["naive"] if ok and ok[0].get("derived") else None)
         row["training_completion"] = [{"unit": r["unit"], "epochs_run": (r.get("training") or {}).get("epochs_run"), "best_epoch": (r.get("training") or {}).get("best_epoch_by_vali"),
@@ -1241,8 +1387,15 @@ def table(design: dict, ver: dict) -> dict:
                                        "replayed_author_metric": (r.get("replay") or {}).get("replayed_author_metric")}
                                       for r in cells if not r["verified"] and r.get("author_metric_float32")]
         rows.append(row)
-    average = {m: (agreement(pub["average"], avg_pool[m], m) if complete and len(avg_pool[m]) == len(design["horizons"]) else
-                   {"status": "NOT_COMPUTED", "why": "not every horizon is verified with all seeds; no average is claimed"}) for m in ("mse", "mae")}
+    # RP103 (Musashi RP97 #5): the four-horizon average is formed WITHIN each matched seed first (a seed must have every horizon
+    # verified), then its dispersion is across seeds; between-horizon spread can never masquerade as seed spread
+    seeds_complete = [sd for sd, hs in sorted(by_seed.items()) if all(h in hs for h in design["horizons"])]
+    seed_averages = {m: [float(np.mean([by_seed[sd][h][m] for h in design["horizons"]])) for sd in seeds_complete] for m in ("mse", "mae")}
+    average = {m: ({**agreement(pub["average"], seed_averages[m], m), "seeds": seeds_complete, "grain": "average over the four horizons within each seed, then across seeds"}
+                   if seeds_complete and len(seeds_complete) == len(design["seeds"]) else
+                   {"status": "NOT_COMPUTED", "why": f"a full four-horizon average needs every horizon verified for every seed; complete seeds: {seeds_complete}",
+                    "seed_averages_available": {str(sd): {m: float(np.mean([by_seed[sd][h][m] for h in design["horizons"]]))} for sd in seeds_complete}})
+               for m in ("mse", "mae")}
     fidelity = {"source_hashes": "sealed == now" if not ver["source_drift_now"] else f"DRIFT {sorted(ver['source_drift_now'])}",
                 "preparation": ver["preparation_custody"]["class"], "environment": "declared divergence from the author's (torch/numpy/pandas/sklearn/GPU differ; recorded in the lock)",
                 "operational_patches": [p["what"] for p in design["lock"]["operational_patches"]],
