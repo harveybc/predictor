@@ -39,7 +39,7 @@ ENVELOPE_SOURCE_SHA256 = "d518cedce2617a454fcc49e5be304c0622a5d7a6f9e14f6593844c
 #: candidate change is awaiting production review, and PENDING_REVIEW says which one. The
 #: package's tests require the two to be consistent: a divergence without a stated reason is
 #: a failure, and a stated reason without a divergence is one too.
-MODULE_SHA256 = "7beab42dd7e647fc3593621013249e576d392a7d451f76b2d8403c771f9e489d"
+MODULE_SHA256 = "841fc4aa9f7955b5ef768db712d2f934d8ce091c2510dd6b6139018474f60ea6"
 PENDING_REVIEW = (
     "S2 availability-contract dimension: additive `gov_availability_contract` table, the "
     "`gov_delivery_availability` view and `write_availability_contracts` / "
@@ -47,5 +47,10 @@ PENDING_REVIEW = (
     "VALIDATING their temporal semantics against the producer's own rules before it "
     "displays anything (U2, V1). Additive and idempotent; no existing table, column, row or "
     "terminal digest is altered. Proved on SQLite and on a disposable PostgreSQL stack; NOT "
-    "deployed. Candidate manifest: docs/audits/work_plan/SATOSHI_S2_PRODUCTION_CANDIDATE.md"
+    "deployed. Candidate manifest: docs/audits/work_plan/SATOSHI_S2_PRODUCTION_CANDIDATE.md. "
+    "2026-09-22 (RP102): `gov_terminal_artifact.bytes` is BIGINT and an existing 32-bit column "
+    "is widened in place — a governed artifact of 4,198,064,038 bytes (a T=720 prediction "
+    "array) had its terminal refused by the DuckDB host; proved on SQLite and DuckDB. The "
+    "package was reinstalled into the DuckDB host's environment for that reason; the lake "
+    "plugin copy carries the same change and is NOT deployed there."
 )

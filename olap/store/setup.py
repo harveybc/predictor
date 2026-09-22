@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="predictor-olap-store",
-    version="0.1.1",
+    version="0.1.2",
     description="The predictor OLAP cube as a backend of a data-warehouse host",
     packages=find_packages(where="src"),
     package_dir={"": "src"},

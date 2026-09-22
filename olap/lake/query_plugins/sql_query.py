@@ -574,8 +574,10 @@ class Plugin:
             " source_sha256 TEXT, range_from TEXT, range_to TEXT, delivery_kind TEXT,"
             " time_column TEXT, availability_contract_sha256 TEXT NOT NULL,"
             " verification_state TEXT NOT NULL)",
+            # `bytes` is BIGINT: a governed artifact can exceed 2^31 bytes (a T=720 prediction
+            # array of the SOTA reproduction is 4.2 GB); an INTEGER column refused its terminal.
             f"CREATE TABLE IF NOT EXISTS {t('gov_terminal_artifact')} ("
-            " terminal_sha256 TEXT NOT NULL, role TEXT NOT NULL, sha256 TEXT NOT NULL, bytes INTEGER NOT NULL)",
+            " terminal_sha256 TEXT NOT NULL, role TEXT NOT NULL, sha256 TEXT NOT NULL, bytes BIGINT NOT NULL)",
             # S2: the contract dimension. Keyed by its own digest, immutable by construction:
             # the bytes ARE the key, so a row can be inserted or left alone, never updated.
             # `completion_lag_max` is TEXT on purpose — an archive's lag is the string
@@ -661,6 +663,19 @@ class Plugin:
                     f"ALTER TABLE {self._qualified('gov_terminal_dataset')} "
                     "ADD COLUMN availability_contract_sha256 TEXT"
                 ))
+            # an existing store created with `bytes INTEGER` (32-bit on DuckDB and Postgres) is
+            # widened in place; SQLite's INTEGER is already 64-bit and cannot be altered
+            if dialect != "sqlite":
+                artifact_columns = {
+                    column["name"]: str(column["type"]).upper() for column in inspect(engine).get_columns(
+                        "gov_terminal_artifact", schema=schema
+                    )
+                }
+                if artifact_columns.get("bytes") in ("INTEGER", "INT", "INT4", "INT32"):
+                    conn.execute(text(
+                        f"ALTER TABLE {self._qualified('gov_terminal_artifact')} "
+                        "ALTER COLUMN bytes TYPE BIGINT"
+                    ))
 
     def write_metrics(self, report):
         """Store one report (§3 'Lake side'). Returns
