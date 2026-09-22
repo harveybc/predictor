@@ -784,22 +784,34 @@ def child(a, design: dict) -> dict:
         (folder / "FAILED.json").write_text(json.dumps({"at": now_iso(), "error": f"{type(exc).__name__}: {str(exc)[:600]}"}))
         G.report_failed(root, a.unit, f"cell failed: {type(exc).__name__}: {str(exc)[:160]}", gov_url=a.gov_url, api_key_file=a.api_key_file, outbox_dir=str(root / "outbox"))
         raise
-    metrics = [U._metric("sota.test.mse_normalized", record["author_metric_float32"]["mse"], "z", split="test", horizon=cell["horizon"]),
-               U._metric("sota.test.mae_normalized", record["author_metric_float32"]["mae"], "z", split="test", horizon=cell["horizon"]),
+    return report_unit(a, design, cell, record, started=started)
+
+
+def report_unit(a, design: dict, cell: dict, record: dict, *, started=None) -> dict:
+    """The unit's COMPLETED terminal from its record: metrics on the record's basis (the author's float32 reduction when it was
+    executed, else the labelled float64 reduction), the three artifacts by digest, identity tags."""
+    G, U = governance_modules()
+    root = Path(a.root); folder = root / "attempts" / cell["cell_id"]
+    started = started or U._z(U.now_iso())
+    metric, basis = metric_of(record)
+    if metric is None:
+        raise SotaRefusal(f"REFUSED: the record of {cell['cell_id']} carries no metric")
+    metrics = [U._metric("sota.test.mse_normalized", metric["mse"], "z", split="test", horizon=cell["horizon"]),
+               U._metric("sota.test.mae_normalized", metric["mae"], "z", split="test", horizon=cell["horizon"]),
                U._metric("sota.train.epochs_run", float(record["training"]["epochs_run"]), "epochs"),
                U._metric("sota.train.best_epoch", float(record["training"]["best_epoch_by_vali"] or 0), "epoch")]
     terminal = U._terminal(status="COMPLETED", reason=None, cost={"wall_seconds": record["cost"]["wall_seconds"], "cpu_seconds": record["cost"]["cpu_seconds"]},
                            metrics=metrics, started=started, finished=U._z(U.now_iso()),
-                           tags={"purpose": "SOTA_REPRODUCTION", "classification": "NON_GOVERNING", "phase": "REPRODUCTION", "unit": a.unit, "role": "forecast",
+                           tags={"purpose": "SOTA_REPRODUCTION", "classification": "NON_GOVERNING", "phase": "REPRODUCTION", "unit": cell["cell_id"], "role": "forecast",
                                  "arm": cell["arm"], "horizon": str(cell["horizon"]), "seq_len": str(cell["seq_len"]), "seed": str(cell["seed"]),
-                                 "design_sha256": design["design_sha256"], "lake": a.lake, "resource": a.resource, "host": socket.gethostname()})
+                                 "design_sha256": design["design_sha256"], "lake": a.lake, "resource": a.resource, "host": socket.gethostname(), "metric_basis": basis[:40]})
     terminal["artifacts"] = [{"role": r, "sha256": sha_file(folder / f), "bytes": (folder / f).stat().st_size}
                              for r, f in (("predictions", "arrays.npz"), ("checkpoint", "checkpoint.pth"), ("record", "cell.json"))]
     (root / "TERMINALS").mkdir(exist_ok=True)
-    (root / "TERMINALS" / f"{a.unit}.json").write_text(json.dumps(terminal, indent=1, default=str))
-    reported = G.report_terminal(root, a.unit, terminal, gov_url=a.gov_url, api_key_file=a.api_key_file, outbox_dir=str(root / "outbox"), started_at=started)
+    (root / "TERMINALS" / f"{cell['cell_id']}.json").write_text(json.dumps(terminal, indent=1, default=str))
+    reported = G.report_terminal(root, cell["cell_id"], terminal, gov_url=a.gov_url, api_key_file=a.api_key_file, outbox_dir=str(root / "outbox"), started_at=started)
     if reported["flushed"]["pending"] or reported["flushed"]["failures"]:
-        raise SotaRefusal(f"REFUSED: the terminal of {a.unit} was not accepted: {reported['flushed']['failures']}")
+        raise SotaRefusal(f"REFUSED: the terminal of {cell['cell_id']} was not accepted: {reported['flushed']['failures']}")
     return record
 
 
@@ -2080,7 +2092,7 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report"])
     ap.add_argument("--reason", default=None)
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
@@ -2115,6 +2127,13 @@ def main(argv=None) -> int:
         print(json.dumps(design["lock"], indent=1, default=str)); return 0
     if a.command == "merge":
         out = merge(a.root, a.source); print(json.dumps(out, indent=1)); return 0 if not out["problems"] else 1
+    if a.command == "report":
+        # a unit whose record and artifacts exist but whose terminal was never sent (a crash after run_cell): report it from the record
+        cell = next((c for c in design["cells"] if c["cell_id"] == a.unit), None)
+        if cell is None or not (a.root / "attempts" / a.unit / "cell.json").is_file():
+            raise SotaRefusal("REFUSED: report needs a registered cell with its record on disk")
+        record = json.loads((a.root / "attempts" / a.unit / "cell.json").read_text())
+        report_unit(a, design, cell, record); print(json.dumps({"unit": a.unit, "reported": True, "metric_basis": metric_of(record)[1]})); return 0
     if a.command == "retire-attempt":
         if not (a.unit and a.reason):
             raise SotaRefusal("REFUSED: retire-attempt names its unit and its reason")
