@@ -660,3 +660,29 @@ def test_RP102_dataloader_workers_change_host_memory_only_batches_are_identical(
     assert all(torch.equal(a, b) for a, b in zip(out[1][0], out[0][0])) and all(torch.equal(a, b) for a, b in zip(out[1][1], out[0][1]))
     rec = R.run_cell(world["design"], cell, data_path=data, folder=tmp_path / "cell", use_gpu=False, bounded=True, dataloader_workers=0)
     assert rec["operational_patches"] and "num_workers 0" in rec["operational_patches"][0]["what"] and rec["effective_args"]["num_workers"] == 0
+
+
+def test_RP102_the_terminal_of_a_cell_on_the_float64_basis_is_built_from_the_record_not_from_the_absent_author_reduction(world, tmp_path, monkeypatch):
+    """The failure that hit T=336 on WORKER_B: the author reduction was not executed within the memory budget, the record carries
+    author_metric_float32 = None, and the terminal must still be sent (on the labelled float64 basis) instead of a TypeError."""
+    root = tmp_path / "root"; unit = "L96_h336_s2021"
+    (root / "attempts" / unit).mkdir(parents=True)
+    for f in ("arrays.npz", "checkpoint.pth", "cell.json"):
+        (root / "attempts" / unit / f).write_bytes(b"x")
+    record = {"author_metric_float32": None, "author_metric_state": "NOT_EXECUTED_WITHIN_BUDGET",
+              "independent_metric_float64": {"mse": 0.1626, "mae": 0.2607},
+              "training": {"epochs_run": 15, "best_epoch_by_vali": 10}, "cost": {"wall_seconds": 900.0, "cpu_seconds": 800.0}}
+    cell = {"cell_id": unit, "arm": "timefilter", "horizon": 336, "seq_len": 96, "seed": 2021}
+    sent = {}
+    U = R._module("df_utility_run")
+    G = SimpleNamespace(report_terminal=lambda root, u, terminal, **kw: sent.update({u: terminal}) or {"flushed": {"pending": [], "failures": []}})
+    monkeypatch.setattr(R, "governance_modules", lambda: (G, U))
+    a = SimpleNamespace(root=root, lake="sota_benchmarks", resource="r", gov_url="http://x", api_key_file="k")
+    R.report_unit(a, {"design_sha256": "d" * 64}, cell, record)
+    terminal = sent[unit]
+    values = {m["name"]: m["value"] for m in terminal["metrics"]}
+    assert terminal["status"] == "COMPLETED" and values["sota.test.mse_normalized"] == 0.1626 and values["sota.test.mae_normalized"] == 0.2607
+    assert terminal["tags"]["metric_basis"].startswith("independent_float64")
+    assert (root / "TERMINALS" / f"{unit}.json").is_file()
+    with pytest.raises(R.SotaRefusal):
+        R.report_unit(a, {"design_sha256": "d" * 64}, cell, {**record, "independent_metric_float64": None})
