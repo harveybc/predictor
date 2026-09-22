@@ -149,6 +149,11 @@ def bind(A=None):
         out["benchmark_lake_registered"] = any(l.get("lake_id") == LAKE_ID for l in out["lakes"])
         return out
     A.inventory = inventory
+    # default arguments were bound at the public module's definition time (port 5059): rebind them to THIS lake's port
+    import functools
+    original_adopt, original_deployed = A.adopt, A.deployed_external
+    A.adopt = functools.partial(original_adopt, lake_port=LAKE_HOST_PORT)
+    A.deployed_external = functools.partial(original_deployed, port=LAKE_HOST_PORT)
     return A
 
 
