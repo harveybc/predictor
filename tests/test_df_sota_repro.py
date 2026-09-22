@@ -717,9 +717,16 @@ def test_RP101_a_stored_array_streams_npz_members_and_npy_files_chunk_by_chunk_e
     assert np.array_equal(a[30:100], pred[30:]) and a[5:5].shape == (0, 5, 3) and a.all_finite() and np.array_equal(a.memmap(), pred)
     assert R.float64_metrics(a, b) == R.float64_metrics(pred, true)
     assert R.StoredArray(tmp_path / "arrays.npz", "true.npy").load().tobytes() == true.tobytes()
-    np.savez_compressed(tmp_path / "c.npz", pred=pred)
+    # a compressed member (the cells written before the no-compression decision) streams forward-only, never inflated whole
+    np.savez_compressed(tmp_path / "c.npz", pred=pred, true=true)
+    c = R.StoredArray(tmp_path / "c.npz", "pred")
+    assert c.compressed and c.shape == pred.shape and np.array_equal(c[0:10], pred[0:10]) and np.array_equal(c[10:20], pred[10:20])
+    assert np.array_equal(c[5:8], pred[5:8]) and np.array_equal(c[-1], pred[-1]) and np.array_equal(c.load(), pred) and c.all_finite()
+    assert R.float64_metrics(c, R.StoredArray(tmp_path / "c.npz", "true")) == R.float64_metrics(pred, true)
+    assert R.compare_predictions(pred, c, atol=1e-4, rtol=1e-4, step=7)["exact_equal_fraction"] == 1.0
     with pytest.raises(R.SotaRefusal):
-        R.StoredArray(tmp_path / "c.npz", "pred")
+        c.memmap()
+    c.close()
     bad = pred.copy(); bad[3, 1, 2] = np.nan; np.save(tmp_path / "bad.npy", bad)
     assert not R.StoredArray(tmp_path / "bad.npy").all_finite() and not R.all_finite(bad)
 

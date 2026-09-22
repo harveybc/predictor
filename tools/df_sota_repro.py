@@ -203,30 +203,35 @@ class StoredArray:
     def __init__(self, path: Path, member: str | None = None):
         import struct
         self.path = Path(path); self.member = member
+        self.compressed = False; self._zip_name = None; self._stream = None; self._stream_row = 0
         base = 0
         if member is not None:
             import zipfile
             with zipfile.ZipFile(self.path) as zf:
                 names = zf.namelist()
-                info = zf.getinfo(member if member in names else member + ".npy")
+                self._zip_name = member if member in names else member + ".npy"
+                info = zf.getinfo(self._zip_name)
             if info.compress_type != zipfile.ZIP_STORED:
-                raise SotaRefusal(f"REFUSED: {self.path.name}:{member} is compressed; a stored member is required to stream it")
-            with open(self.path, "rb") as fh:
-                fh.seek(info.header_offset); lh = fh.read(30)
-                if lh[:4] != b"PK\x03\x04":
-                    raise SotaRefusal(f"REFUSED: {self.path.name}:{member} has no local file header at its recorded offset")
-                name_len, extra_len = struct.unpack("<HH", lh[26:30])
-            base = info.header_offset + 30 + name_len + extra_len
-        with open(self.path, "rb") as fh:
-            fh.seek(base)
-            version = np.lib.format.read_magic(fh)
-            if version == (1, 0):
-                shape, fortran, dtype = np.lib.format.read_array_header_1_0(fh)
-            elif version == (2, 0):
-                shape, fortran, dtype = np.lib.format.read_array_header_2_0(fh)
+                # the cells written before the owner's no-compression decision (savez_compressed): the member is decompressed as a
+                # forward-only stream, row chunk by row chunk; never inflated whole
+                self.compressed = True
             else:
-                shape, fortran, dtype = np.lib.format._read_array_header(fh, version)
-            self.offset = fh.tell()
+                with open(self.path, "rb") as fh:
+                    fh.seek(info.header_offset); lh = fh.read(30)
+                    if lh[:4] != b"PK\x03\x04":
+                        raise SotaRefusal(f"REFUSED: {self.path.name}:{member} has no local file header at its recorded offset")
+                    name_len, extra_len = struct.unpack("<HH", lh[26:30])
+                base = info.header_offset + 30 + name_len + extra_len
+        if self.compressed:
+            fh = self._open_stream()
+            shape, fortran, dtype = self._read_header(fh)
+            self.offset = None
+            self._stream, self._stream_row = fh, 0
+        else:
+            with open(self.path, "rb") as fh:
+                fh.seek(base)
+                shape, fortran, dtype = self._read_header(fh)
+                self.offset = fh.tell()
         if fortran or dtype.hasobject:
             raise SotaRefusal(f"REFUSED: {self.path.name} is not a C-ordered numeric array")
         self.shape, self.dtype = tuple(int(x) for x in shape), np.dtype(dtype)
@@ -234,6 +239,37 @@ class StoredArray:
         self.row_nbytes = int(np.prod(self.shape[1:])) * self.dtype.itemsize if self.ndim else self.dtype.itemsize
         self.nbytes = self.size * self.dtype.itemsize
         self._fd = None
+
+    @staticmethod
+    def _read_header(fh):
+        version = np.lib.format.read_magic(fh)
+        if version == (1, 0):
+            return np.lib.format.read_array_header_1_0(fh)
+        if version == (2, 0):
+            return np.lib.format.read_array_header_2_0(fh)
+        return np.lib.format._read_array_header(fh, version)
+
+    def _open_stream(self):
+        import zipfile
+        self._zf = zipfile.ZipFile(self.path)
+        return self._zf.open(self._zip_name, "r")
+
+    def _read_compressed(self, w0: int, n: int) -> bytes:
+        """Rows [w0, w0+n) of a compressed member: forward-only; a slice behind the cursor reopens the stream."""
+        if self._stream is None or w0 < self._stream_row:
+            self.close()
+            fh = self._open_stream(); self._read_header(fh); self._stream, self._stream_row = fh, 0
+        while self._stream_row < w0:                                  # skip forward in bounded pieces
+            skip = min(w0 - self._stream_row, max(1, (64 << 20) // max(1, self.row_nbytes)))
+            got = self._stream.read(skip * self.row_nbytes)
+            if len(got) != skip * self.row_nbytes:
+                raise SotaRefusal(f"REFUSED: {self.path.name}:{self.member} ended before window {w0} (short member)")
+            self._stream_row += skip
+        buf = self._stream.read(n * self.row_nbytes)
+        if len(buf) != n * self.row_nbytes:
+            raise SotaRefusal(f"REFUSED: {self.path.name}:{self.member} ended before window {w0 + n} (short member)")
+        self._stream_row += n
+        return buf
 
     def _fileno(self) -> int:
         if self._fd is None:
@@ -243,6 +279,12 @@ class StoredArray:
     def close(self):
         if self._fd is not None:
             os.close(self._fd); self._fd = None
+        if self._stream is not None:
+            try:
+                self._stream.close(); self._zf.close()
+            except Exception:
+                pass
+            self._stream = None
 
     def __del__(self):
         try:
@@ -262,6 +304,8 @@ class StoredArray:
             raise TypeError("StoredArray supports contiguous slices along the first axis")
         w0, w1, _ = s.indices(len(self))
         n = max(0, w1 - w0)
+        if self.compressed:
+            return np.frombuffer(self._read_compressed(w0, n), dtype=self.dtype).reshape((n,) + self.shape[1:])
         fd = self._fileno(); off = self.offset + w0 * self.row_nbytes; length = n * self.row_nbytes
         buf = bytearray(length); view = memoryview(buf); got = 0
         while got < length:
@@ -280,6 +324,8 @@ class StoredArray:
         return all(bool(np.isfinite(self[w0:w0 + step]).all()) for w0 in range(0, len(self), step))
 
     def memmap(self) -> np.memmap:
+        if self.compressed:
+            raise SotaRefusal(f"REFUSED: {self.path.name}:{self.member} is compressed and cannot be memory-mapped")
         return np.memmap(self.path, dtype=self.dtype, mode="r", offset=self.offset, shape=self.shape)
 
     def load(self) -> np.ndarray:
@@ -1908,13 +1954,14 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             # the targets were streamed to a file by the author's loader above (digest checked against the record): re-read chunked
             trues = StoredArray(derived["trues_path"])
             recomputed = {"independent_float64": float64_metrics(preds, trues), "targets_source": "closure_work: streamed by the author's test loader, digest = record"}
-            need = 3 * int(preds.nbytes)
+            need = (5 if preds.compressed else 3) * int(preds.nbytes)          # a compressed member is inflated whole for the author's function
             if author_metric_budget is None or need <= author_metric_budget:
-                mae32, mse32 = MET.metric(preds.memmap(), trues.memmap())[:2]
+                a32 = preds.load() if preds.compressed else preds.memmap()
+                mae32, mse32 = MET.metric(a32, trues.memmap())[:2]; del a32
                 recomputed["author_float32"] = {"mae": float(mae32), "mse": float(mse32)}
             else:
                 recomputed["author_float32"] = None
-                recomputed["author_float32_state"] = f"NOT_EXECUTED_WITHIN_BUDGET at closure (needs ~{need} bytes of temporaries)"
+                recomputed["author_float32_state"] = f"NOT_EXECUTED_WITHIN_BUDGET at closure (needs ~{need} bytes of temporaries{'; compressed member' if preds.compressed else ''})"
             trues.close(); del trues
             vault_path = folder / "METRICS_VAULT.json"
             # RP99 (Musashi RP97 #1): a persisted vault is never trusted from disk — the catalog is RECOMPUTED from the accepted
