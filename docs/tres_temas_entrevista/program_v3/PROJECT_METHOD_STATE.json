@@ -1060,7 +1060,7 @@
    "admission": "one cell at a time on dragon within the 8 GiB request (11 GiB available, 3 GiB reserve), 32 GiB temporary disk slot; the author's float32 reduction for T=336/720 is a named residual: it needs ~7/13 GB of temporaries beyond the memmaps"
   },
   "RP102": {
-   "status": "T720_x3_RUNNING_ON_GAMMA_RUN5_ALLOCATOR_PATCH",
+   "status": "T720_RUNNING_ON_GAMMA_RUN5; T720_TERMINALS_BLOCKED_BY_WAREHOUSE_INT32_UNTIL_OWNER_RESTARTS_5057",
    "placement": "gamma rebooted by the owner (kernel memory leak cleared: 11 GiB available; the 5090's phantom 100 % utilization gone); governed preflight on the RTX 5090 (UUID a9f35631…): 55-64 s/epoch, <= 0.27 h per cell, VRAM 4.8 GiB, 49 C after preflight; execute --bounded --author-metric-budget-gib 4, -m 8G, one cell at a time, thermal guard between cells",
    "cells": [
     "L96_h192_s2022",
@@ -1097,6 +1097,12 @@
     "cause": "the author's vali() moves every batch's outputs and targets to the host (T=720: 14.8 MB each, 120 val + 284 test batches ~ 6 GB in a few seconds); with glibc's dynamic mmap threshold those buffers are carved from the heap and the freed pages stay resident. Confirmed by profile runs on gamma (scratch, nothing kept): default allocator -> RSS jump 2.4 -> 7.6 GB at ~57 s and stall; GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 -> RSS flat at 2.4 GB through epoch 1 + validation. The CPU loader alone is fine (0.014 s/batch, 0.9 GB). Two profile runs with faulthandler periodic stack dumps segfaulted inside the interpreter (dump-related); the runs without dumps did not",
     "fix": "8ff2f5e5: child_env() sets GLIBC_TUNABLES for cell and replay processes (execute + closure replays), recorded per cell/replay as an operational patch (host memory only, no arithmetic); --malloc-tunables none switches it off; test added",
     "relaunch": "run 5 on gamma at 15:32 local (`~/rp102_execute_gamma5.log`, run-id ...-gamma5, horizons 720, bounded, budget 4 GiB, workers 0, allocator patch verified in the child's environment), GPU 43 C at start"
+   },
+   "warehouse_blocker": {
+    "symptom": "run 5: L96_h720_s2021 trained and evaluated in full (arrays 4,198,064,038 bytes, record and checkpoint written, allocator patch held the scope at ~2.1 GB) and its COMPLETED terminal was refused by the warehouse: gov_terminal_artifact.bytes is a 32-bit INTEGER on the DuckDB host (DuckDB ConversionException, value out of range for INT32), relayed by data-gov as http 400",
+    "fix": "93a25d10: predictor-olap-store 0.1.2 / predictor-duckdb-store 0.1.1 — `bytes` BIGINT in the DDL and an in-place widening of an existing 32-bit column at start-up (DuckDB provider: ALTER COLUMN + CHECKPOINT so the write-ahead log never carries DDL; the lake plugin copy carries the same change); store suite 106 passed + 1 skipped on dragon with DuckDB (throwaway venv), incl. the reopen of a migrated file",
+    "deployment": "both packages installed into the DuckDB host's environment on omega (~/.venvs/store-hosts-duckdb-prod) at 16:05 local; the running service (crispdm-data-warehouse-olap.service, PID since 2026-09-17) still executes the old code: my restart of the service was refused by the execution environment (interfere-with-workloads) and is NOT bypassed. OWNER ACTION: `systemctl --user restart crispdm-data-warehouse-olap.service` on omega (optionally copy ~/.local/state/crispdm-duckdb/prod/cube.duckdb* aside first); the migration runs at the service's first engine use",
+    "consequence": "the three T=720 cells finish training/evaluation on gamma (records, arrays, checkpoints on disk) but their terminals stay unaccepted until the restart; then `report --unit L96_h720_s202X` re-sends each COMPLETED terminal from its record; until then their closure rows are custody-UNANCHORED (values shown as executed_unverified, never pooled) and their arrays are retained"
    }
   },
   "RP103": {
