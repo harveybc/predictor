@@ -514,13 +514,22 @@ def actual_device_uuid(index: int = 0) -> str | None:
 def trained_device_of(record: dict) -> str | None:
     """The device UUID a cell was trained on, from its record: the recorded actual UUID (records from 2026-09-22 on), else the
     visibility mask the record's environment carried, else nvidia-smi's first GPU of the training host (older records)."""
+    if not str(record.get("device", "")).startswith("cuda"):
+        return None
     if record.get("device_uuid"):
         return record["device_uuid"]
     vis = [x.strip() for x in str((record.get("environment") or {}).get("cuda_visible_devices") or "").split(",") if x.strip()]
     if vis and all(x.startswith("GPU-") for x in vis):
         return vis[0]
-    before = (record.get("cost") or {}).get("gpu_before") or []
-    return (before[0].get("uuid") if before else None) if str(record.get("device", "")).startswith("cuda") else None
+    # older records: the author's Exp overwrites CUDA_VISIBLE_DEVICES with its own index after the CUDA context exists, so the
+    # recorded mask is not evidence; the device whose memory the process occupied between gpu_before and gpu_after is
+    cost = record.get("cost") or {}
+    before = {g.get("uuid"): g for g in cost.get("gpu_before") or []}
+    after = {g.get("uuid"): g for g in cost.get("gpu_after") or []}
+    growth = {u: float(after[u].get("memory_used_mib") or 0) - float(before.get(u, {}).get("memory_used_mib") or 0) for u in after}
+    if growth and max(growth.values()) >= 256:
+        return max(growth, key=growth.get)
+    return next(iter(before)) if before else None
 
 
 def gpu_state() -> list:

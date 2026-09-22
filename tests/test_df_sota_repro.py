@@ -805,4 +805,8 @@ def test_RP100_the_device_identity_is_the_device_the_process_computes_on_not_nvi
     assert R.trained_device_of({"device": "cuda:0", "environment": {"cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"},
                                 "cost": {"gpu_before": [{"uuid": "GPU-b77fc3ad"}]}}) == "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
     assert R.trained_device_of({"device": "cuda:0", "environment": {"cuda_visible_devices": None}, "cost": {"gpu_before": [{"uuid": "GPU-b77fc3ad"}]}}) == "GPU-b77fc3ad"
+    # gamma's records: the author's Exp overwrote the mask with "0" after the CUDA context existed; the 5090 is the GPU whose memory the process occupied
+    two = [{"uuid": "GPU-b77fc3ad", "memory_used_mib": 14.0}, {"uuid": "GPU-a9f35631", "memory_used_mib": 10.0}]
+    after = [{"uuid": "GPU-b77fc3ad", "memory_used_mib": 14.0}, {"uuid": "GPU-a9f35631", "memory_used_mib": 5888.0}]
+    assert R.trained_device_of({"device": "cuda:0", "environment": {"cuda_visible_devices": "0"}, "cost": {"gpu_before": two, "gpu_after": after}}) == "GPU-a9f35631"
     assert R.trained_device_of({"device": "cpu", "cost": {"gpu_before": [{"uuid": "GPU-b77fc3ad"}]}}) is None
