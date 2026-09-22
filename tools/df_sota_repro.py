@@ -557,7 +557,7 @@ def bounded_test(exp, setting: str, work: Path, *, author_metric_budget_bytes: i
             batch_y = batch_y.detach().cpu().numpy()
             outputs = outputs[:, :, f_dim:]
             batch_y = batch_y[:, :, f_dim:]
-            if preds is None:
+            if fp is None:
                 shape = (n_windows, outputs.shape[1], outputs.shape[2])
                 # the files are created with their .npy headers (the memmap only writes the header), then filled through plain file
                 # handles so that every written page can be released from the cache at once; nothing is held in RAM
