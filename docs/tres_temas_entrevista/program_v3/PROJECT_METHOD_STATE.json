@@ -1060,8 +1060,8 @@
    "admission": "one cell at a time on dragon within the 8 GiB request (11 GiB available, 3 GiB reserve), 32 GiB temporary disk slot; the author's float32 reduction for T=336/720 is a named residual: it needs ~7/13 GB of temporaries beyond the memmaps"
   },
   "RP102": {
-   "status": "PAUSED_AT_OWNER_CONCERN",
-   "started": "2026-09-22",
+   "status": "RUNNING_ON_GAMMA_5090",
+   "placement": "gamma rebooted by the owner (kernel memory leak cleared: 11 GiB available; the 5090's phantom 100 % utilization gone); governed preflight on the RTX 5090 (UUID a9f35631…): 55-64 s/epoch, <= 0.27 h per cell, VRAM 4.8 GiB, 49 C after preflight; execute --bounded --author-metric-budget-gib 4, -m 8G, one cell at a time, thermal guard between cells",
    "cells": [
     "L96_h192_s2022",
     "L96_h192_s2023",
@@ -1072,9 +1072,11 @@
     "L96_h720_s2022",
     "L96_h720_s2023"
    ],
-   "path": "bounded adapter, author recipe untouched, governed units, GPU a8bd1b2c (RTX 4090 L)",
-   "interrupted": "L96_h192_s2022 on dragon at epoch ~4 (GPU 83-86 C, driver thermal slowdown active; owner suspects the cooler is off): FAILED terminal, attempt retired as L96_h192_s2022.failed.1790093762",
-   "placement_next": "gamma RTX 5090 (owner: it has its own cooler) after the owner's reboot clears the ~9 GB kernel memory leak and a governed preflight admits it: T=336 x3, T=720 x3 (and T=192 x2 unless dragon's cooler is confirmed)"
+   "notes": [
+    "dragon's attempt of L96_h192_s2022 was stopped at the owner's concern (GPU 83-86 C, driver slowdown) and retired as a versioned FAILED attempt",
+    "on gamma the horizon filter first started a duplicate of L96_h192_s2021 (already completed on omega; no receipt on gamma); interrupted at 2 min, closed FAILED, preserved; the loop continued with the pending cells"
+   ],
+   "final_closure_plan": "consolidate on gamma (dragon's T=96 cells and omega's T=192 s2021 staged as verification copies); same-device replays on the 5090 for gamma-trained cells; T=96 same-device replays need ~3 x 22 s on dragon's GPU (owner to confirm cooling); T=192 s2021 same-device replay needs omega (hold)"
   },
   "RP103": {
    "status": "NOT_STARTED"
