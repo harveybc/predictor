@@ -633,3 +633,13 @@ def test_RP99_paired_contrasts_are_computed_from_the_persisted_per_window_series
     pc2 = R.paired_contrasts(root, design, ver)["horizons"]["4"]
     key = f"{unit} - {twin['cell_id']}"
     assert pc2["state"] == "DONE" and pc2["seed_pairs"][key]["mae"]["mean"] == 0.0 and pc2["seed_pairs"][key]["n_windows"] == 77
+
+
+def test_RP102_a_failed_attempt_is_retired_into_versioned_history_and_nothing_is_deleted(world, tmp_path):
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]
+    (root / "DELIVERIES.json").write_text(json.dumps({"design_sha256": world["design"]["design_sha256"], "units": {unit: {"path": "x", "sha256": "y", "campaign_sha256": "c", "campaign_key": "k"}}}))
+    out = R.retire_attempt(root, unit, reason="interrupted")
+    assert (root / "attempts" / f"{unit}.{out['stamp']}" / "cell.json").is_file() and not (root / "attempts" / unit).exists()
+    d = json.loads((root / "DELIVERIES.json").read_text()); r = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())
+    assert unit not in d["units"] and d["failed_attempts"][0]["unit"] == unit and unit not in r["units"] and r["failed_attempts"][0]["reason"] == "interrupted"
+    assert (root / "TERMINALS" / f"{unit}.{out['stamp']}.json").is_file() and list(root.glob(f"RETIRED.{unit}.*.json"))

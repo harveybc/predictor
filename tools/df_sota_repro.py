@@ -820,6 +820,32 @@ def merge(root: Path, source: Path) -> dict:
     return out
 
 
+# --- versioned failed attempts: a retry is a NEW governed unit, the failed one stays on record --------------------------------------
+
+def retire_attempt(root: Path, unit: str, *, reason: str) -> dict:
+    """After a FAILED terminal, move the attempt folder, its delivery and its receipt into versioned history so that the next
+    execution of the same cell registers a fresh campaign/delivery instead of reusing the closed one. Nothing is deleted."""
+    root = Path(root); stamp = f"failed.{int(time.time())}"
+    out = {"unit": unit, "stamp": stamp, "reason": reason, "moved": {}}
+    folder = root / "attempts" / unit
+    if folder.exists():
+        dest = root / "attempts" / f"{unit}.{stamp}"
+        folder.rename(dest); out["moved"]["attempt"] = str(dest)
+    for name, key in (("DELIVERIES.json", "units"), ("TERMINAL_RECEIPTS.json", "units")):
+        path = root / name
+        if path.is_file():
+            doc = json.loads(path.read_text())
+            entry = (doc.get(key) or {}).pop(unit, None)
+            if entry is not None:
+                doc.setdefault("failed_attempts", []).append({"unit": unit, "stamp": stamp, "reason": reason, "retired_at": now_iso(), "entry": entry})
+                write_atomic(path, json.dumps(doc, indent=1, default=str)); out["moved"][name] = True
+    term = root / "TERMINALS" / f"{unit}.json"
+    if term.is_file():
+        term.rename(root / "TERMINALS" / f"{unit}.{stamp}.json"); out["moved"]["terminal"] = True
+    write_atomic(root / f"RETIRED.{unit}.{stamp}.json", json.dumps(out, indent=1))
+    return out
+
+
 # --- preflight (RP94): bounded, no test score ---------------------------------------------------------------------------------
 
 def preflight(design: dict, *, data_path: Path, work: Path, steps: int = 20, horizons=None, gpu: int = 0, use_gpu: bool | None = None) -> dict:
@@ -1972,7 +1998,8 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt"])
+    ap.add_argument("--reason", default=None)
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--checkpoint", type=Path, default=None, help="profile-eval: a trained checkpoint (else an untrained model, memory only)")
@@ -2005,6 +2032,10 @@ def main(argv=None) -> int:
         print(json.dumps(design["lock"], indent=1, default=str)); return 0
     if a.command == "merge":
         out = merge(a.root, a.source); print(json.dumps(out, indent=1)); return 0 if not out["problems"] else 1
+    if a.command == "retire-attempt":
+        if not (a.unit and a.reason):
+            raise SotaRefusal("REFUSED: retire-attempt names its unit and its reason")
+        print(json.dumps(retire_attempt(a.root, a.unit, reason=a.reason), indent=1)); return 0
     if a.command == "delete-predictions":
         rec = delete_predictions(a.root, a.units or [c["cell_id"] for c in design["cells"]], extra_roots=a.extra_roots, dry_run=a.dry_run)
         print(json.dumps({u: {"gate": e["gate"]["pass"], "reasons": e["gate"]["reasons"], "deleted": [d for d in e["deleted"] if d.get("deleted")].__len__(), "copies": len(e["copies_inventoried"])}
