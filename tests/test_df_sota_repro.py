@@ -216,7 +216,8 @@ def test_RP96_the_verification_binds_arrays_checkpoint_record_targets_and_metric
     assert r["custody"]["class"] == "ACCEPTED_ARTIFACT_CHAIN" and r["recomputed"]["author_float32"] == r["author_metric_float32"]
     assert abs(r["recomputed"]["independent_float64"]["mse"] - r["author_metric_float32"]["mse"]) <= 1e-6 and r["derived"]["windows"] == 77
     assert r["replay"]["allclose_rule"] and r["replay"]["max_abs_prediction_difference"] == 0.0 and r["disposition"] == "ACTIVE"
-    assert (world["root"] / "REPLAYS.json").is_file() and "identity" in json.loads((world["root"] / "REPLAYS.json").read_text())[r["unit"]]
+    history = json.loads((world["root"] / "REPLAYS.json").read_text())[r["unit"]]                    # a history keyed by device@time, never an input
+    assert history and all("identity" in entry and entry["property"] in ("same_device_repeatability", "cross_device_portability") for entry in history.values())
     # the same authority through the closure table: the ECL row enters the ACTIVE ranking, published metric first
     table = T.build([f"{world['root']}:tiny"], registry=B.registry(), warehouse=_wh(world), no_new_measurement=False)
     assert table["problems"] == [] and table["verified_rows"] == 1 and table["dispositions"] == {"ACTIVE": 1}
