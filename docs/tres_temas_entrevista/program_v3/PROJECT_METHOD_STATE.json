@@ -1060,7 +1060,7 @@
    "admission": "one cell at a time on dragon within the 8 GiB request (11 GiB available, 3 GiB reserve), 32 GiB temporary disk slot; the author's float32 reduction for T=336/720 is a named residual: it needs ~7/13 GB of temporaries beyond the memmaps"
   },
   "RP102": {
-   "status": "RUNNING_ON_GAMMA_5090",
+   "status": "T192_COMPLETE_T336_T720_PENDING_RELAUNCH",
    "placement": "gamma rebooted by the owner (kernel memory leak cleared: 11 GiB available; the 5090's phantom 100 % utilization gone); governed preflight on the RTX 5090 (UUID a9f35631…): 55-64 s/epoch, <= 0.27 h per cell, VRAM 4.8 GiB, 49 C after preflight; execute --bounded --author-metric-budget-gib 4, -m 8G, one cell at a time, thermal guard between cells",
    "cells": [
     "L96_h192_s2022",
@@ -1076,7 +1076,12 @@
     "dragon's attempt of L96_h192_s2022 was stopped at the owner's concern (GPU 83-86 C, driver slowdown) and retired as a versioned FAILED attempt",
     "on gamma the horizon filter first started a duplicate of L96_h192_s2021 (already completed on omega; no receipt on gamma); interrupted at 2 min, closed FAILED, preserved; the loop continued with the pending cells"
    ],
-   "final_closure_plan": "consolidate on gamma (dragon's T=96 cells and omega's T=192 s2021 staged as verification copies); same-device replays on the 5090 for gamma-trained cells; T=96 same-device replays need ~3 x 22 s on dragon's GPU (owner to confirm cooling); T=192 s2021 same-device replay needs omega (hold)"
+   "final_closure_plan": "consolidate on gamma (dragon's T=96 cells and omega's T=192 s2021 staged as verification copies); same-device replays on the 5090 for gamma-trained cells; T=96 same-device replays need ~3 x 22 s on dragon's GPU (owner to confirm cooling); T=192 s2021 same-device replay needs omega (hold)",
+   "completed_on_gamma": {
+    "L96_h192_s2022": "MSE 0.158627 / MAE 0.252429 (author float32), 15/15 epochs, best 15, 15.5 min, RSS 7.1 GiB, 5090 38->55 C",
+    "L96_h192_s2023": "MSE 0.153452 / MAE 0.248072, 15/15 epochs, best 12, 15.6 min, RSS 7.0 GiB, 38->55 C"
+   },
+   "oom_event": "L96_h336_s2021 on gamma: scope killed by systemd-oomd at 13:28 local at a 7.1 GB scope peak (host memory pressure from file-backed pages of the bounded evaluation; gamma has 14 GB with another workload); FAILED terminal, attempt retired; fix: predictions/targets streamed through file handles with posix_fadvise(DONTNEED), artifact/digests/float64 streamed from files (commit after 4662ca5); re-profiled before relaunch"
   },
   "RP103": {
    "status": "NOT_STARTED"
