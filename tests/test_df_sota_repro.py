@@ -755,9 +755,12 @@ def test_RP103_the_deletion_gate_reads_replay_failures_from_every_history_form(w
     them demands the preserved route diagnostic before the arrays may be deleted."""
     unit = world["cell"]["cell_id"]
     root = _copy(world, tmp_path)
-    R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)
-    a = SimpleNamespace(root=root, warehouse_token_file=None, warehouse_url=None, data_path=world["data"], skip_replay=True, replay_device="cpu")
-    R.close(a, json.loads((root / "DESIGN.json").read_text()))
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tok"; tok.write_text("synthetic")
+        a = SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False, replay_device="cpu")
+        R.close(a, json.loads((root / "DESIGN.json").read_text()))
     assert R.deletion_gate(root, unit)["pass"], R.deletion_gate(root, unit)["reasons"]
     (root / "REPLAYS_HISTORY.worker.REPLAYS.json").write_text(json.dumps({unit: {"device": "cpu", "allclose_rule": False, "max_abs_prediction_difference": 0.002}}))
     g = R.deletion_gate(root, unit)
