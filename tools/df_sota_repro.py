@@ -122,13 +122,17 @@ def sha_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def _npy_header_len(path: Path) -> int:
+    """Offset of the array bytes inside a .npy file (public API: the memmap's own offset)."""
+    m = np.load(path, mmap_mode="r"); off = int(m.offset); del m
+    return off
+
+
 def stream_npz(dest: Path, member: str, src_npy: Path) -> dict:
     """Write an UNCOMPRESSED .npz holding `member` from an existing .npy file, streaming in 64 MiB pieces with the page cache
     released behind both files; returns the sha256 of the member's array bytes (header excluded) and of the whole npz."""
     import zipfile
-    from numpy.lib import format as npf
-    with open(src_npy, "rb") as fh:
-        version = npf.read_magic(fh); npf._read_array_header(fh, version); header_len = fh.tell()
+    header_len = _npy_header_len(src_npy)
     body_hash = hashlib.sha256()
     with zipfile.ZipFile(dest, "w", compression=zipfile.ZIP_STORED, allowZip64=True) as zf, open(src_npy, "rb") as src:
         with zf.open(member + ".npy", "w", force_zip64=True) as out:
@@ -152,12 +156,8 @@ def stream_npz(dest: Path, member: str, src_npy: Path) -> dict:
 
 def float64_metrics_files(preds_npy: Path, trues_npy: Path, shape: tuple, chunk_windows: int = 64) -> dict:
     """MAE/MSE in float64 read directly from two .npy files window-chunk by window-chunk, releasing the page cache behind."""
-    from numpy.lib import format as npf
     W = shape[0]; per_window = int(np.prod(shape[1:])); item = 4
-    def header_len(path):
-        with open(path, "rb") as fh:
-            v = npf.read_magic(fh); npf._read_array_header(fh, v); return fh.tell()
-    hp, ht = header_len(preds_npy), header_len(trues_npy)
+    hp, ht = _npy_header_len(preds_npy), _npy_header_len(trues_npy)
     n, ab, sq = 0, 0.0, 0.0
     with open(preds_npy, "rb") as fp, open(trues_npy, "rb") as ft:
         for w0 in range(0, W, chunk_windows):
