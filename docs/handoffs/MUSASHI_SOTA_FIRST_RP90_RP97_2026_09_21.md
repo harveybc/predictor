@@ -1,5 +1,27 @@
 # Satoshi: RP90-RP97, SOTA reproduction takes priority
 
+## Owner amendment, 2026-09-22: thermal placement and storage
+
+Read and apply [thermal/retention policy](../tres_temas_entrevista/program_v3/THERMAL_AND_ARTIFACT_RETENTION_2026_09_22.md)
+before the next job. The coordinator is traveling without external cooling:
+no heavy local CPU/GPU fit, verification or compression. Use the existing remote
+workers after health/admission checks; the eGPU needs its own check. No local
+fallback or bypass of the temporary batch-launcher hold. Existing services stay up.
+
+Run independent prediction/metric checks on the workers; return small reports,
+not the entire prediction bank to the coordinator. Finish current transfers
+consistently or explicitly cancel and record them before pruning. Do not remove
+in-flight sources or the owner's active compression-test inputs.
+
+After independent verification, archive original artifacts losslessly to a
+governed remote location, restore and verify original digests in isolation, then
+prune exact local/working duplicates with an auditable receipt. The current
+verifier expects arrays.npz; restore it before calling it, or implement and test
+an explicit archive resolver. Never skip array checks just because metrics were
+previously verified. No lossy quantization or destruction of the last canonical
+prediction copy. Benchmark compression on representative samples remotely;
+report measured bytes saved, compression/restore time and peak RAM.
+
 Base inspected: `3389a25`. Owner explicitly replaces the next experimental
 priority. Read [SOTA_FIRST](../tres_temas_entrevista/program_v3/SOTA_FIRST_2026_09_21.md)
 and the master/state before work. Finish all feasible dependent and independent

@@ -1,5 +1,17 @@
 {
  "schema": "research_program_method_state.v1",
+ "thermal_and_retention_override": {
+  "date": "2026-09-22",
+  "scope": "owner travel period until explicit cooling-restored notice",
+  "coordinator_heavy_cpu_gpu_compression": "DISALLOWED",
+  "coordinator_role": "light orchestration and existing services only",
+  "remote_execution": "existing governed workers; inspect actual GPU UUID, utilization, memory, temperature and compatibility first; no local fallback",
+  "local_batch_guard": "crispdm-run refuses new work when ~/.config/crispdm/coordinator-travel-hold exists; does not intercept direct process launches",
+  "artifact_policy": "THERMAL_AND_ARTIFACT_RETENTION_2026_09_22.md",
+  "deletion_gate": "verified remote lossless archive and restoration against accepted original digest; no active reader/writer; preserve receipts and checkpoint",
+  "archive_aware_verifier": "NOT_IMPLEMENTED; existing verifier still requires restored arrays.npz",
+  "artifacts_deleted_this_update": 0
+ },
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
@@ -941,7 +953,7 @@
   },
   "RP94": {
    "status": "IN_PROGRESS",
-   "next": "governed preflight on omega/dragon/gamma GPUs; allocation"
+   "next": "governed preflight on cooled remote workers only; coordinator travel hold active; external GPU requires utilization diagnosis before admission"
   },
   "RP95": {
    "status": "NOT_STARTED"

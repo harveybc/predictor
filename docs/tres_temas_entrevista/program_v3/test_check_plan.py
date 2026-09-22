@@ -18,6 +18,16 @@ class PlanChecks(unittest.TestCase):
     def test_actual_state(self):
         self.assertEqual(validate(self.state, ROOT), [])
 
+    def test_in_progress_task_is_not_completed(self):
+        task = next(t for t in self.state["tasks"] if t["id"] == "SOTA-REPRO")
+        task["status"] = "IN_PROGRESS"
+        task["evidence"] = []
+        self.assertEqual(validate(self.state, ROOT), [])
+
+    def test_unrecognized_task_status_still_refuses(self):
+        self.state["tasks"][0]["status"] = "TRUST_ME_DONE"
+        self.assertIn("unknown status", " ".join(validate(self.state, ROOT)))
+
     def test_closure_report_applies_to_current_and_future_orders(self):
         self.state["closure_reporting"]["scope"] = "FUTURE_ONLY"
         self.assertIn("closure reporting contract", " ".join(validate(self.state, ROOT)))

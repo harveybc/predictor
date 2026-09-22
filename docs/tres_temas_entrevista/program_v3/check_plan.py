@@ -96,7 +96,7 @@ def validate(state, root):
             if not isinstance(task.get(field), str) or not task[field].strip():
                 issues.append(f"{task_id}: {field} required")
         status = task.get("status")
-        if status not in {"NOT_STARTED", "DESIGNED", "IMPLEMENTED", "EXECUTED",
+        if status not in {"NOT_STARTED", "IN_PROGRESS", "DESIGNED", "IMPLEMENTED", "EXECUTED",
                           "VERIFIED", "REVIEWED", "BLOCKED"}:
             issues.append(f"{task_id}: unknown status")
         if status in {"EXECUTED", "VERIFIED", "REVIEWED"} and not task.get("evidence"):

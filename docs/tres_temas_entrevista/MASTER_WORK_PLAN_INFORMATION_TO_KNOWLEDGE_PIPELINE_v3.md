@@ -1,5 +1,19 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+## Restriccion operativa vigente (22-sep-2026)
+
+El coordinador esta de viaje sin refrigeracion externa: **sin nuevo trabajo
+pesado de CPU/GPU, replay o compresion local**. Ejecutar en los workers con
+refrigeracion comprobada; no fallback al coordinador. Servicios y escritorio
+siguen activos. La eGPU solo se admite tras comprobar utilizacion, memoria,
+compatibilidad y temperatura; no basta que no aparezca un proceso de compute.
+Politica y orden complementaria:
+[termica y retencion](program_v3/THERMAL_AND_ARTIFACT_RETENTION_2026_09_22.md).
+Comprobar predicciones en el worker; no replicar todos los arrays al portatil.
+Eliminar copias locales/duplicadas solo despues de probar restauracion exacta
+desde su archivo gobernado. Metricas verificadas no sustituyen los arrays para
+una auditoria posterior. No se ha autorizado perder la ultima copia de evidencia.
+
 ## Prioridad vigente: reproduccion del estado del arte (21-sep-2026)
 
 Decision explicita del owner: **SOTA-REPRO primero**. Quedan suspendidas las
