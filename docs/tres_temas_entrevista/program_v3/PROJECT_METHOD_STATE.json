@@ -1060,7 +1060,7 @@
    "admission": "one cell at a time on dragon within the 8 GiB request (11 GiB available, 3 GiB reserve), 32 GiB temporary disk slot; the author's float32 reduction for T=336/720 is a named residual: it needs ~7/13 GB of temporaries beyond the memmaps"
   },
   "RP102": {
-   "status": "T720_RUNNING_ON_GAMMA_RUN5; T720_TERMINALS_BLOCKED_BY_WAREHOUSE_INT32_UNTIL_OWNER_RESTARTS_5057",
+   "status": "ALL_12_CELLS_EXECUTED; 9 terminals accepted; 3 T=720 terminals pending the owner's warehouse restart; consolidated closure RUNNING on gamma",
    "placement": "gamma rebooted by the owner (kernel memory leak cleared: 11 GiB available; the 5090's phantom 100 % utilization gone); governed preflight on the RTX 5090 (UUID a9f35631…): 55-64 s/epoch, <= 0.27 h per cell, VRAM 4.8 GiB, 49 C after preflight; execute --bounded --author-metric-budget-gib 4, -m 8G, one cell at a time, thermal guard between cells",
    "cells": [
     "L96_h192_s2022",
@@ -1087,7 +1087,8 @@
     "L96_h336_s2022": "MSE 0.168175 / MAE 0.267413 (float64 basis), 15/15 epochs, best 13, 15 min, RSS 5.3 GiB; reported from its record by `report` (old-code child)",
     "L96_h336_s2023": "COMPLETED at 15:05 local (fixed code reported it directly; values in the closure)",
     "L96_h720_s2021": "MSE 0.187139 / MAE 0.287520 (float64 basis: author reduction needs ~12.6 GB of temporaries), 15/15 epochs, best 12, 20 min, RSS 2.7 GiB (allocator patch; scope peak 2.5 GB), 5090 38->49 C; terminal REFUSED by the warehouse (INT32 bytes) -> re-send with `report` after the owner's restart",
-    "L96_h720_s2022": "MSE 0.198170 / MAE 0.298649 (float64 basis), 15/15 epochs, best 5, 20 min, RSS 2.7 GiB; terminal REFUSED likewise"
+    "L96_h720_s2022": "MSE 0.198170 / MAE 0.298649 (float64 basis), 15/15 epochs, best 5, 20 min, RSS 2.7 GiB; terminal REFUSED likewise",
+    "L96_h720_s2023": "MSE 0.185368 / MAE 0.285684 (float64 basis), 15/15 epochs, best 11, 20 min, RSS 2.7 GiB; terminal REFUSED likewise (warehouse INT32)"
    },
    "oom_event": "L96_h336_s2021 on gamma: scope killed by systemd-oomd at 13:28 local at a 7.1 GB scope peak (host memory pressure from file-backed pages of the bounded evaluation; gamma has 14 GB with another workload); FAILED terminal, attempt retired; fix: predictions/targets streamed through file handles with posix_fadvise(DONTNEED), artifact/digests/float64 streamed from files (commit after 4662ca5); re-profiled before relaunch",
    "streaming_fix": "bounded evaluation now streams predictions/targets through file handles with posix_fadvise(DONTNEED) and streams the artifact, digests and float64 reduction from the files; a first version re-created the files per batch and was caught by the parity tests (predictions/targets misaligned) — fixed; tool suite 31 passed + 1 skipped on gamma; re-profiles on gamma under an 8 GiB request: T=336 cgroup peak 1.89 GB (file 146 MB), T=720 2.32 GB (file 148 MB), T=96 with dragon's checkpoint 4.15 GB with the author metric executed",
@@ -1108,7 +1109,9 @@
    }
   },
   "RP103": {
-   "status": "NOT_STARTED"
+   "status": "CONSOLIDATED_CLOSURE_RUNNING_ON_GAMMA",
+   "started": "2026-09-22 16:54 local",
+   "script": "~/rp103_close_gamma.sh on WORKER_B: merge _from_dragon (+ REPLAYS_HISTORY.*, ROUTE_TRACE.json x3) and _from_omega, close --replay-device cuda --author-metric-budget-gib 4 (memory-bounded closure), deletion gate dry run over root + staging copies"
   },
   "RP104": {
    "status": "SUITES_RUN_ON_DRAGON",
