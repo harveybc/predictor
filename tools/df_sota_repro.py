@@ -1404,9 +1404,8 @@ def deletion_gate(root: Path, unit: str) -> dict:
                 reasons.append("the catalog's independent check is absent or failed")
             if any(c.get("state") == "UNDEFINED" for k, c in (v.get("catalog") or {}).items() if k in ("errors", "matched_baselines")):
                 reasons.append("required errors or baselines are UNDEFINED")
-    hist = json.loads((root / "REPLAYS.json").read_text()).get(unit, {}) if (root / "REPLAYS.json").is_file() else {}
-    if any(not e.get("allclose_rule") for e in hist.values()) and not (folder / "ROUTE_TRACE.json").is_file():
-        reasons.append("a replay failure is recorded and its route-level diagnostic is not preserved")
+    if any(not e.get("allclose_rule") for e in replay_history(root, unit)) and not (folder / "ROUTE_TRACE.json").is_file():
+        reasons.append("a replay failure is recorded (this root's or a merged worker's history) and its route-level diagnostic is not preserved")
     if not (folder / "cell.json").is_file() or not (folder / "checkpoint.pth").is_file():
         reasons.append("record or checkpoint missing (they are preserved, never deleted)")
     arrays = folder / "arrays.npz"

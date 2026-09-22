@@ -748,3 +748,19 @@ def test_RP101_the_closure_streams_the_targets_to_a_file_with_the_records_digest
     ver = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)
     row = ver["rows"][0]
     assert row["verified"] and row["recomputed"]["targets_source"].startswith("closure_work") and not (root / "closure_work").exists()
+
+
+def test_RP103_the_deletion_gate_reads_replay_failures_from_every_history_form(world, tmp_path):
+    """WORKER_A's history is the RP96 flat form; a merged worker's history lives in REPLAYS_HISTORY.*: a recorded failure in any of
+    them demands the preserved route diagnostic before the arrays may be deleted."""
+    unit = world["cell"]["cell_id"]
+    root = _copy(world, tmp_path)
+    R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)
+    a = SimpleNamespace(root=root, warehouse_token_file=None, warehouse_url=None, data_path=world["data"], skip_replay=True, replay_device="cpu")
+    R.close(a, json.loads((root / "DESIGN.json").read_text()))
+    assert R.deletion_gate(root, unit)["pass"], R.deletion_gate(root, unit)["reasons"]
+    (root / "REPLAYS_HISTORY.worker.REPLAYS.json").write_text(json.dumps({unit: {"device": "cpu", "allclose_rule": False, "max_abs_prediction_difference": 0.002}}))
+    g = R.deletion_gate(root, unit)
+    assert not g["pass"] and any("route-level diagnostic" in r for r in g["reasons"])
+    (root / "attempts" / unit / "ROUTE_TRACE.json").write_text("{}")
+    assert R.deletion_gate(root, unit)["pass"]
