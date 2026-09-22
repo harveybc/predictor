@@ -114,7 +114,11 @@ metrics in the normalized space, author reduction. Frozen operational margin: |m
   seasonal-24 0.3043 / 0.3237 z-MSE / z-MAE, persistence 1.5962 / 0.9507). Records, checkpoints and catalogs are never deleted.
   Omega's copies (`_from_dragon` T = 96 ×3, 1.8 GB — retained anyway as unverified; root T = 192 s2021, 1.1 GB — deletable)
   wait for the end of the travel hold: nothing was run on omega. The post-deletion closure (run 5) reports the deleted cells as
-  METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION with their dated verification. __POST_DELETION__
+  METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION with their dated verification. Executed: run 5 at 23:03–23:07Z
+  ([REPORT.gamma.post_deletion.json](../evidence/d3_k5_20260917/RP103/REPORT.gamma.post_deletion.json), sha256 98749dc4…): the six
+  deleted cells carry status METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION with their deletion instant and the report digest they
+  were verified under; the T = 192 and T = 336 rows keep OPERATIONAL_AGREEMENT from those historical verifications (listed as
+  `historically_verified_seeds`), no replay is possible or claimed for them, and the T = 96 replays were re-run (same result).
 * **RP104** — suites in compatible environments, at aceb756d on WORKER_A (no test ran on omega during the hold):
   `tests/test_df_sota_repro.py` 40 passed + 1 skipped (the skip: `seal()` needs the benchmark store receipt, present on omega
   only) in its own process; closure table + benchmark contract + block + financial acceptance 117 passed, 2 deselected (FL08

@@ -583,3 +583,19 @@ Ordenes del owner del 22-sep: ningun trabajo en omega hasta el 24-sep (retencion
 predicciones y boveda exhaustiva de metricas por celda para que Musashi borre los arrays tras su analisis independiente.
 Siguiente: T=192 semillas 2022/2023 y replay en omega desde el 24-sep; decision del owner sobre el techo de memoria para
 T=336/720; solo tras aceptacion de la reproduccion se planifican R0/R1/R2 modulares y H-CORE contra esta referencia.
+
+**Ejecutado por Satoshi (22-sep, RP98-RP105, pendiente de revision):** [retorno](../audits/work_plan/SATOSHI_RP98_RP105_RETURN_2026_09_22.md),
+evidencia en `docs/audits/evidence/d3_k5_20260917/RP103/`. Los cinco hallazgos del dictamen RP97 corregidos con contraejemplos
+PRE/POST (boveda v3 con estados y poblacion exacta, replays re-ejecutados en cada cierre sin cache, promedio dentro de cada
+semilla); traza de rutas: la discrepancia CPU/GPU es NUMERICAL_ONLY; evaluacion y cierre acotados en memoria sin encoger el
+modelo (adaptador en disco, lector por trozos, objetivos en archivo). Las 12 celdas ejecutadas (T=192 s2022/s2023, T=336 x3 y
+T=720 x3 en la RTX 5090 de WORKER_B con dos parches operativos declarados: DataLoader sin procesos hijos y umbrales de malloc
+de glibc). Cierre consolidado en WORKER_B: **T=192 media 0.1576 / 0.2522 y T=336 media 0.1645 / 0.2630 en ACUERDO OPERACIONAL**
+con la regla congelada (replays bit-identicos en el mismo dispositivo); sus 6 arrays borrados con recibos en WORKER_B y WORKER_A
+(11.16 GB + 2.29 GB), catalogos y checkpoints conservados. T=96 sin verificar en este cierre (replay entre GPUs 4090->5090 falla
+la regla puntual 1e-4 con metricas bit-identicas; faltan 3 x 22 s de replay en la GPU de WORKER_A: decision del owner por el
+disipador). T=720 ejecutado pero sus terminales rechazados por el almacen OLAP (columna INT32 de tamano de artefacto): paquetes
+corregidos e instalados, **falta que el owner reinicie `crispdm-data-warehouse-olap.service` en omega** (reinicio negado a
+Satoshi por el entorno); copias de omega intactas durante la retencion. Siguiente: reinicio del almacen -> `report` x3 -> cierre
+con T=720; replays en WORKER_A para T=96; borrados en omega tras la retencion; solo con las cuatro horizontes verificadas se
+forma el promedio dentro de cada semilla.

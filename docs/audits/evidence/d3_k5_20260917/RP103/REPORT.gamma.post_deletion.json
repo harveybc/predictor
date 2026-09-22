@@ -1,0 +1,3677 @@
+{
+ "schema": "df_sota_report.v2",
+ "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+ "verification": {
+  "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+  "disposition": {
+   "disposition": "ACTIVE",
+   "task_id": "ecl321_official_tsl",
+   "policy": "docs/tres_temas_entrevista/program_v3/SOTA_FIRST_2026_09_21.md",
+   "why": "the official processed ECL benchmark is the active reproduction task"
+  },
+  "preparation_custody": {
+   "class": "PREPARATION_ACCEPTED_ARTIFACT",
+   "why": "the accepted prepare terminal carries the digests of BENCH_DATA and its record"
+  },
+  "source_drift_now": {},
+  "rows": [
+   {
+    "unit": "L96_h96_s2021",
+    "cell": {
+     "cell_id": "L96_h96_s2021",
+     "arm": "TimeFilter",
+     "protocol": "L96",
+     "seq_len": 96,
+     "horizon": 96,
+     "seed": 2021
+    },
+    "custody": {
+     "class": "ACCEPTED_ARTIFACT_CHAIN"
+    },
+    "author_metric_float32": {
+     "mae": 0.23055443167686462,
+     "mse": 0.13331516087055206
+    },
+    "metric_basis": "author_float32",
+    "author_metric_state": null,
+    "recomputed": {
+     "independent_float64": {
+      "mae": 0.2305544209409133,
+      "mse": 0.1333151570071943
+     },
+     "targets_source": "closure_work: streamed by the author's test loader, digest = record",
+     "author_float32": {
+      "mae": 0.23055443167686462,
+      "mse": 0.13331516087055206
+     },
+     "metrics_vault_sha256": "a5067e8bed3bd2f9d57829df27e09f1d0285281714955f190686f2275460c6b4",
+     "metrics_vault_recomputed": true,
+     "metrics_vault_read_back_equal": true,
+     "metric_basis": "author_float32"
+    },
+    "derived": {
+     "true_sha256": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+     "n_elements": 159164640,
+     "windows": 5165,
+     "naive": {
+      "mse": 1.5878367830262579,
+      "mae": 0.9454555140073404
+     },
+     "trues_path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/closure_work/trues_L96_T96.npy",
+     "naive_definition": "persistence: the window's last observed value repeated over the horizon, every channel, same test windows, normalized space"
+    },
+    "training": {
+     "epochs_run": 15,
+     "per_epoch": [
+      {
+       "epoch": 1,
+       "steps": 1139,
+       "train_loss": 0.2832685,
+       "vali_loss": 0.1334987,
+       "test_loss": 0.1527534
+      },
+      {
+       "epoch": 2,
+       "steps": 1139,
+       "train_loss": 0.252862,
+       "vali_loss": 0.1275478,
+       "test_loss": 0.1478106
+      },
+      {
+       "epoch": 3,
+       "steps": 1139,
+       "train_loss": 0.2469755,
+       "vali_loss": 0.1259512,
+       "test_loss": 0.1466285
+      },
+      {
+       "epoch": 4,
+       "steps": 1139,
+       "train_loss": 0.2433101,
+       "vali_loss": 0.1225116,
+       "test_loss": 0.1421702
+      },
+      {
+       "epoch": 5,
+       "steps": 1139,
+       "train_loss": 0.2401895,
+       "vali_loss": 0.1225958,
+       "test_loss": 0.1424643
+      },
+      {
+       "epoch": 6,
+       "steps": 1139,
+       "train_loss": 0.2374788,
+       "vali_loss": 0.1212287,
+       "test_loss": 0.1408552
+      },
+      {
+       "epoch": 7,
+       "steps": 1139,
+       "train_loss": 0.2346279,
+       "vali_loss": 0.1199826,
+       "test_loss": 0.1384052
+      },
+      {
+       "epoch": 8,
+       "steps": 1139,
+       "train_loss": 0.2319583,
+       "vali_loss": 0.1170408,
+       "test_loss": 0.1362069
+      },
+      {
+       "epoch": 9,
+       "steps": 1139,
+       "train_loss": 0.2293465,
+       "vali_loss": 0.1172622,
+       "test_loss": 0.1358709
+      },
+      {
+       "epoch": 10,
+       "steps": 1139,
+       "train_loss": 0.227113,
+       "vali_loss": 0.1182774,
+       "test_loss": 0.1380205
+      },
+      {
+       "epoch": 11,
+       "steps": 1139,
+       "train_loss": 0.2249701,
+       "vali_loss": 0.1164323,
+       "test_loss": 0.135338
+      },
+      {
+       "epoch": 12,
+       "steps": 1139,
+       "train_loss": 0.2232541,
+       "vali_loss": 0.1152923,
+       "test_loss": 0.1344081
+      },
+      {
+       "epoch": 13,
+       "steps": 1139,
+       "train_loss": 0.2219597,
+       "vali_loss": 0.1150516,
+       "test_loss": 0.1340867
+      },
+      {
+       "epoch": 14,
+       "steps": 1139,
+       "train_loss": 0.2210152,
+       "vali_loss": 0.1149217,
+       "test_loss": 0.1342985
+      },
+      {
+       "epoch": 15,
+       "steps": 1139,
+       "train_loss": 0.2204635,
+       "vali_loss": 0.1143448,
+       "test_loss": 0.1333396
+      }
+     ],
+     "best_epoch_by_vali": 15,
+     "early_stopped": false,
+     "stop_lines": []
+    },
+    "cost": {
+     "wall_seconds": 2049.3031237125397,
+     "cpu_seconds": 2063.67497,
+     "peak_rss_bytes": 6964432896,
+     "peak_gpu_allocated_bytes": 5095499776,
+     "host": "dragon"
+    },
+    "n_parameters": 1822084,
+    "device": "cuda:0",
+    "device_uuid": null,
+    "environment": {
+     "host": "dragon",
+     "python": "3.12.13",
+     "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+     "torch": "2.13.0+cu130",
+     "numpy": "2.5.1",
+     "pandas": "3.0.3",
+     "sklearn": "1.9.0",
+     "scipy": "1.18.0",
+     "cuda": "13.0",
+     "gpus": [
+      "NVIDIA GeForce RTX 4090 Laptop GPU"
+     ],
+     "cudnn": 92400
+    },
+    "verified": false,
+    "problems": [
+     "L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite True, shape_equal True, error "
+    ],
+    "task_id": "ecl321_official_tsl",
+    "disposition": "ACTIVE",
+    "replay": {
+     "unit": "L96_h96_s2021",
+     "device": "cuda:0",
+     "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "device_name": "NVIDIA GeForce RTX 5090",
+     "max_abs_prediction_difference": 0.00019407272338867188,
+     "allclose_rule": false,
+     "finite": true,
+     "shape_equal": true,
+     "exact_equal_elements": 18183273,
+     "elements": 159164640,
+     "exact_equal_fraction": 0.11424191327923086,
+     "replayed_author_metric": {
+      "mae": 0.23055443167686462,
+      "mse": 0.13331516087055206
+     },
+     "replayed_author_metric_state": "EXECUTED: utils.metrics.metric on the memmapped float32 arrays (same function, dtype, layout)",
+     "replayed_metric_float64": {
+      "mae": 0.23055442105277987,
+      "mse": 0.13331515710564087
+     },
+     "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+     "shape": [
+      5165,
+      96,
+      321
+     ],
+     "operational_patches": [
+      {
+       "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+       "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+      }
+     ],
+     "rule": {
+      "atol": 0.0001,
+      "rtol": 0.0001
+     },
+     "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+     "property": "cross_device_portability",
+     "trained_on_device_uuid": null
+    },
+    "same_device_repeatability": "NOT_TESTED_ON_THIS_DEVICE",
+    "cross_device_portability": "FAIL"
+   },
+   {
+    "unit": "L96_h96_s2022",
+    "cell": {
+     "cell_id": "L96_h96_s2022",
+     "arm": "TimeFilter",
+     "protocol": "L96",
+     "seq_len": 96,
+     "horizon": 96,
+     "seed": 2022
+    },
+    "custody": {
+     "class": "ACCEPTED_ARTIFACT_CHAIN"
+    },
+    "author_metric_float32": {
+     "mae": 0.23777532577514648,
+     "mse": 0.14008182287216187
+    },
+    "metric_basis": "author_float32",
+    "author_metric_state": null,
+    "recomputed": {
+     "independent_float64": {
+      "mae": 0.23777533347876625,
+      "mse": 0.14008181771738154
+     },
+     "targets_source": "closure_work: streamed by the author's test loader, digest = record",
+     "author_float32": {
+      "mae": 0.23777532577514648,
+      "mse": 0.14008182287216187
+     },
+     "metrics_vault_sha256": "2a5ff02d92c5c52b6333f47262d26108cb621d2fc784e2f18a676b343bb779d2",
+     "metrics_vault_recomputed": true,
+     "metrics_vault_read_back_equal": true,
+     "metric_basis": "author_float32"
+    },
+    "derived": {
+     "true_sha256": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+     "n_elements": 159164640,
+     "windows": 5165,
+     "naive": {
+      "mse": 1.5878367830262579,
+      "mae": 0.9454555140073404
+     },
+     "trues_path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/closure_work/trues_L96_T96.npy",
+     "naive_definition": "persistence: the window's last observed value repeated over the horizon, every channel, same test windows, normalized space"
+    },
+    "training": {
+     "epochs_run": 15,
+     "per_epoch": [
+      {
+       "epoch": 1,
+       "steps": 1139,
+       "train_loss": 0.2854725,
+       "vali_loss": 0.134938,
+       "test_loss": 0.155336
+      },
+      {
+       "epoch": 2,
+       "steps": 1139,
+       "train_loss": 0.2542382,
+       "vali_loss": 0.1285888,
+       "test_loss": 0.148712
+      },
+      {
+       "epoch": 3,
+       "steps": 1139,
+       "train_loss": 0.2477998,
+       "vali_loss": 0.1232822,
+       "test_loss": 0.1434966
+      },
+      {
+       "epoch": 4,
+       "steps": 1139,
+       "train_loss": 0.2445493,
+       "vali_loss": 0.120985,
+       "test_loss": 0.1427698
+      },
+      {
+       "epoch": 5,
+       "steps": 1139,
+       "train_loss": 0.2417053,
+       "vali_loss": 0.1197925,
+       "test_loss": 0.1401919
+      },
+      {
+       "epoch": 6,
+       "steps": 1139,
+       "train_loss": 0.2393542,
+       "vali_loss": 0.1196746,
+       "test_loss": 0.1395473
+      },
+      {
+       "epoch": 7,
+       "steps": 1139,
+       "train_loss": 0.2357498,
+       "vali_loss": 0.1199573,
+       "test_loss": 0.1400745
+      },
+      {
+       "epoch": 8,
+       "steps": 1139,
+       "train_loss": 0.2322702,
+       "vali_loss": 0.1211744,
+       "test_loss": 0.1424058
+      },
+      {
+       "epoch": 9,
+       "steps": 1139,
+       "train_loss": 0.2282035,
+       "vali_loss": 0.1186556,
+       "test_loss": 0.1427596
+      },
+      {
+       "epoch": 10,
+       "steps": 1139,
+       "train_loss": 0.2244607,
+       "vali_loss": 0.1179358,
+       "test_loss": 0.1400102
+      },
+      {
+       "epoch": 11,
+       "steps": 1139,
+       "train_loss": 0.221381,
+       "vali_loss": 0.1156567,
+       "test_loss": 0.1419255
+      },
+      {
+       "epoch": 12,
+       "steps": 1139,
+       "train_loss": 0.2189616,
+       "vali_loss": 0.1148682,
+       "test_loss": 0.1398939
+      },
+      {
+       "epoch": 13,
+       "steps": 1139,
+       "train_loss": 0.217121,
+       "vali_loss": 0.1149538,
+       "test_loss": 0.1409936
+      },
+      {
+       "epoch": 14,
+       "steps": 1139,
+       "train_loss": 0.2160487,
+       "vali_loss": 0.1142926,
+       "test_loss": 0.1391537
+      },
+      {
+       "epoch": 15,
+       "steps": 1139,
+       "train_loss": 0.2154145,
+       "vali_loss": 0.114072,
+       "test_loss": 0.1401228
+      }
+     ],
+     "best_epoch_by_vali": 15,
+     "early_stopped": false,
+     "stop_lines": []
+    },
+    "cost": {
+     "wall_seconds": 2060.825041294098,
+     "cpu_seconds": 2073.432027,
+     "peak_rss_bytes": 6940155904,
+     "peak_gpu_allocated_bytes": 5095499776,
+     "host": "dragon"
+    },
+    "n_parameters": 1822084,
+    "device": "cuda:0",
+    "device_uuid": null,
+    "environment": {
+     "host": "dragon",
+     "python": "3.12.13",
+     "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+     "torch": "2.13.0+cu130",
+     "numpy": "2.5.1",
+     "pandas": "3.0.3",
+     "sklearn": "1.9.0",
+     "scipy": "1.18.0",
+     "cuda": "13.0",
+     "gpus": [
+      "NVIDIA GeForce RTX 4090 Laptop GPU"
+     ],
+     "cudnn": 92400
+    },
+    "verified": false,
+    "problems": [
+     "L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite True, shape_equal True, error "
+    ],
+    "task_id": "ecl321_official_tsl",
+    "disposition": "ACTIVE",
+    "replay": {
+     "unit": "L96_h96_s2022",
+     "device": "cuda:0",
+     "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "device_name": "NVIDIA GeForce RTX 5090",
+     "max_abs_prediction_difference": 0.0002186298370361328,
+     "allclose_rule": false,
+     "finite": true,
+     "shape_equal": true,
+     "exact_equal_elements": 18749775,
+     "elements": 159164640,
+     "exact_equal_fraction": 0.11780113346783556,
+     "replayed_author_metric": {
+      "mae": 0.23777532577514648,
+      "mse": 0.14008182287216187
+     },
+     "replayed_author_metric_state": "EXECUTED: utils.metrics.metric on the memmapped float32 arrays (same function, dtype, layout)",
+     "replayed_metric_float64": {
+      "mae": 0.23777533329920003,
+      "mse": 0.14008181757304916
+     },
+     "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+     "shape": [
+      5165,
+      96,
+      321
+     ],
+     "operational_patches": [
+      {
+       "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+       "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+      }
+     ],
+     "rule": {
+      "atol": 0.0001,
+      "rtol": 0.0001
+     },
+     "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+     "property": "cross_device_portability",
+     "trained_on_device_uuid": null
+    },
+    "same_device_repeatability": "NOT_TESTED_ON_THIS_DEVICE",
+    "cross_device_portability": "FAIL"
+   },
+   {
+    "unit": "L96_h96_s2023",
+    "cell": {
+     "cell_id": "L96_h96_s2023",
+     "arm": "TimeFilter",
+     "protocol": "L96",
+     "seq_len": 96,
+     "horizon": 96,
+     "seed": 2023
+    },
+    "custody": {
+     "class": "ACCEPTED_ARTIFACT_CHAIN"
+    },
+    "author_metric_float32": {
+     "mae": 0.23032169044017792,
+     "mse": 0.13309241831302643
+    },
+    "metric_basis": "author_float32",
+    "author_metric_state": null,
+    "recomputed": {
+     "independent_float64": {
+      "mae": 0.230321683210759,
+      "mse": 0.13309241763914356
+     },
+     "targets_source": "closure_work: streamed by the author's test loader, digest = record",
+     "author_float32": {
+      "mae": 0.23032169044017792,
+      "mse": 0.13309241831302643
+     },
+     "metrics_vault_sha256": "351f5eefff1ae2835797e336cb709777fcaf8ab1be49dd027eaa9ef62dc1ee2e",
+     "metrics_vault_recomputed": true,
+     "metrics_vault_read_back_equal": true,
+     "metric_basis": "author_float32"
+    },
+    "derived": {
+     "true_sha256": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+     "n_elements": 159164640,
+     "windows": 5165,
+     "naive": {
+      "mse": 1.5878367830262579,
+      "mae": 0.9454555140073404
+     },
+     "trues_path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/closure_work/trues_L96_T96.npy",
+     "naive_definition": "persistence: the window's last observed value repeated over the horizon, every channel, same test windows, normalized space"
+    },
+    "training": {
+     "epochs_run": 15,
+     "per_epoch": [
+      {
+       "epoch": 1,
+       "steps": 1139,
+       "train_loss": 0.2821772,
+       "vali_loss": 0.1358,
+       "test_loss": 0.1557878
+      },
+      {
+       "epoch": 2,
+       "steps": 1139,
+       "train_loss": 0.2523507,
+       "vali_loss": 0.1271841,
+       "test_loss": 0.1466032
+      },
+      {
+       "epoch": 3,
+       "steps": 1139,
+       "train_loss": 0.2468354,
+       "vali_loss": 0.1270519,
+       "test_loss": 0.1462395
+      },
+      {
+       "epoch": 4,
+       "steps": 1139,
+       "train_loss": 0.2433181,
+       "vali_loss": 0.1245202,
+       "test_loss": 0.1429252
+      },
+      {
+       "epoch": 5,
+       "steps": 1139,
+       "train_loss": 0.2399985,
+       "vali_loss": 0.1219842,
+       "test_loss": 0.1410605
+      },
+      {
+       "epoch": 6,
+       "steps": 1139,
+       "train_loss": 0.2373843,
+       "vali_loss": 0.1190794,
+       "test_loss": 0.138345
+      },
+      {
+       "epoch": 7,
+       "steps": 1139,
+       "train_loss": 0.2345636,
+       "vali_loss": 0.1215857,
+       "test_loss": 0.1401616
+      },
+      {
+       "epoch": 8,
+       "steps": 1139,
+       "train_loss": 0.2319061,
+       "vali_loss": 0.1177444,
+       "test_loss": 0.1382902
+      },
+      {
+       "epoch": 9,
+       "steps": 1139,
+       "train_loss": 0.2294848,
+       "vali_loss": 0.117114,
+       "test_loss": 0.1365872
+      },
+      {
+       "epoch": 10,
+       "steps": 1139,
+       "train_loss": 0.2271214,
+       "vali_loss": 0.116197,
+       "test_loss": 0.1347776
+      },
+      {
+       "epoch": 11,
+       "steps": 1139,
+       "train_loss": 0.2251382,
+       "vali_loss": 0.118304,
+       "test_loss": 0.1363944
+      },
+      {
+       "epoch": 12,
+       "steps": 1139,
+       "train_loss": 0.2233802,
+       "vali_loss": 0.1150378,
+       "test_loss": 0.1332967
+      },
+      {
+       "epoch": 13,
+       "steps": 1139,
+       "train_loss": 0.2220588,
+       "vali_loss": 0.1151011,
+       "test_loss": 0.133227
+      },
+      {
+       "epoch": 14,
+       "steps": 1139,
+       "train_loss": 0.2211146,
+       "vali_loss": 0.1148105,
+       "test_loss": 0.1331762
+      },
+      {
+       "epoch": 15,
+       "steps": 1139,
+       "train_loss": 0.2206236,
+       "vali_loss": 0.1147538,
+       "test_loss": 0.1331162
+      }
+     ],
+     "best_epoch_by_vali": 15,
+     "early_stopped": false,
+     "stop_lines": []
+    },
+    "cost": {
+     "wall_seconds": 2056.9650580883026,
+     "cpu_seconds": 2071.51522,
+     "peak_rss_bytes": 6965305344,
+     "peak_gpu_allocated_bytes": 5095499776,
+     "host": "dragon"
+    },
+    "n_parameters": 1822084,
+    "device": "cuda:0",
+    "device_uuid": null,
+    "environment": {
+     "host": "dragon",
+     "python": "3.12.13",
+     "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+     "torch": "2.13.0+cu130",
+     "numpy": "2.5.1",
+     "pandas": "3.0.3",
+     "sklearn": "1.9.0",
+     "scipy": "1.18.0",
+     "cuda": "13.0",
+     "gpus": [
+      "NVIDIA GeForce RTX 4090 Laptop GPU"
+     ],
+     "cudnn": 92400
+    },
+    "verified": false,
+    "problems": [
+     "L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite True, shape_equal True, error "
+    ],
+    "task_id": "ecl321_official_tsl",
+    "disposition": "ACTIVE",
+    "replay": {
+     "unit": "L96_h96_s2023",
+     "device": "cuda:0",
+     "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "device_name": "NVIDIA GeForce RTX 5090",
+     "max_abs_prediction_difference": 0.0002714395523071289,
+     "allclose_rule": false,
+     "finite": true,
+     "shape_equal": true,
+     "exact_equal_elements": 17311406,
+     "elements": 159164640,
+     "exact_equal_fraction": 0.10876414510157532,
+     "replayed_author_metric": {
+      "mae": 0.23032169044017792,
+      "mse": 0.13309241831302643
+     },
+     "replayed_author_metric_state": "EXECUTED: utils.metrics.metric on the memmapped float32 arrays (same function, dtype, layout)",
+     "replayed_metric_float64": {
+      "mae": 0.23032168309299667,
+      "mse": 0.13309241761640775
+     },
+     "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+     "shape": [
+      5165,
+      96,
+      321
+     ],
+     "operational_patches": [
+      {
+       "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+       "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+      }
+     ],
+     "rule": {
+      "atol": 0.0001,
+      "rtol": 0.0001
+     },
+     "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+     "property": "cross_device_portability",
+     "trained_on_device_uuid": null
+    },
+    "same_device_repeatability": "NOT_TESTED_ON_THIS_DEVICE",
+    "cross_device_portability": "FAIL"
+   },
+   {
+    "unit": "L96_h192_s2021",
+    "cell": {
+     "cell_id": "L96_h192_s2021",
+     "arm": "TimeFilter",
+     "protocol": "L96",
+     "seq_len": 96,
+     "horizon": 192,
+     "seed": 2021
+    },
+    "verified": false,
+    "verified_historically": true,
+    "status": "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION",
+    "author_metric_float32": {
+     "mae": 0.2559875547885895,
+     "mse": 0.1608569175004959
+    },
+    "metric_basis": "author_float32",
+    "custody": {
+     "class": "HISTORICAL: arrays deleted under authorization; digests retained"
+    },
+    "deletion": {
+     "schema": "df_sota_predictions_deleted.v1",
+     "unit": "L96_h192_s2021",
+     "deleted_at": "2026-09-22T23:02:50Z",
+     "arrays_sha256": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+     "pred_sha256": "16c616d590654b8c94e27a3d44858ca2280e816f8ebcb81515b08feefaca6112",
+     "closure_report_sha256": "fbe2cd4c97a33a59546967c7008e45b5c5bcdaa3ded38df18528967e2652338d",
+     "verified_at_deletion": true,
+     "authorization": "owner 2026-09-22 (retention document); Musashi RP98-RP105 RP103",
+     "paths_deleted": [
+      "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h192_s2021/arrays.npz",
+      "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1_from_omega/attempts/L96_h192_s2021/arrays.npz"
+     ],
+     "reading": "metrics verified before authorized deletion; the arrays' hash records their former identity and cannot reconstruct them; no current replay is possible"
+    },
+    "training": {
+     "epochs_run": 15,
+     "per_epoch": [
+      {
+       "epoch": 1,
+       "steps": 1133,
+       "train_loss": 0.2944578,
+       "vali_loss": 0.1475915,
+       "test_loss": 0.1736077
+      },
+      {
+       "epoch": 2,
+       "steps": 1133,
+       "train_loss": 0.2652426,
+       "vali_loss": 0.1398298,
+       "test_loss": 0.1666347
+      },
+      {
+       "epoch": 3,
+       "steps": 1133,
+       "train_loss": 0.2572317,
+       "vali_loss": 0.1357263,
+       "test_loss": 0.1609043
+      },
+      {
+       "epoch": 4,
+       "steps": 1133,
+       "train_loss": 0.2513687,
+       "vali_loss": 0.1389013,
+       "test_loss": 0.1667645
+      },
+      {
+       "epoch": 5,
+       "steps": 1133,
+       "train_loss": 0.2457257,
+       "vali_loss": 0.1378974,
+       "test_loss": 0.1627983
+      },
+      {
+       "epoch": 6,
+       "steps": 1133,
+       "train_loss": 0.2402302,
+       "vali_loss": 0.1432864,
+       "test_loss": 0.1631749
+      },
+      {
+       "epoch": 7,
+       "steps": 1133,
+       "train_loss": 0.2355881,
+       "vali_loss": 0.1407283,
+       "test_loss": 0.1618063
+      },
+      {
+       "epoch": 8,
+       "steps": 1133,
+       "train_loss": 0.2319177,
+       "vali_loss": 0.1369983,
+       "test_loss": 0.1629858
+      },
+      {
+       "epoch": 9,
+       "steps": 1133,
+       "train_loss": 0.2284676,
+       "vali_loss": 0.1345599,
+       "test_loss": 0.1603833
+      },
+      {
+       "epoch": 10,
+       "steps": 1133,
+       "train_loss": 0.2254837,
+       "vali_loss": 0.1367116,
+       "test_loss": 0.1617388
+      },
+      {
+       "epoch": 11,
+       "steps": 1133,
+       "train_loss": 0.2229839,
+       "vali_loss": 0.1358486,
+       "test_loss": 0.1605517
+      },
+      {
+       "epoch": 12,
+       "steps": 1133,
+       "train_loss": 0.2210432,
+       "vali_loss": 0.1349627,
+       "test_loss": 0.1610699
+      },
+      {
+       "epoch": 13,
+       "steps": 1133,
+       "train_loss": 0.2196212,
+       "vali_loss": 0.1347218,
+       "test_loss": 0.1606645
+      },
+      {
+       "epoch": 14,
+       "steps": 1133,
+       "train_loss": 0.2186283,
+       "vali_loss": 0.1339294,
+       "test_loss": 0.1600627
+      },
+      {
+       "epoch": 15,
+       "steps": 1133,
+       "train_loss": 0.2180683,
+       "vali_loss": 0.1346139,
+       "test_loss": 0.1610316
+      }
+     ],
+     "best_epoch_by_vali": 14,
+     "early_stopped": false,
+     "stop_lines": []
+    },
+    "cost": {
+     "wall_seconds": 4943.155935049057,
+     "cpu_seconds": 4982.313766,
+     "peak_rss_bytes": 10726248448,
+     "peak_gpu_allocated_bytes": 5103022592,
+     "host": "omega"
+    },
+    "n_parameters": 1969636,
+    "device": "cuda:0",
+    "device_uuid": null,
+    "replay": {
+     "skipped": true,
+     "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt"
+    },
+    "problems": [],
+    "task_id": "ecl321_official_tsl",
+    "disposition": "ACTIVE"
+   },
+   {
+    "unit": "L96_h192_s2022",
+    "cell": {
+     "cell_id": "L96_h192_s2022",
+     "arm": "TimeFilter",
+     "protocol": "L96",
+     "seq_len": 96,
+     "horizon": 192,
+     "seed": 2022
+    },
+    "verified": false,
+    "verified_historically": true,
+    "status": "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION",
+    "author_metric_float32": {
+     "mae": 0.2524290382862091,
+     "mse": 0.158626526594162
+    },
+    "metric_basis": "author_float32",
+    "custody": {
+     "class": "HISTORICAL: arrays deleted under authorization; digests retained"
+    },
+    "deletion": {
+     "schema": "df_sota_predictions_deleted.v1",
+     "unit": "L96_h192_s2022",
+     "deleted_at": "2026-09-22T23:02:51Z",
+     "arrays_sha256": "a34b226c1c8c2ee22f6e887be52924e06d81cfe232a7a8c84b7188cb0a8e5fcd",
+     "pred_sha256": "de0500c961e7ea91fc67cdb9266f3dc9f3e0437e6a40f53af080a70124be7c6d",
+     "closure_report_sha256": "fbe2cd4c97a33a59546967c7008e45b5c5bcdaa3ded38df18528967e2652338d",
+     "verified_at_deletion": true,
+     "authorization": "owner 2026-09-22 (retention document); Musashi RP98-RP105 RP103",
+     "paths_deleted": [
+      "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h192_s2022/arrays.npz"
+     ],
+     "reading": "metrics verified before authorized deletion; the arrays' hash records their former identity and cannot reconstruct them; no current replay is possible"
+    },
+    "training": {
+     "epochs_run": 15,
+     "per_epoch": [
+      {
+       "epoch": 1,
+       "steps": 1133,
+       "train_loss": 0.2938151,
+       "vali_loss": 0.1497096,
+       "test_loss": 0.1737324
+      },
+      {
+       "epoch": 2,
+       "steps": 1133,
+       "train_loss": 0.2674486,
+       "vali_loss": 0.1391214,
+       "test_loss": 0.1629823
+      },
+      {
+       "epoch": 3,
+       "steps": 1133,
+       "train_loss": 0.2615433,
+       "vali_loss": 0.1381232,
+       "test_loss": 0.1620226
+      },
+      {
+       "epoch": 4,
+       "steps": 1133,
+       "train_loss": 0.2579992,
+       "vali_loss": 0.1352685,
+       "test_loss": 0.1602438
+      },
+      {
+       "epoch": 5,
+       "steps": 1133,
+       "train_loss": 0.2549019,
+       "vali_loss": 0.1355301,
+       "test_loss": 0.1626485
+      },
+      {
+       "epoch": 6,
+       "steps": 1133,
+       "train_loss": 0.2509011,
+       "vali_loss": 0.133774,
+       "test_loss": 0.1587675
+      },
+      {
+       "epoch": 7,
+       "steps": 1133,
+       "train_loss": 0.2457807,
+       "vali_loss": 0.1338444,
+       "test_loss": 0.1605521
+      },
+      {
+       "epoch": 8,
+       "steps": 1133,
+       "train_loss": 0.2400629,
+       "vali_loss": 0.1317555,
+       "test_loss": 0.1595197
+      },
+      {
+       "epoch": 9,
+       "steps": 1133,
+       "train_loss": 0.2351371,
+       "vali_loss": 0.1298652,
+       "test_loss": 0.1617246
+      },
+      {
+       "epoch": 10,
+       "steps": 1133,
+       "train_loss": 0.2310188,
+       "vali_loss": 0.1295229,
+       "test_loss": 0.1593719
+      },
+      {
+       "epoch": 11,
+       "steps": 1133,
+       "train_loss": 0.2276502,
+       "vali_loss": 0.128661,
+       "test_loss": 0.1602952
+      },
+      {
+       "epoch": 12,
+       "steps": 1133,
+       "train_loss": 0.2249849,
+       "vali_loss": 0.1297307,
+       "test_loss": 0.1624885
+      },
+      {
+       "epoch": 13,
+       "steps": 1133,
+       "train_loss": 0.2232133,
+       "vali_loss": 0.1285354,
+       "test_loss": 0.1594693
+      },
+      {
+       "epoch": 14,
+       "steps": 1133,
+       "train_loss": 0.2220097,
+       "vali_loss": 0.1284415,
+       "test_loss": 0.1594566
+      },
+      {
+       "epoch": 15,
+       "steps": 1133,
+       "train_loss": 0.2213824,
+       "vali_loss": 0.1282858,
+       "test_loss": 0.1588045
+      }
+     ],
+     "best_epoch_by_vali": 15,
+     "early_stopped": false,
+     "stop_lines": []
+    },
+    "cost": {
+     "wall_seconds": 919.7820339202881,
+     "cpu_seconds": 910.8225859999999,
+     "peak_rss_bytes": 7572582400,
+     "peak_gpu_allocated_bytes": 5152029184,
+     "host": "gamma",
+     "gpu_before": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 34.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 50.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 10.0,
+       "memory_total_mib": 32607.0
+      }
+     ],
+     "gpu_after": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 38.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 55.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 770.0,
+       "memory_total_mib": 32607.0
+      }
+     ]
+    },
+    "n_parameters": 1969636,
+    "device": "cuda:0",
+    "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "replay": {
+     "skipped": true,
+     "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt"
+    },
+    "problems": [],
+    "task_id": "ecl321_official_tsl",
+    "disposition": "ACTIVE"
+   },
+   {
+    "unit": "L96_h192_s2023",
+    "cell": {
+     "cell_id": "L96_h192_s2023",
+     "arm": "TimeFilter",
+     "protocol": "L96",
+     "seq_len": 96,
+     "horizon": 192,
+     "seed": 2023
+    },
+    "verified": false,
+    "verified_historically": true,
+    "status": "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION",
+    "author_metric_float32": {
+     "mae": 0.24807162582874298,
+     "mse": 0.15345218777656555
+    },
+    "metric_basis": "author_float32",
+    "custody": {
+     "class": "HISTORICAL: arrays deleted under authorization; digests retained"
+    },
+    "deletion": {
+     "schema": "df_sota_predictions_deleted.v1",
+     "unit": "L96_h192_s2023",
+     "deleted_at": "2026-09-22T23:02:52Z",
+     "arrays_sha256": "3f4846bfc3ecc7ac0c4ca9b4b632ec54dfea1c0008849affcbc1eb4b484cc0e2",
+     "pred_sha256": "57347d19071c15e183b5cb3d3bf02a3003912ea2b0e8236f4ffec68d8f2065e0",
+     "closure_report_sha256": "fbe2cd4c97a33a59546967c7008e45b5c5bcdaa3ded38df18528967e2652338d",
+     "verified_at_deletion": true,
+     "authorization": "owner 2026-09-22 (retention document); Musashi RP98-RP105 RP103",
+     "paths_deleted": [
+      "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h192_s2023/arrays.npz"
+     ],
+     "reading": "metrics verified before authorized deletion; the arrays' hash records their former identity and cannot reconstruct them; no current replay is possible"
+    },
+    "training": {
+     "epochs_run": 15,
+     "per_epoch": [
+      {
+       "epoch": 1,
+       "steps": 1133,
+       "train_loss": 0.2913136,
+       "vali_loss": 0.146095,
+       "test_loss": 0.1695532
+      },
+      {
+       "epoch": 2,
+       "steps": 1133,
+       "train_loss": 0.2649171,
+       "vali_loss": 0.1393255,
+       "test_loss": 0.1623786
+      },
+      {
+       "epoch": 3,
+       "steps": 1133,
+       "train_loss": 0.2591831,
+       "vali_loss": 0.1362427,
+       "test_loss": 0.160836
+      },
+      {
+       "epoch": 4,
+       "steps": 1133,
+       "train_loss": 0.2540564,
+       "vali_loss": 0.1380226,
+       "test_loss": 0.1613358
+      },
+      {
+       "epoch": 5,
+       "steps": 1133,
+       "train_loss": 0.2494654,
+       "vali_loss": 0.1373587,
+       "test_loss": 0.1612302
+      },
+      {
+       "epoch": 6,
+       "steps": 1133,
+       "train_loss": 0.2453371,
+       "vali_loss": 0.1365043,
+       "test_loss": 0.1607924
+      },
+      {
+       "epoch": 7,
+       "steps": 1133,
+       "train_loss": 0.2414381,
+       "vali_loss": 0.1355737,
+       "test_loss": 0.1598771
+      },
+      {
+       "epoch": 8,
+       "steps": 1133,
+       "train_loss": 0.2382699,
+       "vali_loss": 0.1327726,
+       "test_loss": 0.1578767
+      },
+      {
+       "epoch": 9,
+       "steps": 1133,
+       "train_loss": 0.235246,
+       "vali_loss": 0.1342091,
+       "test_loss": 0.1566375
+      },
+      {
+       "epoch": 10,
+       "steps": 1133,
+       "train_loss": 0.2327094,
+       "vali_loss": 0.1317348,
+       "test_loss": 0.1559289
+      },
+      {
+       "epoch": 11,
+       "steps": 1133,
+       "train_loss": 0.2304978,
+       "vali_loss": 0.1324753,
+       "test_loss": 0.1545771
+      },
+      {
+       "epoch": 12,
+       "steps": 1133,
+       "train_loss": 0.2285999,
+       "vali_loss": 0.1297444,
+       "test_loss": 0.1543962
+      },
+      {
+       "epoch": 13,
+       "steps": 1133,
+       "train_loss": 0.2273,
+       "vali_loss": 0.1307696,
+       "test_loss": 0.1541823
+      },
+      {
+       "epoch": 14,
+       "steps": 1133,
+       "train_loss": 0.22632,
+       "vali_loss": 0.130325,
+       "test_loss": 0.1539508
+      },
+      {
+       "epoch": 15,
+       "steps": 1133,
+       "train_loss": 0.2257901,
+       "vali_loss": 0.130278,
+       "test_loss": 0.1536136
+      }
+     ],
+     "best_epoch_by_vali": 12,
+     "early_stopped": false,
+     "stop_lines": []
+    },
+    "cost": {
+     "wall_seconds": 916.5767545700073,
+     "cpu_seconds": 908.8842139999999,
+     "peak_rss_bytes": 7567290368,
+     "peak_gpu_allocated_bytes": 5152029184,
+     "host": "gamma",
+     "gpu_before": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 37.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 51.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 10.0,
+       "memory_total_mib": 32607.0
+      }
+     ],
+     "gpu_after": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 39.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 55.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 770.0,
+       "memory_total_mib": 32607.0
+      }
+     ]
+    },
+    "n_parameters": 1969636,
+    "device": "cuda:0",
+    "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "replay": {
+     "skipped": true,
+     "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt"
+    },
+    "problems": [],
+    "task_id": "ecl321_official_tsl",
+    "disposition": "ACTIVE"
+   },
+   {
+    "unit": "L96_h336_s2021",
+    "cell": {
+     "cell_id": "L96_h336_s2021",
+     "arm": "TimeFilter",
+     "protocol": "L96",
+     "seq_len": 96,
+     "horizon": 336,
+     "seed": 2021
+    },
+    "verified": false,
+    "verified_historically": true,
+    "status": "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION",
+    "author_metric_float32": {
+     "mae": 0.26066640344614045,
+     "mse": 0.16259404228254276
+    },
+    "metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+    "custody": {
+     "class": "HISTORICAL: arrays deleted under authorization; digests retained"
+    },
+    "deletion": {
+     "schema": "df_sota_predictions_deleted.v1",
+     "unit": "L96_h336_s2021",
+     "deleted_at": "2026-09-22T23:02:53Z",
+     "arrays_sha256": "93d89dafe515e3834b5d8517b0d2348042f1184d39e147fb2cba5ddb0ee523ad",
+     "pred_sha256": "f5e933e7b7b02172da3ecd781b070ab36fcc557e0bd2d6e7fb87a8beda570eb9",
+     "closure_report_sha256": "fbe2cd4c97a33a59546967c7008e45b5c5bcdaa3ded38df18528967e2652338d",
+     "verified_at_deletion": true,
+     "authorization": "owner 2026-09-22 (retention document); Musashi RP98-RP105 RP103",
+     "paths_deleted": [
+      "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h336_s2021/arrays.npz"
+     ],
+     "reading": "metrics verified before authorized deletion; the arrays' hash records their former identity and cannot reconstruct them; no current replay is possible"
+    },
+    "training": {
+     "epochs_run": 15,
+     "per_epoch": [
+      {
+       "epoch": 1,
+       "steps": 1124,
+       "train_loss": 0.3134889,
+       "vali_loss": 0.1611072,
+       "test_loss": 0.1844621
+      },
+      {
+       "epoch": 2,
+       "steps": 1124,
+       "train_loss": 0.2870573,
+       "vali_loss": 0.156793,
+       "test_loss": 0.1789957
+      },
+      {
+       "epoch": 3,
+       "steps": 1124,
+       "train_loss": 0.2798486,
+       "vali_loss": 0.1554019,
+       "test_loss": 0.1765345
+      },
+      {
+       "epoch": 4,
+       "steps": 1124,
+       "train_loss": 0.2734613,
+       "vali_loss": 0.1539079,
+       "test_loss": 0.1762559
+      },
+      {
+       "epoch": 5,
+       "steps": 1124,
+       "train_loss": 0.2665246,
+       "vali_loss": 0.1496585,
+       "test_loss": 0.1719741
+      },
+      {
+       "epoch": 6,
+       "steps": 1124,
+       "train_loss": 0.2606295,
+       "vali_loss": 0.1618973,
+       "test_loss": 0.1708768
+      },
+      {
+       "epoch": 7,
+       "steps": 1124,
+       "train_loss": 0.2555424,
+       "vali_loss": 0.1502181,
+       "test_loss": 0.1712051
+      },
+      {
+       "epoch": 8,
+       "steps": 1124,
+       "train_loss": 0.2517706,
+       "vali_loss": 0.150273,
+       "test_loss": 0.1688189
+      },
+      {
+       "epoch": 9,
+       "steps": 1124,
+       "train_loss": 0.2481664,
+       "vali_loss": 0.1521196,
+       "test_loss": 0.1683809
+      },
+      {
+       "epoch": 10,
+       "steps": 1124,
+       "train_loss": 0.2447245,
+       "vali_loss": 0.1492554,
+       "test_loss": 0.1667174
+      },
+      {
+       "epoch": 11,
+       "steps": 1124,
+       "train_loss": 0.2421448,
+       "vali_loss": 0.1495506,
+       "test_loss": 0.1651186
+      },
+      {
+       "epoch": 12,
+       "steps": 1124,
+       "train_loss": 0.2400219,
+       "vali_loss": 0.1520544,
+       "test_loss": 0.1637483
+      },
+      {
+       "epoch": 13,
+       "steps": 1124,
+       "train_loss": 0.2384267,
+       "vali_loss": 0.1503095,
+       "test_loss": 0.1635839
+      },
+      {
+       "epoch": 14,
+       "steps": 1124,
+       "train_loss": 0.2373372,
+       "vali_loss": 0.151142,
+       "test_loss": 0.1627849
+      },
+      {
+       "epoch": 15,
+       "steps": 1124,
+       "train_loss": 0.2367214,
+       "vali_loss": 0.1500988,
+       "test_loss": 0.1627107
+      }
+     ],
+     "best_epoch_by_vali": 10,
+     "early_stopped": false,
+     "stop_lines": []
+    },
+    "cost": {
+     "wall_seconds": 918.7268986701965,
+     "cpu_seconds": 920.8153189999999,
+     "peak_rss_bytes": 5645328384,
+     "peak_gpu_allocated_bytes": 5161739264,
+     "host": "gamma",
+     "gpu_before": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 36.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 49.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 10.0,
+       "memory_total_mib": 32607.0
+      }
+     ],
+     "gpu_after": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 37.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 55.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 770.0,
+       "memory_total_mib": 32607.0
+      }
+     ]
+    },
+    "n_parameters": 2190964,
+    "device": "cuda:0",
+    "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "replay": {
+     "skipped": true,
+     "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt"
+    },
+    "problems": [],
+    "task_id": "ecl321_official_tsl",
+    "disposition": "ACTIVE"
+   },
+   {
+    "unit": "L96_h336_s2022",
+    "cell": {
+     "cell_id": "L96_h336_s2022",
+     "arm": "TimeFilter",
+     "protocol": "L96",
+     "seq_len": 96,
+     "horizon": 336,
+     "seed": 2022
+    },
+    "verified": false,
+    "verified_historically": true,
+    "status": "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION",
+    "author_metric_float32": {
+     "mae": 0.26741331167821497,
+     "mse": 0.16817492751600455
+    },
+    "metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+    "custody": {
+     "class": "HISTORICAL: arrays deleted under authorization; digests retained"
+    },
+    "deletion": {
+     "schema": "df_sota_predictions_deleted.v1",
+     "unit": "L96_h336_s2022",
+     "deleted_at": "2026-09-22T23:02:55Z",
+     "arrays_sha256": "e24096d4a8815e8e3d28a83841521ee6e71b5612b322d9e438c77cdb793ba782",
+     "pred_sha256": "37affee782cfba13d78b66afe0f97d1f135ad42961f56a940640e4ecf7e1c36d",
+     "closure_report_sha256": "fbe2cd4c97a33a59546967c7008e45b5c5bcdaa3ded38df18528967e2652338d",
+     "verified_at_deletion": true,
+     "authorization": "owner 2026-09-22 (retention document); Musashi RP98-RP105 RP103",
+     "paths_deleted": [
+      "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h336_s2022/arrays.npz"
+     ],
+     "reading": "metrics verified before authorized deletion; the arrays' hash records their former identity and cannot reconstruct them; no current replay is possible"
+    },
+    "training": {
+     "epochs_run": 15,
+     "per_epoch": [
+      {
+       "epoch": 1,
+       "steps": 1124,
+       "train_loss": 0.3169952,
+       "vali_loss": 0.165403,
+       "test_loss": 0.1909902
+      },
+      {
+       "epoch": 2,
+       "steps": 1124,
+       "train_loss": 0.290714,
+       "vali_loss": 0.1580097,
+       "test_loss": 0.1841547
+      },
+      {
+       "epoch": 3,
+       "steps": 1124,
+       "train_loss": 0.2840026,
+       "vali_loss": 0.1558185,
+       "test_loss": 0.1789012
+      },
+      {
+       "epoch": 4,
+       "steps": 1124,
+       "train_loss": 0.2796503,
+       "vali_loss": 0.1566911,
+       "test_loss": 0.179991
+      },
+      {
+       "epoch": 5,
+       "steps": 1124,
+       "train_loss": 0.2745122,
+       "vali_loss": 0.1530835,
+       "test_loss": 0.1818866
+      },
+      {
+       "epoch": 6,
+       "steps": 1124,
+       "train_loss": 0.2686854,
+       "vali_loss": 0.1557068,
+       "test_loss": 0.1827947
+      },
+      {
+       "epoch": 7,
+       "steps": 1124,
+       "train_loss": 0.2591389,
+       "vali_loss": 0.1538867,
+       "test_loss": 0.1733918
+      },
+      {
+       "epoch": 8,
+       "steps": 1124,
+       "train_loss": 0.2520942,
+       "vali_loss": 0.1601716,
+       "test_loss": 0.175216
+      },
+      {
+       "epoch": 9,
+       "steps": 1124,
+       "train_loss": 0.246647,
+       "vali_loss": 0.1538168,
+       "test_loss": 0.1716352
+      },
+      {
+       "epoch": 10,
+       "steps": 1124,
+       "train_loss": 0.2424409,
+       "vali_loss": 0.1540751,
+       "test_loss": 0.1713049
+      },
+      {
+       "epoch": 11,
+       "steps": 1124,
+       "train_loss": 0.2388002,
+       "vali_loss": 0.153539,
+       "test_loss": 0.1712608
+      },
+      {
+       "epoch": 12,
+       "steps": 1124,
+       "train_loss": 0.2359712,
+       "vali_loss": 0.1516133,
+       "test_loss": 0.1689728
+      },
+      {
+       "epoch": 13,
+       "steps": 1124,
+       "train_loss": 0.2341256,
+       "vali_loss": 0.1510166,
+       "test_loss": 0.1692533
+      },
+      {
+       "epoch": 14,
+       "steps": 1124,
+       "train_loss": 0.2328135,
+       "vali_loss": 0.1515443,
+       "test_loss": 0.1682843
+      },
+      {
+       "epoch": 15,
+       "steps": 1124,
+       "train_loss": 0.2321149,
+       "vali_loss": 0.1513887,
+       "test_loss": 0.1682819
+      }
+     ],
+     "best_epoch_by_vali": 13,
+     "early_stopped": false,
+     "stop_lines": []
+    },
+    "cost": {
+     "wall_seconds": 920.9713590145111,
+     "cpu_seconds": 922.902707,
+     "peak_rss_bytes": 5692157952,
+     "peak_gpu_allocated_bytes": 5161739264,
+     "host": "gamma",
+     "gpu_before": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 38.0,
+       "utilization_pct": 11.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 50.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 10.0,
+       "memory_total_mib": 32607.0
+      }
+     ],
+     "gpu_after": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 38.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 54.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 770.0,
+       "memory_total_mib": 32607.0
+      }
+     ]
+    },
+    "n_parameters": 2190964,
+    "device": "cuda:0",
+    "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "replay": {
+     "skipped": true,
+     "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt"
+    },
+    "problems": [],
+    "task_id": "ecl321_official_tsl",
+    "disposition": "ACTIVE"
+   },
+   {
+    "unit": "L96_h336_s2023",
+    "cell": {
+     "cell_id": "L96_h336_s2023",
+     "arm": "TimeFilter",
+     "protocol": "L96",
+     "seq_len": 96,
+     "horizon": 336,
+     "seed": 2023
+    },
+    "verified": false,
+    "verified_historically": true,
+    "status": "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION",
+    "author_metric_float32": {
+     "mae": 0.26087436697306887,
+     "mse": 0.16267016184468075
+    },
+    "metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+    "custody": {
+     "class": "HISTORICAL: arrays deleted under authorization; digests retained"
+    },
+    "deletion": {
+     "schema": "df_sota_predictions_deleted.v1",
+     "unit": "L96_h336_s2023",
+     "deleted_at": "2026-09-22T23:02:57Z",
+     "arrays_sha256": "a0f541f340088465d002b4631536a705e0e1cb77af8bfe13deb55d2c6cf8b538",
+     "pred_sha256": "4f47076264b95ad04252843319c21ef116c27ccb87a792c10e9131e7ec853346",
+     "closure_report_sha256": "fbe2cd4c97a33a59546967c7008e45b5c5bcdaa3ded38df18528967e2652338d",
+     "verified_at_deletion": true,
+     "authorization": "owner 2026-09-22 (retention document); Musashi RP98-RP105 RP103",
+     "paths_deleted": [
+      "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h336_s2023/arrays.npz"
+     ],
+     "reading": "metrics verified before authorized deletion; the arrays' hash records their former identity and cannot reconstruct them; no current replay is possible"
+    },
+    "training": {
+     "epochs_run": 15,
+     "per_epoch": [
+      {
+       "epoch": 1,
+       "steps": 1124,
+       "train_loss": 0.3145718,
+       "vali_loss": 0.1614601,
+       "test_loss": 0.1851357
+      },
+      {
+       "epoch": 2,
+       "steps": 1124,
+       "train_loss": 0.2875858,
+       "vali_loss": 0.1568996,
+       "test_loss": 0.1765068
+      },
+      {
+       "epoch": 3,
+       "steps": 1124,
+       "train_loss": 0.2815788,
+       "vali_loss": 0.1511964,
+       "test_loss": 0.1765899
+      },
+      {
+       "epoch": 4,
+       "steps": 1124,
+       "train_loss": 0.2756338,
+       "vali_loss": 0.1535016,
+       "test_loss": 0.1808311
+      },
+      {
+       "epoch": 5,
+       "steps": 1124,
+       "train_loss": 0.269645,
+       "vali_loss": 0.1509997,
+       "test_loss": 0.1746097
+      },
+      {
+       "epoch": 6,
+       "steps": 1124,
+       "train_loss": 0.263216,
+       "vali_loss": 0.1521245,
+       "test_loss": 0.1788026
+      },
+      {
+       "epoch": 7,
+       "steps": 1124,
+       "train_loss": 0.2581177,
+       "vali_loss": 0.1509838,
+       "test_loss": 0.1708245
+      },
+      {
+       "epoch": 8,
+       "steps": 1124,
+       "train_loss": 0.2538624,
+       "vali_loss": 0.1482218,
+       "test_loss": 0.1684907
+      },
+      {
+       "epoch": 9,
+       "steps": 1124,
+       "train_loss": 0.250316,
+       "vali_loss": 0.1488039,
+       "test_loss": 0.1673765
+      },
+      {
+       "epoch": 10,
+       "steps": 1124,
+       "train_loss": 0.2470728,
+       "vali_loss": 0.1459149,
+       "test_loss": 0.1643609
+      },
+      {
+       "epoch": 11,
+       "steps": 1124,
+       "train_loss": 0.2444164,
+       "vali_loss": 0.1444525,
+       "test_loss": 0.1638893
+      },
+      {
+       "epoch": 12,
+       "steps": 1124,
+       "train_loss": 0.2422851,
+       "vali_loss": 0.1428873,
+       "test_loss": 0.1629051
+      },
+      {
+       "epoch": 13,
+       "steps": 1124,
+       "train_loss": 0.2406093,
+       "vali_loss": 0.1450667,
+       "test_loss": 0.1634535
+      },
+      {
+       "epoch": 14,
+       "steps": 1124,
+       "train_loss": 0.2395897,
+       "vali_loss": 0.1431828,
+       "test_loss": 0.1629742
+      },
+      {
+       "epoch": 15,
+       "steps": 1124,
+       "train_loss": 0.2389678,
+       "vali_loss": 0.1437843,
+       "test_loss": 0.1627823
+      }
+     ],
+     "best_epoch_by_vali": 12,
+     "early_stopped": false,
+     "stop_lines": []
+    },
+    "cost": {
+     "wall_seconds": 918.5128104686737,
+     "cpu_seconds": 918.730763,
+     "peak_rss_bytes": 5680340992,
+     "peak_gpu_allocated_bytes": 5161739264,
+     "host": "gamma",
+     "gpu_before": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 37.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 51.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 10.0,
+       "memory_total_mib": 32607.0
+      }
+     ],
+     "gpu_after": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 38.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 55.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 770.0,
+       "memory_total_mib": 32607.0
+      }
+     ]
+    },
+    "n_parameters": 2190964,
+    "device": "cuda:0",
+    "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "replay": {
+     "skipped": true,
+     "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt"
+    },
+    "problems": [],
+    "task_id": "ecl321_official_tsl",
+    "disposition": "ACTIVE"
+   },
+   {
+    "unit": "L96_h720_s2021",
+    "cell": {
+     "cell_id": "L96_h720_s2021",
+     "arm": "TimeFilter",
+     "protocol": "L96",
+     "seq_len": 96,
+     "horizon": 720,
+     "seed": 2021
+    },
+    "custody": {
+     "class": "UNCHECKED"
+    },
+    "author_metric_float32": {
+     "mae": 0.28751974018513593,
+     "mse": 0.1871392797732232
+    },
+    "metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+    "author_metric_state": "NOT_EXECUTED_WITHIN_BUDGET: needs ~12594191040 bytes of temporaries, budget 4294967296",
+    "recomputed": null,
+    "derived": null,
+    "training": {
+     "epochs_run": 15,
+     "per_epoch": [
+      {
+       "epoch": 1,
+       "steps": 1100,
+       "train_loss": 0.3669132,
+       "vali_loss": 0.2019057,
+       "test_loss": 0.2285079
+      },
+      {
+       "epoch": 2,
+       "steps": 1100,
+       "train_loss": 0.3320921,
+       "vali_loss": 0.1990512,
+       "test_loss": 0.2139702
+      },
+      {
+       "epoch": 3,
+       "steps": 1100,
+       "train_loss": 0.3192549,
+       "vali_loss": 0.1982345,
+       "test_loss": 0.2101862
+      },
+      {
+       "epoch": 4,
+       "steps": 1100,
+       "train_loss": 0.3111163,
+       "vali_loss": 0.1846451,
+       "test_loss": 0.204577
+      },
+      {
+       "epoch": 5,
+       "steps": 1100,
+       "train_loss": 0.3032268,
+       "vali_loss": 0.2114158,
+       "test_loss": 0.2005084
+      },
+      {
+       "epoch": 6,
+       "steps": 1100,
+       "train_loss": 0.2963017,
+       "vali_loss": 0.1947528,
+       "test_loss": 0.2006127
+      },
+      {
+       "epoch": 7,
+       "steps": 1100,
+       "train_loss": 0.2902109,
+       "vali_loss": 0.1920495,
+       "test_loss": 0.194062
+      },
+      {
+       "epoch": 8,
+       "steps": 1100,
+       "train_loss": 0.2849526,
+       "vali_loss": 0.1896831,
+       "test_loss": 0.195437
+      },
+      {
+       "epoch": 9,
+       "steps": 1100,
+       "train_loss": 0.2800228,
+       "vali_loss": 0.1979046,
+       "test_loss": 0.1946359
+      },
+      {
+       "epoch": 10,
+       "steps": 1100,
+       "train_loss": 0.2758727,
+       "vali_loss": 0.1902198,
+       "test_loss": 0.1906657
+      },
+      {
+       "epoch": 11,
+       "steps": 1100,
+       "train_loss": 0.2726045,
+       "vali_loss": 0.1848759,
+       "test_loss": 0.1894142
+      },
+      {
+       "epoch": 12,
+       "steps": 1100,
+       "train_loss": 0.2695402,
+       "vali_loss": 0.1804325,
+       "test_loss": 0.1877533
+      },
+      {
+       "epoch": 13,
+       "steps": 1100,
+       "train_loss": 0.2673731,
+       "vali_loss": 0.184579,
+       "test_loss": 0.187478
+      },
+      {
+       "epoch": 14,
+       "steps": 1100,
+       "train_loss": 0.2659025,
+       "vali_loss": 0.1894589,
+       "test_loss": 0.1874774
+      },
+      {
+       "epoch": 15,
+       "steps": 1100,
+       "train_loss": 0.2650553,
+       "vali_loss": 0.1880969,
+       "test_loss": 0.1872035
+      }
+     ],
+     "best_epoch_by_vali": 12,
+     "early_stopped": false,
+     "stop_lines": []
+    },
+    "cost": {
+     "wall_seconds": 1206.5228691101074,
+     "cpu_seconds": 1213.3875420000002,
+     "peak_rss_bytes": 2874134528,
+     "peak_gpu_allocated_bytes": 5187266048,
+     "host": "gamma",
+     "gpu_before": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 32.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 42.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 10.0,
+       "memory_total_mib": 32607.0
+      }
+     ],
+     "gpu_after": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 38.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 49.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 770.0,
+       "memory_total_mib": 32607.0
+      }
+     ]
+    },
+    "n_parameters": 2781172,
+    "device": "cuda:0",
+    "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "environment": {
+     "host": "gamma",
+     "python": "3.12.13",
+     "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+     "torch": "2.13.0+cu130",
+     "numpy": "2.5.1",
+     "pandas": "3.0.3",
+     "sklearn": "1.9.0",
+     "scipy": "1.18.0",
+     "cuda": "13.0",
+     "gpus": [
+      "NVIDIA GeForce RTX 5090"
+     ],
+     "cudnn": 92400,
+     "gpu_devices": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 38.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 49.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 770.0,
+       "memory_total_mib": 32607.0
+      }
+     ],
+     "cuda_visible_devices": "0"
+    },
+    "verified": false,
+    "problems": [
+     "L96_h720_s2021: no accepted terminal receipt"
+    ],
+    "task_id": "ecl321_official_tsl",
+    "disposition": "ACTIVE"
+   },
+   {
+    "unit": "L96_h720_s2022",
+    "cell": {
+     "cell_id": "L96_h720_s2022",
+     "arm": "TimeFilter",
+     "protocol": "L96",
+     "seq_len": 96,
+     "horizon": 720,
+     "seed": 2022
+    },
+    "custody": {
+     "class": "UNCHECKED"
+    },
+    "author_metric_float32": {
+     "mae": 0.2986487311261679,
+     "mse": 0.1981701744187609
+    },
+    "metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+    "author_metric_state": "NOT_EXECUTED_WITHIN_BUDGET: needs ~12594191040 bytes of temporaries, budget 4294967296",
+    "recomputed": null,
+    "derived": null,
+    "training": {
+     "epochs_run": 15,
+     "per_epoch": [
+      {
+       "epoch": 1,
+       "steps": 1100,
+       "train_loss": 0.3663801,
+       "vali_loss": 0.2080075,
+       "test_loss": 0.2250392
+      },
+      {
+       "epoch": 2,
+       "steps": 1100,
+       "train_loss": 0.330268,
+       "vali_loss": 0.1866324,
+       "test_loss": 0.2123609
+      },
+      {
+       "epoch": 3,
+       "steps": 1100,
+       "train_loss": 0.3073853,
+       "vali_loss": 0.186079,
+       "test_loss": 0.2032962
+      },
+      {
+       "epoch": 4,
+       "steps": 1100,
+       "train_loss": 0.2921094,
+       "vali_loss": 0.1791351,
+       "test_loss": 0.2138596
+      },
+      {
+       "epoch": 5,
+       "steps": 1100,
+       "train_loss": 0.2790251,
+       "vali_loss": 0.1777164,
+       "test_loss": 0.2101184
+      },
+      {
+       "epoch": 6,
+       "steps": 1100,
+       "train_loss": 0.2701757,
+       "vali_loss": 0.1802534,
+       "test_loss": 0.2010886
+      },
+      {
+       "epoch": 7,
+       "steps": 1100,
+       "train_loss": 0.2631703,
+       "vali_loss": 0.186657,
+       "test_loss": 0.2076948
+      },
+      {
+       "epoch": 8,
+       "steps": 1100,
+       "train_loss": 0.2577608,
+       "vali_loss": 0.1830849,
+       "test_loss": 0.2032391
+      },
+      {
+       "epoch": 9,
+       "steps": 1100,
+       "train_loss": 0.2535808,
+       "vali_loss": 0.1888312,
+       "test_loss": 0.1998279
+      },
+      {
+       "epoch": 10,
+       "steps": 1100,
+       "train_loss": 0.2498071,
+       "vali_loss": 0.1870773,
+       "test_loss": 0.1981467
+      },
+      {
+       "epoch": 11,
+       "steps": 1100,
+       "train_loss": 0.2469524,
+       "vali_loss": 0.1853675,
+       "test_loss": 0.2015968
+      },
+      {
+       "epoch": 12,
+       "steps": 1100,
+       "train_loss": 0.2445543,
+       "vali_loss": 0.1894358,
+       "test_loss": 0.1984328
+      },
+      {
+       "epoch": 13,
+       "steps": 1100,
+       "train_loss": 0.2428422,
+       "vali_loss": 0.189326,
+       "test_loss": 0.1993842
+      },
+      {
+       "epoch": 14,
+       "steps": 1100,
+       "train_loss": 0.2416754,
+       "vali_loss": 0.1876627,
+       "test_loss": 0.1987052
+      },
+      {
+       "epoch": 15,
+       "steps": 1100,
+       "train_loss": 0.241037,
+       "vali_loss": 0.1877303,
+       "test_loss": 0.1982315
+      }
+     ],
+     "best_epoch_by_vali": 5,
+     "early_stopped": false,
+     "stop_lines": []
+    },
+    "cost": {
+     "wall_seconds": 1211.0179703235626,
+     "cpu_seconds": 1216.374378,
+     "peak_rss_bytes": 2890256384,
+     "peak_gpu_allocated_bytes": 5187266048,
+     "host": "gamma",
+     "gpu_before": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 38.0,
+       "utilization_pct": 11.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 47.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 10.0,
+       "memory_total_mib": 32607.0
+      }
+     ],
+     "gpu_after": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 38.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 48.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 770.0,
+       "memory_total_mib": 32607.0
+      }
+     ]
+    },
+    "n_parameters": 2781172,
+    "device": "cuda:0",
+    "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "environment": {
+     "host": "gamma",
+     "python": "3.12.13",
+     "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+     "torch": "2.13.0+cu130",
+     "numpy": "2.5.1",
+     "pandas": "3.0.3",
+     "sklearn": "1.9.0",
+     "scipy": "1.18.0",
+     "cuda": "13.0",
+     "gpus": [
+      "NVIDIA GeForce RTX 5090"
+     ],
+     "cudnn": 92400,
+     "gpu_devices": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 38.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 48.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 770.0,
+       "memory_total_mib": 32607.0
+      }
+     ],
+     "cuda_visible_devices": "0"
+    },
+    "verified": false,
+    "problems": [
+     "L96_h720_s2022: no accepted terminal receipt"
+    ],
+    "task_id": "ecl321_official_tsl",
+    "disposition": "ACTIVE"
+   },
+   {
+    "unit": "L96_h720_s2023",
+    "cell": {
+     "cell_id": "L96_h720_s2023",
+     "arm": "TimeFilter",
+     "protocol": "L96",
+     "seq_len": 96,
+     "horizon": 720,
+     "seed": 2023
+    },
+    "custody": {
+     "class": "UNCHECKED"
+    },
+    "author_metric_float32": {
+     "mae": 0.28568391643111174,
+     "mse": 0.18536765092857793
+    },
+    "metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+    "author_metric_state": "NOT_EXECUTED_WITHIN_BUDGET: needs ~12594191040 bytes of temporaries, budget 4294967296",
+    "recomputed": null,
+    "derived": null,
+    "training": {
+     "epochs_run": 15,
+     "per_epoch": [
+      {
+       "epoch": 1,
+       "steps": 1100,
+       "train_loss": 0.3618965,
+       "vali_loss": 0.1942574,
+       "test_loss": 0.2216133
+      },
+      {
+       "epoch": 2,
+       "steps": 1100,
+       "train_loss": 0.3258956,
+       "vali_loss": 0.1949353,
+       "test_loss": 0.2089515
+      },
+      {
+       "epoch": 3,
+       "steps": 1100,
+       "train_loss": 0.3106169,
+       "vali_loss": 0.1924315,
+       "test_loss": 0.1994809
+      },
+      {
+       "epoch": 4,
+       "steps": 1100,
+       "train_loss": 0.2995371,
+       "vali_loss": 0.1970904,
+       "test_loss": 0.1954199
+      },
+      {
+       "epoch": 5,
+       "steps": 1100,
+       "train_loss": 0.2922979,
+       "vali_loss": 0.1998809,
+       "test_loss": 0.1926117
+      },
+      {
+       "epoch": 6,
+       "steps": 1100,
+       "train_loss": 0.2858294,
+       "vali_loss": 0.1914483,
+       "test_loss": 0.1896748
+      },
+      {
+       "epoch": 7,
+       "steps": 1100,
+       "train_loss": 0.2804591,
+       "vali_loss": 0.1922955,
+       "test_loss": 0.1894553
+      },
+      {
+       "epoch": 8,
+       "steps": 1100,
+       "train_loss": 0.2755681,
+       "vali_loss": 0.1882923,
+       "test_loss": 0.188639
+      },
+      {
+       "epoch": 9,
+       "steps": 1100,
+       "train_loss": 0.2710775,
+       "vali_loss": 0.1903817,
+       "test_loss": 0.1887831
+      },
+      {
+       "epoch": 10,
+       "steps": 1100,
+       "train_loss": 0.2670777,
+       "vali_loss": 0.1940627,
+       "test_loss": 0.1881378
+      },
+      {
+       "epoch": 11,
+       "steps": 1100,
+       "train_loss": 0.2640744,
+       "vali_loss": 0.1795563,
+       "test_loss": 0.1839253
+      },
+      {
+       "epoch": 12,
+       "steps": 1100,
+       "train_loss": 0.2613736,
+       "vali_loss": 0.186191,
+       "test_loss": 0.1868866
+      },
+      {
+       "epoch": 13,
+       "steps": 1100,
+       "train_loss": 0.2596165,
+       "vali_loss": 0.1803741,
+       "test_loss": 0.1859031
+      },
+      {
+       "epoch": 14,
+       "steps": 1100,
+       "train_loss": 0.2582214,
+       "vali_loss": 0.1819892,
+       "test_loss": 0.1851366
+      },
+      {
+       "epoch": 15,
+       "steps": 1100,
+       "train_loss": 0.2575703,
+       "vali_loss": 0.1830847,
+       "test_loss": 0.1854331
+      }
+     ],
+     "best_epoch_by_vali": 11,
+     "early_stopped": false,
+     "stop_lines": []
+    },
+    "cost": {
+     "wall_seconds": 1210.763873577118,
+     "cpu_seconds": 1217.191505,
+     "peak_rss_bytes": 2887684096,
+     "peak_gpu_allocated_bytes": 5187266048,
+     "host": "gamma",
+     "gpu_before": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 38.0,
+       "utilization_pct": 13.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 47.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 10.0,
+       "memory_total_mib": 32607.0
+      }
+     ],
+     "gpu_after": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 38.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 48.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 770.0,
+       "memory_total_mib": 32607.0
+      }
+     ]
+    },
+    "n_parameters": 2781172,
+    "device": "cuda:0",
+    "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "environment": {
+     "host": "gamma",
+     "python": "3.12.13",
+     "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+     "torch": "2.13.0+cu130",
+     "numpy": "2.5.1",
+     "pandas": "3.0.3",
+     "sklearn": "1.9.0",
+     "scipy": "1.18.0",
+     "cuda": "13.0",
+     "gpus": [
+      "NVIDIA GeForce RTX 5090"
+     ],
+     "cudnn": 92400,
+     "gpu_devices": [
+      {
+       "index": 0,
+       "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+       "temperature_c": 38.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 14.0,
+       "memory_total_mib": 12227.0
+      },
+      {
+       "index": 1,
+       "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "name": "NVIDIA GeForce RTX 5090",
+       "temperature_c": 48.0,
+       "utilization_pct": 0.0,
+       "memory_used_mib": 770.0,
+       "memory_total_mib": 32607.0
+      }
+     ],
+     "cuda_visible_devices": "0"
+    },
+    "verified": false,
+    "problems": [
+     "L96_h720_s2023: no accepted terminal receipt"
+    ],
+    "task_id": "ecl321_official_tsl",
+    "disposition": "ACTIVE"
+   }
+  ],
+  "replay_patch": {
+   "what": "torch.load defaults to map_location=cpu inside the CPU replay process",
+   "why": "the author's test(test=1) loads the checkpoint without map_location; a CUDA-trained checkpoint is otherwise unreadable on CPU",
+   "effect": "tensor placement only; the frozen replay rule (CPU, atol/rtol 1e-4, metric within 1e-5) is unchanged"
+  },
+  "problems": [
+   "L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite True, shape_equal True, error ",
+   "L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite True, shape_equal True, error ",
+   "L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite True, shape_equal True, error ",
+   "L96_h720_s2021: no accepted terminal receipt",
+   "L96_h720_s2022: no accepted terminal receipt",
+   "L96_h720_s2023: no accepted terminal receipt"
+  ],
+  "verified_units": [],
+  "unverified_units": [
+   "L96_h192_s2021",
+   "L96_h192_s2022",
+   "L96_h192_s2023",
+   "L96_h336_s2021",
+   "L96_h336_s2022",
+   "L96_h336_s2023",
+   "L96_h720_s2021",
+   "L96_h720_s2022",
+   "L96_h720_s2023",
+   "L96_h96_s2021",
+   "L96_h96_s2022",
+   "L96_h96_s2023"
+  ],
+  "historically_verified_units": [
+   "L96_h192_s2021",
+   "L96_h192_s2022",
+   "L96_h192_s2023",
+   "L96_h336_s2021",
+   "L96_h336_s2022",
+   "L96_h336_s2023"
+  ]
+ },
+ "table": {
+  "schema": "df_sota_table.v1",
+  "at": "2026-09-22T23:06:49Z",
+  "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+  "paper": "Hu, Y. et al. TimeFilter: Patch-Specific Spatial-Temporal Graph Filtration for Time Series Forecasting. ICML 2025 (PMLR v267); arXiv:2501.13041. Author code github.com/TROUBADOUR000/TimeFilter",
+  "protocol": "L96",
+  "published_table": "Table 8 (L = 96)",
+  "rows": [
+   {
+    "dataset_protocol": "ECL official processed (TSL), L=96, T=96, split 7/1/2, normalized space",
+    "model_revision": "TimeFilter @ dffde87e4fff",
+    "horizon": 96,
+    "published": {
+     "mse": 0.133,
+     "mae": 0.23
+    },
+    "seeds_expected": [
+     "L96_h96_s2021",
+     "L96_h96_s2022",
+     "L96_h96_s2023"
+    ],
+    "seeds_verified": [],
+    "verified_all": false,
+    "mse": {
+     "status": "NO_MEASUREMENT",
+     "mean": null,
+     "sd_ddof1": null,
+     "difference": null
+    },
+    "mae": {
+     "status": "NO_MEASUREMENT",
+     "mean": null,
+     "sd_ddof1": null,
+     "difference": null
+    },
+    "historically_verified_seeds": [],
+    "metric_basis": [],
+    "per_seed": {},
+    "scopes": {
+     "recipe_fidelity": null,
+     "same_device_repeatability": [],
+     "cross_device_portability": [],
+     "published_score_agreement": {
+      "mse": "NO_MEASUREMENT",
+      "mae": "NO_MEASUREMENT"
+     },
+     "replay_history": {}
+    },
+    "matched_naive": null,
+    "training_completion": [],
+    "cost": {
+     "wall_seconds_sum": 0,
+     "cpu_seconds_sum": 0,
+     "peak_gpu_bytes_max": 0,
+     "hosts": []
+    },
+    "replay_max_abs_difference": null,
+    "problems": [
+     "L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite True, shape_equal True, error ",
+     "L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite True, shape_equal True, error ",
+     "L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite True, shape_equal True, error "
+    ],
+    "executed_unverified": [
+     {
+      "unit": "L96_h96_s2021",
+      "author_metric_float32": {
+       "mae": 0.23055443167686462,
+       "mse": 0.13331516087055206
+      },
+      "custody": "ACCEPTED_ARTIFACT_CHAIN",
+      "why": "L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite ",
+      "replay_max_abs_difference": 0.00019407272338867188,
+      "replayed_author_metric": {
+       "mae": 0.23055443167686462,
+       "mse": 0.13331516087055206
+      }
+     },
+     {
+      "unit": "L96_h96_s2022",
+      "author_metric_float32": {
+       "mae": 0.23777532577514648,
+       "mse": 0.14008182287216187
+      },
+      "custody": "ACCEPTED_ARTIFACT_CHAIN",
+      "why": "L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite T",
+      "replay_max_abs_difference": 0.0002186298370361328,
+      "replayed_author_metric": {
+       "mae": 0.23777532577514648,
+       "mse": 0.14008182287216187
+      }
+     },
+     {
+      "unit": "L96_h96_s2023",
+      "author_metric_float32": {
+       "mae": 0.23032169044017792,
+       "mse": 0.13309241831302643
+      },
+      "custody": "ACCEPTED_ARTIFACT_CHAIN",
+      "why": "L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite T",
+      "replay_max_abs_difference": 0.0002714395523071289,
+      "replayed_author_metric": {
+       "mae": 0.23032169044017792,
+       "mse": 0.13309241831302643
+      }
+     }
+    ]
+   },
+   {
+    "dataset_protocol": "ECL official processed (TSL), L=96, T=192, split 7/1/2, normalized space",
+    "model_revision": "TimeFilter @ dffde87e4fff",
+    "horizon": 192,
+    "published": {
+     "mse": 0.154,
+     "mae": 0.248
+    },
+    "seeds_expected": [
+     "L96_h192_s2021",
+     "L96_h192_s2022",
+     "L96_h192_s2023"
+    ],
+    "seeds_verified": [
+     "L96_h192_s2021",
+     "L96_h192_s2022",
+     "L96_h192_s2023"
+    ],
+    "verified_all": true,
+    "mse": {
+     "status": "OPERATIONAL_AGREEMENT",
+     "mean": 0.15764521062374115,
+     "sd_ddof1": 0.003798649937341777,
+     "values": [
+      0.1608569175004959,
+      0.158626526594162,
+      0.15345218777656555
+     ],
+     "published": 0.154,
+     "difference": 0.003645210623741152,
+     "tolerance_agree": 0.0105,
+     "tolerance_partial": 0.0155,
+     "n_seeds": 3,
+     "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+    },
+    "mae": {
+     "status": "OPERATIONAL_AGREEMENT",
+     "mean": 0.25216273963451385,
+     "sd_ddof1": 0.003964677673311557,
+     "values": [
+      0.2559875547885895,
+      0.2524290382862091,
+      0.24807162582874298
+     ],
+     "published": 0.248,
+     "difference": 0.004162739634513857,
+     "tolerance_agree": 0.0125,
+     "tolerance_partial": 0.018500000000000003,
+     "n_seeds": 3,
+     "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+    },
+    "historically_verified_seeds": [
+     "L96_h192_s2021",
+     "L96_h192_s2022",
+     "L96_h192_s2023"
+    ],
+    "metric_basis": [
+     "author_float32"
+    ],
+    "per_seed": {
+     "2021": {
+      "mse": 0.1608569175004959,
+      "mae": 0.2559875547885895,
+      "difference_mse": 0.006856917500495913,
+      "difference_mae": 0.00798755478858948
+     },
+     "2022": {
+      "mse": 0.158626526594162,
+      "mae": 0.2524290382862091,
+      "difference_mse": 0.004626526594161989,
+      "difference_mae": 0.004429038286209108
+     },
+     "2023": {
+      "mse": 0.15345218777656555,
+      "mae": 0.24807162582874298,
+      "difference_mse": -0.0005478122234344462,
+      "difference_mae": 7.162582874298273e-05
+     }
+    },
+    "scopes": {
+     "recipe_fidelity": "sealed author files, arguments and preparation bound (closure)",
+     "same_device_repeatability": [
+      "NOT_TESTED_ON_THIS_DEVICE"
+     ],
+     "cross_device_portability": [
+      "NOT_TESTED_ON_THIS_DEVICE"
+     ],
+     "published_score_agreement": {
+      "mse": "OPERATIONAL_AGREEMENT",
+      "mae": "OPERATIONAL_AGREEMENT"
+     },
+     "replay_history": {
+      "L96_h192_s2021": [
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:20:47Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+        "property": "cross_device_portability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 4.76837158203125e-06,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:39:48Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "property": "cross_device_portability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 4.76837158203125e-06,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:57:32Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "property": "cross_device_portability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 4.76837158203125e-06,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       }
+      ],
+      "L96_h192_s2022": [
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:02:48Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:21:15Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:40:14Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "property": "cross_device_portability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:57:59Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       }
+      ],
+      "L96_h192_s2023": [
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:03:17Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:21:43Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:40:41Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "property": "cross_device_portability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:58:27Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       }
+      ]
+     }
+    },
+    "matched_naive": null,
+    "training_completion": [
+     {
+      "unit": "L96_h192_s2021",
+      "epochs_run": 15,
+      "best_epoch": 14,
+      "early_stopped": false,
+      "max_epochs": 15
+     },
+     {
+      "unit": "L96_h192_s2022",
+      "epochs_run": 15,
+      "best_epoch": 15,
+      "early_stopped": false,
+      "max_epochs": 15
+     },
+     {
+      "unit": "L96_h192_s2023",
+      "epochs_run": 15,
+      "best_epoch": 12,
+      "early_stopped": false,
+      "max_epochs": 15
+     }
+    ],
+    "cost": {
+     "wall_seconds_sum": 6779.514723539352,
+     "cpu_seconds_sum": 6802.020566,
+     "peak_gpu_bytes_max": 5152029184,
+     "hosts": [
+      "gamma",
+      "omega"
+     ]
+    },
+    "replay_max_abs_difference": 0.0,
+    "problems": [],
+    "executed_unverified": [
+     {
+      "unit": "L96_h192_s2021",
+      "author_metric_float32": {
+       "mae": 0.2559875547885895,
+       "mse": 0.1608569175004959
+      },
+      "custody": "HISTORICAL: arrays deleted under authorization; digests retained",
+      "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt",
+      "replay_max_abs_difference": null,
+      "replayed_author_metric": null
+     },
+     {
+      "unit": "L96_h192_s2022",
+      "author_metric_float32": {
+       "mae": 0.2524290382862091,
+       "mse": 0.158626526594162
+      },
+      "custody": "HISTORICAL: arrays deleted under authorization; digests retained",
+      "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt",
+      "replay_max_abs_difference": null,
+      "replayed_author_metric": null
+     },
+     {
+      "unit": "L96_h192_s2023",
+      "author_metric_float32": {
+       "mae": 0.24807162582874298,
+       "mse": 0.15345218777656555
+      },
+      "custody": "HISTORICAL: arrays deleted under authorization; digests retained",
+      "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt",
+      "replay_max_abs_difference": null,
+      "replayed_author_metric": null
+     }
+    ]
+   },
+   {
+    "dataset_protocol": "ECL official processed (TSL), L=96, T=336, split 7/1/2, normalized space",
+    "model_revision": "TimeFilter @ dffde87e4fff",
+    "horizon": 336,
+    "published": {
+     "mse": 0.162,
+     "mae": 0.261
+    },
+    "seeds_expected": [
+     "L96_h336_s2021",
+     "L96_h336_s2022",
+     "L96_h336_s2023"
+    ],
+    "seeds_verified": [
+     "L96_h336_s2021",
+     "L96_h336_s2022",
+     "L96_h336_s2023"
+    ],
+    "verified_all": true,
+    "mse": {
+     "status": "OPERATIONAL_AGREEMENT",
+     "mean": 0.16447971054774269,
+     "sd_ddof1": 0.0032003780837321083,
+     "values": [
+      0.16259404228254276,
+      0.16817492751600455,
+      0.16267016184468075
+     ],
+     "published": 0.162,
+     "difference": 0.0024797105477426806,
+     "tolerance_agree": 0.0105,
+     "tolerance_partial": 0.0155,
+     "n_seeds": 3,
+     "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+    },
+    "mae": {
+     "status": "OPERATIONAL_AGREEMENT",
+     "mean": 0.26298469403247476,
+     "sd_ddof1": 0.0038367046923439754,
+     "values": [
+      0.26066640344614045,
+      0.26741331167821497,
+      0.26087436697306887
+     ],
+     "published": 0.261,
+     "difference": 0.001984694032474754,
+     "tolerance_agree": 0.0125,
+     "tolerance_partial": 0.018500000000000003,
+     "n_seeds": 3,
+     "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+    },
+    "historically_verified_seeds": [
+     "L96_h336_s2021",
+     "L96_h336_s2022",
+     "L96_h336_s2023"
+    ],
+    "metric_basis": [
+     "independent_float64 (author float32 reduction NOT executed within the memory budget)"
+    ],
+    "per_seed": {
+     "2021": {
+      "mse": 0.16259404228254276,
+      "mae": 0.26066640344614045,
+      "difference_mse": 0.000594042282542756,
+      "difference_mae": -0.0003335965538595609
+     },
+     "2022": {
+      "mse": 0.16817492751600455,
+      "mae": 0.26741331167821497,
+      "difference_mse": 0.006174927516004541,
+      "difference_mae": 0.006413311678214961
+     },
+     "2023": {
+      "mse": 0.16267016184468075,
+      "mae": 0.26087436697306887,
+      "difference_mse": 0.0006701618446807445,
+      "difference_mae": -0.00012563302693113787
+     }
+    },
+    "scopes": {
+     "recipe_fidelity": "sealed author files, arguments and preparation bound (closure)",
+     "same_device_repeatability": [
+      "NOT_TESTED_ON_THIS_DEVICE"
+     ],
+     "cross_device_portability": [
+      "NOT_TESTED_ON_THIS_DEVICE"
+     ],
+     "published_score_agreement": {
+      "mse": "OPERATIONAL_AGREEMENT",
+      "mae": "OPERATIONAL_AGREEMENT"
+     },
+     "replay_history": {
+      "L96_h336_s2021": [
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:03:50Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:22:14Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:41:14Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "property": "cross_device_portability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:58:58Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       }
+      ],
+      "L96_h336_s2022": [
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:04:23Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:22:47Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:41:47Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "property": "cross_device_portability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:59:31Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       }
+      ],
+      "L96_h336_s2023": [
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:04:56Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:23:21Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:42:18Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "property": "cross_device_portability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       },
+       {
+        "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T23:00:05Z",
+        "device": "cuda:0",
+        "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "property": "same_device_repeatability",
+        "allclose_rule": true,
+        "max_abs_prediction_difference": 0.0,
+        "at": null,
+        "scope": "HISTORICAL_RECORD_ONLY"
+       }
+      ]
+     }
+    },
+    "matched_naive": null,
+    "training_completion": [
+     {
+      "unit": "L96_h336_s2021",
+      "epochs_run": 15,
+      "best_epoch": 10,
+      "early_stopped": false,
+      "max_epochs": 15
+     },
+     {
+      "unit": "L96_h336_s2022",
+      "epochs_run": 15,
+      "best_epoch": 13,
+      "early_stopped": false,
+      "max_epochs": 15
+     },
+     {
+      "unit": "L96_h336_s2023",
+      "epochs_run": 15,
+      "best_epoch": 12,
+      "early_stopped": false,
+      "max_epochs": 15
+     }
+    ],
+    "cost": {
+     "wall_seconds_sum": 2758.2110681533813,
+     "cpu_seconds_sum": 2762.448789,
+     "peak_gpu_bytes_max": 5161739264,
+     "hosts": [
+      "gamma"
+     ]
+    },
+    "replay_max_abs_difference": 0.0,
+    "problems": [],
+    "executed_unverified": [
+     {
+      "unit": "L96_h336_s2021",
+      "author_metric_float32": {
+       "mae": 0.26066640344614045,
+       "mse": 0.16259404228254276
+      },
+      "custody": "HISTORICAL: arrays deleted under authorization; digests retained",
+      "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt",
+      "replay_max_abs_difference": null,
+      "replayed_author_metric": null
+     },
+     {
+      "unit": "L96_h336_s2022",
+      "author_metric_float32": {
+       "mae": 0.26741331167821497,
+       "mse": 0.16817492751600455
+      },
+      "custody": "HISTORICAL: arrays deleted under authorization; digests retained",
+      "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt",
+      "replay_max_abs_difference": null,
+      "replayed_author_metric": null
+     },
+     {
+      "unit": "L96_h336_s2023",
+      "author_metric_float32": {
+       "mae": 0.26087436697306887,
+       "mse": 0.16267016184468075
+      },
+      "custody": "HISTORICAL: arrays deleted under authorization; digests retained",
+      "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt",
+      "replay_max_abs_difference": null,
+      "replayed_author_metric": null
+     }
+    ]
+   },
+   {
+    "dataset_protocol": "ECL official processed (TSL), L=96, T=720, split 7/1/2, normalized space",
+    "model_revision": "TimeFilter @ dffde87e4fff",
+    "horizon": 720,
+    "published": {
+     "mse": 0.184,
+     "mae": 0.284
+    },
+    "seeds_expected": [
+     "L96_h720_s2021",
+     "L96_h720_s2022",
+     "L96_h720_s2023"
+    ],
+    "seeds_verified": [],
+    "verified_all": false,
+    "mse": {
+     "status": "NO_MEASUREMENT",
+     "mean": null,
+     "sd_ddof1": null,
+     "difference": null
+    },
+    "mae": {
+     "status": "NO_MEASUREMENT",
+     "mean": null,
+     "sd_ddof1": null,
+     "difference": null
+    },
+    "historically_verified_seeds": [],
+    "metric_basis": [],
+    "per_seed": {},
+    "scopes": {
+     "recipe_fidelity": null,
+     "same_device_repeatability": [],
+     "cross_device_portability": [],
+     "published_score_agreement": {
+      "mse": "NO_MEASUREMENT",
+      "mae": "NO_MEASUREMENT"
+     },
+     "replay_history": {}
+    },
+    "matched_naive": null,
+    "training_completion": [],
+    "cost": {
+     "wall_seconds_sum": 0,
+     "cpu_seconds_sum": 0,
+     "peak_gpu_bytes_max": 0,
+     "hosts": []
+    },
+    "replay_max_abs_difference": null,
+    "problems": [
+     "L96_h720_s2021: no accepted terminal receipt",
+     "L96_h720_s2022: no accepted terminal receipt",
+     "L96_h720_s2023: no accepted terminal receipt"
+    ],
+    "executed_unverified": [
+     {
+      "unit": "L96_h720_s2021",
+      "author_metric_float32": {
+       "mae": 0.28751974018513593,
+       "mse": 0.1871392797732232
+      },
+      "custody": "UNCHECKED",
+      "why": "L96_h720_s2021: no accepted terminal receipt",
+      "replay_max_abs_difference": null,
+      "replayed_author_metric": null
+     },
+     {
+      "unit": "L96_h720_s2022",
+      "author_metric_float32": {
+       "mae": 0.2986487311261679,
+       "mse": 0.1981701744187609
+      },
+      "custody": "UNCHECKED",
+      "why": "L96_h720_s2022: no accepted terminal receipt",
+      "replay_max_abs_difference": null,
+      "replayed_author_metric": null
+     },
+     {
+      "unit": "L96_h720_s2023",
+      "author_metric_float32": {
+       "mae": 0.28568391643111174,
+       "mse": 0.18536765092857793
+      },
+      "custody": "UNCHECKED",
+      "why": "L96_h720_s2023: no accepted terminal receipt",
+      "replay_max_abs_difference": null,
+      "replayed_author_metric": null
+     }
+    ]
+   }
+  ],
+  "average_over_horizons": {
+   "mse": {
+    "status": "NOT_COMPUTED",
+    "why": "a full four-horizon average needs every horizon verified for every seed; complete seeds: []",
+    "seed_averages_available": {}
+   },
+   "mae": {
+    "status": "NOT_COMPUTED",
+    "why": "a full four-horizon average needs every horizon verified for every seed; complete seeds: []",
+    "seed_averages_available": {}
+   }
+  },
+  "complete": false,
+  "protocol_fidelity": {
+   "source_hashes": "sealed == now",
+   "preparation": "PREPARATION_ACCEPTED_ARTIFACT",
+   "environment": "declared divergence from the author's (torch/numpy/pandas/sklearn/GPU differ; recorded in the lock)",
+   "operational_patches": [
+    "import shims for sktime.datasets and patoolib",
+    "run.py __main__ replicated by main_like_run_py",
+    "exp_long_term_forecasting.metric wrapped to capture preds/trues",
+    "np.Inf restored as an alias of np.inf before importing the author modules"
+   ],
+   "verdict": "NOT_ESTABLISHED: L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite True, shape_equal True, error ; L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite True, shape_equal True, error ; L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite True, shape_equal True, error "
+  },
+  "agreement_rule": "per horizon and for the four-horizon average (formed within each seed first), the three-seed mean of the replicated metric is in OPERATIONAL_AGREEMENT with the published value when |mean - published| <= 2 x std_paper + 0.0005 (rounding half-unit); OPERATIONAL_PARTIAL when <= 3 x std_paper + 0.0005; OUTSIDE_OPERATIONAL_MARGIN otherwise. std_paper is the paper's std over its three runs of the FOUR-HORIZON AVERAGE (Table 7), borrowed per horizon as a predeclared operational margin \u2014 not a published per-horizon error bar, not statistical equivalence; the replicated seed dispersion is reported beside it and never replaces the criterion",
+  "disposition": {
+   "disposition": "ACTIVE",
+   "task_id": "ecl321_official_tsl",
+   "policy": "docs/tres_temas_entrevista/program_v3/SOTA_FIRST_2026_09_21.md",
+   "why": "the official processed ECL benchmark is the active reproduction task"
+  },
+  "unexecuted": [
+   "L96_h96_s2021",
+   "L96_h96_s2022",
+   "L96_h96_s2023",
+   "L96_h192_s2021",
+   "L96_h192_s2022",
+   "L96_h192_s2023",
+   "L96_h336_s2021",
+   "L96_h336_s2022",
+   "L96_h336_s2023",
+   "L96_h720_s2021",
+   "L96_h720_s2022",
+   "L96_h720_s2023"
+  ],
+  "verified_units": [],
+  "problems": [
+   "L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite True, shape_equal True, error ",
+   "L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite True, shape_equal True, error ",
+   "L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite True, shape_equal True, error ",
+   "L96_h720_s2021: no accepted terminal receipt",
+   "L96_h720_s2022: no accepted terminal receipt",
+   "L96_h720_s2023: no accepted terminal receipt"
+  ]
+ },
+ "paired_contrasts": {
+  "schema": "df_sota_paired_contrasts.v1",
+  "grain": "per test window (one hour apart), paired by window index",
+  "horizons": {
+   "96": {
+    "cells": [],
+    "seed_pairs": {},
+    "vs_baselines": {},
+    "state": "NOT_APPLICABLE: no verified cell"
+   },
+   "192": {
+    "cells": [
+     "L96_h192_s2021",
+     "L96_h192_s2022",
+     "L96_h192_s2023"
+    ],
+    "seed_pairs": {
+     "L96_h192_s2021 - L96_h192_s2022": {
+      "n_windows": 5069,
+      "mae": {
+       "mean": 0.003558518275576906,
+       "sd_ddof1": 0.03163527389331966,
+       "first_better": 2291,
+       "second_better": 2778
+      },
+      "mse": {
+       "mean": 0.002230378367208711,
+       "sd_ddof1": 0.04068439485715791,
+       "first_better": 2384,
+       "second_better": 2685
+      }
+     },
+     "L96_h192_s2021 - L96_h192_s2023": {
+      "n_windows": 5069,
+      "mae": {
+       "mean": 0.007915938692517855,
+       "sd_ddof1": 0.02823647076531777,
+       "first_better": 1820,
+       "second_better": 3249
+      },
+      "mse": {
+       "mean": 0.00740471578022541,
+       "sd_ddof1": 0.03504897712830989,
+       "first_better": 1893,
+       "second_better": 3176
+      }
+     },
+     "L96_h192_s2022 - L96_h192_s2023": {
+      "n_windows": 5069,
+      "mae": {
+       "mean": 0.0043574204169409495,
+       "sd_ddof1": 0.017470531602818234,
+       "first_better": 1998,
+       "second_better": 3071
+      },
+      "mse": {
+       "mean": 0.0051743374130167,
+       "sd_ddof1": 0.02428248450229225,
+       "first_better": 2035,
+       "second_better": 3034
+      }
+     }
+    },
+    "vs_baselines": {
+     "L96_h192_s2021": {
+      "n_windows": 5069,
+      "model_minus_seasonal24_mae": {
+       "mean": -0.06775378345573042,
+       "sd_ddof1": 0.047489031910946534,
+       "windows_model_better": 4860
+      },
+      "model_minus_persistence_mae": {
+       "mean": -0.6947217975186621,
+       "sd_ddof1": 0.11346270390162082,
+       "windows_model_better": 5069
+      }
+     },
+     "L96_h192_s2022": {
+      "n_windows": 5069,
+      "model_minus_seasonal24_mae": {
+       "mean": -0.07131230173130734,
+       "sd_ddof1": 0.04198840064570393,
+       "windows_model_better": 4925
+      },
+      "model_minus_persistence_mae": {
+       "mean": -0.698280315794239,
+       "sd_ddof1": 0.11021815800703173,
+       "windows_model_better": 5069
+      }
+     },
+     "L96_h192_s2023": {
+      "n_windows": 5069,
+      "model_minus_seasonal24_mae": {
+       "mean": -0.0756697221482483,
+       "sd_ddof1": 0.038751632369404494,
+       "windows_model_better": 5043
+      },
+      "model_minus_persistence_mae": {
+       "mean": -0.7026377362111801,
+       "sd_ddof1": 0.10985958904952474,
+       "windows_model_better": 5069
+      }
+     }
+    },
+    "state": "DONE"
+   },
+   "336": {
+    "cells": [
+     "L96_h336_s2021",
+     "L96_h336_s2022",
+     "L96_h336_s2023"
+    ],
+    "seed_pairs": {
+     "L96_h336_s2021 - L96_h336_s2022": {
+      "n_windows": 4925,
+      "mae": {
+       "mean": -0.006746908232074581,
+       "sd_ddof1": 0.019497112970487392,
+       "first_better": 3127,
+       "second_better": 1798
+      },
+      "mse": {
+       "mean": -0.00558088523346172,
+       "sd_ddof1": 0.02150377471880191,
+       "first_better": 2968,
+       "second_better": 1957
+      }
+     },
+     "L96_h336_s2021 - L96_h336_s2023": {
+      "n_windows": 4925,
+      "mae": {
+       "mean": -0.00020796352692843917,
+       "sd_ddof1": 0.011076019139230087,
+       "first_better": 2421,
+       "second_better": 2504
+      },
+      "mse": {
+       "mean": -7.611956213800758e-05,
+       "sd_ddof1": 0.012187068956432812,
+       "first_better": 2433,
+       "second_better": 2492
+      }
+     },
+     "L96_h336_s2022 - L96_h336_s2023": {
+      "n_windows": 4925,
+      "mae": {
+       "mean": 0.006538944705146142,
+       "sd_ddof1": 0.01789259389349762,
+       "first_better": 1589,
+       "second_better": 3336
+      },
+      "mse": {
+       "mean": 0.005504765671323711,
+       "sd_ddof1": 0.019894692841449783,
+       "first_better": 1793,
+       "second_better": 3132
+      }
+     }
+    },
+    "vs_baselines": {
+     "L96_h336_s2021": {
+      "n_windows": 4925,
+      "model_minus_seasonal24_mae": {
+       "mean": -0.08202038735854492,
+       "sd_ddof1": 0.037300552025874206,
+       "windows_model_better": 4925
+      },
+      "model_minus_persistence_mae": {
+       "mean": -0.7006569528430261,
+       "sd_ddof1": 0.10953770801672028,
+       "windows_model_better": 4925
+      }
+     },
+     "L96_h336_s2022": {
+      "n_windows": 4925,
+      "model_minus_seasonal24_mae": {
+       "mean": -0.07527347912647032,
+       "sd_ddof1": 0.03991324302869097,
+       "windows_model_better": 4842
+      },
+      "model_minus_persistence_mae": {
+       "mean": -0.6939100446109516,
+       "sd_ddof1": 0.11002066124386253,
+       "windows_model_better": 4925
+      }
+     },
+     "L96_h336_s2023": {
+      "n_windows": 4925,
+      "model_minus_seasonal24_mae": {
+       "mean": -0.08181242383161648,
+       "sd_ddof1": 0.03694491660036534,
+       "windows_model_better": 4921
+      },
+      "model_minus_persistence_mae": {
+       "mean": -0.7004489893160978,
+       "sd_ddof1": 0.10875700846752376,
+       "windows_model_better": 4925
+      }
+     }
+    },
+    "state": "DONE"
+   },
+   "720": {
+    "cells": [],
+    "seed_pairs": {},
+    "vs_baselines": {},
+    "state": "NOT_APPLICABLE: no verified cell"
+   }
+  }
+ },
+ "verified": false,
+ "problems": [
+  "L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite True, shape_equal True, error ",
+  "L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite True, shape_equal True, error ",
+  "L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite True, shape_equal True, error ",
+  "L96_h720_s2021: no accepted terminal receipt",
+  "L96_h720_s2022: no accepted terminal receipt",
+  "L96_h720_s2023: no accepted terminal receipt"
+ ]
+}
