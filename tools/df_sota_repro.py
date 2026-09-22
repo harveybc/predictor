@@ -545,7 +545,7 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
     res = main_like_run_py(cell["argv"], seed=cell["seed"], data_dir=data_path.parent, data_name=data_path.name, work=work, gpu=gpu, use_gpu=use_gpu,
                            log=folder / "author_stdout.log")
     preds, trues = np.asarray(res["preds"], dtype=np.float32), np.asarray(res["trues"], dtype=np.float32)
-    np.savez_compressed(folder / "arrays.npz", pred=preds)
+    np.savez(folder / "arrays.npz", pred=preds)                    # uncompressed by the owner's decision (float32 outputs compress < 13 %)
     trues_sha = sha_array(trues)
     ckpt = folder / "checkpoint.pth"
     shutil.copy2(res["checkpoint"], ckpt)
@@ -832,6 +832,97 @@ def naive_and_trues(design: dict, cell: dict, data_path: Path) -> dict:
             "naive_definition": "persistence: the window's last observed value repeated over the horizon, every channel, same test windows, normalized space"}
 
 
+def metrics_vault(preds: np.ndarray, test_loader, *, pred_len: int, chunk: int = 128, max_lag: int = 168) -> dict:
+    """Every metric a future analysis could want from ONE cell's predictions, so the raw arrays can be deleted afterwards
+    (owner's decision 2026-09-22). Everything is accumulated in float64 over chunks of windows: no full-size temporary.
+    Space: normalized (train-standardized) units, the space the paper reports in.
+
+    Contents: global MSE/MAE/RMSE/MAPE/MSPE/RSE/R2/CORR/bias; per horizon step (T rows) and per channel (C rows) MSE, MAE,
+    bias, residual sd, naive persistence and 24 h seasonal naive (where the window supports it), skill; residual moments
+    (mean, var, skew, kurtosis), histogram, approximate quantiles, tail fractions, entropy; residual autocorrelation along the
+    window index (channel-mean residual per step, lags 1..max_lag; per-channel lags 1/24/168 at the first and last steps);
+    error growth by step; prediction/true correlation and mutual information (64 x 64 histogram); bias of the mean level."""
+    W, T, C = preds.shape
+    sums = {k: np.zeros((T, C)) for k in ("ab", "sq", "r", "nab", "nsq", "sab", "ssq")}
+    sums["y"] = np.zeros((T, C)); sums["y2"] = np.zeros((T, C)); sums["p"] = np.zeros((T, C)); sums["p2"] = np.zeros((T, C)); sums["py"] = np.zeros((T, C))
+    r3 = r4 = 0.0; n_mape = 0; mape = 0.0; mspe = 0.0
+    hist_edges = np.linspace(-20.0, 20.0, 2001); hist = np.zeros(2000)
+    tail = {"1": 0, "2": 0, "3": 0}
+    joint = np.zeros((64, 64)); jedges = np.linspace(-6.0, 6.0, 65)
+    step_series = np.zeros((W, T)); ch_series_first = np.zeros((W, C)); ch_series_last = np.zeros((W, C))
+    w0 = 0
+    for batch_x, batch_y, _, _ in test_loader:
+        y = batch_y[:, -pred_len:, :].numpy().astype(np.float64); x = batch_x.numpy().astype(np.float64)
+        b = y.shape[0]; p = preds[w0:w0 + b].astype(np.float64); d = p - y
+        last = x[:, -1:, :]; naive = np.broadcast_to(last, y.shape)
+        L = x.shape[1]
+        seas = np.stack([x[:, L - 24 + (k % 24), :] for k in range(T)], axis=1) if L >= 24 else naive
+        sums["ab"] += np.abs(d).sum(0); sums["sq"] += (d * d).sum(0); sums["r"] += d.sum(0)
+        sums["nab"] += np.abs(naive - y).sum(0); sums["nsq"] += ((naive - y) ** 2).sum(0)
+        sums["sab"] += np.abs(seas - y).sum(0); sums["ssq"] += ((seas - y) ** 2).sum(0)
+        sums["y"] += y.sum(0); sums["y2"] += (y * y).sum(0); sums["p"] += p.sum(0); sums["p2"] += (p * p).sum(0); sums["py"] += (p * y).sum(0)
+        r3 += float((d ** 3).sum()); r4 += float((d ** 4).sum())
+        nz = np.abs(y) > 1e-8; n_mape += int(nz.sum()); mape += float(np.abs(d[nz] / y[nz]).sum()); mspe += float(((d[nz] / y[nz]) ** 2).sum())
+        hist += np.histogram(d, bins=hist_edges)[0]
+        for t_ in ("1", "2", "3"):
+            tail[t_] += int((np.abs(d) > float(t_)).sum())
+        joint += np.histogram2d(np.clip(p.ravel(), -6, 6), np.clip(y.ravel(), -6, 6), bins=[jedges, jedges])[0]
+        step_series[w0:w0 + b] = d.mean(axis=2); ch_series_first[w0:w0 + b] = d[:, 0, :]; ch_series_last[w0:w0 + b] = d[:, -1, :]
+        w0 += b
+    n = W * T * C
+    mse, mae = float(sums["sq"].sum() / n), float(sums["ab"].sum() / n)
+    ymean = float(sums["y"].sum() / n); sst = float(sums["y2"].sum() - n * ymean ** 2)
+    pmean = float(sums["p"].sum() / n)
+    cov = float(sums["py"].sum() - n * pmean * ymean); vp = float(sums["p2"].sum() - n * pmean ** 2); vy = sst
+    rmean = float(sums["r"].sum() / n); rvar = mse - rmean ** 2
+    skew = (r3 / n - 3 * rmean * rvar - rmean ** 3) / (rvar ** 1.5) if rvar > 0 else None
+    kurt = (r4 / n - 4 * rmean * r3 / n + 6 * rmean ** 2 * mse - 3 * rmean ** 4) / (rvar ** 2) if rvar > 0 else None
+    cdf = np.cumsum(hist) / max(1.0, hist.sum()); centers = (hist_edges[:-1] + hist_edges[1:]) / 2
+    quantiles = {str(q): float(centers[min(len(centers) - 1, int(np.searchsorted(cdf, q)))]) for q in (0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99, 0.999)}
+    ph = hist / max(1.0, hist.sum()); entropy_bits = float(-(ph[ph > 0] * np.log2(ph[ph > 0])).sum())
+    pj = joint / max(1.0, joint.sum()); pa, pb = pj.sum(1, keepdims=True), pj.sum(0, keepdims=True)
+    nzj = pj > 0; mi_bits = float((pj[nzj] * np.log2(pj[nzj] / (pa @ pb)[nzj])).sum())
+    def acf(series: np.ndarray, lags: int) -> list:
+        s_ = series - series.mean(axis=0, keepdims=True); den = (s_ * s_).sum(axis=0)
+        out = []
+        for lag in range(1, lags + 1):
+            num = (s_[lag:] * s_[:-lag]).sum(axis=0)
+            out.append(np.where(den > 0, num / np.where(den > 0, den, 1.0), np.nan))
+        return out
+    lags = min(max_lag, W - 2)
+    step_acf = np.array(acf(step_series, lags))                                    # [lags, T]
+    first_acf = {str(l): acf(ch_series_first, l)[-1].tolist() for l in (1, 24, 168) if l < W - 1}
+    last_acf = {str(l): acf(ch_series_last, l)[-1].tolist() for l in (1, 24, 168) if l < W - 1}
+    per_step = {"mse": (sums["sq"].sum(1) / (W * C)).tolist(), "mae": (sums["ab"].sum(1) / (W * C)).tolist(), "bias": (sums["r"].sum(1) / (W * C)).tolist(),
+                "naive_mse": (sums["nsq"].sum(1) / (W * C)).tolist(), "naive_mae": (sums["nab"].sum(1) / (W * C)).tolist(),
+                "seasonal24_mse": (sums["ssq"].sum(1) / (W * C)).tolist(), "seasonal24_mae": (sums["sab"].sum(1) / (W * C)).tolist()}
+    per_step["skill_mae_vs_naive"] = [1 - a / b if b > 0 else None for a, b in zip(per_step["mae"], per_step["naive_mae"])]
+    per_step["error_growth_mae_over_step1"] = [a / per_step["mae"][0] if per_step["mae"][0] > 0 else None for a in per_step["mae"]]
+    per_channel = {"mse": (sums["sq"].sum(0) / (W * T)).tolist(), "mae": (sums["ab"].sum(0) / (W * T)).tolist(), "bias": (sums["r"].sum(0) / (W * T)).tolist(),
+                   "naive_mse": (sums["nsq"].sum(0) / (W * T)).tolist(), "naive_mae": (sums["nab"].sum(0) / (W * T)).tolist(),
+                   "seasonal24_mae": (sums["sab"].sum(0) / (W * T)).tolist(),
+                   "r2": [float(1 - sq / (y2 - yy ** 2 / (W * T))) if (y2 - yy ** 2 / (W * T)) > 0 else None for sq, y2, yy in zip(sums["sq"].sum(0), sums["y2"].sum(0), sums["y"].sum(0))],
+                   "corr_pred_true": [float((py - pp * yy / (W * T)) / math.sqrt(max(1e-300, (p2 - pp ** 2 / (W * T)) * (y2 - yy ** 2 / (W * T)))))
+                                      for py, pp, yy, p2, y2 in zip(sums["py"].sum(0), sums["p"].sum(0), sums["y"].sum(0), sums["p2"].sum(0), sums["y2"].sum(0))]}
+    per_channel["skill_mae_vs_naive"] = [1 - a / b if b > 0 else None for a, b in zip(per_channel["mae"], per_channel["naive_mae"])]
+    return {"schema": "df_sota_metrics_vault.v1", "space": "normalized (train-standardized) units; author reduction = mean over windows x steps x channels",
+            "population": {"windows": W, "steps": T, "channels": C, "elements": n},
+            "global": {"mse": mse, "mae": mae, "rmse": math.sqrt(mse), "mape": mape / max(1, n_mape), "mspe": mspe / max(1, n_mape), "mape_population": n_mape,
+                       "rse": math.sqrt(float(sums["sq"].sum()) / sst) if sst > 0 else None, "r2": 1 - float(sums["sq"].sum()) / sst if sst > 0 else None,
+                       "corr_pred_true": cov / math.sqrt(vp * vy) if vp > 0 and vy > 0 else None, "bias": rmean, "true_mean": ymean, "pred_mean": pmean,
+                       "true_var": vy / n, "pred_var": vp / n, "naive_mse": float(sums["nsq"].sum() / n), "naive_mae": float(sums["nab"].sum() / n),
+                       "seasonal24_mse": float(sums["ssq"].sum() / n), "seasonal24_mae": float(sums["sab"].sum() / n),
+                       "skill_mae_vs_naive": 1 - mae / float(sums["nab"].sum() / n), "skill_mse_vs_naive": 1 - mse / float(sums["nsq"].sum() / n),
+                       "mase_vs_naive": mae / float(sums["nab"].sum() / n), "mutual_information_bits_pred_true_64x64": mi_bits},
+            "residuals": {"mean": rmean, "var": rvar, "sd": math.sqrt(max(0.0, rvar)), "skewness": skew, "kurtosis": kurt, "entropy_bits_2000bins_[-20,20]": entropy_bits,
+                          "quantiles": quantiles, "fraction_abs_gt": {k: v / n for k, v in tail.items()}, "histogram": {"edges": hist_edges.tolist(), "counts": hist.astype(int).tolist()}},
+            "per_step": per_step, "per_channel": per_channel,
+            "autocorrelation": {"reading": "residual autocorrelation along consecutive test windows (one hour apart)",
+                                "channel_mean_residual_per_step": {"lags": list(range(1, lags + 1)), "acf": step_acf.T.tolist()},
+                                "per_channel_first_step": first_acf, "per_channel_last_step": last_acf},
+            "joint_histogram_pred_true": {"edges": jedges.tolist(), "counts": joint.astype(int).tolist()}}
+
+
 def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None, replay: bool = True, replay_device: str = "cpu",
                     replay_units: list | None = None) -> dict:
     root = Path(root)
@@ -940,11 +1031,18 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             trues = np.concatenate([b[1][:, -args.pred_len:, :].float().numpy().astype(np.float32) for b in test_loader], axis=0)
             mae32, mse32 = MET.metric(preds, trues)[:2]
             recomputed = {"author_float32": {"mae": float(mae32), "mse": float(mse32)}, "independent_float64": float64_metrics(preds, trues)}
+            del trues
+            vault_path = folder / "METRICS_VAULT.json"
+            if not vault_path.is_file() or json.loads(vault_path.read_text()).get("pred_sha256") != record.get("pred_sha256"):
+                _, test_loader = DF.data_provider(args, "test")
+                vault = metrics_vault(preds, test_loader, pred_len=args.pred_len)
+                vault.update(unit=unit, pred_sha256=record.get("pred_sha256"), design_sha256=design["design_sha256"], at=now_iso())
+                vault_path.write_text(json.dumps(vault, default=str))
+            recomputed["metrics_vault_sha256"] = sha_file(vault_path)
             if abs(float(mae32) - record["author_metric_float32"]["mae"]) > 0 or abs(float(mse32) - record["author_metric_float32"]["mse"]) > 0:
                 p_.append(f"{unit}: the author's metric recomputed from the arrays is not the record's: METRIC")
             if abs(recomputed["independent_float64"]["mae"] - record["author_metric_float32"]["mae"]) > 1e-6 or abs(recomputed["independent_float64"]["mse"] - record["author_metric_float32"]["mse"]) > 1e-6:
                 p_.append(f"{unit}: the independent float64 metric differs from the author's by more than 1e-6: REDUCTION")
-            del trues
         rows.append({"unit": unit, "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")}, "custody": custody,
                      "author_metric_float32": record["author_metric_float32"], "recomputed": recomputed, "derived": derived,
                      "training": record.get("training"), "cost": record.get("cost"), "n_parameters": record.get("n_parameters"), "device": record.get("device"),

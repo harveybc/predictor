@@ -302,3 +302,23 @@ def test_RP96_the_agreement_rule_is_frozen_and_applied_as_declared():
     assert R.agreement(pub, [0.160, 0.160, 0.160], "mse")["status"] == "DISAGREEMENT"
     assert R.agreement(pub, [], "mae")["status"] == "NO_MEASUREMENT"
     assert R.AGREEMENT["replay"]["atol"] == 1e-4 and R.AGREEMENT["std_paper"] == {"mse": 0.005, "mae": 0.006}
+
+
+def test_RP96_the_metrics_vault_is_exhaustive_consistent_with_the_author_metric_and_written_at_closure(world):
+    ver = R.verify_sota_run(world["root"], warehouse=_wh(world), data_path=world["data"], replay=False)
+    r = ver["rows"][0]
+    vp = world["root"] / "attempts" / r["unit"] / "METRICS_VAULT.json"
+    assert vp.is_file() and r["recomputed"]["metrics_vault_sha256"] == R.sha_file(vp)
+    v = json.loads(vp.read_text())
+    assert abs(v["global"]["mse"] - r["author_metric_float32"]["mse"]) <= 1e-6 and abs(v["global"]["mae"] - r["author_metric_float32"]["mae"]) <= 1e-6
+    assert v["population"] == {"windows": 77, "steps": 4, "channels": 4, "elements": 77 * 4 * 4}
+    assert abs(np.mean(v["per_step"]["mse"]) - v["global"]["mse"]) <= 1e-9 and abs(np.mean(v["per_channel"]["mae"]) - v["global"]["mae"]) <= 1e-9
+    assert abs(v["global"]["naive_mae"] - r["derived"]["naive"]["mae"]) <= 1e-9                     # the same persistence the closure reports
+    for k in ("rmse", "mape", "mspe", "rse", "r2", "corr_pred_true", "bias", "seasonal24_mae", "skill_mae_vs_naive", "mase_vs_naive", "mutual_information_bits_pred_true_64x64"):
+        assert k in v["global"] and v["global"][k] is not None
+    assert set(v["residuals"]) >= {"mean", "var", "sd", "skewness", "kurtosis", "quantiles", "fraction_abs_gt", "histogram"} and sum(v["residuals"]["histogram"]["counts"]) == v["population"]["elements"]
+    assert len(v["per_channel"]["r2"]) == 4 and len(v["per_step"]["error_growth_mae_over_step1"]) == 4 and v["per_step"]["error_growth_mae_over_step1"][0] == 1.0
+    acf = v["autocorrelation"]["channel_mean_residual_per_step"]
+    assert len(acf["acf"]) == 4 and len(acf["acf"][0]) == len(acf["lags"]) and all(-1.0001 <= x <= 1.0001 for row in acf["acf"] for x in row if x == x)
+    assert "1" in v["autocorrelation"]["per_channel_first_step"] and len(v["autocorrelation"]["per_channel_first_step"]["1"]) == 4
+    assert v["pred_sha256"] == json.loads((world["root"] / "attempts" / r["unit"] / "cell.json").read_text())["pred_sha256"]
