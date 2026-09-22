@@ -1060,7 +1060,7 @@
    "admission": "one cell at a time on dragon within the 8 GiB request (11 GiB available, 3 GiB reserve), 32 GiB temporary disk slot; the author's float32 reduction for T=336/720 is a named residual: it needs ~7/13 GB of temporaries beyond the memmaps"
   },
   "RP102": {
-   "status": "T336_T720_RUNNING_ON_GAMMA_RUN4_WORKERS0",
+   "status": "T336_S2022_S2023_T720_RUNNING_ON_GAMMA_RUN4_WORKERS0",
    "placement": "gamma rebooted by the owner (kernel memory leak cleared: 11 GiB available; the 5090's phantom 100 % utilization gone); governed preflight on the RTX 5090 (UUID a9f35631…): 55-64 s/epoch, <= 0.27 h per cell, VRAM 4.8 GiB, 49 C after preflight; execute --bounded --author-metric-budget-gib 4, -m 8G, one cell at a time, thermal guard between cells",
    "cells": [
     "L96_h192_s2022",
@@ -1074,12 +1074,15 @@
    ],
    "notes": [
     "dragon's attempt of L96_h192_s2022 was stopped at the owner's concern (GPU 83-86 C, driver slowdown) and retired as a versioned FAILED attempt",
-    "on gamma the horizon filter first started a duplicate of L96_h192_s2021 (already completed on omega; no receipt on gamma); interrupted at 2 min, closed FAILED, preserved; the loop continued with the pending cells"
+    "on gamma the horizon filter first started a duplicate of L96_h192_s2021 (already completed on omega; no receipt on gamma); interrupted at 2 min, closed FAILED, preserved; the loop continued with the pending cells",
+    "reporting crash (a1f2f41f fixed): child() built the terminal metrics from the author's float32 reduction, which is None on the float64 basis (T=336/720) -> TypeError after run_cell had written arrays, record and checkpoint; L96_h336_s2021's terminal was sent from its record by the new `report` subcommand (metric basis tagged on the terminal); the running child of L96_h336_s2022 started under the old code and is reported the same way after it finishes; later children load the fixed tool",
+    "844a8d4a: a worker's REPLAYS*.json travel through merge as REPLAYS_HISTORY.<worker>.* and the table cites them per unit as HISTORICAL_RECORD_ONLY (WORKER_A's bit-identical same-device GPU replays of T=96 are kept without new GPU work on dragon, whose cooler is unconfirmed)"
    ],
    "final_closure_plan": "consolidate on gamma (dragon's T=96 cells and omega's T=192 s2021 staged as verification copies); same-device replays on the 5090 for gamma-trained cells; T=96 same-device replays need ~3 x 22 s on dragon's GPU (owner to confirm cooling); T=192 s2021 same-device replay needs omega (hold)",
    "completed_on_gamma": {
     "L96_h192_s2022": "MSE 0.158627 / MAE 0.252429 (author float32), 15/15 epochs, best 15, 15.5 min, RSS 7.1 GiB, 5090 38->55 C",
-    "L96_h192_s2023": "MSE 0.153452 / MAE 0.248072, 15/15 epochs, best 12, 15.6 min, RSS 7.0 GiB, 38->55 C"
+    "L96_h192_s2023": "MSE 0.153452 / MAE 0.248072, 15/15 epochs, best 12, 15.6 min, RSS 7.0 GiB, 38->55 C",
+    "L96_h336_s2021": "MSE 0.162594 / MAE 0.260666 (independent float64 basis: the author's float32 reduction needs ~6.4 GB of temporaries, budget 4 GiB), 15/15 epochs, best 10, 15.6 min, RSS 5.3 GiB; reported COMPLETED by the report subcommand after the reporting crash (below)"
    },
    "oom_event": "L96_h336_s2021 on gamma: scope killed by systemd-oomd at 13:28 local at a 7.1 GB scope peak (host memory pressure from file-backed pages of the bounded evaluation; gamma has 14 GB with another workload); FAILED terminal, attempt retired; fix: predictions/targets streamed through file handles with posix_fadvise(DONTNEED), artifact/digests/float64 streamed from files (commit after 4662ca5); re-profiled before relaunch",
    "streaming_fix": "bounded evaluation now streams predictions/targets through file handles with posix_fadvise(DONTNEED) and streams the artifact, digests and float64 reduction from the files; a first version re-created the files per batch and was caught by the parity tests (predictions/targets misaligned) — fixed; tool suite 31 passed + 1 skipped on gamma; re-profiles on gamma under an 8 GiB request: T=336 cgroup peak 1.89 GB (file 146 MB), T=720 2.32 GB (file 148 MB), T=96 with dragon's checkpoint 4.15 GB with the author metric executed",
