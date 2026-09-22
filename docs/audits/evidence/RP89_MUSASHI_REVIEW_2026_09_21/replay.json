@@ -1,0 +1,104 @@
+{
+  "scope": "RP89: independently anchor six new cells and replay each in a fresh process.\n\nUses the already published RP81 read-only inference probe; no training or services.\nChecks accepted preparation data and record as well as forecast/weights/record bytes.\n",
+  "preparation_problems": [],
+  "cells": [
+    {
+      "arm": "modular_w60",
+      "cell_id": "modular_w60_s1",
+      "seed": 1,
+      "mae_z": 0.5465167033076379,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.19221242479471257,
+      "replay": {
+        "unit": "modular_w60_s1",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 0.0,
+        "mae_z_replayed": 0.5465167033076379,
+        "mae_z_stored": 0.5465167033076379
+      },
+      "problems": []
+    },
+    {
+      "arm": "daily_lag",
+      "cell_id": "daily_lag_s1",
+      "seed": 1,
+      "mae_z": 0.5380721688443476,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.2046940012525852,
+      "replay": {
+        "unit": "daily_lag_s1",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 0.0,
+        "mae_z_replayed": 0.5380721688443476,
+        "mae_z_stored": 0.5380721688443476
+      },
+      "problems": []
+    },
+    {
+      "arm": "modular_w60",
+      "cell_id": "modular_w60_s2",
+      "seed": 2,
+      "mae_z": 0.5408984934916419,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.20051650782967023,
+      "replay": {
+        "unit": "modular_w60_s2",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 2.1756087287272408e-07,
+        "mae_z_replayed": 0.5408984939679921,
+        "mae_z_stored": 0.5408984934916419
+      },
+      "problems": []
+    },
+    {
+      "arm": "daily_lag",
+      "cell_id": "daily_lag_s2",
+      "seed": 2,
+      "mae_z": 0.5340877275818645,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.21058326708195418,
+      "replay": {
+        "unit": "daily_lag_s2",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 2.1756087287272408e-07,
+        "mae_z_replayed": 0.5340877263401941,
+        "mae_z_stored": 0.5340877275818645
+      },
+      "problems": []
+    },
+    {
+      "arm": "modular_w60",
+      "cell_id": "modular_w60_s3",
+      "seed": 3,
+      "mae_z": 0.5375066305958432,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.20552990392066517,
+      "replay": {
+        "unit": "modular_w60_s3",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 1.1965848005779378e-06,
+        "mae_z_replayed": 0.537506630882118,
+        "mae_z_stored": 0.5375066305958432
+      },
+      "problems": []
+    },
+    {
+      "arm": "daily_lag",
+      "cell_id": "daily_lag_s3",
+      "seed": 3,
+      "mae_z": 0.5295217967991123,
+      "naive_mae_z": 0.6765599274892891,
+      "skill": 0.21733201260653234,
+      "replay": {
+        "unit": "daily_lag_s3",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 1.4141456732286173e-06,
+        "mae_z_replayed": 0.5295217969792887,
+        "mae_z_stored": 0.5295217967991123
+      },
+      "problems": []
+    }
+  ],
+  "all_passed": true,
+  "live_warehouse_queried": false
+}

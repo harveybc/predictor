@@ -73,7 +73,8 @@ class PlanChecks(unittest.TestCase):
         self.assertIn("unknown task MOD-E3", " ".join(validate(self.state, ROOT)))
 
     def test_cycle(self):
-        self.state["tasks"][0]["depends_on"] = ["MOD-E1"]
+        task = next(t for t in self.state["tasks"] if t["id"] == "MOD-E0-DEV")
+        task["depends_on"] = ["MOD-E1"]
         self.assertIn("dependency cycle", " ".join(validate(self.state, ROOT)))
 
     def test_done_without_evidence(self):

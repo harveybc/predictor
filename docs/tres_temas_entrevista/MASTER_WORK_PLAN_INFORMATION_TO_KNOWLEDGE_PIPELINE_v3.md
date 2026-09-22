@@ -1,5 +1,37 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+## Prioridad vigente: reproduccion del estado del arte (21-sep-2026)
+
+Decision explicita del owner: **SOTA-REPRO primero**. Quedan suspendidas las
+nuevas mediciones de los pilotos simplificados E0/E1, contexto electrico y
+FIN-LOSS-OPT hasta establecer la referencia publicada correspondiente. No
+repetir ni ampliar esos pilotos como sustituto de una reproduccion fiel.
+Orden activa: [RP90-RP97](../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md).
+Politica: [SOTA_FIRST](program_v3/SOTA_FIRST_2026_09_21.md).
+
+La prioridad inmediata es el benchmark Electricity/ECL de 321 clientes horarios
+que el owner acaba de citar, distinto de UCI235 (hogar individual por minuto).
+No se trasplantan scores, ventanas, escaladores ni conclusiones entre ambos.
+El modelo ganador de la revision bibliografica aun NO esta fijado; PatchTST y
+iTransformer son candidatos documentados, no ganadores actuales por decreto.
+
+Los resultados exploratorios previos se conservan como **HISTORICAL_DEV_ONLY**:
+fuera de la seleccion activa, recomendaciones de arquitectura/loss y decisiones
+de preentrenamiento o negocio. Esta disposicion no declara falsos sus valores
+ni modifica recibos historicos. La exclusion ejecutable de vistas/selectores
+es una tarea de RP90, no un despliegue ya realizado. No se borra historia para
+ocultar errores. Controles ingenuos siguen siendo instrumentos de comparacion,
+no candidatos sustitutivos del modelo de referencia.
+
+La reproduccion conserva datos, protocolo, arquitectura completa, entrenamiento
+y metricas oficiales. El presupuesto se adapta a la receta, no se reduce la
+receta para llamarla reproduccion. Despues de reproducir y auditar, se retoman
+las hipotesis doctorales y la revalidacion financiera/RL, con la referencia fuerte.
+La exactitud del protocolo es obligatoria; la igualdad numerica se comprueba,
+no se promete ni se consigue ajustando reiteradamente contra test.
+
+## Historial anterior (no autoriza nuevas campanas)
+
 Actualizado: 2026-09-21. Responsable del programa y revision: Musashi.
 Ejecucion delegada: Satoshi. Estado: E0-DEV, etapa ARCH y piloto E1 EJECUTADOS;
 piloto historico no gobernado y SUCESOR E1 EJECUTADO; sin confirmacion.

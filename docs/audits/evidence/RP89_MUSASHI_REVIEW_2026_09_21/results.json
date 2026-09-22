@@ -1,0 +1,69 @@
+{
+  "corrupt_checkpoint_cached_replay": {
+    "before_verified": true,
+    "after_verified": true,
+    "checkpoint_replaced_with": "not a checkpoint",
+    "replay": {
+      "adopted_from": "REPLAYS.json (same checkpoint bytes)",
+      "unit": "daily_lag_s1",
+      "allclose_1e_6": true,
+      "max_abs_prediction_difference": 0.0,
+      "mae_z_replayed": 0.5380721688443476,
+      "mae_z_stored": 0.5380721688443476,
+      "weights_file_sha256": "0c00a8c9c13eaf24cf99b22350fcd25fa267f95e8e121d05ffd43333e9c207dc"
+    },
+    "accepted_payloads_unchanged": true,
+    "problems": []
+  },
+  "unanchored_fold_metadata": {
+    "before_verified": true,
+    "after_verified": true,
+    "removed_arrays": [
+      "f0_A_mae_adam_s1",
+      "f0_A_huber_adam_s1"
+    ],
+    "before_verified_units": [
+      "f0_A_huber_adam_s1",
+      "f0_A_mae_adam_s1",
+      "f1_A_huber_adam_s1",
+      "f1_A_mae_adam_s1"
+    ],
+    "after_verified_units": [
+      "f1_A_huber_adam_s1",
+      "f1_A_mae_adam_s1"
+    ],
+    "problems": [],
+    "accepted_preparation_record_unchanged": true
+  },
+  "producer_clock_and_columns": {
+    "source_sha256": "097622b18ae263f36b316b88a7ad108aae09b5b0c2dbe10b3b11d2e54a6cbf94",
+    "source_label": "2024-01-02 00:00:00 EST fixed (UTC-05:00)",
+    "parsed_label": "2024-01-02 00:00:00+00:00",
+    "expected_utc_under_source_spec": "2024-01-02 05:00:00+00:00",
+    "columns_after_producer": [
+      "datetime",
+      "open",
+      "high",
+      "low",
+      "close"
+    ],
+    "pilot_required_columns": [
+      "open",
+      "high",
+      "low",
+      "close",
+      "volume"
+    ],
+    "source_spec": "https://www.histdata.com/f-a-q/data-files-detailed-specification/",
+    "scope": "Synthetic zip; current producer behavior, not proof of historical file lineage"
+  },
+  "cost_refusal_reported_completed": {
+    "actual_cost_parser_result": "REFUSED_AT_SCHEMA",
+    "parser_reason": "REFUSED: 'datetime' carries a UTC offset and the design declares no interpretation (timestamp_interpretation='UTC_OFFSET_AWARE' converts to UTC); an offset is not discarded",
+    "main_exit_code": 0,
+    "reported_terminal_status": "COMPLETED",
+    "reported_terminal_reason": null,
+    "outbox_pending": 1,
+    "fits_executed": 0
+  }
+}

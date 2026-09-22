@@ -1,5 +1,19 @@
 {
  "schema": "research_program_method_state.v1",
+ "sota_first_override": {
+  "decision_date": "2026-09-21",
+  "authority": "explicit owner instruction; supersedes historical next actions below",
+  "status": "SOURCE_AND_PROTOCOL_REVIEW_IN_PROGRESS_NO_NEW_TRAINING",
+  "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
+  "selected_model": null,
+  "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
+  "runtime_exclusion_implemented": false,
+  "policy": "SOTA_FIRST_2026_09_21.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md",
+  "suspended_measurements": ["simplified E0/E1 extensions", "household context pilots", "FIN-LOSS-OPT fits"],
+  "preserved_future_requirements": ["doctoral modular hypotheses", "financial Huber/MAE x Adam/AdamW", "weekly forecasting and RL", "core pretraining"],
+  "completion_requires": "published protocol reproduced and independently verified; not merely a literature dossier"
+ },
  "rp81_external_review": {
   "reviewed_commit": "bd6fcf4",
   "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
@@ -18,14 +32,14 @@
   "owner_action_required": false
  },
  "updated_on": "2026-09-21",
- "current_stage": "acceptance_test_design",
+ "current_stage": "discovery",
  "completed_stages": [
   "discovery",
   "requirements"
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "RP82_RP89_EXECUTED_CONTEXT_DAILY_LAG_CLOSED_FIN_COST_PILOT_EXTERNALLY_REFUSED_AWAITING_MUSASHI_REVIEW",
+ "handoff_status": "SOTA_FIRST_RP90_RP97_ACTIVE_PRIOR_MEASUREMENTS_SUSPENDED",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -38,7 +52,7 @@
   "selected_winner": null,
   "adoption": "MEASUREMENTS_PRESERVED_E0_DONOR_EQUIVALENCE_REQUIRES_COMPLETION"
  },
- "first_experiment": "MOD-E0-DEV",
+ "first_experiment": "SOTA-REPRO",
  "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
  "literature_comparability": {
   "scope": "ALL_DOMAINS_INCLUDING_FINANCE",
@@ -64,16 +78,16 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "Musashi review of the RP82-RP89 return",
-  "operator: declare the resource contract (event/available time columns, timezone, frequency, availability block if known) for market_data/forex/g10/eurusd/1h.parquet; then re-run the sealed cost pilot under a fresh run-id",
-  "financial scientific allocation returns for review after the pilot's numbers",
-  "Q2 long-context questions unchanged (budget-limited)",
-  "fresh-process replay of the 18 RP72 cells only if their scope must be raised"
+  "RP90: enforce historical DEV exclusion without deleting evidence",
+  "RP91: establish best supported published ECL protocol and exact author recipe from primary sources",
+  "RP92-RP94: freeze artifacts and acceptance, repair reused custody, verify official implementation and compute requirements",
+  "RP95-RP97: execute faithful governed reproduction when preflight passes, independently verify and report numerical agreement",
+  "No adapted pilot, financial fit or private holdout access while SOTA reproduction is the active prerequisite"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_RP82_RP89_2026_09_21.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
   "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
   "external_review": "../../audits/work_plan/MUSASHI_RP74_RP81_REVIEW_2026_09_21.md",
@@ -146,6 +160,15 @@
   "WEEKLY-RL"
  ],
  "tasks": [
+  {
+   "id": "SOTA-REPRO",
+   "owner": "Satoshi",
+   "status": "NOT_STARTED",
+   "depends_on": ["BENCHMARK-CONTRACTS"],
+   "evidence": [],
+   "next_action": "RP90-RP97: rank protocol-matched primary references, freeze author recipe and acceptance, then execute and verify faithful reproduction",
+   "deliverable": "Full official benchmark reproduction with published metrics, matched naive, numerical agreement and provenance; not an adapted proxy"
+  },
   {
    "id": "MOD-E0-DEV",
    "owner": "Satoshi",

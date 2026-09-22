@@ -1,5 +1,12 @@
 # Contrato de metricas del programa: version 1
 
+**Prioridad 21-sep-2026:** [SOTA_FIRST](program_v3/SOTA_FIRST_2026_09_21.md)
+exige REPRODUCTION antes de nuevas comparaciones adaptadas. La tabla principal
+de ese carril usa la formula, transformacion, agregacion y poblacion publicadas,
+con valor del articulo, replica, diferencia y naive sobre las mismas filas.
+No sustituir la metrica oficial por nuestro MAE_z ni mezclar UCI235 con ECL321.
+Las tablas DEV previas son HISTORICAL_DEV_ONLY, no la referencia de seleccion.
+
 Fecha: 2026-09-18. Corrige la interpretacion de I-INFO de 9-sep; no cambia valores
 historicos ni afirma haber implementado todos estos medidores. Satoshi inventaria
 productores existentes y completa los que exige el piloto antes de usar sus salidas.
