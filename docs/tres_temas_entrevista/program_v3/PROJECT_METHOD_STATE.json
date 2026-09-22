@@ -1,5 +1,16 @@
 {
  "schema": "research_program_method_state.v1",
+ "storage_capacity_assessment": {
+  "date": "2026-09-22",
+  "policy": "STORAGE_BUDGET_2026_09_22.md",
+  "evidence": "../../audits/evidence/STORAGE_CAPACITY_2026_09_22/ASSESSMENT.json",
+  "resources": "existing mounted home filesystems only; no tmpfs, cloud, NAS or assumed deletions",
+  "operating_reserve_GiB_per_filesystem": 50,
+  "sota_primary_12_cells": "DISK_FITS_PLANNING_ENVELOPE: WORKER_A 4 GiB retained + 32 GiB temporary, COORDINATOR 1.5 GiB metrics backup; preflight still required",
+  "full_program_lifetime_requirement": "NOT_IDENTIFIABLE: remaining campaign populations and artifact sizes not fixed",
+  "reservation_enforcement": "REQUIRED_NOT_VERIFIED_IMPLEMENTED",
+  "scientific_artifacts_deleted": 0
+ },
  "thermal_and_retention_override": {
   "date": "2026-09-22",
   "scope": "owner travel period until explicit cooling-restored notice",

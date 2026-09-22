@@ -1,0 +1,207 @@
+{
+  "schema": "storage_capacity_assessment.v1",
+  "basis": "metadata and sealed design; no content verification, no files deleted",
+  "hosts": {
+    "COORDINATOR": {
+      "available_bytes": 157951037440,
+      "available_GiB": 147.10336685180664,
+      "conditional_prediction_reclaim_bytes": 2891935744,
+      "conditional_available_after_reclaim_GiB": 149.79669189453125,
+      "operating_reserve_GiB": 50,
+      "new_work_budget_before_any_deletion_GiB": 97.10336685180664
+    },
+    "WORKER_A": {
+      "available_bytes": 722746793984,
+      "available_GiB": 673.1104049682617,
+      "conditional_prediction_reclaim_bytes": 4035735552,
+      "conditional_available_after_reclaim_GiB": 676.8689765930176,
+      "operating_reserve_GiB": 50,
+      "new_work_budget_before_any_deletion_GiB": 623.1104049682617
+    },
+    "WORKER_B": {
+      "available_bytes": 230200107008,
+      "available_GiB": 214.39055633544922,
+      "conditional_prediction_reclaim_bytes": 0,
+      "conditional_available_after_reclaim_GiB": 214.39055633544922,
+      "operating_reserve_GiB": 50,
+      "new_work_budget_before_any_deletion_GiB": 164.39055633544922
+    }
+  },
+  "design": {
+    "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+    "cells": [
+      {
+        "horizon": 96,
+        "seed": 2021
+      },
+      {
+        "horizon": 96,
+        "seed": 2022
+      },
+      {
+        "horizon": 96,
+        "seed": 2023
+      },
+      {
+        "horizon": 192,
+        "seed": 2021
+      },
+      {
+        "horizon": 192,
+        "seed": 2022
+      },
+      {
+        "horizon": 192,
+        "seed": 2023
+      },
+      {
+        "horizon": 336,
+        "seed": 2021
+      },
+      {
+        "horizon": 336,
+        "seed": 2022
+      },
+      {
+        "horizon": 336,
+        "seed": 2023
+      },
+      {
+        "horizon": 720,
+        "seed": 2021
+      },
+      {
+        "horizon": 720,
+        "seed": 2022
+      },
+      {
+        "horizon": 720,
+        "seed": 2023
+      }
+    ],
+    "partitions": {
+      "rule": "Dataset_Custom: num_train = int(0.7 n), num_test = int(0.2 n), num_vali = n - train - test; borders [0, train), [train - L, train + vali), [n - test - L, n); windows = rows - L - T + 1 per split",
+      "rows": {
+        "train": 18412,
+        "vali": 2632,
+        "test": 5260
+      },
+      "windows_per_split": {
+        "96": {
+          "train": 18221,
+          "vali": 2537,
+          "test": 5165
+        },
+        "192": {
+          "train": 18125,
+          "vali": 2441,
+          "test": 5069
+        },
+        "336": {
+          "train": 17981,
+          "vali": 2297,
+          "test": 4925
+        },
+        "720": {
+          "train": 17597,
+          "vali": 1913,
+          "test": 4541
+        }
+      },
+      "paper_table5_convention_rows_minus_L_plus_1": {
+        "train": 18317,
+        "vali": 2633,
+        "test": 5261
+      }
+    },
+    "dataset": {
+      "sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+      "bytes": 95581762,
+      "rows": 26304,
+      "channels": 321
+    }
+  },
+  "raw_prediction_projection": {
+    "cells": [
+      {
+        "horizon": 96,
+        "seed": 2021,
+        "bytes": 636658560
+      },
+      {
+        "horizon": 96,
+        "seed": 2022,
+        "bytes": 636658560
+      },
+      {
+        "horizon": 96,
+        "seed": 2023,
+        "bytes": 636658560
+      },
+      {
+        "horizon": 192,
+        "seed": 2021,
+        "bytes": 1249650432
+      },
+      {
+        "horizon": 192,
+        "seed": 2022,
+        "bytes": 1249650432
+      },
+      {
+        "horizon": 192,
+        "seed": 2023,
+        "bytes": 1249650432
+      },
+      {
+        "horizon": 336,
+        "seed": 2021,
+        "bytes": 2124763200
+      },
+      {
+        "horizon": 336,
+        "seed": 2022,
+        "bytes": 2124763200
+      },
+      {
+        "horizon": 336,
+        "seed": 2023,
+        "bytes": 2124763200
+      },
+      {
+        "horizon": 720,
+        "seed": 2021,
+        "bytes": 4198063680
+      },
+      {
+        "horizon": 720,
+        "seed": 2022,
+        "bytes": 4198063680
+      },
+      {
+        "horizon": 720,
+        "seed": 2023,
+        "bytes": 4198063680
+      }
+    ],
+    "total_bytes": 24627407616,
+    "total_GiB": 22.936060667037964,
+    "max_single_cell_GiB": 3.9097514748573303
+  },
+  "sota_retention_envelope": {
+    "cells": 12,
+    "checkpoint_MiB_per_cell": 64,
+    "metrics_logs_receipts_MiB_per_cell": 128,
+    "shared_inputs_sources_indexes_GiB": 1,
+    "total_GiB": 3.25,
+    "rounded_budget_GiB": 4,
+    "basis": "planning ceilings, not observed sizes or permission to truncate model/metrics"
+  },
+  "full_program": {
+    "status": "NOT_FULLY_ENUMERATED_CANNOT_CERTIFY_TOTAL",
+    "known_financial_blueprint_cells": 8112,
+    "blueprint_status": "deferred and receiver choices subject to SOTA-first; not current execution approval",
+    "missing": "final candidates/replicates/datasets/folds/checkpoint sizes for six scientific objects; new metrics catalog not frozen"
+  },
+  "safety": "Only df available on existing home/root volumes counted. tmpfs and speculative deletion not budgeted."
+}

@@ -1,0 +1,258 @@
+{
+  "COORDINATOR": {
+    "at_utc": "2026-09-22T07:00:01.563237+00:00",
+    "home_fs": {
+      "capacity_bytes": 762623827968,
+      "available_bytes": 157951037440
+    },
+    "scope": "SOTA run artifacts only; metadata scan; no prediction values or content hashes read",
+    "roots": [
+      {
+        "root": "sota_timefilter_ecl_v1",
+        "groups": {
+          "shared_preparation": {
+            "files": 2,
+            "logical_bytes": 24427,
+            "allocated_unique_bytes": 28672
+          },
+          "other_artifacts": {
+            "files": 22,
+            "logical_bytes": 132432,
+            "allocated_unique_bytes": 176128
+          },
+          "checkpoints_including_working_duplicates": {
+            "files": 3,
+            "logical_bytes": 85121247,
+            "allocated_unique_bytes": 85131264
+          },
+          "prediction_arrays_candidates_not_yet_deletable": {
+            "files": 1,
+            "logical_bytes": 1143794042,
+            "allocated_unique_bytes": 1143799808
+          }
+        },
+        "records": [
+          {
+            "cell_id": "L96_h192_s2021",
+            "shape": [
+              5069,
+              192,
+              321
+            ],
+            "dtype": "float32",
+            "parameters": 1969636,
+            "checkpoint_bytes": 28373749
+          }
+        ],
+        "hardlinked_file_entries": 0
+      },
+      {
+        "root": "sota_timefilter_ecl_v1_from_worker_a",
+        "groups": {
+          "other_artifacts": {
+            "files": 20,
+            "logical_bytes": 161722,
+            "allocated_unique_bytes": 188416
+          },
+          "prediction_arrays_candidates_not_yet_deletable": {
+            "files": 3,
+            "logical_bytes": 1748117235,
+            "allocated_unique_bytes": 1748135936
+          },
+          "checkpoints_including_working_duplicates": {
+            "files": 3,
+            "logical_bytes": 83350623,
+            "allocated_unique_bytes": 83361792
+          }
+        },
+        "records": [
+          {
+            "cell_id": "L96_h96_s2022",
+            "shape": [
+              5165,
+              96,
+              321
+            ],
+            "dtype": "float32",
+            "parameters": 1822084,
+            "checkpoint_bytes": 27783541
+          },
+          {
+            "cell_id": "L96_h96_s2023",
+            "shape": [
+              5165,
+              96,
+              321
+            ],
+            "dtype": "float32",
+            "parameters": 1822084,
+            "checkpoint_bytes": 27783541
+          },
+          {
+            "cell_id": "L96_h96_s2021",
+            "shape": [
+              5165,
+              96,
+              321
+            ],
+            "dtype": "float32",
+            "parameters": 1822084,
+            "checkpoint_bytes": 27783541
+          }
+        ],
+        "hardlinked_file_entries": 0
+      }
+    ],
+    "errors": []
+  },
+  "WORKER_A": {
+    "at_utc": "2026-09-22T06:57:49.987003+00:00",
+    "home_fs": {
+      "capacity_bytes": 1005867986944,
+      "available_bytes": 722746793984
+    },
+    "scope": "SOTA run artifacts only; metadata scan; no prediction values or content hashes read",
+    "roots": [
+      {
+        "root": "sota_timefilter_ecl_v1",
+        "groups": {
+          "other_artifacts": {
+            "files": 46,
+            "logical_bytes": 315410,
+            "allocated_unique_bytes": 405504
+          },
+          "shared_preparation": {
+            "files": 2,
+            "logical_bytes": 24427,
+            "allocated_unique_bytes": 28672
+          },
+          "prediction_arrays_candidates_not_yet_deletable": {
+            "files": 4,
+            "logical_bytes": 2891911277,
+            "allocated_unique_bytes": 2891935744
+          },
+          "metrics_vault": {
+            "files": 4,
+            "logical_bytes": 2448239,
+            "allocated_unique_bytes": 2457600
+          },
+          "checkpoints_including_working_duplicates": {
+            "files": 10,
+            "logical_bytes": 278425618,
+            "allocated_unique_bytes": 278462464
+          }
+        },
+        "records": [
+          {
+            "cell_id": "L96_h96_s2023",
+            "shape": [
+              5165,
+              96,
+              321
+            ],
+            "dtype": "float32",
+            "parameters": 1822084,
+            "checkpoint_bytes": 27783541
+          },
+          {
+            "cell_id": "L96_h96_s2022",
+            "shape": [
+              5165,
+              96,
+              321
+            ],
+            "dtype": "float32",
+            "parameters": 1822084,
+            "checkpoint_bytes": 27783541
+          },
+          {
+            "cell_id": "L96_h192_s2021",
+            "shape": [
+              5069,
+              192,
+              321
+            ],
+            "dtype": "float32",
+            "parameters": 1969636,
+            "checkpoint_bytes": 28373749
+          },
+          {
+            "cell_id": "L96_h96_s2021",
+            "shape": [
+              5165,
+              96,
+              321
+            ],
+            "dtype": "float32",
+            "parameters": 1822084,
+            "checkpoint_bytes": 27783541
+          }
+        ],
+        "hardlinked_file_entries": 0
+      },
+      {
+        "root": "sota_timefilter_ecl_v1_from_coordinator",
+        "groups": {
+          "other_artifacts": {
+            "files": 9,
+            "logical_bytes": 101176,
+            "allocated_unique_bytes": 114688
+          },
+          "shared_preparation": {
+            "files": 2,
+            "logical_bytes": 24427,
+            "allocated_unique_bytes": 28672
+          },
+          "prediction_arrays_candidates_not_yet_deletable": {
+            "files": 1,
+            "logical_bytes": 1143794042,
+            "allocated_unique_bytes": 1143799808
+          },
+          "checkpoints_including_working_duplicates": {
+            "files": 1,
+            "logical_bytes": 28373749,
+            "allocated_unique_bytes": 28377088
+          }
+        },
+        "records": [
+          {
+            "cell_id": "L96_h192_s2021",
+            "shape": [
+              5069,
+              192,
+              321
+            ],
+            "dtype": "float32",
+            "parameters": 1969636,
+            "checkpoint_bytes": 28373749
+          }
+        ],
+        "hardlinked_file_entries": 0
+      }
+    ],
+    "errors": []
+  },
+  "WORKER_B": {
+    "at_utc": "2026-09-22T07:00:02.000468+00:00",
+    "home_fs": {
+      "capacity_bytes": 411702673408,
+      "available_bytes": 230200107008
+    },
+    "scope": "SOTA run artifacts only; metadata scan; no prediction values or content hashes read",
+    "roots": [
+      {
+        "root": "sota_timefilter_ecl_v1",
+        "groups": {
+          "other_artifacts": {
+            "files": 3,
+            "logical_bytes": 64832,
+            "allocated_unique_bytes": 69632
+          }
+        },
+        "records": [],
+        "hardlinked_file_entries": 0
+      }
+    ],
+    "errors": []
+  }
+}

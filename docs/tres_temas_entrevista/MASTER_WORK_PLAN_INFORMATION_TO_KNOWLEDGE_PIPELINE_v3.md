@@ -1,5 +1,12 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+**Capacidad de disco, 22-sep:** [presupuesto medido sin hardware nuevo](program_v3/STORAGE_BUDGET_2026_09_22.md).
+La campana SOTA primaria de 12 celdas cabe en disco con retencion de metricas y
+checkpoints y borrado posterior de predicciones. El total de todas las propuestas
+NO tiene aun una poblacion finita cerrada; no se declara que todo cabe. Cada
+asignacion usa el espacio real por filesystem, reserva operativa y crecimiento
+acumulado; no cuenta RAM/tmpfs, un NAS futuro ni borrados todavia no realizados.
+
 ## Restriccion operativa vigente (22-sep-2026)
 
 El coordinador esta de viaje sin refrigeracion externa: **sin nuevo trabajo
