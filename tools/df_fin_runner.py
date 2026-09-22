@@ -518,7 +518,12 @@ def select(root: Path, design: dict, *, verification: dict | None = None) -> dic
             rejected.append({"unit": c["cell_id"], "why": why}); continue
         seen.add(key)
         consumed[key] = r
-    folds_rec = {f["fold"]: f.get("status", "SCORABLE") for f in json.loads((root/"FIN_DATA.json").read_text())["folds"]} if (root/"FIN_DATA.json").is_file() else {}
+    # RP90 (Musashi RP89 #2): under a verification the fold population comes from its rows (the ACCEPTED preparation record);
+    # the local FIN_DATA.json is consulted only when no verification was given (development use, declared as such)
+    if verification is not None:
+        folds_rec = {int(r["fold"]): ("FOLD_NOT_SCORABLE" if r.get("status") == "FOLD_NOT_SCORABLE" else "SCORABLE") for r in verification.get("rows") or []}
+    else:
+        folds_rec = {f["fold"]: f.get("status", "SCORABLE") for f in json.loads((root/"FIN_DATA.json").read_text())["folds"]} if (root/"FIN_DATA.json").is_file() else {}
     n_folds = int(design["folds"]["dev_weeks"])
     strata = [(l, o) for l in ("mae", "huber") for o in ("adam", "adamw")]
 
@@ -609,8 +614,13 @@ def close(a) -> dict:
         problems.append("closure without a warehouse read: no accepted custody, nothing is verified")
     scorable = [r for r in ver["rows"] if r.get("status") != "FOLD_NOT_SCORABLE"]
     verified_all = not problems and scorable and all(r["verified"] for r in scorable)
-    report = {"schema": "df_fin_runner_report.v2", "design_sha256": design["design_sha256"],
-              "verification": {k: ver[k] for k in ("design_identity", "preparation_custody", "verified_units", "unverified_units")},
+    B = _module("df_benchmark_contract")
+    disposition = B.disposition(design)
+    report = {"schema": "df_fin_runner_report.v3", "design_sha256": design["design_sha256"],
+              # RP90: the financial task is a deferred mandatory stage (or, for a synthetic/household design, historical);
+              # a selection below is the declared factorial's bookkeeping, never an active recommendation
+              "disposition": disposition, "active_selection": None,
+              "verification": {k: ver[k] for k in ("design_identity", "preparation_custody", "verified_units", "unverified_units", "required_folds_from")},
               "rows": [{"unit": r["unit"], "fold": r["fold"], "candidate_id": r.get("candidate_id"), "seed": r.get("seed"),
                         "validation_mae_z": (r.get("scores") or {}).get("validation", {}).get("mae_z"), "test_mae_z": (r.get("scores") or {}).get("test", {}).get("mae_z"),
                         "verified": r["verified"], "custody": r.get("custody")} for r in ver["rows"]],
@@ -828,6 +838,15 @@ def main(argv=None) -> int:
         except BaseException as exc:
             G.report_failed(a.root, "prepare", f"cost pilot refused: {str(exc)[:200]}", gov_url=a.gov_url, api_key_file=a.api_key_file)
             raise
+        # RP90 (Musashi RP89 #3): a typed refusal returned as a document (REFUSED_AT_SCHEMA, NOTHING_MEASURED) is NOT a completed
+        # diagnostic: the unit closes FAILED with the reason, under its own campaign identity, and the command exits non-zero
+        if doc.get("status") != "MEASURED":
+            reported = G.report_failed(a.root, "prepare", f"cost pilot {doc.get('status')}: {str(doc.get('reason') or doc.get('reading'))[:160]}",
+                                       gov_url=a.gov_url, api_key_file=a.api_key_file, outbox_dir=str(a.root/"outbox"))
+            print(json.dumps({"status": doc.get("status"), "closed_as": "FAILED", "reason": doc.get("reason"), "sent": reported["flushed"]["sent"],
+                              "pending": reported["flushed"]["pending"], "failures": reported["flushed"]["failures"]}))
+            raise FinRefusal(f"REFUSED: the cost pilot did not measure ({doc.get('status')}): {str(doc.get('reason'))[:200]}; "
+                             f"the unit was closed FAILED (sent {reported['flushed']['sent']}, pending {reported['flushed']['pending']})")
         ru = resource.getrusage(resource.RUSAGE_SELF)
         terminal = U._terminal(status="COMPLETED", reason=None, cost={"wall_seconds": time.process_time()-t0, "cpu_seconds": ru.ru_utime+ru.ru_stime},
                                metrics=[U._metric("fin.cost_pilot.configs_measured", sum(1 for c in doc.get("configs", []) if c.get("status") == "MEASURED"), "configs", split="train_only", horizon=0)],
@@ -837,7 +856,10 @@ def main(argv=None) -> int:
         terminal["artifacts"] = [{"role": "record", "sha256": sha_file(a.root/"COST_PILOT.json"), "bytes": (a.root/"COST_PILOT.json").stat().st_size}]
         (a.root/"TERMINALS").mkdir(exist_ok=True); (a.root/"TERMINALS"/"prepare.json").write_text(json.dumps(terminal, indent=1, default=str))
         reported = G.report_terminal(a.root, "prepare", terminal, gov_url=a.gov_url, api_key_file=a.api_key_file, outbox_dir=str(a.root/"outbox"), started_at=started)
-        print(json.dumps({"status": doc.get("status"), "configs": len(doc.get("configs", [])), "cpu": doc.get("total_pilot_cpu_seconds"), "sent": reported["flushed"]["sent"]}))
+        print(json.dumps({"status": doc.get("status"), "configs": len(doc.get("configs", [])), "cpu": doc.get("total_pilot_cpu_seconds"), "sent": reported["flushed"]["sent"],
+                          "pending": reported["flushed"]["pending"], "failures": reported["flushed"]["failures"]}))
+        if reported["flushed"]["pending"] or reported["flushed"]["failures"]:
+            raise FinRefusal(f"REFUSED: the cost-pilot terminal was not accepted (pending {reported['flushed']['pending']}): {reported['flushed']['failures']}")
         return 0
     if a.command == "child":
         child(a.root, a.unit)

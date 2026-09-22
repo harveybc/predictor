@@ -474,7 +474,8 @@ def test_RP83_a_relabeled_design_or_accepted_tags_that_disagree_are_identity_pro
 
 def test_RP83_the_reference_resolver_binds_identity_and_population_through_the_same_authority(tmp_path):
     root, design, wh, Y, o = _block_root(tmp_path, seeds=(1, 2))
-    ours = B.replace(B.household_ours(), source={**B.household_ours().source, "evaluation_origins": N})
+    # RP90: the resolver's identity rules are exercised under an ACTIVE task id; the household task itself is HISTORICAL_DEV_ONLY
+    ours = B.replace(B.household_ours(), task_id=B.ACTIVE_BENCHMARK_TASK_IDS[0], source={**B.household_ours().source, "evaluation_origins": N})
     block = ours.to_design_block(comparability={**B.decide(ours, B.gasparin_2019()), "comparator_state": "NONE"})
     E = _load("df_mod_e0")
     d = json.loads((root/"DESIGN.json").read_text()); d["benchmark_contract"] = block; d.pop("design_sha256"); d["design_sha256"] = E.sha_obj(d)
@@ -484,6 +485,8 @@ def test_RP83_the_reference_resolver_binds_identity_and_population_through_the_s
         h = wh(campaign)
         for u in h["current"]:
             h["current"][u]["config_sha256"] = d["design_sha256"]
+        # the preparation was re-recorded under the resealed design: its accepted record artifact is the current one (RP90)
+        h["current"]["prepare"]["artifacts"] = [{"role": "data", "sha256": _sha(root/"BLOCK_DATA.npz")}, {"role": "record", "sha256": _sha(root/"BLOCK_DATA.json")}]
         return h
     assert B.reference_evidence(ours, root, reference_arm="gru", warehouse=wh2)["state"] == "VERIFIED_COMPARATOR"
     forged = json.loads(json.dumps(d))
@@ -502,3 +505,35 @@ def test_RP83_the_reference_resolver_binds_identity_and_population_through_the_s
             h["current"][u].pop("tags", None)
         return h
     assert B.reference_evidence(ours, root, reference_arm="gru", warehouse=no_tags)["state"] == "PLANNED_REFERENCE"                 # untagged payload
+
+
+# --- RP90: an old low-error result cannot enter the active ranking via a cached table, a rebuilt table or an inherited closure --
+
+def test_RP90_a_zero_error_household_row_is_preserved_verified_and_never_ranks_even_from_a_cached_table(tmp_path):
+    root, design, wh, Y, o = _block_root(tmp_path, seeds=(1,))
+    u = "gru_s1"
+    # the old result is made PERFECT (error 0) and its custody rebuilt so that it verifies end to end
+    np.savez(root/"attempts"/u/"arrays.npz", pred=Y[o+H], y=Y[o+H], naive=Y[o], origins=o, reload_pred=Y[o+H])
+    (root/"attempts"/u/"cell.json").write_text(json.dumps({"arrays_sha256": _sha(root/"attempts"/u/"arrays.npz"), "scores": {"mae_kw": 0.0}}))
+    arts = [{"role": "predictions", "sha256": _sha(root/"attempts"/u/"arrays.npz")}, {"role": "record", "sha256": _sha(root/"attempts"/u/"cell.json")}]
+    (root/"TERMINALS"/f"{u}.json").write_text(json.dumps({"status": "COMPLETED", "artifacts": arts}))         # a genuinely accepted perfect result
+    def wh0(campaign):
+        h = wh(campaign); h["current"][u]["artifacts"] = arts; return h
+    table = T.build([f"{root}:old"], registry=B.registry(), warehouse=wh0, no_new_measurement=True)
+    row = next(r for r in table["rows"] if r["unit"] == u)
+    assert row["verified"] and row["model_error"] == 0.0 and row["disposition"] == "HISTORICAL_DEV_ONLY" and row["task_id"] == B.household_ours().task_id
+    assert table["active_ranking"] == [] and table["dispositions"] == {"HISTORICAL_DEV_ONLY": len(table["rows"])} and table["problems"] == []
+    md = T.markdown(table)
+    assert "EMPTY" in md and "| HISTORICAL_DEV_ONLY |" in md                        # visibly separate, still listed
+    # a CACHED table (written before RP90, without disposition labels, or with a flipped label) cannot bring the row in
+    cached = json.loads(json.dumps(table))
+    for r in cached["rows"]:
+        r.pop("disposition", None); r.pop("task_id", None)
+    assert B.active_ranking(cached["rows"]) == []
+    for r in cached["rows"]:
+        r["disposition"] = "ACTIVE"; r["task_id"] = B.household_ours().task_id
+    assert B.active_ranking(cached["rows"]) == []
+    # an INHERITED closure: the block closure of this design reports the disposition and no active selection
+    K = _load("df_e1_block")
+    assert K._module("df_benchmark_contract").disposition(design)["disposition"] == "HISTORICAL_DEV_ONLY"
+

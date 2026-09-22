@@ -146,6 +146,10 @@ def preparation_custody(root: Path, design: dict, *, warehouse=None) -> dict:
                             "accepted_config_sha256": row.get("config_sha256")})
                 if row.get("config_sha256") not in (None, design.get("design_sha256")):
                     out.update({"class": "PREPARATION_OF_ANOTHER_CONFIGURATION", "why": "the accepted prepare terminal names another configuration"})
+                # RP90 (Musashi RP89 #2): the preparation RECORD (what the preparation says about itself: populations, folds,
+                # scaler) is custody only when the accepted terminal anchors it too; a rewritten local record is not
+                elif "record" in acc and acc.get("record") != sha_file(root/"BLOCK_DATA.json"):
+                    out.update({"class": "PREPARATION_RECORD_CHANGED", "why": "BLOCK_DATA.json on disk is not the accepted prepare terminal's record artifact"})
             elif row:
                 out.update({"class": "PREPARATION_NOT_ACCEPTED", "why": f"the accepted prepare terminal does not anchor these bytes (status {row.get('status')}, "
                                                                           f"data artifact {str(acc.get('data'))[:12]} vs {sha[:12]})"})
@@ -403,8 +407,10 @@ def _row(root, design, unit, role, arm, receipt, problems, data, meta, model_mae
     best = "gasparin_2019"
     decision = reg["decisions_against_household_W60_h60"][best]
     lit = reg["literature"][best]
+    disp = B.disposition(design if design.get("benchmark_contract") else ours["task_id"])
     row = {"run": root.name, "unit": unit, "role": role, "arm": arm or unit.rsplit("_s", 1)[0],
            "seed": unit.rsplit("_s", 1)[-1] if "_s" in unit else "-",
+           "task_id": disp["task_id"] or ours["task_id"], "disposition": disp["disposition"],
            "task_horizon_split": f"{ours['task_id']} | h={h} steps ({ours['horizon_seconds']} s) | {ours['split_rule']}",
            "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
            "model_error": model_mae, "model_error_z": (model_mae/sd) if (model_mae is not None and sd > 0) else None,
@@ -534,6 +540,7 @@ def verify_fin_run(root: Path, *, warehouse=None) -> dict:
     prep = {"class": "PREPARATION_LOCAL_ONLY", "why": "warehouse not read"}
     rec = json.loads((root/"FIN_DATA.json").read_text())
     sha = sha_file(root/"FIN_DATA.npz")
+    record_sha = sha_file(root/"FIN_DATA.json")
     if rec.get("data_sha256") != sha or rec.get("design_sha256") != design.get("design_sha256"):
         prep = {"class": "PREPARATION_CHANGED", "why": "FIN_DATA differs from its record or belongs to another design"}
     elif warehouse is not None and "prepare" in receipts:
@@ -541,11 +548,20 @@ def verify_fin_run(root: Path, *, warehouse=None) -> dict:
         acc = {a.get("role"): a.get("sha256") for a in row.get("artifacts") or []}
         if row.get("terminal_sha256") == receipts["prepare"].get("terminal_sha256") and row.get("status") == "COMPLETED" and acc.get("data") == sha \
                 and row.get("config_sha256") in (None, design.get("design_sha256")):
-            prep = {"class": "PREPARATION_ACCEPTED_ARTIFACT", "why": "the accepted prepare terminal carries the digest of FIN_DATA read"}
+            # RP90 (Musashi RP89 #2): the fold population that DEFINES the required units is read from the accepted record
+            # artifact, never from a mutable local FIN_DATA.json; a terminal without a record artifact anchors no folds
+            if acc.get("record") is None:
+                prep = {"class": "PREPARATION_RECORD_NOT_ANCHORED", "why": "the accepted prepare terminal carries no record artifact: the fold population is not anchored"}
+            elif acc.get("record") != record_sha:
+                prep = {"class": "PREPARATION_RECORD_CHANGED", "why": "FIN_DATA.json on disk is not the accepted prepare terminal's record artifact (fold population rewritten)"}
+            else:
+                prep = {"class": "PREPARATION_ACCEPTED_ARTIFACT", "why": "the accepted prepare terminal carries the digests of FIN_DATA and of its record read"}
         else:
             prep = {"class": "PREPARATION_NOT_ACCEPTED", "why": "the accepted prepare terminal does not anchor these bytes"}
     if prep["class"] not in ("PREPARATION_ACCEPTED_ARTIFACT", "PREPARATION_LOCAL_ONLY"):
         problems.append(f"preparation custody {prep['class']}: {prep['why']}")
+    # the required folds: those the ANCHORED record declares SCORABLE; without an anchored record every registered cell is required
+    folds_anchored = prep["class"] == "PREPARATION_ACCEPTED_ARTIFACT"
     with np.load(root/"FIN_DATA.npz", allow_pickle=False) as z:
         data = {k: z[k] for k in z.files}
     H = _module("df_e1_huber")
@@ -556,8 +572,11 @@ def verify_fin_run(root: Path, *, warehouse=None) -> dict:
         k = int(cell["fold"])
         fold = rec["folds"][k] if k < len(rec["folds"]) else {}
         if fold.get("status") != "SCORABLE":
-            rows.append({"unit": unit, "fold": k, "status": "FOLD_NOT_SCORABLE", "verified": False, "problems": []})
-            continue
+            if folds_anchored:
+                rows.append({"unit": unit, "fold": k, "status": "FOLD_NOT_SCORABLE", "verified": False, "problems": []})
+                continue
+            p_.append(f"{unit}: the local record marks fold {k} {fold.get('status')!r} but no accepted record anchors that population: "
+                      "a registered cell is REQUIRED until the accepted preparation says otherwise")
         if not (folder/"arrays.npz").is_file() or not (folder/"cell.json").is_file():
             p_.append(f"{unit}: a registered cell has no arrays or record — missing, not absent")
             rows.append({"unit": unit, "fold": k, "verified": False, "problems": p_}); continue
@@ -624,7 +643,12 @@ def verify_fin_run(root: Path, *, warehouse=None) -> dict:
         verified = not p_ and custody["class"] == "ACCEPTED_ARTIFACT_CHAIN" and prep["class"] == "PREPARATION_ACCEPTED_ARTIFACT" and not problems
         rows.append({"unit": unit, "fold": k, "candidate_id": cell["candidate_id"], "seed": cell["seed"], "scores": scores, "custody": custody,
                      "verified": verified, "problems": p_})
+    B = _module("df_benchmark_contract")
+    disp = B.disposition(design)
+    for r in rows:
+        r["task_id"] = disp["task_id"]; r["disposition"] = disp["disposition"]
     return {"design_sha256": design.get("design_sha256"), "design_identity": ident, "preparation_custody": prep, "rows": rows,
+            "disposition": disp, "required_folds_from": "accepted preparation record" if folds_anchored else "every registered cell (no anchored record)",
             "problems": problems + [q for r in rows for q in r["problems"]],
             "verified_units": sorted(r["unit"] for r in rows if r["verified"]), "unverified_units": sorted(r["unit"] for r in rows if not r["verified"])}
 
@@ -676,9 +700,18 @@ def markdown(table: dict) -> str:
     if table.get("no_new_measurement"):
         lines += ["**NO_NEW_MEASUREMENT** in this order set. Every row below is a PRIOR verified result, labelled with its run "
                   "and scope; an expected forecast that is missing is a PROBLEM, not an absence.", ""]
-    lines += ["| task / horizon / split | metric & scale | run · arm · seed | binding | model error | naive error (same rows, n) | "
+    B = _module("df_benchmark_contract")
+    ranking = table.get("active_ranking") or []
+    lines += ["## Active reference ranking (SOTA-first)", ""]
+    if ranking:
+        lines += ["| rank | task | run · unit | published-space error | verified |", "|---|---|---|---:|---|"]
+        lines += [f"| {i+1} | {r['task_id']} | {r['run']} · {r['unit']} | {r['ranking_error']:.6f} | yes |" for i, r in enumerate(ranking)]
+    else:
+        lines += ["**EMPTY**: no verified row of an ACTIVE task; every row below is HISTORICAL_DEV_ONLY or a deferred stage and cannot rank, select or recommend."]
+    lines += ["", "## All rows (historical rows visibly separate)", "",
+              "| disposition | task / horizon / split | metric & scale | run · arm · seed | binding | model error | naive error (same rows, n) | "
               "skill vs naive | literature value & source | comparability | verified |",
-              "|---|---|---|---|---:|---:|---:|---|---|---|"]
+              "|---|---|---|---|---|---:|---:|---:|---|---|---|"]
     for r in table.get("rows") or []:
         sk = r["skill_vs_naive"]
         skill_txt = "UNDEFINED" if sk.get("value") is None else f"{sk['value']:+.6f}"
@@ -690,7 +723,7 @@ def markdown(table: dict) -> str:
         ver = "yes" if r.get("verified") else "NO: " + "; ".join(r.get("problems") or [])[:120]
         cust = (r.get("custody") or {}).get("class", "UNCHECKED")
         ver = ver if r.get("verified") else (f"PRESERVED ({cust})" if r.get("preserved_with_qualified_scope") else f"NO ({cust}): " + "; ".join(r.get("problems") or [])[:120])
-        lines.append(f"| {r['task_horizon_split'][:60]}… | {r['metric_and_scale'][:36]}… | {r['run']} · {r['arm']} · s{r['seed']} | "
+        lines.append(f"| {B.disposition(r.get('task_id'))['disposition']} | {r['task_horizon_split'][:60]}… | {r['metric_and_scale'][:36]}… | {r['run']} · {r['arm']} · s{r['seed']} | "
                      f"{r['binding'].get('level')} / {cust} | {me} | {ne} | {skill_txt} | {lit_txt} | {r['comparability_status']} | {ver} |")
     lines += ["", "skill = 1 − error_model / error_naive on identical rows and horizon; positive means a smaller error, not accuracy "
               "or profit. kW and z never share a comparison. Binding: TERMINAL_ARTIFACT = arrays digest in the accepted terminal; "
@@ -719,6 +752,14 @@ def build(runs: list, *, registry: dict, warehouse=None, no_new_measurement: boo
                        "missing_forecast": "a registered forecast unit without arrays or without a warehouse terminal is a problem, "
                                            "whatever NO_NEW_MEASUREMENT says about the round"}}
     table["runs"] = runs_meta
+    # RP90: the ACTIVE ranking is recomputed from each row's task id (never from a stored label); every household row is
+    # HISTORICAL_DEV_ONLY and stays visible in `rows` with its scope, outside the ranking
+    B = _module("df_benchmark_contract")
+    table["active_ranking"] = B.active_ranking(rows)
+    table["dispositions"] = {d: sum(1 for r in rows if B.disposition(r.get("task_id"))["disposition"] == d)
+                             for d in sorted({B.disposition(r.get("task_id"))["disposition"] for r in rows})}
+    table["disposition_rule"] = ("SOTA_FIRST 2026-09-21: only rows of an ACTIVE task (the official ECL benchmark) enter active_ranking; "
+                                 "HISTORICAL_DEV_ONLY and DEFERRED rows are preserved, queryable and never rank, select or recommend")
     table["problems"] = validate(table)
     table["verified_rows"] = sum(1 for r in rows if r.get("verified"))
     table["preserved_qualified_rows"] = sum(1 for r in rows if r.get("preserved_with_qualified_scope"))

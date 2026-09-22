@@ -562,3 +562,46 @@ def test_RP87_the_exact_crop_control_is_training_equivalent_to_the_baseline_and_
     m.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.003), loss="mae")
     losses = [float(m.train_on_batch(*tr[i], return_dict=True)["loss"]) for i in range(6)]
     assert max(abs(x-y) for x, y in zip(losses, eq["losses_modular"])) > 1e-6
+
+
+def test_RP90_a_corrupt_checkpoint_fails_the_actual_closure_even_with_cached_replay_evidence(world, tmp_path, monkeypatch):
+    """Musashi's RP89 #1: with a REPLAYS.json entry for the unit, replacing the checkpoint bytes left the closure verified."""
+    d = _design("DEV_MATCHED", world["source"], recipe={"max_updates": 4, "validate_every_updates": 2, "patience_events": 3})
+    root = tmp_path/"root"
+    K.prepare(d, root, frame=world["frame"]); (root/"DESIGN.json").write_text(json.dumps(d))
+    data = K.load_data(root, d)
+    held = {"prepare": {"terminal_sha256": "p"*64, "status": "COMPLETED", "config_sha256": d["design_sha256"],
+                        "artifacts": [{"role": "data", "sha256": K.sha_file(root/"BLOCK_DATA.npz")}, {"role": "record", "sha256": K.sha_file(root/"BLOCK_DATA.json")}]}}
+    receipts = {"units": {"prepare": {"campaign_sha256": "c"*64, "terminal_sha256": "p"*64}}}
+    for cell in d["cells"]:
+        K.run_cell(d, data, cell, root/"attempts"/cell["cell_id"], pilot=False)
+        arts = [{"role": r, "sha256": K.sha_file(root/"attempts"/cell["cell_id"]/f), "bytes": 1} for r, f in (("predictions", "arrays.npz"), ("weights", "weights.weights.h5"), ("record", "cell.json"))]
+        held[cell["cell_id"]] = {"terminal_sha256": "t"*64, "status": "COMPLETED", "artifacts": arts, "config_sha256": d["design_sha256"], "tags": {"arm": cell["arm"], "seed": str(cell["seed"])}}
+        receipts["units"][cell["cell_id"]] = {"campaign_sha256": "c"*64, "terminal_sha256": "t"*64}
+    (root/"TERMINAL_RECEIPTS.json").write_text(json.dumps(receipts))
+    C = _load("df_mod_e0_close")
+    monkeypatch.setattr(C, "warehouse_terminals", lambda url, token, campaign: {"current": json.loads(json.dumps(held))})
+    token = tmp_path/"tok"; token.write_text("synthetic")
+    args = SimpleNamespace(root=root, warehouse_token_file=token, warehouse_url="synthetic://")
+    first = K.close(args)                                                              # real fresh-process replays, cached with their identity
+    unit = d["cells"][0]["cell_id"]
+    assert first["verified"] and first["replays"][unit]["allclose_1e_6"] and first["replays"][unit]["identity"]["weights_file_sha256"] == K.sha_file(root/"attempts"/unit/"weights.weights.h5")
+    assert first["disposition"]["disposition"] == "HISTORICAL_DEV_ONLY" and first["active_selection"] is None
+    second = K.close(args)                                                             # identical bytes: the cached replay is reused, hashed now
+    assert second["verified"] and "identical checkpoint" in second["replays"][unit]["adopted_from"]
+    # the probe: the checkpoint replaced, everything else (arrays, record, accepted payloads, REPLAYS.json) untouched
+    (root/"attempts"/unit/"weights.weights.h5").write_bytes(b"not a checkpoint")
+    with pytest.raises(K.BlockRefusal, match="closure failed"):
+        K.close(args)
+    rep = json.loads((root/"REPORT.json").read_text())
+    assert not rep["verified"] and rep["summary"] is None and any("CHANGED CHECKPOINT" in p for p in rep["problems"])
+    assert "adopted_from" not in rep["replays"][unit] and rep["replays"][unit]["allclose_1e_6"] is False      # replayed fresh, and it fails
+    # the same with the fresh-process replay skipped: the hash of the consumed bytes alone refuses
+    with pytest.raises(K.BlockRefusal, match="closure failed"):
+        K.close(SimpleNamespace(root=root, warehouse_token_file=token, warehouse_url="synthetic://", skip_replay=True))
+    assert any("CHANGED CHECKPOINT" in p for p in json.loads((root/"REPORT.json").read_text())["problems"])
+    # external replay evidence that names the unit does not rescue a corrupt checkpoint either
+    ev = tmp_path/"replay.json"; ev.write_text(json.dumps({"cells": [{"cell_id": unit, "replay": {"unit": unit, "allclose_1e_6": True, "mae_z_stored": first["rows"][0]["mae_z"]}, "problems": []}]}))
+    with pytest.raises(K.BlockRefusal, match="closure failed"):
+        K.close(SimpleNamespace(root=root, warehouse_token_file=token, warehouse_url="synthetic://", replay_evidence=ev, skip_replay=True))
+    assert "bound_by" not in json.loads((root/"REPORT.json").read_text())["replays"][unit]

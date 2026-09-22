@@ -187,12 +187,15 @@ def test_PROBE_a_contract_hash_plus_a_prepare_receipt_is_preparation_not_a_compa
     (ref/"DESIGN.json").write_text(json.dumps({"benchmark_contract": {"contract_sha256": ours.sha256()}}))
     (ref/"TERMINAL_RECEIPTS.json").write_text(json.dumps({"units": {"prepare": {"status": "COMPLETED"}}}))
     out = B.reference_evidence(ours, ref, reference_arm="gru")
-    assert out["state"] == "PLANNED_REFERENCE" and "design digest" in out["why"]
+    # RP90: the household task is HISTORICAL_DEV_ONLY; its lane verification is reported UNDER that disposition
+    assert out["state"] == "HISTORICAL_DEV_ONLY"
+    assert out["underlying"]["state"] == "PLANNED_REFERENCE" and "design digest" in out["underlying"]["why"]
 
 
 def test_the_matched_lane_needs_a_named_arm_a_complete_population_and_the_accepted_chain(tmp_path):
     ours, theirs = _twin()
-    ours = replace(ours, source={**ours.source, "evaluation_origins": 400})
+    # the lane rules are exercised under an ACTIVE task id (RP90): a household task would be HISTORICAL_DEV_ONLY
+    ours = replace(ours, task_id=B.ACTIVE_BENCHMARK_TASK_IDS[0], source={**ours.source, "evaluation_origins": 400})
     theirs = replace(theirs, horizon_steps=96, horizon_seconds=96*60)
     assert B.decide(ours, theirs, reference_run=tmp_path)["comparator_state"] == "PLANNED_REFERENCE"
     root, wh = _reference_root(tmp_path, ours, seeds=(1, 2))
@@ -299,3 +302,38 @@ def test_the_phase_runner_binds_before_it_acquires(tmp_path):
     with pytest.raises(B.ContractRefusal, match="without a benchmark contract"):
         P.run(stripped, root=tmp_path/"r", run_id="x", source_run=SOURCE, gov_url="http://127.0.0.1:1",
               api_key_file=tmp_path/"none", lake="public_panels", resource="r", cost_pilot_only=True)
+
+
+# --- RP90: HISTORICAL_DEV_ONLY in the real selection paths ------------------------------------------------------
+
+def test_RP90_the_disposition_is_recomputed_from_the_task_id_and_only_the_official_ecl_is_active():
+    assert B.disposition("household_W60_h60")["disposition"] == "HISTORICAL_DEV_ONLY"
+    assert B.disposition({"benchmark_contract": {"task_id": "household_W60_h60"}})["disposition"] == "HISTORICAL_DEV_ONLY"
+    assert B.disposition("fx_eurusd_1h")["disposition"] == "DEFERRED_MANDATORY_STAGE"
+    assert B.disposition(None)["disposition"] == "HISTORICAL_DEV_ONLY" and B.disposition({})["disposition"] == "HISTORICAL_DEV_ONLY"
+    assert B.disposition("ecl321_official_tsl")["disposition"] == "ACTIVE"
+    assert "HISTORICAL_DEV_ONLY" in B.COMPARATOR_STATES
+
+
+def test_RP90_an_old_low_error_household_reference_never_becomes_a_comparator_however_well_it_verifies(tmp_path):
+    """Musashi/owner rule: an old low-error result cannot enter the active reference ranking. The genuine household reference
+    (accepted chain, complete seeds, tags) verifies underneath — and is reported under HISTORICAL_DEV_ONLY, opening no lane."""
+    ours, theirs = _twin()
+    ours = replace(ours, source={**ours.source, "evaluation_origins": 400})
+    theirs = replace(theirs, horizon_steps=96, horizon_seconds=96*60)
+    root, wh = _reference_root(tmp_path, ours, seeds=(1, 2))
+    e = B.reference_evidence(ours, root, reference_arm="gru", warehouse=wh)
+    assert e["state"] == "HISTORICAL_DEV_ONLY" and e["disposition"]["task_id"] == B.household_ours().task_id
+    assert e["underlying"]["state"] == "VERIFIED_COMPARATOR"                       # history stays queryable, verified underneath
+    d = B.decide(ours, theirs, reference_run=root, reference_arm="gru", warehouse=wh)
+    assert d["mode"] == "NOT_COMPARABLE" and d["comparator_state"] == "HISTORICAL_DEV_ONLY" and "opens no lane" in d["why"]
+    # the same protocol (a reproduction lane) under a historical task: no comparator state either
+    d2 = B.decide(ours, ours, reference_run=root, reference_arm="gru", warehouse=wh)
+    assert d2["mode"] == "REPRODUCTION" and d2["comparator_state"] == "HISTORICAL_DEV_ONLY"
+    # the active ranking recomputes the disposition from the task id: a flipped label on a cached row does not enter
+    rows = [{"verified": True, "task_id": B.household_ours().task_id, "model_error": 0.0, "run": "old", "unit": "gru_s1", "disposition": "ACTIVE"},
+            {"verified": True, "task_horizon_split": B.household_ours().task_id + " | h=60", "model_error": 0.0, "run": "older", "unit": "gru_s2"},
+            {"verified": True, "task_id": "ecl321_official_tsl", "model_error": 0.9, "run": "ecl", "unit": "h96_s1"},
+            {"verified": False, "task_id": "ecl321_official_tsl", "model_error": 0.1, "run": "ecl", "unit": "h96_s2"}]
+    ranking = B.active_ranking(rows)
+    assert [r["unit"] for r in ranking] == ["h96_s1"]                                  # the 0.0-error household rows never rank; unverified never ranks

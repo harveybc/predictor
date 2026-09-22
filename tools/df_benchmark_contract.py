@@ -38,7 +38,57 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SCHEMA = "benchmark_contract.v2"
 MODES = ("REPRODUCTION", "MATCHED_DOMAIN_COMPARISON", "NOT_COMPARABLE")
-COMPARATOR_STATES = ("PLANNED_REFERENCE", "LOCALLY_CHECKED_REFERENCE", "VERIFIED_COMPARATOR", "NONE")
+COMPARATOR_STATES = ("PLANNED_REFERENCE", "LOCALLY_CHECKED_REFERENCE", "VERIFIED_COMPARATOR", "NONE", "HISTORICAL_DEV_ONLY",
+                     "DEFERRED_MANDATORY_STAGE")
+# --- RP90 (SOTA-first, owner decision 2026-09-21): dispositions of a task for ACTIVE selection ---------------------------
+#: the only task whose closed results may enter the active reference ranking: the official processed ECL benchmark
+ACTIVE_BENCHMARK_TASK_IDS = ("ecl321_official_tsl",)
+#: previous exploratory pilots: preserved, queryable, never selecting the future architecture/optimizer/loss/policy
+HISTORICAL_DEV_ONLY = "HISTORICAL_DEV_ONLY"
+#: mandatory later stages (financial loss/optimizer, weekly RL): preserved requirements, not active candidates now
+DEFERRED_MANDATORY_STAGE = "DEFERRED_MANDATORY_STAGE"
+ACTIVE = "ACTIVE"
+DEFERRED_TASK_IDS = ("fx.eurusd.1h.FIN-LOSS-OPT.h6h", "fx.eurusd.1h.FIN-LOSS-OPT.h72h", "e3.weekly_long_flat")
+DEFERRED_TASK_PREFIXES = ("fx.", "e3.")
+SOTA_FIRST_POLICY = "docs/tres_temas_entrevista/program_v3/SOTA_FIRST_2026_09_21.md"
+
+
+def disposition(task_id) -> dict:
+    """RP90: what a task's closed results may do NOW. Only the official ECL benchmark is ACTIVE; the household pilots
+    (every previous exploratory model result) are HISTORICAL_DEV_ONLY; the financial and RL tasks are deferred mandatory
+    stages. A design without a contract, or with an unknown task, is never active: an active status is earned by a
+    registered task, not by the absence of a label. The disposition is RECOMPUTED from the task id wherever a ranking is
+    produced (table, resolver, closure), so a cached table or an inherited report cannot carry an old result in."""
+    if isinstance(task_id, dict):                                   # a design or a contract block
+        block = task_id.get("benchmark_contract") if "benchmark_contract" in task_id else task_id
+        task_id = (block or {}).get("task_id") if isinstance(block, dict) else None
+    if task_id in ACTIVE_BENCHMARK_TASK_IDS:
+        return {"disposition": ACTIVE, "task_id": task_id, "policy": SOTA_FIRST_POLICY,
+                "why": "the official processed ECL benchmark is the active reproduction task"}
+    if task_id in DEFERRED_TASK_IDS or (isinstance(task_id, str) and task_id.startswith(DEFERRED_TASK_PREFIXES)):
+        return {"disposition": DEFERRED_MANDATORY_STAGE, "task_id": task_id, "policy": SOTA_FIRST_POLICY,
+                "why": "a preserved mandatory later stage; not an active candidate until the SOTA reproduction is accepted"}
+    return {"disposition": HISTORICAL_DEV_ONLY, "task_id": task_id, "policy": SOTA_FIRST_POLICY,
+            "why": ("previous exploratory pilot (household task / adapted models): preserved with its receipts and failures, "
+                    "excluded from active selection, ranking and recommendations" if task_id else
+                    "no registered task id: nothing without a contract is active")}
+
+
+def active_ranking(rows: list) -> list:
+    """RP90: the ACTIVE reference ranking from verified rows only — disposition recomputed from each row's task id (a
+    stored label is not trusted), ascending published-space error. Historical rows never enter, whatever their error."""
+    keep = []
+    for r in rows or []:
+        if not r.get("verified"):
+            continue
+        task = r.get("task_id") or ((r.get("task_horizon_split") or "").split(" | ")[0] if isinstance(r.get("task_horizon_split"), str) else None)
+        if disposition(task)["disposition"] != ACTIVE:
+            continue
+        err = r.get("published_metric_value", r.get("model_error"))
+        if not isinstance(err, (int, float)) or not math.isfinite(err):
+            continue
+        keep.append({**r, "task_id": task, "ranking_error": float(err)})
+    return sorted(keep, key=lambda r: r["ranking_error"])
 TRANSFORMS = ("none", "zscore_train", "log1p", "minmax_train", "swt_whole_series", "unknown")
 SCALES = ("native", "z_train", "log1p", "minmax", "percent", "unknown")
 # a difference in any of these, outside a declared contrast, makes two results non-comparable
@@ -159,6 +209,20 @@ def reference_evidence(ours: BenchmarkContract, reference_run: Path | None, *, r
         return {"state": "PLANNED_REFERENCE", "why": f"{root} holds no sealed design with accepted terminals"}
     design = json.loads(design_path.read_text())
     block = design.get("benchmark_contract") or {}
+    # RP90: a reference under a HISTORICAL_DEV_ONLY (or deferred) task never becomes an active comparator, however well it
+    # verifies; its verification is still computed and reported UNDER the disposition so history stays queryable
+    disp = disposition(block)
+    if disp["disposition"] != ACTIVE:
+        underlying = _reference_evidence_verified(ours, root, design, block, reference_arm=reference_arm, warehouse=warehouse, seeds=seeds)
+        return {"state": disp["disposition"], "why": f"{disp['why']} (task {disp['task_id']!r}); its own verification is reported "
+                                                    f"under this disposition and opens no lane", "disposition": disp,
+                "underlying": underlying, "run": str(root)}
+    return _reference_evidence_verified(ours, root, design, block, reference_arm=reference_arm, warehouse=warehouse, seeds=seeds)
+
+
+def _reference_evidence_verified(ours: BenchmarkContract, root: Path, design: dict, block: dict, *, reference_arm, warehouse, seeds) -> dict:
+    """The identity/population/custody binding of a reference run (RP74/RP83), independent of its RP90 disposition."""
+    receipts_path = root/"TERMINAL_RECEIPTS.json"
     if block.get("contract_sha256") != ours.sha256():
         return {"state": "PLANNED_REFERENCE", "why": f"the reference run's contract {str(block.get('contract_sha256'))[:12]} is not ours {ours.sha256()[:12]}"}
     if not isinstance(design.get("design_sha256"), str) or len(design["design_sha256"]) != 64:
@@ -242,6 +306,11 @@ def decide(ours: BenchmarkContract, theirs: BenchmarkContract, *, reference_run:
         mode, why = "MATCHED_DOMAIN_COMPARISON", ("the reference METHOD was re-executed under our contract and closed "
                                                   f"({evidence['run']}); its published numbers are not used")
         state = "VERIFIED_COMPARATOR"
+    elif evidence["state"] in (HISTORICAL_DEV_ONLY, DEFERRED_MANDATORY_STAGE):
+        mode = "NOT_COMPARABLE"
+        why = (f"identity fields differ: {differ}; the reference run is {evidence['state']} under the SOTA-first policy and "
+               "opens no lane whatever its verification")
+        state = evidence["state"]
     else:
         mode = "NOT_COMPARABLE"
         why = (f"identity fields differ: {differ}; " +
@@ -372,6 +441,35 @@ def household_ours() -> BenchmarkContract:
         checkpoint_selection="best validation MAE, patience 3 epochs, restored", replicas="3 paired seeds; development")
 
 
+def ecl321_official_tsl_ours(*, horizon_steps: int = 96, input_window_steps: int = 96) -> BenchmarkContract:
+    """RP92: the ACTIVE benchmark — the official processed ECL (Time-Series-Library electricity.csv, 26 304 hourly rows x 321
+    clients) under the author protocol of the selected reference (TimeFilter, ICML 2025, author code): chronological 7/1/2 split
+    by int(), StandardScaler fit on the train rows only and applied to every channel, all 321 channels as inputs and targets,
+    MSE/MAE over every (window, step, channel) element of the test set in the normalized space, no inversion."""
+    n = 26304
+    train, test = int(0.7*n), int(0.2*n)
+    return BenchmarkContract(
+        task_id="ecl321_official_tsl", dataset_id="public.thuml.time_series_library.electricity",
+        source={"kind": "OURS_REPRODUCTION", "file_sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+                "origin": "https://huggingface.co/datasets/thuml/Time-Series-Library (revision 2b66e59ee19dac8f6f19fb5d4997f289fdfea357)",
+                "rows": n, "channels": 321, "split_rows": {"train": train, "vali": n-train-test, "test": test},
+                "reference": "TimeFilter (Hu et al., ICML 2025, arXiv:2501.13041), author code github.com/TROUBADOUR000/TimeFilter"},
+        target="all 321 client series (features M: every channel is input and target; 'OT' is client 320 renamed by the distributor)",
+        target_construction="hourly consumption values as distributed (Autoformer/TimesNet processed ECL); nothing aggregated here",
+        resolution_seconds=3600, horizon_steps=int(horizon_steps), horizon_seconds=int(horizon_steps)*3600, input_window_steps=int(input_window_steps),
+        split_rule=f"chronological: train rows [0, {train}), vali rows [{train}-L, {train}+{n-train-test}), test rows [{n}-{test}-L, {n}); "
+                   "Dataset_Custom borders of the author loader",
+        missing_policy="none needed: the distributed file has no missing values (receipted)",
+        target_transform="zscore_train", scaler_fit_population="StandardScaler fit on the train rows [0, train) of every channel; applied to all rows",
+        metric_formula="MSE = mean (yhat - y)^2 and MAE = mean |yhat - y| over every test window x horizon step x channel, normalized space",
+        metric_scale="z_train", metric_aggregation="one mean over all elements of the test set per horizon; the paper also averages the four horizons",
+        naive_baseline="persistence of the last observed value of the window at every step and channel, same windows",
+        permitted_inputs="the L-step window of all 321 channels (plus the loader's calendar marks, unused by the model)",
+        reference_method="TimeFilter, Table 8 (L=96): 96 0.133/0.230, 192 0.154/0.248, 336 0.162/0.261, 720 0.184/0.284; avg 0.158/0.256 (MSE/MAE)",
+        tuning_budget="none: the author script's settings, frozen", checkpoint_selection="lowest validation MSE epoch, EarlyStopping patience 3, restored",
+        replicas="3 seeds (the paper reports three runs)")
+
+
 def gasparin_2019() -> BenchmarkContract:
     return BenchmarkContract(
         task_id="IHEPC.15min.day_ahead_96.MIMO", dataset_id="public.uci.235.individual_household_electric_power_consumption",
@@ -483,9 +581,12 @@ def registry() -> dict:
     decisions = {name: decide(ours, c) for name, c in sources.items()}
     return {"schema": "benchmark_contract_registry.v2", "contract_schema": SCHEMA,
             "ours": {"household_W60_h60": asdict(ours), "fx_eurusd_1h": asdict(fx_eurusd_1h_ours()),
-                     "rl_weekly": asdict(rl_weekly_ours())},
+                     "rl_weekly": asdict(rl_weekly_ours()), "ecl321_official_tsl": asdict(ecl321_official_tsl_ours())},
+            "dispositions": {k: disposition(v["task_id"])["disposition"] for k, v in
+                             {"household_W60_h60": asdict(ours), "fx_eurusd_1h": asdict(fx_eurusd_1h_ours()), "rl_weekly": asdict(rl_weekly_ours()),
+                              "ecl321_official_tsl": asdict(ecl321_official_tsl_ours())}.items()},
             "validity": {k: v.validate() for k, v in {"household_W60_h60": ours, "fx_eurusd_1h": fx_eurusd_1h_ours(),
-                                                       "rl_weekly": rl_weekly_ours(), **sources}.items()},
+                                                       "rl_weekly": rl_weekly_ours(), "ecl321_official_tsl": ecl321_official_tsl_ours(), **sources}.items()},
             "literature": {k: asdict(v) for k, v in sources.items()},
             "decisions_against_household_W60_h60": decisions,
             "reading": "every decision is NOT_COMPARABLE because identity fields differ; the MATCHED lane opens only with a "

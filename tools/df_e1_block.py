@@ -1149,6 +1149,28 @@ print(json.dumps({{"unit": unit, "allclose_1e_6": bool(np.allclose(pred, stored,
     return json.loads(proc.stdout.strip().splitlines()[-1])
 
 
+def replay_identity(root: Path, unit: str, design: dict, cell: dict) -> dict:
+    """RP90: the identity a cached replay must match, computed from the BYTES on disk now — the checkpoint that a replay
+    would load, the arrays it would compare with, the sealed design and the replay code itself — plus the cell."""
+    folder = Path(root)/"attempts"/unit
+    return {"unit": unit, "cell": {"arm": cell.get("arm"), "seed": cell.get("seed")}, "design_sha256": design.get("design_sha256"),
+            "weights_file_sha256": sha_file(folder/"weights.weights.h5") if (folder/"weights.weights.h5").is_file() else None,
+            "arrays_sha256": sha_file(folder/"arrays.npz") if (folder/"arrays.npz").is_file() else None,
+            "replay_code_sha256": sha_file(Path(__file__).resolve())}
+
+
+def _replay_evidence_binds(entry: dict, unit: str, ident: dict, rec: dict, row: dict | None) -> bool:
+    """An ADOPTED external replay (Musashi's fresh-process replays) binds only when the checkpoint and arrays bytes on disk are
+    the accepted record's, the entry names this unit, and its stored MAE_z equals the one recomputed independently now."""
+    try:
+        return (entry.get("unit") == unit and ident["weights_file_sha256"] is not None
+                and ident["weights_file_sha256"] == rec.get("weights_file_sha256") and ident["arrays_sha256"] == rec.get("arrays_sha256")
+                and row is not None and row.get("model_error_z") is not None
+                and abs(float(entry.get("mae_z_stored")) - float(row["model_error_z"])) <= 1e-12 and bool(entry.get("allclose_1e_6")))
+    except (TypeError, ValueError):
+        return False
+
+
 def close(a) -> dict:
     """RP82: the closure CONSUMES the authoritative verification (tools/df_closure_table.verify_run) — rows, preparation
     custody, design identity, denominator — and adds what only the block knows (reload parity, paired initial weights,
@@ -1177,12 +1199,10 @@ def close(a) -> dict:
     if adopted:
         doc = json.loads(Path(adopted).read_text())
         adopted_rows = {c["cell_id"]: {"adopted_from": str(adopted), **(c.get("replay") or {})} for c in doc.get("cells", []) if not c.get("problems")}
-    # RP86: a replay already recorded for the SAME checkpoint bytes is not repeated (REPLAYS.json keyed by unit + weights digest)
+    # RP90 (Musashi RP89 #1): a cached replay is reused ONLY when the replay identity recomputed from the ACTUAL bytes now on
+    # disk (checkpoint, arrays, design, replay code) equals the one recorded at replay time; a record's claimed digest is a
+    # claim, never the cache key. Entries without an identity (older REPLAYS.json) are never reused.
     prior = json.loads((root/"REPLAYS.json").read_text()) if (root/"REPLAYS.json").is_file() else {}
-    for unit, rep in prior.items():
-        if unit not in adopted_rows and rep.get("weights_file_sha256") and (root/"attempts"/unit/"cell.json").is_file():
-            if json.loads((root/"attempts"/unit/"cell.json").read_text()).get("weights_file_sha256") == rep["weights_file_sha256"]:
-                adopted_rows[unit] = {"adopted_from": "REPLAYS.json (same checkpoint bytes)", **{k: v for k, v in rep.items() if k != "weights_file_sha256"}}
     report_paired = None
     for cell in design["cells"]:
         unit = cell["cell_id"]
@@ -1196,17 +1216,27 @@ def close(a) -> dict:
             if not np.allclose(z["pred"], z["reload_pred"], rtol=1e-6, atol=1e-6):
                 problems.append(f"{unit}: reload parity")
         inits.setdefault((cell["seed"], rec["arm_spec"]["family"], rec["channels"], rec["arm_spec"]["window"]), set()).add(rec["initial_weights_sha256"])
-        # RP86: a read-bound fresh-process replay for every NEWLY measured artifact; adopted independent replays are not repeated
-        if unit in adopted_rows:
-            replays[unit] = adopted_rows[unit]
+        r = rows_by_unit.get(unit)
+        # the checkpoint CONSUMED is hashed now and bound to the accepted record's claim (the record is in the accepted chain)
+        ident = replay_identity(root, unit, design, cell)
+        if ident["weights_file_sha256"] != rec.get("weights_file_sha256"):
+            problems.append(f"{unit}: the checkpoint bytes on disk are not the accepted record's checkpoint: CHANGED CHECKPOINT")
+        if ident["arrays_sha256"] != rec.get("arrays_sha256"):
+            problems.append(f"{unit}: the arrays on disk are not the record's arrays: CHANGED ARRAYS (replay identity)")
+        cached = prior.get(unit) or {}
+        # RP86: a read-bound fresh-process replay for every NEWLY measured artifact; a replay of IDENTICAL bytes is not repeated
+        if cached.get("identity") == ident and "allclose_1e_6" in cached:
+            replays[unit] = {**{k: v for k, v in cached.items() if k != "identity"},
+                             "adopted_from": "REPLAYS.json (identical checkpoint, arrays, design and replay-code bytes, hashed now)"}
+        elif unit in adopted_rows and _replay_evidence_binds(adopted_rows[unit], unit, ident, rec, r):
+            replays[unit] = {**adopted_rows[unit], "bound_by": "actual checkpoint and arrays bytes == accepted record; stored MAE_z == independently recomputed"}
         elif not getattr(a, "skip_replay", False):
             replays[unit] = replay_cell(root, unit)
         else:
             replays[unit] = {"skipped": True, "scope": "in-process reload parity only; no fresh-process replay for this closure"}
         if unit in replays and "allclose_1e_6" in replays[unit] and not replays[unit].get("allclose_1e_6"):
             problems.append(f"{unit}: fresh-process checkpoint replay exceeds allclose(1e-6, 1e-6)")
-        replays[unit]["weights_file_sha256"] = rec.get("weights_file_sha256")
-        r = rows_by_unit.get(unit)
+        replays[unit]["identity"] = ident
         rows.append({**cell, "mae_z": r["model_error_z"] if r else None, "mae_kw": r["model_error"] if r else None,
                      "naive_mae_z": r["naive_error_z"] if r else None, "skill_vs_naive": (r["skill_vs_naive"] or {}).get("value") if r else None,
                      "verified": bool(r and r.get("verified")), "custody": (r or {}).get("custody"), "parameters": rec["parameters"],
@@ -1220,7 +1250,11 @@ def close(a) -> dict:
         problems.append(f"unpaired initial weights within a seed for the same graph: {unpaired}")
     verified_all = not problems and all(r["verified"] for r in rows) and len(rows) == len(expected)
     (root/"REPLAYS.json").write_text(json.dumps({u: r for u, r in replays.items() if "allclose_1e_6" in r}, indent=1, default=str))
-    report = {"schema": "df_e1_block_report.v2", "design_sha256": design["design_sha256"], "block": design["block"], "paired": None,
+    disposition = B.disposition(design)
+    report = {"schema": "df_e1_block_report.v3", "design_sha256": design["design_sha256"], "block": design["block"], "paired": None,
+              # RP90: every block of the household task is HISTORICAL_DEV_ONLY — its summary is a preserved measurement, not a
+              # selection; nothing here proposes an architecture, optimizer, loss or policy
+              "disposition": disposition, "active_selection": None,
               "verification": {k: verification[k] for k in ("design_identity", "preparation_custody", "denominator", "verified_units", "unverified_units")},
               "common_evaluation_rows": int(data["common_eval"].size), "sigma_evaluation": verification["denominator"]["sd_used"],
               "rows": rows, "replays": replays, "problems": problems, "verified": verified_all, "spent_cpu_seconds": spent_cpu(root),

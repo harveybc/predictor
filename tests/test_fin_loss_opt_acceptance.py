@@ -637,3 +637,89 @@ def test_FL08_the_financial_runner_registers_delivers_a_bounded_range_fits_repor
         F.close(a)
     rep = json.loads((root/"REPORT.json").read_text())
     assert any("CHANGED ARRAYS" in p for p in rep["problems"]) and rep["selection"] is None and not rep["verified"]
+
+
+def test_RP90_the_financial_verification_reads_required_folds_from_the_accepted_record_not_a_local_edit(tmp_path):
+    """Musashi's RP89 #2: marking a fold INSUFFICIENT in FIN_DATA.json and deleting its arrays must not shrink the verified
+    population silently; the accepted prepare terminal's record artifact anchors the fold population."""
+    Tc = _load("df_closure_table")
+    bars = _bars(); design = _design(bars)
+    fin = tmp_path/"fin"
+    rec = F.prepare(design, fin, frame=bars)
+    (fin/"DESIGN.json").write_text(json.dumps(design))
+    data, _ = F.load_data(fin, design)
+    Hm = _load("df_e1_huber")
+    terminals, rr = {}, {}
+    def accepted(u, artifacts, tags):
+        rr[u] = {"campaign_sha256": f"fixture-{u}", "terminal_sha256": f"terminal-{u}"}
+        terminals[f"fixture-{u}"] = {"current": {u: {"status": "COMPLETED", "terminal_sha256": f"terminal-{u}", "config_sha256": design["design_sha256"],
+                                                    "tags": tags, "artifacts": artifacts}}}
+    art = lambda role, p: {"role": role, "sha256": F.sha_file(p), "bytes": p.stat().st_size}
+    accepted("prepare", [art("data", fin/"FIN_DATA.npz"), art("record", fin/"FIN_DATA.json")], {})
+    cands = {c["id"]: c for c in design["candidates"]}
+    for cell in design["cells"]:
+        u, k = cell["cell_id"], cell["fold"]; folder = fin/"attempts"/u; folder.mkdir(parents=True)
+        sigma = float(data[f"f{k}_target_mean_sigma"][1]); arr, scores = {}, {}
+        for split in ("validation", "test"):
+            o_, t_ = data[f"f{k}_{split}_origins"], data[f"f{k}_{split}_targets"]
+            y, naive = data["y"][t_], data["y"][o_]; pred = naive.copy()
+            arr.update({f"{split}_origins": o_, f"{split}_targets": t_, f"{split}_y": y, f"{split}_naive": naive, f"{split}_pred": pred, f"{split}_reload_pred": pred})
+            scores[split] = Hm.metrics(pred, y, naive, sigma)
+        np.savez(folder/"arrays.npz", **arr)
+        (folder/"cell.json").write_text(json.dumps({"cell": cell, "candidate": cands[cell["candidate_id"]], "design_sha256": design["design_sha256"], "sigma_train": sigma, "scores": scores}))
+        accepted(u, [art("predictions", folder/"arrays.npz"), art("record", folder/"cell.json")], {"candidate": cell["candidate_id"], "fold": k, "seed": cell["seed"]})
+    (fin/"TERMINAL_RECEIPTS.json").write_text(json.dumps({"units": rr}))
+    wh = lambda campaign: json.loads(json.dumps(terminals.get(campaign, {})))
+    before = Tc.verify_fin_run(fin, warehouse=wh)
+    assert before["problems"] == [] and len(before["verified_units"]) == len(design["cells"]) and before["required_folds_from"] == "accepted preparation record"
+    # the attack: a local metadata edit plus deleted arrays
+    rec["folds"][0]["status"] = "INSUFFICIENT_POPULATION"; (fin/"FIN_DATA.json").write_text(json.dumps(rec))
+    removed = [c["cell_id"] for c in design["cells"] if c["fold"] == 0]
+    for u in removed:
+        (fin/"attempts"/u/"arrays.npz").unlink()
+    after = Tc.verify_fin_run(fin, warehouse=wh)
+    assert after["preparation_custody"]["class"] == "PREPARATION_RECORD_CHANGED" and after["verified_units"] == []
+    assert any("PREPARATION_RECORD_CHANGED" in p for p in after["problems"]) and all(any(u in p and "missing, not absent" in p for p in after["problems"]) for u in removed)
+    # an accepted terminal WITHOUT a record artifact anchors no fold population either
+    (fin/"FIN_DATA.json").write_text(json.dumps({**rec, "folds": [{**f, "status": "SCORABLE"} if f["fold"] == 0 else f for f in rec["folds"]]}))
+    def no_record(campaign):
+        h = wh(campaign)
+        for u, row in (h.get("current") or {}).items():
+            if u == "prepare":
+                row["artifacts"] = [a for a in row["artifacts"] if a["role"] != "record"]
+        return h
+    assert Tc.verify_fin_run(fin, warehouse=no_record)["preparation_custody"]["class"] == "PREPARATION_RECORD_NOT_ANCHORED"
+
+
+def test_RP90_a_cost_pilot_refusal_closes_FAILED_and_a_pending_outbox_is_a_refusal_too(tmp_path, monkeypatch):
+    """Musashi's RP89 #3: a schema refusal was reported COMPLETED with exit 0 and a pending outbox did not affect the exit."""
+    bars = _bars()
+    cost = F.seal_cost_pilot(lake="fixture", resource="fixture.parquet", time_column="datetime", holdout="2025-01-01", range_from="2024-01-01",
+                             range_to="2024-05-19", dev_start="2024-06-24", contract=_contract())
+    aware = bars.copy(); aware["datetime"] = aware.datetime.dt.tz_localize("UTC")
+    croot = tmp_path/"cost"; croot.mkdir(); (croot/"DESIGN.json").write_text(json.dumps(cost))
+    refusal = F.cost_pilot(cost, croot, frame=aware)
+    assert refusal["status"] == "REFUSED_AT_SCHEMA"
+    calls = []
+    class Gov:
+        def report_terminal(self, root, unit, terminal, **kw):
+            calls.append(("terminal", terminal)); return {"flushed": {"sent": 1, "pending": 0, "failures": []}}
+        def report_failed(self, root, unit, reason, **kw):
+            calls.append(("failed", reason)); return {"flushed": {"sent": 1, "pending": 0, "failures": []}}
+    U = _load("df_utility_run")
+    token = tmp_path/"tok"; token.write_text("synthetic")
+    monkeypatch.setattr(F, "acquire", lambda *a, **k: None); monkeypatch.setattr(F, "governance_modules", lambda: (Gov(), U))
+    monkeypatch.setattr(F, "cost_pilot", lambda *a, **k: refusal)
+    with pytest.raises(F.FinRefusal, match="did not measure"):
+        F.main(["cost-pilot", "--root", str(croot), "--api-key-file", str(token)])
+    assert calls and calls[0][0] == "failed" and "REFUSED_AT_SCHEMA" in calls[0][1] and not any(c[0] == "terminal" for c in calls)
+    # a measured pilot whose terminal stays pending in the outbox is not a completed unit either
+    measured = {**refusal, "status": "MEASURED", "configs": [], "total_pilot_cpu_seconds": 0.0}
+    (croot/"COST_PILOT.json").write_text(json.dumps(measured))
+    class Pending(Gov):
+        def report_terminal(self, root, unit, terminal, **kw):
+            calls.append(("terminal", terminal)); return {"flushed": {"sent": 0, "pending": 1, "failures": ["fixture destination unavailable"]}}
+    monkeypatch.setattr(F, "governance_modules", lambda: (Pending(), U)); monkeypatch.setattr(F, "cost_pilot", lambda *a, **k: measured)
+    with pytest.raises(F.FinRefusal, match="not accepted"):
+        F.main(["cost-pilot", "--root", str(croot), "--api-key-file", str(token)])
+    assert calls[-1][0] == "terminal" and calls[-1][1]["status"] == "COMPLETED"       # the terminal was offered, its acceptance was not claimed
