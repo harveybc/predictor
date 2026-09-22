@@ -1,0 +1,136 @@
+{
+  "scope": "POST on the repaired tree (RP90); typed refusals recorded; Musashi's steps repeated, his script untouched",
+  "corrupt_checkpoint_cached_replay": {
+    "before": {
+      "outcome": "RETURNED",
+      "verified": true,
+      "replay_of_unit": {
+        "unit": "daily_lag_s1",
+        "allclose_1e_6": true,
+        "max_abs_prediction_difference": 0.0,
+        "mae_z_replayed": 0.5380721688443476,
+        "mae_z_stored": 0.5380721688443476,
+        "identity": {
+          "unit": "daily_lag_s1",
+          "cell": {
+            "arm": "daily_lag",
+            "seed": 1
+          },
+          "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+          "weights_file_sha256": "0c00a8c9c13eaf24cf99b22350fcd25fa267f95e8e121d05ffd43333e9c207dc",
+          "arrays_sha256": "115f4b3fa6fb33957fbbdadc2d89677ee880daf4a21671cbc31ea567c082d5c8",
+          "replay_code_sha256": "b2fb1e9ec96e9a105d6c75f1606c62aa31436b7d3c69ddec489e061082e10e3b"
+        }
+      }
+    },
+    "after": {
+      "outcome": "REFUSED",
+      "exception": "BlockRefusal",
+      "message": "REFUSED: closure failed: [\"daily_lag_s1: the checkpoint bytes on disk are not the accepted record's checkpoint: CHANGED CHECKPOINT\", 'daily_lag_s1: fresh-process checkpoint replay exceeds allclose(1e-6, 1e-6)']",
+      "report_verified": false,
+      "summary": null,
+      "paired": null,
+      "problems": [
+        "daily_lag_s1: the checkpoint bytes on disk are not the accepted record's checkpoint: CHANGED CHECKPOINT",
+        "daily_lag_s1: fresh-process checkpoint replay exceeds allclose(1e-6, 1e-6)"
+      ],
+      "replay_of_unit": {
+        "unit": "daily_lag_s1",
+        "allclose_1e_6": false,
+        "error": "e_fid(name, mode, userblock_size, fapl, fcpl, swmr=swmr)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<home>/anaconda3/envs/trading-stack/lib/python3.12/site-packages/h5py/_hl/files.py\", line 238, in make_fid\n    fid = h5f.open(name, flags, fapl=fapl)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"h5py/_objects.pyx\", line 56, in h5py._objects.with_phil.wrapper\n  File \"h5py/_objects.pyx\", line 57, in h5py._objects.with_phil.wrapper\n  File \"h5py/h5f.pyx\", line 102, in h5py.h5f.open\nOSError: Unable to synchronously open file (file signature not found)\n",
+        "identity": {
+          "unit": "daily_lag_s1",
+          "cell": {
+            "arm": "daily_lag",
+            "seed": 1
+          },
+          "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+          "weights_file_sha256": "9143fcc5e7747f5d007dec953958fadbd761c5bf675d4daec9e2c394b370c49d",
+          "arrays_sha256": "115f4b3fa6fb33957fbbdadc2d89677ee880daf4a21671cbc31ea567c082d5c8",
+          "replay_code_sha256": "b2fb1e9ec96e9a105d6c75f1606c62aa31436b7d3c69ddec489e061082e10e3b"
+        }
+      }
+    },
+    "checkpoint_replaced_with": "not a checkpoint",
+    "accepted_payloads_unchanged": true,
+    "actual_bytes_sha256_now": "9143fcc5e7747f5d007dec953958fadbd761c5bf675d4daec9e2c394b370c49d",
+    "record_claimed_sha256": "0c00a8c9c13eaf24cf99b22350fcd25fa267f95e8e121d05ffd43333e9c207dc",
+    "original_bytes_sha256": "0c00a8c9c13eaf24cf99b22350fcd25fa267f95e8e121d05ffd43333e9c207dc"
+  },
+  "unanchored_fold_metadata": {
+    "before": {
+      "outcome": "RETURNED",
+      "verified": true,
+      "verified_units": [
+        "f0_A_huber_adam_s1",
+        "f0_A_mae_adam_s1",
+        "f1_A_huber_adam_s1",
+        "f1_A_mae_adam_s1"
+      ],
+      "required_folds_from": "accepted preparation record"
+    },
+    "after": {
+      "outcome": "REFUSED",
+      "exception": "FinRefusal",
+      "message": "REFUSED: closure failed: [\"preparation custody PREPARATION_RECORD_CHANGED: FIN_DATA.json on disk is not the accepted prepare terminal's record artifact (fold population rewritten)\", \"f0_A_mae_adam_s1: the local record marks fold 0 'INSUFFICIENT_POPULATION' but no accepted record anchors that population: a registered cell is REQUIRED until the accepted preparation says otherwise\", 'f0_A_mae_adam_s1: a registered cell has no arrays or record \u2014 missing, not absent', \"f0_A_huber_adam_s1: the local r",
+      "report_verified": false,
+      "verified_units": [],
+      "preparation_custody": {
+        "class": "PREPARATION_RECORD_CHANGED",
+        "why": "FIN_DATA.json on disk is not the accepted prepare terminal's record artifact (fold population rewritten)"
+      },
+      "selection": null,
+      "problems": [
+        "preparation custody PREPARATION_RECORD_CHANGED: FIN_DATA.json on disk is not the accepted prepare terminal's record artifact (fold population rewritten)",
+        "f0_A_mae_adam_s1: the local record marks fold 0 'INSUFFICIENT_POPULATION' but no accepted record anchors that population: a registered cell is REQUIRED until the accepted preparation says otherwise",
+        "f0_A_mae_adam_s1: a registered cell has no arrays or record \u2014 missing, not absent",
+        "f0_A_huber_adam_s1: the local record marks fold 0 'INSUFFICIENT_POPULATION' but no accepted record anchors that population: a registered cell is REQUIRED until the accepted preparation says otherwise",
+        "f0_A_huber_adam_s1: a registered cell has no arrays or record \u2014 missing, not absent"
+      ]
+    },
+    "removed_arrays": [
+      "f0_A_mae_adam_s1",
+      "f0_A_huber_adam_s1"
+    ],
+    "accepted_preparation_record_unchanged": true
+  },
+  "producer_clock_and_columns": {
+    "source_sha256": "097622b18ae263f36b316b88a7ad108aae09b5b0c2dbe10b3b11d2e54a6cbf94",
+    "parsed_label": "2024-01-02 00:00:00+00:00",
+    "expected_utc_under_source_spec": "2024-01-02 05:00:00+00:00",
+    "columns_after_producer": [
+      "datetime",
+      "open",
+      "high",
+      "low",
+      "close"
+    ],
+    "disposition": "UNCHANGED by RP90: the producer's lineage is not established; no metadata, volume, arrival time or availability lag is invented; the financial resource stays undeliverable until the producer lineage is established (a scoped evidence deficit under the deferred financial stage)"
+  },
+  "cost_refusal_reported_completed": {
+    "actual_cost_parser_result": "REFUSED_AT_SCHEMA",
+    "parser_reason": "REFUSED: 'datetime' carries a UTC offset and the design declares no interpretation (timestamp_interpretation='UTC_OFFSET_AWARE' converts to UTC); an offset is not discarded",
+    "main": {
+      "outcome": "REFUSED",
+      "exception": "FinRefusal",
+      "message": "REFUSED: the cost pilot did not measure (REFUSED_AT_SCHEMA): REFUSED: 'datetime' carries a UTC offset and the design declares no interpretation (timestamp_interpretation='UTC_OFFSET_AWARE' converts to UTC); an offset is not discarded; the unit was closed FAILED (sent 0, pending 1)"
+    },
+    "calls": [
+      [
+        "failed",
+        "cost pilot REFUSED_AT_SCHEMA: REFUSED: 'datetime' carries a UTC offset and the design declares no interpretation (timestamp_interpretation='UTC_OFFSET_AWARE' converts to UTC); an offset is n"
+      ]
+    ],
+    "reported_terminal_status": "FAILED",
+    "fits_executed": 0
+  },
+  "cost_pending_outbox": {
+    "main": {
+      "outcome": "REFUSED",
+      "exception": "FinRefusal",
+      "message": "REFUSED: the cost-pilot terminal was not accepted (pending 1): ['fixture destination unavailable']"
+    },
+    "terminal_offered": true,
+    "exit_claimed_success": false
+  }
+}

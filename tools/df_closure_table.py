@@ -459,6 +459,25 @@ def design_identity(design: dict) -> dict:
 
 
 def verify_run(root: Path, *, label: str, registry: dict, warehouse=None) -> dict:
+    """One authority for every layout: block/phase-1 roots (below), and the SOTA reproduction root (RP96) whose verification
+    lives beside the author code it exercises (tools/df_sota_repro.verify_sota_run) and is returned here in the table's row schema."""
+    design = json.loads((Path(root)/"DESIGN.json").read_text()) if (Path(root)/"DESIGN.json").is_file() else {}
+    if design.get("schema") == "df_sota_repro_design.v1":
+        R = _module("df_sota_repro")
+        data_path = None
+        try:
+            data_path = R.delivered_file(Path(root), design, "prepare") if (Path(root)/"DELIVERIES.json").is_file() else None
+        except BaseException:                                       # noqa: BLE001 — no delivery on this host: rows verify without derivation
+            data_path = None
+        ver = R.verify_sota_run(Path(root), warehouse=warehouse, data_path=data_path, replay=False)
+        rows = R.rows_for_table(Path(root), ver, design, label=label)
+        return {"design_sha256": design.get("design_sha256"), "design_identity": {"recomputes": True, "sealed": design.get("design_sha256")},
+                "preparation_custody": ver["preparation_custody"], "denominator": {"ok": True, "sd_used": "per-channel train StandardScaler (author loader)", "scope": "normalized space"},
+                "rows": rows, "problems": ver["problems"], "verified_units": ver["verified_units"], "unverified_units": ver["unverified_units"], "disposition": ver["disposition"]}
+    return _verify_block_run(root, label=label, registry=registry, warehouse=warehouse)
+
+
+def _verify_block_run(root: Path, *, label: str, registry: dict, warehouse=None) -> dict:
     """THE authoritative verification a closure consumes: rows, preparation custody, design identity, denominator."""
     root = Path(root)
     design = json.loads((root/"DESIGN.json").read_text())

@@ -1,0 +1,791 @@
+{
+ "schema": "df_sota_lake_adoption.v1",
+ "at": "2026-09-22T02:48:37Z",
+ "host": "omega",
+ "service": "crispdm-data-gov.service",
+ "config": "<home>/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json",
+ "external_host_divergence": {
+  "component": "financial_data_store (the provider the deployed financial and synthetic lake hosts run)",
+  "deployed_cannot": [
+   "deliver a resource whose availability labels are not ISO8601 (refuses: unparseable time column)",
+   "deliver a whole resource under a holdout (refuses: spans holdout: request a range)"
+  ],
+  "correction": "financial_data_store.governed_download now honours `untimed`: the archive is delivered AS_IS with an UNDECLARED scope and every date range over it is refused by its own contract, with no time parsing on that path",
+  "where": "financial-data, branch satoshi/archive-retrospective-provider-20260920 (re-based on the deployed build, because no branch of that repository matched it)",
+  "status": "CORRECTED_AND_REHEARSED: the route below runs through the EXTERNAL host with the corrected provider on its PYTHONPATH; installing that build into the store-hosts venv is part of the adoption"
+ },
+ "backup": "<home>/.local/state/crispdm-data-foundation/satoshi-sota-lake-adoption-20260922T024837Z/5055.runtime.backup.json",
+ "backup_sha256": "e09b1850fb300134c247a114ae7b4558cf0691e11d53137cf8aba10654396161",
+ "before": {
+  "schema": "df_sota_lake_inventory.v1",
+  "at": "2026-09-22T02:48:37Z",
+  "host": "omega",
+  "runtime_config": {
+   "path": "<home>/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json",
+   "sha256": "e09b1850fb300134c247a114ae7b4558cf0691e11d53137cf8aba10654396161"
+  },
+  "lakes": [
+   {
+    "plugin": "http_lake",
+    "lake_id": "financial_files",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "base_url": "http://<ip>:5056"
+   },
+   {
+    "plugin": "http_lake",
+    "lake_id": "olap_cube",
+    "kind": "warehouse",
+    "engine": "sql_olap",
+    "base_url": "http://<ip>:5057"
+   },
+   {
+    "plugin": "files_lake",
+    "lake_id": "predictor_examples",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "root_path": "<home>/Documents/GitHub/predictor/examples/data_downsampled"
+   },
+   {
+    "plugin": "http_lake",
+    "lake_id": "governance_smoke",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "base_url": "http://<ip>:5058"
+   },
+   {
+    "plugin": "http_lake",
+    "lake_id": "public_panels",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "base_url": "http://<ip>:5059"
+   }
+  ],
+  "policies": [
+   {
+    "principal": "*",
+    "lake": "financial_files",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2025-01-01"
+   },
+   {
+    "principal": "*",
+    "lake": "olap_cube",
+    "verbs": [
+     "discover",
+     "query",
+     "write_metrics",
+     "write_terminal"
+    ],
+    "require_lineage": true,
+    "deny_from": "2025-01-01"
+   },
+   {
+    "principal": "*",
+    "lake": "predictor_examples",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2025-01-01"
+   },
+   {
+    "principal": "predictor",
+    "lake": "governance_smoke",
+    "verbs": [
+     "download"
+    ]
+   },
+   {
+    "principal": "satoshi-gamma",
+    "lake": "governance_smoke",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ]
+   },
+   {
+    "principal": "satoshi-dragon",
+    "lake": "governance_smoke",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ]
+   },
+   {
+    "principal": "predictor",
+    "lake": "public_panels",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2006-12-16"
+   },
+   {
+    "principal": "satoshi-gamma",
+    "lake": "public_panels",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2006-12-16"
+   },
+   {
+    "principal": "satoshi-dragon",
+    "lake": "public_panels",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2006-12-16"
+   }
+  ],
+  "principals": [
+   "doin",
+   "harvey",
+   "heuristic-strategy",
+   "musashi",
+   "predictor",
+   "satoshi-dragon",
+   "satoshi-gamma"
+  ],
+  "accounting_db": "<home>/Documents/GitHub/data-gov/var/accounting.db",
+  "services": {
+   "crispdm-data-gov.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "<home>/.config/systemd/user/crispdm-data-gov.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Sun 2026-09-20 13:25:42 -05",
+    "returncode": 0
+   },
+   "crispdm-data-lake-financial.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "<home>/.config/systemd/user/crispdm-data-lake-financial.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   },
+   "crispdm-data-warehouse-olap.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "<home>/.config/systemd/user/crispdm-data-warehouse-olap.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   },
+   "crispdm-data-lake-synthetic.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "<home>/.config/systemd/user/crispdm-data-lake-synthetic.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   },
+   "crispdm-olap-loader-duckdb.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "<home>/.config/systemd/user/crispdm-olap-loader-duckdb.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   }
+  },
+  "ports": [
+   {
+    "port": 5055,
+    "open": true
+   },
+   {
+    "port": 5056,
+    "open": true
+   },
+   {
+    "port": 5057,
+    "open": true
+   },
+   {
+    "port": 5058,
+    "open": true
+   }
+  ],
+  "public_panels_present": {
+   "thuml_tsl_electricity/electricity.csv": true
+  },
+  "public_panel_lake_registered": false,
+  "note": "read-only inventory; no service was started, stopped or configured by this command",
+  "benchmark_present": {
+   "thuml_tsl_electricity/electricity.csv": true
+  },
+  "benchmark_lake_registered": false
+ },
+ "change": {
+  "previous_lakes_unchanged": true,
+  "lakes_added": [
+   "sota_benchmarks"
+  ],
+  "other_policies_unchanged": true,
+  "everything_else_unchanged": true,
+  "additive": true
+ },
+ "deployed_config": "<home>/.local/state/crispdm-data-foundation/satoshi-sota-lake-adoption-20260922T024837Z/public-panels.host.json",
+ "deployed_config_sha256": "660910e8cde86212a2081ef7c6314d56321670767483aa165a8e1c40915f650a",
+ "restore": "cp <home>/.local/state/crispdm-data-foundation/satoshi-sota-lake-adoption-20260922T024837Z/5055.runtime.backup.json <home>/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json && systemctl --user restart crispdm-data-gov.service",
+ "declared": {
+  "thuml_tsl_electricity/electricity.csv": {
+   "dataset_id": "public.thuml.time_series_library.electricity",
+   "sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+   "bytes": 95581762,
+   "rows": 26304,
+   "columns": 322,
+   "channels": 321,
+   "provenance": {
+    "origin": "https://huggingface.co/datasets/thuml/Time-Series-Library",
+    "path": "electricity/electricity.csv",
+    "dataset_revision": "2b66e59ee19dac8f6f19fb5d4997f289fdfea357",
+    "revision_last_modified": "2025-11-12T11:27:30Z",
+    "lfs_oid_sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+    "download_url": "https://huggingface.co/datasets/thuml/Time-Series-Library/resolve/2b66e59ee19dac8f6f19fb5d4997f289fdfea357/electricity/electricity.csv",
+    "licence": "cc-by-4.0 (dataset card of the Hugging Face repository)",
+    "upstream": "the processed ECL benchmark distributed by Autoformer/TimesNet (Time-Series-Library README: 'well-preprocessed datasets'); derived from UCI ElectricityLoadDiagrams20112014 (Trindade 2015), 321 clients, hourly; the processing steps are the distributors', not re-derived here",
+    "fetched_by": "curl, pinned revision; digest verified against the LFS oid"
+   },
+   "first_label": "2016-07-01 02:00:00",
+   "last_label": "2019-07-02 01:00:00",
+   "label_format": "%Y-%m-%d %H:%M:%S (naive wall clock, zone not stated by the distributor)",
+   "licence": "cc-by-4.0 (dataset card of the Hugging Face repository)",
+   "use_class": "BENCHMARK/PUBLIC (SOTA-first reproduction); ARCHIVE semantics: availability of rows never observed, whole-resource AS_IS only",
+   "availability": "UNDECLARED: the labels are data, not evidence of publication time; no completion lag, no point-in-time and no live-equivalent eligibility",
+   "time_zone": "not stated by the distributor; the author code never interprets it as availability"
+  }
+ },
+ "adopted": true,
+ "binding": {
+  "accepted": true,
+  "why": "bound",
+  "rehearsal": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/rp90/SOTA_LAKE_REHEARSAL.json",
+  "expected": {
+   "deployed_config_sha256": "449d2b7a6770096dd4a229f49304ee6da84986500f6fe390ca489079844cf4c6",
+   "panels_sha256": {
+    "thuml_tsl_electricity/electricity.csv": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad"
+   },
+   "serving_provider_sha256": "c184664e83df08f5b696a1dda553addf7075fda9af8131d37be333ed68949e73",
+   "serving_provider_path": "<home>/Documents/GitHub/financial-data/store/src/financial_data_store/inventory.py",
+   "installed_provider_sha256": "3ea4ab5533405a044f71eacabe5d57dde9addf0244af4fbc8bdfd9918acb6a87",
+   "serving_tools_sha256": {
+    "df_public_lake_adopt.py": "420e9d6462e951167feda10ea246d88345c4682180f1b29eff1b406ccb96ddf2",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_e1_close.py": "4cdd8b0728e94917d6b6e6c6f94ea30ed9c7b1f779df273839bab6d3706700db",
+    "df_e1_receipts.py": "1a599b0cb30949b2cbf7b16c0ef2265980b2a316b352eeceab215288dd654e3e",
+    "governed_run.py": "eb81c56ea69f655e79335a1999c614bdf6631de0dd8c329006ea7c86d1a460a7",
+    "df_sota_lake_adopt.py": "7a3c2ab147b09eba05b597724e33abb4e9314c4dee1acc78e97d50d3c30c151c"
+   },
+   "repository_head": "ea6f3b9255d3b438ecdb204f15be2e74093c53d8",
+   "lake_id": "sota_benchmarks"
+  },
+  "rehearsed": {
+   "deployed_config_sha256": "449d2b7a6770096dd4a229f49304ee6da84986500f6fe390ca489079844cf4c6",
+   "panels_sha256": {
+    "thuml_tsl_electricity/electricity.csv": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad"
+   },
+   "serving_provider_sha256": "c184664e83df08f5b696a1dda553addf7075fda9af8131d37be333ed68949e73",
+   "serving_provider_path": "<home>/Documents/GitHub/financial-data/store/src/financial_data_store/inventory.py",
+   "installed_provider_sha256": "3ea4ab5533405a044f71eacabe5d57dde9addf0244af4fbc8bdfd9918acb6a87",
+   "serving_tools_sha256": {
+    "df_public_lake_adopt.py": "420e9d6462e951167feda10ea246d88345c4682180f1b29eff1b406ccb96ddf2",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_e1_close.py": "4cdd8b0728e94917d6b6e6c6f94ea30ed9c7b1f779df273839bab6d3706700db",
+    "df_e1_receipts.py": "1a599b0cb30949b2cbf7b16c0ef2265980b2a316b352eeceab215288dd654e3e",
+    "governed_run.py": "eb81c56ea69f655e79335a1999c614bdf6631de0dd8c329006ea7c86d1a460a7",
+    "df_sota_lake_adopt.py": "7a3c2ab147b09eba05b597724e33abb4e9314c4dee1acc78e97d50d3c30c151c"
+   },
+   "repository_head": "ea6f3b9255d3b438ecdb204f15be2e74093c53d8",
+   "lake_id": "sota_benchmarks"
+  },
+  "route_ok": true
+ },
+ "lake_host_unit": "crispdm-data-lake-sota-benchmarks.service",
+ "lake_host_unit_file": "<home>/.config/systemd/user/crispdm-data-lake-sota-benchmarks.service",
+ "lake_host_start": {
+  "returncode": 0,
+  "stderr": ""
+ },
+ "lake_host_healthy": true,
+ "config_written_sha256": "91f1e627a856b8afed1de73dc2f5497ee9521045dd5979ecbe3607615dce01c6",
+ "restart": {
+  "returncode": 0,
+  "stderr": ""
+ },
+ "post_check": {
+  "thuml_tsl_electricity/electricity.csv": {
+   "campaign_http": 201,
+   "campaign_sha256": "5bee63587e3ee9782ae06e1a220998446128af872f98fe2f256c9fc2e7f52168",
+   "campaign_key": "rp46-adopt-1790045322-thuml_tsl_electricity-lake-route",
+   "units_registered": [
+    "route-1",
+    "route-probe-that-fails"
+   ],
+   "download": {
+    "http": 200,
+    "verification_state": "VERIFIED_TRANSFER",
+    "bytes": 95581762,
+    "sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+    "cached": false,
+    "availability_use": "UNDECLARED",
+    "availability_label": "UNKNOWN",
+    "availability_contract_sha256": "0218aaea83525cec8e31d0fe71dc4c7cda2e342ca1f06a9c08ea4773c17f6111",
+    "delivery_id": "686f9aecae11441ea0c6617d8195cdb5",
+    "path": "<home>/.cache/data-gov/sota_benchmarks/7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad.csv"
+   },
+   "cache_reuse": {
+    "second_unit_cached": true,
+    "same_digest": true
+   },
+   "bytes_match_characterised": true,
+   "bytes_on_disk_sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+   "delivered_bytes_verified": true,
+   "availability_stays_undeclared": true,
+   "terminals": {
+    "sent": 2,
+    "pending": 0,
+    "failures": {},
+    "units": {
+     "route-1": {
+      "status": "COMPLETED",
+      "payload": {
+       "schema": "governed_terminal.v1",
+       "generation": 1,
+       "status": "COMPLETED",
+       "reason": null,
+       "started_at": "2026-09-22T02:48:44Z",
+       "finished_at": "2026-09-22T02:48:44Z",
+       "costs": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": 0.0
+       },
+       "deliveries": [
+        "686f9aecae11441ea0c6617d8195cdb5"
+       ],
+       "artifacts": [],
+       "metrics": [
+        {
+         "metric": "lake.delivered_bytes",
+         "split": "development",
+         "horizon": 1,
+         "unit": "bytes",
+         "value": 95581762.0,
+         "std_dev": null,
+         "min_value": null,
+         "max_value": null
+        }
+       ],
+       "tags": {
+        "purpose": "PUBLIC_LAKE_ROUTE",
+        "classification": "NON_GOVERNING",
+        "phase": "DEVELOPMENT",
+        "lake": "sota_benchmarks",
+        "resource": "thuml_tsl_electricity/electricity.csv"
+       }
+      }
+     },
+     "route-probe-that-fails": {
+      "status": "FAILED",
+      "payload": {
+       "schema": "governed_terminal.v1",
+       "generation": 1,
+       "status": "FAILED",
+       "reason": "route probe: deliberate failure after its delivery, closed so the campaign has no open unit",
+       "started_at": "2026-09-22T02:48:44Z",
+       "finished_at": "2026-09-22T02:48:44Z",
+       "costs": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": 0.0
+       },
+       "deliveries": [
+        "61b6abbc4f6e4fc9a335dcb2a97bf158"
+       ],
+       "artifacts": [],
+       "metrics": [],
+       "tags": {
+        "purpose": "PUBLIC_LAKE_ROUTE",
+        "classification": "NON_GOVERNING",
+        "phase": "DEVELOPMENT",
+        "lake": "sota_benchmarks",
+        "resource": "thuml_tsl_electricity/electricity.csv"
+       }
+      }
+     }
+    }
+   },
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "campaign_closed": true,
+   "warehouse": {
+    "per_unit": {
+     "route-1": {
+      "present": true,
+      "status_matches": true,
+      "metrics_match": true,
+      "metric_rows": {
+       "sent": 1,
+       "stored": 1
+      },
+      "costs_match": true,
+      "tags_match": true,
+      "artifacts_stored": 0,
+      "terminal_sha256": "78216de0248897f698a9f906c7d94055085c6ec0adbc2d166dbac29530f95802",
+      "generation": 1
+     },
+     "route-probe-that-fails": {
+      "present": true,
+      "status_matches": true,
+      "metrics_match": true,
+      "metric_rows": {
+       "sent": 0,
+       "stored": 0
+      },
+      "costs_match": true,
+      "tags_match": true,
+      "artifacts_stored": 0,
+      "terminal_sha256": "ec19fb62c02fcffd65441c545a21477eed5b2b37104698768a8c8723829b86af",
+      "generation": 1
+     }
+    },
+    "content_matches": true,
+    "rows_all_generations": 2,
+    "reader": "tools/df_mod_e0_close.warehouse_terminals (the canonical reader: terminal row plus its metric, dataset and artifact children)"
+   },
+   "ranged_request": {
+    "campaign_http": 201,
+    "campaign_body": null,
+    "download_http": 422,
+    "body": {
+     "error": "this resource is a retrospective archive: its rows' availability was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+    },
+    "refused_at": "DOWNLOAD",
+    "refused": true,
+    "semantics": "retrospective archive: its rows' availability was never observed, so the archive is withheld from its own first day and only whole-resource AS_IS delivery is possible",
+    "holdout_start": "2016-07-01"
+   },
+   "undeclared_resource": {
+    "http": 403,
+    "body": {
+     "error": "dataset request is not declared by campaign"
+    }
+   },
+   "download_without_campaign": {
+    "http": 400,
+    "body": {
+     "error": "invalid campaign_sha256"
+    }
+   },
+   "refusals_hold": true,
+   "route_complete": true
+  }
+ },
+ "after": {
+  "schema": "df_sota_lake_inventory.v1",
+  "at": "2026-09-22T02:48:44Z",
+  "host": "omega",
+  "runtime_config": {
+   "path": "<home>/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json",
+   "sha256": "91f1e627a856b8afed1de73dc2f5497ee9521045dd5979ecbe3607615dce01c6"
+  },
+  "lakes": [
+   {
+    "plugin": "http_lake",
+    "lake_id": "financial_files",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "base_url": "http://<ip>:5056"
+   },
+   {
+    "plugin": "http_lake",
+    "lake_id": "olap_cube",
+    "kind": "warehouse",
+    "engine": "sql_olap",
+    "base_url": "http://<ip>:5057"
+   },
+   {
+    "plugin": "files_lake",
+    "lake_id": "predictor_examples",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "root_path": "<home>/Documents/GitHub/predictor/examples/data_downsampled"
+   },
+   {
+    "plugin": "http_lake",
+    "lake_id": "governance_smoke",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "base_url": "http://<ip>:5058"
+   },
+   {
+    "plugin": "http_lake",
+    "lake_id": "public_panels",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "base_url": "http://<ip>:5059"
+   },
+   {
+    "plugin": "http_lake",
+    "lake_id": "sota_benchmarks",
+    "kind": "lake",
+    "engine": "files_inventory",
+    "base_url": "http://<ip>:5060"
+   }
+  ],
+  "policies": [
+   {
+    "principal": "*",
+    "lake": "financial_files",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2025-01-01"
+   },
+   {
+    "principal": "*",
+    "lake": "olap_cube",
+    "verbs": [
+     "discover",
+     "query",
+     "write_metrics",
+     "write_terminal"
+    ],
+    "require_lineage": true,
+    "deny_from": "2025-01-01"
+   },
+   {
+    "principal": "*",
+    "lake": "predictor_examples",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2025-01-01"
+   },
+   {
+    "principal": "predictor",
+    "lake": "governance_smoke",
+    "verbs": [
+     "download"
+    ]
+   },
+   {
+    "principal": "satoshi-gamma",
+    "lake": "governance_smoke",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ]
+   },
+   {
+    "principal": "satoshi-dragon",
+    "lake": "governance_smoke",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ]
+   },
+   {
+    "principal": "predictor",
+    "lake": "public_panels",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2006-12-16"
+   },
+   {
+    "principal": "satoshi-gamma",
+    "lake": "public_panels",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2006-12-16"
+   },
+   {
+    "principal": "satoshi-dragon",
+    "lake": "public_panels",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2006-12-16"
+   },
+   {
+    "principal": "predictor",
+    "lake": "sota_benchmarks",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2016-07-01"
+   },
+   {
+    "principal": "satoshi-gamma",
+    "lake": "sota_benchmarks",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2016-07-01"
+   },
+   {
+    "principal": "satoshi-dragon",
+    "lake": "sota_benchmarks",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ],
+    "deny_from": "2016-07-01"
+   }
+  ],
+  "principals": [
+   "doin",
+   "harvey",
+   "heuristic-strategy",
+   "musashi",
+   "predictor",
+   "satoshi-dragon",
+   "satoshi-gamma"
+  ],
+  "accounting_db": "<home>/Documents/GitHub/data-gov/var/accounting.db",
+  "services": {
+   "crispdm-data-gov.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "<home>/.config/systemd/user/crispdm-data-gov.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Mon 2026-09-21 21:48:40 -05",
+    "returncode": 0
+   },
+   "crispdm-data-lake-financial.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "<home>/.config/systemd/user/crispdm-data-lake-financial.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   },
+   "crispdm-data-warehouse-olap.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "<home>/.config/systemd/user/crispdm-data-warehouse-olap.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   },
+   "crispdm-data-lake-synthetic.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "<home>/.config/systemd/user/crispdm-data-lake-synthetic.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   },
+   "crispdm-olap-loader-duckdb.service": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "FragmentPath": "<home>/.config/systemd/user/crispdm-olap-loader-duckdb.service",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Thu 2026-09-17 22:04:38 -05",
+    "returncode": 0
+   }
+  },
+  "ports": [
+   {
+    "port": 5055,
+    "open": true
+   },
+   {
+    "port": 5056,
+    "open": true
+   },
+   {
+    "port": 5057,
+    "open": true
+   },
+   {
+    "port": 5058,
+    "open": true
+   }
+  ],
+  "public_panels_present": {
+   "thuml_tsl_electricity/electricity.csv": true
+  },
+  "public_panel_lake_registered": true,
+  "note": "read-only inventory; no service was started, stopped or configured by this command",
+  "benchmark_present": {
+   "thuml_tsl_electricity/electricity.csv": true
+  },
+  "benchmark_lake_registered": true
+ },
+ "effective_identity": {
+  "lake_host_unit_state": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "FragmentPath": "<home>/.config/systemd/user/crispdm-data-lake-sota-benchmarks.service",
+   "NRestarts": "0",
+   "ExecMainStartTimestamp": "Mon 2026-09-21 21:48:39 -05",
+   "returncode": 0
+  },
+  "serving_provider_sha256": "c184664e83df08f5b696a1dda553addf7075fda9af8131d37be333ed68949e73",
+  "config_on_disk_sha256": "91f1e627a856b8afed1de73dc2f5497ee9521045dd5979ecbe3607615dce01c6",
+  "lakes_now": [
+   "financial_files",
+   "olap_cube",
+   "predictor_examples",
+   "governance_smoke",
+   "public_panels",
+   "sota_benchmarks"
+  ]
+ }
+}

@@ -3,15 +3,24 @@
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "SOURCE_AND_PROTOCOL_REVIEW_IN_PROGRESS_NO_NEW_TRAINING",
+  "status": "SOURCE_AND_PROTOCOL_LOCKED_EXECUTION_IN_PROGRESS",
   "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
-  "selected_model": null,
+  "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
   "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
-  "runtime_exclusion_implemented": false,
+  "runtime_exclusion_implemented": true,
   "policy": "SOTA_FIRST_2026_09_21.md",
   "orders": "../../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md",
-  "suspended_measurements": ["simplified E0/E1 extensions", "household context pilots", "FIN-LOSS-OPT fits"],
-  "preserved_future_requirements": ["doctoral modular hypotheses", "financial Huber/MAE x Adam/AdamW", "weekly forecasting and RL", "core pretraining"],
+  "suspended_measurements": [
+   "simplified E0/E1 extensions",
+   "household context pilots",
+   "FIN-LOSS-OPT fits"
+  ],
+  "preserved_future_requirements": [
+   "doctoral modular hypotheses",
+   "financial Huber/MAE x Adam/AdamW",
+   "weekly forecasting and RL",
+   "core pretraining"
+  ],
   "completion_requires": "published protocol reproduced and independently verified; not merely a literature dossier"
  },
  "rp81_external_review": {
@@ -31,7 +40,7 @@
   "historical_satoshi_return": "Preserved below as reported; this external review qualifies its closure/comparator/financial guarantees",
   "owner_action_required": false
  },
- "updated_on": "2026-09-21",
+ "updated_on": "2026-09-22",
  "current_stage": "discovery",
  "completed_stages": [
   "discovery",
@@ -163,10 +172,14 @@
   {
    "id": "SOTA-REPRO",
    "owner": "Satoshi",
-   "status": "NOT_STARTED",
-   "depends_on": ["BENCHMARK-CONTRACTS"],
-   "evidence": [],
-   "next_action": "RP90-RP97: rank protocol-matched primary references, freeze author recipe and acceptance, then execute and verify faithful reproduction",
+   "status": "IN_PROGRESS",
+   "depends_on": [
+    "BENCHMARK-CONTRACTS"
+   ],
+   "evidence": [
+    "rp90_rp97 block"
+   ],
+   "next_action": "RP94 preflight -> RP95 execution -> RP96 verification -> RP97 return",
    "deliverable": "Full official benchmark reproduction with published metrics, matched naive, numerical agreement and provenance; not an adapted proxy"
   },
   {
@@ -880,5 +893,64 @@
   "reads_of_reserved_test_rows": 0,
   "dev_weeks_read_by_finance": 0,
   "production_reconfiguration": "none"
+ },
+ "rp90_rp97": {
+  "orders": "docs/handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md",
+  "base": "832f31b",
+  "updated_on": "2026-09-22",
+  "RP90": {
+   "status": "DONE",
+   "evidence": [
+    "tools/df_benchmark_contract.py disposition()/active_ranking()",
+    "tools/df_closure_table.py active_ranking + dispositions",
+    "tools/df_e1_block.py close (disposition, active_selection None)",
+    "tests: test_RP90_* in contract/closure/block/fin suites",
+    "docs/audits/evidence/d3_k5_20260917/RP90/REVIEW_REPRODUCED_POST.json (Musashi's four RP89 probes now refuse)"
+   ]
+  },
+  "RP89_repairs": {
+   "status": "DONE",
+   "findings": {
+    "1": "checkpoint bytes hashed; replay identity bound (df_e1_block.replay_identity)",
+    "2": "fold population from the accepted preparation record (verify_fin_run)",
+    "3": "cost-pilot refusal closes FAILED, exit non-zero; pending outbox refuses",
+    "4": "HistData producer lineage: UNCHANGED, no metadata invented; financial resource stays undeliverable (deferred stage)"
+   }
+  },
+  "RP91": {
+   "status": "DONE",
+   "evidence": [
+    "docs/tres_temas_entrevista/program_v3/SOTA_REFERENCE_DOSSIER_2026_09_21.md"
+   ],
+   "selected": "TimeFilter L=96 (Table 8); NPMixer code NOT FOUND (unverified, not refuted)"
+  },
+  "RP92": {
+   "status": "DONE",
+   "evidence": [
+    "docs/tres_temas_entrevista/program_v3/SOTA_PROTOCOL_LOCK_2026_09_21.md",
+    "tools/df_sota_repro.py seal (lock in DESIGN.json)",
+    "benchmark lake sota_benchmarks adopted by the tested procedure: docs/audits/evidence/d3_k5_20260917/RP90/SOTA_LAKE_ADOPTION_RECEIPT.json",
+    "tests/test_df_sota_repro.py (20)"
+   ]
+  },
+  "RP93": {
+   "status": "DONE_FOR_THE_TOOL",
+   "evidence": [
+    "tests/test_df_sota_repro.py: scaler fit population, future perturbation, boundary count, shims/alias, substitutions fail the closure, fresh-process reload"
+   ]
+  },
+  "RP94": {
+   "status": "IN_PROGRESS",
+   "next": "governed preflight on omega/dragon/gamma GPUs; allocation"
+  },
+  "RP95": {
+   "status": "NOT_STARTED"
+  },
+  "RP96": {
+   "status": "NOT_STARTED"
+  },
+  "RP97": {
+   "status": "NOT_STARTED"
+  }
  }
 }

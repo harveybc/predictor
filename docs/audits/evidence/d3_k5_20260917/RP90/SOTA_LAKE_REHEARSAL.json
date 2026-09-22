@@ -1,0 +1,233 @@
+{
+ "schema": "df_public_lake_rehearsal.v2",
+ "at": "2026-09-22T02:46:35Z",
+ "work": "/tmp/rp41-rehearsal-pfbk7tib",
+ "ports": {
+  "data_gov": 44021,
+  "lake_host": 49037,
+  "warehouse": 57401
+ },
+ "stack": "disposable data-gov + disposable EXTERNAL lake host + disposable DuckDB warehouse",
+ "external_host": "data_lake_service with the financial_files provider, the same package the deployed financial and synthetic lakes run: no files_lake embedded in data-gov",
+ "holdout": {
+  "start": "2016-07-01",
+  "reason": "retrospective archive: its rows' availability was never observed, so the archive is withheld from its own first day and only whole-resource AS_IS delivery is possible"
+ },
+ "lakes": {
+  "http": 200,
+  "raw": "{'lakes': [{'description': 'Cube at :5057 (PG*): SELECT-only query, append-only gov_* via write_metrics. Never reset_olap.', 'engine': 'sql_olap', 'kind': 'warehouse', 'lake_id': 'olap_cube', 'root_path': '/tmp/rp41-rehearsal-pfbk7tib', 'title': 'predictor OLAP cube', 'transport': 'http'}, {'description': 'Read-only lake over the official processed public benchmarks the author code reads. BENCHMAR"
+ },
+ "external_host_probe": {
+  "http": 200,
+  "body": {
+   "body": "date,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,1"
+  },
+  "divergence": {
+   "component": "financial_data_store (the provider the deployed financial and synthetic lake hosts run)",
+   "deployed_cannot": [
+    "deliver a resource whose availability labels are not ISO8601 (refuses: unparseable time column)",
+    "deliver a whole resource under a holdout (refuses: spans holdout: request a range)"
+   ],
+   "correction": "financial_data_store.governed_download now honours `untimed`: the archive is delivered AS_IS with an UNDECLARED scope and every date range over it is refused by its own contract, with no time parsing on that path",
+   "where": "financial-data, branch satoshi/archive-retrospective-provider-20260920 (re-based on the deployed build, because no branch of that repository matched it)",
+   "status": "CORRECTED_AND_REHEARSED: the route below runs through the EXTERNAL host with the corrected provider on its PYTHONPATH; installing that build into the store-hosts venv is part of the adoption"
+  },
+  "serving_provider_sha256": "c184664e83df08f5b696a1dda553addf7075fda9af8131d37be333ed68949e73",
+  "installed_provider_sha256": "3ea4ab5533405a044f71eacabe5d57dde9addf0244af4fbc8bdfd9918acb6a87"
+ },
+ "external_host_serves_the_archive": true,
+ "thuml_tsl_electricity/electricity.csv": {
+  "campaign_http": 201,
+  "campaign_sha256": "a352b69b36259c71f25c4a86ea4b3a74d2dd13e000fe096abd36d538222e3586",
+  "campaign_key": "rp41-rehearsal-1790045196-thuml_tsl_electricity-lake-route",
+  "units_registered": [
+   "route-1",
+   "route-probe-that-fails"
+  ],
+  "download": {
+   "http": 200,
+   "verification_state": "VERIFIED_TRANSFER",
+   "bytes": 95581762,
+   "sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+   "cached": false,
+   "availability_use": "UNDECLARED",
+   "availability_label": "UNKNOWN",
+   "availability_contract_sha256": "0218aaea83525cec8e31d0fe71dc4c7cda2e342ca1f06a9c08ea4773c17f6111",
+   "delivery_id": "b8d13855e5964d46bbd9c84a5c2cc4cd",
+   "path": "/tmp/rp41-rehearsal-pfbk7tib/cache/sota_benchmarks/7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad.csv"
+  },
+  "cache_reuse": {
+   "second_unit_cached": true,
+   "same_digest": true
+  },
+  "bytes_match_characterised": true,
+  "bytes_on_disk_sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+  "delivered_bytes_verified": true,
+  "availability_stays_undeclared": true,
+  "terminals": {
+   "sent": 2,
+   "pending": 0,
+   "failures": {},
+   "units": {
+    "route-1": {
+     "status": "COMPLETED",
+     "payload": {
+      "schema": "governed_terminal.v1",
+      "generation": 1,
+      "status": "COMPLETED",
+      "reason": null,
+      "started_at": "2026-09-22T02:46:37Z",
+      "finished_at": "2026-09-22T02:46:37Z",
+      "costs": {
+       "wall_seconds": 0.0,
+       "cpu_seconds": 0.0
+      },
+      "deliveries": [
+       "b8d13855e5964d46bbd9c84a5c2cc4cd"
+      ],
+      "artifacts": [],
+      "metrics": [
+       {
+        "metric": "lake.delivered_bytes",
+        "split": "development",
+        "horizon": 1,
+        "unit": "bytes",
+        "value": 95581762.0,
+        "std_dev": null,
+        "min_value": null,
+        "max_value": null
+       }
+      ],
+      "tags": {
+       "purpose": "PUBLIC_LAKE_ROUTE",
+       "classification": "NON_GOVERNING",
+       "phase": "DEVELOPMENT",
+       "lake": "sota_benchmarks",
+       "resource": "thuml_tsl_electricity/electricity.csv"
+      }
+     }
+    },
+    "route-probe-that-fails": {
+     "status": "FAILED",
+     "payload": {
+      "schema": "governed_terminal.v1",
+      "generation": 1,
+      "status": "FAILED",
+      "reason": "route probe: deliberate failure after its delivery, closed so the campaign has no open unit",
+      "started_at": "2026-09-22T02:46:37Z",
+      "finished_at": "2026-09-22T02:46:37Z",
+      "costs": {
+       "wall_seconds": 0.0,
+       "cpu_seconds": 0.0
+      },
+      "deliveries": [
+       "b8d2ec4d9a234607b670b2d6c1f28e90"
+      ],
+      "artifacts": [],
+      "metrics": [],
+      "tags": {
+       "purpose": "PUBLIC_LAKE_ROUTE",
+       "classification": "NON_GOVERNING",
+       "phase": "DEVELOPMENT",
+       "lake": "sota_benchmarks",
+       "resource": "thuml_tsl_electricity/electricity.csv"
+      }
+     }
+    }
+   }
+  },
+  "reconciliation": {
+   "http": 200,
+   "missing_units": [],
+   "accounting_only": [],
+   "lake_only": []
+  },
+  "campaign_closed": true,
+  "warehouse": {
+   "per_unit": {
+    "route-1": {
+     "present": true,
+     "status_matches": true,
+     "metrics_match": true,
+     "metric_rows": {
+      "sent": 1,
+      "stored": 1
+     },
+     "costs_match": true,
+     "tags_match": true,
+     "artifacts_stored": 0,
+     "terminal_sha256": "74ad168827c4617efb14e322603bbc10d56b3c98f18c358225f415c1e1f6e1a7",
+     "generation": 1
+    },
+    "route-probe-that-fails": {
+     "present": true,
+     "status_matches": true,
+     "metrics_match": true,
+     "metric_rows": {
+      "sent": 0,
+      "stored": 0
+     },
+     "costs_match": true,
+     "tags_match": true,
+     "artifacts_stored": 0,
+     "terminal_sha256": "4e718a4c96672266a3f4e2a19d9e03d5a58c8a00f695f42970163b0925503426",
+     "generation": 1
+    }
+   },
+   "content_matches": true,
+   "rows_all_generations": 2,
+   "reader": "tools/df_mod_e0_close.warehouse_terminals (the canonical reader: terminal row plus its metric, dataset and artifact children)"
+  },
+  "ranged_request": {
+   "campaign_http": 201,
+   "campaign_body": null,
+   "download_http": 422,
+   "body": {
+    "error": "this resource is a retrospective archive: its rows' availability was never observed, so a date range over it would assert availability that no evidence supports; request the whole resource"
+   },
+   "refused_at": "DOWNLOAD",
+   "refused": true,
+   "semantics": "retrospective archive: its rows' availability was never observed, so the archive is withheld from its own first day and only whole-resource AS_IS delivery is possible",
+   "holdout_start": "2016-07-01"
+  },
+  "undeclared_resource": {
+   "http": 403,
+   "body": {
+    "error": "dataset request is not declared by campaign"
+   }
+  },
+  "download_without_campaign": {
+   "http": 400,
+   "body": {
+    "error": "invalid campaign_sha256"
+   }
+  },
+  "refusals_hold": true,
+  "route_complete": true
+ },
+ "route_ok": true,
+ "route_through": "EXTERNAL_HOST",
+ "binding": {
+  "deployed_config_sha256": "449d2b7a6770096dd4a229f49304ee6da84986500f6fe390ca489079844cf4c6",
+  "panels_sha256": {
+   "thuml_tsl_electricity/electricity.csv": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad"
+  },
+  "serving_provider_sha256": "c184664e83df08f5b696a1dda553addf7075fda9af8131d37be333ed68949e73",
+  "serving_provider_path": "<home>/Documents/GitHub/financial-data/store/src/financial_data_store/inventory.py",
+  "installed_provider_sha256": "3ea4ab5533405a044f71eacabe5d57dde9addf0244af4fbc8bdfd9918acb6a87",
+  "serving_tools_sha256": {
+   "df_public_lake_adopt.py": "420e9d6462e951167feda10ea246d88345c4682180f1b29eff1b406ccb96ddf2",
+   "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+   "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+   "df_e1_close.py": "4cdd8b0728e94917d6b6e6c6f94ea30ed9c7b1f779df273839bab6d3706700db",
+   "df_e1_receipts.py": "1a599b0cb30949b2cbf7b16c0ef2265980b2a316b352eeceab215288dd654e3e",
+   "governed_run.py": "eb81c56ea69f655e79335a1999c614bdf6631de0dd8c329006ea7c86d1a460a7",
+   "df_sota_lake_adopt.py": "7a3c2ab147b09eba05b597724e33abb4e9314c4dee1acc78e97d50d3c30c151c"
+  },
+  "repository_head": "ea6f3b9255d3b438ecdb204f15be2e74093c53d8",
+  "lake_id": "sota_benchmarks"
+ },
+ "lake_host_log_tail": "/Sep/2026 21:46:36] \"GET /api/v1/describe HTTP/1.1\" 200 -\n<ip> - - [21/Sep/2026 21:46:36] \"GET /api/v2/download?resource=thuml_tsl_electricity/electricity.csv&role=panel HTTP/1.1\" 200 -\n<ip> - - [21/Sep/2026 21:46:36] \"GET /api/v2/download?resource=thuml_tsl_electricity/electricity.csv HTTP/1.1\" 200 -\n<ip> - - [21/Sep/2026 21:46:37] \"GET /api/v2/download?resource=thuml_tsl_electricity/electricity.csv HTTP/1.1\" 200 -\n<ip> - - [21/Sep/2026 21:46:37] \"\u001b[31m\u001b[1mGET /api/v2/download?resource=thuml_tsl_electricity/electricity.csv&from=2007-01-01&to=2007-01-02 HTTP/1.1\u001b[0m\" 422 -\n",
+ "warehouse_log_tail": "603bbc10d56b3c98f18c358225f415c1e1f6e1a7'+LIMIT+1000 HTTP/1.1\" 200 -\n<ip> - - [21/Sep/2026 21:46:37] \"GET /api/v1/query?sql=SELECT+metric,+split,+horizon,+unit,+value,+std_dev,+min_value,+max_value+FROM+\"main\".\"gov_terminal_metric\"+WHERE+terminal_sha256+%3D+'4e718a4c96672266a3f4e2a19d9e03d5a58c8a00f695f42970163b0925503426'+LIMIT+1000 HTTP/1.1\" 200 -\n<ip> - - [21/Sep/2026 21:46:37] \"GET /api/v1/query?sql=SELECT+role,+sha256,+bytes+FROM+\"main\".\"gov_terminal_artifact\"+WHERE+terminal_sha256+%3D+'4e718a4c96672266a3f4e2a19d9e03d5a58c8a00f695f42970163b0925503426'+LIMIT+1000 HTTP/1.1\" 200 -\n",
+ "data_gov_log_tail": "] \"\u001b[35m\u001b[1mPOST /api/v2/campaigns HTTP/1.1\u001b[0m\" 201 -\n<ip> - - [21/Sep/2026 21:46:37] \"\u001b[31m\u001b[1mGET /api/v2/download?lake=sota_benchmarks&resource=thuml_tsl_electricity/electricity.csv&role=panel&from=2007-01-01&to=2007-01-02 HTTP/1.1\u001b[0m\" 422 -\n<ip> - - [21/Sep/2026 21:46:37] \"\u001b[31m\u001b[1mGET /api/v2/download?lake=sota_benchmarks&resource=uci_501_beijing_multisite_air_quality/panel.parquet&role=panel HTTP/1.1\u001b[0m\" 403 -\n<ip> - - [21/Sep/2026 21:46:37] \"\u001b[31m\u001b[1mGET /api/v2/download?lake=sota_benchmarks&resource=thuml_tsl_electricity/electricity.csv&role=panel HTTP/1.1\u001b[0m\" 400 -\n"
+}
