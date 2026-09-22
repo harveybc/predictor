@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="predictor-duckdb-store",
-    version="0.1.0",
+    version="0.1.1",
     description="The predictor OLAP cube on DuckDB, as a backend of a data-warehouse host",
     packages=find_packages(where="src"),
     package_dir={"": "src"},

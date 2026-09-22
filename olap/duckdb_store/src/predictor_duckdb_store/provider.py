@@ -141,6 +141,19 @@ class PredictorDuckdbStore(_Cube):
                 conn.execute(text(
                     f"ALTER TABLE {self._qualified('gov_terminal_dataset')} "
                     "ADD COLUMN availability_contract_sha256 TEXT"))
+        # A cube created with `bytes INTEGER` (32-bit in DuckDB) refused the terminal of a
+        # 4,198,064,038-byte governed artifact (2026-09-22). Widened in place at start-up,
+        # then checkpointed so the write-ahead log never carries the DDL (see `_ddl`).
+        artifact_columns = {column["name"]: str(column["type"]).upper() for column in
+                            inspect(engine).get_columns("gov_terminal_artifact", schema=schema)}
+        if artifact_columns.get("bytes") in ("INTEGER", "INT", "INT4", "INT32"):
+            with engine.begin() as conn:
+                conn.execute(text(
+                    f"ALTER TABLE {self._qualified('gov_terminal_artifact')} "
+                    "ALTER COLUMN bytes TYPE BIGINT"))
+            with engine.connect() as conn:
+                conn.execute(text("CHECKPOINT"))
+                conn.commit()
 
     # -- write serialisation ---------------------------------------------------
     def write_metrics(self, report):

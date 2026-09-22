@@ -164,3 +164,10 @@ def test_a_duckdb_store_created_with_a_32_bit_bytes_column_is_widened_in_place(t
     assert kind == "BIGINT" and kept == 7
     terminal = terminal_with(artifacts=1, artifact_bytes=4_198_064_038)
     assert plugin.write_terminal(terminal)["stored"]
+    # the file reopens by another process with the widened column and both rows (no DDL left in the log)
+    plugin.engine().dispose()
+    con = duckdb.connect(str(path), read_only=True)
+    assert con.execute("SELECT data_type FROM information_schema.columns WHERE table_name = 'gov_terminal_artifact'"
+                       " AND column_name = 'bytes'").fetchone()[0] == "BIGINT"
+    assert sorted(r[0] for r in con.execute("SELECT bytes FROM gov_terminal_artifact").fetchall()) == [7, 4_198_064_038]
+    con.close()
