@@ -1,0 +1,72 @@
+{
+  "scope": "POST on the repaired tree; Musashi's steps repeated, typed refusals recorded",
+  "baseline": {
+    "verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": []
+  },
+  "altered_vault": {
+    "verified_units": [],
+    "problems": [
+      "L16_h4_s2021: the persisted metric catalog differs from the recomputed one: VAULT_CHANGED (candidate preserved as METRICS_VAULT.rejected.1790093289.json)"
+    ],
+    "persisted_mae_after_closure": 1.0069436567201273,
+    "rejected_candidates_preserved": [
+      "METRICS_VAULT.rejected.1790093289.json"
+    ],
+    "reported_vault_digest_is_the_recomputed_successor": true,
+    "successor_verifies_next_closure": [
+      "L16_h4_s2021"
+    ]
+  },
+  "contradictory_cached_replay": {
+    "verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": [],
+    "max_abs_prediction_difference_reported": 0.0,
+    "adopted_from_cache": false,
+    "exact_equal_fraction": 1.0
+  },
+  "short_loader": {
+    "full": {
+      "outcome": "RETURNED",
+      "mae": 1.0,
+      "consumed_windows": 10
+    },
+    "partial": {
+      "outcome": "REFUSED",
+      "exception": "VaultRefusal",
+      "message": "REFUSED: the loader consumed 5 windows, the predictions have 10: INCOMPLETE POPULATION"
+    }
+  },
+  "constant_correlation": {
+    "global": null,
+    "per_channel": [
+      null
+    ],
+    "catalog_state": {
+      "state": "UNDEFINED",
+      "undefined_channels": 1,
+      "rule": "Pearson needs positive variance in BOTH series; R2 needs positive true variance"
+    }
+  },
+  "horizon_vs_seed_grain": {
+    "expected_seed_averages": [
+      2.5,
+      2.5,
+      2.5
+    ],
+    "expected_seed_sd": 0.0,
+    "reported_values": [
+      2.5,
+      2.5,
+      2.5
+    ],
+    "reported_sd": 0.0,
+    "reported_n_seeds": 3,
+    "grain": "average over the four horizons within each seed, then across seeds",
+    "status_label": "OUTSIDE_OPERATIONAL_MARGIN"
+  }
+}
