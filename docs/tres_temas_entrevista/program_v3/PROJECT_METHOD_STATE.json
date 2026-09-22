@@ -1041,16 +1041,27 @@
    "recompute_on_four_cells": "PENDING (dragon closure)"
   },
   "RP100": {
-   "status": "CODE_DONE_TESTS_RUNNING",
-   "replay": "no cached adoption; outputs validated (finite, shape, count, pointwise, metrics, targets); same_device_repeatability vs cross_device_portability fields; old CPU failures kept as failures; route-trace diagnostic implemented (bounded), run PENDING"
+   "status": "DIAGNOSTIC_DONE_CLOSURE_RUNNING",
+   "route_trace": "three T=96 cells, nine batches holding the most discrepant windows, CPU vs GPU with identical batching: 0 route flips out of 59,351,616 routes per block, 0 cut-index changes, gating probability differences <= 8e-5, min distance to the top-p threshold ~8e-5; same-device repeat 0.0 on both devices -> classification NUMERICAL_ONLY (kernel-level tensor differences amplified through the network; the top-p routing hypothesis is NOT supported on the traced batches)",
+   "evidence": "docs/audits/evidence/d3_k5_20260917/RP98/ROUTE_TRACE.*.json",
+   "replay_policy": "no cached adoption; outputs validated in full; same-device (GPU UUID a8bd1b2c… for dragon-trained cells) vs cross-device fields; old CPU failures preserved as failures of the original rule"
   },
   "RP101": {
-   "status": "CODE_DONE_TESTS_RUNNING",
-   "adapter": "df_sota_bounded_eval.v1: memmapped predictions/targets, hash-streamed targets, author float32 metric only within a declared budget, float64 always; parity and refusal tests; profile-eval subcommand (cgroup incl. file pages, RSS, disk, VRAM, thermals); profiles PENDING on dragon"
+   "status": "PROFILED_ADMITTED",
+   "adapter": "df_sota_bounded_eval.v1 (memmapped predictions/targets, hash-streamed targets, author float32 metric only within a declared budget, float64 always); parity test on the tiny author fixture: identical predictions, targets, population, checkpoint, author metric",
+   "profiles_dragon_8GiB_cap_budget_4GiB": {
+    "h96": "cgroup peak 3.77 GB (anon 1.09, file 1.32), RSS 4.17 GB, disk 1.30 GB, VRAM 0.86 GB, 16.5 s, author metric EXECUTED",
+    "h192": "peak 6.30 GB, disk 2.56 GB, 19.7 s, EXECUTED",
+    "h336": "peak 6.45 GB (file 4.27), disk 4.33 GB, 19.6 s, author metric NOT executed within 4 GiB (needs 6.4 GB temporaries) -> float64 basis",
+    "h720": "peak 7.73 GB = MemoryHigh (file 4.86), disk 8.51 GB, 29 s, NOT executed (needs 12.6 GB) -> float64 basis"
+   },
+   "evidence": "docs/audits/evidence/d3_k5_20260917/RP98/EVAL_PROFILE.h*.dragon.json",
+   "admission": "one cell at a time on dragon within the 8 GiB request (11 GiB available, 3 GiB reserve), 32 GiB temporary disk slot; the author's float32 reduction for T=336/720 is a named residual: it needs ~7/13 GB of temporaries beyond the memmaps"
   },
   "RP102": {
-   "status": "NOT_STARTED",
-   "pending_cells": [
+   "status": "RUNNING_ON_DRAGON",
+   "started": "2026-09-22",
+   "cells": [
     "L96_h192_s2022",
     "L96_h192_s2023",
     "L96_h336_s2021",
@@ -1059,7 +1070,8 @@
     "L96_h720_s2021",
     "L96_h720_s2022",
     "L96_h720_s2023"
-   ]
+   ],
+   "path": "bounded adapter, author recipe untouched, governed units, GPU a8bd1b2c (RTX 4090 L)"
   },
   "RP103": {
    "status": "NOT_STARTED"
