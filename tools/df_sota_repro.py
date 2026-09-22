@@ -101,12 +101,72 @@ class SotaRefusal(SystemExit):
 
 # --- small helpers --------------------------------------------------------------------------------------------------------
 
+def _dontneed(fd: int, offset: int, length: int) -> None:
+    """Tell the kernel the pages of [offset, offset+length) of this file are not needed again (they stay on disk): a bounded
+    evaluation must not let file-backed pages pile up until the host's memory-pressure killer acts (gamma, 2026-09-22)."""
+    try:
+        os.posix_fadvise(fd, offset, length, os.POSIX_FADV_DONTNEED)
+    except (AttributeError, OSError):
+        pass
+
+
 def sha_file(path: Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as fh:
+        pos = 0
         for block in iter(lambda: fh.read(1 << 22), b""):
-            h.update(block)
+            h.update(block); pos += len(block)
+            if pos % (1 << 28) < (1 << 22):
+                _dontneed(fh.fileno(), 0, pos)
+        _dontneed(fh.fileno(), 0, pos)
     return h.hexdigest()
+
+
+def stream_npz(dest: Path, member: str, src_npy: Path) -> dict:
+    """Write an UNCOMPRESSED .npz holding `member` from an existing .npy file, streaming in 64 MiB pieces with the page cache
+    released behind both files; returns the sha256 of the member's array bytes (header excluded) and of the whole npz."""
+    import zipfile
+    from numpy.lib import format as npf
+    with open(src_npy, "rb") as fh:
+        version = npf.read_magic(fh); npf._read_array_header(fh, version); header_len = fh.tell()
+    body_hash = hashlib.sha256()
+    with zipfile.ZipFile(dest, "w", compression=zipfile.ZIP_STORED, allowZip64=True) as zf, open(src_npy, "rb") as src:
+        with zf.open(member + ".npy", "w", force_zip64=True) as out:
+            src.seek(0); written = 0
+            while True:
+                block = src.read(1 << 26)
+                if not block:
+                    break
+                out.write(block)
+                if written + len(block) > header_len:
+                    start = max(0, header_len - written)
+                    body_hash.update(block[start:])
+                written += len(block)
+                _dontneed(src.fileno(), 0, written)
+                try:
+                    zf.fp.flush(); _dontneed(zf.fp.fileno(), 0, zf.fp.tell())
+                except (AttributeError, OSError):
+                    pass
+    return {"array_sha256": body_hash.hexdigest(), "npz_sha256": sha_file(dest)}
+
+
+def float64_metrics_files(preds_npy: Path, trues_npy: Path, shape: tuple, chunk_windows: int = 64) -> dict:
+    """MAE/MSE in float64 read directly from two .npy files window-chunk by window-chunk, releasing the page cache behind."""
+    from numpy.lib import format as npf
+    W = shape[0]; per_window = int(np.prod(shape[1:])); item = 4
+    def header_len(path):
+        with open(path, "rb") as fh:
+            v = npf.read_magic(fh); npf._read_array_header(fh, v); return fh.tell()
+    hp, ht = header_len(preds_npy), header_len(trues_npy)
+    n, ab, sq = 0, 0.0, 0.0
+    with open(preds_npy, "rb") as fp, open(trues_npy, "rb") as ft:
+        for w0 in range(0, W, chunk_windows):
+            cnt = min(chunk_windows, W - w0) * per_window
+            fp.seek(hp + w0 * per_window * item); ft.seek(ht + w0 * per_window * item)
+            a = np.frombuffer(fp.read(cnt * item), dtype=np.float32).astype(np.float64); b = np.frombuffer(ft.read(cnt * item), dtype=np.float32).astype(np.float64)
+            d = a - b; ab += float(np.abs(d).sum()); sq += float((d * d).sum()); n += d.size
+            _dontneed(fp.fileno(), 0, fp.tell()); _dontneed(ft.fileno(), 0, ft.tell())
+    return {"mae": ab / n, "mse": sq / n}
 
 
 def sha_obj(obj) -> str:
@@ -455,7 +515,7 @@ def main_like_run_py(argv: list, *, seed: int, data_dir: Path, data_name: str, w
     if bounded_out is not None:
         return {**base, "preds": bounded_out["preds"], "trues": bounded_out["trues"], "author_metric": bounded_out["author_metric"],
                 "author_metric_state": bounded_out["author_metric_state"], "independent_metric_float64": bounded_out["independent_metric_float64"],
-                "bounded": {k: bounded_out[k] for k in ("finalized", "adapter", "preds_path", "trues_path")}}
+                "bounded": {k: bounded_out[k] for k in ("finalized", "adapter", "preds_path", "trues_path", "shape")}}
     mae, mse = float(captured.value[0]), float(captured.value[1])
     return {**base, "preds": captured.preds, "trues": captured.trues, "author_metric": {"mae": mae, "mse": mse}, "author_metric_state": "EXECUTED: the author's test()"}
 
@@ -481,6 +541,7 @@ def bounded_test(exp, setting: str, work: Path, *, author_metric_budget_bytes: i
     exp.model.load_state_dict(torch.load(checkpoint, map_location=exp.device))     # the author's test(test=1) reload, on the same device
     preds_path, trues_path = work / "bounded_preds.npy", work / "bounded_trues.npy"
     preds = trues = None
+    fp = ft = None; header_off = None
     true_hash = hashlib.sha256()
     f_dim = -1 if exp.args.features == "MS" else 0
     n_seen, batches = 0, []
@@ -498,18 +559,25 @@ def bounded_test(exp, setting: str, work: Path, *, author_metric_budget_bytes: i
             batch_y = batch_y[:, :, f_dim:]
             if preds is None:
                 shape = (n_windows, outputs.shape[1], outputs.shape[2])
-                preds = open_memmap(preds_path, mode="w+", dtype=np.float32, shape=shape)
-                trues = open_memmap(trues_path, mode="w+", dtype=np.float32, shape=shape)
+                # the files are created with their .npy headers (the memmap only writes the header), then filled through plain file
+                # handles so that every written page can be released from the cache at once; nothing is held in RAM
+                m = open_memmap(preds_path, mode="w+", dtype=np.float32, shape=shape); header_off = m.offset; del m
+                m = open_memmap(trues_path, mode="w+", dtype=np.float32, shape=shape); del m
+                fp = open(preds_path, "r+b"); ft = open(trues_path, "r+b"); fp.seek(header_off); ft.seek(header_off)
             b = outputs.shape[0]
             if n_seen + b > n_windows:
                 raise SotaRefusal(f"REFUSED: the loader yielded more windows ({n_seen + b}+) than the dataset declares ({n_windows})")
-            preds[n_seen:n_seen + b] = outputs.astype(np.float32, copy=False)
-            trues[n_seen:n_seen + b] = batch_y.astype(np.float32, copy=False)
-            true_hash.update(memoryview(np.ascontiguousarray(batch_y.astype(np.float32, copy=False))).cast("B"))
+            ob = np.ascontiguousarray(outputs.astype(np.float32, copy=False)); yb = np.ascontiguousarray(batch_y.astype(np.float32, copy=False))
+            fp.write(memoryview(ob).cast("B")); ft.write(memoryview(yb).cast("B"))
+            true_hash.update(memoryview(yb).cast("B"))
             batches.append(b); n_seen += b
+            if len(batches) % 16 == 0:
+                fp.flush(); ft.flush(); _dontneed(fp.fileno(), 0, fp.tell()); _dontneed(ft.fileno(), 0, ft.tell())
+    if fp is not None:
+        fp.flush(); ft.flush(); _dontneed(fp.fileno(), 0, fp.tell()); _dontneed(ft.fileno(), 0, ft.tell()); fp.close(); ft.close()
     if n_seen != n_windows:
         raise SotaRefusal(f"REFUSED: the loader yielded {n_seen} windows, the dataset declares {n_windows}: INCOMPLETE POPULATION")
-    preds.flush(); trues.flush()
+    preds = np.load(preds_path, mmap_mode="r"); trues = np.load(trues_path, mmap_mode="r")
     finalized = {"windows": n_seen, "batches": len(batches), "batch_sizes": {"first": batches[0], "last": batches[-1], "distinct": sorted(set(batches))},
                  "true_sha256": true_hash.hexdigest(), "preds_bytes": int(preds.nbytes)}
     # the author's reduction on the SAME function and dtype, when its temporaries (two full-size float32 arrays per metric) fit
@@ -522,8 +590,8 @@ def bounded_test(exp, setting: str, work: Path, *, author_metric_budget_bytes: i
         author_metric_state = "EXECUTED: utils.metrics.metric on the memmapped float32 arrays (same function, dtype, layout)"
     else:
         author_metric_state = f"NOT_EXECUTED_WITHIN_BUDGET: needs ~{need} bytes of temporaries, budget {author_metric_budget_bytes}"
-    f64 = float64_metrics(preds, trues)
-    return {"preds": preds, "trues": trues, "preds_path": preds_path, "trues_path": trues_path, "finalized": finalized,
+    f64 = float64_metrics_files(preds_path, trues_path, preds.shape)
+    return {"preds": preds, "trues": trues, "preds_path": preds_path, "trues_path": trues_path, "finalized": finalized, "shape": list(preds.shape),
             "author_metric": author_metric, "author_metric_state": author_metric_state, "independent_metric_float64": f64,
             "adapter": {"version": BOUNDED_ADAPTER_VERSION, "source_sha256": hashlib.sha256(__import__("inspect").getsource(bounded_test).encode()).hexdigest(),
                         "author_test_untouched": True, "replaces": "Exp_Long_Term_Forecast.test(): list accumulation + np.concatenate + result file; forward pass identical"}}
@@ -642,18 +710,21 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
         pass
     res = main_like_run_py(cell["argv"], seed=cell["seed"], data_dir=data_path.parent, data_name=data_path.name, work=work, gpu=gpu, use_gpu=use_gpu,
                            log=folder / "author_stdout.log", bounded=bounded, author_metric_budget_bytes=author_metric_budget_bytes)
-    preds, trues = np.asarray(res["preds"], dtype=np.float32), np.asarray(res["trues"], dtype=np.float32)
-    np.savez(folder / "arrays.npz", pred=preds)                    # uncompressed by the owner's decision (float32 outputs compress < 13 %)
-    trues_sha = sha_array(trues); true_shape = list(trues.shape)
     if res.get("bounded"):
-        if res["bounded"]["finalized"]["true_sha256"] != trues_sha:
-            raise SotaRefusal("REFUSED: the streamed target digest and the memmapped targets disagree")
-        del trues
+        # the artifact is streamed from the prediction file (uncompressed npz, the owner's decision); nothing is materialized in RAM
+        shape = tuple(res["bounded"]["shape"])
+        streamed = stream_npz(folder / "arrays.npz", "pred", Path(res["bounded"]["preds_path"]))
+        pred_sha, trues_sha, true_shape, pred_shape = streamed["array_sha256"], res["bounded"]["finalized"]["true_sha256"], list(shape), list(shape)
+        preds = None
         for tmp in (res["bounded"]["preds_path"], res["bounded"]["trues_path"]):
             try:
                 Path(tmp).unlink()
             except OSError:
                 pass
+    else:
+        preds, trues = np.asarray(res["preds"], dtype=np.float32), np.asarray(res["trues"], dtype=np.float32)
+        np.savez(folder / "arrays.npz", pred=preds)                    # uncompressed by the owner's decision (float32 outputs compress < 13 %)
+        trues_sha = sha_array(trues); true_shape = list(trues.shape); pred_sha = sha_array(preds); pred_shape = list(preds.shape)
     ckpt = folder / "checkpoint.pth"
     shutil.copy2(res["checkpoint"], ckpt)
     ru1 = resource.getrusage(resource.RUSAGE_SELF)
@@ -666,13 +737,14 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
         pass
     # independent float64 metric on the same arrays (the author's is float32 by construction), chunked: no full-size temporaries
     f64 = res["independent_metric_float64"] if res.get("bounded") else float64_metrics(preds, trues)
+    dtype_name = "float32"
     training = parse_author_log((folder / "author_stdout.log").read_text())
     record = {"schema": "df_sota_cell_record.v1", "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")},
               "design_sha256": design["design_sha256"], "setting": res["setting"], "effective_args": {k: v for k, v in sorted(res["args"].items())},
               "author_metric_float32": res["author_metric"], "author_metric_state": res.get("author_metric_state"), "independent_metric_float64": f64,
               "evaluation_path": ({"bounded_adapter": res["bounded"]["adapter"], "finalized": res["bounded"]["finalized"]} if res.get("bounded") else {"author_test": True}),
-              "shapes": {"pred": list(preds.shape), "true": true_shape}, "dtype": str(preds.dtype),
-              "arrays_sha256": sha_file(folder / "arrays.npz"), "pred_sha256": sha_array(preds), "true_sha256": trues_sha, "checkpoint_sha256": sha_file(ckpt),
+              "shapes": {"pred": pred_shape, "true": true_shape}, "dtype": dtype_name,
+              "arrays_sha256": sha_file(folder / "arrays.npz"), "pred_sha256": pred_sha, "true_sha256": trues_sha, "checkpoint_sha256": sha_file(ckpt),
               "checkpoint_bytes": ckpt.stat().st_size, "n_parameters": res["n_parameters"], "device": res["device"], "training": training,
               "cost": {"wall_seconds": res["wall_seconds"], "cpu_seconds": ru1.ru_utime + ru1.ru_stime - (ru0.ru_utime + ru0.ru_stime),
                        "peak_rss_bytes": int(ru1.ru_maxrss) * 1024, "peak_gpu_allocated_bytes": peak_gpu, "host": socket.gethostname(),
