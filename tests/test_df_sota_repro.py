@@ -801,7 +801,7 @@ def test_RP100_the_device_identity_is_the_device_the_process_computes_on_not_nvi
     monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "1")
     if not torch.cuda.is_available():
         assert R.actual_device_uuid(0) == "GPU-b77fc3ad"                      # a numeric mask cannot be resolved without CUDA: nvidia-smi order
-    assert R.trained_device_of({"device_uuid": "GPU-x", "environment": {"cuda_visible_devices": "GPU-y"}}) == "GPU-x"
+    assert R.trained_device_of({"device": "cuda:0", "device_uuid": "GPU-x", "environment": {"cuda_visible_devices": "GPU-y"}}) == "GPU-x"
     assert R.trained_device_of({"device": "cuda:0", "environment": {"cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"},
                                 "cost": {"gpu_before": [{"uuid": "GPU-b77fc3ad"}]}}) == "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
     assert R.trained_device_of({"device": "cuda:0", "environment": {"cuda_visible_devices": None}, "cost": {"gpu_before": [{"uuid": "GPU-b77fc3ad"}]}}) == "GPU-b77fc3ad"
