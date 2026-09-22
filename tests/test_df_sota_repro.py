@@ -29,6 +29,11 @@ def _load(name):
     return mod
 
 
+if "tensorflow" in sys.modules or "keras" in sys.modules:
+    # the author path is torch; in one process after the TensorFlow/Keras suites it dies with a fatal interpreter error
+    # (observed on dragon, full-suite run of 2026-09-22). These rules run in their OWN process: `pytest tests/test_df_sota_repro.py`.
+    pytest.skip("run in a separate process: the torch author path does not share a process with TensorFlow", allow_module_level=True)
+
 R = _load("df_sota_repro")
 B = _load("df_benchmark_contract")
 T = _load("df_closure_table")
