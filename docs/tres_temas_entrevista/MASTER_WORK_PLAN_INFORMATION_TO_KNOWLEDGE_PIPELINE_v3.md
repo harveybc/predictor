@@ -542,3 +542,18 @@ pasan la tolerancia existente. No fue una consulta nueva al warehouse vivo.
   gobernado de costo solo en train bajo RP88. Huber/MAE y Adam/AdamW obligatorios,
   sin eleccion desde electricidad; sin busqueda financiera completa ni reserva.
   RL semanal y preentrenamiento de extractor/nucleo conservan sus dependencias.
+
+### Revision RP82-RP89 y continuacion RP90-RP97 SOTA-first (21/22-sep)
+
+**Ejecutado por Satoshi (22-sep, RP90-RP97, pendiente de revision):** [retorno](../audits/work_plan/SATOSHI_RP90_RP97_RETURN_2026_09_22.md).
+Disposicion HISTORICAL_DEV_ONLY implementada en los caminos reales de seleccion (resolver, ranking activo de la tabla,
+cierres); hallazgos RP89 de Musashi reparados y re-probados (POST en `docs/audits/evidence/d3_k5_20260917/RP90/`).
+Referencia seleccionada: **TimeFilter (ICML 2025) L=96, Tabla 8** ([dossier](program_v3/SOTA_REFERENCE_DOSSIER_2026_09_21.md),
+[lock](program_v3/SOTA_PROTOCOL_LOCK_2026_09_21.md)); ECL oficial adoptado como recurso gobernado (lago `sota_benchmarks`).
+Reproduccion fiel PARCIAL por poblacion: T=96 tres semillas verificadas (media MSE 0.1355 / MAE 0.2329 frente a 0.133 / 0.230
+publicados: acuerdo numerico bajo la regla congelada), T=192 una semilla (0.1609 / 0.2560), T=336/720 sin host
+([asignacion RP94](program_v3/SOTA_ALLOCATION_RP94_2026_09_22.md): deficit de memoria nombrado, receta no encogida).
+Ordenes del owner del 22-sep: ningun trabajo en omega hasta el 24-sep (retencion termica de viaje); sin compresion de
+predicciones y boveda exhaustiva de metricas por celda para que Musashi borre los arrays tras su analisis independiente.
+Siguiente: T=192 semillas 2022/2023 y replay en omega desde el 24-sep; decision del owner sobre el techo de memoria para
+T=336/720; solo tras aceptacion de la reproduccion se planifican R0/R1/R2 modulares y H-CORE contra esta referencia.
