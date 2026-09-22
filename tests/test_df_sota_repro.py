@@ -602,9 +602,13 @@ def test_RP101_a_record_without_the_authors_float32_reduction_verifies_on_its_fl
     held = json.loads(json.dumps(world["held"]))
     held[unit]["artifacts"] = [a if a["role"] != "record" else {**a, "sha256": R.sha_file(folder / "cell.json")} for a in held[unit]["artifacts"]]
     (root / "TERMINALS" / f"{unit}.json").write_text(json.dumps({"status": "COMPLETED", "artifacts": held[unit]["artifacts"]}))
+    # the record changed, so a catalog persisted under the old record identity is VAULT_CHANGED once (preserved), then the successor verifies
+    first = R.verify_sota_run(root, warehouse=lambda c: {"current": json.loads(json.dumps(held))}, data_path=world["data"], replay=False)
+    assert first["verified_units"] == [unit] or any("VAULT_CHANGED" in p for p in first["problems"])
     ver = R.verify_sota_run(root, warehouse=lambda c: {"current": json.loads(json.dumps(held))}, data_path=world["data"], replay=True)
     row = ver["rows"][0]
-    assert row["verified"] and row["metric_basis"].startswith("independent_float64") and row["author_metric_float32"] == rec["independent_metric_float64"]
+    assert row["verified"], ver["problems"]
+    assert row["metric_basis"].startswith("independent_float64") and row["author_metric_float32"] == rec["independent_metric_float64"]
     assert row["replay"]["path"].startswith("fresh process") and row["replay"]["replayed_metric_float64"] and row["replay"]["true_sha256_replayed"] == rec["true_sha256"]
     t = R.table(json.loads((root / "DESIGN.json").read_text()), ver)
     assert t["rows"][0]["metric_basis"] == [row["metric_basis"]]
