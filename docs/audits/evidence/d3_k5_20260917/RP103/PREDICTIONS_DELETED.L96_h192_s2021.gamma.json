@@ -1,0 +1,15 @@
+{
+ "schema": "df_sota_predictions_deleted.v1",
+ "unit": "L96_h192_s2021",
+ "deleted_at": "2026-09-22T23:02:50Z",
+ "arrays_sha256": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+ "pred_sha256": "16c616d590654b8c94e27a3d44858ca2280e816f8ebcb81515b08feefaca6112",
+ "closure_report_sha256": "fbe2cd4c97a33a59546967c7008e45b5c5bcdaa3ded38df18528967e2652338d",
+ "verified_at_deletion": true,
+ "authorization": "owner 2026-09-22 (retention document); Musashi RP98-RP105 RP103",
+ "paths_deleted": [
+  "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h192_s2021/arrays.npz",
+  "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1_from_omega/attempts/L96_h192_s2021/arrays.npz"
+ ],
+ "reading": "metrics verified before authorized deletion; the arrays' hash records their former identity and cannot reconstruct them; no current replay is possible"
+}

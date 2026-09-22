@@ -1109,18 +1109,33 @@
    }
   },
   "RP103": {
-   "status": "CONSOLIDATED_CLOSURE_RUNNING_ON_GAMMA",
-   "started": "2026-09-22 16:54 local",
-   "script": "~/rp103_close_gamma.sh on WORKER_B: merge _from_dragon (+ REPLAYS_HISTORY.*, ROUTE_TRACE.json x3) and _from_omega, close --replay-device cuda --author-metric-budget-gib 4 (memory-bounded closure), deletion gate dry run over root + staging copies"
+   "status": "DONE_PARTIAL: consolidated closure on WORKER_B (4 runs; final pre-deletion report sha256 fbe2cd4c…), 6 cells verified (T=192 x3, T=336 x3) and their arrays deleted on WORKER_B (7 paths, 11.16 GB) and WORKER_A (2 paths, 2.29 GB) with receipts; T=96 unverified here (cross-GPU pointwise fail 4090->5090, metrics bit-identical; same-device replays on WORKER_A pending the owner), T=720 custody pending the warehouse restart; omega copies untouched (hold)",
+   "agreement": {
+    "192": "OPERATIONAL_AGREEMENT mean 0.157645/0.252163 vs 0.154/0.248 (+0.0036/+0.0042)",
+    "336": "OPERATIONAL_AGREEMENT mean 0.164480/0.262985 vs 0.162/0.261 (+0.0025/+0.0020), float64 basis",
+    "96": "NO_MEASUREMENT in this closure (executed 0.13332/0.14008/0.13309)",
+    "720": "NO_MEASUREMENT (executed 0.18714/0.19817/0.18537; MAE 0.28752/0.29865/0.28568)",
+    "avg": "NOT_COMPUTED"
+   },
+   "closure_fixes": [
+    "memory-bounded closure (StoredArray chunked reads incl. compressed members; targets streamed to closure_work; chunked replay rule) 21d36487/6cdc0818",
+    "device identity = actual CUDA UUID; older records from occupied GPU memory (aceb756d, 7abad9bf)",
+    "worker replay histories carried through merge as HISTORICAL_RECORD_ONLY (844a8d4a)"
+   ],
+   "evidence": "docs/audits/evidence/d3_k5_20260917/RP103/"
   },
   "RP104": {
-   "status": "SUITES_RUN_ON_DRAGON",
-   "tool_suite": "tests/test_df_sota_repro.py 31 passed, 1 skipped (own process; the skip: seal() needs the benchmark store receipt, present on omega only)",
-   "compatible_suites_dragon": "closure table 35+2, benchmark contract 35, block 19+1, financial 25+2 (FL08 stack test deselected: needs omega's governance stack), lake adopters 16 SKIPPED on dragon (need omega's deployed data-gov configuration; they passed on omega before the hold): 117 passed + 35 passed, 16 skipped, 1 deselected",
-   "environment_scope": "every exercised reproduction path (author parser/script/loader/model/scorer, bounded adapter, catalog, replay, deletion) is covered by the tool suite on dragon; the 24 dragon-environment failures of the earlier full run (operators causality: crispdm-run not on the non-login PATH; governed_run classification: sibling preprocessor worktree absent; acceptance c1_c16: incremental_census absent) do not touch that path and were not re-run"
+   "status": "DONE",
+   "suites_at_279a2abd_on_dragon": "sota tool 40 passed + 1 skipped; closure table/benchmark contract/block/financial 117 passed, 2 deselected; lake adopters 4 skipped; olap store 106 passed + 1 skipped on SQLite AND DuckDB (throwaway venv)"
   },
   "RP105": {
-   "status": "NOT_STARTED"
+   "status": "RETURN_WRITTEN",
+   "return": "docs/audits/work_plan/SATOSHI_RP98_RP105_RETURN_2026_09_22.md",
+   "open_for_owner": [
+    "restart crispdm-data-warehouse-olap.service on omega (T=720 terminals)",
+    "clear WORKER_A's GPU for 3 x 22 s same-device replays (T=96)",
+    "omega deletions after the hold"
+   ]
   },
   "placement": "all compute on dragon (cooled WORKER_A, RTX 4090 L, 11 GiB available, 14 GiB slice); omega under the travel hold (marker present); gamma out (4 GiB available, eGPU busy)",
   "thermal_observation_2026_09_22": "dragon RTX 4090 L during L96_h192_s2022 training: 83-85 C at 98 %, the driver's software thermal slowdown intermittently ACTIVE (target 87 C, clocks 1.77-2.13 GHz); device policy engaged, job not interrupted; a cool-down guard (< 70 C between cells, max 30 min wait) added to execute for the next runs; per-cell records keep gpu_before/gpu_after"

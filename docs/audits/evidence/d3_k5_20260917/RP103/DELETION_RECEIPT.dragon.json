@@ -1,0 +1,94 @@
+{
+ "schema": "df_sota_deletion_receipt.v1",
+ "at": "2026-09-22T23:04:23Z",
+ "host": "dragon",
+ "root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1",
+ "dry_run": false,
+ "units": {
+  "L96_h192_s2021": {
+   "gate": {
+    "pass": true,
+    "reasons": [],
+    "report_sha256": "fbe2cd4c97a33a59546967c7008e45b5c5bcdaa3ded38df18528967e2652338d"
+   },
+   "copies_inventoried": [
+    {
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h192_s2021/arrays.npz",
+     "root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1",
+     "unit": "L96_h192_s2021",
+     "bytes": 1143794042,
+     "sha256": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+     "filesystem_id": "66306",
+     "readers": []
+    },
+    {
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1_from_omega/attempts/L96_h192_s2021/arrays.npz",
+     "root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1_from_omega",
+     "unit": "L96_h192_s2021",
+     "bytes": 1143794042,
+     "sha256": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+     "filesystem_id": "66306",
+     "readers": []
+    }
+   ],
+   "deleted": [
+    {
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h192_s2021/arrays.npz",
+     "deleted": true,
+     "bytes": 1143794042,
+     "sha256": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+     "filesystem_id": "66306",
+     "reclaimed_bytes_fs_delta": 1143799808,
+     "at": "2026-09-22T23:04:27Z"
+    },
+    {
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1_from_omega/attempts/L96_h192_s2021/arrays.npz",
+     "deleted": true,
+     "bytes": 1143794042,
+     "sha256": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+     "filesystem_id": "66306",
+     "reclaimed_bytes_fs_delta": 1143799808,
+     "at": "2026-09-22T23:04:27Z"
+    }
+   ],
+   "marker": {
+    "schema": "df_sota_predictions_deleted.v1",
+    "unit": "L96_h192_s2021",
+    "deleted_at": "2026-09-22T23:04:27Z",
+    "arrays_sha256": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+    "pred_sha256": "16c616d590654b8c94e27a3d44858ca2280e816f8ebcb81515b08feefaca6112",
+    "closure_report_sha256": "fbe2cd4c97a33a59546967c7008e45b5c5bcdaa3ded38df18528967e2652338d",
+    "verified_at_deletion": true,
+    "authorization": "owner 2026-09-22 (retention document); Musashi RP98-RP105 RP103",
+    "paths_deleted": [
+     "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h192_s2021/arrays.npz",
+     "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1_from_omega/attempts/L96_h192_s2021/arrays.npz"
+    ],
+    "reading": "metrics verified before authorized deletion; the arrays' hash records their former identity and cannot reconstruct them; no current replay is possible"
+   }
+  }
+ },
+ "paths": [
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h192_s2021/arrays.npz",
+   "deleted": true,
+   "bytes": 1143794042,
+   "sha256": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+   "filesystem_id": "66306",
+   "reclaimed_bytes_fs_delta": 1143799808,
+   "at": "2026-09-22T23:04:27Z"
+  },
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1_from_omega/attempts/L96_h192_s2021/arrays.npz",
+   "deleted": true,
+   "bytes": 1143794042,
+   "sha256": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+   "filesystem_id": "66306",
+   "reclaimed_bytes_fs_delta": 1143799808,
+   "at": "2026-09-22T23:04:27Z"
+  }
+ ],
+ "reclaimed_bytes_by_filesystem": {
+  "66306": 2287599616
+ }
+}

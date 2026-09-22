@@ -1,0 +1,28 @@
+# SOTA reproduction table — Hu, Y. et al. TimeFilter: Patch-Specific Spatial-Temporal Gr…
+
+Protocol L96 (Table 8 (L = 96)); design 9b49010da99d; protocol fidelity: **NOT_ESTABLISHED: L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite True, shape_equal True, error ; L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite True, shape_equal True, error ; L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite True, shape_equal True, error **; complete: False
+
+| dataset / protocol | model @ revision | T | published MSE / MAE | replicated mean MSE / MAE (sd, n) | difference | matched naive MSE / MAE | training | cost | replay max|Δ| | agreement |
+|---|---|---:|---|---|---|---|---|---|---|---|
+| ECL official processed (TSL), L=96, T=96, split 7/1/2, normalized space | TimeFilter @ dffde87e4fff | 96 | 0.133 / 0.230 | — / — (sd — / —, n=0) | — / — | nan / nan | — | 0.00 h wall, 0.0 GiB peak | nan | NO_MEASUREMENT / NO_MEASUREMENT |
+| ECL official processed (TSL), L=96, T=192, split 7/1/2, normalized space | TimeFilter @ dffde87e4fff | 192 | 0.154 / 0.248 | 0.1576 / 0.2522 (sd 0.0038 / 0.0040, n=3) | +0.0036 / +0.0042 | 1.5962 / 0.9507 | 2021:15ep best14; 2022:15ep best15; 2023:15ep best12 | 1.88 h wall, 4.8 GiB peak | 4.77e-06 | OPERATIONAL_AGREEMENT / OPERATIONAL_AGREEMENT |
+| ECL official processed (TSL), L=96, T=336, split 7/1/2, normalized space | TimeFilter @ dffde87e4fff | 336 | 0.162 / 0.261 | 0.1645 / 0.2630 (sd 0.0032 / 0.0038, n=3) | +0.0025 / +0.0020 | 1.6178 / 0.9613 | 2021:15ep best10; 2022:15ep best13; 2023:15ep best12 | 0.77 h wall, 4.8 GiB peak | 0.00e+00 | OPERATIONAL_AGREEMENT / OPERATIONAL_AGREEMENT |
+| ECL official processed (TSL), L=96, T=720, split 7/1/2, normalized space | TimeFilter @ dffde87e4fff | 720 | 0.184 / 0.284 | — / — (sd — / —, n=0) | — / — | nan / nan | — | 0.00 h wall, 0.0 GiB peak | nan | NO_MEASUREMENT / NO_MEASUREMENT |
+
+## Executed cells NOT verified by the closure (values shown, never pooled into a mean)
+
+| T | unit | MSE / MAE (author float32) | custody | replayed MSE / MAE | replay max|Δ| | check that failed |
+|---:|---|---|---|---|---|---|
+| 96 | L96_h96_s2021 | 0.13332 / 0.23055 | ACCEPTED_ARTIFACT_CHAIN | 0.13331516 / 0.23055443 | 1.94e-04 | L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite  |
+| 96 | L96_h96_s2022 | 0.14008 / 0.23778 | ACCEPTED_ARTIFACT_CHAIN | 0.14008182 / 0.23777533 | 2.19e-04 | L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite T |
+| 96 | L96_h96_s2023 | 0.13309 / 0.23032 | ACCEPTED_ARTIFACT_CHAIN | 0.13309242 / 0.23032169 | 2.71e-04 | L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite T |
+| 720 | L96_h720_s2021 | 0.18714 / 0.28752 | UNCHECKED | nan / nan | nan | L96_h720_s2021: no accepted terminal receipt |
+| 720 | L96_h720_s2022 | 0.19817 / 0.29865 | UNCHECKED | nan / nan | nan | L96_h720_s2022: no accepted terminal receipt |
+| 720 | L96_h720_s2023 | 0.18537 / 0.28568 | UNCHECKED | nan / nan | nan | L96_h720_s2023: no accepted terminal receipt |
+
+Average over the four horizons: MSE None vs published  (NOT_COMPUTED); MAE None vs  (NOT_COMPUTED).
+
+Unexecuted or unverified cells: ['L96_h96_s2021', 'L96_h96_s2022', 'L96_h96_s2023', 'L96_h720_s2021', 'L96_h720_s2022', 'L96_h720_s2023'].
+Agreement rule (frozen before any test score): per horizon and for the four-horizon average (formed within each seed first), the three-seed mean of the replicated metric is in OPERATIONAL_AGREEMENT with the published value when |mean - published| <= 2 x std_paper + 0.0005 (rounding half-unit); OPERATIONAL_PARTIAL when <= 3 x std_paper + 0.0005; OUTSIDE_OPERATIONAL_MARGIN otherwise. std_paper is the paper's std over its three runs of the FOUR-HORIZON AVERAGE (Table 7), borrowed per horizon as a predeclared operational margin — not a published per-horizon error bar, not statistical equivalence; the replicated seed dispersion is reported beside it and never replaces the criterion
+
+* = early stopped. Metrics are the author's `metric()` on the concatenated float32 test predictions in the normalized space (no inversion); the paper prints three decimals. Training completion per seed: epochs run and the checkpointed epoch. Naive = persistence on identical windows.
