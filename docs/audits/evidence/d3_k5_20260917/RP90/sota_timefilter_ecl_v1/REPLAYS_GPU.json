@@ -1,0 +1,78 @@
+{
+ "scope": "same-device-class GPU replay (dragon RTX 4090 Laptop) \u2014 supplementary to the frozen CPU rule, which stays as frozen",
+ "gpu_before": [
+  {
+   "index": 0,
+   "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+   "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+   "temperature_c": 34.0,
+   "utilization_pct": 0.0,
+   "memory_used_mib": 14.0,
+   "memory_total_mib": 16376.0
+  }
+ ],
+ "cells": {
+  "L96_h96_s2021": {
+   "unit": "L96_h96_s2021",
+   "device": "cuda:0",
+   "max_abs_prediction_difference": 0.0,
+   "allclose_rule": true,
+   "replayed_author_metric": {
+    "mae": 0.23055443167686462,
+    "mse": 0.13331516087055206
+   },
+   "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+   "shape": [
+    5165,
+    96,
+    321
+   ],
+   "wall_seconds": 21.863431930541992
+  },
+  "L96_h96_s2022": {
+   "unit": "L96_h96_s2022",
+   "device": "cuda:0",
+   "max_abs_prediction_difference": 0.0,
+   "allclose_rule": true,
+   "replayed_author_metric": {
+    "mae": 0.23777532577514648,
+    "mse": 0.14008182287216187
+   },
+   "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+   "shape": [
+    5165,
+    96,
+    321
+   ],
+   "wall_seconds": 21.86842441558838
+  },
+  "L96_h96_s2023": {
+   "unit": "L96_h96_s2023",
+   "device": "cuda:0",
+   "max_abs_prediction_difference": 0.0,
+   "allclose_rule": true,
+   "replayed_author_metric": {
+    "mae": 0.23032169044017792,
+    "mse": 0.13309241831302643
+   },
+   "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+   "shape": [
+    5165,
+    96,
+    321
+   ],
+   "wall_seconds": 21.769684076309204
+  }
+ },
+ "gpu_after": [
+  {
+   "index": 0,
+   "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+   "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+   "temperature_c": 49.0,
+   "utilization_pct": 9.0,
+   "memory_used_mib": 14.0,
+   "memory_total_mib": 16376.0
+  }
+ ]
+}

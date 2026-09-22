@@ -1,0 +1,57 @@
+{
+ "schema": "df_sota_preflight_memory.v1",
+ "host": "omega",
+ "at": "2026-09-22T03:36:58Z",
+ "what": "the author's evaluation path (Exp.test(): predictions, targets and inputs accumulated in float32, then utils.metrics.metric with full-size temporaries) run on an UNTRAINED model for the two largest horizons, under the batch-slice cap (MemoryMax 14 GiB, MemoryHigh 90 %); no result stored",
+ "slice": {
+  "omega_MemoryMax_bytes": 15032385536,
+  "dragon_MemoryMax_bytes": 15032385536,
+  "gamma_MemoryMax_bytes": 8589934592,
+  "MemoryHigh_rule": "0.9 x requested",
+  "host_available_GiB": {
+   "omega": 15,
+   "dragon": 12,
+   "gamma": 5
+  }
+ },
+ "probes": {
+  "L96_h720": {
+   "requested": "14G",
+   "outcome": "STOPPED by the operator after 15 min: MemoryPeak 11674054656 B (10.9 GiB), CPU 377 s, process alternating R/D (reclaim thrash); the author path had not reached the metric stage",
+   "estimate_anon_peak_GiB": "preds 4.2 + trues 4.2 + inputs 0.56 + metric temporaries 2 x 4.2 + torch/CUDA host ~3 = ~20",
+   "verdict": "EXCEEDS the 14 GiB ceiling on every host: NOT EXECUTABLE under the current slice"
+  },
+  "L96_h336": {
+   "requested": "14G",
+   "outcome": "timed out at 1800 s (exit 124) after being stopped: MemoryPeak 11976470528 B (11.15 GiB), CPU ~400 s, process alternating R/D at ~12 GiB while growing ~12 MB per 40 s (file-page reclaim thrash below MemoryHigh 12.6 GiB)",
+   "estimate_anon_peak_GiB": "preds 2.13 + trues 2.13 + inputs 0.56 + metric temporaries 2 x 2.13 + torch/CUDA host ~3 = ~12 (measured >= 11.2 anon)",
+   "verdict": "at the ceiling: NOT admissible without thrash on omega (needs MemoryMax >= 16 GiB); dragon (12 GiB available) refuses the request; gamma out"
+  },
+  "L96_h192": {
+   "estimate_anon_peak_GiB": "1.25 x 4 + 0.35 + 3 = ~8.4",
+   "verdict": "omega with -m 12G (MemoryHigh 10.8 GiB); dragon cannot request more than 9G (12 GiB available, 3 GiB reserve) -> MemoryHigh 8.1 GiB: thrash risk, not placed there"
+  },
+  "L96_h96": {
+   "measured_preflight_rss_GiB": 2.0,
+   "estimate_anon_peak_GiB": "0.64 x 4 + 0.2 + 3 = ~5.8",
+   "verdict": "dragon with -m 8G"
+  }
+ },
+ "gamma": {
+  "preflight": "scope terminated at 1.8 GiB peak after 82 s under -m 2G (host: 15 GiB total, 5 GiB available, live workload eth-curriculum recovery services present; 8 GiB slice ceiling)",
+  "verdict": "no cell placed on gamma: measured host-memory deficit; its 5090 is in use by another workload and is never touched"
+ },
+ "capacity_deficit": {
+  "cells": [
+   "L96_h336_s2021",
+   "L96_h336_s2022",
+   "L96_h336_s2023",
+   "L96_h720_s2021",
+   "L96_h720_s2022",
+   "L96_h720_s2023"
+  ],
+  "why": "the author's evaluation path needs ~12 GiB (T=336) and ~20 GiB (T=720) of anonymous host memory; the batch slice ceiling is 14 GiB (90 % high) on omega/dragon and 8 GiB on gamma",
+  "what_would_remove_it": "a host with >= 24 GiB admissible batch memory, i.e. raising crispdm-batch.slice MemoryMax on omega to >= 22 GiB (a service change: only through the tested adoption/rollback procedure, not done here) or a larger machine; the recipe is NOT shrunk and the author's scorer is NOT replaced",
+  "not_done": "no reduction of channels, context, horizons, batch size or metric population; no float16; no chunked re-implementation of the author's scorer"
+ }
+}

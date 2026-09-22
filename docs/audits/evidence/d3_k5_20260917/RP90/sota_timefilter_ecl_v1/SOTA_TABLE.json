@@ -1,0 +1,294 @@
+{
+ "schema": "df_sota_table.v1",
+ "at": "2026-09-22T09:41:19Z",
+ "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+ "paper": "Hu, Y. et al. TimeFilter: Patch-Specific Spatial-Temporal Graph Filtration for Time Series Forecasting. ICML 2025 (PMLR v267); arXiv:2501.13041. Author code github.com/TROUBADOUR000/TimeFilter",
+ "protocol": "L96",
+ "published_table": "Table 8 (L = 96)",
+ "rows": [
+  {
+   "dataset_protocol": "ECL official processed (TSL), L=96, T=96, split 7/1/2, normalized space",
+   "model_revision": "TimeFilter @ dffde87e4fff",
+   "horizon": 96,
+   "published": {
+    "mse": 0.133,
+    "mae": 0.23
+   },
+   "seeds_expected": [
+    "L96_h96_s2021",
+    "L96_h96_s2022",
+    "L96_h96_s2023"
+   ],
+   "seeds_verified": [],
+   "verified_all": false,
+   "mse": {
+    "status": "NO_MEASUREMENT",
+    "mean": null,
+    "sd_ddof1": null,
+    "difference": null
+   },
+   "mae": {
+    "status": "NO_MEASUREMENT",
+    "mean": null,
+    "sd_ddof1": null,
+    "difference": null
+   },
+   "matched_naive": null,
+   "training_completion": [],
+   "cost": {
+    "wall_seconds_sum": 0,
+    "cpu_seconds_sum": 0,
+    "peak_gpu_bytes_max": 0,
+    "hosts": []
+   },
+   "replay_max_abs_difference": null,
+   "problems": [
+    "L96_h96_s2021: fresh-process reload through the author's test() exceeds the frozen replay rule (0.0019083023071289062)",
+    "L96_h96_s2022: fresh-process reload through the author's test() exceeds the frozen replay rule (0.00040149688720703125)",
+    "L96_h96_s2023: fresh-process reload through the author's test() exceeds the frozen replay rule (0.010064072906970978)"
+   ],
+   "executed_unverified": [
+    {
+     "unit": "L96_h96_s2021",
+     "author_metric_float32": {
+      "mae": 0.23055443167686462,
+      "mse": 0.13331516087055206
+     },
+     "custody": "ACCEPTED_ARTIFACT_CHAIN",
+     "why": "L96_h96_s2021: fresh-process reload through the author's test() exceeds the frozen replay rule (0.0019083023071289062)",
+     "replay_max_abs_difference": 0.0019083023071289062,
+     "replayed_author_metric": {
+      "mae": 0.23055443167686462,
+      "mse": 0.13331516087055206
+     }
+    },
+    {
+     "unit": "L96_h96_s2022",
+     "author_metric_float32": {
+      "mae": 0.23777532577514648,
+      "mse": 0.14008182287216187
+     },
+     "custody": "ACCEPTED_ARTIFACT_CHAIN",
+     "why": "L96_h96_s2022: fresh-process reload through the author's test() exceeds the frozen replay rule (0.00040149688720703125)",
+     "replay_max_abs_difference": 0.00040149688720703125,
+     "replayed_author_metric": {
+      "mae": 0.23777532577514648,
+      "mse": 0.14008180797100067
+     }
+    },
+    {
+     "unit": "L96_h96_s2023",
+     "author_metric_float32": {
+      "mae": 0.23032169044017792,
+      "mse": 0.13309241831302643
+     },
+     "custody": "ACCEPTED_ARTIFACT_CHAIN",
+     "why": "L96_h96_s2023: fresh-process reload through the author's test() exceeds the frozen replay rule (0.010064072906970978)",
+     "replay_max_abs_difference": 0.010064072906970978,
+     "replayed_author_metric": {
+      "mae": 0.2303217053413391,
+      "mse": 0.13309241831302643
+     }
+    }
+   ]
+  },
+  {
+   "dataset_protocol": "ECL official processed (TSL), L=96, T=192, split 7/1/2, normalized space",
+   "model_revision": "TimeFilter @ dffde87e4fff",
+   "horizon": 192,
+   "published": {
+    "mse": 0.154,
+    "mae": 0.248
+   },
+   "seeds_expected": [
+    "L96_h192_s2021",
+    "L96_h192_s2022",
+    "L96_h192_s2023"
+   ],
+   "seeds_verified": [],
+   "verified_all": false,
+   "mse": {
+    "status": "NO_MEASUREMENT",
+    "mean": null,
+    "sd_ddof1": null,
+    "difference": null
+   },
+   "mae": {
+    "status": "NO_MEASUREMENT",
+    "mean": null,
+    "sd_ddof1": null,
+    "difference": null
+   },
+   "matched_naive": null,
+   "training_completion": [],
+   "cost": {
+    "wall_seconds_sum": 0,
+    "cpu_seconds_sum": 0,
+    "peak_gpu_bytes_max": 0,
+    "hosts": []
+   },
+   "replay_max_abs_difference": null,
+   "problems": [
+    "L96_h192_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent",
+    "L96_h192_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+   ],
+   "executed_unverified": [
+    {
+     "unit": "L96_h192_s2021",
+     "author_metric_float32": {
+      "mae": 0.2559875547885895,
+      "mse": 0.1608569175004959
+     },
+     "custody": "ACCEPTED_ARTIFACT_CHAIN",
+     "why": "REPLAY_PENDING: not replayed on this host (memory placement); the row stays UNVERIFIED until replayed",
+     "replay_max_abs_difference": null,
+     "replayed_author_metric": null
+    }
+   ]
+  },
+  {
+   "dataset_protocol": "ECL official processed (TSL), L=96, T=336, split 7/1/2, normalized space",
+   "model_revision": "TimeFilter @ dffde87e4fff",
+   "horizon": 336,
+   "published": {
+    "mse": 0.162,
+    "mae": 0.261
+   },
+   "seeds_expected": [
+    "L96_h336_s2021",
+    "L96_h336_s2022",
+    "L96_h336_s2023"
+   ],
+   "seeds_verified": [],
+   "verified_all": false,
+   "mse": {
+    "status": "NO_MEASUREMENT",
+    "mean": null,
+    "sd_ddof1": null,
+    "difference": null
+   },
+   "mae": {
+    "status": "NO_MEASUREMENT",
+    "mean": null,
+    "sd_ddof1": null,
+    "difference": null
+   },
+   "matched_naive": null,
+   "training_completion": [],
+   "cost": {
+    "wall_seconds_sum": 0,
+    "cpu_seconds_sum": 0,
+    "peak_gpu_bytes_max": 0,
+    "hosts": []
+   },
+   "replay_max_abs_difference": null,
+   "problems": [
+    "L96_h336_s2021: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent",
+    "L96_h336_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent",
+    "L96_h336_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+   ],
+   "executed_unverified": []
+  },
+  {
+   "dataset_protocol": "ECL official processed (TSL), L=96, T=720, split 7/1/2, normalized space",
+   "model_revision": "TimeFilter @ dffde87e4fff",
+   "horizon": 720,
+   "published": {
+    "mse": 0.184,
+    "mae": 0.284
+   },
+   "seeds_expected": [
+    "L96_h720_s2021",
+    "L96_h720_s2022",
+    "L96_h720_s2023"
+   ],
+   "seeds_verified": [],
+   "verified_all": false,
+   "mse": {
+    "status": "NO_MEASUREMENT",
+    "mean": null,
+    "sd_ddof1": null,
+    "difference": null
+   },
+   "mae": {
+    "status": "NO_MEASUREMENT",
+    "mean": null,
+    "sd_ddof1": null,
+    "difference": null
+   },
+   "matched_naive": null,
+   "training_completion": [],
+   "cost": {
+    "wall_seconds_sum": 0,
+    "cpu_seconds_sum": 0,
+    "peak_gpu_bytes_max": 0,
+    "hosts": []
+   },
+   "replay_max_abs_difference": null,
+   "problems": [
+    "L96_h720_s2021: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent",
+    "L96_h720_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent",
+    "L96_h720_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+   ],
+   "executed_unverified": []
+  }
+ ],
+ "average_over_horizons": {
+  "mse": {
+   "status": "NOT_COMPUTED",
+   "why": "not every horizon is verified with all seeds; no average is claimed"
+  },
+  "mae": {
+   "status": "NOT_COMPUTED",
+   "why": "not every horizon is verified with all seeds; no average is claimed"
+  }
+ },
+ "complete": false,
+ "protocol_fidelity": {
+  "source_hashes": "sealed == now",
+  "preparation": "PREPARATION_ACCEPTED_ARTIFACT",
+  "environment": "declared divergence from the author's (torch/numpy/pandas/sklearn/GPU differ; recorded in the lock)",
+  "operational_patches": [
+   "import shims for sktime.datasets and patoolib",
+   "run.py __main__ replicated by main_like_run_py",
+   "exp_long_term_forecasting.metric wrapped to capture preds/trues",
+   "np.Inf restored as an alias of np.inf before importing the author modules"
+  ],
+  "verdict": "NOT_ESTABLISHED: L96_h96_s2021: fresh-process reload through the author's test() exceeds the frozen replay rule (0.0019083023071289062); L96_h96_s2022: fresh-process reload through the author's test() exceeds the frozen replay rule (0.00040149688720703125); L96_h96_s2023: fresh-process reload through the author's test() exceeds the frozen replay rule (0.010064072906970978)"
+ },
+ "agreement_rule": "per horizon and for the four-horizon average, the three-seed mean of the replicated metric agrees with the published value when |mean - published| <= 2 x std_paper + 0.0005 (rounding half-unit); PARTIAL when <= 3 x std_paper + 0.0005; DISAGREEMENT otherwise. std_paper is the paper's std over its three runs of the four-horizon average (Table 7), applied per horizon as the only dispersion the paper reports; the replicated seed dispersion is reported beside it and never replaces the criterion",
+ "disposition": {
+  "disposition": "ACTIVE",
+  "task_id": "ecl321_official_tsl",
+  "policy": "docs/tres_temas_entrevista/program_v3/SOTA_FIRST_2026_09_21.md",
+  "why": "the official processed ECL benchmark is the active reproduction task"
+ },
+ "unexecuted": [
+  "L96_h96_s2021",
+  "L96_h96_s2022",
+  "L96_h96_s2023",
+  "L96_h192_s2021",
+  "L96_h192_s2022",
+  "L96_h192_s2023",
+  "L96_h336_s2021",
+  "L96_h336_s2022",
+  "L96_h336_s2023",
+  "L96_h720_s2021",
+  "L96_h720_s2022",
+  "L96_h720_s2023"
+ ],
+ "verified_units": [],
+ "problems": [
+  "L96_h96_s2021: fresh-process reload through the author's test() exceeds the frozen replay rule (0.0019083023071289062)",
+  "L96_h96_s2022: fresh-process reload through the author's test() exceeds the frozen replay rule (0.00040149688720703125)",
+  "L96_h96_s2023: fresh-process reload through the author's test() exceeds the frozen replay rule (0.010064072906970978)",
+  "L96_h192_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent",
+  "L96_h192_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent",
+  "L96_h336_s2021: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent",
+  "L96_h336_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent",
+  "L96_h336_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent",
+  "L96_h720_s2021: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent",
+  "L96_h720_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent",
+  "L96_h720_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+ ]
+}

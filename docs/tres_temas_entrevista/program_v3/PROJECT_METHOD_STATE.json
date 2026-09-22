@@ -27,7 +27,7 @@
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "EXECUTION_PARTIAL_T96_COMPLETE_T192_ONE_SEED_CLOSURE_IN_PROGRESS",
+  "status": "PARTIAL_REPRODUCTION_RETURNED_FOR_REVIEW_T96_THREE_SEEDS_T192_ONE_SEED",
   "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
   "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
   "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
@@ -45,7 +45,7 @@
    "weekly forecasting and RL",
    "core pretraining"
   ],
-  "completion_requires": "published protocol reproduced and independently verified; not merely a literature dossier"
+  "completion_requires": "published protocol reproduced and independently verified for all four horizons and three seeds; the T=96 cell agrees numerically by the frozen rule but the closure's replay rule failed on CPU; T=336/720 need a host with >= 22 GiB admissible batch memory"
  },
  "rp81_external_review": {
   "reviewed_commit": "bd6fcf4",
@@ -196,14 +196,14 @@
   {
    "id": "SOTA-REPRO",
    "owner": "Satoshi",
-   "status": "IN_PROGRESS",
+   "status": "IN_PROGRESS_PARTIAL_RETURNED",
    "depends_on": [
     "BENCHMARK-CONTRACTS"
    ],
    "evidence": [
     "rp90_rp97 block"
    ],
-   "next_action": "RP94 preflight -> RP95 execution -> RP96 verification -> RP97 return",
+   "next_action": "Musashi review; T=192 seeds 2022/2023 + replays on omega from 2026-09-24; owner decision on memory ceiling for T=336/720",
    "deliverable": "Full official benchmark reproduction with published metrics, matched naive, numerical agreement and provenance; not an adapted proxy"
   },
   {
@@ -986,11 +986,22 @@
    }
   },
   "RP96": {
-   "status": "IN_PROGRESS",
-   "where": "dragon (CPU): warehouse custody, targets re-derived, author metric recomputed, float64 reduction, naive, fresh-process replays of the T=96 cells, metrics vaults; T=192 replay pending on omega"
+   "status": "DONE_FOR_THE_EXECUTED_CELLS",
+   "where": "dragon (CPU closure; GPU only for the supplementary same-device replay)",
+   "custody": "4 cells ACCEPTED_ARTIFACT_CHAIN (predictions, checkpoint, record digests in the accepted terminals; config digest and tags bound); preparation PREPARATION_ACCEPTED_ARTIFACT; targets re-derived hash-equal; author metric recomputed bitwise; float64 within 1e-6; naive persistence and seasonal-24 on identical windows; metrics vault v2 per cell",
+   "replay": "frozen CPU rule (atol/rtol 1e-4) FAILED on the three T=96 cells (max|delta| 1.9e-3 / 4.0e-4 / 1.0e-2) while the replayed metrics equal the stored ones to <= 1.5e-8; NOT widened. Supplementary same-device GPU replay: max|delta| 0.0, bit-identical, three cells. T=192 replay pending on omega from 2026-09-24",
+   "verdict": "protocol fidelity NOT_ESTABLISHED by the closure's own frozen rule; numerical agreement of the T=96 three-seed mean with the published cell holds by the frozen agreement rule (+0.0025 MSE / +0.0029 MAE) but is reported as unverified"
   },
   "RP97": {
-   "status": "NOT_STARTED"
+   "status": "RETURNED_PARTIAL",
+   "return": "docs/audits/work_plan/SATOSHI_RP90_RP97_RETURN_2026_09_22.md",
+   "unexecuted": [
+    "L96_h192_s2022",
+    "L96_h192_s2023 (omega from 2026-09-24)",
+    "L96_h336_* and L96_h720_* (no host under the batch-slice ceilings)",
+    "protocol B (L=512)"
+   ],
+   "proposal_for_review": "re-freeze the replay rule as metric-level (<= 1e-5) plus same-device-class prediction equality, before the next round; not applied"
   },
   "owner_orders_2026_09_22": [
    "no work of any kind on omega until 2026-09-24 (travel thermal hold)",

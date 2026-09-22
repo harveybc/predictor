@@ -1,0 +1,139 @@
+{
+ "schema": "df_e1_terminal_receipts.v1",
+ "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+ "units": {
+  "preflight_dragon": {
+   "campaign_key": "satoshi-sota-timefilter-ecl-v1-preflight_dragon-data",
+   "campaign_sha256": "20c3ba62a29c8a54aed483e99668c2d6ba404b63c0636bd15a72289aecc983ca",
+   "terminal_sha256": "8fe5813e863832e73e7e673ce859d5deb28a8074fcd8ce5fccacd2d6b2436e78",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-22T03:08:41Z",
+   "work_started_at": "2026-09-22T03:07:28Z",
+   "started_at": "2026-09-22T03:07:28Z",
+   "finished_at": "2026-09-22T03:08:39Z",
+   "metrics": 1,
+   "deliveries": [
+    "e6db4facb4b54822accf392961863611"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "L96_h96_s2021": {
+   "campaign_key": "satoshi-sota-timefilter-ecl-v1-L96_h96_s2021-data",
+   "campaign_sha256": "3a2afc0b881adf392018cef6e539ffddc0119044d9c7ff8b39ddb4ab9cf723cd",
+   "terminal_sha256": "fce31ea399c8e766f714ae81524c83655478a71afb86b18e888ffd795e057838",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-22T03:58:14Z",
+   "work_started_at": "2026-09-22T03:23:16Z",
+   "started_at": "2026-09-22T03:23:16Z",
+   "finished_at": "2026-09-22T03:58:13Z",
+   "metrics": 4,
+   "deliveries": [
+    "c49372c6ce9e41dc8fcec1993d07f937"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "L96_h96_s2022": {
+   "campaign_key": "satoshi-sota-timefilter-ecl-v1-L96_h96_s2022-data",
+   "campaign_sha256": "dcd78a60645b8eb1cbbdf7ef9ac05ce12885d304d5827e6dceb715d3d4030fc0",
+   "terminal_sha256": "43073cfaf9458766e8898a65a785fa7e264308367a961ba2bd4fa94d7b6b250f",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-22T04:33:31Z",
+   "work_started_at": "2026-09-22T03:58:15Z",
+   "started_at": "2026-09-22T03:58:15Z",
+   "finished_at": "2026-09-22T04:33:30Z",
+   "metrics": 4,
+   "deliveries": [
+    "952fdb38bb8948c089a25a36f34b5f93"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "L96_h96_s2023": {
+   "campaign_key": "satoshi-sota-timefilter-ecl-v1-L96_h96_s2023-data",
+   "campaign_sha256": "02d105d06d56b53305fc24b66336c70bb98fe4872805174e7b2fe68911fa49d3",
+   "terminal_sha256": "2b07e2551fab04e0cd2dbdbdc42e65db2f6242a90f9fff6d83ca2dca6adece69",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-22T05:08:43Z",
+   "work_started_at": "2026-09-22T04:33:32Z",
+   "started_at": "2026-09-22T04:33:32Z",
+   "finished_at": "2026-09-22T05:08:42Z",
+   "metrics": 4,
+   "deliveries": [
+    "618221b1c57f484e9ea47520c7ae5d4a"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "L96_h192_s2021": {
+   "campaign_key": "satoshi-sota-timefilter-ecl-v1-L96_h192_s2021-data",
+   "campaign_sha256": "23d05419085c88f4522f05b001d340af845bedf9209a62e7c47f014ecad6977c",
+   "terminal_sha256": "86828012298c0764357c8a89b91c66d6c369ccc6a5613d9bbb42c4ec92b13c5e",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-22T05:00:44Z",
+   "work_started_at": "2026-09-22T03:37:13Z",
+   "started_at": "2026-09-22T03:37:13Z",
+   "finished_at": "2026-09-22T05:00:43Z",
+   "metrics": 4,
+   "deliveries": [
+    "24dfe7a6d02d4e29ab5a6808611150f6"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  },
+  "prepare": {
+   "campaign_key": "satoshi-sota-timefilter-ecl-v1-prepare-data",
+   "campaign_sha256": "f4f9f9713d753187fb96c5aea8ae69faaf7797be7efa995ad42c6abaea93eb35",
+   "terminal_sha256": "1308f234783dacd24fab3ff3d10240730e37c42b35ad3bd68999ebad9ec3439d",
+   "generation": 1,
+   "status": "COMPLETED",
+   "accepted_at": "2026-09-22T03:03:51Z",
+   "work_started_at": "2026-09-22T03:03:30Z",
+   "started_at": "2026-09-22T03:03:30Z",
+   "finished_at": "2026-09-22T03:03:50Z",
+   "metrics": 1,
+   "deliveries": [
+    "72b83b222b0748c69d5ee3c65b474317"
+   ],
+   "reconciliation": {
+    "http": 200,
+    "missing_units": [],
+    "accounting_only": [],
+    "lake_only": []
+   },
+   "source": "the governance client's own answer when it accepted this terminal"
+  }
+ },
+ "updated_at": "2026-09-22T05:08:43Z"
+}

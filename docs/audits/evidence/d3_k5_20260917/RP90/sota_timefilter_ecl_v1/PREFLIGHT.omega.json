@@ -1,0 +1,118 @@
+{
+ "schema": "df_sota_preflight.v1",
+ "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+ "host": "omega",
+ "steps_timed": 20,
+ "cells": {
+  "L96_h96": {
+   "n_parameters": 1822084,
+   "batches": {
+    "train": 1139,
+    "vali": 159,
+    "test": 323
+   },
+   "windows": {
+    "train": 18221,
+    "vali": 2537,
+    "test": 5165
+   },
+   "seconds_per_train_step_median": 0.22765563800930977,
+   "seconds_per_eval_batch_median": 0.08510394702898338,
+   "epoch_seconds_projected": 300.3198741605738,
+   "max_epochs": 15,
+   "cell_seconds_projected_max": 4532.286687298969,
+   "peak_gpu_allocated_bytes": 5095499776,
+   "peak_rss_bytes": 2156834816,
+   "device": "cuda:0",
+   "batch_size": 16
+  },
+  "L96_h192": {
+   "n_parameters": 1969636,
+   "batches": {
+    "train": 1133,
+    "vali": 153,
+    "test": 317
+   },
+   "windows": {
+    "train": 18125,
+    "vali": 2441,
+    "test": 5069
+   },
+   "seconds_per_train_step_median": 0.22860833496088162,
+   "seconds_per_eval_batch_median": 0.08525404502870515,
+   "epoch_seconds_projected": 299.0826446741703,
+   "max_epochs": 15,
+   "cell_seconds_projected_max": 4513.265202386654,
+   "peak_gpu_allocated_bytes": 5101229056,
+   "peak_rss_bytes": 2449862656,
+   "device": "cuda:0",
+   "batch_size": 16
+  },
+  "L96_h336": {
+   "n_parameters": 2190964,
+   "batches": {
+    "train": 1124,
+    "vali": 144,
+    "test": 308
+   },
+   "windows": {
+    "train": 17981,
+    "vali": 2297,
+    "test": 4925
+   },
+   "seconds_per_train_step_median": 0.234410826000385,
+   "seconds_per_eval_batch_median": 0.08581642404897138,
+   "epoch_seconds_projected": 302.2667920945678,
+   "max_epochs": 15,
+   "cell_seconds_projected_max": 4560.4333400256,
+   "peak_gpu_allocated_bytes": 5112070144,
+   "peak_rss_bytes": 2462531584,
+   "device": "cuda:0",
+   "batch_size": 16
+  },
+  "L96_h720": {
+   "n_parameters": 2781172,
+   "batches": {
+    "train": 1100,
+    "vali": 120,
+    "test": 284
+   },
+   "windows": {
+    "train": 17597,
+    "vali": 1913,
+    "test": 4541
+   },
+   "seconds_per_train_step_median": 0.24612494005123153,
+   "seconds_per_eval_batch_median": 0.08673820504918694,
+   "epoch_seconds_projected": 305.7796688962262,
+   "max_epochs": 15,
+   "cell_seconds_projected_max": 4611.328683677362,
+   "peak_gpu_allocated_bytes": 5137096704,
+   "peak_rss_bytes": 2462883840,
+   "device": "cuda:0",
+   "batch_size": 16
+  }
+ },
+ "environment": {
+  "host": "omega",
+  "python": "3.12.13",
+  "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+  "torch": "2.13.0+cu130",
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "sklearn": "1.9.0",
+  "scipy": "1.18.0",
+  "cuda": "13.0",
+  "gpus": [
+   "NVIDIA GeForce RTX 4070 Laptop GPU"
+  ],
+  "cudnn": 92400
+ },
+ "allocation": {
+  "cells_total": 12,
+  "seconds_per_seed_all_horizons_max": 18217.313913388585,
+  "seconds_all_cells_max": 54651.941740165756,
+  "hours_all_cells_max": 15.181094927823821,
+  "reading": "upper bound: every cell runs its full train_epochs; early stopping (patience 3 on validation MSE) can only shorten it"
+ }
+}

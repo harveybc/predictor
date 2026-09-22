@@ -23,11 +23,12 @@ def _load(name):
 
 
 L = _load("df_sota_lake_adopt")
-A = L.bind()                      # the adopter's PRIVATE instance of the public-panel procedure; the public module itself stays untouched
 P = _load("df_public_lake_adopt")
-
-pytestmark = pytest.mark.skipif(not A.RUNTIME_CONFIG.is_file() or not (L.STORE_ROOT / "BUILD_RECEIPT.json").is_file(),
-                                reason="the deployed data-gov configuration or the benchmark store is not present here")
+_PRESENT = P.RUNTIME_CONFIG.is_file() and (L.STORE_ROOT / "BUILD_RECEIPT.json").is_file()
+pytestmark = pytest.mark.skipif(not _PRESENT, reason="the deployed data-gov configuration or the benchmark store is not present here")
+# the adopter's PRIVATE instance of the public-panel procedure (the public module itself stays untouched); binding reads the store
+# receipt, so on a host without it the module must still import (and every rule skips)
+A = L.bind() if _PRESENT else None
 
 
 @pytest.fixture

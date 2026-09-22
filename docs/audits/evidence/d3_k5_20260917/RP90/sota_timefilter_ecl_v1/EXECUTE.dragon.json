@@ -1,0 +1,23 @@
+[
+ {
+  "unit": "L96_h96_s2021",
+  "ok": true,
+  "returncode": 0,
+  "wall_seconds": 2099.028341770172,
+  "tail": ""
+ },
+ {
+  "unit": "L96_h96_s2022",
+  "ok": true,
+  "returncode": 0,
+  "wall_seconds": 2116.4364507198334,
+  "tail": ""
+ },
+ {
+  "unit": "L96_h96_s2023",
+  "ok": true,
+  "returncode": 0,
+  "wall_seconds": 2111.7990674972534,
+  "tail": ""
+ }
+]

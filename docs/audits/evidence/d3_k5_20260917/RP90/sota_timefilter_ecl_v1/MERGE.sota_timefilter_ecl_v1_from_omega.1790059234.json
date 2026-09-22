@@ -1,0 +1,19 @@
+{
+ "from": "<home>/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1_from_omega",
+ "units": {
+  "L96_h192_s2021": {
+   "merged": true,
+   "artifacts": {
+    "predictions": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+    "checkpoint": "80545467255f0457656a51cf4d281cb9cda3e07cad8ef65d7d248da97b8f1617",
+    "record": "3584eca7a5909d74ff0a5976c835f4726c5eb60f17d64f1394e50faf067d84a7"
+   },
+   "host": "omega"
+  },
+  "prepare": {
+   "merged": true,
+   "artifacts": null
+  }
+ },
+ "problems": []
+}
