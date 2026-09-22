@@ -313,7 +313,7 @@ def test_RP96_the_metrics_vault_is_exhaustive_consistent_with_the_author_metric_
     assert abs(v["global"]["mse"] - r["author_metric_float32"]["mse"]) <= 1e-6 and abs(v["global"]["mae"] - r["author_metric_float32"]["mae"]) <= 1e-6
     assert v["population"] == {"windows": 77, "steps": 4, "channels": 4, "elements": 77 * 4 * 4}
     assert abs(np.mean(v["per_step"]["mse"]) - v["global"]["mse"]) <= 1e-9 and abs(np.mean(v["per_channel"]["mae"]) - v["global"]["mae"]) <= 1e-9
-    assert abs(v["global"]["naive_mae"] - r["derived"]["naive"]["mae"]) <= 1e-9                     # the same persistence the closure reports
+    assert abs(v["global"]["naive_mae"] - r["derived"]["naive"]["mae"]) <= 1e-6                     # the same persistence (torch float32 vs numpy float64 accumulation)
     for k in ("rmse", "mape", "mspe", "rse", "r2", "corr_pred_true", "bias", "seasonal24_mae", "skill_mae_vs_naive", "mase_vs_naive", "mutual_information_bits_pred_true_64x64"):
         assert k in v["global"] and v["global"][k] is not None
     assert set(v["residuals"]) >= {"mean", "var", "sd", "skewness", "kurtosis", "quantiles", "fraction_abs_gt", "histogram"} and sum(v["residuals"]["histogram"]["counts"]) == v["population"]["elements"]
