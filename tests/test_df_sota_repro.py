@@ -767,3 +767,16 @@ def test_RP103_the_deletion_gate_reads_replay_failures_from_every_history_form(w
     assert not g["pass"] and any("route-level diagnostic" in r for r in g["reasons"])
     (root / "attempts" / unit / "ROUTE_TRACE.json").write_text("{}")
     assert R.deletion_gate(root, unit)["pass"]
+
+
+def test_RP102_the_host_allocator_setting_is_a_declared_operational_patch_of_cell_and_replay_processes(monkeypatch):
+    """T=720 on WORKER_B: the author's validation grew the host process by ~5 GB of freed-but-resident buffers; the fixed glibc
+    thresholds are passed to the child/replay environment and recorded, and 'none' leaves the allocator alone."""
+    monkeypatch.delenv("GLIBC_TUNABLES", raising=False)
+    env = R.child_env()
+    assert env["GLIBC_TUNABLES"] == R.MALLOC_TUNABLES_DEFAULT and "mmap_threshold=1048576" in env["GLIBC_TUNABLES"]
+    assert "GLIBC_TUNABLES" not in R.child_env("none") and R.child_env(None, OMP_NUM_THREADS=2)["OMP_NUM_THREADS"] == "2"
+    assert R.host_allocator_patch() == []
+    monkeypatch.setenv("GLIBC_TUNABLES", R.MALLOC_TUNABLES_DEFAULT)
+    patch = R.host_allocator_patch()
+    assert len(patch) == 1 and "GLIBC_TUNABLES" in patch[0]["what"] and "host memory only" in patch[0]["effect"]

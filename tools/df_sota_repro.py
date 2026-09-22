@@ -303,6 +303,27 @@ def compare_predictions(rep, stored, *, atol: float, rtol: float, step: int = 64
             "exact_equal_fraction": (n_exact / n_total) if n_total else None}
 
 
+MALLOC_TUNABLES_DEFAULT = "glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152"
+
+
+def child_env(malloc_tunables: str | None = MALLOC_TUNABLES_DEFAULT, **extra) -> dict:
+    """The environment of a cell or replay process. RP102 (T=720 on WORKER_B): the author's validation moves every batch's outputs
+    and targets to the host to score them; with glibc's dynamic mmap threshold those 15 MB buffers are carved from the heap and
+    the freed pages stay resident, so a 720-step validation over 404 batches grew the process by ~5 GB and pinned it at the
+    slice ceiling (throttled, GPU idle). Fixing the thresholds returns each freed buffer to the OS: host allocator only, no
+    arithmetic, no batch, no schedule is touched (declared in the record as an operational patch)."""
+    env = {**os.environ, **{k: str(v) for k, v in extra.items()}}
+    if malloc_tunables and malloc_tunables.lower() != "none":
+        env["GLIBC_TUNABLES"] = malloc_tunables
+    return env
+
+
+def host_allocator_patch() -> list:
+    t = os.environ.get("GLIBC_TUNABLES")
+    return ([{"what": f"GLIBC_TUNABLES={t} (host malloc thresholds fixed)", "effect": "none on arithmetic: freed host buffers of the author's "
+              "validation/evaluation return to the OS instead of staying resident; host memory only"}] if t else [])
+
+
 def now_iso() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
@@ -627,7 +648,7 @@ def main_like_run_py(argv: list, *, seed: int, data_dir: Path, data_name: str, w
         os.chdir(cwd)
         exp_module.metric = original
     base = {"args": vars(args), "setting": setting, "wall_seconds": time.time() - t0, "cpu_seconds": time.process_time() - c0,
-            "operational_patches": ([{"what": f"DataLoader num_workers {dataloader_workers} instead of the author default", "effect": "none: sampler order and batch contents are produced in the main process (tested); host memory only"}] if dataloader_workers is not None else []),
+            "operational_patches": ([{"what": f"DataLoader num_workers {dataloader_workers} instead of the author default", "effect": "none: sampler order and batch contents are produced in the main process (tested); host memory only"}] if dataloader_workers is not None else []) + host_allocator_patch(),
             "checkpoint": work / "checkpoints" / setting / "checkpoint.pth", "n_parameters": int(sum(p.numel() for p in exp.model.parameters())), "device": str(exp.device)}
     if bounded_out is not None:
         return {**base, "preds": bounded_out["preds"], "trues": bounded_out["trues"], "author_metric": bounded_out["author_metric"],
@@ -958,7 +979,7 @@ def execute(a, design: dict) -> list:
                + (["--bounded"] if getattr(a, "bounded", False) else []) + (["--author-metric-budget-gib", str(a.author_metric_budget_gib)] if getattr(a, "author_metric_budget_gib", None) else []) \
                + (["--dataloader-workers", str(a.dataloader_workers)] if getattr(a, "dataloader_workers", None) is not None else [])
         t0 = time.time()
-        proc = subprocess.run(argv, capture_output=True, text=True)
+        proc = subprocess.run(argv, capture_output=True, text=True, env=child_env(getattr(a, "malloc_tunables", MALLOC_TUNABLES_DEFAULT)))
         (folder).mkdir(parents=True, exist_ok=True)
         (folder / "child_stderr.log").write_text(proc.stderr[-20000:])
         out.append({"unit": unit, "ok": proc.returncode == 0, "returncode": proc.returncode, "wall_seconds": time.time() - t0, "tail": proc.stderr[-400:], "thermal_guard": guard,
@@ -1468,7 +1489,8 @@ def replay_code_sha256() -> str:
     return hashlib.sha256("\n".join(parts).encode()).hexdigest()
 
 
-def replay_cell(root: Path, design: dict, unit: str, *, data_path: Path, device: str = "cpu", author_metric_budget: int | None = None) -> dict:
+def replay_cell(root: Path, design: dict, unit: str, *, data_path: Path, device: str = "cpu", author_metric_budget: int | None = None,
+                malloc_tunables: str | None = MALLOC_TUNABLES_DEFAULT) -> dict:
     """Fresh process: the author's test(test=1) reloads the checkpoint through the author's own path and scores; the captured
     predictions are compared with the stored ones under the frozen replay rule."""
     cell = next(c for c in design["cells"] if c["cell_id"] == unit)
@@ -1506,13 +1528,13 @@ print(json.dumps({{"unit": unit, "device": res["device"], "device_uuid": dev_uui
                    "max_abs_prediction_difference": max_abs, "allclose_rule": allclose, "finite": finite, "shape_equal": shape_equal,
                    "exact_equal_elements": n_exact, "elements": n_total, "exact_equal_fraction": (n_exact / n_total) if n_total else None,
                    "replayed_author_metric": res["author_metric"], "replayed_author_metric_state": res.get("author_metric_state"), "replayed_metric_float64": res.get("independent_metric_float64"),
-                   "true_sha256_replayed": res["bounded"]["finalized"]["true_sha256"], "shape": list(rep.shape),
+                   "true_sha256_replayed": res["bounded"]["finalized"]["true_sha256"], "shape": list(rep.shape), "operational_patches": res.get("operational_patches", []),
                    "rule": {{"atol": rule["atol"], "rtol": rule["rtol"]}}}}))
 for tmp in (res["bounded"]["preds_path"], res["bounded"]["trues_path"]):
     Path(tmp).unlink(missing_ok=True)
 shutil.rmtree(work, ignore_errors=True)
 """
-    env = {**os.environ, "OMP_NUM_THREADS": os.environ.get("OMP_NUM_THREADS", "4")}
+    env = child_env(malloc_tunables, OMP_NUM_THREADS=os.environ.get("OMP_NUM_THREADS", "4"))
     if device == "cpu":
         env["CUDA_VISIBLE_DEVICES"] = ""
     proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=7200, env=env)
@@ -2282,6 +2304,7 @@ def main(argv=None) -> int:
     ap.add_argument("--bounded", action="store_true", help="child/execute: evaluate through the disk-backed bounded adapter (RP101) instead of the author's test()")
     ap.add_argument("--author-metric-budget-gib", type=float, default=None, help="bounded: run the author's float32 metric() only if its temporaries fit this budget")
     ap.add_argument("--dataloader-workers", type=int, default=None, help="operational: DataLoader worker processes (author default 1); batch order/content unchanged, host memory only")
+    ap.add_argument("--malloc-tunables", default=MALLOC_TUNABLES_DEFAULT, help="operational: GLIBC_TUNABLES of cell and replay processes ('none' to leave the host allocator alone); host memory only")
     a = ap.parse_args(argv)
     if a.command == "seal":
         a.root.mkdir(parents=True, exist_ok=True)
