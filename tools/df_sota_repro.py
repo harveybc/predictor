@@ -1234,6 +1234,12 @@ def table(design: dict, ver: dict) -> dict:
                        "peak_gpu_bytes_max": max([((r.get("cost") or {}).get("peak_gpu_allocated_bytes") or 0) for r in ok] or [0]), "hosts": sorted({(r.get("cost") or {}).get("host") for r in ok})}
         row["replay_max_abs_difference"] = max([((r.get("replay") or {}).get("max_abs_prediction_difference") or 0.0) for r in ok] or [0.0]) if ok else None
         row["problems"] = [q for r in cells for q in r["problems"]]
+        # executed cells that did NOT verify are shown with their values and the check that failed — never pooled into a mean
+        row["executed_unverified"] = [{"unit": r["unit"], "author_metric_float32": r.get("author_metric_float32"),
+                                       "custody": (r.get("custody") or {}).get("class"), "why": (r["problems"][:1] or [(r.get("replay") or {}).get("why") or "no replay"])[0][:160],
+                                       "replay_max_abs_difference": (r.get("replay") or {}).get("max_abs_prediction_difference"),
+                                       "replayed_author_metric": (r.get("replay") or {}).get("replayed_author_metric")}
+                                      for r in cells if not r["verified"] and r.get("author_metric_float32")]
         rows.append(row)
     average = {m: (agreement(pub["average"], avg_pool[m], m) if complete and len(avg_pool[m]) == len(design["horizons"]) else
                    {"status": "NOT_COMPUTED", "why": "not every horizon is verified with all seeds; no average is claimed"}) for m in ("mse", "mae")}
@@ -1263,6 +1269,15 @@ def markdown(t: dict) -> str:
                      f"{f('mse')} / {f('mae')} (sd {sd('mse')} / {sd('mae')}, n={r['mse'].get('n_seeds', 0)}) | {dd('mse')} / {dd('mae')} | "
                      f"{nv.get('mse', float('nan')):.4f} / {nv.get('mae', float('nan')):.4f} | {tr} | {r['cost']['wall_seconds_sum']/3600:.2f} h wall, {r['cost']['peak_gpu_bytes_max']/2**30:.1f} GiB peak | "
                      f"{(r['replay_max_abs_difference'] if r['replay_max_abs_difference'] is not None else float('nan')):.2e} | {r['mse']['status']} / {r['mae']['status']} |")
+    unv = [(r["horizon"], u) for r in t["rows"] for u in r.get("executed_unverified") or []]
+    if unv:
+        lines += ["", "## Executed cells NOT verified by the closure (values shown, never pooled into a mean)", "",
+                  "| T | unit | MSE / MAE (author float32) | custody | replayed MSE / MAE | replay max|Δ| | check that failed |", "|---:|---|---|---|---|---|---|"]
+        for h, u in unv:
+            m = u.get("author_metric_float32") or {}; rm = u.get("replayed_author_metric") or {}
+            lines.append(f"| {h} | {u['unit']} | {m.get('mse', float('nan')):.5f} / {m.get('mae', float('nan')):.5f} | {u.get('custody')} | "
+                         f"{(rm.get('mse') if rm else float('nan')):.8f} / {(rm.get('mae') if rm else float('nan')):.8f} | "
+                         f"{(u.get('replay_max_abs_difference') if u.get('replay_max_abs_difference') is not None else float('nan')):.2e} | {u.get('why')} |")
     a = t["average_over_horizons"]
     lines += ["", f"Average over the four horizons: MSE {a['mse'].get('mean') if a['mse'].get('mean') is None else round(a['mse']['mean'], 4)} vs published {t['rows'][0]['published'] and ''}"
               f"{'' if a['mse'].get('published') is None else a['mse']['published']} ({a['mse']['status']}); MAE {a['mae'].get('mean') if a['mae'].get('mean') is None else round(a['mae']['mean'], 4)} "

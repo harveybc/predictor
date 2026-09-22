@@ -275,6 +275,10 @@ def test_RP96_every_protocol_substitution_fails_the_actual_closure(world, tmp_pa
     a = SimpleNamespace(root=root, warehouse_token_file=None, warehouse_url=None, data_path=data_path, skip_replay=True, replay_device="cpu")
     rep = R.close(a, json.loads((root / "DESIGN.json").read_text()))
     assert not rep["verified"] and rep["table"]["complete"] is False and rep["table"]["unexecuted"] == [unit]
+    assert rep["table"]["rows"][0]["mse"]["status"] == "NO_MEASUREMENT"                                   # nothing unverified enters a mean
+    if attack not in ("missing",):
+        shown = rep["table"]["rows"][0]["executed_unverified"]
+        assert shown and shown[0]["unit"] == unit and shown[0]["why"] and "NOT verified" in R.markdown(rep["table"])
 
 
 def test_RP96_a_replay_of_altered_checkpoint_bytes_fails_and_a_cached_replay_is_reused_only_for_identical_bytes(world, tmp_path):
