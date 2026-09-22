@@ -1862,6 +1862,7 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
         except (SotaRefusal, KeyError, OSError, ValueError) as exc:
             p_.append(f"{unit}: the predictions cannot be streamed from arrays.npz: {str(exc)[:120]}")
             rows.append({"unit": unit, "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")}, "custody": custody, "status": "UNREADABLE",
+                         "author_metric_float32": metric_of(record)[0], "metric_basis": metric_of(record)[1], "recomputed": None, "derived": None,
                          "problems": p_, "verified": False}); continue
         if not preds.all_finite():
             p_.append(f"{unit}: non-finite predictions")
