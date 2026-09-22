@@ -1647,10 +1647,16 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                 fresh["at"] = now_iso()
                 persisted = json.loads(vault_path.read_text()) if vault_path.is_file() else None
                 if persisted is not None and not vault_equal(persisted, fresh):
-                    rejected = folder / f"METRICS_VAULT.rejected.{int(time.time())}.json"
-                    write_atomic(rejected, json.dumps({"disposition": "REJECTED: persisted catalog differs from the one recomputed from the accepted arrays at closure",
-                                                       "at": now_iso(), "candidate": persisted}, default=str))
-                    p_.append(f"{unit}: the persisted metric catalog differs from the recomputed one: VAULT_CHANGED (candidate preserved as {rejected.name})")
+                    if persisted.get("schema") != VAULT_SCHEMA:
+                        superseded = folder / f"METRICS_VAULT.superseded.{persisted.get('schema', 'unknown')}.{int(time.time())}.json"
+                        write_atomic(superseded, json.dumps({"disposition": f"SUPERSEDED: catalog of schema {persisted.get('schema')} replaced by {VAULT_SCHEMA} recomputed from the accepted arrays",
+                                                             "at": now_iso(), "candidate": persisted}, default=str))
+                        recomputed["metrics_vault_superseded"] = superseded.name
+                    else:
+                        rejected = folder / f"METRICS_VAULT.rejected.{int(time.time())}.json"
+                        write_atomic(rejected, json.dumps({"disposition": "REJECTED: persisted catalog differs from the one recomputed from the accepted arrays at closure",
+                                                           "at": now_iso(), "candidate": persisted}, default=str))
+                        p_.append(f"{unit}: the persisted metric catalog differs from the recomputed one: VAULT_CHANGED (candidate preserved as {rejected.name})")
                 if persisted is None or not vault_equal(persisted, fresh):
                     write_atomic(vault_path, json.dumps(fresh, default=str))
                 recomputed["metrics_vault_sha256"] = sha_file(vault_path)
@@ -1682,7 +1688,7 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
         history = json.loads((root / "REPLAYS.json").read_text()) if (root / "REPLAYS.json").is_file() else {}
         trained_device = lambda r_: ((r_.get("cost") or {}).get("gpu_before") or [{}])[0].get("uuid") if (r_.get("cost") or {}).get("gpu_before") else None
         for r in rows:
-            if r["problems"] or r.get("status") == "MISSING":
+            if r["problems"] or r.get("status") in ("MISSING", "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION", "DELETED_WITHOUT_VALID_RECEIPT"):
                 continue
             unit = r["unit"]; folder = root / "attempts" / unit
             if replay_units is not None and unit not in replay_units:
@@ -1720,7 +1726,7 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
         write_atomic(root / "REPLAYS.json", json.dumps(history, indent=1, default=str))
     elif replay:
         for r in rows:
-            if not r["problems"] and r.get("status") != "MISSING":
+            if not r["problems"] and r.get("status") not in ("MISSING", "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION", "DELETED_WITHOUT_VALID_RECEIPT"):
                 r["replay"] = {"skipped": True, "why": "REPLAY_PENDING: no data file on this host"}; r["verified"] = False
     return {"design_sha256": design["design_sha256"], "disposition": disp, "preparation_custody": prep, "source_drift_now": drift, "rows": rows,
             "replay_patch": {"what": "torch.load defaults to map_location=cpu inside the CPU replay process", "why": "the author's test(test=1) loads the checkpoint "
