@@ -10,9 +10,13 @@ compatibilidad y temperatura; no basta que no aparezca un proceso de compute.
 Politica y orden complementaria:
 [termica y retencion](program_v3/THERMAL_AND_ARTIFACT_RETENTION_2026_09_22.md).
 Comprobar predicciones en el worker; no replicar todos los arrays al portatil.
-Eliminar copias locales/duplicadas solo despues de probar restauracion exacta
-desde su archivo gobernado. Metricas verificadas no sustituyen los arrays para
-una auditoria posterior. No se ha autorizado perder la ultima copia de evidencia.
+**Enmienda posterior del owner, 22-sep:** no comprimir ni conservar un archivo
+permanente de predicciones. Tras el analisis independiente y la persistencia
+verificada del catalogo de metricas pertinente, eliminar las copias inventariadas
+de las predicciones, incluida la ultima, con recibo de eliminacion y alcance
+historico explicito. No borrar antes de ese analisis ni prometer que las metricas
+responden toda pregunta futura. STEP-12 generara sus propias predicciones cuando
+tenga diseno ejecutable; no obliga a retener todos los pilotos actuales.
 
 ## Prioridad vigente: reproduccion del estado del arte (21-sep-2026)
 

@@ -8,8 +8,9 @@
   "remote_execution": "existing governed workers; inspect actual GPU UUID, utilization, memory, temperature and compatibility first; no local fallback",
   "local_batch_guard": "crispdm-run refuses new work when ~/.config/crispdm/coordinator-travel-hold exists; does not intercept direct process launches",
   "artifact_policy": "THERMAL_AND_ARTIFACT_RETENTION_2026_09_22.md",
-  "deletion_gate": "verified remote lossless archive and restoration against accepted original digest; no active reader/writer; preserve receipts and checkpoint",
-  "archive_aware_verifier": "NOT_IMPLEMENTED; existing verifier still requires restored arrays.npz",
+  "deletion_gate": "OWNER_SUPERSEDES_ARCHIVAL: no compression or permanent prediction archive; delete inventoried prediction copies including the last after independent analysis and durable verified metric catalog, with deletion receipts and no active reader/writer",
+  "post_deletion_scope": "historically verified metrics retained; original prediction replay unavailable; never substitute a metrics vault for present-array verification",
+  "future_routing": "STEP-12 is conditional, not a frozen financial experiment; generate dedicated OOS predictions for its eligible model bank when designed; no blanket retention of current pilots",
   "artifacts_deleted_this_update": 0
  },
  "sota_first_override": {

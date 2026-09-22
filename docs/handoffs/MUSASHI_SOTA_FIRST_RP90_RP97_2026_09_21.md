@@ -13,14 +13,20 @@ not the entire prediction bank to the coordinator. Finish current transfers
 consistently or explicitly cancel and record them before pruning. Do not remove
 in-flight sources or the owner's active compression-test inputs.
 
-After independent verification, archive original artifacts losslessly to a
-governed remote location, restore and verify original digests in isolation, then
-prune exact local/working duplicates with an auditable receipt. The current
-verifier expects arrays.npz; restore it before calling it, or implement and test
-an explicit archive resolver. Never skip array checks just because metrics were
-previously verified. No lossy quantization or destruction of the last canonical
-prediction copy. Benchmark compression on representative samples remotely;
-report measured bytes saved, compression/restore time and peak RAM.
+**Superseded by the owner's later instruction on 2026-09-22:** no compression
+benchmark or permanent prediction archive is required. Follow the owner's
+current work, not the withdrawn archival instruction. After independent analysis
+and verification of the persisted, explicitly scoped metric catalog, delete
+the inventoried copies of prediction arrays, including the final copy. Preserve
+metrics, provenance, checkpoints and deletion receipts. Do not delete in-flight
+inputs or declare the analyses complete merely because a vault file exists.
+
+After deletion, label the record as metrics verified before authorized prediction
+deletion, not as a currently replayable prediction artifact. No cached summary
+may masquerade as a successful present-array check. The future STEP-12 routing
+experiment will have its own eligible model bank and OOS predictions; its
+existence does not require retaining all current pilot arrays. Do not start it
+or add an unbounded metric sweep to the current work as a retention workaround.
 
 Base inspected: `3389a25`. Owner explicitly replaces the next experimental
 priority. Read [SOTA_FIRST](../tres_temas_entrevista/program_v3/SOTA_FIRST_2026_09_21.md)

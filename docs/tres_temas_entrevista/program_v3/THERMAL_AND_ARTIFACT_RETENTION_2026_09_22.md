@@ -23,67 +23,60 @@ This changes execution placement and storage, not the frozen ML recipe.
   machine-wide GPU lock. Direct launches must obey the same rule. Removal requires
   owner confirmation that cooling is restored; services need no restart.
 
-## What can be removed
+## Owner supersession: analyze, retain metrics, delete predictions
 
-User authorizes reclaiming storage that is no longer needed. Independent metric
-verification alone does not make the sole prediction array disposable: summaries
-cannot recover paired errors, tails, subgroup performance or prove a later metric
-bug absent. Checkpoint replay can vary numerically; it is not the original output.
+The owner's later instruction on 2026-09-22 withdraws the earlier compression
+and permanent-archive requirements. Satoshi is already implementing that order;
+this amendment aligns Musashi's documents and creates no competing campaign.
+No compression benchmarks, archive resolver or retained canonical prediction
+copy are required. Deletion of the last prediction copy is expressly authorized
+AFTER independent analysis and verified durable storage of the agreed metrics.
 
-Remove working/local duplicates after verification and verified remote archival.
-Keep one lossless authoritative prediction artifact for every retained scientific
-cell, including failed/negative results needed for honest population accounting.
-Keep a second verified copy on a separate failure domain for irreplaceable accepted
-evidence when storage policy requires it; it need not be on the traveling laptop.
-Never infer dispensability from a poor score. A later decision to destroy the last
-copy must explicitly retire the corresponding replay/audit claim, not retain VERIFIED.
+Before deletion, inventory run/cell identity, original accepted digest, exact
+paths and copies on workers/coordinator, active readers/writers and transfers.
+Verify the metric catalog independently, including its population, units,
+reductions, finite/degenerate behavior, bin ranges, lags and approximations.
+Publish metric artifacts and verify their persisted content. A file named
+METRICS_VAULT.json or a test asserting keys exist does not establish correctness.
+Close dependent comparisons before deleting their inputs. Do not delete files
+that another active process is reading, writing or transferring.
 
-Before deleting a specific copy:
+Delete only inventoried prediction artifacts after those conditions pass, on
+all known locations, including the final copy; retain per-path deletion receipts
+and actual bytes reclaimed. Preserve configurations, code/environment identities,
+data/scaler identities, checkpoints, metric artifacts, verification reports and
+accounting. Do not delete an entire run with its supporting provenance.
 
-1. Inventory run/cell identity, path, size, original accepted digest, and every
-   writer, reader, sync, outbox or closure that still depends on that location.
-2. Complete independent metric and checkpoint verification on a remote worker.
-   An unfinished campaign or transfer is not eligible for automatic pruning.
-3. Produce the lossless archive atomically at a durable governed location, with
-   codec/version, compressed digest, original digest and provenance manifest.
-   Read-back restore in a separate directory must match the original accepted
-   file digest, not just a new hash computed from an unanchored current copy.
-4. Run the real closure/verifier on restored artifacts, including predictions,
-   checkpoint and input identities. Test corrupted archive, wrong cell, missing
-   chunk, unavailable archive and interrupted publication as refusals.
-5. Publish an additive location/retention receipt and confirm the authoritative
-   resolver can find it. Never rewrite the original accepted artifact digest.
-6. Delete only the exact redundant paths from the verified inventory, record bytes
-   actually reclaimed, and check no consumer still expects the removed path.
-   Do not glob-delete a run or operate on an in-flight sync/compression input.
+Separate historical verification from current replayability. Original predictions
+will no longer be available for direct re-audit. Their hash records their former
+identity; it cannot reconstruct them. A later regeneration is a new artifact,
+not automatically byte-identical. Missing arrays must not silently pass a current
+array verifier using a cached metric receipt. Historical verification remains
+dated and qualified by authorized deletion, not erased or relabeled as false.
 
-## Current implementation and compression experiment
+## Scope of the metric catalog and future experiments
 
-At inspected predictor revision cd07830, df_sota_repro writes only `pred` into
-np.savez_compressed(arrays.npz); targets are derived and hashed separately. It
-already avoids storing a full repeated target tensor in that file. Its verifier
-and replay still require arrays.npz at the original working path. There is NO
-archive-aware resolver yet. Until one passes tests, restore the exact original
-file in an isolated working root before verification. Do not turn a missing
-arrays.npz into successful verification based on a cached metric receipt.
+Use a finite, explicit catalog tied to the planned questions: official errors
+and matched baselines; per-channel/horizon/time-block errors; residual moments,
+tails and distributions; declared ACF/PACF or spectral/information diagnostics
+where applicable; paired contrasts required by the current design. Each estimator
+needs parameters, sample population, uncertainty/limitations and an independent
+check. Undefined is not zero. Approximate quantiles or clipped histograms must
+not be described as full exact distributions. Do not claim all possible future
+metrics or subgroups are recoverable from these summaries.
 
-Benchmark gzip/bzip2/xz/zstd or other approved lossless codecs on representative
-samples on a cooled worker. Choose by measured space saving, compression CPU,
-decompression time, peak memory and exact restore, not by maximum level alone.
-Avoid compressing every full artifact with every algorithm. Comparing raw float32
-to an NPZ container must disclose container overhead and included fields. Do not
-assume the sample ratio holds for all horizons or series.
+STEP-12 already outlines adaptive routing and chronological OOS expert predictions
+(source: STEP_12_ADAPTIVE_INFORMATION_QUALITY_ROUTING_LINK_ADAPTATION_FINAL.md,
+sections 44-47 and 57). Its project financial protocol depends on upstream
+eligible modes and is not a sealed, allocated current financial experiment.
+META similarly remains deferred. Neither is justification for blanket retention
+of present ECL or failed exploratory model predictions. When that experiment is
+designed, generate the required dedicated OOS predictions for its frozen eligible
+model bank and retain them only through its declared analysis lifecycle.
 
-Float16, decimal rounding and lossy residual coding are NOT archival compression:
-they can erase the marginal improvements being studied. A redesigned chunked
-format needs a reversible mapping, dtype/shape/order metadata and canonical
-tensor verification, plus a successor artifact record. If existing custody binds
-the ZIP/NPZ file bytes, numerical array equality alone cannot replace that identity.
-
-Prefer computation close to artifacts and on-demand restoration. Retain small
-design/config/env locks, training logs, checkpoint, data/scaler identities,
-row/horizon mapping, verification reports and accepted accounting receipts.
-Do not keep multiple full local prediction banks merely to display a table.
+The current e98b269 implementation stores predictions uncompressed and adds a
+metric vault. Its breadth and correctness require audit; this amendment does
+not certify it. No new experiment is authorized solely to justify storage.
 
 ## Scope of this update
 
