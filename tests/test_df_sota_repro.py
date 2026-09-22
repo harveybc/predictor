@@ -686,3 +686,21 @@ def test_RP102_the_terminal_of_a_cell_on_the_float64_basis_is_built_from_the_rec
     assert (root / "TERMINALS" / f"{unit}.json").is_file()
     with pytest.raises(R.SotaRefusal):
         R.report_unit(a, {"design_sha256": "d" * 64}, cell, {**record, "independent_metric_float64": None})
+
+
+def test_RP100_a_workers_replay_history_travels_through_merge_as_a_dated_record_and_the_table_cites_it_as_history_only(world, tmp_path):
+    """The coordinator closes on another device (WORKER_B): WORKER_A's same-device GPU replays are cited from its merged
+    REPLAYS files as HISTORICAL_RECORD_ONLY, in both the RP96 flat/GPU forms and the RP100 keyed form; never as verification."""
+    unit = world["cell"]["cell_id"]
+    root = _copy(world, tmp_path)
+    src = tmp_path / "worker"; import shutil; shutil.copytree(world["root"], src)
+    (src / "REPLAYS.json").write_text(json.dumps({unit: {"device": "cpu", "allclose_rule": False, "max_abs_prediction_difference": 0.0019}}))
+    (src / "REPLAYS_GPU.json").write_text(json.dumps({"cells": {unit: {"device": "cuda:0", "allclose_rule": True, "max_abs_prediction_difference": 0.0}}}))
+    (root / "REPLAYS.json").write_text(json.dumps({unit: {"cuda:GPU-x@2026-09-22T00:00:00Z": {"device": "cuda", "device_uuid": "GPU-x", "property": "cross_device_portability",
+                                                                                           "allclose_rule": True, "max_abs_prediction_difference": 0.0}}}))
+    out = R.merge(root, src)
+    assert sorted(out["replay_history_files"]) == [f"REPLAYS_HISTORY.worker.REPLAYS.json", f"REPLAYS_HISTORY.worker.REPLAYS_GPU.json"]
+    hist = R.replay_history(root, unit)
+    assert {h["scope"] for h in hist} == {"HISTORICAL_RECORD_ONLY"} and len(hist) == 3
+    assert [h["allclose_rule"] for h in sorted(hist, key=lambda h: h["source"])] == [True, False, True]
+    assert R.replay_history(root, "L96_h720_s2099") == []

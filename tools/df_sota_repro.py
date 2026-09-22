@@ -909,6 +909,11 @@ def merge(root: Path, source: Path) -> dict:
     (root / "TERMINAL_RECEIPTS.json").write_text(json.dumps(receipts, indent=1))
     for extra in sorted(source.glob("PREFLIGHT*.json")) + sorted(source.glob("EXECUTE.*.json")):
         shutil.copy2(extra, root / extra.name)
+    # the worker's replay history travels as a dated record (RP100: never an input to a closure's verification; the table cites it
+    # as same-device history when the coordinator closes on another device)
+    for extra in sorted(source.glob("REPLAYS*.json")):
+        shutil.copy2(extra, root / f"REPLAYS_HISTORY.{source.name}.{extra.name}")
+        out.setdefault("replay_history_files", []).append(f"REPLAYS_HISTORY.{source.name}.{extra.name}")
     (root / f"MERGE.{source.name}.{int(time.time())}.json").write_text(json.dumps(out, indent=1))
     return out
 
@@ -1872,6 +1877,31 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             "historically_verified_units": sorted(r["unit"] for r in rows if r.get("verified_historically"))}
 
 
+def replay_history(root: Path, unit: str) -> list:
+    """Every recorded replay of the unit on this root and on merged worker roots (REPLAYS_HISTORY.*), in both the RP96 flat form
+    and the RP100 keyed form, labelled HISTORICAL_RECORD_ONLY: a closure verifies with fresh replays, never with these."""
+    root = Path(root); out = []
+    for f in sorted(root.glob("REPLAYS*.json")):
+        try:
+            h = json.loads(f.read_text())
+        except Exception:
+            continue
+        entries = []
+        if isinstance(h.get("cells"), dict) and unit in h["cells"]:            # RP96 REPLAYS_GPU.json: {cells: {unit: rep}}
+            entries.append((f.name, h["cells"][unit]))
+        elif isinstance(h.get(unit), dict):
+            v = h[unit]
+            if "allclose_rule" in v:                                          # RP96 flat: {unit: rep}
+                entries.append((f.name, v))
+            else:                                                             # RP100 keyed: {unit: {device@time: rep}}
+                entries.extend((f"{f.name}#{k}", e) for k, e in v.items() if isinstance(e, dict))
+        for name, e in entries:
+            out.append({"source": name, "device": e.get("device"), "device_uuid": e.get("device_uuid"), "property": e.get("property"),
+                        "allclose_rule": e.get("allclose_rule"), "max_abs_prediction_difference": e.get("max_abs_prediction_difference"),
+                        "at": e.get("at") or e.get("replayed_at"), "scope": "HISTORICAL_RECORD_ONLY"})
+    return out
+
+
 def metric_of(record: dict) -> tuple:
     """(metric dict, basis): the author's float32 reduction when it was executed; otherwise the independent float64 reduction,
     labelled as such (the difference between the two was <= 2.1e-8 on every cell where both exist; never assumed bitwise)."""
@@ -1928,7 +1958,7 @@ def agreement(published: dict, values: list, metric: str, rule: dict = AGREEMENT
                      "horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"}
 
 
-def table(design: dict, ver: dict) -> dict:
+def table(design: dict, ver: dict, *, root: Path | None = None) -> dict:
     """RP97: dataset/protocol, model/revision, horizon, published, replicated, difference, matched naive, seed dispersion, training
     completion, cost, agreement — normalized official metrics first; nothing unverified enters a mean."""
     pub = design["lock"]["published"]
@@ -1955,7 +1985,8 @@ def table(design: dict, ver: dict) -> dict:
         row["scopes"] = {"recipe_fidelity": "sealed author files, arguments and preparation bound (closure)" if ok else None,
                          "same_device_repeatability": sorted({r.get("same_device_repeatability", "NOT_TESTED_ON_THIS_DEVICE") for r in ok}),
                          "cross_device_portability": sorted({r.get("cross_device_portability", "NOT_TESTED_ON_THIS_DEVICE") for r in ok}),
-                         "published_score_agreement": {"mse": row["mse"]["status"], "mae": row["mae"]["status"]}}
+                         "published_score_agreement": {"mse": row["mse"]["status"], "mae": row["mae"]["status"]},
+                         "replay_history": ({r["unit"]: replay_history(root, r["unit"]) for r in ok} if root is not None else None)}
         complete = complete and row["verified_all"]
         row["matched_naive"] = (ok[0]["derived"]["naive"] if ok and ok[0].get("derived") else None)
         row["training_completion"] = [{"unit": r["unit"], "epochs_run": (r.get("training") or {}).get("epochs_run"), "best_epoch": (r.get("training") or {}).get("best_epoch_by_vali"),
@@ -2075,7 +2106,7 @@ def close(a, design: dict) -> dict:
         for r in ver["rows"]:
             r["verified"] = False
         ver["verified_units"] = []
-    t = table(design, ver)
+    t = table(design, ver, root=a.root)
     contrasts = paired_contrasts(root, design, ver)
     write_atomic(root / "PAIRED_CONTRASTS.json", json.dumps(contrasts, indent=1, default=str))
     report = {"schema": "df_sota_report.v2", "design_sha256": design["design_sha256"], "verification": ver, "table": t, "paired_contrasts": contrasts,
