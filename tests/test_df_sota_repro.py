@@ -643,3 +643,20 @@ def test_RP102_a_failed_attempt_is_retired_into_versioned_history_and_nothing_is
     d = json.loads((root / "DELIVERIES.json").read_text()); r = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())
     assert unit not in d["units"] and d["failed_attempts"][0]["unit"] == unit and unit not in r["units"] and r["failed_attempts"][0]["reason"] == "interrupted"
     assert (root / "TERMINALS" / f"{unit}.{out['stamp']}.json").is_file() and list(root.glob(f"RETIRED.{unit}.*.json"))
+
+
+def test_RP102_dataloader_workers_change_host_memory_only_batches_are_identical(world, tmp_path):
+    import torch
+    cell, data = world["cell"], world["data"]
+    R.author_env()
+    DF = __import__("importlib").import_module("data_provider.data_factory")
+    out = {}
+    for w in (1, 0):
+        R.fix_seeds(cell["seed"])
+        args = R.build_args(cell["argv"], data_dir=data.parent, data_name=data.name, checkpoints=tmp_path / "c", use_gpu=False, dataloader_workers=w)
+        assert args.num_workers == w
+        _, train_loader = DF.data_provider(args, "train"); _, test_loader = DF.data_provider(args, "test")
+        out[w] = ([b[0].clone() for b in train_loader][:6], [b[1].clone() for b in test_loader])
+    assert all(torch.equal(a, b) for a, b in zip(out[1][0], out[0][0])) and all(torch.equal(a, b) for a, b in zip(out[1][1], out[0][1]))
+    rec = R.run_cell(world["design"], cell, data_path=data, folder=tmp_path / "cell", use_gpu=False, bounded=True, dataloader_workers=0)
+    assert rec["operational_patches"] and "num_workers 0" in rec["operational_patches"][0]["what"] and rec["effective_args"]["num_workers"] == 0

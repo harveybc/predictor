@@ -443,12 +443,16 @@ def fix_seeds(seed: int) -> None:
     random.seed(seed); torch.manual_seed(seed); np.random.seed(seed)
 
 
-def build_args(argv: list, *, data_dir: Path, data_name: str, checkpoints: Path, gpu: int = 0, use_gpu: bool | None = None):
-    """run.py's parse and post-parse logic, verbatim in effect; the data root and checkpoint folder are the only transport values."""
+def build_args(argv: list, *, data_dir: Path, data_name: str, checkpoints: Path, gpu: int = 0, use_gpu: bool | None = None, dataloader_workers: int | None = None):
+    """run.py's parse and post-parse logic, verbatim in effect; the data root and checkpoint folder are the only transport values.
+    `dataloader_workers` (operational, declared): how many DataLoader processes fetch batches — the sampler's order and every
+    batch's content are produced in the main process and do not depend on it (tested); it changes host memory only."""
     import torch
     parser, _ = author_parser()
     args = parser.parse_args(list(argv))
     args.root_path, args.data_path, args.checkpoints, args.gpu = str(data_dir), data_name, str(checkpoints), int(gpu)
+    if dataloader_workers is not None:
+        args.num_workers = int(dataloader_workers)
     if use_gpu is not None:
         args.use_gpu = bool(use_gpu)
     args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
@@ -477,11 +481,12 @@ def capture_metric(exp_module, captured: Captured):
 
 
 def main_like_run_py(argv: list, *, seed: int, data_dir: Path, data_name: str, work: Path, gpu: int = 0, use_gpu: bool | None = None,
-                     log: Path | None = None, train: bool = True, bounded: bool = False, author_metric_budget_bytes: int | None = None) -> dict:
+                     log: Path | None = None, train: bool = True, bounded: bool = False, author_metric_budget_bytes: int | None = None,
+                     dataloader_workers: int | None = None) -> dict:
     """run.py's `__main__` for one invocation: seeds, parse, Exp, train, test — the author's code path, in the author's cwd layout."""
     author_env()
     fix_seeds(seed)
-    args = build_args(argv, data_dir=data_dir, data_name=data_name, checkpoints=work / "checkpoints", gpu=gpu, use_gpu=use_gpu)
+    args = build_args(argv, data_dir=data_dir, data_name=data_name, checkpoints=work / "checkpoints", gpu=gpu, use_gpu=use_gpu, dataloader_workers=dataloader_workers)
     exp_module = importlib.import_module("exp.exp_long_term_forecasting")
     Exp = exp_module.Exp_Long_Term_Forecast
     captured = Captured()
@@ -511,6 +516,7 @@ def main_like_run_py(argv: list, *, seed: int, data_dir: Path, data_name: str, w
         os.chdir(cwd)
         exp_module.metric = original
     base = {"args": vars(args), "setting": setting, "wall_seconds": time.time() - t0, "cpu_seconds": time.process_time() - c0,
+            "operational_patches": ([{"what": f"DataLoader num_workers {dataloader_workers} instead of the author default", "effect": "none: sampler order and batch contents are produced in the main process (tested); host memory only"}] if dataloader_workers is not None else []),
             "checkpoint": work / "checkpoints" / setting / "checkpoint.pth", "n_parameters": int(sum(p.numel() for p in exp.model.parameters())), "device": str(exp.device)}
     if bounded_out is not None:
         return {**base, "preds": bounded_out["preds"], "trues": bounded_out["trues"], "author_metric": bounded_out["author_metric"],
@@ -696,7 +702,7 @@ def run_prepare(a, design: dict) -> dict:
 # --- a cell -----------------------------------------------------------------------------------------------------------------
 
 def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: int = 0, use_gpu: bool | None = None, bounded: bool = False,
-             author_metric_budget_bytes: int | None = None) -> dict:
+             author_metric_budget_bytes: int | None = None, dataloader_workers: int | None = None) -> dict:
     """The author's run for one cell; artifacts written under `folder`. Nothing scientific is decided here."""
     folder.mkdir(parents=True, exist_ok=True)
     work = folder / "work"
@@ -709,7 +715,7 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
     except Exception:                                           # noqa: BLE001
         pass
     res = main_like_run_py(cell["argv"], seed=cell["seed"], data_dir=data_path.parent, data_name=data_path.name, work=work, gpu=gpu, use_gpu=use_gpu,
-                           log=folder / "author_stdout.log", bounded=bounded, author_metric_budget_bytes=author_metric_budget_bytes)
+                           log=folder / "author_stdout.log", bounded=bounded, author_metric_budget_bytes=author_metric_budget_bytes, dataloader_workers=dataloader_workers)
     if res.get("bounded"):
         # the artifact is streamed from the prediction file (uncompressed npz, the owner's decision); nothing is materialized in RAM
         shape = tuple(res["bounded"]["shape"])
@@ -743,6 +749,7 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
               "design_sha256": design["design_sha256"], "setting": res["setting"], "effective_args": {k: v for k, v in sorted(res["args"].items())},
               "author_metric_float32": res["author_metric"], "author_metric_state": res.get("author_metric_state"), "independent_metric_float64": f64,
               "evaluation_path": ({"bounded_adapter": res["bounded"]["adapter"], "finalized": res["bounded"]["finalized"]} if res.get("bounded") else {"author_test": True}),
+              "operational_patches": res.get("operational_patches", []),
               "shapes": {"pred": pred_shape, "true": true_shape}, "dtype": dtype_name,
               "arrays_sha256": sha_file(folder / "arrays.npz"), "pred_sha256": pred_sha, "true_sha256": trues_sha, "checkpoint_sha256": sha_file(ckpt),
               "checkpoint_bytes": ckpt.stat().st_size, "n_parameters": res["n_parameters"], "device": res["device"], "training": training,
@@ -770,7 +777,8 @@ def child(a, design: dict) -> dict:
     folder = root / "attempts" / a.unit
     try:
         record = run_cell(design, cell, data_path=path, folder=folder, gpu=a.gpu, use_gpu=None if not a.cpu else False, bounded=bool(getattr(a, "bounded", False)),
-                          author_metric_budget_bytes=(int(a.author_metric_budget_gib * 2 ** 30) if getattr(a, "author_metric_budget_gib", None) else None))
+                          author_metric_budget_bytes=(int(a.author_metric_budget_gib * 2 ** 30) if getattr(a, "author_metric_budget_gib", None) else None),
+                          dataloader_workers=getattr(a, "dataloader_workers", None))
     except BaseException as exc:
         (folder).mkdir(parents=True, exist_ok=True)
         (folder / "FAILED.json").write_text(json.dumps({"at": now_iso(), "error": f"{type(exc).__name__}: {str(exc)[:600]}"}))
@@ -824,7 +832,8 @@ def execute(a, design: dict) -> list:
         guard = thermal_guard() if not a.cpu else {"skipped": "cpu"}
         argv = [sys.executable, str(Path(__file__).resolve()), "child", "--root", str(root), "--unit", unit, "--gov-url", a.gov_url, "--api-key-file", str(a.api_key_file),
                 "--lake", a.lake, "--resource", a.resource, "--gpu", str(a.gpu)] + (["--cpu"] if a.cpu else []) + (["--run-id", a.run_id] if a.run_id else []) \
-               + (["--bounded"] if getattr(a, "bounded", False) else []) + (["--author-metric-budget-gib", str(a.author_metric_budget_gib)] if getattr(a, "author_metric_budget_gib", None) else [])
+               + (["--bounded"] if getattr(a, "bounded", False) else []) + (["--author-metric-budget-gib", str(a.author_metric_budget_gib)] if getattr(a, "author_metric_budget_gib", None) else []) \
+               + (["--dataloader-workers", str(a.dataloader_workers)] if getattr(a, "dataloader_workers", None) is not None else [])
         t0 = time.time()
         proc = subprocess.run(argv, capture_output=True, text=True)
         (folder).mkdir(parents=True, exist_ok=True)
@@ -1654,8 +1663,9 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
         record = json.loads((folder / "cell.json").read_text())
         if record.get("design_sha256") != design["design_sha256"] or any(record["cell"].get(k) != cell[k] for k in ("cell_id", "horizon", "seed", "seq_len", "arm")):
             p_.append(f"{unit}: the record's identity contradicts the design cell")
-        if record.get("effective_args") != cell["effective_args"] | {k: record["effective_args"].get(k) for k in ("root_path", "data_path", "checkpoints", "gpu", "use_gpu", "device_ids", "devices")}:
-            diff = sorted(k for k in set(cell["effective_args"]) | set(record.get("effective_args") or {}) if k not in ("root_path", "data_path", "checkpoints", "gpu", "use_gpu", "device_ids", "devices")
+        transport = ("root_path", "data_path", "checkpoints", "gpu", "use_gpu", "device_ids", "devices", "num_workers")
+        if record.get("effective_args") != cell["effective_args"] | {k: record["effective_args"].get(k) for k in transport}:
+            diff = sorted(k for k in set(cell["effective_args"]) | set(record.get("effective_args") or {}) if k not in transport
                           and cell["effective_args"].get(k) != (record.get("effective_args") or {}).get(k))
             if diff:
                 p_.append(f"{unit}: the effective arguments the cell ran with differ from the sealed ones: {diff}")
@@ -2090,6 +2100,7 @@ def main(argv=None) -> int:
     ap.add_argument("--replay-units", nargs="*", default=None, help="close: replay only these units on this host; the others stay UNVERIFIED (REPLAY_PENDING)")
     ap.add_argument("--bounded", action="store_true", help="child/execute: evaluate through the disk-backed bounded adapter (RP101) instead of the author's test()")
     ap.add_argument("--author-metric-budget-gib", type=float, default=None, help="bounded: run the author's float32 metric() only if its temporaries fit this budget")
+    ap.add_argument("--dataloader-workers", type=int, default=None, help="operational: DataLoader worker processes (author default 1); batch order/content unchanged, host memory only")
     a = ap.parse_args(argv)
     if a.command == "seal":
         a.root.mkdir(parents=True, exist_ok=True)
