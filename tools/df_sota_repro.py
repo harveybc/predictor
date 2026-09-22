@@ -186,10 +186,121 @@ def sha_array(a: np.ndarray) -> str:
 def float64_metrics(preds: np.ndarray, trues: np.ndarray, chunk: int = 256) -> dict:
     """MAE and MSE accumulated in float64 over chunks of windows: an independent reduction with no full-size temporaries."""
     n, ab, sq = 0, 0.0, 0.0
+    row = int(np.prod(preds.shape[1:])) * 8 if len(preds.shape) > 1 else 8
+    chunk = max(1, min(chunk, (96 << 20) // row))                        # <= ~96 MB of float64 per operand per chunk
     for i in range(0, preds.shape[0], chunk):
-        d = preds[i:i + chunk].astype(np.float64) - trues[i:i + chunk].astype(np.float64)
+        d = np.asarray(preds[i:i + chunk]).astype(np.float64) - np.asarray(trues[i:i + chunk]).astype(np.float64)
         ab += float(np.abs(d).sum()); sq += float((d * d).sum()); n += d.size
     return {"mae": ab / n, "mse": sq / n}
+
+
+class StoredArray:
+    """A stored array read chunk by chunk along its first axis straight from its file — a .npy, or a ZIP_STORED member of an
+    .npz — with the pages released behind each read. RP101 applied to the closure: a T=720 cell's predictions are 4.2 GB and
+    the closure (finite check, catalog, float64 reduction, replay comparison) must never hold a whole array, let alone a float64
+    copy of two. `a[w0:w1]` returns an ordinary in-memory chunk; `memmap()` is for the author's own reduction within budget."""
+
+    def __init__(self, path: Path, member: str | None = None):
+        import struct
+        self.path = Path(path); self.member = member
+        base = 0
+        if member is not None:
+            import zipfile
+            with zipfile.ZipFile(self.path) as zf:
+                names = zf.namelist()
+                info = zf.getinfo(member if member in names else member + ".npy")
+            if info.compress_type != zipfile.ZIP_STORED:
+                raise SotaRefusal(f"REFUSED: {self.path.name}:{member} is compressed; a stored member is required to stream it")
+            with open(self.path, "rb") as fh:
+                fh.seek(info.header_offset); lh = fh.read(30)
+                if lh[:4] != b"PK\x03\x04":
+                    raise SotaRefusal(f"REFUSED: {self.path.name}:{member} has no local file header at its recorded offset")
+                name_len, extra_len = struct.unpack("<HH", lh[26:30])
+            base = info.header_offset + 30 + name_len + extra_len
+        with open(self.path, "rb") as fh:
+            fh.seek(base)
+            version = np.lib.format.read_magic(fh)
+            if version == (1, 0):
+                shape, fortran, dtype = np.lib.format.read_array_header_1_0(fh)
+            elif version == (2, 0):
+                shape, fortran, dtype = np.lib.format.read_array_header_2_0(fh)
+            else:
+                shape, fortran, dtype = np.lib.format._read_array_header(fh, version)
+            self.offset = fh.tell()
+        if fortran or dtype.hasobject:
+            raise SotaRefusal(f"REFUSED: {self.path.name} is not a C-ordered numeric array")
+        self.shape, self.dtype = tuple(int(x) for x in shape), np.dtype(dtype)
+        self.ndim = len(self.shape); self.size = int(np.prod(self.shape)) if self.shape else 1
+        self.row_nbytes = int(np.prod(self.shape[1:])) * self.dtype.itemsize if self.ndim else self.dtype.itemsize
+        self.nbytes = self.size * self.dtype.itemsize
+        self._fd = None
+
+    def _fileno(self) -> int:
+        if self._fd is None:
+            self._fd = os.open(self.path, os.O_RDONLY)
+        return self._fd
+
+    def close(self):
+        if self._fd is not None:
+            os.close(self._fd); self._fd = None
+
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:
+            pass
+
+    def __len__(self):
+        return self.shape[0] if self.ndim else 1
+
+    def __getitem__(self, s):
+        if isinstance(s, int):
+            if s < 0:
+                s += len(self)
+            return self[s:s + 1][0]
+        if not isinstance(s, slice) or s.step not in (None, 1):
+            raise TypeError("StoredArray supports contiguous slices along the first axis")
+        w0, w1, _ = s.indices(len(self))
+        n = max(0, w1 - w0)
+        fd = self._fileno(); off = self.offset + w0 * self.row_nbytes; length = n * self.row_nbytes
+        buf = bytearray(length); view = memoryview(buf); got = 0
+        while got < length:
+            k = os.preadv(fd, [view[got:]], off + got)
+            if k <= 0:
+                raise SotaRefusal(f"REFUSED: {self.path.name} ended before window {w1} (short file)")
+            got += k
+        _dontneed(fd, off, length)
+        return np.frombuffer(buf, dtype=self.dtype).reshape((n,) + self.shape[1:])
+
+    def chunk_windows(self, target_bytes: int = 96 << 20) -> int:
+        return max(1, target_bytes // max(1, self.row_nbytes))
+
+    def all_finite(self) -> bool:
+        step = self.chunk_windows()
+        return all(bool(np.isfinite(self[w0:w0 + step]).all()) for w0 in range(0, len(self), step))
+
+    def memmap(self) -> np.memmap:
+        return np.memmap(self.path, dtype=self.dtype, mode="r", offset=self.offset, shape=self.shape)
+
+    def load(self) -> np.ndarray:
+        return self[0:len(self)]
+
+
+def all_finite(a, step: int = 128) -> bool:
+    """Finite check over chunks of windows for any array-like (memmap, StoredArray, ndarray)."""
+    return all(bool(np.isfinite(np.asarray(a[w0:w0 + step])).all()) for w0 in range(0, a.shape[0], step))
+
+
+def compare_predictions(rep, stored, *, atol: float, rtol: float, step: int = 64) -> dict:
+    """The frozen replay rule evaluated chunk by chunk in float64 (|rep - stored| <= atol + rtol*|stored| everywhere), with the
+    maximum absolute difference and the exact-equality count; no full-size temporary."""
+    max_abs, n_exact, close, n_total = 0.0, 0, True, int(np.prod(stored.shape))
+    for w0 in range(0, stored.shape[0], step):
+        a = np.asarray(rep[w0:w0 + step], dtype=np.float32).astype(np.float64); b = np.asarray(stored[w0:w0 + step], dtype=np.float32).astype(np.float64)
+        d = np.abs(a - b); max_abs = max(max_abs, float(d.max()) if d.size else 0.0); n_exact += int((a == b).sum())
+        close = close and bool((d <= atol + rtol * np.abs(b)).all())
+    return {"max_abs_prediction_difference": max_abs, "allclose_rule": close, "exact_equal_elements": n_exact, "elements": n_total,
+            "exact_equal_fraction": (n_exact / n_total) if n_total else None}
 
 
 def now_iso() -> str:
@@ -1377,16 +1488,17 @@ if {device == "cpu"!r}:
     torch.load = functools.partial(_load, map_location=torch.device("cpu"))
 res = M.main_like_run_py(cell["argv"], seed=cell["seed"], data_dir=Path({str(data_path.parent)!r}), data_name={data_path.name!r}, work=work, gpu=0, use_gpu={device != "cpu"}, train=False,
                          bounded=True, author_metric_budget_bytes={author_metric_budget!r})
-with np.load(folder/"arrays.npz") as z: stored = z["pred"]
-rep = np.asarray(res["preds"], dtype=np.float32)
+stored = M.StoredArray(folder/"arrays.npz", "pred")
+rep = res["preds"]                                     # the adapter's file-backed float32 predictions
 rule = design["lock"]["replay_rule"]
-shape_equal = rep.shape == stored.shape
-finite = bool(np.isfinite(rep).all()) and bool(np.isfinite(stored).all())
+shape_equal = tuple(rep.shape) == tuple(stored.shape)
+finite = M.all_finite(rep) and stored.all_finite()
 if shape_equal and finite:
-    d = np.abs(rep.astype(np.float64) - stored.astype(np.float64)); max_abs = float(d.max()); n_exact = int((rep == stored).sum()); n_total = int(rep.size)
-    allclose = bool(np.allclose(rep, stored, atol=rule["atol"], rtol=rule["rtol"]))
+    cmp_ = M.compare_predictions(rep, stored, atol=rule["atol"], rtol=rule["rtol"])
+    max_abs, n_exact, n_total, allclose = cmp_["max_abs_prediction_difference"], cmp_["exact_equal_elements"], cmp_["elements"], cmp_["allclose_rule"]
 else:
-    max_abs, n_exact, n_total, allclose = None, 0, int(rep.size), False
+    max_abs, n_exact, n_total, allclose = None, 0, int(np.prod(rep.shape)), False
+stored.close()
 gpu = M.gpu_state(); dev_uuid = None
 if str(res["device"]).startswith("cuda") and gpu:
     idx = int(str(res["device"]).split(":")[-1]) if ":" in str(res["device"]) else 0
@@ -1410,25 +1522,46 @@ shutil.rmtree(work, ignore_errors=True)
     return json.loads(proc.stdout.strip().splitlines()[-1])
 
 
-def naive_and_trues(design: dict, cell: dict, data_path: Path) -> dict:
-    """The author's test loader (same args, same borders, same scaler): the targets re-derived, and persistence on identical windows."""
+def naive_and_trues(design: dict, cell: dict, data_path: Path, work_dir: Path | None = None) -> dict:
+    """The author's test loader (same args, same borders, same scaler): the targets re-derived, and persistence on identical windows.
+    The targets are hashed as they stream; with `work_dir` they are also written to a .npy file (header first, filled through a
+    file handle, pages released) so the closure can re-read them chunk by chunk instead of holding 4 GB of them."""
     author_env()
     import torch
-    from types import SimpleNamespace
+    from numpy.lib.format import open_memmap
     DF = importlib.import_module("data_provider.data_factory")
     args = build_args(cell["argv"], data_dir=data_path.parent, data_name=data_path.name, checkpoints=Path("/nonexistent"), gpu=0, use_gpu=False)
     args.augmentation_ratio = 0
     test_data, test_loader = DF.data_provider(args, "test")
-    trues, sq, ab = [], 0.0, 0.0
-    n = 0
+    n_windows = (len(test_loader) * test_loader.batch_size) if getattr(test_loader, "drop_last", False) else len(test_data)
+    h = hashlib.sha256(); sq, ab, n, w = 0.0, 0.0, 0, 0
+    path = (Path(work_dir) / f"trues_L{cell['seq_len']}_T{cell['horizon']}.npy") if work_dir is not None else None
+    ft = None; header_off = None
     for batch_x, batch_y, _, _ in test_loader:
         y = batch_y[:, -args.pred_len:, :].float()
         last = batch_x[:, -1:, :].float().expand(-1, args.pred_len, -1)
         d = (last - y).double()
         sq += float((d * d).sum()); ab += float(d.abs().sum()); n += d.numel()
-        trues.append(y.numpy().astype(np.float32))
-    trues = np.concatenate(trues, axis=0)
-    return {"true_sha256": sha_array(trues), "n_elements": n, "windows": int(trues.shape[0]), "naive": {"mse": sq / n, "mae": ab / n},
+        yb = np.ascontiguousarray(y.numpy().astype(np.float32, copy=False))
+        h.update(memoryview(yb).cast("B"))
+        if path is not None:
+            if ft is None:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                m = open_memmap(path, mode="w+", dtype=np.float32, shape=(n_windows, yb.shape[1], yb.shape[2])); header_off = m.offset; del m
+                ft = open(path, "r+b"); ft.seek(header_off)
+            if w + yb.shape[0] > n_windows:
+                ft.close(); path.unlink(missing_ok=True)
+                raise SotaRefusal(f"REFUSED: the loader yielded more windows ({w + yb.shape[0]}+) than it declares ({n_windows})")
+            ft.write(memoryview(yb).cast("B"))
+            if (w // max(1, yb.shape[0])) % 16 == 0:
+                ft.flush(); _dontneed(ft.fileno(), 0, ft.tell())
+        w += yb.shape[0]
+    if ft is not None:
+        ft.flush(); _dontneed(ft.fileno(), 0, ft.tell()); ft.close()
+        if w != n_windows:
+            path.unlink(missing_ok=True)
+            raise SotaRefusal(f"REFUSED: the loader yielded {w} windows, it declares {n_windows}: INCOMPLETE POPULATION")
+    return {"true_sha256": h.hexdigest(), "n_elements": n, "windows": int(w), "naive": {"mse": sq / n, "mae": ab / n}, "trues_path": (str(path) if path else None),
             "naive_definition": "persistence: the window's last observed value repeated over the horizon, every channel, same test windows, normalized space"}
 
 
@@ -1463,7 +1596,7 @@ def metrics_vault(preds: np.ndarray, test_loader, *, pred_len: int, chunk: int =
         raise VaultRefusal(f"REFUSED: predictions have {T} steps, the cell's horizon is {pred_len}")
     if W == 0:
         raise VaultRefusal("REFUSED: no prediction windows")
-    if not np.isfinite(preds).all():
+    if not all_finite(preds):
         raise VaultRefusal("REFUSED: non-finite predictions")
     Z = lambda: np.zeros((T, C))
     S = {k: Z() for k in ("ab", "sq", "r", "nab", "nsq", "sab", "ssq", "y", "y2", "p", "p2", "py")}
@@ -1724,15 +1857,19 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                             p_.append(f"{unit}: the {role} on disk is not the accepted {role} artifact")
                     custody = {"class": "UNANCHORED"}
         # metrics recomputed from the arrays; targets re-derived by the author's loader when the file is available
-        with np.load(folder / "arrays.npz") as z:
-            preds = z["pred"]
-        if not np.isfinite(preds).all():
+        try:
+            preds = StoredArray(folder / "arrays.npz", "pred")             # chunked reads, never a whole 4 GB array (RP101 at closure)
+        except (SotaRefusal, KeyError, OSError, ValueError) as exc:
+            p_.append(f"{unit}: the predictions cannot be streamed from arrays.npz: {str(exc)[:120]}")
+            rows.append({"unit": unit, "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")}, "custody": custody, "status": "UNREADABLE",
+                         "problems": p_, "verified": False}); continue
+        if not preds.all_finite():
             p_.append(f"{unit}: non-finite predictions")
         derived = None
         if data_path is not None and not p_:
             key = (cell["seq_len"], cell["horizon"])
             if key not in cache:
-                cache[key] = naive_and_trues(design, cell, data_path)
+                cache[key] = naive_and_trues(design, cell, data_path, work_dir=root / "closure_work")
             derived = cache[key]
             if derived["true_sha256"] != record.get("true_sha256"):
                 p_.append(f"{unit}: the targets re-derived from the delivered file by the author's loader are not the ones the cell scored: TARGETS")
@@ -1746,17 +1883,17 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             args = build_args(cell["argv"], data_dir=data_path.parent, data_name=data_path.name, checkpoints=Path("/nonexistent"), gpu=0, use_gpu=False)
             args.augmentation_ratio = 0
             DF = importlib.import_module("data_provider.data_factory")
-            _, test_loader = DF.data_provider(args, "test")
-            trues = np.concatenate([b[1][:, -args.pred_len:, :].float().numpy().astype(np.float32) for b in test_loader], axis=0)
-            recomputed = {"independent_float64": float64_metrics(preds, trues)}
+            # the targets were streamed to a file by the author's loader above (digest checked against the record): re-read chunked
+            trues = StoredArray(derived["trues_path"])
+            recomputed = {"independent_float64": float64_metrics(preds, trues), "targets_source": "closure_work: streamed by the author's test loader, digest = record"}
             need = 3 * int(preds.nbytes)
             if author_metric_budget is None or need <= author_metric_budget:
-                mae32, mse32 = MET.metric(preds, trues)[:2]
+                mae32, mse32 = MET.metric(preds.memmap(), trues.memmap())[:2]
                 recomputed["author_float32"] = {"mae": float(mae32), "mse": float(mse32)}
             else:
                 recomputed["author_float32"] = None
                 recomputed["author_float32_state"] = f"NOT_EXECUTED_WITHIN_BUDGET at closure (needs ~{need} bytes of temporaries)"
-            del trues
+            trues.close(); del trues
             vault_path = folder / "METRICS_VAULT.json"
             # RP99 (Musashi RP97 #1): a persisted vault is never trusted from disk — the catalog is RECOMPUTED from the accepted
             # arrays through the author loader and compared; a differing persisted candidate is preserved with a disposition and
@@ -1868,6 +2005,7 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
         for r in rows:
             if not r["problems"] and r.get("status") not in ("MISSING", "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION", "DELETED_WITHOUT_VALID_RECEIPT"):
                 r["replay"] = {"skipped": True, "why": "REPLAY_PENDING: no data file on this host"}; r["verified"] = False
+    shutil.rmtree(root / "closure_work", ignore_errors=True)          # derived targets: re-streamed by the author's loader at every closure
     return {"design_sha256": design["design_sha256"], "disposition": disp, "preparation_custody": prep, "source_drift_now": drift, "rows": rows,
             "replay_patch": {"what": "torch.load defaults to map_location=cpu inside the CPU replay process", "why": "the author's test(test=1) loads the checkpoint "
                              "without map_location; a CUDA-trained checkpoint is otherwise unreadable on CPU", "effect": "tensor placement only; the frozen replay rule "

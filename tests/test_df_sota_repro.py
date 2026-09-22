@@ -704,3 +704,47 @@ def test_RP100_a_workers_replay_history_travels_through_merge_as_a_dated_record_
     assert {h["scope"] for h in hist} == {"HISTORICAL_RECORD_ONLY"} and len(hist) == 3
     assert [h["allclose_rule"] for h in sorted(hist, key=lambda h: h["source"])] == [True, False, True]
     assert R.replay_history(root, "L96_h720_s2099") == []
+
+
+def test_RP101_a_stored_array_streams_npz_members_and_npy_files_chunk_by_chunk_equal_to_a_whole_load(tmp_path):
+    rng = np.random.default_rng(0)
+    pred = rng.standard_normal((37, 5, 3)).astype(np.float32); true = rng.standard_normal((37, 5, 3)).astype(np.float32)
+    np.savez(tmp_path / "arrays.npz", pred=pred, true=true)                      # ZIP_STORED members, as the cells' arrays.npz
+    np.save(tmp_path / "t.npy", true)
+    a = R.StoredArray(tmp_path / "arrays.npz", "pred"); b = R.StoredArray(tmp_path / "t.npy")
+    assert a.shape == pred.shape and a.dtype == np.float32 and a.nbytes == pred.nbytes and len(a) == 37
+    assert np.array_equal(a.load(), pred) and np.array_equal(b.load(), true) and np.array_equal(a[10:20], pred[10:20]) and np.array_equal(a[-1], pred[-1])
+    assert np.array_equal(a[30:100], pred[30:]) and a[5:5].shape == (0, 5, 3) and a.all_finite() and np.array_equal(a.memmap(), pred)
+    assert R.float64_metrics(a, b) == R.float64_metrics(pred, true)
+    assert R.StoredArray(tmp_path / "arrays.npz", "true.npy").load().tobytes() == true.tobytes()
+    np.savez_compressed(tmp_path / "c.npz", pred=pred)
+    with pytest.raises(R.SotaRefusal):
+        R.StoredArray(tmp_path / "c.npz", "pred")
+    bad = pred.copy(); bad[3, 1, 2] = np.nan; np.save(tmp_path / "bad.npy", bad)
+    assert not R.StoredArray(tmp_path / "bad.npy").all_finite() and not R.all_finite(bad)
+
+
+def test_RP100_the_chunked_replay_comparison_is_the_frozen_rule_without_full_size_temporaries(tmp_path):
+    rng = np.random.default_rng(1)
+    stored = rng.standard_normal((50, 4, 3)).astype(np.float32); np.savez(tmp_path / "a.npz", pred=stored)
+    sa = R.StoredArray(tmp_path / "a.npz", "pred")
+    same = R.compare_predictions(stored, sa, atol=1e-4, rtol=1e-4, step=7)
+    assert same["allclose_rule"] and same["max_abs_prediction_difference"] == 0.0 and same["exact_equal_fraction"] == 1.0 and same["elements"] == stored.size
+    near = stored + np.float32(5e-5); r = R.compare_predictions(near, sa, atol=1e-4, rtol=1e-4, step=7)
+    assert r["allclose_rule"] == bool(np.allclose(near, stored, atol=1e-4, rtol=1e-4)) and r["allclose_rule"] and r["exact_equal_elements"] < stored.size
+    far = stored.copy(); far[49, 3, 2] += np.float32(0.01); r = R.compare_predictions(far, sa, atol=1e-4, rtol=1e-4, step=7)
+    assert not r["allclose_rule"] and abs(r["max_abs_prediction_difference"] - 0.01) < 1e-6 and r["exact_equal_elements"] == stored.size - 1
+    perm = stored[::-1].copy()
+    assert not R.compare_predictions(perm, sa, atol=1e-4, rtol=1e-4)["allclose_rule"]
+
+
+def test_RP101_the_closure_streams_the_targets_to_a_file_with_the_records_digest_and_removes_it_afterwards(world, tmp_path):
+    out = R.naive_and_trues(world["design"], world["cell"], world["data"], work_dir=tmp_path / "cw")
+    t = R.StoredArray(out["trues_path"])
+    assert out["true_sha256"] == world["record"]["true_sha256"] == R.sha_array(t.load()) and t.shape[0] == out["windows"]
+    plain = R.naive_and_trues(world["design"], world["cell"], world["data"])
+    assert plain["trues_path"] is None and plain["true_sha256"] == out["true_sha256"] and plain["naive"] == out["naive"]
+    root = _copy(world, tmp_path)
+    ver = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)
+    row = ver["rows"][0]
+    assert row["verified"] and row["recomputed"]["targets_source"].startswith("closure_work") and not (root / "closure_work").exists()
