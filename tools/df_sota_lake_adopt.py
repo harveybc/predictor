@@ -151,9 +151,10 @@ def bind(A=None):
     A.inventory = inventory
     # default arguments were bound at the public module's definition time (port 5059): rebind them to THIS lake's port
     import functools
-    original_adopt, original_deployed = A.adopt, A.deployed_external
+    original_adopt, original_deployed, original_route = A.adopt, A.deployed_external, A.route_checks
     A.adopt = functools.partial(original_adopt, lake_port=LAKE_HOST_PORT)
     A.deployed_external = functools.partial(original_deployed, port=LAKE_HOST_PORT)
+    A.route_checks = functools.partial(original_route, lake=LAKE_ID)          # the route registers its campaign on THIS lake
     return A
 
 

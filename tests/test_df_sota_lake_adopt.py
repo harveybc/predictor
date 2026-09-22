@@ -69,6 +69,8 @@ def test_RP92_the_contract_binds_the_official_bytes_and_withholds_every_date_ran
     assert A.LAKE_ID == "sota_benchmarks" and A.LAKE_HOST_PORT == 5060 and A.LAKE_HOST_UNIT == "crispdm-data-lake-sota-benchmarks.service"
     assert A.HOLDOUT_START == "2016-07-01" and A.policy_entries(["predictor"])[0]["deny_from"] == "2016-07-01"
     assert P.LAKE_ID == "public_panels" and P.LAKE_HOST_PORT == 5059 and P.HOLDOUT_START == "2006-12-16"     # the public adopter is untouched
+    # defaults bound at the public module's definition time are rebound: the route registers on THIS lake, the adoption on THIS port
+    assert A.route_checks.keywords == {"lake": "sota_benchmarks"} and A.adopt.keywords == {"lake_port": 5060} and A.deployed_external.keywords == {"port": 5060}
 
 
 def test_RP92_a_bound_rehearsal_adopts_additively_and_an_unbound_one_never_touches_the_configuration(tmp_path, sandbox):
