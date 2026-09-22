@@ -680,7 +680,7 @@ def test_RP102_the_terminal_of_a_cell_on_the_float64_basis_is_built_from_the_rec
     a = SimpleNamespace(root=root, lake="sota_benchmarks", resource="r", gov_url="http://x", api_key_file="k")
     R.report_unit(a, {"design_sha256": "d" * 64}, cell, record)
     terminal = sent[unit]
-    values = {m["name"]: m["value"] for m in terminal["metrics"]}
+    values = {m["metric"]: m["value"] for m in terminal["metrics"]}
     assert terminal["status"] == "COMPLETED" and values["sota.test.mse_normalized"] == 0.1626 and values["sota.test.mae_normalized"] == 0.2607
     assert terminal["tags"]["metric_basis"].startswith("independent_float64")
     assert (root / "TERMINALS" / f"{unit}.json").is_file()
