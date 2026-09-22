@@ -787,3 +787,22 @@ def test_RP102_the_host_allocator_setting_is_a_declared_operational_patch_of_cel
     monkeypatch.setenv("GLIBC_TUNABLES", R.MALLOC_TUNABLES_DEFAULT)
     patch = R.host_allocator_patch()
     assert len(patch) == 1 and "GLIBC_TUNABLES" in patch[0]["what"] and "host memory only" in patch[0]["effect"]
+
+
+def test_RP100_the_device_identity_is_the_device_the_process_computes_on_not_nvidia_smi_index_zero(monkeypatch):
+    """gamma: the RTX 5090 is nvidia-smi index 1 and cuda:0 of a process restricted by CUDA_VISIBLE_DEVICES; the replay record
+    and the same-device test must name that device. Without CUDA here, the visibility mask decides; a record carries its
+    actual UUID, an older record its environment's mask, an even older one nvidia-smi's first GPU."""
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8")
+    monkeypatch.setattr(R, "gpu_state", lambda: [{"index": 0, "uuid": "GPU-b77fc3ad"}, {"index": 1, "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"}])
+    import torch
+    if not torch.cuda.is_available():
+        assert R.actual_device_uuid(0) == "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "1")
+    if not torch.cuda.is_available():
+        assert R.actual_device_uuid(0) == "GPU-b77fc3ad"                      # a numeric mask cannot be resolved without CUDA: nvidia-smi order
+    assert R.trained_device_of({"device_uuid": "GPU-x", "environment": {"cuda_visible_devices": "GPU-y"}}) == "GPU-x"
+    assert R.trained_device_of({"device": "cuda:0", "environment": {"cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"},
+                                "cost": {"gpu_before": [{"uuid": "GPU-b77fc3ad"}]}}) == "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+    assert R.trained_device_of({"device": "cuda:0", "environment": {"cuda_visible_devices": None}, "cost": {"gpu_before": [{"uuid": "GPU-b77fc3ad"}]}}) == "GPU-b77fc3ad"
+    assert R.trained_device_of({"device": "cpu", "cost": {"gpu_before": [{"uuid": "GPU-b77fc3ad"}]}}) is None

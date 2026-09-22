@@ -490,6 +490,39 @@ def environment() -> dict:
     return out
 
 
+def actual_device_uuid(index: int = 0) -> str | None:
+    """The UUID of the CUDA device a process actually computes on. nvidia-smi lists every GPU of the host in its own order, so
+    `gpu_state()[cuda_index]` is not the device when CUDA_VISIBLE_DEVICES restricts the process (gamma: the RTX 5090 is
+    nvidia-smi index 1 and cuda:0 of the cell process). torch's own device properties first, then the visibility mask, then
+    nvidia-smi's order as a last resort."""
+    try:
+        import torch
+        if torch.cuda.is_available():
+            u = getattr(torch.cuda.get_device_properties(index), "uuid", None)
+            if u:
+                u = str(u)
+                return u if u.startswith("GPU-") else f"GPU-{u}"
+    except Exception:                                               # noqa: BLE001
+        pass
+    vis = [x.strip() for x in (os.environ.get("CUDA_VISIBLE_DEVICES") or "").split(",") if x.strip()]
+    if vis and all(x.startswith("GPU-") for x in vis):
+        return vis[index] if index < len(vis) else vis[0]
+    g = gpu_state()
+    return (g[index] if index < len(g) else (g[0] if g else {})).get("uuid") if g else None
+
+
+def trained_device_of(record: dict) -> str | None:
+    """The device UUID a cell was trained on, from its record: the recorded actual UUID (records from 2026-09-22 on), else the
+    visibility mask the record's environment carried, else nvidia-smi's first GPU of the training host (older records)."""
+    if record.get("device_uuid"):
+        return record["device_uuid"]
+    vis = [x.strip() for x in str((record.get("environment") or {}).get("cuda_visible_devices") or "").split(",") if x.strip()]
+    if vis and all(x.startswith("GPU-") for x in vis):
+        return vis[0]
+    before = (record.get("cost") or {}).get("gpu_before") or []
+    return (before[0].get("uuid") if before else None) if str(record.get("device", "")).startswith("cuda") else None
+
+
 def gpu_state() -> list:
     """Every GPU nvidia-smi sees: UUID, name, temperature, utilization, memory — the physical device identity an execution
     record must carry (a CUDA index is an assumption; a UUID is a device)."""
@@ -930,7 +963,9 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
               "operational_patches": res.get("operational_patches", []),
               "shapes": {"pred": pred_shape, "true": true_shape}, "dtype": dtype_name,
               "arrays_sha256": sha_file(folder / "arrays.npz"), "pred_sha256": pred_sha, "true_sha256": trues_sha, "checkpoint_sha256": sha_file(ckpt),
-              "checkpoint_bytes": ckpt.stat().st_size, "n_parameters": res["n_parameters"], "device": res["device"], "training": training,
+              "checkpoint_bytes": ckpt.stat().st_size, "n_parameters": res["n_parameters"], "device": res["device"],
+              "device_uuid": (actual_device_uuid(int(str(res["device"]).split(":")[-1]) if ":" in str(res["device"]) else 0) if str(res["device"]).startswith("cuda") else None),
+              "training": training,
               "cost": {"wall_seconds": res["wall_seconds"], "cpu_seconds": ru1.ru_utime + ru1.ru_stime - (ru0.ru_utime + ru0.ru_stime),
                        "peak_rss_bytes": int(ru1.ru_maxrss) * 1024, "peak_gpu_allocated_bytes": peak_gpu, "host": socket.gethostname(),
                        "gpu_before": gpu_before, "gpu_after": gpu_state()},
@@ -1566,11 +1601,12 @@ if shape_equal and finite:
 else:
     max_abs, n_exact, n_total, allclose = None, 0, int(np.prod(rep.shape)), False
 stored.close()
-gpu = M.gpu_state(); dev_uuid = None
-if str(res["device"]).startswith("cuda") and gpu:
+gpu = M.gpu_state(); dev_uuid = None; dev_name = "cpu"
+if str(res["device"]).startswith("cuda"):
     idx = int(str(res["device"]).split(":")[-1]) if ":" in str(res["device"]) else 0
-    dev_uuid = (gpu[idx] if idx < len(gpu) else gpu[0]).get("uuid")
-print(json.dumps({{"unit": unit, "device": res["device"], "device_uuid": dev_uuid, "device_name": (gpu[0].get("name") if gpu and str(res["device"]).startswith("cuda") else "cpu"),
+    dev_uuid = M.actual_device_uuid(idx)
+    dev_name = next((g.get("name") for g in gpu if g.get("uuid") == dev_uuid), None) or (torch.cuda.get_device_name(idx) if torch.cuda.is_available() else None)
+print(json.dumps({{"unit": unit, "device": res["device"], "device_uuid": dev_uuid, "device_name": dev_name,
                    "max_abs_prediction_difference": max_abs, "allclose_rule": allclose, "finite": finite, "shape_equal": shape_equal,
                    "exact_equal_elements": n_exact, "elements": n_total, "exact_equal_fraction": (n_exact / n_total) if n_total else None,
                    "replayed_author_metric": res["author_metric"], "replayed_author_metric_state": res.get("author_metric_state"), "replayed_metric_float64": res.get("independent_metric_float64"),
@@ -1871,6 +1907,7 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                          "verified_historically": bool(ok_receipt and dd.get("verified_at_deletion")), "status": "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION" if ok_receipt else "DELETED_WITHOUT_VALID_RECEIPT",
                          "author_metric_float32": basis_metric, "metric_basis": basis, "custody": {"class": "HISTORICAL: arrays deleted under authorization; digests retained"},
                          "deletion": dd, "training": record.get("training"), "cost": record.get("cost"), "n_parameters": record.get("n_parameters"), "device": record.get("device"),
+                         "device_uuid": trained_device_of(record),
                          "replay": {"skipped": True, "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt"},
                          "problems": ([] if ok_receipt else [f"{unit}: predictions absent and the deletion receipt does not bind to the record: DELETED_WITHOUT_VALID_RECEIPT"]),
                          "task_id": disp["task_id"], "disposition": disp["disposition"]})
@@ -2024,6 +2061,7 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                      "author_metric_float32": basis_metric, "metric_basis": basis, "author_metric_state": record.get("author_metric_state"),
                      "recomputed": recomputed, "derived": derived,
                      "training": record.get("training"), "cost": record.get("cost"), "n_parameters": record.get("n_parameters"), "device": record.get("device"),
+                     "device_uuid": trained_device_of(record), "environment": record.get("environment"),
                      "verified": not p_ and custody["class"] == "ACCEPTED_ARTIFACT_CHAIN" and prep["class"] == "PREPARATION_ACCEPTED_ARTIFACT" and not problems and data_path is not None,
                      "problems": p_, "task_id": disp["task_id"], "disposition": disp["disposition"]})
     replays = {}
@@ -2032,7 +2070,7 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
         # selected units on the selected device and validates the OUTPUT (finite, shape, count, full pointwise comparison, metric
         # reductions, targets). REPLAYS.json is a history keyed by unit and device, written for the record only.
         history = json.loads((root / "REPLAYS.json").read_text()) if (root / "REPLAYS.json").is_file() else {}
-        trained_device = lambda r_: ((r_.get("cost") or {}).get("gpu_before") or [{}])[0].get("uuid") if (r_.get("cost") or {}).get("gpu_before") else None
+        trained_device = lambda r_: trained_device_of(r_)
         for r in rows:
             if r["problems"] or r.get("status") in ("MISSING", "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION", "DELETED_WITHOUT_VALID_RECEIPT"):
                 continue
