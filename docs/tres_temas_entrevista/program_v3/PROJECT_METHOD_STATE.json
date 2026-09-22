@@ -1060,7 +1060,7 @@
    "admission": "one cell at a time on dragon within the 8 GiB request (11 GiB available, 3 GiB reserve), 32 GiB temporary disk slot; the author's float32 reduction for T=336/720 is a named residual: it needs ~7/13 GB of temporaries beyond the memmaps"
   },
   "RP102": {
-   "status": "T336_T720_RUNNING_ON_GAMMA_MONITORED",
+   "status": "T336_T720_RUNNING_ON_GAMMA_RUN4_WORKERS0",
    "placement": "gamma rebooted by the owner (kernel memory leak cleared: 11 GiB available; the 5090's phantom 100 % utilization gone); governed preflight on the RTX 5090 (UUID a9f35631…): 55-64 s/epoch, <= 0.27 h per cell, VRAM 4.8 GiB, 49 C after preflight; execute --bounded --author-metric-budget-gib 4, -m 8G, one cell at a time, thermal guard between cells",
    "cells": [
     "L96_h192_s2022",
@@ -1084,7 +1084,8 @@
    "oom_event": "L96_h336_s2021 on gamma: scope killed by systemd-oomd at 13:28 local at a 7.1 GB scope peak (host memory pressure from file-backed pages of the bounded evaluation; gamma has 14 GB with another workload); FAILED terminal, attempt retired; fix: predictions/targets streamed through file handles with posix_fadvise(DONTNEED), artifact/digests/float64 streamed from files (commit after 4662ca5); re-profiled before relaunch",
    "streaming_fix": "bounded evaluation now streams predictions/targets through file handles with posix_fadvise(DONTNEED) and streams the artifact, digests and float64 reduction from the files; a first version re-created the files per batch and was caught by the parity tests (predictions/targets misaligned) — fixed; tool suite 31 passed + 1 skipped on gamma; re-profiles on gamma under an 8 GiB request: T=336 cgroup peak 1.89 GB (file 146 MB), T=720 2.32 GB (file 148 MB), T=96 with dragon's checkpoint 4.15 GB with the author metric executed",
    "relaunch": "2026-09-22 ~14:05 local: execute --horizons 336 720 on the 5090 (run-id …-gamma2), one cell at a time, thermal guard, watcher",
-   "oom_event_2": "second T=336 attempt on gamma (streamed path): systemd-oomd killed the scope at 14:07 local after a 24-min stall at epoch 2 (scope peak 7 GB, host memory pressure of the user slice > 50 %); FAILED terminal, attempt retired; relaunched with a host+scope memory monitor every 15 s (first samples: scope 2.3 GB, anon 1.9 GB, file 0.4 GB during training; host 8.6 GB available)"
+   "oom_event_2": "second T=336 attempt on gamma (streamed path): systemd-oomd killed the scope at 14:07 local after a 24-min stall at epoch 2 (scope peak 7 GB, host memory pressure of the user slice > 50 %); FAILED terminal, attempt retired; relaunched with a host+scope memory monitor every 15 s (first samples: scope 2.3 GB, anon 1.9 GB, file 0.4 GB during training; host 8.6 GB available)",
+   "memory_diagnosis": "monitor (host + scope every 15 s): during training the scope oscillated 3.9-5.8 GB and reached 7.1 GB at epoch 7 of T=336 — main process ~4.9 GB plus the DataLoader worker (a fork whose private pages grew to 4.5 GB) — right at MemoryHigh (7.2 GB) with host pressure rising: the pattern that produced the two systemd-oomd kills (stall, then kill). Attempt 3 stopped by the operator at epoch 7 and retired; run 4 launched with the declared operational option num_workers=0 (batch order and contents unchanged, tested; host memory only): scope 2.0 GB at start"
   },
   "RP103": {
    "status": "NOT_STARTED"
