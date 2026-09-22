@@ -1,5 +1,17 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+**Revision RP97, 22-sep:** [dictamen independiente](../audits/work_plan/MUSASHI_RP90_RP97_REVIEW_2026_09_22.md).
+Cuatro celdas TimeFilter medidas, ocho pendientes en L96. Recalculo independiente
+desde CSV/predicciones: H96 MSE 0.135496 / MAE 0.232884 (tres semillas), frente
+a 0.133 / 0.230 publicados. No es aun reproduccion completa. El cierre acepta
+bovedas alteradas y replays contradictorios; el catalogo admite una poblacion
+incompleta. Corregir antes del borrado autorizado, sin reentrenar lo conservado.
+Orden vigente: [RP98-RP105](../handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md).
+El siguiente paso es reparar estas verificaciones y probar evaluacion acotada
+en memoria en workers existentes, no rebajar la receta ni ampliar hardware.
+La restriccion termica no caduca automaticamente el 24: requiere refrigeracion
+restablecida confirmada por el owner. Ninguna prediccion borrada en esta revision.
+
 **Capacidad de disco, 22-sep:** [presupuesto medido sin hardware nuevo](program_v3/STORAGE_BUDGET_2026_09_22.md).
 La campana SOTA primaria de 12 celdas cabe en disco con retencion de metricas y
 checkpoints y borrado posterior de predicciones. El total de todas las propuestas
@@ -31,20 +43,23 @@ Decision explicita del owner: **SOTA-REPRO primero**. Quedan suspendidas las
 nuevas mediciones de los pilotos simplificados E0/E1, contexto electrico y
 FIN-LOSS-OPT hasta establecer la referencia publicada correspondiente. No
 repetir ni ampliar esos pilotos como sustituto de una reproduccion fiel.
-Orden activa: [RP90-RP97](../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md).
+Orden anterior ejecutada parcialmente: [RP90-RP97](../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md).
+Orden activa: [RP98-RP105](../handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md).
 Politica: [SOTA_FIRST](program_v3/SOTA_FIRST_2026_09_21.md).
 
 La prioridad inmediata es el benchmark Electricity/ECL de 321 clientes horarios
 que el owner acaba de citar, distinto de UCI235 (hogar individual por minuto).
 No se trasplantan scores, ventanas, escaladores ni conclusiones entre ambos.
-El modelo ganador de la revision bibliografica aun NO esta fijado; PatchTST y
-iTransformer son candidatos documentados, no ganadores actuales por decreto.
+La referencia seleccionada es TimeFilter (ICML 2025), revision del autor
+dffde87e, protocolo L96. La seleccion no prueba supremacia sobre toda publicacion
+de 2026. El protocolo de lookback buscado de la Tabla 9 necesita su propio enlace
+por celda a la receta del autor; no se identifica automaticamente con L512.
 
 Los resultados exploratorios previos se conservan como **HISTORICAL_DEV_ONLY**:
 fuera de la seleccion activa, recomendaciones de arquitectura/loss y decisiones
 de preentrenamiento o negocio. Esta disposicion no declara falsos sus valores
 ni modifica recibos historicos. La exclusion ejecutable de vistas/selectores
-es una tarea de RP90, no un despliegue ya realizado. No se borra historia para
+fue incorporada por RP90; se conserva su evidencia y alcance. No se borra historia para
 ocultar errores. Controles ingenuos siguen siendo instrumentos de comparacion,
 no candidatos sustitutivos del modelo de referencia.
 

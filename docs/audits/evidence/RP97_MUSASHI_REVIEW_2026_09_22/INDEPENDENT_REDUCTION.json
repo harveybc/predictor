@@ -1,0 +1,157 @@
+{
+  "schema": "musashi_rp97_independent_reduction.v1",
+  "source_sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+  "population": {
+    "rows": 26304,
+    "channels": 321,
+    "train_rows": 18412,
+    "test_rows": 5260,
+    "first_test_target_index": 21044
+  },
+  "rows": [
+    {
+      "unit": "L96_h96_s2021",
+      "shape": [
+        5165,
+        96,
+        321
+      ],
+      "arrays_sha256": "0b855783f76d8f21c8859b8f9138892326fea538053d8aa6f1645d847a903da9",
+      "record_sha256": "2aeefa1b7e48772bbe611a3f5552b6df473a075ace055c83ccbf5e8ddd14cf32",
+      "vault_sha256": "693e71bb6389d3e5d1fc7527b8e82b74663c5850e9a3beeca38347b224713700",
+      "pred_sha256": "6b78b40629afc57a6ceadbfd8759927101e87b0763dd09ff849349a55b48c864",
+      "true_sha256": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "metrics": {
+        "mae": 0.23055442094091322,
+        "mse": 0.13331515700719443,
+        "naive_mae": 0.9454555140269442,
+        "naive_mse": 1.5878367831809115,
+        "seasonal24_mae": 0.3257686421534114,
+        "seasonal24_mse": 0.3210950401373183
+      },
+      "difference_vs_vault": {
+        "mae": 6.785799699926542e-11,
+        "mse": 6.482159253806685e-11,
+        "naive_mae": 9.076306373145826e-11,
+        "naive_mse": 2.0378676524046568e-10,
+        "seasonal24_mae": 8.917100391414579e-11,
+        "seasonal24_mse": 3.296886652570663e-10
+      },
+      "per_step_mae_max_difference": 9.356415642258753e-11,
+      "per_channel_mae_max_difference": 6.6534280585006655e-09,
+      "author_metric_difference": {
+        "mae": -1.0735951405660416e-08,
+        "mse": -3.8633576338042985e-09
+      }
+    },
+    {
+      "unit": "L96_h96_s2022",
+      "shape": [
+        5165,
+        96,
+        321
+      ],
+      "arrays_sha256": "26aa75b643f2f6a6d4d90ab47ed6ab3b0d5b12074f8e0823544d19de59d9d590",
+      "record_sha256": "96d1e57408d6e1d66d17e3275a2b9ea966ffa0a805d04728c4533162225d8a48",
+      "vault_sha256": "e4e112f874cecf59fb8d431b371476b23fdc88248ee34a275135c782bf0faa1d",
+      "pred_sha256": "d18303a56dbdabad011d4c9a0b1126185e697e170ef3133c908ac4cc5951cfce",
+      "true_sha256": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "metrics": {
+        "mae": 0.23777533347876634,
+        "mse": 0.14008181771738162,
+        "naive_mae": 0.9454555140269442,
+        "naive_mse": 1.5878367831809115,
+        "seasonal24_mae": 0.3257686421534114,
+        "seasonal24_mse": 0.3210950401373183
+      },
+      "difference_vs_vault": {
+        "mae": 9.50849954328703e-11,
+        "mse": 7.096909171444565e-11,
+        "naive_mae": 9.076306373145826e-11,
+        "naive_mse": 2.0378676524046568e-10,
+        "seasonal24_mae": 8.917100391414579e-11,
+        "seasonal24_mse": 3.296886652570663e-10
+      },
+      "per_step_mae_max_difference": 1.1371531494219767e-10,
+      "per_channel_mae_max_difference": 7.466017329816211e-09,
+      "author_metric_difference": {
+        "mae": 7.703619853138832e-09,
+        "mse": -5.154780241545254e-09
+      }
+    },
+    {
+      "unit": "L96_h96_s2023",
+      "shape": [
+        5165,
+        96,
+        321
+      ],
+      "arrays_sha256": "925af6a5935061e6211a0ee9445c4db55af957e5f6325ac0b1ea13f69a33d1c9",
+      "record_sha256": "15c38abd322a72042ef2d00e7ca92a406e38bc64e0b210ef5121713a9970f21e",
+      "vault_sha256": "575729ad66c9cc6fe283e74c4815a02fad034595bb88063b5e163cb702177cbe",
+      "pred_sha256": "f472f07ba93bbb900376fe0a715b9517d8b33047541131db1fe3f39c3f407682",
+      "true_sha256": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "metrics": {
+        "mae": 0.23032168321075905,
+        "mse": 0.13309241763914348,
+        "naive_mae": 0.9454555140269442,
+        "naive_mse": 1.5878367831809115,
+        "seasonal24_mae": 0.3257686421534114,
+        "seasonal24_mse": 0.3210950401373183
+      },
+      "difference_vs_vault": {
+        "mae": 8.289710584641341e-11,
+        "mse": 6.69659050434035e-11,
+        "naive_mae": 9.076306373145826e-11,
+        "naive_mse": 2.0378676524046568e-10,
+        "seasonal24_mae": 8.917100391414579e-11,
+        "seasonal24_mse": 3.296886652570663e-10
+      },
+      "per_step_mae_max_difference": 1.205151534122706e-10,
+      "per_channel_mae_max_difference": 6.19960960346333e-09,
+      "author_metric_difference": {
+        "mae": -7.229418869103554e-09,
+        "mse": -6.738829494423726e-10
+      }
+    },
+    {
+      "unit": "L96_h192_s2021",
+      "shape": [
+        5069,
+        192,
+        321
+      ],
+      "arrays_sha256": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+      "record_sha256": "3584eca7a5909d74ff0a5976c835f4726c5eb60f17d64f1394e50faf067d84a7",
+      "vault_sha256": "0ccda25dfb80d4dcce890e8386f3e8ef5c6779ca015d7cb82249c64e72238c58",
+      "pred_sha256": "16c616d590654b8c94e27a3d44858ca2280e816f8ebcb81515b08feefaca6112",
+      "true_sha256": "63a05d33f0577090f1b4e7f0c2d4b13748d09188904b17ffb1b87aa05f3706bd",
+      "metrics": {
+        "mae": 0.2559875753517074,
+        "mse": 0.1608569145993502,
+        "naive_mae": 0.9507093725933142,
+        "naive_mse": 1.5961736353810734,
+        "seasonal24_mae": 0.32374135826214323,
+        "seasonal24_mse": 0.30431957106899166
+      },
+      "difference_vs_vault": {
+        "mae": 9.349987450946173e-11,
+        "mse": 4.9273751745460004e-11,
+        "naive_mae": 8.301959120160518e-11,
+        "naive_mse": 1.5595658098277454e-10,
+        "seasonal24_mae": 6.323452872436519e-11,
+        "seasonal24_mse": 2.446075564321859e-10
+      },
+      "per_step_mae_max_difference": 1.2495260381939488e-10,
+      "per_channel_mae_max_difference": 1.0663964419193109e-08,
+      "author_metric_difference": {
+        "mae": 2.0563117930638697e-08,
+        "mse": -2.901145712552733e-09
+      }
+    }
+  ],
+  "scope": "independent indices/reductions against bytes on worker, hashes match cell records; no live warehouse query; extended metrics not certified",
+  "elapsed_seconds": 23.336377013940364,
+  "cpu_seconds": 23.626475292,
+  "max_rss_kib": 2167872
+}

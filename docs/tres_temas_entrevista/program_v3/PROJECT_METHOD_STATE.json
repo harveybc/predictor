@@ -27,13 +27,13 @@
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "PARTIAL_REPRODUCTION_RETURNED_FOR_REVIEW_T96_THREE_SEEDS_T192_ONE_SEED",
+  "status": "RP97_REVIEWED_CHANGES_REQUIRED_FOUR_CELLS_PRESERVED_EIGHT_PENDING",
   "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
   "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
   "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
   "runtime_exclusion_implemented": true,
   "policy": "SOTA_FIRST_2026_09_21.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md",
   "suspended_measurements": [
    "simplified E0/E1 extensions",
    "household context pilots",
@@ -45,7 +45,19 @@
    "weekly forecasting and RL",
    "core pretraining"
   ],
-  "completion_requires": "published protocol reproduced and independently verified for all four horizons and three seeds; the T=96 cell agrees numerically by the frozen rule but the closure's replay rule failed on CPU; T=336/720 need a host with >= 22 GiB admissible batch memory"
+  "completion_requires": "All four horizons x three seeds, accepted recipe and scoped independent verification; preserve old CPU replay failures. Repair vault/replay trust and metric population, test bounded evaluation/verification within existing workers before treating 22 GiB as intrinsic model requirement. No automatic coordinator restart date."
+ },
+ "rp97_external_review": {
+  "reviewed_commit": "fb6ec31e28db6d7dc3434c86f18218ee3e5743f1",
+  "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
+  "evidence": "../../audits/evidence/RP97_MUSASHI_REVIEW_2026_09_22/",
+  "findings": ["altered vault accepted", "contradictory replay cache accepted", "short loader halves MAE", "constant correlation reported as zero", "uncertainty aggregation grain"],
+  "independent_reduction": "four cells; independent indices, targets, MSE/MAE, persistence and seasonal24; no author loader or scorer; recorded hashes match",
+  "extended_metric_catalog": "NOT_CERTIFIED; correction and independent estimator checks required before deletion",
+  "live_warehouse_requeried_by_auditor": false,
+  "predictions_deleted": 0,
+  "next_orders": "../../handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md",
+  "owner_action_required": false
  },
  "rp81_external_review": {
   "reviewed_commit": "bd6fcf4",
@@ -65,14 +77,14 @@
   "owner_action_required": false
  },
  "updated_on": "2026-09-22",
- "current_stage": "discovery",
+ "current_stage": "external_review",
  "completed_stages": [
   "discovery",
   "requirements"
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "SOTA_FIRST_RP90_RP97_ACTIVE_PRIOR_MEASUREMENTS_SUSPENDED",
+ "handoff_status": "RP98_RP105_ISSUED_RP97_PARTIAL_REVIEWED_PRIOR_MEASUREMENTS_SUSPENDED",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -111,21 +123,21 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "RP90: enforce historical DEV exclusion without deleting evidence",
-  "RP91: establish best supported published ECL protocol and exact author recipe from primary sources",
-  "RP92-RP94: freeze artifacts and acceptance, repair reused custody, verify official implementation and compute requirements",
-  "RP95-RP97: execute faithful governed reproduction when preflight passes, independently verify and report numerical agreement",
+  "RP98-RP100: freeze PRE; repair metric-vault population/custody and replay report authority; preserve original failures",
+  "RP101: prove bounded evaluation/verification parity and resource admission on existing cooled workers",
+  "RP102: complete eight missing protocol-A cells after admission; protocol B requires exact per-cell source lock and its own capacity proof",
+  "RP103-RP105: correct seed/horizon aggregation, independently certify finite metric catalog and persisted contents, perform authorized per-cell prediction deletion, tests and one return",
   "No adapted pilot, financial fit or private holdout access while SOTA reproduction is the active prerequisite"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
   "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-  "external_review": "../../audits/work_plan/MUSASHI_RP74_RP81_REVIEW_2026_09_21.md",
+  "external_review": "../../audits/work_plan/MUSASHI_RP90_RP97_REVIEW_2026_09_22.md",
   "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-  "return": "https://github.com/harveybc/predictor/blob/bd6fcf4/docs/audits/work_plan/SATOSHI_RP74_RP81_RETURN_2026_09_21.md",
+  "return": "https://github.com/harveybc/predictor/blob/fb6ec31e/docs/audits/work_plan/SATOSHI_RP90_RP97_RETURN_2026_09_22.md",
   "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
   "benchmark_registry": "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
   "fin_loss_opt_design": "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
@@ -196,14 +208,14 @@
   {
    "id": "SOTA-REPRO",
    "owner": "Satoshi",
-   "status": "IN_PROGRESS_PARTIAL_RETURNED",
+   "status": "IN_PROGRESS",
    "depends_on": [
     "BENCHMARK-CONTRACTS"
    ],
    "evidence": [
     "rp90_rp97 block"
    ],
-   "next_action": "Musashi review; T=192 seeds 2022/2023 + replays on omega from 2026-09-24; owner decision on memory ceiling for T=336/720",
+   "next_action": "RP98-RP105: repair closure/catalog, prove bounded evaluation parity, complete missing cells on admitted cooled workers; no automatic coordinator resumption or memory-ceiling increase",
    "deliverable": "Full official benchmark reproduction with published metrics, matched naive, numerical agreement and provenance; not an adapted proxy"
   },
   {
