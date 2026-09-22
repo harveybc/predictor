@@ -322,3 +322,5 @@ def test_RP96_the_metrics_vault_is_exhaustive_consistent_with_the_author_metric_
     assert len(acf["acf"]) == 4 and len(acf["acf"][0]) == len(acf["lags"]) and all(-1.0001 <= x <= 1.0001 for row in acf["acf"] for x in row if x == x)
     assert "1" in v["autocorrelation"]["per_channel_first_step"] and len(v["autocorrelation"]["per_channel_first_step"]["1"]) == 4
     assert v["pred_sha256"] == json.loads((world["root"] / "attempts" / r["unit"] / "cell.json").read_text())["pred_sha256"]
+    assert v["schema"] == "df_sota_metrics_vault.v2" and "quantiles" in v["estimators_and_limitations"] and "APPROXIMATE" in v["estimators_and_limitations"]["quantiles"]
+    assert "NaN" not in vp.read_text() and "Infinity" not in vp.read_text()                      # undefined is None, never a JSON NaN token

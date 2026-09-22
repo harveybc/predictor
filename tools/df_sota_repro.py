@@ -247,7 +247,26 @@ def environment() -> dict:
         out["cudnn"] = torch.backends.cudnn.version() if torch.cuda.is_available() else None
     except Exception:                                               # noqa: BLE001
         pass
+    out["gpu_devices"] = gpu_state()                                   # physical identity (UUID) and thermal state, by nvidia-smi
+    out["cuda_visible_devices"] = os.environ.get("CUDA_VISIBLE_DEVICES")
     return out
+
+
+def gpu_state() -> list:
+    """Every GPU nvidia-smi sees: UUID, name, temperature, utilization, memory — the physical device identity an execution
+    record must carry (a CUDA index is an assumption; a UUID is a device)."""
+    try:
+        proc = subprocess.run(["nvidia-smi", "--query-gpu=index,uuid,name,temperature.gpu,utilization.gpu,memory.used,memory.total",
+                               "--format=csv,noheader,nounits"], capture_output=True, text=True, timeout=20)
+    except Exception:                                               # noqa: BLE001
+        return []
+    rows = []
+    for line in proc.stdout.strip().splitlines():
+        parts = [x.strip() for x in line.split(",")]
+        if len(parts) >= 7:
+            rows.append({"index": int(parts[0]), "uuid": parts[1], "name": parts[2], "temperature_c": float(parts[3]), "utilization_pct": float(parts[4]),
+                         "memory_used_mib": float(parts[5]), "memory_total_mib": float(parts[6])})
+    return rows
 
 
 def seal(*, seq_len: int = 96, seeds=(2021, 2022, 2023), horizons=(96, 192, 336, 720), protocol: str = "L96") -> dict:
@@ -535,6 +554,7 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
     """The author's run for one cell; artifacts written under `folder`. Nothing scientific is decided here."""
     folder.mkdir(parents=True, exist_ok=True)
     work = folder / "work"
+    gpu_before = gpu_state()
     ru0 = resource.getrusage(resource.RUSAGE_SELF)
     try:
         import torch
@@ -567,7 +587,8 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
               "arrays_sha256": sha_file(folder / "arrays.npz"), "pred_sha256": sha_array(preds), "true_sha256": trues_sha, "checkpoint_sha256": sha_file(ckpt),
               "checkpoint_bytes": ckpt.stat().st_size, "n_parameters": res["n_parameters"], "device": res["device"], "training": training,
               "cost": {"wall_seconds": res["wall_seconds"], "cpu_seconds": ru1.ru_utime + ru1.ru_stime - (ru0.ru_utime + ru0.ru_stime),
-                       "peak_rss_bytes": int(ru1.ru_maxrss) * 1024, "peak_gpu_allocated_bytes": peak_gpu, "host": socket.gethostname()},
+                       "peak_rss_bytes": int(ru1.ru_maxrss) * 1024, "peak_gpu_allocated_bytes": peak_gpu, "host": socket.gethostname(),
+                       "gpu_before": gpu_before, "gpu_after": gpu_state()},
               "environment": environment(), "source_files_sha256": source_digests(), "source_drift": code_drift(design),
               "data_file_sha256": sha_file(data_path), "at": now_iso()}
     (folder / "cell.json").write_text(json.dumps(record, indent=1, default=str))
@@ -925,8 +946,32 @@ def metrics_vault(preds: np.ndarray, test_loader, *, pred_len: int, chunk: int =
                    "corr_pred_true": [float((py - pp * yy / (W * T)) / math.sqrt(max(1e-300, (p2 - pp ** 2 / (W * T)) * (y2 - yy ** 2 / (W * T)))))
                                       for py, pp, yy, p2, y2 in zip(sums["py"].sum(0), sums["p"].sum(0), sums["y"].sum(0), sums["p2"].sum(0), sums["y2"].sum(0))]}
     per_channel["skill_mae_vs_naive"] = [1 - a / b if b > 0 else None for a, b in zip(per_channel["mae"], per_channel["naive_mae"])]
-    return {"schema": "df_sota_metrics_vault.v1", "space": "normalized (train-standardized) units; author reduction = mean over windows x steps x channels",
+    def clean(o):
+        """Undefined is None, never a number and never a JSON NaN token."""
+        if isinstance(o, float):
+            return o if math.isfinite(o) else None
+        if isinstance(o, dict):
+            return {k: clean(v) for k, v in o.items()}
+        if isinstance(o, (list, tuple)):
+            return [clean(v) for v in o]
+        return o
+    return clean({"schema": "df_sota_metrics_vault.v2", "space": "normalized (train-standardized) units; author reduction = mean over windows x steps x channels",
             "population": {"windows": W, "steps": T, "channels": C, "elements": n},
+            "estimators_and_limitations": {
+                "global/per_step/per_channel errors": "exact float64 sums over the full population; MAPE/MSPE exclude |true| <= 1e-8 (population reported)",
+                "naive": "persistence = last input value repeated; seasonal24 = the input value 24 h before each step (wraps within the 96-step window for steps > 24: an approximation past step 24)",
+                "residual moments": "exact float64 power sums (mean, var, skew, kurtosis); kurtosis is raw (not excess)",
+                "quantiles": "APPROXIMATE: read from a 2000-bin histogram on [-20, 20] (bin width 0.02); residuals outside the range are not binned "
+                             "(counts sum vs population reported); not a full exact distribution",
+                "entropy": "of the same clipped 2000-bin histogram, bits; depends on the bin width",
+                "mutual_information": "APPROXIMATE: 64 x 64 joint histogram of clipped values on [-6, 6]; plug-in estimator, biased upward for small populations",
+                "autocorrelation": "sample ACF along consecutive test windows (one hour apart) of the CHANNEL-MEAN residual per step (lags 1..max_lag) and of "
+                                   "each channel's residual at the first and last steps (lags 1, 24, 168); no PACF, no spectral estimate; no confidence bands "
+                                   "(the windows overlap by construction, so the usual 1/sqrt(W) band does not apply)",
+                "r2/corr": "per channel and global, exact sums; None when the true variance is zero",
+                "uncertainty": "none per estimator: one cell is one sample; seed dispersion is reported at the table level",
+                "independent_check": "global MSE/MAE equal the author's metric() within 1e-6 and the float64 reduction (closure); per-step and per-channel "
+                                     "means average back to the global values (tests)"},
             "global": {"mse": mse, "mae": mae, "rmse": math.sqrt(mse), "mape": mape / max(1, n_mape), "mspe": mspe / max(1, n_mape), "mape_population": n_mape,
                        "rse": math.sqrt(float(sums["sq"].sum()) / sst) if sst > 0 else None, "r2": 1 - float(sums["sq"].sum()) / sst if sst > 0 else None,
                        "corr_pred_true": cov / math.sqrt(vp * vy) if vp > 0 and vy > 0 else None, "bias": rmean, "true_mean": ymean, "pred_mean": pmean,
@@ -940,7 +985,7 @@ def metrics_vault(preds: np.ndarray, test_loader, *, pred_len: int, chunk: int =
             "autocorrelation": {"reading": "residual autocorrelation along consecutive test windows (one hour apart)",
                                 "channel_mean_residual_per_step": {"lags": list(range(1, lags + 1)), "acf": step_acf.T.tolist()},
                                 "per_channel_first_step": first_acf, "per_channel_last_step": last_acf},
-            "joint_histogram_pred_true": {"edges": jedges.tolist(), "counts": joint.astype(int).tolist()}}
+            "joint_histogram_pred_true": {"edges": jedges.tolist(), "counts": joint.astype(int).tolist()}})
 
 
 def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None, replay: bool = True, replay_device: str = "cpu",
@@ -1053,7 +1098,8 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             recomputed = {"author_float32": {"mae": float(mae32), "mse": float(mse32)}, "independent_float64": float64_metrics(preds, trues)}
             del trues
             vault_path = folder / "METRICS_VAULT.json"
-            if not vault_path.is_file() or json.loads(vault_path.read_text()).get("pred_sha256") != record.get("pred_sha256"):
+            existing = json.loads(vault_path.read_text()) if vault_path.is_file() else {}
+            if existing.get("pred_sha256") != record.get("pred_sha256") or existing.get("schema") != "df_sota_metrics_vault.v2":
                 _, test_loader = DF.data_provider(args, "test")
                 vault = metrics_vault(preds, test_loader, pred_len=args.pred_len)
                 vault.update(unit=unit, pred_sha256=record.get("pred_sha256"), design_sha256=design["design_sha256"], at=now_iso())
