@@ -1060,7 +1060,7 @@
    "admission": "one cell at a time on dragon within the 8 GiB request (11 GiB available, 3 GiB reserve), 32 GiB temporary disk slot; the author's float32 reduction for T=336/720 is a named residual: it needs ~7/13 GB of temporaries beyond the memmaps"
   },
   "RP102": {
-   "status": "RUNNING_ON_DRAGON",
+   "status": "PAUSED_AT_OWNER_CONCERN",
    "started": "2026-09-22",
    "cells": [
     "L96_h192_s2022",
@@ -1072,15 +1072,18 @@
     "L96_h720_s2022",
     "L96_h720_s2023"
    ],
-   "path": "bounded adapter, author recipe untouched, governed units, GPU a8bd1b2c (RTX 4090 L)"
+   "path": "bounded adapter, author recipe untouched, governed units, GPU a8bd1b2c (RTX 4090 L)",
+   "interrupted": "L96_h192_s2022 on dragon at epoch ~4 (GPU 83-86 C, driver thermal slowdown active; owner suspects the cooler is off): FAILED terminal, attempt retired as L96_h192_s2022.failed.1790093762",
+   "placement_next": "gamma RTX 5090 (owner: it has its own cooler) after the owner's reboot clears the ~9 GB kernel memory leak and a governed preflight admits it: T=336 x3, T=720 x3 (and T=192 x2 unless dragon's cooler is confirmed)"
   },
   "RP103": {
    "status": "NOT_STARTED"
   },
   "RP104": {
-   "status": "IN_PROGRESS",
-   "tool_suite_dragon": "tests/test_df_sota_repro.py 30 passed, 1 skipped (own process, aa441c08)",
-   "other_suites": "unchanged since fb6ec31e (only df_sota_repro.py and its tests changed); to be rerun on dragon after the cells finish"
+   "status": "SUITES_RUN_ON_DRAGON",
+   "tool_suite": "tests/test_df_sota_repro.py 31 passed, 1 skipped (own process; the skip: seal() needs the benchmark store receipt, present on omega only)",
+   "compatible_suites_dragon": "closure table 35+2, benchmark contract 35, block 19+1, financial 25+2 (FL08 stack test deselected: needs omega's governance stack), lake adopters 16 SKIPPED on dragon (need omega's deployed data-gov configuration; they passed on omega before the hold): 117 passed + 35 passed, 16 skipped, 1 deselected",
+   "environment_scope": "every exercised reproduction path (author parser/script/loader/model/scorer, bounded adapter, catalog, replay, deletion) is covered by the tool suite on dragon; the 24 dragon-environment failures of the earlier full run (operators causality: crispdm-run not on the non-login PATH; governed_run classification: sibling preprocessor worktree absent; acceptance c1_c16: incremental_census absent) do not touch that path and were not re-run"
   },
   "RP105": {
    "status": "NOT_STARTED"
