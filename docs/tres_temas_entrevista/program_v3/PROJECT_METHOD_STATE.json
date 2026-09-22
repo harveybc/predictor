@@ -51,7 +51,13 @@
   "reviewed_commit": "fb6ec31e28db6d7dc3434c86f18218ee3e5743f1",
   "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
   "evidence": "../../audits/evidence/RP97_MUSASHI_REVIEW_2026_09_22/",
-  "findings": ["altered vault accepted", "contradictory replay cache accepted", "short loader halves MAE", "constant correlation reported as zero", "uncertainty aggregation grain"],
+  "findings": [
+   "altered vault accepted",
+   "contradictory replay cache accepted",
+   "short loader halves MAE",
+   "constant correlation reported as zero",
+   "uncertainty aggregation grain"
+  ],
   "independent_reduction": "four cells; independent indices, targets, MSE/MAE, persistence and seasonal24; no author loader or scorer; recorded hashes match",
   "extended_metric_catalog": "NOT_CERTIFIED; correction and independent estimator checks required before deletion",
   "live_warehouse_requeried_by_auditor": false,
@@ -77,7 +83,7 @@
   "owner_action_required": false
  },
  "updated_on": "2026-09-22",
- "current_stage": "external_review",
+ "current_stage": "rp98_rp105_execution",
  "completed_stages": [
   "discovery",
   "requirements"
@@ -1019,5 +1025,51 @@
    "no work of any kind on omega until 2026-09-24 (travel thermal hold)",
    "no compression of prediction arrays; exhaustive metrics vault per cell so Musashi can delete the raw predictions after independent analysis"
   ]
+ },
+ "rp98_rp105": {
+  "orders": "docs/handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md",
+  "base": "fb6ec31e",
+  "updated_on": "2026-09-22",
+  "RP98": {
+   "status": "PRE_FROZEN_POST_PENDING",
+   "pre": "Musashi's probe rerun unchanged on dragon at fff9575: 20 leaves, 0 differences (docs/audits/evidence/d3_k5_20260917/RP98_PRE)",
+   "refusals": "altered vault -> VAULT_CHANGED (candidate preserved, successor recomputed and read back); contradictory cached replay -> never adopted (replays re-run and validated); short/extra/reordered/non-finite loaders -> VaultRefusal; constant correlation -> None; aggregation within seed first"
+  },
+  "RP99": {
+   "status": "CODE_DONE_TESTS_RUNNING",
+   "catalog": "df_sota_metrics_vault.v3: exact population consumption, identities, catalog states DONE/APPROXIMATE/UNDEFINED/NOT_APPLICABLE with parameters and excluded counts, per-window series, weekly time blocks, mae_relative_to_test_persistence (not MASE), mape_zspace/mspe_zspace labelled; independent numeric oracles per family in tests",
+   "recompute_on_four_cells": "PENDING (dragon closure)"
+  },
+  "RP100": {
+   "status": "CODE_DONE_TESTS_RUNNING",
+   "replay": "no cached adoption; outputs validated (finite, shape, count, pointwise, metrics, targets); same_device_repeatability vs cross_device_portability fields; old CPU failures kept as failures; route-trace diagnostic implemented (bounded), run PENDING"
+  },
+  "RP101": {
+   "status": "CODE_DONE_TESTS_RUNNING",
+   "adapter": "df_sota_bounded_eval.v1: memmapped predictions/targets, hash-streamed targets, author float32 metric only within a declared budget, float64 always; parity and refusal tests; profile-eval subcommand (cgroup incl. file pages, RSS, disk, VRAM, thermals); profiles PENDING on dragon"
+  },
+  "RP102": {
+   "status": "NOT_STARTED",
+   "pending_cells": [
+    "L96_h192_s2022",
+    "L96_h192_s2023",
+    "L96_h336_s2021",
+    "L96_h336_s2022",
+    "L96_h336_s2023",
+    "L96_h720_s2021",
+    "L96_h720_s2022",
+    "L96_h720_s2023"
+   ]
+  },
+  "RP103": {
+   "status": "NOT_STARTED"
+  },
+  "RP104": {
+   "status": "NOT_STARTED"
+  },
+  "RP105": {
+   "status": "NOT_STARTED"
+  },
+  "placement": "all compute on dragon (cooled WORKER_A, RTX 4090 L, 11 GiB available, 14 GiB slice); omega under the travel hold (marker present); gamma out (4 GiB available, eGPU busy)"
  }
 }

@@ -1,0 +1,47 @@
+{
+  "baseline": {
+    "verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": []
+  },
+  "altered_vault": {
+    "original_mae": 1.0069436586184772,
+    "persisted_mae": 999.0,
+    "verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": [],
+    "reported_vault_digest_matches_altered_file": true
+  },
+  "contradictory_cached_replay": {
+    "verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": [],
+    "max_abs_prediction_difference": 999.0
+  },
+  "short_loader": {
+    "full_mae": 1.0,
+    "partial_mae": 0.5,
+    "claimed_windows": 10,
+    "consumed_windows": 5
+  },
+  "constant_correlation": {
+    "global": null,
+    "per_channel": [
+      0.0
+    ]
+  },
+  "horizon_vs_seed_grain": {
+    "fixture": "four distinct horizon errors, same errors for all three seeds",
+    "expected_seed_averages": [
+      2.5,
+      2.5,
+      2.5
+    ],
+    "expected_seed_sd": 0.0,
+    "reported_sd": 1.2909944487358056,
+    "reported_n_seeds": 4
+  }
+}
