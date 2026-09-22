@@ -55,7 +55,7 @@ def store(request, tmp_path):
     return plugin
 
 
-def terminal_with(metrics=2, datasets=1, artifacts=1) -> dict:
+def terminal_with(metrics=2, datasets=1, artifacts=1, artifact_bytes=10) -> dict:
     """A terminal built the way governance builds one, including its own digest.
 
     The digest is the sha256 of the canonical body, so it cannot be invented: a fixture with a
@@ -81,7 +81,7 @@ def terminal_with(metrics=2, datasets=1, artifacts=1) -> dict:
                                "range_to": None, "delivery_kind": "AS_IS", "time_column": "",
                                "availability_contract_sha256": "f" * 64,
                                "state": "VERIFIED_TRANSFER"} for index in range(datasets)],
-        "artifacts": [{"role": f"a{index}", "sha256": "a" * 64, "bytes": 10}
+        "artifacts": [{"role": f"a{index}", "sha256": "a" * 64, "bytes": artifact_bytes}
                       for index in range(artifacts)],
     }
     body["terminal_sha256"] = hashlib.sha256(
@@ -124,3 +124,43 @@ def test_a_terminal_with_no_children_is_still_stored(store):
     assert store.write_terminal(terminal)["stored"] is True
     assert counts(store, terminal["terminal_sha256"]) == {
         "gov_terminal_metric": 0, "gov_terminal_dataset": 0, "gov_terminal_artifact": 0}
+
+
+def test_an_artifact_larger_than_two_gigabytes_lands(store):
+    """The T=720 prediction array of the SOTA reproduction is 4,198,064,038 bytes; a 32-bit
+    `bytes` column refused its terminal (2026-09-22). Every engine must store it."""
+    from sqlalchemy import text
+
+    terminal = terminal_with(artifacts=1, artifact_bytes=4_198_064_038)
+    assert store.write_terminal(terminal)["stored"]
+    with store.engine().connect() as conn:
+        stored = conn.execute(text(
+            f"SELECT bytes FROM {store._qualified('gov_terminal_artifact')}"
+            " WHERE terminal_sha256 = :d"), {"d": terminal["terminal_sha256"]}).scalar()
+    assert int(stored) == 4_198_064_038
+
+
+@pytest.mark.skipif(not DUCKDB, reason="U2_DUCKDB_PATH not set")
+def test_a_duckdb_store_created_with_a_32_bit_bytes_column_is_widened_in_place(tmp_path):
+    """The deployed cube was created with `bytes INTEGER`; the schema hook widens it to BIGINT
+    without touching the rows already stored."""
+    import duckdb
+    from sqlalchemy import text
+    from predictor_duckdb_store.provider import PredictorDuckdbStore
+
+    path = tmp_path / "old.duckdb"
+    con = duckdb.connect(str(path))
+    con.execute("CREATE TABLE gov_terminal_artifact (terminal_sha256 TEXT NOT NULL, role TEXT NOT NULL,"
+                " sha256 TEXT NOT NULL, bytes INTEGER NOT NULL)")
+    con.execute("INSERT INTO gov_terminal_artifact VALUES ('t', 'r', 's', 7)")
+    con.close()
+    plugin = PredictorDuckdbStore()
+    plugin.set_params(duckdb_path=str(path), schema="main", memory_limit="1GB", threads=2, min_free_bytes=1)
+    plugin.engine()
+    with plugin.engine().connect() as conn:
+        kind = conn.execute(text("SELECT data_type FROM information_schema.columns WHERE table_name = 'gov_terminal_artifact'"
+                                 " AND column_name = 'bytes'")).scalar()
+        kept = conn.execute(text("SELECT bytes FROM gov_terminal_artifact WHERE terminal_sha256 = 't'")).scalar()
+    assert kind == "BIGINT" and kept == 7
+    terminal = terminal_with(artifacts=1, artifact_bytes=4_198_064_038)
+    assert plugin.write_terminal(terminal)["stored"]
