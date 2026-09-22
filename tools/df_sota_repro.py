@@ -806,6 +806,12 @@ spec = importlib.util.spec_from_file_location("df_sota_repro", {str(Path(__file_
 root = Path({str(root)!r}); unit = {unit!r}; design = json.loads((root/"DESIGN.json").read_text()); cell = next(c for c in design["cells"] if c["cell_id"] == unit)
 folder = root/"attempts"/unit; work = folder/"replay_work"; shutil.rmtree(work, ignore_errors=True)
 (work/"checkpoints"/cell["setting"]).mkdir(parents=True); shutil.copy2(folder/"checkpoint.pth", work/"checkpoints"/cell["setting"]/"checkpoint.pth")
+import torch, functools
+if {device == "cpu"!r}:
+    # operational patch (declared in REPORT.verification.replay_patch): the author's test(test=1) calls torch.load(path) with no
+    # map_location, so a checkpoint saved from CUDA cannot be read on a CPU-only replay; placement only, no arithmetic changes
+    _load = torch.load
+    torch.load = functools.partial(_load, map_location=torch.device("cpu"))
 res = M.main_like_run_py(cell["argv"], seed=cell["seed"], data_dir=Path({str(data_path.parent)!r}), data_name={data_path.name!r}, work=work, gpu=0, use_gpu={device != "cpu"}, train=False)
 with np.load(folder/"arrays.npz") as z: stored = z["pred"]
 rep = np.asarray(res["preds"], dtype=np.float32)
@@ -1095,6 +1101,9 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             if not r["problems"] and r.get("status") != "MISSING":
                 r["replay"] = {"skipped": True, "why": "REPLAY_PENDING: no data file on this host"}; r["verified"] = False
     return {"design_sha256": design["design_sha256"], "disposition": disp, "preparation_custody": prep, "source_drift_now": drift, "rows": rows,
+            "replay_patch": {"what": "torch.load defaults to map_location=cpu inside the CPU replay process", "why": "the author's test(test=1) loads the checkpoint "
+                             "without map_location; a CUDA-trained checkpoint is otherwise unreadable on CPU", "effect": "tensor placement only; the frozen replay rule "
+                             "(CPU, atol/rtol 1e-4, metric within 1e-5) is unchanged"},
             "problems": problems + [q for r in rows for q in r["problems"]] + ([f"author files drifted from the sealed digests: {sorted(drift)}"] if drift else []),
             "verified_units": sorted(r["unit"] for r in rows if r["verified"]), "unverified_units": sorted(r["unit"] for r in rows if not r["verified"])}
 
