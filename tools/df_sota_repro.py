@@ -114,7 +114,22 @@ def sha_obj(obj) -> str:
 
 
 def sha_array(a: np.ndarray) -> str:
-    return hashlib.sha256(np.ascontiguousarray(a).tobytes()).hexdigest()
+    """Digest of the array bytes, streamed in chunks along the first axis (a 4 GB array never gets a second copy)."""
+    a = np.ascontiguousarray(a)
+    h = hashlib.sha256()
+    step = max(1, (64 << 20) // max(1, a[0:1].nbytes)) if a.ndim else 1
+    for i in range(0, a.shape[0] if a.ndim else 1, step):
+        h.update(memoryview(a[i:i + step]).cast("B"))
+    return h.hexdigest()
+
+
+def float64_metrics(preds: np.ndarray, trues: np.ndarray, chunk: int = 256) -> dict:
+    """MAE and MSE accumulated in float64 over chunks of windows: an independent reduction with no full-size temporaries."""
+    n, ab, sq = 0, 0.0, 0.0
+    for i in range(0, preds.shape[0], chunk):
+        d = preds[i:i + chunk].astype(np.float64) - trues[i:i + chunk].astype(np.float64)
+        ab += float(np.abs(d).sum()); sq += float((d * d).sum()); n += d.size
+    return {"mae": ab / n, "mse": sq / n}
 
 
 def now_iso() -> str:
@@ -534,12 +549,12 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
             peak_gpu = int(torch.cuda.max_memory_allocated())
     except Exception:                                           # noqa: BLE001
         pass
-    # independent float64 metric on the same arrays (the author's is float32 by construction)
-    d = preds.astype(np.float64) - trues.astype(np.float64)
+    # independent float64 metric on the same arrays (the author's is float32 by construction), chunked: no full-size temporaries
+    f64 = float64_metrics(preds, trues)
     training = parse_author_log((folder / "author_stdout.log").read_text())
     record = {"schema": "df_sota_cell_record.v1", "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")},
               "design_sha256": design["design_sha256"], "setting": res["setting"], "effective_args": {k: v for k, v in sorted(res["args"].items())},
-              "author_metric_float32": res["author_metric"], "independent_metric_float64": {"mae": float(np.mean(np.abs(d))), "mse": float(np.mean(d * d))},
+              "author_metric_float32": res["author_metric"], "independent_metric_float64": f64,
               "shapes": {"pred": list(preds.shape), "true": list(trues.shape)}, "dtype": str(preds.dtype),
               "arrays_sha256": sha_file(folder / "arrays.npz"), "pred_sha256": sha_array(preds), "true_sha256": trues_sha, "checkpoint_sha256": sha_file(ckpt),
               "checkpoint_bytes": ckpt.stat().st_size, "n_parameters": res["n_parameters"], "device": res["device"], "training": training,
@@ -873,8 +888,7 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             _, test_loader = DF.data_provider(args, "test")
             trues = np.concatenate([b[1][:, -args.pred_len:, :].float().numpy().astype(np.float32) for b in test_loader], axis=0)
             mae32, mse32 = MET.metric(preds, trues)[:2]
-            d = preds.astype(np.float64) - trues.astype(np.float64)
-            recomputed = {"author_float32": {"mae": float(mae32), "mse": float(mse32)}, "independent_float64": {"mae": float(np.mean(np.abs(d))), "mse": float(np.mean(d * d))}}
+            recomputed = {"author_float32": {"mae": float(mae32), "mse": float(mse32)}, "independent_float64": float64_metrics(preds, trues)}
             if abs(float(mae32) - record["author_metric_float32"]["mae"]) > 0 or abs(float(mse32) - record["author_metric_float32"]["mse"]) > 0:
                 p_.append(f"{unit}: the author's metric recomputed from the arrays is not the record's: METRIC")
             if abs(recomputed["independent_float64"]["mae"] - record["author_metric_float32"]["mae"]) > 1e-6 or abs(recomputed["independent_float64"]["mse"] - record["author_metric_float32"]["mse"]) > 1e-6:
