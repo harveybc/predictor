@@ -83,7 +83,7 @@ scikit-learn 1.5.2 on an A100. Operational patches, none mathematical (tested): 
 * Protocol B (L = 512 script): not started.
 * Test suites: `tests/test_df_sota_repro.py` 20 passed + 1 skipped on dragon (store receipt absent there); the RP90/RP89
   suites (contract 33+2, closure 35+2, block 19+1, fin 25+2, lake adopters 16) passed on omega before the hold; full suite on
-  dragon (CPU, FL08 stack test deselected): __SUITE__.
+  dragon (CPU, FL08 stack test deselected): 2302 passed, 24 failed, 171 skipped, 8 legacy collection errors (18.5 min; `tests/test_df_sota_repro.py` in its own process: 20 passed + 1 skipped). The 24 failures are dragon-environment failures in modules this round did not touch (`test_df_operators_causality` — `crispdm-run` not on the PATH of the non-login shell there, `test_governed_run_classification` — a sibling preprocessor worktree absent on dragon, `test_acceptance_c1_c16` — module `incremental_census` absent), none referencing the changed tools; on omega the same suite closed RP89 at 2469 passed with only the 3 legacy config failures and was not rerun there (hold).
 
 ## Evidence
 
