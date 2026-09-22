@@ -1884,6 +1884,41 @@ def markdown(t: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def paired_contrasts(root: Path, design: dict, ver: dict) -> dict:
+    """RP99/RP103: the paired contrasts the current design needs, computed from the persisted per-window series of the catalogs
+    (so they survive the deletion of the arrays): per horizon, seed-to-seed paired differences of per-window MAE/MSE (mean, sd,
+    sign counts, n windows), and per cell the model-vs-seasonal-24 and model-vs-persistence paired differences per window."""
+    out = {"schema": "df_sota_paired_contrasts.v1", "grain": "per test window (one hour apart), paired by window index", "horizons": {}}
+    vaults = {}
+    for r in ver["rows"]:
+        vp = root / "attempts" / r["unit"] / "METRICS_VAULT.json"
+        if (r["verified"] or r.get("verified_historically")) and vp.is_file():
+            v = json.loads(vp.read_text())
+            if v.get("schema") == VAULT_SCHEMA and v.get("per_window"):
+                vaults[r["unit"]] = (r["cell"], v)
+    for h in design["horizons"]:
+        cells = {u: (c, v) for u, (c, v) in vaults.items() if c["horizon"] == h}
+        entry = {"cells": sorted(cells), "seed_pairs": {}, "vs_baselines": {}}
+        for u, (c, v) in cells.items():
+            pw = v["per_window"]; m = np.asarray(pw["mae"]); s24 = np.asarray(pw["seasonal24_mae"]); nv = np.asarray(pw["naive_mae"])
+            entry["vs_baselines"][u] = {"n_windows": int(m.size),
+                                        "model_minus_seasonal24_mae": {"mean": float((m - s24).mean()), "sd_ddof1": float((m - s24).std(ddof=1)) if m.size > 1 else None, "windows_model_better": int((m < s24).sum())},
+                                        "model_minus_persistence_mae": {"mean": float((m - nv).mean()), "sd_ddof1": float((m - nv).std(ddof=1)) if m.size > 1 else None, "windows_model_better": int((m < nv).sum())}}
+        units = sorted(cells)
+        for i in range(len(units)):
+            for j in range(i + 1, len(units)):
+                a, b = np.asarray(cells[units[i]][1]["per_window"]["mae"]), np.asarray(cells[units[j]][1]["per_window"]["mae"])
+                am, bm = np.asarray(cells[units[i]][1]["per_window"]["mse"]), np.asarray(cells[units[j]][1]["per_window"]["mse"])
+                if a.size != b.size:
+                    entry["seed_pairs"][f"{units[i]} - {units[j]}"] = {"status": "NOT_APPLICABLE: different populations"}; continue
+                d, dm = a - b, am - bm
+                entry["seed_pairs"][f"{units[i]} - {units[j]}"] = {"n_windows": int(d.size), "mae": {"mean": float(d.mean()), "sd_ddof1": float(d.std(ddof=1)), "first_better": int((d < 0).sum()), "second_better": int((d > 0).sum())},
+                                                                   "mse": {"mean": float(dm.mean()), "sd_ddof1": float(dm.std(ddof=1)), "first_better": int((dm < 0).sum()), "second_better": int((dm > 0).sum())}}
+        entry["state"] = "DONE" if len(cells) >= 2 else ("PARTIAL: one cell, baseline contrasts only" if cells else "NOT_APPLICABLE: no verified cell")
+        out["horizons"][str(h)] = entry
+    return out
+
+
 def close(a, design: dict) -> dict:
     validate(design)
     root = Path(a.root)
@@ -1900,7 +1935,9 @@ def close(a, design: dict) -> dict:
             r["verified"] = False
         ver["verified_units"] = []
     t = table(design, ver)
-    report = {"schema": "df_sota_report.v1", "design_sha256": design["design_sha256"], "verification": ver, "table": t,
+    contrasts = paired_contrasts(root, design, ver)
+    write_atomic(root / "PAIRED_CONTRASTS.json", json.dumps(contrasts, indent=1, default=str))
+    report = {"schema": "df_sota_report.v2", "design_sha256": design["design_sha256"], "verification": ver, "table": t, "paired_contrasts": contrasts,
               "verified": bool(t["complete"] and not ver["problems"]), "problems": ver["problems"]}
     (root / "REPORT.json").write_text(json.dumps(report, indent=1, default=str))
     (root / "SOTA_TABLE.json").write_text(json.dumps(t, indent=1, default=str))

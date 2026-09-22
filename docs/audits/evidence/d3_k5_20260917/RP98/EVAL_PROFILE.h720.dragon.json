@@ -1,0 +1,55 @@
+{
+ "schema": "df_sota_eval_profile.v1",
+ "horizon": 720,
+ "trained_checkpoint": false,
+ "device": "cuda:0",
+ "windows": 4541,
+ "preds_bytes": 4198063680,
+ "elapsed_seconds": 29.01525044441223,
+ "peak_rss_bytes": 8121675776,
+ "cgroup_before": {
+  "memory.current": 519884800,
+  "memory.peak": 519884800,
+  "memory.max": 8589934592,
+  "memory.high": 7730937856,
+  "anon": 513998848,
+  "file": 806912,
+  "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-rp101-prof-h720-1790092616-2862344.scope"
+ },
+ "cgroup_after": {
+  "memory.current": 6033551360,
+  "memory.peak": 7733035008,
+  "memory.max": 8589934592,
+  "memory.high": 7730937856,
+  "anon": 1114861568,
+  "file": 4861095936,
+  "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-rp101-prof-h720-1790092616-2862344.scope"
+ },
+ "gpu_before": [
+  {
+   "index": 0,
+   "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+   "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+   "temperature_c": 53.0,
+   "utilization_pct": 0.0,
+   "memory_used_mib": 17.0,
+   "memory_total_mib": 16376.0
+  }
+ ],
+ "gpu_after": [
+  {
+   "index": 0,
+   "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+   "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+   "temperature_c": 55.0,
+   "utilization_pct": 0.0,
+   "memory_used_mib": 1248.0,
+   "memory_total_mib": 16376.0
+  }
+ ],
+ "peak_gpu_allocated_bytes": 880876544,
+ "disk_used_under_work_bytes": 8513163860,
+ "author_metric_state": "NOT_EXECUTED_WITHIN_BUDGET: needs ~12594191040 bytes of temporaries, budget 4294967296",
+ "author_metric": null,
+ "independent_metric_float64": "not stored (untrained model)"
+}

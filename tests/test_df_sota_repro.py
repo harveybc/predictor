@@ -611,3 +611,21 @@ def test_RP101_a_record_without_the_authors_float32_reduction_verifies_on_its_fl
     # at closure with a tiny author-metric budget the author reduction is reported NOT executed and the float64 basis stands
     ver2 = R.verify_sota_run(root, warehouse=lambda c: {"current": json.loads(json.dumps(held))}, data_path=world["data"], replay=False, author_metric_budget=1)
     assert ver2["rows"][0]["verified"] and ver2["rows"][0]["recomputed"]["author_float32"] is None and "NOT_EXECUTED" in ver2["rows"][0]["recomputed"]["author_float32_state"]
+
+
+def test_RP99_paired_contrasts_are_computed_from_the_persisted_per_window_series(world, tmp_path):
+    import copy
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]; design = json.loads((root / "DESIGN.json").read_text())
+    ver = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)
+    pc = R.paired_contrasts(root, design, ver)
+    e = pc["horizons"]["4"]
+    assert e["state"].startswith("PARTIAL") and e["vs_baselines"][unit]["n_windows"] == 77 and e["vs_baselines"][unit]["model_minus_seasonal24_mae"]["sd_ddof1"] is not None
+    v = json.loads((root / "attempts" / unit / "METRICS_VAULT.json").read_text())
+    assert abs(e["vs_baselines"][unit]["model_minus_persistence_mae"]["mean"] - (np.mean(v["per_window"]["mae"]) - np.mean(v["per_window"]["naive_mae"]))) < 1e-12
+    # a second seed (a copy of the catalog under another unit) yields a seed pair with zero difference
+    twin = copy.deepcopy(design["cells"][0]); twin.update(cell_id="L16_h4_s2022", seed=2022); design["cells"].append(twin)
+    import shutil; shutil.copytree(root / "attempts" / unit, root / "attempts" / twin["cell_id"])
+    row2 = copy.deepcopy(ver["rows"][0]); row2.update(unit=twin["cell_id"], cell={**row2["cell"], "cell_id": twin["cell_id"], "seed": 2022}); ver["rows"].append(row2)
+    pc2 = R.paired_contrasts(root, design, ver)["horizons"]["4"]
+    key = f"{unit} - {twin['cell_id']}"
+    assert pc2["state"] == "DONE" and pc2["seed_pairs"][key]["mae"]["mean"] == 0.0 and pc2["seed_pairs"][key]["n_windows"] == 77

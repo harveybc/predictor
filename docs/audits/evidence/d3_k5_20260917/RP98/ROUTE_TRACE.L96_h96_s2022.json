@@ -1,0 +1,201 @@
+{
+ "schema": "df_sota_route_trace.v1",
+ "unit": "L96_h96_s2022",
+ "devices": [
+  "cpu",
+  "cuda"
+ ],
+ "windows": [
+  1135,
+  4761,
+  1166
+ ],
+ "batches": [
+  70,
+  72,
+  297
+ ],
+ "batch_size": 16,
+ "cpu_max_abs_diff_by_window_vs_stored": {
+  "1135": 0.00040149688720703125,
+  "4761": 0.0003116726875305176,
+  "1166": 0.00029909610748291016
+ },
+ "mode": "eval (is_training=False): noisy gating OFF; a difference is numerical or a threshold flip",
+ "gpu": [
+  {
+   "index": 0,
+   "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+   "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+   "temperature_c": 41.0,
+   "utilization_pct": 0.0,
+   "memory_used_mib": 346.0,
+   "memory_total_mib": 16376.0
+  }
+ ],
+ "batches_traced": [
+  {
+   "batch": 70,
+   "windows": [
+    1120,
+    1121,
+    1122,
+    1123,
+    1124,
+    1125,
+    1126,
+    1127,
+    1128,
+    1129,
+    1130,
+    1131,
+    1132,
+    1133,
+    1134,
+    1135
+   ],
+   "pred_max_abs_diff_cpu_vs_stored": 0.00040459632873535156,
+   "pred_max_abs_diff_gpu_vs_stored": 0.00040411949157714844,
+   "pred_max_abs_diff_cpu_vs_gpu": 0.00012224912643432617,
+   "blocks": {
+    "gate_block0": {
+     "route_flips": 0,
+     "routes_total": 59351616,
+     "cut_index_changes": 0,
+     "tokens": 61632,
+     "max_abs_prob_diff": 2.2083520889282227e-05,
+     "min_distance_to_threshold_cpu": 0.0013599991798400879,
+     "min_distance_to_threshold_gpu": 0.0013475418090820312,
+     "route_input_equal": false
+    },
+    "gate_block1": {
+     "route_flips": 0,
+     "routes_total": 59351616,
+     "cut_index_changes": 0,
+     "tokens": 61632,
+     "max_abs_prob_diff": 9.28640365600586e-05,
+     "min_distance_to_threshold_cpu": 0.005753040313720703,
+     "min_distance_to_threshold_gpu": 0.005747973918914795,
+     "route_input_equal": false
+    },
+    "learner_block0": {
+     "max_abs_adj_diff_post_route": 2.478802442550659
+    },
+    "learner_block1": {
+     "max_abs_adj_diff_post_route": 0.002093791961669922
+    }
+   },
+   "classification": "NUMERICAL_ONLY (identical routes, kernel-level tensor differences)"
+  },
+  {
+   "batch": 72,
+   "windows": [
+    1152,
+    1153,
+    1154,
+    1155,
+    1156,
+    1157,
+    1158,
+    1159,
+    1160,
+    1161,
+    1162,
+    1163,
+    1164,
+    1165,
+    1166,
+    1167
+   ],
+   "pred_max_abs_diff_cpu_vs_stored": 0.0002989768981933594,
+   "pred_max_abs_diff_gpu_vs_stored": 2.9802322387695312e-05,
+   "pred_max_abs_diff_cpu_vs_gpu": 0.00029838085174560547,
+   "blocks": {
+    "gate_block0": {
+     "route_flips": 0,
+     "routes_total": 59351616,
+     "cut_index_changes": 0,
+     "tokens": 61632,
+     "max_abs_prob_diff": 2.6345252990722656e-05,
+     "min_distance_to_threshold_cpu": 0.0007158517837524414,
+     "min_distance_to_threshold_gpu": 0.0007184743881225586,
+     "route_input_equal": false
+    },
+    "gate_block1": {
+     "route_flips": 0,
+     "routes_total": 59351616,
+     "cut_index_changes": 0,
+     "tokens": 61632,
+     "max_abs_prob_diff": 0.0009447485208511353,
+     "min_distance_to_threshold_cpu": 0.0016632676124572754,
+     "min_distance_to_threshold_gpu": 0.0016760528087615967,
+     "route_input_equal": false
+    },
+    "learner_block0": {
+     "max_abs_adj_diff_post_route": 0.12729808688163757
+    },
+    "learner_block1": {
+     "max_abs_adj_diff_post_route": 0.3709243834018707
+    }
+   },
+   "classification": "NUMERICAL_ONLY (identical routes, kernel-level tensor differences)"
+  },
+  {
+   "batch": 297,
+   "windows": [
+    4752,
+    4753,
+    4754,
+    4755,
+    4756,
+    4757,
+    4758,
+    4759,
+    4760,
+    4761,
+    4762,
+    4763,
+    4764,
+    4765,
+    4766,
+    4767
+   ],
+   "pred_max_abs_diff_cpu_vs_stored": 3.388524055480957e-05,
+   "pred_max_abs_diff_gpu_vs_stored": 2.8848648071289062e-05,
+   "pred_max_abs_diff_cpu_vs_gpu": 3.0934810638427734e-05,
+   "blocks": {
+    "gate_block0": {
+     "route_flips": 0,
+     "routes_total": 59351616,
+     "cut_index_changes": 0,
+     "tokens": 61632,
+     "max_abs_prob_diff": 3.261864185333252e-05,
+     "min_distance_to_threshold_cpu": 0.0111006498336792,
+     "min_distance_to_threshold_gpu": 0.011104106903076172,
+     "route_input_equal": false
+    },
+    "gate_block1": {
+     "route_flips": 0,
+     "routes_total": 59351616,
+     "cut_index_changes": 0,
+     "tokens": 61632,
+     "max_abs_prob_diff": 9.799003601074219e-05,
+     "min_distance_to_threshold_cpu": 0.002602994441986084,
+     "min_distance_to_threshold_gpu": 0.0025984644889831543,
+     "route_input_equal": false
+    },
+    "learner_block0": {
+     "max_abs_adj_diff_post_route": 0.1617455929517746
+    },
+    "learner_block1": {
+     "max_abs_adj_diff_post_route": 0.15800487995147705
+    }
+   },
+   "classification": "NUMERICAL_ONLY (identical routes, kernel-level tensor differences)"
+  }
+ ],
+ "same_device_same_batch_repeat_max_abs_diff": {
+  "cpu": 0.0,
+  "cuda": 0.0
+ }
+}
