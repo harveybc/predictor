@@ -309,7 +309,8 @@ def test_the_phase_runner_binds_before_it_acquires(tmp_path):
 def test_RP90_the_disposition_is_recomputed_from_the_task_id_and_only_the_official_ecl_is_active():
     assert B.disposition("household_W60_h60")["disposition"] == "HISTORICAL_DEV_ONLY"
     assert B.disposition({"benchmark_contract": {"task_id": "household_W60_h60"}})["disposition"] == "HISTORICAL_DEV_ONLY"
-    assert B.disposition("fx_eurusd_1h")["disposition"] == "DEFERRED_MANDATORY_STAGE"
+    assert B.disposition(B.fx_eurusd_1h_ours().task_id)["disposition"] == "DEFERRED_MANDATORY_STAGE" and B.disposition(B.rl_weekly_ours().task_id)["disposition"] == "DEFERRED_MANDATORY_STAGE"
+    assert B.disposition("fx_eurusd_1h")["disposition"] == "HISTORICAL_DEV_ONLY"                       # an unregistered label is never a deferred stage
     assert B.disposition(None)["disposition"] == "HISTORICAL_DEV_ONLY" and B.disposition({})["disposition"] == "HISTORICAL_DEV_ONLY"
     assert B.disposition("ecl321_official_tsl")["disposition"] == "ACTIVE"
     assert "HISTORICAL_DEV_ONLY" in B.COMPARATOR_STATES
