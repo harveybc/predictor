@@ -816,6 +816,14 @@ def run_preflight(a, design: dict) -> dict:
 
 # --- RP96: verification and the RP97 table ----------------------------------------------------------------------------------------
 
+def replay_code_sha256() -> str:
+    """The digest of the code that PERFORMS a replay (the replay driver and the author-path functions it calls), so that a
+    cached replay is invalidated by a change of that path and not by unrelated edits of this file."""
+    import inspect
+    parts = [inspect.getsource(f) for f in (replay_cell, main_like_run_py, build_args, author_env, fix_seeds, capture_metric, setting_of, author_parser)]
+    return hashlib.sha256("\n".join(parts).encode()).hexdigest()
+
+
 def replay_cell(root: Path, design: dict, unit: str, *, data_path: Path, device: str = "cpu") -> dict:
     """Fresh process: the author's test(test=1) reloads the checkpoint through the author's own path and scores; the captured
     predictions are compared with the stored ones under the frozen replay rule."""
@@ -1126,7 +1134,7 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                 r["verified"] = False
                 continue
             ident = {"checkpoint_sha256": sha_file(folder / "checkpoint.pth"), "arrays_sha256": sha_file(folder / "arrays.npz"), "design_sha256": design["design_sha256"],
-                     "replay_code_sha256": sha_file(Path(__file__).resolve()), "author_files": source_digests(), "device": replay_device}
+                     "replay_code_sha256": replay_code_sha256(), "author_files": source_digests(), "device": replay_device}
             cached = prior.get(unit) or {}
             if cached.get("identity") == ident and "allclose_rule" in cached:
                 replays[unit] = {**cached, "adopted_from": "REPLAYS.json (identical checkpoint, arrays, design, author files and replay code, hashed now)"}
