@@ -644,7 +644,7 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
                            log=folder / "author_stdout.log", bounded=bounded, author_metric_budget_bytes=author_metric_budget_bytes)
     preds, trues = np.asarray(res["preds"], dtype=np.float32), np.asarray(res["trues"], dtype=np.float32)
     np.savez(folder / "arrays.npz", pred=preds)                    # uncompressed by the owner's decision (float32 outputs compress < 13 %)
-    trues_sha = sha_array(trues)
+    trues_sha = sha_array(trues); true_shape = list(trues.shape)
     if res.get("bounded"):
         if res["bounded"]["finalized"]["true_sha256"] != trues_sha:
             raise SotaRefusal("REFUSED: the streamed target digest and the memmapped targets disagree")
@@ -671,7 +671,7 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
               "design_sha256": design["design_sha256"], "setting": res["setting"], "effective_args": {k: v for k, v in sorted(res["args"].items())},
               "author_metric_float32": res["author_metric"], "author_metric_state": res.get("author_metric_state"), "independent_metric_float64": f64,
               "evaluation_path": ({"bounded_adapter": res["bounded"]["adapter"], "finalized": res["bounded"]["finalized"]} if res.get("bounded") else {"author_test": True}),
-              "shapes": {"pred": list(preds.shape), "true": list(trues.shape)}, "dtype": str(preds.dtype),
+              "shapes": {"pred": list(preds.shape), "true": true_shape}, "dtype": str(preds.dtype),
               "arrays_sha256": sha_file(folder / "arrays.npz"), "pred_sha256": sha_array(preds), "true_sha256": trues_sha, "checkpoint_sha256": sha_file(ckpt),
               "checkpoint_bytes": ckpt.stat().st_size, "n_parameters": res["n_parameters"], "device": res["device"], "training": training,
               "cost": {"wall_seconds": res["wall_seconds"], "cpu_seconds": ru1.ru_utime + ru1.ru_stime - (ru0.ru_utime + ru0.ru_stime),
@@ -902,6 +902,191 @@ def run_preflight(a, design: dict) -> dict:
     if reported["flushed"]["pending"] or reported["flushed"]["failures"]:
         raise SotaRefusal(f"REFUSED: the preflight terminal was not accepted: {reported['flushed']['failures']}")
     return doc
+
+
+# --- RP100: route-level diagnostic of a CPU/GPU discrepancy (bounded; no training, no changed top-p) -------------------------------
+
+def _cgroup_memory() -> dict:
+    """memory.current / memory.peak of THIS process's cgroup (file-backed pages included), when readable."""
+    out = {}
+    try:
+        cg = Path("/proc/self/cgroup").read_text().strip().split(":")[-1]
+        base = Path("/sys/fs/cgroup") / cg.lstrip("/")
+        for name in ("memory.current", "memory.peak", "memory.max", "memory.high"):
+            f = base / name
+            if f.is_file():
+                v = f.read_text().strip(); out[name] = int(v) if v.isdigit() else v
+        stat = base / "memory.stat"
+        if stat.is_file():
+            kv = dict(line.split() for line in stat.read_text().splitlines() if " " in line)
+            out["anon"] = int(kv.get("anon", 0)); out["file"] = int(kv.get("file", 0))
+        out["cgroup"] = str(base)
+    except Exception as exc:                                        # noqa: BLE001
+        out["error"] = f"{type(exc).__name__}: {exc}"[:120]
+    return out
+
+
+def route_trace(root: Path, design: dict, unit: str, *, data_path: Path, windows: list | None = None, n_windows: int = 3, gpu: int = 0) -> dict:
+    """Locate WHERE a CPU-vs-GPU prediction discrepancy arises for a cell: the batches holding the most discrepant windows are
+    forwarded on both devices with IDENTICAL batch composition, capturing every graph block's top-p routing decision (the
+    gating probabilities, their cumulative sums, the distance of the cut to the top-p threshold and the resulting expert mask)
+    and the tensors before and after the route; routes and tensors are compared. Evaluation mode: the gating noise is off, so
+    a difference is numerical (kernel) or a routing flip at a threshold, never stochastic. Bounded: a few batches, no training."""
+    import torch
+    author_env()
+    cell = next(c for c in design["cells"] if c["cell_id"] == unit)
+    folder = root / "attempts" / unit
+    with np.load(folder / "arrays.npz") as z:
+        stored = z["pred"]
+    fix_seeds(cell["seed"])
+    args = build_args(cell["argv"], data_dir=data_path.parent, data_name=data_path.name, checkpoints=Path("/nonexistent"), gpu=gpu, use_gpu=False)
+    args.augmentation_ratio = 0
+    DF = importlib.import_module("data_provider.data_factory")
+    test_data, test_loader = DF.data_provider(args, "test")
+    bs = int(args.batch_size)
+    exp_module = importlib.import_module("exp.exp_long_term_forecasting")
+    sd = torch.load(folder / "checkpoint.pth", map_location="cpu")
+    devices = ["cpu"] + (["cuda"] if torch.cuda.is_available() else [])
+    exps = {}
+    for dev in devices:
+        a2 = build_args(cell["argv"], data_dir=data_path.parent, data_name=data_path.name, checkpoints=Path("/nonexistent"), gpu=gpu, use_gpu=(dev == "cuda"))
+        with contextlib.redirect_stdout(io.StringIO()):
+            e = exp_module.Exp_Long_Term_Forecast(a2)
+        e.model.load_state_dict(sd); e.model.eval(); exps[dev] = e
+    # 1. which windows: a CPU pass over all batches (bounded to the test set) unless given
+    L = importlib.import_module("layers.TimeFilter_layers")
+    if windows is None:
+        diffs = np.zeros(stored.shape[0])
+        with torch.no_grad():
+            for i, (bx, by, _, _) in enumerate(test_loader):
+                out, _ = exps["cpu"].model(bx.float(), exps["cpu"].masks, is_training=False)
+                out = out[:, -args.pred_len:, :].numpy()
+                diffs[i * bs:i * bs + out.shape[0]] = np.abs(out.astype(np.float64) - stored[i * bs:i * bs + out.shape[0]].astype(np.float64)).max(axis=(1, 2))
+        windows = [int(w) for w in np.argsort(diffs)[::-1][:n_windows]]
+        cpu_diff_by_window = {str(w): float(diffs[w]) for w in windows}
+    else:
+        cpu_diff_by_window = None
+    batches = sorted({w // bs for w in windows})
+    # 2. hooks on every gating module and graph learner: capture routes and pre/post tensors
+    captures = {}
+    def hook_gate(dev, block_id):
+        def h(module, inputs, output):
+            x = inputs[0].detach().float().cpu()
+            logits = module.softmax(module.gate(inputs[0])).detach().float().cpu()
+            sorted_probs, sorted_idx = torch.sort(logits, descending=True)
+            cum = torch.cumsum(sorted_probs, dim=-1)
+            mask = cum > module.top_p
+            thr = mask.long().argmax(dim=-1)
+            # the cut position per token and how close the cumulative probability at the cut is to top_p
+            dist = (cum - module.top_p).abs().min(dim=-1).values
+            captures.setdefault(dev, {})[f"gate_block{block_id}"] = {"top_p_mask": output[0].detach().float().cpu(), "probs": logits, "cut_index": thr, "distance_to_threshold": dist,
+                                                                    "route_input_sha": hashlib.sha256(x.numpy().tobytes()).hexdigest()[:16]}
+        return h
+    def hook_learner(dev, block_id):
+        def h(module, inputs, output):
+            captures.setdefault(dev, {})[f"learner_block{block_id}"] = {"adj_out": output[0].detach().float().cpu() if isinstance(output, tuple) else output.detach().float().cpu()}
+        return h
+    handles = []
+    for dev, e in exps.items():
+        for bi, block in enumerate(e.model.backbone.blocks if hasattr(e.model, "backbone") and hasattr(e.model.backbone, "blocks") else []):
+            gate = block.gnn.graph_learner.mask_moe
+            handles.append(gate.register_forward_hook(hook_gate(dev, bi)))
+            handles.append(block.gnn.graph_learner.register_forward_hook(hook_learner(dev, bi)))
+    report = {"schema": "df_sota_route_trace.v1", "unit": unit, "devices": devices, "windows": windows, "batches": batches, "batch_size": bs,
+              "cpu_max_abs_diff_by_window_vs_stored": cpu_diff_by_window, "mode": "eval (is_training=False): noisy gating OFF; a difference is numerical or a threshold flip",
+              "gpu": gpu_state(), "batches_traced": []}
+    try:
+        with torch.no_grad():
+            for bi_ in batches:
+                # identical batch composition on both devices: the same contiguous windows of the author's test loader
+                idx = list(range(bi_ * bs, min(len(test_data), (bi_ + 1) * bs)))
+                items = [test_data[i] for i in idx]
+                bx = torch.tensor(np.stack([it[0] for it in items])).float()
+                outs = {}
+                for dev, e in exps.items():
+                    captures.pop(dev, None)
+                    out, _ = e.model(bx.to(e.device), e.masks, is_training=False)
+                    outs[dev] = out[:, -args.pred_len:, :].detach().float().cpu().numpy()
+                entry = {"batch": bi_, "windows": idx, "pred_max_abs_diff_cpu_vs_stored": float(np.abs(outs["cpu"].astype(np.float64) - stored[idx].astype(np.float64)).max())}
+                if "cuda" in outs:
+                    entry["pred_max_abs_diff_gpu_vs_stored"] = float(np.abs(outs["cuda"].astype(np.float64) - stored[idx].astype(np.float64)).max())
+                    entry["pred_max_abs_diff_cpu_vs_gpu"] = float(np.abs(outs["cpu"].astype(np.float64) - outs["cuda"].astype(np.float64)).max())
+                    blocks = {}
+                    for key in sorted(captures.get("cpu", {})):
+                        c, g = captures["cpu"][key], captures["cuda"].get(key)
+                        if g is None:
+                            continue
+                        if key.startswith("gate"):
+                            flips = int((c["top_p_mask"] != g["top_p_mask"]).sum())
+                            blocks[key] = {"route_flips": flips, "routes_total": int(c["top_p_mask"].numel()),
+                                           "cut_index_changes": int((c["cut_index"] != g["cut_index"]).sum()), "tokens": int(c["cut_index"].numel()),
+                                           "max_abs_prob_diff": float((c["probs"] - g["probs"]).abs().max()),
+                                           "min_distance_to_threshold_cpu": float(c["distance_to_threshold"].min()), "min_distance_to_threshold_gpu": float(g["distance_to_threshold"].min()),
+                                           "route_input_equal": c["route_input_sha"] == g["route_input_sha"]}
+                        else:
+                            blocks[key] = {"max_abs_adj_diff_post_route": float((c["adj_out"] - g["adj_out"]).abs().max())}
+                    entry["blocks"] = blocks
+                    flips = sum(b.get("route_flips", 0) for b in blocks.values())
+                    entry["classification"] = ("ROUTING_FLIP_AT_THRESHOLD (numerical difference crossed a top-p cut)" if flips > 0 else
+                                               ("NUMERICAL_ONLY (identical routes, kernel-level tensor differences)" if entry["pred_max_abs_diff_cpu_vs_gpu"] > 0 else "IDENTICAL"))
+                report["batches_traced"].append(entry)
+            # 3. repeatability under identical batching: the same batch twice on each device
+            if batches:
+                bi_ = batches[0]; idx = list(range(bi_ * bs, min(len(test_data), (bi_ + 1) * bs)))
+                bx = torch.tensor(np.stack([test_data[i][0] for i in idx])).float()
+                rep = {}
+                for dev, e in exps.items():
+                    o1, _ = e.model(bx.to(e.device), e.masks, is_training=False); o2, _ = e.model(bx.to(e.device), e.masks, is_training=False)
+                    rep[dev] = float((o1 - o2).abs().max())
+                report["same_device_same_batch_repeat_max_abs_diff"] = rep
+    finally:
+        for h in handles:
+            h.remove()
+    return report
+
+
+# --- RP101: memory/disk/thermal profile of the bounded evaluation path ------------------------------------------------------------
+
+def profile_eval(design: dict, *, data_path: Path, work: Path, horizon: int, checkpoint: Path | None, gpu: int = 0, use_gpu: bool | None = None,
+                 author_metric_budget_bytes: int | None = None) -> dict:
+    """Run the bounded evaluation for one horizon (with a given checkpoint, or an UNTRAINED model for memory only) and measure:
+    cgroup memory current/peak including file-backed pages, RSS, disk used under `work`, GPU VRAM peak, GPU temperature before/after,
+    elapsed time. No result is stored when the model is untrained."""
+    import torch, shutil
+    cell = next(c for c in design["cells"] if c["horizon"] == horizon)
+    author_env(); fix_seeds(cell["seed"])
+    work.mkdir(parents=True, exist_ok=True)
+    args = build_args(cell["argv"], data_dir=data_path.parent, data_name=data_path.name, checkpoints=work / "checkpoints", gpu=gpu, use_gpu=use_gpu)
+    exp_module = importlib.import_module("exp.exp_long_term_forecasting")
+    before = {"cgroup": _cgroup_memory(), "gpu": gpu_state(), "disk_free_bytes": shutil.disk_usage(work).free, "at": now_iso()}
+    with contextlib.redirect_stdout(io.StringIO()):
+        exp = exp_module.Exp_Long_Term_Forecast(args)
+    setting = setting_of(args)
+    (work / "checkpoints" / setting).mkdir(parents=True, exist_ok=True)
+    if checkpoint is not None:
+        shutil.copy2(checkpoint, work / "checkpoints" / setting / "checkpoint.pth"); trained = True
+    else:
+        torch.save(exp.model.state_dict(), work / "checkpoints" / setting / "checkpoint.pth"); trained = False
+    if torch.cuda.is_available():
+        torch.cuda.reset_peak_memory_stats()
+    t0 = time.time()
+    out = bounded_test(exp, setting, work, author_metric_budget_bytes=author_metric_budget_bytes)
+    elapsed = time.time() - t0
+    disk_used = sum(f.stat().st_size for f in work.rglob("*") if f.is_file())
+    ru = resource.getrusage(resource.RUSAGE_SELF)
+    after = {"cgroup": _cgroup_memory(), "gpu": gpu_state(), "at": now_iso()}
+    prof = {"schema": "df_sota_eval_profile.v1", "horizon": horizon, "trained_checkpoint": trained, "device": str(exp.device), "windows": out["finalized"]["windows"],
+            "preds_bytes": out["finalized"]["preds_bytes"], "elapsed_seconds": elapsed, "peak_rss_bytes": int(ru.ru_maxrss) * 1024,
+            "cgroup_before": before["cgroup"], "cgroup_after": after["cgroup"], "gpu_before": before["gpu"], "gpu_after": after["gpu"],
+            "peak_gpu_allocated_bytes": int(torch.cuda.max_memory_allocated()) if torch.cuda.is_available() else None,
+            "disk_used_under_work_bytes": disk_used, "author_metric_state": out["author_metric_state"], "author_metric": out["author_metric"],
+            "independent_metric_float64": out["independent_metric_float64"] if trained else "not stored (untrained model)"}
+    for tmp in (out["preds_path"], out["trues_path"]):
+        try:
+            Path(tmp).unlink()
+        except OSError:
+            pass
+    return prof
 
 
 # --- RP96: verification and the RP97 table ----------------------------------------------------------------------------------------
@@ -1560,7 +1745,10 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval"])
+    ap.add_argument("--checkpoint", type=Path, default=None, help="profile-eval: a trained checkpoint (else an untrained model, memory only)")
+    ap.add_argument("--horizon", type=int, default=None, help="profile-eval: which horizon's cell arguments")
+    ap.add_argument("--windows", type=int, nargs="*", default=None, help="route-trace: window indices (else the most discrepant on CPU)")
     ap.add_argument("--from", dest="source", type=Path, default=None, help="merge: a worker's copy of this root")
     ap.add_argument("--root", type=Path, required=True)
     ap.add_argument("--unit"); ap.add_argument("--run-id")
@@ -1588,6 +1776,22 @@ def main(argv=None) -> int:
         print(json.dumps(design["lock"], indent=1, default=str)); return 0
     if a.command == "merge":
         out = merge(a.root, a.source); print(json.dumps(out, indent=1)); return 0 if not out["problems"] else 1
+    if a.command == "route-trace":
+        path = Path(a.data_path) if a.data_path else delivered_file(a.root, design, None)
+        rep = route_trace(a.root, design, a.unit, data_path=path, windows=a.windows, gpu=a.gpu)
+        (a.root / "attempts" / a.unit / "ROUTE_TRACE.json").write_text(json.dumps(rep, indent=1, default=str))
+        print(json.dumps({k: rep[k] for k in ("windows", "cpu_max_abs_diff_by_window_vs_stored", "same_device_same_batch_repeat_max_abs_diff")}, default=str))
+        for b in rep["batches_traced"]:
+            print(json.dumps({k: b.get(k) for k in ("batch", "pred_max_abs_diff_cpu_vs_gpu", "pred_max_abs_diff_gpu_vs_stored", "classification", "blocks")}, default=str)[:1200])
+        return 0
+    if a.command == "profile-eval":
+        path = Path(a.data_path) if a.data_path else delivered_file(a.root, design, None)
+        prof = profile_eval(design, data_path=path, work=a.root / "profile_work", horizon=a.horizon, checkpoint=a.checkpoint, gpu=a.gpu, use_gpu=None if not a.cpu else False,
+                            author_metric_budget_bytes=(int(a.author_metric_budget_gib * 2 ** 30) if a.author_metric_budget_gib else None))
+        (a.root / f"EVAL_PROFILE.h{a.horizon}.{socket.gethostname()}.json").write_text(json.dumps(prof, indent=1, default=str))
+        print(json.dumps({k: prof[k] for k in ("horizon", "trained_checkpoint", "device", "windows", "preds_bytes", "elapsed_seconds", "peak_rss_bytes", "peak_gpu_allocated_bytes", "disk_used_under_work_bytes", "author_metric_state")}, default=str))
+        print(json.dumps({"cgroup_after": prof["cgroup_after"], "gpu_after_temp": [g.get("temperature_c") for g in prof["gpu_after"]]}, default=str))
+        return 0
     if a.command == "prepare":
         run_prepare(a, design); return 0
     if a.command == "preflight":
