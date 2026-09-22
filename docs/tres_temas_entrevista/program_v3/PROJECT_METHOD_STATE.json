@@ -1031,23 +1031,24 @@
   "base": "fb6ec31e",
   "updated_on": "2026-09-22",
   "RP98": {
-   "status": "PRE_FROZEN_POST_PENDING",
+   "status": "DONE",
    "pre": "Musashi's probe rerun unchanged on dragon at fff9575: 20 leaves, 0 differences (docs/audits/evidence/d3_k5_20260917/RP98_PRE)",
-   "refusals": "altered vault -> VAULT_CHANGED (candidate preserved, successor recomputed and read back); contradictory cached replay -> never adopted (replays re-run and validated); short/extra/reordered/non-finite loaders -> VaultRefusal; constant correlation -> None; aggregation within seed first"
+   "refusals": "altered vault -> VAULT_CHANGED (candidate preserved, successor recomputed and read back); contradictory cached replay -> never adopted (replays re-run and validated); short/extra/reordered/non-finite loaders -> VaultRefusal; constant correlation -> None; aggregation within seed first",
+   "post": "docs/audits/evidence/d3_k5_20260917/RP98/REVIEW_REPRODUCED_POST.json: baseline verifies; altered vault -> VAULT_CHANGED, candidate preserved, successor recomputed and verifies; contradictory cache -> never adopted (max diff 0.0 measured, exact fraction 1.0); short loader -> VaultRefusal INCOMPLETE POPULATION; constant correlation -> None/UNDEFINED; four-horizon average within seed: SD 0.0, n_seeds 3"
   },
   "RP99": {
-   "status": "CODE_DONE_TESTS_RUNNING",
+   "status": "CODE_DONE_TESTED_RECOMPUTE_PENDING_CLOSURE",
    "catalog": "df_sota_metrics_vault.v3: exact population consumption, identities, catalog states DONE/APPROXIMATE/UNDEFINED/NOT_APPLICABLE with parameters and excluded counts, per-window series, weekly time blocks, mae_relative_to_test_persistence (not MASE), mape_zspace/mspe_zspace labelled; independent numeric oracles per family in tests",
    "recompute_on_four_cells": "PENDING (dragon closure)"
   },
   "RP100": {
-   "status": "DIAGNOSTIC_DONE_CLOSURE_RUNNING",
+   "status": "DONE_PENDING_FINAL_CLOSURE",
    "route_trace": "three T=96 cells, nine batches holding the most discrepant windows, CPU vs GPU with identical batching: 0 route flips out of 59,351,616 routes per block, 0 cut-index changes, gating probability differences <= 8e-5, min distance to the top-p threshold ~8e-5; same-device repeat 0.0 on both devices -> classification NUMERICAL_ONLY (kernel-level tensor differences amplified through the network; the top-p routing hypothesis is NOT supported on the traced batches)",
    "evidence": "docs/audits/evidence/d3_k5_20260917/RP98/ROUTE_TRACE.*.json",
    "replay_policy": "no cached adoption; outputs validated in full; same-device (GPU UUID a8bd1b2c… for dragon-trained cells) vs cross-device fields; old CPU failures preserved as failures of the original rule"
   },
   "RP101": {
-   "status": "PROFILED_ADMITTED",
+   "status": "DONE",
    "adapter": "df_sota_bounded_eval.v1 (memmapped predictions/targets, hash-streamed targets, author float32 metric only within a declared budget, float64 always); parity test on the tiny author fixture: identical predictions, targets, population, checkpoint, author metric",
    "profiles_dragon_8GiB_cap_budget_4GiB": {
     "h96": "cgroup peak 3.77 GB (anon 1.09, file 1.32), RSS 4.17 GB, disk 1.30 GB, VRAM 0.86 GB, 16.5 s, author metric EXECUTED",
@@ -1077,11 +1078,14 @@
    "status": "NOT_STARTED"
   },
   "RP104": {
-   "status": "NOT_STARTED"
+   "status": "IN_PROGRESS",
+   "tool_suite_dragon": "tests/test_df_sota_repro.py 30 passed, 1 skipped (own process, aa441c08)",
+   "other_suites": "unchanged since fb6ec31e (only df_sota_repro.py and its tests changed); to be rerun on dragon after the cells finish"
   },
   "RP105": {
    "status": "NOT_STARTED"
   },
-  "placement": "all compute on dragon (cooled WORKER_A, RTX 4090 L, 11 GiB available, 14 GiB slice); omega under the travel hold (marker present); gamma out (4 GiB available, eGPU busy)"
+  "placement": "all compute on dragon (cooled WORKER_A, RTX 4090 L, 11 GiB available, 14 GiB slice); omega under the travel hold (marker present); gamma out (4 GiB available, eGPU busy)",
+  "thermal_observation_2026_09_22": "dragon RTX 4090 L during L96_h192_s2022 training: 83-85 C at 98 %, the driver's software thermal slowdown intermittently ACTIVE (target 87 C, clocks 1.77-2.13 GHz); device policy engaged, job not interrupted; a cool-down guard (< 70 C between cells, max 30 min wait) added to execute for the next runs; per-cell records keep gpu_before/gpu_after"
  }
 }

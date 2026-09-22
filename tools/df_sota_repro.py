@@ -723,6 +723,19 @@ def child(a, design: dict) -> dict:
     return record
 
 
+def thermal_guard(*, cool_below_c: float = 70.0, max_wait_s: int = 1800, poll_s: int = 30) -> dict:
+    """Between cells: wait until every visible GPU is below `cool_below_c` (a pause between cells changes nothing in the recipe);
+    the device's own target/slowdown policy governs DURING a cell (the driver throttles clocks at its target), and every cell record
+    keeps the temperatures before/after. Returns what was observed and how long it waited."""
+    waited, samples = 0, []
+    while True:
+        g = gpu_state(); temps = [x.get("temperature_c") for x in g if x.get("temperature_c") is not None]
+        samples.append({"at": now_iso(), "temperatures_c": temps})
+        if not temps or max(temps) < cool_below_c or waited >= max_wait_s:
+            return {"waited_seconds": waited, "samples": samples[-5:], "cool_below_c": cool_below_c, "proceeded_hot": bool(temps and max(temps) >= cool_below_c)}
+        time.sleep(poll_s); waited += poll_s
+
+
 def execute(a, design: dict) -> list:
     """The cells of this host, one after another (one GPU per host), each in its own process under this accounted scope."""
     validate(design)
@@ -736,6 +749,7 @@ def execute(a, design: dict) -> list:
         receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text()).get("units", {}) if (root / "TERMINAL_RECEIPTS.json").is_file() else {}
         if unit in receipts and (folder / "cell.json").is_file():
             out.append({"unit": unit, "ok": True, "reused": True}); continue
+        guard = thermal_guard() if not a.cpu else {"skipped": "cpu"}
         argv = [sys.executable, str(Path(__file__).resolve()), "child", "--root", str(root), "--unit", unit, "--gov-url", a.gov_url, "--api-key-file", str(a.api_key_file),
                 "--lake", a.lake, "--resource", a.resource, "--gpu", str(a.gpu)] + (["--cpu"] if a.cpu else []) + (["--run-id", a.run_id] if a.run_id else []) \
                + (["--bounded"] if getattr(a, "bounded", False) else []) + (["--author-metric-budget-gib", str(a.author_metric_budget_gib)] if getattr(a, "author_metric_budget_gib", None) else [])
@@ -743,7 +757,8 @@ def execute(a, design: dict) -> list:
         proc = subprocess.run(argv, capture_output=True, text=True)
         (folder).mkdir(parents=True, exist_ok=True)
         (folder / "child_stderr.log").write_text(proc.stderr[-20000:])
-        out.append({"unit": unit, "ok": proc.returncode == 0, "returncode": proc.returncode, "wall_seconds": time.time() - t0, "tail": proc.stderr[-400:]})
+        out.append({"unit": unit, "ok": proc.returncode == 0, "returncode": proc.returncode, "wall_seconds": time.time() - t0, "tail": proc.stderr[-400:], "thermal_guard": guard,
+                    "gpu_after": gpu_state()})
         print(json.dumps(out[-1]), flush=True)
     (root / f"EXECUTE.{socket.gethostname()}.json").write_text(json.dumps(out, indent=1))
     return out
