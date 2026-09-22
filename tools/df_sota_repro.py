@@ -673,6 +673,20 @@ def merge(root: Path, source: Path) -> dict:
         shutil.copy2(terminal_path, root / "TERMINALS" / f"{unit}.json")
         receipts["units"][unit] = src_receipts[unit]
         out["units"][unit] = {"merged": True, "artifacts": digests, "host": (json.loads((folder / "cell.json").read_text()).get("cost") or {}).get("host")}
+    # units without an attempts folder (prepare, preflights): terminal + receipt travel too; the preparation evidence with them
+    for unit, receipt in src_receipts.items():
+        terminal_path = source / "TERMINALS" / f"{unit}.json"
+        if unit in out["units"] or not terminal_path.is_file() or (source / "attempts" / unit).is_dir():
+            continue
+        if unit in receipts["units"] and receipts["units"][unit] != receipt:
+            out["problems"].append(f"{unit}: already present under another receipt; not overwritten"); continue
+        (root / "TERMINALS").mkdir(exist_ok=True)
+        shutil.copy2(terminal_path, root / "TERMINALS" / f"{unit}.json")
+        receipts["units"][unit] = receipt
+        out["units"][unit] = {"merged": True, "artifacts": None}
+    for name in ("BENCH_DATA.npz", "BENCH_DATA.json"):
+        if (source / name).is_file() and not (root / name).is_file():
+            shutil.copy2(source / name, root / name)
     (root / "TERMINAL_RECEIPTS.json").write_text(json.dumps(receipts, indent=1))
     for extra in sorted(source.glob("PREFLIGHT*.json")) + sorted(source.glob("EXECUTE.*.json")):
         shutil.copy2(extra, root / extra.name)
