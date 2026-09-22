@@ -15,7 +15,7 @@
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "SOURCE_AND_PROTOCOL_LOCKED_EXECUTION_IN_PROGRESS",
+  "status": "EXECUTION_PARTIAL_T96_COMPLETE_T192_ONE_SEED_CLOSURE_IN_PROGRESS",
   "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
   "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
   "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
@@ -952,17 +952,37 @@
    ]
   },
   "RP94": {
-   "status": "IN_PROGRESS",
-   "next": "governed preflight on cooled remote workers only; coordinator travel hold active; external GPU requires utilization diagnosis before admission"
+   "status": "DONE_WITH_NAMED_DEFICIT",
+   "evidence": [
+    "docs/tres_temas_entrevista/program_v3/SOTA_ALLOCATION_RP94_2026_09_22.md",
+    "PREFLIGHT.{omega,dragon}.json, PREFLIGHT_MEMORY.omega.json in the reproduction root"
+   ],
+   "deficit": "T=336 (~12 GiB) and T=720 (~20 GiB) evaluation-path host memory exceed the 14 GiB batch-slice ceiling on omega/dragon (8 GiB gamma); gamma has 5 GiB available"
   },
   "RP95": {
-   "status": "NOT_STARTED"
+   "status": "PARTIAL",
+   "executed": [
+    "L96_h96_s2021",
+    "L96_h96_s2022",
+    "L96_h96_s2023 (dragon)",
+    "L96_h192_s2021 (omega)"
+   ],
+   "interrupted": "L96_h192_s2022 closed FAILED at the owner's order (omega GPU 87 C while travelling); partial attempt preserved",
+   "pending": {
+    "L96_h192_s2022/s2023": "omega from 2026-09-24 (owner's travel hold: no work on omega before)",
+    "L96_h336_*/L96_h720_*": "no host under the current slice ceilings"
+   }
   },
   "RP96": {
-   "status": "NOT_STARTED"
+   "status": "IN_PROGRESS",
+   "where": "dragon (CPU): warehouse custody, targets re-derived, author metric recomputed, float64 reduction, naive, fresh-process replays of the T=96 cells, metrics vaults; T=192 replay pending on omega"
   },
   "RP97": {
    "status": "NOT_STARTED"
-  }
+  },
+  "owner_orders_2026_09_22": [
+   "no work of any kind on omega until 2026-09-24 (travel thermal hold)",
+   "no compression of prediction arrays; exhaustive metrics vault per cell so Musashi can delete the raw predictions after independent analysis"
+  ]
  }
 }
