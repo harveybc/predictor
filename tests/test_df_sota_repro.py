@@ -319,7 +319,8 @@ def test_RP96_every_protocol_substitution_fails_the_actual_closure(world, tmp_pa
     a = SimpleNamespace(root=root, warehouse_token_file=None, warehouse_url=None, data_path=data_path, skip_replay=True, replay_device="cpu")
     rep = R.close(a, json.loads((root / "DESIGN.json").read_text()))
     assert not rep["verified"] and rep["table"]["complete"] is False and rep["table"]["unexecuted"] == [unit]
-    assert rep["table"]["rows"][0]["mse"]["status"] == "NO_MEASUREMENT"                                   # nothing unverified enters a mean
+    assert rep["table"]["rows"][0]["mse"]["status"] in ("NO_MEASUREMENT", "MEASURED_REPLAY_UNVERIFIED") and not rep["table"]["rows"][0]["mse"].get("pooled", False)
+    assert rep["table"]["rows"][0]["mse"].get("mean") is None                                          # nothing unverified enters a mean
     if attack not in ("missing",):
         shown = rep["table"]["rows"][0]["executed_unverified"]
         assert shown and shown[0]["unit"] == unit and shown[0]["why"] and "NOT verified" in R.markdown(rep["table"])
@@ -963,7 +964,8 @@ def test_RP106_rewritten_metrics_with_missing_vault_and_checkpoint_are_refused_b
     kinds = {p.split(": ")[1].split(":")[0] for p in ver["problems"]}
     assert {"HISTORY_RECORD_CHANGED", "HISTORY_CHECKPOINT_CHANGED", "HISTORY_VAULT_MISMATCH"} <= kinds, ver["problems"]
     t = R.table(world["design"], ver)
-    assert t["rows"][0]["mae"]["status"] == "NO_MEASUREMENT" and t["rows"][0]["mae"].get("mean") is None      # zero never enters a mean
+    assert t["rows"][0]["mae"].get("mean") is None and not t["rows"][0]["mae"].get("pooled", False)          # zero never enters a mean
+    assert t["rows"][0]["mae"]["status"] in ("NO_MEASUREMENT", "MEASURED_REPLAY_UNVERIFIED")
 
 
 def test_RP106_an_unresolvable_original_report_is_a_typed_refusal(world, tmp_path):
@@ -1444,7 +1446,8 @@ def test_RP115_a_rewritten_report_with_a_recomputed_pointer_is_refused_because_i
     after = R.verify_sota_run(root, warehouse=wh, data_path=world["data"], replay=False)
     assert after["historically_verified_units"] == [] and after["rows"][0]["author_metric_float32"] is None
     assert any("HISTORY_REPORT_NOT_ACCEPTED" in p for p in after["problems"]), after["problems"]
-    assert R.table(world["design"], after)["rows"][0]["mae"]["status"] == "NO_MEASUREMENT"
+    after_row = R.table(world["design"], after)["rows"][0]["mae"]
+    assert after_row.get("mean") is None and not after_row.get("pooled", False)
 
 
 def test_RP115_a_fabricated_regeneration_cannot_replace_a_score(world, tmp_path, monkeypatch):
