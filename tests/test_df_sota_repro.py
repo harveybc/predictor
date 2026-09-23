@@ -1054,3 +1054,26 @@ def test_RP110_same_device_repeatability_needs_a_measured_training_device(world,
     r = {"device_attribution": {"uuid": "GPU-a", "class": "INFERRED_GPU_MEMORY"}, "device": "cuda:0"}
     actual = rep["device_uuid"]; attribution = r["device_attribution"]; equal = actual == attribution["uuid"]
     assert equal and attribution["class"] != "MEASURED"
+
+
+def test_RP109_regeneration_by_inference_is_labelled_and_compared_with_the_deleted_originals_digests(world, tmp_path):
+    """A deleted cell: inference from the retained checkpoint on the same device reproduces the arrays; the digests the record
+    preserved decide whether those bytes ARE the deleted original. Never called a replay of the original, never a training."""
+    root, unit, report_sha = _closed_and_deleted(world, tmp_path)
+    design = json.loads((root / "DESIGN.json").read_text())
+    out = R.regenerate_cell(root, design, unit, data_path=world["data"], device="cpu")
+    assert out["label"] == "REGENERATED_BY_INFERENCE_FROM_RETAINED_CHECKPOINT"
+    assert out["pred_matches_original"] and out["true_matches_original"] and out["identity"].startswith("BIT_IDENTICAL")
+    assert out["author_metric"] == world["record"]["author_metric_float32"] and out["author_metric_state"].startswith("EXECUTED: df_sota_author_metric_exact.v1")
+    assert (root / "attempts" / unit / "regenerated" / "REGENERATION.json").is_file()
+    assert (root / "attempts" / unit / "regenerated" / "REGENERATED_pred.npy").is_file()
+    assert R.sha_npy_body(root / "attempts" / unit / "regenerated" / "REGENERATED_pred.npy") == world["record"]["pred_sha256"]
+    # a record claiming other digests: the regeneration is preserved and refuses identity
+    folder = root / "attempts" / unit
+    rec = json.loads((folder / "cell.json").read_text()); rec["pred_sha256"] = "0" * 64; (folder / "cell.json").write_text(json.dumps(rec))
+    out2 = R.regenerate_cell(root, design, unit, data_path=world["data"], device="cpu", keep_dir=tmp_path / "regen2")
+    assert not out2["pred_matches_original"] and out2["identity"].startswith("REGENERATED_NOT_IDENTICAL") and (tmp_path / "regen2" / "REGENERATION.json").is_file()
+    # a cell that still holds its arrays is refused (regeneration is only for a deleted one)
+    other = _copy(world, tmp_path / "still_there")
+    with pytest.raises(R.SotaRefusal):
+        R.regenerate_cell(other, design, unit, data_path=world["data"], device="cpu")
