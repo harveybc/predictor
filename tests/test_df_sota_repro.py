@@ -1638,7 +1638,7 @@ def test_RP119_a_measured_horizon_whose_replay_is_unaccepted_is_not_called_no_me
     """Musashi RP113 reporting note: T=96's missing property is an accepted replay, not the existence of measurements. The row
     says MEASURED_REPLAY_UNVERIFIED, carries the measured values explicitly unpooled, and stays out of every mean."""
     root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]
-    ver = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)   # no replay: custody fine, replay pending
+    ver = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=True, replay_units=[])   # custody fine, replay not run here
     row = ver["rows"][0]
     assert not row["verified"] and row["author_metric_float32"]
     t = R.table(world["design"], ver)["rows"][0]
