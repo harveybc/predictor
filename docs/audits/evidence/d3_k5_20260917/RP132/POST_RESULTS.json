@@ -1,0 +1,149 @@
+{
+  "scope": "disposable actual-author CPU fixtures, stub accepted warehouse",
+  "host_before": {
+    "thermal_zone0:INT3400 Thermal": 20.0,
+    "thermal_zone1:SEN1": 36.05,
+    "thermal_zone10:TCPU_PCI": 60.0,
+    "thermal_zone11:x86_pkg_temp": 60.0,
+    "thermal_zone2:SEN2": 45.05,
+    "thermal_zone3:SEN3": 36.05,
+    "thermal_zone4:SEN4": 0.05,
+    "thermal_zone5:SEN5": 0.05,
+    "thermal_zone6:SEN6": 33.05,
+    "thermal_zone7:SEN7": 25.05,
+    "thermal_zone8:iwlwifi_1": 30.0,
+    "thermal_zone9:TCPU": 60.05
+  },
+  "positive": {
+    "certificate": "FULL_INDEPENDENT_NUMERIC",
+    "deletion_dry_run": "PENDING"
+  },
+  "no_fields": {
+    "certificate": "DOMAIN_AND_INTERNAL_ONLY",
+    "reported_field_count": 0,
+    "mae_field": null,
+    "deletion": "REFUSED",
+    "array_remaining": true
+  },
+  "failed_field": {
+    "certificate": "DOMAIN_AND_INTERNAL_ONLY",
+    "reported_field_count": 43,
+    "mae_field": {
+      "status": "DISAGREEMENT",
+      "max_abs_difference": 1.0,
+      "tolerance": 1e-09,
+      "detail": "injected field failure; summary left stale",
+      "undefined_declared": null
+    },
+    "deletion": "REFUSED",
+    "array_remaining": true
+  },
+  "revalidation_positive": {
+    "summary": {
+      "cells": 1,
+      "mode": "CURRENT_RECONCILIATION",
+      "with_currently_accepted_numeric_evidence": [
+        "L16_h4_s2021"
+      ],
+      "with_local_numeric_evidence_only": [],
+      "without_numeric_evidence": [],
+      "predictions_on_disk": [
+        "L16_h4_s2021"
+      ],
+      "conditional_preview_eligible": [
+        "L16_h4_s2021"
+      ],
+      "reading": "`conditional_preview_eligible` lists cells whose METADATA preconditions hold today; it authorises nothing and the deletion path repeats the complete gate"
+    },
+    "mode": "CURRENT_RECONCILIATION",
+    "status": "COMPLETE",
+    "accepted": true,
+    "current_cell_verified": true,
+    "eligible": true,
+    "preview_state": "CONDITIONAL_PREVIEW_ELIGIBLE",
+    "currently_accepted_numeric_evidence": [
+      "catalog_acceptance"
+    ],
+    "locally_recorded_numeric_evidence": [
+      "catalog_acceptance"
+    ],
+    "closure_changed_since_acceptance": null
+  },
+  "revalidation_empty_warehouse": {
+    "summary": {
+      "cells": 1,
+      "mode": "CURRENT_RECONCILIATION",
+      "with_currently_accepted_numeric_evidence": [],
+      "with_local_numeric_evidence_only": [
+        "L16_h4_s2021"
+      ],
+      "without_numeric_evidence": [],
+      "predictions_on_disk": [
+        "L16_h4_s2021"
+      ],
+      "conditional_preview_eligible": [],
+      "reading": "`conditional_preview_eligible` lists cells whose METADATA preconditions hold today; it authorises nothing and the deletion path repeats the complete gate"
+    },
+    "mode": "CURRENT_RECONCILIATION",
+    "status": "COMPLETE",
+    "accepted": false,
+    "current_cell_verified": true,
+    "eligible": false,
+    "preview_state": "NOT_ELIGIBLE",
+    "currently_accepted_numeric_evidence": null,
+    "locally_recorded_numeric_evidence": [
+      "catalog_acceptance"
+    ],
+    "closure_changed_since_acceptance": null
+  },
+  "revalidation_current_report_unverified": {
+    "summary": {
+      "cells": 1,
+      "mode": "CURRENT_RECONCILIATION",
+      "with_currently_accepted_numeric_evidence": [
+        "L16_h4_s2021"
+      ],
+      "with_local_numeric_evidence_only": [],
+      "without_numeric_evidence": [],
+      "predictions_on_disk": [
+        "L16_h4_s2021"
+      ],
+      "conditional_preview_eligible": [],
+      "reading": "`conditional_preview_eligible` lists cells whose METADATA preconditions hold today; it authorises nothing and the deletion path repeats the complete gate"
+    },
+    "mode": "CURRENT_RECONCILIATION",
+    "status": "COMPLETE",
+    "accepted": true,
+    "current_cell_verified": false,
+    "eligible": false,
+    "preview_state": "NOT_ELIGIBLE",
+    "currently_accepted_numeric_evidence": [
+      "catalog_acceptance"
+    ],
+    "locally_recorded_numeric_evidence": [
+      "catalog_acceptance"
+    ],
+    "closure_changed_since_acceptance": "the catalog acceptance recorded cell_verified=True; the current closure reports False. The current closure governs; the earlier record is preserved as historical evidence."
+  },
+  "actual_deletion_gate_current_report": {
+    "pass": false,
+    "reasons": [
+      "the closure did not verify the unit: ['REPLAY_PENDING: later closure withdrew verification']"
+    ],
+    "report_sha256": "fec03844bb717ecb6f6dd073613253820c198c066266ece99f8493955374aa3a"
+  },
+  "host_after": {
+    "thermal_zone0:INT3400 Thermal": 20.0,
+    "thermal_zone1:SEN1": 36.05,
+    "thermal_zone10:TCPU_PCI": 48.0,
+    "thermal_zone11:x86_pkg_temp": 48.0,
+    "thermal_zone2:SEN2": 77.05,
+    "thermal_zone3:SEN3": 37.05,
+    "thermal_zone4:SEN4": 37.05,
+    "thermal_zone5:SEN5": 0.05,
+    "thermal_zone6:SEN6": 33.05,
+    "thermal_zone7:SEN7": 25.05,
+    "thermal_zone8:iwlwifi_1": 28.0,
+    "thermal_zone9:TCPU": 48.05
+  }
+}

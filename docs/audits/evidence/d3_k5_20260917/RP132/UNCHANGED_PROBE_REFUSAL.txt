@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/home/harveybc/Documents/GitHub/.worktrees/predictor-rp132/docs/audits/evidence/RP131_MUSASHI_REVIEW_2026_09_23/probe.py", line 116, in <module>
+    main()
+  File "/home/harveybc/Documents/GitHub/.worktrees/predictor-rp132/docs/audits/evidence/RP131_MUSASHI_REVIEW_2026_09_23/probe.py", line 101, in main
+    out["revalidation_positive"] = revalidate(kwargs["warehouse"])
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/harveybc/Documents/GitHub/.worktrees/predictor-rp132/docs/audits/evidence/RP131_MUSASHI_REVIEW_2026_09_23/probe.py", line 99, in revalidate
+    "current_cell_verified": cell["cell_verified_by_current_closure"], "eligible": cell["deletion_eligible_today"]}
+                                                                                   ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'deletion_eligible_today'
+Command exited with non-zero status 1
+CPU_USER=7.91 CPU_SYS=1.80 WALL=10.15

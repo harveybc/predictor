@@ -1995,13 +1995,15 @@ def test_RP131_revalidation_reads_the_retained_evidence_under_the_repaired_gates
     assert cell["numerical_acceptance"] == R.FULL_NUMERIC and cell["numerical_source"] == ["catalog_acceptance"]
     assert cell["catalog_acceptance"]["covers_catalog_on_disk"] and cell["catalog_acceptance"]["accepted"]["accepted"]
     assert cell["predictions_on_disk"] and cell["catalog_certificate_sufficient"] and (root / "REVALIDATION.json").is_file()
-    assert cell["deletion_eligible_today"] == cell["cell_verified_by_current_closure"]
-    assert out["summary"]["with_full_numeric_acceptance"] == [unit] and out["inventory_digest"] == R.catalog_inventory_digest()
+    assert (cell["deletion_preview"]["state"] == "CONDITIONAL_PREVIEW_ELIGIBLE") == cell["cell_verified_by_current_closure"]
+    assert out["summary"]["with_currently_accepted_numeric_evidence"] == [unit] and out["inventory_digest"] == R.catalog_inventory_digest()
+    assert out["mode"] == "CURRENT_RECONCILIATION" and out["status"] == "COMPLETE"
     # a certificate that no longer covers the catalog on disk stops being eligible, without touching any array
     v = json.loads((root / "attempts" / unit / "METRICS_VAULT.json").read_text()); v["at"] = "2020-01-01T00:00:00Z"
     (root / "attempts" / unit / "METRICS_VAULT.json").write_text(json.dumps(v))
     out2 = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)
-    assert not out2["cells"][unit]["catalog_acceptance"]["covers_catalog_on_disk"] and not out2["cells"][unit]["deletion_eligible_today"]
+    assert not out2["cells"][unit]["catalog_acceptance"]["covers_catalog_on_disk"]
+    assert out2["cells"][unit]["deletion_preview"]["state"] == "NOT_ELIGIBLE" and not out2["summary"]["with_currently_accepted_numeric_evidence"]
 
 
 def test_RP128_the_catalog_acceptance_certifies_the_catalog_while_the_cell_verification_stays_a_separate_fact(world, tmp_path):
@@ -2029,3 +2031,231 @@ def test_RP128_the_catalog_acceptance_certifies_the_catalog_while_the_cell_verif
                                receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=_wh(world))
     assert out["units"][unit]["state"] == "REFUSED" and (root / "attempts" / unit / "arrays.npz").is_file()
     assert any("did not verify the unit" in r for r in out["units"][unit]["preflight"]["refusals"])
+
+
+# --------------------------------------------------------------------------------------------------------------------------
+# RP132: the certificate is derived from the complete field-level record, and the real deletion consumer reads it
+# --------------------------------------------------------------------------------------------------------------------------
+
+def _catalog_case(world, tmp_path, monkeypatch, tag, mutate):
+    """A closed, accepted fixture whose catalog acceptance is mutated BEFORE it is published, so the record the deletion consumer
+    reads is faithfully accepted evidence whose own content is internally inconsistent — never a locally forged digest."""
+    root, wh, _held, _rep = _accepted_world(world, tmp_path, monkeypatch, tag=tag)
+    unit = world["cell"]["cell_id"]; design = json.loads((root / "DESIGN.json").read_text())
+    R.accept_catalog(root, design, unit, data_path=world["data"])
+    path = root / "attempts" / unit / "CATALOG_ACCEPTANCE.json"
+    if mutate is not None:
+        ca = json.loads(path.read_text()); mutate(ca); path.write_text(json.dumps(ca, indent=1))
+    _publish_catalog(root, unit, tmp_path, design)
+    R.metadata_backup(root, tmp_path / f"bk_{tag}")
+    return root, unit, {"accepted_report_sha256": R.sha_file(root / "REPORT.json"), "backup_manifest": tmp_path / f"bk_{tag}" / "MANIFEST.json",
+                        "receipts": json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], "warehouse": wh}
+
+
+def _field(ca, name="global.mae"):
+    return ca["independent_comparison"]["fields"][name]
+
+
+CERTIFICATE_COUNTEREXAMPLES = {
+    # Musashi RP131 #1: the two he executed, plus every case RP132 names. Each leaves the recorded SUMMARY green.
+    "no_fields": lambda ca: ca["independent_comparison"].update(fields={}),
+    "one_missing_field": lambda ca: ca["independent_comparison"]["fields"].pop("global.rmse"),
+    "failed_field_stale_summary": lambda ca: _field(ca).update(status="DISAGREEMENT", max_abs_difference=1.0, detail="injected"),
+    "unchecked_family_green_summary": lambda ca: (
+        [ca["independent_comparison"]["fields"][f].update(status="UNCHECKED", why="injected") for f in ("residuals.mean", "residuals.var", "residuals.sd", "residuals.skewness", "residuals.kurtosis_raw")],
+        ca["independent_comparison"]["coverage"].update(residual_moments={"checked": [], "unchecked": ["residuals.mean"], "complete": False})),
+    "excessive_difference": lambda ca: _field(ca).update(max_abs_difference=5.0),
+    "non_finite_difference": lambda ca: _field(ca).update(max_abs_difference=float("nan")),
+    "bool_difference": lambda ca: _field(ca).update(max_abs_difference=True),
+    "altered_tolerance": lambda ca: _field(ca).update(tolerance=1.0, max_abs_difference=0.5),
+    "wrong_inventory": lambda ca: ca.update(inventory_version="df_sota_catalog_estimators.v0", inventory_digest="0" * 64),
+    "undeclared_undefined": lambda ca: _field(ca).update(undefined_declared="something the inventory does not declare"),
+}
+
+
+@pytest.mark.parametrize("case", sorted(CERTIFICATE_COUNTEREXAMPLES))
+def test_RP132_a_certificate_is_refused_when_its_own_field_results_do_not_establish_the_comparison(case, world, tmp_path, monkeypatch):
+    """Musashi RP131 #1, through the REAL deletion API: an accepted catalog acceptance whose recorded summary is green but whose
+    field results do not establish the complete independent comparison cannot certify anything. Every candidate file survives."""
+    root, unit, kwargs = _catalog_case(world, tmp_path, monkeypatch, case, CERTIFICATE_COUNTEREXAMPLES[case])
+    ca = json.loads((root / "attempts" / unit / "CATALOG_ACCEPTANCE.json").read_text())
+    cert = R.acceptance_certificate(ca)
+    assert cert["class"] == R.DOMAIN_ONLY and cert["why"]
+    assert cert["derived_from"].startswith("independent_comparison.fields")
+    out = R.delete_predictions(root, [unit], **kwargs)
+    entry = out["units"][unit]
+    assert entry["state"] == "REFUSED"
+    assert any("CATALOG_ACCEPTANCE_NOT_NUMERICALLY_VERIFIED" in r for r in entry["preflight"]["refusals"])
+    assert (root / "attempts" / unit / "arrays.npz").is_file()                    # the refusal preserved every candidate file
+    assert not (root / "attempts" / unit / "PREDICTIONS_DELETED.json").is_file()
+
+
+def test_RP132_the_valid_positive_control_still_certifies_and_deletes(world, tmp_path, monkeypatch):
+    """The repair must not break the true case: an untouched acceptance carries all 43 declared fields, verified against the bound
+    inventory, and the deletion completes exactly as before."""
+    root, unit, kwargs = _catalog_case(world, tmp_path, monkeypatch, "positive", None)
+    cert = R.acceptance_certificate(json.loads((root / "attempts" / unit / "CATALOG_ACCEPTANCE.json").read_text()))
+    assert cert["class"] == R.FULL_NUMERIC and cert["why"] is None
+    assert cert["verified_fields"] == cert["required_fields"] == len(R._declared_field_index()) == 43
+    assert cert["inventory_basis"]["basis"] == "BOUND_INVENTORY" and not cert["field_failures"] and not cert["contradictions"]
+    assert R.delete_predictions(root, [unit], dry_run=True, **kwargs)["units"][unit]["state"] == "PENDING"
+    assert R.delete_predictions(root, [unit], **kwargs)["units"][unit]["state"] == "COMPLETE"
+    assert not (root / "attempts" / unit / "arrays.npz").exists()
+
+
+def test_RP132_a_resumed_deletion_is_refused_when_the_certificate_stopped_establishing_the_comparison(world, tmp_path, monkeypatch):
+    """An interrupted deletion resumes only under evidence that still certifies: the resumption path reads the same field-level
+    certificate, so a later-broken record cannot carry the unit through it. The marker and the metadata survive."""
+    root, unit, kwargs = _catalog_case(world, tmp_path, monkeypatch, "resume", None)
+    assert R.delete_predictions(root, [unit], **kwargs)["units"][unit]["state"] == "COMPLETE"
+    marker = root / "attempts" / unit / "PREDICTIONS_DELETED.json"
+    before = R.sha_file(marker)
+    path = root / "attempts" / unit / "CATALOG_ACCEPTANCE.json"
+    ca = json.loads(path.read_text()); ca["independent_comparison"]["fields"] = {}; path.write_text(json.dumps(ca, indent=1))
+    design = json.loads((root / "DESIGN.json").read_text())
+    _publish_catalog(root, unit, tmp_path, design)                                # faithfully accepted again, now inconsistent
+    kwargs["receipts"] = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    again = R.delete_predictions(root, [unit], **kwargs)["units"][unit]
+    assert again["state"] == "REFUSED" and any("NOT_NUMERICALLY_VERIFIED" in r for r in again["preflight"]["refusals"])
+    assert again["preflight"]["resumption"] and R.sha_file(marker) == before
+
+
+def test_RP132_a_legacy_certificate_is_read_from_its_recorded_definitions_not_from_family_names(world, tmp_path, monkeypatch):
+    """A certificate written before the inventory had an identity is reusable when the estimator DEFINITIONS it recorded are this
+    inventory's, and is not reusable when they differ or were never recorded — family names establish no version."""
+    root, unit, kwargs = _catalog_case(world, tmp_path, monkeypatch, "legacy", None)
+    ca = json.loads((root / "attempts" / unit / "CATALOG_ACCEPTANCE.json").read_text())
+    legacy = json.loads(json.dumps(ca)); legacy.pop("inventory_version"); legacy.pop("inventory_digest")
+    cert = R.acceptance_certificate(legacy)
+    assert cert["class"] == R.FULL_NUMERIC and cert["inventory_basis"]["basis"] == "LEGACY_DEFINITIONS_MATCH"
+    assert cert["inventory_basis"]["justification"] and cert["inventory_basis"]["producer_recorded"]
+    without = json.loads(json.dumps(legacy)); without.pop("declared_estimators")
+    assert R.acceptance_certificate(without)["class"] == R.DOMAIN_ONLY
+    assert R.acceptance_certificate(without)["inventory_basis"]["basis"] == "LEGACY_WITHOUT_DEFINITIONS"
+    differing = json.loads(json.dumps(legacy)); differing["declared_estimators"]["errors"]["tolerance"] = 1.0
+    assert R.acceptance_certificate(differing)["class"] == R.DOMAIN_ONLY
+    assert R.acceptance_certificate(differing)["inventory_basis"]["basis"] == "LEGACY_DEFINITIONS_DIFFER"
+
+
+def test_RP132_a_contradictory_record_is_rejected_rather_than_repaired(world, tmp_path, monkeypatch):
+    """When the recorded coverage or summary disagrees with the field results, the certificate names the contradiction and refuses;
+    it never rewrites the record to make it consistent."""
+    root, unit, kwargs = _catalog_case(world, tmp_path, monkeypatch, "contra", None)
+    path = root / "attempts" / unit / "CATALOG_ACCEPTANCE.json"
+    ca = json.loads(path.read_text())
+    ca["independent_comparison"]["families_complete"] = sorted(R.CATALOG_ESTIMATORS)[:5]
+    path.write_text(json.dumps(ca, indent=1)); before = R.sha_file(path)
+    cert = R.acceptance_certificate(json.loads(path.read_text()))
+    assert cert["class"] == R.DOMAIN_ONLY and cert["why"].startswith("CONTRADICTORY_RECORD")
+    assert R.sha_file(path) == before                                                # the record is rejected, never repaired
+    assert json.loads(path.read_text())["independent_comparison"]["families_complete"] == sorted(R.CATALOG_ESTIMATORS)[:5]
+    ca2 = json.loads(path.read_text()); ca2["independent_comparison"]["fields"]["global.mae"]["status"] = "UNCHECKED"
+    cert2 = R.acceptance_certificate(ca2)
+    assert cert2["class"] == R.DOMAIN_ONLY and cert2["contradictions"] and "global.mae" in str(cert2["field_failures"])
+
+
+# --------------------------------------------------------------------------------------------------------------------------
+# RP133: revalidation says what is CURRENT, what is merely recorded locally, and what it did not check
+# --------------------------------------------------------------------------------------------------------------------------
+
+def _revalidation_world(world, tmp_path, monkeypatch, tag="reval2"):
+    root, wh, _held, _rep = _accepted_world(world, tmp_path, monkeypatch, tag=tag)
+    unit = world["cell"]["cell_id"]; design = json.loads((root / "DESIGN.json").read_text())
+    R.accept_catalog(root, design, unit, data_path=world["data"])
+    _publish_catalog(root, unit, tmp_path, design)
+    return root, unit, design, wh, json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+
+
+def test_RP133_an_empty_or_unread_warehouse_can_never_produce_an_accepted_summary(world, tmp_path, monkeypatch):
+    """Musashi RP131 #2, first case: a cell whose detail row says the evidence is NOT accepted must not appear in the summary as
+    accepted. With no warehouse at all the report is labelled a historical inspection and asserts nothing about custody."""
+    root, unit, design, wh, receipts = _revalidation_world(world, tmp_path, monkeypatch, "reval_empty")
+    good = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)
+    assert good["summary"]["with_currently_accepted_numeric_evidence"] == [unit] and good["mode"] == "CURRENT_RECONCILIATION"
+    empty = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=lambda campaign: {"current": {}})
+    cell = empty["cells"][unit]
+    assert cell["catalog_acceptance"]["custody"] == "NOT_ACCEPTED" and not cell["catalog_acceptance"]["accepted"]["accepted"]
+    assert cell["locally_recorded_numeric_evidence"] == ["catalog_acceptance"]        # the local comparison is still described
+    assert cell["currently_accepted_numeric_evidence"] is None and cell["numerical_acceptance"] == R.DOMAIN_ONLY
+    assert empty["summary"]["with_currently_accepted_numeric_evidence"] == [] and empty["summary"]["with_local_numeric_evidence_only"] == [unit]
+    assert empty["cells"][unit]["deletion_preview"]["state"] == "NOT_ELIGIBLE"
+    unread = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=None)
+    assert unread["mode"] == "HISTORICAL_INSPECTION" and unread["custody"]["warehouse_consulted"] is False
+    assert unread["cells"][unit]["catalog_acceptance"]["custody"] == "UNAVAILABLE"
+    assert unread["summary"]["with_currently_accepted_numeric_evidence"] == [] and unread["summary"]["with_local_numeric_evidence_only"] == [unit]
+    assert unread["cells"][unit]["deletion_preview"]["state"] == "NOT_ELIGIBLE"
+
+
+def test_RP133_cell_verification_is_read_from_the_current_closure_not_from_the_earlier_certificate(world, tmp_path, monkeypatch):
+    """Musashi RP131 #2, second case: when a later closure withdraws the verification, revalidation must report the CURRENT fact
+    and agree with the actual deletion gate, while preserving the earlier record as historical evidence."""
+    root, unit, design, wh, receipts = _revalidation_world(world, tmp_path, monkeypatch, "reval_stale")
+    before = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)["cells"][unit]
+    assert before["cell_verified_by_current_closure"] and before["deletion_preview"]["state"] == "CONDITIONAL_PREVIEW_ELIGIBLE"
+    rep = json.loads((root / "REPORT.json").read_text())
+    rep["verification"]["rows"][0]["verified"] = False
+    rep["verification"]["rows"][0]["problems"] = ["REPLAY_PENDING: later closure withdrew verification"]
+    (root / "REPORT.json").write_text(json.dumps(rep))
+    after = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)["cells"][unit]
+    assert after["cell_verified_by_current_closure"] is False
+    assert after["current_closure"]["problems"] == ["REPLAY_PENDING: later closure withdrew verification"]
+    assert after["cell_verified_recorded_in_catalog_certificate"] is True and after["closure_changed_since_acceptance"]
+    assert after["deletion_preview"]["state"] == "NOT_ELIGIBLE"
+    assert R.deletion_gate(root, unit)["pass"] is False                              # the report now agrees with the real gate
+
+
+def test_RP133_the_preview_names_everything_it_did_not_check_and_is_never_a_second_gate(world, tmp_path, monkeypatch):
+    """A metadata-only reconciliation cannot assert that a deletion would succeed: it says so explicitly, and the destructive
+    prerequisites it never looked at (backup, content identity, aliases, readers) are named in the record itself."""
+    root, unit, design, wh, receipts = _revalidation_world(world, tmp_path, monkeypatch, "reval_preview")
+    out = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)
+    preview = out["cells"][unit]["deletion_preview"]
+    assert preview["state"] == "CONDITIONAL_PREVIEW_ELIGIBLE" and "not an authorisation" in preview["meaning"]
+    assert {"active readers", "the durable metadata backup and its manifest"} <= set(preview["not_checked_here"])
+    assert "deletion_eligible_today" not in out["cells"][unit] and "deletion_eligible_today" not in out["summary"]
+    assert out["summary"]["conditional_preview_eligible"] == [unit]
+    # the preview promises nothing: without a backup the real deletion still refuses this very cell
+    refused = R.delete_predictions(root, [unit], accepted_report_sha256=R.sha_file(root / "REPORT.json"),
+                                   backup_manifest=None, receipts=receipts, warehouse=wh)["units"][unit]
+    assert refused["state"] == "REFUSED" and (root / "attempts" / unit / "arrays.npz").is_file()
+
+
+def test_RP133_a_regeneration_source_needs_the_same_validated_relationship_as_its_row(world, tmp_path, monkeypatch):
+    """A regeneration acceptance is promoted to currently accepted numerical evidence only under the same conditions as a catalog
+    one: a certificate derived from its fields, its own pass, its recomputed catalog matching the retained one, and custody."""
+    root, unit, design, wh, receipts = _revalidation_world(world, tmp_path, monkeypatch, "reval_regen")
+    ca = json.loads((root / "attempts" / unit / "CATALOG_ACCEPTANCE.json").read_text())
+    regen = root / "attempts" / unit / "regenerated"; regen.mkdir(parents=True, exist_ok=True)
+    body = {"schema": "df_sota_regeneration_acceptance.v1", "unit": unit, "pass": True, "at": ca["at"],
+            "catalog_recomputed_equals_retained": True, "independent_comparison": ca["independent_comparison"],
+            "declared_estimators": ca["declared_estimators"], "inventory_version": ca["inventory_version"],
+            "inventory_digest": ca["inventory_digest"], "producer": ca["producer"]}
+    (regen / "ACCEPTANCE.json").write_text(json.dumps(body, indent=1))
+    (regen / "REGENERATION.json").write_text(json.dumps({"identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL"}))
+    out = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)["cells"][unit]
+    assert out["regeneration_acceptance"]["class"] == R.FULL_NUMERIC                  # its own fields establish the comparison
+    assert out["regeneration_acceptance"]["custody"] == "NOT_ACCEPTED"                # but nothing accepted it for this role
+    assert out["locally_recorded_numeric_evidence"] == ["catalog_acceptance", "regeneration_acceptance"]
+    assert out["currently_accepted_numeric_evidence"] == ["catalog_acceptance"]
+    assert "regeneration_acceptance" in out["not_currently_accepted_because"]
+    # a regenerated catalog that is NOT the retained one cannot be numerical evidence about this cell either
+    body["catalog_recomputed_equals_retained"] = False; (regen / "ACCEPTANCE.json").write_text(json.dumps(body, indent=1))
+    out2 = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)["cells"][unit]
+    assert "its recomputed catalog is not the retained one" in out2["not_currently_accepted_because"]["regeneration_acceptance"]
+
+
+def test_RP133_a_failed_or_missing_catalog_source_is_reported_as_such(world, tmp_path, monkeypatch):
+    """A refused acceptance, and a cell with no acceptance at all, are reported without any numerical evidence — never as a cell
+    that merely lacks custody."""
+    root, unit, design, wh, receipts = _revalidation_world(world, tmp_path, monkeypatch, "reval_failed")
+    path = root / "attempts" / unit / "CATALOG_ACCEPTANCE.json"
+    ca = json.loads(path.read_text()); ca["pass"] = False; ca["refusals"] = ["ORACLE something"]; path.write_text(json.dumps(ca, indent=1))
+    _publish_catalog(root, unit, tmp_path, design)
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    failed = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)["cells"][unit]
+    assert failed["currently_accepted_numeric_evidence"] is None
+    assert "the acceptance itself refused" in failed["not_currently_accepted_because"]["catalog_acceptance"]
+    path.unlink()
+    missing = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)["cells"][unit]
+    assert "catalog_acceptance" not in missing and missing["locally_recorded_numeric_evidence"] is None
+    assert missing["numerical_acceptance"] == R.DOMAIN_ONLY and missing["deletion_preview"]["state"] == "NOT_ELIGIBLE"

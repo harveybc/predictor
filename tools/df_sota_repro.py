@@ -2157,6 +2157,12 @@ def accept_regenerated(root: Path, design: dict, unit: str, *, data_path: Path, 
     out["refusals"] += [f"INDEPENDENT {x}" for x in comparison["disagreements"]]
     if comparison["families_incomplete"]:
         out["refusals"].append(f"INDEPENDENT_COVERAGE: {comparison['families_incomplete']} were not fully checked: {comparison['unchecked'][:6]}")
+    # RP132: this comparison is made under the SAME declared inventory as a catalog acceptance, so it records that identity, the
+    # definitions it used and its producer; a certificate is read from those, never from family names alone.
+    out["inventory_version"] = CATALOG_INVENTORY_VERSION
+    out["inventory_digest"] = catalog_inventory_digest()
+    out["declared_estimators"] = {k: {kk: vv for kk, vv in v.items() if kk != "fields"} for k, v in CATALOG_ESTIMATORS.items()}
+    out["producer"] = _producer_record()
     out["pass"] = not out["refusals"]
     preds.close(); trues.close()
     out["deleted"] = []
@@ -2256,32 +2262,168 @@ FULL_NUMERIC = "FULL_INDEPENDENT_NUMERIC"
 DOMAIN_ONLY = "DOMAIN_AND_INTERNAL_ONLY"
 
 
+def _producer_record() -> dict:
+    """Who wrote an acceptance: the tool's own bytes and the inventory it was bound to. A later reader justifying a legacy
+    certificate needs the producing revision, not only the family names it happened to use."""
+    try:
+        me = sha_file(Path(__file__))
+    except Exception:                                               # noqa: BLE001
+        me = None
+    return {"tool": Path(__file__).name, "tool_sha256": me, "inventory_version": CATALOG_INVENTORY_VERSION, "at": now_iso()}
+
+
 def catalog_inventory_digest() -> str:
     """The digest of the DECLARED inventory itself: a certificate issued under another inventory cannot authorise a deletion
     under this one."""
     return sha_obj({"version": CATALOG_INVENTORY_VERSION, "families": {k: {kk: vv for kk, vv in v.items()} for k, v in CATALOG_ESTIMATORS.items()}})
 
 
+def _declared_field_index() -> dict:
+    """Every field the bound inventory declares, with the family that owns it, the tolerance an independent implementation must
+    meet and the undefined case that family declares. The required set of a certificate is derived from HERE, never from what a
+    recorded summary happens to list."""
+    return {f: {"family": fam, "tolerance": spec.get("tolerance", 1e-9), "undefined": spec.get("undefined")}
+            for fam, spec in CATALOG_ESTIMATORS.items() for f in spec["fields"]}
+
+
+def _inventory_basis(acceptance: dict) -> dict:
+    """RP132: under which declared inventory a recorded comparison may be read. A certificate that names this inventory and its
+    digest is read under it. One that names another is foreign. One that names none (written before the inventory was given an
+    identity) is justified — or not — from the estimator DEFINITIONS it recorded itself; family names alone establish nothing."""
+    version, digest = acceptance.get("inventory_version"), acceptance.get("inventory_digest")
+    if version == CATALOG_INVENTORY_VERSION and digest == catalog_inventory_digest():
+        return {"basis": "BOUND_INVENTORY", "why": None, "recorded_version": version, "recorded_digest": digest}
+    if version is not None or digest is not None:
+        return {"basis": "FOREIGN_INVENTORY", "recorded_version": version, "recorded_digest": digest,
+                "why": f"issued under {version} / {str(digest)[:12]}, not the bound {CATALOG_INVENTORY_VERSION} / {catalog_inventory_digest()[:12]}"}
+    declared = acceptance.get("declared_estimators") or {}
+    if not isinstance(declared, dict) or not declared:
+        return {"basis": "LEGACY_WITHOUT_DEFINITIONS", "recorded_version": None, "recorded_digest": None,
+                "why": "this certificate records neither an inventory identity nor the estimator definitions it used, so it cannot be read under the bound inventory"}
+    differences = []
+    for fam, spec in CATALOG_ESTIMATORS.items():
+        rec = declared.get(fam)
+        if not isinstance(rec, dict):
+            differences.append(f"{fam}: no recorded definition"); continue
+        want = {k: v for k, v in spec.items() if k != "fields"}
+        differences += [f"{fam}.{k}" for k in sorted(set(want) | set(rec)) if _json_equal(rec.get(k), want.get(k)) is False]
+    extra = sorted(set(declared) - set(CATALOG_ESTIMATORS))
+    if differences or extra:
+        return {"basis": "LEGACY_DEFINITIONS_DIFFER", "recorded_version": None, "recorded_digest": None, "differences": differences[:8],
+                "undeclared_families": extra,
+                "why": f"its recorded estimator definitions are not this inventory's: {(differences + ['undeclared ' + str(extra)])[:4]}"}
+    return {"basis": "LEGACY_DEFINITIONS_MATCH", "recorded_version": None, "recorded_digest": None, "why": None,
+            "justification": ("read under the bound inventory because every family definition this certificate recorded - population, orientation, "
+                              "reduction, parameters, undefined case and tolerance - is identical to the bound one, and its own field results are "
+                              "validated against that inventory below; this is a reuse of recorded evidence, not a retroactive claim about a version "
+                              "it never named"),
+            "producer_recorded": {k: acceptance.get(k) for k in ("schema", "at", "host", "producer") if acceptance.get(k) is not None}}
+
+
+def _json_equal(a, b) -> bool:
+    """Equality across a JSON round trip: a declared tuple and the list it was written as are the same declaration."""
+    norm = lambda x: [norm(i) for i in x] if isinstance(x, (list, tuple)) else ({k: norm(v) for k, v in sorted(x.items())} if isinstance(x, dict) else x)
+    return norm(a) == norm(b)
+
+
+def _validated_comparison(comp: dict) -> dict:
+    """RP132 (Musashi RP131 #1): what the recorded FIELD RESULTS establish, field by field, against the bound inventory. A field
+    counts as independently verified only if it is present, applicable, carries a finite typed difference under the family's own
+    declared tolerance, and its declared undefined case is the family's. Coverage and summaries are then DERIVED here and the
+    recorded ones are checked against them: a record whose summary contradicts its fields is rejected, never repaired."""
+    index = _declared_field_index()
+    raw = comp.get("fields")
+    fields = raw if isinstance(raw, dict) else {}
+    failures, verified, unchecked, disagreeing = [], [], [], []
+    for field in sorted(index):
+        fam, tol, undefined = index[field]["family"], index[field]["tolerance"], index[field]["undefined"]
+        e = fields.get(field)
+        if not isinstance(e, dict):
+            failures.append({"field": field, "family": fam, "why": "MISSING: the comparison records no result for this declared field"}); continue
+        status, diff, rec_tol, detail = e.get("status"), e.get("max_abs_difference"), e.get("tolerance"), e.get("detail")
+        if status == "UNCHECKED":
+            unchecked.append(field)
+        elif status == "DISAGREEMENT":
+            disagreeing.append(field)
+        if status != "OK":
+            failures.append({"field": field, "family": fam, "why": f"STATUS {status!r}: {str(detail)[:120]}"}); continue
+        if isinstance(diff, bool) or not isinstance(diff, (int, float)) or not math.isfinite(float(diff)):
+            failures.append({"field": field, "family": fam, "why": f"UNTYPED_DIFFERENCE: {diff!r} is not a finite number"}); continue
+        if not (isinstance(rec_tol, (int, float)) and not isinstance(rec_tol, bool) and float(rec_tol) == float(tol)):
+            failures.append({"field": field, "family": fam, "why": f"TOLERANCE: the result was judged against {rec_tol!r}, the inventory declares {tol!r}"}); continue
+        if float(diff) > float(tol):
+            failures.append({"field": field, "family": fam, "why": f"EXCEEDS_TOLERANCE: {diff} > {tol} under an OK status"}); continue
+        if not _json_equal(e.get("undefined_declared"), undefined):
+            failures.append({"field": field, "family": fam, "why": f"UNDEFINED_DECLARATION: the result declares {e.get('undefined_declared')!r}, the inventory {undefined!r}"}); continue
+        if detail == "BOTH_UNDEFINED" and undefined is None:
+            failures.append({"field": field, "family": fam, "why": "UNDEFINED_NOT_DECLARED: both sides report no value for a family that declares no undefined case"}); continue
+        verified.append(field)
+    contradictions = [f"the comparison records {len(set(fields) - set(index))} field result(s) outside the bound inventory: {sorted(set(fields) - set(index))[:4]}"] if set(fields) - set(index) else []
+    state = lambda f: (fields.get(f) or {}).get("status") if isinstance(fields.get(f), dict) else None
+    derived_complete = []
+    for fam, spec in CATALOG_ESTIMATORS.items():
+        checked = sorted(f for f in spec["fields"] if state(f) in ("OK", "DISAGREEMENT"))
+        un = sorted(f for f in spec["fields"] if state(f) == "UNCHECKED")
+        if not un and len(checked) == len(spec["fields"]):
+            derived_complete.append(fam)
+        cov = (comp.get("coverage") or {}).get(fam)
+        if not isinstance(cov, dict):
+            contradictions.append(f"coverage: {fam} has no recorded coverage"); continue
+        if sorted(cov.get("checked") or []) != checked or sorted(cov.get("unchecked") or []) != un:
+            contradictions.append(f"coverage: {fam} claims {len(cov.get('checked') or [])} checked and {len(cov.get('unchecked') or [])} unchecked, its field results give {len(checked)} and {len(un)}")
+        elif bool(cov.get("complete")) != (not un and len(checked) == len(spec["fields"])):
+            contradictions.append(f"coverage: {fam} claims complete={cov.get('complete')!r} against its own field results")
+    if sorted(comp.get("families_complete") or []) != sorted(derived_complete):
+        contradictions.append(f"families_complete lists {len(comp.get('families_complete') or [])} families, the field results give {len(derived_complete)}")
+    if sorted(comp.get("unchecked") or []) != sorted(unchecked):
+        contradictions.append(f"the recorded unchecked list ({len(comp.get('unchecked') or [])}) is not the unchecked field results ({len(unchecked)})")
+    recorded_dis = sorted({str(x).split(":")[0].strip() for x in (comp.get("disagreements") or [])})
+    if recorded_dis != sorted(disagreeing):
+        contradictions.append(f"the recorded disagreements name {recorded_dis[:3]}, the field results name {sorted(disagreeing)[:3]}")
+    derived_fully = not disagreeing and sorted(derived_complete) == sorted(CATALOG_ESTIMATORS)
+    if isinstance(comp.get("fully_independent"), bool) and comp["fully_independent"] != derived_fully:
+        contradictions.append(f"fully_independent={comp['fully_independent']!r} contradicts the field results")
+    return {"required": sorted(index), "verified": verified, "failures": failures, "unchecked": sorted(unchecked),
+            "disagreeing": sorted(disagreeing), "families_complete": sorted(derived_complete), "contradictions": contradictions,
+            "families_declared": sorted((comp.get("coverage") or {}))}
+
+
 def acceptance_certificate(acceptance: dict) -> dict:
-    """RP128: what a catalog acceptance actually establishes, derived from its own recorded content — never from a bare `pass`.
-    An acceptance that did not run the independent numerical reference is a DOMAIN_AND_INTERNAL_ONLY diagnostic; only a complete
-    comparison of every declared family, with no unchecked field and no disagreement, is FULL_INDEPENDENT_NUMERIC. Certificates
-    written by earlier versions are read the same way, from their comparison block, so valid evidence is reused rather than
-    recomputed."""
+    """RP132: what a catalog acceptance actually establishes, derived from the COMPLETE field-level record it holds - never from
+    `pass`, `fully_independent`, `families_complete`, `unchecked` or `disagreements`. The required field set and every tolerance
+    come from the bound estimator inventory; each recorded field result is then validated for presence, applicable status, a typed
+    finite difference within that tolerance, and the declared undefined case; coverage and summaries are derived and the recorded
+    ones must agree. Only a record whose own fields establish the complete comparison is FULL_INDEPENDENT_NUMERIC; anything else,
+    including an internally contradictory one, is a DOMAIN_AND_INTERNAL_ONLY diagnostic that cannot authorise a deletion."""
     comp = acceptance.get("independent_comparison") or None
-    cov = (comp or {}).get("coverage") or {}
-    families_declared = sorted(cov)
-    complete = sorted((comp or {}).get("families_complete") or [])
-    unchecked = list((comp or {}).get("unchecked") or [])
-    disagreements = list((comp or {}).get("disagreements") or [])
-    full = bool(comp) and not unchecked and not disagreements and set(complete) == set(REQUIRED_CATALOG_FAMILIES) == set(families_declared)
-    return {"class": FULL_NUMERIC if full else DOMAIN_ONLY,
-            "why": None if full else ("no independent numerical comparison was run" if not comp else
-                                      f"unchecked {unchecked[:3]}; disagreements {len(disagreements)}; declared {len(families_declared)} of {len(REQUIRED_CATALOG_FAMILIES)}"),
+    basis = _inventory_basis(acceptance)
+    val = _validated_comparison(comp) if isinstance(comp, dict) else None
+    if val is None:
+        why, full = "no independent numerical comparison was run", False
+    elif basis["basis"] not in ("BOUND_INVENTORY", "LEGACY_DEFINITIONS_MATCH"):
+        why, full = f"INVENTORY: {basis['why']}", False
+    elif val["contradictions"]:
+        why, full = "CONTRADICTORY_RECORD: " + "; ".join(val["contradictions"])[:240], False
+    elif val["failures"]:
+        why = (f"{len(val['failures'])} of {len(val['required'])} declared fields are not independently verified: "
+               + "; ".join(f"{f['field']} {f['why']}" for f in val["failures"][:3])[:240])
+        full = False
+    elif sorted(val["families_complete"]) != sorted(REQUIRED_CATALOG_FAMILIES):
+        why, full = f"COVERAGE: {len(val['families_complete'])} of {len(REQUIRED_CATALOG_FAMILIES)} declared families are complete", False
+    else:
+        why, full = None, True
+    return {"class": FULL_NUMERIC if full else DOMAIN_ONLY, "why": why,
             "catalog_sha256": acceptance.get("catalog_sha256"), "population": acceptance.get("population"),
-            "inventory_version": acceptance.get("inventory_version") or (CATALOG_INVENTORY_VERSION if families_declared else None),
-            "inventory_digest": acceptance.get("inventory_digest"),
-            "families_declared": families_declared, "families_complete": complete, "unchecked": unchecked, "disagreements": disagreements,
+            "inventory_version": acceptance.get("inventory_version"), "inventory_digest": acceptance.get("inventory_digest"),
+            "inventory_basis": basis,
+            "derived_from": "independent_comparison.fields validated against the bound estimator inventory",
+            "required_fields": len(val["required"]) if val else len(_declared_field_index()),
+            "verified_fields": len(val["verified"]) if val else 0,
+            "field_failures": (val["failures"][:12] if val else []),
+            "contradictions": (val["contradictions"] if val else []),
+            "families_declared": (val["families_declared"] if val else []),
+            "families_complete": (val["families_complete"] if val else []),
+            "unchecked": (val["unchecked"] if val else []), "disagreements": (val["disagreeing"] if val else []),
             "pass": acceptance.get("pass"), "at": acceptance.get("at"), "independent_scope": acceptance.get("independent_scope"),
             "cell_verified": (acceptance.get("closure") or {}).get("cell_verified"),
             "cell_verified_historically": (acceptance.get("closure") or {}).get("cell_verified_historically"),
@@ -2666,6 +2808,7 @@ def accept_catalog(root: Path, design: dict, unit: str, *, data_path: Path | Non
                                     "and a controlled regeneration from the retained checkpoint would be required for more")
     out["inventory_version"] = CATALOG_INVENTORY_VERSION
     out["inventory_digest"] = catalog_inventory_digest()
+    out["producer"] = _producer_record()
     out["pass"] = not out["refusals"]
     cert = acceptance_certificate(out)
     out["acceptance_class"] = cert["class"]
@@ -2802,60 +2945,138 @@ def resource_pilot(root: Path, design: dict, *, horizon: int, seq_len: int = 512
 
 
 def revalidate_acceptances(root: Path, design: dict, *, receipts: dict | None = None, warehouse=None) -> dict:
-    """RP131: read-only revalidation of the evidence already on disk under the REPAIRED gates. Nothing is recomputed and no array
-    is read: each cell's catalog acceptance and (where present) its regeneration acceptance are re-read, their certificates
-    derived from their own recorded content, and the accepted chain re-queried for kind, subject, role and scientific design. The
-    result says, per cell, what the retained evidence establishes today and what it does not."""
+    """RP133: read-only revalidation of the evidence already on disk under the repaired gates. Nothing is recomputed and no array
+    is read. Two facts are kept apart at every level: what a record NUMERICALLY establishes on its own (its certificate, derived
+    from its field results) and whether that record is CURRENTLY ACCEPTED under this design, kind, subject and role. A summary
+    may call a cell accepted only when the same validated relationship holds in its detail row, for the catalog and for the
+    regeneration alike. Whether the CELL is verified is read from the current closure report, never from a certificate written
+    earlier. This function checks metadata only: its retention statement is a CONDITIONAL PREVIEW, and the complete destructive
+    gate is performed by the deletion path itself, which is the only thing that may authorise an unlink."""
     root = Path(root)
-    out = {"schema": "df_sota_revalidation.v1", "at": now_iso(), "host": socket.gethostname(), "design_sha256": design["design_sha256"],
-           "inventory_version": CATALOG_INVENTORY_VERSION, "inventory_digest": catalog_inventory_digest(), "cells": {}, "scope":
-           "read-only: certificates and accepted terminals re-read under the repaired gates; no array was read and nothing was recomputed"}
+    consulted = warehouse is not None
+    out = {"schema": "df_sota_revalidation.v2", "at": now_iso(), "host": socket.gethostname(), "design_sha256": design["design_sha256"],
+           "inventory_version": CATALOG_INVENTORY_VERSION, "inventory_digest": catalog_inventory_digest(),
+           "status": "INCOMPLETE",
+           "mode": ("CURRENT_RECONCILIATION" if consulted else "HISTORICAL_INSPECTION"),
+           "custody": {"warehouse_consulted": consulted,
+                       "reading": ("the accepted chain was queried, so an acceptance statement below is about custody TODAY" if consulted else
+                                   "the warehouse was NOT read: nothing below is a statement about current custody, only about what the retained "
+                                   "records contain; no cell may be called currently accepted in this mode")},
+           "cells": {}, "scope":
+           "read-only: certificates and, where custody was available, accepted terminals re-read under the repaired gates; no array was read and nothing was recomputed"}
     cache = {}
+    report_path = root / "REPORT.json"
+    report = json.loads(report_path.read_text()) if report_path.is_file() else None
+    closure = {"present": report is not None, "sha256": sha_file(report_path) if report_path.is_file() else None}
+    if report is not None:
+        closure["accepted"] = accepted_artifact(root, receipts or {}, warehouse, closure["sha256"], expect_kind="closure",
+                                                expect_role="closure_report", design_sha256=design["design_sha256"], cache=cache)
+    out["current_closure"] = closure
     for cell in design["cells"]:
         unit = cell["cell_id"]; folder = root / "attempts" / unit
         entry = {"predictions_on_disk": (folder / "arrays.npz").is_file()}
+        vault_on_disk = sha_file(folder / "METRICS_VAULT.json") if (folder / "METRICS_VAULT.json").is_file() else None
         cat = folder / "CATALOG_ACCEPTANCE.json"
         if cat.is_file():
             ca = json.loads(cat.read_text()); cert = acceptance_certificate(ca)
+            acc = accepted_artifact(root, receipts or {}, warehouse, sha_file(cat), expect_kind="catalog", expect_subject=unit,
+                                    expect_role="catalog_acceptance", design_sha256=design["design_sha256"], cache=cache)
             entry["catalog_acceptance"] = {"sha256": sha_file(cat), "pass": ca.get("pass"), "at": ca.get("at"), "class": cert["class"], "why": cert["why"],
-                                           "cell_verified": cert.get("cell_verified"), "cell_verified_historically": cert.get("cell_verified_historically"),
+                                           "verified_fields": cert["verified_fields"], "required_fields": cert["required_fields"],
+                                           "field_failures": cert["field_failures"][:3], "contradictions": cert["contradictions"][:3],
+                                           "inventory_basis": cert["inventory_basis"]["basis"],
+                                           "cell_verified_recorded_in_this_certificate": cert.get("cell_verified"),
+                                           "cell_verified_historically_recorded_in_this_certificate": cert.get("cell_verified_historically"),
                                            "families_complete": len(cert["families_complete"]), "unchecked": cert["unchecked"][:3],
                                            "inventory_version": cert["inventory_version"], "inventory_digest_recorded": bool(cert["inventory_digest"]),
-                                           "covers_catalog_on_disk": cert["catalog_sha256"] == (sha_file(folder / "METRICS_VAULT.json") if (folder / "METRICS_VAULT.json").is_file() else None),
-                                           "accepted": accepted_artifact(root, receipts or {}, warehouse, sha_file(cat), expect_kind="catalog",
-                                                                         expect_subject=unit, expect_role="catalog_acceptance",
-                                                                         design_sha256=design["design_sha256"], cache=cache)}
+                                           "covers_catalog_on_disk": cert["catalog_sha256"] == vault_on_disk,
+                                           "custody": ("UNAVAILABLE" if not consulted else ("ACCEPTED" if acc["accepted"] else "NOT_ACCEPTED")),
+                                           "accepted": acc}
         reg = folder / "regenerated" / "ACCEPTANCE.json"
         if reg.is_file():
             ra = json.loads(reg.read_text()); rcert = acceptance_certificate(ra)
+            racc = accepted_artifact(root, receipts or {}, warehouse, sha_file(reg), expect_kind="regeneration", expect_subject=unit,
+                                     expect_role="regeneration_acceptance", design_sha256=design["design_sha256"], cache=cache)
             entry["regeneration_acceptance"] = {"sha256": sha_file(reg), "pass": ra.get("pass"), "at": ra.get("at"), "class": rcert["class"],
+                                                "why": rcert["why"], "verified_fields": rcert["verified_fields"], "required_fields": rcert["required_fields"],
+                                                "field_failures": rcert["field_failures"][:3], "contradictions": rcert["contradictions"][:3],
+                                                "inventory_basis": rcert["inventory_basis"]["basis"],
+                                                "catalog_recomputed_equals_retained": ra.get("catalog_recomputed_equals_retained"),
                                                 "families_complete": len(rcert["families_complete"]), "disagreements": len(rcert["disagreements"]),
                                                 "identity": (json.loads((folder / "regenerated" / "REGENERATION.json").read_text()).get("identity")
                                                              if (folder / "regenerated" / "REGENERATION.json").is_file() else None),
-                                                "accepted": accepted_artifact(root, receipts or {}, warehouse, sha_file(reg), expect_kind="regeneration",
-                                                                              expect_subject=unit, expect_role="regeneration_acceptance",
-                                                                              design_sha256=design["design_sha256"], cache=cache)}
-        numeric = [k for k in ("catalog_acceptance", "regeneration_acceptance") if (entry.get(k) or {}).get("class") == FULL_NUMERIC]
-        entry["numerical_acceptance"] = (FULL_NUMERIC if numeric else DOMAIN_ONLY)
-        entry["numerical_source"] = numeric or None
-        ca_ = entry.get("catalog_acceptance") or {}
-        # eligibility is the WHOLE gate, not the catalog alone: the cell itself must be verified by the current closure, which is
-        # exactly what the three retained H96 cells lack while their replay is unaccepted
-        cert_ok = bool(ca_.get("class") == FULL_NUMERIC and ca_.get("pass") and ca_.get("covers_catalog_on_disk")
-                       and (ca_.get("accepted") or {}).get("accepted"))
-        entry["catalog_certificate_sufficient"] = cert_ok
-        entry["cell_verified_by_current_closure"] = bool(ca_.get("cell_verified"))
-        entry["deletion_eligible_today"] = bool(entry["predictions_on_disk"] and cert_ok and entry["cell_verified_by_current_closure"])
-        entry["retention_reason"] = (None if entry["deletion_eligible_today"] else
-                                     ("not on disk" if not entry["predictions_on_disk"] else
-                                      ("the cell is not verified by the current closure (its replay is not accepted)" if cert_ok else
-                                       "the catalog certificate does not establish a full independent numerical acceptance bound to this design")))
+                                                "custody": ("UNAVAILABLE" if not consulted else ("ACCEPTED" if racc["accepted"] else "NOT_ACCEPTED")),
+                                                "accepted": racc}
+        # RP133 (Musashi RP131 #2): a source is LOCAL numerical evidence when its own certificate establishes the complete
+        # comparison; it is CURRENTLY ACCEPTED numerical evidence only when, in addition, the record passed, it covers the
+        # evidence still on disk, and the accepted chain says so today. The summary is built from the second list only.
+        ca_, ra_ = entry.get("catalog_acceptance") or {}, entry.get("regeneration_acceptance") or {}
+        local, accepted_now, why_not = [], [], {}
+        for name, src, extra_ok, extra_why in (
+                ("catalog_acceptance", ca_, bool(ca_.get("covers_catalog_on_disk")), "it does not cover the catalog on disk"),
+                ("regeneration_acceptance", ra_, bool(ra_.get("catalog_recomputed_equals_retained")), "its recomputed catalog is not the retained one")):
+            if not src:
+                continue
+            if src.get("class") == FULL_NUMERIC:
+                local.append(name)
+            reasons = ([] if src.get("class") == FULL_NUMERIC else [f"its certificate is {src.get('class')}"]) \
+                + ([] if src.get("pass") else ["the acceptance itself refused"]) \
+                + ([] if extra_ok else [extra_why]) \
+                + ([] if consulted else ["custody was not read in this mode"]) \
+                + ([] if (consulted and (src.get("accepted") or {}).get("accepted")) else
+                   ([f"it is not accepted today: {(src.get('accepted') or {}).get('why')}"] if consulted else []))
+            if not reasons:
+                accepted_now.append(name)
+            else:
+                why_not[name] = reasons
+        entry["locally_recorded_numeric_evidence"] = local or None
+        entry["currently_accepted_numeric_evidence"] = accepted_now or None
+        entry["numerical_acceptance"] = FULL_NUMERIC if accepted_now else DOMAIN_ONLY
+        entry["numerical_source"] = accepted_now or None
+        entry["not_currently_accepted_because"] = why_not or None
+        # the CELL's verification is read from the closure report that exists NOW, not from any earlier certificate
+        row = next((r for r in (report or {}).get("verification", {}).get("rows", []) if r["unit"] == unit), None) if report else None
+        entry["current_closure"] = {"present": report is not None, "row_present": row is not None,
+                                    "verified": (row or {}).get("verified"), "verified_historically": (row or {}).get("verified_historically"),
+                                    "problems": (row or {}).get("problems"), "report_sha256": closure["sha256"],
+                                    "report_accepted": (closure.get("accepted") or {}).get("accepted") if consulted else None}
+        entry["cell_verified_by_current_closure"] = bool(row and row.get("verified"))
+        entry["cell_verified_recorded_in_catalog_certificate"] = ca_.get("cell_verified_recorded_in_this_certificate")
+        if row is not None and ca_ and ca_.get("cell_verified_recorded_in_this_certificate") is not None \
+                and bool(ca_["cell_verified_recorded_in_this_certificate"]) != entry["cell_verified_by_current_closure"]:
+            entry["closure_changed_since_acceptance"] = (f"the catalog acceptance recorded cell_verified="
+                                                         f"{ca_['cell_verified_recorded_in_this_certificate']!r}; the current closure reports "
+                                                         f"{entry['cell_verified_by_current_closure']!r}. The current closure governs; the earlier "
+                                                         f"record is preserved as historical evidence.")
+        entry["catalog_certificate_sufficient"] = "catalog_acceptance" in accepted_now
+        # RP133: a metadata-only preview, NEVER a second destructive gate. Backup, content identity, aliases, conflicting copies
+        # and readers are not checked here and are not checkable from metadata.
+        blocking = ([] if entry["predictions_on_disk"] else ["the predictions are not on disk"]) \
+            + ([] if accepted_now else ["no currently accepted independent numerical evidence" + ("" if consulted else " can be established without custody")]) \
+            + ([] if entry["cell_verified_by_current_closure"] else ["the current closure does not verify the cell"])
+        entry["deletion_preview"] = {
+            "state": ("CONDITIONAL_PREVIEW_ELIGIBLE" if not blocking else "NOT_ELIGIBLE"), "blocking": blocking or None,
+            "checked_here": ["predictions on disk", "certificate class from field results", "acceptance passed",
+                             "covers the evidence on disk", "currently accepted chain" if consulted else "custody NOT read",
+                             "cell verified by the current closure"],
+            "not_checked_here": ["the durable metadata backup and its manifest", "the accepted predictions digest against every candidate file",
+                                 "aliases, symlinks and non-canonical paths", "conflicting attempts and copies in other roots",
+                                 "active readers", "the post-unlink re-hash and the deletion receipt"],
+            "meaning": ("a CONDITIONAL PREVIEW of the metadata preconditions only; it is not an authorisation and not a claim that a deletion would "
+                        "succeed. The complete gate runs inside the deletion path and is the only thing that may unlink anything.")}
+        entry["retention_reason"] = ("; ".join(blocking) or None)
         out["cells"][unit] = entry
-    out["summary"] = {"cells": len(out["cells"]),
-                      "with_full_numeric_acceptance": sorted(u for u, e in out["cells"].items() if e["numerical_acceptance"] == FULL_NUMERIC),
-                      "without": sorted(u for u, e in out["cells"].items() if e["numerical_acceptance"] != FULL_NUMERIC),
-                      "predictions_on_disk": sorted(u for u, e in out["cells"].items() if e["predictions_on_disk"]),
-                      "deletion_eligible_today": sorted(u for u, e in out["cells"].items() if e["deletion_eligible_today"])}
+    cells = out["cells"]
+    out["summary"] = {"cells": len(cells), "mode": out["mode"],
+                      "with_currently_accepted_numeric_evidence": sorted(u for u, e in cells.items() if e["currently_accepted_numeric_evidence"]),
+                      "with_local_numeric_evidence_only": sorted(u for u, e in cells.items()
+                                                                 if e["locally_recorded_numeric_evidence"] and not e["currently_accepted_numeric_evidence"]),
+                      "without_numeric_evidence": sorted(u for u, e in cells.items() if not e["locally_recorded_numeric_evidence"]),
+                      "predictions_on_disk": sorted(u for u, e in cells.items() if e["predictions_on_disk"]),
+                      "conditional_preview_eligible": sorted(u for u, e in cells.items() if e["deletion_preview"]["state"] == "CONDITIONAL_PREVIEW_ELIGIBLE"),
+                      "reading": ("`conditional_preview_eligible` lists cells whose METADATA preconditions hold today; it authorises nothing and the "
+                                  "deletion path repeats the complete gate")}
+    out["status"] = "COMPLETE"
     write_atomic(root / "REVALIDATION.json", json.dumps(out, indent=1, default=str))
     return out
 
@@ -4161,10 +4382,13 @@ def main(argv=None) -> int:
         if getattr(a, "publish_acceptance", False):
             pub = publish_acceptance(a, design, kind="revalidation", subject=f"revalidation of {design['design_sha256'][:12]}", files={"revalidation": a.root / "REVALIDATION.json"})
             out["acceptance_unit"] = pub["unit"]
-        print(json.dumps({"summary": out["summary"], "acceptance_unit": out.get("acceptance_unit"),
-                          "per_cell": {u: {"numerical": e["numerical_acceptance"], "source": e["numerical_source"], "on_disk": e["predictions_on_disk"],
-                                           "deletion_eligible_today": e["deletion_eligible_today"]} for u, e in out["cells"].items()}}, indent=1, default=str))
-        return 0
+        print(json.dumps({"status": out["status"], "mode": out["mode"], "custody_read": out["custody"]["warehouse_consulted"],
+                          "summary": out["summary"], "acceptance_unit": out.get("acceptance_unit"),
+                          "per_cell": {u: {"numerical": e["numerical_acceptance"], "currently_accepted_source": e["currently_accepted_numeric_evidence"],
+                                           "locally_recorded_source": e["locally_recorded_numeric_evidence"], "on_disk": e["predictions_on_disk"],
+                                           "cell_verified_by_current_closure": e["cell_verified_by_current_closure"],
+                                           "deletion_preview": e["deletion_preview"]["state"]} for u, e in out["cells"].items()}}, indent=1, default=str))
+        return 0 if out["status"] == "COMPLETE" else 1
     if a.command == "ledger":
         out = run_ledger(a.root, design)
         print(json.dumps({"attempts": out["totals"], "free_disk_gib": round(out["measured_free_disk_bytes"] / 2 ** 30, 1),

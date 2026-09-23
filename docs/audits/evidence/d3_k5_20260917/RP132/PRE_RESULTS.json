@@ -1,0 +1,114 @@
+{
+  "scope": "disposable actual-author CPU fixtures, stub accepted warehouse",
+  "host_before": {
+    "thermal_zone0:INT3400 Thermal": 20.0,
+    "thermal_zone1:SEN1": 31.05,
+    "thermal_zone10:TCPU_PCI": 55.0,
+    "thermal_zone11:x86_pkg_temp": 55.0,
+    "thermal_zone2:SEN2": 54.05,
+    "thermal_zone3:SEN3": 30.05,
+    "thermal_zone4:SEN4": 0.05,
+    "thermal_zone5:SEN5": 0.05,
+    "thermal_zone6:SEN6": 28.05,
+    "thermal_zone7:SEN7": 23.05,
+    "thermal_zone8:iwlwifi_1": 27.0,
+    "thermal_zone9:TCPU": 48.05
+  },
+  "positive": {
+    "certificate": "FULL_INDEPENDENT_NUMERIC",
+    "deletion_dry_run": "PENDING"
+  },
+  "no_fields": {
+    "certificate": "FULL_INDEPENDENT_NUMERIC",
+    "reported_field_count": 0,
+    "mae_field": null,
+    "deletion": "COMPLETE",
+    "array_remaining": false
+  },
+  "failed_field": {
+    "certificate": "FULL_INDEPENDENT_NUMERIC",
+    "reported_field_count": 43,
+    "mae_field": {
+      "status": "DISAGREEMENT",
+      "max_abs_difference": 1.0,
+      "tolerance": 1e-09,
+      "detail": "injected field failure; summary left stale",
+      "undefined_declared": null
+    },
+    "deletion": "COMPLETE",
+    "array_remaining": false
+  },
+  "revalidation_positive": {
+    "summary": {
+      "cells": 1,
+      "with_full_numeric_acceptance": [
+        "L16_h4_s2021"
+      ],
+      "without": [],
+      "predictions_on_disk": [
+        "L16_h4_s2021"
+      ],
+      "deletion_eligible_today": [
+        "L16_h4_s2021"
+      ]
+    },
+    "accepted": true,
+    "current_cell_verified": true,
+    "eligible": true
+  },
+  "revalidation_empty_warehouse": {
+    "summary": {
+      "cells": 1,
+      "with_full_numeric_acceptance": [
+        "L16_h4_s2021"
+      ],
+      "without": [],
+      "predictions_on_disk": [
+        "L16_h4_s2021"
+      ],
+      "deletion_eligible_today": []
+    },
+    "accepted": false,
+    "current_cell_verified": true,
+    "eligible": false
+  },
+  "revalidation_current_report_unverified": {
+    "summary": {
+      "cells": 1,
+      "with_full_numeric_acceptance": [
+        "L16_h4_s2021"
+      ],
+      "without": [],
+      "predictions_on_disk": [
+        "L16_h4_s2021"
+      ],
+      "deletion_eligible_today": [
+        "L16_h4_s2021"
+      ]
+    },
+    "accepted": true,
+    "current_cell_verified": true,
+    "eligible": true
+  },
+  "actual_deletion_gate_current_report": {
+    "pass": false,
+    "reasons": [
+      "the closure did not verify the unit: ['REPLAY_PENDING: later closure withdrew verification']"
+    ],
+    "report_sha256": "677fa080a36f2b011bf952d522d6f5707ffab8ddbae5ce9b295c86f075d05269"
+  },
+  "host_after": {
+    "thermal_zone0:INT3400 Thermal": 20.0,
+    "thermal_zone1:SEN1": 32.05,
+    "thermal_zone10:TCPU_PCI": 44.0,
+    "thermal_zone11:x86_pkg_temp": 44.0,
+    "thermal_zone2:SEN2": 54.05,
+    "thermal_zone3:SEN3": 31.05,
+    "thermal_zone4:SEN4": 32.05,
+    "thermal_zone5:SEN5": 48.05,
+    "thermal_zone6:SEN6": 28.05,
+    "thermal_zone7:SEN7": 23.05,
+    "thermal_zone8:iwlwifi_1": 26.0,
+    "thermal_zone9:TCPU": 44.05
+  }
+}
