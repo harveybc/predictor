@@ -1412,5 +1412,28 @@
     "an inference run on the coordinator's GPU would be needed to certify T=192 seed 2021's catalog independently"
    ]
   }
+ },
+ "rp128_rp131": {
+  "orders": "docs/handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md (04022f89; review MUSASHI_RP122_RP127_REVIEW_2026_09_23.md of a73e55b2)",
+  "base": "a73e55b2",
+  "updated_on": "2026-09-23",
+  "RP128": {
+   "status": "DONE_IN_CODE",
+   "what": "a catalog acceptance now carries an explicit CLASS and certificate derived from its own recorded content (FULL_INDEPENDENT_NUMERIC only when every declared family was compared, nothing unchecked and no disagreement; otherwise DOMAIN_AND_INTERNAL_ONLY with a restricted-scope note); the deletion reads that certificate — class, catalog digest, population against the record's shape, inventory version and digest — instead of a bare pass. The catalog acceptance certifies the CATALOG (the closure recomputed and read it back); the cell's own verification is a separate fact the deletion gate enforces",
+   "pre_post": "docs/audits/evidence/d3_k5_20260917/RP128/ (PRE on WORKER_B at a73e55b2: the data-less acceptance authorised a deletion that removed the array; POST at the repaired head: REFUSED with the array intact)"
+  },
+  "RP129": {
+   "status": "DONE_IN_CODE",
+   "what": "the scientific design is mandatory wherever acceptance is consumed (deletion, historical closure, regeneration) and is read from the terminal's own design_sha256 tag; a missing declaration refuses, and a campaign config digest that disagrees with the declared design is a contradiction, not a match"
+  },
+  "RP130": {
+   "status": "DONE_IN_CODE",
+   "what": "booleans are never numeric: False is not the count zero and True is not one, at any depth of a declared numeric field; the real catalog acceptance refuses the producer's boolean count with a typed message"
+  },
+  "RP131": {
+   "status": "IN_PROGRESS",
+   "revalidation": "read-only revalidation of all twelve cells under the repaired gates (docs/audits/evidence/d3_k5_20260917/RP131/REVALIDATION.json): 11 of 12 carry FULL_INDEPENDENT_NUMERIC acceptance (T=96 from their catalog certificates, eight deleted cells from their regeneration certificates), T=192 s2021 remains DOMAIN_AND_INTERNAL_ONLY; the three T=96 arrays are the only predictions on disk and NONE is deletion-eligible today, because their replay is not accepted. Nothing was recomputed and no array was read for this pass; the T=96 catalog certificates were re-issued and published only because the contract separating catalog from cell changed",
+   "accepted_evidence": "65 entries (4 closure reports, 24 catalog acceptances, 34 regeneration records, 3 revalidations)"
+  }
  }
 }
