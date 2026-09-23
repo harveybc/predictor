@@ -106,6 +106,14 @@ def world(tmp_path_factory):
     return {"tmp": tmp, "data": data / "tiny.csv", "root": root, "design": design, "cell": cell, "record": rec, "held": held}
 
 
+
+def _ready(root, unit, world, where):
+    """The mandatory local prerequisites of a deletion (RP116): an independently accepted catalog and a verified backup. Tests
+    whose subject is not the acceptance chain pass require_acceptance=False; the chain itself is tested separately."""
+    R.accept_catalog(root, json.loads((root / "DESIGN.json").read_text()), unit, data_path=world["data"])
+    R.metadata_backup(root, Path(where))
+    return {"accepted_report_sha256": R.sha_file(root / "REPORT.json"), "backup_manifest": Path(where) / "MANIFEST.json", "require_acceptance": False}
+
 def _wh(world):
     return lambda campaign: {"current": json.loads(json.dumps(world["held"]))}
 
@@ -570,7 +578,8 @@ def test_RP103_the_deletion_gate_refuses_unverified_or_altered_cells_and_a_passe
         a2 = SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False, replay_device="cpu")
         rep = R.close(a2, json.loads((root / "DESIGN.json").read_text()))
     assert rep["verified"] and R.deletion_gate(root, unit)["pass"]
-    dry = R.delete_predictions(root, [unit], dry_run=True)
+    ready = _ready(root, unit, world, tmp_path / "bk_rp103")
+    dry = R.delete_predictions(root, [unit], dry_run=True, **ready)
     assert (folder / "arrays.npz").is_file() and dry["units"][unit]["copies_inventoried"][0]["sha256"] == json.loads((folder / "cell.json").read_text())["arrays_sha256"]
     # an altered catalog on disk closes the gate
     vp = folder / "METRICS_VAULT.json"; original = vp.read_bytes(); v = json.loads(original); v["global"]["mae"] = 5.0; vp.write_text(json.dumps(v))
@@ -578,8 +587,9 @@ def test_RP103_the_deletion_gate_refuses_unverified_or_altered_cells_and_a_passe
     # a copy in a staging root is inventoried and deleted too; receipts carry bytes and filesystem deltas
     staging = tmp_path / "staging"; (staging / "attempts" / unit).mkdir(parents=True); import shutil; shutil.copy2(folder / "arrays.npz", staging / "attempts" / unit / "arrays.npz")
     size = (folder / "arrays.npz").stat().st_size
-    rec = R.delete_predictions(root, [unit], extra_roots=[staging])
-    assert rec["units"][unit]["gate"]["pass"] and len([d for d in rec["paths"] if d["deleted"]]) == 2 and sum(d["bytes"] for d in rec["paths"]) == 2 * size
+    ready = _ready(root, unit, world, tmp_path / "bk_rp103b")
+    rec = R.delete_predictions(root, [unit], extra_roots=[staging], **ready)
+    assert rec["units"][unit]["preflight"]["pass"] and len([d for d in rec["paths"] if d["deleted"]]) == 2 and sum(d["bytes"] for d in rec["paths"]) == 2 * size
     assert not (folder / "arrays.npz").exists() and not (staging / "attempts" / unit / "arrays.npz").exists() and (folder / "PREDICTIONS_DELETED.json").is_file()
     assert (folder / "checkpoint.pth").is_file() and (folder / "cell.json").is_file() and vp.is_file() and list(root.glob("DELETION_RECEIPT.*.json"))
     assert rec["reclaimed_bytes_by_filesystem"]
@@ -893,7 +903,7 @@ def _closed_and_deleted(world, tmp_path):
     assert rep["verified"]
     report_sha = R.sha_file(root / "REPORT.json")
     assert (root / "reports" / f"REPORT.{report_sha}.json").is_file()                       # content-addressed copy preserved
-    out = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha)
+    out = R.delete_predictions(root, [unit], **_ready(root, unit, world, tmp_path / "backup_cd"))
     assert out["units"][unit]["state"] == "COMPLETE" and not (root / "attempts" / unit / "arrays.npz").exists()
     return root, unit, report_sha
 
@@ -954,13 +964,14 @@ def test_RP106_an_extra_root_file_of_different_identity_under_the_units_name_ref
         R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False, replay_device="cpu"), json.loads((root / "DESIGN.json").read_text()))
     other = tmp_path / "different_attempt" / "attempts" / unit; other.mkdir(parents=True)
     (other / "arrays.npz").write_bytes(b"different prediction artifact, not the verified identity")
-    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "different_attempt"])
+    ready = _ready(root, unit, world, tmp_path / "bk_rp106")
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "different_attempt"], **ready)
     e = out["units"][unit]
     assert e["state"] == "REFUSED" and any("CONFLICTING_COPY" in r for r in e["preflight"]["refusals"]) and e["deleted"] == []
     assert (root / "attempts" / unit / "arrays.npz").is_file() and (other / "arrays.npz").is_file() and not (root / "attempts" / unit / "PREDICTIONS_DELETED.json").exists()
     # control: an identical copy is deleted with the verified one, each with its own receipt line
     (other / "arrays.npz").write_bytes((root / "attempts" / unit / "arrays.npz").read_bytes())
-    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "different_attempt"])
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "different_attempt"], **ready)
     e = out["units"][unit]
     assert e["state"] == "COMPLETE" and [d["deleted"] for d in e["deleted"]] == [True, True] and not (other / "arrays.npz").exists()
     assert e["marker"]["all_copies_removed"] and len(e["marker"]["paths_deleted"]) == 2 and "verified_at_deletion" not in e["marker"]
@@ -974,33 +985,33 @@ def test_RP108_aliases_readers_conflicting_attempts_and_a_wrong_approval_refuse_
         tok = tmp_path / "tok"; tok.write_text("synthetic")
         R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False, replay_device="cpu"), json.loads((root / "DESIGN.json").read_text()))
     report_sha = R.sha_file(root / "REPORT.json")
+    ready = _ready(root, unit, world, tmp_path / "bk_rp108")
     # a symlinked copy is an alias
     extra = tmp_path / "alias_root" / "attempts" / unit; extra.mkdir(parents=True); (extra / "arrays.npz").symlink_to(folder / "arrays.npz")
-    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], accepted_report_sha256=report_sha)
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], **ready)
     assert out["units"][unit]["state"] == "REFUSED" and any("ALIAS" in r for r in out["units"][unit]["preflight"]["refusals"]) and (folder / "arrays.npz").is_file()
     (extra / "arrays.npz").unlink()
     # a conflicting attempt: an extra root whose record is another record
     (extra / "arrays.npz").write_bytes((folder / "arrays.npz").read_bytes()); (extra / "cell.json").write_text("{}")
-    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], accepted_report_sha256=report_sha)
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], **ready)
     assert out["units"][unit]["state"] == "REFUSED" and any("CONFLICTING_ATTEMPT" in r for r in out["units"][unit]["preflight"]["refusals"])
     (extra / "cell.json").unlink()
     # an active reader
     monkeypatch.setattr(R, "_readers_of", lambda p: ["fuser: 4242"])
-    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], accepted_report_sha256=report_sha)
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], **ready)
     assert out["units"][unit]["state"] == "REFUSED" and any("ACTIVE_READER" in r for r in out["units"][unit]["preflight"]["refusals"])
     monkeypatch.setattr(R, "_readers_of", lambda p: [])
     # the approval names another report; a manifest without the catalog
-    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], accepted_report_sha256="1" * 64)
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], **{**ready, "accepted_report_sha256": "1" * 64})
     assert out["units"][unit]["state"] == "REFUSED" and any("APPROVAL_REPORT_MISMATCH" in r for r in out["units"][unit]["preflight"]["refusals"])
-    manifest = tmp_path / "manifest.json"; manifest.write_text(json.dumps({f"attempts/{unit}/cell.json": R.sha_file(folder / "cell.json")}))
-    out = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=manifest)
-    assert out["units"][unit]["state"] == "REFUSED" and any("BACKUP_UNVERIFIED" in r and "METRICS_VAULT" in r for r in out["units"][unit]["preflight"]["refusals"])
-    manifest.write_text(json.dumps({f"attempts/{unit}/cell.json": R.sha_file(folder / "cell.json"), f"attempts/{unit}/METRICS_VAULT.json": R.sha_file(folder / "METRICS_VAULT.json")}))
+    manifest = tmp_path / "manifest.json"; manifest.write_text(json.dumps({"backup": str(tmp_path / "nowhere"), "files": {f"attempts/{unit}/cell.json": R.sha_file(folder / "cell.json")}}))
+    out = R.delete_predictions(root, [unit], **{**ready, "backup_manifest": manifest})
+    assert out["units"][unit]["state"] == "REFUSED" and any("BACKUP_UNCOVERED" in r and "METRICS_VAULT" in r for r in out["units"][unit]["preflight"]["refusals"])
     assert (folder / "arrays.npz").is_file() and (extra / "arrays.npz").is_file()
-    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], accepted_report_sha256=report_sha, backup_manifest=manifest)
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], **ready)
     e = out["units"][unit]
-    assert e["state"] == "COMPLETE" and e["marker"]["approval"]["accepted_report_sha256"] == report_sha and e["marker"]["approval"]["backup_manifest_sha256"] == R.sha_file(manifest)
-    assert out["free_bytes_after_by_filesystem"]
+    assert e["state"] == "COMPLETE" and e["marker"]["approval"]["accepted_report_sha256"] == report_sha
+    assert e["marker"]["approval"]["backup"]["pass"] and out["free_bytes_after_by_filesystem"]
 
 
 def test_RP108_an_interrupted_deletion_keeps_accurate_per_path_status_and_resumes(world, tmp_path, monkeypatch):
@@ -1011,6 +1022,7 @@ def test_RP108_an_interrupted_deletion_keeps_accurate_per_path_status_and_resume
         tok = tmp_path / "tok"; tok.write_text("synthetic")
         R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False, replay_device="cpu"), json.loads((root / "DESIGN.json").read_text()))
     report_sha = R.sha_file(root / "REPORT.json")
+    ready = _ready(root, unit, world, tmp_path / "bk_rp108b")
     extra = tmp_path / "copy_root" / "attempts" / unit; extra.mkdir(parents=True); (extra / "arrays.npz").write_bytes((folder / "arrays.npz").read_bytes())
     real_unlink = os.unlink
     def failing(path, *a, **k):
@@ -1018,7 +1030,7 @@ def test_RP108_an_interrupted_deletion_keeps_accurate_per_path_status_and_resume
             raise OSError("simulated interruption")
         return real_unlink(path, *a, **k)
     monkeypatch.setattr(os, "unlink", failing)
-    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "copy_root"], accepted_report_sha256=report_sha)
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "copy_root"], **ready)
     e = out["units"][unit]
     assert e["state"] == "PARTIAL" and [d["deleted"] for d in e["deleted"]] == [True, False] and "simulated interruption" in e["deleted"][1]["why"]
     marker = json.loads((folder / "PREDICTIONS_DELETED.json").read_text())
@@ -1028,9 +1040,9 @@ def test_RP108_an_interrupted_deletion_keeps_accurate_per_path_status_and_resume
     assert ver["historically_verified_units"] == [unit] and ver["rows"][0]["deletion"]["state"] == "PARTIAL"
     # resumption: the remaining copy is deleted under the same approval; a different approval refuses
     monkeypatch.setattr(os, "unlink", real_unlink)
-    bad = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "copy_root"], accepted_report_sha256="2" * 64)
+    bad = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "copy_root"], **{**ready, "accepted_report_sha256": "2" * 64})
     assert bad["units"][unit]["state"] == "REFUSED" and (extra / "arrays.npz").is_file()
-    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "copy_root"], accepted_report_sha256=report_sha)
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "copy_root"], **ready)
     e = out["units"][unit]; marker = json.loads((folder / "PREDICTIONS_DELETED.json").read_text())
     assert e["preflight"].get("resumption") and e["state"] == "COMPLETE" and marker["all_copies_removed"] and len(marker["events"]) == 2 and not (extra / "arrays.npz").exists()
 
@@ -1274,8 +1286,11 @@ def test_RP112_the_metadata_backup_covers_the_evidence_the_deletion_approval_bin
     assert (tmp_path / "backup" / "MANIFEST.json").is_file()
     # the deletion accepts this manifest and refuses a stale one
     report_sha = R.sha_file(root / "REPORT.json")
-    ok = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "backup" / "MANIFEST.json")
-    assert ok["units"][unit]["state"] == "COMPLETE" and ok["units"][unit]["marker"]["approval"]["checkpoint_backed_up"] is False
+    R.accept_catalog(root, json.loads((root / "DESIGN.json").read_text()), unit, data_path=world["data"])
+    out = R.metadata_backup(root, tmp_path / "backup")
+    ok = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "backup" / "MANIFEST.json", require_acceptance=False)
+    assert ok["units"][unit]["state"] == "COMPLETE" and ok["units"][unit]["marker"]["approval"]["backup"]["pass"]
+    assert f"attempts/{unit}/CATALOG_ACCEPTANCE.json" in out["files"]
 
 
 # --- RP114: Musashi's RP113 counterexamples, frozen against the real entry points ------------------------------------------------
@@ -1375,8 +1390,6 @@ def test_RP115_a_rewritten_report_with_a_recomputed_pointer_is_refused_because_i
     """Musashi RP113 #1, against the real verifier: the score follows the ACCEPTED closure identity, not a local digest."""
     root, wh, held, _ = _accepted_world(world, tmp_path, monkeypatch)
     unit = world["cell"]["cell_id"]; report_sha = R.sha_file(root / "REPORT.json")
-    R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, require_acceptance=False, backup_manifest=None) if False else None
-    manifest = R.metadata_backup(root, tmp_path / "bk")
     R.accept_catalog(root, json.loads((root / "DESIGN.json").read_text()), unit, data_path=world["data"])
     R.metadata_backup(root, tmp_path / "bk")
     receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
