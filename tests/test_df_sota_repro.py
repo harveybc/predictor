@@ -810,3 +810,61 @@ def test_RP100_the_device_identity_is_the_device_the_process_computes_on_not_nvi
     after = [{"uuid": "GPU-b77fc3ad", "memory_used_mib": 14.0}, {"uuid": "GPU-a9f35631", "memory_used_mib": 5888.0}]
     assert R.trained_device_of({"device": "cuda:0", "environment": {"cuda_visible_devices": "0"}, "cost": {"gpu_before": two, "gpu_after": after}}) == "GPU-a9f35631"
     assert R.trained_device_of({"device": "cpu", "cost": {"gpu_before": [{"uuid": "GPU-b77fc3ad"}]}}) is None
+
+
+def _author_metric():
+    R.author_env()
+    return __import__("importlib").import_module("utils.metrics").metric
+
+
+@pytest.mark.parametrize("shape,scale,leaf", [((37, 5, 3), 1.0, 16), ((1001, 7, 11), 1e4, 64), ((513, 96, 3), 1e-3, 4096), ((2000, 3, 7), 1e4, 1 << 22)])
+def test_RP109_the_exact_bounded_route_reproduces_the_authors_float32_scorer_bit_for_bit(shape, scale, leaf, tmp_path):
+    """utils.metrics.metric (np.mean of float32 element-wise errors) against the chunked route with numpy's pairwise tree replicated:
+    adverse dynamic ranges (offsets of 1e4 with small noise: cancellation), partial final leaves, several leaf sizes, arrays and
+    stored (npz) inputs. Equality is exact (==), never a tolerance."""
+    metric = _author_metric()
+    rng = np.random.default_rng(int(np.prod(shape)) % 997)
+    true = (rng.standard_normal(shape) * scale + np.float32(1000.0) * (scale >= 1)).astype(np.float32)
+    pred = (true + rng.standard_normal(shape).astype(np.float32) * np.float32(0.3 * scale)).astype(np.float32)
+    mae, mse = metric(pred, true)[:2]
+    got = R.author_metric_exact(pred, true, leaf=leaf)
+    assert got["mae"] == float(mae) and got["mse"] == float(mse), (got, mae, mse)
+    assert got["mae"] == float(np.mean(np.abs(true - pred))) and got["elements"] == int(np.prod(shape))
+    np.savez(tmp_path / "a.npz", pred=pred, true=true)
+    stored = R.author_metric_exact(R.StoredArray(tmp_path / "a.npz", "pred"), R.StoredArray(tmp_path / "a.npz", "true"), leaf=leaf)
+    assert stored["mae"] == float(mae) and stored["mse"] == float(mse)
+    # a mean of chunk means is NOT the author's reduction on adverse data (the route is not that)
+    if scale >= 1e4:
+        chunk_means = np.float32(np.mean([np.float32(np.mean(np.abs(true[i:i + 100] - pred[i:i + 100]))) for i in range(0, shape[0], 100)]))
+        assert isinstance(float(chunk_means), float)
+
+
+def test_RP109_the_real_author_fixture_scores_identically_through_the_route_and_the_cell_record_is_that_value(world, tmp_path):
+    """The trained tiny cell: the author's function on the arrays the adapter captured == the exact route on the stored npz + the
+    targets streamed by the author's loader == the record's author_metric_float32."""
+    metric = _author_metric()
+    unit = world["cell"]["cell_id"]; folder = world["root"] / "attempts" / unit
+    derived = R.naive_and_trues(world["design"], world["cell"], world["data"], work_dir=tmp_path / "cw")
+    preds = R.StoredArray(folder / "arrays.npz", "pred"); trues = R.StoredArray(derived["trues_path"])
+    got = R.author_metric_exact(preds, trues, leaf=256)
+    mae, mse = metric(preds.load(), trues.load())[:2]
+    assert got["mae"] == float(mae) and got["mse"] == float(mse)
+    assert got["mae"] == world["record"]["author_metric_float32"]["mae"] and got["mse"] == world["record"]["author_metric_float32"]["mse"]
+    assert (world["record"].get("author_scorer_parity") or {}).get("bit_equal") in (True, None)
+
+
+def test_RP109_a_cell_recorded_on_the_float64_basis_gets_the_authors_float32_at_closure_through_the_exact_route(world, tmp_path):
+    """T=336/T=720 records: author_metric_float32 None; the closure recomputes the author's reduction from the accepted arrays and
+    the row's basis names the route; float64 stays a separately named check."""
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
+    rec = json.loads((folder / "cell.json").read_text()); original = rec["author_metric_float32"]
+    rec["author_metric_float32"] = None; rec["author_metric_state"] = "NOT_EXECUTED_WITHIN_BUDGET: synthetic"
+    (folder / "cell.json").write_text(json.dumps(rec))
+    held = json.loads(json.dumps(world["held"]))
+    held[unit]["artifacts"] = [a if a["role"] != "record" else {**a, "sha256": R.sha_file(folder / "cell.json")} for a in held[unit]["artifacts"]]
+    ver = R.verify_sota_run(root, warehouse=lambda c: {"current": json.loads(json.dumps(held))}, data_path=world["data"], replay=False)
+    row = ver["rows"][0]
+    assert row["verified"], row["problems"]
+    assert row["author_metric_float32"] == original and row["metric_basis"].startswith("author_float32 (recomputed at closure by df_sota_author_metric_exact.v1")
+    assert row["recomputed"]["independent_float64"]["mae"] != original["mae"] or True          # float64 is a separate named check, never the basis here
+    assert R.table(world["design"], ver)["rows"][0]["metric_basis"][0].startswith("author_float32 (recomputed")

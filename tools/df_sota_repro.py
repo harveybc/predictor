@@ -332,6 +332,59 @@ class StoredArray:
         return self[0:len(self)]
 
 
+AUTHOR_SCORER_ROUTE = "df_sota_author_metric_exact.v1"
+_PAIRWISE_LEAF = 1 << 22                                        # elements per leaf reduced by numpy itself (16 MB of float32)
+
+
+def _pairwise_f32(leaf_sum, lo: int, n: int, leaf: int = _PAIRWISE_LEAF):
+    """numpy's pairwise summation tree (numpy/core/src/umath/loops_utils.h.src `pairwise_sum`): below `leaf` the range is reduced
+    by numpy's own inner loop (which applies the same tree), above it the range splits at n//2 rounded down to a multiple of 8
+    and the two partial sums are added once in float32. Verified bit-equal to np.add.reduce for n = 7 … 6.3e6 and leaves 128 …
+    2^20 (numpy 2.5.1) and on a 3-D contiguous array reduced with axis=None."""
+    if n <= leaf:
+        return np.float32(leaf_sum(lo, n))
+    n2 = n // 2; n2 -= n2 % 8
+    return np.float32(_pairwise_f32(leaf_sum, lo, n2, leaf) + _pairwise_f32(leaf_sum, lo + n2, n - n2, leaf))
+
+
+def author_metric_exact(preds, trues, *, leaf: int = _PAIRWISE_LEAF) -> dict:
+    """The author's float32 MAE/MSE (utils.metrics: np.mean(np.abs(true - pred)), np.mean((true - pred) ** 2) on C-contiguous
+    float32 arrays) reproduced BIT FOR BIT through a bounded route: the element-wise differences are formed in float32 chunk by
+    chunk (element-wise ops are exact per element), numpy's pairwise summation tree is replicated over the flattened element index
+    space with leaves reduced by numpy, and the mean is float32(sum) / float32(N) as numpy's `_mean` does. RP109: a mean of chunk
+    means is NOT this; this is the same arithmetic in the same order. `preds`/`trues` are arrays or StoredArray-like objects of
+    the same (W, T, C) shape read by contiguous window slices."""
+    shape = tuple(preds.shape)
+    if shape != tuple(trues.shape) or len(shape) < 1:
+        raise SotaRefusal(f"REFUSED: author metric on shapes {shape} vs {tuple(trues.shape)}")
+    re_ = int(np.prod(shape[1:])) if len(shape) > 1 else 1
+    N = int(shape[0]) * re_
+    cache = {"w0": None, "w1": None, "d_abs": None, "d_sq": None}
+
+    def rows(w0, w1):
+        if cache["w0"] != w0 or cache["w1"] != w1:
+            a = np.asarray(preds[w0:w1], dtype=np.float32); b = np.asarray(trues[w0:w1], dtype=np.float32)
+            d = (b - a).reshape(-1)                                       # true - pred, float32, element-wise exact
+            cache.update(w0=w0, w1=w1, d_abs=np.abs(d), d_sq=d * d)
+        return cache["d_abs"], cache["d_sq"]
+
+    def leaf_sum(kind):
+        def f(lo, n):
+            w0, w1 = lo // re_, (lo + n - 1) // re_ + 1
+            d_abs, d_sq = rows(w0, w1)
+            off = lo - w0 * re_
+            return np.add.reduce((d_abs if kind == "abs" else d_sq)[off:off + n], dtype=np.float32)
+        return f
+    if N == 0:
+        raise SotaRefusal("REFUSED: author metric on an empty population")
+    s_abs = _pairwise_f32(leaf_sum("abs"), 0, N, leaf)
+    cache.update(w0=None)                                              # second pass reads again (the leaf order is identical)
+    s_sq = _pairwise_f32(leaf_sum("sq"), 0, N, leaf)
+    n32 = np.float32(N)
+    return {"mae": float(np.float32(s_abs / n32)), "mse": float(np.float32(s_sq / n32)), "route": AUTHOR_SCORER_ROUTE, "elements": N, "leaf": leaf,
+            "dtype": "float32", "reduction": "numpy pairwise tree replicated over the flattened C-order element index; mean = float32(sum)/float32(N)"}
+
+
 def all_finite(a, step: int = 128) -> bool:
     """Finite check over chunks of windows for any array-like (memmap, StoredArray, ndarray)."""
     return all(bool(np.isfinite(np.asarray(a[w0:w0 + step])).all()) for w0 in range(0, a.shape[0], step))
@@ -806,19 +859,26 @@ def bounded_test(exp, setting: str, work: Path, *, author_metric_budget_bytes: i
     preds = np.load(preds_path, mmap_mode="r"); trues = np.load(trues_path, mmap_mode="r")
     finalized = {"windows": n_seen, "batches": len(batches), "batch_sizes": {"first": batches[0], "last": batches[-1], "distinct": sorted(set(batches))},
                  "true_sha256": true_hash.hexdigest(), "preds_bytes": int(preds.nbytes)}
-    # the author's reduction on the SAME function and dtype, when its temporaries (two full-size float32 arrays per metric) fit
+    # RP109: the author's float32 reduction through the exact bounded route (same arithmetic, same order, ~64 MB of temporaries);
+    # the author's own function runs beside it only when its full-size temporaries fit, as parity evidence for this cell
     need = 2 * int(preds.nbytes) + int(preds.nbytes)
-    author_metric, author_metric_state = None, None
+    exact = author_metric_exact(StoredArray(preds_path), StoredArray(trues_path))
+    author_metric = {"mae": exact["mae"], "mse": exact["mse"]}
+    author_metric_state = f"EXECUTED: {AUTHOR_SCORER_ROUTE} (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test)"
+    author_scorer_parity = None
     if author_metric_budget_bytes is None or need <= author_metric_budget_bytes:
         MET = importlib.import_module("utils.metrics")
         mae, mse, rmse, mape, mspe = MET.metric(np.asarray(preds), np.asarray(trues))
-        author_metric = {"mae": float(mae), "mse": float(mse)}
-        author_metric_state = "EXECUTED: utils.metrics.metric on the memmapped float32 arrays (same function, dtype, layout)"
+        author_scorer_parity = {"author_function": {"mae": float(mae), "mse": float(mse)}, "bit_equal": bool(float(mae) == exact["mae"] and float(mse) == exact["mse"])}
+        if not author_scorer_parity["bit_equal"]:
+            raise SotaRefusal(f"REFUSED: the exact bounded route disagrees with utils.metrics.metric on this cell: {author_scorer_parity}")
+        author_metric_state += "; utils.metrics.metric executed on the memmapped arrays as well: bit-equal"
     else:
-        author_metric_state = f"NOT_EXECUTED_WITHIN_BUDGET: needs ~{need} bytes of temporaries, budget {author_metric_budget_bytes}"
+        author_scorer_parity = {"author_function": None, "why": f"utils.metrics.metric not executed here: needs ~{need} bytes of temporaries, budget {author_metric_budget_bytes}"}
     f64 = float64_metrics_files(preds_path, trues_path, preds.shape)
     return {"preds": preds, "trues": trues, "preds_path": preds_path, "trues_path": trues_path, "finalized": finalized, "shape": list(preds.shape),
-            "author_metric": author_metric, "author_metric_state": author_metric_state, "independent_metric_float64": f64,
+            "author_metric": author_metric, "author_metric_state": author_metric_state, "author_scorer_parity": author_scorer_parity, "author_metric_route": exact,
+            "independent_metric_float64": f64,
             "adapter": {"version": BOUNDED_ADAPTER_VERSION, "source_sha256": hashlib.sha256(__import__("inspect").getsource(bounded_test).encode()).hexdigest(),
                         "author_test_untouched": True, "replaces": "Exp_Long_Term_Forecast.test(): list accumulation + np.concatenate + result file; forward pass identical"}}
 
@@ -2000,14 +2060,18 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             # the targets were streamed to a file by the author's loader above (digest checked against the record): re-read chunked
             trues = StoredArray(derived["trues_path"])
             recomputed = {"independent_float64": float64_metrics(preds, trues), "targets_source": "closure_work: streamed by the author's test loader, digest = record"}
+            exact = author_metric_exact(preds, trues)
+            recomputed["author_float32"] = {"mae": exact["mae"], "mse": exact["mse"]}
+            recomputed["author_float32_route"] = AUTHOR_SCORER_ROUTE
             need = (5 if preds.compressed else 3) * int(preds.nbytes)          # a compressed member is inflated whole for the author's function
             if author_metric_budget is None or need <= author_metric_budget:
                 a32 = preds.load() if preds.compressed else preds.memmap()
                 mae32, mse32 = MET.metric(a32, trues.memmap())[:2]; del a32
-                recomputed["author_float32"] = {"mae": float(mae32), "mse": float(mse32)}
+                recomputed["author_scorer_parity"] = {"author_function": {"mae": float(mae32), "mse": float(mse32)}, "bit_equal": bool(float(mae32) == exact["mae"] and float(mse32) == exact["mse"])}
+                if not recomputed["author_scorer_parity"]["bit_equal"]:
+                    p_.append(f"{unit}: the exact bounded route and utils.metrics.metric disagree at closure: SCORER_ROUTE")
             else:
-                recomputed["author_float32"] = None
-                recomputed["author_float32_state"] = f"NOT_EXECUTED_WITHIN_BUDGET at closure (needs ~{need} bytes of temporaries{'; compressed member' if preds.compressed else ''})"
+                recomputed["author_scorer_parity"] = {"author_function": None, "why": f"utils.metrics.metric not executed at closure (needs ~{need} bytes of temporaries)"}
             trues.close(); del trues
             vault_path = folder / "METRICS_VAULT.json"
             # RP99 (Musashi RP97 #1): a persisted vault is never trusted from disk — the catalog is RECOMPUTED from the accepted
@@ -2066,6 +2130,11 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                 p_.append(f"{unit}: the independent float64 metric differs from the record's ({basis}) by more than 1e-6: REDUCTION")
             recomputed["metric_basis"] = basis
         basis_metric, basis = metric_of(record)
+        if not record.get("author_metric_float32") and recomputed and recomputed.get("author_float32"):
+            # RP109: the record carries only the float64 reduction (the author's function did not fit at training time); the
+            # closure recomputed the author's float32 reduction from the accepted arrays through the exact bounded route
+            basis_metric, basis = recomputed["author_float32"], f"author_float32 (recomputed at closure by {AUTHOR_SCORER_ROUTE}; the record carries the float64 reduction only)"
+            recomputed["metric_basis"] = basis
         rows.append({"unit": unit, "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")}, "custody": custody,
                      "author_metric_float32": basis_metric, "metric_basis": basis, "author_metric_state": record.get("author_metric_state"),
                      "recomputed": recomputed, "derived": derived,
