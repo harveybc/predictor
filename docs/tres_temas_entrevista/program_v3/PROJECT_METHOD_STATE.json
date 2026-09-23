@@ -30,7 +30,11 @@
   "coordinator_role": "light orchestration and existing services only",
   "remote_execution": "ONLY WORKER_B external RTX 5090 eligible for new GPU work; verify physical UUID and assert child device; check connection, utilization, memory, GPU AND host thermals; no internal GPU or coordinator fallback",
   "owner_thermal_clarification": "2026-09-22: WORKER_A cooling unconfirmed; WORKER_B internal RTX 5070 Ti cooling unconfirmed; coordinator traveling without cooler. External RTX 5090 independently cooled per owner. Expected return tomorrow afternoon is not automatic authorization.",
-  "held_gpu_devices": ["COORDINATOR GPU", "WORKER_A GPU", "WORKER_B internal RTX 5070 Ti"],
+  "held_gpu_devices": [
+   "COORDINATOR GPU",
+   "WORKER_A GPU",
+   "WORKER_B internal RTX 5070 Ti"
+  ],
   "worker_host_cpu_policy": "Bound CPU preparation, thread counts and concurrency; monitor host temperature independently of eGPU; no unbounded CPU fallback",
   "local_batch_guard": "crispdm-run refuses new work when ~/.config/crispdm/coordinator-travel-hold exists; does not intercept direct process launches",
   "artifact_policy": "THERMAL_AND_ARTIFACT_RETENTION_2026_09_22.md",
@@ -66,7 +70,11 @@
   "reviewed_commit": "55a339ce0cd3ac28b0495c5ad4bde57736ee9fa1",
   "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
   "evidence": "../../audits/evidence/RP105_MUSASHI_REVIEW_2026_09_22/",
-  "findings": ["post-deletion metric rewrite accepted", "different-identity extra-root copy deleted", "original float32 scoring incomplete for T336/T720"],
+  "findings": [
+   "post-deletion metric rewrite accepted",
+   "different-identity extra-root copy deleted",
+   "original float32 scoring incomplete for T336/T720"
+  ],
   "live_warehouse_requeried_by_auditor": true,
   "warehouse_bigint": "ADOPTED_VERIFIED; eight governance relations unchanged before resend; one intentional warehouse stop/start",
   "t720_original_terminals": "3 resent and reconciled; no new generations",
@@ -1170,5 +1178,46 @@
   },
   "placement": "all compute on dragon (cooled WORKER_A, RTX 4090 L, 11 GiB available, 14 GiB slice); omega under the travel hold (marker present); gamma out (4 GiB available, eGPU busy)",
   "thermal_observation_2026_09_22": "dragon RTX 4090 L during L96_h192_s2022 training: 83-85 C at 98 %, the driver's software thermal slowdown intermittently ACTIVE (target 87 C, clocks 1.77-2.13 GHz); device policy engaged, job not interrupted; a cool-down guard (< 70 C between cells, max 30 min wait) added to execute for the next runs; per-cell records keep gpu_before/gpu_after"
+ },
+ "rp106_rp113": {
+  "orders": "docs/handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md (c779711; review MUSASHI_RP98_RP105_REVIEW_2026_09_22.md of 55a339ce)",
+  "base": "55a339ce",
+  "updated_on": "2026-09-23",
+  "placement": "owner 22-sep: the ONLY device eligible for new GPU work is WORKER_B's EXTERNAL RTX 5090 (GPU-a9f35631…), admitted by physical UUID before every dispatch; WORKER_B's internal 5070 Ti, WORKER_A's GPU and coordinator heavy work remain held with no automatic release; host CPU bounded and host thermals monitored separately (the external cooler does not cool the laptop)",
+  "RP106": {
+   "status": "DONE",
+   "pre": "docs/audits/evidence/d3_k5_20260917/RP106/PROBE_RESULTS_PRE.json (Musashi's probe unchanged at 55a339ce: different-identity copy deleted, rewritten metrics verified as zero, forged report accepted)",
+   "post": "docs/audits/evidence/d3_k5_20260917/RP106/REVIEW_REPRODUCED_POST.json (corrected paths: conflicting copy REFUSED with nothing unlinked, rewritten record/absent vault/checkpoint DELETED_HISTORY_UNBOUND with no score and NO_MEASUREMENT in the table, unresolvable and wrong-design reports refused; controls: identical copy deleted, valid retained history verified)",
+   "note": "Musashi's probe is preserved unchanged; on the corrected tree its own later steps stop with a KeyError because its first scenario no longer deletes anything, so the POST reproduces his three scenarios on top of a valid deletion"
+  },
+  "RP107": {
+   "status": "DONE_IN_CODE",
+   "what": "historical_verification(): the score of a deleted cell is the ORIGINAL pre-deletion closure's, resolved BY DIGEST from preserved reports (REPORT.json, reports/REPORT.<sha>.json, REPORT*.json), bound to the accepted terminal chain (record and checkpoint digests), the retained catalog (the digest that report recomputed), the targets and the design; typed refusals HISTORY_UNRESOLVED_REPORT / HISTORY_DESIGN_MISMATCH / HISTORY_ROW_UNVERIFIED / HISTORY_CUSTODY_* / HISTORY_RECORD_CHANGED / HISTORY_CHECKPOINT_CHANGED / HISTORY_ARRAYS_IDENTITY / HISTORY_VAULT_MISMATCH / HISTORY_TARGETS_MISMATCH; no field of the current record or marker is trusted; successor evidence is versioned, historic reports are never rewritten"
+  },
+  "RP108": {
+   "status": "DONE_IN_CODE",
+   "what": "deletion_preflight() + delete_predictions() v2: exclusive lock per root, whole-unit inventory before any unlink, every candidate path hashed against the ACCEPTED predictions artifact, refusals for conflicting copies, conflicting attempts, symlink/alias, active readers, unverified catalog, approval mismatch (accepted report digest) and missing backup coverage; identity re-checked at the instant of deletion; per-path status with PARTIAL markers, resumption under the same approval; content-addressed reports preserved under reports/ before REPORT.json is replaced"
+  },
+  "RP109": {
+   "status": "DONE",
+   "exact_scorer": "author_metric_exact() reproduces utils.metrics.metric BIT FOR BIT within ~64 MB of temporaries: element-wise float32 differences chunk by chunk, numpy's pairwise summation tree replicated over the flattened population (leaves >= 128 elements reduced by numpy), mean = float32(sum)/float32(N); verified against np.add.reduce for n = 7 … 6.3e6 and on the real author fixture; the author's own function runs beside it whenever its full-size temporaries fit and must agree bitwise (refusal otherwise)",
+   "regeneration": "T=336 x3 regenerated by INFERENCE from the retained checkpoints on the admitted RTX 5090: all three BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL (pred and true digests equal the record's), author float32 now available: s2021 0.1625940501689911/0.2606664299964905, s2022 0.16817493736743927/0.26741331815719604, s2023 0.16267016530036926/0.26087433099746704 (mean 0.164479718/0.262984693; float64 basis differed by <= 3.6e-8)"
+  },
+  "RP110": {
+   "status": "DONE_IN_CODE",
+   "attribution": "device_attribution(): MEASURED (the process asked its CUDA runtime) / VISIBILITY_MASK (a UUID mask) / INFERRED_GPU_MEMORY (the GPU whose memory grew) / UNKNOWN / CPU; only MEASURED (or CPU on both sides) certifies same_device_repeatability; an equal UUID under inferred attribution is reported NOT_CERTIFIED and UNDETERMINED_ATTRIBUTION, never same-device",
+   "parity": "real-author CPU trajectory over four optimizer steps with num_workers 1 vs 0: batches, loss, weights, optimizer state, torch/numpy RNG states after every step and the validation/test loader inputs identical; the allocator option reaches the child's environment and leaves the child's argument vector identical"
+  },
+  "RP111": {
+   "status": "RUNNING",
+   "what": "closure on WORKER_B with replays on the admitted RTX 5090 for the six cells that still hold predictions (T=96 x3, T=720 x3); the six deleted cells go through the bound historical path, three of them with an accepted bit-identical regeneration"
+  },
+  "RP112": {
+   "status": "DONE_FOR_T336",
+   "what": "accept_regenerated(): the retained catalog re-derived from the regenerated bytes through the author's loader and compared with the retained METRICS_VAULT.json, numeric oracles (global vs author <= 1e-6, per-step and per-channel means vs global <= 1e-9, float64 vs author <= 1e-6), catalog states and population; all three T=336 cells PASS with catalog_recomputed_equals_retained true; the regenerated temporaries then deleted with per-path receipts (6 files, ~12.7 GB), catalogs/records/checkpoints and the acceptance records retained"
+  },
+  "RP113": {
+   "status": "PENDING"
+  }
  }
 }
