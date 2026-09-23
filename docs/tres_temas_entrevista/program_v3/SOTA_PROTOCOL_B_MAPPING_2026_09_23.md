@@ -63,19 +63,31 @@ Two corrections to the earlier version of this document, both from Musashi's RP1
    the count is `num_test − pred_len + 1` at a fixed split and horizon: 5260 − T + 1 in both protocols, exactly the populations
    already measured for protocol A. Training windows are the only population that shrinks (by 416 windows, ~2 %).
 
-## Cost: UNMEASURED
+## Cost: measured by a bounded pilot, then projected
 
-No protocol B cell, and no bounded protocol B pilot, has been executed. The earlier "2–4× protocol A, 6–16 h for twelve cells,
-VRAM fits" sentence was an assumption derived from a wrong token-count argument; it is withdrawn. **The runtime, VRAM, host
-memory, disk and scoring cost of protocol B are UNMEASURED.** Protocol A's measured costs on the admitted external RTX 5090
-(15.3–15.6 min per T = 192/336 cell, 20.6–20.8 min per T = 720 cell, ≤ 5.2 GiB VRAM, 2.7–7.1 GiB peak host RSS) describe
-protocol A only and are not admission evidence for protocol B.
+The earlier "2–4× protocol A, 6–16 h for twelve cells, VRAM fits" sentence was an assumption built on a wrong token-count
+argument; it is withdrawn. In its place, a **bounded, governed, exact-recipe pilot** ran on the admitted external RTX 5090
+(UUID a9f35631…, asserted inside the process): the author's own model, loaders, criterion and optimizer under the L = 512
+arguments above, twenty optimizer steps and twenty validation batches, **no test score, no checkpoint kept, no selection**
+([T = 96](../../audits/evidence/d3_k5_20260917/RP114/PILOT.B_L512_T96.json),
+[T = 720](../../audits/evidence/d3_k5_20260917/RP114/PILOT.B_L512_T720.json)):
 
-Before any protocol B campaign is scheduled, the resource question is settled by a **bounded, governed, exact-recipe pilot** on
-the admitted external device: the author's L = 512 arguments unchanged, a fixed small number of optimizer steps and one
-validation pass, measuring wall time per iteration, peak VRAM, peak host RSS, disk and the cost of one bounded evaluation —
-with no test scoring, no checkpoint selection and no number that could influence a recipe choice. The finite population (12
-cells) is then projected from those measurements and stated as a projection.
+| measured | T = 96 | T = 720 |
+|---|---|---|
+| median seconds per optimizer step | 0.0555 | 0.0602 |
+| peak VRAM | 6.60 GiB | 6.64 GiB |
+| peak host RSS | 2.16 GiB | 2.24 GiB |
+| steps per epoch (batch 16) | 1113 | 1074 |
+| model build | 0.4 s | 0.3 s |
+
+Projected from those measurements, with the assumptions named: one epoch of training plus one validation and one test pass is
+about 1.3 minutes; fifteen epochs without early stopping is **0.32 h (T = 96) to 0.34 h (T = 720) per cell**, so the twelve-cell
+population is **about 3.9 to 4.0 hours** on this device — comparable to protocol A's measured 3 to 4 hours, not two to four
+times it. VRAM sits at 6.6 GiB of the 32 GiB the device offers.
+
+What that projection does NOT include, stated rather than absorbed: early stopping (patience 3, which ended several protocol A
+cells sooner), the bounded evaluation and catalog work after training, warm-up variance beyond the first twenty steps, and any
+horizon other than the two measured. The projection is a projection.
 ## What executing it would require
 
 The same governed path as protocol A: seal a design with `protocol="Lsearched"`, acquire the same governed ECL file, execute

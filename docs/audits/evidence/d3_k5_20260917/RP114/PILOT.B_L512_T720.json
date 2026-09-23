@@ -1,0 +1,69 @@
+{
+ "schema": "df_sota_resource_pilot.v1",
+ "at": "2026-09-23T06:36:21Z",
+ "host": "gamma",
+ "device": "cuda:0",
+ "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+ "recipe": {
+  "seq_len": 512,
+  "pred_len": 720,
+  "patch_len": 128,
+  "top_p": 0.0,
+  "dropout": 0.5,
+  "batch_size": 16,
+  "train_epochs": 15,
+  "learning_rate": 0.001,
+  "d_model": 512,
+  "e_layers": 2
+ },
+ "populations": {
+  "train_windows": 17181,
+  "val_windows": 1913,
+  "test_windows": 4541,
+  "steps_per_epoch": 1074
+ },
+ "measured": {
+  "model_build_seconds": 0.27285170555114746,
+  "optimizer_steps": 20,
+  "median_seconds_per_step": 0.060158491134643555,
+  "mean_seconds_per_step": 0.0751927375793457,
+  "train_seconds_measured": 1.7759740352630615,
+  "validation_batches": 20,
+  "validation_seconds_measured": 0.7844176292419434,
+  "peak_vram_bytes": 7125150720,
+  "peak_rss_bytes": 2408583168,
+  "gpu_after": [
+   {
+    "index": 0,
+    "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+    "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+    "temperature_c": 32.0,
+    "utilization_pct": 0.0,
+    "memory_used_mib": 14.0,
+    "memory_total_mib": 12227.0
+   },
+   {
+    "index": 1,
+    "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "name": "NVIDIA GeForce RTX 5090",
+    "temperature_c": 48.0,
+    "utilization_pct": 66.0,
+    "memory_used_mib": 7896.0,
+    "memory_total_mib": 32607.0
+   }
+  ],
+  "host_thermals_c": {
+   "thermal_zone0:acpitz": 71.0,
+   "thermal_zone1:acpitz": 70.8
+  }
+ },
+ "projection": {
+  "basis": "median measured step x steps per epoch x epochs, plus the measured validation rate over the validation and test populations",
+  "seconds_per_epoch_training": 64.61021947860718,
+  "seconds_per_epoch_total": 80.45545558929443,
+  "hours_per_cell_15_epochs": 0.33523106495539345,
+  "hours_for_12_cells": 4.022772779464722,
+  "caveat": "a projection from a bounded pilot of this horizon; other horizons and early stopping are not measured"
+ },
+ "scope": "RESOURCE ONLY: no test score, no checkpoint kept, no selection; nothing here is a benchmark result"
+}
