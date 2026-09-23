@@ -1,6 +1,19 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
-**Revision RP105, 22-sep:** [dictamen independiente](../audits/work_plan/MUSASHI_RP98_RP105_REVIEW_2026_09_22.md).
+**Revision vigente RP113, 23-sep:** [dictamen independiente](../audits/work_plan/MUSASHI_RP106_RP113_REVIEW_2026_09_23.md).
+Cinco contraejemplos ejecutados impiden aceptar el cierre: informe rehasheado y
+regeneracion ficticia pueden cambiar el score; borrado sin aprobacion/respaldo;
+divisor float32 distinto de NumPy para N=16.777.217; catalogo con estimadores
+imposibles aceptado con todos sus oraculos internos en cero. No demuestra
+corrupcion de las mediciones reales ni requiere repetir entrenamientos. T96
+esta MEDIDO con replay pendiente, no carece de datos. No mas borrados hasta
+cerrar aceptacion independiente, scorer y validacion numerica por familia.
+Orden vigente: [RP114-RP121](../handoffs/MUSASHI_SOTA_RP114_RP121_2026_09_23.md).
+Solo la 5090 externa es elegible tras admision. Las reparaciones independientes
+no necesitan otro permiso del owner ni esperan refrigeracion de WORKER_A.
+Musashi no uso GPU, no borro predicciones reales ni reinicio servicios en esta revision.
+
+**Revision historica RP105, 22-sep (alcance superado por RP113):** [dictamen independiente](../audits/work_plan/MUSASHI_RP98_RP105_REVIEW_2026_09_22.md).
 Doce celdas TimeFilter entrenadas; doce terminales aceptados tras la adopcion
 BIGINT y el reenvio de los tres sobres T=720 por Musashi. Historia del almacen
 intacta durante la adopcion. No es aun reproduccion exacta cerrada: faltan
@@ -9,7 +22,7 @@ Dos fallos reproducidos bloquean nuevos borrados: cierre historico que acepta
 metricas reescritas y borrado de copias por nombre sin exigir identidad de bytes.
 Los seis catalogos reales ya retenidos coinciden con el informe pre-borrado y
 sus records/checkpoints con el almacen vivo; no se declaran corruptos.
-Orden vigente: [RP106-RP113](../handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md).
+Orden de esa revision: [RP106-RP113](../handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md).
 Reparar, terminar scoring/replays y aplicar la retencion autorizada, sin repetir
 entrenamientos ni rebajar la receta. GPU de WORKER_A pendiente de confirmacion
 fisica de refrigeracion; coordinador sin compute pesado, sin caducidad automatica.
@@ -60,7 +73,7 @@ nuevas mediciones de los pilotos simplificados E0/E1, contexto electrico y
 FIN-LOSS-OPT hasta establecer la referencia publicada correspondiente. No
 repetir ni ampliar esos pilotos como sustituto de una reproduccion fiel.
 Orden anterior ejecutada parcialmente: [RP90-RP97](../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md).
-Orden activa: [RP106-RP113](../handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md).
+Orden activa: [RP114-RP121](../handoffs/MUSASHI_SOTA_RP114_RP121_2026_09_23.md).
 Politica: [SOTA_FIRST](program_v3/SOTA_FIRST_2026_09_21.md).
 
 La prioridad inmediata es el benchmark Electricity/ECL de 321 clientes horarios

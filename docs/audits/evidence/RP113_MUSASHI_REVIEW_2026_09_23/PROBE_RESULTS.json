@@ -1,0 +1,89 @@
+{
+  "scope": "disposable CPU fixtures only; no production artifacts changed",
+  "host_before": {
+    "thermal_zone0:acpitz": 45.0,
+    "thermal_zone1:acpitz": 53.2
+  },
+  "baseline": {
+    "historically_verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": [],
+    "metric": {
+      "mae": 1.0069435834884644,
+      "mse": 1.3347922563552856
+    }
+  },
+  "rewritten_report_and_pointer": {
+    "historically_verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": [],
+    "metric": {
+      "mae": 0.0,
+      "mse": 0.0
+    }
+  },
+  "fabricated_regeneration": {
+    "historically_verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": [],
+    "metric": {
+      "mae": 0.0,
+      "mse": 0.0
+    }
+  },
+  "delete_without_approval_or_backup": "COMPLETE",
+  "delete_without_approval_arrays_remaining": false,
+  "wrong_estimator_catalog": {
+    "pass": true,
+    "refusals": [],
+    "oracles": {
+      "per_step_mean_vs_global_mae": 0.0,
+      "per_step_mean_vs_global_mse": 0.0,
+      "per_channel_mean_vs_global_mae": 0.0,
+      "per_window_mean_vs_global_mae": 0.0,
+      "per_window_mean_vs_global_mse": 0.0,
+      "time_blocks_weighted_vs_global_mae": 0.0,
+      "time_block_windows_vs_population": 0,
+      "per_window_length_vs_population": 0,
+      "per_step_length_vs_horizon": 0,
+      "per_channel_length_vs_channels": 0,
+      "skill_mae_identity": 0.0,
+      "skill_mse_identity": 0.0,
+      "rmse_identity": 0.0,
+      "naive_per_step_mean_vs_global": 0.0
+    },
+    "injected": {
+      "residual_sd": -123,
+      "entropy_bits": 999,
+      "mi_bits": 999,
+      "acf": 42
+    }
+  },
+  "float32_parity": [
+    {
+      "n": 8193,
+      "bounded": 1.0,
+      "numpy_mean": 1.0,
+      "equal": true
+    },
+    {
+      "n": 16777217,
+      "bounded": 1.0,
+      "numpy_mean": 0.9999999403953552,
+      "equal": false
+    },
+    {
+      "n": 16777219,
+      "bounded": 1.0,
+      "numpy_mean": 1.0,
+      "equal": true
+    }
+  ],
+  "host_after": {
+    "thermal_zone0:acpitz": 57.0,
+    "thermal_zone1:acpitz": 55.7
+  }
+}

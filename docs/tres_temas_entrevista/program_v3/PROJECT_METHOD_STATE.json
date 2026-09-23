@@ -46,13 +46,13 @@
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "RP105_REVIEWED_CHANGES_REQUIRED_TWELVE_TRAINED_AND_ACCEPTED_EXACT_SCORING_INCOMPLETE",
+  "status": "RP113_REVIEWED_CHANGES_REQUIRED_ACCEPTANCE_BYPASSES_AND_SCORER_ROUNDING_PROVEN",
   "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
   "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
   "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
   "runtime_exclusion_implemented": true,
   "policy": "SOTA_FIRST_2026_09_21.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP114_RP121_2026_09_23.md",
   "suspended_measurements": [
    "simplified E0/E1 extensions",
    "household context pilots",
@@ -65,6 +65,19 @@
    "core pretraining"
   ],
   "completion_requires": "All four horizons x three seeds, accepted recipe, original float32 scoring and scoped independent verification. Repair historical custody and content-specific deletion, preserve failed portability checks, qualify inferred device identity. No retraining to repair closure; no automatic coordinator or WORKER_A GPU resumption."
+ },
+ "rp113_external_review": {
+  "reviewed_commit": "e145303cbc5776ee3907d9997a3622e1eab272b8",
+  "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED_NO_NEW_DELETION",
+  "evidence": "../../audits/evidence/RP113_MUSASHI_REVIEW_2026_09_23/",
+  "executed_findings": ["rehashed report and marker accept zero score", "fabricated regeneration overrides score", "deletion without approval or backup", "float32 divisor differs from NumPy at N=16777217", "broken estimator producer accepted with all internal oracles zero"],
+  "focal_suite": "61 passed, 1 skipped; worker CPU-only; 55.03 seconds; five fork-after-thread warnings",
+  "scope": "Disposable actual-author CPU fixtures; no production-array recomputation or new live warehouse query",
+  "gpu_work_by_reviewer": false,
+  "production_deletions_by_reviewer": 0,
+  "next_orders": "../../handoffs/MUSASHI_SOTA_RP114_RP121_2026_09_23.md",
+  "owner_action": "No new engineering approval. WORKER_A cooling remains unconfirmed; independent blocks continue.",
+  "history": "Prior returns below preserved as reported; this review qualifies their completion claims"
  },
  "rp105_external_review": {
   "reviewed_commit": "55a339ce0cd3ac28b0495c5ad4bde57736ee9fa1",
@@ -120,7 +133,7 @@
   "historical_satoshi_return": "Preserved below as reported; this external review qualifies its closure/comparator/financial guarantees",
   "owner_action_required": false
  },
- "updated_on": "2026-09-22",
+ "updated_on": "2026-09-23",
  "current_stage": "external_review",
  "completed_stages": [
   "discovery",
@@ -128,7 +141,7 @@
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "RP106_RP113_ISSUED_RP105_REVIEWED_WAREHOUSE_UNBLOCKED_EXACT_REPRODUCTION_PENDING",
+ "handoff_status": "RP114_RP121_ISSUED_RP113_REVIEWED_NO_REFITTING_ACCEPTANCE_REPAIRS_REQUIRED",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -167,21 +180,21 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "RP106-RP108: freeze PRE; repair historical accepted-evidence chain and content-specific deletion; retain no-deletion hold until repaired",
-  "RP109-RP110: exact bounded author float32 scorer, qualified device attribution and actual-author operational patch parity",
-  "RP111: close already accepted T720 numerical evidence; original-device WORKER_A replay requires physical cooling confirmation",
-  "RP112-RP113: independent finite-catalog acceptance, corrected authorized retention, complete-population report, tests, one return; protocol B remains separate",
+  "RP114-RP116: freeze PRE; independently anchor closure and regeneration outputs; require verified backup and catalog acceptance for deletion",
+  "RP117-RP118: independent estimator references and producer mutations; repair NumPy division semantics and measure actual-cell score impact",
+  "RP119: scoped successor closure, no fitting; held-device replay remains conditional on cooling; cleanup only after corrected gates",
+  "RP120-RP121: correct B population/token/cost assumptions; optional bounded resource pilot, not factorial; tests, reconciliation, one return",
   "No adapted pilot, financial fit or private holdout access while SOTA reproduction is the active prerequisite"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP114_RP121_2026_09_23.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
   "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-  "external_review": "../../audits/work_plan/MUSASHI_RP98_RP105_REVIEW_2026_09_22.md",
+  "external_review": "../../audits/work_plan/MUSASHI_RP106_RP113_REVIEW_2026_09_23.md",
   "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-  "return": "https://github.com/harveybc/predictor/blob/55a339ce/docs/audits/work_plan/SATOSHI_RP98_RP105_RETURN_2026_09_22.md",
+  "return": "https://github.com/harveybc/predictor/blob/e145303c/docs/audits/work_plan/SATOSHI_RP106_RP113_RETURN_2026_09_23.md",
   "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
   "benchmark_registry": "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
   "fin_loss_opt_design": "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
@@ -258,9 +271,10 @@
    ],
    "evidence": [
     "rp90_rp97 block",
-    "rp105_external_review block"
+    "rp105_external_review block",
+    "rp113_external_review block"
    ],
-   "next_action": "RP106-RP113: bind post-deletion evidence, fix content-specific deletion, finish exact float32 scoring and pending replay/catalog without refitting; warehouse blocker already removed",
+   "next_action": "RP114-RP121: independent acceptance of closure/regeneration; mandatory deletion gates; independent estimator validation and float32 division repair; no refitting",
    "deliverable": "Full official benchmark reproduction with published metrics, matched naive, numerical agreement and provenance; not an adapted proxy"
   },
   {
