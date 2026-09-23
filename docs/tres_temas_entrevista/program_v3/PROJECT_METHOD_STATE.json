@@ -46,13 +46,13 @@
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "RP113_REVIEWED_CHANGES_REQUIRED_ACCEPTANCE_BYPASSES_AND_SCORER_ROUNDING_PROVEN",
+  "status": "RP121_REVIEWED_CHANGES_REQUIRED_NUMERICAL_COVERAGE_TYPED_ACCEPTANCE_AND_DELETION_API",
   "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
   "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
   "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
   "runtime_exclusion_implemented": true,
   "policy": "SOTA_FIRST_2026_09_21.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP114_RP121_2026_09_23.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP122_RP127_2026_09_23.md",
   "suspended_measurements": [
    "simplified E0/E1 extensions",
    "household context pilots",
@@ -65,6 +65,24 @@
    "core pretraining"
   ],
   "completion_requires": "All four horizons x three seeds, accepted recipe, original float32 scoring and scoped independent verification. Repair historical custody and content-specific deletion, preserve failed portability checks, qualify inferred device identity. No retraining to repair closure; no automatic coordinator or WORKER_A GPU resumption."
+ },
+ "rp121_external_review": {
+  "reviewed_commit": "316c67af0af317c345c6959681135ba622770584",
+  "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED_NO_BENCHMARK_REFITTING",
+  "evidence": "../../audits/evidence/RP121_MUSASHI_REVIEW_2026_09_23/",
+  "executed_findings": [
+   "plausible wrong ACF and quantiles plus null defined correlation pass independent catalog acceptance",
+   "local registry relabels accepted diagnostic artifact as closure while warehouse is unchanged",
+   "public API require_acceptance=False deletes without accepted warehouse chain"
+  ],
+  "focal_suite": "85 passed, 1 skipped, 5 fork warnings; 75.65 seconds; WORKER_B CPU-only",
+  "scope": "Disposable actual-author fixtures and warehouse stub; no full production-array reduction or live warehouse query this review",
+  "gpu_work_by_reviewer": false,
+  "production_deletions_by_reviewer": 0,
+  "next_orders": "../../handoffs/MUSASHI_SOTA_RP122_RP127_2026_09_23.md",
+  "owner_action": "No new engineering approval; WORKER_A cooling remains unconfirmed, independent repairs continue",
+  "own_erratum": "RP113/RP120 incorrectly assumed A patch24; author script uses patch32: three patches in A, four in B. Satoshi correction accepted.",
+  "history": "Prior returns remain as reported; independent coverage and closure claims are qualified by this review"
  },
  "rp113_external_review": {
   "reviewed_commit": "e145303cbc5776ee3907d9997a3622e1eab272b8",
@@ -147,7 +165,7 @@
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "RP114_RP121_ISSUED_RP113_REVIEWED_NO_REFITTING_ACCEPTANCE_REPAIRS_REQUIRED",
+ "handoff_status": "RP122_RP127_ISSUED_RP121_REVIEWED_FINITE_ACCEPTANCE_REPAIRS_NO_REFITTING",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -186,21 +204,21 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "RP114-RP116: freeze PRE; independently anchor closure and regeneration outputs; require verified backup and catalog acceptance for deletion",
-  "RP117-RP118: independent estimator references and producer mutations; repair NumPy division semantics and measure actual-cell score impact",
-  "RP119: scoped successor closure, no fitting; held-device replay remains conditional on cooling; cleanup only after corrected gates",
-  "RP120-RP121: correct B population/token/cost assumptions; optional bounded resource pilot, not factorial; tests, reconciliation, one return",
+  "RP122-RP123: freeze executed PRE and validate accepted terminal kind, subject, design and artifact role instead of registry hints",
+  "RP124-RP125: independent estimator checks on declared axes/populations, reject missing defined values, remove public deletion bypass",
+  "RP126: complete finite twelve-cell numerical catalog coverage; bounded inference only when needed, no refitting",
+  "RP127: scoped closure and one return; T96 replay conditional on cooling; no verified four-horizon mean while unverified; no B factorial",
   "No adapted pilot, financial fit or private holdout access while SOTA reproduction is the active prerequisite"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP114_RP121_2026_09_23.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP122_RP127_2026_09_23.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
   "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-  "external_review": "../../audits/work_plan/MUSASHI_RP106_RP113_REVIEW_2026_09_23.md",
+  "external_review": "../../audits/work_plan/MUSASHI_RP114_RP121_REVIEW_2026_09_23.md",
   "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-  "return": "https://github.com/harveybc/predictor/blob/e145303c/docs/audits/work_plan/SATOSHI_RP106_RP113_RETURN_2026_09_23.md",
+  "return": "https://github.com/harveybc/predictor/blob/316c67af/docs/audits/work_plan/SATOSHI_RP114_RP121_RETURN_2026_09_23.md",
   "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
   "benchmark_registry": "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
   "fin_loss_opt_design": "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
@@ -278,9 +296,10 @@
    "evidence": [
     "rp90_rp97 block",
     "rp105_external_review block",
-    "rp113_external_review block"
+    "rp113_external_review block",
+    "rp121_external_review block"
    ],
-   "next_action": "RP114-RP121: independent acceptance of closure/regeneration; mandatory deletion gates; independent estimator validation and float32 division repair; no refitting",
+   "next_action": "RP122-RP127: typed accepted relationships; full numeric catalog checks; mandatory deletion API; twelve-cell scoped closure, no refitting",
    "deliverable": "Full official benchmark reproduction with published metrics, matched naive, numerical agreement and provenance; not an adapted proxy"
   },
   {

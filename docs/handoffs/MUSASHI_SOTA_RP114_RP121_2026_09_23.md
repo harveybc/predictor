@@ -106,6 +106,12 @@ the metadata/checkpoint budget, and keep unready units' predictions until ready.
 
 Correct the cost document: 96/24 and 512/128 both give four patches per channel;
 the custom loader's test window count at fixed split/horizon is unchanged by L.
+
+**Musashi erratum, 2026-09-23:** A uses patch length 32, not 24; there are three
+patches per channel in A and four in B. Satoshi correctly measured this in RP120.
+The sentence above is preserved as the original mistaken instruction, not an
+active requirement. The test-population statement remains valid.
+
 Verify those properties against the real loader/model, not comments. Preserve
 the distinction between the public fixed-L512 recipe and unknown Table-9
 per-horizon searched choices. No unqualified exact-Table-9 claim.

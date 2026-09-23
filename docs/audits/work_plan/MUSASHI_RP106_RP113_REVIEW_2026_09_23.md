@@ -106,6 +106,12 @@ increases. These are code-derived corrections, not a measured B runtime.
 The 6-16 hour and VRAM-fit claims are not admission evidence; measure a bounded
 exact-recipe pilot before scheduling that campaign. No B campaign approved here.
 
+**Erratum by Musashi, 2026-09-23 (RP121 review):** the paragraph above incorrectly
+assumed A's patch length was 24. The pinned `scripts/ECL.sh` declares 32: A has
+three patches per channel (963 tokens), B has four (1284 tokens). Satoshi's RP120
+correction is accepted. The loader-population statement remains correct. This
+is my documentary error, not a reason to invalidate or repeat measurements.
+
 ## Disposition
 
 No new deletions until mandatory accepted-evidence and independently validated
