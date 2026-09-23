@@ -1296,9 +1296,20 @@
    "measured_impact": "all six affected cells regenerated bit-identically from their retained checkpoints on the admitted 5090 and rescored with route v2; exactly one number changed in the whole population: T=336 seed 2021 MAE 0.2606664299964905 -> 0.2606664001941681 (3.0e-8). Every other T=336/T=720 author value is bit-identical under both routes; T=96 (159,164,640) and T=192 (312,412,608) have exactly representable counts and could not be affected. No horizon mean, agreement verdict or conclusion moves"
   },
   "RP119": {
-   "status": "IN_PROGRESS",
+   "status": "DONE",
    "reporting": "a horizon measured on the accepted chain without an accepted replay is reported MEASURED_REPLAY_UNVERIFIED with its values explicitly unpooled; the four-horizon average names the horizons missing per seed over a fixed denominator",
-   "catalog_acceptance": "all twelve catalogs accepted and published as governed evidence; worst internal oracle across the population 1.1e-16; the three T=96 acceptances refuse only on the missing accepted replay"
+   "catalog_acceptance": "all twelve catalogs accepted and published as governed evidence; worst internal oracle across the population 1.1e-16; the three T=96 acceptances refuse only on the missing accepted replay",
+   "report": "sha256 9c491f38… on WORKER_B (successor; earlier reports retained and accepted)",
+   "results": {
+    "96": "MEASURED_REPLAY_UNVERIFIED: author float32 0.13332/0.14008/0.13309 and 0.23055/0.23778/0.23032, custody accepted, catalog independently recomputed family by family over 159,164,640 elements (all differences 0.0), cross-device replay on the 5090 FAILS the frozen pointwise rule (1.9e-4/2.2e-4/2.7e-4) with bit-identical replayed metrics; values never pooled",
+    "192": "VERIFIED, OPERATIONAL_AGREEMENT: 0.157645 (SD 0.00380) / 0.252163 (SD 0.00396) vs 0.154/0.248; mixed-host dispersion (coordinator + WORKER_B) stated",
+    "336": "VERIFIED, OPERATIONAL_AGREEMENT: 0.164480 (SD 0.00320) / 0.262985 (SD 0.00384) vs 0.162/0.261; author float32 recovered after deletion by bit-identical regeneration",
+    "720": "VERIFIED, OPERATIONAL_AGREEMENT: 0.190226 (SD 0.00694) / 0.290617 (SD 0.00702) vs 0.184/0.284",
+    "avg": "NOT_COMPUTED over a denominator of four; T=96 named as missing for every seed"
+   },
+   "catalogs": "all twelve accepted and published as governed evidence; worst internal oracle 1.1e-16",
+   "ledger": "19 attempts (12 with records, 7 retired/interrupted with NONE_RECORDED cost), 5.37 h measured wall time, 210.3 GiB free disk",
+   "deletions": "none in this round: T=96 arrays retained because unverified; only regenerated temporaries removed by their own acceptance"
   },
   "RP120": {
    "status": "DONE",
