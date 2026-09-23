@@ -2403,6 +2403,105 @@ def metadata_backup(root: Path, dest: Path, *, extra_globs: tuple = ()) -> dict:
     return out
 
 
+def resource_pilot(root: Path, design: dict, *, horizon: int, seq_len: int = 512, patch_len: int = 128, top_p: float = 0.0,
+                   dropout: float = 0.5, steps: int = 20, val_batches: int = 20, data_path: Path, device: str = "cuda",
+                   required_uuid: str | None = None, work: Path | None = None) -> dict:
+    """RP120: a BOUNDED, exact-recipe resource pilot — the author's own model, loaders, criterion and optimizer under protocol B's
+    published arguments, for a fixed small number of optimizer steps and a bounded validation pass. It measures wall time per
+    iteration, peak VRAM, peak host RSS and the populations; it computes NO test score, selects nothing, keeps no checkpoint and
+    produces no benchmark result. Its only outputs are costs."""
+    import resource as _res
+    cell = next(c for c in design["cells"] if c["horizon"] == horizon)
+    argv = list(cell["argv"])
+
+    def setarg(a_, k, v):
+        if f"--{k}" in a_:
+            a_[a_.index(f"--{k}") + 1] = str(v)
+        else:
+            a_ += [f"--{k}", str(v)]
+        return a_
+    for k, v in (("seq_len", seq_len), ("pred_len", horizon), ("patch_len", patch_len), ("top_p", top_p), ("dropout", dropout)):
+        argv = setarg(argv, k, v)
+    if device != "cpu":
+        adm = admit_gpu(required_uuid or os.environ.get(REQUIRED_GPU_ENV), path=root)
+        if not adm["pass"]:
+            raise SotaRefusal(f"REFUSED: GPU admission failed for the protocol B pilot: {adm['refusals']}")
+    work = Path(work or (Path(root) / "pilot_work")); shutil.rmtree(work, ignore_errors=True); (work / "checkpoints").mkdir(parents=True)
+    author_env()
+    import torch
+    fix_seeds(cell["seed"])
+    args = build_args(argv, data_dir=Path(data_path).parent, data_name=Path(data_path).name, checkpoints=work / "checkpoints", gpu=0,
+                      use_gpu=(device != "cpu"), dataloader_workers=0)
+    args.augmentation_ratio = 0
+    exp_module = importlib.import_module("exp.exp_long_term_forecasting")
+    cwd = os.getcwd(); os.chdir(work)
+    t_build = time.time()
+    try:
+        exp = exp_module.Exp_Long_Term_Forecast(args)
+        if device != "cpu":
+            assert_child_device(required_uuid or os.environ.get(REQUIRED_GPU_ENV), 0)
+            torch.cuda.reset_peak_memory_stats()
+        build_seconds = time.time() - t_build
+        train_data, train_loader = exp._get_data(flag="train")
+        vali_data, vali_loader = exp._get_data(flag="val")
+        test_data, _ = exp._get_data(flag="test")
+        opt = exp._select_optimizer(); crit = exp._select_criterion()
+        exp.model.train()
+        iters = []
+        t0 = time.time()
+        for i, (bx, by, bxm, bym) in enumerate(train_loader):
+            if i >= steps:
+                break
+            ti = time.time()
+            opt.zero_grad()
+            out, moe = exp.model(bx.float().to(exp.device), exp.masks, is_training=True)
+            loss = crit(out[:, -args.pred_len:, :], by[:, -args.pred_len:, :].float().to(exp.device)) + moe
+            loss.backward(); opt.step()
+            if device != "cpu":
+                torch.cuda.synchronize()
+            iters.append(time.time() - ti)
+        train_seconds = time.time() - t0
+        exp.model.eval(); v0 = time.time(); vb = 0
+        with torch.no_grad():
+            for i, (bx, by, bxm, bym) in enumerate(vali_loader):
+                if i >= val_batches:
+                    break
+                o, _ = exp.model(bx.float().to(exp.device), exp.masks, is_training=False)
+                _ = o[:, -args.pred_len:, :].detach().cpu()
+                vb += 1
+        if device != "cpu":
+            torch.cuda.synchronize()
+        val_seconds = time.time() - v0
+        peak_vram = int(torch.cuda.max_memory_allocated()) if device != "cpu" else None
+        gpu_now = gpu_state()
+    finally:
+        os.chdir(cwd)
+        shutil.rmtree(work, ignore_errors=True)
+    ru = _res.getrusage(_res.RUSAGE_SELF)
+    steps_per_epoch = math.ceil(len(train_data) / args.batch_size)
+    per_iter = sorted(iters)[len(iters) // 2] if iters else None
+    out = {"schema": "df_sota_resource_pilot.v1", "at": now_iso(), "host": socket.gethostname(), "device": str(exp.device), "device_uuid": (actual_device_uuid(0) if device != "cpu" else None),
+           "recipe": {"seq_len": seq_len, "pred_len": horizon, "patch_len": patch_len, "top_p": top_p, "dropout": dropout, "batch_size": args.batch_size,
+                      "train_epochs": args.train_epochs, "learning_rate": args.learning_rate, "d_model": args.d_model, "e_layers": args.e_layers},
+           "populations": {"train_windows": len(train_data), "val_windows": len(vali_data), "test_windows": len(test_data), "steps_per_epoch": steps_per_epoch},
+           "measured": {"model_build_seconds": build_seconds, "optimizer_steps": len(iters), "median_seconds_per_step": per_iter,
+                        "mean_seconds_per_step": (sum(iters) / len(iters)) if iters else None, "train_seconds_measured": train_seconds,
+                        "validation_batches": vb, "validation_seconds_measured": val_seconds, "peak_vram_bytes": peak_vram,
+                        "peak_rss_bytes": int(ru.ru_maxrss) * 1024, "gpu_after": gpu_now, "host_thermals_c": host_thermals()},
+           "projection": {"basis": "median measured step x steps per epoch x epochs, plus the measured validation rate over the validation and test populations",
+                          "seconds_per_epoch_training": (per_iter * steps_per_epoch) if per_iter else None},
+           "scope": "RESOURCE ONLY: no test score, no checkpoint kept, no selection; nothing here is a benchmark result"}
+    if per_iter and vb:
+        val_rate = val_seconds / vb
+        epoch = per_iter * steps_per_epoch + val_rate * (math.ceil(len(vali_data) / args.batch_size) + math.ceil(len(test_data) / args.batch_size))
+        out["projection"]["seconds_per_epoch_total"] = epoch
+        out["projection"]["hours_per_cell_15_epochs"] = epoch * args.train_epochs / 3600.0
+        out["projection"]["hours_for_12_cells"] = epoch * args.train_epochs * 12 / 3600.0
+        out["projection"]["caveat"] = "a projection from a bounded pilot of this horizon; other horizons and early stopping are not measured"
+    write_atomic(Path(root) / f"PILOT.B_L{seq_len}_T{horizon}.json", json.dumps(out, indent=1, default=str))
+    return out
+
+
 def run_ledger(root: Path, design: dict) -> dict:
     """RP111: the bounded run ledger, frozen from MEASURED costs — every attempt this root holds (current, retired, regenerated),
     with wall and CPU seconds, peak host RSS, peak VRAM, host, device attribution and the operational patches it carried. No
@@ -3526,7 +3625,7 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger", "accept-catalog", "backup", "accept-report"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger", "accept-catalog", "backup", "accept-report", "pilot"])
     ap.add_argument("--reason", default=None)
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
@@ -3595,6 +3694,13 @@ def main(argv=None) -> int:
         print(json.dumps({"attempts": out["totals"], "free_disk_gib": round(out["measured_free_disk_bytes"] / 2 ** 30, 1),
                           "hosts": sorted({r["host"] for r in out["attempts"] if r["host"]}),
                           "attribution": sorted({r["device_attribution"] for r in out["attempts"]})}, indent=1)); return 0
+    if a.command == "pilot":
+        path = Path(a.data_path) if a.data_path else delivered_file(a.root, design, None)
+        out = resource_pilot(a.root, design, horizon=(a.horizon or 96), steps=a.steps, data_path=path, device=("cpu" if a.cpu else "cuda"),
+                             required_uuid=a.require_gpu_uuid)
+        print(json.dumps({"recipe": out["recipe"], "populations": out["populations"], "measured": {k: v for k, v in out["measured"].items() if k not in ("gpu_after", "host_thermals_c")},
+                          "projection": out["projection"], "device_uuid": out["device_uuid"]}, indent=1, default=str))
+        return 0
     if a.command == "accept-report":
         # RP115: a RETAINED closure report (this root's current one, or a preserved earlier one a deletion marker names) is given a
         # clearly dated successor acceptance. The acceptance is dated now; it does not claim the report was accepted earlier.

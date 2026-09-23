@@ -1614,3 +1614,18 @@ def test_RP115_a_cuda_regeneration_must_name_the_measured_device_it_ran_on(world
     rr = json.loads(rp.read_text()); rr["device"] = "cuda:0"; rr["device_uuid"] = None; rp.write_text(json.dumps(rr))
     ev2 = R.regeneration_evidence(root, world["cell"], json.loads((folder / "cell.json").read_text()), receipts, wh)
     assert any("measured device UUID" in r for r in ev2["refusals"])
+
+
+def test_RP120_the_resource_pilot_measures_costs_only_and_produces_no_score(world, tmp_path):
+    """The pilot runs the author's model, loaders, criterion and optimizer under the given recipe for a bounded number of steps on
+    the CPU fixture: it reports populations and costs, keeps no checkpoint, and carries no test metric."""
+    design = world["design"]; cell = design["cells"][0]
+    root = _copy(world, tmp_path)
+    out = R.resource_pilot(root, design, horizon=cell["horizon"], seq_len=cell["seq_len"], patch_len=cell["effective_args"]["patch_len"],
+                           top_p=0.0, dropout=0.5, steps=2, val_batches=2, data_path=world["data"], device="cpu", work=tmp_path / "pw")
+    assert out["measured"]["optimizer_steps"] == 2 and out["measured"]["median_seconds_per_step"] > 0
+    assert out["populations"]["test_windows"] > 0 and out["populations"]["steps_per_epoch"] > 0
+    assert out["recipe"]["top_p"] == 0.0 and out["recipe"]["dropout"] == 0.5 and out["scope"].startswith("RESOURCE ONLY")
+    assert "mae" not in json.dumps(out) and "mse" not in json.dumps(out)              # no score anywhere
+    assert not (tmp_path / "pw").exists() and (root / f"PILOT.B_L{cell['seq_len']}_T{cell['horizon']}.json").is_file()
+    assert out["projection"]["seconds_per_epoch_total"] > 0 and "projection from a bounded pilot" in out["projection"]["caveat"]
