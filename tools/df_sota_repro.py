@@ -1967,6 +1967,80 @@ shutil.rmtree(work, ignore_errors=True)
     return out
 
 
+def accept_regenerated(root: Path, design: dict, unit: str, *, data_path: Path, delete_after: bool = False) -> dict:
+    """RP112: the retained finite catalog of a DELETED cell, re-derived from the regenerated predictions and independently checked
+    before those temporaries are removed. The regeneration must be bit-identical to the deleted original (RP109); the catalog is
+    recomputed from it through the author's loader and compared with the retained METRICS_VAULT.json; the author's float32 metric,
+    the float64 check and the numeric oracles of the catalog's own independent check must all hold. Only then may the regenerated
+    arrays be deleted, with a per-path receipt; the catalog, record, checkpoint and the regeneration record are kept."""
+    root = Path(root); folder = root / "attempts" / unit
+    cell = next(c for c in design["cells"] if c["cell_id"] == unit)
+    regen_dir = folder / "regenerated"
+    reg_path = regen_dir / "REGENERATION.json"
+    out = {"schema": "df_sota_regenerated_acceptance.v1", "unit": unit, "at": now_iso(), "host": socket.gethostname(), "refusals": []}
+    if not reg_path.is_file():
+        raise SotaRefusal(f"REFUSED: {unit} has no regeneration record")
+    reg = json.loads(reg_path.read_text()); out["regeneration"] = {k: reg.get(k) for k in ("identity", "label", "device_name", "device_uuid", "at", "pred_sha256", "true_sha256", "author_metric", "independent_metric_float64")}
+    record = json.loads((folder / "cell.json").read_text())
+    preds_npy, trues_npy = regen_dir / "REGENERATED_pred.npy", regen_dir / "REGENERATED_true.npy"
+    if not preds_npy.is_file() or not trues_npy.is_file():
+        raise SotaRefusal(f"REFUSED: {unit} has no regenerated arrays on disk to accept")
+    if reg.get("identity") != "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL":
+        out["refusals"].append("REGENERATION_NOT_IDENTICAL: the regenerated predictions are not the deleted original's bytes")
+    now = {"pred": sha_npy_body(preds_npy), "true": sha_npy_body(trues_npy)}
+    out["digests_now"] = now
+    if now["pred"] != record.get("pred_sha256") or now["true"] != record.get("true_sha256"):
+        out["refusals"].append("DIGEST_DRIFT: the regenerated arrays on disk are not the digests the record preserved")
+    preds, trues = StoredArray(preds_npy), StoredArray(trues_npy)
+    exact = author_metric_exact(preds, trues)
+    out["author_metric_float32"] = {"mae": exact["mae"], "mse": exact["mse"]}; out["author_metric_route"] = exact["route"]
+    out["independent_float64"] = float64_metrics(preds, trues)
+    # the catalog, recomputed from these bytes through the author's own loader, compared with the retained one
+    author_env()
+    args = build_args(cell["argv"], data_dir=data_path.parent, data_name=data_path.name, checkpoints=Path("/nonexistent"), gpu=0, use_gpu=False)
+    args.augmentation_ratio = 0
+    DF = importlib.import_module("data_provider.data_factory")
+    _, test_loader = DF.data_provider(args, "test")
+    vault_path = folder / "METRICS_VAULT.json"
+    retained = json.loads(vault_path.read_text()) if vault_path.is_file() else None
+    identity = (retained or {}).get("identity") or {}
+    fresh = metrics_vault(preds, test_loader, pred_len=args.pred_len, identity={k: identity.get(k) for k in identity})
+    out["catalog_recomputed_equals_retained"] = bool(retained is not None and vault_equal(retained, fresh))
+    if retained is None:
+        out["refusals"].append("NO_RETAINED_CATALOG")
+    elif not out["catalog_recomputed_equals_retained"]:
+        out["refusals"].append("CATALOG_DIFFERS: the catalog recomputed from the regenerated arrays is not the retained catalog")
+    ic = fresh.get("independent_check") or {}
+    checks = {"global_vs_author_mae": fresh["global"]["mae"] - exact["mae"], "global_vs_author_mse": fresh["global"]["mse"] - exact["mse"],
+              "per_step_mean_vs_global_mae": float(np.mean(fresh["per_step"]["mae"])) - fresh["global"]["mae"],
+              "per_channel_mean_vs_global_mae": float(np.mean(fresh["per_channel"]["mae"])) - fresh["global"]["mae"],
+              "float64_vs_author_mae": out["independent_float64"]["mae"] - exact["mae"]}
+    out["numeric_oracles"] = checks
+    if abs(checks["global_vs_author_mae"]) > 1e-6 or abs(checks["global_vs_author_mse"]) > 1e-6 or abs(checks["per_step_mean_vs_global_mae"]) > 1e-9 \
+            or abs(checks["per_channel_mean_vs_global_mae"]) > 1e-9 or abs(checks["float64_vs_author_mae"]) > 1e-6:
+        out["refusals"].append(f"ORACLE: the recomputed catalog disagrees with the author's reduction: {checks}")
+    out["catalog_states"] = {k: (v.get("state") if isinstance(v, dict) else None) for k, v in (fresh.get("catalog") or {}).items()}
+    out["population"] = fresh.get("population")
+    out["pass"] = not out["refusals"]
+    preds.close(); trues.close()
+    out["deleted"] = []
+    if out["pass"] and delete_after:
+        for f in (preds_npy, trues_npy):
+            st = os.stat(f); before = os.statvfs(f); free_before = before.f_bavail * before.f_frsize
+            readers = _readers_of(f)
+            if readers:
+                out["deleted"].append({"path": str(f), "deleted": False, "why": f"ACTIVE_READER: {readers}"}); continue
+            os.unlink(f)
+            after = os.statvfs(f.parent)
+            out["deleted"].append({"path": str(f), "deleted": True, "bytes": st.st_size, "sha256": now["pred"] if "pred" in f.name else now["true"],
+                                   "reclaimed_bytes_fs_delta": after.f_bavail * after.f_frsize - free_before, "free_bytes_after": after.f_bavail * after.f_frsize, "at": now_iso()})
+        out["reading"] = ("the regenerated temporaries are removed after this acceptance; the retained catalog, record, checkpoint and this acceptance "
+                          "record remain, and the regeneration can be repeated from the checkpoint at the same cost")
+    write_atomic(regen_dir / f"ACCEPTANCE.{int(time.time())}.json", json.dumps(out, indent=1, default=str))
+    write_atomic(regen_dir / "ACCEPTANCE.json", json.dumps(out, indent=1, default=str))
+    return out
+
+
 def sha_npy_body(path: Path) -> str:
     """The digest of a .npy file's ARRAY BYTES (header excluded): the same quantity `stream_npz` records as `array_sha256`."""
     header = _npy_header_len(path)
@@ -2380,12 +2454,31 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             custody_h = accepted_terminal(warehouse, receipts, unit, design, cell)
             hv = historical_verification(root, design, cell, record, dd, custody_h)
             attribution = device_attribution(record)
+            # RP109/RP112: a regeneration by inference whose bytes are the deleted original's, and its accepted catalog, are a
+            # labelled SUCCESSOR of the historical row — never a replacement of the original report and never a current replay
+            regen = None
+            rp_, ap_ = folder / "regenerated" / "REGENERATION.json", folder / "regenerated" / "ACCEPTANCE.json"
+            if rp_.is_file():
+                rr = json.loads(rp_.read_text())
+                aa = json.loads(ap_.read_text()) if ap_.is_file() else None
+                identical = (rr.get("identity") == "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL" and rr.get("pred_sha256") == record.get("pred_sha256")
+                             and rr.get("true_sha256") == record.get("true_sha256"))
+                regen = {"identity": rr.get("identity"), "bit_identical_to_deleted_original": identical, "device_name": rr.get("device_name"),
+                         "device_uuid": rr.get("device_uuid"), "at": rr.get("at"), "author_metric_float32": rr.get("author_metric"),
+                         "independent_float64": rr.get("independent_metric_float64"), "author_metric_state": rr.get("author_metric_state"),
+                         "catalog_acceptance": ({"pass": aa.get("pass"), "catalog_recomputed_equals_retained": aa.get("catalog_recomputed_equals_retained"),
+                                                 "refusals": aa.get("refusals"), "numeric_oracles": aa.get("numeric_oracles"), "at": aa.get("at")} if aa else None),
+                         "scope": "REGENERATED_BY_INFERENCE: a new execution of the author's test path from the retained checkpoint; not a replay of the deleted arrays"}
+                if hv["verified_historically"] and identical and (aa or {}).get("pass") and rr.get("author_metric"):
+                    hv["metric"] = rr["author_metric"]
+                    hv["basis"] = (f"author_float32 (regenerated by inference from the retained checkpoint on {rr.get('device_name')}, predictions bit-identical to the "
+                                   f"deleted original; catalog re-derived and equal to the retained one) [historical row: {hv['basis']}]")
             rows.append({"unit": unit, "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")}, "verified": False,
                          "verified_historically": hv["verified_historically"], "status": hv["status"],
                          "author_metric_float32": hv["metric"], "metric_basis": hv["basis"], "metric_of_current_record": metric_of(record)[0],
                          "custody": {"class": ("HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization" if hv["verified_historically"] else "HISTORICAL_UNBOUND"),
                                      "terminal": custody_h.get("class")},
-                         "historical": hv["source"], "deletion": dd, "training": record.get("training"), "cost": record.get("cost"), "n_parameters": record.get("n_parameters"),
+                         "historical": hv["source"], "regenerated": regen, "deletion": dd, "training": record.get("training"), "cost": record.get("cost"), "n_parameters": record.get("n_parameters"),
                          "device": record.get("device"), "device_uuid": attribution["uuid"], "device_attribution": attribution,
                          "replay": {"skipped": True, "why": "predictions deleted under authorization: no current replay is possible; the historical verification is the original closure's"},
                          "problems": [f"{unit}: {r}" for r in hv["refusals"]], "task_id": disp["task_id"], "disposition": disp["disposition"]})
@@ -2881,7 +2974,7 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated"])
     ap.add_argument("--reason", default=None)
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
@@ -2930,6 +3023,13 @@ def main(argv=None) -> int:
     if a.command == "admit":
         adm = admit_gpu(a.require_gpu_uuid or os.environ.get(REQUIRED_GPU_ENV), path=a.root)
         print(json.dumps(adm, indent=1, default=str)); return 0 if adm["pass"] else 1
+    if a.command == "accept-regenerated":
+        path = Path(a.data_path) if a.data_path else delivered_file(a.root, design, None)
+        out = {}
+        for unit in (a.units or ([a.unit] if a.unit else [])):
+            r = accept_regenerated(a.root, design, unit, data_path=path, delete_after=not a.dry_run)
+            out[unit] = {k: r[k] for k in ("pass", "refusals", "catalog_recomputed_equals_retained", "author_metric_float32", "numeric_oracles", "deleted")}
+        print(json.dumps(out, indent=1, default=str)); return 0 if all(v["pass"] for v in out.values()) else 1
     if a.command == "regenerate":
         path = Path(a.data_path) if a.data_path else delivered_file(a.root, design, None)
         out = {}
