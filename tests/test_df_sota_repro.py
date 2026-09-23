@@ -1976,3 +1976,28 @@ def test_RP130_a_boolean_is_never_a_numeric_count_in_the_real_acceptance(world, 
     assert R._numeric_diff(False, False) == (0.0, "OK") and R._numeric_diff(True, False)[0] is None
     assert R._numeric_diff([1.0, False], [1.0, 0])[0] is None and R._numeric_diff({"a": True}, {"a": 1})[0] is None
     assert R._numeric_diff([[0.5, True]], [[0.5, True]]) == (0.0, "OK")
+
+
+def test_RP131_revalidation_reads_the_retained_evidence_under_the_repaired_gates_without_recomputing(world, tmp_path, monkeypatch):
+    """Evidence already on disk is re-read and re-judged: its certificate class, whether it covers the catalog on disk, and
+    whether the accepted chain still binds it to this design, subject and role. No array is read and nothing is recomputed."""
+    root, wh, held, _ = _accepted_world(world, tmp_path, monkeypatch, tag="reval")
+    unit = world["cell"]["cell_id"]; design = json.loads((root / "DESIGN.json").read_text())
+    R.accept_catalog(root, design, unit, data_path=world["data"])
+    _publish_catalog(root, unit, tmp_path, design)
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    calls = {"n": 0}
+    real = R.independent_estimators
+    monkeypatch.setattr(R, "independent_estimators", lambda *a_, **k_: calls.update(n=calls["n"] + 1) or real(*a_, **k_))
+    out = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)
+    assert calls["n"] == 0                                                       # read-only: no reduction was run
+    cell = out["cells"][unit]
+    assert cell["numerical_acceptance"] == R.FULL_NUMERIC and cell["numerical_source"] == ["catalog_acceptance"]
+    assert cell["catalog_acceptance"]["covers_catalog_on_disk"] and cell["catalog_acceptance"]["accepted"]["accepted"]
+    assert cell["predictions_on_disk"] and cell["deletion_eligible_today"] and (root / "REVALIDATION.json").is_file()
+    assert out["summary"]["with_full_numeric_acceptance"] == [unit] and out["inventory_digest"] == R.catalog_inventory_digest()
+    # a certificate that no longer covers the catalog on disk stops being eligible, without touching any array
+    v = json.loads((root / "attempts" / unit / "METRICS_VAULT.json").read_text()); v["at"] = "2020-01-01T00:00:00Z"
+    (root / "attempts" / unit / "METRICS_VAULT.json").write_text(json.dumps(v))
+    out2 = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)
+    assert not out2["cells"][unit]["catalog_acceptance"]["covers_catalog_on_disk"] and not out2["cells"][unit]["deletion_eligible_today"]

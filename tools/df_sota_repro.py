@@ -2791,6 +2791,54 @@ def resource_pilot(root: Path, design: dict, *, horizon: int, seq_len: int = 512
     return out
 
 
+def revalidate_acceptances(root: Path, design: dict, *, receipts: dict | None = None, warehouse=None) -> dict:
+    """RP131: read-only revalidation of the evidence already on disk under the REPAIRED gates. Nothing is recomputed and no array
+    is read: each cell's catalog acceptance and (where present) its regeneration acceptance are re-read, their certificates
+    derived from their own recorded content, and the accepted chain re-queried for kind, subject, role and scientific design. The
+    result says, per cell, what the retained evidence establishes today and what it does not."""
+    root = Path(root)
+    out = {"schema": "df_sota_revalidation.v1", "at": now_iso(), "host": socket.gethostname(), "design_sha256": design["design_sha256"],
+           "inventory_version": CATALOG_INVENTORY_VERSION, "inventory_digest": catalog_inventory_digest(), "cells": {}, "scope":
+           "read-only: certificates and accepted terminals re-read under the repaired gates; no array was read and nothing was recomputed"}
+    cache = {}
+    for cell in design["cells"]:
+        unit = cell["cell_id"]; folder = root / "attempts" / unit
+        entry = {"predictions_on_disk": (folder / "arrays.npz").is_file()}
+        cat = folder / "CATALOG_ACCEPTANCE.json"
+        if cat.is_file():
+            ca = json.loads(cat.read_text()); cert = acceptance_certificate(ca)
+            entry["catalog_acceptance"] = {"sha256": sha_file(cat), "pass": ca.get("pass"), "at": ca.get("at"), "class": cert["class"], "why": cert["why"],
+                                           "families_complete": len(cert["families_complete"]), "unchecked": cert["unchecked"][:3],
+                                           "inventory_version": cert["inventory_version"], "inventory_digest_recorded": bool(cert["inventory_digest"]),
+                                           "covers_catalog_on_disk": cert["catalog_sha256"] == (sha_file(folder / "METRICS_VAULT.json") if (folder / "METRICS_VAULT.json").is_file() else None),
+                                           "accepted": accepted_artifact(root, receipts or {}, warehouse, sha_file(cat), expect_kind="catalog",
+                                                                         expect_subject=unit, expect_role="catalog_acceptance",
+                                                                         design_sha256=design["design_sha256"], cache=cache)}
+        reg = folder / "regenerated" / "ACCEPTANCE.json"
+        if reg.is_file():
+            ra = json.loads(reg.read_text()); rcert = acceptance_certificate(ra)
+            entry["regeneration_acceptance"] = {"sha256": sha_file(reg), "pass": ra.get("pass"), "at": ra.get("at"), "class": rcert["class"],
+                                                "families_complete": len(rcert["families_complete"]), "disagreements": len(rcert["disagreements"]),
+                                                "identity": (json.loads((folder / "regenerated" / "REGENERATION.json").read_text()).get("identity")
+                                                             if (folder / "regenerated" / "REGENERATION.json").is_file() else None),
+                                                "accepted": accepted_artifact(root, receipts or {}, warehouse, sha_file(reg), expect_kind="regeneration",
+                                                                              expect_subject=unit, expect_role="regeneration_acceptance",
+                                                                              design_sha256=design["design_sha256"], cache=cache)}
+        numeric = [k for k in ("catalog_acceptance", "regeneration_acceptance") if (entry.get(k) or {}).get("class") == FULL_NUMERIC]
+        entry["numerical_acceptance"] = (FULL_NUMERIC if numeric else DOMAIN_ONLY)
+        entry["numerical_source"] = numeric or None
+        entry["deletion_eligible_today"] = bool(entry["predictions_on_disk"] and (entry.get("catalog_acceptance") or {}).get("class") == FULL_NUMERIC
+                                                and (entry.get("catalog_acceptance") or {}).get("accepted", {}).get("accepted"))
+        out["cells"][unit] = entry
+    out["summary"] = {"cells": len(out["cells"]),
+                      "with_full_numeric_acceptance": sorted(u for u, e in out["cells"].items() if e["numerical_acceptance"] == FULL_NUMERIC),
+                      "without": sorted(u for u, e in out["cells"].items() if e["numerical_acceptance"] != FULL_NUMERIC),
+                      "predictions_on_disk": sorted(u for u, e in out["cells"].items() if e["predictions_on_disk"]),
+                      "deletion_eligible_today": sorted(u for u, e in out["cells"].items() if e["deletion_eligible_today"])}
+    write_atomic(root / "REVALIDATION.json", json.dumps(out, indent=1, default=str))
+    return out
+
+
 def run_ledger(root: Path, design: dict) -> dict:
     """RP111: the bounded run ledger, frozen from MEASURED costs — every attempt this root holds (current, retired, regenerated),
     with wall and CPU seconds, peak host RSS, peak VRAM, host, device attribution and the operational patches it carried. No
@@ -4005,7 +4053,7 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger", "accept-catalog", "backup", "accept-report", "pilot", "retable"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger", "accept-catalog", "backup", "accept-report", "pilot", "retable", "revalidate"])
     ap.add_argument("--reason", default=None)
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
@@ -4082,6 +4130,19 @@ def main(argv=None) -> int:
         (a.root / "SOTA_TABLE.json").write_text(json.dumps(t, indent=1, default=str))
         (a.root / "SOTA_TABLE.md").write_text(markdown(t))
         print(json.dumps({"report_sha256": digest, "rows": [{"horizon": r["horizon"], "state": r["measurement_state"], "baselines": r.get("matched_baselines")} for r in t["rows"]]}, indent=1, default=str))
+        return 0
+    if a.command == "revalidate":
+        C = _module("df_mod_e0_close")
+        token = Path(a.warehouse_token_file).read_text().strip().strip('"').strip("'") if getattr(a, "warehouse_token_file", None) else None
+        warehouse = (lambda campaign: C.warehouse_terminals(a.warehouse_url, token, campaign)) if token else None
+        receipts = (json.loads((a.root / "TERMINAL_RECEIPTS.json").read_text()) or {}).get("units") or {} if (a.root / "TERMINAL_RECEIPTS.json").is_file() else {}
+        out = revalidate_acceptances(a.root, design, receipts=receipts, warehouse=warehouse)
+        if getattr(a, "publish_acceptance", False):
+            pub = publish_acceptance(a, design, kind="revalidation", subject=f"revalidation of {design['design_sha256'][:12]}", files={"revalidation": a.root / "REVALIDATION.json"})
+            out["acceptance_unit"] = pub["unit"]
+        print(json.dumps({"summary": out["summary"], "acceptance_unit": out.get("acceptance_unit"),
+                          "per_cell": {u: {"numerical": e["numerical_acceptance"], "source": e["numerical_source"], "on_disk": e["predictions_on_disk"],
+                                           "deletion_eligible_today": e["deletion_eligible_today"]} for u, e in out["cells"].items()}}, indent=1, default=str))
         return 0
     if a.command == "ledger":
         out = run_ledger(a.root, design)
