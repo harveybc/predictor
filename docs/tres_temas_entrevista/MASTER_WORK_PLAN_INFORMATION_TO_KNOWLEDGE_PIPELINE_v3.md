@@ -648,3 +648,21 @@ CALCULAR. Aceptacion independiente de los doce catalogos (nueve pasan con todos 
 autorizado de los tres arreglos T=720 (12.59 GB) con recibos por ruta. Protocolo B (Tabla 9, L=512) queda especificado y
 costeado como entrega separada, sin ejecutar. Colocacion: unica GPU admitida la RTX 5090 externa de WORKER_B, verificada por
 UUID fisico antes de cada despacho y afirmada dentro del hijo; sin respaldo a GPU interna ni al coordinador.
+
+**Ejecutado por Satoshi (23-sep, RP114-RP121, pendiente de revision):** [retorno](../audits/work_plan/SATOSHI_RP114_RP121_RETURN_2026_09_23.md),
+evidencia en `docs/audits/evidence/d3_k5_20260917/{RP114,RP119}/`. Los cinco contraejemplos del dictamen RP113 quedaron
+congelados como PRE y reparados: (1) resolver un digesto no es aceptarlo, asi que informes de cierre, aceptaciones de catalogo y
+regeneraciones se publican ahora como terminales gobernados y la verificacion historica exige que el informe sea evidencia
+ACEPTADA; (2) una regeneracion fabricada ya no reemplaza nada: debe estar aceptada y ser coherente con el catalogo retenido, y
+una rechazada se reporta e ignora sin destruir el vinculo original; (3) el borrado exige informe aceptado, aceptacion de catalogo
+y respaldo verificado en bytes, y su frontera de desvinculacion prueba por descriptor e inodo que lo borrado eran los bytes
+aceptados; (4) la media float32 del autor divide por el conteo como numpy (entero de 64 bits promovido a float64), no por
+float32(N): se corrigio, se verso la ruta y se midio el impacto real, **un solo numero cambio en toda la poblacion, el MAE de
+T=336 semilla 2021, en 3·10⁻⁸**; (5) la aceptacion de catalogos valida ahora el dominio de cada familia y, donde hay arreglos,
+los recomputa con una implementacion independiente. Las seis celdas afectadas por (4) se regeneraron por inferencia desde sus
+checkpoints en la 5090 externa admitida: **bit a bit identicas a las originales**. Cierre sucesor (informe 9c491f38…):
+**T=192 0.1576/0.2522, T=336 0.1645/0.2630 y T=720 0.1902/0.2906 en ACUERDO OPERACIONAL** con la metrica propia del autor;
+**T=96 pasa a MEDIDA_SIN_REPLAY_ACEPTADO** (no "sin medicion"), con sus valores fuera de toda media y su fallo entre GPUs
+preservado. Los doce catalogos aceptados y publicados (peor oraculo interno 1.1·10⁻¹⁶). Protocolo B: corregido (3 y 4 parches por
+canal, poblacion de prueba identica) y **medido** con un piloto acotado en la 5090 (0.055-0.060 s por paso, 6.6 GiB de VRAM),
+proyectado en ~4 h para doce celdas; sin campana lanzada. Sin borrados nuevos en esta ronda.
