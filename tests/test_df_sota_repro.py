@@ -1231,3 +1231,43 @@ def test_RP111_the_run_ledger_is_frozen_from_measured_costs_including_retired_at
     row = next(r for r in led["attempts"] if r["state"] == "CURRENT")
     assert row["unit"] == unit and row["device_attribution"] == "CPU" and row["peak_rss_bytes"] and row["epochs_run"]
     assert all(isinstance(r["wall_seconds"], float) for r in led["attempts"]) and led["scope"].endswith("nothing here is projected")
+
+
+def test_RP112_the_catalog_is_independently_accepted_from_its_own_estimators_before_any_deletion(world, tmp_path):
+    """Denominators, population, required families and their states, and oracles between the catalog's own estimators (per-step,
+    per-channel, per-window, time blocks, skill identities), plus the closure's recomputation of THIS catalog."""
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tok"; tok.write_text("synthetic")
+        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False, replay_device="cpu"), json.loads((root / "DESIGN.json").read_text()))
+    design = json.loads((root / "DESIGN.json").read_text())
+    acc = R.accept_catalog(root, design, unit)
+    assert acc["pass"], acc["refusals"]
+    assert acc["states"]["errors"] == "DONE" and acc["states"]["matched_baselines"] == "DONE" and acc["population"]["consumed_windows"] == acc["population"]["windows"]
+    assert abs(acc["oracles"]["per_step_mean_vs_global_mae"]) <= 1e-9 and acc["oracles"]["per_window_length_vs_population"] == 0
+    assert acc["closure"]["metrics_vault_read_back_equal"] and acc["closure"]["metrics_vault_sha256"] == acc["catalog_sha256"]
+    assert (folder / "CATALOG_ACCEPTANCE.json").is_file()
+    # a tampered catalog fails its own oracles and the closure binding
+    v = json.loads((folder / "METRICS_VAULT.json").read_text()); v["global"]["mae"] = v["global"]["mae"] * 1.05
+    (folder / "METRICS_VAULT.json").write_text(json.dumps(v))
+    bad = R.accept_catalog(root, design, unit)
+    assert not bad["pass"] and any("ORACLE per_step_mean_vs_global_mae" in r for r in bad["refusals"]) and any("CLOSURE" in r for r in bad["refusals"])
+
+
+def test_RP112_the_metadata_backup_covers_the_evidence_the_deletion_approval_binds_to(world, tmp_path):
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tok"; tok.write_text("synthetic")
+        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False, replay_device="cpu"), json.loads((root / "DESIGN.json").read_text()))
+    out = R.metadata_backup(root, tmp_path / "backup")
+    assert f"attempts/{unit}/cell.json" in out["files"] and f"attempts/{unit}/METRICS_VAULT.json" in out["files"] and "REPORT.json" in out["files"]
+    assert not any("arrays.npz" in k or "checkpoint.pth" in k for k in out["files"]) and out["bytes"] > 0
+    assert (tmp_path / "backup" / "MANIFEST.json").is_file()
+    # the deletion accepts this manifest and refuses a stale one
+    report_sha = R.sha_file(root / "REPORT.json")
+    ok = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "backup" / "MANIFEST.json")
+    assert ok["units"][unit]["state"] == "COMPLETE" and ok["units"][unit]["marker"]["approval"]["checkpoint_backed_up"] is False

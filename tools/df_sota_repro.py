@@ -2041,6 +2041,122 @@ def accept_regenerated(root: Path, design: dict, unit: str, *, data_path: Path, 
     return out
 
 
+CATALOG_REQUIRED_FAMILIES = ("errors", "percentage_errors_zspace", "matched_baselines", "residual_moments", "correlation_r2", "autocorrelation", "time_blocks", "per_window_series")
+
+
+def accept_catalog(root: Path, design: dict, unit: str) -> dict:
+    """RP112: the finite catalog of a cell, checked INDEPENDENTLY of the process that produced it, before its predictions may be
+    deleted. Nothing is recomputed from the arrays here (the closure already did that and read it back); this checks the catalog
+    itself: its identity against the retained record and the accepted chain, its population and denominators, the presence and
+    state of every required estimator family, and numeric oracles that must hold between its own estimators — the per-step and
+    per-channel means against the global, the window-weighted time blocks against the global, the per-window series against the
+    global, the baselines' skill identities, and the closure's own recomputation and author-scorer parity for the same unit."""
+    root = Path(root); folder = root / "attempts" / unit
+    out = {"schema": "df_sota_catalog_acceptance.v1", "unit": unit, "at": now_iso(), "host": socket.gethostname(), "refusals": [], "oracles": {}}
+    vp = folder / "METRICS_VAULT.json"
+    if not vp.is_file():
+        raise SotaRefusal(f"REFUSED: {unit} has no retained catalog")
+    v = json.loads(vp.read_text()); record = json.loads((folder / "cell.json").read_text())
+    out["catalog_sha256"] = sha_file(vp); out["schema_of_catalog"] = v.get("schema"); out["population"] = v.get("population")
+    if v.get("schema") != VAULT_SCHEMA:
+        out["refusals"].append(f"SCHEMA: {v.get('schema')} is not {VAULT_SCHEMA}")
+    ident = v.get("identity") or {}
+    for key, want in (("record_sha256", sha_file(folder / "cell.json")), ("checkpoint_sha256", sha_file(folder / "checkpoint.pth")),
+                      ("pred_sha256", record.get("pred_sha256")), ("true_sha256_record", record.get("true_sha256")),
+                      ("design_sha256", design["design_sha256"]), ("unit", unit)):
+        if ident.get(key) != want:
+            out["refusals"].append(f"IDENTITY: the catalog's {key} is not the retained {key}")
+    pop = v.get("population") or {}
+    cell = next(c for c in design["cells"] if c["cell_id"] == unit)
+    if pop.get("steps") != cell["horizon"] or pop.get("channels") != int(record["effective_args"]["c_out"]):
+        out["refusals"].append("POPULATION: the catalog's horizon/channels are not the cell's")
+    if pop.get("consumed_windows") != pop.get("windows") or pop.get("elements") != (pop.get("windows", 0) * pop.get("steps", 0) * pop.get("channels", 0)):
+        out["refusals"].append("DENOMINATOR: the catalog's element count is not windows x steps x channels, or the loader was not fully consumed")
+    states = {k: (x.get("state") if isinstance(x, dict) else None) for k, x in (v.get("catalog") or {}).items()}
+    out["states"] = states
+    for fam in CATALOG_REQUIRED_FAMILIES:
+        if fam not in states:
+            out["refusals"].append(f"MISSING_FAMILY: {fam}")
+        elif states[fam] not in ("DONE", "APPROXIMATE", "NOT_APPLICABLE_IN_ONE_CELL"):
+            out["refusals"].append(f"FAMILY_STATE: {fam} is {states[fam]}")
+    if states.get("errors") != "DONE" or states.get("matched_baselines") != "DONE":
+        out["refusals"].append("REQUIRED_STATE: errors and matched baselines must be DONE")
+    g = v["global"]; W = pop.get("windows") or 0
+    per_step, per_channel, blocks, per_window = v["per_step"], v["per_channel"], v["time_blocks"], v["per_window"]
+    oracles = {"per_step_mean_vs_global_mae": float(np.mean(per_step["mae"])) - g["mae"],
+               "per_step_mean_vs_global_mse": float(np.mean(per_step["mse"])) - g["mse"],
+               "per_channel_mean_vs_global_mae": float(np.mean(per_channel["mae"])) - g["mae"],
+               "per_window_mean_vs_global_mae": float(np.mean(per_window["mae"])) - g["mae"],
+               "per_window_mean_vs_global_mse": float(np.mean(per_window["mse"])) - g["mse"],
+               "time_blocks_weighted_vs_global_mae": (float(np.sum([b["mae"] * b["windows"] for b in blocks]) / max(1, sum(b["windows"] for b in blocks))) - g["mae"]),
+               "time_block_windows_vs_population": sum(b["windows"] for b in blocks) - W,
+               "per_window_length_vs_population": len(per_window["mae"]) - W,
+               "per_step_length_vs_horizon": len(per_step["mae"]) - pop.get("steps", 0),
+               "per_channel_length_vs_channels": len(per_channel["mae"]) - pop.get("channels", 0),
+               "skill_mae_identity": (1.0 - g["mae"] / g["naive_mae"]) - g["skill_mae_vs_naive"],
+               "skill_mse_identity": (1.0 - g["mse"] / g["naive_mse"]) - g["skill_mse_vs_naive"],
+               "rmse_identity": float(np.sqrt(g["mse"])) - g["rmse"],
+               "naive_per_step_mean_vs_global": float(np.mean(per_step["naive_mae"])) - g["naive_mae"]}
+    out["oracles"] = oracles
+    tolerances = {"per_step_mean_vs_global_mae": 1e-9, "per_step_mean_vs_global_mse": 1e-9, "per_channel_mean_vs_global_mae": 1e-9,
+                  "per_window_mean_vs_global_mae": 1e-9, "per_window_mean_vs_global_mse": 1e-9, "time_blocks_weighted_vs_global_mae": 1e-9,
+                  "time_block_windows_vs_population": 0, "per_window_length_vs_population": 0, "per_step_length_vs_horizon": 0,
+                  "per_channel_length_vs_channels": 0, "skill_mae_identity": 1e-12, "skill_mse_identity": 1e-12, "rmse_identity": 1e-9,
+                  "naive_per_step_mean_vs_global": 1e-9}
+    for k, tol in tolerances.items():
+        if abs(oracles[k]) > tol:
+            out["refusals"].append(f"ORACLE {k}: {oracles[k]} exceeds {tol}")
+    ic = v.get("independent_check") or {}
+    out["catalog_independent_check"] = ic
+    if not ic or abs((ic.get("global_vs_author") or {}).get("mae", 1)) > 1e-6 or abs((ic.get("global_vs_author") or {}).get("mse", 1)) > 1e-6:
+        out["refusals"].append("INDEPENDENT_CHECK: the catalog's global metrics do not agree with the cell's own reduction")
+    report_path = root / "REPORT.json"
+    row = None
+    if report_path.is_file():
+        rep = json.loads(report_path.read_text())
+        row = next((r for r in rep["verification"]["rows"] if r["unit"] == unit), None)
+        out["closure"] = {"report_sha256": sha_file(report_path), "verified": (row or {}).get("verified"), "verified_historically": (row or {}).get("verified_historically"),
+                          "metrics_vault_recomputed": ((row or {}).get("recomputed") or {}).get("metrics_vault_recomputed"),
+                          "metrics_vault_read_back_equal": ((row or {}).get("recomputed") or {}).get("metrics_vault_read_back_equal"),
+                          "metrics_vault_sha256": ((row or {}).get("recomputed") or {}).get("metrics_vault_sha256"),
+                          "author_scorer_parity": ((row or {}).get("recomputed") or {}).get("author_scorer_parity"), "metric_basis": (row or {}).get("metric_basis")}
+        rc = out["closure"]
+        if not (row and (row.get("verified") or row.get("verified_historically"))):
+            out["refusals"].append("CLOSURE: the current closure neither verified this unit nor bound its history")
+        if row and row.get("verified") and not (rc.get("metrics_vault_recomputed") and rc.get("metrics_vault_read_back_equal") and rc.get("metrics_vault_sha256") == out["catalog_sha256"]):
+            out["refusals"].append("CLOSURE: the closure did not recompute and read back THIS catalog from the accepted arrays")
+    else:
+        out["refusals"].append("CLOSURE: no REPORT.json to bind the acceptance to")
+    out["pass"] = not out["refusals"]
+    write_atomic(folder / "CATALOG_ACCEPTANCE.json", json.dumps(out, indent=1, default=str))
+    return out
+
+
+def metadata_backup(root: Path, dest: Path, *, extra_globs: tuple = ()) -> dict:
+    """RP112: the small durable backup the deletion approval binds to — records, catalogs, acceptances, terminals, receipts,
+    reports and deletion markers; never arrays or checkpoints. Returns and writes a manifest {relative path: sha256}."""
+    root, dest = Path(root), Path(dest)
+    patterns = ("attempts/*/cell.json", "attempts/*/METRICS_VAULT.json", "attempts/*/CATALOG_ACCEPTANCE.json", "attempts/*/PREDICTIONS_DELETED.json",
+                "attempts/*/regenerated/REGENERATION.json", "attempts/*/regenerated/ACCEPTANCE.json", "attempts/*/ROUTE_TRACE.json",
+                "TERMINALS/*.json", "TERMINAL_RECEIPTS.json", "DELIVERIES.json", "DESIGN.json", "BENCH_DATA.json", "REPORT.json",
+                "reports/*.json", "REPORT*.json", "SOTA_TABLE.json", "PAIRED_CONTRASTS.json", "DELETION_RECEIPT.*.json", "REPLAYS*.json", "RUN_LEDGER.json") + tuple(extra_globs)
+    manifest, total = {}, 0
+    for pat in patterns:
+        for f in sorted(root.glob(pat)):
+            if not f.is_file():
+                continue
+            rel = str(f.relative_to(root))
+            target = dest / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(f, target)
+            manifest[rel] = sha_file(f); total += f.stat().st_size
+    out = {"schema": "df_sota_metadata_backup.v1", "at": now_iso(), "host": socket.gethostname(), "root": str(root), "backup": str(dest),
+           "files": manifest, "file_count": len(manifest), "bytes": total,
+           "scope": "metadata only: records, catalogs, acceptances, terminals, receipts, reports, markers and ledgers; no prediction array and no checkpoint"}
+    write_atomic(dest / "MANIFEST.json", json.dumps(out, indent=1, default=str))
+    return out
+
+
 def run_ledger(root: Path, design: dict) -> dict:
     """RP111: the bounded run ledger, frozen from MEASURED costs — every attempt this root holds (current, retired, regenerated),
     with wall and CPU seconds, peak host RSS, peak VRAM, host, device attribution and the operational patches it carried. No
@@ -3019,7 +3135,7 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger", "accept-catalog", "backup"])
     ap.add_argument("--reason", default=None)
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
@@ -3065,6 +3181,18 @@ def main(argv=None) -> int:
             raise SotaRefusal("REFUSED: report needs a registered cell with its record on disk")
         record = json.loads((a.root / "attempts" / a.unit / "cell.json").read_text())
         report_unit(a, design, cell, record); print(json.dumps({"unit": a.unit, "reported": True, "metric_basis": metric_of(record)[1]})); return 0
+    if a.command == "accept-catalog":
+        out = {}
+        for unit in (a.units or [c["cell_id"] for c in design["cells"]]):
+            if not (a.root / "attempts" / unit / "METRICS_VAULT.json").is_file():
+                continue
+            r = accept_catalog(a.root, design, unit)
+            out[unit] = {"pass": r["pass"], "refusals": r["refusals"], "states": r["states"], "population": r["population"],
+                         "worst_oracle": max(((abs(v_) if isinstance(v_, (int, float)) else 0), k) for k, v_ in r["oracles"].items())}
+        print(json.dumps(out, indent=1, default=str)); return 0 if all(v["pass"] for v in out.values()) else 1
+    if a.command == "backup":
+        out = metadata_backup(a.root, a.source or (a.root / "metadata_backup"))
+        print(json.dumps({"files": out["file_count"], "bytes": out["bytes"], "backup": out["backup"]}, indent=1)); return 0
     if a.command == "ledger":
         out = run_ledger(a.root, design)
         print(json.dumps({"attempts": out["totals"], "free_disk_gib": round(out["measured_free_disk_bytes"] / 2 ** 30, 1),
