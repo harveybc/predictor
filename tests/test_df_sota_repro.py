@@ -1849,3 +1849,127 @@ def test_RP126_a_regeneration_that_is_not_the_original_removes_its_temporaries_a
     assert not out["pass"] and any("REGENERATION_NOT_IDENTICAL" in r for r in out["refusals"])
     assert [d["deleted"] for d in out["deleted"]] == [True, True] and not (folder / "regenerated" / "REGENERATED_pred.npy").exists()
     assert "not the deleted original, so the temporaries are removed" in out["reading"] and rp.is_file()
+
+
+# --- RP128/RP129/RP130: Musashi's RP127 counterexamples on the real consumers ----------------------------------------------------
+
+def test_RP128_an_acceptance_without_the_numerical_reference_cannot_authorise_a_deletion(world, tmp_path):
+    """Musashi RP127 #1: the wrong-ACF catalog is refused when the reference runs, but a data-less acceptance emitted `pass` and
+    the normal deletion API removed the array. The certificate now says what was established, and the deletion reads it."""
+    def wrong_acf(v):
+        blk = v["autocorrelation"]["channel_mean_residual_per_step"]
+        blk["acf_by_lag"] = [[0.0 if x is not None else None for x in row] for row in blk["acf_by_lag"]]
+        return v
+
+    root = _broken_catalog_world(world, tmp_path, "acf_gate", wrong_acf)
+    unit = world["cell"]["cell_id"]; design = json.loads((root / "DESIGN.json").read_text())
+    with_ref = R.accept_catalog(root, design, unit, data_path=world["data"])
+    assert not with_ref["pass"] and with_ref["acceptance_class"] == R.DOMAIN_ONLY
+    # the same catalog accepted without the reference: it may pass its own restricted checks, but it certifies nothing numeric
+    no_ref = R.accept_catalog(root, design, unit)
+    assert no_ref["pass"] and no_ref["acceptance_class"] == R.DOMAIN_ONLY and no_ref["independent_comparison"] is None
+    assert "cannot authorise a deletion" in no_ref["restricted_scope"]
+    cert = R.acceptance_certificate(no_ref)
+    assert cert["class"] == R.DOMAIN_ONLY and cert["why"] == "no independent numerical comparison was run"
+    # and the real deletion API refuses on it, with every array intact
+    _accept_evidence(world, root, "closure", {"closure_report": root / "REPORT.json"}, "closure")
+    _accept_evidence(world, root, "catalog", {"catalog_acceptance": root / "attempts" / unit / "CATALOG_ACCEPTANCE.json",
+                                              "metrics_vault": root / "attempts" / unit / "METRICS_VAULT.json"}, unit)
+    R.metadata_backup(root, tmp_path / "bk_gate")
+    out = R.delete_predictions(root, [unit], accepted_report_sha256=R.sha_file(root / "REPORT.json"),
+                               backup_manifest=tmp_path / "bk_gate" / "MANIFEST.json",
+                               receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=_wh(world))
+    assert out["units"][unit]["state"] == "REFUSED" and (root / "attempts" / unit / "arrays.npz").is_file()
+    assert any("NOT_NUMERICALLY_VERIFIED" in r for r in out["units"][unit]["preflight"]["refusals"])
+    dry = R.delete_predictions(root, [unit], dry_run=True, accepted_report_sha256=R.sha_file(root / "REPORT.json"),
+                               backup_manifest=tmp_path / "bk_gate" / "MANIFEST.json",
+                               receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=_wh(world))
+    assert dry["units"][unit]["state"] == "REFUSED" and (root / "attempts" / unit / "arrays.npz").is_file()
+
+
+def test_RP128_the_certificate_refuses_a_stale_pass_an_unchecked_field_and_another_population(world, tmp_path):
+    """The deletion reads the certificate's content: a `pass` left over from an incomplete comparison, one unchecked field, a
+    foreign inventory or a population that is not the record's must all refuse."""
+    root, unit, report_sha = _closed_and_deleted(world, tmp_path)          # a valid, fully certified deletion happened here
+    folder = root / "attempts" / unit
+    ca = json.loads((folder / "CATALOG_ACCEPTANCE.json").read_text())
+    assert ca["acceptance_class"] == R.FULL_NUMERIC and R.acceptance_certificate(ca)["class"] == R.FULL_NUMERIC
+    stale = json.loads(json.dumps(ca)); stale["independent_comparison"]["unchecked"] = ["per_step.mae"]
+    assert R.acceptance_certificate(stale)["class"] == R.DOMAIN_ONLY and "unchecked" in R.acceptance_certificate(stale)["why"]
+    failed = json.loads(json.dumps(ca)); failed["independent_comparison"]["disagreements"] = ["residuals.sd: max |difference| 1e-3"]
+    assert R.acceptance_certificate(failed)["class"] == R.DOMAIN_ONLY and failed["pass"] is True     # the flag is not the authority
+    partial = json.loads(json.dumps(ca)); partial["independent_comparison"]["coverage"].pop("entropy", None)
+    partial["independent_comparison"]["families_complete"] = [f for f in partial["independent_comparison"]["families_complete"] if f != "entropy"]
+    assert R.acceptance_certificate(partial)["class"] == R.DOMAIN_ONLY
+
+
+def test_RP129_a_foreign_or_absent_design_refuses_in_the_helper_and_in_the_real_deletion(world, tmp_path):
+    """Musashi RP127 #2: the acceptance terminal declaring another design (or none) must refuse at the destructive consumer, not
+    only when a caller happens to pass the expected design."""
+    root = _copy(world, tmp_path / "design"); unit = world["cell"]["cell_id"]
+    design = json.loads((root / "DESIGN.json").read_text())
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tokd"; tok.write_text("x")
+        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="s://", data_path=world["data"], skip_replay=False, replay_device="cpu"), design)
+    ready = _ready(root, unit, world, tmp_path / "bk_design")
+    receipts = ready["receipts"]
+    foreign = "f" * 64
+    reg = json.loads((root / R.ACCEPTED_EVIDENCE).read_text())["entries"]
+    for acceptance_unit in {e["unit"] for e in reg.values()}:
+        row = world["held"][acceptance_unit]
+        row["config_sha256"] = foreign; row["tags"]["design_sha256"] = foreign
+        row.pop("terminal_sha256", None)
+        row["terminal_sha256"] = hashlib.sha256(json.dumps(row, sort_keys=True).encode()).hexdigest()
+        receipts[acceptance_unit]["terminal_sha256"] = row["terminal_sha256"]
+    doc = json.loads((root / "TERMINAL_RECEIPTS.json").read_text()); doc["units"] = receipts
+    (root / "TERMINAL_RECEIPTS.json").write_text(json.dumps(doc))
+    R.metadata_backup(root, tmp_path / "bk_design2"); ready["backup_manifest"] = tmp_path / "bk_design2" / "MANIFEST.json"
+    strict = R.accepted_artifact(root, receipts, _wh(world), R.sha_file(root / "REPORT.json"), expect_kind="closure",
+                                 expect_role="closure_report", design_sha256=design["design_sha256"])
+    assert not strict["accepted"] and "design" in (strict["why"] or "")
+    out = R.delete_predictions(root, [unit], **ready)
+    assert out["units"][unit]["state"] == "REFUSED" and (root / "attempts" / unit / "arrays.npz").is_file()
+    assert any("NOT_ACCEPTED" in r for r in out["units"][unit]["preflight"]["refusals"])
+    # a terminal that declares NO design is refused too, even when the expected design is given explicitly
+    for acceptance_unit in {e["unit"] for e in reg.values()}:
+        row = world["held"][acceptance_unit]
+        row.pop("config_sha256", None); row["tags"].pop("design_sha256", None)
+        row.pop("terminal_sha256", None)
+        row["terminal_sha256"] = hashlib.sha256(json.dumps(row, sort_keys=True).encode()).hexdigest()
+        receipts[acceptance_unit]["terminal_sha256"] = row["terminal_sha256"]
+    absent = R.accepted_artifact(root, receipts, _wh(world), R.sha_file(root / "REPORT.json"), expect_kind="closure",
+                                 expect_role="closure_report", design_sha256=design["design_sha256"])
+    assert not absent["accepted"] and "declares no scientific design" in (absent["why"] or "")
+    # and a contradictory pair (declared design right, campaign config digest different) is a contradiction, not a match
+    for acceptance_unit in {e["unit"] for e in reg.values()}:
+        row = world["held"][acceptance_unit]
+        row["tags"]["design_sha256"] = design["design_sha256"]; row["config_sha256"] = foreign
+        row.pop("terminal_sha256", None)
+        row["terminal_sha256"] = hashlib.sha256(json.dumps(row, sort_keys=True).encode()).hexdigest()
+        receipts[acceptance_unit]["terminal_sha256"] = row["terminal_sha256"]
+    contra = R.accepted_artifact(root, receipts, _wh(world), R.sha_file(root / "REPORT.json"), expect_kind="closure",
+                                 expect_role="closure_report", design_sha256=design["design_sha256"])
+    assert not contra["accepted"] and "contradicts" in (contra["why"] or "")
+
+
+def test_RP130_a_boolean_is_never_a_numeric_count_in_the_real_acceptance(world, tmp_path):
+    """Musashi RP127 #3: the producer emits `False` where a count belongs. The full acceptance must refuse it as a type, and the
+    same holds for True-as-one, at any depth, while genuine booleans still compare as booleans."""
+    def boolean_count(v):
+        assert v["residuals"]["histogram"]["outside_range"] == 0
+        v["residuals"]["histogram"]["outside_range"] = False
+        return v
+
+    root = _broken_catalog_world(world, tmp_path, "boolcount", boolean_count)
+    unit = world["cell"]["cell_id"]
+    acc = R.accept_catalog(root, json.loads((root / "DESIGN.json").read_text()), unit, data_path=world["data"])
+    field = acc["independent_comparison"]["fields"]["residuals.histogram.outside_range"]
+    assert not acc["pass"] and field["status"] == "DISAGREEMENT" and "boolean" in field["detail"]
+    assert acc["acceptance_class"] == R.DOMAIN_ONLY
+    # the helper's typed rules, including nesting
+    assert R._numeric_diff(False, 0)[0] is None and R._numeric_diff(True, 1)[0] is None and R._numeric_diff(True, 1.0)[0] is None
+    assert R._numeric_diff(False, False) == (0.0, "OK") and R._numeric_diff(True, False)[0] is None
+    assert R._numeric_diff([1.0, False], [1.0, 0])[0] is None and R._numeric_diff({"a": True}, {"a": 1})[0] is None
+    assert R._numeric_diff([[0.5, True]], [[0.5, True]]) == (0.0, "OK")

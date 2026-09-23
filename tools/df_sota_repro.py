@@ -1804,7 +1804,9 @@ def deletion_preflight(root: Path, unit: str, roots: list, *, accepted_report_sh
         out["approval"]["accepted_report_sha256"] = accepted_report_sha256
         if actual != accepted_report_sha256:
             out["refusals"].append(f"APPROVAL_REPORT_MISMATCH: REPORT.json is {str(actual)[:12]}, the accepted report is {accepted_report_sha256[:12]}")
-        acc = accepted_artifact(root, receipts or {}, warehouse, accepted_report_sha256, expect_kind="closure", expect_role="closure_report")
+        design_for_check = (json.loads((root / "DESIGN.json").read_text()).get("design_sha256") if (root / "DESIGN.json").is_file() else None)
+        acc = accepted_artifact(root, receipts or {}, warehouse, accepted_report_sha256, expect_kind="closure", expect_role="closure_report",
+                                design_sha256=design_for_check)
         out["approval"]["report_acceptance"] = acc
         if not acc["accepted"]:
             out["refusals"].append(f"APPROVAL_REPORT_NOT_ACCEPTED: {acc['why']}")
@@ -1813,12 +1815,27 @@ def deletion_preflight(root: Path, unit: str, roots: list, *, accepted_report_sh
         out["refusals"].append("CATALOG_ACCEPTANCE_MISSING: this unit has no independent catalog acceptance")
     else:
         ca = json.loads(cat.read_text())
-        out["approval"]["catalog_acceptance"] = {"sha256": sha_file(cat), "pass": ca.get("pass"), "at": ca.get("at"), "refusals": ca.get("refusals")}
+        cert = acceptance_certificate(ca)
+        on_disk = sha_file(folder / "METRICS_VAULT.json") if (folder / "METRICS_VAULT.json").is_file() else None
+        out["approval"]["catalog_acceptance"] = {"sha256": sha_file(cat), "pass": ca.get("pass"), "at": ca.get("at"), "refusals": ca.get("refusals"),
+                                                 "certificate": cert}
+        # RP128: the destructive decision reads what the certificate ESTABLISHES — its class, the catalog it covers, its
+        # population, the inventory it was issued under and a complete comparison with no disagreement — never a bare flag.
         if not ca.get("pass"):
             out["refusals"].append(f"CATALOG_ACCEPTANCE_FAILED: {ca.get('refusals')}")
-        if ca.get("catalog_sha256") != (sha_file(folder / "METRICS_VAULT.json") if (folder / "METRICS_VAULT.json").is_file() else None):
+        if cert["class"] != FULL_NUMERIC:
+            out["refusals"].append(f"CATALOG_ACCEPTANCE_NOT_NUMERICALLY_VERIFIED: {cert['why']}")
+        if cert["catalog_sha256"] != on_disk:
             out["refusals"].append("CATALOG_ACCEPTANCE_STALE: the acceptance is not of the catalog on disk")
-        acc_c = accepted_artifact(root, receipts or {}, warehouse, sha_file(cat), expect_kind="catalog", expect_subject=unit, expect_role="catalog_acceptance")
+        if cert["inventory_version"] not in (None, CATALOG_INVENTORY_VERSION) or (cert["inventory_digest"] not in (None, catalog_inventory_digest())):
+            out["refusals"].append(f"CATALOG_ACCEPTANCE_INVENTORY: issued under {cert['inventory_version']} / {str(cert['inventory_digest'])[:12]}, not the declared inventory")
+        pop = (cert.get("population") or {})
+        rec_for_pop = json.loads((folder / "cell.json").read_text()) if (folder / "cell.json").is_file() else {}
+        shapes = (rec_for_pop.get("shapes") or {}).get("pred")
+        if shapes and [pop.get("windows"), pop.get("steps"), pop.get("channels")] != list(shapes):
+            out["refusals"].append(f"CATALOG_ACCEPTANCE_POPULATION: the certificate covers {pop.get('windows')}x{pop.get('steps')}x{pop.get('channels')}, the record {shapes}")
+        acc_c = accepted_artifact(root, receipts or {}, warehouse, sha_file(cat), expect_kind="catalog", expect_subject=unit, expect_role="catalog_acceptance",
+                                   design_sha256=design_for_check)
         out["approval"]["catalog_acceptance_accepted"] = acc_c
         if not acc_c["accepted"]:
             out["refusals"].append(f"CATALOG_ACCEPTANCE_NOT_ACCEPTED: {acc_c['why']}")
@@ -2234,6 +2251,38 @@ CATALOG_ESTIMATORS = {
 }
 
 REQUIRED_CATALOG_FAMILIES = tuple(CATALOG_ESTIMATORS)
+CATALOG_INVENTORY_VERSION = "df_sota_catalog_estimators.v1"
+FULL_NUMERIC = "FULL_INDEPENDENT_NUMERIC"
+DOMAIN_ONLY = "DOMAIN_AND_INTERNAL_ONLY"
+
+
+def catalog_inventory_digest() -> str:
+    """The digest of the DECLARED inventory itself: a certificate issued under another inventory cannot authorise a deletion
+    under this one."""
+    return sha_obj({"version": CATALOG_INVENTORY_VERSION, "families": {k: {kk: vv for kk, vv in v.items()} for k, v in CATALOG_ESTIMATORS.items()}})
+
+
+def acceptance_certificate(acceptance: dict) -> dict:
+    """RP128: what a catalog acceptance actually establishes, derived from its own recorded content — never from a bare `pass`.
+    An acceptance that did not run the independent numerical reference is a DOMAIN_AND_INTERNAL_ONLY diagnostic; only a complete
+    comparison of every declared family, with no unchecked field and no disagreement, is FULL_INDEPENDENT_NUMERIC. Certificates
+    written by earlier versions are read the same way, from their comparison block, so valid evidence is reused rather than
+    recomputed."""
+    comp = acceptance.get("independent_comparison") or None
+    cov = (comp or {}).get("coverage") or {}
+    families_declared = sorted(cov)
+    complete = sorted((comp or {}).get("families_complete") or [])
+    unchecked = list((comp or {}).get("unchecked") or [])
+    disagreements = list((comp or {}).get("disagreements") or [])
+    full = bool(comp) and not unchecked and not disagreements and set(complete) == set(REQUIRED_CATALOG_FAMILIES) == set(families_declared)
+    return {"class": FULL_NUMERIC if full else DOMAIN_ONLY,
+            "why": None if full else ("no independent numerical comparison was run" if not comp else
+                                      f"unchecked {unchecked[:3]}; disagreements {len(disagreements)}; declared {len(families_declared)} of {len(REQUIRED_CATALOG_FAMILIES)}"),
+            "catalog_sha256": acceptance.get("catalog_sha256"), "population": acceptance.get("population"),
+            "inventory_version": acceptance.get("inventory_version") or (CATALOG_INVENTORY_VERSION if families_declared else None),
+            "inventory_digest": acceptance.get("inventory_digest"),
+            "families_declared": families_declared, "families_complete": complete, "unchecked": unchecked, "disagreements": disagreements,
+            "pass": acceptance.get("pass"), "at": acceptance.get("at"), "independent_scope": acceptance.get("independent_scope")}
 
 
 def _acf_over_origins(series: np.ndarray, lags: int) -> list:
@@ -2379,7 +2428,11 @@ def _numeric_diff(a, b):
     """The largest absolute difference between two declared values of the same field, or a typed disagreement. `None` on one side
     only is a DISAGREEMENT (RP124: a missing value is not a zero difference); booleans are never numbers."""
     if isinstance(a, bool) or isinstance(b, bool):
-        return (0.0, "OK") if a == b else (None, "DISAGREEMENT: boolean values differ")
+        # RP130: a boolean is a boolean. `False` is not the count zero and `True` is not the value one, in any declared numeric
+        # field, at any depth.
+        if isinstance(a, bool) and isinstance(b, bool):
+            return (0.0, "OK") if a is b else (None, "DISAGREEMENT: boolean values differ")
+        return (None, f"DISAGREEMENT: a boolean cannot be compared with {type(b if isinstance(a, bool) else a).__name__}: a declared numeric field holds {a!r} vs {b!r}")
     if a is None and b is None:
         return (0.0, "BOTH_UNDEFINED")
     if a is None or b is None:
@@ -2601,7 +2654,15 @@ def accept_catalog(root: Path, design: dict, unit: str, *, data_path: Path | Non
         out["independent_scope"] = ("HISTORICAL LIMIT: the prediction arrays were deleted under authorization, so no independent recomputation of the "
                                     "estimator families is possible here; the domain checks, the population and the internal oracles above are what can be checked, "
                                     "and a controlled regeneration from the retained checkpoint would be required for more")
+    out["inventory_version"] = CATALOG_INVENTORY_VERSION
+    out["inventory_digest"] = catalog_inventory_digest()
     out["pass"] = not out["refusals"]
+    cert = acceptance_certificate(out)
+    out["acceptance_class"] = cert["class"]
+    out["certificate"] = cert
+    if cert["class"] != FULL_NUMERIC:
+        out["restricted_scope"] = ("DIAGNOSTIC ONLY: domain checks, population and internal oracles. This acceptance does NOT establish the "
+                                   "independent numerical verification of the declared families and cannot authorise a deletion: " + str(cert["why"]))
     write_atomic(folder / "CATALOG_ACCEPTANCE.json", json.dumps(out, indent=1, default=str))
     return out
 
@@ -3163,8 +3224,17 @@ def accepted_artifact(root: Path, receipts: dict, warehouse, sha256: str | None,
             mismatches.append(f"{unit}: the accepted terminal's subject is {tags.get('subject')!r}, not {expect_subject!r}"); continue
         if expect_role is not None and art.get("role") != expect_role:
             mismatches.append(f"{unit}: the digest is accepted in role {art.get('role')!r}, not {expect_role!r}"); continue
-        if design_sha256 is not None and (row.get("config_sha256") or tags.get("design_sha256")) not in (None, design_sha256):
-            mismatches.append(f"{unit}: accepted under another design"); continue
+        if design_sha256 is not None:
+            # RP129: the authoritative scientific design is the terminal's own `design_sha256` tag. A campaign config digest is a
+            # different fact: when it is present and disagrees with the declared design, that is a contradiction, not a match.
+            declared = tags.get("design_sha256")
+            if declared is None:
+                mismatches.append(f"{unit}: the accepted terminal declares no scientific design"); continue
+            if declared != design_sha256:
+                mismatches.append(f"{unit}: accepted under design {str(declared)[:12]}, not {design_sha256[:12]}"); continue
+            config = row.get("config_sha256")
+            if config is not None and config != declared:
+                mismatches.append(f"{unit}: the campaign config digest {str(config)[:12]} contradicts the declared design {str(declared)[:12]}"); continue
         out.update({"accepted": True, "unit": unit, "kind": tags.get("kind"), "subject": tags.get("subject"), "role": art.get("role"),
                     "accepted_at": row.get("finished_at") or row.get("received_at"), "terminal_sha256": row.get("terminal_sha256"),
                     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
@@ -3216,8 +3286,11 @@ def regeneration_evidence(root: Path, cell: dict, record: dict, receipts: dict, 
     aa = json.loads(ap_.read_text()) if ap_.is_file() else None
     out["regeneration"] = {k: rr.get(k) for k in ("identity", "label", "device", "device_name", "device_uuid", "at", "host", "author_metric",
                                                   "author_metric_state", "independent_metric_float64", "pred_sha256", "true_sha256", "route")}
-    acc_r = accepted_artifact(root, receipts, warehouse, out["regeneration_sha256"], expect_kind="regeneration", expect_subject=unit, expect_role="regeneration")
-    acc_a = (accepted_artifact(root, receipts, warehouse, out["acceptance_sha256"], expect_kind="regeneration", expect_subject=unit, expect_role="regeneration_acceptance")
+    design_here = (json.loads((Path(root) / "DESIGN.json").read_text()).get("design_sha256") if (Path(root) / "DESIGN.json").is_file() else None)
+    acc_r = accepted_artifact(root, receipts, warehouse, out["regeneration_sha256"], expect_kind="regeneration", expect_subject=unit,
+                              expect_role="regeneration", design_sha256=design_here)
+    acc_a = (accepted_artifact(root, receipts, warehouse, out["acceptance_sha256"], expect_kind="regeneration", expect_subject=unit,
+                               expect_role="regeneration_acceptance", design_sha256=design_here)
              if out["acceptance_sha256"] else {"accepted": False, "why": "no acceptance file"})
     if acc_r.get("accepted") and acc_a.get("accepted") and acc_r.get("unit") != acc_a.get("unit"):
         out["refusals"].append("REGEN_ACCEPTANCE_UNRELATED: the regeneration record and its acceptance were accepted under different terminals")
