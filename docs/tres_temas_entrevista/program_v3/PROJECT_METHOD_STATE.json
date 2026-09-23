@@ -70,7 +70,13 @@
   "reviewed_commit": "e145303cbc5776ee3907d9997a3622e1eab272b8",
   "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED_NO_NEW_DELETION",
   "evidence": "../../audits/evidence/RP113_MUSASHI_REVIEW_2026_09_23/",
-  "executed_findings": ["rehashed report and marker accept zero score", "fabricated regeneration overrides score", "deletion without approval or backup", "float32 divisor differs from NumPy at N=16777217", "broken estimator producer accepted with all internal oracles zero"],
+  "executed_findings": [
+   "rehashed report and marker accept zero score",
+   "fabricated regeneration overrides score",
+   "deletion without approval or backup",
+   "float32 divisor differs from NumPy at N=16777217",
+   "broken estimator producer accepted with all internal oracles zero"
+  ],
   "focal_suite": "61 passed, 1 skipped; worker CPU-only; 55.03 seconds; five fork-after-thread warnings",
   "scope": "Disposable actual-author CPU fixtures; no production-array recomputation or new live warehouse query",
   "gpu_work_by_reviewer": false,
@@ -1259,5 +1265,41 @@
    "interpreter": "3.12.13; numpy 2.5.1, pandas 3.0.3, torch 2.13.0+cu130, sklearn 1.9.0; store venv duckdb 1.5.5, sqlalchemy 2.0.54"
   },
   "protocol_B": "docs/tres_temas_entrevista/program_v3/SOTA_PROTOCOL_B_MAPPING_2026_09_23.md: the author's exact L=512 recipe, the unpublished-L choice mapping stated, cost projected from measured protocol A cells; NOT executed, not completed by protocol A"
+ },
+ "rp114_rp121": {
+  "orders": "docs/handoffs/MUSASHI_SOTA_RP114_RP121_2026_09_23.md (a8dcbfce; review MUSASHI_RP106_RP113_REVIEW_2026_09_23.md of e145303c)",
+  "base": "e145303c",
+  "updated_on": "2026-09-23",
+  "RP114": {
+   "status": "DONE",
+   "pre": "docs/audits/evidence/d3_k5_20260917/RP114/PROBE_RESULTS_PRE.json (a8dcbfce: rewritten report verified with score 0, fabricated regeneration verified with score 0, deletion without approval COMPLETE, broken-estimator catalog accepted, float32 mismatch at N=16,777,217)",
+   "post": "docs/audits/evidence/d3_k5_20260917/RP114/PROBE_RESULTS_POST.json (repaired head: HISTORY_REPORT_NOT_ACCEPTED, fabrication refused and the original score intact, deletion REFUSED with the array retained, catalog refused on four domain violations, float32 equal)",
+   "tests": "every counterexample also frozen as a test on the real entry points, with domain sweeps (NaN/inf, missing evidence, CPU vs CUDA regeneration) rather than only the probe's exact values"
+  },
+  "RP115": {
+   "status": "DONE_IN_CODE",
+   "what": "publish_acceptance() reports closure, catalog and regeneration evidence as governed COMPLETED terminals (acquire + terminal + ACCEPTED_EVIDENCE registry); accepted_artifact() answers from the receipt and the warehouse row, never from the local registry alone; historical verification requires the resolved report to be accepted evidence; regeneration_evidence() requires both its record and its acceptance to be accepted AND consistent (identity, digests, device, population, finite metric, agreement with the retained catalog); a refused successor is reported and ignored, never used and never destructive"
+  },
+  "RP116": {
+   "status": "DONE_IN_CODE",
+   "what": "deletion prerequisites mandatory through API and CLI: accepted report digest, accepted catalog acceptance of the catalog on disk, verified backup (destination bytes present and equal to the manifest, unit record/catalog/acceptance covered); the unlink boundary hashes through an open descriptor, checks that the path still names that inode, unlinks, and re-hashes the still-open inode so the receipt states what was removed; own descriptor not counted as a competing reader"
+  },
+  "RP117": {
+   "status": "DONE_IN_CODE",
+   "what": "per-family domain checks (sd >= 0 and = sqrt(var), entropy <= log2(bins), MI <= 6 bits on a 64x64 grid, |ACF| <= 1, |corr| <= 1, r2 <= 1, monotone quantiles, histogram counts = population, all reported numbers finite) plus independent_estimators(), a second implementation that recomputes residual moments, entropy, joint MI, correlation, R2, errors and histogram from the arrays without calling the producer; used wherever the arrays exist, with an explicit HISTORICAL LIMIT label where they were deleted"
+  },
+  "RP118": {
+   "status": "DONE_IN_CODE",
+   "what": "author_metric_exact v2 divides by the element count the way numpy does (int64 scalar -> float64 quotient -> cast), not by float32(N); v1's claim retained as superseded. Cells whose element count is not exactly representable in float32 (T=336: 531,190,800; T=720: 1,049,515,920) must be rescored; T=96 (159,164,640) and T=192 (312,412,608) are exactly representable and unaffected"
+  },
+  "RP119": {
+   "status": "PENDING"
+  },
+  "RP120": {
+   "status": "PENDING"
+  },
+  "RP121": {
+   "status": "PENDING"
+  }
  }
 }
