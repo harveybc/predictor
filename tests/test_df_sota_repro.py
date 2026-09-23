@@ -114,7 +114,8 @@ def _accept_evidence(world, root, kind, files, subject):
     primary = digests[list(files)[0]]
     unit = f"acceptance_{kind}_{primary[:16]}"
     design = json.loads((Path(root) / "DESIGN.json").read_text())
-    terminal = {"status": "COMPLETED", "config_sha256": design["design_sha256"], "tags": {"kind": kind, "subject": subject},
+    terminal = {"status": "COMPLETED", "config_sha256": design["design_sha256"],
+                "tags": {"kind": kind, "subject": subject, "design_sha256": design["design_sha256"]},
                 "artifacts": [{"role": role, "sha256": d, "bytes": Path(files[role]).stat().st_size} for role, d in digests.items()]}
     terminal["terminal_sha256"] = hashlib.sha256(json.dumps(terminal, sort_keys=True).encode()).hexdigest()
     world["held"][unit] = terminal
