@@ -142,6 +142,15 @@ def _ready(root, unit, world, where):
     return {"accepted_report_sha256": R.sha_file(root / "REPORT.json"), "backup_manifest": Path(where) / "MANIFEST.json",
             "receipts": receipts, "warehouse": _wh(world)}
 
+
+def _publish_catalog(root, unit, tmp_path, design):
+    """Publish the catalog acceptance through the governed chain, as production does (the stub governance is active)."""
+    a = SimpleNamespace(root=root, gov_url="fixture://", api_key_file=tmp_path / "key", lake="l", resource="r", run_id="fixture")
+    (tmp_path / "key").write_text("k")
+    return R.publish_acceptance(a, design, kind="catalog", subject=unit,
+                                files={"catalog_acceptance": root / "attempts" / unit / "CATALOG_ACCEPTANCE.json",
+                                       "metrics_vault": root / "attempts" / unit / "METRICS_VAULT.json"})
+
 def _wh(world):
     return lambda campaign: {"current": json.loads(json.dumps(world["held"]))}
 
@@ -1437,7 +1446,9 @@ def test_RP115_a_rewritten_report_with_a_recomputed_pointer_is_refused_because_i
     """Musashi RP113 #1, against the real verifier: the score follows the ACCEPTED closure identity, not a local digest."""
     root, wh, held, _ = _accepted_world(world, tmp_path, monkeypatch)
     unit = world["cell"]["cell_id"]; report_sha = R.sha_file(root / "REPORT.json")
-    R.accept_catalog(root, json.loads((root / "DESIGN.json").read_text()), unit, data_path=world["data"])
+    design = json.loads((root / "DESIGN.json").read_text())
+    R.accept_catalog(root, design, unit, data_path=world["data"])
+    _publish_catalog(root, unit, tmp_path, design)
     R.metadata_backup(root, tmp_path / "bk")
     receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
     out = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "bk" / "MANIFEST.json",
@@ -1466,6 +1477,7 @@ def test_RP115_a_fabricated_regeneration_cannot_replace_a_score(world, tmp_path,
     unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
     design = json.loads((root / "DESIGN.json").read_text())
     R.accept_catalog(root, design, unit, data_path=world["data"])
+    _publish_catalog(root, unit, tmp_path, design)
     R.metadata_backup(root, tmp_path / "bk2")
     receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
     R.delete_predictions(root, [unit], accepted_report_sha256=R.sha_file(root / "REPORT.json"), backup_manifest=tmp_path / "bk2" / "MANIFEST.json",
@@ -1617,6 +1629,7 @@ def test_RP115_a_cuda_regeneration_must_name_the_measured_device_it_ran_on(world
     unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
     design = json.loads((root / "DESIGN.json").read_text())
     R.accept_catalog(root, design, unit, data_path=world["data"])
+    _publish_catalog(root, unit, tmp_path, design)
     R.metadata_backup(root, tmp_path / "bkdev")
     R.delete_predictions(root, [unit], accepted_report_sha256=R.sha_file(root / "REPORT.json"), backup_manifest=tmp_path / "bkdev" / "MANIFEST.json",
                          receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=wh)
