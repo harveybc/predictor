@@ -2131,7 +2131,9 @@ def accept_regenerated(root: Path, design: dict, unit: str, *, data_path: Path, 
     ind = independent_estimators(preds, trues, test_loader=loader2, pred_len=args.pred_len)
     comparison = compare_catalog_to_reference(retained or {}, ind)
     out["independent_estimators"] = {k: ind[k] for k in ("population", "global", "residuals", "baselines_checked", "seasonal_supported")}
+    out["independent_estimators"].update(_legacy_reference_view(ind))
     out["independent_comparison"] = comparison
+    out["independent_vs_retained_catalog"] = {f: v.get("max_abs_difference") for f, v in comparison["fields"].items()}
     out["independently_accepted_families"] = comparison["families_complete"]
     out["independent_scope"] = ("every declared family recomputed from the REGENERATED arrays (bit-identical to the deleted originals) and the author's "
                                 "loader by an implementation that never calls the catalog's producer; this lifts the historical limit for this cell")
@@ -2407,6 +2409,15 @@ def _numeric_diff(a, b):
     return (None, f"DISAGREEMENT: incomparable types {type(a).__name__} vs {type(b).__name__}")
 
 
+def _legacy_reference_view(ind: dict) -> dict:
+    """The flat field names earlier consumers (and Musashi's harness) read, beside the structured reference."""
+    g, r = ind.get("global") or {}, ind.get("residuals") or {}
+    return {"mae_float64": g.get("mae"), "mse_float64": g.get("mse"), "corr_pred_true": g.get("corr_pred_true"), "r2": g.get("r2"),
+            "mutual_information_bits": g.get("mutual_information_bits_pred_true_64x64"), "residual_sd": r.get("sd"),
+            "residual_mean": r.get("mean"), "entropy_bits": r.get("entropy_bits"), "elements": (ind.get("population") or {}).get("elements"),
+            "histogram_counts": ((r.get("histogram") or {}).get("counts"))}
+
+
 def compare_catalog_to_reference(vault: dict, ind: dict) -> dict:
     """RP124: field by field, under the declared tolerance of its family. Reports every field's status and the coverage, so a
     claim of independent acceptance can be made only for the families actually checked."""
@@ -2568,7 +2579,9 @@ def accept_catalog(root: Path, design: dict, unit: str, *, data_path: Path | Non
         ind = independent_estimators(preds, trues, test_loader=loader, pred_len=args.pred_len)
         comparison = compare_catalog_to_reference(v, ind)
         out["independent_estimators"] = {k: ind[k] for k in ("population", "global", "residuals", "baselines_checked", "seasonal_supported")}
+        out["independent_estimators"].update(_legacy_reference_view(ind))     # the flat names earlier consumers read
         out["independent_comparison"] = comparison
+        out["independent_vs_catalog"] = {f: v.get("max_abs_difference") for f, v in comparison["fields"].items()}
         out["independent_scope"] = ("every declared family recomputed from the retained prediction arrays and the author's loader (same population, same "
                                     "definitions) by an implementation that never calls the catalog's producer")
         out["independently_accepted_families"] = comparison["families_complete"]
