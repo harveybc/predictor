@@ -2242,7 +2242,7 @@ def _acf_over_origins(series: np.ndarray, lags: int) -> list:
     return out
 
 
-def independent_estimators(preds, trues, *, test_loader=None, pred_len: int | None = None, block_windows: int = VAULT_BLOCK_WINDOWS,
+def independent_estimators(preds, trues, *, test_loader=None, pred_len: int | None = None, block_windows: int = 168,
                            max_lag: int = 168, q_list=(0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99, 0.999)) -> dict:
     """RP117/RP124: a SECOND implementation of every declared family in CATALOG_ESTIMATORS, on the SAME population and the same
     definitions, written without calling the catalog's producer. Baselines need the author's loader inputs, so `test_loader`
