@@ -3422,6 +3422,73 @@ def vault_equal(a: dict, b: dict) -> bool:
     return json.dumps(strip(a), sort_keys=True) == json.dumps(strip(b), sort_keys=True)
 
 
+# RP138: the DECLARED lineage of the catalog implementation. A catalog records the digest of the source of `metrics_vault` that
+# wrote it. When that function changes, every retained catalog stops matching a fresh recomputation on that field alone, and the
+# closure refused the whole row as VAULT_CHANGED — which blocked the original-device replay of three real cells whose numbers
+# were identical to the last bit. A predecessor digest is accepted here ONLY when it is written down with the revisions that
+# produced it, the exact difference, and why that difference cannot move a number. It is a declaration bound to evidence, not a
+# tolerance: an undeclared digest still refuses, and a declared one never excuses a numeric difference.
+METRIC_IMPLEMENTATION_LINEAGE = {
+    "44086f33d8df2ebd404aa1209da32769efd5c108cbd2b8e12432d47766937fd8": {
+        "revisions": "21d36487191e (2026-09-22) through the current head; 41 revisions of tools/df_sota_repro.py produce it",
+        "predecessors": {
+            "45a8a3636db9f1b795fbbdf3e26824af9e177b90df0deacb3f354ade205a738b": {
+                "revisions": "3f250c16b342 through 844a8d4ab101 (14 revisions, 2026-09-22), which wrote the retained protocol-A catalogs",
+                "transition": "844a8d4ab101 -> 21d36487191e",
+                "difference": "one line: the finiteness guard `np.isfinite(preds).all()` became the memory-bounded `all_finite(preds)` (RP101)",
+                "class": "NON_NUMERIC_GUARD",
+                "why_not_numeric": ("the changed line only raises VaultRefusal when a prediction is not finite; it contributes to no accumulator, "
+                                    "population, parameter or reduction, so no declared estimator can move. Measured on the three real H96 cells: "
+                                    "every numeric field of the recomputed catalog equals the retained one exactly"),
+                "declared_on": "2026-09-23",
+                "declared_by": "RP138, from the file's own history: both digests were located by hashing the source of metrics_vault at every revision",
+                "evidence": "docs/audits/evidence/d3_k5_20260917/RP138/IMPLEMENTATION_LINEAGE.json",
+            },
+        },
+    },
+}
+
+
+def current_metric_implementation() -> str:
+    """The digest a catalog written now would carry."""
+    return hashlib.sha256(__import__("inspect").getsource(metrics_vault).encode()).hexdigest()
+
+
+def vault_equal_except_implementation(a: dict, b: dict) -> bool:
+    """Equality of everything a catalog measures, ignoring WHICH implementation measured it."""
+    def strip(v):
+        out = {k: x for k, x in v.items() if k not in ("at", "independent_check")}
+        ident = dict(out.get("identity") or {})
+        ident.pop("metric_implementation_sha256", None)
+        out["identity"] = ident
+        return out
+    return json.dumps(strip(a), sort_keys=True) == json.dumps(strip(b), sort_keys=True)
+
+
+def implementation_transition(persisted: dict, fresh: dict) -> dict | None:
+    """RP138: is the difference between a retained catalog and a fresh recomputation EXACTLY a declared change of implementation?
+    Returns the bound lineage record, or None — in which case the caller treats the difference as a changed measurement. The two
+    conditions are independent and both are required: every measured field must be identical, and the retained digest must be a
+    written-down predecessor of the current one. A numeric difference is never explained by a declared transition."""
+    if not isinstance(persisted, dict) or not isinstance(fresh, dict):
+        return None
+    old = ((persisted.get("identity") or {}).get("metric_implementation_sha256"))
+    new = ((fresh.get("identity") or {}).get("metric_implementation_sha256"))
+    if not old or not new or old == new:
+        return None
+    entry = (METRIC_IMPLEMENTATION_LINEAGE.get(new) or {}).get("predecessors", {}).get(old)
+    if entry is None:
+        return None
+    if not vault_equal_except_implementation(persisted, fresh):
+        return None                                                  # a real difference in what was measured: not a transition
+    return {"from": old, "to": new, "from_revisions": entry["revisions"], "to_revisions": METRIC_IMPLEMENTATION_LINEAGE[new]["revisions"],
+            "transition": entry["transition"], "difference": entry["difference"], "class": entry["class"],
+            "why_not_numeric": entry["why_not_numeric"], "declared_on": entry["declared_on"], "declared_by": entry["declared_by"],
+            "evidence": entry["evidence"], "at": now_iso(),
+            "scope": ("the retained catalog keeps its bytes and its accepted identity; this record binds the current implementation's "
+                      "recomputation to it as a separate fact, and does not make the old digest the new one")}
+
+
 def write_atomic(path: Path, text: str) -> None:
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_text(text)
@@ -3923,7 +3990,21 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                     p_.append(f"{unit}: the recomputed catalog fails its independent check: {ic}"[:220])
                 fresh["at"] = now_iso()
                 persisted = json.loads(vault_path.read_text()) if vault_path.is_file() else None
-                if persisted is not None and not vault_equal(persisted, fresh):
+                # RP138: a persisted catalog whose ONLY difference is the digest of the implementation that wrote it, where that
+                # digest is a DECLARED predecessor of the current one, is an implementation-identity transition and not a changed
+                # measurement. The retained catalog keeps its bytes and its accepted identity; the current recomputation is
+                # written beside it as a separately bound record. Anything else is still VAULT_CHANGED.
+                transition = implementation_transition(persisted, fresh) if persisted is not None else None
+                if transition is not None:
+                    current_file = folder / f"METRICS_VAULT.current.{transition['to'][:12]}.json"
+                    write_atomic(current_file, json.dumps({"disposition": ("CURRENT_IMPLEMENTATION_RECOMPUTATION: the retained catalog remains the authoritative, "
+                                                                           "accepted one; this is what the current implementation computes from the same accepted arrays, "
+                                                                           "identical in every declared field and differing only in identity.metric_implementation_sha256"),
+                                                           "at": now_iso(), "transition": transition, "catalog": fresh}, default=str))
+                    transition["current_catalog_file"] = current_file.name
+                    transition["current_catalog_sha256"] = sha_file(current_file)
+                    recomputed["metric_implementation_transition"] = transition
+                if persisted is not None and transition is None and not vault_equal(persisted, fresh):
                     if persisted.get("schema") != VAULT_SCHEMA:
                         superseded = folder / f"METRICS_VAULT.superseded.{persisted.get('schema', 'unknown')}.{int(time.time())}.json"
                         write_atomic(superseded, json.dumps({"disposition": f"SUPERSEDED: catalog of schema {persisted.get('schema')} replaced by {VAULT_SCHEMA} recomputed from the accepted arrays",
@@ -3934,11 +4015,16 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                         write_atomic(rejected, json.dumps({"disposition": "REJECTED: persisted catalog differs from the one recomputed from the accepted arrays at closure",
                                                            "at": now_iso(), "candidate": persisted}, default=str))
                         p_.append(f"{unit}: the persisted metric catalog differs from the recomputed one: VAULT_CHANGED (candidate preserved as {rejected.name})")
-                if persisted is None or not vault_equal(persisted, fresh):
+                if persisted is None or (transition is None and not vault_equal(persisted, fresh)):
                     write_atomic(vault_path, json.dumps(fresh, default=str))
                 recomputed["metrics_vault_sha256"] = sha_file(vault_path)
                 recomputed["metrics_vault_recomputed"] = True
-                recomputed["metrics_vault_read_back_equal"] = vault_equal(json.loads(vault_path.read_text()), fresh)
+                on_disk_now = json.loads(vault_path.read_text())
+                recomputed["metrics_vault_identical"] = vault_equal(on_disk_now, fresh)
+                recomputed["metrics_vault_read_back_equal"] = bool(recomputed["metrics_vault_identical"]
+                                                                  or (transition is not None and vault_equal_except_implementation(on_disk_now, fresh)))
+                recomputed["metrics_vault_read_back_basis"] = ("IDENTICAL" if recomputed["metrics_vault_identical"] else
+                                                              ("DECLARED_IMPLEMENTATION_TRANSITION" if recomputed["metrics_vault_read_back_equal"] else "DIFFERS"))
                 if not recomputed["metrics_vault_read_back_equal"]:
                     p_.append(f"{unit}: the published catalog does not read back equal to the recomputed one")
             basis_metric, basis = metric_of(record)

@@ -2285,3 +2285,99 @@ def test_RP134_a_record_with_only_field_level_definitions_is_reused_under_a_date
     silent = json.loads(json.dumps(bare)); silent["independent_comparison"] = None
     assert R.acceptance_certificate(silent)["inventory_basis"]["basis"] == "LEGACY_WITHOUT_DEFINITIONS"
     assert R.acceptance_certificate(silent)["class"] == R.DOMAIN_ONLY
+
+
+# --------------------------------------------------------------------------------------------------------------------------
+# RP138: a declared change of the catalog implementation is a bound transition, not a changed measurement
+# --------------------------------------------------------------------------------------------------------------------------
+
+def _closed_root(world, tmp_path, tag):
+    """A copied fixture closed once against the stub warehouse, so a retained catalog exists on disk."""
+    import unittest.mock as um
+    root = _copy(world, tmp_path / tag)
+    C = _load("df_mod_e0_close")
+    tok = tmp_path / f"tok_{tag}"; tok.write_text("x")
+    a = SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="s://", data_path=world["data"], skip_replay=False,
+                        replay_device="cpu")
+    design = json.loads((root / "DESIGN.json").read_text())
+    with um.patch.object(C, "warehouse_terminals", lambda url, t_, c: _wh(world)(c)):
+        R.close(a, design)
+    return root, a, design, C
+
+
+def test_RP138_the_declared_lineage_matches_the_implementation_that_is_actually_running():
+    """The registry is about this code, not about a remembered string: the digest a catalog written now would carry is the one
+    the lineage declares as current, and the retained protocol-A digest is written down as its predecessor with its evidence."""
+    current = R.current_metric_implementation()
+    assert current in R.METRIC_IMPLEMENTATION_LINEAGE
+    entry = R.METRIC_IMPLEMENTATION_LINEAGE[current]["predecessors"]["45a8a3636db9f1b795fbbdf3e26824af9e177b90df0deacb3f354ade205a738b"]
+    assert entry["class"] == "NON_NUMERIC_GUARD" and entry["transition"] == "844a8d4ab101 -> 21d36487191e"
+    assert entry["declared_on"] and entry["evidence"].endswith("IMPLEMENTATION_LINEAGE.json")
+
+
+def test_RP138_a_declared_transition_keeps_the_retained_catalog_and_does_not_block_the_row(world, tmp_path, monkeypatch):
+    """Musashi's delegated verifier was stopped by VAULT_CHANGED on three cells whose numbers matched exactly. Under a declared
+    predecessor digest the retained catalog keeps its BYTES and its accepted identity, the row is not refused, and the current
+    implementation's recomputation is written beside it as a separate record."""
+    root, a, design, C = _closed_root(world, tmp_path, "transition")
+    unit = world["cell"]["cell_id"]; vault = root / "attempts" / unit / "METRICS_VAULT.json"
+    v = json.loads(vault.read_text()); current = v["identity"]["metric_implementation_sha256"]
+    v["identity"]["metric_implementation_sha256"] = "old" + "0" * 61
+    vault.write_text(json.dumps(v, default=str))
+    before = R.sha_file(vault)
+    monkeypatch.setitem(R.METRIC_IMPLEMENTATION_LINEAGE, current, {
+        "revisions": "test", "predecessors": {"old" + "0" * 61: {
+            "revisions": "test predecessor", "transition": "a -> b", "difference": "a guard", "class": "NON_NUMERIC_GUARD",
+            "why_not_numeric": "it raises or does nothing", "declared_on": "2026-09-23", "declared_by": "test",
+            "evidence": "IMPLEMENTATION_LINEAGE.json"}}})
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, t_, c: _wh(world)(c)):
+        rep = R.close(a, design)
+    row = next(r for r in rep["verification"]["rows"] if r["unit"] == unit)
+    assert R.sha_file(vault) == before                                           # the accepted catalog was NOT overwritten
+    assert not any("VAULT_CHANGED" in str(p) for p in (row.get("problems") or []))
+    tr = row["recomputed"]["metric_implementation_transition"]
+    assert tr["from"].startswith("old") and tr["to"] == current and tr["class"] == "NON_NUMERIC_GUARD"
+    assert (root / "attempts" / unit / tr["current_catalog_file"]).is_file()
+    assert row["recomputed"]["metrics_vault_read_back_basis"] == "DECLARED_IMPLEMENTATION_TRANSITION"
+    assert row["recomputed"]["metrics_vault_identical"] is False
+    assert row["recomputed"]["metrics_vault_sha256"] == before                   # the report still binds the retained catalog
+    assert row["verified"]
+
+
+def test_RP138_an_undeclared_implementation_digest_is_still_a_changed_catalog(world, tmp_path):
+    """Nothing here is a general tolerance for a differing identity: a digest nobody wrote down refuses exactly as before."""
+    root, a, design, C = _closed_root(world, tmp_path, "undeclared")
+    unit = world["cell"]["cell_id"]; vault = root / "attempts" / unit / "METRICS_VAULT.json"
+    v = json.loads(vault.read_text()); v["identity"]["metric_implementation_sha256"] = "undeclared" + "0" * 54
+    vault.write_text(json.dumps(v, default=str))
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, t_, c: _wh(world)(c)):
+        rep = R.close(a, design)
+    row = next(r for r in rep["verification"]["rows"] if r["unit"] == unit)
+    assert any("VAULT_CHANGED" in str(p) for p in (row.get("problems") or []))
+    assert "metric_implementation_transition" not in row["recomputed"]
+    assert list((root / "attempts" / unit).glob("METRICS_VAULT.rejected.*.json"))
+
+
+def test_RP138_a_declared_transition_never_explains_a_numeric_difference(world, tmp_path, monkeypatch):
+    """The adversarial case: a catalog carrying a declared predecessor digest AND a changed number is a changed measurement.
+    The two conditions are independent, so the declaration cannot carry the difference through."""
+    root, a, design, C = _closed_root(world, tmp_path, "numeric")
+    unit = world["cell"]["cell_id"]; vault = root / "attempts" / unit / "METRICS_VAULT.json"
+    v = json.loads(vault.read_text()); current = v["identity"]["metric_implementation_sha256"]
+    v["identity"]["metric_implementation_sha256"] = "old" + "0" * 61
+    v["global"]["mae"] = v["global"]["mae"] + 1e-3
+    vault.write_text(json.dumps(v, default=str))
+    monkeypatch.setitem(R.METRIC_IMPLEMENTATION_LINEAGE, current, {
+        "revisions": "test", "predecessors": {"old" + "0" * 61: {
+            "revisions": "test predecessor", "transition": "a -> b", "difference": "a guard", "class": "NON_NUMERIC_GUARD",
+            "why_not_numeric": "it raises or does nothing", "declared_on": "2026-09-23", "declared_by": "test",
+            "evidence": "IMPLEMENTATION_LINEAGE.json"}}})
+    assert R.implementation_transition(json.loads(vault.read_text()), {"identity": {"metric_implementation_sha256": current},
+                                                                      **{k: x for k, x in json.loads(vault.read_text()).items() if k != "identity"}}) is None
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, t_, c: _wh(world)(c)):
+        rep = R.close(a, design)
+    row = next(r for r in rep["verification"]["rows"] if r["unit"] == unit)
+    assert any("VAULT_CHANGED" in str(p) for p in (row.get("problems") or []))

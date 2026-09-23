@@ -1,0 +1,81 @@
+{
+ "schema": "df_sota_metric_implementation_lineage.v1",
+ "question": "Musashi's delegated original-device verifier was stopped on all three H96 cells by VAULT_CHANGED. The only field that differed between the retained catalogs and a fresh recomputation was identity.metric_implementation_sha256. This is the evidence for what that transition actually is.",
+ "method": "the source of metrics_vault() was extracted with ast at every revision of tools/df_sota_repro.py and hashed the same way the catalog writer hashes it (sha256 of inspect.getsource), so each digest is located in the file's own history",
+ "revisions_scanned": 64,
+ "digests": {
+  "44086f33d8df2ebd404aa1209da32769efd5c108cbd2b8e12432d47766937fd8": {
+   "revision_count": 41,
+   "newest": {
+    "rev": "e473efbeb034",
+    "date": "2026-09-23",
+    "subject": "RP134: a legacy record with only field-level definitions is reused und"
+   },
+   "oldest": {
+    "rev": "21d36487191e",
+    "date": "2026-09-22",
+    "subject": "RP101 at closure: the verification path is memory-bounded too \u2014 predic"
+   }
+  },
+  "45a8a3636db9f1b795fbbdf3e26824af9e177b90df0deacb3f354ade205a738b": {
+   "revision_count": 14,
+   "newest": {
+    "rev": "844a8d4ab101",
+    "date": "2026-09-22",
+    "subject": "RP100: a worker's replay history travels through merge as a dated reco"
+   },
+   "oldest": {
+    "rev": "3f250c16b342",
+    "date": "2026-09-22",
+    "subject": "RP98-RP100/RP103: metric catalog v3 (population consumed exactly, type"
+   }
+  },
+  "593d93b02b52493202a9f7fbec39591c3500e0c14cc5cbb7a31720892f877fb5": {
+   "revision_count": 3,
+   "newest": {
+    "rev": "e194094a3074",
+    "date": "2026-09-22",
+    "subject": "RP97: the table shows executed-but-unverified cells with their values "
+   },
+   "oldest": {
+    "rev": "aff3ad351384",
+    "date": "2026-09-22",
+    "subject": "RP96: metrics vault v2 \u2014 every estimator with parameters and limitatio"
+   }
+  },
+  "c7c599c5f9d41c5a4108112a05dd2b3349157ca778b4f788e2867a361e606265": {
+   "revision_count": 3,
+   "newest": {
+    "rev": "30c8b00ec1db",
+    "date": "2026-09-22",
+    "subject": "RP96: CPU replay maps a CUDA-trained checkpoint to the CPU (placement-"
+   },
+   "oldest": {
+    "rev": "e98b2690cd3b",
+    "date": "2026-09-22",
+    "subject": "RP96: exhaustive per-cell metrics vault at closure (owner: the raw pre"
+   }
+  }
+ },
+ "retained_catalogs_digest": "45a8a3636db9f1b795fbbdf3e26824af9e177b90df0deacb3f354ade205a738b",
+ "current_digest": "44086f33d8df2ebd404aa1209da32769efd5c108cbd2b8e12432d47766937fd8",
+ "transition": {
+  "from_revision": "844a8d4ab101",
+  "to_revision": "21d36487191e",
+  "unified_diff_of_the_implementation": [
+   "--- 844a8d4ab101",
+   "+++ 21d36487191e",
+   "@@ -14,5 +14,5 @@",
+   "     if W == 0:",
+   "         raise VaultRefusal(\"REFUSED: no prediction windows\")",
+   "-    if not np.isfinite(preds).all():",
+   "+    if not all_finite(preds):",
+   "         raise VaultRefusal(\"REFUSED: non-finite predictions\")",
+   "     Z = lambda: np.zeros((T, C))"
+  ],
+  "class": "NON_NUMERIC_GUARD",
+  "reading": "the whole difference is the finiteness guard: np.isfinite(preds).all() became the memory-bounded all_finite(preds) under RP101. It raises VaultRefusal on a non-finite prediction and contributes to no accumulator, population, parameter or reduction, so no declared estimator can move"
+ },
+ "independent_confirmation": "the delegated verifier recomputed all three retained H96 catalogs on WORKER_A from the accepted arrays: every numeric field matched the retained catalog exactly and the records' author metrics matched exactly (0.13331516/0.23055443, 0.14008182/0.23777533, 0.13309242/0.23032169)",
+ "consequence": "the digest is declared in METRIC_IMPLEMENTATION_LINEAGE as a predecessor of the current one. The retained catalogs keep their bytes and their accepted identity; a fresh recomputation is bound beside them; and an undeclared digest, or any numeric difference, still refuses as VAULT_CHANGED"
+}
