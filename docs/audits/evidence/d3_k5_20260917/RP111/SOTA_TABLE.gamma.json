@@ -1,0 +1,932 @@
+{
+ "schema": "df_sota_table.v1",
+ "at": "2026-09-23T05:18:52Z",
+ "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+ "paper": "Hu, Y. et al. TimeFilter: Patch-Specific Spatial-Temporal Graph Filtration for Time Series Forecasting. ICML 2025 (PMLR v267); arXiv:2501.13041. Author code github.com/TROUBADOUR000/TimeFilter",
+ "protocol": "L96",
+ "published_table": "Table 8 (L = 96)",
+ "rows": [
+  {
+   "dataset_protocol": "ECL official processed (TSL), L=96, T=96, split 7/1/2, normalized space",
+   "model_revision": "TimeFilter @ dffde87e4fff",
+   "horizon": 96,
+   "published": {
+    "mse": 0.133,
+    "mae": 0.23
+   },
+   "seeds_expected": [
+    "L96_h96_s2021",
+    "L96_h96_s2022",
+    "L96_h96_s2023"
+   ],
+   "seeds_verified": [],
+   "verified_all": false,
+   "mse": {
+    "status": "NO_MEASUREMENT",
+    "mean": null,
+    "sd_ddof1": null,
+    "difference": null
+   },
+   "mae": {
+    "status": "NO_MEASUREMENT",
+    "mean": null,
+    "sd_ddof1": null,
+    "difference": null
+   },
+   "historically_verified_seeds": [],
+   "metric_basis": [],
+   "per_seed": {},
+   "scopes": {
+    "recipe_fidelity": null,
+    "same_device_repeatability": [],
+    "cross_device_portability": [],
+    "published_score_agreement": {
+     "mse": "NO_MEASUREMENT",
+     "mae": "NO_MEASUREMENT"
+    },
+    "replay_history": {}
+   },
+   "matched_naive": null,
+   "training_completion": [],
+   "cost": {
+    "wall_seconds_sum": 0,
+    "cpu_seconds_sum": 0,
+    "peak_gpu_bytes_max": 0,
+    "hosts": []
+   },
+   "replay_max_abs_difference": null,
+   "problems": [
+    "L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite True, shape_equal True, error ",
+    "L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite True, shape_equal True, error ",
+    "L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite True, shape_equal True, error "
+   ],
+   "executed_unverified": [
+    {
+     "unit": "L96_h96_s2021",
+     "author_metric_float32": {
+      "mae": 0.23055443167686462,
+      "mse": 0.13331516087055206
+     },
+     "custody": "ACCEPTED_ARTIFACT_CHAIN",
+     "why": "L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite ",
+     "replay_max_abs_difference": 0.00019407272338867188,
+     "replayed_author_metric": {
+      "mae": 0.23055443167686462,
+      "mse": 0.13331516087055206
+     }
+    },
+    {
+     "unit": "L96_h96_s2022",
+     "author_metric_float32": {
+      "mae": 0.23777532577514648,
+      "mse": 0.14008182287216187
+     },
+     "custody": "ACCEPTED_ARTIFACT_CHAIN",
+     "why": "L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite T",
+     "replay_max_abs_difference": 0.0002186298370361328,
+     "replayed_author_metric": {
+      "mae": 0.23777532577514648,
+      "mse": 0.14008182287216187
+     }
+    },
+    {
+     "unit": "L96_h96_s2023",
+     "author_metric_float32": {
+      "mae": 0.23032169044017792,
+      "mse": 0.13309241831302643
+     },
+     "custody": "ACCEPTED_ARTIFACT_CHAIN",
+     "why": "L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite T",
+     "replay_max_abs_difference": 0.0002714395523071289,
+     "replayed_author_metric": {
+      "mae": 0.23032169044017792,
+      "mse": 0.13309241831302643
+     }
+    }
+   ]
+  },
+  {
+   "dataset_protocol": "ECL official processed (TSL), L=96, T=192, split 7/1/2, normalized space",
+   "model_revision": "TimeFilter @ dffde87e4fff",
+   "horizon": 192,
+   "published": {
+    "mse": 0.154,
+    "mae": 0.248
+   },
+   "seeds_expected": [
+    "L96_h192_s2021",
+    "L96_h192_s2022",
+    "L96_h192_s2023"
+   ],
+   "seeds_verified": [
+    "L96_h192_s2021",
+    "L96_h192_s2022",
+    "L96_h192_s2023"
+   ],
+   "verified_all": true,
+   "mse": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.15764521062374115,
+    "sd_ddof1": 0.003798649937341777,
+    "values": [
+     0.1608569175004959,
+     0.158626526594162,
+     0.15345218777656555
+    ],
+    "published": 0.154,
+    "difference": 0.003645210623741152,
+    "tolerance_agree": 0.0105,
+    "tolerance_partial": 0.0155,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "mae": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.25216273963451385,
+    "sd_ddof1": 0.003964677673311557,
+    "values": [
+     0.2559875547885895,
+     0.2524290382862091,
+     0.24807162582874298
+    ],
+    "published": 0.248,
+    "difference": 0.004162739634513857,
+    "tolerance_agree": 0.0125,
+    "tolerance_partial": 0.018500000000000003,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "historically_verified_seeds": [
+    "L96_h192_s2021",
+    "L96_h192_s2022",
+    "L96_h192_s2023"
+   ],
+   "metric_basis": [
+    "author_float32 [historical: original closure fbe2cd4c97a3]"
+   ],
+   "per_seed": {
+    "2021": {
+     "mse": 0.1608569175004959,
+     "mae": 0.2559875547885895,
+     "difference_mse": 0.006856917500495913,
+     "difference_mae": 0.00798755478858948
+    },
+    "2022": {
+     "mse": 0.158626526594162,
+     "mae": 0.2524290382862091,
+     "difference_mse": 0.004626526594161989,
+     "difference_mae": 0.004429038286209108
+    },
+    "2023": {
+     "mse": 0.15345218777656555,
+     "mae": 0.24807162582874298,
+     "difference_mse": -0.0005478122234344462,
+     "difference_mae": 7.162582874298273e-05
+    }
+   },
+   "scopes": {
+    "recipe_fidelity": "sealed author files, arguments and preparation bound (closure)",
+    "same_device_repeatability": [
+     "NOT_TESTED_ON_THIS_DEVICE"
+    ],
+    "cross_device_portability": [
+     "NOT_TESTED_ON_THIS_DEVICE"
+    ],
+    "published_score_agreement": {
+     "mse": "OPERATIONAL_AGREEMENT",
+     "mae": "OPERATIONAL_AGREEMENT"
+    },
+    "replay_history": {
+     "L96_h192_s2021": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:20:47Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "property": "cross_device_portability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 4.76837158203125e-06,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:39:48Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "cross_device_portability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 4.76837158203125e-06,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:57:32Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "cross_device_portability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 4.76837158203125e-06,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L96_h192_s2022": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:02:48Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:21:15Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:40:14Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "cross_device_portability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:57:59Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L96_h192_s2023": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:03:17Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:21:43Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:40:41Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "cross_device_portability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:58:27Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ]
+    }
+   },
+   "matched_naive": null,
+   "training_completion": [
+    {
+     "unit": "L96_h192_s2021",
+     "epochs_run": 15,
+     "best_epoch": 14,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L96_h192_s2022",
+     "epochs_run": 15,
+     "best_epoch": 15,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L96_h192_s2023",
+     "epochs_run": 15,
+     "best_epoch": 12,
+     "early_stopped": false,
+     "max_epochs": 15
+    }
+   ],
+   "cost": {
+    "wall_seconds_sum": 6779.514723539352,
+    "cpu_seconds_sum": 6802.020566,
+    "peak_gpu_bytes_max": 5152029184,
+    "hosts": [
+     "gamma",
+     "omega"
+    ]
+   },
+   "replay_max_abs_difference": 0.0,
+   "problems": [],
+   "executed_unverified": [
+    {
+     "unit": "L96_h192_s2021",
+     "author_metric_float32": {
+      "mae": 0.2559875547885895,
+      "mse": 0.1608569175004959
+     },
+     "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+     "why": "predictions deleted under authorization: no current replay is possible; the historical verification is the original closure's",
+     "replay_max_abs_difference": null,
+     "replayed_author_metric": null
+    },
+    {
+     "unit": "L96_h192_s2022",
+     "author_metric_float32": {
+      "mae": 0.2524290382862091,
+      "mse": 0.158626526594162
+     },
+     "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+     "why": "predictions deleted under authorization: no current replay is possible; the historical verification is the original closure's",
+     "replay_max_abs_difference": null,
+     "replayed_author_metric": null
+    },
+    {
+     "unit": "L96_h192_s2023",
+     "author_metric_float32": {
+      "mae": 0.24807162582874298,
+      "mse": 0.15345218777656555
+     },
+     "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+     "why": "predictions deleted under authorization: no current replay is possible; the historical verification is the original closure's",
+     "replay_max_abs_difference": null,
+     "replayed_author_metric": null
+    }
+   ]
+  },
+  {
+   "dataset_protocol": "ECL official processed (TSL), L=96, T=336, split 7/1/2, normalized space",
+   "model_revision": "TimeFilter @ dffde87e4fff",
+   "horizon": 336,
+   "published": {
+    "mse": 0.162,
+    "mae": 0.261
+   },
+   "seeds_expected": [
+    "L96_h336_s2021",
+    "L96_h336_s2022",
+    "L96_h336_s2023"
+   ],
+   "seeds_verified": [
+    "L96_h336_s2021",
+    "L96_h336_s2022",
+    "L96_h336_s2023"
+   ],
+   "verified_all": true,
+   "mse": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.16447971761226654,
+    "sd_ddof1": 0.0032003804707519206,
+    "values": [
+     0.1625940501689911,
+     0.16817493736743927,
+     0.16267016530036926
+    ],
+    "published": 0.162,
+    "difference": 0.0024797176122665354,
+    "tolerance_agree": 0.0105,
+    "tolerance_partial": 0.0155,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "mae": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.2629846930503845,
+    "sd_ddof1": 0.003836710304292311,
+    "values": [
+     0.2606664299964905,
+     0.26741331815719604,
+     0.26087433099746704
+    ],
+    "published": 0.261,
+    "difference": 0.0019846930503845117,
+    "tolerance_agree": 0.0125,
+    "tolerance_partial": 0.018500000000000003,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "historically_verified_seeds": [
+    "L96_h336_s2021",
+    "L96_h336_s2022",
+    "L96_h336_s2023"
+   ],
+   "metric_basis": [
+    "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original; catalog re-derived and equal to the retained one) [historical row: independent_float64 (author float32 reduction NOT executed within the memory budget) [historical: original closure fbe2cd4c97a3]]"
+   ],
+   "per_seed": {
+    "2021": {
+     "mse": 0.1625940501689911,
+     "mae": 0.2606664299964905,
+     "difference_mse": 0.0005940501689910838,
+     "difference_mae": -0.00033357000350953125
+    },
+    "2022": {
+     "mse": 0.16817493736743927,
+     "mae": 0.26741331815719604,
+     "difference_mse": 0.006174937367439265,
+     "difference_mae": 0.006413318157196035
+    },
+    "2023": {
+     "mse": 0.16267016530036926,
+     "mae": 0.26087433099746704,
+     "difference_mse": 0.0006701653003692576,
+     "difference_mae": -0.00012566900253296875
+    }
+   },
+   "scopes": {
+    "recipe_fidelity": "sealed author files, arguments and preparation bound (closure)",
+    "same_device_repeatability": [
+     "NOT_TESTED_ON_THIS_DEVICE"
+    ],
+    "cross_device_portability": [
+     "NOT_TESTED_ON_THIS_DEVICE"
+    ],
+    "published_score_agreement": {
+     "mse": "OPERATIONAL_AGREEMENT",
+     "mae": "OPERATIONAL_AGREEMENT"
+    },
+    "replay_history": {
+     "L96_h336_s2021": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:03:50Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:22:14Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:41:14Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "cross_device_portability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:58:58Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L96_h336_s2022": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:04:23Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:22:47Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:41:47Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "cross_device_portability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:59:31Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L96_h336_s2023": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:04:56Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519@2026-09-22T22:23:21Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T22:42:18Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "cross_device_portability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      },
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-22T23:00:05Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ]
+    }
+   },
+   "matched_naive": null,
+   "training_completion": [
+    {
+     "unit": "L96_h336_s2021",
+     "epochs_run": 15,
+     "best_epoch": 10,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L96_h336_s2022",
+     "epochs_run": 15,
+     "best_epoch": 13,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L96_h336_s2023",
+     "epochs_run": 15,
+     "best_epoch": 12,
+     "early_stopped": false,
+     "max_epochs": 15
+    }
+   ],
+   "cost": {
+    "wall_seconds_sum": 2758.2110681533813,
+    "cpu_seconds_sum": 2762.448789,
+    "peak_gpu_bytes_max": 5161739264,
+    "hosts": [
+     "gamma"
+    ]
+   },
+   "replay_max_abs_difference": 0.0,
+   "problems": [],
+   "executed_unverified": [
+    {
+     "unit": "L96_h336_s2021",
+     "author_metric_float32": {
+      "mae": 0.2606664299964905,
+      "mse": 0.1625940501689911
+     },
+     "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+     "why": "predictions deleted under authorization: no current replay is possible; the historical verification is the original closure's",
+     "replay_max_abs_difference": null,
+     "replayed_author_metric": null
+    },
+    {
+     "unit": "L96_h336_s2022",
+     "author_metric_float32": {
+      "mae": 0.26741331815719604,
+      "mse": 0.16817493736743927
+     },
+     "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+     "why": "predictions deleted under authorization: no current replay is possible; the historical verification is the original closure's",
+     "replay_max_abs_difference": null,
+     "replayed_author_metric": null
+    },
+    {
+     "unit": "L96_h336_s2023",
+     "author_metric_float32": {
+      "mae": 0.26087433099746704,
+      "mse": 0.16267016530036926
+     },
+     "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+     "why": "predictions deleted under authorization: no current replay is possible; the historical verification is the original closure's",
+     "replay_max_abs_difference": null,
+     "replayed_author_metric": null
+    }
+   ]
+  },
+  {
+   "dataset_protocol": "ECL official processed (TSL), L=96, T=720, split 7/1/2, normalized space",
+   "model_revision": "TimeFilter @ dffde87e4fff",
+   "horizon": 720,
+   "published": {
+    "mse": 0.184,
+    "mae": 0.284
+   },
+   "seeds_expected": [
+    "L96_h720_s2021",
+    "L96_h720_s2022",
+    "L96_h720_s2023"
+   ],
+   "seeds_verified": [
+    "L96_h720_s2021",
+    "L96_h720_s2022",
+    "L96_h720_s2023"
+   ],
+   "verified_all": true,
+   "mse": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.19022570053736368,
+    "sd_ddof1": 0.006936901507419969,
+    "values": [
+     0.18713927268981934,
+     0.19817017018795013,
+     0.1853676587343216
+    ],
+    "published": 0.184,
+    "difference": 0.006225700537363682,
+    "tolerance_agree": 0.0105,
+    "tolerance_partial": 0.0155,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "mae": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.29061747590700787,
+    "sd_ddof1": 0.007015591340672149,
+    "values": [
+     0.28751975297927856,
+     0.29864874482154846,
+     0.28568392992019653
+    ],
+    "published": 0.284,
+    "difference": 0.006617475907007897,
+    "tolerance_agree": 0.0125,
+    "tolerance_partial": 0.018500000000000003,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "historically_verified_seeds": [
+    "L96_h720_s2021",
+    "L96_h720_s2022",
+    "L96_h720_s2023"
+   ],
+   "metric_basis": [
+    "author_float32 (recomputed at closure by df_sota_author_metric_exact.v1; the record carries the float64 reduction only) [historical: original closure bc9d3388f1f2]"
+   ],
+   "per_seed": {
+    "2021": {
+     "mse": 0.18713927268981934,
+     "mae": 0.28751975297927856,
+     "difference_mse": 0.003139272689819339,
+     "difference_mae": 0.0035197529792785898
+    },
+    "2022": {
+     "mse": 0.19817017018795013,
+     "mae": 0.29864874482154846,
+     "difference_mse": 0.014170170187950137,
+     "difference_mae": 0.014648744821548487
+    },
+    "2023": {
+     "mse": 0.1853676587343216,
+     "mae": 0.28568392992019653,
+     "difference_mse": 0.0013676587343215973,
+     "difference_mae": 0.0016839299201965585
+    }
+   },
+   "scopes": {
+    "recipe_fidelity": "sealed author files, arguments and preparation bound (closure)",
+    "same_device_repeatability": [
+     "NOT_TESTED_ON_THIS_DEVICE"
+    ],
+    "cross_device_portability": [
+     "NOT_TESTED_ON_THIS_DEVICE"
+    ],
+    "published_score_agreement": {
+     "mse": "OPERATIONAL_AGREEMENT",
+     "mae": "OPERATIONAL_AGREEMENT"
+    },
+    "replay_history": {
+     "L96_h720_s2021": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-23T04:57:15Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_inferred (INFERRED_GPU_MEMORY): NOT certified as same-device",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L96_h720_s2022": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-23T04:58:28Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_inferred (INFERRED_GPU_MEMORY): NOT certified as same-device",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L96_h720_s2023": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-23T04:59:40Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_inferred (INFERRED_GPU_MEMORY): NOT certified as same-device",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ]
+    }
+   },
+   "matched_naive": null,
+   "training_completion": [
+    {
+     "unit": "L96_h720_s2021",
+     "epochs_run": 15,
+     "best_epoch": 12,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L96_h720_s2022",
+     "epochs_run": 15,
+     "best_epoch": 5,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L96_h720_s2023",
+     "epochs_run": 15,
+     "best_epoch": 11,
+     "early_stopped": false,
+     "max_epochs": 15
+    }
+   ],
+   "cost": {
+    "wall_seconds_sum": 3628.304713010788,
+    "cpu_seconds_sum": 3646.953425,
+    "peak_gpu_bytes_max": 5187266048,
+    "hosts": [
+     "gamma"
+    ]
+   },
+   "replay_max_abs_difference": 0.0,
+   "problems": [],
+   "executed_unverified": [
+    {
+     "unit": "L96_h720_s2021",
+     "author_metric_float32": {
+      "mae": 0.28751975297927856,
+      "mse": 0.18713927268981934
+     },
+     "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+     "why": "predictions deleted under authorization: no current replay is possible; the historical verification is the original closure's",
+     "replay_max_abs_difference": null,
+     "replayed_author_metric": null
+    },
+    {
+     "unit": "L96_h720_s2022",
+     "author_metric_float32": {
+      "mae": 0.29864874482154846,
+      "mse": 0.19817017018795013
+     },
+     "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+     "why": "predictions deleted under authorization: no current replay is possible; the historical verification is the original closure's",
+     "replay_max_abs_difference": null,
+     "replayed_author_metric": null
+    },
+    {
+     "unit": "L96_h720_s2023",
+     "author_metric_float32": {
+      "mae": 0.28568392992019653,
+      "mse": 0.1853676587343216
+     },
+     "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+     "why": "predictions deleted under authorization: no current replay is possible; the historical verification is the original closure's",
+     "replay_max_abs_difference": null,
+     "replayed_author_metric": null
+    }
+   ]
+  }
+ ],
+ "average_over_horizons": {
+  "mse": {
+   "status": "NOT_COMPUTED",
+   "why": "a full four-horizon average needs every horizon verified for every seed; complete seeds: []",
+   "seed_averages_available": {}
+  },
+  "mae": {
+   "status": "NOT_COMPUTED",
+   "why": "a full four-horizon average needs every horizon verified for every seed; complete seeds: []",
+   "seed_averages_available": {}
+  }
+ },
+ "complete": false,
+ "protocol_fidelity": {
+  "source_hashes": "sealed == now",
+  "preparation": "PREPARATION_ACCEPTED_ARTIFACT",
+  "environment": "declared divergence from the author's (torch/numpy/pandas/sklearn/GPU differ; recorded in the lock)",
+  "operational_patches": [
+   "import shims for sktime.datasets and patoolib",
+   "run.py __main__ replicated by main_like_run_py",
+   "exp_long_term_forecasting.metric wrapped to capture preds/trues",
+   "np.Inf restored as an alias of np.inf before importing the author modules"
+  ],
+  "verdict": "NOT_ESTABLISHED: L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite True, shape_equal True, error ; L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite True, shape_equal True, error ; L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite True, shape_equal True, error "
+ },
+ "agreement_rule": "per horizon and for the four-horizon average (formed within each seed first), the three-seed mean of the replicated metric is in OPERATIONAL_AGREEMENT with the published value when |mean - published| <= 2 x std_paper + 0.0005 (rounding half-unit); OPERATIONAL_PARTIAL when <= 3 x std_paper + 0.0005; OUTSIDE_OPERATIONAL_MARGIN otherwise. std_paper is the paper's std over its three runs of the FOUR-HORIZON AVERAGE (Table 7), borrowed per horizon as a predeclared operational margin \u2014 not a published per-horizon error bar, not statistical equivalence; the replicated seed dispersion is reported beside it and never replaces the criterion",
+ "disposition": {
+  "disposition": "ACTIVE",
+  "task_id": "ecl321_official_tsl",
+  "policy": "docs/tres_temas_entrevista/program_v3/SOTA_FIRST_2026_09_21.md",
+  "why": "the official processed ECL benchmark is the active reproduction task"
+ },
+ "unexecuted": [
+  "L96_h96_s2021",
+  "L96_h96_s2022",
+  "L96_h96_s2023",
+  "L96_h192_s2021",
+  "L96_h192_s2022",
+  "L96_h192_s2023",
+  "L96_h336_s2021",
+  "L96_h336_s2022",
+  "L96_h336_s2023",
+  "L96_h720_s2021",
+  "L96_h720_s2022",
+  "L96_h720_s2023"
+ ],
+ "verified_units": [],
+ "problems": [
+  "L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite True, shape_equal True, error ",
+  "L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite True, shape_equal True, error ",
+  "L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite True, shape_equal True, error "
+ ]
+}
