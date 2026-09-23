@@ -615,3 +615,23 @@ corregidos e instalados, **falta que el owner reinicie `crispdm-data-warehouse-o
 Satoshi por el entorno); copias de omega intactas durante la retencion. Siguiente: reinicio del almacen -> `report` x3 -> cierre
 con T=720; replays en WORKER_A para T=96; borrados en omega tras la retencion; solo con las cuatro horizontes verificadas se
 forma el promedio dentro de cada semilla.
+
+**Ejecutado por Satoshi (23-sep, RP106-RP113, pendiente de revision):** [retorno](../audits/work_plan/SATOSHI_RP106_RP113_RETURN_2026_09_23.md),
+evidencia en `docs/audits/evidence/d3_k5_20260917/RP106/`, `.../RP111/` y `.../RP112/`. Los tres hallazgos del dictamen RP105
+corregidos con su PRE congelado y su POST reproducido: la verificacion historica de una celda borrada ahora se RESUELVE POR
+DIGESTO contra el informe de cierre original y se ATA al registro, al checkpoint, al catalogo y a la cadena de terminales
+aceptada (rechazos tipificados; el marcador de borrado ya no es autoridad de nada); el borrado es por CONTENIDO bajo frontera
+exclusiva, con aprobacion atada al informe aceptado y a un respaldo de metadatos, estado por ruta y reanudacion. La metrica
+oficial del autor (float32) se completa dentro de la memoria real: `author_metric_exact` reproduce BIT A BIT
+`utils.metrics.metric` replicando el arbol de suma por pares de numpy (probado contra la funcion del autor y contra
+`np.add.reduce`). Las tres celdas T=336 borradas se REGENERARON por INFERENCIA desde sus checkpoints en la RTX 5090 externa:
+bit a bit identicas a las originales (digestos de predicciones y objetivos iguales a los del registro), lo que recupero su
+metrica oficial; su catalogo se rederivo de esos bytes y coincide con el retenido. Atribucion de dispositivo con clase de
+evidencia (MEDIDA / MASCARA / INFERIDA / DESCONOCIDA): solo la medida certifica repetibilidad en el mismo dispositivo. Cierre en
+WORKER_B (informe bc9d3388…): **T=192 0.1576/0.2522, T=336 0.1645/0.2630 y T=720 0.1902/0.2906 en ACUERDO OPERACIONAL** con la
+regla congelada; T=96 sigue SIN MEDICION porque su replay entre GPUs falla la regla puntual (la regla no se ensancha) y su
+replay en el dispositivo original espera la confirmacion de refrigeracion del owner; el promedio de cuatro horizontes sigue SIN
+CALCULAR. Aceptacion independiente de los doce catalogos (nueve pasan con todos los oraculos exactamente 0.0) y borrado
+autorizado de los tres arreglos T=720 (12.59 GB) con recibos por ruta. Protocolo B (Tabla 9, L=512) queda especificado y
+costeado como entrega separada, sin ejecutar. Colocacion: unica GPU admitida la RTX 5090 externa de WORKER_B, verificada por
+UUID fisico antes de cada despacho y afirmada dentro del hijo; sin respaldo a GPU interna ni al coordinador.
