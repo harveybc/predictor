@@ -1684,3 +1684,152 @@ def test_RP121_the_table_reports_the_matched_baselines_from_the_retained_catalog
     assert row["matched_baselines"]["persistence"]["mae"] == vault["naive_mae"] and row["matched_baselines"]["seasonal24"]["mae"] == vault["seasonal24_mae"]
     assert row["matched_naive"]["mse"] == vault["naive_mse"] and row["matched_baselines"]["source"].endswith(unit)
     assert row["matched_baselines"]["windows"] == json.loads((root / "attempts" / unit / "METRICS_VAULT.json").read_text())["population"]["windows"]
+
+
+# --- RP122: Musashi's RP121 counterexamples, frozen against the real entry points ------------------------------------------------
+
+def _broken_catalog_world(world, tmp_path, tag, mutate):
+    """A closed fixture whose catalog PRODUCER emitted a mutated value; the closure recomputes and reads back that catalog."""
+    import unittest.mock as um
+    original = R.metrics_vault
+
+    def producer(*a_, **k_):
+        return mutate(original(*a_, **k_))
+
+    root = _copy(world, tmp_path / tag)
+    C = _load("df_mod_e0_close")
+    with um.patch.object(R, "metrics_vault", producer), um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / f"tok_{tag}"; tok.write_text("x")
+        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="s://", data_path=world["data"], skip_replay=False, replay_device="cpu"),
+                json.loads((root / "DESIGN.json").read_text()))
+    return root
+
+
+@pytest.mark.parametrize("tag,field,mutate", [
+    ("acf_zero", "autocorrelation.channel_mean_residual_per_step.acf_by_lag",
+     lambda v: v.update({"autocorrelation": {**v["autocorrelation"], "channel_mean_residual_per_step": {
+         **v["autocorrelation"]["channel_mean_residual_per_step"],
+         "acf_by_lag": [[0.0 if x is not None else None for x in row] for row in v["autocorrelation"]["channel_mean_residual_per_step"]["acf_by_lag"]]}}}) or v),
+    ("quantiles_zero", "residuals.quantiles", lambda v: v["residuals"].update({"quantiles": {k: 0.0 for k in v["residuals"]["quantiles"]}}) or v),
+    ("corr_null", "global.corr_pred_true", lambda v: v["global"].update({"corr_pred_true": None}) or v),
+    ("entropy_plausible", "residuals.entropy_bits", lambda v: v["residuals"].update({"entropy_bits": 4.0}) or v),
+    ("per_step_shift", "per_step.mae", lambda v: v["per_step"].update({"mae": [x + 1e-3 for x in v["per_step"]["mae"]]}) or v),
+    ("baseline_shift", "global.naive_mae", lambda v: v["global"].update({"naive_mae": v["global"]["naive_mae"] * 1.01}) or v),
+    ("block_shift", "time_blocks", lambda v: v.update({"time_blocks": [{**b, "mae": b["mae"] + 1e-4} for b in v["time_blocks"]]}) or v),
+])
+def test_RP122_a_plausible_wrong_value_in_any_family_is_refused_by_the_independent_reference(world, tmp_path, tag, field, mutate):
+    """Musashi RP121 #1, per family: values inside every domain but not equal to the independent reference under the declared
+    definition. Each mutation is refused, naming its own field."""
+    root = _broken_catalog_world(world, tmp_path, tag, mutate)
+    unit = world["cell"]["cell_id"]
+    acc = R.accept_catalog(root, json.loads((root / "DESIGN.json").read_text()), unit, data_path=world["data"], independent=True)
+    assert not acc["pass"], (tag, acc["refusals"])
+    assert any(field in r for r in acc["refusals"]), (tag, field, acc["refusals"])
+    assert not acc["independent_comparison"]["fully_independent"]
+
+
+def test_RP122_a_valid_catalog_is_independently_accepted_with_full_family_coverage(world, tmp_path):
+    """The positive control: every declared family checked, none unchecked, no disagreement."""
+    root = _copy(world, tmp_path / "control")
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tokc"; tok.write_text("x")
+        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="s://", data_path=world["data"], skip_replay=False, replay_device="cpu"),
+                json.loads((root / "DESIGN.json").read_text()))
+    acc = R.accept_catalog(root, json.loads((root / "DESIGN.json").read_text()), world["cell"]["cell_id"], data_path=world["data"], independent=True)
+    assert acc["pass"], acc["refusals"]
+    comp = acc["independent_comparison"]
+    assert comp["fully_independent"] and not comp["unchecked"] and set(comp["coverage"]) == set(R.CATALOG_ESTIMATORS)
+    assert all(f["status"] == "OK" for f in comp["fields"].values())
+    assert acc["independent_estimators"]["baselines_checked"] is True
+
+
+def test_RP122_a_missing_value_on_one_side_is_a_disagreement_not_a_zero_difference():
+    """RP124: null, empty and boolean values never become a zero discrepancy."""
+    assert R._numeric_diff(None, None) == (0.0, "BOTH_UNDEFINED")
+    d, st = R._numeric_diff(None, -0.197)
+    assert d is None and "one side is undefined" in st
+    d, st = R._numeric_diff(0.5, None)
+    assert d is None and "one side is undefined" in st
+    assert R._numeric_diff(True, False)[0] is None and R._numeric_diff(True, True) == (0.0, "OK")
+    assert R._numeric_diff([1.0, None], [1.0, None]) == (0.0, "BOTH_UNDEFINED")
+    assert R._numeric_diff([1.0, None], [1.0, 2.0])[0] is None
+    assert R._numeric_diff([1.0], [1.0, 2.0])[0] is None and R._numeric_diff({"a": 1.0}, {"b": 1.0})[0] is None
+    assert R._numeric_diff(float("nan"), 1.0)[0] is None and R._numeric_diff(1.0, float("inf"))[0] is None
+    assert R._dig({"a": {"b": None}}, "a.b") == ("PRESENT", None) and R._dig({"a": {}}, "a.b") == ("ABSENT", None)
+
+
+def test_RP122_a_locally_relabelled_diagnostic_cannot_present_itself_as_an_accepted_closure(world, tmp_path, monkeypatch):
+    """Musashi RP121 #2: the warehouse says `diagnostic` for `unrelated-subject`; only the local registry is changed."""
+    root, wh, held, _ = _accepted_world(world, tmp_path, monkeypatch, tag="relabel")
+    other = _copy(world, tmp_path / "diag")
+    (other / "REPORT.json").write_text((root / "REPORT.json").read_text())
+    _accept_evidence(world, other, "diagnostic", {"diagnostic_attachment": other / "REPORT.json"}, "unrelated-subject")
+    digest = R.sha_file(other / "REPORT.json")
+    receipts = json.loads((other / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    before = R.accepted_artifact(other, receipts, _wh(world), digest, expect_kind="closure", expect_role="closure_report")
+    assert not before["accepted"]
+    held_before = json.dumps(world["held"], sort_keys=True)
+    reg = json.loads((other / R.ACCEPTED_EVIDENCE).read_text())
+    reg["entries"][digest].update(kind="closure", role="closure_report", subject="closure")
+    (other / R.ACCEPTED_EVIDENCE).write_text(json.dumps(reg))
+    after = R.accepted_artifact(other, receipts, _wh(world), digest, expect_kind="closure", expect_role="closure_report")
+    assert not after["accepted"], after
+    assert json.dumps(world["held"], sort_keys=True) == held_before                      # the warehouse never moved
+    assert "kind is 'diagnostic'" in (after["why"] or "") or "role" in (after["why"] or "")
+    # and the same digest accepted in the RIGHT kind and role is accepted
+    _accept_evidence(world, other, "closure", {"closure_report": other / "REPORT.json"}, "closure")
+    receipts = json.loads((other / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    good = R.accepted_artifact(other, receipts, _wh(world), digest, expect_kind="closure", expect_role="closure_report")
+    assert good["accepted"] and good["authority"].startswith("the accepted terminal's own tags")
+
+
+def test_RP122_an_acceptance_for_another_subject_or_role_does_not_certify_this_cell(world, tmp_path):
+    """A catalog acceptance published for another unit, or a digest accepted in another role, must not certify this one."""
+    root = _copy(world, tmp_path / "subject"); unit = world["cell"]["cell_id"]
+    design = json.loads((root / "DESIGN.json").read_text())
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "toks"; tok.write_text("x")
+        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="s://", data_path=world["data"], skip_replay=False, replay_device="cpu"), design)
+    R.accept_catalog(root, design, unit, data_path=world["data"])
+    _accept_evidence(world, root, "catalog", {"catalog_acceptance": root / "attempts" / unit / "CATALOG_ACCEPTANCE.json"}, "another-unit")
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    digest = R.sha_file(root / "attempts" / unit / "CATALOG_ACCEPTANCE.json")
+    wrong = R.accepted_artifact(root, receipts, _wh(world), digest, expect_kind="catalog", expect_subject=unit, expect_role="catalog_acceptance")
+    assert not wrong["accepted"] and "subject" in (wrong["why"] or "")
+    wrong_role = R.accepted_artifact(root, receipts, _wh(world), digest, expect_kind="catalog", expect_subject="another-unit", expect_role="metrics_vault")
+    assert not wrong_role["accepted"] and "role" in (wrong_role["why"] or "")
+    right = R.accepted_artifact(root, receipts, _wh(world), digest, expect_kind="catalog", expect_subject="another-unit", expect_role="catalog_acceptance")
+    assert right["accepted"]
+
+
+def test_RP122_no_public_call_deletes_predictions_without_the_accepted_chain(world, tmp_path):
+    """Musashi RP121 #3: the bypass is gone. Local report, catalog and backup are all valid; only the accepted chain is missing."""
+    import inspect
+    root, unit, _ = (None, None, None)
+    root = _copy(world, tmp_path / "nochain"); unit = world["cell"]["cell_id"]
+    design = json.loads((root / "DESIGN.json").read_text())
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tokn"; tok.write_text("x")
+        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="s://", data_path=world["data"], skip_replay=False, replay_device="cpu"), design)
+    R.accept_catalog(root, design, unit, data_path=world["data"])
+    R.metadata_backup(root, tmp_path / "bknc")
+    ready = {"accepted_report_sha256": R.sha_file(root / "REPORT.json"), "backup_manifest": tmp_path / "bknc" / "MANIFEST.json",
+             "receipts": json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], "warehouse": lambda campaign: {"current": {}}}
+    out = R.delete_predictions(root, [unit], **ready)
+    assert out["units"][unit]["state"] == "REFUSED" and (root / "attempts" / unit / "arrays.npz").is_file()
+    why = " ".join(out["units"][unit]["preflight"]["refusals"])
+    assert "APPROVAL_REPORT_NOT_ACCEPTED" in why and "CATALOG_ACCEPTANCE_NOT_ACCEPTED" in why
+    # no public signature offers a way to turn the prerequisite off
+    for fn in (R.delete_predictions, R.deletion_preflight):
+        assert "require_acceptance" not in inspect.signature(fn).parameters
+    assert "require_acceptance" not in inspect.getsource(R.delete_predictions)
+    # a dry run is non-destructive and reports the same failed prerequisites
+    dry = R.delete_predictions(root, [unit], dry_run=True, **ready)
+    assert dry["units"][unit]["state"] == "REFUSED" and (root / "attempts" / unit / "arrays.npz").is_file()
+    assert "APPROVAL_REPORT_NOT_ACCEPTED" in " ".join(dry["units"][unit]["preflight"]["refusals"])
