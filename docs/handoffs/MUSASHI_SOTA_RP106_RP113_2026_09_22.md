@@ -11,12 +11,21 @@ and resend/reconciliation of all three original T=720 pending terminals.
 Do NOT restart again for this, create replacement envelopes, or retrain cells.
 All 12 record/checkpoint identities were checked against the live warehouse.
 
-**Placement:** coordinator heavy CPU/GPU hold remains, without automatic expiry.
-WORKER_A GPU is held pending physical cooling confirmation. WORKER_B's previously
-admitted GPU may run only after fresh temperature, UUID, free RAM/VRAM, competing
-workload and disk checks. No VM interruption, larger slice, compression, new
-storage, full-array transfer home or reduced recipe. A blocked GPU task does not
-block the CPU repairs, custody work or other admitted worker tasks.
+**Placement (owner clarification, 22-sep):** the ONLY GPU eligible for new work
+is WORKER_B's EXTERNAL RTX 5090, with its independent cooler. WORKER_B's internal
+RTX 5070 Ti and WORKER_A's GPU remain held; coordinator heavy CPU/GPU work also
+remains held. The owner's expected return tomorrow afternoon is NOT a release
+time. Explicit cooling-restored confirmation is required for those devices.
+Select the external device by verified physical CUDA UUID, never a guessed index
+or model name alone; assert the actual child uses that UUID. If it is disconnected,
+unavailable or fails admission, refuse GPU work without internal-GPU/host fallback.
+Before dispatch, check connection, thermals, free RAM/VRAM, competing workload and
+disk. Its independent cooler does not cool the host CPU: bound CPU preprocessing,
+thread counts and concurrency, monitor host thermals as well, and stop safely on
+failed admission or thermal limits. No VM interruption, larger slice, compression,
+new storage, full-array transfer home or reduced recipe. Continue lightweight
+repairs/custody work while an original-device replay is held; a 5090 replay of a
+checkpoint trained elsewhere remains CROSS_DEVICE, never SAME_DEVICE.
 
 ## RP106: preserve PRE, make the real path fail correctly
 

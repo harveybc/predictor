@@ -16,7 +16,10 @@
   "scope": "owner travel period until explicit cooling-restored notice",
   "coordinator_heavy_cpu_gpu_compression": "DISALLOWED",
   "coordinator_role": "light orchestration and existing services only",
-  "remote_execution": "existing governed workers; inspect actual GPU UUID, utilization, memory, temperature and compatibility first; no local fallback",
+  "remote_execution": "ONLY WORKER_B external RTX 5090 eligible for new GPU work; verify physical UUID and assert child device; check connection, utilization, memory, GPU AND host thermals; no internal GPU or coordinator fallback",
+  "owner_thermal_clarification": "2026-09-22: WORKER_A cooling unconfirmed; WORKER_B internal RTX 5070 Ti cooling unconfirmed; coordinator traveling without cooler. External RTX 5090 independently cooled per owner. Expected return tomorrow afternoon is not automatic authorization.",
+  "held_gpu_devices": ["COORDINATOR GPU", "WORKER_A GPU", "WORKER_B internal RTX 5070 Ti"],
+  "worker_host_cpu_policy": "Bound CPU preparation, thread counts and concurrency; monitor host temperature independently of eGPU; no unbounded CPU fallback",
   "local_batch_guard": "crispdm-run refuses new work when ~/.config/crispdm/coordinator-travel-hold exists; does not intercept direct process launches",
   "artifact_policy": "THERMAL_AND_ARTIFACT_RETENTION_2026_09_22.md",
   "deletion_gate": "OWNER_SUPERSEDES_ARCHIVAL: no compression or permanent prediction archive; delete inventoried prediction copies including the last after independent analysis and durable verified metric catalog, with deletion receipts and no active reader/writer",
@@ -59,7 +62,7 @@
   "deleted_cells_retained_custody": "6/6 catalogs match pre-deletion report; metadata backup 14542485 bytes; not array recomputation",
   "predictions_deleted_by_reviewer": 0,
   "next_orders": "../../handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md",
-  "owner_information_required": "WORKER_A physical cooling confirmation only; independent blocks continue",
+  "owner_information_required": "Cooling explicitly NOT confirmed for WORKER_A or WORKER_B internal GPU; await future confirmation without repeated approval requests; independent admitted external-5090 and lightweight blocks continue",
   "historical_blocks_below": "Prior Satoshi returns preserved as reported; this review supersedes their pending restart and terminal claims"
  },
  "rp97_external_review": {

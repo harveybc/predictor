@@ -25,10 +25,15 @@ acumulado; no cuenta RAM/tmpfs, un NAS futuro ni borrados todavia no realizados.
 ## Restriccion operativa vigente (22-sep-2026)
 
 El coordinador esta de viaje sin refrigeracion externa: **sin nuevo trabajo
-pesado de CPU/GPU, replay o compresion local**. Ejecutar en los workers con
-refrigeracion comprobada; no fallback al coordinador. Servicios y escritorio
-siguen activos. La eGPU solo se admite tras comprobar utilizacion, memoria,
-compatibilidad y temperatura; no basta que no aparezca un proceso de compute.
+pesado de CPU/GPU, replay o compresion local**. Aclaracion posterior del owner:
+**solo la RTX 5090 externa de WORKER_B es elegible para nuevo trabajo GPU**.
+La RTX 5070 Ti interna de WORKER_B y la GPU de WORKER_A siguen suspendidas;
+el regreso previsto manana por la tarde no levanta esas restricciones.
+Sin fallback al coordinador ni a GPUs internas. Servicios y escritorio siguen
+activos. Verificar UUID fisico y dispositivo usado por el hijo, conexion,
+utilizacion, memoria, compatibilidad y temperatura antes de admitir la eGPU.
+Su disipador no refrigera la CPU del portatil: limitar y vigilar tambien el
+trabajo CPU del host. No basta que no aparezca un proceso de compute.
 Politica y orden complementaria:
 [termica y retencion](program_v3/THERMAL_AND_ARTIFACT_RETENTION_2026_09_22.md).
 Comprobar predicciones en el worker; no replicar todos los arrays al portatil.

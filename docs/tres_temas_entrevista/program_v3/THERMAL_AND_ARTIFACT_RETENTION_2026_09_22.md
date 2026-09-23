@@ -8,9 +8,18 @@ This changes execution placement and storage, not the frozen ML recipe.
 - The traveling coordinator performs light orchestration only. No new heavy
   CPU/GPU training, inference replay, decompression sweeps or maximum-compression
   benchmarks there. Existing desktop and governance services remain untouched.
-- Prefer existing cooled remote workers, selected by actual available memory,
-  measured thermal state and GPU compatibility. The external 5090 is eligible
-  only after a device-specific check; absence of a compute PID does not prove idle.
+- Owner clarification, 22-sep: ONLY WORKER_B's EXTERNAL RTX 5090 is eligible
+  for new GPU work, subject to admission. Its independent cooler is the basis
+  for that authorization, not a new temperature measurement by Musashi.
+  WORKER_B's internal RTX 5070 Ti and WORKER_A's GPU remain held. The expected
+  return tomorrow afternoon does not automatically release any hold.
+  Verify physical UUID, connection, available memory, measured thermal state
+  and compatibility; absence of a compute PID does not prove idle. Require the
+  child process to use that physical device. No fallback to an internal GPU.
+- The external cooler does not establish safe host CPU temperatures. Bound host
+  CPU work, thread count and concurrency; monitor host and GPU temperatures.
+  If either fails admission or its thermal limits, stop the work safely and
+  continue only independent lightweight tasks. No unbounded CPU fallback.
 - Select by physical device UUID in execution records, not assumed CUDA index.
   Record actual host-role/device, environment, start/end temperature and cost.
   Respect existing per-device thermal/admission policies. Do not invent a universal
