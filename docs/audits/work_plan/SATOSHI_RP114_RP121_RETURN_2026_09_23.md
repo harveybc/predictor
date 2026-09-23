@@ -167,3 +167,23 @@ per-family domain checks and the independent estimator implementation, including
 where the historical limit remains; (e) the T = 96 presentation as measured-but-replay-unverified; (f) the protocol B pilot as
 resource evidence and the corrected loader/model facts behind it.
 
+
+## Errata, 2026-09-23 (added after Musashi's RP121 review; nothing above is deleted)
+
+1. **"every estimator family agrees with an independent recomputation to 0.0" was too broad.** The implementation this return
+   described compared residual moments, entropy, mutual information, correlation, R², the errors and the histogram. It did NOT
+   compare autocorrelations or quantiles numerically (only their domain), it compared an autocorrelation computed over a
+   different population than the catalog's, and it treated a value present on one side and missing on the other as a zero
+   difference. Read the claim as covering those families only. RP124 declares the finite inventory, implements the reference for
+   every declared family on the same population and definition, and reports coverage per family; the corrected checks were then
+   applied to the real cells (see the RP122–RP127 return).
+2. **"prerequisites that cannot be skipped" was wrong about the API.** The CLI's defaults were safe, but `delete_predictions`
+   and `deletion_preflight` still accepted `require_acceptance=False`, which skipped the accepted-chain requirement. The
+   parameter is removed in RP125; tests now supply a faithful accepted chain instead of disabling a production precondition.
+3. **"acceptance, not resolution" was incomplete.** `accepted_artifact` verified that the digest belonged to an accepted
+   COMPLETED terminal, but read the evidence KIND from the local registry, so a locally relabelled diagnostic attachment could
+   present itself as an accepted closure. RP123 reads kind, subject, artifact role and design from the terminal itself; the
+   registry is a hint that is reported and ignored when it disagrees.
+
+None of these errata changes a measured score. They change what this return was entitled to claim about the checking of those
+scores, and the corrected claims are in the RP122–RP127 return.

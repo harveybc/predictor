@@ -1348,5 +1348,36 @@
    ],
    "not_executed": "protocol B: recipe mapped, properties verified and cost measured by a bounded pilot (~4 h for twelve cells); no cell trained or scored"
   }
+ },
+ "rp122_rp127": {
+  "orders": "docs/handoffs/MUSASHI_SOTA_RP122_RP127_2026_09_23.md (37df73b8; review MUSASHI_RP114_RP121_REVIEW_2026_09_23.md of 316c67af)",
+  "base": "316c67af",
+  "updated_on": "2026-09-23",
+  "RP122": {
+   "status": "DONE",
+   "pre": "docs/audits/evidence/d3_k5_20260917/RP122/PROBE_RESULTS_PRE.json (316c67af: plausible-wrong catalog accepted, local relabel turned a diagnostic into a closure acceptance, require_acceptance=False deleted the array)",
+   "post": "docs/audits/evidence/d3_k5_20260917/RP122/REVIEW_REPRODUCED_POST.json (repaired head: catalog refused naming quantiles 2.41, correlation undefined-vs--0.1979 and ACF 0.943; relabel refused before and after with the warehouse untouched; the bypass raises TypeError at the interface and the array remains; positive control passes with 14 families complete and none unchecked)",
+   "tests": "per-family mutation tests (ACF, quantiles, correlation, entropy, per-step, baselines, time blocks), the missing-value semantics, subject/role mismatches and the absence of any public bypass"
+  },
+  "RP123": {
+   "status": "DONE_IN_CODE",
+   "what": "accepted_artifact reads kind, subject, artifact role and design from the accepted terminal (tags and artifact roles), scanning the acceptance units the receipts name; the local registry is only a hint and a contradicting hint is reported and ignored; the regeneration record and its acceptance must come from the same accepted terminal"
+  },
+  "RP124": {
+   "status": "DONE_IN_CODE",
+   "what": "CATALOG_ESTIMATORS declares the finite approved catalog before measurement (population, axis, orientation, reduction, parameters, undefined condition, tolerance per family); independent_estimators implements every declared family on the same population — ACF over window origins per fixed forecast step, quantiles from the declared histogram CDF, baselines from the author's loader inputs — and compare_catalog_to_reference compares field by field under each family's tolerance, treating a value present on one side only as a disagreement and reporting coverage"
+  },
+  "RP125": {
+   "status": "DONE_IN_CODE",
+   "what": "require_acceptance removed from deletion_preflight and delete_predictions; the accepted chain and the verified durable backup are checked in every callable path including resumption; dry runs stay non-destructive and report the same failed prerequisites"
+  },
+  "RP126": {
+   "status": "RUNNING",
+   "what": "the corrected checks applied to all twelve cells on WORKER_B: the three retained H96 catalogs pass the full independent comparison (14 families, none unchecked, no disagreement; their only refusal is the missing accepted replay), and the nine deleted cells are regenerated one bounded cell at a time and checked family by family before their temporaries are removed"
+  },
+  "RP127": {
+   "status": "PENDING",
+   "errata": "the RP114-RP121 return carries a dated erratum for its 'every family', 'cannot be skipped' and 'acceptance, not resolution' claims; no history deleted"
+  }
  }
 }
