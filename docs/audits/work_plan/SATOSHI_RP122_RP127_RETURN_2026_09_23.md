@@ -141,3 +141,20 @@ proof that no public invocation unlinks without the accepted chain; (e) the per-
 model cells, including the cell whose regeneration on the admitted device is NOT bit-identical and what that limits;
 (f) the dated errata on the previous return.
 
+
+## Errata, 2026-09-23 (added after Musashi's RP127 review; nothing above is deleted)
+
+1. **"eleven of twelve cells carry a full independent estimator acceptance" was true of the checks that ran, but the acceptance
+   CLASS was not enforced where it mattered.** An acceptance produced without the numerical reference — no data path, the
+   reference disabled, or arrays unavailable — still emitted `pass`, and the deletion read that flag. RP128 gives every
+   acceptance an explicit class and certificate derived from its own content, and the deletion now reads the certificate
+   (class, catalog digest, population, inventory) instead of the flag. The eleven checks themselves stand and were revalidated
+   read-only, not repeated.
+2. **The scientific design was not required where acceptance is consumed.** `accepted_artifact` could check it when a caller
+   passed it, but the deletion and regeneration consumers did not, and a terminal that declared no design passed even when the
+   expected design was given. RP129 makes the design mandatory at those consumers, read from the terminal's own field, with a
+   contradicting campaign-config digest refused.
+3. **A boolean compared equal to a number.** `False` matched the count zero in a declared numeric field. RP130 rejects booleans
+   in numeric fields at any depth.
+
+No measured score changes, and no production array was deleted through any of these paths.
