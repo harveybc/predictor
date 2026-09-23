@@ -1,0 +1,58 @@
+{
+ "schema": "df_sota_provenance_correction.v1",
+ "at": "2026-09-23T22:53:13Z",
+ "host": "gamma",
+ "unit": "L512_h96_s2022",
+ "campaign": "RP135_RELEASED_L512_RECIPE",
+ "kind": "ADDITIVE_PROVENANCE_CORRECTION",
+ "what_happened": "the cell had trained and been evaluated, but its delivery had not been accepted when the governed transport failed. Recovery used `df_sota_repro.py report` (not `execute`, which would have retrained an existing cell). That invocation rebuilt the terminal's work timestamps from the moment of reporting, and an older pending envelope returned a generation conflict",
+ "corrected_claim": {
+  "field": [
+   "started_at",
+   "finished_at"
+  ],
+  "as_currently_recorded": {
+   "started_at": "2026-09-23T22:04:55Z",
+   "finished_at": "2026-09-23T22:04:55Z",
+   "status": "RECONSTRUCTED_AT_RECOVERY: these are the reporting moment, not the measured work window"
+  },
+  "as_measured": {
+   "started_at": "2026-09-23T14:59:01Z",
+   "finished_at": "2026-09-23T15:20:09Z",
+   "source": "the terminal retained before the recovery invocation, preserved beside the current one",
+   "corroboration": {
+    "cell_record_at": "2026-09-23T15:20:09Z",
+    "note": "the cell record's own timestamp lies inside the measured window"
+   }
+  },
+  "elapsed_measured_seconds": 1268
+ },
+ "unaffected": {
+  "metrics": {
+   "author_metric_float32": {
+    "mae": 0.22093379497528076,
+    "mse": 0.12584877014160156
+   },
+   "independent_metric_float64": {
+    "mae": 0.22093379412342623,
+    "mse": 0.12584876699039424
+   }
+  },
+  "artifact_digests_identical": true,
+  "every_other_field_identical": true,
+  "reading": "accepted metrics and artifact identity are evidence about the measurement; they are NOT evidence that a newly reported work-start timestamp is true. Only the two timestamps above are corrected, and only by this additive record"
+ },
+ "preserved": {
+  "retained_original_terminal": {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_L512_v1/TERMINALS/L512_h96_s2022.before-recovery-20260923.json",
+   "sha256": "b6c6d0f9ef8dd47bedf213a91c6fd41de0dca3e4b10e16473264255472b8c670"
+  },
+  "current_terminal": {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_L512_v1/TERMINALS/L512_h96_s2022.json",
+   "sha256": "f11e6cb4c9279ff80a6f2b43109c9fe5fbcb7f0da56f11df1884d828e328294d"
+  },
+  "conflicting_envelope": "preserved as delivered; not erased and not replayed",
+  "warehouse_history": "NOT rewritten by this correction: this record is additive and local to the campaign root"
+ },
+ "issued_by": "Satoshi, RP137"
+}

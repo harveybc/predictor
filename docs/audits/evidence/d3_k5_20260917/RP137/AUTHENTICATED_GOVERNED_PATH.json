@@ -1,0 +1,50 @@
+{
+ "campaign_receipts": [
+  "L512_h96_s2021",
+  "L512_h96_s2022",
+  "L512_h96_s2023",
+  "prepare"
+ ],
+ "queried": {
+  "prepare": {
+   "status": "COMPLETED",
+   "terminal_sha256_matches_receipt": true,
+   "artifact_roles": [
+    "data",
+    "record"
+   ],
+   "tags_kind": "see-raw"
+  },
+  "L512_h96_s2021": {
+   "status": "COMPLETED",
+   "terminal_sha256_matches_receipt": true,
+   "artifact_roles": [
+    "checkpoint",
+    "predictions",
+    "record"
+   ],
+   "tags_kind": "see-raw"
+  },
+  "L512_h96_s2022": {
+   "status": "COMPLETED",
+   "terminal_sha256_matches_receipt": true,
+   "artifact_roles": [
+    "checkpoint",
+    "predictions",
+    "record"
+   ],
+   "tags_kind": "see-raw"
+  },
+  "L512_h96_s2023": {
+   "status": "COMPLETED",
+   "terminal_sha256_matches_receipt": true,
+   "artifact_roles": [
+    "checkpoint",
+    "predictions",
+    "record"
+   ],
+   "tags_kind": "see-raw"
+  }
+ },
+ "authenticated_rows_returned": 4
+}

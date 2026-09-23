@@ -1,0 +1,40 @@
+{
+ "schema": "df_sota_campaign_cost_ledger.v1",
+ "at": "2026-09-23T23:05:00Z",
+ "campaign": "RP135_RELEASED_L512_RECIPE",
+ "measured_from": "each accepted terminal's own costs block, and the live crispdm-run scope's cpu.stat on WORKER_B",
+ "prior_lane": {
+  "description": "the morning Hermes lane, before the native continuation; these costs are snapshotted and are NOT part of the new allocation",
+  "cells": {"L512_h96_s2021": 1259.40, "L512_h96_s2022": 1257.83},
+  "cpu_seconds": 2517.23
+ },
+ "continuation_lane": {
+  "description": "crispdm-rp135-continuation-20260923.service, started 2026-09-23T22:20:06Z, outer 8 h runtime, inner 24000 s wall, 1 thread, 6 GiB",
+  "allocation_cpu_seconds": 24000,
+  "allocation_wall_hours": 8,
+  "measured_scope": "crispdm-rp135-continuation-1790202006-856300.scope",
+  "cpu_seconds_so_far": 2028.76,
+  "memory_peak_bytes": 4313423872,
+  "cells_completed_in_this_lane": {"L512_h96_s2023": 1258.81},
+  "share_of_allocation_used": 0.0845
+ },
+ "projection": {
+  "method": "the L512 H96 cells measure 1258 CPU s each; the completed protocol-A campaign gives the measured per-horizon ratios under the SAME early stopping (patience 3), which dominate cost far more than the horizon length does",
+  "protocol_a_measured_cpu_seconds_per_cell": {"h96": 2069.5, "h192": 2267.3, "h336": 920.8, "h720": 1215.7},
+  "protocol_a_ratio_to_h96": {"h96": 1.0, "h192": 1.096, "h336": 0.445, "h720": 0.587},
+  "projected_remaining_nine_cells_cpu_seconds": 8034,
+  "projected_verification_cpu_seconds": 3000,
+  "projected_continuation_total_cpu_seconds": 13100,
+  "verdict": "the ten remaining cells and their verification fit inside the declared 24000 s allocation with roughly 45 percent headroom",
+  "caveats": [
+   "cost is driven by how many epochs early stopping actually runs, not by the horizon: protocol A's h336 and h720 cells were CHEAPER than its h96 cells",
+   "the protocol-A ratios come from cells trained on more than one host, so they are an anchor for the shape of the cost, not a per-host prediction",
+   "protocol B carries four patches per channel against three and 1284 tokens against 963, which the L512 H96 measurement already includes"
+  ]
+ },
+ "other_lanes_this_round": {
+  "original_device_verification_worker_a_delegated": 692.70,
+  "satoshi_repairs_and_verification": "measured separately in the return; no GPU seconds on the campaign device"
+ },
+ "rule": "prior costs are reported separately from the continuation allocation; the expired Hermes task lifetime is not reused as a fresh execution allowance"
+}
