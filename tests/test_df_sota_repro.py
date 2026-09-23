@@ -1651,3 +1651,14 @@ def test_RP119_a_measured_horizon_whose_replay_is_unaccepted_is_not_called_no_me
     avg = R.table(world["design"], ver)["average_over_horizons"]["mae"]
     assert avg["status"] == "NOT_COMPUTED" and avg["denominator"] == len(world["design"]["horizons"])
     assert avg["horizons_missing_per_seed"][str(world["cell"]["seed"])] == world["design"]["horizons"]
+
+
+def test_RP121_the_table_reports_the_matched_baselines_from_the_retained_catalog_when_the_arrays_are_gone(world, tmp_path):
+    root, unit, _ = _closed_and_deleted(world, tmp_path)
+    ver = _verify(world, root)
+    assert ver["historically_verified_units"] == [unit]
+    row = R.table(world["design"], ver, root=root)["rows"][0]
+    vault = json.loads((root / "attempts" / unit / "METRICS_VAULT.json").read_text())["global"]
+    assert row["matched_baselines"]["persistence"]["mae"] == vault["naive_mae"] and row["matched_baselines"]["seasonal24"]["mae"] == vault["seasonal24_mae"]
+    assert row["matched_naive"]["mse"] == vault["naive_mse"] and row["matched_baselines"]["source"].endswith(unit)
+    assert row["matched_baselines"]["windows"] == json.loads((root / "attempts" / unit / "METRICS_VAULT.json").read_text())["population"]["windows"]

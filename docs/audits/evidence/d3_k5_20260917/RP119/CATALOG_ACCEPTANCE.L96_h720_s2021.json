@@ -1,0 +1,98 @@
+{
+ "schema": "df_sota_catalog_acceptance.v1",
+ "unit": "L96_h720_s2021",
+ "at": "2026-09-23T06:38:36Z",
+ "host": "gamma",
+ "refusals": [],
+ "oracles": {
+  "per_step_mean_vs_global_mae": 5.551115123125783e-17,
+  "per_step_mean_vs_global_mse": 2.7755575615628914e-17,
+  "per_channel_mean_vs_global_mae": 0.0,
+  "per_window_mean_vs_global_mae": 0.0,
+  "per_window_mean_vs_global_mse": 2.7755575615628914e-17,
+  "time_blocks_weighted_vs_global_mae": -5.551115123125783e-17,
+  "time_block_windows_vs_population": 0,
+  "per_window_length_vs_population": 0,
+  "per_step_length_vs_horizon": 0,
+  "per_channel_length_vs_channels": 0,
+  "skill_mae_identity": 0.0,
+  "skill_mse_identity": 0.0,
+  "rmse_identity": 0.0,
+  "naive_per_step_mean_vs_global": -1.1102230246251565e-16
+ },
+ "catalog_sha256": "36329d653f698d301a1177557f6d5641f1247c7f427046e560fe0c3612d558c2",
+ "schema_of_catalog": "df_sota_metrics_vault.v3",
+ "population": {
+  "windows": 4541,
+  "steps": 720,
+  "channels": 321,
+  "elements": 1049515920,
+  "consumed_windows": 4541
+ },
+ "states": {
+  "errors": "DONE",
+  "percentage_errors_zspace": "DONE",
+  "matched_baselines": "DONE",
+  "residual_moments": "DONE",
+  "quantiles": "APPROXIMATE",
+  "entropy": "APPROXIMATE",
+  "mutual_information": "APPROXIMATE",
+  "correlation_r2": "DONE",
+  "autocorrelation": "DONE",
+  "time_blocks": "DONE",
+  "per_window_series": "DONE",
+  "paired_contrasts": "NOT_APPLICABLE_IN_ONE_CELL"
+ },
+ "domain_checks": {
+  "residual_sd_non_negative": true,
+  "residual_sd_is_sqrt_var": true,
+  "residual_var_non_negative": true,
+  "residual_mean_matches_bias": true,
+  "entropy_within_log2_bins": true,
+  "mutual_information_within_log2_64": true,
+  "correlation_within_unit_interval": true,
+  "r2_at_most_one": true,
+  "histogram_counts_are_the_population": true,
+  "joint_histogram_counts_are_the_population": true,
+  "quantiles_do_not_decrease": true,
+  "autocorrelation_within_unit_interval": true,
+  "errors_non_negative": true,
+  "baselines_non_negative": true,
+  "all_reported_numbers_finite": true
+ },
+ "catalog_independent_check": {
+  "record_metric": {
+   "mae": 0.28751974018513593,
+   "mse": 0.1871392797732232
+  },
+  "record_metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+  "global_vs_author": {
+   "mae": -5.551115123125783e-17,
+   "mse": -5.551115123125783e-17
+  },
+  "per_step_mean_vs_global": {
+   "mae": 5.551115123125783e-17,
+   "mse": 2.7755575615628914e-17
+  },
+  "per_channel_mean_vs_global": {
+   "mae": 0.0
+  },
+  "naive_vs_closure": {
+   "mae": 2.5966628847129414e-10
+  },
+  "rule": "|global - author float32| <= 1e-6; per-step and per-channel means reproduce the global within 1e-9; naive equals the closure's within 1e-6"
+ },
+ "closure": {
+  "report_sha256": "b84a7767387fbb81c39bc9af6e41633e639b7b5134c0db28bd65bd18a04ce76e",
+  "verified": false,
+  "verified_historically": true,
+  "metrics_vault_recomputed": null,
+  "metrics_vault_read_back_equal": null,
+  "metrics_vault_sha256": null,
+  "author_scorer_parity": null,
+  "metric_basis": "author_float32 (recomputed at closure by df_sota_author_metric_exact.v1; the record carries the float64 reduction only) [historical: original closure bc9d3388f1f2]"
+ },
+ "independent_estimators": null,
+ "independent_scope": "HISTORICAL LIMIT: the prediction arrays were deleted under authorization, so no independent recomputation of the estimator families is possible here; the domain checks, the population and the internal oracles above are what can be checked, and a controlled regeneration from the retained checkpoint would be required for more",
+ "pass": true
+}

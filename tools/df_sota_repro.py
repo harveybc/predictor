@@ -3507,7 +3507,20 @@ def table(design: dict, ver: dict, *, root: Path | None = None) -> dict:
         else:
             row["measurement_state"] = ("VERIFIED" if row["verified_all"] else ("PARTIAL" if ok else "NOT_EXECUTED"))
         complete = complete and row["verified_all"]
+        # RP121: the matched baselines belong in the table. When the cells' arrays are gone their retained catalogs still carry
+        # them, computed on the same windows, so the row reports them from there instead of leaving a hole.
         row["matched_naive"] = (ok[0]["derived"]["naive"] if ok and ok[0].get("derived") else None)
+        row["matched_baselines"] = None
+        if ok and root is not None:
+            vp = Path(root) / "attempts" / ok[0]["unit"] / "METRICS_VAULT.json"
+            if vp.is_file():
+                g_ = json.loads(vp.read_text()).get("global") or {}
+                row["matched_baselines"] = {"source": f"retained catalog of {ok[0]['unit']}", "windows": (json.loads(vp.read_text()).get("population") or {}).get("windows"),
+                                            "persistence": {"mse": g_.get("naive_mse"), "mae": g_.get("naive_mae")},
+                                            "seasonal24": {"mse": g_.get("seasonal24_mse"), "mae": g_.get("seasonal24_mae")},
+                                            "skill_vs_persistence": {"mae": g_.get("skill_mae_vs_naive"), "mse": g_.get("skill_mse_vs_naive")}}
+                if row["matched_naive"] is None:
+                    row["matched_naive"] = row["matched_baselines"]["persistence"]
         row["training_completion"] = [{"unit": r["unit"], "epochs_run": (r.get("training") or {}).get("epochs_run"), "best_epoch": (r.get("training") or {}).get("best_epoch_by_vali"),
                                        "early_stopped": (r.get("training") or {}).get("early_stopped"), "max_epochs": (design["cells"][0]["effective_args"].get("train_epochs"))} for r in ok]
         row["cost"] = {"wall_seconds_sum": sum((r.get("cost") or {}).get("wall_seconds") or 0 for r in ok), "cpu_seconds_sum": sum((r.get("cost") or {}).get("cpu_seconds") or 0 for r in ok),
@@ -3661,7 +3674,7 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger", "accept-catalog", "backup", "accept-report", "pilot"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger", "accept-catalog", "backup", "accept-report", "pilot", "retable"])
     ap.add_argument("--reason", default=None)
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
@@ -3725,6 +3738,20 @@ def main(argv=None) -> int:
     if a.command == "backup":
         out = metadata_backup(a.root, a.source or (a.root / "metadata_backup"))
         print(json.dumps({"files": out["file_count"], "bytes": out["bytes"], "backup": out["backup"]}, indent=1)); return 0
+    if a.command == "retable":
+        # rebuild the table and its markdown from the verification block of an existing report: no recomputation, no replay,
+        # the same verification, a richer presentation
+        rep = json.loads((a.root / "REPORT.json").read_text())
+        t = table(design, rep["verification"], root=a.root)
+        rep["table"] = t
+        text = json.dumps(rep, indent=1, default=str); digest = hashlib.sha256(text.encode()).hexdigest()
+        (a.root / "reports").mkdir(exist_ok=True)
+        (a.root / "reports" / f"REPORT.{digest}.json").write_text(text)
+        (a.root / "REPORT.json").write_text(text)
+        (a.root / "SOTA_TABLE.json").write_text(json.dumps(t, indent=1, default=str))
+        (a.root / "SOTA_TABLE.md").write_text(markdown(t))
+        print(json.dumps({"report_sha256": digest, "rows": [{"horizon": r["horizon"], "state": r["measurement_state"], "baselines": r.get("matched_baselines")} for r in t["rows"]]}, indent=1, default=str))
+        return 0
     if a.command == "ledger":
         out = run_ledger(a.root, design)
         print(json.dumps({"attempts": out["totals"], "free_disk_gib": round(out["measured_free_disk_bytes"] / 2 ** 30, 1),
