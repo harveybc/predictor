@@ -2041,6 +2041,51 @@ def accept_regenerated(root: Path, design: dict, unit: str, *, data_path: Path, 
     return out
 
 
+def run_ledger(root: Path, design: dict) -> dict:
+    """RP111: the bounded run ledger, frozen from MEASURED costs — every attempt this root holds (current, retired, regenerated),
+    with wall and CPU seconds, peak host RSS, peak VRAM, host, device attribution and the operational patches it carried. No
+    projection, no loop: what ran, what it cost, and what evidence class its device identity has."""
+    root = Path(root)
+    rows, totals = [], {"wall_seconds": 0.0, "cpu_seconds": 0.0}
+    for folder in sorted((root / "attempts").glob("*")):
+        rec_path = folder / "cell.json"
+        if not rec_path.is_file():
+            continue
+        try:
+            r = json.loads(rec_path.read_text())
+        except Exception:                                           # noqa: BLE001
+            continue
+        cost = r.get("cost") or {}
+        att = device_attribution(r)
+        row = {"attempt": folder.name, "unit": (r.get("cell") or {}).get("cell_id"), "state": ("RETIRED" if ".failed." in folder.name else "CURRENT"),
+               "host": cost.get("host"), "device": r.get("device"), "device_uuid": att["uuid"], "device_attribution": att["class"],
+               "wall_seconds": cost.get("wall_seconds"), "cpu_seconds": cost.get("cpu_seconds"), "peak_rss_bytes": cost.get("peak_rss_bytes"),
+               "peak_gpu_allocated_bytes": cost.get("peak_gpu_allocated_bytes"), "epochs_run": (r.get("training") or {}).get("epochs_run"),
+               "operational_patches": [x.get("what") for x in r.get("operational_patches") or []], "at": r.get("at"),
+               "predictions_on_disk": (folder / "arrays.npz").is_file()}
+        reg = folder / "regenerated" / "REGENERATION.json"
+        if reg.is_file():
+            rr = json.loads(reg.read_text())
+            row["regeneration"] = {"at": rr.get("at"), "device_uuid": rr.get("device_uuid"), "identity": rr.get("identity")}
+            acc = folder / "regenerated" / "ACCEPTANCE.json"
+            if acc.is_file():
+                aa = json.loads(acc.read_text())
+                row["regeneration"]["acceptance_pass"] = aa.get("pass")
+                row["regeneration"]["temporaries_deleted_bytes"] = sum(d.get("bytes", 0) for d in aa.get("deleted") or [] if d.get("deleted"))
+        for k in ("wall_seconds", "cpu_seconds"):
+            if isinstance(row.get(k), (int, float)):
+                totals[k] += float(row[k])
+        rows.append(row)
+    vfs = os.statvfs(root)
+    out = {"schema": "df_sota_run_ledger.v1", "at": now_iso(), "host": socket.gethostname(), "root": str(root), "design_sha256": design["design_sha256"],
+           "attempts": rows, "totals": {**totals, "attempts": len(rows), "retired": len([r for r in rows if r["state"] == "RETIRED"]),
+                                        "predictions_on_disk": len([r for r in rows if r["predictions_on_disk"]])},
+           "measured_free_disk_bytes": vfs.f_bavail * vfs.f_frsize,
+           "scope": "MEASURED costs of the attempts this root holds; retired attempts are kept and counted; nothing here is projected"}
+    write_atomic(root / "RUN_LEDGER.json", json.dumps(out, indent=1, default=str))
+    return out
+
+
 def sha_npy_body(path: Path) -> str:
     """The digest of a .npy file's ARRAY BYTES (header excluded): the same quantity `stream_npz` records as `array_sha256`."""
     header = _npy_header_len(path)
@@ -2974,7 +3019,7 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger"])
     ap.add_argument("--reason", default=None)
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
@@ -3020,6 +3065,11 @@ def main(argv=None) -> int:
             raise SotaRefusal("REFUSED: report needs a registered cell with its record on disk")
         record = json.loads((a.root / "attempts" / a.unit / "cell.json").read_text())
         report_unit(a, design, cell, record); print(json.dumps({"unit": a.unit, "reported": True, "metric_basis": metric_of(record)[1]})); return 0
+    if a.command == "ledger":
+        out = run_ledger(a.root, design)
+        print(json.dumps({"attempts": out["totals"], "free_disk_gib": round(out["measured_free_disk_bytes"] / 2 ** 30, 1),
+                          "hosts": sorted({r["host"] for r in out["attempts"] if r["host"]}),
+                          "attribution": sorted({r["device_attribution"] for r in out["attempts"]})}, indent=1)); return 0
     if a.command == "admit":
         adm = admit_gpu(a.require_gpu_uuid or os.environ.get(REQUIRED_GPU_ENV), path=a.root)
         print(json.dumps(adm, indent=1, default=str)); return 0 if adm["pass"] else 1

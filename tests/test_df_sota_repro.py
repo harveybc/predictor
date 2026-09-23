@@ -1219,3 +1219,15 @@ def test_RP110_the_allocator_option_reaches_the_real_child_and_changes_no_argume
     R.execute(a, json.loads((root / "DESIGN.json").read_text()))
     c2 = child_call()
     assert "GLIBC_TUNABLES" not in c2["env"] and c2["argv"] == c["argv"]          # the recipe is identical either way
+
+
+def test_RP111_the_run_ledger_is_frozen_from_measured_costs_including_retired_attempts(world, tmp_path):
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]
+    import shutil
+    shutil.copytree(root / "attempts" / unit, root / "attempts" / f"{unit}.failed.1790000000")
+    led = R.run_ledger(root, world["design"])
+    assert led["totals"]["attempts"] == 2 and led["totals"]["retired"] == 1 and led["totals"]["predictions_on_disk"] == 2
+    assert led["totals"]["wall_seconds"] > 0 and led["measured_free_disk_bytes"] > 0 and (root / "RUN_LEDGER.json").is_file()
+    row = next(r for r in led["attempts"] if r["state"] == "CURRENT")
+    assert row["unit"] == unit and row["device_attribution"] == "CPU" and row["peak_rss_bytes"] and row["epochs_run"]
+    assert all(isinstance(r["wall_seconds"], float) for r in led["attempts"]) and "projected" not in json.dumps(led).lower()
