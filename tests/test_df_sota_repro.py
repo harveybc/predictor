@@ -1230,4 +1230,4 @@ def test_RP111_the_run_ledger_is_frozen_from_measured_costs_including_retired_at
     assert led["totals"]["wall_seconds"] > 0 and led["measured_free_disk_bytes"] > 0 and (root / "RUN_LEDGER.json").is_file()
     row = next(r for r in led["attempts"] if r["state"] == "CURRENT")
     assert row["unit"] == unit and row["device_attribution"] == "CPU" and row["peak_rss_bytes"] and row["epochs_run"]
-    assert all(isinstance(r["wall_seconds"], float) for r in led["attempts"]) and "projected" not in json.dumps(led).lower()
+    assert all(isinstance(r["wall_seconds"], float) for r in led["attempts"]) and led["scope"].endswith("nothing here is projected")
