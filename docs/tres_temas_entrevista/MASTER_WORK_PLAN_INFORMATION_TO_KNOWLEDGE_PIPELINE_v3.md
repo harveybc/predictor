@@ -825,3 +825,23 @@ fechada a nivel de campo cuyos limites quedan escritos: los parametros de famili
 cuantiles, binning de la informacion mutua, rezagos de autocorrelacion, tamano de bloque temporal) **no** quedan establecidos-
 y T=192 semilla 2021 sin evidencia numerica, con sus cuatro razones. Ninguna celda con vista previa favorable, **ningun borrado
 de produccion**, puntuaciones intactas. Costo medido: 393 s de CPU de los 1.800 reservados; sin GPU. Suite 124 pasan, 1 omitida.
+
+**Ejecutado por Satoshi (23-sep noche, RP136-RP139, pendiente de revision):**
+[retorno](../audits/work_plan/SATOSHI_RP136_RP139_RETURN_2026_09_23.md), evidencia en
+`docs/audits/evidence/d3_k5_20260917/{RP137,RP138}/`. **Resultado experimental primero:** las tres celdas retenidas de T=96
+se reproducen **bit a bit en su dispositivo original** (RTX 4090 de WORKER_A): diferencia maxima absoluta 0.0 y 159.164.640
+de 159.164.640 elementos iguales por celda, metricas replicadas identicas al registro, custodia de cadena aceptada y filas
+verificadas sin problemas; la discrepancia previa entre dispositivos (1,9e-4 a 2,7e-4 en la 5090) queda como hecho de
+portabilidad, no de la medicion. Ademas **L96_h192_s2021 -la celda que nunca se regeneraba identica- tambien es exacta en su
+propio dispositivo** (RTX 4070 del coordinador): 312.412.608 de 312.412.608 elementos iguales; esa corrida se hizo sin
+credenciales de gobernanza, asi que la custodia no se comprobo y la fila NO queda verificada: es una comprobacion ausente, no
+fallida. El bloqueo que lo impedia era `VAULT_CHANGED` por un solo campo: el digesto de la implementacion del catalogo. Se
+localizaron ambos digestos recorriendo las 64 revisiones del archivo y hasheando el fuente de `metrics_vault`; **toda la
+diferencia es una linea**, el guardia de finitud que paso a su version acotada en memoria (RP101), que no alimenta ningun
+acumulador ni reduccion. `METRIC_IMPLEMENTATION_LINEAGE` declara ese predecesor con sus revisiones, el diff exacto y por que
+no puede mover un numero; el catalogo retenido conserva sus bytes y su identidad aceptada, un digesto no declarado sigue
+rechazando y un predecesor declarado nunca explica una diferencia numerica. Campana L512 supervisada y viva: cinco celdas
+entrenadas o en curso de doce, ruta gobernada verificada con respuestas autenticadas reales, correccion de procedencia
+aditiva para la celda 2 (solo se reconstruyeron `started_at` y `finished_at`; la ventana medida era 14:59:01Z a 15:20:09Z),
+libro de costos medido (2.517 s de CPU del carril previo; proyeccion de unos 13.100 s frente a la asignacion de 24.000) y
+latido cada dos minutos. Siguiente intervencion doctoral **preparada y NO autorizada a ajustar**. Suite 128 pasan, 1 omitida.

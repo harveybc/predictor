@@ -1,0 +1,100 @@
+{
+ "schema": "df_sota_same_device_replay_binding.v1",
+ "at": "2026-09-23T23:05:20Z",
+ "host": "dragon",
+ "destination_root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1",
+ "source_stage": "/home/harveybc/.local/state/crispdm-data-foundation/original-device-check-20260923/worker-a-rp138/root",
+ "device": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+ "identities": {
+  "L96_h96_s2021": {
+   "record": {
+    "production": "2aeefa1b7e48772bbe611a3f5552b6df473a075ace055c83ccbf5e8ddd14cf32",
+    "stage": "2aeefa1b7e48772bbe611a3f5552b6df473a075ace055c83ccbf5e8ddd14cf32",
+    "equal": true
+   },
+   "checkpoint": {
+    "production": "3dd39aa903358981578b3f53b47862452ff909ecb6a55b086c7d65866aa0f12f",
+    "stage": "3dd39aa903358981578b3f53b47862452ff909ecb6a55b086c7d65866aa0f12f",
+    "equal": true
+   },
+   "predictions": {
+    "production": "0b855783f76d8f21c8859b8f9138892326fea538053d8aa6f1645d847a903da9",
+    "stage": "0b855783f76d8f21c8859b8f9138892326fea538053d8aa6f1645d847a903da9",
+    "equal": true
+   },
+   "row_verified": true,
+   "replay": {
+    "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+    "max_abs_prediction_difference": 0.0,
+    "exact_equal_fraction": 1.0,
+    "allclose_rule": true,
+    "replayed_author_metric": {
+     "mae": 0.23055443167686462,
+     "mse": 0.13331516087055206
+    }
+   }
+  },
+  "L96_h96_s2022": {
+   "record": {
+    "production": "96d1e57408d6e1d66d17e3275a2b9ea966ffa0a805d04728c4533162225d8a48",
+    "stage": "96d1e57408d6e1d66d17e3275a2b9ea966ffa0a805d04728c4533162225d8a48",
+    "equal": true
+   },
+   "checkpoint": {
+    "production": "9a20a65e76d3259b2a1d5d6cb47649572469dbb01b07a2b146fbfd95236ae22b",
+    "stage": "9a20a65e76d3259b2a1d5d6cb47649572469dbb01b07a2b146fbfd95236ae22b",
+    "equal": true
+   },
+   "predictions": {
+    "production": "26aa75b643f2f6a6d4d90ab47ed6ab3b0d5b12074f8e0823544d19de59d9d590",
+    "stage": "26aa75b643f2f6a6d4d90ab47ed6ab3b0d5b12074f8e0823544d19de59d9d590",
+    "equal": true
+   },
+   "row_verified": true,
+   "replay": {
+    "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+    "max_abs_prediction_difference": 0.0,
+    "exact_equal_fraction": 1.0,
+    "allclose_rule": true,
+    "replayed_author_metric": {
+     "mae": 0.23777532577514648,
+     "mse": 0.14008182287216187
+    }
+   }
+  },
+  "L96_h96_s2023": {
+   "record": {
+    "production": "15c38abd322a72042ef2d00e7ca92a406e38bc64e0b210ef5121713a9970f21e",
+    "stage": "15c38abd322a72042ef2d00e7ca92a406e38bc64e0b210ef5121713a9970f21e",
+    "equal": true
+   },
+   "checkpoint": {
+    "production": "3fbda47b8d6962f939ec338dfa10eff8219f3cbd49d5cf79eec5daa3b459b176",
+    "stage": "3fbda47b8d6962f939ec338dfa10eff8219f3cbd49d5cf79eec5daa3b459b176",
+    "equal": true
+   },
+   "predictions": {
+    "production": "925af6a5935061e6211a0ee9445c4db55af957e5f6325ac0b1ea13f69a33d1c9",
+    "stage": "925af6a5935061e6211a0ee9445c4db55af957e5f6325ac0b1ea13f69a33d1c9",
+    "equal": true
+   },
+   "row_verified": true,
+   "replay": {
+    "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+    "max_abs_prediction_difference": 0.0,
+    "exact_equal_fraction": 1.0,
+    "allclose_rule": true,
+    "replayed_author_metric": {
+     "mae": 0.23032169044017792,
+     "mse": 0.13309241831302643
+    }
+   }
+  }
+ },
+ "problems": [],
+ "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+ "stage_report_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+ "replay_history_file": "REPLAYS_HISTORY.worker-a-rp138.REPLAYS_GPU.json",
+ "replay_history_sha256": "c7dbfa3b5bf6db3c3a35da428d2641fb34458846bf07eadfbe64c57d4a576c97",
+ "reading": "this is same-device replay HISTORY bound to the production root by design, record, checkpoint and array identity. Per RP100 it is never an input to a closure's verification; a closure that runs on another device cites it as same-device history. It is additive: no existing file was modified or removed"
+}

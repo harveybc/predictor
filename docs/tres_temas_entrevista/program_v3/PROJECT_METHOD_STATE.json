@@ -1518,5 +1518,33 @@
   },
   "cost": "393 CPU seconds of the 1,800 reserved for retention repairs, inside the preceding 14,400 total; no GPU seconds by Satoshi; suite 124 passed, 1 skipped",
   "return": "docs/audits/work_plan/SATOSHI_RP132_RP134_RETURN_2026_09_23.md"
+ },
+ "rp136_rp139": {
+  "orders": "docs/handoffs/MUSASHI_SOTA_RP136_RP139_2026_09_23.md (ba96574e), after the owner confirmed all cooling restored",
+  "base": "ba96574e merged into satoshi/rp132-rp134-20260923",
+  "updated_on": "2026-09-23",
+  "RP136": {
+   "status": "DONE",
+   "what": "the RP132-RP134 return, its dated errata, the successor revalidation, the final probe output and the plan/state entries are committed and pushed; the experimental section is rebuilt from live receipts. The eight legacy regeneration records stay qualified: matching field tolerances do not establish histogram bins and ranges, quantile lists, mutual-information binning, autocorrelation lags or time-block populations"
+  },
+  "RP137": {
+   "status": "SUPERVISED",
+   "governed_path": "verified by real authenticated responses: four warehouse rows for this campaign's receipts, all COMPLETED, terminal digests matching the receipts, expected artifact roles",
+   "provenance_correction": "additive correction issued for L512_h96_s2022: started_at and finished_at were rebuilt to the reporting moment 22:04:55Z, the measured window is 14:59:01Z to 15:20:09Z from the retained pre-recovery terminal; artifacts, metrics, costs, tags and deliveries identical; nothing rewritten or erased",
+   "cost_ledger": "prior lane 2517.23 CPU s snapshotted separately; continuation lane measured from the scope's cpu.stat; projection about 13100 CPU s for the ten remaining cells plus verification against the declared 24000 s allocation",
+   "risk": "the continuation scope's memory peak reached 5.80 GiB against its 6 GiB limit at H192; not changed under the running process, reported instead"
+  },
+  "RP138": {
+   "status": "DONE_WORKER_A",
+   "implementation_identity": "METRIC_IMPLEMENTATION_LINEAGE declares the retained catalogs' digest 45a8a363 as a predecessor of the current 44086f33, bound to revisions 3f250c16b342..844a8d4ab101 and 21d36487191e onwards. The whole difference is one line, the finiteness guard becoming the memory-bounded all_finite under RP101, which contributes to no accumulator or reduction. The retained catalogs keep their bytes and accepted identity; an undeclared digest still refuses and a declared one never explains a numeric difference",
+   "worker_a_result": "all three retained H96 cells replayed on their ORIGINAL device GPU-a8bd1b2c (RTX 4090 Laptop) and are BIT-EXACT: max_abs_prediction_difference 0.0 and exact_equal_fraction 1.0 over 159,164,640 elements per cell, replayed author metrics equal to the records, custody ACCEPTED_ARTIFACT_CHAIN, rows verified with no problems. The CLI exit 1 is the nine unstaged cells of the sealed design, an incomplete population and not a failed closure",
+   "binding": "the same-device replay history is bound into the root holding the originals by design, record, checkpoint and array identity (SAME_DEVICE_REPLAY_BINDING), additively; per RP100 it is history a closure cites, never an input to its verification",
+   "coordinator": "fresh admission refused once at 22 percent utilization and passed on the second attempt without bypassing the check; the coordinator's ORIGINAL environment is the trading-stack env, not the base interpreter the earlier driver would have used; its governance credentials were not available to this session, so the run is a replay measurement without custody re-verification"
+  },
+  "RP139": {
+   "status": "DONE",
+   "heartbeat": "a user timer on the GPU host writes one JSON line every two minutes with the service state, live training unit, scope CPU ledger, GPU and host thermals, free disk and cell count; read-only about the campaign",
+   "next_intervention": "docs/tres_temas_entrevista/program_v3/NEXT_INTERVENTION_PREPARATION_2026_09_23.md, PREPARED and NOT AUTHORIZED TO FIT: the R0/R1/R2 learning regimes of the modular detector, what is held fixed, the two conflations the plan forbids, matched data/tuning/budget, the unmet prerequisites, a resource plan from measured costs, and the financial lane's two real blockers"
+  }
  }
 }

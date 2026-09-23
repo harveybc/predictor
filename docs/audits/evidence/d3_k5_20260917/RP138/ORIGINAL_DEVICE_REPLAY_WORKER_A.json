@@ -1,0 +1,90 @@
+{
+ "schema": "df_sota_original_device_replay.v1",
+ "at": "2026-09-23",
+ "host": "WORKER_A",
+ "device": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9 (NVIDIA GeForce RTX 4090 Laptop GPU)",
+ "code": "558d90f5",
+ "rule": {
+  "atol": 0.0001,
+  "rtol": 0.0001
+ },
+ "cells": {
+  "L96_h96_s2021": {
+   "verified": true,
+   "problems": [],
+   "custody": "ACCEPTED_ARTIFACT_CHAIN",
+   "max_abs_prediction_difference": 0.0,
+   "exact_equal_fraction": 1.0,
+   "elements": 159164640,
+   "allclose_rule": true,
+   "replayed_author_metric": {
+    "mae": 0.23055443167686462,
+    "mse": 0.13331516087055206
+   },
+   "replayed_metric_float64": {
+    "mae": 0.2305544209409133,
+    "mse": 0.1333151570071943
+   },
+   "metric_implementation_transition": {
+    "from": "45a8a3636db9f1b795fbbdf3e26824af9e177b90df0deacb3f354ade205a738b",
+    "to": "44086f33d8df2ebd404aa1209da32769efd5c108cbd2b8e12432d47766937fd8",
+    "class": "NON_NUMERIC_GUARD",
+    "current_catalog_file": "METRICS_VAULT.current.44086f33d8df.json"
+   },
+   "metrics_vault_identical": false,
+   "metrics_vault_read_back_basis": "DECLARED_IMPLEMENTATION_TRANSITION"
+  },
+  "L96_h96_s2022": {
+   "verified": true,
+   "problems": [],
+   "custody": "ACCEPTED_ARTIFACT_CHAIN",
+   "max_abs_prediction_difference": 0.0,
+   "exact_equal_fraction": 1.0,
+   "elements": 159164640,
+   "allclose_rule": true,
+   "replayed_author_metric": {
+    "mae": 0.23777532577514648,
+    "mse": 0.14008182287216187
+   },
+   "replayed_metric_float64": {
+    "mae": 0.2377753334787663,
+    "mse": 0.1400818177173815
+   },
+   "metric_implementation_transition": {
+    "from": "45a8a3636db9f1b795fbbdf3e26824af9e177b90df0deacb3f354ade205a738b",
+    "to": "44086f33d8df2ebd404aa1209da32769efd5c108cbd2b8e12432d47766937fd8",
+    "class": "NON_NUMERIC_GUARD",
+    "current_catalog_file": "METRICS_VAULT.current.44086f33d8df.json"
+   },
+   "metrics_vault_identical": false,
+   "metrics_vault_read_back_basis": "DECLARED_IMPLEMENTATION_TRANSITION"
+  },
+  "L96_h96_s2023": {
+   "verified": true,
+   "problems": [],
+   "custody": "ACCEPTED_ARTIFACT_CHAIN",
+   "max_abs_prediction_difference": 0.0,
+   "exact_equal_fraction": 1.0,
+   "elements": 159164640,
+   "allclose_rule": true,
+   "replayed_author_metric": {
+    "mae": 0.23032169044017792,
+    "mse": 0.13309241831302643
+   },
+   "replayed_metric_float64": {
+    "mae": 0.23032168321075905,
+    "mse": 0.1330924176391435
+   },
+   "metric_implementation_transition": {
+    "from": "45a8a3636db9f1b795fbbdf3e26824af9e177b90df0deacb3f354ade205a738b",
+    "to": "44086f33d8df2ebd404aa1209da32769efd5c108cbd2b8e12432d47766937fd8",
+    "class": "NON_NUMERIC_GUARD",
+    "current_catalog_file": "METRICS_VAULT.current.44086f33d8df.json"
+   },
+   "metrics_vault_identical": false,
+   "metrics_vault_read_back_basis": "DECLARED_IMPLEMENTATION_TRANSITION"
+  }
+ },
+ "exit_code_note": "the CLI returned 1 because the nine cells NOT staged for this partial check have no record, arrays or checkpoint in this stage. That is an incomplete population, not a failed closure: the three selected rows are verified with no problems",
+ "originals": "unchanged: the stage hard-links the arrays and checkpoints and the before/after stat comparison is identical"
+}

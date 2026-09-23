@@ -1,0 +1,41 @@
+{
+ "schema": "df_sota_original_device_replay.v1",
+ "at": "2026-09-23",
+ "host": "COORDINATOR",
+ "code": "558d90f5",
+ "device": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326 (NVIDIA GeForce RTX 4070 Laptop GPU)",
+ "environment": "the cell's ORIGINAL environment: the trading-stack env, python 3.12.13, torch 2.13.0+cu130, numpy 2.5.1, pandas 3.0.3, sklearn 1.9.0, scipy 1.18.0, cuda 13.0 - matching the record's sealed env exactly",
+ "admission": "refused once at 22 percent device utilization and passed on the second attempt; the check was never bypassed",
+ "rule": {
+  "atol": 0.0001,
+  "rtol": 0.0001
+ },
+ "cell": {
+  "unit": "L96_h192_s2021",
+  "max_abs_prediction_difference": 0.0,
+  "exact_equal_fraction": 1.0,
+  "elements": 312412608,
+  "allclose_rule": true,
+  "replayed_author_metric": {
+   "mae": 0.2559875547885895,
+   "mse": 0.1608569175004959
+  },
+  "replayed_metric_float64": {
+   "mae": 0.25598757535170746,
+   "mse": 0.1608569145993499
+  },
+  "metrics_vault_identical": true,
+  "metrics_vault_read_back_basis": "IDENTICAL",
+  "metric_implementation_transition": null,
+  "verified": false,
+  "problems": [],
+  "custody": "UNCHECKED"
+ },
+ "scope": "this run deliberately carried NO governance credentials: they were not available to this session, so custody could not be re-checked and the row is not verified. That is a missing check, not a failed one - the row carries no problems. What this establishes is the REPLAY: on its original device the cell reproduces its predictions bit for bit",
+ "why_it_matters": "this is the cell whose regeneration on the external 5090 was NOT the deleted original, which is why its catalog could not be certified. On its own device it is exact",
+ "originals": "unchanged: the stage hard-links the array and checkpoint; the before/after stat comparison is identical",
+ "cost": {
+  "wall_seconds": 977,
+  "note": "measured by the driver; the scope cost file is beside it"
+ }
+}
