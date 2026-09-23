@@ -84,8 +84,9 @@
   "science": {
    "task": "SOTA-REPRO",
    "order": "RP135",
-   "status": "TWO_TRAINED_TERMINALS_ACCEPTED_CONTINUATION_EXECUTOR_RESUMED",
-   "executor_task": "t_28e5c655",
+   "status": "TWO_TRAINED_TERMINALS_ACCEPTED_THIRD_TRAINING_OBSERVED_2224Z",
+   "executor_service": "crispdm-rp135-continuation-20260923.service",
+   "superseded_blocked_task": "t_28e5c655",
    "recipe": "TimeFilter dffde87e released ECL L512 block; 321 channels; four horizons x three seeds",
    "device": "Only admitted WORKER_B external RTX 5090",
    "does_not_depend_on": ["RP132-RP134 retention repair", "A original-device replays"],
@@ -102,7 +103,7 @@
    "science_blocking": false
   },
   "physical_waits": {
-   "scope": "Owner explicitly confirmed all cooling restored; original-device checks assigned to Musashi verifier, fresh admission still required",
+   "scope": "Cooling confirmed. Verifier attempt ended: WORKER_A numerical retained metrics match, VAULT_CHANGED implementation digest prevented replay; COORDINATOR competing GPU utilization refused admission. Satoshi RP138 owns follow-up, no owner action required.",
    "science_blocking": false
   }
  },
@@ -266,7 +267,7 @@
  },
  "next_allowed_actions": [
   "RP136: finish existing repair return/evidence commits; preserve legacy definition limits; no deletion or blanket regeneration",
-  "RP137: attach to resumed Hermes RP135 executor; continue ten untrained cells on external5090 with 24000 CPU-second/8h continuation allocation; no duplicate launch or refit of two completed cells",
+  "RP137: supervise existing native RP135 service/real flock; expired Hermes task stays blocked; third cell training on external5090, nine queued; 24000 CPU-second/8h continuation allocation; no duplicate launch or refit",
   "RP138: Musashi verifier performs original-device H96 and H192s2021 checks after cooling admission, then reconcile actual evidence without widened tolerances",
   "RP139: durable forwarding, real process ownership/heartbeats, additive recovery provenance correction, one scientific-results-first return and prepare next matched intervention",
   "No adapted pilot, financial fit or private holdout access while SOTA reproduction is the active prerequisite"

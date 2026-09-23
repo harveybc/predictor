@@ -11,8 +11,12 @@ RP132-RP134 repair commits `103629bb` and `e473efbe` are pushed on
 `satoshi/rp132-rp134-20260923`. The return, RP134 evidence and state edits in that
 worktree are still uncommitted as inspected by Musashi. Do not redo that work.
 
-RP135 belongs to Hermes task `t_28e5c655`, resumed by Musashi after restoring
-the governance network path. Do NOT dispatch another RP135 executor. The first
+RP135 now belongs to the native user systemd service
+`crispdm-rp135-continuation-20260923.service`, under a real nonblocking flock.
+Hermes task `t_28e5c655` is BLOCKED as operationally superseded: its runtime cap
+counted from the morning start and repeatedly expired resumed workers. Do not
+unblock it or dispatch another RP135 executor. At22:24Z the actual GPU child
+PID856355 was training `L512_h96_s2023` on the external5090 (62C,60% use). The first
 two L512 H96 cells finished training; ten remain untrained at this handoff.
 Both now have accepted terminal receipts. Same-device replay and complete
 scientific closure are separate and still required.
@@ -45,6 +49,13 @@ instances to the two workers, with reconnect and loopback-only forwarding.
 The four existing store/governance services were not restarted. Observe real
 authenticated responses, not just LISTEN or HTTP 200 from a public page.
 
+The first resumed delivery exposed a SECOND dependency: the registered SOTA
+benchmark lake service was inactive and disabled. Musashi enabled and started
+that existing unit with its unchanged package/configuration/data. It is now
+active with NRestarts=0. Preserve the failed delivery attempts; a public root-page
+check alone did not establish that the complete governed download path worked.
+Verify a single actual unit's delivery before submitting the remaining batch.
+
 Cell 2 recovery used `df_sota_repro.py report`, not `execute`: without an accepted
 receipt the latter would retrain an existing cell. Receipt and reconciliation
 now record COMPLETED. Musashi's report invocation rebuilt timestamps and a
@@ -57,6 +68,9 @@ conflicting envelope. This bookkeeping does not block independent remaining fits
 
 Tell the executor to skip the two accepted cells, recheck its lease/live PIDs and
 continue the ten untrained cells on the same external GPU and frozen design.
+The native continuation already skipped both accepted cells; Satoshi supervises
+that job, not a second copy. Logs are in the user journal for the service and the
+existing campaign root. Do not edit the pinned training checkout.
 Do not silently move an already sealed cell to another device or change its
 model, training allocation, split, scaler, targets or metric reduction.
 
@@ -80,6 +94,20 @@ WORKER_A H96 seeds 2021/2022/2023; COORDINATOR H192 seed 2021. Coordinate with
 its process/receipt before any retry. These hosts may work while RP135 trains
 on WORKER_B. Use their correct original environments and physical device UUIDs.
 
+Update22:27Z: that delegated attempt has finished, no scopes remain. WORKER_A
+spent692.70 CPU seconds; retained metrics match the records exactly for all
+three cells, but `VAULT_CHANGED` stopped the CLI before GPU replay. Numerical
+catalog fields match; the differing field is `metric_implementation_sha256`
+(45a8a363... -> 44086f33...). Do not rewrite the bound catalog to make it pass.
+Satoshi now owns resolving the implementation-identity transition: preserve
+original authority and record a separately bound current verification, then run
+the original-device replay without treating the old digest as the new one.
+Avoid another eleven-minute catalog recomputation unless consumed evidence
+actually changes. COORDINATOR admission refused a34% competing load; no replay
+started there. Fresh admission is needed, not another owner cooling approval.
+Full local evidence: `~/.local/state/crispdm-data-foundation/original-device-check-20260923/RESULT.json`.
+Neither historical path has gained replay acceptance from this attempt.
+
 The original roots retain predictions on these hosts. Use replay/close on those
 originals; do not use a deleted-cell regeneration command or delete originals
 to satisfy that command. Preserve current report metadata before replacing the
@@ -100,6 +128,11 @@ durable supervisor, heartbeat at least every three minutes, single GPU dispatche
 and a lease tied to the actual process, not merely a JSON file saying OWNED.
 On stale agent lease, first inspect the training child: attach if alive, do not
 launch another copy or kill valid work. Record downtime and its cause.
+Do not reuse the expired Hermes task lifetime as a fresh execution allocation.
+The native continuation began22:20:06Z with an outer8h runtime and an inner
+24000-second wall timeout, threads1 and6GiB host memory. These wall limits alone
+do not prove the aggregate CPU allocation: measure the scope CPU ledger, include
+verification cost, and refuse further children when the allocation cannot fit.
 
 Forwarding reconnection is transport recovery, not permission to restart shared
 stores. Check the restored authenticated path and resume the accepted outbox;

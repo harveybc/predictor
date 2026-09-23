@@ -5,12 +5,19 @@ todos los equipos; GPUs elegibles tras admision, 5090 externa primera opcion.
 [Ordenes RP136-RP139](../handoffs/MUSASHI_SOTA_RP136_RP139_2026_09_23.md).
 Dos celdas L512 H96 entrenadas: MSE/MAE normalizados del autor
 0.125551/0.220453 y 0.125849/0.220934; aun no son una media de tres semillas ni
-reproduccion exacta de Tabla 9. Diez entrenamientos restantes, mismo ejecutor
-Hermes `t_28e5c655`, reanudado tras recuperar el transporte SSH a gobernanza.
+reproduccion exacta de Tabla 9. Continuacion bajo servicio persistente
+`crispdm-rp135-continuation-20260923.service` con flock real: H96 semilla2023
+entrenando en la5090 a22:24Z (PID856355); nueve celdas siguientes en cola.
+Hermes `t_28e5c655` queda bloqueado/superado operacionalmente: su limite desde
+el inicio matutino expiraba cada reintento. No lanzar un ejecutor duplicado.
 Los servicios centrales no estaban caidos y no se reiniciaron. Segundo terminal
 recuperado sin entrenar otra vez, con errata de timestamps/conflicto a conciliar.
-Replays de dispositivos originales en paralelo a cargo del verificador de Musashi;
-Satoshi termina de publicar el retorno de reparaciones ya codificadas (`e473efbe`).
+La primera nueva entrega detecto ademas el lago SOTA detenido y deshabilitado:
+se habilito/inicio su unidad existente, sin cambiar receta, datos o configuracion.
+Intento historico paralelo terminado: metricas retenidas H96 identicas, pero
+VAULT_CHANGED por identidad del implementador impidio replay; coordinador
+rechazado por carga GPU competidora. Seguimiento de ambos enRP138, sin otra
+aprobacion del owner. Satoshi publica el retorno de reparaciones (`e473efbe`).
 Asignacion de continuacion: 24 000 s CPU / 8h wall para las diez celdas y su
 verificacion, previa a ejecutarlas, conservando aparte los costos anteriores.
 Las restricciones de viaje y estados "aun no entrenado" que siguen abajo son
