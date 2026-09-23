@@ -1288,7 +1288,7 @@
   "RP117": {
    "status": "DONE_IN_CODE",
    "what": "per-family domain checks (sd >= 0 and = sqrt(var), entropy <= log2(bins), MI <= 6 bits on a 64x64 grid, |ACF| <= 1, |corr| <= 1, r2 <= 1, monotone quantiles, histogram counts = population, all reported numbers finite) plus independent_estimators(), a second implementation that recomputes residual moments, entropy, joint MI, correlation, R2, errors and histogram from the arrays without calling the producer; used wherever the arrays exist, with an explicit HISTORICAL LIMIT label where they were deleted",
-   "real_cell_coverage": "independent estimator recomputation applied to the three T=96 cells that still hold their arrays (159,164,640 elements each: every family agrees to 0.0 — residual moments, entropy, joint mutual information, correlation, R2, errors, histogram counts) and, by regenerating from the retained checkpoints, to one cell per deleted horizon; the remaining deleted cells carry domain validation and internal oracles with an explicit historical limit"
+   "real_cell_coverage": "six of twelve cells checked on real bytes: the three T=96 cells that still hold their arrays (159,164,640 elements each, every family 0.0) and one cell per deleted horizon regenerated bit-identically from its retained checkpoint (T=192 s2022 2.2e-16, T=336 s2021 1.1e-16, T=720 s2021 4.4e-16), temporaries removed by their own acceptance; the remaining six deleted cells keep domain validation and internal oracles with an explicit historical limit"
   },
   "RP118": {
    "status": "DONE_IN_CODE",
@@ -1318,7 +1318,16 @@
    "pilot": "bounded exact-recipe pilot on the admitted external 5090 (UUID asserted in-process, 20 optimizer steps + 20 validation batches, no test score, no checkpoint, no selection): T=96 median 0.0555 s/step, T=720 0.0602 s/step, peak VRAM 6.60-6.64 GiB, peak host RSS 2.16-2.24 GiB, 1074-1113 steps per epoch; projected 0.32-0.34 h per cell at 15 epochs and about 3.9-4.0 h for twelve cells, comparable to protocol A's measured 3-4 h and NOT 2-4x it. Excluded from the projection and said so: early stopping, the bounded evaluation and catalog work, warm-up variance beyond 20 steps, and the two unmeasured horizons"
   },
   "RP121": {
-   "status": "PENDING"
+   "status": "RETURNED",
+   "return": "docs/audits/work_plan/SATOSHI_RP114_RP121_RETURN_2026_09_23.md",
+   "head": "c7ccec6b",
+   "evidence": "docs/audits/evidence/d3_k5_20260917/{RP114,RP119}/",
+   "accepted_evidence_registry": "39 entries (3 closure reports, 18 catalog acceptances, 18 regeneration records)",
+   "suites": "WORKER_A at the final head: sota tool 85 passed + 1 skipped (66 s, 1.37 GB); closure/contract/block/financial 117 passed + 2 deselected (161 s, 2.96 GB); olap store on SQLite and DuckDB 106 passed + 1 skipped (3.6 s); lake adopters 4 skipped",
+   "open_for_owner": [
+    "cooling confirmation for WORKER_A's GPU: ~66 s of same-device replays would verify T=96 and unlock the four-horizon average"
+   ],
+   "not_executed": "protocol B: recipe mapped, properties verified and cost measured by a bounded pilot (~4 h for twelve cells); no cell trained or scored"
   }
  }
 }
