@@ -1595,40 +1595,156 @@ def deletion_gate(root: Path, unit: str) -> dict:
     return {"pass": not reasons, "reasons": reasons, "report_sha256": sha_file(report_path)}
 
 
-def delete_predictions(root: Path, units: list, *, extra_roots: list | None = None, dry_run: bool = False) -> dict:
-    """The owner's authorized deletion (2026-09-22): inventory every copy under the given roots, pass the gate per unit, delete the
-    inventoried arrays (including the final copy), record per-path receipts with the bytes the filesystem actually reclaimed, and
-    leave a PREDICTIONS_DELETED.json beside each record so the closure reports the dated historical verification."""
+def _manifest_digests(manifest) -> dict:
+    """A backup manifest as {relative path: sha256}: a JSON object of that shape, a JSON list of {path, sha256}, or a mapping."""
+    if manifest is None:
+        return {}
+    if isinstance(manifest, (str, Path)):
+        manifest = json.loads(Path(manifest).read_text())
+    if isinstance(manifest, dict) and isinstance(manifest.get("files"), (list, dict)):
+        manifest = manifest["files"]
+    if isinstance(manifest, list):
+        return {x["path"]: x["sha256"] for x in manifest if isinstance(x, dict) and "path" in x and "sha256" in x}
+    return {k: (v["sha256"] if isinstance(v, dict) else v) for k, v in dict(manifest).items()}
+
+
+def deletion_preflight(root: Path, unit: str, roots: list, *, accepted_report_sha256: str | None = None, backup_manifest=None) -> dict:
+    """RP108: everything that must hold BEFORE any unlink of a unit's copies. The approval binds to the exact accepted report
+    (REPORT.json bytes) and to a backup manifest that already holds the retained record and catalog; every candidate path must
+    hash to the accepted predictions artifact (a folder name is not an identity); aliases, conflicting attempts, changed copies,
+    active readers and an unverified catalog refuse the WHOLE unit."""
+    root = Path(root); folder = root / "attempts" / unit
+    out = {"unit": unit, "refusals": [], "paths": [], "accepted_arrays_sha256": None, "approval": {}}
+    gate = deletion_gate(root, unit)
+    out["gate"] = gate
+    resumption = (not (folder / "arrays.npz").is_file()) and (folder / "PREDICTIONS_DELETED.json").is_file()
+    if resumption:
+        marker = json.loads((folder / "PREDICTIONS_DELETED.json").read_text())
+        out["resumption"] = True
+        if accepted_report_sha256 and (marker.get("approval") or {}).get("accepted_report_sha256") not in (None, accepted_report_sha256):
+            out["refusals"].append("RESUMPTION_APPROVAL_MISMATCH: the earlier deletion was approved under another report")
+        out["accepted_arrays_sha256"] = marker.get("arrays_sha256")
+        if not out["accepted_arrays_sha256"]:
+            out["refusals"].append("RESUMPTION_NO_IDENTITY: the earlier marker names no arrays digest")
+    else:
+        if not gate["pass"]:
+            out["refusals"].append("GATE: " + "; ".join(gate["reasons"])[:300])
+        else:
+            rec = json.loads((folder / "cell.json").read_text())
+            report = json.loads((root / "REPORT.json").read_text())
+            row = next((r for r in report["verification"]["rows"] if r["unit"] == unit), None) or {}
+            acc = (row.get("accepted_artifacts") or {}).get("predictions")
+            out["accepted_arrays_sha256"] = acc or rec.get("arrays_sha256")
+            if acc and acc != rec.get("arrays_sha256"):
+                out["refusals"].append("IDENTITY: the accepted predictions artifact and the record disagree")
+    if accepted_report_sha256:
+        actual = sha_file(root / "REPORT.json") if (root / "REPORT.json").is_file() else None
+        out["approval"]["accepted_report_sha256"] = accepted_report_sha256
+        if actual != accepted_report_sha256:
+            out["refusals"].append(f"APPROVAL_REPORT_MISMATCH: REPORT.json is {str(actual)[:12]}, the accepted report is {accepted_report_sha256[:12]}")
+    if backup_manifest is not None:
+        digests = _manifest_digests(backup_manifest)
+        out["approval"]["backup_manifest_sha256"] = sha_file(Path(backup_manifest)) if isinstance(backup_manifest, (str, Path)) else None
+        for rel in (f"attempts/{unit}/cell.json", f"attempts/{unit}/METRICS_VAULT.json"):
+            local = root / rel
+            if rel not in digests:
+                out["refusals"].append(f"BACKUP_UNVERIFIED: {rel} is not in the backup manifest")
+            elif not local.is_file() or sha_file(local) != digests[rel]:
+                out["refusals"].append(f"BACKUP_UNVERIFIED: {rel} on disk is not the backed-up bytes")
+        out["approval"]["checkpoint_backed_up"] = f"attempts/{unit}/checkpoint.pth" in digests
+    accepted = out["accepted_arrays_sha256"]
+    accepted_record = sha_file(folder / "cell.json") if (folder / "cell.json").is_file() else None
+    seen_inodes = set()
+    for r in [root] + [Path(x) for x in roots if Path(x) != root]:
+        cand = Path(r) / "attempts" / unit / "arrays.npz"
+        other_record = Path(r) / "attempts" / unit / "cell.json"
+        if Path(r) != root and other_record.is_file() and accepted_record and sha_file(other_record) != accepted_record:
+            out["refusals"].append(f"CONFLICTING_ATTEMPT: {other_record} claims this unit with another record")
+        if not cand.exists() and not cand.is_symlink():
+            continue
+        entry = {"path": str(cand), "root": str(r)}
+        if cand.is_symlink() or os.path.realpath(cand) != str(cand):
+            entry["refusal"] = "ALIAS: symlink or non-canonical path"; out["refusals"].append(f"{entry['refusal']}: {cand}"); out["paths"].append(entry); continue
+        st = os.stat(cand); key = (st.st_dev, st.st_ino)
+        if key in seen_inodes:
+            entry["duplicate_inode_of_previous"] = True; out["paths"].append(entry); continue
+        seen_inodes.add(key)
+        entry.update({"bytes": st.st_size, "sha256": sha_file(cand), "filesystem_id": str(st.st_dev), "readers": _readers_of(cand)})
+        if accepted and entry["sha256"] != accepted:
+            entry["refusal"] = "CONFLICTING_COPY: not the accepted predictions artifact"; out["refusals"].append(f"{entry['refusal']}: {cand}")
+        if entry["readers"]:
+            entry["refusal"] = f"ACTIVE_READER: {entry['readers']}"; out["refusals"].append(f"{entry['refusal']}: {cand}")
+        out["paths"].append(entry)
+    if not out["paths"] and not resumption:
+        out["refusals"].append("NO_COPY: nothing to delete")
+    out["pass"] = not out["refusals"]
+    return out
+
+
+def delete_predictions(root: Path, units: list, *, extra_roots: list | None = None, dry_run: bool = False,
+                       accepted_report_sha256: str | None = None, backup_manifest=None) -> dict:
+    """The owner's authorized deletion (2026-09-22), RP108: under an exclusive lock, preflight the whole inventory of every unit
+    (identity by content, aliases, conflicting attempts, readers, bound approval), then unlink copy by copy re-hashing each one
+    just before, recording a per-path status; an interrupted deletion leaves an accurate PARTIAL marker and resumes later. The
+    marker names paths and digests; it is never the authority of a score (RP107 binds that to the original closure report)."""
+    import fcntl
     root = Path(root); roots = [root] + [Path(x) for x in (extra_roots or [])]
-    receipt = {"schema": "df_sota_deletion_receipt.v1", "at": now_iso(), "host": socket.gethostname(), "root": str(root), "dry_run": dry_run, "units": {}, "paths": []}
-    inv = inventory_predictions(roots)
-    for unit in units:
-        gate = deletion_gate(root, unit)
-        copies = [x for x in inv if x["unit"] == unit]
-        entry = {"gate": gate, "copies_inventoried": copies, "deleted": []}
-        if gate["pass"] and not dry_run:
-            rec = json.loads((root / "attempts" / unit / "cell.json").read_text())
-            for c in copies:
-                path = Path(c["path"])
-                if c["readers"]:
-                    entry["deleted"].append({"path": c["path"], "deleted": False, "why": f"readers {c['readers']}"}); continue
-                before = os.statvfs(path); free_before = before.f_bavail * before.f_frsize
-                path.unlink()
-                after = os.statvfs(path.parent); free_after = after.f_bavail * after.f_frsize
-                entry["deleted"].append({"path": c["path"], "deleted": True, "bytes": c["bytes"], "sha256": c["sha256"], "filesystem_id": c["filesystem_id"],
-                                         "reclaimed_bytes_fs_delta": free_after - free_before, "at": now_iso()})
-            marker = {"schema": "df_sota_predictions_deleted.v1", "unit": unit, "deleted_at": now_iso(), "arrays_sha256": rec.get("arrays_sha256"), "pred_sha256": rec.get("pred_sha256"),
-                      "closure_report_sha256": gate["report_sha256"], "verified_at_deletion": True, "authorization": "owner 2026-09-22 (retention document); Musashi RP98-RP105 RP103",
-                      "paths_deleted": [d["path"] for d in entry["deleted"] if d["deleted"]], "reading": "metrics verified before authorized deletion; the arrays' hash records their former identity and cannot reconstruct them; no current replay is possible"}
-            write_atomic(root / "attempts" / unit / "PREDICTIONS_DELETED.json", json.dumps(marker, indent=1))
-            entry["marker"] = marker
-        receipt["units"][unit] = entry
-        receipt["paths"] += entry["deleted"]
-    receipt["reclaimed_bytes_by_filesystem"] = {}
-    for d in receipt["paths"]:
-        if d.get("deleted"):
-            receipt["reclaimed_bytes_by_filesystem"][d["filesystem_id"]] = receipt["reclaimed_bytes_by_filesystem"].get(d["filesystem_id"], 0) + d["reclaimed_bytes_fs_delta"]
-    write_atomic(root / f"DELETION_RECEIPT.{int(time.time())}.json", json.dumps(receipt, indent=1, default=str))
+    receipt = {"schema": "df_sota_deletion_receipt.v2", "at": now_iso(), "host": socket.gethostname(), "root": str(root), "dry_run": dry_run,
+               "approval": {"accepted_report_sha256": accepted_report_sha256, "backup_manifest": str(backup_manifest) if backup_manifest is not None else None},
+               "units": {}, "paths": []}
+    lock_path = root / "DELETION.lock"
+    with open(lock_path, "w") as lock:
+        try:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            raise SotaRefusal("REFUSED: another deletion holds this root's exclusive boundary")
+        for unit in units:
+            pre = deletion_preflight(root, unit, roots, accepted_report_sha256=accepted_report_sha256, backup_manifest=backup_manifest)
+            entry = {"preflight": pre, "gate": pre.get("gate"), "copies_inventoried": [p_ for p_ in pre["paths"] if "sha256" in p_], "deleted": [], "state": "REFUSED" if not pre["pass"] else "PENDING"}
+            if pre["pass"] and not dry_run:
+                folder = root / "attempts" / unit
+                previous = json.loads((folder / "PREDICTIONS_DELETED.json").read_text()) if (folder / "PREDICTIONS_DELETED.json").is_file() else None
+                for c in entry["copies_inventoried"]:
+                    path = Path(c["path"]); status = {"path": c["path"], "bytes": c["bytes"], "sha256": c["sha256"], "filesystem_id": c["filesystem_id"], "deleted": False}
+                    try:
+                        now_sha = sha_file(path)                                   # identity re-checked at the instant of deletion
+                        if now_sha != pre["accepted_arrays_sha256"]:
+                            status["why"] = f"IDENTITY_CHANGED_AT_DELETION: {now_sha[:12]}"
+                        elif _readers_of(path):
+                            status["why"] = f"ACTIVE_READER_AT_DELETION: {_readers_of(path)}"
+                        else:
+                            before = os.statvfs(path); free_before = before.f_bavail * before.f_frsize
+                            os.unlink(path)
+                            after = os.statvfs(path.parent); free_after = after.f_bavail * after.f_frsize
+                            status.update({"deleted": True, "reclaimed_bytes_fs_delta": free_after - free_before, "free_bytes_after": free_after, "at": now_iso()})
+                    except Exception as exc:                            # noqa: BLE001
+                        status["why"] = f"FAILED: {type(exc).__name__}: {str(exc)[:160]}"
+                    entry["deleted"].append(status)
+                remaining = [d_ for d_ in entry["deleted"] if not d_["deleted"]]
+                all_removed = not remaining and bool(entry["deleted"])
+                events = (previous or {}).get("events") or []
+                events.append({"at": now_iso(), "host": socket.gethostname(), "deleted": [d_["path"] for d_ in entry["deleted"] if d_["deleted"]],
+                               "not_deleted": [{"path": d_["path"], "why": d_.get("why")} for d_ in remaining]})
+                marker = {"schema": "df_sota_predictions_deleted.v2", "unit": unit, "deleted_at": (previous or {}).get("deleted_at") or now_iso(), "last_event_at": now_iso(),
+                          "arrays_sha256": pre["accepted_arrays_sha256"], "closure_report_sha256": (previous or {}).get("closure_report_sha256") or (pre.get("gate") or {}).get("report_sha256"),
+                          "approval": {**((previous or {}).get("approval") or {}), **pre.get("approval", {})},
+                          "paths_deleted": sorted(set(((previous or {}).get("paths_deleted") or []) + [d_["path"] for d_ in entry["deleted"] if d_["deleted"]])),
+                          "paths_remaining": [{"path": d_["path"], "why": d_.get("why")} for d_ in remaining],
+                          "all_copies_removed": all_removed, "state": "COMPLETE" if all_removed else "PARTIAL", "events": events,
+                          "authorization": "owner 2026-09-22 (retention document); Musashi RP106-RP113 RP108",
+                          "reading": "a pointer to the deleted bytes' digest and to the closure report they were verified under; the score is bound by that report (RP107), not by this file"}
+                if any(d_["deleted"] for d_ in entry["deleted"]) or previous:
+                    write_atomic(folder / "PREDICTIONS_DELETED.json", json.dumps(marker, indent=1))
+                entry["marker"] = marker; entry["state"] = marker["state"]
+            receipt["units"][unit] = entry
+            receipt["paths"] += entry["deleted"]
+        receipt["reclaimed_bytes_by_filesystem"] = {}; receipt["free_bytes_after_by_filesystem"] = {}
+        for d_ in receipt["paths"]:
+            if d_.get("deleted"):
+                receipt["reclaimed_bytes_by_filesystem"][d_["filesystem_id"]] = receipt["reclaimed_bytes_by_filesystem"].get(d_["filesystem_id"], 0) + d_["reclaimed_bytes_fs_delta"]
+                receipt["free_bytes_after_by_filesystem"][d_["filesystem_id"]] = d_["free_bytes_after"]
+        write_atomic(root / f"DELETION_RECEIPT.{int(time.time())}.json", json.dumps(receipt, indent=1, default=str))
+        fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
     return receipt
 
 
@@ -1934,6 +2050,125 @@ def write_atomic(path: Path, text: str) -> None:
     os.replace(tmp, path)
 
 
+def accepted_terminal(warehouse, receipts: dict, unit: str, design: dict, cell: dict) -> dict:
+    """The accepted COMPLETED terminal of a unit as the warehouse holds it now: its artifact digests by role and every identity
+    problem (receipt disagreement, configuration, tags). `acc` is None when nothing is accepted."""
+    receipt = receipts.get(unit); problems = []
+    if receipt is None:
+        return {"acc": None, "row": None, "problems": [f"{unit}: no accepted terminal receipt"], "class": "NO_RECEIPT"}
+    if warehouse is None:
+        return {"acc": None, "row": None, "problems": [f"{unit}: custody unavailable: the warehouse was not read"], "class": "CUSTODY_UNAVAILABLE"}
+    row = ((warehouse(receipt["campaign_sha256"]) or {}).get("current") or {}).get(unit)
+    if not row:
+        return {"acc": None, "row": None, "problems": [f"{unit}: the warehouse holds NO terminal for this unit"], "class": "NO_ACCEPTED_TERMINAL"}
+    acc = {x.get("role"): x.get("sha256") for x in row.get("artifacts") or []}
+    if row.get("terminal_sha256") != receipt.get("terminal_sha256") or row.get("status") != "COMPLETED":
+        problems.append(f"{unit}: the accepted terminal digest/status disagrees with the receipt")
+    if row.get("config_sha256") and row.get("config_sha256") != design["design_sha256"]:
+        problems.append(f"{unit}: reported under another configuration")
+    tags = row.get("tags") or row.get("tags_json") or {}
+    if isinstance(tags, str):
+        try:
+            tags = json.loads(tags)
+        except Exception:
+            tags = {}
+    for key, want in (("horizon", cell["horizon"]), ("seed", cell["seed"]), ("seq_len", cell["seq_len"]), ("arm", cell["arm"])):
+        if key in tags and str(tags[key]) != str(want):
+            problems.append(f"{unit}: the accepted terminal's {key} is {tags[key]!r}, the design says {want!r}: IDENTITY")
+    return {"acc": acc, "row": row, "problems": problems, "class": "ACCEPTED" if not problems else "IDENTITY_PROBLEM"}
+
+
+def resolve_report(root: Path, sha256: str | None):
+    """The closure report whose BYTES hash to `sha256`: REPORT.json, the content-addressed copies under reports/, or any
+    REPORT*.json kept in the root (pre-deletion copies). None when no file has that digest — a digest string alone is not a report."""
+    root = Path(root)
+    if not sha256 or not isinstance(sha256, str) or len(sha256) != 64:
+        return None
+    candidates = [root / "reports" / f"REPORT.{sha256}.json", root / "REPORT.json"] + sorted(root.glob("REPORT*.json")) + sorted((root / "reports").glob("REPORT.*.json"))
+    seen = set()
+    for c in candidates:
+        if not c.is_file() or c in seen:
+            continue
+        seen.add(c)
+        if sha_file(c) == sha256:
+            try:
+                return {"path": str(c), "sha256": sha256, "report": json.loads(c.read_text())}
+            except Exception:                                       # noqa: BLE001
+                return None
+    return None
+
+
+HISTORY_BOUND = "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION"
+
+
+def historical_verification(root: Path, design: dict, cell: dict, record: dict, marker: dict, custody: dict) -> dict:
+    """RP107: a deleted cell's score is what the ORIGINAL pre-deletion closure verified, bound to what is still on disk and to the
+    accepted terminal chain — never a field of the current record or a flag in the deletion marker. Every failure is a typed
+    refusal and yields no historically verified score."""
+    unit = cell["cell_id"]; folder = Path(root) / "attempts" / unit
+    refusals = []
+    resolved = resolve_report(root, marker.get("closure_report_sha256"))
+    if resolved is None:
+        refusals.append("HISTORY_UNRESOLVED_REPORT: no preserved closure report has the digest the deletion marker names")
+        return {"status": "DELETED_HISTORY_UNBOUND", "verified_historically": False, "refusals": refusals, "metric": None, "basis": None, "source": None}
+    report = resolved["report"]
+    if report.get("design_sha256") != design["design_sha256"]:
+        refusals.append("HISTORY_DESIGN_MISMATCH: the original report was closed under another design")
+    row = next((r for r in ((report.get("verification") or {}).get("rows") or []) if r.get("unit") == unit), None)
+    if row is None or not row.get("verified") or (row.get("custody") or {}).get("class") != "ACCEPTED_ARTIFACT_CHAIN":
+        refusals.append("HISTORY_ROW_UNVERIFIED: the original report did not verify this unit with accepted custody")
+    acc = custody.get("acc")
+    if acc is None:
+        refusals.append(f"HISTORY_CUSTODY_{custody.get('class', 'UNAVAILABLE')}: the accepted terminal chain cannot anchor the retained files")
+    else:
+        if custody.get("problems"):
+            refusals.append("HISTORY_TERMINAL_IDENTITY: " + "; ".join(custody["problems"])[:200])
+        if not (folder / "cell.json").is_file() or sha_file(folder / "cell.json") != acc.get("record"):
+            refusals.append("HISTORY_RECORD_CHANGED: the retained record is not the accepted record artifact")
+        if not (folder / "checkpoint.pth").is_file() or sha_file(folder / "checkpoint.pth") != acc.get("checkpoint"):
+            refusals.append("HISTORY_CHECKPOINT_CHANGED: the retained checkpoint is not the accepted checkpoint artifact")
+        if not (marker.get("arrays_sha256") and marker.get("arrays_sha256") == acc.get("predictions") == record.get("arrays_sha256")):
+            refusals.append("HISTORY_ARRAYS_IDENTITY: the deleted arrays' digest, the accepted predictions artifact and the record disagree")
+    rc = (row or {}).get("recomputed") or {}
+    vault = folder / "METRICS_VAULT.json"
+    if not vault.is_file() or not rc.get("metrics_vault_sha256") or sha_file(vault) != rc.get("metrics_vault_sha256"):
+        refusals.append("HISTORY_VAULT_MISMATCH: the retained catalog is absent or is not the one the original closure verified")
+    else:
+        try:
+            v = json.loads(vault.read_text())
+            if (v.get("identity") or {}).get("true_sha256_consumed") != record.get("true_sha256") or ((row or {}).get("derived") or {}).get("true_sha256") != record.get("true_sha256"):
+                refusals.append("HISTORY_TARGETS_MISMATCH: the targets the catalog consumed / the original closure derived are not the record's")
+        except Exception:                                           # noqa: BLE001
+            refusals.append("HISTORY_VAULT_UNREADABLE")
+    metric = (row or {}).get("author_metric_float32") if row else None
+    basis = (row or {}).get("metric_basis") if row else None
+    ok = not refusals and metric is not None
+    return {"status": HISTORY_BOUND if ok else "DELETED_HISTORY_UNBOUND", "verified_historically": ok, "refusals": refusals,
+            "metric": metric if ok else None, "basis": (f"{basis} [historical: original closure {resolved['sha256'][:12]}]" if ok else None),
+            "source": {"report_path": resolved["path"], "report_sha256": resolved["sha256"], "row_verified": bool(row and row.get("verified")),
+                       "record_metric_agrees_with_original": (metric == metric_of(record)[0]) if row else None}}
+
+
+def device_attribution(record: dict) -> dict:
+    """RP110: the class of evidence behind a record's training device. MEASURED = the process asked its CUDA runtime for the UUID;
+    VISIBILITY_MASK = a UUID mask the process was started with; INFERRED_GPU_MEMORY = the host GPU whose memory grew while the
+    cell ran (not process attribution); UNKNOWN otherwise. Only MEASURED can certify same-device repeatability."""
+    if not str(record.get("device", "")).startswith("cuda"):
+        return {"uuid": None, "class": "CPU"}
+    if record.get("device_uuid"):
+        return {"uuid": record["device_uuid"], "class": "MEASURED"}
+    vis = [x.strip() for x in str((record.get("environment") or {}).get("cuda_visible_devices") or "").split(",") if x.strip()]
+    if vis and all(x.startswith("GPU-") for x in vis):
+        return {"uuid": vis[0], "class": "VISIBILITY_MASK"}
+    cost = record.get("cost") or {}
+    before = {g.get("uuid"): g for g in cost.get("gpu_before") or []}
+    after = {g.get("uuid"): g for g in cost.get("gpu_after") or []}
+    growth = {u: float(after[u].get("memory_used_mib") or 0) - float(before.get(u, {}).get("memory_used_mib") or 0) for u in after}
+    if growth and max(growth.values()) >= 256:
+        return {"uuid": max(growth, key=growth.get), "class": "INFERRED_GPU_MEMORY"}
+    return {"uuid": next(iter(before)) if before else None, "class": "UNKNOWN"}
+
+
 def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None, replay: bool = True, replay_device: str = "cpu",
                     replay_units: list | None = None, author_metric_budget: int | None = None) -> dict:
     root = Path(root)
@@ -1970,19 +2205,22 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
         unit, folder, p_ = cell["cell_id"], root / "attempts" / cell["cell_id"], []
         deleted = folder / "PREDICTIONS_DELETED.json"
         if not (folder / "arrays.npz").is_file() and deleted.is_file() and (folder / "cell.json").is_file():
-            # RP103: the arrays were deleted under the owner's authorization AFTER their metrics were verified; the record and the
-            # deletion receipt say when and under which closure. Not a current replay, not a missing artifact.
+            # RP103/RP107: the arrays were deleted under the owner's authorization AFTER their metrics were verified. The score is the
+            # ORIGINAL closure's, resolved by digest and bound to the retained record/checkpoint/catalog and the accepted terminal
+            # chain; the marker is a pointer, never an authority. Not a current replay, not a missing artifact.
             dd = json.loads(deleted.read_text()); record = json.loads((folder / "cell.json").read_text())
-            ok_receipt = dd.get("arrays_sha256") == record.get("arrays_sha256") and dd.get("closure_report_sha256") and dd.get("deleted_at")
-            basis_metric, basis = metric_of(record)
+            custody_h = accepted_terminal(warehouse, receipts, unit, design, cell)
+            hv = historical_verification(root, design, cell, record, dd, custody_h)
+            attribution = device_attribution(record)
             rows.append({"unit": unit, "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")}, "verified": False,
-                         "verified_historically": bool(ok_receipt and dd.get("verified_at_deletion")), "status": "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION" if ok_receipt else "DELETED_WITHOUT_VALID_RECEIPT",
-                         "author_metric_float32": basis_metric, "metric_basis": basis, "custody": {"class": "HISTORICAL: arrays deleted under authorization; digests retained"},
-                         "deletion": dd, "training": record.get("training"), "cost": record.get("cost"), "n_parameters": record.get("n_parameters"), "device": record.get("device"),
-                         "device_uuid": trained_device_of(record),
-                         "replay": {"skipped": True, "why": "predictions deleted under authorization: no current replay is possible; historical verification dated in the receipt"},
-                         "problems": ([] if ok_receipt else [f"{unit}: predictions absent and the deletion receipt does not bind to the record: DELETED_WITHOUT_VALID_RECEIPT"]),
-                         "task_id": disp["task_id"], "disposition": disp["disposition"]})
+                         "verified_historically": hv["verified_historically"], "status": hv["status"],
+                         "author_metric_float32": hv["metric"], "metric_basis": hv["basis"], "metric_of_current_record": metric_of(record)[0],
+                         "custody": {"class": ("HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization" if hv["verified_historically"] else "HISTORICAL_UNBOUND"),
+                                     "terminal": custody_h.get("class")},
+                         "historical": hv["source"], "deletion": dd, "training": record.get("training"), "cost": record.get("cost"), "n_parameters": record.get("n_parameters"),
+                         "device": record.get("device"), "device_uuid": attribution["uuid"], "device_attribution": attribution,
+                         "replay": {"skipped": True, "why": "predictions deleted under authorization: no current replay is possible; the historical verification is the original closure's"},
+                         "problems": [f"{unit}: {r}" for r in hv["refusals"]], "task_id": disp["task_id"], "disposition": disp["disposition"]})
             continue
         if not (folder / "cell.json").is_file() or not (folder / "arrays.npz").is_file() or not (folder / "checkpoint.pth").is_file():
             rows.append({"unit": unit, "cell": cell, "verified": False, "status": "MISSING", "problems": [f"{unit}: a registered cell has no record, arrays or checkpoint — missing, not absent"]}); continue
@@ -2026,7 +2264,7 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                     if key in tags and str(tags[key]) != str(want):
                         p_.append(f"{unit}: the accepted terminal's {key} is {tags[key]!r}, the design says {want!r}: IDENTITY")
                 if acc.get("predictions") == arrays_sha and acc.get("checkpoint") == ckpt_sha and acc.get("record") == record_sha and not p_:
-                    custody = {"class": "ACCEPTED_ARTIFACT_CHAIN"}
+                    custody = {"class": "ACCEPTED_ARTIFACT_CHAIN", "accepted_artifacts": {k: acc.get(k) for k in ("predictions", "checkpoint", "record")}}
                 else:
                     for role, sha in (("predictions", arrays_sha), ("checkpoint", ckpt_sha), ("record", record_sha)):
                         if acc.get(role) != sha:
@@ -2139,6 +2377,7 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             basis_metric, basis = recomputed["author_float32"], f"author_float32 (recomputed at closure by {AUTHOR_SCORER_ROUTE}; the record carries the float64 reduction only)"
             recomputed["metric_basis"] = basis
         rows.append({"unit": unit, "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")}, "custody": custody,
+                     "accepted_artifacts": custody.get("accepted_artifacts"), "device_attribution": device_attribution(record),
                      "author_metric_float32": basis_metric, "metric_basis": basis, "author_metric_state": record.get("author_metric_state"),
                      "recomputed": recomputed, "derived": derived,
                      "training": record.get("training"), "cost": record.get("cost"), "n_parameters": record.get("n_parameters"), "device": record.get("device"),
@@ -2168,9 +2407,17 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             rep["environment"] = environment()
             # the four properties are kept apart: which device actually replayed, and whether it is the device that trained the cell
             actual = rep.get("device_uuid")
-            same_device = bool(actual and trained_device(r) and actual == trained_device(r)) or (rep.get("device") == "cpu" and str(r.get("device", "")).startswith("cpu"))
-            rep["property"] = "same_device_repeatability" if same_device else "cross_device_portability"
-            rep["trained_on_device_uuid"] = trained_device(r)
+            attribution = r.get("device_attribution") or {"uuid": trained_device(r), "class": "UNKNOWN"}
+            equal = bool(actual and attribution.get("uuid") and actual == attribution.get("uuid"))
+            cpu_both = rep.get("device") == "cpu" and str(r.get("device", "")).startswith("cpu")
+            if cpu_both or (equal and attribution.get("class") == "MEASURED"):
+                same_device, prop = True, "same_device_repeatability"
+            elif equal:
+                same_device, prop = False, f"same_device_inferred ({attribution.get('class')}): NOT certified as same-device"
+            else:
+                same_device, prop = False, "cross_device_portability"
+            rep["property"] = prop
+            rep["trained_on_device_uuid"] = attribution.get("uuid"); rep["trained_on_attribution"] = attribution.get("class")
             ok = bool(rep.get("allclose_rule")) and rep.get("finite") is True and rep.get("shape_equal") is True
             if not ok:
                 r["problems"].append(f"{unit}: fresh-process reload ({rep['property']}, {rep.get('device')}) fails the frozen replay rule (atol/rtol 1e-4): "
@@ -2183,8 +2430,13 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                     abs((rep.get("replayed_author_metric") or rep["replayed_metric_float64"])["mse"] - r["author_metric_float32"]["mse"]) > 1e-5:
                 r["problems"].append(f"{unit}: the metric of the replayed predictions differs from the stored one by more than 1e-5")
             r["replay"] = {k: v for k, v in rep.items() if k not in ("identity", "environment")}
-            r["same_device_repeatability"] = ("PASS" if ok and same_device else ("FAIL" if same_device else "NOT_TESTED_ON_THIS_DEVICE"))
-            r["cross_device_portability"] = ("PASS" if ok and not same_device else ("FAIL" if not same_device else "NOT_TESTED_ON_THIS_DEVICE"))
+            if same_device:
+                r["same_device_repeatability"] = "PASS" if ok else "FAIL"; r["cross_device_portability"] = "NOT_TESTED_ON_THIS_DEVICE"
+            elif equal:                                                 # same UUID, but the training side is inferred: neither claim is certified
+                r["same_device_repeatability"] = f"NOT_CERTIFIED ({'PASS' if ok else 'FAIL'} on the inferred device; attribution {attribution.get('class')})"
+                r["cross_device_portability"] = "UNDETERMINED_ATTRIBUTION"
+            else:
+                r["same_device_repeatability"] = "NOT_TESTED_ON_THIS_DEVICE"; r["cross_device_portability"] = "PASS" if ok else "FAIL"
             r["verified"] = r["verified"] and not r["problems"]
             history.setdefault(unit, {})[f"{rep.get('device')}:{actual or 'cpu'}@{now_iso()}"] = rep
             replays[unit] = rep
@@ -2437,10 +2689,15 @@ def close(a, design: dict) -> dict:
     write_atomic(root / "PAIRED_CONTRASTS.json", json.dumps(contrasts, indent=1, default=str))
     report = {"schema": "df_sota_report.v2", "design_sha256": design["design_sha256"], "verification": ver, "table": t, "paired_contrasts": contrasts,
               "verified": bool(t["complete"] and not ver["problems"]), "problems": ver["problems"]}
-    (root / "REPORT.json").write_text(json.dumps(report, indent=1, default=str))
+    text = json.dumps(report, indent=1, default=str)
+    digest = hashlib.sha256(text.encode()).hexdigest()
+    (root / "reports").mkdir(exist_ok=True)
+    if not (root / "reports" / f"REPORT.{digest}.json").is_file():           # RP108: content-addressed, never overwritten
+        (root / "reports" / f"REPORT.{digest}.json").write_text(text)
+    (root / "REPORT.json").write_text(text)
     (root / "SOTA_TABLE.json").write_text(json.dumps(t, indent=1, default=str))
     (root / "SOTA_TABLE.md").write_text(markdown(t))
-    print(json.dumps({"verified": report["verified"], "complete": t["complete"], "verified_units": ver["verified_units"], "problems": ver["problems"][:5],
+    print(json.dumps({"verified": report["verified"], "complete": t["complete"], "verified_units": ver["verified_units"], "report_sha256": digest, "problems": ver["problems"][:5],
                       "agreement": {str(r["horizon"]): (r["mse"]["status"], r["mae"]["status"]) for r in t["rows"]}}, indent=1))
     return report
 
@@ -2453,6 +2710,8 @@ def main(argv=None) -> int:
     ap.add_argument("--reason", default=None)
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--accepted-report-sha256", default=None, help="delete-predictions: the independently accepted closure report REPORT.json must hash to this")
+    ap.add_argument("--backup-manifest", type=Path, default=None, help="delete-predictions: manifest {relative path: sha256} of the durable metadata backup; record and catalog must be in it")
     ap.add_argument("--checkpoint", type=Path, default=None, help="profile-eval: a trained checkpoint (else an untrained model, memory only)")
     ap.add_argument("--horizon", type=int, default=None, help="profile-eval: which horizon's cell arguments")
     ap.add_argument("--windows", type=int, nargs="*", default=None, help="route-trace: window indices (else the most discrepant on CPU)")
@@ -2497,10 +2756,13 @@ def main(argv=None) -> int:
             raise SotaRefusal("REFUSED: retire-attempt names its unit and its reason")
         print(json.dumps(retire_attempt(a.root, a.unit, reason=a.reason), indent=1)); return 0
     if a.command == "delete-predictions":
-        rec = delete_predictions(a.root, a.units or [c["cell_id"] for c in design["cells"]], extra_roots=a.extra_roots, dry_run=a.dry_run)
-        print(json.dumps({u: {"gate": e["gate"]["pass"], "reasons": e["gate"]["reasons"], "deleted": [d for d in e["deleted"] if d.get("deleted")].__len__(), "copies": len(e["copies_inventoried"])}
-                          for u, e in rec["units"].items()}, indent=1)); print(json.dumps({"reclaimed_bytes_by_filesystem": rec["reclaimed_bytes_by_filesystem"]}))
-        return 0 if all(e["gate"]["pass"] for e in rec["units"].values()) else 1
+        rec = delete_predictions(a.root, a.units or [c["cell_id"] for c in design["cells"]], extra_roots=a.extra_roots, dry_run=a.dry_run,
+                                 accepted_report_sha256=a.accepted_report_sha256, backup_manifest=a.backup_manifest)
+        print(json.dumps({u: {"state": e["state"], "refusals": e["preflight"]["refusals"], "deleted": len([d for d in e["deleted"] if d.get("deleted")]), "copies": len(e["copies_inventoried"]),
+                              "not_deleted": [{"path": d["path"], "why": d.get("why")} for d in e["deleted"] if not d.get("deleted")]}
+                          for u, e in rec["units"].items()}, indent=1))
+        print(json.dumps({"reclaimed_bytes_by_filesystem": rec["reclaimed_bytes_by_filesystem"], "free_bytes_after_by_filesystem": rec["free_bytes_after_by_filesystem"]}))
+        return 0 if all(e["preflight"]["pass"] for e in rec["units"].values()) else 1
     if a.command == "route-trace":
         path = Path(a.data_path) if a.data_path else delivered_file(a.root, design, None)
         rep = route_trace(a.root, design, a.unit, data_path=path, windows=a.windows, gpu=a.gpu)

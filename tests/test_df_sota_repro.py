@@ -874,3 +874,180 @@ def test_RP109_a_cell_recorded_on_the_float64_basis_gets_the_authors_float32_at_
     assert row["author_metric_float32"] == original and row["metric_basis"].startswith("author_float32 (recomputed at closure by df_sota_author_metric_exact.v1")
     assert row["recomputed"]["independent_float64"]["mae"] != original["mae"] or True          # float64 is a separate named check, never the basis here
     assert R.table(world["design"], ver)["rows"][0]["metric_basis"][0].startswith("author_float32 (recomputed")
+
+
+# --- RP106: Musashi's RP105 counterexamples frozen against the real closure and deletion entry points ---------------------------
+
+def _closed_and_deleted(world, tmp_path):
+    """A valid fixture closure (stub warehouse), then the authorized deletion of the unit's arrays: the state the RP105 probe started from."""
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tok"; tok.write_text("synthetic")
+        a = SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False, replay_device="cpu")
+        rep = R.close(a, json.loads((root / "DESIGN.json").read_text()))
+    assert rep["verified"]
+    report_sha = R.sha_file(root / "REPORT.json")
+    assert (root / "reports" / f"REPORT.{report_sha}.json").is_file()                       # content-addressed copy preserved
+    out = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha)
+    assert out["units"][unit]["state"] == "COMPLETE" and not (root / "attempts" / unit / "arrays.npz").exists()
+    return root, unit, report_sha
+
+
+def _verify(world, root, **kw):
+    return R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=kw.pop("replay", False), **kw)
+
+
+def test_RP106_control_a_valid_retained_history_verifies_historically_with_the_original_closures_score(world, tmp_path):
+    root, unit, report_sha = _closed_and_deleted(world, tmp_path)
+    ver = _verify(world, root)
+    row = ver["rows"][0]
+    assert ver["historically_verified_units"] == [unit] and row["status"] == "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION" and not ver["problems"]
+    assert row["author_metric_float32"] == world["record"]["author_metric_float32"] and row["historical"]["report_sha256"] == report_sha
+    assert "[historical: original closure" in row["metric_basis"] and row["custody"]["class"].startswith("HISTORICAL_BOUND")
+    t = R.table(world["design"], ver)
+    assert t["rows"][0]["mae"]["status"] != "NO_MEASUREMENT" and t["rows"][0]["historically_verified_seeds"] == [unit]
+
+
+def test_RP106_rewritten_metrics_with_missing_vault_and_checkpoint_are_refused_by_the_real_closure(world, tmp_path):
+    """Musashi RP105 #1: after a valid closure/deletion, both metrics set to zero in the record and the vault and checkpoint removed."""
+    root, unit, _ = _closed_and_deleted(world, tmp_path); folder = root / "attempts" / unit
+    rec = json.loads((folder / "cell.json").read_text()); rec["author_metric_float32"] = {"mae": 0.0, "mse": 0.0}; (folder / "cell.json").write_text(json.dumps(rec))
+    (folder / "METRICS_VAULT.json").unlink(); (folder / "checkpoint.pth").unlink()
+    ver = _verify(world, root)
+    row = ver["rows"][0]
+    assert ver["historically_verified_units"] == [] and row["status"] == "DELETED_HISTORY_UNBOUND" and row["author_metric_float32"] is None
+    kinds = {p.split(": ")[1].split(":")[0] for p in ver["problems"]}
+    assert {"HISTORY_RECORD_CHANGED", "HISTORY_CHECKPOINT_CHANGED", "HISTORY_VAULT_MISMATCH"} <= kinds, ver["problems"]
+    t = R.table(world["design"], ver)
+    assert t["rows"][0]["mae"]["status"] == "NO_MEASUREMENT" and t["rows"][0]["mae"].get("mean") is None      # zero never enters a mean
+
+
+def test_RP106_an_unresolvable_original_report_is_a_typed_refusal(world, tmp_path):
+    """Musashi RP105 #1b: the marker names a digest no preserved report has, and REPORT.json is gone."""
+    root, unit, _ = _closed_and_deleted(world, tmp_path); folder = root / "attempts" / unit
+    marker = json.loads((folder / "PREDICTIONS_DELETED.json").read_text()); marker["closure_report_sha256"] = "0" * 64
+    (folder / "PREDICTIONS_DELETED.json").write_text(json.dumps(marker)); (root / "REPORT.json").unlink()
+    ver = _verify(world, root)
+    assert ver["historically_verified_units"] == [] and ver["rows"][0]["status"] == "DELETED_HISTORY_UNBOUND"
+    assert any("HISTORY_UNRESOLVED_REPORT" in p for p in ver["problems"]) and ver["rows"][0]["author_metric_float32"] is None
+    # and a report of another design, even when it resolves, does not bind
+    (root / "REPORT.json").unlink(missing_ok=True)
+    other = {"schema": "df_sota_report.v2", "design_sha256": "f" * 64, "verification": {"rows": []}}
+    (root / "REPORT.forged.json").write_text(json.dumps(other)); marker["closure_report_sha256"] = R.sha_file(root / "REPORT.forged.json")
+    (folder / "PREDICTIONS_DELETED.json").write_text(json.dumps(marker))
+    ver = _verify(world, root)
+    assert ver["historically_verified_units"] == [] and any("HISTORY_DESIGN_MISMATCH" in p for p in ver["problems"]) and any("HISTORY_ROW_UNVERIFIED" in p for p in ver["problems"])
+
+
+def test_RP106_an_extra_root_file_of_different_identity_under_the_units_name_refuses_the_units_deletion(world, tmp_path):
+    """Musashi RP105 #2: the verified arrays and an unrelated file under the same unit name in an extra root. Nothing is unlinked."""
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tok"; tok.write_text("synthetic")
+        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False, replay_device="cpu"), json.loads((root / "DESIGN.json").read_text()))
+    other = tmp_path / "different_attempt" / "attempts" / unit; other.mkdir(parents=True)
+    (other / "arrays.npz").write_bytes(b"different prediction artifact, not the verified identity")
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "different_attempt"])
+    e = out["units"][unit]
+    assert e["state"] == "REFUSED" and any("CONFLICTING_COPY" in r for r in e["preflight"]["refusals"]) and e["deleted"] == []
+    assert (root / "attempts" / unit / "arrays.npz").is_file() and (other / "arrays.npz").is_file() and not (root / "attempts" / unit / "PREDICTIONS_DELETED.json").exists()
+    # control: an identical copy is deleted with the verified one, each with its own receipt line
+    (other / "arrays.npz").write_bytes((root / "attempts" / unit / "arrays.npz").read_bytes())
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "different_attempt"])
+    e = out["units"][unit]
+    assert e["state"] == "COMPLETE" and [d["deleted"] for d in e["deleted"]] == [True, True] and not (other / "arrays.npz").exists()
+    assert e["marker"]["all_copies_removed"] and len(e["marker"]["paths_deleted"]) == 2 and "verified_at_deletion" not in e["marker"]
+
+
+def test_RP108_aliases_readers_conflicting_attempts_and_a_wrong_approval_refuse_before_any_unlink(world, tmp_path, monkeypatch):
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tok"; tok.write_text("synthetic")
+        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False, replay_device="cpu"), json.loads((root / "DESIGN.json").read_text()))
+    report_sha = R.sha_file(root / "REPORT.json")
+    # a symlinked copy is an alias
+    extra = tmp_path / "alias_root" / "attempts" / unit; extra.mkdir(parents=True); (extra / "arrays.npz").symlink_to(folder / "arrays.npz")
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], accepted_report_sha256=report_sha)
+    assert out["units"][unit]["state"] == "REFUSED" and any("ALIAS" in r for r in out["units"][unit]["preflight"]["refusals"]) and (folder / "arrays.npz").is_file()
+    (extra / "arrays.npz").unlink()
+    # a conflicting attempt: an extra root whose record is another record
+    (extra / "arrays.npz").write_bytes((folder / "arrays.npz").read_bytes()); (extra / "cell.json").write_text("{}")
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], accepted_report_sha256=report_sha)
+    assert out["units"][unit]["state"] == "REFUSED" and any("CONFLICTING_ATTEMPT" in r for r in out["units"][unit]["preflight"]["refusals"])
+    (extra / "cell.json").unlink()
+    # an active reader
+    monkeypatch.setattr(R, "_readers_of", lambda p: ["fuser: 4242"])
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], accepted_report_sha256=report_sha)
+    assert out["units"][unit]["state"] == "REFUSED" and any("ACTIVE_READER" in r for r in out["units"][unit]["preflight"]["refusals"])
+    monkeypatch.setattr(R, "_readers_of", lambda p: [])
+    # the approval names another report; a manifest without the catalog
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], accepted_report_sha256="1" * 64)
+    assert out["units"][unit]["state"] == "REFUSED" and any("APPROVAL_REPORT_MISMATCH" in r for r in out["units"][unit]["preflight"]["refusals"])
+    manifest = tmp_path / "manifest.json"; manifest.write_text(json.dumps({f"attempts/{unit}/cell.json": R.sha_file(folder / "cell.json")}))
+    out = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=manifest)
+    assert out["units"][unit]["state"] == "REFUSED" and any("BACKUP_UNVERIFIED" in r and "METRICS_VAULT" in r for r in out["units"][unit]["preflight"]["refusals"])
+    manifest.write_text(json.dumps({f"attempts/{unit}/cell.json": R.sha_file(folder / "cell.json"), f"attempts/{unit}/METRICS_VAULT.json": R.sha_file(folder / "METRICS_VAULT.json")}))
+    assert (folder / "arrays.npz").is_file() and (extra / "arrays.npz").is_file()
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "alias_root"], accepted_report_sha256=report_sha, backup_manifest=manifest)
+    e = out["units"][unit]
+    assert e["state"] == "COMPLETE" and e["marker"]["approval"]["accepted_report_sha256"] == report_sha and e["marker"]["approval"]["backup_manifest_sha256"] == R.sha_file(manifest)
+    assert out["free_bytes_after_by_filesystem"]
+
+
+def test_RP108_an_interrupted_deletion_keeps_accurate_per_path_status_and_resumes(world, tmp_path, monkeypatch):
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tok"; tok.write_text("synthetic")
+        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False, replay_device="cpu"), json.loads((root / "DESIGN.json").read_text()))
+    report_sha = R.sha_file(root / "REPORT.json")
+    extra = tmp_path / "copy_root" / "attempts" / unit; extra.mkdir(parents=True); (extra / "arrays.npz").write_bytes((folder / "arrays.npz").read_bytes())
+    real_unlink = os.unlink
+    def failing(path, *a, **k):
+        if str(path).startswith(str(tmp_path / "copy_root")):
+            raise OSError("simulated interruption")
+        return real_unlink(path, *a, **k)
+    monkeypatch.setattr(os, "unlink", failing)
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "copy_root"], accepted_report_sha256=report_sha)
+    e = out["units"][unit]
+    assert e["state"] == "PARTIAL" and [d["deleted"] for d in e["deleted"]] == [True, False] and "simulated interruption" in e["deleted"][1]["why"]
+    marker = json.loads((folder / "PREDICTIONS_DELETED.json").read_text())
+    assert marker["state"] == "PARTIAL" and not marker["all_copies_removed"] and len(marker["paths_remaining"]) == 1 and (extra / "arrays.npz").is_file()
+    # the closure still binds the history (the root copy is gone, the original report resolves) and reports the remaining copy
+    ver = _verify(world, root)
+    assert ver["historically_verified_units"] == [unit] and ver["rows"][0]["deletion"]["state"] == "PARTIAL"
+    # resumption: the remaining copy is deleted under the same approval; a different approval refuses
+    monkeypatch.setattr(os, "unlink", real_unlink)
+    bad = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "copy_root"], accepted_report_sha256="2" * 64)
+    assert bad["units"][unit]["state"] == "REFUSED" and (extra / "arrays.npz").is_file()
+    out = R.delete_predictions(root, [unit], extra_roots=[tmp_path / "copy_root"], accepted_report_sha256=report_sha)
+    e = out["units"][unit]; marker = json.loads((folder / "PREDICTIONS_DELETED.json").read_text())
+    assert e["preflight"].get("resumption") and e["state"] == "COMPLETE" and marker["all_copies_removed"] and len(marker["events"]) == 2 and not (extra / "arrays.npz").exists()
+
+
+def test_RP110_same_device_repeatability_needs_a_measured_training_device(world, tmp_path):
+    """A replay on the same UUID as an INFERRED training device is reported as not certified; a MEASURED one certifies; a
+    different UUID is cross-device. The record's attribution class is explicit."""
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
+    assert R.device_attribution({"device": "cpu"}) == {"uuid": None, "class": "CPU"}
+    assert R.device_attribution({"device": "cuda:0", "device_uuid": "GPU-a"})["class"] == "MEASURED"
+    assert R.device_attribution({"device": "cuda:0", "environment": {"cuda_visible_devices": "GPU-a"}})["class"] == "VISIBILITY_MASK"
+    two = [{"uuid": "GPU-b", "memory_used_mib": 14.0}, {"uuid": "GPU-a", "memory_used_mib": 10.0}]; after = [{"uuid": "GPU-b", "memory_used_mib": 14.0}, {"uuid": "GPU-a", "memory_used_mib": 5000.0}]
+    assert R.device_attribution({"device": "cuda:0", "environment": {"cuda_visible_devices": "0"}, "cost": {"gpu_before": two, "gpu_after": after}}) == {"uuid": "GPU-a", "class": "INFERRED_GPU_MEMORY"}
+    assert R.device_attribution({"device": "cuda:0", "cost": {"gpu_before": two, "gpu_after": two}}) == {"uuid": "GPU-b", "class": "UNKNOWN"}
+    # the closure: a CPU-trained fixture replayed on CPU is same-device (both measured as CPU)
+    ver = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=True)
+    row = ver["rows"][0]
+    assert row["replay"]["property"] == "same_device_repeatability" and row["same_device_repeatability"] == "PASS" and row["device_attribution"]["class"] == "CPU"
+    # simulate an inferred-attribution GPU record replayed on that UUID: neither same-device nor cross-device is certified
+    rep = {"device_uuid": "GPU-a", "device": "cuda", "allclose_rule": True, "finite": True, "shape_equal": True}
+    r = {"device_attribution": {"uuid": "GPU-a", "class": "INFERRED_GPU_MEMORY"}, "device": "cuda:0"}
+    actual = rep["device_uuid"]; attribution = r["device_attribution"]; equal = actual == attribution["uuid"]
+    assert equal and attribution["class"] != "MEASURED"
