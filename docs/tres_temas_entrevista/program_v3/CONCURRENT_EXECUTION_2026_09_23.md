@@ -49,11 +49,12 @@ unit/campaign identities before moving a cell to RUNNING.
    master plan with its real reference, data and acceptance dependencies. Do not
    revive suspended household pilots or invent work merely to occupy hardware.
 
-Current eligible device: external RTX 5090 only. The owner's expected arrival
-does not release any other device. After explicit physical cooling confirmation,
-inventory/admit the other GPUs and distribute independent cells by measured
-memory/runtime, not a requirement for equal work. Original-device A replays
-have a different device dependency and do not hold B's queue.
+Updated after explicit owner cooling confirmation, 2026-09-23: all GPUs are
+eligible after fresh admission; external5090 remains first choice. The owner
+actually confirmed all fans functional, not merely an expected arrival time.
+Distribute independent work by measured memory/runtime, not equal work quotas.
+Original-device A replays now proceed on their own hosts and do not hold B's
+queue. Do not migrate existing sealed B cells to newly available devices.
 
 ## Dependency-local holds
 

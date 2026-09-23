@@ -1,0 +1,21 @@
+{
+  "schema": "operational_recovery.v1",
+  "date": "2026-09-23",
+  "owner_cooling_confirmation": "Explicit all-fans-functional confirmation after return home",
+  "checked_state": {
+    "coordinator_store_services": "all four active; warehouse root HTTP200, governance root HTTP302",
+    "worker_b_forwarding_before": "no listeners on 15055 or 15057",
+    "worker_b_forwarding_after": "governance HTTP302, warehouse HTTP200 through restored SSH transport",
+    "production_store_restarts": 0,
+    "transport": "enabled user systemd SSH forwarding instances for both workers; loopback only, reconnect",
+    "coordinator_travel_marker": "archived with release date, not bypassed"
+  },
+  "executor": {"task_id": "t_28e5c655", "action": "unblocked and dispatched after transport repair", "duplicate_campaign_started": false},
+  "completed_training_cells": [
+    {"cell": "L512_h96_s2021", "mse": 0.125551, "mae": 0.220453, "receipt": "accepted previously", "independent_replay": "not established by this recovery"},
+    {"cell": "L512_h96_s2022", "mse": 0.12584877014160156, "mae": 0.22093379497528076, "receipt": "COMPLETED accepted 2026-09-23T22:04:56Z", "terminal_sha256": "4d12fafe8bcb79475979f74c89218ee62396342804dc4d38bb7300e14bc09631", "reconciliation": {"http": 200, "missing_units": [], "accounting_only": [], "lake_only": []}, "independent_replay": "not established by this recovery"}
+  ],
+  "recovery_incident": "report CLI reconstructed timestamps and returned nonzero because an older pending envelope conflicted, despite a newly accepted COMPLETED terminal. Original terminal backed up before invocation; additive provenance/disposition work remains. No retraining performed.",
+  "literature": {"published_mse": 0.126, "published_mae": 0.220, "table": "TimeFilter Table 9 H96", "comparability": "PUBLISHED_WITH_UNRESOLVED_LOOKBACK; no exact-agreement claim"},
+  "continuation_budget": {"cpu_seconds": 24000, "wall_hours": 8, "scope": "ten remaining cells plus verification; prior costs preserved separately"}
+}
