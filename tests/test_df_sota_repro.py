@@ -1703,8 +1703,10 @@ def _broken_catalog_world(world, tmp_path, tag, mutate):
     C = _load("df_mod_e0_close")
     with um.patch.object(R, "metrics_vault", producer), um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
         tok = tmp_path / f"tok_{tag}"; tok.write_text("x")
-        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="s://", data_path=world["data"], skip_replay=False, replay_device="cpu"),
-                json.loads((root / "DESIGN.json").read_text()))
+        a = SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="s://", data_path=world["data"], skip_replay=False, replay_device="cpu")
+        design = json.loads((root / "DESIGN.json").read_text())
+        R.close(a, design)                     # a catalog persisted under another producer is superseded once (preserved)
+        R.close(a, design)                     # and the successor verifies on the second closure
     return root
 
 
