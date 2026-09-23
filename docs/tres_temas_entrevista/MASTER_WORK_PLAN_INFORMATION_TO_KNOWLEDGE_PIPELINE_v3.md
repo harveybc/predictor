@@ -806,3 +806,22 @@ compuertas reparadas: **once con aceptacion numerica completa** (T=96 por sus pr
 certificados de regeneracion) y T=192 semilla 2021 solo con dominio e internos; los tres arreglos de T=96 siguen retenidos y
 **ninguna celda es elegible para borrado hoy**. Puntuaciones sin cambios. Fe de erratas fechada en el retorno anterior. Sin GPU
 en esta ronda; suites en WORKER_A: 104 + 117 + 106.
+
+**Ejecutado por Satoshi (23-sep, RP132-RP134, entregado bajo RP136, pendiente de revision):**
+[retorno](../audits/work_plan/SATOSHI_RP132_RP134_RETURN_2026_09_23.md), evidencia en
+`docs/audits/evidence/d3_k5_20260917/{RP132,RP134}/`, rama separada `satoshi/rp132-rp134-20260923`. Los dos contraejemplos del
+dictamen RP131 reproducidos sin reparar (una aceptacion aceptada con CERO campos y otra con DISCREPANCIA en `global.mae`, ambas
+con resumenes verdes, ambas certificaban completo y **borraban el arreglo**) y luego reparados: el certificado ya no lee
+`families_complete`, `unchecked`, `disagreements`, `fully_independent` ni `pass`, sino los 43 campos declarados del inventario
+ligado -presencia, estado aplicable, diferencia finita y tipada, tolerancia propia de la familia, caso indefinido declarado- y
+deriva cobertura y resumenes, de modo que un registro contradictorio se **rechaza** en vez de repararse. El inventario bajo el
+que se lee un registro es explicito; los nombres de familia no establecen version. La revalidacion (esquema v2) separa la
+evidencia numerica registrada localmente de la **aceptada hoy** bajo diseno, tipo, sujeto y rol, exige a los resumenes la misma
+relacion validada que a sus filas, etiqueta como INSPECCION HISTORICA la corrida sin almacen, lee la verificacion de la celda del
+cierre **actual** y sustituye `deletion_eligible_today` por una VISTA PREVIA CONDICIONAL que enumera lo que no comprobo; la
+compuerta completa vive solo en el borrado. Reverificacion de los doce registros retenidos en WORKER_B (solo lectura, 0.24 s de
+CPU): **once fuentes en pie** -tres catalogos de T=96 bajo el inventario ligado y ocho regeneraciones bajo una reutilizacion
+fechada a nivel de campo cuyos limites quedan escritos: los parametros de familia (bins e intervalo del histograma, lista de
+cuantiles, binning de la informacion mutua, rezagos de autocorrelacion, tamano de bloque temporal) **no** quedan establecidos-
+y T=192 semilla 2021 sin evidencia numerica, con sus cuatro razones. Ninguna celda con vista previa favorable, **ningun borrado
+de produccion**, puntuaciones intactas. Costo medido: 393 s de CPU de los 1.800 reservados; sin GPU. Suite 124 pasan, 1 omitida.

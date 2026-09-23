@@ -2,17 +2,17 @@
   "scope": "disposable actual-author CPU fixtures, stub accepted warehouse",
   "host_before": {
     "thermal_zone0:INT3400 Thermal": 20.0,
-    "thermal_zone1:SEN1": 36.05,
-    "thermal_zone10:TCPU_PCI": 60.0,
-    "thermal_zone11:x86_pkg_temp": 60.0,
-    "thermal_zone2:SEN2": 45.05,
-    "thermal_zone3:SEN3": 36.05,
+    "thermal_zone1:SEN1": 35.05,
+    "thermal_zone10:TCPU_PCI": 78.0,
+    "thermal_zone11:x86_pkg_temp": 78.0,
+    "thermal_zone2:SEN2": 57.05,
+    "thermal_zone3:SEN3": 34.05,
     "thermal_zone4:SEN4": 0.05,
     "thermal_zone5:SEN5": 0.05,
-    "thermal_zone6:SEN6": 33.05,
+    "thermal_zone6:SEN6": 32.05,
     "thermal_zone7:SEN7": 25.05,
-    "thermal_zone8:iwlwifi_1": 30.0,
-    "thermal_zone9:TCPU": 60.05
+    "thermal_zone8:iwlwifi_1": 29.0,
+    "thermal_zone9:TCPU": 75.05
   },
   "positive": {
     "certificate": "FULL_INDEPENDENT_NUMERIC",
@@ -130,20 +130,20 @@
     "reasons": [
       "the closure did not verify the unit: ['REPLAY_PENDING: later closure withdrew verification']"
     ],
-    "report_sha256": "fec03844bb717ecb6f6dd073613253820c198c066266ece99f8493955374aa3a"
+    "report_sha256": "4cb5bbaafb7f9aeea94fea48466bd316eafca182e809a3117ca42838d17fc5e1"
   },
   "host_after": {
     "thermal_zone0:INT3400 Thermal": 20.0,
-    "thermal_zone1:SEN1": 36.05,
+    "thermal_zone1:SEN1": 35.05,
     "thermal_zone10:TCPU_PCI": 48.0,
     "thermal_zone11:x86_pkg_temp": 48.0,
-    "thermal_zone2:SEN2": 77.05,
-    "thermal_zone3:SEN3": 37.05,
-    "thermal_zone4:SEN4": 37.05,
+    "thermal_zone2:SEN2": 70.05,
+    "thermal_zone3:SEN3": 35.05,
+    "thermal_zone4:SEN4": 36.05,
     "thermal_zone5:SEN5": 0.05,
-    "thermal_zone6:SEN6": 33.05,
+    "thermal_zone6:SEN6": 32.05,
     "thermal_zone7:SEN7": 25.05,
-    "thermal_zone8:iwlwifi_1": 28.0,
-    "thermal_zone9:TCPU": 48.05
+    "thermal_zone8:iwlwifi_1": 29.0,
+    "thermal_zone9:TCPU": 46.05
   }
 }

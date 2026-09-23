@@ -89,8 +89,15 @@
    "superseded_blocked_task": "t_28e5c655",
    "recipe": "TimeFilter dffde87e released ECL L512 block; 321 channels; four horizons x three seeds",
    "device": "Only admitted WORKER_B external RTX 5090",
-   "does_not_depend_on": ["RP132-RP134 retention repair", "A original-device replays"],
-   "still_requires": ["fresh governed admission per remaining unit", "scientific path checks", "thermal/memory/disk/compute admission"],
+   "does_not_depend_on": [
+    "RP132-RP134 retention repair",
+    "A original-device replays"
+   ],
+   "still_requires": [
+    "fresh governed admission per remaining unit",
+    "scientific path checks",
+    "thermal/memory/disk/compute admission"
+   ],
    "continuation_budget": "24000 CPU seconds and 8h wall, declared before continuation, prior costs preserved",
    "meaning": "Published-recipe reference construction, not isolated context effect, exact Table 9 identity or doctoral hypothesis confirmation"
   },
@@ -1486,5 +1493,30 @@
     "the coordinator's GPU would be needed to certify T=192 seed 2021's catalog"
    ]
   }
+ },
+ "rp132_rp134": {
+  "orders": "docs/handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md (2b3a8531; review MUSASHI_RP128_RP131_REVIEW_2026_09_23.md of c9dce617); delivered under RP136 of MUSASHI_SOTA_RP136_RP139_2026_09_23.md (ba96574e)",
+  "base": "2b3a8531, merged with ba96574e",
+  "branch": "satoshi/rp132-rp134-20260923 (separate repair worktree, preserved as ordered)",
+  "updated_on": "2026-09-23",
+  "RP132": {
+   "status": "DONE_IN_CODE",
+   "what": "acceptance_certificate is derived from independent_comparison.fields validated against the bound estimator inventory (43 fields, 14 families): presence, applicable status, typed finite difference, the family's declared tolerance, the difference within it, the declared undefined case. Coverage and summaries are derived and the recorded ones must agree, so a contradictory record is rejected and never repaired. families_complete, unchecked, disagreements, fully_independent and pass no longer participate. The inventory a record is read under is explicit: BOUND_INVENTORY, FOREIGN_INVENTORY, LEGACY_DEFINITIONS_MATCH, LEGACY_FIELD_DEFINITIONS_MATCH or LEGACY_WITHOUT_DEFINITIONS; family names establish nothing. accept_catalog and accept_regenerated now record the inventory identity, the definitions and the producing tool digest",
+   "pre_post": "docs/audits/evidence/d3_k5_20260917/RP132/ (PRE on WORKER_A at 2b3a8531: an acceptance with zero field results and one with a global.mae DISAGREEMENT both certified FULL_INDEPENDENT_NUMERIC and deleted the array; POST at e473efbe: DOMAIN_AND_INTERNAL_ONLY and REFUSED with the array intact)",
+   "tests": "ten refusal cases through the real deletion consumer plus the positive control, the resumed deletion and the legacy bases"
+  },
+  "RP133": {
+   "status": "DONE_IN_CODE",
+   "what": "revalidate_acceptances schema v2 separates locally recorded numerical evidence from evidence currently accepted under this design, kind, subject and role, with the same validated relationship required of the summary as of the detail row, for catalog and regeneration sources. Without a warehouse the report is HISTORICAL_INSPECTION and asserts nothing about custody. Cell verification is read from the current closure report, and a withdrawn verification is named beside the earlier certificate's flag. deletion_eligible_today is removed: the metadata result is a CONDITIONAL_PREVIEW that lists what it did not check, and the complete gate stays in the deletion path"
+  },
+  "RP134": {
+   "status": "DONE",
+   "what": "the twelve retained records re-checked on WORKER_B against the currently accepted chain, read-only, 0.24 CPU s, no array read. Eleven sources stand: the three T=96 catalog acceptances under BOUND_INVENTORY and eight regeneration acceptances under a dated LEGACY_FIELD_DEFINITIONS_MATCH whose limits are recorded. T=192 s2021 has no numerical evidence and states all four reasons. Nothing is preview-eligible; no production prediction was deleted; the three T=96 arrays remain on disk",
+   "successor_revalidation": "docs/audits/evidence/d3_k5_20260917/RP134/REVALIDATION_2026_09_23.json (the RP131 one is preserved)",
+   "errata": "dated errata appended beside SATOSHI_RP128_RP131_RETURN_2026_09_23.md, correcting four overbroad claims without deleting them",
+   "qualification_standing": "RP136 confirms it: matching field tolerances alone does not establish histogram bins/ranges, quantile lists, MI bins, ACF lags or time-block populations for the eight legacy regeneration records. The limitation is retained unless the definitions can be established from the bound producer revision/configuration; no full-numerical claim is made for missing scientific definitions"
+  },
+  "cost": "393 CPU seconds of the 1,800 reserved for retention repairs, inside the preceding 14,400 total; no GPU seconds by Satoshi; suite 124 passed, 1 skipped",
+  "return": "docs/audits/work_plan/SATOSHI_RP132_RP134_RETURN_2026_09_23.md"
  }
 }

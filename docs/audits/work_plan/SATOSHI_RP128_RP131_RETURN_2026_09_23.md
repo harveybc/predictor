@@ -120,3 +120,39 @@ between certifying a catalog and verifying a cell, and whether the deletion gate
 read from the terminal's own field, including the contradiction case; (d) the boolean typing at depth; (e) the read-only
 revalidation as a way to reuse valid evidence instead of recomputing it, and whether the re-issued T = 96 certificates are
 scoped honestly; (f) the dated errata on the previous return.
+
+---
+
+## Dated errata, 2026-09-23 (RP134), appended and not substituted
+
+Musashi's RP131 review executed two counterexamples that this return's own claims did not survive. The text above is preserved
+exactly as it was published; these are the corrections, beside it.
+
+1. **"judged again from their own recorded content" was overbroad.** The certificate that produced the acceptance column read
+   the comparison's SUMMARY lists (`families_complete`, `unchecked`, `disagreements`) and not the field results underneath them.
+   An accepted acceptance with zero recorded fields, and one with a DISAGREEMENT on `global.mae`, both certified
+   FULL_INDEPENDENT_NUMERIC and both deleted the array through the real API. The correct statement for that round is: the class
+   was derived from the record's summary, which the record's own field results could contradict. RP132 replaced the derivation
+   with the field-level one; the eleven numerical reductions and every MSE/MAE value are unaffected.
+
+2. **"deletion eligible today" was a second, weaker gate and its `no` values were right for the wrong reason.** That column was
+   computed from metadata alone — no backup, no content identity, no aliases, no readers — while being named as if it were the
+   decision. Each cell's `no` happened to agree with the real gate, but the column could also have said `yes` where the real gate
+   refused: with the current closure's row set to unverified, the RP131 reporting function still reported the cell verified and
+   eligible while `deletion_gate` correctly refused. RP133 removed the column; the metadata result is now a CONDITIONAL PREVIEW
+   that lists what it did not check, and the complete gate lives only in the deletion path.
+
+3. **"published as accepted evidence" did not mean the sources were checked as currently accepted.** The revalidation selected a
+   numerical class regardless of whether the warehouse still bound that evidence to this design, subject and role; an empty
+   warehouse response produced `accepted: false` in the detail row and an accepted cell in the summary. RP133 requires the same
+   validated relationship in the summary as in the row, for catalog and regeneration alike, and labels a run without custody as a
+   historical inspection.
+
+4. **"14/14 families independently checked", in the owner-facing table, rested on the same summary.** Under the repaired
+   validator the eleven sources still stand, but two of them now carry a named qualification rather than a bare count: the three
+   T = 96 catalog certificates are read under the bound inventory, and the eight regeneration certificates are read under a dated
+   field-level reuse whose limits are recorded, because the code that wrote them never recorded the family-level parameters.
+   The successor revalidation of 2026-09-23 is the current statement; this one is historical.
+
+No measured value in this return changes. The corrections are about what the evidence was checked to establish, not about the
+numbers it established.
