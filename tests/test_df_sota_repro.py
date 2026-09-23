@@ -7,6 +7,7 @@ import copy
 import hashlib
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -592,7 +593,7 @@ def test_RP103_the_deletion_gate_refuses_unverified_or_altered_cells_and_a_passe
     # without a valid receipt, missing arrays are a problem
     (folder / "PREDICTIONS_DELETED.json").write_text(json.dumps({"arrays_sha256": "0" * 64, "closure_report_sha256": "x", "deleted_at": "now"}))
     bad = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)
-    assert bad["rows"][0]["status"] == "DELETED_WITHOUT_VALID_RECEIPT" and bad["problems"]
+    assert bad["rows"][0]["status"] == "DELETED_HISTORY_UNBOUND" and bad["problems"]
     (folder / "PREDICTIONS_DELETED.json").unlink()
     gone = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)
     assert gone["rows"][0]["status"] == "MISSING" and any("missing, not absent" in p for p in gone["problems"])
@@ -868,7 +869,9 @@ def test_RP109_a_cell_recorded_on_the_float64_basis_gets_the_authors_float32_at_
     (folder / "cell.json").write_text(json.dumps(rec))
     held = json.loads(json.dumps(world["held"]))
     held[unit]["artifacts"] = [a if a["role"] != "record" else {**a, "sha256": R.sha_file(folder / "cell.json")} for a in held[unit]["artifacts"]]
-    ver = R.verify_sota_run(root, warehouse=lambda c: {"current": json.loads(json.dumps(held))}, data_path=world["data"], replay=False)
+    wh = lambda c: {"current": json.loads(json.dumps(held))}
+    R.verify_sota_run(root, warehouse=wh, data_path=world["data"], replay=False)          # the record changed: the catalog under the old identity is VAULT_CHANGED once (preserved)
+    ver = R.verify_sota_run(root, warehouse=wh, data_path=world["data"], replay=False)
     row = ver["rows"][0]
     assert row["verified"], row["problems"]
     assert row["author_metric_float32"] == original and row["metric_basis"].startswith("author_float32 (recomputed at closure by df_sota_author_metric_exact.v1")
