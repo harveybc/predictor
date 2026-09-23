@@ -1372,13 +1372,23 @@
    "what": "require_acceptance removed from deletion_preflight and delete_predictions; the accepted chain and the verified durable backup are checked in every callable path including resumption; dry runs stay non-destructive and report the same failed prerequisites"
   },
   "RP126": {
-   "status": "RUNNING",
-   "what": "the corrected checks applied to all twelve cells on WORKER_B: the three retained H96 catalogs pass the full independent comparison (14 families, none unchecked, no disagreement; their only refusal is the missing accepted replay), and the nine deleted cells are regenerated one bounded cell at a time and checked family by family before their temporaries are removed",
-   "partial_findings": "the three retained H96 catalogs pass the FULL independent comparison (14 families, none unchecked, no disagreement; their only refusal remains the missing accepted replay); T=192 s2022 and s2023 regenerate bit-identically and pass all 14 families; T=192 s2021, trained on the coordinator's RTX 4070 Laptop, regenerates NOT bit-identically on the admitted 5090 (the same cross-device numerical difference that fails the H96 replay) and its acceptance REFUSES with nine family disagreements, so its catalog cannot be independently certified without an inference run on the device that produced it"
+   "status": "DONE",
+   "coverage": "11 of 12 cells carry a full independent estimator acceptance (14 declared families, none unchecked, no disagreement): the three retained T=96 catalogs in place and eight deleted cells through bit-identical regeneration on the admitted 5090, temporaries removed with receipts. T=192 seed 2021 (trained on the coordinator's RTX 4070 Laptop) does NOT regenerate identically on the 5090 and its acceptance REFUSES with nine family disagreements; certifying its catalog needs its original device",
+   "largest_disagreement_in_accepted_cells": "3.6e-12 (raw kurtosis)"
   },
   "RP127": {
-   "status": "PENDING",
-   "errata": "the RP114-RP121 return carries a dated erratum for its 'every family', 'cannot be skipped' and 'acceptance, not resolution' claims; no history deleted"
+   "status": "RETURNED",
+   "return": "docs/audits/work_plan/SATOSHI_RP122_RP127_RETURN_2026_09_23.md",
+   "head": "c7c354e9",
+   "closure": "report sha256 211e6231… (successor; scores unchanged: T=192 0.157645/0.252163, T=336 0.164480/0.262985, T=720 0.190226/0.290617 OPERATIONAL_AGREEMENT; T=96 MEASURED_REPLAY_UNVERIFIED; average NOT_COMPUTED over a denominator of four)",
+   "evidence": "docs/audits/evidence/d3_k5_20260917/{RP122,RP127}/",
+   "accepted_evidence_registry": "56 entries (4 closure reports, 18 catalog acceptances, 34 regeneration records)",
+   "errata": "the RP114-RP121 return keeps its text and carries dated errata for its 'every family', 'cannot be skipped' and 'acceptance, not resolution' claims",
+   "suites": "WORKER_A: sota tool 98 passed + 1 skipped (76.5 s, 1.37 GB); closure/contract/block/financial 117 passed + 2 deselected (165 s, 2.96 GB); olap store 106 passed + 1 skipped on SQLite and DuckDB; lake adopters 4 skipped",
+   "open_for_owner": [
+    "cooling confirmation for WORKER_A's GPU (T=96 replay)",
+    "an inference run on the coordinator's GPU would be needed to certify T=192 seed 2021's catalog independently"
+   ]
   }
  }
 }

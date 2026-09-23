@@ -680,3 +680,20 @@ checkpoints en la 5090 externa admitida: **bit a bit identicas a las originales*
 preservado. Los doce catalogos aceptados y publicados (peor oraculo interno 1.1·10⁻¹⁶). Protocolo B: corregido (3 y 4 parches por
 canal, poblacion de prueba identica) y **medido** con un piloto acotado en la 5090 (0.055-0.060 s por paso, 6.6 GiB de VRAM),
 proyectado en ~4 h para doce celdas; sin campana lanzada. Sin borrados nuevos en esta ronda.
+
+**Ejecutado por Satoshi (23-sep, RP122-RP127, pendiente de revision):** [retorno](../audits/work_plan/SATOSHI_RP122_RP127_RETURN_2026_09_23.md),
+evidencia en `docs/audits/evidence/d3_k5_20260917/{RP122,RP127}/`. Los tres hallazgos del dictamen RP121 reproducidos y
+reparados: (1) el catalogo aceptaba autocorrelaciones y cuantiles plausibles pero falsos y trataba un valor ausente como
+diferencia cero -> se declara el inventario finito de estimadores (14 familias con poblacion, eje, orientacion, reduccion,
+parametros, condicion de indefinicion y tolerancia) y una implementacion independiente los recomputa sobre LA MISMA poblacion
+(autocorrelacion sobre origenes de ventana por paso fijo, cuantiles por la CDF del histograma declarado, linea base desde el
+cargador del autor), comparando campo por campo con cobertura explicita; (2) la aceptacion leia el TIPO de evidencia del
+registro local -> ahora tipo, sujeto, rol y diseno se leen del terminal aceptado y el registro es solo una pista; (3) la API
+publica permitia `require_acceptance=False` -> el parametro se elimino y las pruebas inyectan una cadena aceptada fiel.
+Aplicado a las doce celdas: los tres catalogos de T=96 y ocho de las nueve celdas borradas (regeneradas bit a bit identicas en
+la 5090 admitida) pasan **las catorce familias sin discrepancias**; la novena, T=192 semilla 2021, fue entrenada en el
+coordinador y NO se regenera identica en la 5090, de modo que su catalogo no puede certificarse sin su dispositivo original y
+la aceptacion lo rechaza en vez de aparentarlo. Las puntuaciones no cambian: T=192 0.1576/0.2522, T=336 0.1645/0.2630 y
+T=720 0.1902/0.2906 en acuerdo operacional; T=96 medido sin replay aceptado; promedio de cuatro horizontes SIN CALCULAR sobre
+denominador cuatro. El retorno anterior conserva su texto con una **fe de erratas fechada** de sus tres afirmaciones
+demasiado amplias. Suites en WORKER_A: 98 + 117 + 106.
