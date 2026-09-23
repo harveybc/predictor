@@ -332,7 +332,13 @@ class StoredArray:
         return self[0:len(self)]
 
 
-AUTHOR_SCORER_ROUTE = "df_sota_author_metric_exact.v1"
+AUTHOR_SCORER_ROUTE = "df_sota_author_metric_exact.v2"
+AUTHOR_SCORER_ROUTE_SUPERSEDED = {"df_sota_author_metric_exact.v1": (
+    "SUPERSEDED 2026-09-23 (Musashi RP113 #4): v1 divided the float32 sum by float32(N). NumPy's mean divides by the element "
+    "count as an int64 scalar, which promotes the division to float64 and casts the quotient back to float32. The two differ "
+    "whenever float32(N) != N or the quotient rounds differently: at N = 16,777,217 with unit errors v1 returned 1.0 and the "
+    "author's function 0.9999999403953552. Cells whose element count is not exactly representable in float32 (T = 336 and "
+    "T = 720 here) were rescored with v2; their v1 values are retained as superseded.")}
 _PAIRWISE_LEAF = 1 << 22                                        # elements per leaf reduced by numpy itself (16 MB of float32)
 
 
@@ -346,6 +352,16 @@ def _pairwise_f32(leaf_sum, lo: int, n: int, leaf: int = _PAIRWISE_LEAF):
         return np.float32(leaf_sum(lo, n))
     n2 = n // 2; n2 -= n2 % 8
     return np.float32(_pairwise_f32(leaf_sum, lo, n2, leaf) + _pairwise_f32(leaf_sum, lo + n2, n - n2, leaf))
+
+
+def f32_mean(total, n: int):
+    """NumPy's own final step of `mean` on a float32 array, reproduced exactly: `numpy/_core/_methods.py::_mean` computes the
+    float32 sum, divides it by `rcount` — an int64 SCALAR, which promotes the division to float64 — and casts the quotient back
+    with `arr.dtype.type(...)`. Dividing by float32(N) instead is a different operation as soon as N is not exactly representable
+    in float32 (RP118)."""
+    if n <= 0:
+        raise SotaRefusal("REFUSED: a mean over an empty population")
+    return np.float32(np.float64(np.float32(total)) / np.float64(int(n)))
 
 
 def author_metric_exact(preds, trues, *, leaf: int = _PAIRWISE_LEAF) -> dict:
@@ -381,9 +397,9 @@ def author_metric_exact(preds, trues, *, leaf: int = _PAIRWISE_LEAF) -> dict:
     s_abs = _pairwise_f32(leaf_sum("abs"), 0, N, leaf)
     cache.update(w0=None)                                              # second pass reads again (the leaf order is identical)
     s_sq = _pairwise_f32(leaf_sum("sq"), 0, N, leaf)
-    n32 = np.float32(N)
-    return {"mae": float(np.float32(s_abs / n32)), "mse": float(np.float32(s_sq / n32)), "route": AUTHOR_SCORER_ROUTE, "elements": N, "leaf": max(int(leaf), 128),
-            "dtype": "float32", "reduction": "numpy pairwise tree replicated over the flattened C-order element index; mean = float32(sum)/float32(N)"}
+    return {"mae": float(f32_mean(s_abs, N)), "mse": float(f32_mean(s_sq, N)), "route": AUTHOR_SCORER_ROUTE, "elements": N, "leaf": max(int(leaf), 128),
+            "sum_abs_float32": float(s_abs), "sum_sq_float32": float(s_sq), "denominator_exact_in_float32": int(np.float32(N)) == N,
+            "dtype": "float32", "reduction": "numpy pairwise tree replicated over the flattened C-order element index; mean = numpy's own float32(float64(sum)/int64(N))"}
 
 
 def all_finite(a, step: int = 128) -> bool:

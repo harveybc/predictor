@@ -1276,3 +1276,53 @@ def test_RP112_the_metadata_backup_covers_the_evidence_the_deletion_approval_bin
     report_sha = R.sha_file(root / "REPORT.json")
     ok = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "backup" / "MANIFEST.json")
     assert ok["units"][unit]["state"] == "COMPLETE" and ok["units"][unit]["marker"]["approval"]["checkpoint_backed_up"] is False
+
+
+# --- RP114: Musashi's RP113 counterexamples, frozen against the real entry points ------------------------------------------------
+
+@pytest.mark.parametrize("n", [1, 7, 8193, (1 << 24) - 1, 1 << 24, (1 << 24) + 1, (1 << 24) + 3, 159164640, 312412608, 531190800, 1049515920, (1 << 30) + 7])
+def test_RP118_the_mean_denominator_is_numpys_int64_division_not_float32(n):
+    """Musashi RP113 #4: at N = 16,777,217 with unit errors the v1 route returned 1.0 and the author's function
+    0.9999999403953552. The denominator is tested alone, over the 2^24 boundary and at the real benchmark cardinalities
+    (T = 336 and T = 720 have counts that float32 cannot represent), against numpy's own arithmetic."""
+    for total in (np.float32(n), np.float32(n - 1), np.float32(0.0), np.float32(n) * np.float32(0.5), np.float32(3.7e7)):
+        expected = np.float32(np.float64(total) / np.float64(n))                    # numpy: float32 scalar / int64 scalar -> float64 -> cast
+        assert R.f32_mean(total, n) == expected
+        assert np.float32(total / np.intp(n)) == expected                            # the very promotion numpy performs
+    with pytest.raises(R.SotaRefusal):
+        R.f32_mean(np.float32(1.0), 0)
+
+
+def test_RP118_the_exact_route_matches_the_authors_function_across_the_2_24_boundary():
+    """The whole function, against the unmodified author operation, at the cardinality that broke v1 and its neighbours."""
+    metric = _author_metric()
+    for n in (8193, (1 << 24) - 1, 1 << 24, (1 << 24) + 1, (1 << 24) + 3):
+        pred = np.zeros(n, dtype=np.float32); true = np.ones(n, dtype=np.float32)
+        got = R.author_metric_exact(pred, true, leaf=1 << 20)
+        mae, mse = metric(pred, true)[:2]
+        assert got["mae"] == float(mae) == float(np.mean(np.abs(true - pred))), (n, got["mae"], float(mae))
+        assert got["mse"] == float(mse) and got["elements"] == n
+        del pred, true
+    # the sum is tested separately from the denominator: the pairwise replica against numpy's own reduction
+    rng = np.random.default_rng(3)
+    for n in (129, 5000, (1 << 20) + 17):
+        a = (rng.standard_normal(n).astype(np.float32) + np.float32(1000.0)).astype(np.float32)
+        leaf_sum = lambda lo, k: np.add.reduce(a[lo:lo + k], dtype=np.float32)
+        assert R._pairwise_f32(leaf_sum, 0, n, 1 << 20) == np.add.reduce(a, dtype=np.float32)
+    assert R.AUTHOR_SCORER_ROUTE == "df_sota_author_metric_exact.v2" and "df_sota_author_metric_exact.v1" in R.AUTHOR_SCORER_ROUTE_SUPERSEDED
+
+
+def test_RP118_a_magnitude_and_shape_sweep_still_matches_the_author_on_stored_and_memory_arrays(tmp_path):
+    metric = _author_metric()
+    rng = np.random.default_rng(11)
+    for shape, scale, offset in (((17, 3, 5), 1e-6, 0.0), ((257, 7, 11), 1.0, 1e4), ((41, 96, 321), 0.3, -5.0), ((1000, 4, 4), 1e3, 1e3)):
+        true = (rng.standard_normal(shape) * scale + offset).astype(np.float32)
+        pred = (true + rng.standard_normal(shape).astype(np.float32) * np.float32(scale)).astype(np.float32)
+        mae, mse = metric(pred, true)[:2]
+        for leaf in (128, 1 << 12, 1 << 22):
+            got = R.author_metric_exact(pred, true, leaf=leaf)
+            assert got["mae"] == float(mae) and got["mse"] == float(mse), (shape, scale, leaf)
+        np.savez(tmp_path / "a.npz", pred=pred, true=true)
+        stored = R.author_metric_exact(R.StoredArray(tmp_path / "a.npz", "pred"), R.StoredArray(tmp_path / "a.npz", "true"), leaf=1 << 12)
+        assert stored["mae"] == float(mae) and stored["mse"] == float(mse)
+        assert stored["denominator_exact_in_float32"] is True
