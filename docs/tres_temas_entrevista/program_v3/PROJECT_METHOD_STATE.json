@@ -25,18 +25,15 @@
  },
  "thermal_and_retention_override": {
   "date": "2026-09-22",
-  "scope": "owner travel period until explicit cooling-restored notice",
-  "coordinator_heavy_cpu_gpu_compression": "DISALLOWED",
-  "coordinator_role": "light orchestration and existing services only",
-  "remote_execution": "ONLY WORKER_B external RTX 5090 eligible for new GPU work; verify physical UUID and assert child device; check connection, utilization, memory, GPU AND host thermals; no internal GPU or coordinator fallback",
+  "scope": "Travel thermal hold released by explicit owner all-fans-functional confirmation on 2026-09-23; retention policy unchanged",
+  "cooling_restored_on": "2026-09-23",
+  "coordinator_heavy_cpu_gpu_compression": "CPU/GPU eligible after admission; no compression experiments under unchanged retention policy",
+  "coordinator_role": "orchestration and admitted independent original-device replay/work; protect existing services",
+  "remote_execution": "External5090 first; other GPUs eligible for useful independent work after physical UUID, thermal, memory, disk and workload admission; no silent sealed-cell migration",
   "owner_thermal_clarification": "2026-09-22: WORKER_A cooling unconfirmed; WORKER_B internal RTX 5070 Ti cooling unconfirmed; coordinator traveling without cooler. External RTX 5090 independently cooled per owner. Expected return tomorrow afternoon is not automatic authorization.",
-  "held_gpu_devices": [
-   "COORDINATOR GPU",
-   "WORKER_A GPU",
-   "WORKER_B internal RTX 5070 Ti"
-  ],
+  "held_gpu_devices": [],
   "worker_host_cpu_policy": "Bound CPU preparation, thread counts and concurrency; monitor host temperature independently of eGPU; no unbounded CPU fallback",
-  "local_batch_guard": "crispdm-run refuses new work when ~/.config/crispdm/coordinator-travel-hold exists; does not intercept direct process launches",
+  "local_batch_guard": "Travel marker archived as coordinator-travel-hold.released-20260923 following owner confirmation; regular admission guards remain",
   "artifact_policy": "THERMAL_AND_ARTIFACT_RETENTION_2026_09_22.md",
   "deletion_gate": "OWNER_SUPERSEDES_ARCHIVAL: no compression or permanent prediction archive; delete inventoried prediction copies including the last after independent analysis and durable verified metric catalog, with deletion receipts and no active reader/writer",
   "post_deletion_scope": "historically verified metrics retained; original prediction replay unavailable; never substitute a metrics vault for present-array verification",
@@ -46,13 +43,13 @@
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "RP131_REVIEWED_RETENTION_REPAIRS_SCOPED_RELEASED_L512_EXECUTION_ORDERED",
+  "status": "RP135_CONTINUATION_DISPATCHED_TWO_TRAINED_COOLING_RESTORED_REPAIRS_RETURN_PENDING",
   "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
   "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
   "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
   "runtime_exclusion_implemented": true,
   "policy": "SOTA_FIRST_2026_09_21.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP136_RP139_2026_09_23.md",
   "suspended_measurements": [
    "simplified E0/E1 extensions",
    "household context pilots",
@@ -87,24 +84,26 @@
   "science": {
    "task": "SOTA-REPRO",
    "order": "RP135",
-   "status": "HERMES_EXECUTOR_DISPATCHED_GPU_CHILD_NOT_YET_CONFIRMED",
-   "executor_task": "t_28e5c655",
+   "status": "TWO_TRAINED_TERMINALS_ACCEPTED_THIRD_TRAINING_OBSERVED_2224Z",
+   "executor_service": "crispdm-rp135-continuation-20260923.service",
+   "superseded_blocked_task": "t_28e5c655",
    "recipe": "TimeFilter dffde87e released ECL L512 block; 321 channels; four horizons x three seeds",
    "device": "Only admitted WORKER_B external RTX 5090",
    "does_not_depend_on": ["RP132-RP134 retention repair", "A original-device replays"],
-   "still_requires": ["sealed executable design", "governed inputs", "scientific path checks", "thermal/memory/disk/compute admission"],
+   "still_requires": ["fresh governed admission per remaining unit", "scientific path checks", "thermal/memory/disk/compute admission"],
+   "continuation_budget": "24000 CPU seconds and 8h wall, declared before continuation, prior costs preserved",
    "meaning": "Published-recipe reference construction, not isolated context effect, exact Table 9 identity or doctoral hypothesis confirmation"
   },
   "retention": {
    "orders": "RP132-RP134",
-   "status": "CHANGES_REQUIRED",
+   "status": "CODE_PUSHED_e473efbe_RETURN_PACKAGING_AND_REVIEW_PENDING",
    "cpu_budget_seconds": 1800,
    "budget_relation": "Within standing 14400-second round CPU ceiling",
    "production_deletion": "HELD",
    "science_blocking": false
   },
   "physical_waits": {
-   "scope": "Original-device historical replays only; unchanged explicit cooling confirmation requirements",
+   "scope": "Cooling confirmed. Verifier attempt ended: WORKER_A numerical retained metrics match, VAULT_CHANGED implementation digest prevented replay; COORDINATOR competing GPU utilization refused admission. Satoshi RP138 owns follow-up, no owner action required.",
    "science_blocking": false
   }
  },
@@ -228,7 +227,7 @@
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "RP132_RP135_ISSUED_RELEASED_L512_CAMPAIGN_AND_BOUNDED_NONBLOCKING_REPAIRS",
+ "handoff_status": "RP136_RP139_ISSUED_COOLING_RESTORED_CONCURRENT_RECOVERY_AND_EXPERIMENTS",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -267,16 +266,16 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "RP135 first: seal and execute existing published L512 campaign on admitted external 5090; retain arrays; no dependence on old-device replays or retention repair review",
-  "RP132: derive certificate from actual field results and bound inventory; preserve positive/negative controls",
-  "RP133: distinguish recorded comparisons, accepted custody and current closure; conditional readiness preview only",
-  "RP134: retained-metadata recheck and one scoped return; repair lane capped at 1800 CPU seconds within 14400 total; unresolved repair holds deletion, not independent science",
+  "RP136: finish existing repair return/evidence commits; preserve legacy definition limits; no deletion or blanket regeneration",
+  "RP137: supervise existing native RP135 service/real flock; expired Hermes task stays blocked; third cell training on external5090, nine queued; 24000 CPU-second/8h continuation allocation; no duplicate launch or refit",
+  "RP138: Musashi verifier performs original-device H96 and H192s2021 checks after cooling admission, then reconcile actual evidence without widened tolerances",
+  "RP139: durable forwarding, real process ownership/heartbeats, additive recovery provenance correction, one scientific-results-first return and prepare next matched intervention",
   "No adapted pilot, financial fit or private holdout access while SOTA reproduction is the active prerequisite"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP136_RP139_2026_09_23.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
   "concurrent_execution": "CONCURRENT_EXECUTION_2026_09_23.md",
   "execution_queue": "EXPERIMENT_EXECUTION_QUEUE.json",
@@ -366,7 +365,7 @@
     "rp127_external_review block",
     "rp131_external_review block"
    ],
-   "next_action": "RP135: execute published L512 reference campaign on admitted external 5090; RP132-RP134 retention repairs are separate and bounded; no wait for old-device replay",
+   "next_action": "RP136-RP139: finish L512 on external5090, original-device A checks in parallel after owner cooling confirmation, package existing repairs and reconcile recovered terminal provenance",
    "deliverable": "Full official benchmark reproduction with published metrics, matched naive, numerical agreement and provenance; not an adapted proxy"
   },
   {

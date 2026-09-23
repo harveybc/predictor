@@ -1,0 +1,13 @@
+[Unit]
+Description=Governance and warehouse SSH forwarding to worker %i
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ssh -NT -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o ConnectTimeout=10 -R 127.0.0.1:15055:127.0.0.1:5055 -R 127.0.0.1:15057:127.0.0.1:5057 %i
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

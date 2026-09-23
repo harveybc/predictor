@@ -3,7 +3,20 @@
 Owner instruction, 2026-09-22. Applies immediately to the active SOTA orders.
 This changes execution placement and storage, not the frozen ML recipe.
 
-## Thermal placement
+## Cooling restored, explicit owner notice 2026-09-23
+
+The owner has returned home and explicitly confirmed all fans functional.
+The travel-only holds below are historical, not current prohibitions. All GPUs
+are eligible subject to fresh physical-device, workload, host/GPU temperature,
+memory and disk admission. External RTX 5090 remains first choice. No silent
+migration of sealed cells, automatic host reboot or removal of ordinary guards.
+The coordinator's travel marker was archived with the release date. This does
+not restart any production store. Current allocation: L512 on external5090,
+original-device historical replays on WORKER_A and COORDINATOR in parallel.
+Internal WORKER_B GPU shares host resources: combined admission is mandatory.
+All prediction retention and no-compression rules remain unchanged.
+
+## Original travel placement (superseded thermally by the notice above)
 
 - Standing dispatch preference, independent of the temporary travel holds:
   WORKER_B's external RTX 5090 is the FIRST choice for GPU tasks, especially

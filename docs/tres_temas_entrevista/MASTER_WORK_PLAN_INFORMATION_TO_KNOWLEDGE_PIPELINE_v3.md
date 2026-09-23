@@ -1,5 +1,28 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+**Estado vigente, 23-sep tras regreso del owner:** refrigeracion confirmada en
+todos los equipos; GPUs elegibles tras admision, 5090 externa primera opcion.
+[Ordenes RP136-RP139](../handoffs/MUSASHI_SOTA_RP136_RP139_2026_09_23.md).
+Dos celdas L512 H96 entrenadas: MSE/MAE normalizados del autor
+0.125551/0.220453 y 0.125849/0.220934; aun no son una media de tres semillas ni
+reproduccion exacta de Tabla 9. Continuacion bajo servicio persistente
+`crispdm-rp135-continuation-20260923.service` con flock real: H96 semilla2023
+entrenando en la5090 a22:24Z (PID856355); nueve celdas siguientes en cola.
+Hermes `t_28e5c655` queda bloqueado/superado operacionalmente: su limite desde
+el inicio matutino expiraba cada reintento. No lanzar un ejecutor duplicado.
+Los servicios centrales no estaban caidos y no se reiniciaron. Segundo terminal
+recuperado sin entrenar otra vez, con errata de timestamps/conflicto a conciliar.
+La primera nueva entrega detecto ademas el lago SOTA detenido y deshabilitado:
+se habilito/inicio su unidad existente, sin cambiar receta, datos o configuracion.
+Intento historico paralelo terminado: metricas retenidas H96 identicas, pero
+VAULT_CHANGED por identidad del implementador impidio replay; coordinador
+rechazado por carga GPU competidora. Seguimiento de ambos enRP138, sin otra
+aprobacion del owner. Satoshi publica el retorno de reparaciones (`e473efbe`).
+Asignacion de continuacion: 24 000 s CPU / 8h wall para las diez celdas y su
+verificacion, previa a ejecutarlas, conservando aparte los costos anteriores.
+Las restricciones de viaje y estados "aun no entrenado" que siguen abajo son
+historia. No confundir este relevo con autorizacion para borrar predicciones.
+
 **Revision vigente RP131, 23-sep: avanzar experimentos y separar retencion.**
 [Dictamen independiente](../audits/work_plan/MUSASHI_RP128_RP131_REVIEW_2026_09_23.md)
 y [ordenes RP132-RP135](../handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md).
@@ -101,7 +124,7 @@ NO tiene aun una poblacion finita cerrada; no se declara que todo cabe. Cada
 asignacion usa el espacio real por filesystem, reserva operativa y crecimiento
 acumulado; no cuenta RAM/tmpfs, un NAS futuro ni borrados todavia no realizados.
 
-## Restriccion operativa vigente (22-sep-2026)
+## Restriccion de viaje historica (22-sep; levantada explicitamente el 23-sep)
 
 Preferencia permanente del owner: **la RTX 5090 externa de WORKER_B es la primera
 opcion GPU**, especialmente para tareas individuales, incluso cuando se levanten
@@ -139,7 +162,7 @@ nuevas mediciones de los pilotos simplificados E0/E1, contexto electrico y
 FIN-LOSS-OPT hasta establecer la referencia publicada correspondiente. No
 repetir ni ampliar esos pilotos como sustituto de una reproduccion fiel.
 Orden anterior ejecutada parcialmente: [RP90-RP97](../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md).
-Orden activa: [RP132-RP135](../handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md).
+Orden activa: [RP136-RP139](../handoffs/MUSASHI_SOTA_RP136_RP139_2026_09_23.md).
 Politica: [SOTA_FIRST](program_v3/SOTA_FIRST_2026_09_21.md).
 
 La prioridad inmediata es el benchmark Electricity/ECL de 321 clientes horarios
