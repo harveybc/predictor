@@ -24,6 +24,14 @@ acumulado; no cuenta RAM/tmpfs, un NAS futuro ni borrados todavia no realizados.
 
 ## Restriccion operativa vigente (22-sep-2026)
 
+Preferencia permanente del owner: **la RTX 5090 externa de WORKER_B es la primera
+opcion GPU**, especialmente para tareas individuales, incluso cuando se levanten
+las restricciones de los otros equipos. Distribuir por tiempo a resultado medido,
+no por reparto uniforme. Respetar excepciones de replay en dispositivo original.
+Tras una interrupcion electrica, verificar que regreso la eGPU, no solo el host;
+sin reinicio automatico ni fallback silencioso. No interrumpir la ronda activa
+para aplicar esta actualizacion documental.
+
 El coordinador esta de viaje sin refrigeracion externa: **sin nuevo trabajo
 pesado de CPU/GPU, replay o compresion local**. Aclaracion posterior del owner:
 **solo la RTX 5090 externa de WORKER_B es elegible para nuevo trabajo GPU**.

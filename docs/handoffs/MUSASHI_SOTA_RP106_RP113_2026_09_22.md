@@ -27,6 +27,16 @@ new storage, full-array transfer home or reduced recipe. Continue lightweight
 repairs/custody work while an original-device replay is held; a 5090 replay of a
 checkpoint trained elsewhere remains CROSS_DEVICE, never SAME_DEVICE.
 
+**Standing preference (owner follow-up):** the external RTX 5090 remains the
+FIRST choice even when other GPUs become available. Prioritize individual GPU
+jobs there; use secondary eligible GPUs only where useful parallelism, queue/
+transfer cost, compatibility or required original-device evidence justifies it.
+Do not rebalance or interrupt this running round merely to apply the preference.
+After a power interruption, confirm the external UUID, driver health and bounded
+CUDA execution; a reachable host with only its internal GPU is not recovery.
+No automatic host reboot or silent fallback. Record measured job costs rather
+than treating the owner's approximate speed ratios as universal benchmark facts.
+
 ## RP106: preserve PRE, make the real path fail correctly
 
 Preserve Musashi's probe/results unchanged. Before implementation, freeze tests

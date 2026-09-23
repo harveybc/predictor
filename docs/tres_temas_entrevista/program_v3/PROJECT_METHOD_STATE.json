@@ -1,5 +1,17 @@
 {
  "schema": "research_program_method_state.v1",
+ "gpu_dispatch_policy": {
+  "authority": "Owner standing instruction, 2026-09-22; persists after travel holds end",
+  "first_choice": "WORKER_B external RTX 5090, identified by physical UUID",
+  "priority": "Individual GPU jobs first; prefer measured time to result rather than equal allocation across devices",
+  "secondary_devices": "Only when eligible and justified by useful parallelism, queue/transfer cost, compatibility, external-device unavailability or required original-device replay",
+  "admission": "Existing thermal, memory, disk and workload guards remain; check actual child UUID",
+  "power_recovery": "Host online is insufficient: verify external UUID, driver health and bounded CUDA execution; no automatic reboot or silent internal-GPU fallback",
+  "running_work": "No interruption or migration of Satoshi's active round for this policy update",
+  "runtime_enforcement": "Documented dispatch requirement, not a new scheduler implementation",
+  "performance_ratios": "Owner-reported expectations; task projections require measured costs",
+  "future_ups": "Not provisioned; not counted as available infrastructure"
+ },
  "storage_capacity_assessment": {
   "date": "2026-09-22",
   "policy": "STORAGE_BUDGET_2026_09_22.md",

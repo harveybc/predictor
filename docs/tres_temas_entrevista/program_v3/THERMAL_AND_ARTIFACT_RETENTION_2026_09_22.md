@@ -5,6 +5,21 @@ This changes execution placement and storage, not the frozen ML recipe.
 
 ## Thermal placement
 
+- Standing dispatch preference, independent of the temporary travel holds:
+  WORKER_B's external RTX 5090 is the FIRST choice for GPU tasks, especially
+  individual jobs, even after other devices become eligible again. Do not
+  distribute work evenly merely to occupy all GPUs. Prefer earliest feasible
+  completion using measured runtime, queue, transfer and memory costs; the owner's
+  reported speed advantages are motivation, not measured per-task projections.
+  Other eligible GPUs are secondary for useful parallel work, incompatibility,
+  external-device unavailability or an explicitly required original-device replay.
+  This does not release current holds, migrate active jobs or authorize a restart.
+- After an external-power interruption, host reachability does not establish
+  that the eGPU returned correctly. Verify its physical UUID and driver state,
+  then an admitted bounded CUDA health check before dispatch. If missing or
+  unhealthy, stop admission to that device and diagnose; no silent internal-GPU
+  fallback or automatic host reboot. Preserve active work before any separately
+  coordinated recovery. Do not assume a future UPS is available infrastructure.
 - The traveling coordinator performs light orchestration only. No new heavy
   CPU/GPU training, inference replay, decompression sweeps or maximum-compression
   benchmarks there. Existing desktop and governance services remain untouched.
