@@ -1227,7 +1227,16 @@
    "deletion": "T=720 x3 deleted under the corrected per-content path with the approval bound to REPORT bc9d3388… and to the metadata backup manifest (84 files, 25.2 MB, metadata only): 12,594,204,672 bytes reclaimed, measured free disk 210.3 GiB afterwards; T=96 arrays retained (unverified), WORKER_A and omega copies untouched"
   },
   "RP113": {
-   "status": "PENDING"
+   "status": "RETURNED",
+   "return": "docs/audits/work_plan/SATOSHI_RP106_RP113_RETURN_2026_09_23.md",
+   "head": "74024c0b",
+   "final_closure": "REPORT sha256 b84a7767… (after the authorized T=720 deletion; the nine deleted cells are historically bound, three of them through accepted bit-identical regenerations); the closure that verified T=720 with its arrays is bc9d3388…",
+   "ledger": "19 attempts (12 with records, 7 retired or interrupted with an explicit NONE_RECORDED cost), 5.37 h measured wall time, 210.3 GiB free disk after the cleanup",
+   "open_for_owner": [
+    "cooling confirmation for WORKER_A's GPU: ~66 s of same-device replays would verify T=96 and unlock the four-horizon average",
+    "coordinator and WORKER_A copies of the T=96 arrays stay held under the thermal policy"
+   ],
+   "not_executed": "protocol B (Table 9, L=512): specified and costed (6-16 h on the admitted device), deliberately not run"
   },
   "RP104_suites_at_6175c98d_on_dragon": {
    "sota tool": "61 passed, 1 skipped, 49.4 s, 1.35 GB peak RSS",
