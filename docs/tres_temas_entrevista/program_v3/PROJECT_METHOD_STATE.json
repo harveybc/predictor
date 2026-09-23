@@ -46,13 +46,13 @@
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "RP121_REVIEWED_CHANGES_REQUIRED_NUMERICAL_COVERAGE_TYPED_ACCEPTANCE_AND_DELETION_API",
+  "status": "RP127_REVIEWED_CHANGES_REQUIRED_SCOPE_AND_DESIGN_AT_DESTRUCTIVE_CONSUMERS",
   "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
   "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
   "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
   "runtime_exclusion_implemented": true,
   "policy": "SOTA_FIRST_2026_09_21.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP122_RP127_2026_09_23.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md",
   "suspended_measurements": [
    "simplified E0/E1 extensions",
    "household context pilots",
@@ -65,6 +65,27 @@
    "core pretraining"
   ],
   "completion_requires": "All four horizons x three seeds, accepted recipe, original float32 scoring and scoped independent verification. Repair historical custody and content-specific deletion, preserve failed portability checks, qualify inferred device identity. No retraining to repair closure; no automatic coordinator or WORKER_A GPU resumption."
+ },
+ "rp127_external_review": {
+  "reviewed_commit": "a73e55b2dcad1265b7643f49fcfda810fcb7d801",
+  "disposition": "CHANGES_REQUIRED_INTEGRATION_GATES_MEASUREMENTS_PRESERVED",
+  "evidence": "../../audits/evidence/RP127_MUSASHI_REVIEW_2026_09_23/",
+  "executed_findings": [
+   "no-data domain-only catalog acceptance permits normal deletion despite wrong ACF",
+   "foreign design accepted through destructive caller; missing design accepted even with explicit expectation",
+   "boolean false accepted as numeric histogram count zero"
+  ],
+  "focal_suite": "98 passed, 1 skipped, 5 fork warnings; 90.06 seconds; WORKER_B bounded CPU-only",
+  "scope": "Actual-author disposable fixtures and stub warehouse; retained example reports inspected; no fresh production metric reduction or live warehouse query",
+  "retained_progress": "Independent numerical implementation detects prior ACF example; old API flag removed; keep eleven successful numerical comparisons subject to evidence-content checks, no blanket regeneration",
+  "physical_holds": [
+   "H96 original-device replay on WORKER_A requires explicit cooling confirmation and admission",
+   "H192 s2021 original-device inference on COORDINATOR requires explicit cooling confirmation and admission; identical output is not guaranteed"
+  ],
+  "gpu_work_by_reviewer": false,
+  "production_deletions_by_reviewer": 0,
+  "next_orders": "../../handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md",
+  "owner_action": "No new engineering permission. Physical cooling remains unconfirmed; complete software work independently."
  },
  "rp121_external_review": {
   "reviewed_commit": "316c67af0af317c345c6959681135ba622770584",
@@ -165,7 +186,7 @@
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "RP122_RP127_ISSUED_RP121_REVIEWED_FINITE_ACCEPTANCE_REPAIRS_NO_REFITTING",
+ "handoff_status": "RP128_RP131_ISSUED_RP127_REVIEWED_REUSE_NUMERIC_EVIDENCE_FIX_CONSUMER_GATES",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -204,21 +225,21 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "RP122-RP123: freeze executed PRE and validate accepted terminal kind, subject, design and artifact role instead of registry hints",
-  "RP124-RP125: independent estimator checks on declared axes/populations, reject missing defined values, remove public deletion bypass",
-  "RP126: complete finite twelve-cell numerical catalog coverage; bounded inference only when needed, no refitting",
-  "RP127: scoped closure and one return; T96 replay conditional on cooling; no verified four-horizon mean while unverified; no B factorial",
+  "RP128: freeze review PRE; separate domain-only inspection from full numeric acceptance and enforce coverage in destructive consumers",
+  "RP129: require accepted scientific-design identity in every evidence consumer; reject foreign, missing and contradictory identity",
+  "RP130: reject boolean-as-number and run actual entry-point regression/mutation tests",
+  "RP131: reuse sufficient retained numeric evidence, scoped metadata closure and one return; original-device work conditional on cooling; no fitting or B factorial",
   "No adapted pilot, financial fit or private holdout access while SOTA reproduction is the active prerequisite"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP122_RP127_2026_09_23.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
   "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-  "external_review": "../../audits/work_plan/MUSASHI_RP114_RP121_REVIEW_2026_09_23.md",
+  "external_review": "../../audits/work_plan/MUSASHI_RP122_RP127_REVIEW_2026_09_23.md",
   "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-  "return": "https://github.com/harveybc/predictor/blob/316c67af/docs/audits/work_plan/SATOSHI_RP114_RP121_RETURN_2026_09_23.md",
+  "return": "https://github.com/harveybc/predictor/blob/a73e55b2/docs/audits/work_plan/SATOSHI_RP122_RP127_RETURN_2026_09_23.md",
   "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
   "benchmark_registry": "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
   "fin_loss_opt_design": "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
@@ -297,9 +318,10 @@
     "rp90_rp97 block",
     "rp105_external_review block",
     "rp113_external_review block",
-    "rp121_external_review block"
+    "rp121_external_review block",
+    "rp127_external_review block"
    ],
-   "next_action": "RP122-RP127: typed accepted relationships; full numeric catalog checks; mandatory deletion API; twelve-cell scoped closure, no refitting",
+   "next_action": "RP128-RP131: integrate numeric scope and scientific-design identity into destructive consumers; reuse validated evidence; held-device work remains conditional",
    "deliverable": "Full official benchmark reproduction with published metrics, matched naive, numerical agreement and provenance; not an adapted proxy"
   },
   {

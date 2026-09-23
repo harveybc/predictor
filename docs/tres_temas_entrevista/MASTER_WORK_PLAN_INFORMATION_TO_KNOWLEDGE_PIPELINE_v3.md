@@ -1,12 +1,24 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
-**Revision vigente RP121, 23-sep:** [dictamen independiente](../audits/work_plan/MUSASHI_RP114_RP121_REVIEW_2026_09_23.md).
+**Revision vigente RP127, 23-sep:** [dictamen independiente](../audits/work_plan/MUSASHI_RP122_RP127_REVIEW_2026_09_23.md).
+Las comprobaciones numericas nuevas detectan los valores falsos anteriores.
+Persisten dos brechas reproducidas en la integracion: catalogo sin referencia
+numerica habilita borrado, y aceptacion de otro diseno pasa por la ruta destructiva.
+Ademas un booleano pasa como conteo numerico cero. No demuestra corrupcion real;
+no repetir entrenamiento ni las once reducciones cuya evidencia siga siendo valida.
+Orden activa: [RP128-RP131](../handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md).
+T96 mantiene replay pendiente y arrays; T192 semilla 2021 mantiene su score
+historico y catalogo pendiente de regeneracion identica. Las GPUs originales
+siguen retenidas hasta confirmacion fisica; las reparaciones no esperan ese hecho.
+Sin GPU, reinicio ni borrado real por Musashi en esta revision.
+
+**Revision historica RP121, 23-sep (superada por RP127):** [dictamen independiente](../audits/work_plan/MUSASHI_RP114_RP121_REVIEW_2026_09_23.md).
 Tres fallos reproducidos en fixtures CPU: catalogo acepta ACF/cuantiles falsos y
 correlacion nula aunque esta definida; registro local reetiqueta evidencia
 diagnostica como cierre; API permite borrar sin cadena aceptada mediante una
 opcion explicita. No prueba corrupcion de resultados reales ni exige reentrenar.
 Suite focal independiente: 85 passed, 1 skipped. No GPU ni borrado real por Musashi.
-Orden activa: [RP122-RP127](../handoffs/MUSASHI_SOTA_RP122_RP127_2026_09_23.md).
+Orden de esa revision: [RP122-RP127](../handoffs/MUSASHI_SOTA_RP122_RP127_2026_09_23.md).
 Corregir y terminar cobertura numerica por familia/celda, preservando scores y
 scorer oficial. T96 sigue MEDIDO / REPLAY_UNVERIFIED; no promedio verificado de
 cuatro horizontes ni borrado de sus arrays. Hay trabajo independiente de la
@@ -87,7 +99,7 @@ nuevas mediciones de los pilotos simplificados E0/E1, contexto electrico y
 FIN-LOSS-OPT hasta establecer la referencia publicada correspondiente. No
 repetir ni ampliar esos pilotos como sustituto de una reproduccion fiel.
 Orden anterior ejecutada parcialmente: [RP90-RP97](../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md).
-Orden activa: [RP122-RP127](../handoffs/MUSASHI_SOTA_RP122_RP127_2026_09_23.md).
+Orden activa: [RP128-RP131](../handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md).
 Politica: [SOTA_FIRST](program_v3/SOTA_FIRST_2026_09_21.md).
 
 La prioridad inmediata es el benchmark Electricity/ECL de 321 clientes horarios
