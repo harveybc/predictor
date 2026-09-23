@@ -1225,8 +1225,13 @@ def test_RP111_the_run_ledger_is_frozen_from_measured_costs_including_retired_at
     root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]
     import shutil
     shutil.copytree(root / "attempts" / unit, root / "attempts" / f"{unit}.failed.1790000000")
+    # an interrupted attempt that never reached its record must still appear, with its cost stated as not recorded
+    (root / "attempts" / f"{unit}.failed.1790000001").mkdir()
+    (root / "attempts" / f"{unit}.failed.1790000001" / "FAILED.json").write_text(json.dumps({"at": "2026-09-22T20:10:51Z", "error": "KeyboardInterrupt: "}))
     led = R.run_ledger(root, world["design"])
-    assert led["totals"]["attempts"] == 2 and led["totals"]["retired"] == 1 and led["totals"]["predictions_on_disk"] == 2
+    assert led["totals"]["attempts"] == 3 and led["totals"]["retired"] == 2 and led["totals"]["predictions_on_disk"] == 2
+    ghost = next(r for r in led["attempts"] if r["attempt"].endswith("1790000001"))
+    assert ghost["state"] == "RETIRED" and ghost["measured_cost"].startswith("NONE_RECORDED") and "KeyboardInterrupt" in ghost["failure"]
     assert led["totals"]["wall_seconds"] > 0 and led["measured_free_disk_bytes"] > 0 and (root / "RUN_LEDGER.json").is_file()
     row = next(r for r in led["attempts"] if r["state"] == "CURRENT")
     assert row["unit"] == unit and row["device_attribution"] == "CPU" and row["peak_rss_bytes"] and row["epochs_run"]

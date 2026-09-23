@@ -2164,12 +2164,27 @@ def run_ledger(root: Path, design: dict) -> dict:
     root = Path(root)
     rows, totals = [], {"wall_seconds": 0.0, "cpu_seconds": 0.0}
     for folder in sorted((root / "attempts").glob("*")):
-        rec_path = folder / "cell.json"
-        if not rec_path.is_file():
+        if not folder.is_dir():
             continue
-        try:
-            r = json.loads(rec_path.read_text())
-        except Exception:                                           # noqa: BLE001
+        rec_path = folder / "cell.json"
+        r = {}
+        if rec_path.is_file():
+            try:
+                r = json.loads(rec_path.read_text())
+            except Exception:                                       # noqa: BLE001
+                r = {}
+        if not r:
+            # a retired or interrupted attempt without a record: it still ran, and what it cost is what its own files say
+            failed = folder / "FAILED.json"
+            log = folder / "author_stdout.log"
+            rows.append({"attempt": folder.name, "unit": folder.name.split(".failed.")[0], "state": ("RETIRED" if ".failed." in folder.name else "NO_RECORD"),
+                         "host": None, "device": None, "device_uuid": None, "device_attribution": "NO_RECORD",
+                         "wall_seconds": None, "cpu_seconds": None, "peak_rss_bytes": None, "peak_gpu_allocated_bytes": None,
+                         "epochs_run": (len([1 for l in log.read_text(errors="ignore").splitlines() if l.startswith("Epoch:") and "Train Loss" in l]) if log.is_file() else None),
+                         "operational_patches": [], "at": (json.loads(failed.read_text()).get("at") if failed.is_file() else None),
+                         "predictions_on_disk": (folder / "arrays.npz").is_file(),
+                         "failure": (json.loads(failed.read_text()).get("error") if failed.is_file() else "no FAILED.json"),
+                         "measured_cost": "NONE_RECORDED: the attempt did not reach its record"})
             continue
         cost = r.get("cost") or {}
         att = device_attribution(r)
@@ -2195,6 +2210,7 @@ def run_ledger(root: Path, design: dict) -> dict:
     vfs = os.statvfs(root)
     out = {"schema": "df_sota_run_ledger.v1", "at": now_iso(), "host": socket.gethostname(), "root": str(root), "design_sha256": design["design_sha256"],
            "attempts": rows, "totals": {**totals, "attempts": len(rows), "retired": len([r for r in rows if r["state"] == "RETIRED"]),
+                                        "without_measured_cost": len([r for r in rows if r.get("measured_cost")]),
                                         "predictions_on_disk": len([r for r in rows if r["predictions_on_disk"]])},
            "measured_free_disk_bytes": vfs.f_bavail * vfs.f_frsize,
            "scope": "MEASURED costs of the attempts this root holds; retired attempts are kept and counted; nothing here is projected"}
