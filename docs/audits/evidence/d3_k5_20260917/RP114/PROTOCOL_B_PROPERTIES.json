@@ -1,0 +1,110 @@
+{
+ "A (Table 8)": [
+  {
+   "pred_len": 96,
+   "train_windows": 18221,
+   "val_windows": 2537,
+   "test_windows": 5165,
+   "num_patches_per_channel": 3,
+   "tokens_L": 963,
+   "patch_len": 32,
+   "top_p": 0.5,
+   "dropout": 0.5,
+   "test_rows_implied": 5260,
+   "mask_elements": 2782107
+  },
+  {
+   "pred_len": 192,
+   "train_windows": 18125,
+   "val_windows": 2441,
+   "test_windows": 5069,
+   "num_patches_per_channel": 3,
+   "tokens_L": 963,
+   "patch_len": 32,
+   "top_p": 0.5,
+   "dropout": 0.5,
+   "test_rows_implied": 5260,
+   "mask_elements": 2782107
+  },
+  {
+   "pred_len": 336,
+   "train_windows": 17981,
+   "val_windows": 2297,
+   "test_windows": 4925,
+   "num_patches_per_channel": 3,
+   "tokens_L": 963,
+   "patch_len": 32,
+   "top_p": 0.5,
+   "dropout": 0.5,
+   "test_rows_implied": 5260,
+   "mask_elements": 2782107
+  },
+  {
+   "pred_len": 720,
+   "train_windows": 17597,
+   "val_windows": 1913,
+   "test_windows": 4541,
+   "num_patches_per_channel": 3,
+   "tokens_L": 963,
+   "patch_len": 32,
+   "top_p": 0.5,
+   "dropout": 0.5,
+   "test_rows_implied": 5260,
+   "mask_elements": 2782107
+  }
+ ],
+ "B (Table 9 script)": [
+  {
+   "pred_len": 96,
+   "train_windows": 17805,
+   "val_windows": 2537,
+   "test_windows": 5165,
+   "num_patches_per_channel": 4,
+   "tokens_L": 1284,
+   "patch_len": 128,
+   "top_p": 0.0,
+   "dropout": 0.5,
+   "test_rows_implied": 5260,
+   "mask_elements": 4945968
+  },
+  {
+   "pred_len": 192,
+   "train_windows": 17709,
+   "val_windows": 2441,
+   "test_windows": 5069,
+   "num_patches_per_channel": 4,
+   "tokens_L": 1284,
+   "patch_len": 128,
+   "top_p": 0.0,
+   "dropout": 0.5,
+   "test_rows_implied": 5260,
+   "mask_elements": 4945968
+  },
+  {
+   "pred_len": 336,
+   "train_windows": 17565,
+   "val_windows": 2297,
+   "test_windows": 4925,
+   "num_patches_per_channel": 4,
+   "tokens_L": 1284,
+   "patch_len": 128,
+   "top_p": 0.0,
+   "dropout": 0.5,
+   "test_rows_implied": 5260,
+   "mask_elements": 4945968
+  },
+  {
+   "pred_len": 720,
+   "train_windows": 17181,
+   "val_windows": 1913,
+   "test_windows": 4541,
+   "num_patches_per_channel": 4,
+   "tokens_L": 1284,
+   "patch_len": 128,
+   "top_p": 0.0,
+   "dropout": 0.5,
+   "test_rows_implied": 5260,
+   "mask_elements": 4945968
+  }
+ ]
+}

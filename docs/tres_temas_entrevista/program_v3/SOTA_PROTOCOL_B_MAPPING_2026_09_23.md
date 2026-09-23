@@ -40,15 +40,42 @@ Differences from protocol A (L = 96, Table 8) that matter and are not defaults: 
 4. The frozen agreement rule, the metric space and reduction, the data identity, the seeds and the replay rule are the
    same as protocol A's; only the recipe above changes. Seeds {2021, 2022, 2023}, as in protocol A.
 
-## Cost, from measured protocol A costs on the admitted device
+## What actually changes, verified against the pinned loader and model
 
-Protocol A on the external RTX 5090 measured 15.5 min (T = 192), 15.3 min (T = 336) and 20.8 min (T = 720) per cell, with a
-peak host RSS of 2.7–7.1 GiB and ≤ 5.2 GiB of VRAM. Protocol B multiplies the token count per channel by 512/96 ≈ 5.3 at the
-patch embedding while keeping four patches per channel, and its test population shrinks (fewer windows fit). A conservative
-projection is **2–4× protocol A's wall time per cell**, i.e. roughly 30–80 min per cell and **6–16 h for twelve cells** on one
-device, with VRAM well inside the 32 GiB of the admitted 5090 and host RSS bounded by the same disk-backed evaluation.
-This is a projection from measured cells, not a measurement.
+Read from the code at dffde87e with the governed ECL file, not from comments
+([PROTOCOL_B_PROPERTIES.json](../../audits/evidence/d3_k5_20260917/RP114/PROTOCOL_B_PROPERTIES.json)):
 
+| property | protocol A (L = 96, patch 32) | protocol B (L = 512, patch 128) |
+|---|---|---|
+| patches per channel `(L − P)/P + 1` | 3 | 4 |
+| token sequence per sample `C × patches` | 963 | 1284 |
+| graph mask elements `3 × tokens²` | 2,782,107 | 4,945,968 |
+| training windows (T = 96 … 720) | 18221 / 18125 / 17981 / 17597 | 17805 / 17709 / 17565 / 17181 |
+| validation windows | 2537 / 2441 / 2297 / 1913 | identical |
+| **test windows** | 5165 / 5069 / 4925 / 4541 | **identical** |
+
+Two corrections to the earlier version of this document, both from Musashi's RP113 review and both confirmed above:
+
+1. The input is not tokenised 512/96 ≈ 5.3 times more finely. The patch length grows with the input, so the token count rises
+   from 963 to 1284 (×1.33) and the mask from 2.78 M to 4.95 M elements (×1.78). What grows per token is the patch projection's
+   input width (32 → 128 values per patch).
+2. The test population does NOT shrink because L grows. The pinned custom loader prepends `seq_len` rows at the test border, so
+   the count is `num_test − pred_len + 1` at a fixed split and horizon: 5260 − T + 1 in both protocols, exactly the populations
+   already measured for protocol A. Training windows are the only population that shrinks (by 416 windows, ~2 %).
+
+## Cost: UNMEASURED
+
+No protocol B cell, and no bounded protocol B pilot, has been executed. The earlier "2–4× protocol A, 6–16 h for twelve cells,
+VRAM fits" sentence was an assumption derived from a wrong token-count argument; it is withdrawn. **The runtime, VRAM, host
+memory, disk and scoring cost of protocol B are UNMEASURED.** Protocol A's measured costs on the admitted external RTX 5090
+(15.3–15.6 min per T = 192/336 cell, 20.6–20.8 min per T = 720 cell, ≤ 5.2 GiB VRAM, 2.7–7.1 GiB peak host RSS) describe
+protocol A only and are not admission evidence for protocol B.
+
+Before any protocol B campaign is scheduled, the resource question is settled by a **bounded, governed, exact-recipe pilot** on
+the admitted external device: the author's L = 512 arguments unchanged, a fixed small number of optimizer steps and one
+validation pass, measuring wall time per iteration, peak VRAM, peak host RSS, disk and the cost of one bounded evaluation —
+with no test scoring, no checkpoint selection and no number that could influence a recipe choice. The finite population (12
+cells) is then projected from those measurements and stated as a projection.
 ## What executing it would require
 
 The same governed path as protocol A: seal a design with `protocol="Lsearched"`, acquire the same governed ECL file, execute
