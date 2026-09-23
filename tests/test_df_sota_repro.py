@@ -501,7 +501,7 @@ def test_RP101_the_bounded_adapter_reproduces_the_authors_test_elementwise_with_
     # RP109: a budget below the author function's temporaries still yields the author's float32 reduction, through the exact
     # bounded route (bit-equal to the author's function run above); the author's own function is then reported not executed
     c = run("budget", bounded=True, author_metric_budget_bytes=1)
-    assert c["author_metric"] == a["author_metric"] and c["author_metric_state"].startswith("EXECUTED: df_sota_author_metric_exact.v1")
+    assert c["author_metric"] == a["author_metric"] and c["author_metric_state"].startswith("EXECUTED: df_sota_author_metric_exact.v2")
     assert c["author_scorer_parity"]["author_function"] is None and "not executed" in c["author_scorer_parity"]["why"]
     assert b["author_scorer_parity"]["bit_equal"] is True and abs(c["independent_metric_float64"]["mse"] - a["author_metric"]["mse"]) <= 1e-6
     # through run_cell: the artifact and the record carry the adapter identity, the memmaps are gone, the checkpoint is the author's
@@ -613,7 +613,7 @@ def test_RP101_a_record_without_the_authors_float32_reduction_verifies_on_its_fl
     row = ver["rows"][0]
     assert row["verified"], ver["problems"]
     # RP109: the closure recomputes the author's float32 reduction through the exact route; float64 stays a separately named check
-    assert row["metric_basis"].startswith("author_float32 (recomputed at closure by df_sota_author_metric_exact.v1") and row["author_metric_float32"] == world["record"]["author_metric_float32"]
+    assert row["metric_basis"].startswith("author_float32 (recomputed at closure by df_sota_author_metric_exact.v2") and row["author_metric_float32"] == world["record"]["author_metric_float32"]
     assert abs(row["recomputed"]["independent_float64"]["mae"] - rec["independent_metric_float64"]["mae"]) <= 1e-9 and row["recomputed"]["author_scorer_parity"]["bit_equal"] is True
     assert row["replay"]["path"].startswith("fresh process") and row["replay"]["replayed_metric_float64"] and row["replay"]["true_sha256_replayed"] == rec["true_sha256"]
     t = R.table(json.loads((root / "DESIGN.json").read_text()), ver)
@@ -874,7 +874,7 @@ def test_RP109_a_cell_recorded_on_the_float64_basis_gets_the_authors_float32_at_
     ver = R.verify_sota_run(root, warehouse=wh, data_path=world["data"], replay=False)
     row = ver["rows"][0]
     assert row["verified"], row["problems"]
-    assert row["author_metric_float32"] == original and row["metric_basis"].startswith("author_float32 (recomputed at closure by df_sota_author_metric_exact.v1")
+    assert row["author_metric_float32"] == original and row["metric_basis"].startswith("author_float32 (recomputed at closure by df_sota_author_metric_exact.v2")
     assert row["recomputed"]["independent_float64"]["mae"] != original["mae"] or True          # float64 is a separate named check, never the basis here
     assert R.table(world["design"], ver)["rows"][0]["metric_basis"][0].startswith("author_float32 (recomputed")
 
@@ -1064,7 +1064,7 @@ def test_RP109_regeneration_by_inference_is_labelled_and_compared_with_the_delet
     out = R.regenerate_cell(root, design, unit, data_path=world["data"], device="cpu")
     assert out["label"] == "REGENERATED_BY_INFERENCE_FROM_RETAINED_CHECKPOINT"
     assert out["pred_matches_original"] and out["true_matches_original"] and out["identity"].startswith("BIT_IDENTICAL")
-    assert out["author_metric"] == world["record"]["author_metric_float32"] and out["author_metric_state"].startswith("EXECUTED: df_sota_author_metric_exact.v1")
+    assert out["author_metric"] == world["record"]["author_metric_float32"] and out["author_metric_state"].startswith("EXECUTED: df_sota_author_metric_exact.v2")
     assert (root / "attempts" / unit / "regenerated" / "REGENERATION.json").is_file()
     assert (root / "attempts" / unit / "regenerated" / "REGENERATED_pred.npy").is_file()
     assert R.sha_npy_body(root / "attempts" / unit / "regenerated" / "REGENERATED_pred.npy") == world["record"]["pred_sha256"]
