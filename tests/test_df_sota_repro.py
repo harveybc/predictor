@@ -132,7 +132,7 @@ def _accept_evidence(world, root, kind, files, subject):
 
 def _ready(root, unit, world, where):
     """The mandatory local prerequisites of a deletion (RP116): an independently accepted catalog and a verified backup. Tests
-    whose subject is not the acceptance chain pass require_acceptance=False; the chain itself is tested separately."""
+    whose subject is not the acceptance chain get a faithful accepted chain from the fixture, never a disabled prerequisite."""
     R.accept_catalog(root, json.loads((root / "DESIGN.json").read_text()), unit, data_path=world["data"])
     _accept_evidence(world, root, "closure", {"closure_report": root / "REPORT.json"}, "closure")
     _accept_evidence(world, root, "catalog", {"catalog_acceptance": root / "attempts" / unit / "CATALOG_ACCEPTANCE.json",
@@ -1330,7 +1330,12 @@ def test_RP112_the_metadata_backup_covers_the_evidence_the_deletion_approval_bin
     report_sha = R.sha_file(root / "REPORT.json")
     R.accept_catalog(root, json.loads((root / "DESIGN.json").read_text()), unit, data_path=world["data"])
     out = R.metadata_backup(root, tmp_path / "backup")
-    ok = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "backup" / "MANIFEST.json", require_acceptance=False)
+    _accept_evidence(world, root, "closure", {"closure_report": root / "REPORT.json"}, "closure")
+    _accept_evidence(world, root, "catalog", {"catalog_acceptance": root / "attempts" / unit / "CATALOG_ACCEPTANCE.json",
+                                              "metrics_vault": root / "attempts" / unit / "METRICS_VAULT.json"}, unit)
+    out = R.metadata_backup(root, tmp_path / "backup")
+    ok = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "backup" / "MANIFEST.json",
+                              receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=_wh(world))
     assert ok["units"][unit]["state"] == "COMPLETE" and ok["units"][unit]["marker"]["approval"]["backup"]["pass"]
     assert f"attempts/{unit}/CATALOG_ACCEPTANCE.json" in out["files"]
 
@@ -1436,7 +1441,7 @@ def test_RP115_a_rewritten_report_with_a_recomputed_pointer_is_refused_because_i
     R.metadata_backup(root, tmp_path / "bk")
     receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
     out = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "bk" / "MANIFEST.json",
-                               receipts=receipts, warehouse=wh, require_acceptance=False)
+                               receipts=receipts, warehouse=wh)
     assert out["units"][unit]["state"] == "COMPLETE"
     base = R.verify_sota_run(root, warehouse=wh, data_path=world["data"], replay=False)
     assert base["historically_verified_units"] == [unit] and base["rows"][0]["author_metric_float32"] == world["record"]["author_metric_float32"]
@@ -1464,7 +1469,7 @@ def test_RP115_a_fabricated_regeneration_cannot_replace_a_score(world, tmp_path,
     R.metadata_backup(root, tmp_path / "bk2")
     receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
     R.delete_predictions(root, [unit], accepted_report_sha256=R.sha_file(root / "REPORT.json"), backup_manifest=tmp_path / "bk2" / "MANIFEST.json",
-                         receipts=receipts, warehouse=wh, require_acceptance=False)
+                         receipts=receipts, warehouse=wh)
     rec = json.loads((folder / "cell.json").read_text())
     (folder / "regenerated").mkdir()
     (folder / "regenerated" / "REGENERATION.json").write_text(json.dumps({"identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
@@ -1507,14 +1512,14 @@ def test_RP116_deletion_without_approval_backup_or_catalog_acceptance_refuses(wo
     import shutil as sh
     sh.rmtree(tmp_path / "bk3" / "attempts")
     out = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "bk3" / "MANIFEST.json",
-                               receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=wh, require_acceptance=False)
+                               receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=wh)
     assert out["units"][unit]["state"] == "REFUSED" and any("BACKUP_ABSENT" in r for r in out["units"][unit]["preflight"]["refusals"])
     assert (folder / "arrays.npz").is_file()
     # a corrupt backup copy is not a backup either
     R.metadata_backup(root, tmp_path / "bk4")
     (tmp_path / "bk4" / "attempts" / unit / "METRICS_VAULT.json").write_text("{}")
     out = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "bk4" / "MANIFEST.json",
-                               receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=wh, require_acceptance=False)
+                               receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=wh)
     assert out["units"][unit]["state"] == "REFUSED" and any("BACKUP_CORRUPT" in r for r in out["units"][unit]["preflight"]["refusals"])
     # the catalog acceptance must be accepted evidence when acceptance is required
     R.metadata_backup(root, tmp_path / "bk5")
@@ -1614,7 +1619,7 @@ def test_RP115_a_cuda_regeneration_must_name_the_measured_device_it_ran_on(world
     R.accept_catalog(root, design, unit, data_path=world["data"])
     R.metadata_backup(root, tmp_path / "bkdev")
     R.delete_predictions(root, [unit], accepted_report_sha256=R.sha_file(root / "REPORT.json"), backup_manifest=tmp_path / "bkdev" / "MANIFEST.json",
-                         receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=wh, require_acceptance=False)
+                         receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=wh)
     R.regenerate_cell(root, design, unit, data_path=world["data"], device="cpu")
     R.accept_regenerated(root, design, unit, data_path=world["data"], delete_after=True)
     receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]

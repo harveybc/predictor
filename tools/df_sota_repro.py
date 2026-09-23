@@ -1767,7 +1767,7 @@ def verify_backup(root: Path, manifest_path, unit: str) -> dict:
 
 
 def deletion_preflight(root: Path, unit: str, roots: list, *, accepted_report_sha256: str | None = None, backup_manifest=None,
-                       receipts: dict | None = None, warehouse=None, require_acceptance: bool = True) -> dict:
+                       receipts: dict | None = None, warehouse=None) -> dict:
     """RP108: everything that must hold BEFORE any unlink of a unit's copies. The approval binds to the exact accepted report
     (REPORT.json bytes) and to a backup manifest that already holds the retained record and catalog; every candidate path must
     hash to the accepted predictions artifact (a folder name is not an identity); aliases, conflicting attempts, changed copies,
@@ -1804,11 +1804,10 @@ def deletion_preflight(root: Path, unit: str, roots: list, *, accepted_report_sh
         out["approval"]["accepted_report_sha256"] = accepted_report_sha256
         if actual != accepted_report_sha256:
             out["refusals"].append(f"APPROVAL_REPORT_MISMATCH: REPORT.json is {str(actual)[:12]}, the accepted report is {accepted_report_sha256[:12]}")
-        if require_acceptance:
-            acc = accepted_artifact(root, receipts or {}, warehouse, accepted_report_sha256, expect_kind="closure")
-            out["approval"]["report_acceptance"] = acc
-            if not acc["accepted"]:
-                out["refusals"].append(f"APPROVAL_REPORT_NOT_ACCEPTED: {acc['why']}")
+        acc = accepted_artifact(root, receipts or {}, warehouse, accepted_report_sha256, expect_kind="closure", expect_role="closure_report")
+        out["approval"]["report_acceptance"] = acc
+        if not acc["accepted"]:
+            out["refusals"].append(f"APPROVAL_REPORT_NOT_ACCEPTED: {acc['why']}")
     cat = folder / "CATALOG_ACCEPTANCE.json"
     if not cat.is_file():
         out["refusals"].append("CATALOG_ACCEPTANCE_MISSING: this unit has no independent catalog acceptance")
@@ -1819,11 +1818,10 @@ def deletion_preflight(root: Path, unit: str, roots: list, *, accepted_report_sh
             out["refusals"].append(f"CATALOG_ACCEPTANCE_FAILED: {ca.get('refusals')}")
         if ca.get("catalog_sha256") != (sha_file(folder / "METRICS_VAULT.json") if (folder / "METRICS_VAULT.json").is_file() else None):
             out["refusals"].append("CATALOG_ACCEPTANCE_STALE: the acceptance is not of the catalog on disk")
-        if require_acceptance:
-            acc_c = accepted_artifact(root, receipts or {}, warehouse, sha_file(cat), expect_kind="catalog")
-            out["approval"]["catalog_acceptance_accepted"] = acc_c
-            if not acc_c["accepted"]:
-                out["refusals"].append(f"CATALOG_ACCEPTANCE_NOT_ACCEPTED: {acc_c['why']}")
+        acc_c = accepted_artifact(root, receipts or {}, warehouse, sha_file(cat), expect_kind="catalog", expect_subject=unit, expect_role="catalog_acceptance")
+        out["approval"]["catalog_acceptance_accepted"] = acc_c
+        if not acc_c["accepted"]:
+            out["refusals"].append(f"CATALOG_ACCEPTANCE_NOT_ACCEPTED: {acc_c['why']}")
     backup = verify_backup(root, backup_manifest, unit)
     out["approval"]["backup"] = backup
     out["refusals"] += backup["refusals"]
@@ -1858,7 +1856,7 @@ def deletion_preflight(root: Path, unit: str, roots: list, *, accepted_report_sh
 
 def delete_predictions(root: Path, units: list, *, extra_roots: list | None = None, dry_run: bool = False,
                        accepted_report_sha256: str | None = None, backup_manifest=None, receipts: dict | None = None,
-                       warehouse=None, require_acceptance: bool = True) -> dict:
+                       warehouse=None) -> dict:
     """The owner's authorized deletion (2026-09-22), RP108: under an exclusive lock, preflight the whole inventory of every unit
     (identity by content, aliases, conflicting attempts, readers, bound approval), then unlink copy by copy re-hashing each one
     just before, recording a per-path status; an interrupted deletion leaves an accurate PARTIAL marker and resumes later. The
@@ -1876,7 +1874,7 @@ def delete_predictions(root: Path, units: list, *, extra_roots: list | None = No
             raise SotaRefusal("REFUSED: another deletion holds this root's exclusive boundary")
         for unit in units:
             pre = deletion_preflight(root, unit, roots, accepted_report_sha256=accepted_report_sha256, backup_manifest=backup_manifest,
-                                     receipts=receipts, warehouse=warehouse, require_acceptance=require_acceptance)
+                                     receipts=receipts, warehouse=warehouse)
             entry = {"preflight": pre, "gate": pre.get("gate"), "copies_inventoried": [p_ for p_ in pre["paths"] if "sha256" in p_], "deleted": [], "state": "REFUSED" if not pre["pass"] else "PENDING"}
             if pre["pass"] and not dry_run:
                 folder = root / "attempts" / unit
@@ -3087,33 +3085,76 @@ def publish_acceptance(a, design: dict, *, kind: str, subject: str, files: dict,
     return {"unit": unit, "kind": kind, "subject": subject, "digests": digests}
 
 
-def accepted_artifact(root: Path, receipts: dict, warehouse, sha256: str | None, *, expect_kind: str | None = None) -> dict:
-    """Is this digest an artifact of an ACCEPTED terminal? The local registry only says WHICH unit to ask about; the answer comes
-    from the accepted chain (the receipt and the warehouse row). No warehouse, no acceptance."""
+def _acceptance_rows(root: Path, receipts: dict, warehouse, cache: dict | None = None) -> dict:
+    """Every acceptance unit this root has a receipt for, as the WAREHOUSE holds it. One query per unit, memoised."""
+    cache = cache if cache is not None else {}
+    rows = {}
+    for unit, receipt in (receipts or {}).items():
+        if not str(unit).startswith("acceptance_"):
+            continue
+        key = receipt.get("campaign_sha256")
+        if key not in cache:
+            try:
+                cache[key] = ((warehouse(key) or {}).get("current") or {}) if warehouse is not None else {}
+            except Exception:                                       # noqa: BLE001
+                cache[key] = {}
+        row = cache[key].get(unit)
+        if row:
+            rows[unit] = (row, receipt)
+    return rows
+
+
+def accepted_artifact(root: Path, receipts: dict, warehouse, sha256: str | None, *, expect_kind: str | None = None,
+                      expect_subject: str | None = None, expect_role: str | None = None, design_sha256: str | None = None,
+                      cache: dict | None = None) -> dict:
+    """RP123: is this digest an artifact of an ACCEPTED terminal that was accepted FOR THIS PURPOSE? Kind, subject, design and the
+    artifact's role are read from the authoritative terminal, never from the local registry; the registry is only a hint about
+    which unit to ask about first, and a hint that contradicts the terminal is reported and ignored. A digest stored in another
+    role, for another subject, or under another design does not certify this closure, catalog or regeneration."""
     root = Path(root)
-    out = {"accepted": False, "sha256": sha256, "why": None}
+    out = {"accepted": False, "sha256": sha256, "why": None, "expected": {"kind": expect_kind, "subject": expect_subject, "role": expect_role}}
     if not sha256:
         out["why"] = "no digest"; return out
-    reg = json.loads((root / ACCEPTED_EVIDENCE).read_text()).get("entries", {}) if (root / ACCEPTED_EVIDENCE).is_file() else {}
-    entry = reg.get(sha256)
-    if entry is None:
-        out["why"] = "no acceptance is registered for this digest"; return out
-    out.update({"unit": entry["unit"], "kind": entry.get("kind"), "role": entry.get("role"), "accepted_at": entry.get("at"), "scope": entry.get("scope")})
-    if expect_kind and entry.get("kind") != expect_kind:
-        out["why"] = f"the acceptance is of kind {entry.get('kind')!r}, not {expect_kind!r}"; return out
-    receipt = receipts.get(entry["unit"])
-    if receipt is None:
-        out["why"] = f"the acceptance unit {entry['unit']} has no terminal receipt"; return out
     if warehouse is None:
         out["why"] = "custody unavailable: the warehouse was not read"; return out
-    row = ((warehouse(receipt["campaign_sha256"]) or {}).get("current") or {}).get(entry["unit"])
-    if not row:
-        out["why"] = f"the warehouse holds no terminal for {entry['unit']}"; return out
-    if row.get("status") != "COMPLETED" or row.get("terminal_sha256") != receipt.get("terminal_sha256"):
-        out["why"] = "the accepted terminal disagrees with the receipt or is not COMPLETED"; return out
-    if not any(x.get("sha256") == sha256 for x in row.get("artifacts") or []):
-        out["why"] = "the accepted terminal does not carry this digest"; return out
-    out["accepted"] = True
+    reg = json.loads((root / ACCEPTED_EVIDENCE).read_text()).get("entries", {}) if (root / ACCEPTED_EVIDENCE).is_file() else {}
+    hint = reg.get(sha256)
+    out["registry_hint"] = {k: hint.get(k) for k in ("unit", "kind", "role", "subject", "at")} if hint else None
+    rows = _acceptance_rows(root, receipts, warehouse, cache)
+    if hint and hint.get("unit") and hint["unit"] not in rows:
+        out["why"] = f"the registry points at {hint['unit']}, which has no accepted terminal"
+    order = ([hint["unit"]] if hint and hint.get("unit") in rows else []) + [u for u in rows if not (hint and u == hint.get("unit"))]
+    mismatches = []
+    for unit in order:
+        row, receipt = rows[unit]
+        if row.get("status") != "COMPLETED" or row.get("terminal_sha256") != receipt.get("terminal_sha256"):
+            mismatches.append(f"{unit}: the accepted terminal disagrees with the receipt or is not COMPLETED"); continue
+        tags = row.get("tags") or row.get("tags_json") or {}
+        if isinstance(tags, str):
+            try:
+                tags = json.loads(tags)
+            except Exception:                                       # noqa: BLE001
+                tags = {}
+        art = next((x for x in (row.get("artifacts") or []) if x.get("sha256") == sha256), None)
+        if art is None:
+            continue
+        if expect_kind is not None and tags.get("kind") != expect_kind:
+            mismatches.append(f"{unit}: the accepted terminal's kind is {tags.get('kind')!r}, not {expect_kind!r}"); continue
+        if expect_subject is not None and str(tags.get("subject")) != str(expect_subject):
+            mismatches.append(f"{unit}: the accepted terminal's subject is {tags.get('subject')!r}, not {expect_subject!r}"); continue
+        if expect_role is not None and art.get("role") != expect_role:
+            mismatches.append(f"{unit}: the digest is accepted in role {art.get('role')!r}, not {expect_role!r}"); continue
+        if design_sha256 is not None and (row.get("config_sha256") or tags.get("design_sha256")) not in (None, design_sha256):
+            mismatches.append(f"{unit}: accepted under another design"); continue
+        out.update({"accepted": True, "unit": unit, "kind": tags.get("kind"), "subject": tags.get("subject"), "role": art.get("role"),
+                    "accepted_at": row.get("finished_at") or row.get("received_at"), "terminal_sha256": row.get("terminal_sha256"),
+                    "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+                    "registry_contradicts": bool(hint and (hint.get("kind") != tags.get("kind") or hint.get("role") != art.get("role")
+                                                           or str(hint.get("subject")) != str(tags.get("subject"))))})
+        if out["registry_contradicts"]:
+            out["registry_note"] = "the local registry's kind/role/subject disagree with the accepted terminal; the terminal decides"
+        return out
+    out["why"] = "; ".join(mismatches)[:400] or f"no accepted terminal carries this digest for kind={expect_kind!r} subject={expect_subject!r} role={expect_role!r}"
     return out
 
 
@@ -3156,8 +3197,11 @@ def regeneration_evidence(root: Path, cell: dict, record: dict, receipts: dict, 
     aa = json.loads(ap_.read_text()) if ap_.is_file() else None
     out["regeneration"] = {k: rr.get(k) for k in ("identity", "label", "device", "device_name", "device_uuid", "at", "host", "author_metric",
                                                   "author_metric_state", "independent_metric_float64", "pred_sha256", "true_sha256", "route")}
-    acc_r = accepted_artifact(root, receipts, warehouse, out["regeneration_sha256"], expect_kind="regeneration")
-    acc_a = accepted_artifact(root, receipts, warehouse, out["acceptance_sha256"], expect_kind="regeneration") if out["acceptance_sha256"] else {"accepted": False, "why": "no acceptance file"}
+    acc_r = accepted_artifact(root, receipts, warehouse, out["regeneration_sha256"], expect_kind="regeneration", expect_subject=unit, expect_role="regeneration")
+    acc_a = (accepted_artifact(root, receipts, warehouse, out["acceptance_sha256"], expect_kind="regeneration", expect_subject=unit, expect_role="regeneration_acceptance")
+             if out["acceptance_sha256"] else {"accepted": False, "why": "no acceptance file"})
+    if acc_r.get("accepted") and acc_a.get("accepted") and acc_r.get("unit") != acc_a.get("unit"):
+        out["refusals"].append("REGEN_ACCEPTANCE_UNRELATED: the regeneration record and its acceptance were accepted under different terminals")
     out["accepted"] = {"regeneration": acc_r, "acceptance": acc_a}
     if not acc_r["accepted"]:
         out["refusals"].append(f"REGEN_NOT_ACCEPTED: {acc_r['why']}")
@@ -3208,7 +3252,8 @@ def historical_verification(root: Path, design: dict, cell: dict, record: dict, 
         return {"status": "DELETED_HISTORY_UNBOUND", "verified_historically": False, "refusals": refusals, "metric": None, "basis": None, "source": None}
     # RP115 (Musashi RP113 #1): resolving bytes is not acceptance. The report's digest must be an artifact of an ACCEPTED terminal,
     # so rewriting the report locally and recomputing the marker's pointer refuses instead of publishing a new score.
-    acceptance = accepted_artifact(root, receipts or {}, warehouse, resolved["sha256"], expect_kind="closure")
+    acceptance = accepted_artifact(root, receipts or {}, warehouse, resolved["sha256"], expect_kind="closure",
+                                   expect_role="closure_report", design_sha256=design["design_sha256"])
     if not acceptance["accepted"]:
         refusals.append(f"HISTORY_REPORT_NOT_ACCEPTED: the closure report the marker names is not accepted evidence ({acceptance['why']})")
     report = resolved["report"]
