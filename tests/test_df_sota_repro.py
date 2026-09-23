@@ -2001,3 +2001,30 @@ def test_RP131_revalidation_reads_the_retained_evidence_under_the_repaired_gates
     (root / "attempts" / unit / "METRICS_VAULT.json").write_text(json.dumps(v))
     out2 = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)
     assert not out2["cells"][unit]["catalog_acceptance"]["covers_catalog_on_disk"] and not out2["cells"][unit]["deletion_eligible_today"]
+
+
+def test_RP128_the_catalog_acceptance_certifies_the_catalog_while_the_cell_verification_stays_a_separate_fact(world, tmp_path):
+    """A cell whose replay is not accepted can still have its catalog numerically certified: the closure recomputed and read back
+    that very catalog. The deletion gate keeps its own, separate requirement that the cell be verified."""
+    root = _copy(world, tmp_path / "sep"); unit = world["cell"]["cell_id"]; design = json.loads((root / "DESIGN.json").read_text())
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "toksep"; tok.write_text("x")
+        # replay_units=[] leaves the cell unverified (REPLAY_PENDING) while the catalog is recomputed and read back
+        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="s://", data_path=world["data"], skip_replay=False,
+                                replay_device="cpu", replay_units=[]), design)
+    acc = R.accept_catalog(root, design, unit, data_path=world["data"])
+    assert acc["pass"] and acc["acceptance_class"] == R.FULL_NUMERIC
+    assert acc["closure"]["recomputed_this_catalog"] and acc["closure"]["cell_verified"] is False
+    assert R.acceptance_certificate(acc)["cell_verified"] is False and "separate fact" in R.acceptance_certificate(acc)["scope_note"]
+    # the deletion still refuses, on the cell's own verification, and keeps the array
+    _accept_evidence(world, root, "closure", {"closure_report": root / "REPORT.json"}, "closure")
+    _accept_evidence(world, root, "catalog", {"catalog_acceptance": root / "attempts" / unit / "CATALOG_ACCEPTANCE.json",
+                                              "metrics_vault": root / "attempts" / unit / "METRICS_VAULT.json"}, unit)
+    R.metadata_backup(root, tmp_path / "bk_sep")
+    out = R.delete_predictions(root, [unit], accepted_report_sha256=R.sha_file(root / "REPORT.json"),
+                               backup_manifest=tmp_path / "bk_sep" / "MANIFEST.json",
+                               receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=_wh(world))
+    assert out["units"][unit]["state"] == "REFUSED" and (root / "attempts" / unit / "arrays.npz").is_file()
+    assert any("did not verify the unit" in r for r in out["units"][unit]["preflight"]["refusals"])

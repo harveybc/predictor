@@ -2282,7 +2282,10 @@ def acceptance_certificate(acceptance: dict) -> dict:
             "inventory_version": acceptance.get("inventory_version") or (CATALOG_INVENTORY_VERSION if families_declared else None),
             "inventory_digest": acceptance.get("inventory_digest"),
             "families_declared": families_declared, "families_complete": complete, "unchecked": unchecked, "disagreements": disagreements,
-            "pass": acceptance.get("pass"), "at": acceptance.get("at"), "independent_scope": acceptance.get("independent_scope")}
+            "pass": acceptance.get("pass"), "at": acceptance.get("at"), "independent_scope": acceptance.get("independent_scope"),
+            "cell_verified": (acceptance.get("closure") or {}).get("cell_verified"),
+            "cell_verified_historically": (acceptance.get("closure") or {}).get("cell_verified_historically"),
+            "scope_note": "this certificate is about the CATALOG; whether the cell itself is verified (custody, replay) is a separate fact"}
 
 
 def _acf_over_origins(series: np.ndarray, lags: int) -> list:
@@ -2616,10 +2619,17 @@ def accept_catalog(root: Path, design: dict, unit: str, *, data_path: Path | Non
                           "metrics_vault_sha256": ((row or {}).get("recomputed") or {}).get("metrics_vault_sha256"),
                           "author_scorer_parity": ((row or {}).get("recomputed") or {}).get("author_scorer_parity"), "metric_basis": (row or {}).get("metric_basis")}
         rc = out["closure"]
-        if not (row and (row.get("verified") or row.get("verified_historically"))):
-            out["refusals"].append("CLOSURE: the current closure neither verified this unit nor bound its history")
-        if row and row.get("verified") and not (rc.get("metrics_vault_recomputed") and rc.get("metrics_vault_read_back_equal") and rc.get("metrics_vault_sha256") == out["catalog_sha256"]):
-            out["refusals"].append("CLOSURE: the closure did not recompute and read back THIS catalog from the accepted arrays")
+        # RP128: this acceptance certifies THE CATALOG. Its binding requirement is that the closure recomputed this very catalog
+        # from the accepted arrays and read it back, or bound it historically; whether the CELL is verified (its replay, its
+        # custody) is a different fact, recorded here and enforced separately by the deletion gate.
+        recomputed_here = bool(rc.get("metrics_vault_recomputed") and rc.get("metrics_vault_read_back_equal") and rc.get("metrics_vault_sha256") == out["catalog_sha256"])
+        out["closure"]["recomputed_this_catalog"] = recomputed_here
+        out["closure"]["cell_verified"] = bool(row and row.get("verified"))
+        out["closure"]["cell_verified_historically"] = bool(row and row.get("verified_historically"))
+        if row is None:
+            out["refusals"].append("CLOSURE: the current closure has no row for this unit")
+        elif not (recomputed_here or row.get("verified_historically")):
+            out["refusals"].append("CLOSURE: the closure neither recomputed and read back THIS catalog nor bound it historically")
     else:
         out["refusals"].append("CLOSURE: no REPORT.json to bind the acceptance to")
     # RP124: independent recomputation from the arrays, where they still exist — every declared family, on the same population and
