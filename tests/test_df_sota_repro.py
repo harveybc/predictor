@@ -1465,9 +1465,12 @@ def test_RP115_a_fabricated_regeneration_cannot_replace_a_score(world, tmp_path,
     (folder / "regenerated" / "ACCEPTANCE.json").write_text(json.dumps({"pass": True}))
     ver = R.verify_sota_run(root, warehouse=wh, data_path=world["data"], replay=False)
     row = ver["rows"][0]
-    assert row["author_metric_float32"] is None and not row["verified_historically"] and row["status"] == "DELETED_HISTORY_UNBOUND"
+    # the fabrication changes NOTHING: the row keeps the score the original accepted closure bound, and the claim is refused
+    assert row["author_metric_float32"] == world["record"]["author_metric_float32"] and row["verified_historically"]
+    assert not row["metric_basis"].startswith("author_float32 (regenerated") and row["regenerated"]["usable"] is False
     kinds = " ".join(ver["problems"])
     assert "REGEN_NOT_ACCEPTED" in kinds and "REGEN_INCOMPLETE" in kinds and "REGEN_CONTRADICTS_CATALOG" in kinds
+    assert all(p.startswith(f"{unit}: REGENERATION_REFUSED_NOT_USED") for p in ver["problems"])
     # a real regeneration, accepted through the governed chain, does restore the score
     R.regenerate_cell(root, design, unit, data_path=world["data"], device="cpu")
     acc = R.accept_regenerated(root, design, unit, data_path=world["data"], delete_after=True)
