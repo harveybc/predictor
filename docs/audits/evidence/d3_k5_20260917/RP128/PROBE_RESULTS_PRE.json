@@ -1,0 +1,86 @@
+{
+  "scope": "disposable actual-author CPU fixture and stub warehouse only",
+  "host_before": {
+    "thermal_zone0:acpitz": 43.0,
+    "thermal_zone1:acpitz": 57.5
+  },
+  "positive_catalog": {
+    "pass": true,
+    "fully_independent": true
+  },
+  "wrong_acf_with_reference": {
+    "pass": false,
+    "refusals": [
+      "INDEPENDENT autocorrelation.channel_mean_residual_per_step.acf_by_lag: max |difference| 0.9428690468981116 exceeds 1e-09"
+    ]
+  },
+  "wrong_acf_default_without_data": {
+    "pass": true,
+    "independent_comparison": null,
+    "independently_accepted_families": []
+  },
+  "delete_without_independent_reference": {
+    "state": "COMPLETE",
+    "array_remaining": false
+  },
+  "foreign_design_explicit_check": {
+    "accepted": false,
+    "sha256": "e4e1e941ec384902f5ea4fbe7c528da6e5fd5d9bb494d83fa57e6588b0c51040",
+    "why": "acceptance_closure_e4e1e941ec384902: accepted under another design",
+    "expected": {
+      "kind": "closure",
+      "subject": null,
+      "role": "closure_report"
+    },
+    "registry_hint": {
+      "unit": "acceptance_closure_e4e1e941ec384902",
+      "kind": "closure",
+      "role": "closure_report",
+      "subject": "closure",
+      "at": "2026-09-23T00:00:00Z"
+    }
+  },
+  "foreign_design_actual_deletion": {
+    "state": "COMPLETE",
+    "array_remaining": false
+  },
+  "missing_design_explicit_check": {
+    "accepted": true,
+    "sha256": "e4e1e941ec384902f5ea4fbe7c528da6e5fd5d9bb494d83fa57e6588b0c51040",
+    "why": null,
+    "expected": {
+      "kind": "closure",
+      "subject": null,
+      "role": "closure_report"
+    },
+    "registry_hint": {
+      "unit": "acceptance_closure_e4e1e941ec384902",
+      "kind": "closure",
+      "role": "closure_report",
+      "subject": "closure",
+      "at": "2026-09-23T00:00:00Z"
+    },
+    "unit": "acceptance_closure_e4e1e941ec384902",
+    "kind": "closure",
+    "subject": "closure",
+    "role": "closure_report",
+    "accepted_at": null,
+    "terminal_sha256": "7d7d551c4ac8fc0a3ccd6436160d811dd2919bca944ff0d1d654095f776f1bca",
+    "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+    "registry_contradicts": false
+  },
+  "boolean_as_numeric_zero": {
+    "pass": true,
+    "comparison": {
+      "status": "OK",
+      "max_abs_difference": 0.0,
+      "tolerance": 0.0,
+      "detail": "OK",
+      "undefined_declared": null
+    }
+  },
+  "host_after": {
+    "thermal_zone0:acpitz": 60.0,
+    "thermal_zone1:acpitz": 58.5
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "scope": "disposable actual-author CPU fixture and stub warehouse only",
+  "host_before": {
+    "thermal_zone0:INT3400 Thermal": 20.0,
+    "thermal_zone1:SEN1": 36.05,
+    "thermal_zone10:TCPU_PCI": 78.0,
+    "thermal_zone11:x86_pkg_temp": 78.0,
+    "thermal_zone2:SEN2": 69.05,
+    "thermal_zone3:SEN3": 36.05,
+    "thermal_zone4:SEN4": 0.05,
+    "thermal_zone5:SEN5": 51.05,
+    "thermal_zone6:SEN6": 33.05,
+    "thermal_zone7:SEN7": 25.05,
+    "thermal_zone8:iwlwifi_1": 29.0,
+    "thermal_zone9:TCPU": 71.05
+  },
+  "positive_catalog": {
+    "pass": true,
+    "fully_independent": true
+  },
+  "wrong_acf_with_reference": {
+    "pass": false,
+    "refusals": [
+      "INDEPENDENT autocorrelation.channel_mean_residual_per_step.acf_by_lag: max |difference| 0.9428690481435833 exceeds 1e-09"
+    ]
+  },
+  "wrong_acf_default_without_data": {
+    "pass": true,
+    "independent_comparison": null,
+    "independently_accepted_families": []
+  },
+  "delete_without_independent_reference": {
+    "state": "REFUSED",
+    "array_remaining": true
+  },
+  "foreign_design_explicit_check": {
+    "accepted": false,
+    "sha256": "a453f00f5a925e7296be7fa2f3ee52c58c089b0b40a1b6de60d6fd1c663e7461",
+    "why": "acceptance_closure_a453f00f5a925e72: accepted under design ffffffffffff, not 6a77b8cf4a3d",
+    "expected": {
+      "kind": "closure",
+      "subject": null,
+      "role": "closure_report"
+    },
+    "registry_hint": {
+      "unit": "acceptance_closure_a453f00f5a925e72",
+      "kind": "closure",
+      "role": "closure_report",
+      "subject": "closure",
+      "at": "2026-09-23T00:00:00Z"
+    }
+  },
+  "foreign_design_actual_deletion": {
+    "state": "REFUSED",
+    "array_remaining": true
+  },
+  "missing_design_explicit_check": {
+    "accepted": false,
+    "sha256": "a453f00f5a925e7296be7fa2f3ee52c58c089b0b40a1b6de60d6fd1c663e7461",
+    "why": "acceptance_closure_a453f00f5a925e72: the accepted terminal declares no scientific design",
+    "expected": {
+      "kind": "closure",
+      "subject": null,
+      "role": "closure_report"
+    },
+    "registry_hint": {
+      "unit": "acceptance_closure_a453f00f5a925e72",
+      "kind": "closure",
+      "role": "closure_report",
+      "subject": "closure",
+      "at": "2026-09-23T00:00:00Z"
+    }
+  },
+  "boolean_as_numeric_zero": {
+    "pass": false,
+    "comparison": {
+      "status": "DISAGREEMENT",
+      "max_abs_difference": null,
+      "tolerance": 0.0,
+      "detail": "DISAGREEMENT: a boolean cannot be compared with int: a declared numeric field holds False vs 0",
+      "undefined_declared": null
+    }
+  },
+  "host_after": {
+    "thermal_zone0:INT3400 Thermal": 20.0,
+    "thermal_zone1:SEN1": 37.05,
+    "thermal_zone10:TCPU_PCI": 70.0,
+    "thermal_zone11:x86_pkg_temp": 70.0,
+    "thermal_zone2:SEN2": 59.05,
+    "thermal_zone3:SEN3": 37.05,
+    "thermal_zone4:SEN4": 37.05,
+    "thermal_zone5:SEN5": 52.05,
+    "thermal_zone6:SEN6": 33.05,
+    "thermal_zone7:SEN7": 25.05,
+    "thermal_zone8:iwlwifi_1": 29.0,
+    "thermal_zone9:TCPU": 48.05
+  }
+}
