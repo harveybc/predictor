@@ -497,9 +497,12 @@ def test_RP101_the_bounded_adapter_reproduces_the_authors_test_elementwise_with_
     assert b["bounded"]["finalized"]["true_sha256"] == R.sha_array(np.asarray(a["trues"], dtype=np.float32)) and R.sha_file(ckpt) == ckpt_sha
     assert b["bounded"]["adapter"]["version"] == R.BOUNDED_ADAPTER_VERSION and b["bounded"]["adapter"]["source_sha256"]
     assert abs(b["independent_metric_float64"]["mae"] - a["author_metric"]["mae"]) <= 1e-6
-    # a budget below the temporaries: the author's float32 reduction is reported NOT executed, never approximated
+    # RP109: a budget below the author function's temporaries still yields the author's float32 reduction, through the exact
+    # bounded route (bit-equal to the author's function run above); the author's own function is then reported not executed
     c = run("budget", bounded=True, author_metric_budget_bytes=1)
-    assert c["author_metric"] is None and c["author_metric_state"].startswith("NOT_EXECUTED_WITHIN_BUDGET") and abs(c["independent_metric_float64"]["mse"] - a["author_metric"]["mse"]) <= 1e-6
+    assert c["author_metric"] == a["author_metric"] and c["author_metric_state"].startswith("EXECUTED: df_sota_author_metric_exact.v1")
+    assert c["author_scorer_parity"]["author_function"] is None and "not executed" in c["author_scorer_parity"]["why"]
+    assert b["author_scorer_parity"]["bit_equal"] is True and abs(c["independent_metric_float64"]["mse"] - a["author_metric"]["mse"]) <= 1e-6
     # through run_cell: the artifact and the record carry the adapter identity, the memmaps are gone, the checkpoint is the author's
     folder = tmp_path / "cell"
     rec = R.run_cell(d, cell, data_path=data, folder=folder, use_gpu=False, bounded=True)
