@@ -1,5 +1,13 @@
 # Satoshi: RP132-RP135, resume reference experiments; isolate retention repairs
 
+**Dispatch update, 2026-09-23:** Musashi created and dispatched Hermes task
+`t_28e5c655` for RP135; the worker process was observed running. This is NOT yet
+proof of a training child or a new score. Satoshi owns coordination but must
+attach to that task and its shared RP135 lease, NOT launch a duplicate campaign.
+Read the queue's `executor` record and task comments for current progress.
+The subordinate handles RP135; Satoshi can perform RP132-RP134 independently.
+If it fails, reconcile its processes/receipts before a successor takes over.
+
 Reviewed base `c9dce617`; read the [independent review](../audits/work_plan/MUSASHI_RP128_RP131_REVIEW_2026_09_23.md)
 and preserve its probe/results. Supersedes RP128-RP131. One return after all
 feasible work; no further engineering authorization needed. The owner's latest

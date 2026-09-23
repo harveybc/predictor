@@ -23,7 +23,9 @@ No falta permiso del owner; no se espera otra revision para iniciar RP135.
   temporales; reserva de disco de 50 GiB, sin asumir borrados ni equipos nuevos.
 
 Estado honesto: las ultimas rondas avanzaron herramientas, no hipotesis doctorales.
-RP135 queda **ordenado, no ejecutado** por este cambio de plan. Los defectos de
+RP135 tiene **ejecutor Hermes despachado (`t_28e5c655`), entrenamiento aun no
+confirmado**; no se confunde un agente corriendo con una celda medida. Satoshi
+se acopla a esa tarea y su lease, no lanza otra campana duplicada. Los defectos de
 datos, entrenamiento, metricas, gobernanza o capacidad de la nueva ruta siguen
 siendo causas validas para detener esa ruta, no para inventar un resultado.
 

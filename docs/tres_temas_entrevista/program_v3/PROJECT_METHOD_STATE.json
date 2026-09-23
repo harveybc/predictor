@@ -87,7 +87,8 @@
   "science": {
    "task": "SOTA-REPRO",
    "order": "RP135",
-   "status": "ORDERED_NOT_EXECUTED",
+   "status": "HERMES_EXECUTOR_DISPATCHED_GPU_CHILD_NOT_YET_CONFIRMED",
+   "executor_task": "t_28e5c655",
    "recipe": "TimeFilter dffde87e released ECL L512 block; 321 channels; four horizons x three seeds",
    "device": "Only admitted WORKER_B external RTX 5090",
    "does_not_depend_on": ["RP132-RP134 retention repair", "A original-device replays"],
