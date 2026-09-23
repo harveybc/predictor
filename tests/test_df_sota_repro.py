@@ -1670,6 +1670,8 @@ def test_RP119_a_measured_horizon_whose_replay_is_unaccepted_is_not_called_no_me
     assert t["measurement_state"] == "MEASURED_REPLAY_UNVERIFIED" and t["mse"]["status"] == "MEASURED_REPLAY_UNVERIFIED"
     assert t["mse"]["pooled"] is False and t["mse"]["mean"] is None and t["mse"]["measured_mean_not_pooled"] == world["record"]["author_metric_float32"]["mse"]
     assert "replay required by the frozen rule is not accepted" in t["mse"]["why"]
+    t2 = R.table(world["design"], ver, root=root)["rows"][0]
+    assert t2["matched_baselines"]["persistence"]["mae"] and "measured, replay unverified" in t2["matched_baselines"]["source"]
     avg = R.table(world["design"], ver)["average_over_horizons"]["mae"]
     assert avg["status"] == "NOT_COMPUTED" and avg["denominator"] == len(world["design"]["horizons"])
     assert avg["horizons_missing_per_seed"][str(world["cell"]["seed"])] == world["design"]["horizons"]

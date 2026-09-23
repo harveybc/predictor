@@ -3767,11 +3767,13 @@ def table(design: dict, ver: dict, *, root: Path | None = None) -> dict:
         # them, computed on the same windows, so the row reports them from there instead of leaving a hole.
         row["matched_naive"] = (ok[0]["derived"]["naive"] if ok and ok[0].get("derived") else None)
         row["matched_baselines"] = None
-        if ok and root is not None:
-            vp = Path(root) / "attempts" / ok[0]["unit"] / "METRICS_VAULT.json"
+        # a measured row keeps its matched baselines even when its replay is not accepted: they are in its retained catalog
+        source_cell = (ok or [r for r in cells if r.get("author_metric_float32")] or [None])[0]
+        if source_cell is not None and root is not None:
+            vp = Path(root) / "attempts" / source_cell["unit"] / "METRICS_VAULT.json"
             if vp.is_file():
                 g_ = json.loads(vp.read_text()).get("global") or {}
-                row["matched_baselines"] = {"source": f"retained catalog of {ok[0]['unit']}", "windows": (json.loads(vp.read_text()).get("population") or {}).get("windows"),
+                row["matched_baselines"] = {"source": f"retained catalog of {source_cell['unit']}" + ("" if ok else " (measured, replay unverified)"), "windows": (json.loads(vp.read_text()).get("population") or {}).get("windows"),
                                             "persistence": {"mse": g_.get("naive_mse"), "mae": g_.get("naive_mae")},
                                             "seasonal24": {"mse": g_.get("seasonal24_mse"), "mae": g_.get("seasonal24_mae")},
                                             "skill_vs_persistence": {"mae": g_.get("skill_mae_vs_naive"), "mse": g_.get("skill_mse_vs_naive")}}
