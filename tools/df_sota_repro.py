@@ -3473,6 +3473,20 @@ def table(design: dict, ver: dict, *, root: Path | None = None) -> dict:
                          "cross_device_portability": sorted({r.get("cross_device_portability", "NOT_TESTED_ON_THIS_DEVICE") for r in ok}),
                          "published_score_agreement": {"mse": row["mse"]["status"], "mae": row["mae"]["status"]},
                          "replay_history": ({r["unit"]: replay_history(root, r["unit"]) for r in ok} if root is not None else None)}
+        # RP119: a horizon whose cells were MEASURED but whose replay is not accepted is not "no measurement". It is measured and
+        # not poolable, and it says which property is missing; its values stay out of every mean.
+        unverified = [r for r in cells if not (r["verified"] or r.get("verified_historically")) and r.get("author_metric_float32")]
+        if not ok and unverified:
+            why = ("measured on the accepted artifact chain and scored by the author's own reduction, but the replay required by the frozen rule is "
+                   "not accepted on this host: " + "; ".join(sorted({(r.get("cross_device_portability") or r.get("same_device_repeatability") or "REPLAY_PENDING") for r in unverified})))
+            for m in ("mse", "mae"):
+                row[m] = {**row[m], "status": "MEASURED_REPLAY_UNVERIFIED", "why": why,
+                          "measured_values": [r["author_metric_float32"][m] for r in unverified],
+                          "measured_mean_not_pooled": float(np.mean([r["author_metric_float32"][m] for r in unverified])),
+                          "pooled": False}
+            row["measurement_state"] = "MEASURED_REPLAY_UNVERIFIED"
+        else:
+            row["measurement_state"] = ("VERIFIED" if row["verified_all"] else ("PARTIAL" if ok else "NOT_EXECUTED"))
         complete = complete and row["verified_all"]
         row["matched_naive"] = (ok[0]["derived"]["naive"] if ok and ok[0].get("derived") else None)
         row["training_completion"] = [{"unit": r["unit"], "epochs_run": (r.get("training") or {}).get("epochs_run"), "best_epoch": (r.get("training") or {}).get("best_epoch_by_vali"),
@@ -3488,13 +3502,16 @@ def table(design: dict, ver: dict, *, root: Path | None = None) -> dict:
                                        "replayed_author_metric": (r.get("replay") or {}).get("replayed_author_metric")}
                                       for r in cells if not r["verified"] and r.get("author_metric_float32")]
         rows.append(row)
-    # RP103 (Musashi RP97 #5): the four-horizon average is formed WITHIN each matched seed first (a seed must have every horizon
-    # verified), then its dispersion is across seeds; between-horizon spread can never masquerade as seed spread
+    # RP103 (Musashi RP97 #5) and RP121: the four-horizon average is formed WITHIN each matched seed first (a seed must have every
+    # horizon verified), then its dispersion is across seeds; a horizon that is measured but not verified keeps its place in the
+    # denominator and is named, so the average is never computed over a smaller set
     seeds_complete = [sd for sd, hs in sorted(by_seed.items()) if all(h in hs for h in design["horizons"])]
     seed_averages = {m: [float(np.mean([by_seed[sd][h][m] for h in design["horizons"]])) for sd in seeds_complete] for m in ("mse", "mae")}
     average = {m: ({**agreement(pub["average"], seed_averages[m], m), "seeds": seeds_complete, "grain": "average over the four horizons within each seed, then across seeds"}
                    if seeds_complete and len(seeds_complete) == len(design["seeds"]) else
                    {"status": "NOT_COMPUTED", "why": f"a full four-horizon average needs every horizon verified for every seed; complete seeds: {seeds_complete}",
+                    "horizons_missing_per_seed": {str(sd): [h for h in design["horizons"] if h not in by_seed.get(sd, {})] for sd in design["seeds"]},
+                    "denominator": len(design["horizons"]),
                     "seed_averages_available": {str(sd): {m: float(np.mean([by_seed[sd][h][m] for h in design["horizons"]]))} for sd in seeds_complete}})
                for m in ("mse", "mae")}
     fidelity = {"source_hashes": "sealed == now" if not ver["source_drift_now"] else f"DRIFT {sorted(ver['source_drift_now'])}",

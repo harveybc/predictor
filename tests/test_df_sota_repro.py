@@ -1629,3 +1629,19 @@ def test_RP120_the_resource_pilot_measures_costs_only_and_produces_no_score(worl
     assert "mae" not in json.dumps(out) and "mse" not in json.dumps(out)              # no score anywhere
     assert not (tmp_path / "pw").exists() and (root / f"PILOT.B_L{cell['seq_len']}_T{cell['horizon']}.json").is_file()
     assert out["projection"]["seconds_per_epoch_total"] > 0 and "projection from a bounded pilot" in out["projection"]["caveat"]
+
+
+def test_RP119_a_measured_horizon_whose_replay_is_unaccepted_is_not_called_no_measurement(world, tmp_path):
+    """Musashi RP113 reporting note: T=96's missing property is an accepted replay, not the existence of measurements. The row
+    says MEASURED_REPLAY_UNVERIFIED, carries the measured values explicitly unpooled, and stays out of every mean."""
+    root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]
+    ver = R.verify_sota_run(root, warehouse=_wh(world), data_path=world["data"], replay=False)   # no replay: custody fine, replay pending
+    row = ver["rows"][0]
+    assert not row["verified"] and row["author_metric_float32"]
+    t = R.table(world["design"], ver)["rows"][0]
+    assert t["measurement_state"] == "MEASURED_REPLAY_UNVERIFIED" and t["mse"]["status"] == "MEASURED_REPLAY_UNVERIFIED"
+    assert t["mse"]["pooled"] is False and t["mse"]["mean"] is None and t["mse"]["measured_mean_not_pooled"] == world["record"]["author_metric_float32"]["mse"]
+    assert "replay required by the frozen rule is not accepted" in t["mse"]["why"]
+    avg = R.table(world["design"], ver)["average_over_horizons"]["mae"]
+    assert avg["status"] == "NOT_COMPUTED" and avg["denominator"] == len(world["design"]["horizons"])
+    assert avg["horizons_missing_per_seed"][str(world["cell"]["seed"])] == world["design"]["horizons"]
