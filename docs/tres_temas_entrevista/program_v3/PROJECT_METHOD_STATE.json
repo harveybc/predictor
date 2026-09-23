@@ -1373,7 +1373,8 @@
   },
   "RP126": {
    "status": "RUNNING",
-   "what": "the corrected checks applied to all twelve cells on WORKER_B: the three retained H96 catalogs pass the full independent comparison (14 families, none unchecked, no disagreement; their only refusal is the missing accepted replay), and the nine deleted cells are regenerated one bounded cell at a time and checked family by family before their temporaries are removed"
+   "what": "the corrected checks applied to all twelve cells on WORKER_B: the three retained H96 catalogs pass the full independent comparison (14 families, none unchecked, no disagreement; their only refusal is the missing accepted replay), and the nine deleted cells are regenerated one bounded cell at a time and checked family by family before their temporaries are removed",
+   "partial_findings": "the three retained H96 catalogs pass the FULL independent comparison (14 families, none unchecked, no disagreement; their only refusal remains the missing accepted replay); T=192 s2022 and s2023 regenerate bit-identically and pass all 14 families; T=192 s2021, trained on the coordinator's RTX 4070 Laptop, regenerates NOT bit-identically on the admitted 5090 (the same cross-device numerical difference that fails the H96 replay) and its acceptance REFUSES with nine family disagreements, so its catalog cannot be independently certified without an inference run on the device that produced it"
   },
   "RP127": {
    "status": "PENDING",
