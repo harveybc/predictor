@@ -1833,3 +1833,17 @@ def test_RP122_no_public_call_deletes_predictions_without_the_accepted_chain(wor
     dry = R.delete_predictions(root, [unit], dry_run=True, **ready)
     assert dry["units"][unit]["state"] == "REFUSED" and (root / "attempts" / unit / "arrays.npz").is_file()
     assert "APPROVAL_REPORT_NOT_ACCEPTED" in " ".join(dry["units"][unit]["preflight"]["refusals"])
+
+
+def test_RP126_a_regeneration_that_is_not_the_original_removes_its_temporaries_and_says_why(world, tmp_path, monkeypatch):
+    """A cross-device regeneration is provably not the deleted original: it certifies nothing, so its arrays are removed with the
+    refusal recorded; bytes that claim to be identical but fail another check are kept for inspection."""
+    root, unit, _ = _closed_and_deleted(world, tmp_path)
+    design = json.loads((root / "DESIGN.json").read_text()); folder = root / "attempts" / unit
+    R.regenerate_cell(root, design, unit, data_path=world["data"], device="cpu")
+    rp = folder / "regenerated" / "REGENERATION.json"
+    rr = json.loads(rp.read_text()); rr["identity"] = "REGENERATED_NOT_IDENTICAL: a new inference, NOT the deleted original"; rp.write_text(json.dumps(rr))
+    out = R.accept_regenerated(root, design, unit, data_path=world["data"], delete_after=True)
+    assert not out["pass"] and any("REGENERATION_NOT_IDENTICAL" in r for r in out["refusals"])
+    assert [d["deleted"] for d in out["deleted"]] == [True, True] and not (folder / "regenerated" / "REGENERATED_pred.npy").exists()
+    assert "not the deleted original, so the temporaries are removed" in out["reading"] and rp.is_file()
