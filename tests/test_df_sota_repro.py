@@ -1529,9 +1529,9 @@ def test_RP117_the_independent_estimators_match_closed_form_values_on_a_construc
     """The independent implementation itself, against values computed by hand: a constant residual, a deterministic pair with
     known correlation, and the degenerate zero-variance case."""
     true = np.ones((40, 3, 2), dtype=np.float32) * np.float32(2.0)
-    pred = np.ones((40, 3, 2), dtype=np.float32)                                   # residual == 1 everywhere
+    pred = np.ones((40, 3, 2), dtype=np.float32)                                   # residual (pred - true) == -1 everywhere
     ind = R.independent_estimators(pred, true, max_lag=3, sample_windows=8)
-    assert ind["elements"] == 240 and abs(ind["residual_mean"] - 1.0) < 1e-12 and ind["residual_sd"] == 0.0
+    assert ind["elements"] == 240 and abs(ind["residual_mean"] + 1.0) < 1e-12 and ind["residual_sd"] == 0.0
     assert ind["mae_float64"] == 1.0 and ind["mse_float64"] == 1.0 and ind["entropy_bits"] == 0.0     # one occupied bin
     assert ind["corr_pred_true"] is None and ind["skewness"] is None                                  # zero variance: undefined, not invented
     rng = np.random.default_rng(5)

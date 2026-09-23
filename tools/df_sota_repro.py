@@ -2176,7 +2176,7 @@ def independent_estimators(preds, trues, *, max_lag: int = 8, sample_windows: in
     jedges = np.linspace(-6.0, 6.0, 65); joint = np.zeros((64, 64)); step = max(1, (96 << 20) // max(1, int(np.prod(preds.shape[1:])) * 8))
     for w0 in range(0, W, step):
         a = np.asarray(preds[w0:w0 + step], dtype=np.float64); b = np.asarray(trues[w0:w0 + step], dtype=np.float64)
-        d = (b - a).reshape(-1)                                       # true - pred, the author's residual orientation
+        d = (a - b).reshape(-1)                                       # pred - true: the residual orientation the catalog reports as `bias`
         n += d.size; s1 += d.sum(); s2 += (d * d).sum(); s3 += (d ** 3).sum(); s4 += (d ** 4).sum()
         ab += np.abs(d).sum(); sq += (d * d).sum()
         pf, yf = a.reshape(-1), b.reshape(-1)
@@ -2213,7 +2213,7 @@ def independent_estimators(preds, trues, *, max_lag: int = 8, sample_windows: in
             "entropy_bits": entropy, "mutual_information_bits": mi, "corr_pred_true": corr, "r2": r2,
             "mae_float64": ab / n, "mse_float64": sq / n, "histogram_counts": hist.astype(int).tolist(), "histogram_outside": outside,
             "autocorrelation_sample": acf, "autocorrelation_sample_windows": len(idx),
-            "definitions": {"residual": "true - pred, float64", "entropy": "Shannon over the 2000-bin residual histogram on [-20, 20]",
+            "definitions": {"residual": "pred - true, float64 (the orientation the catalog's bias reports)", "entropy": "Shannon over the 2000-bin residual histogram on [-20, 20]",
                             "mutual_information": "Shannon MI over the 64x64 joint histogram of clipped (pred, true) on [-6, 6]",
                             "corr": "Pearson over all elements", "r2": "1 - MSE / Var(true)", "acf": "sample autocorrelation of the channel-mean residual per step"}}
 
