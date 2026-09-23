@@ -1287,7 +1287,8 @@
   },
   "RP117": {
    "status": "DONE_IN_CODE",
-   "what": "per-family domain checks (sd >= 0 and = sqrt(var), entropy <= log2(bins), MI <= 6 bits on a 64x64 grid, |ACF| <= 1, |corr| <= 1, r2 <= 1, monotone quantiles, histogram counts = population, all reported numbers finite) plus independent_estimators(), a second implementation that recomputes residual moments, entropy, joint MI, correlation, R2, errors and histogram from the arrays without calling the producer; used wherever the arrays exist, with an explicit HISTORICAL LIMIT label where they were deleted"
+   "what": "per-family domain checks (sd >= 0 and = sqrt(var), entropy <= log2(bins), MI <= 6 bits on a 64x64 grid, |ACF| <= 1, |corr| <= 1, r2 <= 1, monotone quantiles, histogram counts = population, all reported numbers finite) plus independent_estimators(), a second implementation that recomputes residual moments, entropy, joint MI, correlation, R2, errors and histogram from the arrays without calling the producer; used wherever the arrays exist, with an explicit HISTORICAL LIMIT label where they were deleted",
+   "real_cell_coverage": "independent estimator recomputation applied to the three T=96 cells that still hold their arrays (159,164,640 elements each: every family agrees to 0.0 — residual moments, entropy, joint mutual information, correlation, R2, errors, histogram counts) and, by regenerating from the retained checkpoints, to one cell per deleted horizon; the remaining deleted cells carry domain validation and internal oracles with an explicit historical limit"
   },
   "RP118": {
    "status": "DONE_IN_CODE",
@@ -1296,7 +1297,8 @@
   },
   "RP119": {
    "status": "IN_PROGRESS",
-   "reporting": "a horizon measured on the accepted chain without an accepted replay is reported MEASURED_REPLAY_UNVERIFIED with its values explicitly unpooled; the four-horizon average names the horizons missing per seed over a fixed denominator"
+   "reporting": "a horizon measured on the accepted chain without an accepted replay is reported MEASURED_REPLAY_UNVERIFIED with its values explicitly unpooled; the four-horizon average names the horizons missing per seed over a fixed denominator",
+   "catalog_acceptance": "all twelve catalogs accepted and published as governed evidence; worst internal oracle across the population 1.1e-16; the three T=96 acceptances refuse only on the missing accepted replay"
   },
   "RP120": {
    "status": "DONE",
