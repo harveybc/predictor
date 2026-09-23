@@ -1994,7 +1994,8 @@ def test_RP131_revalidation_reads_the_retained_evidence_under_the_repaired_gates
     cell = out["cells"][unit]
     assert cell["numerical_acceptance"] == R.FULL_NUMERIC and cell["numerical_source"] == ["catalog_acceptance"]
     assert cell["catalog_acceptance"]["covers_catalog_on_disk"] and cell["catalog_acceptance"]["accepted"]["accepted"]
-    assert cell["predictions_on_disk"] and cell["deletion_eligible_today"] and (root / "REVALIDATION.json").is_file()
+    assert cell["predictions_on_disk"] and cell["catalog_certificate_sufficient"] and (root / "REVALIDATION.json").is_file()
+    assert cell["deletion_eligible_today"] == cell["cell_verified_by_current_closure"]
     assert out["summary"]["with_full_numeric_acceptance"] == [unit] and out["inventory_digest"] == R.catalog_inventory_digest()
     # a certificate that no longer covers the catalog on disk stops being eligible, without touching any array
     v = json.loads((root / "attempts" / unit / "METRICS_VAULT.json").read_text()); v["at"] = "2020-01-01T00:00:00Z"

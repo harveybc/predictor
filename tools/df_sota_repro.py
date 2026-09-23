@@ -2818,6 +2818,7 @@ def revalidate_acceptances(root: Path, design: dict, *, receipts: dict | None = 
         if cat.is_file():
             ca = json.loads(cat.read_text()); cert = acceptance_certificate(ca)
             entry["catalog_acceptance"] = {"sha256": sha_file(cat), "pass": ca.get("pass"), "at": ca.get("at"), "class": cert["class"], "why": cert["why"],
+                                           "cell_verified": cert.get("cell_verified"), "cell_verified_historically": cert.get("cell_verified_historically"),
                                            "families_complete": len(cert["families_complete"]), "unchecked": cert["unchecked"][:3],
                                            "inventory_version": cert["inventory_version"], "inventory_digest_recorded": bool(cert["inventory_digest"]),
                                            "covers_catalog_on_disk": cert["catalog_sha256"] == (sha_file(folder / "METRICS_VAULT.json") if (folder / "METRICS_VAULT.json").is_file() else None),
@@ -2838,8 +2839,17 @@ def revalidate_acceptances(root: Path, design: dict, *, receipts: dict | None = 
         entry["numerical_acceptance"] = (FULL_NUMERIC if numeric else DOMAIN_ONLY)
         entry["numerical_source"] = numeric or None
         ca_ = entry.get("catalog_acceptance") or {}
-        entry["deletion_eligible_today"] = bool(entry["predictions_on_disk"] and ca_.get("class") == FULL_NUMERIC and ca_.get("pass")
-                                                and ca_.get("covers_catalog_on_disk") and (ca_.get("accepted") or {}).get("accepted"))
+        # eligibility is the WHOLE gate, not the catalog alone: the cell itself must be verified by the current closure, which is
+        # exactly what the three retained H96 cells lack while their replay is unaccepted
+        cert_ok = bool(ca_.get("class") == FULL_NUMERIC and ca_.get("pass") and ca_.get("covers_catalog_on_disk")
+                       and (ca_.get("accepted") or {}).get("accepted"))
+        entry["catalog_certificate_sufficient"] = cert_ok
+        entry["cell_verified_by_current_closure"] = bool(ca_.get("cell_verified"))
+        entry["deletion_eligible_today"] = bool(entry["predictions_on_disk"] and cert_ok and entry["cell_verified_by_current_closure"])
+        entry["retention_reason"] = (None if entry["deletion_eligible_today"] else
+                                     ("not on disk" if not entry["predictions_on_disk"] else
+                                      ("the cell is not verified by the current closure (its replay is not accepted)" if cert_ok else
+                                       "the catalog certificate does not establish a full independent numerical acceptance bound to this design")))
         out["cells"][unit] = entry
     out["summary"] = {"cells": len(out["cells"]),
                       "with_full_numeric_acceptance": sorted(u for u, e in out["cells"].items() if e["numerical_acceptance"] == FULL_NUMERIC),
