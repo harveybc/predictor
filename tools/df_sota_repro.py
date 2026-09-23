@@ -2844,8 +2844,8 @@ def regeneration_evidence(root: Path, cell: dict, record: dict, receipts: dict, 
     except Exception:                                               # noqa: BLE001
         return {"present": True, "refusals": ["REGEN_UNREADABLE"], "usable": False}
     aa = json.loads(ap_.read_text()) if ap_.is_file() else None
-    out["regeneration"] = {k: rr.get(k) for k in ("identity", "label", "device_name", "device_uuid", "at", "host", "author_metric", "author_metric_state",
-                                                  "independent_metric_float64", "pred_sha256", "true_sha256", "route")}
+    out["regeneration"] = {k: rr.get(k) for k in ("identity", "label", "device", "device_name", "device_uuid", "at", "host", "author_metric",
+                                                  "author_metric_state", "independent_metric_float64", "pred_sha256", "true_sha256", "route")}
     acc_r = accepted_artifact(root, receipts, warehouse, out["regeneration_sha256"], expect_kind="regeneration")
     acc_a = accepted_artifact(root, receipts, warehouse, out["acceptance_sha256"], expect_kind="regeneration") if out["acceptance_sha256"] else {"accepted": False, "why": "no acceptance file"}
     out["accepted"] = {"regeneration": acc_r, "acceptance": acc_a}
@@ -2859,9 +2859,11 @@ def regeneration_evidence(root: Path, cell: dict, record: dict, receipts: dict, 
         out["refusals"].append("REGEN_NOT_IDENTICAL")
     if rr.get("pred_sha256") != record.get("pred_sha256") or rr.get("true_sha256") != record.get("true_sha256"):
         out["refusals"].append("REGEN_DIGESTS: the regeneration's digests are not the record's")
-    for key in ("device_uuid", "at", "host", "author_metric_state", "finalized"):
+    for key in ("device", "at", "host", "author_metric_state", "finalized"):
         if not rr.get(key):
             out["refusals"].append(f"REGEN_INCOMPLETE: no {key}")
+    if str(rr.get("device", "")).startswith("cuda") and not rr.get("device_uuid"):
+        out["refusals"].append("REGEN_INCOMPLETE: a CUDA regeneration must name the measured device UUID it ran on")
     if not (isinstance(metric, dict) and all(isinstance(metric.get(k), (int, float)) and math.isfinite(metric[k]) for k in ("mae", "mse"))):
         out["refusals"].append("REGEN_METRIC_NOT_FINITE")
     vault_path = folder / "METRICS_VAULT.json"

@@ -1591,3 +1591,23 @@ def test_RP116_the_deletion_boundary_does_not_mistake_its_own_descriptor_for_a_c
         assert not [r for r in R._readers_of(path) if "fuser" in r] or True
         fd_readers = R._readers_of(path)
     assert isinstance(fd_readers, list)
+
+
+def test_RP115_a_cuda_regeneration_must_name_the_measured_device_it_ran_on(world, tmp_path, monkeypatch):
+    """A CPU regeneration names `cpu`; a regeneration that claims CUDA without a measured UUID is incomplete evidence."""
+    root, wh, held, _ = _accepted_world(world, tmp_path, monkeypatch, tag="dev")
+    unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
+    design = json.loads((root / "DESIGN.json").read_text())
+    R.accept_catalog(root, design, unit, data_path=world["data"])
+    R.metadata_backup(root, tmp_path / "bkdev")
+    R.delete_predictions(root, [unit], accepted_report_sha256=R.sha_file(root / "REPORT.json"), backup_manifest=tmp_path / "bkdev" / "MANIFEST.json",
+                         receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=wh, require_acceptance=False)
+    R.regenerate_cell(root, design, unit, data_path=world["data"], device="cpu")
+    R.accept_regenerated(root, design, unit, data_path=world["data"], delete_after=True)
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    ev = R.regeneration_evidence(root, world["cell"], json.loads((folder / "cell.json").read_text()), receipts, wh)
+    assert "REGEN_INCOMPLETE: no device" not in ev["refusals"] and ev["regeneration"]["device"] == "cpu"
+    rp = folder / "regenerated" / "REGENERATION.json"
+    rr = json.loads(rp.read_text()); rr["device"] = "cuda:0"; rr["device_uuid"] = None; rp.write_text(json.dumps(rr))
+    ev2 = R.regeneration_evidence(root, world["cell"], json.loads((folder / "cell.json").read_text()), receipts, wh)
+    assert any("measured device UUID" in r for r in ev2["refusals"])
