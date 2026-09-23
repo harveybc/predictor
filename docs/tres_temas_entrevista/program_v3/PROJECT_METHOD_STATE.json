@@ -27,13 +27,13 @@
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "RP97_REVIEWED_CHANGES_REQUIRED_FOUR_CELLS_PRESERVED_EIGHT_PENDING",
+  "status": "RP105_REVIEWED_CHANGES_REQUIRED_TWELVE_TRAINED_AND_ACCEPTED_EXACT_SCORING_INCOMPLETE",
   "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
   "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
   "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
   "runtime_exclusion_implemented": true,
   "policy": "SOTA_FIRST_2026_09_21.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md",
   "suspended_measurements": [
    "simplified E0/E1 extensions",
    "household context pilots",
@@ -45,7 +45,22 @@
    "weekly forecasting and RL",
    "core pretraining"
   ],
-  "completion_requires": "All four horizons x three seeds, accepted recipe and scoped independent verification; preserve old CPU replay failures. Repair vault/replay trust and metric population, test bounded evaluation/verification within existing workers before treating 22 GiB as intrinsic model requirement. No automatic coordinator restart date."
+  "completion_requires": "All four horizons x three seeds, accepted recipe, original float32 scoring and scoped independent verification. Repair historical custody and content-specific deletion, preserve failed portability checks, qualify inferred device identity. No retraining to repair closure; no automatic coordinator or WORKER_A GPU resumption."
+ },
+ "rp105_external_review": {
+  "reviewed_commit": "55a339ce0cd3ac28b0495c5ad4bde57736ee9fa1",
+  "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
+  "evidence": "../../audits/evidence/RP105_MUSASHI_REVIEW_2026_09_22/",
+  "findings": ["post-deletion metric rewrite accepted", "different-identity extra-root copy deleted", "original float32 scoring incomplete for T336/T720"],
+  "live_warehouse_requeried_by_auditor": true,
+  "warehouse_bigint": "ADOPTED_VERIFIED; eight governance relations unchanged before resend; one intentional warehouse stop/start",
+  "t720_original_terminals": "3 resent and reconciled; no new generations",
+  "accepted_cell_artifacts": "12/12 record and checkpoint identities match live accepted artifacts",
+  "deleted_cells_retained_custody": "6/6 catalogs match pre-deletion report; metadata backup 14542485 bytes; not array recomputation",
+  "predictions_deleted_by_reviewer": 0,
+  "next_orders": "../../handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md",
+  "owner_information_required": "WORKER_A physical cooling confirmation only; independent blocks continue",
+  "historical_blocks_below": "Prior Satoshi returns preserved as reported; this review supersedes their pending restart and terminal claims"
  },
  "rp97_external_review": {
   "reviewed_commit": "fb6ec31e28db6d7dc3434c86f18218ee3e5743f1",
@@ -83,14 +98,14 @@
   "owner_action_required": false
  },
  "updated_on": "2026-09-22",
- "current_stage": "rp98_rp105_execution",
+ "current_stage": "external_review",
  "completed_stages": [
   "discovery",
   "requirements"
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "RP98_RP105_ISSUED_RP97_PARTIAL_REVIEWED_PRIOR_MEASUREMENTS_SUSPENDED",
+ "handoff_status": "RP106_RP113_ISSUED_RP105_REVIEWED_WAREHOUSE_UNBLOCKED_EXACT_REPRODUCTION_PENDING",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -129,21 +144,21 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "RP98-RP100: freeze PRE; repair metric-vault population/custody and replay report authority; preserve original failures",
-  "RP101: prove bounded evaluation/verification parity and resource admission on existing cooled workers",
-  "RP102: complete eight missing protocol-A cells after admission; protocol B requires exact per-cell source lock and its own capacity proof",
-  "RP103-RP105: correct seed/horizon aggregation, independently certify finite metric catalog and persisted contents, perform authorized per-cell prediction deletion, tests and one return",
+  "RP106-RP108: freeze PRE; repair historical accepted-evidence chain and content-specific deletion; retain no-deletion hold until repaired",
+  "RP109-RP110: exact bounded author float32 scorer, qualified device attribution and actual-author operational patch parity",
+  "RP111: close already accepted T720 numerical evidence; original-device WORKER_A replay requires physical cooling confirmation",
+  "RP112-RP113: independent finite-catalog acceptance, corrected authorized retention, complete-population report, tests, one return; protocol B remains separate",
   "No adapted pilot, financial fit or private holdout access while SOTA reproduction is the active prerequisite"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
   "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-  "external_review": "../../audits/work_plan/MUSASHI_RP90_RP97_REVIEW_2026_09_22.md",
+  "external_review": "../../audits/work_plan/MUSASHI_RP98_RP105_REVIEW_2026_09_22.md",
   "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-  "return": "https://github.com/harveybc/predictor/blob/fb6ec31e/docs/audits/work_plan/SATOSHI_RP90_RP97_RETURN_2026_09_22.md",
+  "return": "https://github.com/harveybc/predictor/blob/55a339ce/docs/audits/work_plan/SATOSHI_RP98_RP105_RETURN_2026_09_22.md",
   "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
   "benchmark_registry": "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
   "fin_loss_opt_design": "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
@@ -219,9 +234,10 @@
     "BENCHMARK-CONTRACTS"
    ],
    "evidence": [
-    "rp90_rp97 block"
+    "rp90_rp97 block",
+    "rp105_external_review block"
    ],
-   "next_action": "RP98-RP105: repair closure/catalog, prove bounded evaluation parity, complete missing cells on admitted cooled workers; no automatic coordinator resumption or memory-ceiling increase",
+   "next_action": "RP106-RP113: bind post-deletion evidence, fix content-specific deletion, finish exact float32 scoring and pending replay/catalog without refitting; warehouse blocker already removed",
    "deliverable": "Full official benchmark reproduction with published metrics, matched naive, numerical agreement and provenance; not an adapted proxy"
   },
   {

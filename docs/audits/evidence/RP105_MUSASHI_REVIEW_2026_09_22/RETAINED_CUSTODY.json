@@ -1,0 +1,81 @@
+{
+  "pre_deletion_report_sha256": "fbe2cd4c97a33a59546967c7008e45b5c5bcdaa3ded38df18528967e2652338d",
+  "rows": [
+    {
+      "unit": "L96_h192_s2021",
+      "record_sha256": "3584eca7a5909d74ff0a5976c835f4726c5eb60f17d64f1394e50faf067d84a7",
+      "vault_sha256": "d595ec8534cd62ce6ccdc04ca65bd889a83667382e6353ac1b3e08eef8c5041b",
+      "record_matches_live_accepted": true,
+      "checkpoint_matches_live_accepted": true,
+      "vault_matches_pre_deletion_report": true,
+      "vault_matches_worker_current": true,
+      "report_resolves": true,
+      "arrays_identity_matches_record": true,
+      "pre_report_verified": true
+    },
+    {
+      "unit": "L96_h192_s2022",
+      "record_sha256": "035abc642a6d62f2087be7ad185a8dbc1988a3c49e836015692c9ccbe50e6e55",
+      "vault_sha256": "2b88b7db704fff313c415d431aaf1ce6c4e28d269f6b76ca7ed0a1c4fa9b7a11",
+      "record_matches_live_accepted": true,
+      "checkpoint_matches_live_accepted": true,
+      "vault_matches_pre_deletion_report": true,
+      "vault_matches_worker_current": true,
+      "report_resolves": true,
+      "arrays_identity_matches_record": true,
+      "pre_report_verified": true
+    },
+    {
+      "unit": "L96_h192_s2023",
+      "record_sha256": "6cc455141ab627e539fe95a699602b2cb3b51c71bab19cfa6ac5032a2e0a0e8b",
+      "vault_sha256": "a78f4fb0dbc38ef0bb1a627fffe8ac6e7ba3801c8c7c5f7f9f27c91e758240c4",
+      "record_matches_live_accepted": true,
+      "checkpoint_matches_live_accepted": true,
+      "vault_matches_pre_deletion_report": true,
+      "vault_matches_worker_current": true,
+      "report_resolves": true,
+      "arrays_identity_matches_record": true,
+      "pre_report_verified": true
+    },
+    {
+      "unit": "L96_h336_s2021",
+      "record_sha256": "c04f9d5720bb89923def480f6d147ca6a7983b6955f8adce31f13b3d213d1e67",
+      "vault_sha256": "717525b04f64e677edf82695b24b847d205631cee43692046da1115ac63169ff",
+      "record_matches_live_accepted": true,
+      "checkpoint_matches_live_accepted": true,
+      "vault_matches_pre_deletion_report": true,
+      "vault_matches_worker_current": true,
+      "report_resolves": true,
+      "arrays_identity_matches_record": true,
+      "pre_report_verified": true
+    },
+    {
+      "unit": "L96_h336_s2022",
+      "record_sha256": "83187dff443a4b3f86d30016b3b4a7391e464befb431d817a9a1fb615abe8f56",
+      "vault_sha256": "0645f143bb28e693577a25cad3e43a77931383ca8365324b26575320b4d690c5",
+      "record_matches_live_accepted": true,
+      "checkpoint_matches_live_accepted": true,
+      "vault_matches_pre_deletion_report": true,
+      "vault_matches_worker_current": true,
+      "report_resolves": true,
+      "arrays_identity_matches_record": true,
+      "pre_report_verified": true
+    },
+    {
+      "unit": "L96_h336_s2023",
+      "record_sha256": "3d755c5cea2ae36e440b5721b186e0d8a1f262248484a5ea0d61ea4955fd141c",
+      "vault_sha256": "cea95dbcebe6be90c43552f5dbc7f87f8ee7cba70685e81c8dbc93ed5a842976",
+      "record_matches_live_accepted": true,
+      "checkpoint_matches_live_accepted": true,
+      "vault_matches_pre_deletion_report": true,
+      "vault_matches_worker_current": true,
+      "report_resolves": true,
+      "arrays_identity_matches_record": true,
+      "pre_report_verified": true
+    }
+  ],
+  "scope": "retained bytes versus preserved pre-deletion report and independently queried accepted artifacts; NOT re-estimation from deleted arrays",
+  "pass": true,
+  "backup_files": 37,
+  "backup_bytes": 14542485
+}

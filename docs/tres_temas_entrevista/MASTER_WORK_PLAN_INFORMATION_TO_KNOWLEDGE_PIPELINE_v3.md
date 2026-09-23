@@ -1,16 +1,19 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
-**Revision RP97, 22-sep:** [dictamen independiente](../audits/work_plan/MUSASHI_RP90_RP97_REVIEW_2026_09_22.md).
-Cuatro celdas TimeFilter medidas, ocho pendientes en L96. Recalculo independiente
-desde CSV/predicciones: H96 MSE 0.135496 / MAE 0.232884 (tres semillas), frente
-a 0.133 / 0.230 publicados. No es aun reproduccion completa. El cierre acepta
-bovedas alteradas y replays contradictorios; el catalogo admite una poblacion
-incompleta. Corregir antes del borrado autorizado, sin reentrenar lo conservado.
-Orden vigente: [RP98-RP105](../handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md).
-El siguiente paso es reparar estas verificaciones y probar evaluacion acotada
-en memoria en workers existentes, no rebajar la receta ni ampliar hardware.
-La restriccion termica no caduca automaticamente el 24: requiere refrigeracion
-restablecida confirmada por el owner. Ninguna prediccion borrada en esta revision.
+**Revision RP105, 22-sep:** [dictamen independiente](../audits/work_plan/MUSASHI_RP98_RP105_REVIEW_2026_09_22.md).
+Doce celdas TimeFilter entrenadas; doce terminales aceptados tras la adopcion
+BIGINT y el reenvio de los tres sobres T=720 por Musashi. Historia del almacen
+intacta durante la adopcion. No es aun reproduccion exacta cerrada: faltan
+verificaciones numericas y el scorer original float32 de T=336/720.
+Dos fallos reproducidos bloquean nuevos borrados: cierre historico que acepta
+metricas reescritas y borrado de copias por nombre sin exigir identidad de bytes.
+Los seis catalogos reales ya retenidos coinciden con el informe pre-borrado y
+sus records/checkpoints con el almacen vivo; no se declaran corruptos.
+Orden vigente: [RP106-RP113](../handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md).
+Reparar, terminar scoring/replays y aplicar la retencion autorizada, sin repetir
+entrenamientos ni rebajar la receta. GPU de WORKER_A pendiente de confirmacion
+fisica de refrigeracion; coordinador sin compute pesado, sin caducidad automatica.
+Ninguna prediccion de produccion borrada por Musashi en esta revision.
 
 **Capacidad de disco, 22-sep:** [presupuesto medido sin hardware nuevo](program_v3/STORAGE_BUDGET_2026_09_22.md).
 La campana SOTA primaria de 12 celdas cabe en disco con retencion de metricas y
@@ -44,7 +47,7 @@ nuevas mediciones de los pilotos simplificados E0/E1, contexto electrico y
 FIN-LOSS-OPT hasta establecer la referencia publicada correspondiente. No
 repetir ni ampliar esos pilotos como sustituto de una reproduccion fiel.
 Orden anterior ejecutada parcialmente: [RP90-RP97](../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md).
-Orden activa: [RP98-RP105](../handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md).
+Orden activa: [RP106-RP113](../handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md).
 Politica: [SOTA_FIRST](program_v3/SOTA_FIRST_2026_09_21.md).
 
 La prioridad inmediata es el benchmark Electricity/ECL de 321 clientes horarios

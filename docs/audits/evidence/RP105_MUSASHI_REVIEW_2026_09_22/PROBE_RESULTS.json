@@ -1,0 +1,52 @@
+{
+  "baseline": {
+    "verified_units": [
+      "L16_h4_s2021"
+    ],
+    "deletion_gate": {
+      "pass": true,
+      "reasons": [],
+      "report_sha256": "1ec5c7502598f6ef2ab782002ac5046bb8a2ba4cefeb1da9c9beaa778159fbc6"
+    }
+  },
+  "different_copy_deleted": {
+    "verified_arrays_sha256": "bb4510ff656ebcf4c538da8cf88831a500a6dd5409f9a90670d387cc7e8b754e",
+    "other_sha256": "7c5e7f9c4aebee3406be34183907cdebcee827663575e7495fafd6996e046197",
+    "other_path_exists_after": false,
+    "deleted_digests": [
+      "bb4510ff656ebcf4c538da8cf88831a500a6dd5409f9a90670d387cc7e8b754e",
+      "7c5e7f9c4aebee3406be34183907cdebcee827663575e7495fafd6996e046197"
+    ]
+  },
+  "changed_record_without_vault_or_checkpoint": {
+    "historically_verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": [],
+    "historical_score": {
+      "mae": 0.0,
+      "mse": 0.0
+    },
+    "table_score": {
+      "status": "OUTSIDE_OPERATIONAL_MARGIN",
+      "mean": 0.0,
+      "sd_ddof1": null,
+      "values": [
+        0.0
+      ],
+      "published": 0.5,
+      "difference": -0.5,
+      "tolerance_agree": 0.0125,
+      "tolerance_partial": 0.018500000000000003,
+      "n_seeds": 1,
+      "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+    }
+  },
+  "nonexistent_historical_report": {
+    "historically_verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": [],
+    "status": "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION"
+  }
+}

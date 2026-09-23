@@ -1,0 +1,111 @@
+{
+  "state": "ADOPTED_VERIFIED",
+  "provider_sha256": "a8de8fc0ae14e133f771c2ab6a4cecf32270a442df8e14ef4e3f2adf95bb4e08",
+  "before": {
+    "tables": {
+      "gov_report": {
+        "count": 0,
+        "digest": null
+      },
+      "gov_metric": {
+        "count": 0,
+        "digest": null
+      },
+      "gov_dataset": {
+        "count": 0,
+        "digest": null
+      },
+      "gov_terminal": {
+        "count": 2568,
+        "digest": "14312c4f796c444ab3b1fe69cebe4347"
+      },
+      "gov_terminal_metric": {
+        "count": 144252,
+        "digest": "8c478d630caffd898d377000a86de3f4"
+      },
+      "gov_terminal_dataset": {
+        "count": 262,
+        "digest": "7170fc948376166c584876c79053ec5b"
+      },
+      "gov_terminal_artifact": {
+        "count": 364,
+        "digest": "d134f7cbc56c0ad04809606a8872c00f"
+      },
+      "gov_availability_contract": {
+        "count": 0,
+        "digest": null
+      }
+    },
+    "bytes_type": "INTEGER"
+  },
+  "after": {
+    "tables": {
+      "gov_report": {
+        "count": 0,
+        "digest": null
+      },
+      "gov_metric": {
+        "count": 0,
+        "digest": null
+      },
+      "gov_dataset": {
+        "count": 0,
+        "digest": null
+      },
+      "gov_terminal": {
+        "count": 2568,
+        "digest": "14312c4f796c444ab3b1fe69cebe4347"
+      },
+      "gov_terminal_metric": {
+        "count": 144252,
+        "digest": "8c478d630caffd898d377000a86de3f4"
+      },
+      "gov_terminal_dataset": {
+        "count": 262,
+        "digest": "7170fc948376166c584876c79053ec5b"
+      },
+      "gov_terminal_artifact": {
+        "count": 364,
+        "digest": "d134f7cbc56c0ad04809606a8872c00f"
+      },
+      "gov_availability_contract": {
+        "count": 0,
+        "digest": null
+      }
+    },
+    "bytes_type": "BIGINT"
+  },
+  "rehearsal": {
+    "type": "BIGINT",
+    "big_artifact_bytes_roundtrip": 4198064038,
+    "counts_equal": true,
+    "contents_equal": true
+  },
+  "snapshot": {
+    "kind": "VERIFIED_SNAPSHOT",
+    "verified": true,
+    "source_counts": {
+      "gov_report": 0,
+      "gov_metric": 0,
+      "gov_dataset": 0,
+      "gov_terminal": 2568,
+      "gov_terminal_metric": 144252,
+      "gov_terminal_dataset": 262,
+      "gov_terminal_artifact": 364,
+      "gov_availability_contract": 0
+    },
+    "source_digests": {
+      "gov_report": null,
+      "gov_metric": null,
+      "gov_dataset": null,
+      "gov_terminal": "14312c4f796c444ab3b1fe69cebe4347",
+      "gov_terminal_metric": "8c478d630caffd898d377000a86de3f4",
+      "gov_terminal_dataset": "7170fc948376166c584876c79053ec5b",
+      "gov_terminal_artifact": "d134f7cbc56c0ad04809606a8872c00f",
+      "gov_availability_contract": null
+    },
+    "relations_differing_from_source": []
+  },
+  "operation_seconds": 7.69861912727356,
+  "restart_scope": "one intentional warehouse stop/start; no other service restarted"
+}
