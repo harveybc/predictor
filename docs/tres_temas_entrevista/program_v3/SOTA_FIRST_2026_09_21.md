@@ -3,6 +3,16 @@
 Owner decision: 2026-09-21. Status: ACTIVE; NO_NEW_MEASUREMENT.
 This overrides older next-fit instructions, not the recorded historical facts.
 
+## Execution amendment, 2026-09-23
+
+Retention-tool repairs and original-device replay waits are NOT global training
+prerequisites. Execute the already mapped TimeFilter released L512 recipe under
+RP135 on the admitted external 5090 while retaining its artifacts. This advances
+SOTA-REPRO itself; it does not waive independent acceptance before downstream
+model selection. Its Table 9 comparison must retain the unresolved published
+lookback qualification. Keep scientific-path, governance, disk and thermal gates.
+No new owner engineering authorization is needed between campaign cells.
+
 ## What changes
 
 The primary experiment is a faithful reproduction of the strongest supported

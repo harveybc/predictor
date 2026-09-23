@@ -1,6 +1,9 @@
 # Protocol B (TimeFilter Table 9, long context): the author's recipe, mapped exactly, NOT executed
 
 Status: **SPECIFIED AND SEALED FOR EXECUTION; NO CELL RUN; NO RESULT CLAIMED.**
+Execution ordered on 2026-09-23 in
+[RP135](../../handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md), independently of
+historical A replay and retention repairs. This is an order, not a run receipt.
 Scope: this is the separate deliverable RP113 asks for. Protocol A (Table 8, L = 96) does not complete it and its numbers
 are never reported as protocol B's.
 
@@ -26,7 +29,7 @@ with `seq_len=512` for all four horizons. Its arguments, verbatim:
 ```
 
 Differences from protocol A (L = 96, Table 8) that matter and are not defaults: **seq_len 512**, **patch_len 128**
-(so the number of patches per channel is 4, as in protocol A), **top_p 0.0**, **dropout 0.5 at every horizon**.
+(so the number of patches per channel is 4, versus 3 in protocol A), **top_p 0.0**, **dropout 0.5 at every horizon**.
 
 ## The choice mapping, stated instead of assumed
 
@@ -92,5 +95,7 @@ horizon other than the two measured. The projection is a projection.
 
 The same governed path as protocol A: seal a design with `protocol="Lsearched"`, acquire the same governed ECL file, execute
 one cell at a time on the **admitted external RTX 5090** (UUID checked before each dispatch, host thermals monitored), close
-with replays on that device, catalog every cell, then delete predictions under the corrected per-content gate. No part of it
+with replays on that device, catalog every cell, and retain predictions during RP135
+while the destructive gate is under repair. Later deletion requires the corrected
+per-content gate. No part of it
 may reuse protocol A's cells, and no protocol A number may appear in a protocol B row.

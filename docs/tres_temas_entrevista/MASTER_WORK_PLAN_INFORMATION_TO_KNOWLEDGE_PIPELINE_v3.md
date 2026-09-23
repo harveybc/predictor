@@ -1,12 +1,50 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
-**Revision vigente RP127, 23-sep:** [dictamen independiente](../audits/work_plan/MUSASHI_RP122_RP127_REVIEW_2026_09_23.md).
+**Revision vigente RP131, 23-sep: avanzar experimentos y separar retencion.**
+[Dictamen independiente](../audits/work_plan/MUSASHI_RP128_RP131_REVIEW_2026_09_23.md)
+y [ordenes RP132-RP135](../handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md).
+Los casos anteriores estan reparados; dos nuevas brechas afectan certificados
+de borrado y el informe de revalidacion, no demuestran errores en los scores.
+Musashi corrige la orquestacion: **bloquear borrados no bloquea experimentos**.
+No falta permiso del owner; no se espera otra revision para iniciar RP135.
+
+- Frente experimental activo: **SOTA-REPRO, receta publicada L512 de TimeFilter**,
+  321 clientes ECL, cuatro horizontes x tres semillas, solo 5090 externa admitida.
+  Diseno y piloto de costo existentes; unas cuatro horas GPU de entrenamiento
+  proyectadas, mas evaluacion/cierre. No es una promesa de duracion total.
+- Pregunta: rendimiento de esa receta fuerte con contexto largo, antes de las
+  intervenciones doctorales. No es un efecto causal aislado del contexto ni
+  reproduccion exacta de Tabla 9: su lookback por horizonte no esta publicado.
+- Frente de retencion: RP132-RP134, maximo 1 800 s CPU dentro del techo total de
+  14 400 s; sin nuevos borrados. No reconstruir todo ni repetir once reducciones.
+- Refrigeracion pendiente solo bloquea los replays en sus dispositivos originales.
+  Se conservan T96 y el alcance incompleto de T192 s2021; no se relajan tolerancias.
+- Capacidad: inventario real antes de admitir RP135, incluidos arrays retenidos y
+  temporales; reserva de disco de 50 GiB, sin asumir borrados ni equipos nuevos.
+
+Estado honesto: las ultimas rondas avanzaron herramientas, no hipotesis doctorales.
+RP135 queda **ordenado, no ejecutado** por este cambio de plan. Los defectos de
+datos, entrenamiento, metricas, gobernanza o capacidad de la nueva ruta siguen
+siendo causas validas para detener esa ruta, no para inventar un resultado.
+
+**Orden adicional del owner, 23-sep: ejecucion concurrente permanente.**
+[Politica](program_v3/CONCURRENT_EXECUTION_2026_09_23.md) y
+[cola persistente](program_v3/EXPERIMENT_EXECUTION_QUEUE.json).
+Satoshi despacha la experimentacion en checkout inmutable mientras otro
+worktree/agente repara y otro analiza/prepara el siguiente diseno. Usar instancias
+Hermes/subagentes disponibles sin duplicar campanas ni interferir con otras
+tareas. Ninguna espera entre pasos para pedir "continua". La admision termica y
+de capacidad permanece; no llenar GPUs con trabajo ajeno al plan. Cada auditoria
+abre con resultados nuevos o trabajo real en curso y la causa de cualquier
+inactividad; no presentar tests de software como avances experimentales.
+
+**Revision historica RP127, 23-sep (superada por RP131):** [dictamen independiente](../audits/work_plan/MUSASHI_RP122_RP127_REVIEW_2026_09_23.md).
 Las comprobaciones numericas nuevas detectan los valores falsos anteriores.
 Persisten dos brechas reproducidas en la integracion: catalogo sin referencia
 numerica habilita borrado, y aceptacion de otro diseno pasa por la ruta destructiva.
 Ademas un booleano pasa como conteo numerico cero. No demuestra corrupcion real;
 no repetir entrenamiento ni las once reducciones cuya evidencia siga siendo valida.
-Orden activa: [RP128-RP131](../handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md).
+Orden de esa revision: [RP128-RP131](../handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md).
 T96 mantiene replay pendiente y arrays; T192 semilla 2021 mantiene su score
 historico y catalogo pendiente de regeneracion identica. Las GPUs originales
 siguen retenidas hasta confirmacion fisica; las reparaciones no esperan ese hecho.
@@ -99,7 +137,7 @@ nuevas mediciones de los pilotos simplificados E0/E1, contexto electrico y
 FIN-LOSS-OPT hasta establecer la referencia publicada correspondiente. No
 repetir ni ampliar esos pilotos como sustituto de una reproduccion fiel.
 Orden anterior ejecutada parcialmente: [RP90-RP97](../handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md).
-Orden activa: [RP128-RP131](../handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md).
+Orden activa: [RP132-RP135](../handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md).
 Politica: [SOTA_FIRST](program_v3/SOTA_FIRST_2026_09_21.md).
 
 La prioridad inmediata es el benchmark Electricity/ECL de 321 clientes horarios
@@ -289,7 +327,11 @@ y [protocolo semanal/RL 12E](https://github.com/harveybc/predictor/blob/a5630c8a
 delimitan las brechas. No convertir un estado antiguo "no ejecutado" en un estado
 actual, ni una mecanica ejecutada en hipotesis probada.
 
-## 4. Primer experimento real: MOD-E0-DEV
+## 4. Primer experimento modular historico: MOD-E0-DEV
+
+Esta seccion conserva el diseno y su razon cientifica. **No es la orden de
+ejecucion actual:** la prioridad SOTA-first posterior y la cola de la seccion 5
+gobiernan los nuevos ajustes. No repetir estos pilotos para ocupar una GPU.
 
 **Pregunta:** al variar heterogeneidad temporal y relaciones retardadas entre
 variables, que aportan agrupar por perfiles y conservar secuencias hasta la fusion,
@@ -389,11 +431,26 @@ demuestra por si solo ausencia de sobreajuste ni selecciona por el test.
 
 ## 5. Cola y dependencias, sin cadena artificial
 
+Cola vigente desde 23-sep; sustituye las filas antiguas "Ahora A/B" de RP57-RP63.
+El estado detallado de celdas vive en
+[EXPERIMENT_EXECUTION_QUEUE.json](program_v3/EXPERIMENT_EXECUTION_QUEUE.json).
+
+| Carril vigente | Trabajo | Dependencia real / siguiente resultado |
+|---|---|---|
+| GPU, primero | RP135: receta publicada TimeFilter L512, 12 celdas, solo 5090 externa admitida | Preparacion gobernada, diseno sellado y capacidad; MSE/MAE del autor, naive y receta documentada; no espera borrados ni replay historico |
+| CPU, independiente | RP132-RP134: dos consumidores de evidencia | Arbol separado, tope 1 800 s CPU; conservar arrays hasta reparar, no detener entrenamiento independiente |
+| Analisis/diseno concurrente | Contraste modular frente a referencia aceptada, luego R0/R1/R2 y H-CORE segun dependencias | Preparar intervencion/controles sin tocar el modelo que entrena; no afirmar que la arquitectura de electricidad gana en finanzas |
+| Preparacion financiera concurrente | FIN-LOSS-OPT y E3 semanal forecasting/RL | Resolver contratos y referencia financiera antes de ajustar; no abrir reserva ni convertir un fallo documental electrico en bloqueo de diseno |
+| Espera fisica localizada | Replay A T96 y catalogo T192 s2021 en dispositivos originales | Confirmacion de refrigeracion + admision; no retiene la cola B |
+
+Las filas siguientes son mapa historico y dependencias cientificas conservadas,
+no una segunda cola de despacho ni permiso para revivir pilotos suspendidos.
+
 | Orden | Trabajo / responsable ejecutor Satoshi | Dependencia y salida |
 |---|---|---|
 | Ejecutado, revision parcial | Piloto multivariado RP1-RP8 | 66 celdas y 3 pilotos; conservar efectos descriptivos, no aceptacion confirmatoria |
-| Ahora A | RP57-RP59: comparadores, antecedentes antiguos y auditoria de datos | Naive/lineal/modelo por filas y escalas identicas; no inferir log1p ni unidades por magnitud |
-| Ahora B | RP60-RP63: diagnostico ML y referencia de literatura | Loss/monitor, curvas, capacidad, contexto y volumen por separado; ejecutar fase acotada antes de repetir pretraining |
+| Historico A | RP57-RP59: comparadores, antecedentes antiguos y auditoria de datos | Naive/lineal/modelo por filas y escalas identicas; no inferir log1p ni unidades por magnitud |
+| Historico B | RP60-RP63: diagnostico ML y referencia de literatura | Loss/monitor, curvas, capacidad, contexto y volumen por separado; conservar el alcance de esos diagnosticos |
 | E0, antes de elegir | MOD-ARCH-COMPARE: ARCH-A/B/C y ARCH-0 en el modular propio | Efectos descriptivos recalculados; aceptacion compuesta pendiente de RP26, sin ganador universal |
 | Paralelo C | Aceptacion RL offline de RP53 conservada para revision | RP56 reporta reparacion de terminales sin fill; no aceptacion cientifica ni entrenamiento RL por ese hecho |
 | Despues D | E1 publico: desarrollar perfiles, seleccion, contextos, R0/R1/R2 y comparadores | Piloto de mecanismos y datos admisibles; fijar procedimiento, margenes, precision y presupuestos antes de reservas |

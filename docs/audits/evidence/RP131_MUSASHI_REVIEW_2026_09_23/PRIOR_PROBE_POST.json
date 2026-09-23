@@ -1,0 +1,78 @@
+{
+  "scope": "disposable actual-author CPU fixture and stub warehouse only",
+  "host_before": {
+    "thermal_zone0:acpitz": 50.0,
+    "thermal_zone1:acpitz": 52.3
+  },
+  "positive_catalog": {
+    "pass": true,
+    "fully_independent": true
+  },
+  "wrong_acf_with_reference": {
+    "pass": false,
+    "refusals": [
+      "INDEPENDENT autocorrelation.channel_mean_residual_per_step.acf_by_lag: max |difference| 0.9428690468981116 exceeds 1e-09"
+    ]
+  },
+  "wrong_acf_default_without_data": {
+    "pass": true,
+    "independent_comparison": null,
+    "independently_accepted_families": []
+  },
+  "delete_without_independent_reference": {
+    "state": "REFUSED",
+    "array_remaining": true
+  },
+  "foreign_design_explicit_check": {
+    "accepted": false,
+    "sha256": "871aa8f197be3f774f77a30f8f4d6539cc7f0ee7c7c87964cca02071176aa082",
+    "why": "acceptance_closure_871aa8f197be3f77: accepted under design ffffffffffff, not 6a77b8cf4a3d",
+    "expected": {
+      "kind": "closure",
+      "subject": null,
+      "role": "closure_report"
+    },
+    "registry_hint": {
+      "unit": "acceptance_closure_871aa8f197be3f77",
+      "kind": "closure",
+      "role": "closure_report",
+      "subject": "closure",
+      "at": "2026-09-23T00:00:00Z"
+    }
+  },
+  "foreign_design_actual_deletion": {
+    "state": "REFUSED",
+    "array_remaining": true
+  },
+  "missing_design_explicit_check": {
+    "accepted": false,
+    "sha256": "871aa8f197be3f774f77a30f8f4d6539cc7f0ee7c7c87964cca02071176aa082",
+    "why": "acceptance_closure_871aa8f197be3f77: the accepted terminal declares no scientific design",
+    "expected": {
+      "kind": "closure",
+      "subject": null,
+      "role": "closure_report"
+    },
+    "registry_hint": {
+      "unit": "acceptance_closure_871aa8f197be3f77",
+      "kind": "closure",
+      "role": "closure_report",
+      "subject": "closure",
+      "at": "2026-09-23T00:00:00Z"
+    }
+  },
+  "boolean_as_numeric_zero": {
+    "pass": false,
+    "comparison": {
+      "status": "DISAGREEMENT",
+      "max_abs_difference": null,
+      "tolerance": 0.0,
+      "detail": "DISAGREEMENT: a boolean cannot be compared with int: a declared numeric field holds False vs 0",
+      "undefined_declared": null
+    }
+  },
+  "host_after": {
+    "thermal_zone0:acpitz": 57.0,
+    "thermal_zone1:acpitz": 60.7
+  }
+}

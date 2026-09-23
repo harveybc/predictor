@@ -46,13 +46,13 @@
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "RP127_REVIEWED_CHANGES_REQUIRED_SCOPE_AND_DESIGN_AT_DESTRUCTIVE_CONSUMERS",
+  "status": "RP131_REVIEWED_RETENTION_REPAIRS_SCOPED_RELEASED_L512_EXECUTION_ORDERED",
   "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
   "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
   "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
   "runtime_exclusion_implemented": true,
   "policy": "SOTA_FIRST_2026_09_21.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md",
   "suspended_measurements": [
    "simplified E0/E1 extensions",
    "household context pilots",
@@ -65,6 +65,47 @@
    "core pretraining"
   ],
   "completion_requires": "All four horizons x three seeds, accepted recipe, original float32 scoring and scoped independent verification. Repair historical custody and content-specific deletion, preserve failed portability checks, qualify inferred device identity. No retraining to repair closure; no automatic coordinator or WORKER_A GPU resumption."
+ },
+ "rp131_external_review": {
+  "reviewed_commit": "c9dce617a0badc480dc0519e8b94234c555f40f5",
+  "disposition": "CHANGES_REQUIRED_RETENTION_ONLY_NO_GLOBAL_EXPERIMENT_HOLD",
+  "evidence": "../../audits/evidence/RP131_MUSASHI_REVIEW_2026_09_23/",
+  "executed_findings": [
+   "empty or failed field-level comparisons still certify deletion when summaries remain green",
+   "revalidation summary ignores refused custody and copies stale cell-verification status"
+  ],
+  "verification": "New actual-author disposable CPU probe and unchanged prior probe executed; no independent pytest suite, production mutation or new scientific score",
+  "owner_action_required": false,
+  "production_deletions_by_reviewer": 0,
+  "next_orders": "../../handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md"
+ },
+ "execution_lanes": {
+  "policy": "CONCURRENT_EXECUTION_2026_09_23.md",
+  "queue": "EXPERIMENT_EXECUTION_QUEUE.json",
+  "owner_instruction": "Keep independent eligible experiments running while repairs and analysis proceed in isolated worktrees; use available Hermes/subagents; no routine continue prompts",
+  "reporting": "Every audit leads with new scientific results or identified running work and measured idle cause; never substitute tests or old scores for new measurements",
+  "science": {
+   "task": "SOTA-REPRO",
+   "order": "RP135",
+   "status": "ORDERED_NOT_EXECUTED",
+   "recipe": "TimeFilter dffde87e released ECL L512 block; 321 channels; four horizons x three seeds",
+   "device": "Only admitted WORKER_B external RTX 5090",
+   "does_not_depend_on": ["RP132-RP134 retention repair", "A original-device replays"],
+   "still_requires": ["sealed executable design", "governed inputs", "scientific path checks", "thermal/memory/disk/compute admission"],
+   "meaning": "Published-recipe reference construction, not isolated context effect, exact Table 9 identity or doctoral hypothesis confirmation"
+  },
+  "retention": {
+   "orders": "RP132-RP134",
+   "status": "CHANGES_REQUIRED",
+   "cpu_budget_seconds": 1800,
+   "budget_relation": "Within standing 14400-second round CPU ceiling",
+   "production_deletion": "HELD",
+   "science_blocking": false
+  },
+  "physical_waits": {
+   "scope": "Original-device historical replays only; unchanged explicit cooling confirmation requirements",
+   "science_blocking": false
+  }
  },
  "rp127_external_review": {
   "reviewed_commit": "a73e55b2dcad1265b7643f49fcfda810fcb7d801",
@@ -179,14 +220,14 @@
   "owner_action_required": false
  },
  "updated_on": "2026-09-23",
- "current_stage": "external_review",
+ "current_stage": "system_verification",
  "completed_stages": [
   "discovery",
   "requirements"
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "RP128_RP131_ISSUED_RP127_REVIEWED_REUSE_NUMERIC_EVIDENCE_FIX_CONSUMER_GATES",
+ "handoff_status": "RP132_RP135_ISSUED_RELEASED_L512_CAMPAIGN_AND_BOUNDED_NONBLOCKING_REPAIRS",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -225,21 +266,23 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "RP128: freeze review PRE; separate domain-only inspection from full numeric acceptance and enforce coverage in destructive consumers",
-  "RP129: require accepted scientific-design identity in every evidence consumer; reject foreign, missing and contradictory identity",
-  "RP130: reject boolean-as-number and run actual entry-point regression/mutation tests",
-  "RP131: reuse sufficient retained numeric evidence, scoped metadata closure and one return; original-device work conditional on cooling; no fitting or B factorial",
+  "RP135 first: seal and execute existing published L512 campaign on admitted external 5090; retain arrays; no dependence on old-device replays or retention repair review",
+  "RP132: derive certificate from actual field results and bound inventory; preserve positive/negative controls",
+  "RP133: distinguish recorded comparisons, accepted custody and current closure; conditional readiness preview only",
+  "RP134: retained-metadata recheck and one scoped return; repair lane capped at 1800 CPU seconds within 14400 total; unresolved repair holds deletion, not independent science",
   "No adapted pilot, financial fit or private holdout access while SOTA reproduction is the active prerequisite"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
+  "concurrent_execution": "CONCURRENT_EXECUTION_2026_09_23.md",
+  "execution_queue": "EXPERIMENT_EXECUTION_QUEUE.json",
   "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-  "external_review": "../../audits/work_plan/MUSASHI_RP122_RP127_REVIEW_2026_09_23.md",
+  "external_review": "../../audits/work_plan/MUSASHI_RP128_RP131_REVIEW_2026_09_23.md",
   "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-  "return": "https://github.com/harveybc/predictor/blob/a73e55b2/docs/audits/work_plan/SATOSHI_RP122_RP127_RETURN_2026_09_23.md",
+  "return": "https://github.com/harveybc/predictor/blob/c9dce617/docs/audits/work_plan/SATOSHI_RP128_RP131_RETURN_2026_09_23.md",
   "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
   "benchmark_registry": "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
   "fin_loss_opt_design": "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
@@ -319,9 +362,10 @@
     "rp105_external_review block",
     "rp113_external_review block",
     "rp121_external_review block",
-    "rp127_external_review block"
+    "rp127_external_review block",
+    "rp131_external_review block"
    ],
-   "next_action": "RP128-RP131: integrate numeric scope and scientific-design identity into destructive consumers; reuse validated evidence; held-device work remains conditional",
+   "next_action": "RP135: execute published L512 reference campaign on admitted external 5090; RP132-RP134 retention repairs are separate and bounded; no wait for old-device replay",
    "deliverable": "Full official benchmark reproduction with published metrics, matched naive, numerical agreement and provenance; not an adapted proxy"
   },
   {

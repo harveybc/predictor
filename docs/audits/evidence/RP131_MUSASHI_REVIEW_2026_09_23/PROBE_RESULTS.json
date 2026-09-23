@@ -1,0 +1,94 @@
+{
+  "scope": "disposable actual-author CPU fixtures, stub accepted warehouse",
+  "host_before": {
+    "thermal_zone0:acpitz": 41.0,
+    "thermal_zone1:acpitz": 50.5
+  },
+  "positive": {
+    "certificate": "FULL_INDEPENDENT_NUMERIC",
+    "deletion_dry_run": "PENDING"
+  },
+  "no_fields": {
+    "certificate": "FULL_INDEPENDENT_NUMERIC",
+    "reported_field_count": 0,
+    "mae_field": null,
+    "deletion": "COMPLETE",
+    "array_remaining": false
+  },
+  "failed_field": {
+    "certificate": "FULL_INDEPENDENT_NUMERIC",
+    "reported_field_count": 43,
+    "mae_field": {
+      "status": "DISAGREEMENT",
+      "max_abs_difference": 1.0,
+      "tolerance": 1e-09,
+      "detail": "injected field failure; summary left stale",
+      "undefined_declared": null
+    },
+    "deletion": "COMPLETE",
+    "array_remaining": false
+  },
+  "revalidation_positive": {
+    "summary": {
+      "cells": 1,
+      "with_full_numeric_acceptance": [
+        "L16_h4_s2021"
+      ],
+      "without": [],
+      "predictions_on_disk": [
+        "L16_h4_s2021"
+      ],
+      "deletion_eligible_today": [
+        "L16_h4_s2021"
+      ]
+    },
+    "accepted": true,
+    "current_cell_verified": true,
+    "eligible": true
+  },
+  "revalidation_empty_warehouse": {
+    "summary": {
+      "cells": 1,
+      "with_full_numeric_acceptance": [
+        "L16_h4_s2021"
+      ],
+      "without": [],
+      "predictions_on_disk": [
+        "L16_h4_s2021"
+      ],
+      "deletion_eligible_today": []
+    },
+    "accepted": false,
+    "current_cell_verified": true,
+    "eligible": false
+  },
+  "revalidation_current_report_unverified": {
+    "summary": {
+      "cells": 1,
+      "with_full_numeric_acceptance": [
+        "L16_h4_s2021"
+      ],
+      "without": [],
+      "predictions_on_disk": [
+        "L16_h4_s2021"
+      ],
+      "deletion_eligible_today": [
+        "L16_h4_s2021"
+      ]
+    },
+    "accepted": true,
+    "current_cell_verified": true,
+    "eligible": true
+  },
+  "actual_deletion_gate_current_report": {
+    "pass": false,
+    "reasons": [
+      "the closure did not verify the unit: ['REPLAY_PENDING: later closure withdrew verification']"
+    ],
+    "report_sha256": "5332a339e3d69c3ced3dba2b2f62c41a81801612b08273789469a8819fd0b5f9"
+  },
+  "host_after": {
+    "thermal_zone0:acpitz": 58.0,
+    "thermal_zone1:acpitz": 62.8
+  }
+}
