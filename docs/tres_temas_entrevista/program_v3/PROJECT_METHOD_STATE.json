@@ -1291,16 +1291,18 @@
   },
   "RP118": {
    "status": "DONE_IN_CODE",
-   "what": "author_metric_exact v2 divides by the element count the way numpy does (int64 scalar -> float64 quotient -> cast), not by float32(N); v1's claim retained as superseded. Cells whose element count is not exactly representable in float32 (T=336: 531,190,800; T=720: 1,049,515,920) must be rescored; T=96 (159,164,640) and T=192 (312,412,608) are exactly representable and unaffected"
+   "what": "author_metric_exact v2 divides by the element count the way numpy does (int64 scalar -> float64 quotient -> cast), not by float32(N); v1's claim retained as superseded. Cells whose element count is not exactly representable in float32 (T=336: 531,190,800; T=720: 1,049,515,920) must be rescored; T=96 (159,164,640) and T=192 (312,412,608) are exactly representable and unaffected",
+   "measured_impact": "all six affected cells regenerated bit-identically from their retained checkpoints on the admitted 5090 and rescored with route v2; exactly one number changed in the whole population: T=336 seed 2021 MAE 0.2606664299964905 -> 0.2606664001941681 (3.0e-8). Every other T=336/T=720 author value is bit-identical under both routes; T=96 (159,164,640) and T=192 (312,412,608) have exactly representable counts and could not be affected. No horizon mean, agreement verdict or conclusion moves"
   },
   "RP119": {
    "status": "IN_PROGRESS",
    "reporting": "a horizon measured on the accepted chain without an accepted replay is reported MEASURED_REPLAY_UNVERIFIED with its values explicitly unpooled; the four-horizon average names the horizons missing per seed over a fixed denominator"
   },
   "RP120": {
-   "status": "DONE_DOCUMENT_PENDING_PILOT",
+   "status": "DONE",
    "corrections": "verified against the pinned loader and model (docs/audits/evidence/d3_k5_20260917/RP114/PROTOCOL_B_PROPERTIES.json): patches per channel 3 (A, L=96/P=32) and 4 (B, L=512/P=128), tokens 963 -> 1284 (x1.33) and mask 2.78M -> 4.95M elements (x1.78), NOT a 5.3x token factor; test windows identical in both protocols at every horizon (5260 - T + 1), only training windows shrink by ~2 %",
-   "cost": "the earlier 2-4x / 6-16 h / VRAM-fit estimate is WITHDRAWN and the runtime marked UNMEASURED; a bounded governed exact-recipe pilot (author model, loaders and optimizer, fixed steps, one bounded validation pass, no test score, no checkpoint, no selection) is implemented and will be run on the admitted external 5090"
+   "cost": "the earlier 2-4x / 6-16 h / VRAM-fit estimate is WITHDRAWN and the runtime marked UNMEASURED; a bounded governed exact-recipe pilot (author model, loaders and optimizer, fixed steps, one bounded validation pass, no test score, no checkpoint, no selection) is implemented and will be run on the admitted external 5090",
+   "pilot": "bounded exact-recipe pilot on the admitted external 5090 (UUID asserted in-process, 20 optimizer steps + 20 validation batches, no test score, no checkpoint, no selection): T=96 median 0.0555 s/step, T=720 0.0602 s/step, peak VRAM 6.60-6.64 GiB, peak host RSS 2.16-2.24 GiB, 1074-1113 steps per epoch; projected 0.32-0.34 h per cell at 15 epochs and about 3.9-4.0 h for twelve cells, comparable to protocol A's measured 3-4 h and NOT 2-4x it. Excluded from the projection and said so: early stopping, the bounded evaluation and catalog work, warm-up variance beyond 20 steps, and the two unmeasured horizons"
   },
   "RP121": {
    "status": "PENDING"
