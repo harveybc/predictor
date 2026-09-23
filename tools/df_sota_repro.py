@@ -3526,7 +3526,7 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger", "accept-catalog", "backup"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger", "accept-catalog", "backup", "accept-report"])
     ap.add_argument("--reason", default=None)
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
@@ -3595,6 +3595,20 @@ def main(argv=None) -> int:
         print(json.dumps({"attempts": out["totals"], "free_disk_gib": round(out["measured_free_disk_bytes"] / 2 ** 30, 1),
                           "hosts": sorted({r["host"] for r in out["attempts"] if r["host"]}),
                           "attribution": sorted({r["device_attribution"] for r in out["attempts"]})}, indent=1)); return 0
+    if a.command == "accept-report":
+        # RP115: a RETAINED closure report (this root's current one, or a preserved earlier one a deletion marker names) is given a
+        # clearly dated successor acceptance. The acceptance is dated now; it does not claim the report was accepted earlier.
+        target = Path(a.source) if a.source else (a.root / "REPORT.json")
+        if not target.is_file():
+            raise SotaRefusal(f"REFUSED: {target} is not a file")
+        digest = sha_file(target)
+        rep = json.loads(target.read_text())
+        if rep.get("design_sha256") != design["design_sha256"]:
+            raise SotaRefusal("REFUSED: that report was closed under another design")
+        pub = publish_acceptance(a, design, kind="closure", subject=f"retained closure report {digest[:12]} ({target.name})", files={"closure_report": target})
+        print(json.dumps({"report": str(target), "sha256": digest, "acceptance_unit": pub["unit"],
+                          "scope": "dated successor acceptance: these bytes are accepted evidence from now on; earlier local availability is not evidence of earlier acceptance"}, indent=1))
+        return 0
     if a.command == "admit":
         adm = admit_gpu(a.require_gpu_uuid or os.environ.get(REQUIRED_GPU_ENV), path=a.root)
         print(json.dumps(adm, indent=1, default=str)); return 0 if adm["pass"] else 1
