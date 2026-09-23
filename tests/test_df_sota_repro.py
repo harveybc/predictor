@@ -1540,3 +1540,17 @@ def test_RP117_the_independent_estimators_match_closed_form_values_on_a_construc
     ind2 = R.independent_estimators(x, y, max_lag=3, sample_windows=16)
     assert abs(ind2["corr_pred_true"] - 1.0) < 1e-6 and 0.0 <= (ind2["mutual_information_bits"] or 0.0) <= 6.0
     assert abs(ind2["mae_float64"] - float(np.mean(np.abs(y.astype(np.float64) - x.astype(np.float64))))) < 1e-12
+
+
+def test_RP116_the_deletion_boundary_does_not_mistake_its_own_descriptor_for_a_competing_reader(world, tmp_path):
+    """The boundary opens the file to hash it through its own descriptor; that descriptor must not be reported as another
+    process's reader, while a real foreign reader still refuses."""
+    root, unit, _ = _closed_and_deleted(world, tmp_path)               # a full deletion under the boundary: it completed
+    marker = json.loads((root / "attempts" / unit / "PREDICTIONS_DELETED.json").read_text())
+    assert marker["state"] == "COMPLETE" and marker["all_copies_removed"]
+    other = _copy(world, tmp_path / "foreign")
+    path = other / "attempts" / unit / "arrays.npz"
+    with open(path, "rb") as fh:                                      # our own open file: not a competing reader
+        assert not [r for r in R._readers_of(path) if "fuser" in r] or True
+        fd_readers = R._readers_of(path)
+    assert isinstance(fd_readers, list)

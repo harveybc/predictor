@@ -1634,12 +1634,15 @@ def profile_eval(design: dict, *, data_path: Path, work: Path, horizon: int, che
 # --- RP103: authorized deletion of prediction arrays after verified metrics ---------------------------------------------------------
 
 def _readers_of(path: Path) -> list:
-    """Processes holding or transferring the file: fuser on the path plus any rsync/scp/cp command line naming it."""
+    """OTHER processes holding or transferring the file: fuser on the path (this process's own descriptor is not a competing
+    reader — the deletion boundary itself holds one) plus any rsync/scp/cp command line naming it."""
     out = []
     try:
         r = subprocess.run(["fuser", str(path)], capture_output=True, text=True, timeout=20)
-        if r.stdout.strip():
-            out.append(f"fuser: {r.stdout.strip()}")
+        pids = [x for x in r.stdout.replace("\n", " ").split() if x.strip().rstrip("cemrstfF").isdigit()]
+        others = [x for x in pids if int(x.rstrip("cemrstfF")) != os.getpid()]
+        if others:
+            out.append(f"fuser: {' '.join(others)}")
     except Exception:                                               # noqa: BLE001
         pass
     try:
