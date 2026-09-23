@@ -709,3 +709,18 @@ la aceptacion lo rechaza en vez de aparentarlo. Las puntuaciones no cambian: T=1
 T=720 0.1902/0.2906 en acuerdo operacional; T=96 medido sin replay aceptado; promedio de cuatro horizontes SIN CALCULAR sobre
 denominador cuatro. El retorno anterior conserva su texto con una **fe de erratas fechada** de sus tres afirmaciones
 demasiado amplias. Suites en WORKER_A: 98 + 117 + 106.
+
+**Ejecutado por Satoshi (23-sep, RP128-RP131, pendiente de revision):** [retorno](../audits/work_plan/SATOSHI_RP128_RP131_RETURN_2026_09_23.md),
+evidencia en `docs/audits/evidence/d3_k5_20260917/{RP128,RP131}/`. Los tres hallazgos del dictamen RP127 reproducidos (PRE en
+WORKER_B) y reparados (POST): (1) una aceptacion que nunca ejecuto la referencia numerica podia autorizar un borrado -> cada
+aceptacion lleva ahora una CLASE explicita y un certificado derivado de su propio contenido (FULL_INDEPENDENT_NUMERIC solo si se
+comparo cada familia declarada, sin campos sin revisar ni discrepancias; si no, DOMAIN_AND_INTERNAL_ONLY con alcance restringido
+y conservado como diagnostico), y el consumidor destructivo valida ese certificado -clase, catalogo cubierto, poblacion contra la
+forma del registro, version y digesto del inventario- en vez de un booleano; ademas se separo lo que certifica el catalogo de lo
+que verifica la celda; (2) los consumidores destructivos no exigian el diseno cientifico -> ahora es obligatorio y se lee del
+campo propio del terminal, con la ausencia y la contradiccion rechazadas; (3) un booleano se comparaba igual a un numero -> los
+booleanos solo se comparan con booleanos, a cualquier profundidad. Revalidacion de solo lectura de las doce celdas bajo las
+compuertas reparadas: **once con aceptacion numerica completa** (T=96 por sus propios certificados, ocho borradas por sus
+certificados de regeneracion) y T=192 semilla 2021 solo con dominio e internos; los tres arreglos de T=96 siguen retenidos y
+**ninguna celda es elegible para borrado hoy**. Puntuaciones sin cambios. Fe de erratas fechada en el retorno anterior. Sin GPU
+en esta ronda; suites en WORKER_A: 104 + 117 + 106.

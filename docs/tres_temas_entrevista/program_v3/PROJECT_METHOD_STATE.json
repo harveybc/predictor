@@ -1431,9 +1431,16 @@
    "what": "booleans are never numeric: False is not the count zero and True is not one, at any depth of a declared numeric field; the real catalog acceptance refuses the producer's boolean count with a typed message"
   },
   "RP131": {
-   "status": "IN_PROGRESS",
+   "status": "RETURNED",
    "revalidation": "read-only revalidation of all twelve cells under the repaired gates (docs/audits/evidence/d3_k5_20260917/RP131/REVALIDATION.json): 11 of 12 carry FULL_INDEPENDENT_NUMERIC acceptance (T=96 from their catalog certificates, eight deleted cells from their regeneration certificates), T=192 s2021 remains DOMAIN_AND_INTERNAL_ONLY; the three T=96 arrays are the only predictions on disk and NONE is deletion-eligible today, because their replay is not accepted. Nothing was recomputed and no array was read for this pass; the T=96 catalog certificates were re-issued and published only because the contract separating catalog from cell changed",
-   "accepted_evidence": "65 entries (4 closure reports, 24 catalog acceptances, 34 regeneration records, 3 revalidations)"
+   "accepted_evidence": "65 entries (4 closure reports, 24 catalog acceptances, 34 regeneration records, 3 revalidations)",
+   "return": "docs/audits/work_plan/SATOSHI_RP128_RP131_RETURN_2026_09_23.md",
+   "suites": "WORKER_A: sota tool 104 passed + 1 skipped (96.4 s, 1.36 GB); closure/contract/block/financial 117 passed + 2 deselected (163.8 s, 2.95 GB); olap store 106 passed + 1 skipped on SQLite and DuckDB; lake adopters 4 skipped",
+   "cost": "no GPU this round; about 22 minutes of admitted CPU inside the 14,400 CPU-second ceiling; host 20-56 C on WORKER_B and 20-48 C on WORKER_A; one probe run refused by its own thermal guard on WORKER_A after back-to-back suites and was moved to the cooler worker",
+   "open_for_owner": [
+    "cooling confirmation for WORKER_A's GPU (T=96 replay)",
+    "the coordinator's GPU would be needed to certify T=192 seed 2021's catalog"
+   ]
   }
  }
 }
