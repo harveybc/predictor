@@ -3768,7 +3768,7 @@
  },
  "table": {
   "schema": "df_sota_table.v1",
-  "at": "2026-09-23T09:07:57Z",
+  "at": "2026-09-23T09:14:39Z",
   "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
   "paper": "Hu, Y. et al. TimeFilter: Patch-Specific Spatial-Temporal Graph Filtration for Time Series Forecasting. ICML 2025 (PMLR v267); arXiv:2501.13041. Author code github.com/TROUBADOUR000/TimeFilter",
   "protocol": "L96",
@@ -3831,8 +3831,26 @@
      "replay_history": {}
     },
     "measurement_state": "MEASURED_REPLAY_UNVERIFIED",
-    "matched_naive": null,
-    "matched_baselines": null,
+    "matched_naive": {
+     "mse": 1.5878367830840463,
+     "mae": 0.9454555143179588
+    },
+    "matched_baselines": {
+     "source": "retained catalog of L96_h96_s2021 (measured, replay unverified)",
+     "windows": 5165,
+     "persistence": {
+      "mse": 1.5878367830840463,
+      "mae": 0.9454555143179588
+     },
+     "seasonal24": {
+      "mse": 0.32109503997258054,
+      "mae": 0.3257686426764087
+     },
+     "skill_vs_persistence": {
+      "mae": 0.7561446123594373,
+      "mse": 0.9160397602401822
+     }
+    },
     "training_completion": [],
     "cost": {
      "wall_seconds_sum": 0,
