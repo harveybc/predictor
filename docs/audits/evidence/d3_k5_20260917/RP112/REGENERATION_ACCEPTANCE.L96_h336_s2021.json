@@ -1,0 +1,88 @@
+{
+ "schema": "df_sota_regenerated_acceptance.v1",
+ "unit": "L96_h336_s2021",
+ "at": "2026-09-23T04:27:18Z",
+ "host": "gamma",
+ "refusals": [],
+ "regeneration": {
+  "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
+  "label": "REGENERATED_BY_INFERENCE_FROM_RETAINED_CHECKPOINT",
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "at": "2026-09-23T04:23:23Z",
+  "pred_sha256": "f5e933e7b7b02172da3ecd781b070ab36fcc557e0bd2d6e7fb87a8beda570eb9",
+  "true_sha256": "5650423070ebaed3b38917c481a2cd9665d9fa10bcdb1883403eec89da07fdbb",
+  "author_metric": {
+   "mae": 0.2606664299964905,
+   "mse": 0.1625940501689911
+  },
+  "independent_metric_float64": {
+   "mae": 0.26066640344614045,
+   "mse": 0.16259404228254276
+  }
+ },
+ "digests_now": {
+  "pred": "f5e933e7b7b02172da3ecd781b070ab36fcc557e0bd2d6e7fb87a8beda570eb9",
+  "true": "5650423070ebaed3b38917c481a2cd9665d9fa10bcdb1883403eec89da07fdbb"
+ },
+ "author_metric_float32": {
+  "mae": 0.2606664299964905,
+  "mse": 0.1625940501689911
+ },
+ "author_metric_route": "df_sota_author_metric_exact.v1",
+ "independent_float64": {
+  "mae": 0.2606664034461404,
+  "mse": 0.1625940422825428
+ },
+ "catalog_recomputed_equals_retained": true,
+ "numeric_oracles": {
+  "global_vs_author_mae": -2.6550349974119314e-08,
+  "global_vs_author_mse": -7.886448327720785e-09,
+  "per_step_mean_vs_global_mae": -1.1102230246251565e-16,
+  "per_channel_mean_vs_global_mae": -5.551115123125783e-17,
+  "float64_vs_author_mae": -2.6550350085141616e-08
+ },
+ "catalog_states": {
+  "errors": "DONE",
+  "percentage_errors_zspace": "DONE",
+  "matched_baselines": "DONE",
+  "residual_moments": "DONE",
+  "quantiles": "APPROXIMATE",
+  "entropy": "APPROXIMATE",
+  "mutual_information": "APPROXIMATE",
+  "correlation_r2": "DONE",
+  "autocorrelation": "DONE",
+  "time_blocks": "DONE",
+  "per_window_series": "DONE",
+  "paired_contrasts": "NOT_APPLICABLE_IN_ONE_CELL"
+ },
+ "population": {
+  "windows": 4925,
+  "steps": 336,
+  "channels": 321,
+  "elements": 531190800,
+  "consumed_windows": 4925
+ },
+ "pass": true,
+ "deleted": [
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h336_s2021/regenerated/REGENERATED_pred.npy",
+   "deleted": true,
+   "bytes": 2124763328,
+   "sha256": "f5e933e7b7b02172da3ecd781b070ab36fcc557e0bd2d6e7fb87a8beda570eb9",
+   "reclaimed_bytes_fs_delta": 2124771328,
+   "free_bytes_after": 202666037248,
+   "at": "2026-09-23T04:29:15Z"
+  },
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h336_s2021/regenerated/REGENERATED_true.npy",
+   "deleted": true,
+   "bytes": 2124763328,
+   "sha256": "5650423070ebaed3b38917c481a2cd9665d9fa10bcdb1883403eec89da07fdbb",
+   "reclaimed_bytes_fs_delta": 2124771328,
+   "free_bytes_after": 204790808576,
+   "at": "2026-09-23T04:29:15Z"
+  }
+ ],
+ "reading": "the regenerated temporaries are removed after this acceptance; the retained catalog, record, checkpoint and this acceptance record remain, and the regeneration can be repeated from the checkpoint at the same cost"
+}

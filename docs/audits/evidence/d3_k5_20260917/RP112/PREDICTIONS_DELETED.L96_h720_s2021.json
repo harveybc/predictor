@@ -1,0 +1,31 @@
+{
+ "schema": "df_sota_predictions_deleted.v2",
+ "unit": "L96_h720_s2021",
+ "deleted_at": "2026-09-23T05:06:22Z",
+ "last_event_at": "2026-09-23T05:06:22Z",
+ "arrays_sha256": "75a2a5490cc6ccfbd044654ae3b918811f322a9b202c2a4684ecafe6109d120d",
+ "closure_report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf",
+ "approval": {
+  "accepted_report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf",
+  "backup_manifest_sha256": "fa52fd7ac21fa1f975ee0d5bc8bbb17a8adfc853a9c5964c030a218a33d97ded",
+  "checkpoint_backed_up": false
+ },
+ "paths_deleted": [
+  "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2021/arrays.npz"
+ ],
+ "paths_remaining": [],
+ "all_copies_removed": true,
+ "state": "COMPLETE",
+ "events": [
+  {
+   "at": "2026-09-23T05:06:22Z",
+   "host": "gamma",
+   "deleted": [
+    "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2021/arrays.npz"
+   ],
+   "not_deleted": []
+  }
+ ],
+ "authorization": "owner 2026-09-22 (retention document); Musashi RP106-RP113 RP108",
+ "reading": "a pointer to the deleted bytes' digest and to the closure report they were verified under; the score is bound by that report (RP107), not by this file"
+}

@@ -1,0 +1,312 @@
+{
+ "schema": "df_sota_deletion_receipt.v2",
+ "at": "2026-09-23T05:06:11Z",
+ "host": "gamma",
+ "root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1",
+ "dry_run": false,
+ "approval": {
+  "accepted_report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf",
+  "backup_manifest": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/metadata_backup/MANIFEST.json"
+ },
+ "units": {
+  "L96_h720_s2021": {
+   "preflight": {
+    "unit": "L96_h720_s2021",
+    "refusals": [],
+    "paths": [
+     {
+      "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2021/arrays.npz",
+      "root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1",
+      "bytes": 4198064038,
+      "sha256": "75a2a5490cc6ccfbd044654ae3b918811f322a9b202c2a4684ecafe6109d120d",
+      "filesystem_id": "66310",
+      "readers": []
+     }
+    ],
+    "accepted_arrays_sha256": "75a2a5490cc6ccfbd044654ae3b918811f322a9b202c2a4684ecafe6109d120d",
+    "approval": {
+     "accepted_report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf",
+     "backup_manifest_sha256": "fa52fd7ac21fa1f975ee0d5bc8bbb17a8adfc853a9c5964c030a218a33d97ded",
+     "checkpoint_backed_up": false
+    },
+    "gate": {
+     "pass": true,
+     "reasons": [],
+     "report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf"
+    },
+    "pass": true
+   },
+   "gate": {
+    "pass": true,
+    "reasons": [],
+    "report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf"
+   },
+   "copies_inventoried": [
+    {
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2021/arrays.npz",
+     "root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1",
+     "bytes": 4198064038,
+     "sha256": "75a2a5490cc6ccfbd044654ae3b918811f322a9b202c2a4684ecafe6109d120d",
+     "filesystem_id": "66310",
+     "readers": []
+    }
+   ],
+   "deleted": [
+    {
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2021/arrays.npz",
+     "bytes": 4198064038,
+     "sha256": "75a2a5490cc6ccfbd044654ae3b918811f322a9b202c2a4684ecafe6109d120d",
+     "filesystem_id": "66310",
+     "deleted": true,
+     "reclaimed_bytes_fs_delta": 4198068224,
+     "free_bytes_after": 217450328064,
+     "at": "2026-09-23T05:06:22Z"
+    }
+   ],
+   "state": "COMPLETE",
+   "marker": {
+    "schema": "df_sota_predictions_deleted.v2",
+    "unit": "L96_h720_s2021",
+    "deleted_at": "2026-09-23T05:06:22Z",
+    "last_event_at": "2026-09-23T05:06:22Z",
+    "arrays_sha256": "75a2a5490cc6ccfbd044654ae3b918811f322a9b202c2a4684ecafe6109d120d",
+    "closure_report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf",
+    "approval": {
+     "accepted_report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf",
+     "backup_manifest_sha256": "fa52fd7ac21fa1f975ee0d5bc8bbb17a8adfc853a9c5964c030a218a33d97ded",
+     "checkpoint_backed_up": false
+    },
+    "paths_deleted": [
+     "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2021/arrays.npz"
+    ],
+    "paths_remaining": [],
+    "all_copies_removed": true,
+    "state": "COMPLETE",
+    "events": [
+     {
+      "at": "2026-09-23T05:06:22Z",
+      "host": "gamma",
+      "deleted": [
+       "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2021/arrays.npz"
+      ],
+      "not_deleted": []
+     }
+    ],
+    "authorization": "owner 2026-09-22 (retention document); Musashi RP106-RP113 RP108",
+    "reading": "a pointer to the deleted bytes' digest and to the closure report they were verified under; the score is bound by that report (RP107), not by this file"
+   }
+  },
+  "L96_h720_s2022": {
+   "preflight": {
+    "unit": "L96_h720_s2022",
+    "refusals": [],
+    "paths": [
+     {
+      "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2022/arrays.npz",
+      "root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1",
+      "bytes": 4198064038,
+      "sha256": "5677eb6cf407d5f6cf3e0f33a66e3d57c412544c6bb1b8bda9cbbec977934168",
+      "filesystem_id": "66310",
+      "readers": []
+     }
+    ],
+    "accepted_arrays_sha256": "5677eb6cf407d5f6cf3e0f33a66e3d57c412544c6bb1b8bda9cbbec977934168",
+    "approval": {
+     "accepted_report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf",
+     "backup_manifest_sha256": "fa52fd7ac21fa1f975ee0d5bc8bbb17a8adfc853a9c5964c030a218a33d97ded",
+     "checkpoint_backed_up": false
+    },
+    "gate": {
+     "pass": true,
+     "reasons": [],
+     "report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf"
+    },
+    "pass": true
+   },
+   "gate": {
+    "pass": true,
+    "reasons": [],
+    "report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf"
+   },
+   "copies_inventoried": [
+    {
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2022/arrays.npz",
+     "root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1",
+     "bytes": 4198064038,
+     "sha256": "5677eb6cf407d5f6cf3e0f33a66e3d57c412544c6bb1b8bda9cbbec977934168",
+     "filesystem_id": "66310",
+     "readers": []
+    }
+   ],
+   "deleted": [
+    {
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2022/arrays.npz",
+     "bytes": 4198064038,
+     "sha256": "5677eb6cf407d5f6cf3e0f33a66e3d57c412544c6bb1b8bda9cbbec977934168",
+     "filesystem_id": "66310",
+     "deleted": true,
+     "reclaimed_bytes_fs_delta": 4198068224,
+     "free_bytes_after": 221648396288,
+     "at": "2026-09-23T05:06:32Z"
+    }
+   ],
+   "state": "COMPLETE",
+   "marker": {
+    "schema": "df_sota_predictions_deleted.v2",
+    "unit": "L96_h720_s2022",
+    "deleted_at": "2026-09-23T05:06:32Z",
+    "last_event_at": "2026-09-23T05:06:32Z",
+    "arrays_sha256": "5677eb6cf407d5f6cf3e0f33a66e3d57c412544c6bb1b8bda9cbbec977934168",
+    "closure_report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf",
+    "approval": {
+     "accepted_report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf",
+     "backup_manifest_sha256": "fa52fd7ac21fa1f975ee0d5bc8bbb17a8adfc853a9c5964c030a218a33d97ded",
+     "checkpoint_backed_up": false
+    },
+    "paths_deleted": [
+     "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2022/arrays.npz"
+    ],
+    "paths_remaining": [],
+    "all_copies_removed": true,
+    "state": "COMPLETE",
+    "events": [
+     {
+      "at": "2026-09-23T05:06:32Z",
+      "host": "gamma",
+      "deleted": [
+       "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2022/arrays.npz"
+      ],
+      "not_deleted": []
+     }
+    ],
+    "authorization": "owner 2026-09-22 (retention document); Musashi RP106-RP113 RP108",
+    "reading": "a pointer to the deleted bytes' digest and to the closure report they were verified under; the score is bound by that report (RP107), not by this file"
+   }
+  },
+  "L96_h720_s2023": {
+   "preflight": {
+    "unit": "L96_h720_s2023",
+    "refusals": [],
+    "paths": [
+     {
+      "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2023/arrays.npz",
+      "root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1",
+      "bytes": 4198064038,
+      "sha256": "f9e24ccfc4dd4f07645b1b4c2c072f7f09f4d2a9754eabf58809178a46e7eed4",
+      "filesystem_id": "66310",
+      "readers": []
+     }
+    ],
+    "accepted_arrays_sha256": "f9e24ccfc4dd4f07645b1b4c2c072f7f09f4d2a9754eabf58809178a46e7eed4",
+    "approval": {
+     "accepted_report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf",
+     "backup_manifest_sha256": "fa52fd7ac21fa1f975ee0d5bc8bbb17a8adfc853a9c5964c030a218a33d97ded",
+     "checkpoint_backed_up": false
+    },
+    "gate": {
+     "pass": true,
+     "reasons": [],
+     "report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf"
+    },
+    "pass": true
+   },
+   "gate": {
+    "pass": true,
+    "reasons": [],
+    "report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf"
+   },
+   "copies_inventoried": [
+    {
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2023/arrays.npz",
+     "root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1",
+     "bytes": 4198064038,
+     "sha256": "f9e24ccfc4dd4f07645b1b4c2c072f7f09f4d2a9754eabf58809178a46e7eed4",
+     "filesystem_id": "66310",
+     "readers": []
+    }
+   ],
+   "deleted": [
+    {
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2023/arrays.npz",
+     "bytes": 4198064038,
+     "sha256": "f9e24ccfc4dd4f07645b1b4c2c072f7f09f4d2a9754eabf58809178a46e7eed4",
+     "filesystem_id": "66310",
+     "deleted": true,
+     "reclaimed_bytes_fs_delta": 4198068224,
+     "free_bytes_after": 225846460416,
+     "at": "2026-09-23T05:06:42Z"
+    }
+   ],
+   "state": "COMPLETE",
+   "marker": {
+    "schema": "df_sota_predictions_deleted.v2",
+    "unit": "L96_h720_s2023",
+    "deleted_at": "2026-09-23T05:06:42Z",
+    "last_event_at": "2026-09-23T05:06:42Z",
+    "arrays_sha256": "f9e24ccfc4dd4f07645b1b4c2c072f7f09f4d2a9754eabf58809178a46e7eed4",
+    "closure_report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf",
+    "approval": {
+     "accepted_report_sha256": "bc9d3388f1f21d28145beb90c4f73231f760b41b4f2d1a18c5b696cf82ee3bdf",
+     "backup_manifest_sha256": "fa52fd7ac21fa1f975ee0d5bc8bbb17a8adfc853a9c5964c030a218a33d97ded",
+     "checkpoint_backed_up": false
+    },
+    "paths_deleted": [
+     "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2023/arrays.npz"
+    ],
+    "paths_remaining": [],
+    "all_copies_removed": true,
+    "state": "COMPLETE",
+    "events": [
+     {
+      "at": "2026-09-23T05:06:42Z",
+      "host": "gamma",
+      "deleted": [
+       "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2023/arrays.npz"
+      ],
+      "not_deleted": []
+     }
+    ],
+    "authorization": "owner 2026-09-22 (retention document); Musashi RP106-RP113 RP108",
+    "reading": "a pointer to the deleted bytes' digest and to the closure report they were verified under; the score is bound by that report (RP107), not by this file"
+   }
+  }
+ },
+ "paths": [
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2021/arrays.npz",
+   "bytes": 4198064038,
+   "sha256": "75a2a5490cc6ccfbd044654ae3b918811f322a9b202c2a4684ecafe6109d120d",
+   "filesystem_id": "66310",
+   "deleted": true,
+   "reclaimed_bytes_fs_delta": 4198068224,
+   "free_bytes_after": 217450328064,
+   "at": "2026-09-23T05:06:22Z"
+  },
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2022/arrays.npz",
+   "bytes": 4198064038,
+   "sha256": "5677eb6cf407d5f6cf3e0f33a66e3d57c412544c6bb1b8bda9cbbec977934168",
+   "filesystem_id": "66310",
+   "deleted": true,
+   "reclaimed_bytes_fs_delta": 4198068224,
+   "free_bytes_after": 221648396288,
+   "at": "2026-09-23T05:06:32Z"
+  },
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2023/arrays.npz",
+   "bytes": 4198064038,
+   "sha256": "f9e24ccfc4dd4f07645b1b4c2c072f7f09f4d2a9754eabf58809178a46e7eed4",
+   "filesystem_id": "66310",
+   "deleted": true,
+   "reclaimed_bytes_fs_delta": 4198068224,
+   "free_bytes_after": 225846460416,
+   "at": "2026-09-23T05:06:42Z"
+  }
+ ],
+ "reclaimed_bytes_by_filesystem": {
+  "66310": 12594204672
+ },
+ "free_bytes_after_by_filesystem": {
+  "66310": 225846460416
+ }
+}
