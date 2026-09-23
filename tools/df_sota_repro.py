@@ -2286,6 +2286,42 @@ def _declared_field_index() -> dict:
             for fam, spec in CATALOG_ESTIMATORS.items() for f in spec["fields"]}
 
 
+def _legacy_field_level_basis(acceptance: dict) -> dict:
+    """RP134: a certificate written before ANY inventory identity or family definition was recorded — the regeneration
+    acceptances of the deleted cells are the real instances. Family names establish nothing, but the record is not silent: every
+    field result it holds carries the tolerance it was judged against and the undefined case it declared. When the recorded field
+    SET is exactly this inventory's and every one of those per-field definitions is identical to the bound one, the comparison was
+    made under this inventory's field-level contract and may be reused, with the dated scope below. What such a record does NOT
+    establish is named in `limits`: the family-level parameters (bin counts, ranges, quantile lists, lags, block sizes) were never
+    written down by that producer. Records written from RP132 onwards carry them, so this path closes over time."""
+    comp = acceptance.get("independent_comparison")
+    fields = (comp or {}).get("fields")
+    index = _declared_field_index()
+    if not isinstance(fields, dict) or not fields:
+        return {"basis": "LEGACY_WITHOUT_DEFINITIONS", "recorded_version": None, "recorded_digest": None,
+                "why": "this certificate records neither an inventory identity, nor the estimator definitions it used, nor any field result to read them from"}
+    missing, extra = sorted(set(index) - set(fields)), sorted(set(fields) - set(index))
+    differing = [f for f in sorted(set(index) & set(fields))
+                 if not (isinstance(fields[f], dict)
+                         and isinstance(fields[f].get("tolerance"), (int, float)) and not isinstance(fields[f].get("tolerance"), bool)
+                         and float(fields[f]["tolerance"]) == float(index[f]["tolerance"])
+                         and _json_equal(fields[f].get("undefined_declared"), index[f]["undefined"]))]
+    if missing or extra or differing:
+        return {"basis": "LEGACY_FIELD_DEFINITIONS_DIFFER", "recorded_version": None, "recorded_digest": None,
+                "missing_fields": missing[:6], "undeclared_fields": extra[:6], "differing_definitions": differing[:6],
+                "why": (f"its recorded field-level definitions are not this inventory's: {len(missing)} missing, {len(extra)} undeclared, "
+                        f"{len(differing)} with another tolerance or undefined case")}
+    return {"basis": "LEGACY_FIELD_DEFINITIONS_MATCH", "recorded_version": None, "recorded_digest": None, "why": None,
+            "justification": (f"read under the bound inventory on {now_iso()[:10]} because the {len(index)} field results it recorded are exactly this "
+                              "inventory's declared fields, each judged against this inventory's tolerance and declaring this inventory's undefined case, "
+                              "and none of them disagreed - so the two implementations it compared also agreed structurally. This is a reuse of recorded "
+                              "evidence under a dated scope, not a claim about a version the record never named"),
+            "limits": ("this reuse does NOT establish the family-level parameters (histogram bins and range, the quantile list, the mutual-information "
+                       "binning, autocorrelation lags, time-block size) under which those fields were computed: that producer recorded none of them. "
+                       "Re-running the acceptance under the current code, which records them, is what would establish them"),
+            "producer_recorded": {k: acceptance.get(k) for k in ("schema", "at", "host", "producer", "independent_scope") if acceptance.get(k) is not None}}
+
+
 def _inventory_basis(acceptance: dict) -> dict:
     """RP132: under which declared inventory a recorded comparison may be read. A certificate that names this inventory and its
     digest is read under it. One that names another is foreign. One that names none (written before the inventory was given an
@@ -2298,8 +2334,7 @@ def _inventory_basis(acceptance: dict) -> dict:
                 "why": f"issued under {version} / {str(digest)[:12]}, not the bound {CATALOG_INVENTORY_VERSION} / {catalog_inventory_digest()[:12]}"}
     declared = acceptance.get("declared_estimators") or {}
     if not isinstance(declared, dict) or not declared:
-        return {"basis": "LEGACY_WITHOUT_DEFINITIONS", "recorded_version": None, "recorded_digest": None,
-                "why": "this certificate records neither an inventory identity nor the estimator definitions it used, so it cannot be read under the bound inventory"}
+        return _legacy_field_level_basis(acceptance)
     differences = []
     for fam, spec in CATALOG_ESTIMATORS.items():
         rec = declared.get(fam)
@@ -2400,7 +2435,7 @@ def acceptance_certificate(acceptance: dict) -> dict:
     val = _validated_comparison(comp) if isinstance(comp, dict) else None
     if val is None:
         why, full = "no independent numerical comparison was run", False
-    elif basis["basis"] not in ("BOUND_INVENTORY", "LEGACY_DEFINITIONS_MATCH"):
+    elif basis["basis"] not in ("BOUND_INVENTORY", "LEGACY_DEFINITIONS_MATCH", "LEGACY_FIELD_DEFINITIONS_MATCH"):
         why, full = f"INVENTORY: {basis['why']}", False
     elif val["contradictions"]:
         why, full = "CONTRADICTORY_RECORD: " + "; ".join(val["contradictions"])[:240], False

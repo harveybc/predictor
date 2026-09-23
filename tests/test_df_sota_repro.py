@@ -2129,9 +2129,12 @@ def test_RP132_a_legacy_certificate_is_read_from_its_recorded_definitions_not_fr
     cert = R.acceptance_certificate(legacy)
     assert cert["class"] == R.FULL_NUMERIC and cert["inventory_basis"]["basis"] == "LEGACY_DEFINITIONS_MATCH"
     assert cert["inventory_basis"]["justification"] and cert["inventory_basis"]["producer_recorded"]
+    # with no family definitions the reader falls back to the FIELD-level contract, and with neither it establishes nothing
     without = json.loads(json.dumps(legacy)); without.pop("declared_estimators")
-    assert R.acceptance_certificate(without)["class"] == R.DOMAIN_ONLY
-    assert R.acceptance_certificate(without)["inventory_basis"]["basis"] == "LEGACY_WITHOUT_DEFINITIONS"
+    assert R.acceptance_certificate(without)["inventory_basis"]["basis"] == "LEGACY_FIELD_DEFINITIONS_MATCH"
+    silent = json.loads(json.dumps(without)); silent["independent_comparison"]["fields"] = {}
+    assert R.acceptance_certificate(silent)["class"] == R.DOMAIN_ONLY
+    assert R.acceptance_certificate(silent)["inventory_basis"]["basis"] == "LEGACY_WITHOUT_DEFINITIONS"
     differing = json.loads(json.dumps(legacy)); differing["declared_estimators"]["errors"]["tolerance"] = 1.0
     assert R.acceptance_certificate(differing)["class"] == R.DOMAIN_ONLY
     assert R.acceptance_certificate(differing)["inventory_basis"]["basis"] == "LEGACY_DEFINITIONS_DIFFER"
@@ -2259,3 +2262,26 @@ def test_RP133_a_failed_or_missing_catalog_source_is_reported_as_such(world, tmp
     missing = R.revalidate_acceptances(root, design, receipts=receipts, warehouse=wh)["cells"][unit]
     assert "catalog_acceptance" not in missing and missing["locally_recorded_numeric_evidence"] is None
     assert missing["numerical_acceptance"] == R.DOMAIN_ONLY and missing["deletion_preview"]["state"] == "NOT_ELIGIBLE"
+
+
+def test_RP134_a_record_with_only_field_level_definitions_is_reused_under_a_dated_scope_that_names_its_limits(world, tmp_path, monkeypatch):
+    """The real retained regeneration acceptances record no inventory identity and no family definitions, only 43 field results
+    carrying their tolerance and undefined case. That field-level contract is this inventory's, so the comparison is reusable —
+    and the certificate must say, in the record itself, which family-level parameters the reuse does not establish."""
+    root, unit, kwargs = _catalog_case(world, tmp_path, monkeypatch, "fieldonly", None)
+    ca = json.loads((root / "attempts" / unit / "CATALOG_ACCEPTANCE.json").read_text())
+    bare = json.loads(json.dumps(ca))
+    for k in ("inventory_version", "inventory_digest", "declared_estimators", "producer"):
+        bare.pop(k, None)
+    cert = R.acceptance_certificate(bare)
+    assert cert["class"] == R.FULL_NUMERIC and cert["inventory_basis"]["basis"] == "LEGACY_FIELD_DEFINITIONS_MATCH"
+    assert "does NOT establish the family-level parameters" in cert["inventory_basis"]["limits"]
+    assert cert["inventory_basis"]["justification"].startswith("read under the bound inventory on 20")
+    # one altered tolerance in the recorded field results, and the field-level contract is no longer this inventory's
+    altered = json.loads(json.dumps(bare)); altered["independent_comparison"]["fields"]["global.mae"]["tolerance"] = 1e-3
+    assert R.acceptance_certificate(altered)["inventory_basis"]["basis"] == "LEGACY_FIELD_DEFINITIONS_DIFFER"
+    assert R.acceptance_certificate(altered)["class"] == R.DOMAIN_ONLY
+    # a record with no comparison at all cannot be read under any inventory
+    silent = json.loads(json.dumps(bare)); silent["independent_comparison"] = None
+    assert R.acceptance_certificate(silent)["inventory_basis"]["basis"] == "LEGACY_WITHOUT_DEFINITIONS"
+    assert R.acceptance_certificate(silent)["class"] == R.DOMAIN_ONLY
