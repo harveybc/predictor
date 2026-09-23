@@ -1195,11 +1195,14 @@ def test_RP110_the_dataloader_worker_change_leaves_the_training_trajectory_ident
 def test_RP110_the_allocator_option_reaches_the_real_child_and_changes_no_argument(world, tmp_path, monkeypatch):
     """The declared host-allocator patch must arrive in the child's environment, and nothing in the child's argument vector (the
     scientific recipe) may depend on it."""
-    seen = {}
+    calls = []
 
     def fake_run(argv, **kw):
-        seen["argv"] = argv; seen["env"] = kw.get("env") or {}
+        calls.append({"argv": argv, "env": kw.get("env") or {}})
         return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    def child_call():
+        return next(c for c in calls if any("child" == str(x) for x in c["argv"]))
 
     root = _copy(world, tmp_path); unit = world["cell"]["cell_id"]
     (root / "TERMINAL_RECEIPTS.json").write_text(json.dumps({"units": {}}))
@@ -1208,9 +1211,11 @@ def test_RP110_the_allocator_option_reaches_the_real_child_and_changes_no_argume
                         lake="l", resource="r", run_id=None, bounded=True, author_metric_budget_gib=4, dataloader_workers=0,
                         malloc_tunables=R.MALLOC_TUNABLES_DEFAULT, require_gpu_uuid=None)
     R.execute(a, json.loads((root / "DESIGN.json").read_text()))
-    assert seen["env"]["GLIBC_TUNABLES"] == R.MALLOC_TUNABLES_DEFAULT
-    assert "--dataloader-workers" in seen["argv"] and "GLIBC_TUNABLES" not in " ".join(str(x) for x in seen["argv"])
-    assert not any("malloc" in str(x).lower() for x in seen["argv"])
-    a.malloc_tunables = "none"
+    c = child_call()
+    assert c["env"]["GLIBC_TUNABLES"] == R.MALLOC_TUNABLES_DEFAULT
+    assert "--dataloader-workers" in c["argv"] and "GLIBC_TUNABLES" not in " ".join(str(x) for x in c["argv"])
+    assert not any("malloc" in str(x).lower() for x in c["argv"])
+    calls.clear(); a.malloc_tunables = "none"
     R.execute(a, json.loads((root / "DESIGN.json").read_text()))
-    assert "GLIBC_TUNABLES" not in seen["env"]
+    c2 = child_call()
+    assert "GLIBC_TUNABLES" not in c2["env"] and c2["argv"] == c["argv"]          # the recipe is identical either way
