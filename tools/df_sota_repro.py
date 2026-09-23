@@ -2827,8 +2827,9 @@ def revalidate_acceptances(root: Path, design: dict, *, receipts: dict | None = 
         numeric = [k for k in ("catalog_acceptance", "regeneration_acceptance") if (entry.get(k) or {}).get("class") == FULL_NUMERIC]
         entry["numerical_acceptance"] = (FULL_NUMERIC if numeric else DOMAIN_ONLY)
         entry["numerical_source"] = numeric or None
-        entry["deletion_eligible_today"] = bool(entry["predictions_on_disk"] and (entry.get("catalog_acceptance") or {}).get("class") == FULL_NUMERIC
-                                                and (entry.get("catalog_acceptance") or {}).get("accepted", {}).get("accepted"))
+        ca_ = entry.get("catalog_acceptance") or {}
+        entry["deletion_eligible_today"] = bool(entry["predictions_on_disk"] and ca_.get("class") == FULL_NUMERIC and ca_.get("pass")
+                                                and ca_.get("covers_catalog_on_disk") and (ca_.get("accepted") or {}).get("accepted"))
         out["cells"][unit] = entry
     out["summary"] = {"cells": len(out["cells"]),
                       "with_full_numeric_acceptance": sorted(u for u, e in out["cells"].items() if e["numerical_acceptance"] == FULL_NUMERIC),
