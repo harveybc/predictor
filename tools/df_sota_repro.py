@@ -586,6 +586,82 @@ def trained_device_of(record: dict) -> str | None:
     return next(iter(before)) if before else None
 
 
+REQUIRED_GPU_ENV = "CRISPDM_REQUIRED_GPU_UUID"
+
+
+def host_thermals() -> dict:
+    """Every host thermal zone in degrees Celsius. The external enclosure's cooler does not cool this host's CPU (owner, 22-sep),
+    so host temperature is admitted and monitored separately from the GPU's."""
+    out = {}
+    for zone in sorted(Path("/sys/class/thermal").glob("thermal_zone*")) if Path("/sys/class/thermal").is_dir() else []:
+        try:
+            out[f"{zone.name}:{(zone / 'type').read_text().strip()}"] = int((zone / "temp").read_text().strip()) / 1000.0
+        except Exception:                                           # noqa: BLE001
+            continue
+    return out
+
+
+def admit_gpu(required_uuid: str | None, *, path: Path | None = None, min_free_ram_bytes: int = 3 << 30, min_free_vram_mib: int = 6000,
+              min_free_disk_bytes: int = 20 << 30, max_gpu_c: float = 80.0, max_host_c: float = 90.0, max_other_util_pct: float = 20.0) -> dict:
+    """Owner's placement policy (22-sep): the ONLY device eligible for new GPU work is the one whose PHYSICAL CUDA UUID is named
+    here. Admission is a refusal, never a fallback: the device must be connected and visible to nvidia-smi, cool enough, with
+    enough free VRAM, and the host must have enough free RAM, disk and acceptable temperatures; another process computing on that
+    device refuses too. Returns {'pass', 'refusals', 'measured'} — the caller must not start GPU work when it does not pass."""
+    refusals = []
+    gpus = gpu_state()
+    measured = {"required_uuid": required_uuid, "gpus": gpus, "host_thermals_c": host_thermals(), "at": now_iso(), "host": socket.gethostname()}
+    if not required_uuid:
+        refusals.append("NO_REQUIRED_DEVICE: GPU work needs the physical CUDA UUID of the admitted device (owner policy)")
+        device = None
+    else:
+        device = next((g for g in gpus if g.get("uuid") == required_uuid), None)
+        if device is None:
+            refusals.append(f"DEVICE_ABSENT: no GPU with UUID {required_uuid[:16]}… is connected (visible: {[str(g.get('uuid'))[:16] for g in gpus]})")
+    if device is not None:
+        measured["device"] = device
+        if device.get("temperature_c") is not None and float(device["temperature_c"]) > max_gpu_c:
+            refusals.append(f"GPU_TEMPERATURE: {device['temperature_c']} C exceeds {max_gpu_c} C")
+        free_vram = float(device.get("memory_total_mib") or 0) - float(device.get("memory_used_mib") or 0)
+        measured["free_vram_mib"] = free_vram
+        if free_vram < min_free_vram_mib:
+            refusals.append(f"VRAM: {free_vram:.0f} MiB free, {min_free_vram_mib} MiB required")
+        if float(device.get("utilization_pct") or 0) > max_other_util_pct:
+            refusals.append(f"COMPETING_WORKLOAD: the device reports {device['utilization_pct']} % utilization before dispatch")
+    try:
+        procs = subprocess.run(["nvidia-smi", "--query-compute-apps=gpu_uuid,pid,used_memory", "--format=csv,noheader"], capture_output=True, text=True, timeout=20).stdout.strip()
+        measured["compute_apps"] = [l for l in procs.splitlines() if l.strip()]
+        if required_uuid and any(required_uuid in l for l in measured["compute_apps"]):
+            refusals.append(f"COMPETING_WORKLOAD: another process computes on this device: {[l for l in measured['compute_apps'] if required_uuid in l]}")
+    except Exception:                                               # noqa: BLE001
+        measured["compute_apps"] = None
+    try:
+        mem = {k: int(v) * 1024 for k, v in (l.split(":") for l in Path("/proc/meminfo").read_text().splitlines()[:5]) for v in [v.split()[0]]}
+        free_ram = mem.get("MemAvailable", 0)
+    except Exception:                                               # noqa: BLE001
+        free_ram = 0
+    measured["free_ram_bytes"] = free_ram
+    if free_ram < min_free_ram_bytes:
+        refusals.append(f"HOST_RAM: {free_ram / 2 ** 30:.1f} GiB available, {min_free_ram_bytes / 2 ** 30:.1f} GiB required")
+    hot = {k: v for k, v in measured["host_thermals_c"].items() if v > max_host_c}
+    if hot:
+        refusals.append(f"HOST_TEMPERATURE: {hot} exceed {max_host_c} C (the external cooler does not cool this host)")
+    if path is not None:
+        vfs = os.statvfs(path if Path(path).exists() else Path(path).parent)
+        measured["free_disk_bytes"] = vfs.f_bavail * vfs.f_frsize
+        if measured["free_disk_bytes"] < min_free_disk_bytes:
+            refusals.append(f"DISK: {measured['free_disk_bytes'] / 2 ** 30:.1f} GiB free, {min_free_disk_bytes / 2 ** 30:.1f} GiB required")
+    return {"pass": not refusals, "refusals": refusals, "measured": measured,
+            "policy": "owner 2026-09-22: only the named external device is eligible; no internal-GPU or host fallback on refusal"}
+
+
+def assert_child_device(required_uuid: str | None, index: int = 0) -> dict:
+    """Inside the process that will compute: the CUDA device it actually holds must BE the admitted physical device."""
+    actual = actual_device_uuid(index)
+    if required_uuid and actual != required_uuid:
+        raise SotaRefusal(f"REFUSED: this process holds CUDA device {actual}, the admitted device is {required_uuid}: no fallback")
+    return {"required": required_uuid, "actual": actual, "asserted": bool(required_uuid)}
+
+
 def gpu_state() -> list:
     """Every GPU nvidia-smi sees: UUID, name, temperature, utilization, memory — the physical device identity an execution
     record must carry (a CUDA index is an assumption; a UUID is a device)."""
@@ -1057,6 +1133,12 @@ def child(a, design: dict) -> dict:
     if code_drift(design):
         raise SotaRefusal(f"REFUSED: the author files differ from the sealed digests: {code_drift(design)}")
     started = U._z(U.now_iso())
+    if not a.cpu:
+        required = getattr(a, "require_gpu_uuid", None) or os.environ.get(REQUIRED_GPU_ENV)
+        adm = admit_gpu(required, path=a.root)
+        if not adm["pass"]:
+            raise SotaRefusal(f"REFUSED: GPU admission failed for {a.unit}: {adm['refusals']}")
+        assert_child_device(required, a.gpu)
     acquire(a, design, a.unit)
     path = delivered_file(root, design, a.unit)
     folder = root / "attempts" / a.unit
@@ -1116,6 +1198,10 @@ def thermal_guard(*, cool_below_c: float = 70.0, max_wait_s: int = 1800, poll_s:
 def execute(a, design: dict) -> list:
     """The cells of this host, one after another (one GPU per host), each in its own process under this accounted scope."""
     validate(design)
+    if not a.cpu:
+        adm = admit_gpu(getattr(a, "require_gpu_uuid", None) or os.environ.get(REQUIRED_GPU_ENV), path=a.root)
+        if not adm["pass"]:
+            raise SotaRefusal(f"REFUSED: GPU admission failed before dispatch: {adm['refusals']}")
     units = [c["cell_id"] for c in design["cells"] if (not a.seeds or c["seed"] in a.seeds) and (not a.horizons or c["horizon"] in a.horizons)]
     if a.units:
         units = [u for u in units if u in a.units]
@@ -1130,7 +1216,8 @@ def execute(a, design: dict) -> list:
         argv = [sys.executable, str(Path(__file__).resolve()), "child", "--root", str(root), "--unit", unit, "--gov-url", a.gov_url, "--api-key-file", str(a.api_key_file),
                 "--lake", a.lake, "--resource", a.resource, "--gpu", str(a.gpu)] + (["--cpu"] if a.cpu else []) + (["--run-id", a.run_id] if a.run_id else []) \
                + (["--bounded"] if getattr(a, "bounded", False) else []) + (["--author-metric-budget-gib", str(a.author_metric_budget_gib)] if getattr(a, "author_metric_budget_gib", None) else []) \
-               + (["--dataloader-workers", str(a.dataloader_workers)] if getattr(a, "dataloader_workers", None) is not None else [])
+               + (["--dataloader-workers", str(a.dataloader_workers)] if getattr(a, "dataloader_workers", None) is not None else []) \
+               + (["--require-gpu-uuid", a.require_gpu_uuid] if getattr(a, "require_gpu_uuid", None) else [])
         t0 = time.time()
         proc = subprocess.run(argv, capture_output=True, text=True, env=child_env(getattr(a, "malloc_tunables", MALLOC_TUNABLES_DEFAULT)))
         (folder).mkdir(parents=True, exist_ok=True)
@@ -1759,7 +1846,7 @@ def replay_code_sha256() -> str:
 
 
 def replay_cell(root: Path, design: dict, unit: str, *, data_path: Path, device: str = "cpu", author_metric_budget: int | None = None,
-                malloc_tunables: str | None = MALLOC_TUNABLES_DEFAULT) -> dict:
+                malloc_tunables: str | None = MALLOC_TUNABLES_DEFAULT, required_uuid: str | None = None) -> dict:
     """Fresh process: the author's test(test=1) reloads the checkpoint through the author's own path and scores; the captured
     predictions are compared with the stored ones under the frozen replay rule."""
     cell = next(c for c in design["cells"] if c["cell_id"] == unit)
@@ -1776,6 +1863,7 @@ if {device == "cpu"!r}:
     # map_location, so a checkpoint saved from CUDA cannot be read on a CPU-only replay; placement only, no arithmetic changes
     _load = torch.load
     torch.load = functools.partial(_load, map_location=torch.device("cpu"))
+M.assert_child_device({required_uuid!r}) if {device != "cpu"!r} else None
 res = M.main_like_run_py(cell["argv"], seed=cell["seed"], data_dir=Path({str(data_path.parent)!r}), data_name={data_path.name!r}, work=work, gpu=0, use_gpu={device != "cpu"}, train=False,
                          bounded=True, author_metric_budget_bytes={author_metric_budget!r})
 stored = M.StoredArray(folder/"arrays.npz", "pred")
@@ -1814,7 +1902,7 @@ shutil.rmtree(work, ignore_errors=True)
 
 
 def regenerate_cell(root: Path, design: dict, unit: str, *, data_path: Path, device: str = "cuda", author_metric_budget: int | None = None,
-                    keep_dir: Path | None = None) -> dict:
+                    keep_dir: Path | None = None, required_uuid: str | None = None) -> dict:
     """RP109: INFERENCE ONLY from the retained checkpoint, for a cell whose predictions were deleted under authorization. The
     author's own test path reloads the checkpoint and scores the same test population; the regenerated predictions and targets are
     labelled REGENERATED and compared with the digests the record preserved (pred_sha256 / true_sha256). A digest match means the
@@ -1825,6 +1913,10 @@ def regenerate_cell(root: Path, design: dict, unit: str, *, data_path: Path, dev
     record = json.loads((folder / "cell.json").read_text())
     if (folder / "arrays.npz").is_file():
         raise SotaRefusal(f"REFUSED: {unit} still holds its original predictions; regeneration is only for a deleted cell")
+    if device != "cpu":
+        adm = admit_gpu(required_uuid or os.environ.get(REQUIRED_GPU_ENV), path=root)
+        if not adm["pass"]:
+            raise SotaRefusal(f"REFUSED: GPU admission failed for the regeneration of {unit}: {adm['refusals']}")
     if not (folder / "checkpoint.pth").is_file():
         raise SotaRefusal(f"REFUSED: {unit} has no retained checkpoint to run inference from")
     keep = Path(keep_dir) if keep_dir else folder / "regenerated"
@@ -1840,6 +1932,7 @@ import torch, functools
 if {device == "cpu"!r}:
     _load = torch.load
     torch.load = functools.partial(_load, map_location=torch.device("cpu"))
+M.assert_child_device({required_uuid!r}) if {device != "cpu"!r} else None
 res = M.main_like_run_py(cell["argv"], seed=cell["seed"], data_dir=Path({str(data_path.parent)!r}), data_name={data_path.name!r}, work=work, gpu=0, use_gpu={device != "cpu"}, train=False,
                          bounded=True, author_metric_budget_bytes={author_metric_budget!r})
 keep = Path({str(keep)!r})
@@ -2476,7 +2569,8 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
                 continue
             ident = {"checkpoint_sha256": sha_file(folder / "checkpoint.pth"), "arrays_sha256": sha_file(folder / "arrays.npz"), "design_sha256": design["design_sha256"],
                      "replay_code_sha256": replay_code_sha256(), "author_files": source_digests(), "device_requested": replay_device}
-            rep = replay_cell(root, design, unit, data_path=data_path, device=replay_device, author_metric_budget=author_metric_budget)
+            rep = replay_cell(root, design, unit, data_path=data_path, device=replay_device, author_metric_budget=author_metric_budget,
+                              required_uuid=os.environ.get(REQUIRED_GPU_ENV))
             rep["identity"] = ident
             rep["path"] = "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line"
             rep["environment"] = environment()
@@ -2751,6 +2845,12 @@ def close(a, design: dict) -> dict:
     token = Path(a.warehouse_token_file).read_text().strip().strip('"').strip("'") if getattr(a, "warehouse_token_file", None) else None
     warehouse = (lambda campaign: C.warehouse_terminals(a.warehouse_url, token, campaign)) if token else None
     data_path = Path(a.data_path) if getattr(a, "data_path", None) else (delivered_file(root, design, None) if (root / "DELIVERIES.json").is_file() else None)
+    if getattr(a, "replay_device", "cpu") != "cpu" and not getattr(a, "skip_replay", False):
+        required = getattr(a, "require_gpu_uuid", None) or os.environ.get(REQUIRED_GPU_ENV)
+        adm = admit_gpu(required, path=root)
+        if not adm["pass"]:
+            raise SotaRefusal(f"REFUSED: GPU admission failed before the closure's replays: {adm['refusals']}")
+        os.environ[REQUIRED_GPU_ENV] = required
     ver = verify_sota_run(root, warehouse=warehouse, data_path=data_path, replay=not getattr(a, "skip_replay", False), replay_device=getattr(a, "replay_device", "cpu"),
                           replay_units=getattr(a, "replay_units", None),
                           author_metric_budget=(int(a.author_metric_budget_gib * 2 ** 30) if getattr(a, "author_metric_budget_gib", None) else None))
@@ -2781,7 +2881,7 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit"])
     ap.add_argument("--reason", default=None)
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
@@ -2804,6 +2904,7 @@ def main(argv=None) -> int:
     ap.add_argument("--bounded", action="store_true", help="child/execute: evaluate through the disk-backed bounded adapter (RP101) instead of the author's test()")
     ap.add_argument("--author-metric-budget-gib", type=float, default=None, help="bounded: run the author's float32 metric() only if its temporaries fit this budget")
     ap.add_argument("--dataloader-workers", type=int, default=None, help="operational: DataLoader worker processes (author default 1); batch order/content unchanged, host memory only")
+    ap.add_argument("--require-gpu-uuid", default=None, help="the physical CUDA UUID of the ONLY device admitted for new GPU work (owner policy); no fallback")
     ap.add_argument("--malloc-tunables", default=MALLOC_TUNABLES_DEFAULT, help="operational: GLIBC_TUNABLES of cell and replay processes ('none' to leave the host allocator alone); host memory only")
     a = ap.parse_args(argv)
     if a.command == "seal":
@@ -2826,11 +2927,14 @@ def main(argv=None) -> int:
             raise SotaRefusal("REFUSED: report needs a registered cell with its record on disk")
         record = json.loads((a.root / "attempts" / a.unit / "cell.json").read_text())
         report_unit(a, design, cell, record); print(json.dumps({"unit": a.unit, "reported": True, "metric_basis": metric_of(record)[1]})); return 0
+    if a.command == "admit":
+        adm = admit_gpu(a.require_gpu_uuid or os.environ.get(REQUIRED_GPU_ENV), path=a.root)
+        print(json.dumps(adm, indent=1, default=str)); return 0 if adm["pass"] else 1
     if a.command == "regenerate":
         path = Path(a.data_path) if a.data_path else delivered_file(a.root, design, None)
         out = {}
         for unit in (a.units or ([a.unit] if a.unit else [])):
-            r = regenerate_cell(a.root, design, unit, data_path=path, device=a.replay_device,
+            r = regenerate_cell(a.root, design, unit, data_path=path, device=a.replay_device, required_uuid=a.require_gpu_uuid,
                                 author_metric_budget=(int(a.author_metric_budget_gib * 2 ** 30) if getattr(a, "author_metric_budget_gib", None) else None))
             out[unit] = {k: r[k] for k in ("identity", "pred_matches_original", "true_matches_original", "author_metric", "record_metric", "record_metric_basis", "device_name", "device_uuid")}
         print(json.dumps(out, indent=1, default=str)); return 0

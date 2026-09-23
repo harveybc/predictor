@@ -1077,3 +1077,38 @@ def test_RP109_regeneration_by_inference_is_labelled_and_compared_with_the_delet
     other = _copy(world, tmp_path / "still_there")
     with pytest.raises(R.SotaRefusal):
         R.regenerate_cell(other, design, unit, data_path=world["data"], device="cpu")
+
+
+def test_RP_placement_gpu_admission_is_a_refusal_by_physical_uuid_with_no_fallback(tmp_path, monkeypatch):
+    """Owner policy 2026-09-22: only the named external device is eligible. Absence, heat, busy VRAM, a competing compute process,
+    a hot host, low host RAM or low disk each refuse; nothing falls back to another GPU or to the host."""
+    ext = "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"; internal = "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
+    good = [{"index": 0, "uuid": internal, "name": "internal", "temperature_c": 30.0, "utilization_pct": 0.0, "memory_used_mib": 14.0, "memory_total_mib": 12227.0},
+            {"index": 1, "uuid": ext, "name": "RTX 5090", "temperature_c": 36.0, "utilization_pct": 0.0, "memory_used_mib": 10.0, "memory_total_mib": 32607.0}]
+    monkeypatch.setattr(R, "gpu_state", lambda: good)
+    monkeypatch.setattr(R, "host_thermals", lambda: {"thermal_zone0:acpitz": 41.0})
+    monkeypatch.setattr(R.subprocess, "run", lambda *a_, **k: SimpleNamespace(stdout="", stderr="", returncode=0))
+    adm = R.admit_gpu(ext, path=tmp_path, min_free_disk_bytes=1)
+    assert adm["pass"] and adm["measured"]["device"]["uuid"] == ext and adm["measured"]["free_vram_mib"] > 30000
+    assert not R.admit_gpu(None, path=tmp_path, min_free_disk_bytes=1)["pass"]
+    assert any("NO_REQUIRED_DEVICE" in r for r in R.admit_gpu(None, path=tmp_path, min_free_disk_bytes=1)["refusals"])
+    monkeypatch.setattr(R, "gpu_state", lambda: [good[0]])                       # the external device unplugged
+    out = R.admit_gpu(ext, path=tmp_path, min_free_disk_bytes=1)
+    assert not out["pass"] and any("DEVICE_ABSENT" in r for r in out["refusals"]) and "internal" not in json.dumps(out["refusals"]).replace(internal[:16], "")
+    monkeypatch.setattr(R, "gpu_state", lambda: [good[0], {**good[1], "temperature_c": 84.0}])
+    assert any("GPU_TEMPERATURE" in r for r in R.admit_gpu(ext, path=tmp_path, min_free_disk_bytes=1)["refusals"])
+    monkeypatch.setattr(R, "gpu_state", lambda: [good[0], {**good[1], "memory_used_mib": 32000.0}])
+    assert any("VRAM" in r for r in R.admit_gpu(ext, path=tmp_path, min_free_disk_bytes=1)["refusals"])
+    monkeypatch.setattr(R, "gpu_state", lambda: good)
+    monkeypatch.setattr(R, "host_thermals", lambda: {"zone0:x86_pkg_temp": 95.0})
+    assert any("HOST_TEMPERATURE" in r for r in R.admit_gpu(ext, path=tmp_path, min_free_disk_bytes=1)["refusals"])
+    monkeypatch.setattr(R, "host_thermals", lambda: {"thermal_zone0:acpitz": 41.0})
+    assert any("HOST_RAM" in r for r in R.admit_gpu(ext, path=tmp_path, min_free_ram_bytes=1 << 60, min_free_disk_bytes=1)["refusals"])
+    assert any("DISK" in r for r in R.admit_gpu(ext, path=tmp_path, min_free_disk_bytes=1 << 60)["refusals"])
+    monkeypatch.setattr(R.subprocess, "run", lambda *a_, **k: SimpleNamespace(stdout=f"{ext}, 1234, 5000 MiB\n", stderr="", returncode=0))
+    assert any("COMPETING_WORKLOAD" in r for r in R.admit_gpu(ext, path=tmp_path, min_free_disk_bytes=1)["refusals"])
+    # the child asserts the device it actually holds
+    monkeypatch.setattr(R, "actual_device_uuid", lambda i=0: ext)
+    assert R.assert_child_device(ext)["actual"] == ext
+    with pytest.raises(R.SotaRefusal):
+        R.assert_child_device(internal)
