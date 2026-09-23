@@ -107,12 +107,40 @@ def world(tmp_path_factory):
 
 
 
+def _accept_evidence(world, root, kind, files, subject):
+    """What the governed chain produces for an evidence object, in the fixture: an acceptance terminal in the stub warehouse, its
+    receipt, and the local registry entry that says which unit to ask about."""
+    digests = {role: R.sha_file(Path(f)) for role, f in files.items()}
+    primary = digests[list(files)[0]]
+    unit = f"acceptance_{kind}_{primary[:16]}"
+    design = json.loads((Path(root) / "DESIGN.json").read_text())
+    terminal = {"status": "COMPLETED", "config_sha256": design["design_sha256"], "tags": {"kind": kind, "subject": subject},
+                "artifacts": [{"role": role, "sha256": d, "bytes": Path(files[role]).stat().st_size} for role, d in digests.items()]}
+    terminal["terminal_sha256"] = hashlib.sha256(json.dumps(terminal, sort_keys=True).encode()).hexdigest()
+    world["held"][unit] = terminal
+    rec = json.loads((Path(root) / "TERMINAL_RECEIPTS.json").read_text())
+    rec.setdefault("units", {})[unit] = {"campaign_sha256": "c" * 64, "terminal_sha256": terminal["terminal_sha256"]}
+    (Path(root) / "TERMINAL_RECEIPTS.json").write_text(json.dumps(rec))
+    reg_path = Path(root) / R.ACCEPTED_EVIDENCE
+    reg = json.loads(reg_path.read_text()) if reg_path.is_file() else {"schema": "df_sota_accepted_evidence.v1", "entries": {}}
+    for role, d in digests.items():
+        reg["entries"][d] = {"unit": unit, "kind": kind, "role": role, "subject": subject, "at": "2026-09-23T00:00:00Z",
+                             "scope": "fixture acceptance"}
+    reg_path.write_text(json.dumps(reg))
+    return unit
+
+
 def _ready(root, unit, world, where):
     """The mandatory local prerequisites of a deletion (RP116): an independently accepted catalog and a verified backup. Tests
     whose subject is not the acceptance chain pass require_acceptance=False; the chain itself is tested separately."""
     R.accept_catalog(root, json.loads((root / "DESIGN.json").read_text()), unit, data_path=world["data"])
+    _accept_evidence(world, root, "closure", {"closure_report": root / "REPORT.json"}, "closure")
+    _accept_evidence(world, root, "catalog", {"catalog_acceptance": root / "attempts" / unit / "CATALOG_ACCEPTANCE.json",
+                                              "metrics_vault": root / "attempts" / unit / "METRICS_VAULT.json"}, unit)
     R.metadata_backup(root, Path(where))
-    return {"accepted_report_sha256": R.sha_file(root / "REPORT.json"), "backup_manifest": Path(where) / "MANIFEST.json", "require_acceptance": False}
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    return {"accepted_report_sha256": R.sha_file(root / "REPORT.json"), "backup_manifest": Path(where) / "MANIFEST.json",
+            "receipts": receipts, "warehouse": _wh(world)}
 
 def _wh(world):
     return lambda campaign: {"current": json.loads(json.dumps(world["held"]))}
@@ -903,7 +931,8 @@ def _closed_and_deleted(world, tmp_path):
     assert rep["verified"]
     report_sha = R.sha_file(root / "REPORT.json")
     assert (root / "reports" / f"REPORT.{report_sha}.json").is_file()                       # content-addressed copy preserved
-    out = R.delete_predictions(root, [unit], **_ready(root, unit, world, tmp_path / "backup_cd"))
+    ready = _ready(root, unit, world, tmp_path / "backup_cd")
+    out = R.delete_predictions(root, [unit], **ready)
     assert out["units"][unit]["state"] == "COMPLETE" and not (root / "attempts" / unit / "arrays.npz").exists()
     return root, unit, report_sha
 
