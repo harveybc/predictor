@@ -1,0 +1,109 @@
+{
+  "scope": "disposable CPU fixtures only; no production artifacts changed",
+  "host_before": {
+    "thermal_zone0:INT3400 Thermal": 20.0,
+    "thermal_zone1:SEN1": 36.05,
+    "thermal_zone10:TCPU_PCI": 62.0,
+    "thermal_zone11:x86_pkg_temp": 62.0,
+    "thermal_zone2:SEN2": 57.05,
+    "thermal_zone3:SEN3": 35.05,
+    "thermal_zone4:SEN4": 0.05,
+    "thermal_zone5:SEN5": 49.05,
+    "thermal_zone6:SEN6": 32.05,
+    "thermal_zone7:SEN7": 25.05,
+    "thermal_zone8:iwlwifi_1": 30.0,
+    "thermal_zone9:TCPU": 59.05
+  },
+  "baseline": {
+    "historically_verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": [],
+    "metric": {
+      "mae": 1.0069435834884644,
+      "mse": 1.3347922563552856
+    }
+  },
+  "rewritten_report_and_pointer": {
+    "historically_verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": [],
+    "metric": {
+      "mae": 0.0,
+      "mse": 0.0
+    }
+  },
+  "fabricated_regeneration": {
+    "historically_verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": [],
+    "metric": {
+      "mae": 0.0,
+      "mse": 0.0
+    }
+  },
+  "delete_without_approval_or_backup": "COMPLETE",
+  "delete_without_approval_arrays_remaining": false,
+  "wrong_estimator_catalog": {
+    "pass": true,
+    "refusals": [],
+    "oracles": {
+      "per_step_mean_vs_global_mae": 0.0,
+      "per_step_mean_vs_global_mse": 0.0,
+      "per_channel_mean_vs_global_mae": 0.0,
+      "per_window_mean_vs_global_mae": 0.0,
+      "per_window_mean_vs_global_mse": 2.220446049250313e-16,
+      "time_blocks_weighted_vs_global_mae": 0.0,
+      "time_block_windows_vs_population": 0,
+      "per_window_length_vs_population": 0,
+      "per_step_length_vs_horizon": 0,
+      "per_channel_length_vs_channels": 0,
+      "skill_mae_identity": 0.0,
+      "skill_mse_identity": 0.0,
+      "rmse_identity": 0.0,
+      "naive_per_step_mean_vs_global": 0.0
+    },
+    "injected": {
+      "residual_sd": -123,
+      "entropy_bits": 999,
+      "mi_bits": 999,
+      "acf": 42
+    }
+  },
+  "float32_parity": [
+    {
+      "n": 8193,
+      "bounded": 1.0,
+      "numpy_mean": 1.0,
+      "equal": true
+    },
+    {
+      "n": 16777217,
+      "bounded": 1.0,
+      "numpy_mean": 0.9999999403953552,
+      "equal": false
+    },
+    {
+      "n": 16777219,
+      "bounded": 1.0,
+      "numpy_mean": 1.0,
+      "equal": true
+    }
+  ],
+  "host_after": {
+    "thermal_zone0:INT3400 Thermal": 20.0,
+    "thermal_zone1:SEN1": 36.05,
+    "thermal_zone10:TCPU_PCI": 61.0,
+    "thermal_zone11:x86_pkg_temp": 61.0,
+    "thermal_zone2:SEN2": 61.05,
+    "thermal_zone3:SEN3": 36.05,
+    "thermal_zone4:SEN4": 37.05,
+    "thermal_zone5:SEN5": 0.05,
+    "thermal_zone6:SEN6": 32.05,
+    "thermal_zone7:SEN7": 25.05,
+    "thermal_zone8:iwlwifi_1": 28.0,
+    "thermal_zone9:TCPU": 58.05
+  }
+}
