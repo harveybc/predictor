@@ -1,0 +1,926 @@
+{
+ "schema": "df_sota_revalidation.v1",
+ "at": "2026-09-23T13:36:02Z",
+ "host": "gamma",
+ "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+ "inventory_version": "df_sota_catalog_estimators.v1",
+ "inventory_digest": "0e289d0b6def4783f0a2d1345ccb77d043b361ee90eb5a513a8c54666187b263",
+ "cells": {
+  "L96_h96_s2021": {
+   "predictions_on_disk": true,
+   "catalog_acceptance": {
+    "sha256": "73a047598a99a75c331fa03a37d876893744b3324b8b886ebd273f0904790ab8",
+    "pass": true,
+    "at": "2026-09-23T13:31:21Z",
+    "class": "FULL_INDEPENDENT_NUMERIC",
+    "why": null,
+    "cell_verified": false,
+    "cell_verified_historically": false,
+    "families_complete": 14,
+    "unchecked": [],
+    "inventory_version": "df_sota_catalog_estimators.v1",
+    "inventory_digest_recorded": true,
+    "covers_catalog_on_disk": true,
+    "accepted": {
+     "accepted": true,
+     "sha256": "73a047598a99a75c331fa03a37d876893744b3324b8b886ebd273f0904790ab8",
+     "why": null,
+     "expected": {
+      "kind": "catalog",
+      "subject": "L96_h96_s2021",
+      "role": "catalog_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_catalog_73a047598a99a75c",
+      "kind": "catalog",
+      "role": "catalog_acceptance",
+      "subject": "L96_h96_s2021",
+      "at": "2026-09-23T13:32:00Z"
+     },
+     "unit": "acceptance_catalog_73a047598a99a75c",
+     "kind": "catalog",
+     "subject": "L96_h96_s2021",
+     "role": "catalog_acceptance",
+     "accepted_at": "2026-09-23T13:32:00Z",
+     "terminal_sha256": "d6d86798abc87c5c6fb9dcd02f2c9a6f8c01d34b3b236980cb2a421a85cdc10d",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "numerical_acceptance": "FULL_INDEPENDENT_NUMERIC",
+   "numerical_source": [
+    "catalog_acceptance"
+   ],
+   "catalog_certificate_sufficient": true,
+   "cell_verified_by_current_closure": false,
+   "deletion_eligible_today": false,
+   "retention_reason": "the cell is not verified by the current closure (its replay is not accepted)"
+  },
+  "L96_h96_s2022": {
+   "predictions_on_disk": true,
+   "catalog_acceptance": {
+    "sha256": "82fe946f46dec325b47e29b2732d86eba09b024925dd00426daf8d2e5b03eb23",
+    "pass": true,
+    "at": "2026-09-23T13:32:00Z",
+    "class": "FULL_INDEPENDENT_NUMERIC",
+    "why": null,
+    "cell_verified": false,
+    "cell_verified_historically": false,
+    "families_complete": 14,
+    "unchecked": [],
+    "inventory_version": "df_sota_catalog_estimators.v1",
+    "inventory_digest_recorded": true,
+    "covers_catalog_on_disk": true,
+    "accepted": {
+     "accepted": true,
+     "sha256": "82fe946f46dec325b47e29b2732d86eba09b024925dd00426daf8d2e5b03eb23",
+     "why": null,
+     "expected": {
+      "kind": "catalog",
+      "subject": "L96_h96_s2022",
+      "role": "catalog_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_catalog_82fe946f46dec325",
+      "kind": "catalog",
+      "role": "catalog_acceptance",
+      "subject": "L96_h96_s2022",
+      "at": "2026-09-23T13:32:34Z"
+     },
+     "unit": "acceptance_catalog_82fe946f46dec325",
+     "kind": "catalog",
+     "subject": "L96_h96_s2022",
+     "role": "catalog_acceptance",
+     "accepted_at": "2026-09-23T13:32:34Z",
+     "terminal_sha256": "ceffb9d48db2c2d894644019c149dfb01a4d9a6b4e7225d922d06f7067109521",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "numerical_acceptance": "FULL_INDEPENDENT_NUMERIC",
+   "numerical_source": [
+    "catalog_acceptance"
+   ],
+   "catalog_certificate_sufficient": true,
+   "cell_verified_by_current_closure": false,
+   "deletion_eligible_today": false,
+   "retention_reason": "the cell is not verified by the current closure (its replay is not accepted)"
+  },
+  "L96_h96_s2023": {
+   "predictions_on_disk": true,
+   "catalog_acceptance": {
+    "sha256": "9b54070c92894e373279782aab5c3f5be0c90666964c377aa783a1efd5f50af3",
+    "pass": true,
+    "at": "2026-09-23T13:32:34Z",
+    "class": "FULL_INDEPENDENT_NUMERIC",
+    "why": null,
+    "cell_verified": false,
+    "cell_verified_historically": false,
+    "families_complete": 14,
+    "unchecked": [],
+    "inventory_version": "df_sota_catalog_estimators.v1",
+    "inventory_digest_recorded": true,
+    "covers_catalog_on_disk": true,
+    "accepted": {
+     "accepted": true,
+     "sha256": "9b54070c92894e373279782aab5c3f5be0c90666964c377aa783a1efd5f50af3",
+     "why": null,
+     "expected": {
+      "kind": "catalog",
+      "subject": "L96_h96_s2023",
+      "role": "catalog_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_catalog_9b54070c92894e37",
+      "kind": "catalog",
+      "role": "catalog_acceptance",
+      "subject": "L96_h96_s2023",
+      "at": "2026-09-23T13:33:10Z"
+     },
+     "unit": "acceptance_catalog_9b54070c92894e37",
+     "kind": "catalog",
+     "subject": "L96_h96_s2023",
+     "role": "catalog_acceptance",
+     "accepted_at": "2026-09-23T13:33:10Z",
+     "terminal_sha256": "7d7fe511508ce14003ed45e7c1945011f5c083ea35a96292ee6de8ee2a49f848",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "numerical_acceptance": "FULL_INDEPENDENT_NUMERIC",
+   "numerical_source": [
+    "catalog_acceptance"
+   ],
+   "catalog_certificate_sufficient": true,
+   "cell_verified_by_current_closure": false,
+   "deletion_eligible_today": false,
+   "retention_reason": "the cell is not verified by the current closure (its replay is not accepted)"
+  },
+  "L96_h192_s2021": {
+   "predictions_on_disk": false,
+   "catalog_acceptance": {
+    "sha256": "5d36d12a1d87a575f0b553877bdedbd4fc21a2b81057bd31a69b52cbdfb9a825",
+    "pass": true,
+    "at": "2026-09-23T06:38:09Z",
+    "class": "DOMAIN_AND_INTERNAL_ONLY",
+    "why": "no independent numerical comparison was run",
+    "cell_verified": null,
+    "cell_verified_historically": null,
+    "families_complete": 0,
+    "unchecked": [],
+    "inventory_version": null,
+    "inventory_digest_recorded": false,
+    "covers_catalog_on_disk": true,
+    "accepted": {
+     "accepted": true,
+     "sha256": "5d36d12a1d87a575f0b553877bdedbd4fc21a2b81057bd31a69b52cbdfb9a825",
+     "why": null,
+     "expected": {
+      "kind": "catalog",
+      "subject": "L96_h192_s2021",
+      "role": "catalog_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_catalog_5d36d12a1d87a575",
+      "kind": "catalog",
+      "role": "catalog_acceptance",
+      "subject": "L96_h192_s2021",
+      "at": "2026-09-23T06:38:14Z"
+     },
+     "unit": "acceptance_catalog_5d36d12a1d87a575",
+     "kind": "catalog",
+     "subject": "L96_h192_s2021",
+     "role": "catalog_acceptance",
+     "accepted_at": "2026-09-23T06:38:14Z",
+     "terminal_sha256": "2169ed1e089296a6aa4eccd6d9b88f0b889faf33699ef3f9ca1abdef3c2f1717",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "regeneration_acceptance": {
+    "sha256": "07cb681f998464834fde6b7ad9c98afa6f3c35f397968d8d481f59611b31121c",
+    "pass": false,
+    "at": "2026-09-23T09:10:38Z",
+    "class": "DOMAIN_AND_INTERNAL_ONLY",
+    "families_complete": 14,
+    "disagreements": 9,
+    "identity": "REGENERATED_NOT_IDENTICAL: a new inference, NOT the deleted original",
+    "accepted": {
+     "accepted": false,
+     "sha256": "07cb681f998464834fde6b7ad9c98afa6f3c35f397968d8d481f59611b31121c",
+     "why": "no accepted terminal carries this digest for kind='regeneration' subject='L96_h192_s2021' role='regeneration_acceptance'",
+     "expected": {
+      "kind": "regeneration",
+      "subject": "L96_h192_s2021",
+      "role": "regeneration_acceptance"
+     },
+     "registry_hint": null
+    }
+   },
+   "numerical_acceptance": "DOMAIN_AND_INTERNAL_ONLY",
+   "numerical_source": null,
+   "catalog_certificate_sufficient": false,
+   "cell_verified_by_current_closure": false,
+   "deletion_eligible_today": false,
+   "retention_reason": "not on disk"
+  },
+  "L96_h192_s2022": {
+   "predictions_on_disk": false,
+   "catalog_acceptance": {
+    "sha256": "864d4ef7e0d539cdc1c53d5f43304cdb404f885cc9e8f18d2d0a00b11de05813",
+    "pass": true,
+    "at": "2026-09-23T06:38:14Z",
+    "class": "DOMAIN_AND_INTERNAL_ONLY",
+    "why": "no independent numerical comparison was run",
+    "cell_verified": null,
+    "cell_verified_historically": null,
+    "families_complete": 0,
+    "unchecked": [],
+    "inventory_version": null,
+    "inventory_digest_recorded": false,
+    "covers_catalog_on_disk": true,
+    "accepted": {
+     "accepted": true,
+     "sha256": "864d4ef7e0d539cdc1c53d5f43304cdb404f885cc9e8f18d2d0a00b11de05813",
+     "why": null,
+     "expected": {
+      "kind": "catalog",
+      "subject": "L96_h192_s2022",
+      "role": "catalog_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_catalog_864d4ef7e0d539cd",
+      "kind": "catalog",
+      "role": "catalog_acceptance",
+      "subject": "L96_h192_s2022",
+      "at": "2026-09-23T06:38:19Z"
+     },
+     "unit": "acceptance_catalog_864d4ef7e0d539cd",
+     "kind": "catalog",
+     "subject": "L96_h192_s2022",
+     "role": "catalog_acceptance",
+     "accepted_at": "2026-09-23T06:38:18Z",
+     "terminal_sha256": "4446ad766dbd33044108981f7b3e7ca1f6b1470e0c024cb00cfa6094046482c0",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "regeneration_acceptance": {
+    "sha256": "4f1448b83acb17696c9194850c5f375840413806ad6c7d42a5d5e20c27cbbaea",
+    "pass": true,
+    "at": "2026-09-23T08:13:22Z",
+    "class": "FULL_INDEPENDENT_NUMERIC",
+    "families_complete": 14,
+    "disagreements": 0,
+    "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
+    "accepted": {
+     "accepted": true,
+     "sha256": "4f1448b83acb17696c9194850c5f375840413806ad6c7d42a5d5e20c27cbbaea",
+     "why": null,
+     "expected": {
+      "kind": "regeneration",
+      "subject": "L96_h192_s2022",
+      "role": "regeneration_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_regeneration_8c04a34b00220c12",
+      "kind": "regeneration",
+      "role": "regeneration_acceptance",
+      "subject": "L96_h192_s2022",
+      "at": "2026-09-23T08:15:22Z"
+     },
+     "unit": "acceptance_regeneration_8c04a34b00220c12",
+     "kind": "regeneration",
+     "subject": "L96_h192_s2022",
+     "role": "regeneration_acceptance",
+     "accepted_at": "2026-09-23T08:15:21Z",
+     "terminal_sha256": "a6de802891e37d53a64f12531fdd26bfc646418d2a0c207631884e2544730b1e",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "numerical_acceptance": "FULL_INDEPENDENT_NUMERIC",
+   "numerical_source": [
+    "regeneration_acceptance"
+   ],
+   "catalog_certificate_sufficient": false,
+   "cell_verified_by_current_closure": false,
+   "deletion_eligible_today": false,
+   "retention_reason": "not on disk"
+  },
+  "L96_h192_s2023": {
+   "predictions_on_disk": false,
+   "catalog_acceptance": {
+    "sha256": "7381906d72a78f3d7a14b2f4683b7579c5b42ba579c8294dc59fabbc644d779a",
+    "pass": true,
+    "at": "2026-09-23T06:38:19Z",
+    "class": "DOMAIN_AND_INTERNAL_ONLY",
+    "why": "no independent numerical comparison was run",
+    "cell_verified": null,
+    "cell_verified_historically": null,
+    "families_complete": 0,
+    "unchecked": [],
+    "inventory_version": null,
+    "inventory_digest_recorded": false,
+    "covers_catalog_on_disk": true,
+    "accepted": {
+     "accepted": true,
+     "sha256": "7381906d72a78f3d7a14b2f4683b7579c5b42ba579c8294dc59fabbc644d779a",
+     "why": null,
+     "expected": {
+      "kind": "catalog",
+      "subject": "L96_h192_s2023",
+      "role": "catalog_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_catalog_7381906d72a78f3d",
+      "kind": "catalog",
+      "role": "catalog_acceptance",
+      "subject": "L96_h192_s2023",
+      "at": "2026-09-23T06:38:23Z"
+     },
+     "unit": "acceptance_catalog_7381906d72a78f3d",
+     "kind": "catalog",
+     "subject": "L96_h192_s2023",
+     "role": "catalog_acceptance",
+     "accepted_at": "2026-09-23T06:38:23Z",
+     "terminal_sha256": "cf03373dae476c10cf2bd709db381357519e9f4c74027d0a878afd0659b7adb5",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "regeneration_acceptance": {
+    "sha256": "db9bc2b94c8d6a450a3ad24400996b8da9663371768a560a60863808f0aae744",
+    "pass": true,
+    "at": "2026-09-23T08:15:52Z",
+    "class": "FULL_INDEPENDENT_NUMERIC",
+    "families_complete": 14,
+    "disagreements": 0,
+    "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
+    "accepted": {
+     "accepted": true,
+     "sha256": "db9bc2b94c8d6a450a3ad24400996b8da9663371768a560a60863808f0aae744",
+     "why": null,
+     "expected": {
+      "kind": "regeneration",
+      "subject": "L96_h192_s2023",
+      "role": "regeneration_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_regeneration_5066a72dbec23e92",
+      "kind": "regeneration",
+      "role": "regeneration_acceptance",
+      "subject": "L96_h192_s2023",
+      "at": "2026-09-23T08:17:57Z"
+     },
+     "unit": "acceptance_regeneration_5066a72dbec23e92",
+     "kind": "regeneration",
+     "subject": "L96_h192_s2023",
+     "role": "regeneration_acceptance",
+     "accepted_at": "2026-09-23T08:17:57Z",
+     "terminal_sha256": "67a512dfb778bc616059d0b84ccfe777df60a0541267c042ed0948fd650a46c9",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "numerical_acceptance": "FULL_INDEPENDENT_NUMERIC",
+   "numerical_source": [
+    "regeneration_acceptance"
+   ],
+   "catalog_certificate_sufficient": false,
+   "cell_verified_by_current_closure": false,
+   "deletion_eligible_today": false,
+   "retention_reason": "not on disk"
+  },
+  "L96_h336_s2021": {
+   "predictions_on_disk": false,
+   "catalog_acceptance": {
+    "sha256": "9e92314d305e1186c4bb3bad7019b84ae4330081ec6f3e6086b0f9f6ba9c3b52",
+    "pass": true,
+    "at": "2026-09-23T06:38:23Z",
+    "class": "DOMAIN_AND_INTERNAL_ONLY",
+    "why": "no independent numerical comparison was run",
+    "cell_verified": null,
+    "cell_verified_historically": null,
+    "families_complete": 0,
+    "unchecked": [],
+    "inventory_version": null,
+    "inventory_digest_recorded": false,
+    "covers_catalog_on_disk": true,
+    "accepted": {
+     "accepted": true,
+     "sha256": "9e92314d305e1186c4bb3bad7019b84ae4330081ec6f3e6086b0f9f6ba9c3b52",
+     "why": null,
+     "expected": {
+      "kind": "catalog",
+      "subject": "L96_h336_s2021",
+      "role": "catalog_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_catalog_9e92314d305e1186",
+      "kind": "catalog",
+      "role": "catalog_acceptance",
+      "subject": "L96_h336_s2021",
+      "at": "2026-09-23T06:38:27Z"
+     },
+     "unit": "acceptance_catalog_9e92314d305e1186",
+     "kind": "catalog",
+     "subject": "L96_h336_s2021",
+     "role": "catalog_acceptance",
+     "accepted_at": "2026-09-23T06:38:27Z",
+     "terminal_sha256": "bcd5a21a49d73e186aa1b6ac339f94795ee8d5c62b8ccd435c0ad12a4b0a8f80",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "regeneration_acceptance": {
+    "sha256": "d6160e29082d854d356a7b7655b7e05b2dc98899411695b257a43c8b2609cb24",
+    "pass": true,
+    "at": "2026-09-23T08:18:37Z",
+    "class": "FULL_INDEPENDENT_NUMERIC",
+    "families_complete": 14,
+    "disagreements": 0,
+    "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
+    "accepted": {
+     "accepted": true,
+     "sha256": "d6160e29082d854d356a7b7655b7e05b2dc98899411695b257a43c8b2609cb24",
+     "why": null,
+     "expected": {
+      "kind": "regeneration",
+      "subject": "L96_h336_s2021",
+      "role": "regeneration_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_regeneration_1f9e764f53b0762e",
+      "kind": "regeneration",
+      "role": "regeneration_acceptance",
+      "subject": "L96_h336_s2021",
+      "at": "2026-09-23T08:22:16Z"
+     },
+     "unit": "acceptance_regeneration_1f9e764f53b0762e",
+     "kind": "regeneration",
+     "subject": "L96_h336_s2021",
+     "role": "regeneration_acceptance",
+     "accepted_at": "2026-09-23T08:22:16Z",
+     "terminal_sha256": "137001f389b0666f3e947639bf6d5d3b90ee43f1cf607a97d226e909201c623a",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "numerical_acceptance": "FULL_INDEPENDENT_NUMERIC",
+   "numerical_source": [
+    "regeneration_acceptance"
+   ],
+   "catalog_certificate_sufficient": false,
+   "cell_verified_by_current_closure": false,
+   "deletion_eligible_today": false,
+   "retention_reason": "not on disk"
+  },
+  "L96_h336_s2022": {
+   "predictions_on_disk": false,
+   "catalog_acceptance": {
+    "sha256": "0180457de2461b25c9515dfc758577d7cbf9c03368bacc6ffb8853fa1ab6b1d0",
+    "pass": true,
+    "at": "2026-09-23T06:38:27Z",
+    "class": "DOMAIN_AND_INTERNAL_ONLY",
+    "why": "no independent numerical comparison was run",
+    "cell_verified": null,
+    "cell_verified_historically": null,
+    "families_complete": 0,
+    "unchecked": [],
+    "inventory_version": null,
+    "inventory_digest_recorded": false,
+    "covers_catalog_on_disk": true,
+    "accepted": {
+     "accepted": true,
+     "sha256": "0180457de2461b25c9515dfc758577d7cbf9c03368bacc6ffb8853fa1ab6b1d0",
+     "why": null,
+     "expected": {
+      "kind": "catalog",
+      "subject": "L96_h336_s2022",
+      "role": "catalog_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_catalog_0180457de2461b25",
+      "kind": "catalog",
+      "role": "catalog_acceptance",
+      "subject": "L96_h336_s2022",
+      "at": "2026-09-23T06:38:31Z"
+     },
+     "unit": "acceptance_catalog_0180457de2461b25",
+     "kind": "catalog",
+     "subject": "L96_h336_s2022",
+     "role": "catalog_acceptance",
+     "accepted_at": "2026-09-23T06:38:31Z",
+     "terminal_sha256": "eda6a9d4e32a5031b463ffdbe283948edd8cb2f4b292aba895805fe2c4d62502",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "regeneration_acceptance": {
+    "sha256": "cf5770f02fd80dd6d4d6865092c112f916706de9dae125a54f34bca66274e020",
+    "pass": true,
+    "at": "2026-09-23T08:22:58Z",
+    "class": "FULL_INDEPENDENT_NUMERIC",
+    "families_complete": 14,
+    "disagreements": 0,
+    "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
+    "accepted": {
+     "accepted": true,
+     "sha256": "cf5770f02fd80dd6d4d6865092c112f916706de9dae125a54f34bca66274e020",
+     "why": null,
+     "expected": {
+      "kind": "regeneration",
+      "subject": "L96_h336_s2022",
+      "role": "regeneration_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_regeneration_0448090ae8c35679",
+      "kind": "regeneration",
+      "role": "regeneration_acceptance",
+      "subject": "L96_h336_s2022",
+      "at": "2026-09-23T08:26:30Z"
+     },
+     "unit": "acceptance_regeneration_0448090ae8c35679",
+     "kind": "regeneration",
+     "subject": "L96_h336_s2022",
+     "role": "regeneration_acceptance",
+     "accepted_at": "2026-09-23T08:26:29Z",
+     "terminal_sha256": "e922ae9faac6281def64643ff9c57a81b5250e11c9acd75a0f999640c066fc20",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "numerical_acceptance": "FULL_INDEPENDENT_NUMERIC",
+   "numerical_source": [
+    "regeneration_acceptance"
+   ],
+   "catalog_certificate_sufficient": false,
+   "cell_verified_by_current_closure": false,
+   "deletion_eligible_today": false,
+   "retention_reason": "not on disk"
+  },
+  "L96_h336_s2023": {
+   "predictions_on_disk": false,
+   "catalog_acceptance": {
+    "sha256": "d31d6d6cb6d3af160b37abe64de3d60dcc07af7277ebe8f3b001b7c40700ab52",
+    "pass": true,
+    "at": "2026-09-23T06:38:32Z",
+    "class": "DOMAIN_AND_INTERNAL_ONLY",
+    "why": "no independent numerical comparison was run",
+    "cell_verified": null,
+    "cell_verified_historically": null,
+    "families_complete": 0,
+    "unchecked": [],
+    "inventory_version": null,
+    "inventory_digest_recorded": false,
+    "covers_catalog_on_disk": true,
+    "accepted": {
+     "accepted": true,
+     "sha256": "d31d6d6cb6d3af160b37abe64de3d60dcc07af7277ebe8f3b001b7c40700ab52",
+     "why": null,
+     "expected": {
+      "kind": "catalog",
+      "subject": "L96_h336_s2023",
+      "role": "catalog_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_catalog_d31d6d6cb6d3af16",
+      "kind": "catalog",
+      "role": "catalog_acceptance",
+      "subject": "L96_h336_s2023",
+      "at": "2026-09-23T06:38:36Z"
+     },
+     "unit": "acceptance_catalog_d31d6d6cb6d3af16",
+     "kind": "catalog",
+     "subject": "L96_h336_s2023",
+     "role": "catalog_acceptance",
+     "accepted_at": "2026-09-23T06:38:36Z",
+     "terminal_sha256": "61d53d891db5d49ef336e5ffd7802ae3b70df7681d407e0cf2b541dd5798bd96",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "regeneration_acceptance": {
+    "sha256": "7cfa5bdcb802a3d0af0d1b68d3773ae2e6de2933c0ae3fc8c0d15b6e9b4d67ea",
+    "pass": true,
+    "at": "2026-09-23T08:27:07Z",
+    "class": "FULL_INDEPENDENT_NUMERIC",
+    "families_complete": 14,
+    "disagreements": 0,
+    "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
+    "accepted": {
+     "accepted": true,
+     "sha256": "7cfa5bdcb802a3d0af0d1b68d3773ae2e6de2933c0ae3fc8c0d15b6e9b4d67ea",
+     "why": null,
+     "expected": {
+      "kind": "regeneration",
+      "subject": "L96_h336_s2023",
+      "role": "regeneration_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_regeneration_d1821129123f77d4",
+      "kind": "regeneration",
+      "role": "regeneration_acceptance",
+      "subject": "L96_h336_s2023",
+      "at": "2026-09-23T08:30:45Z"
+     },
+     "unit": "acceptance_regeneration_d1821129123f77d4",
+     "kind": "regeneration",
+     "subject": "L96_h336_s2023",
+     "role": "regeneration_acceptance",
+     "accepted_at": "2026-09-23T08:30:45Z",
+     "terminal_sha256": "7d22633244aecc6fd832d9881efcaa28cd661f881c3f194934f48e7bf3d7ee67",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "numerical_acceptance": "FULL_INDEPENDENT_NUMERIC",
+   "numerical_source": [
+    "regeneration_acceptance"
+   ],
+   "catalog_certificate_sufficient": false,
+   "cell_verified_by_current_closure": false,
+   "deletion_eligible_today": false,
+   "retention_reason": "not on disk"
+  },
+  "L96_h720_s2021": {
+   "predictions_on_disk": false,
+   "catalog_acceptance": {
+    "sha256": "a9d56016ac7fcb088b8738eb78e47b2fe23b36fa1a0a68305dd69c86a34c33c3",
+    "pass": true,
+    "at": "2026-09-23T06:38:36Z",
+    "class": "DOMAIN_AND_INTERNAL_ONLY",
+    "why": "no independent numerical comparison was run",
+    "cell_verified": null,
+    "cell_verified_historically": null,
+    "families_complete": 0,
+    "unchecked": [],
+    "inventory_version": null,
+    "inventory_digest_recorded": false,
+    "covers_catalog_on_disk": true,
+    "accepted": {
+     "accepted": true,
+     "sha256": "a9d56016ac7fcb088b8738eb78e47b2fe23b36fa1a0a68305dd69c86a34c33c3",
+     "why": null,
+     "expected": {
+      "kind": "catalog",
+      "subject": "L96_h720_s2021",
+      "role": "catalog_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_catalog_a9d56016ac7fcb08",
+      "kind": "catalog",
+      "role": "catalog_acceptance",
+      "subject": "L96_h720_s2021",
+      "at": "2026-09-23T06:38:41Z"
+     },
+     "unit": "acceptance_catalog_a9d56016ac7fcb08",
+     "kind": "catalog",
+     "subject": "L96_h720_s2021",
+     "role": "catalog_acceptance",
+     "accepted_at": "2026-09-23T06:38:40Z",
+     "terminal_sha256": "1c13eb80ffb2be370b766b8590f5ced0ba349e5f92007772944cb3abe32ebbb7",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "regeneration_acceptance": {
+    "sha256": "77afa6ada2f9f5d3458a1811b8364f980ce9b99d8313326a185b875f9ceb8316",
+    "pass": true,
+    "at": "2026-09-23T08:31:44Z",
+    "class": "FULL_INDEPENDENT_NUMERIC",
+    "families_complete": 14,
+    "disagreements": 0,
+    "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
+    "accepted": {
+     "accepted": true,
+     "sha256": "77afa6ada2f9f5d3458a1811b8364f980ce9b99d8313326a185b875f9ceb8316",
+     "why": null,
+     "expected": {
+      "kind": "regeneration",
+      "subject": "L96_h720_s2021",
+      "role": "regeneration_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_regeneration_2e94e600cf9254fd",
+      "kind": "regeneration",
+      "role": "regeneration_acceptance",
+      "subject": "L96_h720_s2021",
+      "at": "2026-09-23T08:38:47Z"
+     },
+     "unit": "acceptance_regeneration_2e94e600cf9254fd",
+     "kind": "regeneration",
+     "subject": "L96_h720_s2021",
+     "role": "regeneration_acceptance",
+     "accepted_at": "2026-09-23T08:38:47Z",
+     "terminal_sha256": "0f4e8262fe8288e70e0fea381010d048ee8341b355f97ec8919fe0d6ac020a14",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "numerical_acceptance": "FULL_INDEPENDENT_NUMERIC",
+   "numerical_source": [
+    "regeneration_acceptance"
+   ],
+   "catalog_certificate_sufficient": false,
+   "cell_verified_by_current_closure": false,
+   "deletion_eligible_today": false,
+   "retention_reason": "not on disk"
+  },
+  "L96_h720_s2022": {
+   "predictions_on_disk": false,
+   "catalog_acceptance": {
+    "sha256": "29a8f71015644592166410b73f743a07fbf0d74e3cd135e80dfe67087b79eb3a",
+    "pass": true,
+    "at": "2026-09-23T06:38:41Z",
+    "class": "DOMAIN_AND_INTERNAL_ONLY",
+    "why": "no independent numerical comparison was run",
+    "cell_verified": null,
+    "cell_verified_historically": null,
+    "families_complete": 0,
+    "unchecked": [],
+    "inventory_version": null,
+    "inventory_digest_recorded": false,
+    "covers_catalog_on_disk": true,
+    "accepted": {
+     "accepted": true,
+     "sha256": "29a8f71015644592166410b73f743a07fbf0d74e3cd135e80dfe67087b79eb3a",
+     "why": null,
+     "expected": {
+      "kind": "catalog",
+      "subject": "L96_h720_s2022",
+      "role": "catalog_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_catalog_29a8f71015644592",
+      "kind": "catalog",
+      "role": "catalog_acceptance",
+      "subject": "L96_h720_s2022",
+      "at": "2026-09-23T06:38:45Z"
+     },
+     "unit": "acceptance_catalog_29a8f71015644592",
+     "kind": "catalog",
+     "subject": "L96_h720_s2022",
+     "role": "catalog_acceptance",
+     "accepted_at": "2026-09-23T06:38:45Z",
+     "terminal_sha256": "215d1adbc2a7386f807d7f4b86262014faa29f44fa5b8bdc6a3a18848f438b1c",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "regeneration_acceptance": {
+    "sha256": "6f1b8a9e1f079800ff4689a6a78e42b1da3180e75c28b695fa22c5520c58fcab",
+    "pass": true,
+    "at": "2026-09-23T08:39:47Z",
+    "class": "FULL_INDEPENDENT_NUMERIC",
+    "families_complete": 14,
+    "disagreements": 0,
+    "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
+    "accepted": {
+     "accepted": true,
+     "sha256": "6f1b8a9e1f079800ff4689a6a78e42b1da3180e75c28b695fa22c5520c58fcab",
+     "why": null,
+     "expected": {
+      "kind": "regeneration",
+      "subject": "L96_h720_s2022",
+      "role": "regeneration_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_regeneration_0629efd8187ded16",
+      "kind": "regeneration",
+      "role": "regeneration_acceptance",
+      "subject": "L96_h720_s2022",
+      "at": "2026-09-23T08:46:40Z"
+     },
+     "unit": "acceptance_regeneration_0629efd8187ded16",
+     "kind": "regeneration",
+     "subject": "L96_h720_s2022",
+     "role": "regeneration_acceptance",
+     "accepted_at": "2026-09-23T08:46:39Z",
+     "terminal_sha256": "44d98ec0435a4d30aaac0862ee0d1668a9430db784f7a16260062eca60157423",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "numerical_acceptance": "FULL_INDEPENDENT_NUMERIC",
+   "numerical_source": [
+    "regeneration_acceptance"
+   ],
+   "catalog_certificate_sufficient": false,
+   "cell_verified_by_current_closure": false,
+   "deletion_eligible_today": false,
+   "retention_reason": "not on disk"
+  },
+  "L96_h720_s2023": {
+   "predictions_on_disk": false,
+   "catalog_acceptance": {
+    "sha256": "3ebe3cbbef7639b4a81d60279540060cac10e4ee78ae45ffd945ea75a42db255",
+    "pass": true,
+    "at": "2026-09-23T06:38:45Z",
+    "class": "DOMAIN_AND_INTERNAL_ONLY",
+    "why": "no independent numerical comparison was run",
+    "cell_verified": null,
+    "cell_verified_historically": null,
+    "families_complete": 0,
+    "unchecked": [],
+    "inventory_version": null,
+    "inventory_digest_recorded": false,
+    "covers_catalog_on_disk": true,
+    "accepted": {
+     "accepted": true,
+     "sha256": "3ebe3cbbef7639b4a81d60279540060cac10e4ee78ae45ffd945ea75a42db255",
+     "why": null,
+     "expected": {
+      "kind": "catalog",
+      "subject": "L96_h720_s2023",
+      "role": "catalog_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_catalog_3ebe3cbbef7639b4",
+      "kind": "catalog",
+      "role": "catalog_acceptance",
+      "subject": "L96_h720_s2023",
+      "at": "2026-09-23T06:38:50Z"
+     },
+     "unit": "acceptance_catalog_3ebe3cbbef7639b4",
+     "kind": "catalog",
+     "subject": "L96_h720_s2023",
+     "role": "catalog_acceptance",
+     "accepted_at": "2026-09-23T06:38:50Z",
+     "terminal_sha256": "5424d5058f7b4df3ea197cf9cd01a76df839be94318309c3eeba3d01f34cf8e2",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "regeneration_acceptance": {
+    "sha256": "270a3bc67de10cf8854198679730467463db1da611980800b4cc20906950b054",
+    "pass": true,
+    "at": "2026-09-23T08:47:40Z",
+    "class": "FULL_INDEPENDENT_NUMERIC",
+    "families_complete": 14,
+    "disagreements": 0,
+    "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
+    "accepted": {
+     "accepted": true,
+     "sha256": "270a3bc67de10cf8854198679730467463db1da611980800b4cc20906950b054",
+     "why": null,
+     "expected": {
+      "kind": "regeneration",
+      "subject": "L96_h720_s2023",
+      "role": "regeneration_acceptance"
+     },
+     "registry_hint": {
+      "unit": "acceptance_regeneration_277a25a38583ae8a",
+      "kind": "regeneration",
+      "role": "regeneration_acceptance",
+      "subject": "L96_h720_s2023",
+      "at": "2026-09-23T08:54:39Z"
+     },
+     "unit": "acceptance_regeneration_277a25a38583ae8a",
+     "kind": "regeneration",
+     "subject": "L96_h720_s2023",
+     "role": "regeneration_acceptance",
+     "accepted_at": "2026-09-23T08:54:39Z",
+     "terminal_sha256": "31639bbf65245e76f5c67bcabd992ca888d72a115687b82a2b8adbaf67da0f92",
+     "authority": "the accepted terminal's own tags and artifact roles; the local registry was a hint only",
+     "registry_contradicts": false
+    }
+   },
+   "numerical_acceptance": "FULL_INDEPENDENT_NUMERIC",
+   "numerical_source": [
+    "regeneration_acceptance"
+   ],
+   "catalog_certificate_sufficient": false,
+   "cell_verified_by_current_closure": false,
+   "deletion_eligible_today": false,
+   "retention_reason": "not on disk"
+  }
+ },
+ "scope": "read-only: certificates and accepted terminals re-read under the repaired gates; no array was read and nothing was recomputed",
+ "summary": {
+  "cells": 12,
+  "with_full_numeric_acceptance": [
+   "L96_h192_s2022",
+   "L96_h192_s2023",
+   "L96_h336_s2021",
+   "L96_h336_s2022",
+   "L96_h336_s2023",
+   "L96_h720_s2021",
+   "L96_h720_s2022",
+   "L96_h720_s2023",
+   "L96_h96_s2021",
+   "L96_h96_s2022",
+   "L96_h96_s2023"
+  ],
+  "without": [
+   "L96_h192_s2021"
+  ],
+  "predictions_on_disk": [
+   "L96_h96_s2021",
+   "L96_h96_s2022",
+   "L96_h96_s2023"
+  ],
+  "deletion_eligible_today": []
+ }
+}
