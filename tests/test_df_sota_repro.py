@@ -611,13 +611,16 @@ def test_RP101_a_record_without_the_authors_float32_reduction_verifies_on_its_fl
     ver = R.verify_sota_run(root, warehouse=lambda c: {"current": json.loads(json.dumps(held))}, data_path=world["data"], replay=True)
     row = ver["rows"][0]
     assert row["verified"], ver["problems"]
-    assert row["metric_basis"].startswith("independent_float64") and row["author_metric_float32"] == rec["independent_metric_float64"]
+    # RP109: the closure recomputes the author's float32 reduction through the exact route; float64 stays a separately named check
+    assert row["metric_basis"].startswith("author_float32 (recomputed at closure by df_sota_author_metric_exact.v1") and row["author_metric_float32"] == world["record"]["author_metric_float32"]
+    assert abs(row["recomputed"]["independent_float64"]["mae"] - rec["independent_metric_float64"]["mae"]) <= 1e-9 and row["recomputed"]["author_scorer_parity"]["bit_equal"] is True
     assert row["replay"]["path"].startswith("fresh process") and row["replay"]["replayed_metric_float64"] and row["replay"]["true_sha256_replayed"] == rec["true_sha256"]
     t = R.table(json.loads((root / "DESIGN.json").read_text()), ver)
     assert t["rows"][0]["metric_basis"] == [row["metric_basis"]]
-    # at closure with a tiny author-metric budget the author reduction is reported NOT executed and the float64 basis stands
+    # at closure with a tiny author-metric budget the exact route still gives the author's float32; only the author's own function is not run beside it
     ver2 = R.verify_sota_run(root, warehouse=lambda c: {"current": json.loads(json.dumps(held))}, data_path=world["data"], replay=False, author_metric_budget=1)
-    assert ver2["rows"][0]["verified"] and ver2["rows"][0]["recomputed"]["author_float32"] is None and "NOT_EXECUTED" in ver2["rows"][0]["recomputed"]["author_float32_state"]
+    r2 = ver2["rows"][0]
+    assert r2["verified"] and r2["recomputed"]["author_float32"] == world["record"]["author_metric_float32"] and r2["recomputed"]["author_scorer_parity"]["author_function"] is None
 
 
 def test_RP99_paired_contrasts_are_computed_from_the_persisted_per_window_series(world, tmp_path):

@@ -341,6 +341,7 @@ def _pairwise_f32(leaf_sum, lo: int, n: int, leaf: int = _PAIRWISE_LEAF):
     by numpy's own inner loop (which applies the same tree), above it the range splits at n//2 rounded down to a multiple of 8
     and the two partial sums are added once in float32. Verified bit-equal to np.add.reduce for n = 7 … 6.3e6 and leaves 128 …
     2^20 (numpy 2.5.1) and on a 3-D contiguous array reduced with axis=None."""
+    leaf = max(int(leaf), 128)                                   # numpy stops splitting at 128 (8-accumulator unrolled loop): never split below it
     if n <= leaf:
         return np.float32(leaf_sum(lo, n))
     n2 = n // 2; n2 -= n2 % 8
@@ -381,7 +382,7 @@ def author_metric_exact(preds, trues, *, leaf: int = _PAIRWISE_LEAF) -> dict:
     cache.update(w0=None)                                              # second pass reads again (the leaf order is identical)
     s_sq = _pairwise_f32(leaf_sum("sq"), 0, N, leaf)
     n32 = np.float32(N)
-    return {"mae": float(np.float32(s_abs / n32)), "mse": float(np.float32(s_sq / n32)), "route": AUTHOR_SCORER_ROUTE, "elements": N, "leaf": leaf,
+    return {"mae": float(np.float32(s_abs / n32)), "mse": float(np.float32(s_sq / n32)), "route": AUTHOR_SCORER_ROUTE, "elements": N, "leaf": max(int(leaf), 128),
             "dtype": "float32", "reduction": "numpy pairwise tree replicated over the flattened C-order element index; mean = float32(sum)/float32(N)"}
 
 
@@ -794,6 +795,7 @@ def main_like_run_py(argv: list, *, seed: int, data_dir: Path, data_name: str, w
     if bounded_out is not None:
         return {**base, "preds": bounded_out["preds"], "trues": bounded_out["trues"], "author_metric": bounded_out["author_metric"],
                 "author_metric_state": bounded_out["author_metric_state"], "independent_metric_float64": bounded_out["independent_metric_float64"],
+                "author_scorer_parity": bounded_out.get("author_scorer_parity"), "author_metric_route": bounded_out.get("author_metric_route"),
                 "bounded": {k: bounded_out[k] for k in ("finalized", "adapter", "preds_path", "trues_path", "shape")}}
     mae, mse = float(captured.value[0]), float(captured.value[1])
     return {**base, "preds": captured.preds, "trues": captured.trues, "author_metric": {"mae": mae, "mse": mse}, "author_metric_state": "EXECUTED: the author's test()"}
@@ -1030,6 +1032,7 @@ def run_cell(design: dict, cell: dict, *, data_path: Path, folder: Path, gpu: in
               "author_metric_float32": res["author_metric"], "author_metric_state": res.get("author_metric_state"), "independent_metric_float64": f64,
               "evaluation_path": ({"bounded_adapter": res["bounded"]["adapter"], "finalized": res["bounded"]["finalized"]} if res.get("bounded") else {"author_test": True}),
               "operational_patches": res.get("operational_patches", []),
+              "author_scorer_parity": res.get("author_scorer_parity"), "author_metric_route": res.get("author_metric_route"),
               "shapes": {"pred": pred_shape, "true": true_shape}, "dtype": dtype_name,
               "arrays_sha256": sha_file(folder / "arrays.npz"), "pred_sha256": pred_sha, "true_sha256": trues_sha, "checkpoint_sha256": sha_file(ckpt),
               "checkpoint_bytes": ckpt.stat().st_size, "n_parameters": res["n_parameters"], "device": res["device"],
