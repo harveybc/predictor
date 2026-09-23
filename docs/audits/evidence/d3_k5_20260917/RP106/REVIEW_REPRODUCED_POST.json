@@ -1,0 +1,74 @@
+{
+  "different_copy_refused": {
+    "state": "REFUSED",
+    "refusals": [
+      "CONFLICTING_COPY: not the accepted predictions artifact: /tmp/satoshi-rp106-lz9huj1e/different_attempt/attempts/L16_h4_s2021/arrays.npz"
+    ],
+    "verified_arrays_sha256": "bb4510ff656ebcf4c538da8cf88831a500a6dd5409f9a90670d387cc7e8b754e",
+    "other_sha256": "7c5e7f9c4aebee3406be34183907cdebcee827663575e7495fafd6996e046197",
+    "verified_path_exists_after": true,
+    "other_path_exists_after": true,
+    "deleted_digests": []
+  },
+  "identical_copy_control": {
+    "state": "COMPLETE",
+    "deleted": [
+      "attempts",
+      "attempts"
+    ],
+    "all_copies_removed": true
+  },
+  "retained_history_control": {
+    "historically_verified_units": [
+      "L16_h4_s2021"
+    ],
+    "problems": [],
+    "historical_score": {
+      "mae": 1.0069435834884644,
+      "mse": 1.3347922563552856
+    },
+    "basis": "author_float32 [historical: original closure cc8bf1527d12]",
+    "table_score": {
+      "status": "OUTSIDE_OPERATIONAL_MARGIN",
+      "mean": 1.0069435834884644,
+      "sd_ddof1": null,
+      "values": [
+        1.0069435834884644
+      ],
+      "published": 0.5,
+      "difference": 0.5069435834884644,
+      "tolerance_agree": 0.0125,
+      "tolerance_partial": 0.018500000000000003,
+      "n_seeds": 1,
+      "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+    }
+  },
+  "changed_record_without_vault_or_checkpoint": {
+    "historically_verified_units": [],
+    "problems": [
+      "L16_h4_s2021: HISTORY_RECORD_CHANGED: the retained record is not the accepted record artifact",
+      "L16_h4_s2021: HISTORY_CHECKPOINT_CHANGED: the retained checkpoint is not the accepted checkpoint artifact",
+      "L16_h4_s2021: HISTORY_VAULT_MISMATCH: the retained catalog is absent or is not the one the original closure verified"
+    ],
+    "status": "DELETED_HISTORY_UNBOUND",
+    "historical_score": null,
+    "current_record_claims": {
+      "mae": 0.0,
+      "mse": 0.0
+    },
+    "table_score": {
+      "status": "NO_MEASUREMENT",
+      "mean": null,
+      "sd_ddof1": null,
+      "difference": null
+    }
+  },
+  "nonexistent_historical_report": {
+    "historically_verified_units": [],
+    "problems": [
+      "L16_h4_s2021: HISTORY_UNRESOLVED_REPORT: no preserved closure report has the digest the deletion marker names"
+    ],
+    "status": "DELETED_HISTORY_UNBOUND",
+    "historical_score": null
+  }
+}
