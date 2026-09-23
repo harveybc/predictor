@@ -110,6 +110,21 @@ def _dontneed(fd: int, offset: int, length: int) -> None:
         pass
 
 
+def sha_fd(fd: int) -> str:
+    """The digest of an OPEN file, read through its descriptor from offset 0: the bytes of that inode, not of whatever the path
+    names now. Used by the deletion boundary, which must be able to say what it actually removed."""
+    h = hashlib.sha256(); pos = 0
+    while True:
+        block = os.pread(fd, 1 << 22, pos)
+        if not block:
+            break
+        h.update(block); pos += len(block)
+        if pos % (1 << 28) < (1 << 22):
+            _dontneed(fd, 0, pos)
+    _dontneed(fd, 0, pos)
+    return h.hexdigest()
+
+
 def sha_file(path: Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as fh:
@@ -1711,7 +1726,45 @@ def _manifest_digests(manifest) -> dict:
     return {k: (v["sha256"] if isinstance(v, dict) else v) for k, v in dict(manifest).items()}
 
 
-def deletion_preflight(root: Path, unit: str, roots: list, *, accepted_report_sha256: str | None = None, backup_manifest=None) -> dict:
+def verify_backup(root: Path, manifest_path, unit: str) -> dict:
+    """RP116: a manifest is a claim; the backup is bytes. The manifest names its own destination, every file it claims must EXIST
+    THERE and hash to the claimed digest, the local original must hash to the same, and the unit's record, catalog and catalog
+    acceptance must be covered."""
+    out = {"manifest": str(manifest_path), "refusals": [], "checked": 0}
+    if manifest_path is None:
+        out["refusals"].append("BACKUP_MISSING: no backup manifest was given"); return out
+    manifest_path = Path(manifest_path)
+    if not manifest_path.is_file():
+        out["refusals"].append(f"BACKUP_MANIFEST_ABSENT: {manifest_path}"); return out
+    try:
+        doc = json.loads(manifest_path.read_text())
+    except Exception:                                               # noqa: BLE001
+        out["refusals"].append("BACKUP_MANIFEST_UNREADABLE"); return out
+    dest = Path(doc.get("backup") or manifest_path.parent)
+    files = _manifest_digests(doc)
+    out["manifest_sha256"] = sha_file(manifest_path); out["destination"] = str(dest); out["files_claimed"] = len(files)
+    required = [f"attempts/{unit}/cell.json", f"attempts/{unit}/METRICS_VAULT.json", f"attempts/{unit}/CATALOG_ACCEPTANCE.json"]
+    for rel in required:
+        if rel not in files:
+            out["refusals"].append(f"BACKUP_UNCOVERED: {rel} is not in the backup")
+    for rel, digest in files.items():
+        if not rel.startswith(f"attempts/{unit}/") and rel not in ("REPORT.json", ACCEPTED_EVIDENCE, "TERMINAL_RECEIPTS.json", "DESIGN.json"):
+            continue                                                # this unit's evidence and the root-level anchors
+        copy = dest / rel
+        if not copy.is_file():
+            out["refusals"].append(f"BACKUP_ABSENT: {rel} is claimed but not in {dest}"); continue
+        if sha_file(copy) != digest:
+            out["refusals"].append(f"BACKUP_CORRUPT: {rel} in the backup is not the digest the manifest claims"); continue
+        local = Path(root) / rel
+        if local.is_file() and sha_file(local) != digest:
+            out["refusals"].append(f"BACKUP_STALE: {rel} on disk is not the backed-up bytes")
+        out["checked"] += 1
+    out["pass"] = not out["refusals"]
+    return out
+
+
+def deletion_preflight(root: Path, unit: str, roots: list, *, accepted_report_sha256: str | None = None, backup_manifest=None,
+                       receipts: dict | None = None, warehouse=None, require_acceptance: bool = True) -> dict:
     """RP108: everything that must hold BEFORE any unlink of a unit's copies. The approval binds to the exact accepted report
     (REPORT.json bytes) and to a backup manifest that already holds the retained record and catalog; every candidate path must
     hash to the accepted predictions artifact (a folder name is not an identity); aliases, conflicting attempts, changed copies,
@@ -1740,21 +1793,37 @@ def deletion_preflight(root: Path, unit: str, roots: list, *, accepted_report_sh
             out["accepted_arrays_sha256"] = acc or rec.get("arrays_sha256")
             if acc and acc != rec.get("arrays_sha256"):
                 out["refusals"].append("IDENTITY: the accepted predictions artifact and the record disagree")
-    if accepted_report_sha256:
+    # RP116 (Musashi RP113 #3): the prerequisites are MANDATORY through every interface, and each is verified, not declared.
+    if not accepted_report_sha256:
+        out["refusals"].append("APPROVAL_MISSING: deletion requires the digest of the independently accepted closure report")
+    else:
         actual = sha_file(root / "REPORT.json") if (root / "REPORT.json").is_file() else None
         out["approval"]["accepted_report_sha256"] = accepted_report_sha256
         if actual != accepted_report_sha256:
             out["refusals"].append(f"APPROVAL_REPORT_MISMATCH: REPORT.json is {str(actual)[:12]}, the accepted report is {accepted_report_sha256[:12]}")
-    if backup_manifest is not None:
-        digests = _manifest_digests(backup_manifest)
-        out["approval"]["backup_manifest_sha256"] = sha_file(Path(backup_manifest)) if isinstance(backup_manifest, (str, Path)) else None
-        for rel in (f"attempts/{unit}/cell.json", f"attempts/{unit}/METRICS_VAULT.json"):
-            local = root / rel
-            if rel not in digests:
-                out["refusals"].append(f"BACKUP_UNVERIFIED: {rel} is not in the backup manifest")
-            elif not local.is_file() or sha_file(local) != digests[rel]:
-                out["refusals"].append(f"BACKUP_UNVERIFIED: {rel} on disk is not the backed-up bytes")
-        out["approval"]["checkpoint_backed_up"] = f"attempts/{unit}/checkpoint.pth" in digests
+        if require_acceptance:
+            acc = accepted_artifact(root, receipts or {}, warehouse, accepted_report_sha256, expect_kind="closure")
+            out["approval"]["report_acceptance"] = acc
+            if not acc["accepted"]:
+                out["refusals"].append(f"APPROVAL_REPORT_NOT_ACCEPTED: {acc['why']}")
+    cat = folder / "CATALOG_ACCEPTANCE.json"
+    if not cat.is_file():
+        out["refusals"].append("CATALOG_ACCEPTANCE_MISSING: this unit has no independent catalog acceptance")
+    else:
+        ca = json.loads(cat.read_text())
+        out["approval"]["catalog_acceptance"] = {"sha256": sha_file(cat), "pass": ca.get("pass"), "at": ca.get("at"), "refusals": ca.get("refusals")}
+        if not ca.get("pass"):
+            out["refusals"].append(f"CATALOG_ACCEPTANCE_FAILED: {ca.get('refusals')}")
+        if ca.get("catalog_sha256") != (sha_file(folder / "METRICS_VAULT.json") if (folder / "METRICS_VAULT.json").is_file() else None):
+            out["refusals"].append("CATALOG_ACCEPTANCE_STALE: the acceptance is not of the catalog on disk")
+        if require_acceptance:
+            acc_c = accepted_artifact(root, receipts or {}, warehouse, sha_file(cat), expect_kind="catalog")
+            out["approval"]["catalog_acceptance_accepted"] = acc_c
+            if not acc_c["accepted"]:
+                out["refusals"].append(f"CATALOG_ACCEPTANCE_NOT_ACCEPTED: {acc_c['why']}")
+    backup = verify_backup(root, backup_manifest, unit)
+    out["approval"]["backup"] = backup
+    out["refusals"] += backup["refusals"]
     accepted = out["accepted_arrays_sha256"]
     accepted_record = sha_file(folder / "cell.json") if (folder / "cell.json").is_file() else None
     seen_inodes = set()
@@ -1785,7 +1854,8 @@ def deletion_preflight(root: Path, unit: str, roots: list, *, accepted_report_sh
 
 
 def delete_predictions(root: Path, units: list, *, extra_roots: list | None = None, dry_run: bool = False,
-                       accepted_report_sha256: str | None = None, backup_manifest=None) -> dict:
+                       accepted_report_sha256: str | None = None, backup_manifest=None, receipts: dict | None = None,
+                       warehouse=None, require_acceptance: bool = True) -> dict:
     """The owner's authorized deletion (2026-09-22), RP108: under an exclusive lock, preflight the whole inventory of every unit
     (identity by content, aliases, conflicting attempts, readers, bound approval), then unlink copy by copy re-hashing each one
     just before, recording a per-path status; an interrupted deletion leaves an accurate PARTIAL marker and resumes later. The
@@ -1802,26 +1872,43 @@ def delete_predictions(root: Path, units: list, *, extra_roots: list | None = No
         except OSError:
             raise SotaRefusal("REFUSED: another deletion holds this root's exclusive boundary")
         for unit in units:
-            pre = deletion_preflight(root, unit, roots, accepted_report_sha256=accepted_report_sha256, backup_manifest=backup_manifest)
+            pre = deletion_preflight(root, unit, roots, accepted_report_sha256=accepted_report_sha256, backup_manifest=backup_manifest,
+                                     receipts=receipts, warehouse=warehouse, require_acceptance=require_acceptance)
             entry = {"preflight": pre, "gate": pre.get("gate"), "copies_inventoried": [p_ for p_ in pre["paths"] if "sha256" in p_], "deleted": [], "state": "REFUSED" if not pre["pass"] else "PENDING"}
             if pre["pass"] and not dry_run:
                 folder = root / "attempts" / unit
                 previous = json.loads((folder / "PREDICTIONS_DELETED.json").read_text()) if (folder / "PREDICTIONS_DELETED.json").is_file() else None
                 for c in entry["copies_inventoried"]:
                     path = Path(c["path"]); status = {"path": c["path"], "bytes": c["bytes"], "sha256": c["sha256"], "filesystem_id": c["filesystem_id"], "deleted": False}
+                    fd = None
                     try:
-                        now_sha = sha_file(path)                                   # identity re-checked at the instant of deletion
+                        # RP116: the identity is taken FROM AN OPEN DESCRIPTOR, the path is confirmed to be that same inode, and
+                        # after the unlink the bytes are hashed again through the still-open descriptor. A cooperative lock cannot
+                        # bind another process, but this proves what was removed: if anything replaced or rewrote the file between
+                        # the check and the unlink, the two digests differ and the receipt says so.
+                        fd = os.open(path, os.O_RDONLY)
+                        now_sha = sha_fd(fd); st_open = os.fstat(fd); st_path = os.stat(path)
+                        status["inode"] = f"{st_open.st_dev}:{st_open.st_ino}"
                         if now_sha != pre["accepted_arrays_sha256"]:
                             status["why"] = f"IDENTITY_CHANGED_AT_DELETION: {now_sha[:12]}"
+                        elif (st_open.st_dev, st_open.st_ino) != (st_path.st_dev, st_path.st_ino):
+                            status["why"] = "PATH_REBOUND: the path no longer names the inode that was checked"
                         elif _readers_of(path):
                             status["why"] = f"ACTIVE_READER_AT_DELETION: {_readers_of(path)}"
                         else:
                             before = os.statvfs(path); free_before = before.f_bavail * before.f_frsize
                             os.unlink(path)
+                            after_sha = sha_fd(fd)                                  # the same inode, now unlinked
                             after = os.statvfs(path.parent); free_after = after.f_bavail * after.f_frsize
-                            status.update({"deleted": True, "reclaimed_bytes_fs_delta": free_after - free_before, "free_bytes_after": free_after, "at": now_iso()})
+                            status.update({"deleted": True, "reclaimed_bytes_fs_delta": free_after - free_before, "free_bytes_after": free_after,
+                                           "at": now_iso(), "digest_after_unlink": after_sha, "bytes_removed_were_the_accepted_bytes": after_sha == now_sha})
+                            if after_sha != now_sha:
+                                status["why"] = "CONTENT_CHANGED_UNDER_US: the inode's bytes differ from the ones checked; recorded, not hidden"
                     except Exception as exc:                            # noqa: BLE001
                         status["why"] = f"FAILED: {type(exc).__name__}: {str(exc)[:160]}"
+                    finally:
+                        if fd is not None:
+                            os.close(fd)
                     entry["deleted"].append(status)
                 remaining = [d_ for d_ in entry["deleted"] if not d_["deleted"]]
                 all_removed = not remaining and bool(entry["deleted"])
@@ -2060,7 +2147,78 @@ def accept_regenerated(root: Path, design: dict, unit: str, *, data_path: Path, 
 CATALOG_REQUIRED_FAMILIES = ("errors", "percentage_errors_zspace", "matched_baselines", "residual_moments", "correlation_r2", "autocorrelation", "time_blocks", "per_window_series")
 
 
-def accept_catalog(root: Path, design: dict, unit: str) -> dict:
+def _numbers_in(o, depth: int = 0):
+    """Every float or int the catalog reports, so a non-finite value cannot hide in a corner of it (None is a declared state)."""
+    if depth > 8:
+        return
+    if isinstance(o, bool):
+        return
+    if isinstance(o, (int, float)):
+        yield float(o); return
+    if isinstance(o, dict):
+        for v in o.values():
+            yield from _numbers_in(v, depth + 1)
+    elif isinstance(o, (list, tuple)):
+        for v in o:
+            yield from _numbers_in(v, depth + 1)
+
+
+def independent_estimators(preds, trues, *, max_lag: int = 8, sample_windows: int = 64) -> dict:
+    """RP117: the estimator families recomputed from the arrays by an implementation that does NOT call the catalog's producer —
+    residual moments and entropy over the same 2000-bin grid, correlation and R², the 64×64 joint histogram and its mutual
+    information, the residual autocorrelation over the step axis, and the error/baseline means. Definitions, in the normalized
+    space, over the whole population unless a sample is named."""
+    W = preds.shape[0]
+    n = 0; s1 = s2 = s3 = s4 = 0.0
+    py = pp = yy = p2 = y2 = 0.0
+    ab = sq = 0.0
+    edges = np.linspace(-20.0, 20.0, 2001); hist = np.zeros(2000); outside = 0
+    jedges = np.linspace(-6.0, 6.0, 65); joint = np.zeros((64, 64)); step = max(1, (96 << 20) // max(1, int(np.prod(preds.shape[1:])) * 8))
+    for w0 in range(0, W, step):
+        a = np.asarray(preds[w0:w0 + step], dtype=np.float64); b = np.asarray(trues[w0:w0 + step], dtype=np.float64)
+        d = (b - a).reshape(-1)                                       # true - pred, the author's residual orientation
+        n += d.size; s1 += d.sum(); s2 += (d * d).sum(); s3 += (d ** 3).sum(); s4 += (d ** 4).sum()
+        ab += np.abs(d).sum(); sq += (d * d).sum()
+        pf, yf = a.reshape(-1), b.reshape(-1)
+        py += float((pf * yf).sum()); pp += float(pf.sum()); yy += float(yf.sum()); p2 += float((pf * pf).sum()); y2 += float((yf * yf).sum())
+        h, _ = np.histogram(d, bins=edges); hist += h; outside += int(d.size - h.sum())
+        joint += np.histogram2d(np.clip(pf, -6, 6), np.clip(yf, -6, 6), bins=[jedges, jedges])[0]
+    mean = s1 / n; var = s2 / n - mean * mean
+    sd = math.sqrt(max(0.0, var))
+    m3 = s3 / n - 3 * mean * (s2 / n) + 2 * mean ** 3
+    m4 = s4 / n - 4 * mean * (s3 / n) + 6 * mean * mean * (s2 / n) - 3 * mean ** 4
+    ph = hist / hist.sum() if hist.sum() > 0 else None
+    entropy = float(-(ph[ph > 0] * np.log2(ph[ph > 0])).sum()) if ph is not None else None
+    pj = joint / joint.sum() if joint.sum() > 0 else None
+    mi = None
+    if pj is not None:
+        px, pyv = pj.sum(1, keepdims=True), pj.sum(0, keepdims=True)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            terms = pj * np.log2(pj / (px * pyv))
+        mi = float(np.nansum(np.where(pj > 0, terms, 0.0)))
+    cov = py - pp * yy / n; vp = p2 - pp * pp / n; vy = y2 - yy * yy / n
+    corr = float(cov / math.sqrt(vp * vy)) if vp > 0 and vy > 0 else None
+    r2 = float(1 - (sq / n) / (vy / n)) if vy > 0 else None
+    # residual autocorrelation along the step axis, on a bounded sample of windows (channel-mean residual per step)
+    idx = list(range(0, W, max(1, W // max(1, sample_windows))))[:sample_windows]
+    series = np.concatenate([np.asarray(trues[i:i + 1], dtype=np.float64).mean(axis=2).ravel() - np.asarray(preds[i:i + 1], dtype=np.float64).mean(axis=2).ravel() for i in idx]) if idx else np.zeros(0)
+    acf = []
+    if series.size > max_lag + 2:
+        c0 = float(((series - series.mean()) ** 2).mean())
+        for lag in range(1, max_lag + 1):
+            x, y_ = series[:-lag] - series.mean(), series[lag:] - series.mean()
+            acf.append(float((x * y_).mean() / c0) if c0 > 0 else None)
+    return {"elements": n, "residual_mean": mean, "residual_var": var, "residual_sd": sd,
+            "skewness": (m3 / sd ** 3) if sd > 0 else None, "kurtosis_raw": (m4 / sd ** 4) if sd > 0 else None,
+            "entropy_bits": entropy, "mutual_information_bits": mi, "corr_pred_true": corr, "r2": r2,
+            "mae_float64": ab / n, "mse_float64": sq / n, "histogram_counts": hist.astype(int).tolist(), "histogram_outside": outside,
+            "autocorrelation_sample": acf, "autocorrelation_sample_windows": len(idx),
+            "definitions": {"residual": "true - pred, float64", "entropy": "Shannon over the 2000-bin residual histogram on [-20, 20]",
+                            "mutual_information": "Shannon MI over the 64x64 joint histogram of clipped (pred, true) on [-6, 6]",
+                            "corr": "Pearson over all elements", "r2": "1 - MSE / Var(true)", "acf": "sample autocorrelation of the channel-mean residual per step"}}
+
+
+def accept_catalog(root: Path, design: dict, unit: str, *, data_path: Path | None = None, independent: bool = True) -> dict:
     """RP112: the finite catalog of a cell, checked INDEPENDENTLY of the process that produced it, before its predictions may be
     deleted. Nothing is recomputed from the arrays here (the closure already did that and read it back); this checks the catalog
     itself: its identity against the retained record and the accepted chain, its population and denominators, the presence and
@@ -2122,6 +2280,41 @@ def accept_catalog(root: Path, design: dict, unit: str) -> dict:
     for k, tol in tolerances.items():
         if abs(oracles[k]) > tol:
             out["refusals"].append(f"ORACLE {k}: {oracles[k]} exceeds {tol}")
+    # RP117 (Musashi RP113 #5): every claimed family is checked against its OWN definition and domain, not only against the
+    # producer's other summaries. A standard deviation cannot be negative, a 64x64 discrete mutual information cannot exceed
+    # 6 bits, a residual entropy over 2000 bins cannot exceed log2(2000), an autocorrelation cannot leave [-1, 1], a histogram's
+    # counts must be the population, quantiles must not decrease.
+    dom = {}
+    res = v.get("residuals") or {}
+    hist = (res.get("histogram") or {}); counts = hist.get("counts") or []
+    jh = v.get("joint_histogram_pred_true") or {}; jcounts = jh.get("counts") or []
+    n_elements = (pop.get("elements") or 0)
+    finite = lambda x: isinstance(x, (int, float)) and math.isfinite(x)
+    dom["residual_sd_non_negative"] = finite(res.get("sd")) and res["sd"] >= 0.0
+    dom["residual_sd_is_sqrt_var"] = finite(res.get("var")) and finite(res.get("sd")) and abs(res["sd"] - math.sqrt(max(0.0, res["var"]))) <= 1e-9
+    dom["residual_var_non_negative"] = finite(res.get("var")) and res["var"] >= 0.0
+    dom["residual_mean_matches_bias"] = finite(res.get("mean")) and finite(g.get("bias")) and abs(res["mean"] - g["bias"]) <= 1e-9
+    bins = max(1, len(counts))
+    dom["entropy_within_log2_bins"] = (res.get("entropy_bits") is None) or (finite(res.get("entropy_bits")) and -1e-12 <= res["entropy_bits"] <= math.log2(bins) + 1e-9)
+    mi = g.get("mutual_information_bits_pred_true_64x64")
+    dom["mutual_information_within_log2_64"] = (mi is None) or (finite(mi) and -1e-12 <= mi <= 6.0 + 1e-9)
+    dom["correlation_within_unit_interval"] = (g.get("corr_pred_true") is None) or (finite(g["corr_pred_true"]) and -1.0 - 1e-9 <= g["corr_pred_true"] <= 1.0 + 1e-9)
+    dom["r2_at_most_one"] = (g.get("r2") is None) or (finite(g["r2"]) and g["r2"] <= 1.0 + 1e-9)
+    dom["histogram_counts_are_the_population"] = bool(counts) and (sum(counts) + int(hist.get("outside_range") or 0) == n_elements) and all(isinstance(c, int) and c >= 0 for c in counts)
+    dom["joint_histogram_counts_are_the_population"] = bool(jcounts) and (sum(sum(r_) for r_ in jcounts) == n_elements) and all(c >= 0 for r_ in jcounts for c in r_)
+    q = res.get("quantiles") or {}
+    qs = [q[k] for k in sorted(q, key=lambda k_: float(k_.rstrip("pq%") or 0)) if finite(q.get(k))] if isinstance(q, dict) else []
+    dom["quantiles_do_not_decrease"] = all(a_ <= b_ + 1e-9 for a_, b_ in zip(qs, qs[1:])) if len(qs) > 1 else True
+    acf_block = (v.get("autocorrelation") or {}).get("channel_mean_residual_per_step") or {}
+    acf_values = [x for row in (acf_block.get("acf_by_lag") or []) for x in (row if isinstance(row, list) else [row]) if x is not None]
+    dom["autocorrelation_within_unit_interval"] = all(finite(x) and -1.0 - 1e-9 <= x <= 1.0 + 1e-9 for x in acf_values)
+    dom["errors_non_negative"] = all(finite(x) and x >= 0 for x in (per_step["mae"] + per_step["mse"] + per_channel["mae"] + per_window["mae"]))
+    dom["baselines_non_negative"] = all(finite(g.get(k)) and g[k] >= 0 for k in ("naive_mse", "naive_mae", "seasonal24_mse", "seasonal24_mae"))
+    dom["all_reported_numbers_finite"] = all(math.isfinite(x) for x in _numbers_in(v))
+    out["domain_checks"] = dom
+    for k, ok in dom.items():
+        if not ok:
+            out["refusals"].append(f"DOMAIN {k}: the catalog violates the definition of this family")
     ic = v.get("independent_check") or {}
     out["catalog_independent_check"] = ic
     if not ic or abs((ic.get("global_vs_author") or {}).get("mae", 1)) > 1e-6 or abs((ic.get("global_vs_author") or {}).get("mse", 1)) > 1e-6:
@@ -2143,6 +2336,40 @@ def accept_catalog(root: Path, design: dict, unit: str) -> dict:
             out["refusals"].append("CLOSURE: the closure did not recompute and read back THIS catalog from the accepted arrays")
     else:
         out["refusals"].append("CLOSURE: no REPORT.json to bind the acceptance to")
+    # independent recomputation from the arrays, where they still exist: the strongest available check per family
+    arrays = folder / "arrays.npz"
+    if independent and arrays.is_file() and data_path is not None:
+        preds = StoredArray(arrays, "pred")
+        derived = naive_and_trues(design, cell, Path(data_path), work_dir=root / "closure_work")
+        trues = StoredArray(derived["trues_path"])
+        ind = independent_estimators(preds, trues)
+        out["independent_estimators"] = ind
+        comp = {"residual_sd": ind["residual_sd"] - (res.get("sd") or 0.0), "residual_mean": ind["residual_mean"] - (res.get("mean") or 0.0),
+                "skewness": (ind["skewness"] - res["skewness"]) if (ind["skewness"] is not None and res.get("skewness") is not None) else 0.0,
+                "kurtosis_raw": (ind["kurtosis_raw"] - res["kurtosis_raw"]) if (ind["kurtosis_raw"] is not None and res.get("kurtosis_raw") is not None) else 0.0,
+                "entropy_bits": (ind["entropy_bits"] - res["entropy_bits"]) if (ind["entropy_bits"] is not None and res.get("entropy_bits") is not None) else 0.0,
+                "mutual_information_bits": (ind["mutual_information_bits"] - mi) if (ind["mutual_information_bits"] is not None and mi is not None) else 0.0,
+                "corr_pred_true": (ind["corr_pred_true"] - g["corr_pred_true"]) if (ind["corr_pred_true"] is not None and g.get("corr_pred_true") is not None) else 0.0,
+                "r2": (ind["r2"] - g["r2"]) if (ind["r2"] is not None and g.get("r2") is not None) else 0.0,
+                "mae": ind["mae_float64"] - g["mae"], "mse": ind["mse_float64"] - g["mse"],
+                "histogram_counts": float(np.abs(np.asarray(ind["histogram_counts"]) - np.asarray(counts)).sum()) if counts else 0.0}
+        out["independent_vs_catalog"] = comp
+        out["independent_scope"] = "recomputed from the retained prediction arrays and the author's loader targets, without calling the catalog's producer"
+        tol = {"residual_sd": 1e-6, "residual_mean": 1e-6, "skewness": 1e-4, "kurtosis_raw": 1e-3, "entropy_bits": 1e-6,
+               "mutual_information_bits": 1e-6, "corr_pred_true": 1e-6, "r2": 1e-6, "mae": 1e-6, "mse": 1e-6, "histogram_counts": 0.0}
+        for k, t_ in tol.items():
+            if abs(comp[k]) > t_:
+                out["refusals"].append(f"INDEPENDENT {k}: the catalog disagrees with an independent recomputation by {comp[k]}")
+        acf_cat = [x for x in ((acf_block.get("acf_by_lag") or [[None]])[0] if acf_block.get("acf_by_lag") else []) if x is not None][:len(ind["autocorrelation_sample"])]
+        if acf_cat and ind["autocorrelation_sample"]:
+            out["independent_vs_catalog"]["autocorrelation_sign_and_range"] = all(abs(x) <= 1.0 for x in acf_cat)
+        preds.close(); trues.close()
+        shutil.rmtree(root / "closure_work", ignore_errors=True)
+    else:
+        out["independent_estimators"] = None
+        out["independent_scope"] = ("HISTORICAL LIMIT: the prediction arrays were deleted under authorization, so no independent recomputation of the "
+                                    "estimator families is possible here; the domain checks, the population and the internal oracles above are what can be checked, "
+                                    "and a controlled regeneration from the retained checkpoint would be required for more")
     out["pass"] = not out["refusals"]
     write_atomic(folder / "CATALOG_ACCEPTANCE.json", json.dumps(out, indent=1, default=str))
     return out
@@ -2513,6 +2740,70 @@ def accepted_terminal(warehouse, receipts: dict, unit: str, design: dict, cell: 
     return {"acc": acc, "row": row, "problems": problems, "class": "ACCEPTED" if not problems else "IDENTITY_PROBLEM"}
 
 
+ACCEPTED_EVIDENCE = "ACCEPTED_EVIDENCE.json"
+
+
+def publish_acceptance(a, design: dict, *, kind: str, subject: str, files: dict, metrics: list | None = None) -> dict:
+    """RP115: an evidence object becomes ACCEPTED only through the governed chain, exactly like a cell's artifacts. `files` maps a
+    role to a path; the unit is named after the primary file's digest, a governed delivery is acquired for it and a COMPLETED
+    terminal carries every file's digest. A local file, however well hashed, is not accepted evidence until its digest appears in
+    an accepted terminal, so rewriting it and recomputing its digest cannot make it acceptable."""
+    G, U = governance_modules()
+    root = Path(a.root)
+    digests = {role: {"sha256": sha_file(Path(f)), "bytes": Path(f).stat().st_size, "path": str(Path(f).relative_to(root))} for role, f in files.items()}
+    primary = digests[list(files)[0]]["sha256"]
+    unit = f"acceptance_{kind}_{primary[:16]}"
+    started = U._z(U.now_iso())
+    acquire(a, design, unit)
+    terminal = U._terminal(status="COMPLETED", reason=None, cost={"wall_seconds": 0.0, "cpu_seconds": 0.0}, metrics=(metrics or []),
+                           started=started, finished=U._z(U.now_iso()),
+                           tags={"purpose": "SOTA_EVIDENCE_ACCEPTANCE", "classification": "NON_GOVERNING", "phase": "ACCEPTANCE", "kind": kind,
+                                 "subject": subject, "design_sha256": design["design_sha256"], "host": socket.gethostname(), "unit": unit})
+    terminal["artifacts"] = [{"role": role, "sha256": d["sha256"], "bytes": d["bytes"]} for role, d in digests.items()]
+    (root / "TERMINALS").mkdir(exist_ok=True)
+    (root / "TERMINALS" / f"{unit}.json").write_text(json.dumps(terminal, indent=1, default=str))
+    reported = G.report_terminal(root, unit, terminal, gov_url=a.gov_url, api_key_file=a.api_key_file, outbox_dir=str(root / "outbox"), started_at=started)
+    if reported["flushed"]["pending"] or reported["flushed"]["failures"]:
+        raise SotaRefusal(f"REFUSED: the acceptance terminal of {unit} was not accepted: {reported['flushed']['failures']}")
+    registry = json.loads((root / ACCEPTED_EVIDENCE).read_text()) if (root / ACCEPTED_EVIDENCE).is_file() else {"schema": "df_sota_accepted_evidence.v1", "entries": {}}
+    for role, d in digests.items():
+        registry["entries"][d["sha256"]] = {"unit": unit, "kind": kind, "role": role, "subject": subject, "path": d["path"], "bytes": d["bytes"],
+                                            "at": now_iso(), "host": socket.gethostname(),
+                                            "scope": "accepted at this date; local availability before this acceptance is not evidence of earlier acceptance"}
+    write_atomic(root / ACCEPTED_EVIDENCE, json.dumps(registry, indent=1, default=str))
+    return {"unit": unit, "kind": kind, "subject": subject, "digests": digests}
+
+
+def accepted_artifact(root: Path, receipts: dict, warehouse, sha256: str | None, *, expect_kind: str | None = None) -> dict:
+    """Is this digest an artifact of an ACCEPTED terminal? The local registry only says WHICH unit to ask about; the answer comes
+    from the accepted chain (the receipt and the warehouse row). No warehouse, no acceptance."""
+    root = Path(root)
+    out = {"accepted": False, "sha256": sha256, "why": None}
+    if not sha256:
+        out["why"] = "no digest"; return out
+    reg = json.loads((root / ACCEPTED_EVIDENCE).read_text()).get("entries", {}) if (root / ACCEPTED_EVIDENCE).is_file() else {}
+    entry = reg.get(sha256)
+    if entry is None:
+        out["why"] = "no acceptance is registered for this digest"; return out
+    out.update({"unit": entry["unit"], "kind": entry.get("kind"), "role": entry.get("role"), "accepted_at": entry.get("at"), "scope": entry.get("scope")})
+    if expect_kind and entry.get("kind") != expect_kind:
+        out["why"] = f"the acceptance is of kind {entry.get('kind')!r}, not {expect_kind!r}"; return out
+    receipt = receipts.get(entry["unit"])
+    if receipt is None:
+        out["why"] = f"the acceptance unit {entry['unit']} has no terminal receipt"; return out
+    if warehouse is None:
+        out["why"] = "custody unavailable: the warehouse was not read"; return out
+    row = ((warehouse(receipt["campaign_sha256"]) or {}).get("current") or {}).get(entry["unit"])
+    if not row:
+        out["why"] = f"the warehouse holds no terminal for {entry['unit']}"; return out
+    if row.get("status") != "COMPLETED" or row.get("terminal_sha256") != receipt.get("terminal_sha256"):
+        out["why"] = "the accepted terminal disagrees with the receipt or is not COMPLETED"; return out
+    if not any(x.get("sha256") == sha256 for x in row.get("artifacts") or []):
+        out["why"] = "the accepted terminal does not carry this digest"; return out
+    out["accepted"] = True
+    return out
+
+
 def resolve_report(root: Path, sha256: str | None):
     """The closure report whose BYTES hash to `sha256`: REPORT.json, the content-addressed copies under reports/, or any
     REPORT*.json kept in the root (pre-deletion copies). None when no file has that digest — a digest string alone is not a report."""
@@ -2536,7 +2827,61 @@ def resolve_report(root: Path, sha256: str | None):
 HISTORY_BOUND = "METRICS_VERIFIED_BEFORE_AUTHORIZED_DELETION"
 
 
-def historical_verification(root: Path, design: dict, cell: dict, record: dict, marker: dict, custody: dict) -> dict:
+def regeneration_evidence(root: Path, cell: dict, record: dict, receipts: dict, warehouse) -> dict:
+    """RP115 (Musashi RP113 #2): a regeneration replaces nothing unless BOTH its record and its acceptance are accepted evidence
+    AND their content is consistent with what is retained. Copying the original digests into a hand-written file, or an
+    ACCEPTANCE that only says `pass`, must not become a score."""
+    unit = cell["cell_id"]; folder = Path(root) / "attempts" / unit
+    rp_, ap_ = folder / "regenerated" / "REGENERATION.json", folder / "regenerated" / "ACCEPTANCE.json"
+    if not rp_.is_file():
+        return {"present": False}
+    out = {"present": True, "refusals": [], "regeneration_sha256": sha_file(rp_), "acceptance_sha256": sha_file(ap_) if ap_.is_file() else None}
+    try:
+        rr = json.loads(rp_.read_text())
+    except Exception:                                               # noqa: BLE001
+        return {"present": True, "refusals": ["REGEN_UNREADABLE"], "usable": False}
+    aa = json.loads(ap_.read_text()) if ap_.is_file() else None
+    out["regeneration"] = {k: rr.get(k) for k in ("identity", "label", "device_name", "device_uuid", "at", "host", "author_metric", "author_metric_state",
+                                                  "independent_metric_float64", "pred_sha256", "true_sha256", "route")}
+    acc_r = accepted_artifact(root, receipts, warehouse, out["regeneration_sha256"], expect_kind="regeneration")
+    acc_a = accepted_artifact(root, receipts, warehouse, out["acceptance_sha256"], expect_kind="regeneration") if out["acceptance_sha256"] else {"accepted": False, "why": "no acceptance file"}
+    out["accepted"] = {"regeneration": acc_r, "acceptance": acc_a}
+    if not acc_r["accepted"]:
+        out["refusals"].append(f"REGEN_NOT_ACCEPTED: {acc_r['why']}")
+    if not acc_a["accepted"]:
+        out["refusals"].append(f"REGEN_ACCEPTANCE_NOT_ACCEPTED: {acc_a.get('why')}")
+    # content, not just acceptance: the regeneration must name its own execution and agree with the retained catalog
+    metric = rr.get("author_metric")
+    if rr.get("identity") != "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL":
+        out["refusals"].append("REGEN_NOT_IDENTICAL")
+    if rr.get("pred_sha256") != record.get("pred_sha256") or rr.get("true_sha256") != record.get("true_sha256"):
+        out["refusals"].append("REGEN_DIGESTS: the regeneration's digests are not the record's")
+    for key in ("device_uuid", "at", "host", "author_metric_state", "finalized"):
+        if not rr.get(key):
+            out["refusals"].append(f"REGEN_INCOMPLETE: no {key}")
+    if not (isinstance(metric, dict) and all(isinstance(metric.get(k), (int, float)) and math.isfinite(metric[k]) for k in ("mae", "mse"))):
+        out["refusals"].append("REGEN_METRIC_NOT_FINITE")
+    vault_path = folder / "METRICS_VAULT.json"
+    if vault_path.is_file() and isinstance(metric, dict) and all(isinstance(metric.get(k), (int, float)) for k in ("mae", "mse")):
+        g = (json.loads(vault_path.read_text()).get("global") or {})
+        if abs(g.get("mae", 1e9) - metric["mae"]) > 1e-6 or abs(g.get("mse", 1e9) - metric["mse"]) > 1e-6:
+            out["refusals"].append("REGEN_CONTRADICTS_CATALOG: the regenerated metric disagrees with the retained catalog's global")
+        pop = (json.loads(vault_path.read_text()).get("population") or {})
+        fin = rr.get("finalized") or {}
+        if fin.get("windows") not in (None, pop.get("windows")):
+            out["refusals"].append("REGEN_POPULATION: the regeneration's window count is not the catalog's")
+    if aa is None or not aa.get("pass") or not aa.get("catalog_recomputed_equals_retained") or aa.get("refusals"):
+        out["refusals"].append("REGEN_ACCEPTANCE_CONTENT: the acceptance does not certify a catalog re-derived from the regenerated bytes")
+    elif not isinstance(aa.get("numeric_oracles"), dict) or not aa["numeric_oracles"]:
+        out["refusals"].append("REGEN_ACCEPTANCE_CONTENT: the acceptance carries no numeric oracles")
+    elif aa.get("digests_now", {}).get("pred") not in (None, record.get("pred_sha256")):
+        out["refusals"].append("REGEN_ACCEPTANCE_CONTENT: the acceptance scored other bytes than the record's")
+    out["usable"] = not out["refusals"]
+    return out
+
+
+def historical_verification(root: Path, design: dict, cell: dict, record: dict, marker: dict, custody: dict,
+                            *, receipts: dict | None = None, warehouse=None) -> dict:
     """RP107: a deleted cell's score is what the ORIGINAL pre-deletion closure verified, bound to what is still on disk and to the
     accepted terminal chain — never a field of the current record or a flag in the deletion marker. Every failure is a typed
     refusal and yields no historically verified score."""
@@ -2546,6 +2891,11 @@ def historical_verification(root: Path, design: dict, cell: dict, record: dict, 
     if resolved is None:
         refusals.append("HISTORY_UNRESOLVED_REPORT: no preserved closure report has the digest the deletion marker names")
         return {"status": "DELETED_HISTORY_UNBOUND", "verified_historically": False, "refusals": refusals, "metric": None, "basis": None, "source": None}
+    # RP115 (Musashi RP113 #1): resolving bytes is not acceptance. The report's digest must be an artifact of an ACCEPTED terminal,
+    # so rewriting the report locally and recomputing the marker's pointer refuses instead of publishing a new score.
+    acceptance = accepted_artifact(root, receipts or {}, warehouse, resolved["sha256"], expect_kind="closure")
+    if not acceptance["accepted"]:
+        refusals.append(f"HISTORY_REPORT_NOT_ACCEPTED: the closure report the marker names is not accepted evidence ({acceptance['why']})")
     report = resolved["report"]
     if report.get("design_sha256") != design["design_sha256"]:
         refusals.append("HISTORY_DESIGN_MISMATCH: the original report was closed under another design")
@@ -2581,6 +2931,7 @@ def historical_verification(root: Path, design: dict, cell: dict, record: dict, 
     return {"status": HISTORY_BOUND if ok else "DELETED_HISTORY_UNBOUND", "verified_historically": ok, "refusals": refusals,
             "metric": metric if ok else None, "basis": (f"{basis} [historical: original closure {resolved['sha256'][:12]}]" if ok else None),
             "source": {"report_path": resolved["path"], "report_sha256": resolved["sha256"], "row_verified": bool(row and row.get("verified")),
+                       "report_acceptance": acceptance,
                        "record_metric_agrees_with_original": (metric == metric_of(record)[0]) if row else None}}
 
 
@@ -2645,27 +2996,22 @@ def verify_sota_run(root: Path, *, warehouse=None, data_path: Path | None = None
             # chain; the marker is a pointer, never an authority. Not a current replay, not a missing artifact.
             dd = json.loads(deleted.read_text()); record = json.loads((folder / "cell.json").read_text())
             custody_h = accepted_terminal(warehouse, receipts, unit, design, cell)
-            hv = historical_verification(root, design, cell, record, dd, custody_h)
+            hv = historical_verification(root, design, cell, record, dd, custody_h, receipts=receipts, warehouse=warehouse)
             attribution = device_attribution(record)
             # RP109/RP112: a regeneration by inference whose bytes are the deleted original's, and its accepted catalog, are a
             # labelled SUCCESSOR of the historical row — never a replacement of the original report and never a current replay
-            regen = None
-            rp_, ap_ = folder / "regenerated" / "REGENERATION.json", folder / "regenerated" / "ACCEPTANCE.json"
-            if rp_.is_file():
-                rr = json.loads(rp_.read_text())
-                aa = json.loads(ap_.read_text()) if ap_.is_file() else None
-                identical = (rr.get("identity") == "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL" and rr.get("pred_sha256") == record.get("pred_sha256")
-                             and rr.get("true_sha256") == record.get("true_sha256"))
-                regen = {"identity": rr.get("identity"), "bit_identical_to_deleted_original": identical, "device_name": rr.get("device_name"),
-                         "device_uuid": rr.get("device_uuid"), "at": rr.get("at"), "author_metric_float32": rr.get("author_metric"),
-                         "independent_float64": rr.get("independent_metric_float64"), "author_metric_state": rr.get("author_metric_state"),
-                         "catalog_acceptance": ({"pass": aa.get("pass"), "catalog_recomputed_equals_retained": aa.get("catalog_recomputed_equals_retained"),
-                                                 "refusals": aa.get("refusals"), "numeric_oracles": aa.get("numeric_oracles"), "at": aa.get("at")} if aa else None),
-                         "scope": "REGENERATED_BY_INFERENCE: a new execution of the author's test path from the retained checkpoint; not a replay of the deleted arrays"}
-                if hv["verified_historically"] and identical and (aa or {}).get("pass") and rr.get("author_metric"):
+            regen = regeneration_evidence(root, cell, record, receipts, warehouse)
+            if regen.get("present"):
+                regen["scope"] = "REGENERATED_BY_INFERENCE: a new execution of the author's test path from the retained checkpoint; not a replay of the deleted arrays"
+                rr = regen.get("regeneration") or {}
+                if hv["verified_historically"] and regen.get("usable"):
                     hv["metric"] = rr["author_metric"]
                     hv["basis"] = (f"author_float32 (regenerated by inference from the retained checkpoint on {rr.get('device_name')}, predictions bit-identical to the "
-                                   f"deleted original; catalog re-derived and equal to the retained one) [historical row: {hv['basis']}]")
+                                   f"deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: {hv['basis']}]")
+                elif regen.get("refusals"):
+                    hv["refusals"] = hv["refusals"] + regen["refusals"]
+                    if hv["verified_historically"]:
+                        hv["verified_historically"] = False; hv["status"] = "DELETED_HISTORY_UNBOUND"; hv["metric"] = None; hv["basis"] = None
             rows.append({"unit": unit, "cell": {k: cell[k] for k in ("cell_id", "arm", "protocol", "seq_len", "horizon", "seed")}, "verified": False,
                          "verified_historically": hv["verified_historically"], "status": hv["status"],
                          "author_metric_float32": hv["metric"], "metric_basis": hv["basis"], "metric_of_current_record": metric_of(record)[0],
@@ -3158,7 +3504,12 @@ def close(a, design: dict) -> dict:
     (root / "REPORT.json").write_text(text)
     (root / "SOTA_TABLE.json").write_text(json.dumps(t, indent=1, default=str))
     (root / "SOTA_TABLE.md").write_text(markdown(t))
-    print(json.dumps({"verified": report["verified"], "complete": t["complete"], "verified_units": ver["verified_units"], "report_sha256": digest, "problems": ver["problems"][:5],
+    if getattr(a, "publish_acceptance", False):
+        pub = publish_acceptance(a, design, kind="closure", subject=f"closure of {design['design_sha256'][:12]}", files={"closure_report": root / "REPORT.json"},
+                                 metrics=[_module("df_utility_run")._metric("sota.closure.verified_units", float(len(ver["verified_units"])), "units")])
+        report["acceptance"] = pub
+    print(json.dumps({"verified": report["verified"], "complete": t["complete"], "verified_units": ver["verified_units"], "report_sha256": digest,
+                      "acceptance_unit": (report.get("acceptance") or {}).get("unit"), "problems": ver["problems"][:5],
                       "agreement": {str(r["horizon"]): (r["mse"]["status"], r["mae"]["status"]) for r in t["rows"]}}, indent=1))
     return report
 
@@ -3172,6 +3523,7 @@ def main(argv=None) -> int:
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--accepted-report-sha256", default=None, help="delete-predictions: the independently accepted closure report REPORT.json must hash to this")
+    ap.add_argument("--publish-acceptance", action="store_true", help="close/accept-*: publish the evidence's digest as a governed COMPLETED terminal (RP115)")
     ap.add_argument("--backup-manifest", type=Path, default=None, help="delete-predictions: manifest {relative path: sha256} of the durable metadata backup; record and catalog must be in it")
     ap.add_argument("--checkpoint", type=Path, default=None, help="profile-eval: a trained checkpoint (else an untrained model, memory only)")
     ap.add_argument("--horizon", type=int, default=None, help="profile-eval: which horizon's cell arguments")
@@ -3218,9 +3570,14 @@ def main(argv=None) -> int:
         for unit in (a.units or [c["cell_id"] for c in design["cells"]]):
             if not (a.root / "attempts" / unit / "METRICS_VAULT.json").is_file():
                 continue
-            r = accept_catalog(a.root, design, unit)
+            r = accept_catalog(a.root, design, unit, data_path=(Path(a.data_path) if a.data_path else (delivered_file(a.root, design, None) if (a.root / "DELIVERIES.json").is_file() else None)))
             out[unit] = {"pass": r["pass"], "refusals": r["refusals"], "states": r["states"], "population": r["population"],
                          "worst_oracle": max(((abs(v_) if isinstance(v_, (int, float)) else 0), k) for k, v_ in r["oracles"].items())}
+            if r["pass"] and getattr(a, "publish_acceptance", False):
+                pub = publish_acceptance(a, design, kind="catalog", subject=unit,
+                                         files={"catalog_acceptance": a.root / "attempts" / unit / "CATALOG_ACCEPTANCE.json",
+                                                "metrics_vault": a.root / "attempts" / unit / "METRICS_VAULT.json"})
+                out[unit]["acceptance_unit"] = pub["unit"]
         print(json.dumps(out, indent=1, default=str)); return 0 if all(v["pass"] for v in out.values()) else 1
     if a.command == "backup":
         out = metadata_backup(a.root, a.source or (a.root / "metadata_backup"))
@@ -3239,6 +3596,11 @@ def main(argv=None) -> int:
         for unit in (a.units or ([a.unit] if a.unit else [])):
             r = accept_regenerated(a.root, design, unit, data_path=path, delete_after=not a.dry_run)
             out[unit] = {k: r[k] for k in ("pass", "refusals", "catalog_recomputed_equals_retained", "author_metric_float32", "numeric_oracles", "deleted")}
+            if r["pass"] and getattr(a, "publish_acceptance", False):
+                pub = publish_acceptance(a, design, kind="regeneration", subject=unit,
+                                         files={"regeneration": a.root / "attempts" / unit / "regenerated" / "REGENERATION.json",
+                                                "regeneration_acceptance": a.root / "attempts" / unit / "regenerated" / "ACCEPTANCE.json"})
+                out[unit]["acceptance_unit"] = pub["unit"]
         print(json.dumps(out, indent=1, default=str)); return 0 if all(v["pass"] for v in out.values()) else 1
     if a.command == "regenerate":
         path = Path(a.data_path) if a.data_path else delivered_file(a.root, design, None)
@@ -3253,8 +3615,13 @@ def main(argv=None) -> int:
             raise SotaRefusal("REFUSED: retire-attempt names its unit and its reason")
         print(json.dumps(retire_attempt(a.root, a.unit, reason=a.reason), indent=1)); return 0
     if a.command == "delete-predictions":
+        C = _module("df_mod_e0_close")
+        token = Path(a.warehouse_token_file).read_text().strip().strip('"').strip("'") if getattr(a, "warehouse_token_file", None) else None
+        warehouse = (lambda campaign: C.warehouse_terminals(a.warehouse_url, token, campaign)) if token else None
+        receipts = (json.loads((a.root / "TERMINAL_RECEIPTS.json").read_text()) or {}).get("units") or {} if (a.root / "TERMINAL_RECEIPTS.json").is_file() else {}
         rec = delete_predictions(a.root, a.units or [c["cell_id"] for c in design["cells"]], extra_roots=a.extra_roots, dry_run=a.dry_run,
-                                 accepted_report_sha256=a.accepted_report_sha256, backup_manifest=a.backup_manifest)
+                                 accepted_report_sha256=a.accepted_report_sha256, backup_manifest=a.backup_manifest,
+                                 receipts=receipts, warehouse=warehouse)
         print(json.dumps({u: {"state": e["state"], "refusals": e["preflight"]["refusals"], "deleted": len([d for d in e["deleted"] if d.get("deleted")]), "copies": len(e["copies_inventoried"]),
                               "not_deleted": [{"path": d["path"], "why": d.get("why")} for d in e["deleted"] if not d.get("deleted")]}
                           for u, e in rec["units"].items()}, indent=1))

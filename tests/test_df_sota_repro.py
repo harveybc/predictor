@@ -1326,3 +1326,204 @@ def test_RP118_a_magnitude_and_shape_sweep_still_matches_the_author_on_stored_an
         stored = R.author_metric_exact(R.StoredArray(tmp_path / "a.npz", "pred"), R.StoredArray(tmp_path / "a.npz", "true"), leaf=1 << 12)
         assert stored["mae"] == float(mae) and stored["mse"] == float(mse)
         assert stored["denominator_exact_in_float32"] is True
+
+
+def _stub_governance(monkeypatch, world, root, held, receipts_store):
+    """Governance for the fixture: acquire records a delivery, report_terminal accepts the terminal into the stub warehouse and
+    writes its receipt, exactly as the real chain does for a cell."""
+    U = R._module("df_utility_run")
+
+    def acquire(**kw):
+        unit = kw["unit_id"]
+        doc = json.loads((root / "DELIVERIES.json").read_text())
+        doc.setdefault("units", {})[unit] = {"path": str(world["data"]), "sha256": R.sha_file(world["data"]),
+                                             "campaign_sha256": "c" * 64, "campaign_key": f"fixture-{unit}"}
+        (root / "DELIVERIES.json").write_text(json.dumps(doc))
+        return {"unit": unit}
+
+    def report_terminal(root_, unit, terminal, **kw):
+        digest = hashlib.sha256(json.dumps(terminal, sort_keys=True, default=str).encode()).hexdigest()
+        held[unit] = {**terminal, "terminal_sha256": digest, "config_sha256": terminal["tags"].get("design_sha256")}
+        rec = json.loads((Path(root_) / "TERMINAL_RECEIPTS.json").read_text())
+        rec["units"][unit] = {"campaign_sha256": "c" * 64, "terminal_sha256": digest}
+        (Path(root_) / "TERMINAL_RECEIPTS.json").write_text(json.dumps(rec))
+        receipts_store[unit] = rec["units"][unit]
+        return {"flushed": {"pending": [], "failures": {}}}
+
+    monkeypatch.setattr(R, "governance_modules", lambda: (SimpleNamespace(acquire=acquire, report_terminal=report_terminal, report_failed=lambda *a_, **k_: None), U))
+    return lambda campaign: {"current": json.loads(json.dumps(held))}
+
+
+def _accepted_world(world, tmp_path, monkeypatch, *, tag="acc"):
+    """A closed fixture whose closure report is published as ACCEPTED evidence through the governed chain."""
+    root = _copy(world, tmp_path / tag)
+    held = json.loads(json.dumps(world["held"])); receipts = {}
+    wh = _stub_governance(monkeypatch, world, root, held, receipts)
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: wh(c)):
+        tok = tmp_path / f"tok_{tag}"; tok.write_text("synthetic")
+        a = SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="synthetic://", data_path=world["data"], skip_replay=False,
+                            replay_device="cpu", publish_acceptance=True, gov_url="fixture://", api_key_file=tmp_path / "key",
+                            lake="l", resource="r", run_id="fixture")
+        (tmp_path / "key").write_text("k")
+        rep = R.close(a, json.loads((root / "DESIGN.json").read_text()))
+    return root, wh, held, rep
+
+
+def test_RP115_a_rewritten_report_with_a_recomputed_pointer_is_refused_because_it_is_not_accepted_evidence(world, tmp_path, monkeypatch):
+    """Musashi RP113 #1, against the real verifier: the score follows the ACCEPTED closure identity, not a local digest."""
+    root, wh, held, _ = _accepted_world(world, tmp_path, monkeypatch)
+    unit = world["cell"]["cell_id"]; report_sha = R.sha_file(root / "REPORT.json")
+    R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, require_acceptance=False, backup_manifest=None) if False else None
+    manifest = R.metadata_backup(root, tmp_path / "bk")
+    R.accept_catalog(root, json.loads((root / "DESIGN.json").read_text()), unit, data_path=world["data"])
+    R.metadata_backup(root, tmp_path / "bk")
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    out = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "bk" / "MANIFEST.json",
+                               receipts=receipts, warehouse=wh, require_acceptance=False)
+    assert out["units"][unit]["state"] == "COMPLETE"
+    base = R.verify_sota_run(root, warehouse=wh, data_path=world["data"], replay=False)
+    assert base["historically_verified_units"] == [unit] and base["rows"][0]["author_metric_float32"] == world["record"]["author_metric_float32"]
+    # now rewrite the report's score and re-point the marker at the new bytes, exactly as the probe does
+    rep = json.loads((root / "REPORT.json").read_text())
+    rep["verification"]["rows"][0]["author_metric_float32"] = {"mae": 0.0, "mse": 0.0}
+    (root / "REPORT.json").write_text(json.dumps(rep, indent=1))
+    marker_path = root / "attempts" / unit / "PREDICTIONS_DELETED.json"
+    marker = json.loads(marker_path.read_text()); marker["closure_report_sha256"] = R.sha_file(root / "REPORT.json")
+    marker_path.write_text(json.dumps(marker))
+    after = R.verify_sota_run(root, warehouse=wh, data_path=world["data"], replay=False)
+    assert after["historically_verified_units"] == [] and after["rows"][0]["author_metric_float32"] is None
+    assert any("HISTORY_REPORT_NOT_ACCEPTED" in p for p in after["problems"]), after["problems"]
+    assert R.table(world["design"], after)["rows"][0]["mae"]["status"] == "NO_MEASUREMENT"
+
+
+def test_RP115_a_fabricated_regeneration_cannot_replace_a_score(world, tmp_path, monkeypatch):
+    """Musashi RP113 #2: a hand-written REGENERATION.json with copied digests and a zero metric, plus an ACCEPTANCE that only
+    says pass, must not be usable — neither as accepted evidence nor by content."""
+    root, wh, held, _ = _accepted_world(world, tmp_path, monkeypatch, tag="fab")
+    unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
+    design = json.loads((root / "DESIGN.json").read_text())
+    R.accept_catalog(root, design, unit, data_path=world["data"])
+    R.metadata_backup(root, tmp_path / "bk2")
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    R.delete_predictions(root, [unit], accepted_report_sha256=R.sha_file(root / "REPORT.json"), backup_manifest=tmp_path / "bk2" / "MANIFEST.json",
+                         receipts=receipts, warehouse=wh, require_acceptance=False)
+    rec = json.loads((folder / "cell.json").read_text())
+    (folder / "regenerated").mkdir()
+    (folder / "regenerated" / "REGENERATION.json").write_text(json.dumps({"identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
+        "pred_sha256": rec["pred_sha256"], "true_sha256": rec["true_sha256"], "author_metric": {"mae": 0.0, "mse": 0.0}}))
+    (folder / "regenerated" / "ACCEPTANCE.json").write_text(json.dumps({"pass": True}))
+    ver = R.verify_sota_run(root, warehouse=wh, data_path=world["data"], replay=False)
+    row = ver["rows"][0]
+    assert row["author_metric_float32"] is None and not row["verified_historically"] and row["status"] == "DELETED_HISTORY_UNBOUND"
+    kinds = " ".join(ver["problems"])
+    assert "REGEN_NOT_ACCEPTED" in kinds and "REGEN_INCOMPLETE" in kinds and "REGEN_CONTRADICTS_CATALOG" in kinds
+    # a real regeneration, accepted through the governed chain, does restore the score
+    R.regenerate_cell(root, design, unit, data_path=world["data"], device="cpu")
+    acc = R.accept_regenerated(root, design, unit, data_path=world["data"], delete_after=True)
+    assert acc["pass"]
+    a = SimpleNamespace(root=root, gov_url="fixture://", api_key_file=tmp_path / "key", lake="l", resource="r", run_id="fixture")
+    R.publish_acceptance(a, design, kind="regeneration", subject=unit,
+                         files={"regeneration": folder / "regenerated" / "REGENERATION.json", "regeneration_acceptance": folder / "regenerated" / "ACCEPTANCE.json"})
+    ok = R.verify_sota_run(root, warehouse=wh, data_path=world["data"], replay=False)
+    assert ok["historically_verified_units"] == [unit] and ok["rows"][0]["author_metric_float32"] == world["record"]["author_metric_float32"]
+    assert ok["rows"][0]["metric_basis"].startswith("author_float32 (regenerated by inference")
+
+
+def test_RP116_deletion_without_approval_backup_or_catalog_acceptance_refuses(world, tmp_path, monkeypatch):
+    """Musashi RP113 #3: the prerequisites are mandatory in the API, not optional arguments."""
+    root, wh, held, _ = _accepted_world(world, tmp_path, monkeypatch, tag="req")
+    unit = world["cell"]["cell_id"]; folder = root / "attempts" / unit
+    design = json.loads((root / "DESIGN.json").read_text())
+    bare = R.delete_predictions(root, [unit])
+    assert bare["units"][unit]["state"] == "REFUSED" and (folder / "arrays.npz").is_file()
+    why = " ".join(bare["units"][unit]["preflight"]["refusals"])
+    assert "APPROVAL_MISSING" in why and "BACKUP_MISSING" in why and "CATALOG_ACCEPTANCE_MISSING" in why
+    report_sha = R.sha_file(root / "REPORT.json")
+    R.accept_catalog(root, design, unit, data_path=world["data"])
+    # a manifest whose destination does not hold the bytes is not a backup
+    R.metadata_backup(root, tmp_path / "bk3")
+    import shutil as sh
+    sh.rmtree(tmp_path / "bk3" / "attempts")
+    out = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "bk3" / "MANIFEST.json",
+                               receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=wh, require_acceptance=False)
+    assert out["units"][unit]["state"] == "REFUSED" and any("BACKUP_ABSENT" in r for r in out["units"][unit]["preflight"]["refusals"])
+    assert (folder / "arrays.npz").is_file()
+    # a corrupt backup copy is not a backup either
+    R.metadata_backup(root, tmp_path / "bk4")
+    (tmp_path / "bk4" / "attempts" / unit / "METRICS_VAULT.json").write_text("{}")
+    out = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "bk4" / "MANIFEST.json",
+                               receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=wh, require_acceptance=False)
+    assert out["units"][unit]["state"] == "REFUSED" and any("BACKUP_CORRUPT" in r for r in out["units"][unit]["preflight"]["refusals"])
+    # the catalog acceptance must be accepted evidence when acceptance is required
+    R.metadata_backup(root, tmp_path / "bk5")
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    strict = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "bk5" / "MANIFEST.json",
+                                  receipts=receipts, warehouse=wh)
+    assert strict["units"][unit]["state"] == "REFUSED" and any("CATALOG_ACCEPTANCE_NOT_ACCEPTED" in r for r in strict["units"][unit]["preflight"]["refusals"])
+    a = SimpleNamespace(root=root, gov_url="fixture://", api_key_file=tmp_path / "key", lake="l", resource="r", run_id="fixture")
+    R.publish_acceptance(a, design, kind="catalog", subject=unit,
+                         files={"catalog_acceptance": folder / "CATALOG_ACCEPTANCE.json", "metrics_vault": folder / "METRICS_VAULT.json"})
+    R.metadata_backup(root, tmp_path / "bk6")
+    done = R.delete_predictions(root, [unit], accepted_report_sha256=report_sha, backup_manifest=tmp_path / "bk6" / "MANIFEST.json",
+                                receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"], warehouse=wh)
+    assert done["units"][unit]["state"] == "COMPLETE" and not (folder / "arrays.npz").exists()
+    d = done["units"][unit]["deleted"][0]
+    assert d["bytes_removed_were_the_accepted_bytes"] and d["digest_after_unlink"] == d["sha256"] and d["inode"]
+
+
+def test_RP117_a_broken_estimator_producer_is_refused_even_when_its_own_summaries_agree(world, tmp_path, monkeypatch):
+    """Musashi RP113 #5: a producer that emits a negative SD, 999-bit entropy, 999-bit MI and an ACF of 42 while keeping MAE/MSE
+    consistent must not pass. The domain of each family is checked, and where the arrays exist the families are recomputed."""
+    design = world["design"]; unit = world["cell"]["cell_id"]
+    original = R.metrics_vault
+
+    def broken(*a_, **k_):
+        v = original(*a_, **k_)
+        v["residuals"]["sd"] = -123.0
+        v["residuals"]["entropy_bits"] = 999.0
+        v["global"]["mutual_information_bits_pred_true_64x64"] = 999.0
+        v["autocorrelation"]["channel_mean_residual_per_step"]["acf_by_lag"][0][0] = 42.0
+        return v
+
+    monkeypatch.setattr(R, "metrics_vault", broken)
+    root = _copy(world, tmp_path / "broken")
+    C = _load("df_mod_e0_close")
+    import unittest.mock as um
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tokb"; tok.write_text("x")
+        R.close(SimpleNamespace(root=root, warehouse_token_file=tok, warehouse_url="s://", data_path=world["data"], skip_replay=False, replay_device="cpu"), design)
+    monkeypatch.setattr(R, "metrics_vault", original)
+    bad = R.accept_catalog(root, design, unit, data_path=world["data"])
+    why = " ".join(bad["refusals"])
+    assert not bad["pass"]
+    assert "DOMAIN residual_sd_non_negative" in why and "DOMAIN entropy_within_log2_bins" in why
+    assert "DOMAIN mutual_information_within_log2_64" in why and "DOMAIN autocorrelation_within_unit_interval" in why
+    assert "INDEPENDENT residual_sd" in why and "INDEPENDENT entropy_bits" in why and "INDEPENDENT mutual_information_bits" in why
+    # the honest catalog passes, and its families agree with an independent recomputation
+    good_root = _copy(world, tmp_path / "good")
+    with um.patch.object(C, "warehouse_terminals", lambda url, tok, c: _wh(world)(c)):
+        tok = tmp_path / "tokg"; tok.write_text("x")
+        R.close(SimpleNamespace(root=good_root, warehouse_token_file=tok, warehouse_url="s://", data_path=world["data"], skip_replay=False, replay_device="cpu"), design)
+    ok = R.accept_catalog(good_root, design, unit, data_path=world["data"])
+    assert ok["pass"], ok["refusals"]
+    assert all(abs(v) <= 1e-3 for k, v in ok["independent_vs_catalog"].items() if isinstance(v, float))
+    assert ok["independent_estimators"]["elements"] == ok["population"]["elements"] and ok["domain_checks"]["all_reported_numbers_finite"]
+
+
+def test_RP117_the_independent_estimators_match_closed_form_values_on_a_constructed_fixture():
+    """The independent implementation itself, against values computed by hand: a constant residual, a deterministic pair with
+    known correlation, and the degenerate zero-variance case."""
+    true = np.ones((40, 3, 2), dtype=np.float32) * np.float32(2.0)
+    pred = np.ones((40, 3, 2), dtype=np.float32)                                   # residual == 1 everywhere
+    ind = R.independent_estimators(pred, true, max_lag=3, sample_windows=8)
+    assert ind["elements"] == 240 and abs(ind["residual_mean"] - 1.0) < 1e-12 and ind["residual_sd"] == 0.0
+    assert ind["mae_float64"] == 1.0 and ind["mse_float64"] == 1.0 and ind["entropy_bits"] == 0.0     # one occupied bin
+    assert ind["corr_pred_true"] is None and ind["skewness"] is None                                  # zero variance: undefined, not invented
+    rng = np.random.default_rng(5)
+    x = rng.standard_normal((200, 2, 3)).astype(np.float32)
+    y = (x * np.float32(2.0)).astype(np.float32)                                   # perfectly correlated
+    ind2 = R.independent_estimators(x, y, max_lag=3, sample_windows=16)
+    assert abs(ind2["corr_pred_true"] - 1.0) < 1e-6 and 0.0 <= (ind2["mutual_information_bits"] or 0.0) <= 6.0
+    assert abs(ind2["mae_float64"] - float(np.mean(np.abs(y.astype(np.float64) - x.astype(np.float64))))) < 1e-12
