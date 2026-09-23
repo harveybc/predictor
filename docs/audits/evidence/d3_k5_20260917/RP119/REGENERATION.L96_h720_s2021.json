@@ -1,0 +1,102 @@
+{
+ "unit": "L96_h720_s2021",
+ "device": "cuda:0",
+ "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+ "device_name": "NVIDIA GeForce RTX 5090",
+ "pred_sha256": "65730d77077a2847073688f2055fae59d22de8937f9cc6df948d1ddc461d83d0",
+ "true_sha256": "1ba5a73cc81c1580e5353049722b1e5489811bd52d637b0f5670f760b4728ef8",
+ "shape": [
+  4541,
+  720,
+  321
+ ],
+ "author_metric": {
+  "mae": 0.28751975297927856,
+  "mse": 0.18713927268981934
+ },
+ "author_metric_state": "EXECUTED: df_sota_author_metric_exact.v2 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test)",
+ "author_scorer_parity": {
+  "author_function": null,
+  "why": "utils.metrics.metric not executed here: needs ~12594191040 bytes of temporaries, budget 4294967296"
+ },
+ "independent_metric_float64": {
+  "mae": 0.28751974018513593,
+  "mse": 0.1871392797732232
+ },
+ "finalized": {
+  "windows": 4541,
+  "batches": 284,
+  "batch_sizes": {
+   "first": 16,
+   "last": 13,
+   "distinct": [
+    13,
+    16
+   ]
+  },
+  "true_sha256": "1ba5a73cc81c1580e5353049722b1e5489811bd52d637b0f5670f760b4728ef8",
+  "preds_bytes": 4198063680
+ },
+ "paths": {
+  "pred": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2021/regenerated/REGENERATED_pred.npy",
+  "true": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/attempts/L96_h720_s2021/regenerated/REGENERATED_true.npy"
+ },
+ "operational_patches": [
+  {
+   "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+   "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+  }
+ ],
+ "label": "REGENERATED_BY_INFERENCE_FROM_RETAINED_CHECKPOINT",
+ "original_digests": {
+  "pred_sha256": "65730d77077a2847073688f2055fae59d22de8937f9cc6df948d1ddc461d83d0",
+  "true_sha256": "1ba5a73cc81c1580e5353049722b1e5489811bd52d637b0f5670f760b4728ef8",
+  "arrays_sha256": "75a2a5490cc6ccfbd044654ae3b918811f322a9b202c2a4684ecafe6109d120d"
+ },
+ "pred_matches_original": true,
+ "true_matches_original": true,
+ "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
+ "record_metric": {
+  "mae": 0.28751974018513593,
+  "mse": 0.1871392797732232
+ },
+ "record_metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+ "at": "2026-09-23T06:58:55Z",
+ "host": "gamma",
+ "environment": {
+  "host": "gamma",
+  "python": "3.12.13",
+  "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+  "torch": "2.13.0+cu130",
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "sklearn": "1.9.0",
+  "scipy": "1.18.0",
+  "cuda": "13.0",
+  "gpus": [
+   "NVIDIA GeForce RTX 5090"
+  ],
+  "cudnn": 92400,
+  "gpu_devices": [
+   {
+    "index": 0,
+    "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+    "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+    "temperature_c": 34.0,
+    "utilization_pct": 0.0,
+    "memory_used_mib": 14.0,
+    "memory_total_mib": 12227.0
+   },
+   {
+    "index": 1,
+    "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "name": "NVIDIA GeForce RTX 5090",
+    "temperature_c": 43.0,
+    "utilization_pct": 0.0,
+    "memory_used_mib": 12.0,
+    "memory_total_mib": 32607.0
+   }
+  ],
+  "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+ }
+}

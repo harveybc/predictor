@@ -363,6 +363,72 @@
    "at": "2026-09-23T06:50:30Z",
    "host": "gamma",
    "scope": "accepted at this date; local availability before this acceptance is not evidence of earlier acceptance"
+  },
+  "d63d7a6ca534ff0d7292fc1170090c2b762304a8e6ef78c2f3d60735b95f1f7d": {
+   "unit": "acceptance_regeneration_d63d7a6ca534ff0d",
+   "kind": "regeneration",
+   "role": "regeneration",
+   "subject": "L96_h192_s2022",
+   "path": "attempts/L96_h192_s2022/regenerated/REGENERATION.json",
+   "bytes": 3363,
+   "at": "2026-09-23T06:53:45Z",
+   "host": "gamma",
+   "scope": "accepted at this date; local availability before this acceptance is not evidence of earlier acceptance"
+  },
+  "355b4b29ed47f9861fab9335978321081e3241d596a3373e4c4da7178fa224c1": {
+   "unit": "acceptance_regeneration_d63d7a6ca534ff0d",
+   "kind": "regeneration",
+   "role": "regeneration_acceptance",
+   "subject": "L96_h192_s2022",
+   "path": "attempts/L96_h192_s2022/regenerated/ACCEPTANCE.json",
+   "bytes": 19155,
+   "at": "2026-09-23T06:53:45Z",
+   "host": "gamma",
+   "scope": "accepted at this date; local availability before this acceptance is not evidence of earlier acceptance"
+  },
+  "4ca11331aca41a09bc29aaae343bfcee1f50ead73311583a2d2ce3d34a8b18b8": {
+   "unit": "acceptance_regeneration_4ca11331aca41a09",
+   "kind": "regeneration",
+   "role": "regeneration",
+   "subject": "L96_h336_s2021",
+   "path": "attempts/L96_h336_s2021/regenerated/REGENERATION.json",
+   "bytes": 3393,
+   "at": "2026-09-23T06:57:57Z",
+   "host": "gamma",
+   "scope": "accepted at this date; local availability before this acceptance is not evidence of earlier acceptance"
+  },
+  "4a36ef190ea95f385f4e3788d047bd3337d0e5bbd6941e5ba72356726a879fc2": {
+   "unit": "acceptance_regeneration_4ca11331aca41a09",
+   "kind": "regeneration",
+   "role": "regeneration_acceptance",
+   "subject": "L96_h336_s2021",
+   "path": "attempts/L96_h336_s2021/regenerated/ACCEPTANCE.json",
+   "bytes": 19197,
+   "at": "2026-09-23T06:57:57Z",
+   "host": "gamma",
+   "scope": "accepted at this date; local availability before this acceptance is not evidence of earlier acceptance"
+  },
+  "5a0a27f961807bdc92138c314a90275a44aa85ca4c8a1544cfc6e68e02e91a3f": {
+   "unit": "acceptance_regeneration_5a0a27f961807bdc",
+   "kind": "regeneration",
+   "role": "regeneration",
+   "subject": "L96_h720_s2021",
+   "path": "attempts/L96_h720_s2021/regenerated/REGENERATION.json",
+   "bytes": 3394,
+   "at": "2026-09-23T07:05:49Z",
+   "host": "gamma",
+   "scope": "accepted at this date; local availability before this acceptance is not evidence of earlier acceptance"
+  },
+  "da012ad00f69b08e5ab9f81b23d215328db9375c2b8d73f10f00a17432145abf": {
+   "unit": "acceptance_regeneration_5a0a27f961807bdc",
+   "kind": "regeneration",
+   "role": "regeneration_acceptance",
+   "subject": "L96_h720_s2021",
+   "path": "attempts/L96_h720_s2021/regenerated/ACCEPTANCE.json",
+   "bytes": 19437,
+   "at": "2026-09-23T07:05:49Z",
+   "host": "gamma",
+   "scope": "accepted at this date; local availability before this acceptance is not evidence of earlier acceptance"
   }
  }
 }

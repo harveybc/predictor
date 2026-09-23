@@ -1,6 +1,6 @@
 {
  "schema": "df_sota_run_ledger.v1",
- "at": "2026-09-23T06:50:30Z",
+ "at": "2026-09-23T07:06:30Z",
  "host": "gamma",
  "root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1",
  "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
@@ -56,7 +56,14 @@
    "epochs_run": 15,
    "operational_patches": [],
    "at": "2026-09-22T17:56:22Z",
-   "predictions_on_disk": false
+   "predictions_on_disk": false,
+   "regeneration": {
+    "at": "2026-09-23T06:51:46Z",
+    "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
+    "acceptance_pass": true,
+    "temporaries_deleted_bytes": 2499301120
+   }
   },
   {
    "attempt": "L96_h192_s2023",
@@ -94,7 +101,7 @@
    "at": "2026-09-22T19:33:42Z",
    "predictions_on_disk": false,
    "regeneration": {
-    "at": "2026-09-23T06:13:03Z",
+    "at": "2026-09-23T06:54:23Z",
     "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
     "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
     "acceptance_pass": true,
@@ -249,7 +256,7 @@
    "at": "2026-09-22T20:52:20Z",
    "predictions_on_disk": false,
    "regeneration": {
-    "at": "2026-09-23T06:21:31Z",
+    "at": "2026-09-23T06:58:55Z",
     "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
     "identity": "BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL",
     "acceptance_pass": true,
@@ -408,6 +415,6 @@
   "without_measured_cost": 7,
   "predictions_on_disk": 3
  },
- "measured_free_disk_bytes": 225835536384,
+ "measured_free_disk_bytes": 225824890880,
  "scope": "MEASURED costs of the attempts this root holds; retired attempts are kept and counted; nothing here is projected"
 }
