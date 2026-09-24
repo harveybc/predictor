@@ -210,3 +210,111 @@ def test_F5_an_unexpected_cell_cannot_expand_the_denominator():
     checks = M.regime_checks(intruder, seeds=(2021,))
     assert checks["unexpected_cells"] == ["R0_s9999"]
     assert checks["complete"] is False and checks["verdict"] == "UNEXPECTED_CELLS"
+
+
+# --- RP157: the closure authenticates its design and binds every returned child ------------------------------------------------
+
+def _fake_run(tmp_path, cells, *, design_sha="d" * 64, monitor=640, pred_len=96, seeds=(2021, 2022, 2023)):
+    run_dir = tmp_path / "run"; run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "CONTRAST.json").write_text(json.dumps({
+        "design_sha256": design_sha, "seeds": list(seeds), "pred_len": pred_len,
+        "populations": {"validation_monitor_windows": monitor}, "cells": cells}))
+    return run_dir
+
+
+def _cell_record(regime, seed, **over):
+    record = {"regime": regime, "seed": seed, "selected_epoch": 1, "model_path": "/nonexistent",
+              "model_sha256": "a" * 64, "steps": 1, "observed_updates": 1,
+              "detector_unchanged_by_the_fit": regime == "R1", "donor": None if regime == "R0" else "d"}
+    record.update(over)
+    return record
+
+
+def test_RP157_a_design_whose_digest_is_not_the_runs_is_refused(tmp_path):
+    """The two digests used to be reported and never compared; a supplied design could claim anything."""
+    cells = {f"{r}_s{s}": _cell_record(r, s) for s in (2021,) for r in ("R0", "R1", "R2")}
+    run_dir = _fake_run(tmp_path, cells, seeds=(2021,))
+    foreign = {"design_sha256": "f" * 64, "factorial": {"cells": sorted(cells)}, "task": {"pred_len": 96}}
+    with pytest.raises(M.DesignError) as exc:
+        M.score_contrast(DATA if DATA.is_file() else Path("/nonexistent"), run_dir, design=foreign)
+    assert "digest" in str(exc.value).lower()
+
+
+def test_RP157_an_empty_factorial_is_refused_rather_than_trivially_complete(tmp_path):
+    run_dir = _fake_run(tmp_path, {}, seeds=(2021,))
+    empty = {"design_sha256": "d" * 64, "factorial": {"cells": []}, "task": {"pred_len": 96}}
+    with pytest.raises(M.DesignError) as exc:
+        M.score_contrast(DATA if DATA.is_file() else Path("/nonexistent"), run_dir, design=empty)
+    assert "empty" in str(exc.value).lower() or "no cells" in str(exc.value).lower()
+
+
+def test_RP157_a_design_that_does_not_cover_the_runs_cells_is_refused(tmp_path):
+    cells = {f"{r}_s{s}": _cell_record(r, s) for s in (2021,) for r in ("R0", "R1", "R2")}
+    run_dir = _fake_run(tmp_path, cells, seeds=(2021,))
+    short = {"design_sha256": "d" * 64, "factorial": {"cells": ["R0_s2021"]}, "task": {"pred_len": 96}}
+    with pytest.raises(M.DesignError):
+        M.score_contrast(DATA if DATA.is_file() else Path("/nonexistent"), run_dir, design=short)
+
+
+@pytest.mark.parametrize("mutation,reason", [
+    ({"populations_drop": "label_disjoint_from_selection"}, "population"),
+    ({"pred_len": 192}, "horizon"),
+    ({"nan_mae": True}, "finite"),
+    ({"cell_name": "R0_s9999"}, "cell"),
+    ({"regime": "R9"}, "regime"),
+    ({"drop_reduction": "author_float32"}, "reduction"),
+])
+def test_RP157_a_child_that_does_not_bind_to_its_expected_cell_suppresses_the_summary(mutation, reason):
+    """Every returned child is bound to the cell it was asked for: its name, seed, regime, horizon, populations and typed
+    finite reductions. A child that drifts on any of them is a problem, not an average over fewer seeds."""
+    def child(cell):
+        seed = int(cell.split("_s")[1]); regime = cell.split("_s")[0]
+        populations = {}
+        for name, windows in (("complete_validation", 2537), ("label_disjoint_from_selection", 1802)):
+            populations[name] = {"windows": windows, "elements": windows * 96 * 321,
+                                 "author_float32": {"mae": 0.37, "mse": 0.29},
+                                 "independent_float64": {"mae": 0.37, "mse": 0.29},
+                                 "matched_persistence_author_float32": {"mae": 0.86, "mse": 1.5},
+                                 "skill_mae_vs_persistence": 0.57}
+        record = {"cell": cell, "seed": seed, "regime": regime, "pred_len": 96,
+                  "model_identity_reconciled": True, "populations": populations}
+        if cell == "R2_s2023":
+            if "populations_drop" in mutation:
+                record["populations"].pop(mutation["populations_drop"])
+            if "pred_len" in mutation:
+                record["pred_len"] = mutation["pred_len"]
+            if mutation.get("nan_mae"):
+                record["populations"]["complete_validation"]["author_float32"]["mae"] = float("nan")
+            if "cell_name" in mutation:
+                record["cell"] = mutation["cell_name"]
+            if "regime" in mutation:
+                record["regime"] = mutation["regime"]
+            if "drop_reduction" in mutation:
+                record["populations"]["complete_validation"].pop(mutation["drop_reduction"])
+        return record
+
+    expected = [f"{r}_s{s}" for s in (2021, 2022, 2023) for r in ("R0", "R1", "R2")]
+    report = M.validate_children({c: child(c) for c in expected}, expected=expected, pred_len=96,
+                                 populations=("complete_validation", "label_disjoint_from_selection"))
+    assert report["problems"], f"the {reason} mutation must be reported"
+    assert any(reason in p.lower() for p in report["problems"]), report["problems"]
+    assert report["bound"] is False
+
+
+def test_RP157_a_clean_population_binds_and_permits_a_summary():
+    expected = [f"{r}_s{s}" for s in (2021, 2022, 2023) for r in ("R0", "R1", "R2")]
+    children = {}
+    for cell in expected:
+        seed = int(cell.split("_s")[1]); regime = cell.split("_s")[0]
+        populations = {name: {"windows": w, "elements": w * 96 * 321,
+                              "author_float32": {"mae": 0.37, "mse": 0.29},
+                              "independent_float64": {"mae": 0.37, "mse": 0.29},
+                              "matched_persistence_author_float32": {"mae": 0.86, "mse": 1.5},
+                              "skill_mae_vs_persistence": 0.57}
+                       for name, w in (("complete_validation", 2537), ("label_disjoint_from_selection", 1802))}
+        children[cell] = {"cell": cell, "seed": seed, "regime": regime, "pred_len": 96,
+                          "model_identity_reconciled": True, "populations": populations}
+    report = M.validate_children(children, expected=expected, pred_len=96,
+                                 populations=("complete_validation", "label_disjoint_from_selection"))
+    assert report["bound"] is True and not report["problems"]
+    assert report["windows_per_population"] == {"complete_validation": 2537, "label_disjoint_from_selection": 1802}

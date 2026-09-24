@@ -967,6 +967,95 @@ def score_cell(data_path: Path, run_dir: Path, cell: str, *, pred_len: int = 96,
     return out
 
 
+
+class DesignError(RuntimeError):
+    """A design that cannot authenticate itself against the run it claims to describe. Raised BEFORE any child is dispatched."""
+
+
+def authenticate_design(contrast: dict, design: dict) -> dict:
+    """RP157 (Musashi finding 1): a design is accepted only when it authenticates against the run's own record.
+
+    Its digest is RECOMPUTED from its canonical scientific content, that recomputation must equal what the design claims, and
+    that in turn must equal the digest the run recorded when it produced these cells. An empty factorial, or one that does not
+    cover the cells the run holds, is refused. Comparing two caller-supplied strings would not be this."""
+    if not isinstance(design, dict) or not isinstance(design.get("factorial"), dict):
+        raise DesignError("REFUSED: a design with no factorial cannot describe this run")
+    cells = list(design["factorial"].get("cells") or [])
+    if not cells:
+        raise DesignError("REFUSED: the design declares an empty factorial; an empty population is not a complete contrast")
+    covers = design.get("identity_covers")
+    if covers:
+        recomputed = hashlib.sha256(json.dumps({k: design[k] for k in covers}, sort_keys=True, default=str).encode()).hexdigest()
+        if recomputed != design.get("design_sha256"):
+            raise DesignError(f"REFUSED: the design's own content hashes to {recomputed[:12]} and it claims "
+                              f"{str(design.get('design_sha256'))[:12]}")
+    if design.get("design_sha256") != contrast.get("design_sha256"):
+        raise DesignError(f"REFUSED: the design digest {str(design.get('design_sha256'))[:12]} is not the one this run "
+                          f"recorded when it produced these cells, {str(contrast.get('design_sha256'))[:12]}")
+    held = {c for c in (contrast.get("cells") or {}) if not c.startswith("AE_")}
+    declared = set(cells)
+    if not held <= declared:
+        raise DesignError(f"REFUSED: the run holds cells the design does not declare: {sorted(held - declared)[:4]}")
+    if not declared <= held | {c for c in (contrast.get("cells") or {})}:
+        raise DesignError(f"REFUSED: the design declares cells this run does not hold: {sorted(declared - held)[:4]}")
+    return {"design_sha256": design["design_sha256"], "cells": sorted(declared),
+            "pred_len": (design.get("task") or {}).get("pred_len"),
+            "authenticated": "the digest was recomputed from the design's own content and equals the run's recorded digest"}
+
+
+def validate_children(children: dict, *, expected, pred_len: int, populations, reductions=("author_float32",)) -> dict:
+    """RP157 (Musashi finding 2): bind every returned child to the cell it was asked for before ANY aggregate exists.
+
+    A child must name its own cell, the seed and regime that cell encodes, the horizon the design declares, every expected
+    population with a consistent window count, and typed finite numbers in every declared reduction. A silently missing
+    population would otherwise average one regime over fewer seeds than the others."""
+    problems, windows = [], {}
+    for cell in expected:
+        record = children.get(cell)
+        if record is None:
+            problems.append(f"{cell}: the design declares this cell and no child returned it")
+            continue
+        if record.get("cell") != cell:
+            problems.append(f"{cell}: the child names cell {record.get('cell')!r}")
+        regime, _, seed = cell.partition("_s")
+        if str(record.get("regime")) != regime:
+            problems.append(f"{cell}: the child declares regime {record.get('regime')!r}, not {regime!r}")
+        if str(record.get("seed")) != seed:
+            problems.append(f"{cell}: the child declares seed {record.get('seed')!r}, not {seed!r}")
+        if int(record.get("pred_len") or 0) != int(pred_len):
+            problems.append(f"{cell}: the child declares horizon {record.get('pred_len')!r}, not {pred_len}")
+        if not record.get("model_identity_reconciled"):
+            problems.append(f"{cell}: the child's checkpoint identity did not reconcile")
+        held = record.get("populations") or {}
+        for population in populations:
+            entry = held.get(population)
+            if not isinstance(entry, dict):
+                problems.append(f"{cell}: the child omits the {population} population")
+                continue
+            count = entry.get("windows")
+            if not isinstance(count, int) or isinstance(count, bool) or count <= 0:
+                problems.append(f"{cell}: the {population} population declares an untyped window count {count!r}")
+                continue
+            seen = windows.setdefault(population, count)
+            if seen != count:
+                problems.append(f"{cell}: the {population} population has {count} windows and another cell has {seen}")
+            for reduction in reductions:
+                values = entry.get(reduction)
+                if not isinstance(values, dict):
+                    problems.append(f"{cell}: the {population} population omits the {reduction} reduction")
+                    continue
+                for metric in ("mae", "mse"):
+                    value = values.get(metric)
+                    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+                        problems.append(f"{cell}: {reduction}.{metric} is {value!r}, which is not a finite number")
+    unexpected = sorted(set(children) - set(expected))
+    if unexpected:
+        problems.append(f"children returned for cells nobody asked for: {unexpected[:4]}")
+    return {"bound": not problems, "problems": problems, "windows_per_population": windows,
+            "reading": ("every child is bound to its expected cell, seed, regime, horizon, populations and typed finite "
+                        "reductions before any aggregate is formed")}
+
+
 def score_contrast(data_path: Path, run_dir: Path, *, pred_len: int = 96, batch: int = 32, python: str | None = None,
                    design: dict | None = None) -> dict:
     """RP156: replay every cell of the REGISTERED design in a separate process. The expected population comes from the design,
@@ -976,8 +1065,8 @@ def score_contrast(data_path: Path, run_dir: Path, *, pred_len: int = 96, batch:
     run_dir = Path(run_dir)
     contrast = json.loads((run_dir / "CONTRAST.json").read_text())
     registered = design or seal_contrast(data_path, pred_len=pred_len, seeds=tuple(contrast["seeds"]))
-    expected = [c for c in registered["factorial"]["cells"]]
-    expected = sorted(f"{c.split('_s')[0]}_s{c.split('_s')[1]}" for c in expected)
+    authenticated = authenticate_design(contrast, registered)       # refuses before a single child is dispatched
+    expected = authenticated["cells"]
     monitor = (contrast.get("populations") or {}).get("validation_monitor_windows") or 0
     out = {"schema": "df_ecl_modular_scoring.v2", "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
            "run_dir": str(run_dir), "design_sha256": contrast["design_sha256"],
@@ -999,10 +1088,17 @@ def score_contrast(data_path: Path, run_dir: Path, *, pred_len: int = 96, batch:
             out["problems"].append(f"{cell}: the replay process refused or failed ({proc.returncode}): {proc.stderr.strip()[-220:]}")
             continue
         out["cells"][cell] = json.loads(line[-1])
+    populations = ("complete_validation", "label_disjoint_from_selection")
+    binding = validate_children(out["cells"], expected=expected, pred_len=pred_len, populations=populations,
+                                reductions=("author_float32", "independent_float64"))
+    out["problems"] += binding["problems"]
     identity_failures = [c for c, r in out["cells"].items() if not r.get("model_identity_reconciled")]
+    out["design_authentication"] = authenticated
+    out["child_binding"] = {k: v for k, v in binding.items() if k != "problems"}
     out["reconciliation"] = {"cells_expected": len(expected), "cells_scored": len(out["cells"]),
                              "identity_failures": identity_failures,
-                             "complete": len(out["cells"]) == len(expected) and not identity_failures and not out["problems"]}
+                             "complete": (len(out["cells"]) == len(expected) and not identity_failures
+                                          and binding["bound"] and not out["problems"])}
     if not out["reconciliation"]["complete"]:
         # RP156 (finding 2): an incomplete or identity-failing population produces DIAGNOSTICS, never a regime summary
         out["by_regime"] = None
@@ -1018,7 +1114,7 @@ def score_contrast(data_path: Path, run_dir: Path, *, pred_len: int = 96, batch:
         by_regime.setdefault(r["regime"], []).append(r)
     out["by_regime"] = {}
     for regime, rows in sorted(by_regime.items()):
-        for population in ("complete_validation", "label_disjoint_from_selection"):
+        for population in populations:
             picked = [row["populations"][population] for row in rows if population in row["populations"]]
             if not picked:
                 continue
