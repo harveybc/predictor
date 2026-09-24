@@ -4289,6 +4289,10 @@ def _root_identity(root: Path, unit: str) -> dict:
     out["predictions_sha256"] = sha_file(folder / "arrays.npz") if out["predictions_on_disk"] else None
     out["predictions_sha256_recorded"] = rec.get("arrays_sha256")
     out["pred_body_sha256_recorded"] = rec.get("pred_sha256")
+    reg = folder / "regenerated"
+    out["regeneration_sha256"] = sha_file(reg / "REGENERATION.json") if (reg / "REGENERATION.json").is_file() else None
+    out["regeneration_acceptance_sha256"] = sha_file(reg / "ACCEPTANCE.json") if (reg / "ACCEPTANCE.json").is_file() else None
+    out["catalog_sha256"] = sha_file(folder / "METRICS_VAULT.json") if (folder / "METRICS_VAULT.json").is_file() else None
     out["shapes_pred"] = (rec.get("shapes") or {}).get("pred")
     out["elements"] = (int(np.prod(out["shapes_pred"])) if out.get("shapes_pred") else None)
     out["author_metric_float32"] = rec.get("author_metric_float32")
@@ -4428,12 +4432,16 @@ def _claim_for(payload: dict, entry: dict, unit: str, ident: dict) -> dict | Non
         # a HISTORICAL row carries no accepted_artifacts block; the identities it DOES carry are the ones its own replay
         # recorded, and those are real comparisons against this root rather than an absence of a mismatch
         replay_ident = ((row.get("replay") or {}).get("identity") or {})
+        regenerated = (row.get("regenerated") or {})
         checks = (("predictions", accepted.get("predictions"), ident.get("predictions_sha256_recorded"), "CHANGED_PREDICTIONS"),
                   ("checkpoint", accepted.get("checkpoint"), ident.get("checkpoint_sha256"), "CHANGED_CHECKPOINT"),
                   ("record", accepted.get("record"), ident.get("record_sha256"), "CHANGED_RECORD"),
                   ("replay.checkpoint", replay_ident.get("checkpoint_sha256"), ident.get("checkpoint_sha256"), "CHANGED_CHECKPOINT"),
                   ("replay.arrays", replay_ident.get("arrays_sha256"), ident.get("predictions_sha256_recorded"), "CHANGED_PREDICTIONS"),
-                  ("replay.pred_body", replay_ident.get("pred_sha256"), ident.get("pred_body_sha256_recorded"), "CHANGED_PREDICTIONS"))
+                  ("replay.pred_body", replay_ident.get("pred_sha256"), ident.get("pred_body_sha256_recorded"), "CHANGED_PREDICTIONS"),
+                  ("regeneration", regenerated.get("regeneration_sha256"), ident.get("regeneration_sha256"), "CHANGED_REGENERATION"),
+                  ("regeneration_acceptance", regenerated.get("acceptance_sha256"), ident.get("regeneration_acceptance_sha256"), "CHANGED_REGENERATION_ACCEPTANCE"),
+                  ("catalog", ((row.get("recomputed") or {}).get("metrics_vault_sha256")), ident.get("catalog_sha256"), "CHANGED_CATALOG"))
         mismatch = [f"{code}: the report's {role} digest is not this root's" for role, claimed, mine, code in checks
                     if claimed and mine and claimed != mine]
         present = [role for role, claimed, mine, _c in checks if claimed and mine and claimed == mine]

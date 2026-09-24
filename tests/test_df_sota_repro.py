@@ -2619,7 +2619,13 @@ def test_RP144_a_report_row_without_accepted_identities_binds_nothing(world, tmp
     def strip(rep, root, unit):
         for r in rep["verification"]["rows"]:
             if r["unit"] == unit:
+                # every checkable link removed: accepted artifacts, the replay's own identity, the regeneration objects and
+                # the recomputed catalog digest. What is left is a green flag and nothing to compare it against.
                 r["accepted_artifacts"] = {}
+                r["regenerated"] = {}
+                r["recomputed"] = {}
+                if isinstance(r.get("replay"), dict):
+                    r["replay"].pop("identity", None)
                 r["verified"] = True
     root, unit, design, out = _composed(world, tmp_path, monkeypatch, "rp144_norow", evidence_mutator=strip)
     cell = out["cells"][unit]
