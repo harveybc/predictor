@@ -1,0 +1,3 @@
+567c610b82afd2fe347ffd4315a7505c3c4669f5 CL23: the drain, and an acknowledgement that cannot name anything else
+759882ae7d3b0584f37f3246b75eed5778c91052 CL20: a corruption is never laundered, and an acceptance is a claim about the disk
+54e5fc1c1f363952c0b72202c78881943f14d6e9 Freeze the CL20 counterexamples before repairing the queue

@@ -1,0 +1,3 @@
+9e9914e1c7d1cca65b7ade900cadf263bd7ac1a0 Declare the columns this bundle reads and does not forecast
+5753edd312233073b4f6f8c26368efe18e26dd8f Let ordinary phrasing reach the native forecast model, and nothing else
+30e91a01d1f133221481b64d6b02190dae488267 Preserve the native forecast deployment notes as left

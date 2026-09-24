@@ -1,0 +1,3 @@
+ec385c96fd3440c9eb666140a7e61faa82c01409 Untrack the build directory that an earlier commit swept in
+151fac24c3962f338e99424dbf1ced42152db521 Ignore the policy package's build directory
+f4e27f4bfdea761691a1b3e28df24ead1316b5b8 Declare the policy provider's one resolvable slot and refuse any other policy by name

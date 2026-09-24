@@ -1,0 +1,3 @@
+ab65cebbc70968686f036467ca29a7fe4351220a Add the evaluation machinery the task families lack, refusals included
+0934d9727210a117a28ddc8f6fa87e868a333fb6 An oversize upload says what the limit is
+d732bccb7595d07990e55b5d72e84e21e4ca89e3 An interpreter asked to choose will choose: refuse the named-but-unsupported first

@@ -1,0 +1,200 @@
+{
+ "base": "http://127.0.0.1:8766",
+ "families": [
+  {
+   "backend": "EconML LinearDML / explicit offline fitted study",
+   "elapsed_seconds": 0.0009348839957965538,
+   "example_resolves": true,
+   "execution_authorized": false,
+   "interpretation": {
+    "interpreter": null,
+    "parameters": {
+     "study": "ATE of treatment on outcome"
+    },
+    "reading": "values are chosen from what the provider declared; nothing here can introduce a target, a horizon or an option the fitted model does not have",
+    "sources": {
+     "study": "QUESTION_TEXT"
+    },
+    "status": "OK"
+   },
+   "outputs": [
+    "effect"
+   ],
+   "payload_keys": [
+    "assumptions",
+    "diagnostics",
+    "estimand",
+    "estimate",
+    "interval",
+    "unit"
+   ],
+   "prompt": "Report ATE of treatment on outcome, with its uncertainty.",
+   "provider": "causal_inference",
+   "status": "OK",
+   "title": "SYNTHETIC/DEVELOPMENT: confounded ATE, known effect 2",
+   "why": null
+  },
+  {
+   "backend": "declared_provider",
+   "elapsed_seconds": 0.0026061419921461493,
+   "example_resolves": true,
+   "execution_authorized": false,
+   "interpretation": {
+    "interpreter": null,
+    "parameters": {
+     "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+     "task_id": "ohlc-demo-regimes-v1"
+    },
+    "reading": "values are chosen from what the provider declared; nothing here can introduce a target, a horizon or an option the fitted model does not have",
+    "sources": {
+     "model_version": "QUESTION_TEXT",
+     "task_id": "QUESTION_TEXT"
+    },
+    "status": "OK"
+   },
+   "outputs": [
+    "regimes"
+   ],
+   "payload_keys": [
+    "model_version",
+    "rows"
+   ],
+   "prompt": "Assign hierarchical regimes",
+   "provider": "feature-eng-hierarchical-regimes",
+   "status": "OK",
+   "title": "DEVELOPMENT: 8 historical OHLC rows, no market-performance claim",
+   "why": null
+  },
+  {
+   "backend": "fixture",
+   "elapsed_seconds": 0.00036545199691317976,
+   "example_resolves": true,
+   "execution_authorized": false,
+   "interpretation": null,
+   "outputs": [
+    "answer"
+   ],
+   "payload_keys": [
+    "calibration",
+    "label",
+    "probability_decimals",
+    "sdk_answer",
+    "uncalibrated_probabilities"
+   ],
+   "prompt": "Which economy is named in this news?",
+   "provider": "laya_news",
+   "status": "OK",
+   "title": "Noticia \u00b7 Clasificaci\u00f3n",
+   "why": null
+  },
+  {
+   "backend": "tensorflow_saved_model_cpu_subprocess",
+   "elapsed_seconds": 3.5951695410039974,
+   "example_resolves": true,
+   "execution_authorized": false,
+   "interpretation": {
+    "interpreter": null,
+    "parameters": {
+     "horizon": 60,
+     "target": "Global_active_power"
+    },
+    "reading": "values are chosen from what the provider declared; nothing here can introduce a target, a horizon or an option the fitted model does not have",
+    "sources": {
+     "horizon": "QUESTION_TEXT",
+     "target": "QUESTION_TEXT"
+    },
+    "status": "OK"
+   },
+   "outputs": [
+    "Global_active_power"
+   ],
+   "payload_keys": [
+    "horizons",
+    "scale",
+    "targets",
+    "unit",
+    "values"
+   ],
+   "prompt": "forecast Global_active_power at 60 steps",
+   "provider": "predictor_forecast",
+   "status": "OK",
+   "title": "DEVELOPMENT: retained household-power model, 60-minute forecast",
+   "why": null
+  },
+  {
+   "backend": "stable_baselines3_cpu_subprocess",
+   "elapsed_seconds": 2.5210051230096724,
+   "example_resolves": true,
+   "execution_authorized": false,
+   "interpretation": {
+    "interpreter": null,
+    "parameters": {
+     "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+    },
+    "reading": "values are chosen from what the provider declared; nothing here can introduce a target, a horizon or an option the fitted model does not have",
+    "sources": {
+     "policy_id": "QUESTION_TEXT"
+    },
+    "status": "OK"
+   },
+   "outputs": [
+    "action"
+   ],
+   "payload_keys": [
+    "action",
+    "action_space",
+    "deterministic",
+    "execution_authorized",
+    "out_of_declared_range",
+    "policy_id",
+    "reading",
+    "unit"
+   ],
+   "prompt": "What action does this fitted policy propose for this observation?",
+   "provider": "trading_policy",
+   "status": "OK",
+   "title": "DEVELOPMENT: fitted policy, one observation, proposed action",
+   "why": null
+  }
+ ],
+ "interpreter": {
+  "available": true,
+  "command": "hermes",
+  "model": null,
+  "reading": "the model chooses among declared values; it cannot introduce one"
+ },
+ "providers": [
+  "causal_inference",
+  "feature-eng-hierarchical-regimes",
+  "laya_news",
+  "predictor_forecast",
+  "trading_policy"
+ ],
+ "refusals": [
+  {
+   "content": "ValueError: the question names horizon [90] and this fitted model only has [60]; answering the nearest one would answer a different question",
+   "for_the_right_reason": true,
+   "prompt": "forecast Global_active_power at 90 steps",
+   "provider": "predictor_forecast",
+   "refused": true,
+   "status": "REFUSED"
+  },
+  {
+   "content": "ValueError: the question names target ['Voltage'] and this fitted model only has ['Global_active_power']; answering the nearest one would answer a different question",
+   "for_the_right_reason": true,
+   "prompt": "forecast Voltage at 60 steps",
+   "provider": "predictor_forecast",
+   "refused": true,
+   "status": "REFUSED"
+  }
+ ],
+ "schema": "m5phet_family_verification.v1",
+ "summary": {
+  "any_execution_authorized": false,
+  "examples_that_resolve": 5,
+  "families": 5,
+  "families_answering": 5,
+  "refusals": 2,
+  "refusals_correct": 2
+ }
+}

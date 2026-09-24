@@ -1,0 +1,3 @@
+eaa3d032b86c468a7c7963af788b63a99ed0b869 Declare what the retained regime reference offers and refuse any other task or version by name
+56bc7cc358b25bbac62d2700baa98aa9278f795e Order the release boundary by publication and name what has no clock
+8c88254da4943f00c19785c3c2d4e6f51ff1a7c7 Freeze the CL21 counterexamples before repairing the calendar

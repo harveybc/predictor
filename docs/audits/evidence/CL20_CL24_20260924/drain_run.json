@@ -1,0 +1,297 @@
+{
+  "schema": "news_drain_run.v1",
+  "collection": {
+    "schema": "news_collection.v1",
+    "source_kind": "RECORDED_FILES_NOT_A_LIVE_FEED",
+    "items": [
+      {
+        "reference": "00_relevant.json",
+        "entry_id": "1b775983253d6c08b6fbad412ee5ec16c6751ae7aa0d288e6cf9b2c0284648b4",
+        "disposition": "ACCEPTED",
+        "event_id": "ecb-hold-001",
+        "revises": []
+      },
+      {
+        "reference": "01_relevant.json",
+        "entry_id": "5c57b6bf9175099c397cfa6500ced1778ea320f72aaf7506474e8d1ebab4fbb9",
+        "disposition": "ACCEPTED",
+        "event_id": "fed-cut-002",
+        "revises": []
+      },
+      {
+        "reference": "02_relevant.json",
+        "entry_id": "dcc40a5b03c38dc4ec9a461c088d952605b1e429d22a6f817a42bd2b9ef4fd36",
+        "disposition": "ACCEPTED",
+        "event_id": "us-cpi-003",
+        "revises": []
+      },
+      {
+        "reference": "03_relevant.json",
+        "entry_id": "796b2a635eb89d43c276d74482e03fe42ea8b9c91bc16c51ab4d195a7c2f89a6",
+        "disposition": "ACCEPTED",
+        "event_id": "ea-unemployment-004",
+        "revises": []
+      },
+      {
+        "reference": "04_relevant.json",
+        "entry_id": "dbb290534531b5a2e3ac01d3356af57a0d1e28d52213f61cdaebc77413a634e8",
+        "disposition": "ACCEPTED",
+        "event_id": "eurusd-rate-005",
+        "revises": []
+      },
+      {
+        "reference": "05_unrelated.json",
+        "entry_id": "4964a0e39ba714aa3d43d02e4f0e69c4e55583b958b004059f1da9ecd5b42672",
+        "disposition": "ACCEPTED",
+        "event_id": "sports-006",
+        "revises": []
+      },
+      {
+        "reference": "06_unrelated.json",
+        "entry_id": "38e71fdbab49fd85622880da39d0b6a5e6473c8f9462cace49e663e146e6d9af",
+        "disposition": "ACCEPTED",
+        "event_id": "tech-007",
+        "revises": []
+      },
+      {
+        "reference": "07_unrelated_names_a_currency.json",
+        "entry_id": "f680b4020ddbfcf23c1e74711ffb2bd8134e173f369f12239f8bd290d3d2de65",
+        "disposition": "ACCEPTED",
+        "event_id": "passing-mention-008",
+        "revises": []
+      },
+      {
+        "reference": "08_ambiguous.json",
+        "entry_id": "9466b980df9a1d81b85735d18673b1e6d4b8553e834cd6eab2116dbc582cce32",
+        "disposition": "ACCEPTED",
+        "event_id": "fragment-009",
+        "revises": []
+      },
+      {
+        "reference": "09_negated.json",
+        "entry_id": "fc3c2ee0537b92a3e67568accbdd9e9d71e736a9b9f629c17dceae4bda2c5c9a",
+        "disposition": "ACCEPTED",
+        "event_id": "negated-010",
+        "revises": []
+      },
+      {
+        "reference": "10_duplicate_of_ecb-hold-001.json",
+        "entry_id": "1b775983253d6c08b6fbad412ee5ec16c6751ae7aa0d288e6cf9b2c0284648b4",
+        "disposition": "DUPLICATE",
+        "event_id": "ecb-hold-001",
+        "revises": []
+      },
+      {
+        "reference": "11_revision_of_ecb-hold-001.json",
+        "entry_id": "2545bd9f54066ac5a72147bced012fe13a076a9b44b785ce1f6cb6608e448e75",
+        "disposition": "REVISION",
+        "event_id": "ecb-hold-001",
+        "revises": [
+          "1b775983253d6c08b6fbad412ee5ec16c6751ae7aa0d288e6cf9b2c0284648b4"
+        ]
+      },
+      {
+        "reference": "12_instruction_like.json",
+        "entry_id": "3f5cadf8bff3e437c34bc4b35a304fc110ceef6933f936392064d9a7be6cddb7",
+        "disposition": "ACCEPTED",
+        "event_id": "instruction-like-011",
+        "revises": []
+      }
+    ],
+    "accepted": 11,
+    "revisions": 1,
+    "duplicates": 1,
+    "refused": 0,
+    "live_feed": false
+  },
+  "drain": {
+    "schema": "news_drain.v1",
+    "task_id": "news_relevance_eurusd.v1",
+    "as_of": "2026-09-24T21:44:39.435859+00:00",
+    "clock_mode": "WALL_CLOCK",
+    "max_age_seconds": 900,
+    "evaluation": {
+      "task_id": "news_relevance_eurusd.v1",
+      "task_sha256": "d74765376726dca60623d1f7b2414fdbf6c664c1eed9b91b7790e458c319e297",
+      "question_sha256": "9d11e78e01719c3f5a3f58c0a316d1aff3bba0b1b8f7a8dd5a5c3b6ca31f2705",
+      "provider_ref": "laya_news",
+      "state_digest": "f057ebed79717126d7cd5b772310bd3679a67b5a4d07917111be452e3013fdf8",
+      "as_of": "2026-09-24T21:44:39.435859+00:00",
+      "max_age_seconds": 900,
+      "attempt": 0
+    },
+    "pending_before": 12,
+    "processed": 12,
+    "classified": 12,
+    "refused": 0,
+    "recovered": 0,
+    "failed": 0,
+    "acknowledged": 12,
+    "skipped": 0,
+    "skipped_entry_ids": [],
+    "items": [
+      {
+        "entry_id": "1b775983253d6c08b6fbad412ee5ec16c6751ae7aa0d288e6cf9b2c0284648b4",
+        "event_id": "ecb-hold-001",
+        "source": "regression-bank",
+        "input_sha256": "53ccfda6eab5b9d743222f41cc94fa24d7d9afdf25d431bd6caf77517d25b29c",
+        "attempts": 0,
+        "outcome": "CLASSIFIED",
+        "status": "SHADOW_ONLY",
+        "store_disposition": "STORED",
+        "acknowledged_with": "30e00c628c7d6afebe954acde9a04b2a77c76c55b91093de6fdc44559940d356",
+        "why": null
+      },
+      {
+        "entry_id": "5c57b6bf9175099c397cfa6500ced1778ea320f72aaf7506474e8d1ebab4fbb9",
+        "event_id": "fed-cut-002",
+        "source": "regression-bank",
+        "input_sha256": "4a952af6231c2ac4adbefd43874c10b10d2c8f1ef08521b406edf147e35a78b1",
+        "attempts": 0,
+        "outcome": "CLASSIFIED",
+        "status": "SHADOW_ONLY",
+        "store_disposition": "STORED",
+        "acknowledged_with": "b457ccecb8cfb90aee552f61a22aea25cdd3bc576eb3c5010fca093e7243df51",
+        "why": null
+      },
+      {
+        "entry_id": "dcc40a5b03c38dc4ec9a461c088d952605b1e429d22a6f817a42bd2b9ef4fd36",
+        "event_id": "us-cpi-003",
+        "source": "regression-bank",
+        "input_sha256": "bdc2106ff23b59143f6c5c2ce1210ace1d4e1008bac6ba0cbef4c6d6411e4792",
+        "attempts": 0,
+        "outcome": "CLASSIFIED",
+        "status": "SHADOW_ONLY",
+        "store_disposition": "STORED",
+        "acknowledged_with": "77f227185c40d33edbaa581e853b2716867e66ccbe2ccb7441c2129287df0e5a",
+        "why": null
+      },
+      {
+        "entry_id": "796b2a635eb89d43c276d74482e03fe42ea8b9c91bc16c51ab4d195a7c2f89a6",
+        "event_id": "ea-unemployment-004",
+        "source": "regression-bank",
+        "input_sha256": "d95128c41f37fe0b9c1a9621c9da9a90ada6a63f975b6a1aa3978efc581f6a75",
+        "attempts": 0,
+        "outcome": "CLASSIFIED",
+        "status": "SHADOW_ONLY",
+        "store_disposition": "STORED",
+        "acknowledged_with": "2652622b487c25260f8260c33fb6cf8c925555450f6f87c5dda11f50f4fe94e5",
+        "why": null
+      },
+      {
+        "entry_id": "dbb290534531b5a2e3ac01d3356af57a0d1e28d52213f61cdaebc77413a634e8",
+        "event_id": "eurusd-rate-005",
+        "source": "regression-bank",
+        "input_sha256": "5c00030663fc0afcaf9099d514b0d5beef5f12dc49982f2fd3892639612f1f6d",
+        "attempts": 0,
+        "outcome": "CLASSIFIED",
+        "status": "SHADOW_ONLY",
+        "store_disposition": "STORED",
+        "acknowledged_with": "cc8594c148bb2acce194695f510a4f8390082df1cebc636cf045cc04a4af939c",
+        "why": null
+      },
+      {
+        "entry_id": "4964a0e39ba714aa3d43d02e4f0e69c4e55583b958b004059f1da9ecd5b42672",
+        "event_id": "sports-006",
+        "source": "regression-bank",
+        "input_sha256": "a5326ed6876f1d313100006623660c13171571dd9d51ee70b622bcc69818fe13",
+        "attempts": 0,
+        "outcome": "CLASSIFIED",
+        "status": "SHADOW_ONLY",
+        "store_disposition": "STORED",
+        "acknowledged_with": "d4e1d208189ad32912954201625745d6c3b632622b054209aca02b322f76f45d",
+        "why": null
+      },
+      {
+        "entry_id": "38e71fdbab49fd85622880da39d0b6a5e6473c8f9462cace49e663e146e6d9af",
+        "event_id": "tech-007",
+        "source": "regression-bank",
+        "input_sha256": "69b2a94fc3865c85e27a4e3535950934f9f7a5c525a6fb6125d85d4701edb1b9",
+        "attempts": 0,
+        "outcome": "CLASSIFIED",
+        "status": "SHADOW_ONLY",
+        "store_disposition": "STORED",
+        "acknowledged_with": "1423d0bfa513736fc412753def6e201107de640f3aa4f16792856d1d76d87d6c",
+        "why": null
+      },
+      {
+        "entry_id": "f680b4020ddbfcf23c1e74711ffb2bd8134e173f369f12239f8bd290d3d2de65",
+        "event_id": "passing-mention-008",
+        "source": "regression-bank",
+        "input_sha256": "1a9c2e5f8c013cccbd6aaf8dd65ba16806cdd33c7e7afbbfe3aa2f2b6ed481f6",
+        "attempts": 0,
+        "outcome": "CLASSIFIED",
+        "status": "SHADOW_ONLY",
+        "store_disposition": "STORED",
+        "acknowledged_with": "a809a8ee2efac6372552a265ab6ed138d49ef12f22b383eba4334659379fa3c9",
+        "why": null
+      },
+      {
+        "entry_id": "9466b980df9a1d81b85735d18673b1e6d4b8553e834cd6eab2116dbc582cce32",
+        "event_id": "fragment-009",
+        "source": "regression-bank",
+        "input_sha256": "85a929acb02d906d39eb062b7762d98618f1cd86ad822da5c1d76b7adeb32a87",
+        "attempts": 0,
+        "outcome": "CLASSIFIED",
+        "status": "SHADOW_ONLY",
+        "store_disposition": "STORED",
+        "acknowledged_with": "c46cd0e6cfe108c207b8d7e9cfbf5f65f9b43bcb9e8d9a24faf0393d7e707c04",
+        "why": null
+      },
+      {
+        "entry_id": "fc3c2ee0537b92a3e67568accbdd9e9d71e736a9b9f629c17dceae4bda2c5c9a",
+        "event_id": "negated-010",
+        "source": "regression-bank",
+        "input_sha256": "770b2e57a629440bf521cc4def6709ed5eb4346a6a6c6a2e74ea3c36691ddf90",
+        "attempts": 0,
+        "outcome": "CLASSIFIED",
+        "status": "SHADOW_ONLY",
+        "store_disposition": "STORED",
+        "acknowledged_with": "0b6dda6bc3168ef1715fd5c33cad9fad5cfbbc924c08bfee73ca8dd5b58a67ac",
+        "why": null
+      },
+      {
+        "entry_id": "2545bd9f54066ac5a72147bced012fe13a076a9b44b785ce1f6cb6608e448e75",
+        "event_id": "ecb-hold-001",
+        "source": "regression-bank",
+        "input_sha256": "83a557394fad0df00e26008c3f5e485b8a61443d54974a6fd6fefb9c820586e6",
+        "attempts": 0,
+        "outcome": "CLASSIFIED",
+        "status": "SHADOW_ONLY",
+        "store_disposition": "REVISION",
+        "acknowledged_with": "85cc901fb1de7523b33a5e81a1192f31cd238e0ffd39b318964e66357754f4f3",
+        "why": null
+      },
+      {
+        "entry_id": "3f5cadf8bff3e437c34bc4b35a304fc110ceef6933f936392064d9a7be6cddb7",
+        "event_id": "instruction-like-011",
+        "source": "regression-bank",
+        "input_sha256": "5724d859efa7a9493d7009963fdcd58838e1e07e0155538a87c3620ffec40468",
+        "attempts": 0,
+        "outcome": "CLASSIFIED",
+        "status": "SHADOW_ONLY",
+        "store_disposition": "STORED",
+        "acknowledged_with": "9cf0656bc6eabc61bb644d9904f015bd6be294e6f360bbb6e5028392f195324f",
+        "why": null
+      }
+    ],
+    "queue": {
+      "schema": "news_queue_report.v1",
+      "entries": 12,
+      "by_state": {
+        "ACKNOWLEDGED": 12
+      },
+      "events": 11,
+      "revisions": 1,
+      "integrity_failures": [],
+      "quarantined": [],
+      "unfinished_writes": 0,
+      "inference_performed": false,
+      "execution_authorized": false
+    },
+    "execution_authorized": false,
+    "broker_calls": 0,
+    "inference_performed": true
+  },
+  "clock_mode": "WALL_CLOCK"
+}
