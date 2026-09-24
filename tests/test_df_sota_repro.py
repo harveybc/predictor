@@ -2515,11 +2515,13 @@ def test_RP140_a_retained_replay_history_is_bound_by_its_recorded_identity_or_by
     claim = out1["cells"][unit]["admitted"][0]
     assert claim["kind"] == "replay_history" and claim["binding_strength"] == "IDENTITY_BOUND"
     assert out1["cells"][unit]["properties"]["replay"]["exact_equal_fraction"] == 1.0
-    # shape {"cells": {unit: record}} with no identity block, bound by reproducing the record's own metric exactly
+    # shape {"cells": {unit: record}} with no identity block, bound by reproducing the record's own metric AT THE RECORD'S
+    # OWN POPULATION (RP144: an equal scalar at another shape is a different measurement that shares a number)
+    shape = list((rec.get("shapes") or {}).get("pred"))
     h2 = tmp_path / "hist_cells.json"
     h2.write_text(json.dumps({"cells": {unit: {"unit": unit, "device": "cuda:0", "device_uuid": "GPU-history",
                                                "max_abs_prediction_difference": 0.0, "allclose_rule": True,
-                                               "exact_equal_elements": 10, "elements": 10, "exact_equal_fraction": 1.0,
+                                               "exact_equal_fraction": 1.0, "shape": shape,
                                                "replayed_author_metric": metric}}}))
     out2 = R.compose_evidence(root, design, evidence=[h2], receipts=receipts)
     assert out2["cells"][unit]["admitted"][0]["binding_strength"] == "METRIC_AND_SHAPE_BOUND"
@@ -2536,6 +2538,7 @@ def test_RP140_a_retained_replay_history_is_bound_by_its_recorded_identity_or_by
                                      "allclose_rule": True, "replayed_author_metric": {"mae": 1.0, "mse": 1.0}}}))
     out4 = R.compose_evidence(root, design, evidence=[h4], receipts=receipts)
     assert not out4["cells"][unit]["admitted"] and "UNBOUND" in str(out4["cells"][unit]["refused"][0]["why"])
+    assert R._bind_replay_record({"replayed_author_metric": metric}, {"author_metric_float32": metric})[1] == "METRIC_WITHOUT_POPULATION"
 
 
 def test_RP140_a_score_absent_from_the_record_is_taken_only_from_a_bound_report_row(world, tmp_path, monkeypatch):
@@ -2568,3 +2571,72 @@ def test_RP140_a_score_absent_from_the_record_is_taken_only_from_a_bound_report_
     unbound = tmp_path / "unbound_report.json"; unbound.write_text(json.dumps(rep, default=str))
     out2 = R.compose_evidence(root, design, evidence=[unbound], receipts=receipts)
     assert out2["cells"][unit]["properties"]["score"] is None
+
+
+# --------------------------------------------------------------------------------------------------------------------------
+# RP144: the absence of a mismatch is not a match
+# --------------------------------------------------------------------------------------------------------------------------
+
+def test_RP144_a_metric_that_matches_at_another_population_does_not_bind(world, tmp_path, monkeypatch):
+    """Musashi's counterexample: a retained replay with no identity, the same scalar metric and a shape of [1, 1, 1] must not
+    acquire artifact-bound verification. The metric fallback is a binding only when the population is checked too."""
+    root, unit, design, _ = _composed(world, tmp_path, monkeypatch, "rp144_metric")
+    rec = json.loads((root / "attempts" / unit / "cell.json").read_text())
+    metric, shape = rec["author_metric_float32"], (rec.get("shapes") or {}).get("pred")
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    bad = tmp_path / "metric_wrong_population.json"
+    bad.write_text(json.dumps({unit: {"unit": unit, "device": "cuda:0", "device_uuid": "GPU-x", "allclose_rule": True,
+                                      "max_abs_prediction_difference": 0.0, "exact_equal_fraction": 1.0,
+                                      "replayed_author_metric": metric, "shape": [1, 1, 1]}}))
+    out = R.compose_evidence(root, design, evidence=[bad], receipts=receipts)
+    assert not out["cells"][unit]["admitted"]
+    assert "METRIC_WITHOUT_POPULATION" in str(out["cells"][unit]["refused"][0]["why"])
+    assert out["cells"][unit]["composition_class"] == "SCORE_WITHOUT_BOUND_REPLAY"
+    # the same record at the record's own shape does bind, and says which strength it bound at
+    good = tmp_path / "metric_right_population.json"
+    good.write_text(json.dumps({unit: {"unit": unit, "device": "cuda:0", "device_uuid": "GPU-x", "allclose_rule": True,
+                                       "max_abs_prediction_difference": 0.0, "exact_equal_fraction": 1.0,
+                                       "replayed_author_metric": metric, "shape": list(shape)}}))
+    ok = R.compose_evidence(root, design, evidence=[good], receipts=receipts)
+    assert ok["cells"][unit]["admitted"][0]["binding_strength"] == "METRIC_AND_SHAPE_BOUND"
+
+
+def test_RP144_a_recorded_digest_this_root_cannot_answer_for_is_unverifiable(world, tmp_path, monkeypatch):
+    """A replay that names a checkpoint the root holds no counterpart for is not IDENTITY_BOUND: nothing was compared."""
+    root, unit, design, _ = _composed(world, tmp_path, monkeypatch, "rp144_unanswerable")
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    (root / "attempts" / unit / "checkpoint.pth").unlink()
+    h = tmp_path / "claims_checkpoint.json"
+    h.write_text(json.dumps({unit: {"unit": unit, "device": "cuda:0", "allclose_rule": True,
+                                    "max_abs_prediction_difference": 0.0, "identity": {"checkpoint_sha256": "a" * 64}}}))
+    out = R.compose_evidence(root, design, evidence=[h], receipts=receipts)
+    assert not out["cells"][unit]["admitted"]
+    assert "IDENTITY_UNVERIFIABLE" in str(out["cells"][unit]["refused"][0]["why"])
+
+
+def test_RP144_a_report_row_without_accepted_identities_binds_nothing(world, tmp_path, monkeypatch):
+    """A green row that carries no accepted artifact digest says nothing about this cell."""
+    def strip(rep, root, unit):
+        for r in rep["verification"]["rows"]:
+            if r["unit"] == unit:
+                r["accepted_artifacts"] = {}
+                r["verified"] = True
+    root, unit, design, out = _composed(world, tmp_path, monkeypatch, "rp144_norow", evidence_mutator=strip)
+    cell = out["cells"][unit]
+    assert not any(c.get("bound") for c in cell["refused"] + cell["admitted"] if c["kind"] == "report" and c["path"].endswith("replay_report.json"))
+    assert any("NO_ACCEPTED_IDENTITY" in str(c.get("why")) for c in cell["refused"])
+
+
+def test_RP144_a_binding_object_with_no_recorded_comparison_binds_nothing(world, tmp_path, monkeypatch):
+    """An empty identity block with row_verified true is not evidence; the comparison has to exist."""
+    root, unit, design, _ = _composed(world, tmp_path, monkeypatch, "rp144_emptybind")
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    b = tmp_path / "empty_binding.json"
+    b.write_text(json.dumps({"schema": "df_sota_same_device_replay_binding.v1",
+                             "identities": {unit: {"row_verified": True,
+                                                   "replay": {"device_uuid": "GPU-y", "allclose_rule": True,
+                                                              "max_abs_prediction_difference": 0.0, "exact_equal_fraction": 1.0}}}}))
+    out = R.compose_evidence(root, design, evidence=[b], receipts=receipts)
+    assert not out["cells"][unit]["admitted"]
+    assert "NO_COMPARISON" in str(out["cells"][unit]["refused"][0]["why"])
+    assert out["cells"][unit]["properties"]["replay"] is None

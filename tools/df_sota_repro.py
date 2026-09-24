@@ -4242,22 +4242,37 @@ def _replay_history_entries(payload: dict) -> dict:
 
 
 def _bind_replay_record(entry: dict, ident: dict) -> tuple:
-    """How strongly a retained replay record is bound to this root's cell: by the digests it recorded, or - when it recorded
-    none - by reproducing the record's own author metric bit for bit at the record's shape. Anything else is unbound."""
+    """RP144: how strongly a retained replay record is bound to this root's cell. Both sides must be PRESENT and equal - the
+    absence of a mismatch is not a match. A digest the entry records but the root cannot answer for is unverifiable, not bound.
+    The metric fallback is only a binding when the record's population is checked too: an equal scalar at another shape is a
+    different measurement that happens to share a number."""
     identity = entry.get("identity") or {}
+    pairs = (("checkpoint_sha256", ident.get("checkpoint_sha256")),
+             ("pred_sha256", ident.get("pred_body_sha256_recorded")),
+             ("arrays_sha256", ident.get("predictions_sha256_recorded")))
     if identity:
-        mismatch = [k for k, v in (("checkpoint_sha256", ident.get("checkpoint_sha256")),
-                                   ("pred_sha256", ident.get("pred_body_sha256_recorded")),
-                                   ("arrays_sha256", ident.get("predictions_sha256_recorded")))
-                    if identity.get(k) is not None and v is not None and identity.get(k) != v]
+        mismatch = [k for k, v in pairs if identity.get(k) is not None and v is not None and identity.get(k) != v]
         if mismatch:
             return (False, "IDENTITY_DIFFERS", f"IDENTITY_DIFFERS: the retained replay records another {mismatch[0]}")
-        if any(identity.get(k) is not None for k in ("checkpoint_sha256", "pred_sha256", "arrays_sha256")):
+        matched = [k for k, v in pairs if identity.get(k) is not None and v is not None and identity.get(k) == v]
+        unanswerable = [k for k, v in pairs if identity.get(k) is not None and v is None]
+        if matched:
             return (True, "IDENTITY_BOUND", None)
+        if unanswerable:
+            return (False, "IDENTITY_UNVERIFIABLE",
+                    f"IDENTITY_UNVERIFIABLE: the retained replay records a {unanswerable[0]} this root holds no counterpart for")
     got, want = entry.get("replayed_author_metric") or {}, ident.get("author_metric_float32") or {}
-    if got and want and all(got.get(m) == want.get(m) for m in ("mae", "mse")):
-        return (True, "METRIC_AND_SHAPE_BOUND", None)
-    return (False, "UNBOUND", "UNBOUND: the retained replay records no identity and does not reproduce the record's own metric exactly")
+    if not (got and want and all(got.get(m) == want.get(m) for m in ("mae", "mse"))):
+        return (False, "UNBOUND", "UNBOUND: the retained replay records no identity and does not reproduce the record's own metric exactly")
+    shape, want_shape = entry.get("shape"), ident.get("shapes_pred")
+    if not (shape and want_shape and [int(v) for v in shape] == [int(v) for v in want_shape]):
+        return (False, "METRIC_WITHOUT_POPULATION",
+                f"METRIC_WITHOUT_POPULATION: the metric matches but the recorded shape {shape} is not the record's {want_shape}")
+    elements = entry.get("elements")
+    if elements is not None and ident.get("elements") is not None and int(elements) != int(ident["elements"]):
+        return (False, "METRIC_WITHOUT_POPULATION",
+                f"METRIC_WITHOUT_POPULATION: the metric matches but the element count {elements} is not the record's {ident['elements']}")
+    return (True, "METRIC_AND_SHAPE_BOUND", None)
 
 
 def _root_identity(root: Path, unit: str) -> dict:
@@ -4274,6 +4289,8 @@ def _root_identity(root: Path, unit: str) -> dict:
     out["predictions_sha256"] = sha_file(folder / "arrays.npz") if out["predictions_on_disk"] else None
     out["predictions_sha256_recorded"] = rec.get("arrays_sha256")
     out["pred_body_sha256_recorded"] = rec.get("pred_sha256")
+    out["shapes_pred"] = (rec.get("shapes") or {}).get("pred")
+    out["elements"] = (int(np.prod(out["shapes_pred"])) if out.get("shapes_pred") else None)
     out["author_metric_float32"] = rec.get("author_metric_float32")
     out["independent_metric_float64"] = rec.get("independent_metric_float64")
     out["metric_basis"] = metric_of(rec)[1]
@@ -4405,18 +4422,18 @@ def _claim_for(payload: dict, entry: dict, unit: str, ident: dict) -> dict | Non
         row = next((r for r in payload["verification"]["rows"] if r.get("unit") == unit), None)
         if row is None:
             return None
+        # RP144: a row binds only when its accepted-artifact identities are PRESENT and equal to this root's. A row that
+        # carries none of them says nothing about this cell, however green its own flags are.
         accepted = (row.get("accepted_artifacts") or {})
-        claimed_pred = accepted.get("predictions")
-        mismatch = []
-        if claimed_pred and ident.get("predictions_sha256_recorded") and claimed_pred != ident["predictions_sha256_recorded"]:
-            mismatch.append("CHANGED_PREDICTIONS: the report's accepted predictions digest is not this root's record")
-        claimed_ckpt = accepted.get("checkpoint")
-        if claimed_ckpt and ident.get("checkpoint_sha256") and claimed_ckpt != ident["checkpoint_sha256"]:
-            mismatch.append("CHANGED_CHECKPOINT: the report's accepted checkpoint digest is not the checkpoint in this root")
-        claimed_rec = accepted.get("record")
-        if claimed_rec and ident.get("record_sha256") and claimed_rec != ident["record_sha256"]:
-            mismatch.append("CHANGED_RECORD: the report's accepted record digest is not this root's record")
-        base.update({"bound": not mismatch, "why": "; ".join(mismatch) or None,
+        checks = (("predictions", accepted.get("predictions"), ident.get("predictions_sha256_recorded"), "CHANGED_PREDICTIONS"),
+                  ("checkpoint", accepted.get("checkpoint"), ident.get("checkpoint_sha256"), "CHANGED_CHECKPOINT"),
+                  ("record", accepted.get("record"), ident.get("record_sha256"), "CHANGED_RECORD"))
+        mismatch = [f"{code}: the report's accepted {role} digest is not this root's" for role, claimed, mine, code in checks
+                    if claimed and mine and claimed != mine]
+        present = [role for role, claimed, mine, _c in checks if claimed and mine and claimed == mine]
+        if not mismatch and not present:
+            mismatch.append("NO_ACCEPTED_IDENTITY: the report row carries no accepted artifact digest this root can match")
+        base.update({"bound": not mismatch, "matched_identities": present, "why": "; ".join(mismatch) or None,
                      "closure": {"verified": row.get("verified"), "verified_historically": row.get("verified_historically"),
                                  "custody": (row.get("custody") or {}).get("class"), "problems": (row.get("problems") or [])[:2]},
                      "row_metric": {"author_metric_float32": row.get("author_metric_float32"), "metric_basis": row.get("metric_basis")},
@@ -4426,9 +4443,11 @@ def _claim_for(payload: dict, entry: dict, unit: str, ident: dict) -> dict | Non
         ids = (payload.get("identities") or {}).get(unit)
         if ids is None:
             return None
-        equal = all(bool(ids.get(k, {}).get("equal")) for k in ("record", "checkpoint", "predictions") if isinstance(ids.get(k), dict))
-        base.update({"bound": bool(equal and ids.get("row_verified")),
-                     "why": None if equal else "IDENTITY_DIFFERS: the binding's staged objects are not this root's",
+        compared = [k for k in ("record", "checkpoint", "predictions") if isinstance(ids.get(k), dict)]
+        equal = bool(compared) and all(bool(ids[k].get("equal")) for k in compared)
+        why = (None if equal else ("IDENTITY_DIFFERS: the binding's staged objects are not this root's" if compared else
+                                   "NO_COMPARISON: the binding records no identity comparison for this cell"))
+        base.update({"bound": bool(equal and ids.get("row_verified")), "compared_identities": compared, "why": why,
                      "replay": ids.get("replay"), "closure": None})
         return base
     if kind == "replay_history":
