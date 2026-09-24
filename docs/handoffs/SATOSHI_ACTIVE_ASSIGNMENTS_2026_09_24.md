@@ -1,5 +1,11 @@
 # Start here: reconcile ALL active assignments, not only M5PHET
 
+**Owner clarification:** the public M5PHET interface must match Laya's experience:
+data/context and natural-language questions in, task-specific structured answers
+out. This is required across the five families, not a later optional frontend.
+See the updated [current delivery order](SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md).
+Do not stop or duplicate the real Laya pilot while adding this interface.
+
 **Current priority after `e36c1c6d`: [classification-first and external providers](SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md).**
 Deliver real Laya relevance classification through M5PHET with native parity.
 Implement other family adapters in parallel in their existing owner repos.

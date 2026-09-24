@@ -1,10 +1,56 @@
 # Execute M5PHET's first real business slice; domain plugins in parallel
 
+## Owner clarification: the same question-driven experience as Laya
+
+M5PHET's public product is **data/context + natural-language questions -> typed
+answers across the five ML families**. A plugin catalog, five example scripts,
+a generated config, or requiring users to know tensor/plugin details does not
+satisfy this requirement. Natural language is not a later optional convenience.
+The explicit task API stays underneath and remains available to advanced callers.
+
+Integrate M5PHET's `docs/NATURAL_LANGUAGE_INTERFACE.md` (NL01-NL08) from
+`musashi/classification-first-20260924`. Complete the real Laya slice through
+this question-first public path; reuse its native question handling, without
+waiting for or interposing a generalized language interpreter. In parallel,
+implement a question-to-forecast path that returns actual specialized-engine
+results, not merely a TaskSpec. The same input/answer experience extends to the
+other assigned family engines. Interpretation and validation may differ inside
+providers; users should not have to assemble those internals themselves.
+
+Preserve current pilot installations/jobs. No new repository, mandatory remote
+language service, unbounded fitting or replacement of ongoing scientific work.
+The detailed contract distinguishes valid profile defaults, meaningful ambiguity,
+data availability, model readiness, and provider results from generated prose.
+Use existing provider/client infrastructure, not another agent framework.
+
 Owner instruction: do not stop the M5PHET lane behind doctoral closure. Satoshi
 implements, Musashi audits. This supplements existing RP147-RP151 and INT orders;
 it is not another research stage or a reset of any compute allocation.
 
 ## First deliverable, highest priority
+
+**RAG considered, not a new prerequisite:** the owner asks to evaluate retrieval
+where useful. First candidate is versioned schema/provider/task documentation for
+the language interface. Use exact metadata lookups and existing retrieval/MCP
+facilities before new infrastructure. Skills guide use; retrieved text never
+grants capability or permission. Market/news/calendar retrieval is a separate
+information-set experiment with receipt/vintage filtering before ranking.
+Compare task correctness, evidence, latency/tokens and storage with/without RAG;
+do not index prediction arrays or upload raw private datasets. Full constraints
+are in M5PHET's natural-language design. No new RAG service/training/storage budget
+and no delay to real Laya parity or independent provider implementation.
+
+**Interpreter deployment update:** reuse existing supported Hermes/OpenCode
+language access first; the owner names inexpensive DeepSeek Flash as a candidate.
+Resolve the actual configured model/endpoint and entitlement without exposing
+secrets. A small local pretrained instruction model on an admitted coordinator
+is an alternative behind the same contract, not a prerequisite or a new LLM
+training project. Compare semantic task accuracy, refusals, cost and latency on
+NL02-NL07. Disable tools/code execution for interpretation; validate structured
+task proposals. Reuse retained tasks rather than reinterpreting every tick.
+The existing Alpaca broker integration is not a language backend; inspect any
+separate language installation by that name before assigning that role. Full
+deployment constraints are in M5PHET's `NATURAL_LANGUAGE_INTERFACE.md`.
 
 **English news relevance to EURUSD**, through the installed M5PHET provider
 registry and real Laya, with direct SDK parity. Not three half-built classifiers,
