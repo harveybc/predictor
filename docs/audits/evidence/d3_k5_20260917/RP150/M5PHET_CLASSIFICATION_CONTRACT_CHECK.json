@@ -1,0 +1,33 @@
+{
+ "schema": "df_m5phet_contract_check.v1",
+ "at": "2026-09-24",
+ "scope": "the pinned dependency and its actual nested typed result, executed in an isolated venv on the coordinator; no model weights, no network inference, no broker call",
+ "pinned": {
+  "m5phet": "git+https://github.com/harveybc/M5PHET.git@bcd65b78c12e53e85adc9f2328cb0c0faccb94e8",
+  "laya_sdk_optional_extra": "git+https://github.com/NandhaKishorM/laya.git@1e28ac20c0896b1c37a744cd11f740eb98f8b178",
+  "installed_version": "m5phet 0.1.0",
+  "exports": ["ContractError", "classification", "make_classification_result"],
+  "source_of_pins": "news-signal/pyproject.toml; PROJECT_METHOD_STATE.json contract_revision bcd65b78c12e53e85adc9f2328cb0c0faccb94e8"
+ },
+ "typed_result_observed": {
+  "schema": "m5phet.classification.v1",
+  "family": "classification",
+  "uncertainty": "UNCALIBRATED_CLASS_PROBABILITIES",
+  "execution_authorized": false,
+  "provenance_fields": ["input_sha256", "model_sha256", "task_sha256"],
+  "result_sha256": "present, 64 hex characters over a canonical JSON snapshot",
+  "multi_task": "the result carries one label and one uncalibrated distribution per declared task; the population must match the declaration exactly"
+ },
+ "refusals_executed": [
+  "an uppercase identity digest is refused: lowercase SHA256 required",
+  "a distribution that does not sum to one within the declared precision is refused",
+  "a label that is not a maximal-probability declared class is refused",
+  "an output population smaller than the declared task set is refused"
+ ],
+ "reading": [
+  "the contract carries no-order authority explicitly: execution_authorized is false in the payload itself",
+  "the uncertainty field states UNCALIBRATED, so a probability from this contract is not a trading probability",
+  "data, model and task identities are mandatory and typed",
+  "this verifies the CONTRACT, not any trained model: no weights were downloaded and no inference was run"
+ ]
+}
