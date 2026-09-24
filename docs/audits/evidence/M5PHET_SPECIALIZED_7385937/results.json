@@ -1,0 +1,91 @@
+{
+  "corrupt_interior_without_explicit_recover": {
+    "corrupt_bytes_still_present": true,
+    "reported_open": []
+  },
+  "declared_forecast_without_questions": {
+    "status": "INVALID_INPUT",
+    "why": "an infer request must declare the questions to answer; nothing is loaded for an unanswerable request"
+  },
+  "foreign_population": {
+    "actual_loaded_task": "task",
+    "binding_contains_population": false,
+    "payload_contains_nan": false,
+    "requested_rows": [
+      "row-1"
+    ],
+    "requested_task_in_binding": "task",
+    "returned_rows": [
+      "foreign-row"
+    ],
+    "schema_valid": true,
+    "status": "OK"
+  },
+  "missing_calibration_bindings": {
+    "calibration_bound": true,
+    "status": "OK"
+  },
+  "modified_manifest_keeps_old_digest": {
+    "authority": "GOVERNED",
+    "same_digest": true,
+    "task": {
+      "id": "B"
+    }
+  },
+  "nonfinite_payload": {
+    "actual_loaded_task": "task",
+    "binding_contains_population": false,
+    "payload_contains_nan": true,
+    "requested_rows": [
+      "row-1"
+    ],
+    "requested_task_in_binding": "task",
+    "returned_rows": [
+      "row-1"
+    ],
+    "schema_valid": true,
+    "status": "OK"
+  },
+  "offset_future_calibration": {
+    "calibration_bound": true,
+    "status": "OK"
+  },
+  "revision": "7385937",
+  "scope": "runtime recording doubles and temporary evidence; no live services/model",
+  "undeclared_combination": {
+    "calls": [],
+    "status": "UNSUPPORTED_TASK"
+  },
+  "valid_baseline": {
+    "actual_loaded_task": "task",
+    "binding_contains_population": false,
+    "payload_contains_nan": false,
+    "requested_rows": [
+      "row-1"
+    ],
+    "requested_task_in_binding": "task",
+    "returned_rows": [
+      "row-1"
+    ],
+    "schema_valid": true,
+    "status": "OK"
+  },
+  "wrong_calibration_digest": {
+    "calibration_bound": true,
+    "status": "OK"
+  },
+  "wrong_loaded_task": {
+    "actual_loaded_task": "different-task",
+    "binding_contains_population": false,
+    "payload_contains_nan": false,
+    "requested_rows": [
+      "row-1"
+    ],
+    "requested_task_in_binding": "task",
+    "returned_rows": [
+      "row-1"
+    ],
+    "schema_valid": true,
+    "status": "OK"
+  }
+}

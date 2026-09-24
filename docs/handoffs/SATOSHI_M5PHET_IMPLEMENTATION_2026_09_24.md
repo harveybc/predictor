@@ -1,5 +1,10 @@
 # M5PHET: implementation assignment to Satoshi
 
+Latest candidate `7385937`: apply the
+[specialized-provider review and scoped continuation](../audits/work_plan/MUSASHI_M5PHET_7385937_REVIEW_2026_09_24.md).
+Explicit supported combinations are improved; population/calibration/typed-output
+and resume guarantees still require fixes. Continue the real Laya slice in parallel.
+
 Candidate `adba176` is reviewed: execute the scoped
 [integration continuation](SATOSHI_M5PHET_INTEGRATION_CONTINUATION_2026_09_24.md)
 alongside this assignment. Implementation exists but acceptance is not complete;
