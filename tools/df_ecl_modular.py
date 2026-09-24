@@ -623,3 +623,136 @@ def delivered_batch_oracle(data_path: Path, *, pred_len: int, seq_len: int = SEQ
                                 "mae_equals_offset": abs(mae - 0.5) < 1e-9, "mse_equals_offset_squared": abs(mse - 0.25) < 1e-9},
             "scope": ("the oracle reads the raw CSV, standardises with the author's train-only statistics and slices rows; it "
                       "never calls his Dataset, so a batching or channel-order defect in the delivered windows would show")}
+
+
+def run_contrast(data_path: Path, out_dir: Path, *, pred_len: int = 96, seeds=(2021, 2022, 2023), batch: int = 32,
+                 cpu_budget_seconds: float = 14400.0, wall_budget_seconds: float = 28800.0,
+                 internal_validation_fraction: float = 0.2, probe_steps: int = 5) -> dict:
+    """RP146: the first DEVELOPMENT R0/R1/R2 contrast on the matched ECL task. One auto-encoder per seed; R1 and R2 consume that
+    seed's donor bytes and R0 shares the seed's initial checkpoint. Every factor other than the regime is held constant. The
+    update budget is prescribed from a measured cost probe BEFORE any fit and is identical across the three regimes. The outer
+    test is never read; the outer validation is read only as the declared checkpoint rule and no recipe is selected from it."""
+    import os as _os
+    import resource
+    E, RG = _e0(), _regimes()
+    out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    cpu_now = lambda: sum(getattr(resource.getrusage(resource.RUSAGE_SELF), k) for k in ("ru_utime", "ru_stime"))
+    t_wall0, t_cpu0 = time.time(), cpu_now()
+    causality = causality_report(data_path, pred_len=pred_len, perturb_windows=2)
+    if not causality["pass"]:
+        raise RuntimeError(f"REFUSED: causality proofs did not pass: {causality['checks']}")
+    oracle = delivered_batch_oracle(data_path, pred_len=pred_len, n_windows=4)
+    if not (oracle["inputs_match_independent_oracle"] and oracle["targets_match_independent_oracle"]):
+        raise RuntimeError("REFUSED: the delivered batches do not match the independent oracle")
+    design = seal_contrast(data_path, pred_len=pred_len, seeds=seeds, internal_validation_fraction=internal_validation_fraction)
+    d = author_datasets(data_path, pred_len=pred_len)
+    train_ds, val_ds = d["splits"]["train"]["dataset"], d["splits"]["val"]["dataset"]
+    origins = split_origins(data_path, pred_len=pred_len)
+    part = ae_partition(origins["train"]["origins"], seq_len=SEQ_LEN, pred_len=pred_len,
+                        internal_validation_fraction=internal_validation_fraction)
+    base = origins["train"]["rows"][0]
+    tr_local = [o - base for o in origins["train"]["origins"]]
+    ae_tr_local = [o - base for o in part["ae_train_origins"]]
+    ae_va_local = [o - base for o in part["ae_validation_origins"]]
+    val_local = list(range(origins["val"]["n_windows"]))
+    assignment = [0] * CHANNELS
+    tf = E._tf()
+    W = _windows_class(tf)
+    out = {"schema": "df_ecl_modular_contrast_run.v1", "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+           "host": _os.uname().nodename, "design_sha256": design["design_sha256"], "pred_len": pred_len, "seeds": list(seeds),
+           "budget": {"cpu_seconds": cpu_budget_seconds, "wall_seconds": wall_budget_seconds},
+           "causality": causality["checks"], "batch_oracle": {k: oracle[k] for k in
+                                                              ("inputs_match_independent_oracle", "targets_match_independent_oracle",
+                                                               "max_abs_input_difference", "max_abs_target_difference")},
+           "exposure": "the outer test is never read; the outer validation is read only as the declared checkpoint rule",
+           "cells": {}, "cost_probe": {}}
+    # --- one cost probe, then one update budget used by every regime of every seed
+    tf.keras.utils.set_random_seed(int(seeds[0]))
+    probe_model = build_ecl_modular(assignment, pred_len=pred_len, seed=int(seeds[0]))
+    probe_model.compile(optimizer=tf.keras.optimizers.Adam(1e-3), loss="mse")
+    probe_seq = W(train_ds, tr_local, seq_len=SEQ_LEN, pred_len=pred_len, batch=batch, seed=int(seeds[0]))
+    probe_model.fit(probe_seq, epochs=1, steps_per_epoch=1, verbose=0)
+    t0 = time.time(); probe_model.fit(probe_seq, epochs=1, steps_per_epoch=probe_steps, verbose=0)
+    fit_s = (time.time() - t0) / probe_steps
+    ae_probe, _dn = RG.build_autoencoder(assignment, SEQ_LEN, CHANNELS, arch=ARCH, seed=int(seeds[0]), mask_ratio=0.25)
+    ae_probe.compile(optimizer=tf.keras.optimizers.Adam(1e-3), loss=_masked_mse(tf, CHANNELS))
+    ae_seq0 = W(train_ds, ae_tr_local, seq_len=SEQ_LEN, pred_len=pred_len, batch=batch, seed=int(seeds[0]), masked=0.25)
+    ae_probe.fit(ae_seq0, epochs=1, steps_per_epoch=1, verbose=0)
+    t0 = time.time(); ae_probe.fit(ae_seq0, epochs=1, steps_per_epoch=probe_steps, verbose=0)
+    ae_s = (time.time() - t0) / probe_steps
+    spent = time.time() - t_wall0
+    usable = max(0.0, min(cpu_budget_seconds, wall_budget_seconds) - spent - 600.0)
+    n_seeds, n_reg = len(seeds), 3
+    per_seed = usable / max(1, n_seeds)
+    ae_epochs = max(1, int((per_seed * 0.25) / max(1e-6, ae_s * len(ae_seq0))))
+    fit_epochs = max(1, int((per_seed * 0.70 / n_reg) / max(1e-6, fit_s * len(probe_seq))))
+    out["cost_probe"] = {"fit_seconds_per_step": fit_s, "ae_seconds_per_step": ae_s, "steps_per_epoch_fit": len(probe_seq),
+                         "steps_per_epoch_ae": len(ae_seq0), "wall_spent_before_prescription": spent,
+                         "usable_after_reserve": usable}
+    out["prescribed"] = {"ae_epochs": ae_epochs, "fit_epochs_per_regime": fit_epochs,
+                         "identical_across_regimes": True,
+                         "rule": "one measured probe, one budget; every regime of every seed receives the same update allowance"}
+    for seed in seeds:
+        tf.keras.utils.set_random_seed(int(seed))
+        seed_dir = out_dir / f"seed{seed}"; seed_dir.mkdir(parents=True, exist_ok=True)
+        init = build_ecl_modular(assignment, pred_len=pred_len, seed=int(seed))
+        init_path = seed_dir / "initial.weights.h5"
+        init.save_weights(str(init_path))
+        det_names = RG.detector_layer_names(init)
+        ae, _dec = RG.build_autoencoder(assignment, SEQ_LEN, CHANNELS, arch=ARCH, seed=int(seed), mask_ratio=0.25)
+        ae.compile(optimizer=tf.keras.optimizers.Adam(1e-3), loss=_masked_mse(tf, CHANNELS))
+        ae_tr = W(train_ds, ae_tr_local, seq_len=SEQ_LEN, pred_len=pred_len, batch=batch, seed=int(seed), masked=0.25)
+        ae_va = W(train_ds, ae_va_local, seq_len=SEQ_LEN, pred_len=pred_len, batch=batch, seed=0, masked=0.25, fixed_masks=True)
+        t0 = time.time()
+        ae_hist = ae.fit(ae_tr, epochs=ae_epochs, steps_per_epoch=len(ae_tr), validation_data=ae_va,
+                         validation_steps=min(10, len(ae_va)), verbose=0)
+        ae_cost = time.time() - t0
+        donor = seed_dir / "detector.npz"
+        np.savez(donor, **{f"{n}__{i}": np.asarray(w) for n in det_names for i, w in enumerate(ae.get_layer(n).get_weights())})
+        out["cells"][f"AE_s{seed}"] = {"epochs": ae_epochs, "steps": ae_epochs * len(ae_tr), "wall_seconds": ae_cost,
+                                       "masked_loss": [float(v) for v in ae_hist.history.get("loss", [])][:3] +
+                                                      [float(v) for v in ae_hist.history.get("loss", [])][-1:],
+                                       "fixed_inner_validation_loss": [float(v) for v in ae_hist.history.get("val_loss", [])][:3] +
+                                                                      [float(v) for v in ae_hist.history.get("val_loss", [])][-1:],
+                                       "donor_sha256": hashlib.sha256(donor.read_bytes()).hexdigest(),
+                                       "donor_equals_autoencoder": donor_source_equality(donor, ae, det_names)["all_equal_to_donor"]}
+        for regime in ("R0", "R1", "R2"):
+            model = build_ecl_modular(assignment, pred_len=pred_len, seed=int(seed))
+            model.load_weights(str(init_path))
+            info = RG.apply_regime(model, regime, None if regime == "R0" else donor)
+            model.compile(optimizer=tf.keras.optimizers.Adam(1e-3), loss="mse")
+            fit_seq = W(train_ds, tr_local, seq_len=SEQ_LEN, pred_len=pred_len, batch=batch, seed=int(seed))
+            va_seq = W(val_ds, val_local, seq_len=SEQ_LEN, pred_len=pred_len, batch=batch, seed=0)
+            before = RG.weights_digest(model, det_names)
+            t0 = time.time()
+            h = model.fit(fit_seq, epochs=fit_epochs, steps_per_epoch=len(fit_seq), validation_data=va_seq,
+                          validation_steps=min(20, len(va_seq)), verbose=0)
+            cost = time.time() - t0
+            after = RG.weights_digest(model, det_names)
+            out["cells"][f"{regime}_s{seed}"] = {
+                "regime": regime, "seed": seed, "epochs": fit_epochs, "steps": fit_epochs * len(fit_seq),
+                "wall_seconds": cost, "train_loss_first_last": [float(h.history["loss"][0]), float(h.history["loss"][-1])],
+                "outer_validation_loss_first_last": [float(h.history["val_loss"][0]), float(h.history["val_loss"][-1])],
+                "detector_digest_before": before, "detector_digest_after": after,
+                "detector_unchanged_by_the_fit": before == after,
+                "imported": info.get("imported"), "frozen_layers": len(info.get("frozen") or []),
+                "donor": (None if regime == "R0" else hashlib.sha256(donor.read_bytes()).hexdigest()),
+            }
+            if cpu_now() - t_cpu0 > cpu_budget_seconds:
+                out["stopped_early"] = f"the CPU allocation was reached after {regime}_s{seed}"
+                break
+        if out.get("stopped_early"):
+            break
+    out["regime_checks"] = {
+        "R1_detector_unchanged_by_its_fit": all(v["detector_unchanged_by_the_fit"] for k, v in out["cells"].items() if k.startswith("R1_")),
+        "R2_detector_changed_by_its_fit": all(not v["detector_unchanged_by_the_fit"] for k, v in out["cells"].items() if k.startswith("R2_")),
+        "R1_and_R2_share_the_donor_per_seed": all(out["cells"].get(f"R1_s{s}", {}).get("donor") == out["cells"].get(f"R2_s{s}", {}).get("donor")
+                                                  for s in seeds if f"R1_s{s}" in out["cells"] and f"R2_s{s}" in out["cells"]),
+        "same_update_allowance": len({v["steps"] for k, v in out["cells"].items() if not k.startswith("AE_")}) <= 1,
+    }
+    out["measured_cost"] = {"cpu_seconds": cpu_now() - t_cpu0, "wall_seconds": time.time() - t_wall0}
+    out["measured_cost"]["within_cpu_budget"] = out["measured_cost"]["cpu_seconds"] <= cpu_budget_seconds
+    out["claims"] = {"scope": "DEVELOPMENT contrast: no test score, no recipe selected from any score, no H1 claim",
+                     "cost_readings": ["the downstream fit alone", "the auto-encoder plus the downstream fit"]}
+    (out_dir / "CONTRAST.json").write_text(json.dumps(out, indent=1, default=str))
+    return out
