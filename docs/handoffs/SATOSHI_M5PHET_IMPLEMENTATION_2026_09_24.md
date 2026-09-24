@@ -1,9 +1,19 @@
 # M5PHET: implementation assignment to Satoshi
 
-Latest candidate `7385937`: apply the
+**First read the [consolidated active assignments](SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md).**
+RP144-RP151 remain in force outside M5PHET: reconcile the contrast and completed
+B, then advance real Laya, news, paper/demo brokers, calendar and finance lanes
+in parallel where independent. A framework-only return does not close them.
+
+Latest candidate `d9ffc4d`: apply the
+[independent POST review and continuation](../audits/work_plan/MUSASHI_M5PHET_D9FFC4D_REVIEW_2026_09_24.md).
+Accepted repairs remain; exact forecast coverage, canonical population handling
+and writable torn-tail recovery need narrow fixes. Real Laya integration and
+independent experiments continue in parallel; no new owner permission required.
+
+Earlier candidate `7385937`: retain the
 [specialized-provider review and scoped continuation](../audits/work_plan/MUSASHI_M5PHET_7385937_REVIEW_2026_09_24.md).
-Explicit supported combinations are improved; population/calibration/typed-output
-and resume guarantees still require fixes. Continue the real Laya slice in parallel.
+The latest review above qualifies which earlier cases are now accepted.
 
 Candidate `adba176` is reviewed: execute the scoped
 [integration continuation](SATOSHI_M5PHET_INTEGRATION_CONTINUATION_2026_09_24.md)

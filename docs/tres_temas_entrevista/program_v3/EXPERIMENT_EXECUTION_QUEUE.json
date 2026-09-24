@@ -4,14 +4,14 @@
   "dispatcher": "Satoshi",
   "policy": "CONCURRENT_EXECUTION_2026_09_23.md",
   "runtime_enforcement": "Existing runners/admission; this is a persistent ordered manifest, not a newly installed scheduler",
-  "next_orders": "../../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md",
+  "next_orders": "../../handoffs/SATOSHI_RP155_REVIEW_AND_EXECUTION_2026_09_24.md",
   "latest_return": {
-    "commit": "07140d03",
+    "commit": "ebe35fb3",
     "status": "REPORTED_NOT_FRESHLY_REMEASURED_BY_THIS_UPDATE",
     "A": "12-cell consolidation reported, MSE0.161962/MAE0.259662; composition audit scoped separately",
-    "B": "10/12 training terminals at return, H720s2022 running; refresh executor before dispatch",
-    "doctoral": "Matched ECL adapter and TRAIN-only pilot executed; RP146 specifies next finite contrast",
-    "historical_executor_fields_below": "Preserved last direct RP139 observation, not current dispatch authority"
+    "B": "RP145 closure reports 12/12 verified, MSE/MAE 0.150307/0.246397, 16167/24000CPU; review retained closure, no duplicate fit queue",
+    "doctoral": "RP155 reports training finished 12 cells, 11415.44 CPU s excluding later scoring; Musashi requires additive scoring-only successor due target overlap and closure gaps. No retraining",
+    "historical_executor_fields_below": "Executor AND cells preserve the last direct RP139 observation, not current dispatch authority; rederive current per-cell state from accepted records before any dispatch"
   },
   "parallel_news_lane": {
     "orders": "RP147-RP151",
@@ -24,7 +24,8 @@
     "dispatch": "Separate service/profile/lease, existing broker risk path; no duplicate scientific executor"
   },
   "campaign": "RP135_RELEASED_L512_RECIPE",
-  "state": "LATEST_REPORT_TEN_TRAINING_TERMINALS_RECHECK_NATIVE_EXECUTOR_BEFORE_DISPATCH",
+  "state": "REPORTED_CLOSED_TWELVE_CELLS_DO_NOT_REDISPATCH_HISTORICAL_QUEUE",
+  "cells_scope": "HISTORICAL_RP139_SNAPSHOT_NOT_RUNNABLE_QUEUE",
   "executor": {
     "kind": "USER_SYSTEMD_NATIVE_BATCH_WITH_FLOCK",
     "superseded_task_id": "t_28e5c655",
@@ -66,7 +67,7 @@
     "production_deletions_allowed": false
   },
   "upcoming_design_work": [
-    {"task": "Doctoral extractor/pretraining intervention against accepted reference", "status": "IMPLEMENT_TEST_THEN_GOVERNED_TRAIN_ONLY_COST_PILOT_AUTHORIZED_RP142", "requires": "Full-horizon321-channel matched target/scaler/reduction and inner-TRAIN AE validation tests; pilot1800CPU/1800wall on admitted independent worker; scientific comparison needs its accepted reference/sealed design"},
+    {"task": "Doctoral extractor/pretraining intervention against accepted reference", "status": "TRAINING_RETAINED_RP155_SCORING_SUCCESSOR_REQUIRED", "requires": "Fix scoring acceptance and target support, seal 1802 label-disjoint windows, infer existing selected checkpoints under actual remaining allocation; include all scoring costs, no training reset"},
     {"task": "FIN-LOSS-OPT", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Financial resource temporal contract, matched financial reference and existing finance design; no heldout access"},
     {"task": "Weekly forecasting and RL", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Existing E3 business/data/execution contracts and domain-specific model reference; keep RL separate from forecasting metrics"}
   ]

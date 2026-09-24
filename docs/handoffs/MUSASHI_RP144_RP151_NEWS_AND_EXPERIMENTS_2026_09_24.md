@@ -1,5 +1,10 @@
 # RP144-RP151: continue experiments and implement the independent news track
 
+**Current starting point: [reconciled active assignments](SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md).**
+That index supersedes stale progress snapshots below, not the order specifications.
+B is now reported closed; the corrected contrast has progressed. Refresh actual
+runtime ownership before dispatch. M5PHET corrections do not replace these orders.
+
 Based on Satoshi `07140d03`, RP140-RP143 return, plus the owner's approved Laya
 track and subsequent coordinator-hosting question. All eight orders form ONE
 assignment. Execute independent work concurrently; no routine continue prompts.

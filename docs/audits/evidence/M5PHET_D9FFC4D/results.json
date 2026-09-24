@@ -1,0 +1,123 @@
+{
+  "cases": {
+    "baseline": {
+      "calls": [
+        "load",
+        "infer"
+      ],
+      "population_bound": true,
+      "status": "OK",
+      "why": null
+    },
+    "crossed_combination": {
+      "calls": [],
+      "population_bound": false,
+      "status": "UNSUPPORTED_TASK",
+      "why": "provider 'probe' declares each of these separately but not the combination {'operation': 'infer', 'family': 'classification', 'output_kind': 'marginal_quantiles'}; support is a tested combination, not a product of capability lists"
+    },
+    "forecast_6": {
+      "requested_horizons": [
+        6
+      ],
+      "returned_horizons": [
+        6
+      ],
+      "schema_valid": true,
+      "status": "OK"
+    },
+    "forecast_6_72": {
+      "requested_horizons": [
+        6,
+        72
+      ],
+      "returned_horizons": [
+        6
+      ],
+      "schema_valid": true,
+      "status": "OK"
+    },
+    "foreign_nested_population": {
+      "calls": [
+        "load",
+        "infer"
+      ],
+      "population_bound": false,
+      "status": "OK",
+      "why": null
+    },
+    "foreign_top_level_population": {
+      "calls": [
+        "load",
+        "infer"
+      ],
+      "population_bound": true,
+      "status": "INVALID_INPUT",
+      "why": "the returned population is not the requested one: the evaluated rows differ"
+    },
+    "future_offset": {
+      "calls": [
+        "load"
+      ],
+      "population_bound": true,
+      "status": "CALIBRATION_UNAVAILABLE",
+      "why": "its calibration_end 2026-09-24T04:30:00+00:00 is after the decision clock 2026-09-24T00:00:00+00:00"
+    },
+    "interior_corruption": {
+      "reason": "attempts.jsonl holds an interior record this run cannot read (line 3 of 4); it is not a torn final append, so the log is refused rather than silently skipped",
+      "refused_on_open": true
+    },
+    "manifest_rewritten": {
+      "reason": "run 'run' fails its own integrity check: the manifest's identity hashes to 4ed9b749180f and it stores 31d28fbd09b4; the record was altered after it was written",
+      "refused_on_open": true
+    },
+    "missing_calibration_digest": {
+      "calls": [
+        "load"
+      ],
+      "population_bound": true,
+      "status": "CALIBRATION_UNAVAILABLE",
+      "why": "it declares no state_digest; an absent binding is not a match"
+    },
+    "nonfinite_payload": {
+      "calls": [
+        "load",
+        "infer"
+      ],
+      "population_bound": true,
+      "status": "INVALID_INPUT",
+      "why": "tone: the payload carries a non-finite number at payload.probability; every reported number must be finite"
+    },
+    "past_offset": {
+      "calls": [
+        "load"
+      ],
+      "population_bound": true,
+      "status": "OK",
+      "why": null
+    },
+    "torn_tail_then_append": {
+      "append_and_finish_accepted": true,
+      "new_start_parseable": false,
+      "reason": "attempts.jsonl holds an interior record this run cannot read (line 3 of 4); it is not a torn final append, so the log is refused rather than silently skipped",
+      "subsequent_open_refused": true
+    },
+    "wrong_calibration_digest": {
+      "calls": [
+        "load"
+      ],
+      "population_bound": true,
+      "status": "CALIBRATION_UNAVAILABLE",
+      "why": "its state_digest is 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc', not 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'"
+    },
+    "wrong_loaded_task": {
+      "calls": [
+        "load"
+      ],
+      "population_bound": false,
+      "status": "INVALID_INPUT",
+      "why": "the loaded state is fitted to task 'foreign-task' and the request is for 'task', which it does not declare as compatible"
+    }
+  },
+  "revision": "d9ffc4deaf7948d9432597e8c68bcd48e6ceb41c",
+  "scope": "real public APIs, recording provider, temporary evidence; no model or live service"
+}
