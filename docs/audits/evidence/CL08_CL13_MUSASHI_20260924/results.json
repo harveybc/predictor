@@ -1,0 +1,67 @@
+{
+  "scope": "CPU fixtures; retained real-weight JSON parity; no fresh model inference",
+  "installed_question_path": {
+    "status": "SHADOW_ONLY",
+    "reason": null,
+    "backend_calls": 1,
+    "installed_m5phet_origin": {
+      "dir_info": {
+        "editable": true
+      },
+      "url": "LOCAL_CANDIDATE_CHECKOUT"
+    }
+  },
+  "valid_record_wrong_key": {
+    "disposition": "DUPLICATE",
+    "requested_task": "adhoc.question.v1:76d95fc24a08a692bd80b1b68bac796b9ce8ea5d0fb9d90d34404651c98fd69d",
+    "returned_stored_task": "adhoc.question.v1:2009b872a5a3d09f17a64d7a0d872cc72570e1191600031516c4827a9e24e8bd",
+    "reused_other_record_digest": true,
+    "replay_integrity_failures": 0
+  },
+  "option_truncation": {
+    "budget_fits": true,
+    "backend_called": 1,
+    "tail_present_in_requested_option": true,
+    "tail_present_in_upstream_sequence": false,
+    "source_sha256": "99f6d7acfa3975362ba3fbe9c3ea26efc9d1b3c299ebf103d4b87902416579d7",
+    "source_url": "https://raw.githubusercontent.com/NandhaKishorM/laya/1e28ac20c0896b1c37a744cd11f740eb98f8b178/laya/common.py",
+    "tokenizer": "DETERMINISTIC_WORD_FIXTURE_NOT_REAL_CHECKPOINT_TOKENIZER"
+  },
+  "post_publication_consensus": {
+    "selected_consensus": 2.9,
+    "computed_surprise": 0.0,
+    "pre_publication_consensus": 2.5,
+    "expected_release_surprise": 0.3999999999999999
+  },
+  "unknown_availability_consumed": {
+    "helper": false,
+    "consumer_surprise": 0.3999999999999999
+  },
+  "mutable_arrival": {
+    "before_actual": 2.9,
+    "after_actual": 99.0,
+    "vintage_unchanged": true
+  },
+  "retained_real_question_parity": {
+    "rate_cut_risk": {
+      "population_equal": true,
+      "distinct_inputs": 12,
+      "exact_answers": 12,
+      "labels_over_13_rows": {
+        "no_bearing": 11,
+        "less_likely": 1,
+        "more_likely": 1
+      }
+    },
+    "who_is_affected": {
+      "population_equal": true,
+      "distinct_inputs": 12,
+      "exact_answers": 12,
+      "labels_over_13_rows": {
+        "united_states": 3,
+        "euro_area": 9,
+        "elsewhere": 1
+      }
+    }
+  }
+}

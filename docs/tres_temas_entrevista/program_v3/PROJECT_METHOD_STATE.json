@@ -1,5 +1,18 @@
 {
  "schema": "research_program_method_state.v1",
+ "cl08_cl13_review_20260924": {
+  "candidates": {"news-signal": "e40098b", "M5PHET": "3f4a833", "feature-eng": "1a0402e", "predictor": "1e9d994f"},
+  "status": "USER_QUESTIONS_IMPLEMENTED_RETAINED_PARITY_CONFIRMED_DEPLOYMENT_AND_CALENDAR_GAPS",
+  "scope": "Independent retained parity, CPU fixtures, actual clean dependency resolution; no GPU or live services",
+  "findings": ["declared runtime pin rejects user-question task kinds", "valid record at wrong storage key reused", "individual option truncation missed", "consensus cutoff uses actual receipt instead of publication", "UNKNOWN availability helper not enforced by consumer", "calendar read exposes mutable retained history"],
+  "parity": "12/12 exact distinct inputs per question, two questions; quality not labelled for these tasks",
+  "doctoral": "Previous count-rewrite case fixed; metric values explicitly self-reported; no new scientific measurement",
+  "orders": "../../audits/work_plan/MUSASHI_CL08_CL13_REVIEW_2026_09_24.md",
+  "evidence": "../../audits/evidence/CL08_CL13_MUSASHI_20260924/results.json",
+  "next_action": "CL14-CL19 concurrently; deliver forecast slice and application code while repairing scoped boundaries",
+  "global_hold": false,
+  "new_training_budget": false
+ },
  "cl_first_review_20260924": {
   "candidates": {"news-signal": "bb281cc", "M5PHET": "e752ed1", "predictor": "8d9eba36"},
   "scope": "Retained JSON and CPU fixture probes; no live services, GPU inference or trading validation",
@@ -15,11 +28,11 @@
  "classification_first_20260924": {
   "public_interface": "Required Laya-like experience across all five families: data/context + natural-language questions -> typed engine answers; not a plugin catalog",
   "RAG": "Consider bounded documentation retrieval evaluation; market-context RAG separate and point-in-time; optional, not implemented, not a classification prerequisite",
-  "natural_language_design": "M5PHET/docs/NATURAL_LANGUAGE_INTERFACE.md; NL01-NL08 specified, not implemented",
+  "natural_language_design": "NL01 user-authored choice implemented in news-signal e40098b, real retained parity; declared runtime pin blocks clean deployment. Other-family NL slices pending",
   "interpreter_candidates": "Reuse configured Hermes/OpenCode language access (owner names DeepSeek Flash); optional admitted small local pretrained model. Verify exact identity/access, no LLM training or broker-role conflation",
   "orders": "../../handoffs/SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md",
   "primary_task": "English news relevance to EURUSD via real Laya and M5PHET Registry; direct SDK parity",
-  "status": "REAL_LAYA_RETAINED_PARITY_VERIFIED_NL_INTERFACE_AND_SAFE_DEPLOYMENT_PENDING",
+  "status": "REAL_LAYA_USER_QUESTIONS_PARITY_VERIFIED_DEPLOYMENT_AND_OTHER_FAMILY_SLICES_PENDING",
   "provider_owners": {"classification": "news-signal", "forecasting": "predictor/prediction_provider", "hierarchical_regimes": "feature-eng", "causal_inference": "causal-inference", "RL": "agent-multi/gym-fx"},
   "DOIN": "transversal optional optimization, not RL engine",
   "implementation_owner": "Satoshi",
@@ -559,12 +572,12 @@
    "deliverable": "Task-specific typed results and five-front roadmap; not five completed engines"
   },
   {
-   "id": "NEWS-ADAPTER",
-   "owner": "Musashi + Satoshi",
-   "status": "IMPLEMENTED",
+    "id": "NEWS-ADAPTER",
+    "owner": "Musashi + Satoshi",
+    "status": "EXECUTED",
    "depends_on": ["M5PHET-CONTRACTS"],
    "evidence": ["https://github.com/harveybc/news-signal"],
-   "next_action": "Real frozen-weight smoke, offline/device/provenance checks and measured coordinator resources; prototype tested only with fixture/SDK double",
+    "next_action": "CL14-15: release the measured real-weight user-question path with its compatible runtime and repaired store/token guards. Independent retained parity is 12/12 for each of two questions; no need to repeat initial pilot",
    "deliverable": "Typed news features, no model order authority, actual deployment evidence"
   },
   {

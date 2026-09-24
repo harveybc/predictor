@@ -1,5 +1,12 @@
 # Start here: reconcile ALL active assignments, not only M5PHET
 
+**Latest: CL08-CL13 reviewed at `e40098b` / `3f4a833` / `1a0402e` / `1e9d994f`.**
+[CL14-CL19: deployable questions, calendar corrections and parallel forecast slice](../audits/work_plan/MUSASHI_CL08_CL13_REVIEW_2026_09_24.md).
+Two user questions retain 12/12 native parity each. The declared installation
+still rejects them; calendar release-time/availability and store-key checks need
+scoped repairs. Deliver the question-to-forecast path and collector/broker code
+in parallel, not after another audit-only round. No repeated doctoral inference.
+
 **Current review after CL01-CL07 (`bb281cc` / `e752ed1` / `8d9eba36`):
 [CL08-CL13, parallel application delivery](../audits/work_plan/MUSASHI_CL_FIRST_REVIEW_2026_09_24.md).**
 Retained real-Laya parity independently matches 12/12 inputs in both processes;

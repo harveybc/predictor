@@ -1,0 +1,16 @@
+{
+  "scope": "CPU fixtures; retained real-weight JSON parity; no fresh model inference",
+  "installed_question_path": {
+    "status": "REFUSED_WITH_INPUT",
+    "reason": "the loaded state is fitted to task 'laya_zero_shot_checkpoint' and the request is for 'adhoc.question.v1:76d95fc24a08a692bd80b1b68bac796b9ce8ea5d0fb9d90d34404651c98fd69d', which it does not declare as compatible",
+    "backend_calls": 0,
+    "installed_m5phet_origin": {
+      "url": "https://github.com/harveybc/M5PHET.git",
+      "vcs_info": {
+        "commit_id": "e752ed194c65dc42804ead3759a615a07f3ea8f0",
+        "requested_revision": "e752ed194c65dc42804ead3759a615a07f3ea8f0",
+        "vcs": "git"
+      }
+    }
+  }
+}
