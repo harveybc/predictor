@@ -1,5 +1,17 @@
 {
  "schema": "research_program_method_state.v1",
+ "active_assignment_reconciliation_20260924": {
+  "source_branch_tip": "b75097d3",
+  "scope": "Fetched commit ancestry and published returns/evidence; not live process, warehouse or account inspection",
+  "prior_orders_integrated": ["d4bb3353", "32a5467d", "d46d3363", "af8ca197"],
+  "latest_review_not_yet_ancestor_at_check": "032aaa52",
+  "index": "../../handoffs/SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md",
+  "B": "Closure reports 12/12, MSE/MAE 0.150307/0.246397; do not rerun from stale 10/12 queue",
+  "doctoral": "Corrected successor reported on second seed; refresh lease and budget, continue missing work only",
+  "not_delivered_in_inspected_returns": ["real Laya weights/pilot", "prospective news and shadow", "MT5 demo and Alpaca paper integration", "calendar as-of transforms", "financial resource evidence and matched reference", "real optional governance/DOIN round trips"],
+  "new_compute_budget": false,
+  "global_hold": false
+ },
  "m5phet_review_d9ffc4d": {
   "revision": "d9ffc4deaf7948d9432597e8c68bcd48e6ceb41c",
   "status": "REPAIRED_CASES_ACCEPTED_THREE_BOUNDARY_GAPS_NO_GLOBAL_HOLD",
@@ -374,14 +386,16 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "RP144-RP145: check composition by content identity, finish B using its existing lease/budget; refresh live status rather than treating the 10/12 report as current",
-  "RP146: fix actual-batch target oracle, identity-fixed AE validation masks, donor-source reload parity and post-optimizer regime proof; then sealed H96 R0/R1/R2 development contrast, paired seeds, full321 channels,14400CPU/8h; no public-test tuning",
+  "Read SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md first; reconcile all lanes, not only M5PHET",
+  "RP144-RP145: A retained, B closure reports 12/12; review actual closure evidence, no repeat fit queue from historical status",
+  "RP146: corrected H96 R0/R1/R2 successor reported on second seed; refresh actual lease, cells and residual 14400CPU/8h allocation, complete/replay/score only missing work; no public-test tuning or budget reset",
   "RP147: isolated real Laya checkpoint pilot on admitted coordinator candidate,600CPU/900wall excluding install/download; no silent GPU fallback",
   "RP148-RP149: prospective governed news and shadow service, then isolated MT5 demo and Alpaca paper through existing LTS risk; do not replace active strategies",
-  "RP150-RP151: financial producer evidence/reference work and broader typed-ML RFC in parallel; one complete return, no routine continue prompts",
+  "RP150-RP151: financial producer evidence/reference, calendar as-of transforms, M5PHET implementation and real optional integration in parallel; one all-lane return, no routine continue prompts",
   "No invented availability, private reserve reads, ungoverned scientific fits, broker-risk bypass or real-capital activation"
  ],
  "documents": {
+  "active_assignments": "../../handoffs/SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md",
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
   "orders": "../../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md",

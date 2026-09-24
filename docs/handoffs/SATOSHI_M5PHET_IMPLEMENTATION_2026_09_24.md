@@ -1,5 +1,10 @@
 # M5PHET: implementation assignment to Satoshi
 
+**First read the [consolidated active assignments](SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md).**
+RP144-RP151 remain in force outside M5PHET: reconcile the contrast and completed
+B, then advance real Laya, news, paper/demo brokers, calendar and finance lanes
+in parallel where independent. A framework-only return does not close them.
+
 Latest candidate `d9ffc4d`: apply the
 [independent POST review and continuation](../audits/work_plan/MUSASHI_M5PHET_D9FFC4D_REVIEW_2026_09_24.md).
 Accepted repairs remain; exact forecast coverage, canonical population handling
