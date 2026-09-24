@@ -1,0 +1,109 @@
+{
+ "schema": "df_ecl_modular_pilot.v1",
+ "at": "2026-09-24T01:13:12Z",
+ "host": "dragon",
+ "pred_len": 96,
+ "seed": 2021,
+ "batch": 32,
+ "budget": {
+  "cpu_seconds": 1800,
+  "wall_seconds": 1800
+ },
+ "design_sha256": "3f6b089c55dc0ec4507e5127d2b7687b3c5e0d969a7dff5fbd949c45445eca0a",
+ "causality": {
+  "ae_validation_inside_outer_train": true,
+  "ae_validation_targets_inside_outer_train_targets": true,
+  "ae_validation_disjoint_from_outer_validation": true,
+  "ae_validation_disjoint_from_outer_test": true,
+  "ae_training_disjoint_from_ae_validation": true,
+  "ae_purge_respected": true,
+  "outer_target_support_disjoint": true,
+  "future_perturbation_leaves_windows_unchanged": true
+ },
+ "exposure": "TRAIN ONLY: no validation selection and no test access in this pilot",
+ "cost_probe": {
+  "probe_steps": 5,
+  "ae_seconds_per_step": 0.029447031021118165,
+  "r0_seconds_per_step": 0.02860264778137207,
+  "wall_spent_before_prescription": 13.458796501159668,
+  "wall_available_after_reserve": 1636.5412034988403,
+  "warm_up": "one untimed step precedes each timing so graph tracing is not charged to the per-step cost"
+ },
+ "prescribed": {
+  "ae_steps": 22230,
+  "r0_steps": 22886,
+  "rule": "prescribed from the measured cost and the declared budget BEFORE the fits, never adjusted afterwards"
+ },
+ "autoencoder": {
+  "steps": 22230,
+  "wall_seconds": 7.0852086544036865,
+  "loss": [
+   0.3602217137813568
+  ],
+  "internal_validation_loss": [
+   0.2545693814754486
+  ],
+  "validation_origins": {
+   "n": 3644,
+   "inside_outer_train": true,
+   "purge": 192
+  },
+  "reading": "masked reconstruction; a diagnostic, never a result of the task"
+ },
+ "pretrained_detector": {
+  "path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-pilot-20260924/detector_seed2021.npz",
+  "sha256": "28397833280f99e4ad070373ec716e6fa9526291d2d5f5b587e3d98ad3df7c6b",
+  "layers": [
+   "g0_det1_conv",
+   "g0_det1_proj",
+   "g0_det2_conv"
+  ],
+  "decoder_layers": [
+   "g0_dec1",
+   "g0_dec2"
+  ],
+  "decoder_never_connected_at_inference": true
+ },
+ "R0": {
+  "steps": 22886,
+  "wall_seconds": 11.434569120407104,
+  "loss": [
+   0.44367045164108276
+  ]
+ },
+ "regimes": {
+  "R0_detector_digest_after_its_own_fit": "243f5c4bf4885b1ba1418fedb1e81f1538bf9beaac2c8e1d9852d6b3736cbde0",
+  "R1": {
+   "imported": [
+    "g0_det1_conv",
+    "g0_det1_proj",
+    "g0_det2_conv"
+   ],
+   "frozen_layers": 3,
+   "detector_receives_gradient": false
+  },
+  "R2": {
+   "imported": [
+    "g0_det1_conv",
+    "g0_det1_proj",
+    "g0_det2_conv"
+   ],
+   "trainable_layers": 10,
+   "detector_receives_gradient": true
+  },
+  "R1_and_R2_import_the_same_bytes": true,
+  "reload_parity": true,
+  "proved": "the freeze and the update are read from a gradient report on a real batch, not from a flag"
+ },
+ "measured_cost": {
+  "cpu_seconds": 39.262702,
+  "wall_seconds": 32.14520812034607,
+  "within_cpu_budget": true,
+  "within_wall_budget": true
+ },
+ "claims": {
+  "H1": "none: this pilot measures cost and proves the path; it says nothing about pre-training's effect",
+  "public_test": "not scored",
+  "model_selection": "none performed"
+ }
+}

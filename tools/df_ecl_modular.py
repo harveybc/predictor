@@ -468,13 +468,18 @@ def train_only_pilot(data_path: Path, out_dir: Path, *, pred_len: int = 96, seed
     out["cost_probe"] = {"probe_steps": probe_steps, "ae_seconds_per_step": ae_s_per_step, "r0_seconds_per_step": r0_s_per_step,
                          "wall_spent_before_prescription": spent_wall, "wall_available_after_reserve": remaining,
                          "warm_up": "one untimed step precedes each timing so graph tracing is not charged to the per-step cost"}
-    out["prescribed"] = {"ae_steps": ae_steps, "r0_steps": r0_steps,
+    out["prescribed"] = {"ae_steps_requested": ae_steps, "r0_steps_requested": r0_steps,
                          "rule": "prescribed from the measured cost and the declared budget BEFORE the fits, never adjusted afterwards"}
     va_seq = W(train_ds, ae_va_local, seq_len=SEQ_LEN, pred_len=pred_len, batch=batch, seed=0, masked=0.25)
+    # a finite sequence yields at most len(seq) batches per epoch, so the prescribed step count is executed as whole passes:
+    # asking for more steps than the sequence holds silently ran ONE pass in the first attempt, which is recorded in the return
+    ae_epochs = max(1, math.ceil(ae_steps / max(1, len(ae_seq))))
+    ae_steps = ae_epochs * len(ae_seq)
     t0 = time.time()
-    hist = ae.fit(ae_seq, epochs=1, steps_per_epoch=ae_steps, validation_data=va_seq,
+    hist = ae.fit(ae_seq, epochs=ae_epochs, steps_per_epoch=len(ae_seq), validation_data=va_seq,
                   validation_steps=min(10, len(va_seq)), verbose=0)
-    out["autoencoder"] = {"steps": ae_steps, "wall_seconds": time.time() - t0,
+    out["autoencoder"] = {"steps": ae_steps, "epochs": ae_epochs, "steps_per_epoch": len(ae_seq),
+                          "wall_seconds": time.time() - t0,
                           "loss": [float(v) for v in hist.history.get("loss", [])],
                           "internal_validation_loss": [float(v) for v in hist.history.get("val_loss", [])],
                           "validation_origins": {"n": len(ae_va_local), "inside_outer_train": True, "purge": part["purge"]},
@@ -485,9 +490,12 @@ def train_only_pilot(data_path: Path, out_dir: Path, *, pred_len: int = 96, seed
     out["pretrained_detector"] = {"path": str(npz), "sha256": hashlib.sha256(npz.read_bytes()).hexdigest(),
                                   "layers": det_names, "decoder_layers": dec_names,
                                   "decoder_never_connected_at_inference": True}
+    r0_epochs = max(1, math.ceil(r0_steps / max(1, len(fit_seq))))
+    r0_steps = r0_epochs * len(fit_seq)
     t0 = time.time()
-    h0 = model.fit(fit_seq, epochs=1, steps_per_epoch=r0_steps, verbose=0)
-    out["R0"] = {"steps": r0_steps, "wall_seconds": time.time() - t0, "loss": [float(v) for v in h0.history.get("loss", [])]}
+    h0 = model.fit(fit_seq, epochs=r0_epochs, steps_per_epoch=len(fit_seq), verbose=0)
+    out["R0"] = {"steps": r0_steps, "epochs": r0_epochs, "steps_per_epoch": len(fit_seq),
+                 "wall_seconds": time.time() - t0, "loss": [float(v) for v in h0.history.get("loss", [])]}
     xb, yb = fit_seq[0]
     r0_detector_after_fit = RG.weights_digest(model, det_names)
     r1 = RG.apply_regime(model, "R1", npz)
