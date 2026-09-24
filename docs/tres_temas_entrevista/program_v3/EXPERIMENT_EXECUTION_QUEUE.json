@@ -6,17 +6,18 @@
   "runtime_enforcement": "Existing runners/admission; this is a persistent ordered manifest, not a newly installed scheduler",
   "next_orders": "../../handoffs/SATOSHI_RP155_REVIEW_AND_EXECUTION_2026_09_24.md",
   "latest_return": {
-    "commit": "3c25ecab",
+    "commit": "e36c1c6d",
     "status": "REPORTED_NOT_FRESHLY_REMEASURED_BY_THIS_UPDATE",
     "A": "12-cell consolidation reported, MSE0.161962/MAE0.259662; composition audit scoped separately",
     "B": "RP145 closure reports 12/12 verified, MSE/MAE 0.150307/0.246397, 16167/24000CPU; review retained closure, no duplicate fit queue",
-    "doctoral": "RP157 retains identical RP156 population metrics; canonical design and exact expected-population validation still incomplete. Complete pure closing path over retained evidence; no routine inference or retraining",
+    "doctoral": "RP158 retained metrics equal RP157; primary design/count fixes pass focused cases. Finish typed elements and derived-metric validation in a pure retained-evidence closure; no routine inference or retraining",
     "historical_executor_fields_below": "Executor AND cells preserve the last direct RP139 observation, not current dispatch authority; rederive current per-cell state from accepted records before any dispatch"
   },
   "parallel_news_lane": {
     "orders": "RP147-RP151",
     "repository": "https://github.com/harveybc/news-signal",
-    "state": "REAL_SDK_AND_SNAPSHOT_INSTALL_REPORTED_IN_PROGRESS_PILOT_AFTER_FRESH_ADMISSION",
+    "state": "CLASSIFICATION_FIRST_EURUSD_RELEVANCE_ASSIGNED_REAL_SDK_PARITY_NOT_YET_VERIFIED",
+    "current_orders": "../../handoffs/SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md",
     "first_host_candidate": "External5090 preferred for eligible GPU work; use admitted COORDINATOR4070 only when measuring the planned small-model residency on that device",
     "blocks_RP135_or_doctoral": false,
     "modes": ["SHADOW", "MT5_DEMO", "ALPACA_PAPER"],
