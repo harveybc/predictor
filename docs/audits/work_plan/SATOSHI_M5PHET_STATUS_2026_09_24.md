@@ -107,3 +107,25 @@ R0's and R2's move. Seeds 2022 and 2023 remain. **No score is reported from this
 selection monitor, not the reference metric, and there is no H1 claim.
 
 Suites: predictor reproduction 142 passed at `b62fd5f6`; M5PHET 107 passed at `8b78114`.
+
+## Update, 2026-09-24 05:35Z, after the approved plugin architecture `70abf145`
+
+Implemented in the existing provider registry, tests first, with the pre-implementation failure frozen. M5PHET `7385937`.
+
+**The rule that makes the criteria meaningful.** A provider now declares `supported`, the list of tested
+operation/family/output_kind combinations. Registration refuses a provider that omits it, and a request whose combination is
+not on that list refuses before the model is loaded. The counterexample is a test: a provider that classifies typed questions
+and forecasts quantiles has **not** thereby declared that it emits quantiles for a classification task.
+
+| acceptance criterion | state |
+|---|---|
+| local specialized inference with no language-model service or key | **VERIFIED**, with the packages blocked at import and the keys removed |
+| configuration selects the named provider with no hidden fallback | **VERIFIED**, by name, and an absent remote provider does not block the working local one |
+| incompatible provider, operation or output combinations refuse before loading | **VERIFIED**, including the product counterexample |
+| a provider swap preserves task and evaluation population and records a changed model identity | **VERIFIED**, with the binding carrying the model digest |
+
+An optional language-model provider is registered like any other, authorizes nothing, and cannot answer a family it never
+declared. No parallel plugin system was added and no general-purpose language-model subsystem is required.
+
+Still pending on this line: the real Laya or Jev provider behind the contract, and the remaining families' engines. The
+contract accepts them; nothing here claims one is integrated.
