@@ -1,0 +1,3 @@
+9c8509313426c3ed6e7034b847f80ed7e4842ef3 Build the env observation from market data, outside an episode
+6d779afdd7cd4e8b2d7c2dfadc6395482e831269 wp4: C38 strict nested schemas, typed refusals, full provisioned E2E proof
+9353e0a40f3b272c7bb95846429ad381b5584ff2 wp4: C36-C37 derived-only consumption and a single production factory

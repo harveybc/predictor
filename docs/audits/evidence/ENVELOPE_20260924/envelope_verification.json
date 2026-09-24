@@ -1,0 +1,355 @@
+{
+ "schema": "m5phet_envelope_verification.v1",
+ "areas": {
+  "classification": {
+   "provider": "laya_news",
+   "question_types": {
+    "choice": {
+     "required": [
+      "options"
+     ],
+     "optional": [
+      "instructions"
+     ]
+    }
+   }
+  },
+  "forecasting": {
+   "provider": "predictor_forecast",
+   "question_types": {
+    "point_forecast": {
+     "required": [
+      "horizon"
+     ],
+     "optional": [
+      "target"
+     ]
+    },
+    "interval": {
+     "required": [
+      "horizon",
+      "confidence_level"
+     ],
+     "optional": [
+      "target"
+     ]
+    },
+    "anomaly_risk": {
+     "required": [
+      "threshold"
+     ],
+     "optional": [
+      "horizon",
+      "target"
+     ]
+    }
+   }
+  },
+  "causal": {
+   "provider": "causal_inference",
+   "question_types": {
+    "ate": {
+     "required": [],
+     "optional": []
+    },
+    "cate": {
+     "required": [
+      "condition"
+     ],
+     "optional": []
+    }
+   }
+  },
+  "rl": {
+   "provider": "trading_policy",
+   "question_types": {
+    "next_action": {
+     "required": [],
+     "optional": []
+    },
+    "value_estimation": {
+     "required": [],
+     "optional": []
+    }
+   }
+  },
+  "unsupervised": {
+   "provider": "feature-eng-hierarchical-regimes",
+   "question_types": {
+    "clustering": {
+     "required": [],
+     "optional": [
+      "method",
+      "expected_clusters",
+      "level"
+     ]
+    },
+    "cluster_description": {
+     "required": [
+      "target_metric"
+     ],
+     "optional": [
+      "level"
+     ]
+    }
+   }
+  }
+ },
+ "envelopes": [
+  {
+   "area": "forecasting",
+   "message_status": "PARTIAL",
+   "questions": [
+    {
+     "question": "prediccion",
+     "type": "point_forecast",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why": null,
+     "preview": {
+      "type": "point_forecast",
+      "values": [
+       0.5412255525588989
+      ],
+      "unit": "kW",
+      "scale": "original",
+      "targets": [
+       "Global_active_power"
+      ]
+     }
+    },
+    {
+     "question": "rango",
+     "type": "interval",
+     "expected": "REFUSED:NOT_ESTIMABLE",
+     "got": "REFUSED:NOT_ESTIMABLE",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why": "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7 cannot: it emits a point estimate and no predictive distribution; an interval would require a quantile or ensemble head this bundle does not have",
+     "preview": {
+      "status": "REFUSED",
+      "refusal": "NOT_ESTIMABLE",
+      "why": "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7 cannot: it emits a point estimate and no predictive distribution; an interval would require a quantile or ensemble head this bundle does not have",
+      "type": "interval"
+     }
+    },
+    {
+     "question": "riesgo",
+     "type": "anomaly_risk",
+     "expected": "REFUSED:NOT_ESTIMABLE",
+     "got": "REFUSED:NOT_ESTIMABLE",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why": "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7 cannot: it emits a point estimate and no predictive distribution; an interval would require a quantile or ensemble head this bundle does not have; a probability of crossing '< 0.3' is a statement about that distribution",
+     "preview": {
+      "status": "REFUSED",
+      "refusal": "NOT_ESTIMABLE",
+      "why": "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7 cannot: it emits a point estimate and no predictive distribution; an interval would require a quantile or ensemble head this bundle does not have; a probability of crossing '< 0.3' is a statement about that distribution",
+      "type": "anomaly_risk"
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration": "Pronóstico de potencia: 0.5412255525588989 kW (estimación puntual, horizonte 60).\n\nEl rango fue rechazado (REFUSED): no es estimable. El modelo solo emite una estimación puntual y no tiene distribución predictiva; un intervalo requeriría una cabeza cuantílica o de ensemble que este bundle no tiene.\n",
+   "execution_authorized": false
+  },
+  {
+   "area": "causal",
+   "message_status": "PARTIAL",
+   "questions": [
+    {
+     "question": "efecto",
+     "type": "ate",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why": null,
+     "preview": {
+      "type": "ate",
+      "status": "OK",
+      "execution_authorized": false,
+      "estimand": "ATE",
+      "effect_size": 2.0293820021534623
+     }
+    },
+    {
+     "question": "jovenes",
+     "type": "cate",
+     "expected": "REFUSED:NOT_ESTIMABLE",
+     "got": "REFUSED:NOT_ESTIMABLE",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why": "the retained study estimates an average effect (ATE of treatment on outcome, constant across units) and was not fitted with an effect modifier, so a conditional effect under 'baseline == 1' cannot be read from it, and it is not derived by subsetting the population and refitting during inference; answering this needs a study fitted explicitly with that modifier declared (and with a heterogeneous-effect estimand), which this engine does not offer today.",
+     "preview": {
+      "status": "REFUSED",
+      "refusal": "NOT_ESTIMABLE",
+      "why": "the retained study estimates an average effect (ATE of treatment on outcome, constant across units) and was not fitted with an effect modifier, so a conditional effect under 'baseline == 1' cannot be read from it, and it is not derived by subsetting the population and refitting during inference; answering this needs a study fitted explicitly with that modifier declared (and with a heterogeneous-effect estimand), which this engine does not offer today.",
+      "type": "cate"
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration": "El efecto del tratamiento fue positivo: el efecto promedio (ATE) sobre el resultado es de 2.0293820021534623 unidades de resultado sintético (contraste 1 vs 0), con un intervalo de confianza al 95% de [1.931308938896731, 2.1274550654101936] que excluye el cero. Este resultado solo vale bajo los supu",
+   "execution_authorized": false
+  },
+  {
+   "area": "rl",
+   "message_status": "OK",
+   "questions": [
+    {
+     "question": "accion",
+     "type": "next_action",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why": null,
+     "preview": {
+      "type": "next_action",
+      "action": [
+       0.05912280082702637
+      ],
+      "unit": "target position fraction of the policy's own action scale",
+      "action_space": "Box(-1, 1, (1,), float32)",
+      "deterministic": true
+     }
+    },
+    {
+     "question": "retorno",
+     "type": "value_estimation",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why": null,
+     "preview": {
+      "type": "value_estimation",
+      "expected_return": 3.7995848655700684,
+      "uncertainty_bounds": [
+       3.7995848655700684,
+       4.006697177886963
+      ],
+      "critic_values": [
+       4.006697177886963,
+       3.7995848655700684
+      ],
+      "n_critics": 2
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration": "Acción: la política propone 0.05912280082702637, en una escala Box(-1, 1), determinista. Es la fracción de posición objetivo respecto a su propia escala de acción. No es una recomendación, ni un tamaño de posición, ni una orden (execution_authorized = false).\n\nRetorno: expected_return = 3.7995848655",
+   "execution_authorized": false
+  },
+  {
+   "area": "unsupervised",
+   "message_status": "OK",
+   "questions": [
+    {
+     "question": "segmentacion",
+     "type": "clustering",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why": null,
+     "preview": {
+      "type": "clustering",
+      "status": "OK",
+      "execution_authorized": false,
+      "basis": "assignment of the supplied rows under the fitted reference; nothing fitted or selected here",
+      "reference": {
+       "task_id": "ohlc-demo-regimes-v1",
+       "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+       "features": [
+        "body_pipettes",
+        "range_pipettes"
+       ],
+       "engine": "sklearn.AgglomerativeClustering:ward",
+       "assignment": "sklearn.NearestNeighbors:1-reference-path"
+      }
+     }
+    },
+    {
+     "question": "perfil",
+     "type": "cluster_description",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why": null,
+     "preview": {
+      "type": "cluster_description",
+      "status": "OK",
+      "execution_authorized": false,
+      "basis": "the cluster whose supplied rows satisfy target_metric most (largest share, then count, then lowest id); centroid is the mean of the supplied rows assigned to it, in the caller's units",
+      "reference": {
+       "task_id": "ohlc-demo-regimes-v1",
+       "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f"
+      }
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration": "Segmentación: 8 filas, k óptimo [2, 4]. A k=2 salen 7 filas en el cluster 0 y 1 en el cluster 1 (silhouette 0.23696695699600165). A k=4 hay 3 clusters ocupados: 2 filas en el 0, 1 en el 1 y 5 en el 2 (silhouette 0.2827649752252609).\n\nCluster alto (el que más cumple \"body_pipettes > 0\"): es el cluste",
+   "execution_authorized": false
+  },
+  {
+   "area": "classification",
+   "message_status": "OK",
+   "questions": [
+    {
+     "question": "economia",
+     "type": "choice",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why": null,
+     "preview": {
+      "type": "choice",
+      "status": "OK",
+      "label": "euro_area",
+      "uncalibrated_probabilities": {
+       "euro_area": 0.9666,
+       "united_states": 0.0096,
+       "other": 0.0239
+      },
+      "probability_decimals": 4
+     }
+    },
+    {
+     "question": "tono",
+     "type": "choice",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why": null,
+     "preview": {
+      "type": "choice",
+      "status": "OK",
+      "label": "neutral",
+      "uncalibrated_probabilities": {
+       "hawkish": 0.0914,
+       "dovish": 0.1575,
+       "neutral": 0.7511
+      },
+      "probability_decimals": 4
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration": "Habla de la economía de la eurozona (euro_area), con probabilidad 0.9666, y con tono neutral, con probabilidad 0.7511.\n\nSobre rechazos: ninguna de las dos preguntas fue rechazada como pregunta — ambas devolvieron estado OK con una etiqueta del SDK (euro_area para economía y neutral para tono). Sin e",
+   "execution_authorized": false
+  }
+ ],
+ "summary": {
+  "questions_as_expected": 11,
+  "questions": 11,
+  "any_execution_authorized": false
+ }
+}

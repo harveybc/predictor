@@ -1,0 +1,3 @@
+42e83d57c7c0c016d75906f56e5f6f80b12e4e91 Answer named, typed causal questions from the retained study alone
+38e9b86109c655e9f10597f1e82d584efc44ecb8 Ship an example this provider's own slots can resolve
+6072860e83ec1ec3d88228fe85afd13c157b700a Resolve ordinary phrasing to the causal studies actually retained

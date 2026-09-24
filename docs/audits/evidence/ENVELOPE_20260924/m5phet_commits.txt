@@ -1,0 +1,3 @@
+2f1bb7749dda58c0e22db2bf05421db40ec149de The router is shown what the engines have, not only what the data contains
+6a1a7290cbc66d876d1c5dc28a5811f7a69ef87f A classification envelope reaches the real checkpoint on the private worker
+84b2e56cb011d1901c2a3b9dba7cbb0aa696a136 Question mode in the interface, and an MCP door to the same contract

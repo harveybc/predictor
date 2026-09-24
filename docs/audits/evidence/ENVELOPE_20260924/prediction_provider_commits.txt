@@ -1,0 +1,3 @@
+9f2108ba831763a12037c4432c8285eaa6ace956 Declare the pairs that are fitted, not only the values that are admissible
+21ad89e19b84068431326fbec828b518fde244ea Take part in the question envelope: answer the point forecast, refuse the distribution by name
+0051cbff662fe025b03d4a717f25a3586dc4cfe8 Serve several exported bundles, and export a second real predictor model

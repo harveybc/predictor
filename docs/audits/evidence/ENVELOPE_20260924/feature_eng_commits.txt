@@ -1,0 +1,3 @@
+6296447b8dead9bdc1caea58b2676b66d444a9ef An absent feature declaration means the fitted features
+6bf29a0fc18b11a71bafbba674a8fe2877b35560 Answer the workbench's typed questions as assignment under the fitted reference
+6451b96234989c23d4cbe3863edd03d0ebea59f3 A sentence may name the command; it may not smuggle a second one
