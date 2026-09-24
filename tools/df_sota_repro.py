@@ -4490,8 +4490,14 @@ def composed_table(root: Path, design: dict, composition: dict) -> dict:
            "agreement_rule": ("|mean - published| <= 2*sigma_paper + 0.0005, a PREDECLARED OPERATIONAL BAND: not statistical equivalence "
                               "and not exact equality to a rounded published table")}
     attributions = sorted({v for r in rows for v in r["training_device_attribution"].values()})
-    out["four_horizon_mean"] = ({"status": "NOT_COMPUTED", "why": "not every horizon is complete over a denominator of four"} if not all_pooled else
-                                {m: float(np.mean([r[m]["mean"] for r in rows])) for m in ("mse", "mae")})
+    missing = [r["horizon"] for r in rows if not r["complete"] or any(r[m].get("mean") is None for m in ("mse", "mae"))]
+    out["four_horizon_mean"] = ({"status": "NOT_COMPUTED",
+                                 "why": f"horizons {missing} are not complete over a denominator of four, or carry no pooled score"} if (not all_pooled or missing) else
+                                {"status": "COMPUTED", "denominator": len(rows),
+                                 **{m: float(np.mean([r[m]["mean"] for r in rows])) for m in ("mse", "mae")},
+                                 "published": {m: float(np.mean([float(r["published"][m]) for r in rows])) for m in ("mse", "mae")},
+                                 "scope": ("the unweighted mean over the four horizons of each horizon's seed mean, on the pooling rule above; "
+                                           "the published side is the same unweighted mean of the published per-horizon values")})
     out["device_attribution_scope"] = {
         "classes_present": attributions,
         "reading": ("NO cell of this campaign records a MEASURED training-device UUID. Exact reproduction on an observed device is "
