@@ -4340,8 +4340,18 @@ def compose_evidence(root: Path, design: dict, *, evidence: list, receipts: dict
         closures = [c for c in row["admitted"] if c["kind"] == "report" and c.get("closure")]
         custody = [c for c in row["admitted"] if c["kind"] == "custody_audit"]
         attribution = ident["attribution"]
+        # RP140: the score comes from the record when the record carries it; for the cells whose author float32 reduction was not
+        # executable at the time, it comes from a BOUND report row, with that row's own declared basis carried with it. A score is
+        # never taken from an object that failed to bind.
+        score, basis, score_source = ident["author_metric_float32"], ident["metric_basis"], "record"
+        if not score:
+            for c in closures:
+                claimed = (c.get("row_metric") or {}).get("author_metric_float32")
+                if claimed:
+                    score, basis, score_source = claimed, (c["row_metric"].get("metric_basis") or "report row"), c["evidence_sha256"]
+                    break
         row["properties"] = {
-            "score": ident["author_metric_float32"], "metric_basis": ident["metric_basis"],
+            "score": score, "metric_basis": basis, "score_source": score_source,
             "accepted_terminal": bool(receipt),
             "closure_verified": any((c["closure"] or {}).get("verified") for c in closures),
             "closure_verified_historically": any((c["closure"] or {}).get("verified_historically") for c in closures),
@@ -4409,6 +4419,7 @@ def _claim_for(payload: dict, entry: dict, unit: str, ident: dict) -> dict | Non
         base.update({"bound": not mismatch, "why": "; ".join(mismatch) or None,
                      "closure": {"verified": row.get("verified"), "verified_historically": row.get("verified_historically"),
                                  "custody": (row.get("custody") or {}).get("class"), "problems": (row.get("problems") or [])[:2]},
+                     "row_metric": {"author_metric_float32": row.get("author_metric_float32"), "metric_basis": row.get("metric_basis")},
                      "replay": row.get("replay") if (row.get("replay") or {}).get("device_uuid") else None})
         return base
     if kind == "binding":

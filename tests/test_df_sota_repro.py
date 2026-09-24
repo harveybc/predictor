@@ -2536,3 +2536,35 @@ def test_RP140_a_retained_replay_history_is_bound_by_its_recorded_identity_or_by
                                      "allclose_rule": True, "replayed_author_metric": {"mae": 1.0, "mse": 1.0}}}))
     out4 = R.compose_evidence(root, design, evidence=[h4], receipts=receipts)
     assert not out4["cells"][unit]["admitted"] and "UNBOUND" in str(out4["cells"][unit]["refused"][0]["why"])
+
+
+def test_RP140_a_score_absent_from_the_record_is_taken_only_from_a_bound_report_row(world, tmp_path, monkeypatch):
+    """Three horizons of the real campaign carry no author float32 in their records: the reduction was not executable then, and
+    the value lives in a closure row with its own declared basis. The composition takes it from there, and only from an object
+    that actually bound."""
+    root, unit, design, _ = _composed(world, tmp_path, monkeypatch, "score_src")
+    folder = root / "attempts" / unit
+    rec = json.loads((folder / "cell.json").read_text())
+    kept = rec["author_metric_float32"]
+    rec["author_metric_float32"] = None
+    (folder / "cell.json").write_text(json.dumps(rec, default=str))
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    rep = json.loads((root / "REPORT.json").read_text())
+    for r in rep["verification"]["rows"]:
+        if r["unit"] == unit:
+            r["author_metric_float32"] = kept
+            r["metric_basis"] = "author_float32 (regenerated, bit-identical to the deleted original)"
+            # the real campaign's records always carried None here, so the closure's accepted record digest is this record's
+            r.setdefault("accepted_artifacts", {})["record"] = R.sha_file(folder / "cell.json")
+    bound = tmp_path / "bound_report.json"; bound.write_text(json.dumps(rep, default=str))
+    out = R.compose_evidence(root, design, evidence=[bound], receipts=receipts)
+    props = out["cells"][unit]["properties"]
+    assert props["score"] == kept and props["score_source"] != "record"
+    assert "regenerated" in props["metric_basis"]
+    # the same row inside an object that does NOT bind supplies nothing
+    for r in rep["verification"]["rows"]:
+        if r["unit"] == unit:
+            r.setdefault("accepted_artifacts", {})["checkpoint"] = "d" * 64
+    unbound = tmp_path / "unbound_report.json"; unbound.write_text(json.dumps(rep, default=str))
+    out2 = R.compose_evidence(root, design, evidence=[unbound], receipts=receipts)
+    assert out2["cells"][unit]["properties"]["score"] is None
