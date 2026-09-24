@@ -76,3 +76,34 @@ never imports, and a historical import that creates no authority it never had.
 | INT01, INT03, INT05, INT11, INT12 | **IMPLEMENTED and VERIFIED** |
 | INT02, INT04 | NOT STARTED: need the governed adapter against the real services |
 | INT06 to INT10 | NOT STARTED: need the DOIN plugin round trip and the remaining families |
+
+## Update, 2026-09-24 05:20Z, after the integration review `5cb79c06`
+
+**PRE and POST.** The review's probe was run unchanged first and all twelve counterexamples reproduced
+([PRE](../evidence/d3_k5_20260917/RP153/PRE_probe_output.json)). Each scenario is now a rejection or recovery regression, and
+the probe was left unedited, so running it against the repaired code stops at its first scenario because the API refuses where
+it used to record a value ([POST and the scenario map](../evidence/d3_k5_20260917/RP153/README.md)).
+
+| finding | repaired |
+|---|---|
+| 1, resume misattributes work and loses attempts | identity and profile validated on resume; open attempts derived from durable events; interior corruption quarantined and refused, only a torn tail dropped |
+| 2, governed authority from truthiness | an accepted delivery is a validated contract, and a profile is not changed by resuming in either direction |
+| 3, the runtime certifies what it has not checked | a null payload under OK is invalid, an unanswerable request refuses before load and infer, a foreign or future calibration does not bind, and a provider exception keeps its class |
+| 4, records not typed or idempotent | unknown attempts, contradictory finishes, non-finite or boolean values and boolean populations all refuse; metric events have stable identities and are idempotent |
+| 5, missing R2 evidence became a positive finding | checks are computed only from typed evidence and are None otherwise; an unexpected cell is an error, not extra support |
+| 6, class entry points cannot load | a class entry point is instantiated |
+| analytics gaps | grain preserved, summed population named as such beside a distinct attempt count, an unreadable record refuses instead of being skipped, rebuilds published atomically |
+
+**The corrected contrast is running and its first seed is complete**, with the declared contract actually executed:
+
+| cell | selected epoch | restored matches selection | detector moved by its fit | observed updates |
+|---|---|---|---|---|
+| R0_s2021 | 58 | yes | yes | 35,910 |
+| R1_s2021 | 55 | yes | **no** | 35,910 |
+| R2_s2021 | 51 | yes | yes | 35,910 |
+
+The equal update allowance is now an observation rather than an arithmetic claim, and R1's detector is measurably frozen while
+R0's and R2's move. Seeds 2022 and 2023 remain. **No score is reported from this run**: the validation figures are the declared
+selection monitor, not the reference metric, and there is no H1 claim.
+
+Suites: predictor reproduction 142 passed at `b62fd5f6`; M5PHET 107 passed at `8b78114`.
