@@ -30,13 +30,27 @@ R1, now or retrospectively.
 
 ## 2. What the pre-training is, exactly
 
+**Dated correction, 2026-09-23 (RP142).** The first version of this section said the auto-encoder's internal validation uses
+the inputs of the DEV validation windows. That repeated an obsolete rule and is wrong. The rule the code actually implements,
+and the one this successor fixes, is a **purged tail of the TRAIN origins**. The earlier sentence is superseded here and in
+the dated successor to the 13E task sheet; neither is erased.
+
 Masked reconstruction of the preprocessed input: a fraction of time x channel positions is zeroed and the loss counts the
-masked positions only, with the mask travelling in the target tensor. It consumes **the DEV train windows only**; internal
-validation uses the inputs of the DEV validation windows with no label, so **no score of the task is read during
-pre-training**. The decoder is a separate per-branch 1x1 convolutional stack, saved apart and never connected at inference.
-Reconstruction error is a diagnostic and never a result of the task. One auto-encoder per seed: R1 and R2 of a seed consume
-that seed's detector file with its digest recorded per unit, and R0 of the seed shares the same initial checkpoint. Three
-seeds show optimisation variability and are not a power calculation.
+masked positions only, with the mask travelling in the target tensor. It consumes **the outer TRAIN windows only**. Its
+internal validation is a chronological tail of those same TRAIN origins, separated from the AE's own training origins by a
+purge of at least `window + horizon` origins so that no validation target draws on a row any training window saw. The outer
+validation split is **never read during pre-training**: it may later select the downstream forecasting checkpoint, as
+declared, but it is neither AE training data nor AE early-stopping data. No outer-test access for any selection, at any stage.
+
+Membership is **proved, not asserted**, before any fit: the AE validation origins are a subset of the outer TRAIN origins,
+disjoint from the outer validation origins, disjoint from the AE training origins, and separated from them by the declared
+purge; and a future perturbation of rows beyond each window's support must leave that window's inputs and targets unchanged.
+Labels being absent from a window is not evidence that it belongs to TRAIN.
+
+The decoder is a separate per-branch 1x1 convolutional stack, saved apart and never connected at inference. Reconstruction
+error is a diagnostic and never a result of the task. One auto-encoder per seed: R1 and R2 of a seed consume that seed's
+detector file with its digest recorded per unit, and R0 of the seed shares the same initial checkpoint. Three seeds show
+optimisation variability and are not a power calculation.
 
 ## 3. Held fixed across the regimes
 

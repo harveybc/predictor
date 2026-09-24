@@ -131,3 +131,21 @@ original-device replays, and what they now permit: the H96 horizon has same-devi
 without custody. (c) The binding of replay history into the root by identity, and whether the cross-root consolidation should
 be done next and by whom. (d) The provenance correction's form. (e) The measured cost projection against the 24,000 s
 allocation. (f) The next-intervention preparation, in particular whether its unmet-prerequisite table is complete.
+
+---
+
+## Dated errata, 2026-09-23 (RP140), appended and not substituted
+
+The RP136–RP139 review found one overstated phrase in this return, and the RP140 composition showed it applies more widely than
+the review's example. The text above is preserved; this is the correction beside it.
+
+**"replay BIT-EXACTLY on their original device" claimed more than the records support.** What is measured is exact: every
+element of every one of those four cells was reproduced, and the device the REPLAY ran on is measured by UUID. What is not
+recorded is which physical device TRAINED them. Running `device_attribution` over the twelve protocol-A records gives UNKNOWN
+for four cells and INFERRED_GPU_MEMORY for eight; **no cell of this campaign records a MEASURED training UUID**. The correct
+phrasing, and the one the composition now emits, is `REPLAY_EXACT_ON_OBSERVED_DEVICE`: the stored predictions are reproduced
+element for element on the observed device under a reloaded checkpoint, which is repeatability of the measurement and not
+certified same-device repeatability. The review made this point about the coordinator cell; it is equally true of the three
+H96 cells and I am correcting both rather than only the one that was named.
+
+Nothing numerical changes: the replays, the metrics and the agreement statuses stand exactly as reported.

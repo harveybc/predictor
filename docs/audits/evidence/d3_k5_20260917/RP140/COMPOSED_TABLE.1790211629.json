@@ -1,0 +1,480 @@
+{
+ "schema": "df_sota_composed_table.v1",
+ "at": "2026-09-24T01:00:29Z",
+ "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+ "source_composition": "EVIDENCE_COMPOSITION.1790211629.json",
+ "rows": [
+  {
+   "horizon": 96,
+   "published": {
+    "mse": 0.133,
+    "mae": 0.23
+   },
+   "units": [
+    "L96_h96_s2021",
+    "L96_h96_s2022",
+    "L96_h96_s2023"
+   ],
+   "poolable": [
+    "L96_h96_s2021",
+    "L96_h96_s2022",
+    "L96_h96_s2023"
+   ],
+   "not_poolable": {},
+   "per_seed": {
+    "2021": {
+     "mae": 0.23055443167686462,
+     "mse": 0.13331516087055206
+    },
+    "2022": {
+     "mae": 0.23777532577514648,
+     "mse": 0.14008182287216187
+    },
+    "2023": {
+     "mae": 0.23032169044017792,
+     "mse": 0.13309241831302643
+    }
+   },
+   "mse": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.13549646735191345,
+    "sd_ddof1": 0.003972595813449653,
+    "values": [
+     0.13331516087055206,
+     0.14008182287216187,
+     0.13309241831302643
+    ],
+    "published": 0.133,
+    "difference": 0.002496467351913445,
+    "tolerance_agree": 0.0105,
+    "tolerance_partial": 0.0155,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "mae": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.23288381596406302,
+    "sd_ddof1": 0.004237769849196395,
+    "values": [
+     0.23055443167686462,
+     0.23777532577514648,
+     0.23032169044017792
+    ],
+    "published": 0.23,
+    "difference": 0.002883815964063008,
+    "tolerance_agree": 0.0125,
+    "tolerance_partial": 0.018500000000000003,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "fidelity": {
+    "L96_h96_s2021": {
+     "class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+     "exact_equal_fraction": 1.0,
+     "observed_device": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9"
+    },
+    "L96_h96_s2022": {
+     "class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+     "exact_equal_fraction": 1.0,
+     "observed_device": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9"
+    },
+    "L96_h96_s2023": {
+     "class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+     "exact_equal_fraction": 1.0,
+     "observed_device": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9"
+    }
+   },
+   "training_device_attribution": {
+    "L96_h96_s2021": "UNKNOWN",
+    "L96_h96_s2022": "UNKNOWN",
+    "L96_h96_s2023": "UNKNOWN"
+   },
+   "matched_baselines": {
+    "L96_h96_s2021": {
+     "naive_mae": 0.9454555143179588,
+     "naive_mse": 1.5878367830840463,
+     "seasonal24_mae": 0.3257686426764087,
+     "seasonal24_mse": 0.32109503997258054,
+     "skill_mae_vs_naive": 0.7561446123594373,
+     "skill_mse_vs_naive": 0.9160397602401822
+    },
+    "L96_h96_s2022": {
+     "naive_mae": 0.9454555143179588,
+     "naive_mse": 1.5878367830840463,
+     "seasonal24_mae": 0.3257686426764087,
+     "seasonal24_mse": 0.32109503997258054,
+     "skill_mae_vs_naive": 0.7485071165402268,
+     "skill_mse_vs_naive": 0.9117782008769809
+    },
+    "L96_h96_s2023": {
+     "naive_mae": 0.9454555143179588,
+     "naive_mse": 1.5878367830840463,
+     "seasonal24_mae": 0.3257686426764087,
+     "seasonal24_mse": 0.32109503997258054,
+     "skill_mae_vs_naive": 0.7563907770140719,
+     "skill_mse_vs_naive": 0.9161800387438822
+    }
+   },
+   "complete": true
+  },
+  {
+   "horizon": 192,
+   "published": {
+    "mse": 0.154,
+    "mae": 0.248
+   },
+   "units": [
+    "L96_h192_s2021",
+    "L96_h192_s2022",
+    "L96_h192_s2023"
+   ],
+   "poolable": [
+    "L96_h192_s2021",
+    "L96_h192_s2022",
+    "L96_h192_s2023"
+   ],
+   "not_poolable": {},
+   "per_seed": {
+    "2021": {
+     "mae": 0.2559875547885895,
+     "mse": 0.1608569175004959
+    },
+    "2022": {
+     "mae": 0.2524290382862091,
+     "mse": 0.158626526594162
+    },
+    "2023": {
+     "mae": 0.24807162582874298,
+     "mse": 0.15345218777656555
+    }
+   },
+   "mse": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.15764521062374115,
+    "sd_ddof1": 0.003798649937341777,
+    "values": [
+     0.1608569175004959,
+     0.158626526594162,
+     0.15345218777656555
+    ],
+    "published": 0.154,
+    "difference": 0.003645210623741152,
+    "tolerance_agree": 0.0105,
+    "tolerance_partial": 0.0155,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "mae": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.25216273963451385,
+    "sd_ddof1": 0.003964677673311557,
+    "values": [
+     0.2559875547885895,
+     0.2524290382862091,
+     0.24807162582874298
+    ],
+    "published": 0.248,
+    "difference": 0.004162739634513857,
+    "tolerance_agree": 0.0125,
+    "tolerance_partial": 0.018500000000000003,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "fidelity": {
+    "L96_h192_s2021": {
+     "class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+     "exact_equal_fraction": 1.0,
+     "observed_device": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326"
+    },
+    "L96_h192_s2022": {
+     "class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+     "exact_equal_fraction": 1.0,
+     "observed_device": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
+    },
+    "L96_h192_s2023": {
+     "class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+     "exact_equal_fraction": 1.0,
+     "observed_device": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
+    }
+   },
+   "training_device_attribution": {
+    "L96_h192_s2021": "UNKNOWN",
+    "L96_h192_s2022": "INFERRED_GPU_MEMORY",
+    "L96_h192_s2023": "INFERRED_GPU_MEMORY"
+   },
+   "matched_baselines": {
+    "L96_h192_s2021": {
+     "naive_mae": 0.9507093728703696,
+     "naive_mse": 1.596173635303633,
+     "seasonal24_mae": 0.32374135880743793,
+     "seasonal24_mse": 0.30431957094569156,
+     "skill_mae_vs_naive": 0.7307404527012992,
+     "skill_mse_vs_naive": 0.8992234234161179
+    },
+    "L96_h192_s2022": {
+     "naive_mae": 0.9507093728703696,
+     "naive_mse": 1.596173635303633,
+     "seasonal24_mae": 0.32374135880743793,
+     "seasonal24_mse": 0.30431957094569156,
+     "skill_mae_vs_naive": 0.73448346647304,
+     "skill_mse_vs_naive": 0.9006207515750838
+    },
+    "L96_h192_s2023": {
+     "naive_mae": 0.9507093728703696,
+     "naive_mse": 1.596173635303633,
+     "seasonal24_mae": 0.32374135880743793,
+     "seasonal24_mse": 0.30431957094569156,
+     "skill_mae_vs_naive": 0.7390668023917605,
+     "skill_mse_vs_naive": 0.903862464944214
+    }
+   },
+   "complete": true
+  },
+  {
+   "horizon": 336,
+   "published": {
+    "mse": 0.162,
+    "mae": 0.261
+   },
+   "units": [
+    "L96_h336_s2021",
+    "L96_h336_s2022",
+    "L96_h336_s2023"
+   ],
+   "poolable": [
+    "L96_h336_s2021",
+    "L96_h336_s2022",
+    "L96_h336_s2023"
+   ],
+   "not_poolable": {},
+   "per_seed": {
+    "2021": {
+     "mae": 0.2606664001941681,
+     "mse": 0.1625940501689911
+    },
+    "2022": {
+     "mae": 0.26741331815719604,
+     "mse": 0.16817493736743927
+    },
+    "2023": {
+     "mae": 0.26087433099746704,
+     "mse": 0.16267016530036926
+    }
+   },
+   "mse": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.16447971761226654,
+    "sd_ddof1": 0.0032003804707519206,
+    "values": [
+     0.1625940501689911,
+     0.16817493736743927,
+     0.16267016530036926
+    ],
+    "published": 0.162,
+    "difference": 0.0024797176122665354,
+    "tolerance_agree": 0.0105,
+    "tolerance_partial": 0.0155,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "mae": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.26298468311627704,
+    "sd_ddof1": 0.0038367193080784223,
+    "values": [
+     0.2606664001941681,
+     0.26741331815719604,
+     0.26087433099746704
+    ],
+    "published": 0.261,
+    "difference": 0.0019846831162770306,
+    "tolerance_agree": 0.0125,
+    "tolerance_partial": 0.018500000000000003,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "fidelity": {
+    "L96_h336_s2021": {
+     "class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+     "exact_equal_fraction": 1.0,
+     "observed_device": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
+    },
+    "L96_h336_s2022": {
+     "class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+     "exact_equal_fraction": 1.0,
+     "observed_device": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
+    },
+    "L96_h336_s2023": {
+     "class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+     "exact_equal_fraction": 1.0,
+     "observed_device": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
+    }
+   },
+   "training_device_attribution": {
+    "L96_h336_s2021": "INFERRED_GPU_MEMORY",
+    "L96_h336_s2022": "INFERRED_GPU_MEMORY",
+    "L96_h336_s2023": "INFERRED_GPU_MEMORY"
+   },
+   "matched_baselines": {
+    "L96_h336_s2021": {
+     "naive_mae": 0.9613233562891667,
+     "naive_mse": 1.6178496659215122,
+     "seasonal24_mae": 0.3426867908046854,
+     "seasonal24_mse": 0.3273082828720005,
+     "skill_mae_vs_naive": 0.7288462807641054,
+     "skill_mse_vs_naive": 0.899499906754358
+    },
+    "L96_h336_s2022": {
+     "naive_mae": 0.9613233562891667,
+     "naive_mse": 1.6178496659215122,
+     "seasonal24_mae": 0.3426867908046854,
+     "seasonal24_mse": 0.3273082828720005,
+     "skill_mae_vs_naive": 0.7218279261304279,
+     "skill_mse_vs_naive": 0.8960503370254654
+    },
+    "L96_h336_s2023": {
+     "naive_mae": 0.9613233562891667,
+     "naive_mse": 1.6178496659215122,
+     "seasonal24_mae": 0.3426867908046854,
+     "seasonal24_mse": 0.3273082828720005,
+     "skill_mae_vs_naive": 0.728629950300929,
+     "skill_mse_vs_naive": 0.8994528569179354
+    }
+   },
+   "complete": true
+  },
+  {
+   "horizon": 720,
+   "published": {
+    "mse": 0.184,
+    "mae": 0.284
+   },
+   "units": [
+    "L96_h720_s2021",
+    "L96_h720_s2022",
+    "L96_h720_s2023"
+   ],
+   "poolable": [
+    "L96_h720_s2021",
+    "L96_h720_s2022",
+    "L96_h720_s2023"
+   ],
+   "not_poolable": {},
+   "per_seed": {
+    "2021": {
+     "mae": 0.28751975297927856,
+     "mse": 0.18713927268981934
+    },
+    "2022": {
+     "mae": 0.29864874482154846,
+     "mse": 0.19817017018795013
+    },
+    "2023": {
+     "mae": 0.28568392992019653,
+     "mse": 0.1853676587343216
+    }
+   },
+   "mse": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.19022570053736368,
+    "sd_ddof1": 0.006936901507419969,
+    "values": [
+     0.18713927268981934,
+     0.19817017018795013,
+     0.1853676587343216
+    ],
+    "published": 0.184,
+    "difference": 0.006225700537363682,
+    "tolerance_agree": 0.0105,
+    "tolerance_partial": 0.0155,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "mae": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.29061747590700787,
+    "sd_ddof1": 0.007015591340672149,
+    "values": [
+     0.28751975297927856,
+     0.29864874482154846,
+     0.28568392992019653
+    ],
+    "published": 0.284,
+    "difference": 0.006617475907007897,
+    "tolerance_agree": 0.0125,
+    "tolerance_partial": 0.018500000000000003,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "fidelity": {
+    "L96_h720_s2021": {
+     "class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+     "exact_equal_fraction": 1.0,
+     "observed_device": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+    },
+    "L96_h720_s2022": {
+     "class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+     "exact_equal_fraction": 1.0,
+     "observed_device": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+    },
+    "L96_h720_s2023": {
+     "class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+     "exact_equal_fraction": 1.0,
+     "observed_device": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+    }
+   },
+   "training_device_attribution": {
+    "L96_h720_s2021": "INFERRED_GPU_MEMORY",
+    "L96_h720_s2022": "INFERRED_GPU_MEMORY",
+    "L96_h720_s2023": "INFERRED_GPU_MEMORY"
+   },
+   "matched_baselines": {
+    "L96_h720_s2021": {
+     "naive_mae": 0.9753622507679967,
+     "naive_mse": 1.646760789291007,
+     "seasonal24_mae": 0.37328394060998743,
+     "seasonal24_mse": 0.36698765348650936,
+     "skill_mae_vs_naive": 0.7052174820598769,
+     "skill_mse_vs_naive": 0.8863591597576271
+    },
+    "L96_h720_s2022": {
+     "naive_mae": 0.9753622507679967,
+     "naive_mse": 1.646760789291007,
+     "seasonal24_mae": 0.37328394060998743,
+     "seasonal24_mse": 0.36698765348650936,
+     "skill_mae_vs_naive": 0.693807371680611,
+     "skill_mse_vs_naive": 0.8796606187689952
+    },
+    "L96_h720_s2023": {
+     "naive_mae": 0.9753622507679967,
+     "naive_mse": 1.646760789291007,
+     "seasonal24_mae": 0.37328394060998743,
+     "seasonal24_mse": 0.36698765348650936,
+     "skill_mae_vs_naive": 0.7070996789078465,
+     "skill_mse_vs_naive": 0.8874349862262717
+    }
+   },
+   "complete": true
+  }
+ ],
+ "pooling_rule": "a cell is pooled when its terminal is accepted, a closure verified it now or historically, and a replay bound to its own record, checkpoint and prediction identities passes the frozen rule atol/rtol 1e-4",
+ "agreement_rule": "|mean - published| <= 2*sigma_paper + 0.0005, a PREDECLARED OPERATIONAL BAND: not statistical equivalence and not exact equality to a rounded published table",
+ "four_horizon_mean": {
+  "status": "COMPUTED",
+  "denominator": 4,
+  "mse": 0.1619617740313212,
+  "mae": 0.2596621786554655,
+  "published": {
+   "mse": 0.15825,
+   "mae": 0.25575
+  },
+  "scope": "the unweighted mean over the four horizons of each horizon's seed mean, on the pooling rule above; the published side is the same unweighted mean of the published per-horizon values"
+ },
+ "device_attribution_scope": {
+  "classes_present": [
+   "INFERRED_GPU_MEMORY",
+   "UNKNOWN"
+  ],
+  "reading": "NO cell of this campaign records a MEASURED training-device UUID. Exact reproduction on an observed device is numerical repeatability of the stored predictions under a reloaded checkpoint; it does not establish which physical device produced them. Every 'same device' phrase about this campaign is qualified by this line."
+ }
+}
