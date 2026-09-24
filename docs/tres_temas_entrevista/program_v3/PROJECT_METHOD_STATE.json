@@ -1,5 +1,20 @@
 {
  "schema": "research_program_method_state.v1",
+ "rp155_review": {
+  "candidate": "ebe35fb3",
+  "experimental_commit": "99a1630a",
+  "status": "TRAINING_RETAINED_SCORING_SUCCESSOR_REQUIRED_NO_GLOBAL_HOLD",
+  "scope": "Published per-cell arithmetic, source and bounded CPU probes; no checkpoint inference or live warehouse/job inspection",
+  "reported_R2_vs_R0": "-0.002402791 MAE, 0.647 percent relative improvement, favorable in 3/3 published seed pairs; descriptive population has label overlap with selection",
+  "findings": ["95 complement windows share monitor target labels", "scoring aggregates missing cells and identity failures", "float64 scoring differs from declared author float32 reducer"],
+  "label_disjoint_scoring_origins": "735..2536 inclusive, 1802 windows; infer from saved checkpoints, do not retrain",
+  "orders_not_in_return_ancestry": ["032aaa52", "7e924bf5"],
+  "review": "../../audits/work_plan/MUSASHI_RP155_REVIEW_2026_09_24.md",
+  "orders": "../../handoffs/SATOSHI_RP155_REVIEW_AND_EXECUTION_2026_09_24.md",
+  "next_application_delivery": "RP147 pinned real Laya SDK/checkpoint -> M5PHET -> news-signal pilot, within existing budget; independent CPU lanes continue",
+  "new_compute_budget": false,
+  "global_hold": false
+ },
  "active_assignment_reconciliation_20260924": {
   "source_branch_tip": "b75097d3",
   "scope": "Fetched commit ancestry and published returns/evidence; not live process, warehouse or account inspection",
@@ -388,7 +403,7 @@
  "next_allowed_actions": [
   "Read SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md first; reconcile all lanes, not only M5PHET",
   "RP144-RP145: A retained, B closure reports 12/12; review actual closure evidence, no repeat fit queue from historical status",
-  "RP146: corrected H96 R0/R1/R2 successor reported on second seed; refresh actual lease, cells and residual 14400CPU/8h allocation, complete/replay/score only missing work; no public-test tuning or budget reset",
+  "RP146/RP155: training finished, reported metrics retained; fix target-support and scoring acceptance, re-score saved checkpoints on sealed label-disjoint validation subset under remaining allocation; no retraining, test selection or budget reset",
   "RP147: isolated real Laya checkpoint pilot on admitted coordinator candidate,600CPU/900wall excluding install/download; no silent GPU fallback",
   "RP148-RP149: prospective governed news and shadow service, then isolated MT5 demo and Alpaca paper through existing LTS risk; do not replace active strategies",
   "RP150-RP151: financial producer evidence/reference, calendar as-of transforms, M5PHET implementation and real optional integration in parallel; one all-lane return, no routine continue prompts",

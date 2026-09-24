@@ -4,13 +4,13 @@
   "dispatcher": "Satoshi",
   "policy": "CONCURRENT_EXECUTION_2026_09_23.md",
   "runtime_enforcement": "Existing runners/admission; this is a persistent ordered manifest, not a newly installed scheduler",
-  "next_orders": "../../handoffs/SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md",
+  "next_orders": "../../handoffs/SATOSHI_RP155_REVIEW_AND_EXECUTION_2026_09_24.md",
   "latest_return": {
-    "commit": "b75097d3",
+    "commit": "ebe35fb3",
     "status": "REPORTED_NOT_FRESHLY_REMEASURED_BY_THIS_UPDATE",
     "A": "12-cell consolidation reported, MSE0.161962/MAE0.259662; composition audit scoped separately",
     "B": "RP145 closure reports 12/12 verified, MSE/MAE 0.150307/0.246397, 16167/24000CPU; review retained closure, no duplicate fit queue",
-    "doctoral": "Corrected successor first seed complete in published status; owner reports second seed at 6138/14400CPU. Refresh actual ownership/cells/budget before dispatch",
+    "doctoral": "RP155 reports training finished 12 cells, 11415.44 CPU s excluding later scoring; Musashi requires additive scoring-only successor due target overlap and closure gaps. No retraining",
     "historical_executor_fields_below": "Executor AND cells preserve the last direct RP139 observation, not current dispatch authority; rederive current per-cell state from accepted records before any dispatch"
   },
   "parallel_news_lane": {
@@ -67,7 +67,7 @@
     "production_deletions_allowed": false
   },
   "upcoming_design_work": [
-    {"task": "Doctoral extractor/pretraining intervention against accepted reference", "status": "CORRECTED_RP146_SUCCESSOR_REPORTED_IN_PROGRESS_REFRESH_BEFORE_DISPATCH", "requires": "Existing sealed successor and remaining14400CPU/8h allocation; complete missing cells, fresh-process replay and full-population closure; no duplicate RP142 pilot or reset"},
+    {"task": "Doctoral extractor/pretraining intervention against accepted reference", "status": "TRAINING_RETAINED_RP155_SCORING_SUCCESSOR_REQUIRED", "requires": "Fix scoring acceptance and target support, seal 1802 label-disjoint windows, infer existing selected checkpoints under actual remaining allocation; include all scoring costs, no training reset"},
     {"task": "FIN-LOSS-OPT", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Financial resource temporal contract, matched financial reference and existing finance design; no heldout access"},
     {"task": "Weekly forecasting and RL", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Existing E3 business/data/execution contracts and domain-specific model reference; keep RL separate from forecasting metrics"}
   ]

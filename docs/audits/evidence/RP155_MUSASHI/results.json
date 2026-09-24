@@ -1,0 +1,106 @@
+{
+  "candidate": "ebe35fb3",
+  "cases": {
+    "changed_checkpoint": {
+      "problems": [],
+      "reconciliation": {
+        "all_model_identities_match": false,
+        "cells_expected": 9,
+        "cells_scored": 9
+      },
+      "regimes_summarized": [
+        "R0",
+        "R1",
+        "R2"
+      ],
+      "seeds_summarized": {
+        "R0": 3,
+        "R1": 3,
+        "R2": 3
+      }
+    },
+    "empty_population": {
+      "problems": [],
+      "reconciliation": {
+        "all_model_identities_match": true,
+        "cells_expected": 0,
+        "cells_scored": 0
+      },
+      "regimes_summarized": [],
+      "seeds_summarized": {}
+    },
+    "missing_registered_cell": {
+      "problems": [],
+      "reconciliation": {
+        "all_model_identities_match": true,
+        "cells_expected": 8,
+        "cells_scored": 8
+      },
+      "regimes_summarized": [
+        "R0",
+        "R1",
+        "R2"
+      ],
+      "seeds_summarized": {
+        "R0": 3,
+        "R1": 3,
+        "R2": 2
+      }
+    },
+    "positive": {
+      "problems": [],
+      "reconciliation": {
+        "all_model_identities_match": true,
+        "cells_expected": 9,
+        "cells_scored": 9
+      },
+      "regimes_summarized": [
+        "R0",
+        "R1",
+        "R2"
+      ],
+      "seeds_summarized": {
+        "R0": 3,
+        "R1": 3,
+        "R2": 3
+      }
+    }
+  },
+  "reported_metric_recalculation": {
+    "R0": {
+      "mean": 0.37138277460559993,
+      "sd_ddof1": 0.0015989375900270285
+    },
+    "R1": {
+      "mean": 0.3746118389996602,
+      "sd_ddof1": 0.0006188789715473842
+    },
+    "R2": {
+      "mean": 0.36897998350751915,
+      "sd_ddof1": 0.0004250521469165871
+    },
+    "R2_relative_MAE_reduction": 0.006469850683388567,
+    "paired_R1_minus_R0": [
+      0.004954032132395314,
+      0.0026484717383802314,
+      0.002084689311405208
+    ],
+    "paired_R2_minus_R0": [
+      -0.0012786369164179412,
+      -0.0018611488057764247,
+      -0.004068587572047977
+    ],
+    "scope": "Recomputed from published per-cell scores, not from prediction arrays"
+  },
+  "scope": "Bounded CPU review of actual RP155 scoring orchestration and window adapter.\n\nChild results are published fixtures, not new model inference. The subprocess\ntransport is replaced to attack acceptance, while the real score_contrast runs.\nWindow values encode row identity to measure target-support intersection through\nthe actual _TrainWindows implementation. No GPU, services or original run writes.\n",
+  "target_support": {
+    "complement_windows_with_shared_labels": 95,
+    "first_label_disjoint_local_origin": 735,
+    "label_disjoint_windows": 1802,
+    "monitor_windows": 640,
+    "repeated_target_channel_elements_in_complement": 1463760,
+    "reported_complement_windows": 1897,
+    "scope": "Row/channel identity, not statistical independence; causal input-context reuse need not be removed",
+    "shared_target_timestamps": 95
+  }
+}
