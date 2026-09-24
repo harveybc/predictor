@@ -6,11 +6,11 @@
   "runtime_enforcement": "Existing runners/admission; this is a persistent ordered manifest, not a newly installed scheduler",
   "next_orders": "../../handoffs/SATOSHI_RP155_REVIEW_AND_EXECUTION_2026_09_24.md",
   "latest_return": {
-    "commit": "ebe35fb3",
+    "commit": "b3a064d5",
     "status": "REPORTED_NOT_FRESHLY_REMEASURED_BY_THIS_UPDATE",
     "A": "12-cell consolidation reported, MSE0.161962/MAE0.259662; composition audit scoped separately",
     "B": "RP145 closure reports 12/12 verified, MSE/MAE 0.150307/0.246397, 16167/24000CPU; review retained closure, no duplicate fit queue",
-    "doctoral": "RP155 reports training finished 12 cells, 11415.44 CPU s excluding later scoring; Musashi requires additive scoring-only successor due target overlap and closure gaps. No retraining",
+    "doctoral": "RP156 corrected 1802-window scoring reported, R2 relative MAE improvement 0.694385 percent. Support accepted at CPU-oracle scope; remaining design/child-result closure gaps. Reuse retained evidence, no routine re-inference or retraining",
     "historical_executor_fields_below": "Executor AND cells preserve the last direct RP139 observation, not current dispatch authority; rederive current per-cell state from accepted records before any dispatch"
   },
   "parallel_news_lane": {
@@ -67,7 +67,7 @@
     "production_deletions_allowed": false
   },
   "upcoming_design_work": [
-    {"task": "Doctoral extractor/pretraining intervention against accepted reference", "status": "TRAINING_RETAINED_RP155_SCORING_SUCCESSOR_REQUIRED", "requires": "Fix scoring acceptance and target support, seal 1802 label-disjoint windows, infer existing selected checkpoints under actual remaining allocation; include all scoring costs, no training reset"},
+    {"task": "Doctoral extractor/pretraining intervention against accepted reference", "status": "RP156_SCORES_RETAINED_AUTHORITY_AND_CHILD_VALIDATION_REQUIRED", "requires": "Revalidate retained results against accepted design and complete typed child contracts; no routine re-inference, only specific missing-evidence repair within budget. RP147 actual Laya pilot independent and due"},
     {"task": "FIN-LOSS-OPT", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Financial resource temporal contract, matched financial reference and existing finance design; no heldout access"},
     {"task": "Weekly forecasting and RL", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Existing E3 business/data/execution contracts and domain-specific model reference; keep RL separate from forecasting metrics"}
   ]
