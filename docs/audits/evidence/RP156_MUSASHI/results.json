@@ -1,0 +1,176 @@
+{
+  "candidate": "b3a064d5",
+  "cases": {
+    "baseline": {
+      "design_digests_equal": true,
+      "label_disjoint_seeds": {
+        "R0": 3,
+        "R1": 3,
+        "R2": 3
+      },
+      "problems": [],
+      "reconciliation": {
+        "cells_expected": 9,
+        "cells_scored": 9,
+        "complete": true,
+        "identity_failures": []
+      },
+      "status": "COMPLETE",
+      "summary_contains_nan": false,
+      "summary_present": true
+    },
+    "empty_declared_design": {
+      "design_digests_equal": true,
+      "label_disjoint_seeds": {},
+      "problems": [],
+      "reconciliation": {
+        "cells_expected": 0,
+        "cells_scored": 0,
+        "complete": true,
+        "identity_failures": []
+      },
+      "status": "COMPLETE",
+      "summary_contains_nan": false,
+      "summary_present": true
+    },
+    "foreign_design_digest": {
+      "design_digests_equal": false,
+      "label_disjoint_seeds": {
+        "R0": 3,
+        "R1": 3,
+        "R2": 3
+      },
+      "problems": [],
+      "reconciliation": {
+        "cells_expected": 9,
+        "cells_scored": 9,
+        "complete": true,
+        "identity_failures": []
+      },
+      "status": "COMPLETE",
+      "summary_contains_nan": false,
+      "summary_present": true
+    },
+    "foreign_horizon": {
+      "design_digests_equal": true,
+      "label_disjoint_seeds": {
+        "R0": 3,
+        "R1": 3,
+        "R2": 3
+      },
+      "problems": [],
+      "reconciliation": {
+        "cells_expected": 9,
+        "cells_scored": 9,
+        "complete": true,
+        "identity_failures": []
+      },
+      "status": "COMPLETE",
+      "summary_contains_nan": false,
+      "summary_present": true
+    },
+    "identity_false": {
+      "design_digests_equal": true,
+      "label_disjoint_seeds": {},
+      "problems": [],
+      "reconciliation": {
+        "cells_expected": 9,
+        "cells_scored": 9,
+        "complete": false,
+        "identity_failures": [
+          "R2_s2023"
+        ]
+      },
+      "status": "INCOMPLETE_EVIDENCE",
+      "summary_contains_nan": false,
+      "summary_present": false
+    },
+    "missing_cell": {
+      "design_digests_equal": true,
+      "label_disjoint_seeds": {},
+      "problems": [
+        "R2_s2023: the registered design declares it and the run holds no such cell"
+      ],
+      "reconciliation": {
+        "cells_expected": 9,
+        "cells_scored": 8,
+        "complete": false,
+        "identity_failures": []
+      },
+      "status": "INCOMPLETE_EVIDENCE",
+      "summary_contains_nan": false,
+      "summary_present": false
+    },
+    "missing_population": {
+      "design_digests_equal": true,
+      "label_disjoint_seeds": {
+        "R0": 3,
+        "R1": 3,
+        "R2": 2
+      },
+      "problems": [],
+      "reconciliation": {
+        "cells_expected": 9,
+        "cells_scored": 9,
+        "complete": true,
+        "identity_failures": []
+      },
+      "status": "COMPLETE",
+      "summary_contains_nan": false,
+      "summary_present": true
+    },
+    "nan_metric": {
+      "design_digests_equal": true,
+      "label_disjoint_seeds": {
+        "R0": 3,
+        "R1": 3,
+        "R2": 3
+      },
+      "problems": [],
+      "reconciliation": {
+        "cells_expected": 9,
+        "cells_scored": 9,
+        "complete": true,
+        "identity_failures": []
+      },
+      "status": "COMPLETE",
+      "summary_contains_nan": true,
+      "summary_present": true
+    }
+  },
+  "checkpoint_mismatch_before_model": true,
+  "published_arithmetic_not_array_reduction": {
+    "R0": {
+      "mean": 0.37117380897204083,
+      "sd_ddof1": 0.0015336464318612875
+    },
+    "R1": {
+      "mean": 0.3745835026105245,
+      "sd_ddof1": 0.0007333176580871724
+    },
+    "R2": {
+      "mean": 0.3685964345932007,
+      "sd_ddof1": 0.0006488872403592787
+    },
+    "R2_relative_reduction": 0.006943847643717471,
+    "paired_R1_minus_R0": [
+      0.004801124334335327,
+      0.0028741657733917236,
+      0.002553790807723999
+    ],
+    "paired_R2_minus_R0": [
+      -0.0017117559909820557,
+      -0.0017015635967254639,
+      -0.004318803548812866
+    ]
+  },
+  "scope": "RP156 independent CPU acceptance probes; no model inference or live resources.\n\nReal scoring orchestration with published child fixtures at the subprocess\nboundary. Assertions characterize repairs and remaining acceptance defects.\n",
+  "support": {
+    "first_disjoint_origin": 735,
+    "last_monitor_target_row": 830,
+    "monitor_windows": 640,
+    "n_disjoint": 1802,
+    "n_overlapping_after_monitor": 95,
+    "rule": "an origin is label-disjoint when its FIRST target row is after the monitor's last target row; sharing an input context is not sharing a label"
+  }
+}

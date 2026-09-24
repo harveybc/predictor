@@ -1,5 +1,17 @@
 {
  "schema": "research_program_method_state.v1",
+ "rp156_review": {
+  "candidate": "b3a064d5cdba3fb4dd49087d0516ac4c300cda6b",
+  "status": "CORRECTED_DEVELOPMENT_SCORES_RETAINED_ACCEPTANCE_GAPS_APPLICATIONS_STILL_DUE",
+  "scope": "Source and published arithmetic, CPU support/checkpoint/parent-scorer probes; no original-array reduction or live resources",
+  "accepted_repairs": ["1802 label-disjoint windows derived correctly", "missing expected cell suppresses summary", "mismatched checkpoint refused before model load", "author float32 and float64 named separately"],
+  "remaining_findings": ["supplied or reconstructed design not authenticated or digest-compared; empty design completes", "missing child population, wrong horizon and nonfinite metric can complete"],
+  "reported_R2_relative_MAE_improvement": 0.006943847643717471,
+  "next_action": "Validate retained RP156 evidence under actual accepted design; no routine re-inference. Start already assigned real Laya setup/admission/pilot and independent CPU application lanes",
+  "orders_and_review": "../../audits/work_plan/MUSASHI_RP156_REVIEW_2026_09_24.md",
+  "new_compute_budget": false,
+  "global_hold": false
+ },
  "rp155_review": {
   "candidate": "ebe35fb3",
   "experimental_commit": "99a1630a",
@@ -419,7 +431,7 @@
  "next_allowed_actions": [
   "Read SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md first; reconcile all lanes, not only M5PHET",
   "RP144-RP145: A retained, B closure reports 12/12; review actual closure evidence, no repeat fit queue from historical status",
-  "RP146/RP155: training finished, reported metrics retained; fix target-support and scoring acceptance, re-score saved checkpoints on sealed label-disjoint validation subset under remaining allocation; no retraining, test selection or budget reset",
+  "RP146/RP156: corrected label-disjoint scores retained; finish design/child-result validation by reusing retained evidence, no routine inference or training repeat; count all scoring costs",
   "RP147: isolated real Laya checkpoint pilot on admitted coordinator candidate,600CPU/900wall excluding install/download; no silent GPU fallback",
   "RP148-RP149: prospective governed news and shadow service, then isolated MT5 demo and Alpaca paper through existing LTS risk; do not replace active strategies",
   "RP150-RP151: financial producer evidence/reference, calendar as-of transforms, M5PHET implementation and real optional integration in parallel; one all-lane return, no routine continue prompts",

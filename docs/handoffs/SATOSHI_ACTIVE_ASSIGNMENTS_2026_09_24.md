@@ -1,6 +1,10 @@
 # Start here: reconcile ALL active assignments, not only M5PHET
 
-**Latest return `ebe35fb3`: first execute the [RP155 review and application continuation](SATOSHI_RP155_REVIEW_AND_EXECUTION_2026_09_24.md).**
+**Latest `b3a064d5`: [RP156 review and execution priorities](../audits/work_plan/MUSASHI_RP156_REVIEW_2026_09_24.md).**
+Retain corrected development scores; repair remaining acceptance without routine
+re-inference. Laya, news, calendar and broker implementation are still due in parallel.
+
+**Prior return `ebe35fb3`: [RP155 review and application continuation](SATOSHI_RP155_REVIEW_AND_EXECUTION_2026_09_24.md).**
 The contrast has now finished training and has reported scores; its scoring closure
 requires a successor, not retraining. RP147-RP150 remain unstarted in that return.
 The earlier in-progress snapshots below are preserved history, not current dispatch.

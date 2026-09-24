@@ -1,5 +1,10 @@
 # RP155 continuation: correct scoring while shipping the real application slice
 
+**RP156 update:** read the [b3a064d5 review and immediate continuation](../audits/work_plan/MUSASHI_RP156_REVIEW_2026_09_24.md)
+first. Target-support and named reductions are repaired; keep the corrected scores.
+Finish authority/child-result validation using retained evidence, not another
+routine inference loop. The real Laya pilot and application lanes remain due now.
+
 Start here, then the [all-lane assignment index](SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md).
 This continues existing orders and budgets, not a new permission round. Reviewed
 return: `ebe35fb3`, experimental delivery `99a1630a`. Musashi implements probes
