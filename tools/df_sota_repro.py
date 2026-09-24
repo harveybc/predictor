@@ -4216,7 +4216,48 @@ def _evidence_kind(payload: dict) -> str:
         return "binding"
     if schema.startswith("musashi.live_custody_followup"):
         return "custody_audit"
+    if _replay_history_entries(payload):
+        return "replay_history"
     return "unknown"
+
+
+
+def _replay_history_entries(payload: dict) -> dict:
+    """The retained replay histories come in three recorded shapes: {unit: record}, {unit: {key: record}} and
+    {"cells": {unit: record}}. All three are read; nothing is guessed from a filename."""
+    if not isinstance(payload, dict):
+        return {}
+    source = payload.get("cells") if isinstance(payload.get("cells"), dict) else payload
+    out = {}
+    for unit, value in (source or {}).items():
+        if not isinstance(value, dict):
+            continue
+        if value.get("unit") == unit and ("max_abs_prediction_difference" in value or "allclose_rule" in value):
+            out.setdefault(unit, []).append(value)
+        else:
+            for _key, inner in value.items():
+                if isinstance(inner, dict) and inner.get("unit") == unit:
+                    out.setdefault(unit, []).append(inner)
+    return out
+
+
+def _bind_replay_record(entry: dict, ident: dict) -> tuple:
+    """How strongly a retained replay record is bound to this root's cell: by the digests it recorded, or - when it recorded
+    none - by reproducing the record's own author metric bit for bit at the record's shape. Anything else is unbound."""
+    identity = entry.get("identity") or {}
+    if identity:
+        mismatch = [k for k, v in (("checkpoint_sha256", ident.get("checkpoint_sha256")),
+                                   ("pred_sha256", ident.get("pred_body_sha256_recorded")),
+                                   ("arrays_sha256", ident.get("predictions_sha256_recorded")))
+                    if identity.get(k) is not None and v is not None and identity.get(k) != v]
+        if mismatch:
+            return (False, "IDENTITY_DIFFERS", f"IDENTITY_DIFFERS: the retained replay records another {mismatch[0]}")
+        if any(identity.get(k) is not None for k in ("checkpoint_sha256", "pred_sha256", "arrays_sha256")):
+            return (True, "IDENTITY_BOUND", None)
+    got, want = entry.get("replayed_author_metric") or {}, ident.get("author_metric_float32") or {}
+    if got and want and all(got.get(m) == want.get(m) for m in ("mae", "mse")):
+        return (True, "METRIC_AND_SHAPE_BOUND", None)
+    return (False, "UNBOUND", "UNBOUND: the retained replay records no identity and does not reproduce the record's own metric exactly")
 
 
 def _root_identity(root: Path, unit: str) -> dict:
@@ -4378,6 +4419,24 @@ def _claim_for(payload: dict, entry: dict, unit: str, ident: dict) -> dict | Non
         base.update({"bound": bool(equal and ids.get("row_verified")),
                      "why": None if equal else "IDENTITY_DIFFERS: the binding's staged objects are not this root's",
                      "replay": ids.get("replay"), "closure": None})
+        return base
+    if kind == "replay_history":
+        entries = _replay_history_entries(payload).get(unit) or []
+        if not entries:
+            return None
+        best, strength, why = None, None, None
+        for e in entries:
+            ok, how, reason = _bind_replay_record(e, ident)
+            if not ok:
+                why = why or reason; continue
+            score = (bool(e.get("allclose_rule")), (e.get("exact_equal_elements") or 0))
+            if best is None or score > best[0]:
+                best, strength = (score, e), how
+        if best is None:
+            base.update({"bound": False, "why": why or "UNBOUND", "replay": None, "closure": None})
+            return base
+        base.update({"bound": True, "why": None, "binding_strength": strength, "replay": best[1], "closure": None,
+                     "retained_history": True})
         return base
     if kind == "custody_audit":
         if payload.get("unit") != unit:

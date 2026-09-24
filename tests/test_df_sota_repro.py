@@ -2495,3 +2495,44 @@ def test_RP140_the_composed_table_pools_only_what_the_composition_establishes(wo
     assert row2["poolable"] == [] and not row2["complete"]
     assert unit in row2["not_poolable"] and "no bound replay passes the frozen rule" in row2["not_poolable"][unit]
     assert tbl2["four_horizon_mean"]["status"] == "NOT_COMPUTED"
+
+
+def test_RP140_a_retained_replay_history_is_bound_by_its_recorded_identity_or_by_its_own_metric(world, tmp_path, monkeypatch):
+    """The deleted cells keep prior replay evidence in the retained histories. It must not be discarded merely because it lives in
+    another file shape, and it must not be admitted when it belongs to another checkpoint."""
+    root, unit, design, _ = _composed(world, tmp_path, monkeypatch, "hist_ok")
+    rec = json.loads((root / "attempts" / unit / "cell.json").read_text())
+    metric = rec["author_metric_float32"]
+    ckpt = R.sha_file(root / "attempts" / unit / "checkpoint.pth")
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    # shape {unit: {key: record}}, bound by the checkpoint digest it recorded
+    h1 = tmp_path / "hist_nested.json"
+    h1.write_text(json.dumps({unit: {"cuda:0@t": {"unit": unit, "device": "cuda:0", "device_uuid": "GPU-history",
+                                                 "max_abs_prediction_difference": 0.0, "allclose_rule": True,
+                                                 "exact_equal_elements": 10, "elements": 10, "exact_equal_fraction": 1.0,
+                                                 "identity": {"checkpoint_sha256": ckpt}}}}))
+    out1 = R.compose_evidence(root, design, evidence=[h1], receipts=receipts)
+    claim = out1["cells"][unit]["admitted"][0]
+    assert claim["kind"] == "replay_history" and claim["binding_strength"] == "IDENTITY_BOUND"
+    assert out1["cells"][unit]["properties"]["replay"]["exact_equal_fraction"] == 1.0
+    # shape {"cells": {unit: record}} with no identity block, bound by reproducing the record's own metric exactly
+    h2 = tmp_path / "hist_cells.json"
+    h2.write_text(json.dumps({"cells": {unit: {"unit": unit, "device": "cuda:0", "device_uuid": "GPU-history",
+                                               "max_abs_prediction_difference": 0.0, "allclose_rule": True,
+                                               "exact_equal_elements": 10, "elements": 10, "exact_equal_fraction": 1.0,
+                                               "replayed_author_metric": metric}}}))
+    out2 = R.compose_evidence(root, design, evidence=[h2], receipts=receipts)
+    assert out2["cells"][unit]["admitted"][0]["binding_strength"] == "METRIC_AND_SHAPE_BOUND"
+    # a history whose recorded checkpoint is another one is refused
+    h3 = tmp_path / "hist_foreign.json"
+    h3.write_text(json.dumps({unit: {"unit": unit, "device": "cuda:0", "max_abs_prediction_difference": 0.0,
+                                     "allclose_rule": True, "identity": {"checkpoint_sha256": "c" * 64}}}))
+    out3 = R.compose_evidence(root, design, evidence=[h3], receipts=receipts)
+    assert not out3["cells"][unit]["admitted"]
+    assert "IDENTITY_DIFFERS" in str(out3["cells"][unit]["refused"][0]["why"])
+    # and one that neither records an identity nor reproduces the metric
+    h4 = tmp_path / "hist_unbound.json"
+    h4.write_text(json.dumps({unit: {"unit": unit, "device": "cuda:0", "max_abs_prediction_difference": 0.0,
+                                     "allclose_rule": True, "replayed_author_metric": {"mae": 1.0, "mse": 1.0}}}))
+    out4 = R.compose_evidence(root, design, evidence=[h4], receipts=receipts)
+    assert not out4["cells"][unit]["admitted"] and "UNBOUND" in str(out4["cells"][unit]["refused"][0]["why"])
