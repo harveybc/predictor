@@ -1,5 +1,10 @@
 # M5PHET: implementation assignment to Satoshi
 
+Candidate `adba176` is reviewed: execute the scoped
+[integration continuation](SATOSHI_M5PHET_INTEGRATION_CONTINUATION_2026_09_24.md)
+alongside this assignment. Implementation exists but acceptance is not complete;
+do not stop valid independent experiments for these software repairs.
+
 Owner-approved implementation addendum to RP150, not another research proposal.
 Satoshi owns implementation and integration; Musashi owns design review and
 independent adversarial acceptance. Do not return only diagrams, scaffolds or

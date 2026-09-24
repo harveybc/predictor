@@ -1,0 +1,138 @@
+{
+  "class_entrypoint": {
+    "group": "m5phet.providers",
+    "refused": {
+      "probe": "Provider.capabilities() missing 1 required positional argument: 'self'"
+    },
+    "registered": []
+  },
+  "denied_receipt_accepted": {
+    "authority": "GOVERNED",
+    "directory_created": true
+  },
+  "empty_payload_success": {
+    "facts": {
+      "application_eligible": false,
+      "calibration_bound": false,
+      "capability_checked": true,
+      "governance_accepted": false,
+      "replayed": false,
+      "schema_valid": true
+    },
+    "outputs": {
+      "tone": {
+        "payload": null,
+        "status": "OK",
+        "uncertainty": "UNCALIBRATED",
+        "why": null
+      }
+    },
+    "status": "OK"
+  },
+  "extra_regime_cell": {
+    "R1_and_R2_share_the_donor_per_seed": true,
+    "R1_detector_unchanged_by_its_fit": true,
+    "R2_detector_changed_by_its_fit": true,
+    "complete": true,
+    "expected_cells": [
+      "AE_s1",
+      "R0_s1",
+      "R1_s1",
+      "R2_s1"
+    ],
+    "missing_cells": [],
+    "present_cells": [
+      "AE_s1",
+      "R0_s1",
+      "R0_s999",
+      "R1_s1",
+      "R2_s1"
+    ],
+    "reading": "every check is computed only from cells that exist; a missing population is reported as such and never as a green verdict",
+    "same_observed_updates": true,
+    "same_update_allowance": true,
+    "verdict": "COMPLETE"
+  },
+  "foreign_future_calibration_bound": {
+    "facts": {
+      "application_eligible": false,
+      "calibration_bound": true,
+      "capability_checked": true,
+      "governance_accepted": false,
+      "replayed": false,
+      "schema_valid": true
+    },
+    "status": "OK"
+  },
+  "governed_resume_without_resolver": {
+    "authority": "GOVERNED"
+  },
+  "invalid_duplicate_metrics": {
+    "boolean_population": true,
+    "nonfinite_serialized": true,
+    "rows": 2,
+    "unknown_attempt_finished": true
+  },
+  "invalid_request_does_work": {
+    "calls": [
+      "load",
+      "infer"
+    ],
+    "status": "INVALID_INPUT"
+  },
+  "missing_R2_evidence": {
+    "R1_and_R2_share_the_donor_per_seed": true,
+    "R1_detector_unchanged_by_its_fit": true,
+    "R2_detector_changed_by_its_fit": true,
+    "complete": true,
+    "expected_cells": [
+      "AE_s1",
+      "R0_s1",
+      "R1_s1",
+      "R2_s1"
+    ],
+    "missing_cells": [],
+    "present_cells": [
+      "AE_s1",
+      "R0_s1",
+      "R1_s1",
+      "R2_s1"
+    ],
+    "reading": "every check is computed only from cells that exist; a missing population is reported as such and never as a green verdict",
+    "same_observed_updates": true,
+    "same_update_allowance": true,
+    "verdict": "COMPLETE"
+  },
+  "recovery_erases_interior_corruption": {
+    "corrupt_bytes_preserved_in_log": false,
+    "report": {
+      "attempts_recovered": 1,
+      "metrics_recovered": 2,
+      "truncated_records_dropped": 1
+    }
+  },
+  "resume_changed_identity": {
+    "requested_task": "B",
+    "retained_task": {
+      "id": "A"
+    },
+    "same_digest": true
+  },
+  "resume_loses_pending_attempt": {
+    "pending_attempt_exists": true,
+    "reported_open": []
+  },
+  "scope": {
+    "m5phet_revision": "adba176",
+    "not_tested": [
+      "live services",
+      "GPU",
+      "new scientific training",
+      "DuckDB projection"
+    ],
+    "predictor_revision": "5c2dc332",
+    "predictor_source_sha256": "d460f30a5e10f29d698e2dc7fbf7c71f212d75b366b646057a0e513f1498cfd0",
+    "provider_probe": "recording double through actual runtime and entrypoint discovery",
+    "regime_probe": "exact AST function, no rewritten implementation"
+  }
+}
