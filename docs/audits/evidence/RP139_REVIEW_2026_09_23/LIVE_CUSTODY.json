@@ -1,0 +1,100 @@
+{
+  "schema": "musashi.live_custody_followup.v1",
+  "at": "2026-09-23T23:55:52.461150+00:00",
+  "unit": "L96_h192_s2021",
+  "checks": {
+    "prepare:terminal": true,
+    "prepare:design": true,
+    "prepare:data": true,
+    "prepare:record": true,
+    "L96_h192_s2021:terminal": true,
+    "L96_h192_s2021:design": true,
+    "L96_h192_s2021:predictions": true,
+    "L96_h192_s2021:checkpoint": true,
+    "L96_h192_s2021:record": true,
+    "record_design": true,
+    "record_cell": true,
+    "report_design": true,
+    "report_population": true,
+    "recorded_replay_exact": true
+  },
+  "live_custody_pass": true,
+  "previous_report_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+  "previous_report_replay": {
+    "unit": "L96_h192_s2021",
+    "device": "cuda:0",
+    "device_uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+    "device_name": "NVIDIA GeForce RTX 4070 Laptop GPU",
+    "max_abs_prediction_difference": 0.0,
+    "allclose_rule": true,
+    "finite": true,
+    "shape_equal": true,
+    "exact_equal_elements": 312412608,
+    "elements": 312412608,
+    "exact_equal_fraction": 1.0,
+    "replayed_author_metric": {
+      "mae": 0.2559875547885895,
+      "mse": 0.1608569175004959
+    },
+    "replayed_author_metric_state": "EXECUTED: df_sota_author_metric_exact.v2 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test); utils.metrics.metric executed on the memmapped arrays as well: bit-equal",
+    "replayed_metric_float64": {
+      "mae": 0.25598757535170746,
+      "mse": 0.1608569145993499
+    },
+    "true_sha256_replayed": "63a05d33f0577090f1b4e7f0c2d4b13748d09188904b17ffb1b87aa05f3706bd",
+    "shape": [
+      5069,
+      192,
+      321
+    ],
+    "operational_patches": [
+      {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+      }
+    ],
+    "rule": {
+      "atol": 0.0001,
+      "rtol": 0.0001
+    },
+    "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+    "property": "cross_device_portability",
+    "trained_on_device_uuid": null,
+    "trained_on_attribution": "UNKNOWN"
+  },
+  "accepted_terminals": {
+    "prepare": {
+      "terminal_sha256": "1308f234783dacd24fab3ff3d10240730e37c42b35ad3bd68999ebad9ec3439d",
+      "generation": 1,
+      "artifacts": {
+        "data": {
+          "sha256": "ffd4489d3d27592a3ad78ae1e3172d043d311deb7d6933140d3d80b843f5b510",
+          "bytes": 22746
+        },
+        "record": {
+          "sha256": "2ade6ce04465de5b66e5c8b9f96870d200e5e2415b6ad2e59019ae53d6bcd993",
+          "bytes": 1681
+        }
+      }
+    },
+    "L96_h192_s2021": {
+      "terminal_sha256": "86828012298c0764357c8a89b91c66d6c369ccc6a5613d9bbb42c4ec92b13c5e",
+      "generation": 1,
+      "artifacts": {
+        "predictions": {
+          "sha256": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+          "bytes": 1143794042
+        },
+        "checkpoint": {
+          "sha256": "80545467255f0457656a51cf4d281cb9cda3e07cad8ef65d7d248da97b8f1617",
+          "bytes": 28373749
+        },
+        "record": {
+          "sha256": "3584eca7a5909d74ff0a5976c835f4726c5eb60f17d64f1394e50faf067d84a7",
+          "bytes": 7132
+        }
+      }
+    }
+  },
+  "scope": "Fresh authenticated custody and recorded replay observation only. No fresh replay, no full closure, no deletion permission."
+}

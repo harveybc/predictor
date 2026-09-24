@@ -5,17 +5,17 @@
   "policy": "CONCURRENT_EXECUTION_2026_09_23.md",
   "runtime_enforcement": "Existing runners/admission; this is a persistent ordered manifest, not a newly installed scheduler",
   "campaign": "RP135_RELEASED_L512_RECIPE",
-  "state": "RESUMED_AFTER_TRANSPORT_RECOVERY_TWO_TRAINED_TEN_REMAIN",
+  "state": "SIX_TRAINED_H336s2021_RUNNING_RP139_REVIEW",
   "executor": {
     "kind": "USER_SYSTEMD_NATIVE_BATCH_WITH_FLOCK",
     "superseded_task_id": "t_28e5c655",
     "service": "crispdm-rp135-continuation-20260923.service",
-    "observed_status": "RUNNING_L512_h96_s2023_GPU_CHILD_856355_AT_2224Z",
+    "observed_status": "RUNNING_L512_h336_s2021_GPU_CHILD_900129_AT_2357Z",
     "orders_commit": "9d01871a",
     "dispatch_date": "2026-09-23",
     "lease": "~/.local/state/crispdm-data-foundation/dispatch/rp135.lock on GPU host",
     "duplicate_policy": "Satoshi observes the native service/real flock; expired Hermes task remains BLOCKED; never launch another RP135 executor",
-    "gpu_child_receipt": "22:24Z actual child PID856355 on external5090, 60 percent GPU utilization, 62C; first two accepted cells skipped"
+    "gpu_child_receipt": "23:57Z PID900129 H336s2021 external5090; six records/terminal receipts retained; live scope MemoryMax7GiB MemoryHigh6GiB parent8GiB, no restart"
   },
   "design_sha256": "bcc7e3d3c09c6744829ca4685e200cdd7c70255097823cf45cd439f3e8145c67",
   "producer_commit": "9d01871a82d043b016ee4d3bf7c2b622265927b5",
@@ -28,11 +28,11 @@
   "cells": [
     {"horizon": 96, "seed": 2021, "status": "TRAINED_TERMINAL_ACCEPTED_REPLAY_PENDING", "receipt": "9e6c0a80763e860f8051a45de0bb61249da95aa3f0162023d05c45010ce7759f"},
     {"horizon": 96, "seed": 2022, "status": "TRAINED_TERMINAL_ACCEPTED_REPLAY_PENDING_PROVENANCE_ERRATUM", "receipt": "4d12fafe8bcb79475979f74c89218ee62396342804dc4d38bb7300e14bc09631"},
-    {"horizon": 96, "seed": 2023, "status": "RUNNING_OBSERVED_2224Z", "receipt": null},
-    {"horizon": 192, "seed": 2021, "status": "QUEUED", "receipt": null},
-    {"horizon": 192, "seed": 2022, "status": "QUEUED", "receipt": null},
-    {"horizon": 192, "seed": 2023, "status": "QUEUED", "receipt": null},
-    {"horizon": 336, "seed": 2021, "status": "QUEUED", "receipt": null},
+    {"horizon": 96, "seed": 2023, "status": "TRAINED_RECEIPT_REPLAY_PENDING", "receipt": "d95f519abb7b74c85eadfea2f218c7e83a9f6418eb1da16e44f70b6930c301b5"},
+    {"horizon": 192, "seed": 2021, "status": "TRAINED_RECEIPT_REPLAY_PENDING", "receipt": "2e6fc3ba14c200c6880e6695b15169c8f95cef0c59f01a024f223f3a0e92a840"},
+    {"horizon": 192, "seed": 2022, "status": "TRAINED_RECEIPT_REPLAY_PENDING", "receipt": "4ad3004501a6e1d8e3a2d849ee0e1c44115724c620ade16bac00a375daff191e"},
+    {"horizon": 192, "seed": 2023, "status": "TRAINED_RECEIPT_REPLAY_PENDING", "receipt": "5631428a7d1b624c89d13f3603da4af5015f0b8b962332faaad126bd94185eac"},
+    {"horizon": 336, "seed": 2021, "status": "RUNNING_OBSERVED_2357Z", "receipt": null},
     {"horizon": 336, "seed": 2022, "status": "QUEUED", "receipt": null},
     {"horizon": 336, "seed": 2023, "status": "QUEUED", "receipt": null},
     {"horizon": 720, "seed": 2021, "status": "QUEUED", "receipt": null},
@@ -41,13 +41,13 @@
   ],
   "independent_repair_lane": {
     "orders": "RP132-RP134",
-    "status": "CODE_PUSHED_e473efbe_RETURN_PACKAGING_UNCOMMITTED_REVIEW_PENDING",
+    "status": "RETURN_PUBLISHED_d0fb9acd_NARROW_LINEAGE_REVIEWED_NO_NEW_DELETION_PERMISSION",
     "cpu_seconds_cap": 1800,
     "blocks_this_campaign": false,
     "production_deletions_allowed": false
   },
   "upcoming_design_work": [
-    {"task": "Doctoral extractor/pretraining intervention against accepted reference", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Reference acceptance and sealed matched modular contrast; no universal electricity-to-finance winner"},
+    {"task": "Doctoral extractor/pretraining intervention against accepted reference", "status": "IMPLEMENT_TEST_THEN_GOVERNED_TRAIN_ONLY_COST_PILOT_AUTHORIZED_RP142", "requires": "Full-horizon321-channel matched target/scaler/reduction and inner-TRAIN AE validation tests; pilot1800CPU/1800wall on admitted independent worker; scientific comparison needs its accepted reference/sealed design"},
     {"task": "FIN-LOSS-OPT", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Financial resource temporal contract, matched financial reference and existing finance design; no heldout access"},
     {"task": "Weekly forecasting and RL", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Existing E3 business/data/execution contracts and domain-specific model reference; keep RL separate from forecasting metrics"}
   ]

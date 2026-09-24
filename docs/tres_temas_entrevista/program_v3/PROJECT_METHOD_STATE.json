@@ -43,13 +43,13 @@
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "RP135_CONTINUATION_DISPATCHED_TWO_TRAINED_COOLING_RESTORED_REPAIRS_RETURN_PENDING",
+  "status": "RP139_REVIEWED_SIX_B_CELLS_TRAINED_A_CUSTODY_FOLLOWUP_PASSED_NEXT_ADAPTER_AUTHORIZED",
   "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
   "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
   "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
   "runtime_exclusion_implemented": true,
   "policy": "SOTA_FIRST_2026_09_21.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP136_RP139_2026_09_23.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP140_RP143_2026_09_23.md",
   "suspended_measurements": [
    "simplified E0/E1 extensions",
    "household context pilots",
@@ -61,7 +61,7 @@
    "weekly forecasting and RL",
    "core pretraining"
   ],
-  "completion_requires": "All four horizons x three seeds, accepted recipe, original float32 scoring and scoped independent verification. Repair historical custody and content-specific deletion, preserve failed portability checks, qualify inferred device identity. No retraining to repair closure; no automatic coordinator or WORKER_A GPU resumption."
+  "completion_requires": "Per consumed reference: all four horizons x three seeds, accepted recipe, original float32 scoring and scoped independent verification with custody. Preserve failed portability checks and UNKNOWN/inferred device identity. Deletion certification is separate from score acceptance. No retraining to repair closure. Cooling confirmed; regular admission applies. TRAIN-only matched adapter cost pilot authorized under RP142 tests; final scientific comparison needs its accepted reference, not unrelated protocol B or retention completion."
  },
  "rp131_external_review": {
   "reviewed_commit": "c9dce617a0badc480dc0519e8b94234c555f40f5",
@@ -84,7 +84,7 @@
   "science": {
    "task": "SOTA-REPRO",
    "order": "RP135",
-   "status": "TWO_TRAINED_TERMINALS_ACCEPTED_THIRD_TRAINING_OBSERVED_2224Z",
+   "status": "SIX_TRAINED_WITH_RECEIPTS_H336s2021_RUNNING_RP139_REVIEW",
    "executor_service": "crispdm-rp135-continuation-20260923.service",
    "superseded_blocked_task": "t_28e5c655",
    "recipe": "TimeFilter dffde87e released ECL L512 block; 321 channels; four horizons x three seeds",
@@ -103,7 +103,7 @@
    "science_blocking": false
   },
   "physical_waits": {
-   "scope": "Cooling confirmed. Verifier attempt ended: WORKER_A numerical retained metrics match, VAULT_CHANGED implementation digest prevented replay; COORDINATOR competing GPU utilization refused admission. Satoshi RP138 owns follow-up, no owner action required.",
+   "scope": "Cooling confirmed. Four original-device-targeted replay reports numerically exact; coordinator custody freshly checked by Musashi. Coordinator training UUID remains UNKNOWN, do not certify measured same-device attribution. Evidence composition pending, not physical authorization.",
    "science_blocking": false
   }
  },
@@ -266,21 +266,21 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "RP136: finish existing repair return/evidence commits; preserve legacy definition limits; no deletion or blanket regeneration",
-  "RP137: supervise existing native RP135 service/real flock; expired Hermes task stays blocked; third cell training on external5090, nine queued; 24000 CPU-second/8h continuation allocation; no duplicate launch or refit",
-  "RP138: Musashi verifier performs original-device H96 and H192s2021 checks after cooling admission, then reconcile actual evidence without widened tolerances",
-  "RP139: durable forwarding, real process ownership/heartbeats, additive recovery provenance correction, one scientific-results-first return and prepare next matched intervention",
-  "No adapted pilot, financial fit or private holdout access while SOTA reproduction is the active prerequisite"
+  "RP140: consolidate protocol A by bound artifact/terminal/report identities; fresh coordinator custody already PASS; preserve UNKNOWN training-device attribution where applicable",
+  "RP141: supervise existing native RP135 and close B on5090; six trained, H336s2021 running; scope7GiB parent8GiB; unchanged CPU allocation; no duplicate/refit/deletion",
+  "RP142: implement matched full-horizon321-channel ECL modular adapter with inner-TRAIN AE validation and ML parity tests; governed TRAIN-only1800CPU/1800wall pilot authorized after tests, independent worker while5090 trains",
+  "RP143: prepare next sealed matched scientific contrast and financial-contract/reference investigation concurrently; accepted A can support A-matched design without waiting for B or retention",
+  "No public-test tuning, financial fit, private reserve access or scientific modular comparison before its actually consumed reference and design are accepted"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP136_RP139_2026_09_23.md",
+  "orders": "../../handoffs/MUSASHI_SOTA_RP140_RP143_2026_09_23.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
   "concurrent_execution": "CONCURRENT_EXECUTION_2026_09_23.md",
   "execution_queue": "EXPERIMENT_EXECUTION_QUEUE.json",
   "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-  "external_review": "../../audits/work_plan/MUSASHI_RP128_RP131_REVIEW_2026_09_23.md",
+  "external_review": "../../audits/work_plan/MUSASHI_RP136_RP139_REVIEW_2026_09_23.md",
   "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
   "return": "https://github.com/harveybc/predictor/blob/c9dce617/docs/audits/work_plan/SATOSHI_RP128_RP131_RETURN_2026_09_23.md",
   "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
