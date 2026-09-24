@@ -5,6 +5,12 @@ Candidate `adba176` is reviewed: execute the scoped
 alongside this assignment. Implementation exists but acceptance is not complete;
 do not stop valid independent experiments for these software repairs.
 
+Owner's upstream-reuse clarification: read the
+[Laya architecture/reuse and fork decision](../audits/work_plan/MUSASHI_LAYA_ARCHITECTURE_2026_09_24.md)
+before implementing equivalent provider features. Upstream 0.3.18 already has
+schema helpers absent from our 0.3.11 pin. Prefer the SDK, not a rebuilt engine;
+upgrade only after scoped compatibility tests, preserving our strict boundary.
+
 Owner-approved implementation addendum to RP150, not another research proposal.
 Satoshi owns implementation and integration; Musashi owns design review and
 independent adversarial acceptance. Do not return only diagrams, scaffolds or

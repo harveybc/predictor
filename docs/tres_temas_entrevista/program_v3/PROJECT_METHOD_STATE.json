@@ -1,5 +1,15 @@
 {
  "schema": "research_program_method_state.v1",
+ "laya_upstream_architecture_review": {
+  "current_adapter_pin": "1e28ac20c0896b1c37a744cd11f740eb98f8b178",
+  "reviewed_candidate": "84ca7240348e6fb3b8145d2d9f6266d5125747d8",
+  "status": "SOURCE_CONFIG_AND_CPU_HELPERS_REVIEWED_NOT_ADOPTED_NO_WEIGHTS_TESTED",
+  "reuse": "Agent/tokenizer/decision heads; Router, structured helpers and hooks where needed; no duplicate language model or schema compiler",
+  "fork": "Independent M5PHET plus optional upstream dependency; thin Laya fork only for evidenced necessary internal patch, not a new engine or automatic public fork",
+  "evidence": "../../audits/work_plan/MUSASHI_LAYA_ARCHITECTURE_2026_09_24.md",
+  "implementation_owner": "Satoshi",
+  "blocks_independent_experiments": false
+ },
  "m5phet_integration_review_20260924": {
   "predictor_revision": "5c2dc332",
   "m5phet_revision": "adba176",
