@@ -1974,5 +1974,34 @@
   },
   "tests": "150 passed on WORKER_A across the reproduction and ECL modules",
   "return": "docs/audits/work_plan/SATOSHI_RP144_RP151_RETURN_2026_09_24.md"
+ },
+ "rp158_closure_repair_20260924": {
+  "orders": "RP158 medium-severity acceptance gap plus the requested pure closure",
+  "status": "IMPLEMENTED_AND_TESTED_AWAITING_REVIEW",
+  "inference": "NONE: CPU over retained records only; no model ran and no GPU was used for this repair",
+  "validate_children_gaps_closed": [
+   "an absent or untyped element count now refuses instead of passing because it was only checked WHEN it was an int",
+   "a negative MAE or MSE refuses: a mean of absolute or squared errors is never negative",
+   "the derived skill must follow from the MAE and baseline in its own record, within 1e-9",
+   "a null skill is correct only against a zero baseline, and a number against a zero baseline refuses"
+  ],
+  "pure_closure": {
+   "function": "tools/df_ecl_modular.py::close_contrast and close_retained_run",
+   "property": "validates, reconciles and aggregates over retained child records; starts no process and runs no inference",
+   "test": "subprocess.run, subprocess.Popen, subprocess.check_output and score_cell are all replaced with a raising double for the whole closure; the test fails if any of them is reached",
+   "does_not_overwrite": "a re-closure writes CLOSURE.json and leaves the retained SCORING.json byte-identical",
+   "refuses_to_self_agree": "a run whose retained scoring declares no contract window counts is refused rather than recomputing the expectations it would then be checked against"
+  },
+  "named_gap": "ecl-modular-contrast-20260924b cannot be closed purely today: it retained no DESIGN.json beside it, so its design was only ever re-derived from the datasets. score_contrast now retains the design it authenticates, which closes this for every later run; the existing run's numbers are untouched and were not recomputed",
+  "tests": "65 passed: tests/test_df_ecl_contrast_gates.py and tests/test_df_ecl_modular.py, CPU, torch environment",
+  "numbers_unchanged": "R0 0.371174 / R1 0.374584 / R2 0.368596 on the 1,802 label-disjoint windows"
+ },
+ "natural_language_interface_rag_20260924": {
+  "published": "M5PHET cae6be4, orders c4f2dcba",
+  "standing": "CONSIDERED, NOT IMPLEMENTED, NOT A BLOCKER",
+  "read_and_registered_by": "Satoshi, 2026-09-24, in the same block as the CL01-CL07 delivery",
+  "no_work_started": true,
+  "where_it_would_attach": "the interpretation layer above the provider contract, never inside it",
+  "invariant": "retrieved text is data; the registry's declared combinations remain the only source of what may be asked"
  }
 }

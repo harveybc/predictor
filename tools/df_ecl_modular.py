@@ -44,6 +44,7 @@ Causality
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import importlib
 import importlib.util
@@ -1074,8 +1075,13 @@ def validate_children(children: dict, *, expected, pred_len: int, populations, r
             if contract is not None and count != contract:
                 problems.append(f"{cell}: the {population} population reports {count} windows and the support contract "
                                 f"declares {contract}")
+            # RP158 (Musashi, medium): validating a field only WHEN it is an integer means an absent or string element count
+            # passes. The count is what ties the metric to the array it was computed over, so it is mandatory and typed.
             elements = entry.get("elements")
-            if isinstance(elements, int) and not isinstance(elements, bool) and elements != count * pred_len * CHANNELS:
+            if isinstance(elements, bool) or not isinstance(elements, int):
+                problems.append(f"{cell}: the {population} population declares an untyped element count {elements!r}; "
+                                f"the count that ties a metric to its array is mandatory, not optional")
+            elif elements != count * pred_len * CHANNELS:
                 problems.append(f"{cell}: the {population} population declares {elements} elements, which is not "
                                 f"{count} x {pred_len} x {CHANNELS}")
             seen = windows.setdefault(population, count)
@@ -1089,10 +1095,35 @@ def validate_children(children: dict, *, expected, pred_len: int, populations, r
                     value = baseline.get(metric)
                     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
                         problems.append(f"{cell}: the matched persistence {metric} is {value!r}, not a finite number")
+                    elif float(value) < 0:
+                        # RP158: MAE and MSE are means of absolute and squared errors. A negative one is not a weak result;
+                        # it is a number that cannot have come from the definition it claims.
+                        problems.append(f"{cell}: the matched persistence {metric} is {value!r}, and a mean of "
+                                        f"{'absolute' if metric == 'mae' else 'squared'} errors is never negative")
+            # RP158: the skill is DERIVED from two numbers in this same record. A finite value that does not follow from them
+            # is not a weak skill; it is a contradiction, and `None` is only correct when the baseline is exactly zero.
             skill = entry.get("skill_mae_vs_persistence")
-            if skill is not None and (isinstance(skill, bool) or not isinstance(skill, (int, float))
-                                      or not math.isfinite(float(skill))):
+            observed = (entry.get(reductions[0]) or {}).get("mae") if isinstance(entry.get(reductions[0]), dict) else None
+            base_mae = baseline.get("mae") if isinstance(baseline, dict) else None
+            usable = (isinstance(base_mae, (int, float)) and not isinstance(base_mae, bool) and math.isfinite(float(base_mae))
+                      and isinstance(observed, (int, float)) and not isinstance(observed, bool)
+                      and math.isfinite(float(observed)))
+            if skill is None:
+                if usable and float(base_mae) != 0.0:
+                    problems.append(f"{cell}: the {population} skill is null while its baseline MAE is {base_mae!r}; "
+                                    f"an undefined skill is only correct against a zero baseline")
+            elif isinstance(skill, bool) or not isinstance(skill, (int, float)) or not math.isfinite(float(skill)):
                 problems.append(f"{cell}: the derived skill is {skill!r}, not a finite number")
+            elif usable:
+                if float(base_mae) == 0.0:
+                    problems.append(f"{cell}: the {population} skill is {skill!r} against a zero baseline; that quotient "
+                                    f"is undefined and must be reported as null, not as a number")
+                else:
+                    derived = 1.0 - float(observed) / float(base_mae)
+                    if abs(derived - float(skill)) > 1e-9:
+                        problems.append(f"{cell}: the {population} skill is {skill!r}, and the MAE {observed!r} against the "
+                                        f"baseline {base_mae!r} derives {derived!r}; a stored derived value that does not "
+                                        f"follow from its own record is a contradiction, not a rounding")
             for reduction in reductions:
                 values = entry.get(reduction)
                 if not isinstance(values, dict):
@@ -1102,6 +1133,9 @@ def validate_children(children: dict, *, expected, pred_len: int, populations, r
                     value = values.get(metric)
                     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
                         problems.append(f"{cell}: {reduction}.{metric} is {value!r}, which is not a finite number")
+                    elif float(value) < 0:
+                        problems.append(f"{cell}: {reduction}.{metric} is {value!r}, and a mean of "
+                                        f"{'absolute' if metric == 'mae' else 'squared'} errors is never negative")
     unexpected = sorted(set(children) - set(expected))
     if unexpected:
         problems.append(f"children returned for cells nobody asked for: {unexpected[:4]}")
@@ -1130,6 +1164,12 @@ def score_contrast(data_path: Path, run_dir: Path, *, pred_len: int = 96, batch:
         registered, source = seal_contrast(data_path, pred_len=pred_len, seeds=tuple(contrast["seeds"])), "re_derived_and_matched"
     authenticated = authenticate_design(contrast, registered)       # refuses before a single child is dispatched
     authenticated["design_source"] = source
+    # RP158 continuation: a run whose design was only ever re-derived cannot be closed again without the datasets, which makes
+    # every later closure depend on data that may be gone. The AUTHENTICATED design is retained beside the run the first time,
+    # so the next closure reads it instead of rebuilding it. An existing file is never overwritten.
+    if not retained.is_file():
+        retained.write_text(json.dumps(registered, indent=1, default=str))
+        authenticated["design_retained_now"] = True
     expected = authenticated["cells"]
     pred_len = authenticated["pred_len"]                            # the dispatch uses the AUTHENTICATED horizon
     # the expected window counts come from the task and support contract, not from whatever a child reports
@@ -1159,8 +1199,20 @@ def score_contrast(data_path: Path, run_dir: Path, *, pred_len: int = 96, batch:
             out["problems"].append(f"{cell}: the replay process refused or failed ({proc.returncode}): {proc.stderr.strip()[-220:]}")
             continue
         out["cells"][cell] = json.loads(line[-1])
-    populations = ("complete_validation", "label_disjoint_from_selection")
-    binding = validate_children(out["cells"], expected=expected, pred_len=pred_len, populations=populations,
+    return close_contrast(out, run_dir, expected=expected, pred_len=pred_len,
+                          expected_windows=expected_windows, checkpoints=checkpoints, authenticated=authenticated)
+
+
+POPULATIONS = ("complete_validation", "label_disjoint_from_selection")
+
+
+def close_contrast(out: dict, run_dir: Path, *, expected, pred_len: int, expected_windows: dict,
+                   checkpoints: dict, authenticated: dict, write_to: str = "SCORING.json") -> dict:
+    """RP158 (Musashi): the closure over RETAINED child records. It validates, reconciles and aggregates, and it runs no
+    inference and starts no process. Whatever produced the children -- a dispatch minutes ago or a run from last week read
+    back off disk -- the rules applied here are the same ones, in one place, so a re-closure cannot drift from a first one."""
+    run_dir = Path(run_dir)
+    binding = validate_children(out["cells"], expected=expected, pred_len=pred_len, populations=POPULATIONS,
                                 reductions=("author_float32", "independent_float64"),
                                 expected_windows=expected_windows, checkpoints=checkpoints)
     out["problems"] += binding["problems"]
@@ -1179,7 +1231,7 @@ def score_contrast(data_path: Path, run_dir: Path, *, pred_len: int = 96, batch:
         out["diagnostics"] = {c: r["populations"] for c, r in out["cells"].items()}
         out["reading"] = ("a summary over a population that is missing a cell, or that includes a checkpoint whose identity "
                           "failed, would not be the declared contrast; the per-cell readings above are diagnostics")
-        (run_dir / "SCORING.json").write_text(json.dumps(out, indent=1, default=str))
+        (run_dir / write_to).write_text(json.dumps(out, indent=1, default=str))
         return out
     out["status"] = "COMPLETE"
     by_regime = {}
@@ -1187,7 +1239,7 @@ def score_contrast(data_path: Path, run_dir: Path, *, pred_len: int = 96, batch:
         by_regime.setdefault(r["regime"], []).append(r)
     out["by_regime"] = {}
     for regime, rows in sorted(by_regime.items()):
-        for population in populations:
+        for population in POPULATIONS:
             picked = [row["populations"][population] for row in rows if population in row["populations"]]
             if not picked:
                 continue
@@ -1209,5 +1261,42 @@ def score_contrast(data_path: Path, run_dir: Path, *, pred_len: int = 96, batch:
                                           "`label_disjoint_from_selection` shares no target row with it, which is not the same "
                                           "as statistical independence"),
                      "H1": "none: this is a development contrast and no hypothesis is decided here"}
-    (run_dir / "SCORING.json").write_text(json.dumps(out, indent=1, default=str))
+    (run_dir / write_to).write_text(json.dumps(out, indent=1, default=str))
     return out
+
+
+def close_retained_run(run_dir: Path, *, design: dict | None = None) -> dict:
+    """Close a run from what was retained beside it: CONTRAST.json, DESIGN.json and the children inside SCORING.json.
+
+    Nothing here loads a model, reads the market data or starts a process. The expected window counts are NOT recomputed --
+    they are read from the contract the scoring recorded, because re-deriving them would mean rebuilding the datasets, and a
+    closure that quietly rebuilds its own expectations can always agree with itself."""
+    run_dir = Path(run_dir)
+    contrast = json.loads((run_dir / "CONTRAST.json").read_text())
+    scoring_path = run_dir / "SCORING.json"
+    if not scoring_path.is_file():
+        raise DesignError(f"{run_dir}: no retained SCORING.json; there are no child records to close over")
+    retained = json.loads(scoring_path.read_text())
+    registered = design
+    if registered is None:
+        design_path = run_dir / "DESIGN.json"
+        if not design_path.is_file():
+            raise DesignError(f"{run_dir}: no retained DESIGN.json and none supplied; the expected cells are undeclared")
+        registered = json.loads(design_path.read_text())
+    authenticated = authenticate_design(contrast, registered)
+    expected_windows = ((retained.get("child_binding") or {}).get("expected_windows_from_contract"))
+    if not expected_windows:
+        raise DesignError(f"{run_dir}: the retained scoring declares no contract window counts; a closure that recomputes "
+                          f"its own expectations can only agree with itself")
+    out = {"schema": "df_ecl_modular_scoring.v3", "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+           "run_dir": str(run_dir), "design_sha256": contrast["design_sha256"],
+           "registered_design_sha256": registered["design_sha256"],
+           "monitor_windows": (contrast.get("populations") or {}).get("validation_monitor_windows") or 0,
+           "expected_cells": authenticated["cells"], "fresh_process_per_cell": False,
+           "source": "RETAINED_RECORDS_NO_INFERENCE",
+           "cells": copy.deepcopy(retained.get("cells") or {}), "problems": []}
+    checkpoints = {c: (contrast["cells"].get(c) or {}).get("model_sha256") for c in authenticated["cells"]}
+    # a re-closure never overwrites the record it read: the retained scoring stays exactly as it was written
+    return close_contrast(out, run_dir, expected=authenticated["cells"], pred_len=authenticated["pred_len"],
+                          expected_windows=expected_windows, checkpoints=checkpoints, authenticated=authenticated,
+                          write_to="CLOSURE.json")
