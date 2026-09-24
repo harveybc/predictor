@@ -1,5 +1,15 @@
 {
  "schema": "research_program_method_state.v1",
+ "general_ml_program": {
+  "name": "M5PHET",
+  "repository": "https://github.com/harveybc/M5PHET",
+  "fronts": ["classification", "regression_forecasting", "representation_unsupervised", "reinforcement_learning", "causal_inference"],
+  "optimization": "DOIN cross-cutting; not a sixth required model",
+  "selection": "Task-matched reproduced open-source references, license and measured deployment suitability; no universal Laya requirement",
+  "implemented_scope": "Classification result contract consumed by news-signal; four other engine fronts planned",
+  "contract_revision": "bcd65b78c12e53e85adc9f2328cb0c0faccb94e8",
+  "blocks_existing_work": false
+ },
  "rp143_external_review": {
   "reviewed_commit": "07140d03",
   "disposition": "CHANGES_REQUIRED_COMPOSITION_AND_ML_GATES_NO_GLOBAL_HOLD",
@@ -381,10 +391,19 @@
  ],
  "tasks": [
   {
-   "id": "NEWS-ADAPTER",
+   "id": "M5PHET-CONTRACTS",
    "owner": "Musashi + Satoshi",
    "status": "IMPLEMENTED",
    "depends_on": [],
+   "evidence": ["https://github.com/harveybc/M5PHET/tree/bcd65b78c12e53e85adc9f2328cb0c0faccb94e8"],
+   "next_action": "Keep first consumer pinned and verified; design each further task family with its consumer and independent oracle before engine implementation",
+   "deliverable": "Task-specific typed results and five-front roadmap; not five completed engines"
+  },
+  {
+   "id": "NEWS-ADAPTER",
+   "owner": "Musashi + Satoshi",
+   "status": "IMPLEMENTED",
+   "depends_on": ["M5PHET-CONTRACTS"],
    "evidence": ["https://github.com/harveybc/news-signal"],
    "next_action": "Real frozen-weight smoke, offline/device/provenance checks and measured coordinator resources; prototype tested only with fixture/SDK double",
    "deliverable": "Typed news features, no model order authority, actual deployment evidence"

@@ -1,5 +1,16 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+**Nombre y alcance general aprobados: M5PHET (24-sep UTC).**
+[M5PHET](https://github.com/harveybc/M5PHET) alberga el programa de cinco frentes:
+clasificacion, regresion/forecasting, representacion/no supervisado, RL e inferencia
+causal. DOIN es transversal para evaluacion/busqueda distribuida. No imponer Laya
+en todos: seleccionar herramientas open-source por referencia reproducida, tarea,
+licencia, exactitud/calibracion y costo. Implementado ahora: contrato minimo de
+clasificacion consumido realmente por news-signal; los otros motores son roadmap,
+no capacidades demostradas. El formulario enlaza ambos repositorios y omite nombre
+personal. No se modifica la historia Git ni se promete anonimato de cuenta.
+La expansion no bloquea el trabajo experimental ni el carril MT5 demo/Alpaca paper.
+
 **Actualizacion vigente, 24-sep UTC: experimentos + NEWS-LIVE en paralelo.**
 [Ordenes RP144-RP151](../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md)
 y [carril Laya/MT5/Alpaca](program_v3/NEWS_LIVE_PARALLEL_2026_09_24.md).

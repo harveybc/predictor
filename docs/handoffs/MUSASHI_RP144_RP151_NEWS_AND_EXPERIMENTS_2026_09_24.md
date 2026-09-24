@@ -4,6 +4,10 @@ Based on Satoshi `07140d03`, RP140-RP143 return, plus the owner's approved Laya
 track and subsequent coordinator-hosting question. All eight orders form ONE
 assignment. Execute independent work concurrently; no routine continue prompts.
 These are implementation/demo-paper orders, not real-capital authorization.
+Owner addendum: the broader program is **M5PHET**, not a news-only framework.
+Use https://github.com/harveybc/M5PHET and news-signal's pinned runtime dependency;
+its classification contract is implemented, four other engines are roadmap.
+Do not block the existing orders to build all five. See the expanded RP150 below.
 Read [the scoped independent review](../audits/work_plan/MUSASHI_RP140_RP143_REVIEW_2026_09_24.md)
 and freeze its probes unchanged before corrections.
 
@@ -154,10 +158,26 @@ cannot support the task, name the exact evidence/source successor needed. A
 prospectively timestamped news route need not wait for this historical FX resource.
 Prepare the matched financial reference independently without reading the reserve.
 
-The typed-ML proposal is a collaboration RFC in news-signal (classification,
-regression, representation/OOD, temporal, RL, causal, optimization as separate
-engines). The directory submission is for the implemented prototype; no claim
-upstream will implement/fund our project. No external submission by Satoshi.
+The typed-ML proposal now lives in https://github.com/harveybc/M5PHET:
+classification, regression/forecasting, representation/unsupervised, RL and causal
+are five operational fronts; DOIN optimization is cross-cutting. news-signal is
+the first real consumer of its classification contract. Verify the pinned
+dependency and the actual nested typed_result, not just a README link. Preserve
+no-order authority, explicit uncalibrated status and data/model/task identities.
+For each next front, map the existing domain repo, task-specific output and
+uncertainty semantics, current open-source reference and matched acceptance
+protocol before adding an engine. Forecasting must cover direct-horizon versus
+joint multi-output as a designed contrast, not a default inferred from Laya's
+ordinal score. Causal effects require identification assumptions and refutation;
+RL requires environment/reward/policy evaluation, not a relabelled classifier.
+Select the best suitable open-source engine by measured task evidence, license,
+resource fit and deployment needs. Do not present a fixed universal champion.
+The directory submission links BOTH repos: news-signal as source URL, M5PHET
+and news-signal URLs in Description. Name optional field blank; no personal
+biography in public text and no promise that an existing GitHub account is
+anonymous. No claim upstream will implement/fund our project. No external
+submission by Satoshi. This addendum does not invalidate completed RP144-RP151
+work or authorize restarting existing experiments.
 Keep the future feature-branch vs final-head ablations explicit, not assumptions
 that Laya replaces predictor or that an unmeasured model improves live trading.
 

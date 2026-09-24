@@ -1,5 +1,18 @@
 # NEWS-LIVE: parallel news-model track for MT5 and Alpaca
 
+## M5PHET addendum, owner-approved
+
+The general program is now [M5PHET](https://github.com/harveybc/M5PHET).
+news-signal consumes its pinned `m5phet.classification.v1` contract at runtime;
+it remains the application, not the owner of all ML engines. M5PHET defines five
+operational fronts: classification, regression/forecasting, representation/
+unsupervised, RL and causal. DOIN search/evaluation is cross-cutting. Only the
+classification contract is implemented here; no generic model performance claim.
+Use the strongest suitable open-source engine per matched task, not Laya by fiat.
+The joint submission names both repos, with a single source-URL field pointing
+to the runnable news application. Keep personal biography out of public drafts.
+Existing experiment, GPU and demo/paper orders remain in force without delay.
+
 Owner approved 23-sep local / 24-sep UTC. This is an additive business track,
 not a replacement for doctoral forecasting, extractor/core pretraining, weekly
 RL, or FIN-LOSS-OPT. It does not wait for protocol-B retention repairs.
