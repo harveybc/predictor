@@ -1,0 +1,165 @@
+"""RP144-RP151 continuation: the contrast's learning and evaluation path, F1 to F4.
+
+These tests were written against the REAL runner before its correction, and their pre-correction failure is frozen in
+docs/audits/evidence/d3_k5_20260917/RP152/. Each one states a behaviour: a summary that cannot be vacuously true, a design
+identity that separates scientific inputs from operational timestamps, an allocation that refuses rather than rounds up to one
+epoch, an evaluation population that loses no window, a trained model that can actually be restored, and a step count that is
+an observed optimizer iteration rather than a multiplication.
+"""
+
+from __future__ import annotations
+
+import importlib.util
+import json
+import sys
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+DATA = Path.home() / ".cache/data-gov/sota_benchmarks/7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad.csv"
+needs_data = pytest.mark.skipif(not DATA.is_file(), reason="the governed ECL delivery is not on this host")
+
+
+def _load(name: str):
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(name, ROOT / "tools" / f"{name}.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+M = _load("df_ecl_modular")
+
+
+# --- F2: a summary that no population can make vacuously true -----------------------------------------------------------
+
+def test_F2_an_empty_population_cannot_satisfy_the_regime_checks():
+    """Musashi executed the exact assignment with cells={} and got four green flags. A verdict over nothing is not a verdict."""
+    checks = M.regime_checks({}, seeds=(2021, 2022, 2023))
+    assert checks["complete"] is False
+    assert checks["missing_cells"], "an empty population must name what is missing"
+    assert checks["verdict"] == "INCOMPLETE_POPULATION"
+    for key in ("R1_detector_unchanged_by_its_fit", "R2_detector_changed_by_its_fit"):
+        assert checks[key] is None, "a check with no evidence reports None, never True"
+
+
+def test_F2_one_regime_of_one_seed_is_reported_as_partial():
+    cells = {"R0_s2021": {"steps": 10, "observed_updates": 10, "detector_unchanged_by_the_fit": False, "donor": None}}
+    checks = M.regime_checks(cells, seeds=(2021, 2022, 2023))
+    assert checks["complete"] is False and checks["verdict"] == "INCOMPLETE_POPULATION"
+    assert "R1_s2021" in checks["missing_cells"] and "AE_s2022" in checks["missing_cells"]
+
+
+def test_F2_a_complete_population_is_judged_on_its_own_evidence():
+    cells = {}
+    for seed in (2021, 2022, 2023):
+        cells[f"AE_s{seed}"] = {"donor_sha256": f"d{seed}"}
+        cells[f"R0_s{seed}"] = {"steps": 10, "observed_updates": 10, "detector_unchanged_by_the_fit": False, "donor": None}
+        cells[f"R1_s{seed}"] = {"steps": 10, "observed_updates": 10, "detector_unchanged_by_the_fit": True, "donor": f"d{seed}"}
+        cells[f"R2_s{seed}"] = {"steps": 10, "observed_updates": 10, "detector_unchanged_by_the_fit": False, "donor": f"d{seed}"}
+    checks = M.regime_checks(cells, seeds=(2021, 2022, 2023))
+    assert checks["complete"] is True and checks["verdict"] == "COMPLETE"
+    assert checks["R1_detector_unchanged_by_its_fit"] is True
+    assert checks["R2_detector_changed_by_its_fit"] is True
+    assert checks["R1_and_R2_share_the_donor_per_seed"] is True
+    assert checks["same_update_allowance"] is True
+    # and a single wrong cell flips exactly the check it belongs to
+    broken = dict(cells)
+    broken["R1_s2022"] = {**cells["R1_s2022"], "detector_unchanged_by_the_fit": False}
+    assert M.regime_checks(broken, seeds=(2021, 2022, 2023))["R1_detector_unchanged_by_its_fit"] is False
+
+
+# --- F3: a design identity that a mutation actually moves ----------------------------------------------------------------
+
+@needs_data
+def test_F3_the_design_digest_is_stable_across_seals_and_moves_with_a_scientific_change():
+    """The previous assertion ended in `or True`, so it could not fail. A canonical identity must ignore the clock and must
+    not ignore the science."""
+    a = M.seal_contrast(DATA, pred_len=96)
+    b = M.seal_contrast(DATA, pred_len=96)
+    assert a["design_sha256"] == b["design_sha256"], "two seals of the same design must share one identity"
+    for changed in (M.seal_contrast(DATA, pred_len=192),
+                    M.seal_contrast(DATA, pred_len=96, seeds=(2021, 2022)),
+                    M.seal_contrast(DATA, pred_len=96, internal_validation_fraction=0.3)):
+        assert changed["design_sha256"] != a["design_sha256"], "a scientific change must move the identity"
+    assert a["at"] is not None and "at" not in a["identity_covers"]
+    assert "task" in a["identity_covers"] and "architecture" in a["identity_covers"]
+
+
+# --- F4: allocation refused rather than rounded up ------------------------------------------------------------------------
+
+@needs_data
+def test_F4_an_infeasible_allocation_is_refused_not_rounded_up_to_one_epoch(tmp_path):
+    """The previous code forced at least one epoch even when the usable budget was zero."""
+    with pytest.raises(M.AllocationError) as exc:
+        M.run_contrast(DATA, tmp_path / "infeasible", pred_len=96, seeds=(2021,),
+                       cpu_budget_seconds=1.0, wall_budget_seconds=1.0, limit_train_windows=64)
+    assert "allocation" in str(exc.value).lower()
+    assert not (tmp_path / "infeasible" / "CONTRAST.json").exists()
+
+
+# --- the evaluation population loses no window ----------------------------------------------------------------------------
+
+@needs_data
+def test_the_window_sequence_delivers_every_origin_including_an_uneven_last_batch():
+    """`len(idx) // batch` silently dropped the remainder, so a scoring population could be short without saying so."""
+    E = _load("df_mod_e0")
+    tf = E._tf()
+    d = M.author_datasets(DATA, pred_len=96)
+    ds = d["splits"]["train"]["dataset"]
+    W = M._windows_class(tf)
+    origins = list(range(10))
+    seq = W(ds, origins, seq_len=M.SEQ_LEN, pred_len=96, batch=4, seed=0, complete=True)
+    rows = sum(len(seq[i][0]) for i in range(len(seq)))
+    assert rows == len(origins), f"the sequence delivered {rows} of {len(origins)} windows"
+    assert len(seq) == 3, "10 windows at batch 4 is three batches, the last of two"
+
+
+# --- F1 and F4 through the real runner on a tiny population ----------------------------------------------------------------
+
+@needs_data
+def test_F1_each_regime_cell_persists_a_restorable_model_and_a_selected_checkpoint(tmp_path):
+    """The declared contract selects a checkpoint on the outer validation and restores it. The run must therefore leave a
+    model that can be loaded again and say which epoch it chose."""
+    out = M.run_contrast(DATA, tmp_path / "tiny", pred_len=96, seeds=(2021,), batch=8,
+                         cpu_budget_seconds=900, wall_budget_seconds=900,
+                         limit_train_windows=64, limit_validation_windows=32, max_epochs=2)
+    for regime in ("R0", "R1", "R2"):
+        cell = out["cells"][f"{regime}_s2021"]
+        model_path = Path(cell["model_path"])
+        assert model_path.is_file(), f"{regime} left no restorable model"
+        assert cell["model_sha256"] and len(cell["model_sha256"]) == 64
+        assert isinstance(cell["selected_epoch"], int) and cell["selected_epoch"] >= 1
+        assert cell["selected_epoch"] <= cell["epochs"]
+        assert cell["restored_matches_selection"] is True
+
+
+@needs_data
+def test_F4_the_reported_updates_are_observed_optimizer_iterations(tmp_path):
+    """`epochs * len(sequence)` is an arithmetic claim. The optimizer's own iteration counter is the measurement."""
+    out = M.run_contrast(DATA, tmp_path / "tiny_steps", pred_len=96, seeds=(2021,), batch=8,
+                         cpu_budget_seconds=900, wall_budget_seconds=900,
+                         limit_train_windows=64, limit_validation_windows=32, max_epochs=2)
+    for regime in ("R0", "R1", "R2"):
+        cell = out["cells"][f"{regime}_s2021"]
+        assert cell["observed_updates"] > 0
+        assert cell["observed_updates"] == cell["steps"], "the observed count must match the prescribed one or be reported"
+    assert out["measured_cost"]["cpu_seconds"] > 0 and out["measured_cost"]["wall_seconds"] > 0
+    assert out["measured_cost"]["cpu_seconds"] != out["measured_cost"]["wall_seconds"]
+
+
+@needs_data
+def test_the_monitoring_subset_is_declared_apart_from_the_full_scoring_population(tmp_path):
+    """A twenty-batch validation reading is a monitor, not the reference metric, and the record must say so."""
+    out = M.run_contrast(DATA, tmp_path / "tiny_pop", pred_len=96, seeds=(2021,), batch=8,
+                         cpu_budget_seconds=900, wall_budget_seconds=900,
+                         limit_train_windows=64, limit_validation_windows=32, max_epochs=2)
+    pop = out["populations"]
+    assert pop["validation_monitor_windows"] <= pop["validation_windows_available"]
+    assert pop["scoring_population"] == "NOT_SCORED_IN_THIS_RUN"
+    cell = out["cells"]["R0_s2021"]
+    assert cell["validation_monitor_loss_is_not_the_reference_metric"] is True

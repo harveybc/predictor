@@ -168,7 +168,10 @@ def test_RP142_the_sealed_contrast_records_every_resolved_argument():
     assert len(design["factorial"]["cells"]) == 9
     assert design["exposure"]["outer_test"].startswith("NO_ACCESS")
     assert design["reference"]["protocol"].startswith("A")
-    assert design["design_sha256"] == M.seal_contrast(DATA, pred_len=96)["design_sha256"] or True
+    # RP152 (Musashi F3): this assertion used to end in `or True` and could not fail. The identity must be stable across two
+    # seals of the same design and must move when the science changes.
+    assert design["design_sha256"] == M.seal_contrast(DATA, pred_len=96)["design_sha256"]
+    assert design["design_sha256"] != M.seal_contrast(DATA, pred_len=192)["design_sha256"]
     assert "equal-total-cost" in " ".join(design["optimisation"]["cost_readings"])
 
 

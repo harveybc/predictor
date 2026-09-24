@@ -1,0 +1,30 @@
+>       out = M.run_contrast(DATA, tmp_path / "tiny_steps", pred_len=96, seeds=(2021,), batch=8,
+                             cpu_budget_seconds=900, wall_budget_seconds=900,
+                             limit_train_windows=64, limit_validation_windows=32, max_epochs=2)
+E       TypeError: run_contrast() got an unexpected keyword argument 'limit_train_windows'
+
+tests/test_df_ecl_contrast_gates.py:144: TypeError
+_ test_the_monitoring_subset_is_declared_apart_from_the_full_scoring_population _
+
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-142/test_the_monitoring_subset_is_0')
+
+    @needs_data
+    def test_the_monitoring_subset_is_declared_apart_from_the_full_scoring_population(tmp_path):
+        """A twenty-batch validation reading is a monitor, not the reference metric, and the record must say so."""
+>       out = M.run_contrast(DATA, tmp_path / "tiny_pop", pred_len=96, seeds=(2021,), batch=8,
+                             cpu_budget_seconds=900, wall_budget_seconds=900,
+                             limit_train_windows=64, limit_validation_windows=32, max_epochs=2)
+E       TypeError: run_contrast() got an unexpected keyword argument 'limit_train_windows'
+
+tests/test_df_ecl_contrast_gates.py:158: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_df_ecl_contrast_gates.py::test_F2_an_empty_population_cannot_satisfy_the_regime_checks
+FAILED tests/test_df_ecl_contrast_gates.py::test_F2_one_regime_of_one_seed_is_reported_as_partial
+FAILED tests/test_df_ecl_contrast_gates.py::test_F2_a_complete_population_is_judged_on_its_own_evidence
+FAILED tests/test_df_ecl_contrast_gates.py::test_F3_the_design_digest_is_stable_across_seals_and_moves_with_a_scientific_change
+FAILED tests/test_df_ecl_contrast_gates.py::test_F4_an_infeasible_allocation_is_refused_not_rounded_up_to_one_epoch
+FAILED tests/test_df_ecl_contrast_gates.py::test_the_window_sequence_delivers_every_origin_including_an_uneven_last_batch
+FAILED tests/test_df_ecl_contrast_gates.py::test_F1_each_regime_cell_persists_a_restorable_model_and_a_selected_checkpoint
+FAILED tests/test_df_ecl_contrast_gates.py::test_F4_the_reported_updates_are_observed_optimizer_iterations
+FAILED tests/test_df_ecl_contrast_gates.py::test_the_monitoring_subset_is_declared_apart_from_the_full_scoring_population
+9 failed in 6.35s
