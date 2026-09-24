@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/home/harveybc/Documents/GitHub/.worktrees/predictor-rp132/docs/audits/evidence/M5PHET_INTEGRATION_REVIEW_2026_09_24/probe.py", line 128, in <module>
+    main()
+  File "/home/harveybc/Documents/GitHub/.worktrees/predictor-rp132/docs/audits/evidence/M5PHET_INTEGRATION_REVIEW_2026_09_24/probe.py", line 56, in main
+    resumed = open_run(root, **{**kwargs, "task": {"id": "B"}, "code_identity": {"rev": "B"}}, resume=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/m5phet-src/src/m5phet/evidence.py", line 264, in open_run
+    raise ContractError(
+m5phet.classification.ContractError: run 'local' was opened under identity d3742fb3217e and the request asks for f36d68a59bfe: a changed task, code, model, data or calibration identity requires a NEW run

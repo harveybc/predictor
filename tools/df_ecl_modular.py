@@ -640,29 +640,46 @@ class AllocationError(RuntimeError):
 
 
 def regime_checks(cells: dict, seeds) -> dict:
-    """RP152 (Musashi F2): a verdict over a population, which first says whether that population is there. `all()` over an
-    empty set is True, which made an empty or one-cell run look like a passing contrast. A check with no evidence is None."""
+    """RP152/RP153 (Musashi F2 and integration finding 5): a verdict over a population that must actually be there, computed
+    only from TYPED evidence. `all()` over an empty set is True and `not v.get(k)` turns a MISSING measurement into a positive
+    finding; both made an incomplete run look like a passing contrast. A check without typed evidence is None, a cell nobody
+    asked for is an error rather than extra support, and every state is named."""
     seeds = list(seeds)
+    cells = cells or {}
     expected = [f"AE_s{s}" for s in seeds] + [f"{r}_s{s}" for s in seeds for r in ("R0", "R1", "R2")]
-    missing = [c for c in expected if c not in (cells or {})]
-    out = {"expected_cells": expected, "present_cells": sorted(cells or {}), "missing_cells": missing,
-           "complete": not missing, "verdict": "COMPLETE" if not missing else "INCOMPLETE_POPULATION"}
-    r1 = [v for k, v in (cells or {}).items() if k.startswith("R1_")]
-    r2 = [v for k, v in (cells or {}).items() if k.startswith("R2_")]
-    fits = [v for k, v in (cells or {}).items() if not k.startswith("AE_")]
-    out["R1_detector_unchanged_by_its_fit"] = (all(v.get("detector_unchanged_by_the_fit") for v in r1) if r1 else None)
-    out["R2_detector_changed_by_its_fit"] = (all(not v.get("detector_unchanged_by_the_fit") for v in r2) if r2 else None)
-    pairs = [(f"R1_s{s}", f"R2_s{s}") for s in seeds if f"R1_s{s}" in (cells or {}) and f"R2_s{s}" in (cells or {})]
-    out["R1_and_R2_share_the_donor_per_seed"] = (all(cells[a].get("donor") == cells[b].get("donor") and cells[a].get("donor")
+    missing = [c for c in expected if c not in cells]
+    unexpected = sorted(set(cells) - set(expected))
+    typed = lambda cell, key: isinstance((cell or {}).get(key), bool)
+    fit_names = [f"{r}_s{s}" for s in seeds for r in ("R0", "R1", "R2") if f"{r}_s{s}" in cells]
+    without_evidence = sorted(n for n in fit_names if not typed(cells[n], "detector_unchanged_by_the_fit"))
+    out = {"expected_cells": expected, "present_cells": sorted(cells), "missing_cells": missing,
+           "unexpected_cells": unexpected, "cells_without_evidence": without_evidence}
+    r1 = [cells[n] for n in fit_names if n.startswith("R1_")]
+    r2 = [cells[n] for n in fit_names if n.startswith("R2_")]
+    out["R1_detector_unchanged_by_its_fit"] = (all(c["detector_unchanged_by_the_fit"] for c in r1)
+                                               if r1 and all(typed(c, "detector_unchanged_by_the_fit") for c in r1) else None)
+    out["R2_detector_changed_by_its_fit"] = (all(c["detector_unchanged_by_the_fit"] is False for c in r2)
+                                             if r2 and all(typed(c, "detector_unchanged_by_the_fit") for c in r2) else None)
+    pairs = [(f"R1_s{s}", f"R2_s{s}") for s in seeds if f"R1_s{s}" in cells and f"R2_s{s}" in cells]
+    out["R1_and_R2_share_the_donor_per_seed"] = (all(cells[a].get("donor") and cells[a].get("donor") == cells[b].get("donor")
                                                      for a, b in pairs) if pairs else None)
-    allowances = {v.get("steps") for v in fits if v.get("steps") is not None}
-    out["same_update_allowance"] = (len(allowances) == 1 if fits else None)
-    observed = {v.get("observed_updates") for v in fits if v.get("observed_updates") is not None}
-    out["same_observed_updates"] = (len(observed) == 1 if observed else None)
-    out["reading"] = ("every check is computed only from cells that exist; a missing population is reported as such and never "
-                      "as a green verdict")
-    return out
+    fits = [cells[n] for n in fit_names]
+    def _same(key):
+        """True when every fit cell carries a typed value for `key` and they all agree; None when any is missing."""
+        values = [c.get(key) for c in fits]
+        if not fits or any(v is None or isinstance(v, bool) or not isinstance(v, int) for v in values):
+            return None
+        return len(set(values)) == 1
 
+    out["same_update_allowance"] = _same("steps")
+    out["same_observed_updates"] = _same("observed_updates")
+    out["complete"] = not missing and not unexpected and not without_evidence
+    out["verdict"] = ("COMPLETE" if out["complete"] else
+                      ("UNEXPECTED_CELLS" if unexpected else
+                       ("INCOMPLETE_POPULATION" if missing else "INCOMPLETE_EVIDENCE")))
+    out["reading"] = ("every check is computed from typed evidence in cells that exist; a missing population, a cell nobody "
+                      "asked for and an untyped measurement are each named, and none of them becomes a green verdict")
+    return out
 
 def run_contrast(data_path: Path, out_dir: Path, *, pred_len: int = 96, seeds=(2021, 2022, 2023), batch: int = 32,
                  cpu_budget_seconds: float = 14400.0, wall_budget_seconds: float = 28800.0,

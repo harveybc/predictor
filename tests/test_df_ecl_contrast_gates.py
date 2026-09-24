@@ -163,3 +163,50 @@ def test_the_monitoring_subset_is_declared_apart_from_the_full_scoring_populatio
     assert pop["scoring_population"] == "NOT_SCORED_IN_THIS_RUN"
     cell = out["cells"]["R0_s2021"]
     assert cell["validation_monitor_loss_is_not_the_reference_metric"] is True
+
+
+# --- Musashi's integration review, finding 5: missing evidence is not a positive finding ------------------------------------
+
+def test_F5_missing_R2_change_evidence_is_never_a_positive_finding():
+    """The exact counterexample: every expected cell name present, but no R2 change measurement. `not v.get(...)` turned the
+    absence into True. A check needs typed evidence, not the absence of a False."""
+    cells = {}
+    for seed in (2021,):
+        cells[f"AE_s{seed}"] = {"donor_sha256": "d"}
+        cells[f"R0_s{seed}"] = {"steps": 10, "observed_updates": 10, "detector_unchanged_by_the_fit": False, "donor": None}
+        cells[f"R1_s{seed}"] = {"steps": 10, "observed_updates": 10, "detector_unchanged_by_the_fit": True, "donor": "d"}
+        cells[f"R2_s{seed}"] = {"steps": 10, "observed_updates": 10, "donor": "d"}          # no measurement at all
+    checks = M.regime_checks(cells, seeds=(2021,))
+    assert checks["R2_detector_changed_by_its_fit"] is None
+    assert checks["complete"] is False
+    assert checks["verdict"] in ("INCOMPLETE_POPULATION", "INCOMPLETE_EVIDENCE")
+    assert any("R2_s2021" in str(x) for x in checks.get("cells_without_evidence", []))
+
+
+@pytest.mark.parametrize("bad", [None, "yes", 1, 0])
+def test_F5_an_untyped_detector_flag_is_not_evidence(bad):
+    cells = {"AE_s2021": {"donor_sha256": "d"},
+             "R0_s2021": {"steps": 1, "observed_updates": 1, "detector_unchanged_by_the_fit": False, "donor": None},
+             "R1_s2021": {"steps": 1, "observed_updates": 1, "detector_unchanged_by_the_fit": bad, "donor": "d"},
+             "R2_s2021": {"steps": 1, "observed_updates": 1, "detector_unchanged_by_the_fit": False, "donor": "d"}}
+    checks = M.regime_checks(cells, seeds=(2021,))
+    assert checks["R1_detector_unchanged_by_its_fit"] is None
+    assert checks["complete"] is False
+
+
+def test_F5_an_unexpected_cell_cannot_expand_the_denominator():
+    """Adding R0 from a seed nobody asked for used to leave the verdict COMPLETE."""
+    cells = {}
+    for seed in (2021,):
+        cells[f"AE_s{seed}"] = {"donor_sha256": "d"}
+        for regime, unchanged in (("R0", False), ("R1", True), ("R2", False)):
+            cells[f"{regime}_s{seed}"] = {"steps": 1, "observed_updates": 1,
+                                          "detector_unchanged_by_the_fit": unchanged,
+                                          "donor": None if regime == "R0" else "d"}
+    clean = M.regime_checks(cells, seeds=(2021,))
+    assert clean["complete"] is True and clean["verdict"] == "COMPLETE"
+    intruder = dict(cells)
+    intruder["R0_s9999"] = {"steps": 1, "observed_updates": 1, "detector_unchanged_by_the_fit": False, "donor": None}
+    checks = M.regime_checks(intruder, seeds=(2021,))
+    assert checks["unexpected_cells"] == ["R0_s9999"]
+    assert checks["complete"] is False and checks["verdict"] == "UNEXPECTED_CELLS"
