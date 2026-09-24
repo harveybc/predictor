@@ -4439,9 +4439,10 @@ def _claim_for(payload: dict, entry: dict, unit: str, ident: dict) -> dict | Non
                   ("replay.checkpoint", replay_ident.get("checkpoint_sha256"), ident.get("checkpoint_sha256"), "CHANGED_CHECKPOINT"),
                   ("replay.arrays", replay_ident.get("arrays_sha256"), ident.get("predictions_sha256_recorded"), "CHANGED_PREDICTIONS"),
                   ("replay.pred_body", replay_ident.get("pred_sha256"), ident.get("pred_body_sha256_recorded"), "CHANGED_PREDICTIONS"),
-                  ("regeneration", regenerated.get("regeneration_sha256"), ident.get("regeneration_sha256"), "CHANGED_REGENERATION"),
-                  ("regeneration_acceptance", regenerated.get("acceptance_sha256"), ident.get("regeneration_acceptance_sha256"), "CHANGED_REGENERATION_ACCEPTANCE"),
-                  ("catalog", ((row.get("recomputed") or {}).get("metrics_vault_sha256")), ident.get("catalog_sha256"), "CHANGED_CATALOG"))
+                  ("regeneration", regenerated.get("regeneration_sha256"), ident.get("regeneration_sha256"), "CHANGED_REGENERATION"))
+        # NOT identity keys: the metric catalog and the regeneration ACCEPTANCE are derived objects that each closure and each
+        # acceptance round rewrites, so two roots holding the same cell legitimately differ in them. Binding uses the cell's
+        # immutable artifacts - record, checkpoint, prediction array and body, and the regeneration record itself.
         mismatch = [f"{code}: the report's {role} digest is not this root's" for role, claimed, mine, code in checks
                     if claimed and mine and claimed != mine]
         present = [role for role, claimed, mine, _c in checks if claimed and mine and claimed == mine]
