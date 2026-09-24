@@ -1,5 +1,17 @@
 {
  "schema": "research_program_method_state.v1",
+ "cl_first_review_20260924": {
+  "candidates": {"news-signal": "bb281cc", "M5PHET": "e752ed1", "predictor": "8d9eba36"},
+  "scope": "Retained JSON and CPU fixture probes; no live services, GPU inference or trading validation",
+  "parity": "12/12 exact distinct inputs, both first and restarted process; full population equality",
+  "quality": "6/13 correct, macro-F1 0.333333; 12 unique inputs, author labels, development smoke only",
+  "findings": ["shadow path escape", "evaluation identity and integrity lost on reuse", "declared runtime dependency has no runtime module", "pure closure trusts mutable scoring population", "natural-language question path still absent"],
+  "orders": "../../audits/work_plan/MUSASHI_CL_FIRST_REVIEW_2026_09_24.md",
+  "evidence": "../../audits/evidence/CL_FIRST_MUSASHI_20260924/results.json",
+  "next_action": "CL08-CL13 concurrently; Satoshi implements; no repeat training or routine inference for closure",
+  "global_hold": false,
+  "new_compute_budget": false
+ },
  "classification_first_20260924": {
   "public_interface": "Required Laya-like experience across all five families: data/context + natural-language questions -> typed engine answers; not a plugin catalog",
   "RAG": "Consider bounded documentation retrieval evaluation; market-context RAG separate and point-in-time; optional, not implemented, not a classification prerequisite",
@@ -7,7 +19,7 @@
   "interpreter_candidates": "Reuse configured Hermes/OpenCode language access (owner names DeepSeek Flash); optional admitted small local pretrained model. Verify exact identity/access, no LLM training or broker-role conflation",
   "orders": "../../handoffs/SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md",
   "primary_task": "English news relevance to EURUSD via real Laya and M5PHET Registry; direct SDK parity",
-  "status": "IMPLEMENTATION_ASSIGNED_REAL_INFERENCE_NOT_VERIFIED",
+  "status": "REAL_LAYA_RETAINED_PARITY_VERIFIED_NL_INTERFACE_AND_SAFE_DEPLOYMENT_PENDING",
   "provider_owners": {"classification": "news-signal", "forecasting": "predictor/prediction_provider", "hierarchical_regimes": "feature-eng", "causal_inference": "causal-inference", "RL": "agent-multi/gym-fx"},
   "DOIN": "transversal optional optimization, not RL engine",
   "implementation_owner": "Satoshi",

@@ -1,5 +1,13 @@
 # Start here: reconcile ALL active assignments, not only M5PHET
 
+**Current review after CL01-CL07 (`bb281cc` / `e752ed1` / `8d9eba36`):
+[CL08-CL13, parallel application delivery](../audits/work_plan/MUSASHI_CL_FIRST_REVIEW_2026_09_24.md).**
+Retained real-Laya parity independently matches 12/12 inputs in both processes;
+author-labelled smoke macro-F1 is 0.333333, not production quality. Fix packaging
+and shadow-store boundaries while delivering the already required natural-language
+question path and the forecast slice. Pure ECL closure repair is CPU-only and does
+not block those lanes. All in-progress snapshots below are history, not dispatch.
+
 **Owner clarification:** the public M5PHET interface must match Laya's experience:
 data/context and natural-language questions in, task-specific structured answers
 out. This is required across the five families, not a later optional frontend.

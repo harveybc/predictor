@@ -1,0 +1,67 @@
+{
+  "scope": "Retained JSON parity, fixture public application/store and fixture retained closure; CPU only",
+  "parity": {
+    "first": {
+      "expected_distinct_inputs": 12,
+      "population_exact": true,
+      "exact_answers": 12
+    },
+    "restart": {
+      "expected_distinct_inputs": 12,
+      "population_exact": true,
+      "exact_answers": 12
+    }
+  },
+  "quality": {
+    "confusion": {
+      "related": {
+        "related": 5,
+        "unclear": 2,
+        "unrelated": 0
+      },
+      "unclear": {
+        "related": 1,
+        "unclear": 0,
+        "unrelated": 0
+      },
+      "unrelated": {
+        "related": 2,
+        "unclear": 2,
+        "unrelated": 1
+      }
+    },
+    "macro_f1": 0.3333333333333333,
+    "correct": 6,
+    "rows": 13,
+    "distinct_inputs": 12,
+    "always_related_accuracy": 0.5384615384615384,
+    "always_related_macro_f1": 0.2333333333333333
+  },
+  "path_escape": {
+    "application_status": "SHADOW_ONLY",
+    "written_outside_store": true
+  },
+  "refusal_then_success": {
+    "first": "REFUSED_WITH_INPUT",
+    "second": "SHADOW_ONLY",
+    "disposition": "DUPLICATE",
+    "persisted_status": "REFUSED_WITH_INPUT"
+  },
+  "different_task": {
+    "new_receipt_task": "news_triage.v1",
+    "disposition": "DUPLICATE",
+    "persisted_task": "news_relevance_eurusd.v1"
+  },
+  "corrupted_duplicate": {
+    "disposition": "DUPLICATE",
+    "actionable_events": 1,
+    "integrity_failures": 1
+  },
+  "retained_population_rewrite": {
+    "baseline": "COMPLETE",
+    "mutated": "COMPLETE",
+    "mutated_problems": [],
+    "design_and_contrast_changed": false,
+    "summaries_present": true
+  }
+}
