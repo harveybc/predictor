@@ -1,0 +1,46 @@
+{
+  "scope": "the five reviewed cases after repair; public surfaces, CPU, no model and no broker",
+  "valid_record_wrong_key": {
+    "disposition": "REPLACED_INVALID",
+    "requested_task": "adhoc.question.v1:76d95fc24a08a692bd80b1b68bac796b9ce8ea5d0fb9d90d34404651c98fd69d",
+    "returned_stored_task": "adhoc.question.v1:76d95fc24a08a692bd80b1b68bac796b9ce8ea5d0fb9d90d34404651c98fd69d",
+    "reused_other_record_digest": false,
+    "replay_integrity_failures": 1,
+    "failure_reasons": [],
+    "quarantined": 1
+  },
+  "option_truncation": {
+    "budget_fits": false,
+    "options_truncated": [
+      "a"
+    ],
+    "option_tokens_asked": {
+      "a": 58,
+      "b": 2
+    },
+    "option_token_limit": 48,
+    "public_path_outcome": "REFUSED_WITH_INPUT"
+  },
+  "post_publication_consensus": {
+    "release_consensus": 2.5,
+    "release_surprise": 0.3999999999999999,
+    "available_consensus": 2.9,
+    "available_surprise": 0.0,
+    "boundaries_named": [
+      "available",
+      "release"
+    ]
+  },
+  "unknown_availability_consumed": {
+    "disposition": "ARCHIVED_NOT_POINT_IN_TIME",
+    "consumer_release_surprise": null,
+    "consumer_available_surprise": null,
+    "archive_retained": 1,
+    "undeclared_refused": "AVAILABILITY_MUST_BE_DECLARED: this arrival does not say whether its historical "
+  },
+  "mutable_arrival": {
+    "before_actual": 2.9,
+    "after_actual": 2.9,
+    "vintage_unchanged": true
+  }
+}

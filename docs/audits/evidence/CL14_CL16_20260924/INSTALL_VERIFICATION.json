@@ -1,0 +1,37 @@
+{
+ "console_script": "news-signal",
+ "editable_or_pythonpath_substitution": false,
+ "entry_point_discovered": "laya_news",
+ "entry_point_group": "m5phet.providers",
+ "entry_point_refused": {},
+ "fresh_process_store_recovery": {
+  "actionable_events": 1,
+  "inference_performed": false,
+  "integrity_failures": [],
+  "records": 1
+ },
+ "imported_m5phet_runtime": true,
+ "installed_entry_point_ask": {
+  "backend_kind": "NON_MODEL_FIXTURE",
+  "entry_point_discovered": "laya_news",
+  "label": "none",
+  "option_order": [
+   "us",
+   "eu",
+   "none"
+  ],
+  "question": "Which economy is named?",
+  "returncode": 0,
+  "status": "SHADOW_ONLY",
+  "stored": "STORED",
+  "task_id": "adhoc.question.v1:76d95fc24a08a692bd80b1b68bac796b9ce8ea5d0fb9d90d34404651c98fd69d",
+  "token_budget_checked": true
+ },
+ "installed_inside_venv": true,
+ "pinned_commit": "3f4a833ca794b20962c64a98f9f5280494185f9b",
+ "pinned_url": "https://github.com/harveybc/M5PHET.git",
+ "python": "3.12.7",
+ "reading": "resolved by pip from the declared git pin alone. The backend is the package's declared NON_MODEL_FIXTURE, so this proves the installed path answers a user-authored question end to end; it measures no model",
+ "schema": "news_install_verification.v2",
+ "venv": "ISOLATED_CLEAN_VENV"
+}
