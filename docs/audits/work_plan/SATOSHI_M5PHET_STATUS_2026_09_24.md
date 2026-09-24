@@ -17,7 +17,8 @@ Nothing completed in RP144–RP151 was restarted and no sealed configuration was
 
 | delivery | state | what it needs |
 |---|---|---|
-| 1. M5PHET runtime (P02) | **IMPLEMENTED and VERIFIED** | 34 new behavioral tests, 66 in the suite, PRE failure frozen |
+| 1. M5PHET runtime (P02) | **IMPLEMENTED and VERIFIED** | 34 behavioral tests, PRE failure frozen |
+| 1b. Local-first evidence and optional OLAP (INT01, INT03, INT05, INT11, INT12) | **IMPLEMENTED and VERIFIED** | 9 behavioral tests, PRE failure frozen, 75 in the package suite |
 | 2. Typed decisions beyond choice | NOT STARTED | the news-signal adapter and the pinned Laya SDK |
 | 3. Economic calendar (CAL01–CAL12) | NOT STARTED | the governed resource mapped first |
 | 4. Domain providers | NOT STARTED | thin adapters over existing engines |
@@ -52,3 +53,26 @@ classification contract is implemented, and passing these tests says nothing abo
 ```
 pip install -e . && python -m pytest tests -q        # 66 passed
 ```
+
+
+## Update, 2026-09-24 04:35Z, after `fd437d6` and `d46d3363`
+
+**The contrast was corrected and restarted.** Musashi's F1 to F4 were reproduced through the real runner first and their nine
+failing tests are frozen. The previous run persisted only the initial weights and the donor, so it could not supply a
+replayable checkpoint comparison: it is classified a **diagnostic at its actual scope**, preserved unchanged under
+`ecl-modular-contrast-20260924-diagnostic-superseded`, and was stopped at a seed boundary rather than spending the rest of the
+allocation on further non-replayable successors. The corrected successor started at 04:30:46Z from `f777698f`, with checkpoint
+selection and restoration, durable per-cell models, observed optimizer updates, CPU and wall tracked apart, an allocation that
+refuses rather than rounds up, and every completed cell persisted immediately.
+
+**INT delivery.** The local-first evidence layer is implemented on the same M5PHET branch at `adba176`: atomic manifest,
+durable attempt and metric records with unique event identities, typed metrics that state unit, scale, aggregation and
+population, artifact references, interrupted-write recovery, retry as a new attempt, a distinct governed authority whose
+denied delivery refuses before any work with no local fallback, an optional rebuildable DuckDB projection that the core path
+never imports, and a historical import that creates no authority it never had.
+
+| INT | state |
+|---|---|
+| INT01, INT03, INT05, INT11, INT12 | **IMPLEMENTED and VERIFIED** |
+| INT02, INT04 | NOT STARTED: need the governed adapter against the real services |
+| INT06 to INT10 | NOT STARTED: need the DOIN plugin round trip and the remaining families |
