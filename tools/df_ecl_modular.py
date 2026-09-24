@@ -968,6 +968,12 @@ def score_cell(data_path: Path, run_dir: Path, cell: str, *, pred_len: int = 96,
 
 
 
+#: RP158 (Musashi finding 1): the canonical scientific fields of a contrast design are defined by THIS SCHEMA, not by a list
+#: the design carries about itself. An object cannot decide which of its own fields matter to its identity.
+CANONICAL_DESIGN_FIELDS = ("reference", "task", "channel_order", "architecture", "regimes", "factorial",
+                           "pretraining", "optimisation", "exposure")
+
+
 class DesignError(RuntimeError):
     """A design that cannot authenticate itself against the run it claims to describe. Raised BEFORE any child is dispatched."""
 
@@ -983,12 +989,19 @@ def authenticate_design(contrast: dict, design: dict) -> dict:
     cells = list(design["factorial"].get("cells") or [])
     if not cells:
         raise DesignError("REFUSED: the design declares an empty factorial; an empty population is not a complete contrast")
-    covers = design.get("identity_covers")
-    if covers:
-        recomputed = hashlib.sha256(json.dumps({k: design[k] for k in covers}, sort_keys=True, default=str).encode()).hexdigest()
-        if recomputed != design.get("design_sha256"):
-            raise DesignError(f"REFUSED: the design's own content hashes to {recomputed[:12]} and it claims "
-                              f"{str(design.get('design_sha256'))[:12]}")
+    absent = [f for f in CANONICAL_DESIGN_FIELDS if f not in design]
+    if absent:
+        raise DesignError(f"REFUSED: the design omits canonical scientific field(s) {', '.join(absent)}; a partial object "
+                          f"cannot authenticate as this design")
+    covers = list(design.get("identity_covers") or ())
+    if covers and sorted(covers) != sorted(CANONICAL_DESIGN_FIELDS):
+        raise DesignError(f"REFUSED: the design declares its identity covers {sorted(covers)}, and this schema's canonical "
+                          f"fields are {sorted(CANONICAL_DESIGN_FIELDS)}; an object does not choose what identifies it")
+    recomputed = hashlib.sha256(
+        json.dumps({k: design[k] for k in CANONICAL_DESIGN_FIELDS}, sort_keys=True, default=str).encode()).hexdigest()
+    if recomputed != design.get("design_sha256"):
+        raise DesignError(f"REFUSED: the design's canonical content hashes to {recomputed[:12]} and it claims "
+                          f"{str(design.get('design_sha256'))[:12]}")
     if design.get("design_sha256") != contrast.get("design_sha256"):
         raise DesignError(f"REFUSED: the design digest {str(design.get('design_sha256'))[:12]} is not the one this run "
                           f"recorded when it produced these cells, {str(contrast.get('design_sha256'))[:12]}")
@@ -998,18 +1011,30 @@ def authenticate_design(contrast: dict, design: dict) -> dict:
         raise DesignError(f"REFUSED: the run holds cells the design does not declare: {sorted(held - declared)[:4]}")
     if not declared <= held | {c for c in (contrast.get("cells") or {})}:
         raise DesignError(f"REFUSED: the design declares cells this run does not hold: {sorted(declared - held)[:4]}")
-    return {"design_sha256": design["design_sha256"], "cells": sorted(declared),
-            "pred_len": (design.get("task") or {}).get("pred_len"),
-            "authenticated": "the digest was recomputed from the design's own content and equals the run's recorded digest"}
+    declared_pred_len = (design.get("task") or {}).get("pred_len")
+    run_pred_len = contrast.get("pred_len")
+    if run_pred_len is not None and int(declared_pred_len or 0) != int(run_pred_len):
+        raise DesignError(f"REFUSED: the design declares horizon {declared_pred_len!r} and this run produced its cells at "
+                          f"{run_pred_len!r}; the task argument is bound to dispatch, not asserted beside it")
+    declared_seeds = sorted(int(x) for x in (design.get("factorial") or {}).get("seeds") or [])
+    run_seeds = sorted(int(x) for x in (contrast.get("seeds") or []))
+    if declared_seeds and run_seeds and declared_seeds != run_seeds:
+        raise DesignError(f"REFUSED: the design declares seeds {declared_seeds} and the run recorded {run_seeds}")
+    return {"design_sha256": design["design_sha256"], "cells": sorted(declared), "pred_len": int(declared_pred_len),
+            "canonical_fields": list(CANONICAL_DESIGN_FIELDS), "seeds": declared_seeds or run_seeds,
+            "authenticated": ("the digest was recomputed over this SCHEMA's canonical fields, equals what the design claims, "
+                              "equals the digest the run recorded, and its task arguments match the dispatch")}
 
 
-def validate_children(children: dict, *, expected, pred_len: int, populations, reductions=("author_float32",)) -> dict:
+def validate_children(children: dict, *, expected, pred_len: int, populations, reductions=("author_float32",),
+                      expected_windows: dict | None = None, checkpoints: dict | None = None) -> dict:
     """RP157 (Musashi finding 2): bind every returned child to the cell it was asked for before ANY aggregate exists.
 
     A child must name its own cell, the seed and regime that cell encodes, the horizon the design declares, every expected
     population with a consistent window count, and typed finite numbers in every declared reduction. A silently missing
     population would otherwise average one regime over fewer seeds than the others."""
     problems, windows = [], {}
+    expected_windows = expected_windows or {}
     for cell in expected:
         record = children.get(cell)
         if record is None:
@@ -1024,8 +1049,15 @@ def validate_children(children: dict, *, expected, pred_len: int, populations, r
             problems.append(f"{cell}: the child declares seed {record.get('seed')!r}, not {seed!r}")
         if int(record.get("pred_len") or 0) != int(pred_len):
             problems.append(f"{cell}: the child declares horizon {record.get('pred_len')!r}, not {pred_len}")
-        if not record.get("model_identity_reconciled"):
-            problems.append(f"{cell}: the child's checkpoint identity did not reconcile")
+        reconciled = record.get("model_identity_reconciled")
+        if reconciled is not True:
+            problems.append(f"{cell}: the child's checkpoint identity is {reconciled!r}, which is not the boolean True; "
+                            f"a truthy string is not a reconciliation")
+        expected_digest = (checkpoints or {}).get(cell)
+        if expected_digest is not None and record.get("model_sha256_on_disk") != expected_digest:
+            problems.append(f"{cell}: the child scored a checkpoint hashing to "
+                            f"{str(record.get('model_sha256_on_disk'))[:12]}, and the retained record declares "
+                            f"{str(expected_digest)[:12]}")
         held = record.get("populations") or {}
         for population in populations:
             entry = held.get(population)
@@ -1036,9 +1068,31 @@ def validate_children(children: dict, *, expected, pred_len: int, populations, r
             if not isinstance(count, int) or isinstance(count, bool) or count <= 0:
                 problems.append(f"{cell}: the {population} population declares an untyped window count {count!r}")
                 continue
+            # RP158 (finding 2): the expected count comes from the validated task and support CONTRACT, never from whatever
+            # the first sibling happened to report. Nine children agreeing on 1 window is nine children being wrong together.
+            contract = expected_windows.get(population)
+            if contract is not None and count != contract:
+                problems.append(f"{cell}: the {population} population reports {count} windows and the support contract "
+                                f"declares {contract}")
+            elements = entry.get("elements")
+            if isinstance(elements, int) and not isinstance(elements, bool) and elements != count * pred_len * CHANNELS:
+                problems.append(f"{cell}: the {population} population declares {elements} elements, which is not "
+                                f"{count} x {pred_len} x {CHANNELS}")
             seen = windows.setdefault(population, count)
             if seen != count:
                 problems.append(f"{cell}: the {population} population has {count} windows and another cell has {seen}")
+            baseline = entry.get("matched_persistence_author_float32")
+            if not isinstance(baseline, dict):
+                problems.append(f"{cell}: the {population} population omits its matched persistence baseline")
+            else:
+                for metric in ("mae", "mse"):
+                    value = baseline.get(metric)
+                    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+                        problems.append(f"{cell}: the matched persistence {metric} is {value!r}, not a finite number")
+            skill = entry.get("skill_mae_vs_persistence")
+            if skill is not None and (isinstance(skill, bool) or not isinstance(skill, (int, float))
+                                      or not math.isfinite(float(skill))):
+                problems.append(f"{cell}: the derived skill is {skill!r}, not a finite number")
             for reduction in reductions:
                 values = entry.get(reduction)
                 if not isinstance(values, dict):
@@ -1064,11 +1118,28 @@ def score_contrast(data_path: Path, run_dir: Path, *, pred_len: int = 96, batch:
     import sys
     run_dir = Path(run_dir)
     contrast = json.loads((run_dir / "CONTRAST.json").read_text())
-    registered = design or seal_contrast(data_path, pred_len=pred_len, seeds=tuple(contrast["seeds"]))
-    authenticated = authenticate_design(contrast, registered)       # refuses before a single child is dispatched
-    expected = authenticated["cells"]
     monitor = (contrast.get("populations") or {}).get("validation_monitor_windows") or 0
-    out = {"schema": "df_ecl_modular_scoring.v2", "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    # RP158: a retained design beside the run is the authority. A supplied one is accepted only if it authenticates, and a
+    # re-derivation is accepted only if it reproduces the digest the run recorded: neither is a fresh seal trusted on sight.
+    retained = run_dir / "DESIGN.json"
+    if design is not None:
+        registered, source = design, "supplied_and_authenticated"
+    elif retained.is_file():
+        registered, source = json.loads(retained.read_text()), "retained_beside_the_run"
+    else:
+        registered, source = seal_contrast(data_path, pred_len=pred_len, seeds=tuple(contrast["seeds"])), "re_derived_and_matched"
+    authenticated = authenticate_design(contrast, registered)       # refuses before a single child is dispatched
+    authenticated["design_source"] = source
+    expected = authenticated["cells"]
+    pred_len = authenticated["pred_len"]                            # the dispatch uses the AUTHENTICATED horizon
+    # the expected window counts come from the task and support contract, not from whatever a child reports
+    probe = author_datasets(data_path, pred_len=pred_len)
+    n_validation = len(probe["splits"]["val"]["dataset"])
+    support = label_disjoint_origins(n_validation, monitor, pred_len=pred_len)
+    expected_windows = {"complete_validation": n_validation,
+                        "label_disjoint_from_selection": support["n_disjoint"]}
+    checkpoints = {c: (contrast["cells"].get(c) or {}).get("model_sha256") for c in expected}
+    out = {"schema": "df_ecl_modular_scoring.v3", "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
            "run_dir": str(run_dir), "design_sha256": contrast["design_sha256"],
            "registered_design_sha256": registered["design_sha256"], "monitor_windows": monitor,
            "expected_cells": expected, "fresh_process_per_cell": True, "cells": {}, "problems": []}
@@ -1090,11 +1161,13 @@ def score_contrast(data_path: Path, run_dir: Path, *, pred_len: int = 96, batch:
         out["cells"][cell] = json.loads(line[-1])
     populations = ("complete_validation", "label_disjoint_from_selection")
     binding = validate_children(out["cells"], expected=expected, pred_len=pred_len, populations=populations,
-                                reductions=("author_float32", "independent_float64"))
+                                reductions=("author_float32", "independent_float64"),
+                                expected_windows=expected_windows, checkpoints=checkpoints)
     out["problems"] += binding["problems"]
     identity_failures = [c for c, r in out["cells"].items() if not r.get("model_identity_reconciled")]
     out["design_authentication"] = authenticated
     out["child_binding"] = {k: v for k, v in binding.items() if k != "problems"}
+    out["child_binding"]["expected_windows_from_contract"] = expected_windows
     out["reconciliation"] = {"cells_expected": len(expected), "cells_scored": len(out["cells"]),
                              "identity_failures": identity_failures,
                              "complete": (len(out["cells"]) == len(expected) and not identity_failures

@@ -1,0 +1,779 @@
+{
+ "schema": "df_ecl_modular_scoring.v3",
+ "at": "2026-09-24T15:10:57Z",
+ "run_dir": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b",
+ "design_sha256": "b5d5eee1b5fce981f4627352ed516d5745b1e16996507a8c63fffc53518cadd9",
+ "registered_design_sha256": "b5d5eee1b5fce981f4627352ed516d5745b1e16996507a8c63fffc53518cadd9",
+ "monitor_windows": 640,
+ "expected_cells": [
+  "R0_s2021",
+  "R0_s2022",
+  "R0_s2023",
+  "R1_s2021",
+  "R1_s2022",
+  "R1_s2023",
+  "R2_s2021",
+  "R2_s2022",
+  "R2_s2023"
+ ],
+ "fresh_process_per_cell": true,
+ "cells": {
+  "R0_s2021": {
+   "cell": "R0_s2021",
+   "seed": 2021,
+   "regime": "R0",
+   "selected_epoch": 58,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2021/R0_selected.weights.h5",
+   "model_sha256_recorded": "7251d81cb04ed69679082d75d6ac7640185eeba0807c12832f4705f3827217c0",
+   "model_sha256_on_disk": "7251d81cb04ed69679082d75d6ac7640185eeba0807c12832f4705f3827217c0",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "target_support": {
+    "monitor_windows": 640,
+    "last_monitor_target_row": 830,
+    "first_disjoint_origin": 735,
+    "n_disjoint": 1802,
+    "n_overlapping_after_monitor": 95,
+    "rule": "an origin is label-disjoint when its FIRST target row is after the monitor's last target row; sharing an input context is not sharing a label"
+   },
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "author_float32": {
+      "mae": 0.37099823355674744,
+      "mse": 0.28799957036972046,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8879448175430298,
+      "mse": 1.4077486991882324
+     },
+     "skill_mae_vs_persistence": 0.5821832323056846,
+     "independent_float64": {
+      "mae": 0.37099820244630527,
+      "mse": 0.28799956825208717
+     },
+     "float64_minus_float32": {
+      "mae": -3.111044216685954e-08,
+      "mse": -2.117633290943388e-09
+     }
+    },
+    "label_disjoint_from_selection": {
+     "windows": 1802,
+     "elements": 55530432,
+     "author_float32": {
+      "mae": 0.3697334825992584,
+      "mse": 0.27942460775375366,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8682830929756165,
+      "mse": 1.333262324333191
+     },
+     "skill_mae_vs_persistence": 0.5741786456624678,
+     "independent_float64": {
+      "mae": 0.3697334602541507,
+      "mse": 0.27942462986483874
+     },
+     "float64_minus_float32": {
+      "mae": -2.2345107708598988e-08,
+      "mse": 2.211108507399473e-08
+     }
+    }
+   },
+   "scope": "scored on the outer VALIDATION split. `complete_validation` includes the checkpoint-selection monitor and is therefore not an independent estimate. `label_disjoint_from_selection` shares NO target row with the monitor; it is still adjacent in time and disjoint labels do not establish statistical independence. The outer TEST split was not read"
+  },
+  "R0_s2022": {
+   "cell": "R0_s2022",
+   "seed": 2022,
+   "regime": "R0",
+   "selected_epoch": 52,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2022/R0_selected.weights.h5",
+   "model_sha256_recorded": "9e531410d52b856e3ec2dc1b0e86144f8c5be9e04298527779dd332b093d4e06",
+   "model_sha256_on_disk": "9e531410d52b856e3ec2dc1b0e86144f8c5be9e04298527779dd332b093d4e06",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "target_support": {
+    "monitor_windows": 640,
+    "last_monitor_target_row": 830,
+    "first_disjoint_origin": 735,
+    "n_disjoint": 1802,
+    "n_overlapping_after_monitor": 95,
+    "rule": "an origin is label-disjoint when its FIRST target row is after the monitor's last target row; sharing an input context is not sharing a label"
+   },
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "author_float32": {
+      "mae": 0.37176278233528137,
+      "mse": 0.28932827711105347,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8879448175430298,
+      "mse": 1.4077486991882324
+     },
+     "skill_mae_vs_persistence": 0.5813222004448877,
+     "independent_float64": {
+      "mae": 0.37176277659488594,
+      "mse": 0.28932827997453436
+     },
+     "float64_minus_float32": {
+      "mae": -5.74039543677074e-09,
+      "mse": 2.8634808968419634e-09
+     }
+    },
+    "label_disjoint_from_selection": {
+     "windows": 1802,
+     "elements": 55530432,
+     "author_float32": {
+      "mae": 0.3710016906261444,
+      "mse": 0.28136083483695984,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8682830929756165,
+      "mse": 1.333262324333191
+     },
+     "skill_mae_vs_persistence": 0.5727180528706171,
+     "independent_float64": {
+      "mae": 0.37100168965818336,
+      "mse": 0.2813608353572795
+     },
+     "float64_minus_float32": {
+      "mae": -9.679610446511333e-10,
+      "mse": 5.203196762337825e-10
+     }
+    }
+   },
+   "scope": "scored on the outer VALIDATION split. `complete_validation` includes the checkpoint-selection monitor and is therefore not an independent estimate. `label_disjoint_from_selection` shares NO target row with the monitor; it is still adjacent in time and disjoint labels do not establish statistical independence. The outer TEST split was not read"
+  },
+  "R0_s2023": {
+   "cell": "R0_s2023",
+   "seed": 2023,
+   "regime": "R0",
+   "selected_epoch": 57,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2023/R0_selected.weights.h5",
+   "model_sha256_recorded": "ca7cb86c5f62b383ce8d9194a4f606fbffa6b930e4750eeaed324117dfb66cae",
+   "model_sha256_on_disk": "ca7cb86c5f62b383ce8d9194a4f606fbffa6b930e4750eeaed324117dfb66cae",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "target_support": {
+    "monitor_windows": 640,
+    "last_monitor_target_row": 830,
+    "first_disjoint_origin": 735,
+    "n_disjoint": 1802,
+    "n_overlapping_after_monitor": 95,
+    "rule": "an origin is label-disjoint when its FIRST target row is after the monitor's last target row; sharing an input context is not sharing a label"
+   },
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "author_float32": {
+      "mae": 0.37313172221183777,
+      "mse": 0.2911814749240875,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8879448175430298,
+      "mse": 1.4077486991882324
+     },
+     "skill_mae_vs_persistence": 0.5797805056801789,
+     "independent_float64": {
+      "mae": 0.3731317289704823,
+      "mse": 0.29118148051936377
+     },
+     "float64_minus_float32": {
+      "mae": 6.758644532922631e-09,
+      "mse": 5.595276242331693e-09
+     }
+    },
+    "label_disjoint_from_selection": {
+     "windows": 1802,
+     "elements": 55530432,
+     "author_float32": {
+      "mae": 0.3727862536907196,
+      "mse": 0.2838216722011566,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8682830929756165,
+      "mse": 1.333262324333191
+     },
+     "skill_mae_vs_persistence": 0.5706627749560611,
+     "independent_float64": {
+      "mae": 0.3727862561652635,
+      "mse": 0.2838216669187187
+     },
+     "float64_minus_float32": {
+      "mae": 2.4745439031192973e-09,
+      "mse": -5.282437931519723e-09
+     }
+    }
+   },
+   "scope": "scored on the outer VALIDATION split. `complete_validation` includes the checkpoint-selection monitor and is therefore not an independent estimate. `label_disjoint_from_selection` shares NO target row with the monitor; it is still adjacent in time and disjoint labels do not establish statistical independence. The outer TEST split was not read"
+  },
+  "R1_s2021": {
+   "cell": "R1_s2021",
+   "seed": 2021,
+   "regime": "R1",
+   "selected_epoch": 55,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2021/R1_selected.weights.h5",
+   "model_sha256_recorded": "c9740927b913a7afbccedf6bf7c25ac1f93b3c57749fafe6e35d1686c39fb757",
+   "model_sha256_on_disk": "c9740927b913a7afbccedf6bf7c25ac1f93b3c57749fafe6e35d1686c39fb757",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "target_support": {
+    "monitor_windows": 640,
+    "last_monitor_target_row": 830,
+    "first_disjoint_origin": 735,
+    "n_disjoint": 1802,
+    "n_overlapping_after_monitor": 95,
+    "rule": "an origin is label-disjoint when its FIRST target row is after the monitor's last target row; sharing an input context is not sharing a label"
+   },
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "author_float32": {
+      "mae": 0.3758549988269806,
+      "mse": 0.2967485189437866,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8879448175430298,
+      "mse": 1.4077486991882324
+     },
+     "skill_mae_vs_persistence": 0.5767135621479466,
+     "independent_float64": {
+      "mae": 0.37585500447659165,
+      "mse": 0.29674851488747467
+     },
+     "float64_minus_float32": {
+      "mae": 5.649611056757209e-09,
+      "mse": -4.0563119529934966e-09
+     }
+    },
+    "label_disjoint_from_selection": {
+     "windows": 1802,
+     "elements": 55530432,
+     "author_float32": {
+      "mae": 0.37453460693359375,
+      "mse": 0.2876150608062744,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8682830929756165,
+      "mse": 1.333262324333191
+     },
+     "skill_mae_vs_persistence": 0.5686491998248415,
+     "independent_float64": {
+      "mae": 0.37453457047577055,
+      "mse": 0.2876150446678417
+     },
+     "float64_minus_float32": {
+      "mae": -3.645782320482738e-08,
+      "mse": -1.6138432701318095e-08
+     }
+    }
+   },
+   "scope": "scored on the outer VALIDATION split. `complete_validation` includes the checkpoint-selection monitor and is therefore not an independent estimate. `label_disjoint_from_selection` shares NO target row with the monitor; it is still adjacent in time and disjoint labels do not establish statistical independence. The outer TEST split was not read"
+  },
+  "R1_s2022": {
+   "cell": "R1_s2022",
+   "seed": 2022,
+   "regime": "R1",
+   "selected_epoch": 57,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2022/R1_selected.weights.h5",
+   "model_sha256_recorded": "d47766be64dd42b327d6f5304b8aa7f6ca2e755f720fb3d624d9f3961a4a84d5",
+   "model_sha256_on_disk": "d47766be64dd42b327d6f5304b8aa7f6ca2e755f720fb3d624d9f3961a4a84d5",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "target_support": {
+    "monitor_windows": 640,
+    "last_monitor_target_row": 830,
+    "first_disjoint_origin": 735,
+    "n_disjoint": 1802,
+    "n_overlapping_after_monitor": 95,
+    "rule": "an origin is label-disjoint when its FIRST target row is after the monitor's last target row; sharing an input context is not sharing a label"
+   },
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "author_float32": {
+      "mae": 0.3737964332103729,
+      "mse": 0.29421693086624146,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8879448175430298,
+      "mse": 1.4077486991882324
+     },
+     "skill_mae_vs_persistence": 0.5790319107389139,
+     "independent_float64": {
+      "mae": 0.3737964270348449,
+      "mse": 0.2942169002708506
+     },
+     "float64_minus_float32": {
+      "mae": -6.1755280333919416e-09,
+      "mse": -3.0595390831944513e-08
+     }
+    },
+    "label_disjoint_from_selection": {
+     "windows": 1802,
+     "elements": 55530432,
+     "author_float32": {
+      "mae": 0.37387585639953613,
+      "mse": 0.28706783056259155,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8682830929756165,
+      "mse": 1.333262324333191
+     },
+     "skill_mae_vs_persistence": 0.5694078815720583,
+     "independent_float64": {
+      "mae": 0.3738758638473569,
+      "mse": 0.2870678322686462
+     },
+     "float64_minus_float32": {
+      "mae": 7.447820749018064e-09,
+      "mse": 1.7060546309011215e-09
+     }
+    }
+   },
+   "scope": "scored on the outer VALIDATION split. `complete_validation` includes the checkpoint-selection monitor and is therefore not an independent estimate. `label_disjoint_from_selection` shares NO target row with the monitor; it is still adjacent in time and disjoint labels do not establish statistical independence. The outer TEST split was not read"
+  },
+  "R1_s2023": {
+   "cell": "R1_s2023",
+   "seed": 2023,
+   "regime": "R1",
+   "selected_epoch": 57,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2023/R1_selected.weights.h5",
+   "model_sha256_recorded": "5f2641a4590157b68339e47219f86676306f64848829ec84fd72770f0ea620d5",
+   "model_sha256_on_disk": "5f2641a4590157b68339e47219f86676306f64848829ec84fd72770f0ea620d5",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "target_support": {
+    "monitor_windows": 640,
+    "last_monitor_target_row": 830,
+    "first_disjoint_origin": 735,
+    "n_disjoint": 1802,
+    "n_overlapping_after_monitor": 95,
+    "rule": "an origin is label-disjoint when its FIRST target row is after the monitor's last target row; sharing an input context is not sharing a label"
+   },
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "author_float32": {
+      "mae": 0.37508365511894226,
+      "mse": 0.2938304841518402,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8879448175430298,
+      "mse": 1.4077486991882324
+     },
+     "skill_mae_vs_persistence": 0.5775822464319235,
+     "independent_float64": {
+      "mae": 0.37508365746139205,
+      "mse": 0.29383048024916975
+     },
+     "float64_minus_float32": {
+      "mae": 2.342449789694001e-09,
+      "mse": -3.902670464572822e-09
+     }
+    },
+    "label_disjoint_from_selection": {
+     "windows": 1802,
+     "elements": 55530432,
+     "author_float32": {
+      "mae": 0.3753400444984436,
+      "mse": 0.28647759556770325,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8682830929756165,
+      "mse": 1.333262324333191
+     },
+     "skill_mae_vs_persistence": 0.5677215789010139,
+     "independent_float64": {
+      "mae": 0.375340036918609,
+      "mse": 0.28647758463966666
+     },
+     "float64_minus_float32": {
+      "mae": -7.57983459331868e-09,
+      "mse": -1.0928036586754786e-08
+     }
+    }
+   },
+   "scope": "scored on the outer VALIDATION split. `complete_validation` includes the checkpoint-selection monitor and is therefore not an independent estimate. `label_disjoint_from_selection` shares NO target row with the monitor; it is still adjacent in time and disjoint labels do not establish statistical independence. The outer TEST split was not read"
+  },
+  "R2_s2021": {
+   "cell": "R2_s2021",
+   "seed": 2021,
+   "regime": "R2",
+   "selected_epoch": 51,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2021/R2_selected.weights.h5",
+   "model_sha256_recorded": "0b1dba77b2280dfe6f364fde4df9d6af3c9f731d4039c01f3901a88cb3183e13",
+   "model_sha256_on_disk": "0b1dba77b2280dfe6f364fde4df9d6af3c9f731d4039c01f3901a88cb3183e13",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "target_support": {
+    "monitor_windows": 640,
+    "last_monitor_target_row": 830,
+    "first_disjoint_origin": 735,
+    "n_disjoint": 1802,
+    "n_overlapping_after_monitor": 95,
+    "rule": "an origin is label-disjoint when its FIRST target row is after the monitor's last target row; sharing an input context is not sharing a label"
+   },
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "author_float32": {
+      "mae": 0.3701866567134857,
+      "mse": 0.2874741554260254,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8879448175430298,
+      "mse": 1.4077486991882324
+     },
+     "skill_mae_vs_persistence": 0.5830972269900697,
+     "independent_float64": {
+      "mae": 0.3701866580974193,
+      "mse": 0.28747412960295105
+     },
+     "float64_minus_float32": {
+      "mae": 1.3839335788468077e-09,
+      "mse": -2.5823074345510122e-08
+     }
+    },
+    "label_disjoint_from_selection": {
+     "windows": 1802,
+     "elements": 55530432,
+     "author_float32": {
+      "mae": 0.36802172660827637,
+      "mse": 0.27778810262680054,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8682830929756165,
+      "mse": 1.333262324333191
+     },
+     "skill_mae_vs_persistence": 0.5761500718077308,
+     "independent_float64": {
+      "mae": 0.3680217363301233,
+      "mse": 0.2777881127074218
+     },
+     "float64_minus_float32": {
+      "mae": 9.721846938592904e-09,
+      "mse": 1.0080621282160251e-08
+     }
+    }
+   },
+   "scope": "scored on the outer VALIDATION split. `complete_validation` includes the checkpoint-selection monitor and is therefore not an independent estimate. `label_disjoint_from_selection` shares NO target row with the monitor; it is still adjacent in time and disjoint labels do not establish statistical independence. The outer TEST split was not read"
+  },
+  "R2_s2022": {
+   "cell": "R2_s2022",
+   "seed": 2022,
+   "regime": "R2",
+   "selected_epoch": 63,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2022/R2_selected.weights.h5",
+   "model_sha256_recorded": "b4ac96675403ee0b44122b2e92f36731876b34be6f1f7d945aad353c3f653fe5",
+   "model_sha256_on_disk": "b4ac96675403ee0b44122b2e92f36731876b34be6f1f7d945aad353c3f653fe5",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "target_support": {
+    "monitor_windows": 640,
+    "last_monitor_target_row": 830,
+    "first_disjoint_origin": 735,
+    "n_disjoint": 1802,
+    "n_overlapping_after_monitor": 95,
+    "rule": "an origin is label-disjoint when its FIRST target row is after the monitor's last target row; sharing an input context is not sharing a label"
+   },
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "author_float32": {
+      "mae": 0.3701070547103882,
+      "mse": 0.28796645998954773,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8879448175430298,
+      "mse": 1.4077486991882324
+     },
+     "skill_mae_vs_persistence": 0.5831868744563591,
+     "independent_float64": {
+      "mae": 0.37010704117504717,
+      "mse": 0.2879664839325627
+     },
+     "float64_minus_float32": {
+      "mae": -1.353534101466991e-08,
+      "mse": 2.394301495955986e-08
+     }
+    },
+    "label_disjoint_from_selection": {
+     "windows": 1802,
+     "elements": 55530432,
+     "author_float32": {
+      "mae": 0.36930012702941895,
+      "mse": 0.2799787223339081,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8682830929756165,
+      "mse": 1.333262324333191
+     },
+     "skill_mae_vs_persistence": 0.5746777404546448,
+     "independent_float64": {
+      "mae": 0.3693001340230098,
+      "mse": 0.27997874445680254
+     },
+     "float64_minus_float32": {
+      "mae": 6.993590873083377e-09,
+      "mse": 2.2122894460796516e-08
+     }
+    }
+   },
+   "scope": "scored on the outer VALIDATION split. `complete_validation` includes the checkpoint-selection monitor and is therefore not an independent estimate. `label_disjoint_from_selection` shares NO target row with the monitor; it is still adjacent in time and disjoint labels do not establish statistical independence. The outer TEST split was not read"
+  },
+  "R2_s2023": {
+   "cell": "R2_s2023",
+   "seed": 2023,
+   "regime": "R2",
+   "selected_epoch": 60,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2023/R2_selected.weights.h5",
+   "model_sha256_recorded": "9c8c21d0423c22b472decf704910212522ce27b2bef56343af705c03fda924d7",
+   "model_sha256_on_disk": "9c8c21d0423c22b472decf704910212522ce27b2bef56343af705c03fda924d7",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "target_support": {
+    "monitor_windows": 640,
+    "last_monitor_target_row": 830,
+    "first_disjoint_origin": 735,
+    "n_disjoint": 1802,
+    "n_overlapping_after_monitor": 95,
+    "rule": "an origin is label-disjoint when its FIRST target row is after the monitor's last target row; sharing an input context is not sharing a label"
+   },
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "author_float32": {
+      "mae": 0.37040743231773376,
+      "mse": 0.28769394755363464,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8879448175430298,
+      "mse": 1.4077486991882324
+     },
+     "skill_mae_vs_persistence": 0.5828485903632363,
+     "independent_float64": {
+      "mae": 0.37040742140745175,
+      "mse": 0.28769393433241625
+     },
+     "float64_minus_float32": {
+      "mae": -1.0910282011167283e-08,
+      "mse": -1.3221218397863055e-08
+     }
+    },
+    "label_disjoint_from_selection": {
+     "windows": 1802,
+     "elements": 55530432,
+     "author_float32": {
+      "mae": 0.36846745014190674,
+      "mse": 0.27851325273513794,
+      "route": "df_sota_author_metric_exact.v2"
+     },
+     "matched_persistence_author_float32": {
+      "mae": 0.8682830929756165,
+      "mse": 1.333262324333191
+     },
+     "skill_mae_vs_persistence": 0.5756367328549904,
+     "independent_float64": {
+      "mae": 0.36846742509377256,
+      "mse": 0.278513257703826
+     },
+     "float64_minus_float32": {
+      "mae": -2.5048134177918513e-08,
+      "mse": 4.968688072093386e-09
+     }
+    }
+   },
+   "scope": "scored on the outer VALIDATION split. `complete_validation` includes the checkpoint-selection monitor and is therefore not an independent estimate. `label_disjoint_from_selection` shares NO target row with the monitor; it is still adjacent in time and disjoint labels do not establish statistical independence. The outer TEST split was not read"
+  }
+ },
+ "problems": [],
+ "design_authentication": {
+  "design_sha256": "b5d5eee1b5fce981f4627352ed516d5745b1e16996507a8c63fffc53518cadd9",
+  "cells": [
+   "R0_s2021",
+   "R0_s2022",
+   "R0_s2023",
+   "R1_s2021",
+   "R1_s2022",
+   "R1_s2023",
+   "R2_s2021",
+   "R2_s2022",
+   "R2_s2023"
+  ],
+  "pred_len": 96,
+  "canonical_fields": [
+   "reference",
+   "task",
+   "channel_order",
+   "architecture",
+   "regimes",
+   "factorial",
+   "pretraining",
+   "optimisation",
+   "exposure"
+  ],
+  "seeds": [
+   2021,
+   2022,
+   2023
+  ],
+  "authenticated": "the digest was recomputed over this SCHEMA's canonical fields, equals what the design claims, equals the digest the run recorded, and its task arguments match the dispatch",
+  "design_source": "re_derived_and_matched"
+ },
+ "child_binding": {
+  "bound": true,
+  "windows_per_population": {
+   "complete_validation": 2537,
+   "label_disjoint_from_selection": 1802
+  },
+  "reading": "every child is bound to its expected cell, seed, regime, horizon, populations and typed finite reductions before any aggregate is formed",
+  "expected_windows_from_contract": {
+   "complete_validation": 2537,
+   "label_disjoint_from_selection": 1802
+  }
+ },
+ "reconciliation": {
+  "cells_expected": 9,
+  "cells_scored": 9,
+  "identity_failures": [],
+  "complete": true
+ },
+ "status": "COMPLETE",
+ "by_regime": {
+  "R0": {
+   "complete_validation": {
+    "seeds": 3,
+    "matched_persistence_author_float32_mae": 0.8879448175430298,
+    "author_float32": {
+     "mae_mean": 0.3719642460346222,
+     "mae_sd": 0.0010809182101176086,
+     "mse_mean": 0.28950310746828717,
+     "mse_sd": 0.001598140603524393
+    },
+    "independent_float64": {
+     "mae_mean": 0.3719642360038911,
+     "mae_sd": 0.0010809362966656662,
+     "mse_mean": 0.2895031095819951,
+     "mse_sd": 0.001598144381116732
+    }
+   },
+   "label_disjoint_from_selection": {
+    "seeds": 3,
+    "matched_persistence_author_float32_mae": 0.8682830929756165,
+    "author_float32": {
+     "mae_mean": 0.37117380897204083,
+     "mae_sd": 0.0015336464318612875,
+     "mse_mean": 0.28153570493062335,
+     "mse_sd": 0.0022037419542444577
+    },
+    "independent_float64": {
+     "mae_mean": 0.37117380202586586,
+     "mae_sd": 0.00153365827975423,
+     "mse_mean": 0.28153571071361233,
+     "mse_sd": 0.00220372860306974
+    }
+   }
+  },
+  "R1": {
+   "complete_validation": {
+    "seeds": 3,
+    "matched_persistence_author_float32_mae": 0.8879448175430298,
+    "author_float32": {
+     "mae_mean": 0.37491169571876526,
+     "mae_sd": 0.0010400003009382983,
+     "mse_mean": 0.29493197798728943,
+     "mse_sd": 0.0015849924450109156
+    },
+    "independent_float64": {
+     "mae_mean": 0.3749116963242762,
+     "mae_sd": 0.0010400063679736715,
+     "mse_mean": 0.2949319651358317,
+     "mse_sd": 0.0015849983780542544
+    }
+   },
+   "label_disjoint_from_selection": {
+    "seeds": 3,
+    "matched_persistence_author_float32_mae": 0.8682830929756165,
+    "author_float32": {
+     "mae_mean": 0.3745835026105245,
+     "mae_sd": 0.0007333176580871724,
+     "mse_mean": 0.28705349564552307,
+     "mse_sd": 0.0005688680951019846
+    },
+    "independent_float64": {
+     "mae_mean": 0.3745834904139122,
+     "mae_sd": 0.0007333113703644627,
+     "mse_mean": 0.28705348719205154,
+     "mse_sd": 0.0005688656826008032
+    }
+   }
+  },
+  "R2": {
+   "complete_validation": {
+    "seeds": 3,
+    "matched_persistence_author_float32_mae": 0.8879448175430298,
+    "author_float32": {
+     "mae_mean": 0.3702337145805359,
+     "mae_sd": 0.00015561975738044218,
+     "mse_mean": 0.2877115209897359,
+     "mse_sd": 0.00024662231257235103
+    },
+    "independent_float64": {
+     "mae_mean": 0.3702337068933061,
+     "mae_sd": 0.00015561896703376077,
+     "mse_mean": 0.28771151595597666,
+     "mse_sd": 0.00024664758581242576
+    }
+   },
+   "label_disjoint_from_selection": {
+    "seeds": 3,
+    "matched_persistence_author_float32_mae": 0.8682830929756165,
+    "author_float32": {
+     "mae_mean": 0.3685964345932007,
+     "mae_sd": 0.0006488872403592787,
+     "mse_mean": 0.27876002589861554,
+     "mse_sd": 0.001115964345734905
+    },
+    "independent_float64": {
+     "mae_mean": 0.36859643181563523,
+     "mae_sd": 0.0006488892170538076,
+     "mse_mean": 0.2787600382893501,
+     "mse_sd": 0.0011159714863707
+    }
+   }
+  }
+ },
+ "claims": {
+  "population": "the outer VALIDATION split; the outer TEST split was not read",
+  "reductions": "the author's float32 metric and an independent float64 diagnostic are reported separately",
+  "selection_caveat": "`complete_validation` includes the selection monitor; `label_disjoint_from_selection` shares no target row with it, which is not the same as statistical independence",
+  "H1": "none: this is a development contrast and no hypothesis is decided here"
+ }
+}

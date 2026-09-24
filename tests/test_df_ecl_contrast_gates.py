@@ -230,14 +230,139 @@ def _cell_record(regime, seed, **over):
     return record
 
 
-def test_RP157_a_design_whose_digest_is_not_the_runs_is_refused(tmp_path):
-    """The two digests used to be reported and never compared; a supplied design could claim anything."""
+def _full_design(cells, *, sha="d" * 64, pred_len=96, seeds=(2021,)):
+    """A design carrying every canonical field, so a test can exercise one factor at a time."""
+    design = {"reference": {"model": "TimeFilter"}, "task": {"pred_len": pred_len, "channels": 321},
+              "channel_order": {"sha256": "c" * 64}, "architecture": {"arch": "B"}, "regimes": {"R0": "", "R1": "", "R2": ""},
+              "factorial": {"cells": sorted(cells), "seeds": list(seeds)}, "pretraining": {"mask_ratio": 0.25},
+              "optimisation": {"loss": "mse"}, "exposure": {"outer_test": "NO_ACCESS"}}
+    design["design_sha256"] = sha
+    return design
+
+
+def test_RP158_a_partial_object_cannot_authenticate_as_a_design(tmp_path):
+    """An object that carries only a digest and a cell list is not this design; the SCHEMA names what identifies it."""
     cells = {f"{r}_s{s}": _cell_record(r, s) for s in (2021,) for r in ("R0", "R1", "R2")}
     run_dir = _fake_run(tmp_path, cells, seeds=(2021,))
-    foreign = {"design_sha256": "f" * 64, "factorial": {"cells": sorted(cells)}, "task": {"pred_len": 96}}
+    partial = {"design_sha256": "d" * 64, "factorial": {"cells": sorted(cells)}, "task": {"pred_len": 96}}
     with pytest.raises(M.DesignError) as exc:
-        M.score_contrast(DATA if DATA.is_file() else Path("/nonexistent"), run_dir, design=foreign)
-    assert "digest" in str(exc.value).lower()
+        M.score_contrast(Path("/nonexistent"), run_dir, design=partial)
+    assert "canonical" in str(exc.value).lower()
+
+
+def test_RP158_a_design_cannot_choose_which_of_its_fields_identify_it(tmp_path):
+    cells = {f"{r}_s{s}": _cell_record(r, s) for s in (2021,) for r in ("R0", "R1", "R2")}
+    run_dir = _fake_run(tmp_path, cells, seeds=(2021,))
+    design = _full_design(cells)
+    design["identity_covers"] = ["task"]
+    with pytest.raises(M.DesignError) as exc:
+        M.score_contrast(Path("/nonexistent"), run_dir, design=design)
+    assert "identifies it" in str(exc.value) or "canonical fields" in str(exc.value)
+
+
+def test_RP157_a_design_whose_digest_is_not_the_runs_is_refused(tmp_path):
+    """The two digests used to be reported and never compared; a supplied design could claim anything."""
+    import hashlib, json as _json
+    cells = {f"{r}_s{s}": _cell_record(r, s) for s in (2021,) for r in ("R0", "R1", "R2")}
+    run_dir = _fake_run(tmp_path, cells, seeds=(2021,))
+    foreign = _full_design(cells)
+    foreign["design_sha256"] = hashlib.sha256(_json.dumps(
+        {k: foreign[k] for k in M.CANONICAL_DESIGN_FIELDS}, sort_keys=True, default=str).encode()).hexdigest()
+    with pytest.raises(M.DesignError) as exc:
+        M.score_contrast(Path("/nonexistent"), run_dir, design=foreign)
+    assert "not the one this run recorded" in str(exc.value)
+
+
+def test_RP158_a_declared_horizon_that_is_not_the_runs_is_refused(tmp_path):
+    """A design declaring 192 while the run produced its cells at 96 used to complete."""
+    import hashlib, json as _json
+    cells = {f"{r}_s{s}": _cell_record(r, s) for s in (2021,) for r in ("R0", "R1", "R2")}
+    run_dir = _fake_run(tmp_path, cells, seeds=(2021,))
+    design = _full_design(cells, pred_len=192)
+    design["design_sha256"] = "d" * 64
+    design["task"]["pred_len"] = 192
+    # make the canonical digest agree with itself so only the horizon differs from the run
+    design["design_sha256"] = hashlib.sha256(_json.dumps(
+        {k: design[k] for k in M.CANONICAL_DESIGN_FIELDS}, sort_keys=True, default=str).encode()).hexdigest()
+    run = _fake_run(tmp_path / "b", cells, design_sha=design["design_sha256"], seeds=(2021,), pred_len=96)
+    with pytest.raises(M.DesignError) as exc:
+        M.score_contrast(Path("/nonexistent"), run, design=design)
+    assert "horizon" in str(exc.value).lower()
+
+
+def test_RP158_nine_children_agreeing_on_a_wrong_count_do_not_make_it_right():
+    """Setting BOTH window counts to 1 in ALL nine children used to complete, because the first sibling defined the reference."""
+    expected = [f"{r}_s{s}" for s in (2021, 2022, 2023) for r in ("R0", "R1", "R2")]
+    children = {}
+    for cell in expected:
+        seed = int(cell.split("_s")[1]); regime = cell.split("_s")[0]
+        populations = {name: {"windows": 1, "elements": 1 * 96 * 321,
+                              "author_float32": {"mae": 0.37, "mse": 0.29},
+                              "independent_float64": {"mae": 0.37, "mse": 0.29},
+                              "matched_persistence_author_float32": {"mae": 0.86, "mse": 1.5},
+                              "skill_mae_vs_persistence": 0.57}
+                       for name in ("complete_validation", "label_disjoint_from_selection")}
+        children[cell] = {"cell": cell, "seed": seed, "regime": regime, "pred_len": 96,
+                          "model_identity_reconciled": True, "populations": populations}
+    report = M.validate_children(children, expected=expected, pred_len=96,
+                                 populations=("complete_validation", "label_disjoint_from_selection"),
+                                 expected_windows={"complete_validation": 2537, "label_disjoint_from_selection": 1802})
+    assert report["bound"] is False
+    assert any("support contract declares" in p for p in report["problems"])
+
+
+@pytest.mark.parametrize("flag", ["false", "true", 1, 0, None])
+def test_RP158_a_truthy_identity_flag_is_not_a_reconciliation(flag):
+    expected = ["R0_s2021"]
+    children = {"R0_s2021": {"cell": "R0_s2021", "seed": 2021, "regime": "R0", "pred_len": 96,
+                             "model_identity_reconciled": flag,
+                             "populations": {"complete_validation": {
+                                 "windows": 2537, "elements": 2537 * 96 * 321,
+                                 "author_float32": {"mae": 0.37, "mse": 0.29},
+                                 "matched_persistence_author_float32": {"mae": 0.86, "mse": 1.5},
+                                 "skill_mae_vs_persistence": 0.57}}}}
+    report = M.validate_children(children, expected=expected, pred_len=96, populations=("complete_validation",),
+                                 expected_windows={"complete_validation": 2537})
+    assert report["bound"] is False
+    assert any("boolean True" in p for p in report["problems"])
+
+
+def test_RP158_a_non_finite_baseline_or_skill_is_refused():
+    expected = ["R0_s2021"]
+
+    def child(**over):
+        population = {"windows": 2537, "elements": 2537 * 96 * 321,
+                      "author_float32": {"mae": 0.37, "mse": 0.29},
+                      "matched_persistence_author_float32": {"mae": 0.86, "mse": 1.5},
+                      "skill_mae_vs_persistence": 0.57}
+        population.update(over)
+        return {"R0_s2021": {"cell": "R0_s2021", "seed": 2021, "regime": "R0", "pred_len": 96,
+                             "model_identity_reconciled": True, "populations": {"complete_validation": population}}}
+
+    for mutation, needle in ((
+            {"matched_persistence_author_float32": {"mae": float("nan"), "mse": 1.5}}, "persistence"),
+            ({"skill_mae_vs_persistence": float("inf")}, "skill"),
+            ({"matched_persistence_author_float32": None}, "persistence")):
+        report = M.validate_children(child(**mutation), expected=expected, pred_len=96,
+                                     populations=("complete_validation",),
+                                     expected_windows={"complete_validation": 2537})
+        assert report["bound"] is False, mutation
+        assert any(needle in p.lower() for p in report["problems"]), report["problems"]
+
+
+def test_RP158_a_child_that_scored_another_checkpoint_is_refused():
+    expected = ["R0_s2021"]
+    children = {"R0_s2021": {"cell": "R0_s2021", "seed": 2021, "regime": "R0", "pred_len": 96,
+                             "model_identity_reconciled": True, "model_sha256_on_disk": "b" * 64,
+                             "populations": {"complete_validation": {
+                                 "windows": 2537, "elements": 2537 * 96 * 321,
+                                 "author_float32": {"mae": 0.37, "mse": 0.29},
+                                 "matched_persistence_author_float32": {"mae": 0.86, "mse": 1.5},
+                                 "skill_mae_vs_persistence": 0.57}}}}
+    report = M.validate_children(children, expected=expected, pred_len=96, populations=("complete_validation",),
+                                 expected_windows={"complete_validation": 2537}, checkpoints={"R0_s2021": "a" * 64})
+    assert report["bound"] is False
+    assert any("retained record declares" in p for p in report["problems"])
 
 
 def test_RP157_an_empty_factorial_is_refused_rather_than_trivially_complete(tmp_path):
