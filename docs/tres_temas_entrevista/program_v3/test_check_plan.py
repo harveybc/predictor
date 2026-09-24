@@ -18,6 +18,19 @@ class PlanChecks(unittest.TestCase):
     def test_actual_state(self):
         self.assertEqual(validate(self.state, ROOT), [])
 
+    def test_news_cannot_authorize_real_capital(self):
+        self.state["news_live_track"]["real_capital_authorized"] = True
+        self.assertIn("news live scope", validate(self.state, ROOT))
+
+    def test_news_cannot_block_independent_science(self):
+        self.state["news_live_track"]["blocks_scientific_experiments"] = True
+        self.assertIn("news must not block independent science", validate(self.state, ROOT))
+
+    def test_news_paper_requires_shadow_and_business_contract(self):
+        task = next(t for t in self.state["tasks"] if t["id"] == "NEWS-PAPER")
+        task["depends_on"] = []
+        self.assertIn("news paper prerequisites", validate(self.state, ROOT))
+
     def test_in_progress_task_is_not_completed(self):
         task = next(t for t in self.state["tasks"] if t["id"] == "SOTA-REPRO")
         task["status"] = "IN_PROGRESS"

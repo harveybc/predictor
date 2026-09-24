@@ -1,5 +1,26 @@
 {
  "schema": "research_program_method_state.v1",
+ "rp143_external_review": {
+  "reviewed_commit": "07140d03",
+  "disposition": "CHANGES_REQUIRED_COMPOSITION_AND_ML_GATES_NO_GLOBAL_HOLD",
+  "scope": "Source inspection and bounded CPU counterprobes; no new original-array reduction or production custody read",
+  "findings": ["metric-only replay pools without shape check", "absent report/binding identities accepted", "target parity bypasses actual adapter batches", "AE validation masks change on repeated access", "reload parity and gradient-only regime proof too weak"],
+  "numerical_mean": "Retained mean recomputes; no metric-only histories selected in current composition, so no numerical invalidation inferred from that counterexample",
+  "review": "../../audits/work_plan/MUSASHI_RP140_RP143_REVIEW_2026_09_24.md"
+ },
+ "news_live_track": {
+  "authority": "Owner approved parallel Laya track and coordinator-hosting investigation, 2026-09-24 UTC",
+  "document": "NEWS_LIVE_PARALLEL_2026_09_24.md",
+  "repository": "https://github.com/harveybc/news-signal",
+  "status": "ADAPTER_PROTOTYPE_TESTED_REAL_WEIGHTS_AND_BROKERS_PENDING",
+  "allowed_modes": ["SHADOW", "MT5_DEMO", "ALPACA_PAPER"],
+  "real_capital_authorized": false,
+  "blocks_scientific_experiments": false,
+  "resident_host_candidate": "COORDINATOR RTX4070 8GiB after real-weight admission/latency pilot; not measured inference yet",
+  "gpu_training_priority": "WORKER_B external5090 remains first choice; do not evict RP135",
+  "execution_authority": "Existing LTS risk and execution, never the classifier",
+  "orders": "../../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md"
+ },
  "gpu_dispatch_policy": {
   "authority": "Owner standing instruction, 2026-09-22; persists after travel holds end",
   "first_choice": "WORKER_B external RTX 5090, identified by physical UUID",
@@ -43,13 +64,13 @@
  "sota_first_override": {
   "decision_date": "2026-09-21",
   "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "RP139_REVIEWED_SIX_B_CELLS_TRAINED_A_CUSTODY_FOLLOWUP_PASSED_NEXT_ADAPTER_AUTHORIZED",
+  "status": "RP143_REVIEWED_COMPOSITION_AND_ML_FIXES_REQUIRED_B_AND_NEWS_CONTINUE",
   "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
   "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
   "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
   "runtime_exclusion_implemented": true,
   "policy": "SOTA_FIRST_2026_09_21.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP140_RP143_2026_09_23.md",
+  "orders": "../../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md",
   "suspended_measurements": [
    "simplified E0/E1 extensions",
    "household context pilots",
@@ -84,7 +105,7 @@
   "science": {
    "task": "SOTA-REPRO",
    "order": "RP135",
-   "status": "SIX_TRAINED_WITH_RECEIPTS_H336s2021_RUNNING_RP139_REVIEW",
+   "status": "RP143_REPORT_TEN_TRAINING_TERMINALS_H720s2022_RUNNING_RECHECK_LIVE_BEFORE_DISPATCH",
    "executor_service": "crispdm-rp135-continuation-20260923.service",
    "superseded_blocked_task": "t_28e5c655",
    "recipe": "TimeFilter dffde87e released ECL L512 block; 321 channels; four horizons x three seeds",
@@ -103,7 +124,7 @@
   },
   "retention": {
    "orders": "RP132-RP134",
-   "status": "CODE_PUSHED_e473efbe_RETURN_PACKAGING_AND_REVIEW_PENDING",
+   "status": "RETURN_PUBLISHED_RETENTION_GATE_SEPARATE_NO_NEW_DELETION_AUTHORIZATION",
    "cpu_budget_seconds": 1800,
    "budget_relation": "Within standing 14400-second round CPU ceiling",
    "production_deletion": "HELD",
@@ -234,7 +255,7 @@
  ],
  "program_owner": "Musashi",
  "execution_owner": "Satoshi",
- "handoff_status": "RP136_RP139_ISSUED_COOLING_RESTORED_CONCURRENT_RECOVERY_AND_EXPERIMENTS",
+ "handoff_status": "RP144_RP151_ISSUED_PARALLEL_EXPERIMENTS_AND_NEWS_DEMO_PAPER",
  "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
  "architecture_comparison": {
   "reference": "ARCH-A",
@@ -248,7 +269,7 @@
   "adoption": "MEASUREMENTS_PRESERVED_E0_DONOR_EQUIVALENCE_REQUIRES_COMPLETION"
  },
  "first_experiment": "SOTA-REPRO",
- "authorization_scope": "DEVELOPMENT_ONLY_NO_RESERVED_CONFIRMATION_NO_LIVE",
+ "authorization_scope": "DEVELOPMENT_AND_NEWS_LIVE_DATA_SHADOW_DEMO_PAPER_NO_RESERVED_CONFIRMATION_NO_REAL_CAPITAL",
  "literature_comparability": {
   "scope": "ALL_DOMAINS_INCLUDING_FINANCE",
   "required_before": "NEW_SCIENTIFIC_TRAINING",
@@ -273,21 +294,23 @@
   "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
  },
  "next_allowed_actions": [
-  "RP140: consolidate protocol A by bound artifact/terminal/report identities; fresh coordinator custody already PASS; preserve UNKNOWN training-device attribution where applicable",
-  "RP141: supervise existing native RP135 and close B on5090; six trained, H336s2021 running; scope7GiB parent8GiB; unchanged CPU allocation; no duplicate/refit/deletion",
-  "RP142: implement matched full-horizon321-channel ECL modular adapter with inner-TRAIN AE validation and ML parity tests; governed TRAIN-only1800CPU/1800wall pilot authorized after tests, independent worker while5090 trains",
-  "RP143: prepare next sealed matched scientific contrast and financial-contract/reference investigation concurrently; accepted A can support A-matched design without waiting for B or retention",
-  "No public-test tuning, financial fit, private reserve access or scientific modular comparison before its actually consumed reference and design are accepted"
+  "RP144-RP145: check composition by content identity, finish B using its existing lease/budget; refresh live status rather than treating the 10/12 report as current",
+  "RP146: fix actual-batch target oracle, identity-fixed AE validation masks, donor-source reload parity and post-optimizer regime proof; then sealed H96 R0/R1/R2 development contrast, paired seeds, full321 channels,14400CPU/8h; no public-test tuning",
+  "RP147: isolated real Laya checkpoint pilot on admitted coordinator candidate,600CPU/900wall excluding install/download; no silent GPU fallback",
+  "RP148-RP149: prospective governed news and shadow service, then isolated MT5 demo and Alpaca paper through existing LTS risk; do not replace active strategies",
+  "RP150-RP151: financial producer evidence/reference work and broader typed-ML RFC in parallel; one complete return, no routine continue prompts",
+  "No invented availability, private reserve reads, ungoverned scientific fits, broker-risk bypass or real-capital activation"
  ],
  "documents": {
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_SOTA_RP140_RP143_2026_09_23.md",
+  "orders": "../../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md",
+  "news_live": "NEWS_LIVE_PARALLEL_2026_09_24.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
   "concurrent_execution": "CONCURRENT_EXECUTION_2026_09_23.md",
   "execution_queue": "EXPERIMENT_EXECUTION_QUEUE.json",
   "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-  "external_review": "../../audits/work_plan/MUSASHI_RP136_RP139_REVIEW_2026_09_23.md",
+  "external_review": "../../audits/work_plan/MUSASHI_RP140_RP143_REVIEW_2026_09_24.md",
   "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
   "return": "https://github.com/harveybc/predictor/blob/c9dce617/docs/audits/work_plan/SATOSHI_RP128_RP131_RETURN_2026_09_23.md",
   "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
@@ -357,6 +380,33 @@
   "WEEKLY-RL"
  ],
  "tasks": [
+  {
+   "id": "NEWS-ADAPTER",
+   "owner": "Musashi + Satoshi",
+   "status": "IMPLEMENTED",
+   "depends_on": [],
+   "evidence": ["https://github.com/harveybc/news-signal"],
+   "next_action": "Real frozen-weight smoke, offline/device/provenance checks and measured coordinator resources; prototype tested only with fixture/SDK double",
+   "deliverable": "Typed news features, no model order authority, actual deployment evidence"
+  },
+  {
+   "id": "NEWS-SHADOW",
+   "owner": "Satoshi",
+   "status": "DESIGNED",
+   "depends_on": ["NEWS-ADAPTER"],
+   "evidence": [],
+   "next_action": "Implement licensed receipt-time collector, governed inputs and bounded resident inference; prospective calibration design",
+   "deliverable": "Working live-data shadow stream and input/model/latency evidence"
+  },
+  {
+   "id": "NEWS-PAPER",
+   "owner": "Satoshi",
+   "status": "DESIGNED",
+   "depends_on": ["NEWS-SHADOW", "BUSINESS-CONTRACT"],
+   "evidence": [],
+   "next_action": "Implement policy through existing LTS risk and both MT5 demo/Alpaca paper, isolated mandates, idempotency/fill/recovery tests",
+   "deliverable": "Separate end-to-end broker receipts and matched prospective evaluation, no real-capital release"
+  },
   {
    "id": "SOTA-REPRO",
    "owner": "Satoshi",
@@ -1294,7 +1344,7 @@
  "rp106_rp113": {
   "orders": "docs/handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md (c779711; review MUSASHI_RP98_RP105_REVIEW_2026_09_22.md of 55a339ce)",
   "base": "55a339ce",
-  "updated_on": "2026-09-23",
+ "updated_on": "2026-09-24",
   "placement": "owner 22-sep: the ONLY device eligible for new GPU work is WORKER_B's EXTERNAL RTX 5090 (GPU-a9f35631…), admitted by physical UUID before every dispatch; WORKER_B's internal 5070 Ti, WORKER_A's GPU and coordinator heavy work remain held with no automatic release; host CPU bounded and host thermals monitored separately (the external cooler does not cool the laptop)",
   "RP106": {
    "status": "DONE",

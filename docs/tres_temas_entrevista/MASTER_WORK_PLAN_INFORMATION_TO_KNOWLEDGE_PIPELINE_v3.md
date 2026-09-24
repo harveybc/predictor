@@ -1,5 +1,27 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+**Actualizacion vigente, 24-sep UTC: experimentos + NEWS-LIVE en paralelo.**
+[Ordenes RP144-RP151](../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md)
+y [carril Laya/MT5/Alpaca](program_v3/NEWS_LIVE_PARALLEL_2026_09_24.md).
+Retorno RP140-RP143 `07140d03` incorporado como reportado, no como una nueva
+auditoria independiente: A agrupa12 celdas, media MSE/MAE0.161962/0.259662;
+B10/12 terminales de entrenamiento al cierre reportado, aun requiere replay
+y cierre; adaptador doctoral ECL implementado y piloto TRAIN-only ejecutado.
+La siguiente comparacion R0/R1/R2 se somete a sus propias pruebas ML y referencia
+A, sin esperar retencion ni Laya. No rehacer los entrenamientos aceptados.
+
+Owner aprueba NEWS-LIVE: repo [news-signal](https://github.com/harveybc/news-signal),
+Laya local -> features causales -> politica evaluada -> riesgo/ejecucion LTS
+existente -> **MT5 demo y Alpaca paper**, primero shadow con datos en vivo.
+Prototipo CLI probado; pesos reales, calibracion, collector gobernado y enlaces
+broker aun pendientes. Ningun permiso para operar capital real ni reemplazar
+estrategias existentes. Publicar el estado honesto en README/formulario.
+El coordinador4070/8GiB es candidato para inferencia residente tras piloto medido;
+5090 externa mantiene prioridad para cargas GPU sustanciales, sin competir con B.
+Hermes/subagentes trabajan por carriles con leases y worktrees separados.
+La propuesta typed-ML ampliada es un RFC separado, no capacidad ya demostrada.
+Los siguientes bloques fechados son historia y no revierten esta actualizacion.
+
 **Revision RP139, 23-sep al cierre del dia:**
 [dictamen](../audits/work_plan/MUSASHI_RP136_RP139_REVIEW_2026_09_23.md) y
 [ordenes RP140-RP143](../handoffs/MUSASHI_SOTA_RP140_RP143_2026_09_23.md).

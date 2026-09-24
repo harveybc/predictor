@@ -85,6 +85,14 @@ def validate(state, root):
         if not path or not (root / path).is_file():
             issues.append(f"missing document {name}")
 
+    news = state.get("news_live_track", {})
+    if news.get("allowed_modes") != ["SHADOW", "MT5_DEMO", "ALPACA_PAPER"] or news.get("real_capital_authorized") is not False:
+        issues.append("news live scope")
+    if news.get("blocks_scientific_experiments") is not False:
+        issues.append("news must not block independent science")
+    if not documents.get("news_live") or not (root / documents["news_live"]).is_file():
+        issues.append("missing news live document")
+
     tasks = state.get("tasks", [])
     by_id = {}
     for task in tasks:
@@ -103,6 +111,7 @@ def validate(state, root):
             issues.append(f"{task_id}: evidence required")
     required_tasks = set().union(*REQUIRED.values(), {"BUSINESS-CONTRACT", "BENCHMARK-CONTRACTS"})
     required_tasks.add(state.get("first_experiment"))
+    required_tasks.update({"NEWS-ADAPTER", "NEWS-SHADOW", "NEWS-PAPER"})
     for task_id in sorted(required_tasks, key=str):
         if task_id not in by_id:
             issues.append(f"unknown task {task_id}")
@@ -112,6 +121,8 @@ def validate(state, root):
         "MOD-E1": ({"MOD-E0-DEV", "MOD-ARCH-COMPARE"}, "E1 prerequisites"),
         "MOD-FROZEN-PREFIX": ({"MOD-E1"}, "prefix prerequisites"),
         "MOD-CORE-PRETRAIN": ({"MOD-E1", "MOD-FROZEN-PREFIX"}, "core prerequisites"),
+        "NEWS-SHADOW": ({"NEWS-ADAPTER"}, "news shadow prerequisites"),
+        "NEWS-PAPER": ({"NEWS-SHADOW", "BUSINESS-CONTRACT"}, "news paper prerequisites"),
     }
     for task_id, (dependencies, label) in required_dependencies.items():
         if not dependencies.issubset(by_id.get(task_id, {}).get("depends_on", [])):

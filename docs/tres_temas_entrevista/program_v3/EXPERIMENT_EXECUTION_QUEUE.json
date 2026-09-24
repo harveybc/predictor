@@ -1,11 +1,30 @@
 {
   "schema": "research_execution_queue.v1",
-  "updated_on": "2026-09-23",
+  "updated_on": "2026-09-24",
   "dispatcher": "Satoshi",
   "policy": "CONCURRENT_EXECUTION_2026_09_23.md",
   "runtime_enforcement": "Existing runners/admission; this is a persistent ordered manifest, not a newly installed scheduler",
+  "next_orders": "../../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md",
+  "latest_return": {
+    "commit": "07140d03",
+    "status": "REPORTED_NOT_FRESHLY_REMEASURED_BY_THIS_UPDATE",
+    "A": "12-cell consolidation reported, MSE0.161962/MAE0.259662; composition audit scoped separately",
+    "B": "10/12 training terminals at return, H720s2022 running; refresh executor before dispatch",
+    "doctoral": "Matched ECL adapter and TRAIN-only pilot executed; RP146 specifies next finite contrast",
+    "historical_executor_fields_below": "Preserved last direct RP139 observation, not current dispatch authority"
+  },
+  "parallel_news_lane": {
+    "orders": "RP147-RP151",
+    "repository": "https://github.com/harveybc/news-signal",
+    "state": "PROTOTYPE_TESTED_REAL_WEIGHT_PILOT_AND_BROKER_INTEGRATION_NEXT",
+    "first_host_candidate": "Admitted COORDINATOR4070 for small resident inference; external5090 first for substantial training",
+    "blocks_RP135_or_doctoral": false,
+    "modes": ["SHADOW", "MT5_DEMO", "ALPACA_PAPER"],
+    "real_capital_authorized": false,
+    "dispatch": "Separate service/profile/lease, existing broker risk path; no duplicate scientific executor"
+  },
   "campaign": "RP135_RELEASED_L512_RECIPE",
-  "state": "SIX_TRAINED_H336s2021_RUNNING_RP139_REVIEW",
+  "state": "LATEST_REPORT_TEN_TRAINING_TERMINALS_RECHECK_NATIVE_EXECUTOR_BEFORE_DISPATCH",
   "executor": {
     "kind": "USER_SYSTEMD_NATIVE_BATCH_WITH_FLOCK",
     "superseded_task_id": "t_28e5c655",

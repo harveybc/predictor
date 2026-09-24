@@ -1,0 +1,56 @@
+{
+  "schema": "rp143_musashi_lightweight_pre.v1",
+  "reviewed_commit": "07140d03a265d235584235216dad3346be569853",
+  "execution": {
+    "address_space_limit_mib": 512,
+    "cpu_hard_limit_seconds": 15,
+    "cpu_soft_limit_seconds": 10,
+    "gpu_visible": false,
+    "heavy_modules_imported": [],
+    "numpy_threads": 1,
+    "wall_alarm_seconds": 20
+  },
+  "observations": {
+    "binding_without_identity_blocks": true,
+    "metric_only_wrong_shape_replay_reaches_mean": "COMPUTED",
+    "report_without_identities": {
+      "bound": true,
+      "closure": {"custody": null, "problems": [], "verified": true, "verified_historically": null},
+      "row_metric": {"author_metric_float32": {"mae": 0, "mse": 0}, "metric_basis": null}
+    },
+    "retained_arithmetic": {"mae": 0.2596621786554654, "mse": 0.1619617740313212},
+    "retained_selected_replay_classes": {"IDENTITY_BOUND": 8, "report": 4},
+    "same_validation_batch": {"different_mask_positions": 20, "equal_masks": false},
+    "unverifiable_digest_binding": [true, "IDENTITY_BOUND", null],
+    "wrong_shape_metric_binding": [true, "METRIC_AND_SHAPE_BOUND", null]
+  },
+  "scope": {
+    "actual_functions": [
+      "df_sota_repro._bind_replay_record",
+      "df_sota_repro._claim_for",
+      "df_sota_repro._replay_history_entries",
+      "df_sota_repro.composed_table",
+      "df_sota_repro.agreement",
+      "df_ecl_modular._windows_class",
+      "df_ecl_modular._windows_class.<locals>._TrainWindows.__getitem__"
+    ],
+    "mocked": [
+      "TensorFlow namespace and PyDataset base class only; no framework execution",
+      "Dataset.__getitem__: constant synthetic NumPy arrays",
+      "df_sota_repro._baselines_from_catalogs: returns {}, no filesystem read"
+    ],
+    "not_verified": [
+      "Production artifact identities or terminal custody",
+      "Independent adapter target/metric parity (finding 3 was source review only)",
+      "AE reload parity or optimizer freeze/update behavior (finding 5 was source review only)",
+      "Full compose_evidence execution or any training/model execution"
+    ],
+    "retained_read": "Only the committed composition JSON; counts and score arithmetic, not identity validation",
+    "synthetic": "All probe identities, reports, histories, design cells, closure and terminal flags"
+  },
+  "source_sha256": {
+    "docs/audits/evidence/d3_k5_20260917/RP140/EVIDENCE_COMPOSITION.1790211629.json": "a8b61ed7290b6bd66dd3ee9f16b26b5115e9983cc0b5a2905199ba6cee4a8ded",
+    "tools/df_ecl_modular.py": "e2c23c058e258ad0e41489f63b4b23cc43d27bd0dc2366035bb417549baa8819",
+    "tools/df_sota_repro.py": "bfe13c2928ec4fa0fce4faf3bbcef04f8a2b28f02e4a5479c3669883ae7506e9"
+  }
+}
