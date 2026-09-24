@@ -4,9 +4,12 @@ Based on Satoshi `07140d03`, RP140-RP143 return, plus the owner's approved Laya
 track and subsequent coordinator-hosting question. All eight orders form ONE
 assignment. Execute independent work concurrently; no routine continue prompts.
 These are implementation/demo-paper orders, not real-capital authorization.
-Owner addendum: the broader program is **M5PHET**, not a news-only framework.
+Owner addendum: **M5PHET is a typed ML framework**, not a research-program label.
 Use https://github.com/harveybc/M5PHET and news-signal's pinned runtime dependency;
-its classification contract is implemented, four other engines are roadmap.
+Its classification contract is implemented; the general provider runtime and
+four other task families are designed, not shipped. Calendar-first use cases and
+P01-P09/CAL01-CAL12 tests are specified in that repository. Apply the expanded
+RP150 to the next independent implementation increment, without restarting work.
 Do not block the existing orders to build all five. See the expanded RP150 below.
 Read [the scoped independent review](../audits/work_plan/MUSASHI_RP140_RP143_REVIEW_2026_09_24.md)
 and freeze its probes unchanged before corrections.
@@ -149,7 +152,7 @@ Canaries use isolated paper/demo profiles, never the active strategy's positions
 code: drain/monitor actions precede that flag. Test shadow with ZeroNetworkSink.
 No real-money activation is authorized by these orders.
 
-## RP150 - financial prerequisites and broader ML proposal, in parallel
+## RP150 - financial prerequisites and M5PHET product integration, in parallel
 
 Keep FIN-LOSS-OPT mandatory. Resolve the financial producer's timestamp/receipt/
 completion contract from evidence. UNKNOWN stays UNKNOWN; do not fabricate a lag
@@ -158,13 +161,13 @@ cannot support the task, name the exact evidence/source successor needed. A
 prospectively timestamped news route need not wait for this historical FX resource.
 Prepare the matched financial reference independently without reading the reserve.
 
-The typed-ML proposal now lives in https://github.com/harveybc/M5PHET:
+The typed-ML framework design now lives in https://github.com/harveybc/M5PHET:
 classification, regression/forecasting, representation/unsupervised, RL and causal
-are five operational fronts; DOIN optimization is cross-cutting. news-signal is
+are five task families; DOIN optimization is cross-cutting. news-signal is
 the first real consumer of its classification contract. Verify the pinned
 dependency and the actual nested typed_result, not just a README link. Preserve
 no-order authority, explicit uncalibrated status and data/model/task identities.
-For each next front, map the existing domain repo, task-specific output and
+For each next family, map the existing domain repo, task-specific output and
 uncertainty semantics, current open-source reference and matched acceptance
 protocol before adding an engine. Forecasting must cover direct-horizon versus
 joint multi-output as a designed contrast, not a default inferred from Laya's
@@ -180,6 +183,35 @@ submission by Satoshi. This addendum does not invalidate completed RP144-RP151
 work or authorize restarting existing experiments.
 Keep the future feature-branch vs final-head ablations explicit, not assumptions
 that Laya replaces predictor or that an unmeasured model improves live trading.
+
+Product clarification, 24-sep UTC (M5PHET design revision `4508b98`;
+runtime dependency remains unchanged): read docs/USE_CASES.md, INTERFACES.md,
+ECONOMIC_CALENDAR.md and IMPLEMENTATION_PLAN.md. State + task/schema -> typed
+result is the intended interface; reject unsupported capabilities before work.
+Reuse Laya's SDK for choice/binary/ordinal tasks, with explicit semantics and
+negative tests; recommend direct SDK use where no composition is required.
+Do not invent five model implementations to fill the five interfaces.
+
+First independent increment: inventory the EXISTING economic dataset and map
+source/resource/units/field clocks, consensus and actual/revision vintages, rights
+and gaps. Implement the vintage-aware as-of transform and CAL01-CAL12 negative
+tests in the appropriate data/feature boundary before consuming it in ML. Missing
+historical availability constrains that experiment only; preserve UNKNOWN and
+start prospective capture where entitled. No guessed zero latency or invented
+source registration. Numeric release values come from source records, not Laya.
+
+Specify/wire consumers to existing engines: hierarchical market state with an
+inductive assignment rule; predictor multi-horizon output with declared Bayesian/
+quantile/distribution method and calibration; actual RL observation/action path.
+Calendar-only RL need not await a forecasting winner. Seal price-only vs known
+schedule vs observed-surprise ablations on the SAME origins, model and budget;
+separate capacity and representation changes. Causal effects require a distinct
+identified study with pre-treatment support and sensitivity, never sentiment
+renamed as causality. Geopolitical text follows structured calendar ingestion.
+
+P01-P09 are acceptance designs, not passing model tests. Work within existing
+lane budgets; continue current admitted experiments in parallel. Report actual
+software/data progress without claiming these new workflows trained or validated.
 
 ## RP151 - one return, evidence first, all lanes accounted
 

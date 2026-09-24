@@ -2,16 +2,22 @@
 
 ## M5PHET addendum, owner-approved
 
-The general program is now [M5PHET](https://github.com/harveybc/M5PHET).
+The typed ML framework is [M5PHET](https://github.com/harveybc/M5PHET).
 news-signal consumes its pinned `m5phet.classification.v1` contract at runtime;
 it remains the application, not the owner of all ML engines. M5PHET defines five
-operational fronts: classification, regression/forecasting, representation/
+task families: classification, regression/forecasting, representation/
 unsupervised, RL and causal. DOIN search/evaluation is cross-cutting. Only the
 classification contract is implemented here; no generic model performance claim.
 Use the strongest suitable open-source engine per matched task, not Laya by fiat.
 The joint submission names both repos, with a single source-URL field pointing
 to the runnable news application. Keep personal biography out of public drafts.
 Existing experiment, GPU and demo/paper orders remain in force without delay.
+Product design now includes concrete state/schema/result contracts and an
+economic-calendar-first integration (UC-02), with vintage-aware schedule,
+consensus, actuals and revisions. Shared temporal features feed forecasting,
+hierarchical representations and RL; identified causal studies remain separate.
+Read M5PHET docs/IMPLEMENTATION_PLAN.md for P01-P09 and calendar CAL01-CAL12.
+They are design/acceptance requirements, not implemented providers or new results.
 
 Owner approved 23-sep local / 24-sep UTC. This is an additive business track,
 not a replacement for doctoral forecasting, extractor/core pretraining, weekly
