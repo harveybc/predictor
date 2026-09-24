@@ -1,5 +1,10 @@
 # Start here: reconcile ALL active assignments, not only M5PHET
 
+**Latest `3c25ecab`: [RP157 review and bounded completion](../audits/work_plan/MUSASHI_RP157_REVIEW_2026_09_24.md).**
+Retained metrics are consistent; finish canonical authority and expected-population
+validation without another routine model replay. Laya setup is reported underway;
+collector/calendar/broker CPU lanes proceed during installation.
+
 **Latest `b3a064d5`: [RP156 review and execution priorities](../audits/work_plan/MUSASHI_RP156_REVIEW_2026_09_24.md).**
 Retain corrected development scores; repair remaining acceptance without routine
 re-inference. Laya, news, calendar and broker implementation are still due in parallel.

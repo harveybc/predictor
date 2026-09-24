@@ -1,11 +1,33 @@
 {
  "schema": "research_program_method_state.v1",
+ "rp157_review": {
+  "candidate": "3c25ecab103163a4face96b6f47ffd8280cb8c67",
+  "status": "RETAINED_RECORDS_CONSISTENT_CANONICAL_AND_POPULATION_VALIDATION_INCOMPLETE",
+  "scope": "Source, published records, six parent-scorer transport-fixture probes and 19 CPU tests; no live authority or model inference",
+  "findings": [
+   "missing or empty identity_covers skips recomputation; declared and dispatched horizon can disagree",
+   "all children can agree on wrong counts; naive nonfiniteness and string identity accepted"
+  ],
+  "retained_results": "Nine RP157 population records equal RP156; expected counts/elements and finite model/naive values checked; R2 relative MAE improvement remains about0.694 percent, development only",
+  "orders_and_review": "../../audits/work_plan/MUSASHI_RP157_REVIEW_2026_09_24.md",
+  "next_action": "Complete contract matrix using retained child evidence without inference, while real Laya setup/pilot and independent CPU application lanes continue",
+  "new_compute_budget": false,
+  "global_hold": false
+ },
  "rp156_review": {
   "candidate": "b3a064d5cdba3fb4dd49087d0516ac4c300cda6b",
   "status": "CORRECTED_DEVELOPMENT_SCORES_RETAINED_ACCEPTANCE_GAPS_APPLICATIONS_STILL_DUE",
   "scope": "Source and published arithmetic, CPU support/checkpoint/parent-scorer probes; no original-array reduction or live resources",
-  "accepted_repairs": ["1802 label-disjoint windows derived correctly", "missing expected cell suppresses summary", "mismatched checkpoint refused before model load", "author float32 and float64 named separately"],
-  "remaining_findings": ["supplied or reconstructed design not authenticated or digest-compared; empty design completes", "missing child population, wrong horizon and nonfinite metric can complete"],
+  "accepted_repairs": [
+   "1802 label-disjoint windows derived correctly",
+   "missing expected cell suppresses summary",
+   "mismatched checkpoint refused before model load",
+   "author float32 and float64 named separately"
+  ],
+  "remaining_findings": [
+   "supplied or reconstructed design not authenticated or digest-compared; empty design completes",
+   "missing child population, wrong horizon and nonfinite metric can complete"
+  ],
   "reported_R2_relative_MAE_improvement": 0.006943847643717471,
   "next_action": "Validate retained RP156 evidence under actual accepted design; no routine re-inference. Start already assigned real Laya setup/admission/pilot and independent CPU application lanes",
   "orders_and_review": "../../audits/work_plan/MUSASHI_RP156_REVIEW_2026_09_24.md",
@@ -18,9 +40,16 @@
   "status": "TRAINING_RETAINED_SCORING_SUCCESSOR_REQUIRED_NO_GLOBAL_HOLD",
   "scope": "Published per-cell arithmetic, source and bounded CPU probes; no checkpoint inference or live warehouse/job inspection",
   "reported_R2_vs_R0": "-0.002402791 MAE, 0.647 percent relative improvement, favorable in 3/3 published seed pairs; descriptive population has label overlap with selection",
-  "findings": ["95 complement windows share monitor target labels", "scoring aggregates missing cells and identity failures", "float64 scoring differs from declared author float32 reducer"],
+  "findings": [
+   "95 complement windows share monitor target labels",
+   "scoring aggregates missing cells and identity failures",
+   "float64 scoring differs from declared author float32 reducer"
+  ],
   "label_disjoint_scoring_origins": "735..2536 inclusive, 1802 windows; infer from saved checkpoints, do not retrain",
-  "orders_not_in_return_ancestry": ["032aaa52", "7e924bf5"],
+  "orders_not_in_return_ancestry": [
+   "032aaa52",
+   "7e924bf5"
+  ],
   "review": "../../audits/work_plan/MUSASHI_RP155_REVIEW_2026_09_24.md",
   "orders": "../../handoffs/SATOSHI_RP155_REVIEW_AND_EXECUTION_2026_09_24.md",
   "next_application_delivery": "RP147 pinned real Laya SDK/checkpoint -> M5PHET -> news-signal pilot, within existing budget; independent CPU lanes continue",
@@ -30,12 +59,24 @@
  "active_assignment_reconciliation_20260924": {
   "source_branch_tip": "b75097d3",
   "scope": "Fetched commit ancestry and published returns/evidence; not live process, warehouse or account inspection",
-  "prior_orders_integrated": ["d4bb3353", "32a5467d", "d46d3363", "af8ca197"],
+  "prior_orders_integrated": [
+   "d4bb3353",
+   "32a5467d",
+   "d46d3363",
+   "af8ca197"
+  ],
   "latest_review_not_yet_ancestor_at_check": "032aaa52",
   "index": "../../handoffs/SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md",
   "B": "Closure reports 12/12, MSE/MAE 0.150307/0.246397; do not rerun from stale 10/12 queue",
   "doctoral": "Corrected successor reported on second seed; refresh lease and budget, continue missing work only",
-  "not_delivered_in_inspected_returns": ["real Laya weights/pilot", "prospective news and shadow", "MT5 demo and Alpaca paper integration", "calendar as-of transforms", "financial resource evidence and matched reference", "real optional governance/DOIN round trips"],
+  "not_delivered_in_inspected_returns": [
+   "real Laya weights/pilot",
+   "prospective news and shadow",
+   "MT5 demo and Alpaca paper integration",
+   "calendar as-of transforms",
+   "financial resource evidence and matched reference",
+   "real optional governance/DOIN round trips"
+  ],
   "new_compute_budget": false,
   "global_hold": false
  },
@@ -44,8 +85,21 @@
   "status": "REPAIRED_CASES_ACCEPTED_THREE_BOUNDARY_GAPS_NO_GLOBAL_HOLD",
   "scope": "CPU suite and 15 isolated recording-provider/temporary-evidence cases; no model or live job inspection",
   "suite": "138 passed, 1 skipped (DuckDB unavailable)",
-  "findings": ["multi-horizon output can omit a horizon with OK", "resume allows new writes onto a torn tail", "original input_schema population declaration is silently ignored"],
-  "accepted": ["explicit combination refusal", "wrong loaded task refusal", "top-level population binding", "calibration state binding and aware UTC clocks", "nonfinite payload refusal", "manifest identity recomputation", "interior corruption refusal on open", "single-horizon forecast without classification questions"],
+  "findings": [
+   "multi-horizon output can omit a horizon with OK",
+   "resume allows new writes onto a torn tail",
+   "original input_schema population declaration is silently ignored"
+  ],
+  "accepted": [
+   "explicit combination refusal",
+   "wrong loaded task refusal",
+   "top-level population binding",
+   "calibration state binding and aware UTC clocks",
+   "nonfinite payload refusal",
+   "manifest identity recomputation",
+   "interior corruption refusal on open",
+   "single-horizon forecast without classification questions"
+  ],
   "orders_and_review": "../../audits/work_plan/MUSASHI_M5PHET_D9FFC4D_REVIEW_2026_09_24.md",
   "parallel_delivery": "Actual pinned Laya SDK/checkpoint vertical slice remains required; implementation by Satoshi, not a new mock-only milestone",
   "reported_experimental_progress": "Owner-supplied second-seed progress 6138/14400 CPU seconds; not live-verified here",
@@ -57,7 +111,14 @@
   "status": "DISPATCH_BEHAVIOR_ACCEPTED_AT_DOUBLE_SCOPE_INTEGRATION_CHANGES_REQUIRED",
   "scope": "Actual runtime API, one-factor recording-provider probes and temporary evidence; no live campaign or model inference",
   "suite": "115 passed, 1 skipped (DuckDB unavailable), reproduced in two interpreters",
-  "remaining": ["calibration identity and timezone checks", "task and actual population binding", "per-output payload validation", "canonical resume integrity and mandatory recovery", "operation-specific inference schemas", "real provider vertical slice"],
+  "remaining": [
+   "calibration identity and timezone checks",
+   "task and actual population binding",
+   "per-output payload validation",
+   "canonical resume integrity and mandatory recovery",
+   "operation-specific inference schemas",
+   "real provider vertical slice"
+  ],
   "orders_and_review": "../../audits/work_plan/MUSASHI_M5PHET_7385937_REVIEW_2026_09_24.md",
   "new_compute_budget": false,
   "blocks_independent_experiments": false
@@ -78,7 +139,14 @@
   "scope": "Candidate source, actual temporary local/runtime APIs and exact regime-check AST; no live campaign inspection or training",
   "status": "CHANGES_REQUIRED_NO_GLOBAL_HOLD",
   "suite": "74 passed, 1 skipped here (DuckDB unavailable)",
-  "findings": ["resume identity/open attempts and destructive interior recovery", "truthy denied delivery/profile drift", "unvalidated payload and foreign future calibration certified", "invalid duplicate metrics and unknown attempts", "missing R2 evidence promoted and unexpected cell accepted", "class provider entrypoint cannot instantiate"],
+  "findings": [
+   "resume identity/open attempts and destructive interior recovery",
+   "truthy denied delivery/profile drift",
+   "unvalidated payload and foreign future calibration certified",
+   "invalid duplicate metrics and unknown attempts",
+   "missing R2 evidence promoted and unexpected cell accepted",
+   "class provider entrypoint cannot instantiate"
+  ],
   "reported_experimental_progress": "RP145 B table reports 12 verified cells, mean author normalized MSE/MAE 0.1503/0.2464 versus 0.150/0.246; L512 versus paper searched lookback remains qualified; not independently re-reduced in this review",
   "review": "../../audits/work_plan/MUSASHI_M5PHET_INTEGRATION_REVIEW_2026_09_24.md",
   "orders": "../../handoffs/SATOSHI_M5PHET_INTEGRATION_CONTINUATION_2026_09_24.md",
@@ -88,7 +156,12 @@
   "reviewed_commit": "f8e9e77f9113144563e914883364c25b148407b6",
   "scope": "Source inspection plus exact extracted AST probes; no live job/cube inspection or new training",
   "disposition": "CONTRAST_PATH_CHANGES_REQUIRED_NO_GLOBAL_HOLD",
-  "findings": ["Declared checkpoint selection and trained downstream persistence absent in run_contrast", "Empty or R0-only population passes all four regime summary checks", "Unequal design digests pass assert ending in or True", "Requested steps presented without optimizer observations; CPU/wall prescription conflated"],
+  "findings": [
+   "Declared checkpoint selection and trained downstream persistence absent in run_contrast",
+   "Empty or R0-only population passes all four regime summary checks",
+   "Unequal design digests pass assert ending in or True",
+   "Requested steps presented without optimizer observations; CPU/wall prescription conflated"
+  ],
   "reported_progress": "B twelve cells trained, closure running; R0/R1/R2 running; A reported mean preserved; RP147-149 not started",
   "review": "../../audits/work_plan/MUSASHI_RP144_RP151_INTERIM_REVIEW_2026_09_24.md",
   "continuation": "../../handoffs/SATOSHI_RP144_RP151_CONTINUATION_2026_09_24.md",
@@ -121,7 +194,13 @@
   "implementation_orders": "../../handoffs/SATOSHI_M5PHET_IMPLEMENTATION_2026_09_24.md",
   "development_method": "Behavioral tests first; top-down design and bottom-up implementation per component; independent lanes parallel",
   "next_input": "Existing economic dataset: inventory then vintage-aware as-of features; CAL01-CAL12 required before ML consumption",
-  "consumer_cases": ["typed event decisions", "hierarchical market state", "uncertain multi-horizon forecasts", "calendar-aware trading policies", "identified economic-release effects"],
+  "consumer_cases": [
+   "typed event decisions",
+   "hierarchical market state",
+   "uncertain multi-horizon forecasts",
+   "calendar-aware trading policies",
+   "identified economic-release effects"
+  ],
   "contract_revision": "bcd65b78c12e53e85adc9f2328cb0c0faccb94e8",
   "blocks_existing_work": false
  },
@@ -143,7 +222,8 @@
   "authority": "Owner approved parallel Laya track and coordinator-hosting investigation, 2026-09-24 UTC",
   "document": "NEWS_LIVE_PARALLEL_2026_09_24.md",
   "repository": "https://github.com/harveybc/news-signal",
-  "status": "ADAPTER_PROTOTYPE_TESTED_REAL_WEIGHTS_AND_BROKERS_PENDING",
+  "status": "LAYA_ISOLATED_SDK_AND_SNAPSHOT_SETUP_IN_PROGRESS_REPORTED_REAL_PILOT_AND_BROKERS_PENDING",
+  "setup_observation_scope": "Owner supplied Satoshi report after RP157; not independently inspected live; Hub checkpoint name convaiinnovations/laya, resolved immutable snapshot revision must be recorded",
   "allowed_modes": [
    "SHADOW",
    "MT5_DEMO",
