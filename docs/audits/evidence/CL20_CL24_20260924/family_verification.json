@@ -3,7 +3,7 @@
  "families": [
   {
    "backend": "EconML LinearDML / explicit offline fitted study",
-   "elapsed_seconds": 0.0009348839957965538,
+   "elapsed_seconds": 0.0010419619939057156,
    "example_resolves": true,
    "execution_authorized": false,
    "interpretation": {
@@ -36,7 +36,7 @@
   },
   {
    "backend": "declared_provider",
-   "elapsed_seconds": 0.0026061419921461493,
+   "elapsed_seconds": 0.0025627599970903248,
    "example_resolves": true,
    "execution_authorized": false,
    "interpretation": {
@@ -66,8 +66,8 @@
    "why": null
   },
   {
-   "backend": "fixture",
-   "elapsed_seconds": 0.00036545199691317976,
+   "backend": "declared_provider",
+   "elapsed_seconds": 6.893545751998317,
    "example_resolves": true,
    "execution_authorized": false,
    "interpretation": null,
@@ -89,7 +89,7 @@
   },
   {
    "backend": "tensorflow_saved_model_cpu_subprocess",
-   "elapsed_seconds": 3.5951695410039974,
+   "elapsed_seconds": 3.785190626003896,
    "example_resolves": true,
    "execution_authorized": false,
    "interpretation": {
@@ -122,8 +122,42 @@
    "why": null
   },
   {
+   "backend": "tensorflow_saved_model_cpu_subprocess",
+   "elapsed_seconds": 3.5134469170006923,
+   "example_resolves": true,
+   "execution_authorized": false,
+   "interpretation": {
+    "interpreter": null,
+    "parameters": {
+     "horizon": 1,
+     "target": "direction_long"
+    },
+    "reading": "values are chosen from what the provider declared; nothing here can introduce a target, a horizon or an option the fitted model does not have",
+    "sources": {
+     "horizon": "QUESTION_TEXT",
+     "target": "QUESTION_TEXT"
+    },
+    "status": "OK"
+   },
+   "outputs": [
+    "direction_long"
+   ],
+   "payload_keys": [
+    "horizons",
+    "scale",
+    "targets",
+    "unit",
+    "values"
+   ],
+   "prompt": "forecast direction_long at 1 steps",
+   "provider": "predictor_forecast",
+   "status": "OK",
+   "title": "DEVELOPMENT: retained predictor direction_cnn example, direction_long probability",
+   "why": null
+  },
+  {
    "backend": "stable_baselines3_cpu_subprocess",
-   "elapsed_seconds": 2.5210051230096724,
+   "elapsed_seconds": 2.8378564529994037,
    "example_resolves": true,
    "execution_authorized": false,
    "interpretation": {
@@ -145,6 +179,8 @@
     "action_space",
     "deterministic",
     "execution_authorized",
+    "observation_build",
+    "observation_source",
     "out_of_declared_range",
     "policy_id",
     "reading",
@@ -155,14 +191,187 @@
    "status": "OK",
    "title": "DEVELOPMENT: fitted policy, one observation, proposed action",
    "why": null
+  },
+  {
+   "backend": "stable_baselines3_cpu_subprocess",
+   "elapsed_seconds": 2.7350728849996813,
+   "example_resolves": true,
+   "execution_authorized": false,
+   "interpretation": {
+    "interpreter": null,
+    "parameters": {
+     "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+    },
+    "reading": "values are chosen from what the provider declared; nothing here can introduce a target, a horizon or an option the fitted model does not have",
+    "sources": {
+     "policy_id": "QUESTION_TEXT"
+    },
+    "status": "OK"
+   },
+   "outputs": [
+    "action"
+   ],
+   "payload_keys": [
+    "action",
+    "action_space",
+    "deterministic",
+    "execution_authorized",
+    "observation_build",
+    "observation_source",
+    "out_of_declared_range",
+    "policy_id",
+    "reading",
+    "unit"
+   ],
+   "prompt": "What action does this fitted policy propose for these bars?",
+   "provider": "trading_policy",
+   "status": "OK",
+   "title": "DEVELOPMENT: market data in, proposed action out (256 rows of 83 fitted columns)",
+   "why": null
   }
  ],
  "interpreter": {
   "available": true,
   "command": "hermes",
-  "model": null,
+  "model": "deepseek-v4-pro (OpenCode Go)",
   "reading": "the model chooses among declared values; it cannot introduce one"
  },
+ "prose": [
+  {
+   "answered": true,
+   "example": "Noticia \u00b7 Clasificaci\u00f3n",
+   "prompt": "Which economy is named in this news?",
+   "provider": "laya_news",
+   "sources": null,
+   "status": "OK",
+   "why": null
+  },
+  {
+   "answered": true,
+   "example": "Noticia \u00b7 Clasificaci\u00f3n",
+   "prompt": "\u00bfDe qu\u00e9 econom\u00eda habla esta noticia?",
+   "provider": "laya_news",
+   "sources": null,
+   "status": "OK",
+   "why": null
+  },
+  {
+   "answered": true,
+   "example": "DEVELOPMENT: retained household-power model, 60-minute forecast",
+   "prompt": "predict household power one hour ahead",
+   "provider": "predictor_forecast",
+   "sources": {
+    "horizon": "QUESTION_TEXT",
+    "target": "QUESTION_TEXT"
+   },
+   "status": "OK",
+   "why": null
+  },
+  {
+   "answered": true,
+   "example": "DEVELOPMENT: retained household-power model, 60-minute forecast",
+   "prompt": "\u00bfcu\u00e1nta potencia habr\u00e1 en la pr\u00f3xima hora?",
+   "provider": "predictor_forecast",
+   "sources": {
+    "horizon": "QUESTION_TEXT",
+    "target": "QUESTION_TEXT"
+   },
+   "status": "OK",
+   "why": null
+  },
+  {
+   "answered": true,
+   "example": "DEVELOPMENT: retained predictor direction_cnn example, direction_long probability",
+   "prompt": "what is the direction_long probability at horizon 1?",
+   "provider": "predictor_forecast",
+   "sources": {
+    "horizon": "QUESTION_TEXT",
+    "target": "QUESTION_TEXT"
+   },
+   "status": "OK",
+   "why": null
+  },
+  {
+   "answered": true,
+   "example": "DEVELOPMENT: retained predictor direction_cnn example, direction_long probability",
+   "prompt": "\u00bfcu\u00e1l es la probabilidad de direction_long a horizonte 1?",
+   "provider": "predictor_forecast",
+   "sources": {
+    "horizon": "QUESTION_TEXT",
+    "target": "QUESTION_TEXT"
+   },
+   "status": "OK",
+   "why": null
+  },
+  {
+   "answered": true,
+   "example": "DEVELOPMENT: 8 historical OHLC rows, no market-performance claim",
+   "prompt": "assign hierarchical regimes to these rows",
+   "provider": "feature-eng-hierarchical-regimes",
+   "sources": {
+    "model_version": "QUESTION_TEXT",
+    "task_id": "QUESTION_TEXT"
+   },
+   "status": "OK",
+   "why": null
+  },
+  {
+   "answered": true,
+   "example": "DEVELOPMENT: 8 historical OHLC rows, no market-performance claim",
+   "prompt": "asigna los reg\u00edmenes jer\u00e1rquicos a estas filas",
+   "provider": "feature-eng-hierarchical-regimes",
+   "sources": {
+    "model_version": "QUESTION_TEXT",
+    "task_id": "QUESTION_TEXT"
+   },
+   "status": "OK",
+   "why": null
+  },
+  {
+   "answered": true,
+   "example": "SYNTHETIC/DEVELOPMENT: confounded ATE, known effect 2",
+   "prompt": "Report ATE of treatment on outcome, with its uncertainty.",
+   "provider": "causal_inference",
+   "sources": {
+    "study": "QUESTION_TEXT"
+   },
+   "status": "OK",
+   "why": null
+  },
+  {
+   "answered": true,
+   "example": "SYNTHETIC/DEVELOPMENT: confounded ATE, known effect 2",
+   "prompt": "\u00bfCu\u00e1l es el ATE of treatment on outcome y su incertidumbre?",
+   "provider": "causal_inference",
+   "sources": {
+    "study": "QUESTION_TEXT"
+   },
+   "status": "OK",
+   "why": null
+  },
+  {
+   "answered": true,
+   "example": "DEVELOPMENT: fitted policy, one observation, proposed action",
+   "prompt": "What action does eth_4h_sac_current_stack_anchor_v1 propose?",
+   "provider": "trading_policy",
+   "sources": {
+    "policy_id": "QUESTION_TEXT"
+   },
+   "status": "OK",
+   "why": null
+  },
+  {
+   "answered": true,
+   "example": "DEVELOPMENT: market data in, proposed action out (256 rows of 83 fitted columns)",
+   "prompt": "\u00bfQu\u00e9 acci\u00f3n propone la pol\u00edtica para estas barras?",
+   "provider": "trading_policy",
+   "sources": {
+    "policy_id": "QUESTION_TEXT"
+   },
+   "status": "OK",
+   "why": null
+  }
+ ],
  "providers": [
   "causal_inference",
   "feature-eng-hierarchical-regimes",
@@ -172,7 +381,7 @@
  ],
  "refusals": [
   {
-   "content": "ValueError: the question names horizon [90] and this fitted model only has [60]; answering the nearest one would answer a different question",
+   "content": "ValueError: the question names horizon [90] and this fitted model only has [1, 60]; answering the nearest one would answer a different question",
    "for_the_right_reason": true,
    "prompt": "forecast Global_active_power at 90 steps",
    "provider": "predictor_forecast",
@@ -180,7 +389,7 @@
    "status": "REFUSED"
   },
   {
-   "content": "ValueError: the question names target ['Voltage'] and this fitted model only has ['Global_active_power']; answering the nearest one would answer a different question",
+   "content": "ValueError: the question names target ['Voltage'] and this fitted model only has ['Global_active_power', 'direction_long']; answering the nearest one would answer a different question",
    "for_the_right_reason": true,
    "prompt": "forecast Voltage at 60 steps",
    "provider": "predictor_forecast",
@@ -191,9 +400,13 @@
  "schema": "m5phet_family_verification.v1",
  "summary": {
   "any_execution_authorized": false,
-  "examples_that_resolve": 5,
+  "examples": 7,
+  "examples_answering": 7,
+  "examples_that_resolve": 7,
   "families": 5,
   "families_answering": 5,
+  "prose": 12,
+  "prose_answered": 12,
   "refusals": 2,
   "refusals_correct": 2
  }
