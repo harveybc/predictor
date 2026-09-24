@@ -1,5 +1,18 @@
 {
  "schema": "research_program_method_state.v1",
+ "cl14_cl19_review_20260924": {
+  "candidates": {"news-signal": "317dd35", "feature-eng": "d081d0f", "M5PHET": "3f4a833", "predictor": "c4b52c06"},
+  "status": "CLEAN_INSTALLED_ASK_ACCEPTED_QUEUE_AND_CALENDAR_LIFECYCLE_GAPS",
+  "accepted": ["clean dependency resolution and installed fixture ask/restart", "recorded collection 11 events plus one revision, idempotent replay"],
+  "findings": ["queue retry re-signs corruption and offer can falsely acknowledge", "queue wrong-key reuse and cross-source revision", "repeated shadow corruption reports unsuccessful recovery as success", "calendar publication/receipt selection and original/revision ordering confused"],
+  "tests": "news 117 passed/1 skipped; calendar focal 37 passed; independent CPU adversarial probe",
+  "orders": "../../audits/work_plan/MUSASHI_CL14_CL19_REVIEW_2026_09_24.md",
+  "evidence": "../../audits/evidence/CL14_CL19_MUSASHI_20260924/results.json",
+  "forecast": "CL17 not started implementation; CL22 deliver native question-to-forecast in parallel",
+  "new_model_measurement": false,
+  "global_hold": false,
+  "new_training_budget": false
+ },
  "cl08_cl13_review_20260924": {
   "candidates": {"news-signal": "e40098b", "M5PHET": "3f4a833", "feature-eng": "1a0402e", "predictor": "1e9d994f"},
   "status": "USER_QUESTIONS_IMPLEMENTED_RETAINED_PARITY_CONFIRMED_DEPLOYMENT_AND_CALENDAR_GAPS",
@@ -28,11 +41,11 @@
  "classification_first_20260924": {
   "public_interface": "Required Laya-like experience across all five families: data/context + natural-language questions -> typed engine answers; not a plugin catalog",
   "RAG": "Consider bounded documentation retrieval evaluation; market-context RAG separate and point-in-time; optional, not implemented, not a classification prerequisite",
-  "natural_language_design": "NL01 user-authored choice implemented in news-signal e40098b, real retained parity; declared runtime pin blocks clean deployment. Other-family NL slices pending",
+  "natural_language_design": "NL01 user-authored choice with retained native parity; clean installed fixture ask accepted at317dd35. Other-family NL slices pending",
   "interpreter_candidates": "Reuse configured Hermes/OpenCode language access (owner names DeepSeek Flash); optional admitted small local pretrained model. Verify exact identity/access, no LLM training or broker-role conflation",
   "orders": "../../handoffs/SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md",
   "primary_task": "English news relevance to EURUSD via real Laya and M5PHET Registry; direct SDK parity",
-  "status": "REAL_LAYA_USER_QUESTIONS_PARITY_VERIFIED_DEPLOYMENT_AND_OTHER_FAMILY_SLICES_PENDING",
+  "status": "CLEAN_ASK_INSTALL_ACCEPTED_RETAINED_LAYA_PARITY_OTHER_FAMILY_SLICES_PENDING",
   "provider_owners": {"classification": "news-signal", "forecasting": "predictor/prediction_provider", "hierarchical_regimes": "feature-eng", "causal_inference": "causal-inference", "RL": "agent-multi/gym-fx"},
   "DOIN": "transversal optional optimization, not RL engine",
   "implementation_owner": "Satoshi",

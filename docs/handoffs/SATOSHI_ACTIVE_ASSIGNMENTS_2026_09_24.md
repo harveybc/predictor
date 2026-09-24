@@ -1,5 +1,13 @@
 # Start here: reconcile ALL active assignments, not only M5PHET
 
+**Latest: CL14-CL19 reviewed at `317dd35` / `d081d0f` / `3f4a833` / `c4b52c06`.**
+[CL20-CL24: lifecycle repairs AND deliver the outstanding forecast slice](../audits/work_plan/MUSASHI_CL14_CL19_REVIEW_2026_09_24.md).
+Clean installed `ask` accepted with explicit fixture; recorded collector positive
+reproduced. Queue retry/recovery, repeated shadow corruption and calendar source
+chronology need scoped repairs. CL17 is unstarted implementation, not an owner
+permission dependency. Start it concurrently; no repeated doctoral inference.
+Earlier review snapshots below are history, not current dispatch instructions.
+
 **Latest: CL08-CL13 reviewed at `e40098b` / `3f4a833` / `1a0402e` / `1e9d994f`.**
 [CL14-CL19: deployable questions, calendar corrections and parallel forecast slice](../audits/work_plan/MUSASHI_CL08_CL13_REVIEW_2026_09_24.md).
 Two user questions retain 12/12 native parity each. The declared installation

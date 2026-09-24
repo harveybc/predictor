@@ -4,16 +4,16 @@
   "dispatcher": "Satoshi",
   "policy": "CONCURRENT_EXECUTION_2026_09_23.md",
   "runtime_enforcement": "Existing runners/admission; this is a persistent ordered manifest, not a newly installed scheduler",
-  "next_orders": "../../audits/work_plan/MUSASHI_CL08_CL13_REVIEW_2026_09_24.md",
+  "next_orders": "../../audits/work_plan/MUSASHI_CL14_CL19_REVIEW_2026_09_24.md",
   "ready_code_lanes": [
-    {"order": "CL14-15", "owner": "news-signal/M5PHET", "action": "release pin, token and store-key repairs"},
-    {"order": "CL16", "owner": "feature-eng", "action": "calendar publication/receipt, consumed availability and immutable history"},
-    {"order": "CL17", "owner": "predictor/prediction_provider/M5PHET", "action": "question-to-forecast native adapter, bounded DEV parity"},
-    {"order": "CL18", "owner": "news-signal/application adapters", "action": "collector code, labelled quality design, demo/paper broker code"}
+    {"order": "CL20", "owner": "news-signal", "action": "queue identity/transitions and repeated shadow recovery; preserve accepted clean installation"},
+    {"order": "CL21", "owner": "feature-eng", "action": "publication-order selection, unknown clocks and source vintage lineage"},
+    {"order": "CL22 (outstanding CL17)", "owner": "predictor/prediction_provider/M5PHET", "action": "deliver question-to-forecast native adapter concurrently; unstarted implementation, not external permission hold"},
+    {"order": "CL23", "owner": "news-signal/application adapters", "action": "recorded source through consumer and acknowledgement, quality design, demo/paper adapter code"}
   ],
   "latest_return": {
-    "commit": "1e9d994f",
-    "status": "RETAINED_JSON_AND_CPU_BOUNDARIES_REVIEWED_NO_LIVE_DISPATCH_OBSERVATION",
+    "commit": "c4b52c06",
+    "status": "CLEAN_INSTALLED_FIXTURE_ASK_ACCEPTED_CPU_QUEUE_CALENDAR_GAPS_NO_LIVE_DISPATCH_OBSERVATION",
     "A": "12-cell consolidation reported, MSE0.161962/MAE0.259662; composition audit scoped separately",
     "B": "RP145 closure reports 12/12 verified, MSE/MAE 0.150307/0.246397, 16167/24000CPU; review retained closure, no duplicate fit queue",
     "doctoral": "Prior scoring population rewrite now rejected from retained run counts; metric values explicitly self-reported, not independently authenticated. No routine inference or retraining",
@@ -22,8 +22,8 @@
   "parallel_news_lane": {
     "orders": "RP147-RP151",
     "repository": "https://github.com/harveybc/news-signal",
-    "state": "USER_QUESTIONS_IMPLEMENTED_TWO_TASKS_RETAINED_PARITY_CONFIRMED_CLEAN_INSTALL_REJECTS_NEW_TASK_KIND",
-    "current_orders": "../../audits/work_plan/MUSASHI_CL08_CL13_REVIEW_2026_09_24.md",
+    "state": "CLEAN_INSTALL_ACCEPTED_RETAINED_NATIVE_PARITY_RECORDED_COLLECTOR_PARTIAL_NO_LIVE_CAPTURE",
+    "current_orders": "../../audits/work_plan/MUSASHI_CL14_CL19_REVIEW_2026_09_24.md",
     "first_host_candidate": "External5090 preferred for eligible GPU work; use admitted COORDINATOR4070 only when measuring the planned small-model residency on that device",
     "blocks_RP135_or_doctoral": false,
     "modes": ["SHADOW", "MT5_DEMO", "ALPACA_PAPER"],
