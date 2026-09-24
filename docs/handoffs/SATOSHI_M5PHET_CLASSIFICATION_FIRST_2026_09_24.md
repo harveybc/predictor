@@ -1,5 +1,28 @@
 # Execute M5PHET's first real business slice; domain plugins in parallel
 
+## Owner clarification: the same question-driven experience as Laya
+
+M5PHET's public product is **data/context + natural-language questions -> typed
+answers across the five ML families**. A plugin catalog, five example scripts,
+a generated config, or requiring users to know tensor/plugin details does not
+satisfy this requirement. Natural language is not a later optional convenience.
+The explicit task API stays underneath and remains available to advanced callers.
+
+Integrate M5PHET's `docs/NATURAL_LANGUAGE_INTERFACE.md` (NL01-NL08) from
+`musashi/classification-first-20260924`. Complete the real Laya slice through
+this question-first public path; reuse its native question handling, without
+waiting for or interposing a generalized language interpreter. In parallel,
+implement a question-to-forecast path that returns actual specialized-engine
+results, not merely a TaskSpec. The same input/answer experience extends to the
+other assigned family engines. Interpretation and validation may differ inside
+providers; users should not have to assemble those internals themselves.
+
+Preserve current pilot installations/jobs. No new repository, mandatory remote
+language service, unbounded fitting or replacement of ongoing scientific work.
+The detailed contract distinguishes valid profile defaults, meaningful ambiguity,
+data availability, model readiness, and provider results from generated prose.
+Use existing provider/client infrastructure, not another agent framework.
+
 Owner instruction: do not stop the M5PHET lane behind doctoral closure. Satoshi
 implements, Musashi audits. This supplements existing RP147-RP151 and INT orders;
 it is not another research stage or a reset of any compute allocation.
