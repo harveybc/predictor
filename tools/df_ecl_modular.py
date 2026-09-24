@@ -49,6 +49,7 @@ import importlib
 import importlib.util
 import json
 import math
+import os
 import time
 from pathlib import Path
 
@@ -866,4 +867,106 @@ def run_contrast(data_path: Path, out_dir: Path, *, pred_len: int = 96, seeds=(2
                      "cost_readings": ["the downstream fit alone", "the auto-encoder plus the downstream fit"],
                      "equal_total_cost": "NOT CLAIMED: an equal update allowance is not equal total cost evidence"}
     persist()
+    return out
+
+
+# --- RP155: fresh-process replay, full-population scoring and content reconciliation -------------------------------------------
+
+def score_cell(data_path: Path, run_dir: Path, cell: str, *, pred_len: int = 96, batch: int = 32,
+               monitor_windows: int | None = None) -> dict:
+    """Score ONE finished cell from its saved selected weights. Meant to be invoked in a FRESH process: it rebuilds the model,
+    loads the selected checkpoint, and reduces over the COMPLETE declared population rather than the selection monitor. The
+    matched persistence baseline is computed on the SAME rows, in the same pass."""
+    E, RG = _e0(), _regimes()
+    run_dir = Path(run_dir)
+    record = json.loads((run_dir / "CONTRAST.json").read_text())["cells"][cell]
+    seed = int(record["seed"])
+    tf = E._tf()
+    tf.keras.utils.set_random_seed(seed)
+    model = build_ecl_modular([0] * CHANNELS, pred_len=pred_len, seed=seed)
+    weights = Path(record["model_path"])
+    on_disk = hashlib.sha256(weights.read_bytes()).hexdigest()
+    model.load_weights(str(weights))
+    d = author_datasets(data_path, pred_len=pred_len)
+    val_ds = d["splits"]["val"]["dataset"]
+    n = len(val_ds)
+    W = _windows_class(tf)
+    monitor = int(monitor_windows if monitor_windows is not None else 0)
+    groups = {"complete_validation": list(range(n))}
+    if 0 < monitor < n:
+        groups["validation_never_used_for_selection"] = list(range(monitor, n))
+    out = {"cell": cell, "seed": seed, "regime": record["regime"], "selected_epoch": record["selected_epoch"],
+           "model_path": str(weights), "model_sha256_recorded": record["model_sha256"], "model_sha256_on_disk": on_disk,
+           "model_identity_reconciled": on_disk == record["model_sha256"],
+           "pred_len": pred_len, "populations": {}}
+    for name, idx in groups.items():
+        seq = W(val_ds, idx, seq_len=SEQ_LEN, pred_len=pred_len, batch=batch, seed=0, complete=True)
+        ab = sq = nab = nsq = 0.0
+        count = 0
+        for b in range(len(seq)):
+            x, y = seq[b]
+            pred = np.asarray(model.predict(x, verbose=0), dtype=np.float64)
+            true = np.asarray(y, dtype=np.float64)
+            naive = np.repeat(np.asarray(x, dtype=np.float64)[:, -1:, :], pred_len, axis=1)
+            ab += float(np.abs(pred - true).sum()); sq += float(((pred - true) ** 2).sum())
+            nab += float(np.abs(naive - true).sum()); nsq += float(((naive - true) ** 2).sum())
+            count += int(true.size)
+        out["populations"][name] = {
+            "windows": len(idx), "elements": count,
+            "model": {"mae": ab / count, "mse": sq / count},
+            "matched_persistence_same_rows": {"mae": nab / count, "mse": nsq / count},
+            "skill_mae_vs_persistence": 1.0 - (ab / count) / (nab / count) if nab else None}
+    out["scope"] = ("scored on the outer VALIDATION split, which this design also used as the checkpoint-selection monitor; the "
+                    "complement never used for selection is reported beside it. The outer TEST split was not read")
+    return out
+
+
+def score_contrast(data_path: Path, run_dir: Path, *, pred_len: int = 96, batch: int = 32, python: str | None = None) -> dict:
+    """RP155: replay every finished cell in a SEPARATE PROCESS and reduce the complete population. A fresh interpreter per cell
+    is the point: a score produced inside the process that trained the model is not a replay."""
+    import subprocess
+    import sys
+    run_dir = Path(run_dir)
+    contrast = json.loads((run_dir / "CONTRAST.json").read_text())
+    monitor = (contrast.get("populations") or {}).get("validation_monitor_windows") or 0
+    cells = sorted(k for k in contrast["cells"] if not k.startswith("AE_"))
+    out = {"schema": "df_ecl_modular_scoring.v1", "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "run_dir": str(run_dir),
+           "design_sha256": contrast["design_sha256"], "monitor_windows": monitor,
+           "fresh_process_per_cell": True, "cells": {}, "problems": []}
+    for cell in cells:
+        code = (f"import json,sys,importlib.util,pathlib;"
+                f"spec=importlib.util.spec_from_file_location('m',{str(Path(__file__).resolve())!r});"
+                f"m=importlib.util.module_from_spec(spec);sys.modules['m']=m;spec.loader.exec_module(m);"
+                f"print(json.dumps(m.score_cell(pathlib.Path({str(data_path)!r}),pathlib.Path({str(run_dir)!r}),{cell!r},"
+                f"pred_len={pred_len},batch={batch},monitor_windows={monitor})))")
+        proc = subprocess.run([python or sys.executable, "-c", code], capture_output=True, text=True,
+                              env={**os.environ, "CUDA_VISIBLE_DEVICES": "", "TF_CPP_MIN_LOG_LEVEL": "3"})
+        line = [l for l in proc.stdout.splitlines() if l.startswith("{")]
+        if proc.returncode != 0 or not line:
+            out["problems"].append(f"{cell}: the replay process failed ({proc.returncode}): {proc.stderr[-200:]}")
+            continue
+        out["cells"][cell] = json.loads(line[-1])
+    by_regime = {}
+    for cell, r in out["cells"].items():
+        by_regime.setdefault(r["regime"], []).append(r)
+    out["by_regime"] = {}
+    for regime, rows in sorted(by_regime.items()):
+        for population in ("complete_validation", "validation_never_used_for_selection"):
+            values = [row["populations"][population]["model"] for row in rows if population in row["populations"]]
+            if not values:
+                continue
+            out["by_regime"].setdefault(regime, {})[population] = {
+                "seeds": len(values),
+                "mae_mean": float(np.mean([v["mae"] for v in values])), "mae_sd": (float(np.std([v["mae"] for v in values], ddof=1)) if len(values) > 1 else None),
+                "mse_mean": float(np.mean([v["mse"] for v in values])), "mse_sd": (float(np.std([v["mse"] for v in values], ddof=1)) if len(values) > 1 else None),
+                "matched_persistence_mae": float(np.mean([row["populations"][population]["matched_persistence_same_rows"]["mae"] for row in rows])),
+            }
+    out["reconciliation"] = {"all_model_identities_match": all(r["model_identity_reconciled"] for r in out["cells"].values()),
+                             "cells_scored": len(out["cells"]), "cells_expected": len(cells)}
+    out["claims"] = {"population": "the outer VALIDATION split; the outer TEST split was not read",
+                     "selection_caveat": ("the same split supplied the checkpoint-selection monitor, so the complete-population "
+                                          "figure is not an independent estimate; the complement never used for selection is "
+                                          "reported beside it"),
+                     "H1": "none: this is a development contrast and no hypothesis is decided here"}
+    (run_dir / "SCORING.json").write_text(json.dumps(out, indent=1, default=str))
     return out

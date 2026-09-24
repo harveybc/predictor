@@ -1,0 +1,437 @@
+{
+ "schema": "df_ecl_modular_scoring.v1",
+ "at": "2026-09-24T06:48:24Z",
+ "run_dir": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b",
+ "design_sha256": "b5d5eee1b5fce981f4627352ed516d5745b1e16996507a8c63fffc53518cadd9",
+ "monitor_windows": 640,
+ "fresh_process_per_cell": true,
+ "cells": {
+  "R0_s2021": {
+   "cell": "R0_s2021",
+   "seed": 2021,
+   "regime": "R0",
+   "selected_epoch": 58,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2021/R0_selected.weights.h5",
+   "model_sha256_recorded": "7251d81cb04ed69679082d75d6ac7640185eeba0807c12832f4705f3827217c0",
+   "model_sha256_on_disk": "7251d81cb04ed69679082d75d6ac7640185eeba0807c12832f4705f3827217c0",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "model": {
+      "mae": 0.3709982024463054,
+      "mse": 0.2879995682520872
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8879448193127837,
+      "mse": 1.407748631476188
+     },
+     "skill_mae_vs_persistence": 0.5821832681748897
+    },
+    "validation_never_used_for_selection": {
+     "windows": 1897,
+     "elements": 58457952,
+     "model": {
+      "mae": 0.36984127901764524,
+      "mse": 0.28321758029877875
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8696377083954785,
+      "mse": 1.341065508559861
+     },
+     "skill_mae_vs_persistence": 0.5747179826182798
+    }
+   },
+   "scope": "scored on the outer VALIDATION split, which this design also used as the checkpoint-selection monitor; the complement never used for selection is reported beside it. The outer TEST split was not read"
+  },
+  "R0_s2022": {
+   "cell": "R0_s2022",
+   "seed": 2022,
+   "regime": "R0",
+   "selected_epoch": 52,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2022/R0_selected.weights.h5",
+   "model_sha256_recorded": "9e531410d52b856e3ec2dc1b0e86144f8c5be9e04298527779dd332b093d4e06",
+   "model_sha256_on_disk": "9e531410d52b856e3ec2dc1b0e86144f8c5be9e04298527779dd332b093d4e06",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "model": {
+      "mae": 0.37176277659488616,
+      "mse": 0.2893282799745344
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8879448193127837,
+      "mse": 1.407748631476188
+     },
+     "skill_mae_vs_persistence": 0.581322207744161
+    },
+    "validation_never_used_for_selection": {
+     "windows": 1897,
+     "elements": 58457952,
+     "model": {
+      "mae": 0.3712734968709484,
+      "mse": 0.28552159748915834
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8696377083954785,
+      "mse": 1.341065508559861
+     },
+     "skill_mae_vs_persistence": 0.5730710693813346
+    }
+   },
+   "scope": "scored on the outer VALIDATION split, which this design also used as the checkpoint-selection monitor; the complement never used for selection is reported beside it. The outer TEST split was not read"
+  },
+  "R0_s2023": {
+   "cell": "R0_s2023",
+   "seed": 2023,
+   "regime": "R0",
+   "selected_epoch": 57,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2023/R0_selected.weights.h5",
+   "model_sha256_recorded": "ca7cb86c5f62b383ce8d9194a4f606fbffa6b930e4750eeaed324117dfb66cae",
+   "model_sha256_on_disk": "ca7cb86c5f62b383ce8d9194a4f606fbffa6b930e4750eeaed324117dfb66cae",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "model": {
+      "mae": 0.37313172897048225,
+      "mse": 0.2911814805193637
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8879448193127837,
+      "mse": 1.407748631476188
+     },
+     "skill_mae_vs_persistence": 0.579780498906155
+    },
+    "validation_never_used_for_selection": {
+     "windows": 1897,
+     "elements": 58457952,
+     "model": {
+      "mae": 0.3730335479282062,
+      "mse": 0.2879482253534494
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8696377083954785,
+      "mse": 1.341065508559861
+     },
+     "skill_mae_vs_persistence": 0.571047179386379
+    }
+   },
+   "scope": "scored on the outer VALIDATION split, which this design also used as the checkpoint-selection monitor; the complement never used for selection is reported beside it. The outer TEST split was not read"
+  },
+  "R1_s2021": {
+   "cell": "R1_s2021",
+   "seed": 2021,
+   "regime": "R1",
+   "selected_epoch": 55,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2021/R1_selected.weights.h5",
+   "model_sha256_recorded": "c9740927b913a7afbccedf6bf7c25ac1f93b3c57749fafe6e35d1686c39fb757",
+   "model_sha256_on_disk": "c9740927b913a7afbccedf6bf7c25ac1f93b3c57749fafe6e35d1686c39fb757",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "model": {
+      "mae": 0.3758550044765915,
+      "mse": 0.2967485148874746
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8879448193127837,
+      "mse": 1.407748631476188
+     },
+     "skill_mae_vs_persistence": 0.5767135566290247
+    },
+    "validation_never_used_for_selection": {
+     "windows": 1897,
+     "elements": 58457952,
+     "model": {
+      "mae": 0.37479531115004056,
+      "mse": 0.2917695741112818
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8696377083954785,
+      "mse": 1.341065508559861
+     },
+     "skill_mae_vs_persistence": 0.5690213205662906
+    }
+   },
+   "scope": "scored on the outer VALIDATION split, which this design also used as the checkpoint-selection monitor; the complement never used for selection is reported beside it. The outer TEST split was not read"
+  },
+  "R1_s2022": {
+   "cell": "R1_s2022",
+   "seed": 2022,
+   "regime": "R1",
+   "selected_epoch": 57,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2022/R1_selected.weights.h5",
+   "model_sha256_recorded": "d47766be64dd42b327d6f5304b8aa7f6ca2e755f720fb3d624d9f3961a4a84d5",
+   "model_sha256_on_disk": "d47766be64dd42b327d6f5304b8aa7f6ca2e755f720fb3d624d9f3961a4a84d5",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "model": {
+      "mae": 0.3737964270348449,
+      "mse": 0.2942169002708506
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8879448193127837,
+      "mse": 1.407748631476188
+     },
+     "skill_mae_vs_persistence": 0.5790319185327968
+    },
+    "validation_never_used_for_selection": {
+     "windows": 1897,
+     "elements": 58457952,
+     "model": {
+      "mae": 0.37392196860932864,
+      "mse": 0.2909547912297186
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8696377083954785,
+      "mse": 1.341065508559861
+     },
+     "skill_mae_vs_persistence": 0.5700255807683043
+    }
+   },
+   "scope": "scored on the outer VALIDATION split, which this design also used as the checkpoint-selection monitor; the complement never used for selection is reported beside it. The outer TEST split was not read"
+  },
+  "R1_s2023": {
+   "cell": "R1_s2023",
+   "seed": 2023,
+   "regime": "R1",
+   "selected_epoch": 57,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2023/R1_selected.weights.h5",
+   "model_sha256_recorded": "5f2641a4590157b68339e47219f86676306f64848829ec84fd72770f0ea620d5",
+   "model_sha256_on_disk": "5f2641a4590157b68339e47219f86676306f64848829ec84fd72770f0ea620d5",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "model": {
+      "mae": 0.375083657461392,
+      "mse": 0.2938304802491695
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8879448193127837,
+      "mse": 1.407748631476188
+     },
+     "skill_mae_vs_persistence": 0.5775822446357822
+    },
+    "validation_never_used_for_selection": {
+     "windows": 1897,
+     "elements": 58457952,
+     "model": {
+      "mae": 0.3751182372396114,
+      "mse": 0.29002977621587445
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8696377083954785,
+      "mse": 1.341065508559861
+     },
+     "skill_mae_vs_persistence": 0.5686499865194188
+    }
+   },
+   "scope": "scored on the outer VALIDATION split, which this design also used as the checkpoint-selection monitor; the complement never used for selection is reported beside it. The outer TEST split was not read"
+  },
+  "R2_s2021": {
+   "cell": "R2_s2021",
+   "seed": 2021,
+   "regime": "R2",
+   "selected_epoch": 51,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2021/R2_selected.weights.h5",
+   "model_sha256_recorded": "0b1dba77b2280dfe6f364fde4df9d6af3c9f731d4039c01f3901a88cb3183e13",
+   "model_sha256_on_disk": "0b1dba77b2280dfe6f364fde4df9d6af3c9f731d4039c01f3901a88cb3183e13",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "model": {
+      "mae": 0.37018665809741924,
+      "mse": 0.2874741296029509
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8879448193127837,
+      "mse": 1.407748631476188
+     },
+     "skill_mae_vs_persistence": 0.5830972262624139
+    },
+    "validation_never_used_for_selection": {
+     "windows": 1897,
+     "elements": 58457952,
+     "model": {
+      "mae": 0.3685626421012273,
+      "mse": 0.2823063192004474
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8696377083954785,
+      "mse": 1.341065508559861
+     },
+     "skill_mae_vs_persistence": 0.5761882925002846
+    }
+   },
+   "scope": "scored on the outer VALIDATION split, which this design also used as the checkpoint-selection monitor; the complement never used for selection is reported beside it. The outer TEST split was not read"
+  },
+  "R2_s2022": {
+   "cell": "R2_s2022",
+   "seed": 2022,
+   "regime": "R2",
+   "selected_epoch": 63,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2022/R2_selected.weights.h5",
+   "model_sha256_recorded": "b4ac96675403ee0b44122b2e92f36731876b34be6f1f7d945aad353c3f653fe5",
+   "model_sha256_on_disk": "b4ac96675403ee0b44122b2e92f36731876b34be6f1f7d945aad353c3f653fe5",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "model": {
+      "mae": 0.3701070411750471,
+      "mse": 0.28796648393256263
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8879448193127837,
+      "mse": 1.407748631476188
+     },
+     "skill_mae_vs_persistence": 0.5831868905305536
+    },
+    "validation_never_used_for_selection": {
+     "windows": 1897,
+     "elements": 58457952,
+     "model": {
+      "mae": 0.369412348065172,
+      "mse": 0.28379934767191006
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8696377083954785,
+      "mse": 1.341065508559861
+     },
+     "skill_mae_vs_persistence": 0.5752112120957189
+    }
+   },
+   "scope": "scored on the outer VALIDATION split, which this design also used as the checkpoint-selection monitor; the complement never used for selection is reported beside it. The outer TEST split was not read"
+  },
+  "R2_s2023": {
+   "cell": "R2_s2023",
+   "seed": 2023,
+   "regime": "R2",
+   "selected_epoch": 60,
+   "model_path": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-contrast-20260924b/seed2023/R2_selected.weights.h5",
+   "model_sha256_recorded": "9c8c21d0423c22b472decf704910212522ce27b2bef56343af705c03fda924d7",
+   "model_sha256_on_disk": "9c8c21d0423c22b472decf704910212522ce27b2bef56343af705c03fda924d7",
+   "model_identity_reconciled": true,
+   "pred_len": 96,
+   "populations": {
+    "complete_validation": {
+     "windows": 2537,
+     "elements": 78180192,
+     "model": {
+      "mae": 0.37040742140745175,
+      "mse": 0.28769393433241636
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8879448193127837,
+      "mse": 1.407748631476188
+     },
+     "skill_mae_vs_persistence": 0.5828486034817738
+    },
+    "validation_never_used_for_selection": {
+     "windows": 1897,
+     "elements": 58457952,
+     "model": {
+      "mae": 0.3689649603561582,
+      "mse": 0.28288068166110214
+     },
+     "matched_persistence_same_rows": {
+      "mae": 0.8696377083954785,
+      "mse": 1.341065508559861
+     },
+     "skill_mae_vs_persistence": 0.5757256650738898
+    }
+   },
+   "scope": "scored on the outer VALIDATION split, which this design also used as the checkpoint-selection monitor; the complement never used for selection is reported beside it. The outer TEST split was not read"
+  }
+ },
+ "problems": [],
+ "by_regime": {
+  "R0": {
+   "complete_validation": {
+    "seeds": 3,
+    "mae_mean": 0.3719642360038913,
+    "mae_sd": 0.0010809362966655658,
+    "mse_mean": 0.2895031095819951,
+    "mse_sd": 0.0015981443811166737,
+    "matched_persistence_mae": 0.8879448193127836
+   },
+   "validation_never_used_for_selection": {
+    "seeds": 3,
+    "mae_mean": 0.37138277460559993,
+    "mae_sd": 0.0015989375900270285,
+    "mse_mean": 0.2855624677137955,
+    "mse_sd": 0.0023655873350536755,
+    "matched_persistence_mae": 0.8696377083954786
+   }
+  },
+  "R1": {
+   "complete_validation": {
+    "seeds": 3,
+    "mae_mean": 0.3749116963242762,
+    "mae_sd": 0.0010400063679735915,
+    "mse_mean": 0.2949319651358316,
+    "mse_sd": 0.0015849983780542997,
+    "matched_persistence_mae": 0.8879448193127836
+   },
+   "validation_never_used_for_selection": {
+    "seeds": 3,
+    "mae_mean": 0.3746118389996602,
+    "mae_sd": 0.0006188789715473842,
+    "mse_mean": 0.2909180471856249,
+    "mse_sd": 0.0008704807710674754,
+    "matched_persistence_mae": 0.8696377083954786
+   }
+  },
+  "R2": {
+   "complete_validation": {
+    "seeds": 3,
+    "mae_mean": 0.3702337068933061,
+    "mae_sd": 0.00015561896703379175,
+    "mse_mean": 0.2877115159559766,
+    "mse_sd": 0.00024664758581247325,
+    "matched_persistence_mae": 0.8879448193127836
+   },
+   "validation_never_used_for_selection": {
+    "seeds": 3,
+    "mae_mean": 0.36897998350751915,
+    "mae_sd": 0.0004250521469165871,
+    "mse_mean": 0.2829954495111532,
+    "mse_sd": 0.0007531017518924883,
+    "matched_persistence_mae": 0.8696377083954786
+   }
+  }
+ },
+ "reconciliation": {
+  "all_model_identities_match": true,
+  "cells_scored": 9,
+  "cells_expected": 9
+ },
+ "claims": {
+  "population": "the outer VALIDATION split; the outer TEST split was not read",
+  "selection_caveat": "the same split supplied the checkpoint-selection monitor, so the complete-population figure is not an independent estimate; the complement never used for selection is reported beside it",
+  "H1": "none: this is a development contrast and no hypothesis is decided here"
+ }
+}
