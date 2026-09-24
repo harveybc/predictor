@@ -226,7 +226,7 @@
   "historical_satoshi_return": "Preserved below as reported; this external review qualifies its closure/comparator/financial guarantees",
   "owner_action_required": false
  },
- "updated_on": "2026-09-23",
+ "updated_on": "2026-09-24",
  "current_stage": "system_verification",
  "completed_stages": [
   "discovery",
@@ -1545,6 +1545,36 @@
    "status": "DONE",
    "heartbeat": "a user timer on the GPU host writes one JSON line every two minutes with the service state, live training unit, scope CPU ledger, GPU and host thermals, free disk and cell count; read-only about the campaign",
    "next_intervention": "docs/tres_temas_entrevista/program_v3/NEXT_INTERVENTION_PREPARATION_2026_09_23.md, PREPARED and NOT AUTHORIZED TO FIT: the R0/R1/R2 learning regimes of the modular detector, what is held fixed, the two conflations the plan forbids, matched data/tuning/budget, the unmet prerequisites, a resource plan from measured costs, and the financial lane's two real blockers"
+  }
+ },
+ "rp140_rp143": {
+  "orders": "docs/handoffs/MUSASHI_SOTA_RP140_RP143_2026_09_23.md (5c9a14d5), after MUSASHI_RP136_RP139_REVIEW_2026_09_23.md",
+  "updated_on": "2026-09-24",
+  "RP140": {
+   "status": "DONE",
+   "what": "compose_evidence binds evidence objects to the authoritative root per cell by design, record, checkpoint, prediction, report and accepted-terminal identity; it reads no array, edits no report and sets no verified flag. Retained replay histories are admitted in all three recorded shapes at two stated binding strengths (IDENTITY_BOUND, METRIC_AND_SHAPE_BOUND); a score absent from a record is taken only from a bound report row, with that row's declared basis",
+   "result": "all twelve protocol-A cells pool. T=96 0.135496/0.232884, T=192 0.157645/0.252163, T=336 0.164480/0.262985, T=720 0.190226/0.290617, every horizon in OPERATIONAL_AGREEMENT, and the four-horizon mean 0.161962/0.259662 against a published 0.158250/0.255750 over a denominator of four",
+   "qualification": "no cell records a MEASURED training-device UUID (UNKNOWN for four, INFERRED_GPU_MEMORY for eight), so every exact replay is REPLAY_EXACT_ON_OBSERVED_DEVICE and never a same-device claim; the earlier wording is corrected in a dated errata",
+   "evidence": "docs/audits/evidence/d3_k5_20260917/RP140/"
+  },
+  "RP141": {
+   "status": "SUPERVISED",
+   "campaign": "ten of twelve L512 cells accepted at 01:34Z; h720 s2022 training, s2023 queued. Measured per cell 1258 s at H96, 1341 at H192, 1362 at H336",
+   "allocation": "continuation scope 11,614 CPU s of the declared 24,000 (48 percent); memory peak 5.40 GiB against the 7 GiB limit with oom and oom_kill zero",
+   "scores": "H96 0.125551/0.125849/0.126375; H192 0.144051/0.142953/0.143947; H336 0.152274/0.152304/0.153511; H720 0.179536 (1 of 3). Recorded, not accepted: no replay, no closure, no verified mean. Table 9's lookback stays unresolved"
+  },
+  "RP142": {
+   "status": "DONE",
+   "what": "tools/df_ecl_modular.py is the matched ECL adapter: the reference's own resolved arguments, 321 channels in the author's order, full [batch, horizon, 321] target and output, the approved architecture with one change (the readout), and R0/R1/R2 applied by the approved regime module",
+   "causality": "proved over row identities on TARGET support, with the author's deliberate input-context overlap declared; the AE's internal validation is a purged chronological tail of the outer TRAIN origins; a future perturbation leaves windows unchanged; split boundaries re-derived with the author's formulas and checked against his own arrays",
+   "corrections": "the preparation's obsolete AE-validation paragraph is corrected in place and 13E gets a dated successor (13E_v3_SUCCESSOR_AE_VALIDATION_2026_09_23.md); nothing erased",
+   "pilot": "TRAIN-ONLY on WORKER_A: 23,797 AE steps (masked loss 0.35999 to 0.14284, purged inner validation 0.25378 to 0.16439) and 23,329 R0 steps (0.44293 to 0.29182), 1,206.1 CPU s and 820.1 s wall inside the declared 1,800/1,800. No test score, no selection, no H1 claim. The first attempt is preserved: it executed one pass instead of its prescription"
+  },
+  "RP143": {
+   "status": "DONE",
+   "financial": "docs/tres_temas_entrevista/program_v3/FINANCIAL_PRODUCER_CONTRACT_INVESTIGATION_2026_09_23.md: the 422 blocker in the service's own words, the six contract fields and the three with no evidence, the producer lineage stated as known and unknown, and what a matched financial reference would have to satisfy. No byte read, reserve untouched",
+   "suite": "146 passed at 87db6944 on WORKER_A, clean worktree, no skips",
+   "return": "docs/audits/work_plan/SATOSHI_RP140_RP143_RETURN_2026_09_24.md"
   }
  }
 }

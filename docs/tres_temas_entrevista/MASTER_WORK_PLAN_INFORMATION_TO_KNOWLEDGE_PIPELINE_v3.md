@@ -856,3 +856,21 @@ entrenadas o en curso de doce, ruta gobernada verificada con respuestas autentic
 aditiva para la celda 2 (solo se reconstruyeron `started_at` y `finished_at`; la ventana medida era 14:59:01Z a 15:20:09Z),
 libro de costos medido (2.517 s de CPU del carril previo; proyeccion de unos 13.100 s frente a la asignacion de 24.000) y
 latido cada dos minutos. Siguiente intervencion doctoral **preparada y NO autorizada a ajustar**. Suite 128 pasan, 1 omitida.
+
+**Ejecutado por Satoshi (24-sep, RP140-RP143, pendiente de revision):**
+[retorno](../audits/work_plan/SATOSHI_RP140_RP143_RETURN_2026_09_24.md), evidencia en
+`docs/audits/evidence/d3_k5_20260917/{RP140,RP142}/`. **Protocolo A consolidado:** las doce celdas entran en el mismo
+denominador bajo una regla de agrupacion declarada (terminal aceptado, cierre que verifico la celda, y un replay ligado a sus
+propias identidades que pasa la regla congelada). T=96 0.135496/0.232884, T=192 0.157645/0.252163, T=336 0.164480/0.262985,
+T=720 0.190226/0.290617, los cuatro horizontes en ACUERDO OPERACIONAL, y por primera vez **media de cuatro horizontes
+0.161962/0.259662** frente a 0.158250/0.255750 publicados; persistencia pareada en las mismas filas 0.9455/0.9507/0.9613/0.9754.
+La calificacion que acompana cada fila: **ninguna celda registra el UUID MEDIDO del dispositivo que la entreno** (UNKNOWN en
+cuatro, INFERRED_GPU_MEMORY en ocho), asi que una reproduccion exacta es repetibilidad de las predicciones almacenadas y no
+una afirmacion de mismo dispositivo; mi redaccion anterior queda corregida en fe de erratas fechada. **Protocolo B:** diez de
+doce celdas aceptadas (H96 0.125551/0.125849/0.126375; H192 0.144051/0.142953/0.143947; H336 0.152274/0.152304/0.153511;
+H720 0.179536 de tres), sin replay ni cierre: puntuaciones registradas, no ciencia aceptada; la Tabla 9 conserva su lookback
+sin resolver. Asignacion medida antes de cada hijo: 11.614 s de CPU de 24.000. **Contraste doctoral ejecutable:** adaptador ECL
+emparejado (argumentos resueltos de la propia referencia, 321 canales en su orden, objetivo y salida [lote, horizonte, 321],
+arquitectura aprobada con un unico cambio en la lectura) con causalidad **probada sobre el soporte de objetivos** y el
+solapamiento de contexto del autor declarado; piloto SOLO-TRAIN ejecutado en WORKER_A dentro de 1.800/1.800 s, sin puntuar el
+test y sin afirmacion sobre H1. Lane financiero investigado sin leer un byte. Suite 146 pasan.
