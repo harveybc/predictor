@@ -1,5 +1,16 @@
 {
  "schema": "research_program_method_state.v1",
+ "rp151_interim_review": {
+  "reviewed_commit": "f8e9e77f9113144563e914883364c25b148407b6",
+  "scope": "Source inspection plus exact extracted AST probes; no live job/cube inspection or new training",
+  "disposition": "CONTRAST_PATH_CHANGES_REQUIRED_NO_GLOBAL_HOLD",
+  "findings": ["Declared checkpoint selection and trained downstream persistence absent in run_contrast", "Empty or R0-only population passes all four regime summary checks", "Unequal design digests pass assert ending in or True", "Requested steps presented without optimizer observations; CPU/wall prescription conflated"],
+  "reported_progress": "B twelve cells trained, closure running; R0/R1/R2 running; A reported mean preserved; RP147-149 not started",
+  "review": "../../audits/work_plan/MUSASHI_RP144_RP151_INTERIM_REVIEW_2026_09_24.md",
+  "continuation": "../../handoffs/SATOSHI_RP144_RP151_CONTINUATION_2026_09_24.md",
+  "implementation_owner": "Satoshi",
+  "new_compute_budget": false
+ },
  "general_ml_program": {
   "name": "M5PHET",
   "product_identity": "Typed machine-learning framework; state plus task/schema to structured results, not a generic research program",

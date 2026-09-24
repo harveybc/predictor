@@ -4,6 +4,11 @@ Based on Satoshi `07140d03`, RP140-RP143 return, plus the owner's approved Laya
 track and subsequent coordinator-hosting question. All eight orders form ONE
 assignment. Execute independent work concurrently; no routine continue prompts.
 These are implementation/demo-paper orders, not real-capital authorization.
+Interim return at `f8e9e77f` reviewed: follow the
+[targeted continuation](SATOSHI_RP144_RP151_CONTINUATION_2026_09_24.md).
+RP145/RP146 were reported running and RP147-RP149 are not complete; do not reset
+or duplicate ongoing work. The continuation adds actual-runner ML checks and
+incorporates the explicit M5PHET implementation assignment published afterward.
 Owner addendum: **M5PHET is a typed ML framework**, not a research-program label.
 Use https://github.com/harveybc/M5PHET and news-signal's pinned runtime dependency;
 Its classification contract is implemented; the general provider runtime and
