@@ -154,6 +154,12 @@ No real-money activation is authorized by these orders.
 
 ## RP150 - financial prerequisites and M5PHET product integration, in parallel
 
+**Implementation is assigned to Satoshi, not design-only.** Execute the
+[M5PHET implementation addendum](SATOSHI_M5PHET_IMPLEMENTATION_2026_09_24.md)
+with behavioral tests first, top-down design and bottom-up implementation,
+parallel independent lanes and actual domain-engine integration. Musashi reviews;
+Satoshi codes. Do not restart completed work or pause existing experiments.
+
 Keep FIN-LOSS-OPT mandatory. Resolve the financial producer's timestamp/receipt/
 completion contract from evidence. UNKNOWN stays UNKNOWN; do not fabricate a lag
 to bypass the422 or claim archive-only data is point-in-time. If that resource
