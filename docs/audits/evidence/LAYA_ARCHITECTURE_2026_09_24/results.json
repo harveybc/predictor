@@ -1,0 +1,26 @@
+{
+  "colliding_enum_projection": {
+    "value": 1
+  },
+  "colliding_enum_questions": {
+    "value": {
+      "criteria": {
+        "1": null
+      },
+      "instructions": "What is `value`?",
+      "type": "choice"
+    }
+  },
+  "constant_false_projection": {
+    "flag": true
+  },
+  "constant_false_questions": {
+    "flag": {
+      "instructions": "Is `flag` true?",
+      "type": "noul"
+    }
+  },
+  "missing_required_projection": {},
+  "scope": "actual upstream helper functions; no neural forward pass or package substitution",
+  "source_revision": "84ca7240348e6fb3b8145d2d9f6266d5125747d8"
+}

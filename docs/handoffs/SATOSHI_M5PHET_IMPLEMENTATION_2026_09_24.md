@@ -5,12 +5,49 @@ Candidate `adba176` is reviewed: execute the scoped
 alongside this assignment. Implementation exists but acceptance is not complete;
 do not stop valid independent experiments for these software repairs.
 
+Owner's upstream-reuse clarification: read the
+[Laya architecture/reuse and fork decision](../audits/work_plan/MUSASHI_LAYA_ARCHITECTURE_2026_09_24.md)
+before implementing equivalent provider features. Upstream 0.3.18 already has
+schema helpers absent from our 0.3.11 pin. Prefer the SDK, not a rebuilt engine;
+upgrade only after scoped compatibility tests, preserving our strict boundary.
+
 Owner-approved implementation addendum to RP150, not another research proposal.
 Satoshi owns implementation and integration; Musashi owns design review and
 independent adversarial acceptance. Do not return only diagrams, scaffolds or
 additional plans. Read M5PHET design revision `4508b98`, especially USE_CASES,
 INTERFACES, ECONOMIC_CALENDAR and IMPLEMENTATION_PLAN (P01-P09, CAL01-CAL12).
 Reconcile newer commits and running work first; preserve completed RP144-RP151.
+
+## Approved plugin architecture: specialized ML, optional language models
+
+Organize providers by task/capability, not by model size or an assumption that
+every task needs a generative LLM. Classification, forecasting, representation,
+RL and causal inference have their own typed contracts and configurable engines.
+One provider may support multiple contracts, but only for declared, tested
+combinations of operation, input and output semantics. Do not infer support from
+the Cartesian product of independent capability lists.
+
+Laya/Jev are candidate interchangeable classification providers only where their
+capabilities match; an unavailable remote provider must not block a working local
+one. Reuse their supported SDK/API rather than reimplementing their networks.
+An optional language-model provider can interpret requests, generate explanations
+or contribute declared features when a concrete use case needs it. It is neither
+a mandatory orchestrator nor authority to invent measured outputs, change a
+scientific task, execute code or authorize broker actions. No new general-purpose
+LLM subsystem is required for this delivery.
+
+Compose providers through explicit typed edges (for example event classification
+-> forecast inputs -> policy observation), retaining as-of times and source/model
+identities. Reusing a text representation in another family requires a compatible
+adapter and its own evaluation; it is not automatic evidence for that task.
+
+Acceptance: local specialized inference works with no LLM service/key installed;
+configuration selects the named provider without hidden fallback; incompatible
+provider/operation/output combinations refuse before loading; a provider swap
+preserves task and evaluation population while recording changed model identity.
+Use real available engines for integration evidence. Keep governance, local OLAP
+and DOIN independently optional. Implement this in the existing provider registry,
+not a parallel plugin system. These refinements do not restart current experiments.
 
 ## Method and parallel ownership
 
