@@ -1,0 +1,12 @@
+{
+  "records": 17,
+  "events": 16,
+  "revisions": 1,
+  "integrity_failures": [],
+  "actionable_events": 11,
+  "refused_events": 5,
+  "broker_calls": 0,
+  "schema": "news_shadow_replay.v1",
+  "inference_performed": false,
+  "execution_authorized": false
+}

@@ -1,0 +1,152 @@
+{
+ "compared": 11,
+ "comparison": "REAL_SDK_DIRECT_VERSUS_REAL_PROVIDER_THROUGH_M5PHET_REGISTRY",
+ "equal": 11,
+ "ignored_envelope_fields": [
+  "seconds",
+  "load_seconds",
+  "inference_seconds",
+  "recorded_at",
+  "peak_rss_bytes",
+  "peak_vram_bytes"
+ ],
+ "mismatches": [
+  {
+   "direct": false,
+   "event_id": "future-receipt-013",
+   "reason": "MISSING_ON_ONE_SIDE",
+   "wrapper": true
+  },
+  {
+   "direct": false,
+   "event_id": "other-asset-016",
+   "reason": "MISSING_ON_ONE_SIDE",
+   "wrapper": true
+  },
+  {
+   "direct": false,
+   "event_id": "overlong-014",
+   "reason": "MISSING_ON_ONE_SIDE",
+   "wrapper": true
+  },
+  {
+   "direct": false,
+   "event_id": "token-budget-015",
+   "reason": "MISSING_ON_ONE_SIDE",
+   "wrapper": true
+  },
+  {
+   "direct": false,
+   "event_id": "wrong-language-012",
+   "reason": "MISSING_ON_ONE_SIDE",
+   "wrapper": true
+  }
+ ],
+ "questions_sha256_direct": "d74765376726dca60623d1f7b2414fdbf6c664c1eed9b91b7790e458c319e297",
+ "reading": "equality establishes that the wrapper did not change the model's input or its output. It says nothing about whether the classifier is correct, and nothing about calibration.",
+ "rows": [
+  {
+   "equal": true,
+   "event_id": "ea-unemployment-004",
+   "key_order_equal": true,
+   "labels": {
+    "relevance": "unclear"
+   }
+  },
+  {
+   "equal": true,
+   "event_id": "ecb-hold-001",
+   "key_order_equal": true,
+   "labels": {
+    "relevance": "related"
+   }
+  },
+  {
+   "equal": true,
+   "event_id": "eurusd-rate-005",
+   "key_order_equal": true,
+   "labels": {
+    "relevance": "related"
+   }
+  },
+  {
+   "equal": true,
+   "event_id": "fed-cut-002",
+   "key_order_equal": true,
+   "labels": {
+    "relevance": "related"
+   }
+  },
+  {
+   "equal": true,
+   "event_id": "fragment-009",
+   "key_order_equal": true,
+   "labels": {
+    "relevance": "related"
+   }
+  },
+  {
+   "equal": true,
+   "event_id": "instruction-like-011",
+   "key_order_equal": true,
+   "labels": {
+    "relevance": "unrelated"
+   }
+  },
+  {
+   "equal": true,
+   "event_id": "negated-010",
+   "key_order_equal": true,
+   "labels": {
+    "relevance": "related"
+   }
+  },
+  {
+   "equal": true,
+   "event_id": "passing-mention-008",
+   "key_order_equal": true,
+   "labels": {
+    "relevance": "related"
+   }
+  },
+  {
+   "equal": true,
+   "event_id": "sports-006",
+   "key_order_equal": true,
+   "labels": {
+    "relevance": "unclear"
+   }
+  },
+  {
+   "equal": true,
+   "event_id": "tech-007",
+   "key_order_equal": true,
+   "labels": {
+    "relevance": "unclear"
+   }
+  },
+  {
+   "equal": true,
+   "event_id": "us-cpi-003",
+   "key_order_equal": true,
+   "labels": {
+    "relevance": "unclear"
+   }
+  }
+ ],
+ "schema": "laya_parity.v1",
+ "sdk": {
+  "commit": "1e28ac20c0896b1c37a744cd11f740eb98f8b178",
+  "url": "https://github.com/NandhaKishorM/laya.git",
+  "version": "0.3.11"
+ },
+ "settings": {
+  "compile": false,
+  "device": "cuda:0",
+  "fast": false,
+  "head_max_len": 192,
+  "max_len": 512,
+  "torch_threads": 2
+ },
+ "tolerance": "NONE: exact equality of the SDK's exposed decision fields"
+}

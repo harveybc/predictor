@@ -1,0 +1,80 @@
+{
+ "as_of": "2026-09-24T12:00:00Z",
+ "asset": "GBPUSD",
+ "binding": {
+  "as_of": "2026-09-24T12:00:00Z",
+  "fitted_state_ref": "laya-checkpoint:bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89",
+  "model_sha256": "b1e14f30e4a785151aa7b5145bdb45fd864dce60b7075aade846d1b63893bcef",
+  "population_sha256": "de8ee6136e0f4d0d46bcfc18d84ea8bd5047f29158f423b1fc6fa6bfe84a54ef",
+  "provider": "laya_news",
+  "state_digest": "bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89",
+  "state_task_id": "laya_zero_shot_checkpoint",
+  "task_compatibility": "DECLARED_BY_STATE",
+  "task_id": "news_relevance_eurusd.v1"
+ },
+ "calibration": "UNCALIBRATED",
+ "entry_point_group": "m5phet.providers",
+ "event_id": "other-asset-016",
+ "execution_authorized": false,
+ "features": null,
+ "governance": "NOT_REGISTERED_BY_THIS_TOOL",
+ "input_sha256": "a4448afdf2accefca7f45d54dfcc999014b54ae15829fd31b02864d90d7056a6",
+ "latency": {
+  "inference_seconds": 0.01116686500608921,
+  "load_kind": "WARM",
+  "load_seconds": 8.998904377222061e-08
+ },
+ "limitations": [
+  "NO_RETURN_FORECAST",
+  "NO_CALIBRATED_CONFIDENCE",
+  "NO_BROKER_ORDERS",
+  "AGREEMENT_WITH_THE_SDK_IS_WRAPPER_FIDELITY_NOT_DOMAIN_ACCURACY"
+ ],
+ "m5phet_status": "INVALID_INPUT",
+ "max_age_seconds": 900,
+ "model": {
+  "kind": "WARM",
+  "seconds": 8.998904377222061e-08,
+  "state_ref": "laya-checkpoint:bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89"
+ },
+ "model_identity": {
+  "adapter_sha256": "e88cf9c0eb6e887788f5dfb641065342b8e6573acc547fb5a6a7fc861014186f",
+  "checkpoint_sha256": "bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89",
+  "cuda_version": "13.0",
+  "device": "cuda:0",
+  "gpu_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "gpu_uuid_attribution": "MEASURED",
+  "gpu_uuid_observed": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "kind": "LAYA_LOCAL_CHECKPOINT",
+  "sdk_commit": "1e28ac20c0896b1c37a744cd11f740eb98f8b178",
+  "sdk_version": "0.3.11",
+  "torch_version": "2.14.0+cu130"
+ },
+ "outputs": {
+  "relevance": {
+   "payload": null,
+   "status": "INVALID_INPUT",
+   "why": "ASSET_NOT_IN_TASK_SCOPE: news_relevance_eurusd.v1 covers ['EURUSD'], not 'GBPUSD'"
+  }
+ },
+ "peak_rss_bytes": 3391926272,
+ "produced_by": "M5PHET_REGISTRY",
+ "provider_ref": "laya_news",
+ "published_at": "2026-09-24T11:50:00Z",
+ "receipt_sha256": "f6f9576f63a89d0070f868763d705151ea2a702f8ee6b3b5af86d4ea0762c2aa",
+ "received_at": "2026-09-24T11:50:30Z",
+ "recorded_at": "2026-09-24T16:37:28.693847+00:00",
+ "refusal_reasons": {
+  "relevance": "ASSET_NOT_IN_TASK_SCOPE: news_relevance_eurusd.v1 covers ['EURUSD'], not 'GBPUSD'"
+ },
+ "registered_providers": [
+  "laya_news"
+ ],
+ "request_sha256": "687ac0df3a48cb401c2001a17977535673b5e7b8e903c704c1a9fd2393cddd8a",
+ "schema": "news_shadow.v2",
+ "source": "regression-bank",
+ "status": "REFUSED_WITH_INPUT",
+ "task_id": "news_relevance_eurusd.v1",
+ "task_sha256": "d74765376726dca60623d1f7b2414fdbf6c664c1eed9b91b7790e458c319e297",
+ "why": "the provider returned no population; coverage of the requested rows is not established"
+}

@@ -1,0 +1,48 @@
+{
+ "batch_versus_permuted_batch": {
+  "labels_equal": 13,
+  "max_abs_probability_delta": 0.0,
+  "probability_maps_exactly_equal": 13,
+  "rows": 13
+ },
+ "reading": "equal labels with unequal probability maps means the batched path is numerically different, not that the wrapper changed anything; the upstream README describes a smaller difference than observed here",
+ "schema": "laya_batch_experiment.v1",
+ "scope": "A PROPERTY OF THE SDK's BATCHED PATH, NOT OF THE WRAPPER",
+ "settings": {
+  "compile": false,
+  "device": "cuda:0",
+  "fast": false,
+  "head_max_len": 192,
+  "max_len": 512,
+  "torch_threads": 2
+ },
+ "single_call_seconds": [
+  0.6837380960059818,
+  0.012002591014606878,
+  0.010853758023586124,
+  0.011523413006216288,
+  0.010766555002192035,
+  0.010682447988074273,
+  0.010661537991836667,
+  0.010679822007659823,
+  0.01067218801472336,
+  0.011186430987436324,
+  0.010942535009235144,
+  0.011136046989122406,
+  0.011057960975449532
+ ],
+ "single_versus_batch": {
+  "labels_equal": 13,
+  "max_abs_probability_delta": 0.02180000000000004,
+  "probability_maps_exactly_equal": 0,
+  "rows": 13,
+  "seconds": 0.02816298298421316
+ },
+ "single_versus_permuted_batch": {
+  "labels_equal": 13,
+  "max_abs_probability_delta": 0.02180000000000004,
+  "probability_maps_exactly_equal": 0,
+  "rows": 13,
+  "seconds": null
+ }
+}

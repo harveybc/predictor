@@ -1,0 +1,125 @@
+{
+ "as_of": "2026-09-24T12:00:00Z",
+ "asset": "EURUSD",
+ "binding": {
+  "as_of": "2026-09-24T12:00:00Z",
+  "fitted_state_ref": "laya-checkpoint:bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89",
+  "model_sha256": "b1e14f30e4a785151aa7b5145bdb45fd864dce60b7075aade846d1b63893bcef",
+  "population_sha256": "36c4375626625cb0afd7afed361031ba0446789b1182964083174679d1f69492",
+  "provider": "laya_news",
+  "state_digest": "bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89",
+  "state_task_id": "laya_zero_shot_checkpoint",
+  "task_compatibility": "DECLARED_BY_STATE",
+  "task_id": "news_relevance_eurusd.v1"
+ },
+ "calibration": "UNCALIBRATED",
+ "entry_point_group": "m5phet.providers",
+ "event_id": "ea-unemployment-004",
+ "execution_authorized": false,
+ "features": {
+  "relevance": {
+   "label": "unclear",
+   "probability_decimals": 4,
+   "sdk_answer": {
+    "action": {
+     "act_probability": 1.0
+    },
+    "choice": "unclear",
+    "confidence": 0.025,
+    "probabilities": {
+     "related": 0.3522,
+     "unclear": 0.4162,
+     "unrelated": 0.2317
+    },
+    "type": "choice"
+   },
+   "uncalibrated_probabilities": {
+    "related": 0.3522,
+    "unclear": 0.4162,
+    "unrelated": 0.2317
+   },
+   "uncertainty": "UNCALIBRATED_CLASS_PROBABILITIES"
+  }
+ },
+ "governance": "NOT_REGISTERED_BY_THIS_TOOL",
+ "input_sha256": "a3431add52a72be19c960e6be44dafa9c943c0b1b108f82baba28e44b17b7b09",
+ "latency": {
+  "inference_seconds": 0.011396905989386141,
+  "load_kind": "WARM",
+  "load_seconds": 9.001814760267735e-08
+ },
+ "limitations": [
+  "NO_RETURN_FORECAST",
+  "NO_CALIBRATED_CONFIDENCE",
+  "NO_BROKER_ORDERS",
+  "AGREEMENT_WITH_THE_SDK_IS_WRAPPER_FIDELITY_NOT_DOMAIN_ACCURACY"
+ ],
+ "m5phet_status": "OK",
+ "max_age_seconds": 900,
+ "model": {
+  "kind": "WARM",
+  "seconds": 9.001814760267735e-08,
+  "state_ref": "laya-checkpoint:bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89"
+ },
+ "model_identity": {
+  "adapter_sha256": "e88cf9c0eb6e887788f5dfb641065342b8e6573acc547fb5a6a7fc861014186f",
+  "checkpoint_sha256": "bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89",
+  "cuda_version": "13.0",
+  "device": "cuda:0",
+  "gpu_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "gpu_uuid_attribution": "MEASURED",
+  "gpu_uuid_observed": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "kind": "LAYA_LOCAL_CHECKPOINT",
+  "sdk_commit": "1e28ac20c0896b1c37a744cd11f740eb98f8b178",
+  "sdk_version": "0.3.11",
+  "torch_version": "2.14.0+cu130"
+ },
+ "outputs": {
+  "relevance": {
+   "payload": {
+    "calibration": "UNCALIBRATED",
+    "label": "unclear",
+    "probability_decimals": 4,
+    "sdk_answer": {
+     "action": {
+      "act_probability": 1.0
+     },
+     "choice": "unclear",
+     "confidence": 0.025,
+     "probabilities": {
+      "related": 0.3522,
+      "unclear": 0.4162,
+      "unrelated": 0.2317
+     },
+     "type": "choice"
+    },
+    "uncalibrated_probabilities": {
+     "related": 0.3522,
+     "unclear": 0.4162,
+     "unrelated": 0.2317
+    }
+   },
+   "status": "OK",
+   "uncertainty": "UNCALIBRATED_CLASS_PROBABILITIES",
+   "why": null
+  }
+ },
+ "peak_rss_bytes": 3389571072,
+ "produced_by": "M5PHET_REGISTRY",
+ "provider_ref": "laya_news",
+ "published_at": "2026-09-24T11:50:00Z",
+ "receipt_sha256": "8728862321f0a2035331f24e122bd7db4740ec44faa98d49b61228239e54f59c",
+ "received_at": "2026-09-24T11:50:30Z",
+ "recorded_at": "2026-09-24T16:37:22.105711+00:00",
+ "refusal_reasons": null,
+ "registered_providers": [
+  "laya_news"
+ ],
+ "request_sha256": "5593830ceed9007a424b237942fe56097ac5cd6df6d192b2489f4a7ad1128c7a",
+ "schema": "news_shadow.v2",
+ "source": "regression-bank",
+ "status": "SHADOW_ONLY",
+ "task_id": "news_relevance_eurusd.v1",
+ "task_sha256": "d74765376726dca60623d1f7b2414fdbf6c664c1eed9b91b7790e458c319e297",
+ "why": null
+}

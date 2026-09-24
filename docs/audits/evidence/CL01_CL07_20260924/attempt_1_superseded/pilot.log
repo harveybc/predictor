@@ -1,0 +1,149 @@
+START 2026-09-24T16:33:03Z host=gamma
+=== 1/6 direct SDK reference (imports laya, never news_signal) ===
+/home/harveybc/work/news-signal/tools/direct_sdk_reference.py:93: RuntimeWarning: laya: this checkpoint ships invalid temperatures or values outside [0.5, 5]; using choice:11+=0.10058280825614929 -> 0.5. Treat confidence from the affected entries as uncalibrated.
+  agent = Agent(str(args.checkpoint), device=args.device, fast=False, compile=False)
+In file included from /home/harveybc/anaconda3/envs/trading-stack/include/python3.12/Python.h:12,
+                 from /home/harveybc/.local/state/crispdm-data-foundation/laya-pilot-20260924/venv/lib/python3.12/site-packages/triton/backends/nvidia/driver.c:9:
+/home/harveybc/anaconda3/envs/trading-stack/include/python3.12/pyconfig.h:1874:9: warning: ‘_POSIX_C_SOURCE’ redefined
+ 1874 | #define _POSIX_C_SOURCE 200809L
+      |         ^~~~~~~~~~~~~~~
+In file included from /usr/include/x86_64-linux-gnu/bits/libc-header-start.h:33,
+                 from /usr/include/stdlib.h:26,
+                 from /home/harveybc/.local/state/crispdm-data-foundation/laya-pilot-20260924/venv/lib/python3.12/site-packages/triton/backends/nvidia/include/cuda.h:56,
+                 from /home/harveybc/.local/state/crispdm-data-foundation/laya-pilot-20260924/venv/lib/python3.12/site-packages/triton/backends/nvidia/driver.c:1:
+/usr/include/features.h:319:10: note: this is the location of the previous definition
+  319 | # define _POSIX_C_SOURCE        202405L
+      |          ^~~~~~~~~~~~~~~
+/home/harveybc/.local/state/crispdm-data-foundation/laya-pilot-20260924/pilot/direct.json
+rc_direct=0
+1
+=== 2/6 wrapper through the installed entry point, first process ===
+/home/harveybc/work/news-signal/src/news_signal/backends.py:97: RuntimeWarning: laya: this checkpoint ships invalid temperatures or values outside [0.5, 5]; using choice:11+=0.10058280825614929 -> 0.5. Treat confidence from the affected entries as uncalibrated.
+  self.agent = Agent(str(Path(directory).resolve()), device=device, fast=False, compile=False)
+{
+ "counts": {
+  "answered": 13,
+  "declared_items": 13,
+  "declared_refusals": 5,
+  "refused": 5
+ },
+ "cpu_seconds": {
+  "system": 1.376136,
+  "user": 4.880792
+ },
+ "gpu": {
+  "attribution": "MEASURED",
+  "cuda_available": true,
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "device_uuid": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "peak_allocated_bytes": 2466795008,
+  "peak_reserved_bytes": 2667577344,
+  "total_bytes": 33668726784
+ },
+ "latency_seconds": {
+  "cold_load": 5.149121612019371,
+  "first_inference": 0.6873957400093786,
+  "wall_total": 5.99615954598994,
+  "warm_inference_max": 0.6873957400093786,
+  "warm_inference_median": 0.010774038993986323,
+  "warm_inference_min": 0.010532176005654037
+ },
+ "peak_rss_bytes": 3389181952
+}
+rc_first=0
+=== 3/6 the same path in a NEW process: restart identity and duplicate handling ===
+/home/harveybc/work/news-signal/src/news_signal/backends.py:97: RuntimeWarning: laya: this checkpoint ships invalid temperatures or values outside [0.5, 5]; using choice:11+=0.10058280825614929 -> 0.5. Treat confidence from the affected entries as uncalibrated.
+  self.agent = Agent(str(Path(directory).resolve()), device=device, fast=False, compile=False)
+{
+ "counts": {
+  "answered": 13,
+  "declared_items": 13,
+  "declared_refusals": 5,
+  "refused": 5
+ },
+ "cpu_seconds": {
+  "system": 1.374479,
+  "user": 4.815435
+ },
+ "gpu": {
+  "attribution": "MEASURED",
+  "cuda_available": true,
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "device_uuid": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "peak_allocated_bytes": 2466795008,
+  "peak_reserved_bytes": 2667577344,
+  "total_bytes": 33668726784
+ },
+ "latency_seconds": {
+  "cold_load": 5.160880226001609,
+  "first_inference": 0.6029163089988288,
+  "wall_total": 5.925826432008762,
+  "warm_inference_max": 0.6029163089988288,
+  "warm_inference_median": 0.011204104986973107,
+  "warm_inference_min": 0.010855411004740745
+ },
+ "peak_rss_bytes": 3392659456
+}
+rc_restart=0
+=== 4/6 replay from disk: no model, no inference ===
+rc_replay=0
+{
+  "records": 17,
+  "events": 16,
+  "revisions": 1,
+  "integrity_failures": [],
+  "actionable_events": 16,
+  "broker_calls": 0,
+  "schema": "news_shadow_replay.v1",
+  "inference_performed": false,
+  "execution_authorized": false
+}
+=== 5/6 parity: the native reference against the wrapper's receipts ===
+rc_parity=1
+{
+ "compared": 11,
+ "equal": 11,
+ "mismatches": [
+  {
+   "direct": false,
+   "event_id": "future-receipt-013",
+   "reason": "MISSING_ON_ONE_SIDE",
+   "wrapper": true
+  },
+  {
+   "direct": false,
+   "event_id": "other-asset-016",
+   "reason": "MISSING_ON_ONE_SIDE",
+   "wrapper": true
+  },
+  {
+   "direct": false,
+   "event_id": "overlong-014",
+   "reason": "MISSING_ON_ONE_SIDE",
+   "wrapper": true
+  },
+  {
+   "direct": false,
+   "event_id": "token-budget-015",
+   "reason": "MISSING_ON_ONE_SIDE",
+   "wrapper": true
+  },
+  {
+   "direct": false,
+   "event_id": "wrong-language-012",
+   "reason": "MISSING_ON_ONE_SIDE",
+   "wrapper": true
+  }
+ ]
+}
+=== 6/6 the documented single-shot command, and the corpus score ===
+/home/harveybc/work/news-signal/src/news_signal/backends.py:97: RuntimeWarning: laya: this checkpoint ships invalid temperatures or values outside [0.5, 5]; using choice:11+=0.10058280825614929 -> 0.5. Treat confidence from the affected entries as uncalibrated.
+  self.agent = Agent(str(Path(directory).resolve()), device=device, fast=False, compile=False)
+rc_single=0
+rc_score=0
+wrapper {"rows_scored": 13, "coverage": 1.0, "macro_f1": 0.3333333333333333, "accuracy": 0.46153846153846156}
+direct_sdk {"rows_scored": 13, "coverage": 1.0, "macro_f1": 0.3333333333333333, "accuracy": 0.46153846153846156}
+identical_labels True
+GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519, 31, 0 %, 14 MiB
+GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8, 39, 6 %, 10 MiB
+FINISH 2026-09-24T16:33:32Z

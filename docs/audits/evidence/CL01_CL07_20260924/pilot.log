@@ -1,0 +1,149 @@
+START 2026-09-24T16:37:08Z host=gamma
+=== 1/6 direct SDK reference (imports laya, never news_signal) ===
+/home/harveybc/work/news-signal/tools/direct_sdk_reference.py:93: RuntimeWarning: laya: this checkpoint ships invalid temperatures or values outside [0.5, 5]; using choice:11+=0.10058280825614929 -> 0.5. Treat confidence from the affected entries as uncalibrated.
+  agent = Agent(str(args.checkpoint), device=args.device, fast=False, compile=False)
+/home/harveybc/.local/state/crispdm-data-foundation/laya-pilot-20260924/pilot2/direct.json
+rc_direct=0
+1
+=== 2/6 wrapper through the installed entry point, first process ===
+{
+ "counts": {
+  "answered": 13,
+  "declared_items": 13,
+  "declared_refusals": 5,
+  "refused": 5
+ },
+ "cpu_seconds": {
+  "system": 1.392005,
+  "user": 4.899195
+ },
+ "gpu": {
+  "attribution": "MEASURED",
+  "cuda_available": true,
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "device_uuid": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "peak_allocated_bytes": 2466795008,
+  "peak_reserved_bytes": 2667577344,
+  "total_bytes": 33668726784
+ },
+ "latency_seconds": {
+  "cold_load": 5.182943167979829,
+  "first_inference": 0.6799523819936439,
+  "wall_total": 6.0230855510162655,
+  "warm_inference_max": 0.6799523819936439,
+  "warm_inference_median": 0.010755463998066261,
+  "warm_inference_min": 0.010648644005414099
+ },
+ "peak_rss_bytes": 3389571072
+}
+rc_first=0
+=== 3/6 the same path in a NEW process: restart identity and duplicate handling ===
+{
+ "counts": {
+  "answered": 13,
+  "declared_items": 13,
+  "declared_refusals": 5,
+  "refused": 5
+ },
+ "cpu_seconds": {
+  "system": 1.350075,
+  "user": 4.824095000000001
+ },
+ "gpu": {
+  "attribution": "MEASURED",
+  "cuda_available": true,
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "device_uuid": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "peak_allocated_bytes": 2466795008,
+  "peak_reserved_bytes": 2667577344,
+  "total_bytes": 33668726784
+ },
+ "latency_seconds": {
+  "cold_load": 5.148969677014975,
+  "first_inference": 0.599556101980852,
+  "wall_total": 5.910831415007124,
+  "warm_inference_max": 0.599556101980852,
+  "warm_inference_median": 0.011148279998451471,
+  "warm_inference_min": 0.010732781986007467
+ },
+ "peak_rss_bytes": 3391926272
+}
+rc_restart=0
+=== 4/6 replay from disk: no model, no inference ===
+rc_replay=0
+{
+  "records": 17,
+  "events": 16,
+  "revisions": 1,
+  "integrity_failures": [],
+  "actionable_events": 16,
+  "broker_calls": 0,
+  "schema": "news_shadow_replay.v1",
+  "inference_performed": false,
+  "execution_authorized": false
+}
+=== 5/6 parity: the native reference against the wrapper's receipts ===
+rc_parity=0
+{
+ "compared": 12,
+ "equal": 12,
+ "mismatches": [],
+ "process_reload": {
+  "compared": 12,
+  "equal": 12,
+  "mismatches": [],
+  "scope": "PROCESS_RELOAD: the same wrapper, a new process, the same inputs"
+ }
+}
+=== 6/6 the documented single-shot command, and the corpus score ===
+/home/harveybc/work/news-signal/src/news_signal/backends.py:97: RuntimeWarning: laya: this checkpoint ships invalid temperatures or values outside [0.5, 5]; using choice:11+=0.10058280825614929 -> 0.5. Treat confidence from the affected entries as uncalibrated.
+  self.agent = Agent(str(Path(directory).resolve()), device=device, fast=False, compile=False)
+rc_single=0
+rc_score=0
+wrapper {"rows_scored": 13, "coverage": 1.0, "macro_f1": 0.3333333333333333, "accuracy": 0.46153846153846156}
+direct_sdk {"rows_scored": 13, "coverage": 1.0, "macro_f1": 0.3333333333333333, "accuracy": 0.46153846153846156}
+identical_labels True
+=== 7/7 the SDK's own batched path, reported separately ===
+{
+ "batch_versus_permuted_batch": {
+  "labels_equal": 13,
+  "max_abs_probability_delta": 0.0,
+  "probability_maps_exactly_equal": 13,
+  "rows": 13
+ },
+ "reading": "equal labels with unequal probability maps means the batched path is numerically different, not that the wrapper changed anything; the upstream README describes a smaller difference than observed here",
+ "schema": "laya_batch_experiment.v1",
+ "scope": "A PROPERTY OF THE SDK's BATCHED PATH, NOT OF THE WRAPPER",
+ "settings": {
+  "compile": false,
+  "device": "cuda:0",
+  "fast": false,
+  "head_max_len": 192,
+  "max_len": 512,
+  "torch_threads": 2
+ },
+ "single_call_seconds": [
+  0.6837380960059818,
+  0.012002591014606878,
+  0.010853758023586124,
+  0.011523413006216288,
+  0.010766555002192035,
+  0.010682447988074273,
+  0.010661537991836667,
+  0.010679822007659823,
+  0.01067218801472336,
+  0.011186430987436324,
+  0.010942535009235144,
+  0.011136046989122406,
+  0.011057960975449532
+ ],
+ "single_versus_batch": {
+  "labels_equal": 13,
+  "max_abs_probability_delta": 0.02180000000000004,
+  "probability_maps_exactly_equal": 0,
+  "rows": 13,
+  "seconds": 0.02816298298421316
+ },
+GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519, 31, 0 %, 14 MiB
+GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8, 39, 6 %, 10 MiB
+FINISH 2026-09-24T16:37:35Z

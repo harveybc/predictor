@@ -1,0 +1,143 @@
+{
+ "direct_sdk": {
+  "accuracy": 0.46153846153846156,
+  "class_counts": {
+   "related": 7,
+   "unclear": 1,
+   "unrelated": 5
+  },
+  "confusion": {
+   "related": {
+    "related": 5,
+    "unclear": 2,
+    "unrelated": 0
+   },
+   "unclear": {
+    "related": 1,
+    "unclear": 0,
+    "unrelated": 0
+   },
+   "unrelated": {
+    "related": 2,
+    "unclear": 2,
+    "unrelated": 1
+   }
+  },
+  "coverage": 1.0,
+  "macro_f1": 0.3333333333333333,
+  "per_class": {
+   "related": {
+    "f1": 0.6666666666666666,
+    "precision": 0.625,
+    "predicted": 8,
+    "recall": 0.7142857142857143,
+    "support": 7,
+    "true_positive": 5
+   },
+   "unclear": {
+    "f1": 0.0,
+    "precision": 0.0,
+    "predicted": 4,
+    "recall": 0.0,
+    "support": 1,
+    "true_positive": 0
+   },
+   "unrelated": {
+    "f1": 0.33333333333333337,
+    "precision": 1.0,
+    "predicted": 1,
+    "recall": 0.2,
+    "support": 5,
+    "true_positive": 1
+   }
+  },
+  "reading": "the labels are author-written; this describes thirteen items and is not an estimate of business accuracy, a calibration or a power calculation",
+  "relevant_class": {
+   "f1": 0.6666666666666666,
+   "precision": 0.625,
+   "predicted": 8,
+   "recall": 0.7142857142857143,
+   "support": 7,
+   "true_positive": 5
+  },
+  "rows_declared": 13,
+  "rows_scored": 13,
+  "rows_unpredicted": [],
+  "rows_with_foreign_label": [],
+  "schema": "news_corpus_score.v1",
+  "status": "SMOKE_TEST_AUTHOR_WRITTEN_LABELS",
+  "task_id": "news_relevance_eurusd.v1"
+ },
+ "identical_labels": true,
+ "same_rows": true,
+ "schema": "news_corpus_score_pair.v1",
+ "wrapper": {
+  "accuracy": 0.46153846153846156,
+  "class_counts": {
+   "related": 7,
+   "unclear": 1,
+   "unrelated": 5
+  },
+  "confusion": {
+   "related": {
+    "related": 5,
+    "unclear": 2,
+    "unrelated": 0
+   },
+   "unclear": {
+    "related": 1,
+    "unclear": 0,
+    "unrelated": 0
+   },
+   "unrelated": {
+    "related": 2,
+    "unclear": 2,
+    "unrelated": 1
+   }
+  },
+  "coverage": 1.0,
+  "macro_f1": 0.3333333333333333,
+  "per_class": {
+   "related": {
+    "f1": 0.6666666666666666,
+    "precision": 0.625,
+    "predicted": 8,
+    "recall": 0.7142857142857143,
+    "support": 7,
+    "true_positive": 5
+   },
+   "unclear": {
+    "f1": 0.0,
+    "precision": 0.0,
+    "predicted": 4,
+    "recall": 0.0,
+    "support": 1,
+    "true_positive": 0
+   },
+   "unrelated": {
+    "f1": 0.33333333333333337,
+    "precision": 1.0,
+    "predicted": 1,
+    "recall": 0.2,
+    "support": 5,
+    "true_positive": 1
+   }
+  },
+  "reading": "the labels are author-written; this describes thirteen items and is not an estimate of business accuracy, a calibration or a power calculation",
+  "relevant_class": {
+   "f1": 0.6666666666666666,
+   "precision": 0.625,
+   "predicted": 8,
+   "recall": 0.7142857142857143,
+   "support": 7,
+   "true_positive": 5
+  },
+  "rows_declared": 13,
+  "rows_scored": 13,
+  "rows_unpredicted": [],
+  "rows_with_foreign_label": [],
+  "schema": "news_corpus_score.v1",
+  "status": "SMOKE_TEST_AUTHOR_WRITTEN_LABELS",
+  "task_id": "news_relevance_eurusd.v1"
+ }
+}

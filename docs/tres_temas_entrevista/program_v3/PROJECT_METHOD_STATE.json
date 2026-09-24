@@ -3,19 +3,68 @@
  "classification_first_20260924": {
   "orders": "../../handoffs/SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md",
   "primary_task": "English news relevance to EURUSD via real Laya and M5PHET Registry; direct SDK parity",
-  "status": "IMPLEMENTATION_ASSIGNED_REAL_INFERENCE_NOT_VERIFIED",
-  "provider_owners": {"classification": "news-signal", "forecasting": "predictor/prediction_provider", "hierarchical_regimes": "feature-eng", "causal_inference": "causal-inference", "RL": "agent-multi/gym-fx"},
+  "status": "REAL_INFERENCE_VERIFIED_CL01_CL07_RETURNED_AWAITING_REVIEW",
+  "provider_owners": {
+   "classification": "news-signal",
+   "forecasting": "predictor/prediction_provider",
+   "hierarchical_regimes": "feature-eng",
+   "causal_inference": "causal-inference",
+   "RL": "agent-multi/gym-fx"
+  },
   "DOIN": "transversal optional optimization, not RL engine",
   "implementation_owner": "Satoshi",
-  "parallel_CPU_work": ["forecast and hierarchy adapters", "causal package and calendar", "policy adapter", "remaining pure closure validation"],
+  "parallel_CPU_work": [
+   "forecast and hierarchy adapters",
+   "causal package and calendar",
+   "policy adapter",
+   "remaining pure closure validation"
+  ],
   "new_training_budget": false,
-  "global_hold": false
+  "global_hold": false,
+  "return": "../work_plan/SATOSHI_CL01_CL07_CLASSIFICATION_RETURN_2026_09_24.md",
+  "evidence": "../evidence/CL01_CL07_20260924/",
+  "executed": {
+   "date": "2026-09-24",
+   "device": "external RTX 5090 GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8, MEASURED",
+   "admission": "crispdm-run -m 6G -t 900 -n laya-eurusd-pilot2",
+   "sdk": "laya 0.3.11 @ 1e28ac20c0896b1c37a744cd11f740eb98f8b178",
+   "checkpoint_manifest_sha256": "bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89",
+   "task_id": "news_relevance_eurusd.v1",
+   "cl01_parity": "12/12 distinct inputs exactly equal, every SDK decision field, no tolerance",
+   "cl04_process_reload": "12/12 equal in a separate process",
+   "cl06_store": "17 records, 16 identities, 11 actionable, 5 retained refusals, 0 integrity failures, 0 broker calls",
+   "cl07_domain_quality": "SMOKE_TEST_AUTHOR_WRITTEN_LABELS: macro-F1 0.3333, 6/13 correct on a sealed 13-row bank",
+   "latency": "cold load 5.18 s, first inference 0.680 s, warm median 10.8 ms",
+   "memory": "peak VRAM 2.47 GB of 33.7 GB, peak RSS 3.39 GB",
+   "sdk_finding": "predict_batch agrees on all 13 labels but on no probability map; max delta 0.0218 (upstream, not the wrapper)",
+   "defects_repaired": [
+    "GPU uuid compared in two different forms, so the device check could never pass",
+    "a refusal reported the runtime's observation and hid the provider's reason",
+    "a retained refusal was counted as an actionable event",
+    "the parity comparator keyed rows by event_id, dropping a revision"
+   ],
+   "commits": {
+    "news-signal": "bb281cc on satoshi/classification-first-20260924",
+    "m5phet": "3e36396 on satoshi/runtime-p02-20260924"
+   },
+   "not_established": [
+    "live news feed",
+    "calibration",
+    "business quality of the classifier",
+    "any trading claim; no broker call was made"
+   ]
+  },
+  "doctoral_numbers_unchanged": "R0 0.371174 / R1 0.374584 / R2 0.368596 as returned at e36c1c6d"
  },
  "rp158_review": {
   "candidate": "e36c1c6dd05340f7c3a1b53a575cad69625a5580",
   "scope": "Source, 30 passed focused tests/6 deselected, retained-child validator probes; no inference or live authority",
   "status": "RETAINED_METRICS_UNCHANGED_REMAINING_TYPED_ELEMENTS_AND_DERIVED_METRIC_CHECKS",
-  "remaining": ["absent/string elements accepted", "negative loss and incorrect finite skill accepted", "pure retained-evidence closure still absent"],
+  "remaining": [
+   "absent/string elements accepted",
+   "negative loss and incorrect finite skill accepted",
+   "pure retained-evidence closure still absent"
+  ],
   "evidence": "../../audits/evidence/RP158_MUSASHI/results.json",
   "blocks_M5PHET": false,
   "retrain_or_routine_replay": false

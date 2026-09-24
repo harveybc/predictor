@@ -1,0 +1,536 @@
+{
+ "corpus_sha256": "80774ec53f27d787bdc4c8413f3b8e478ce0ec3a450db7c3b4b55ea01d9399b1",
+ "counts": {
+  "answered": 13,
+  "declared_items": 13,
+  "declared_refusals": 5,
+  "refused": 5
+ },
+ "cpu_seconds": {
+  "system": 1.350075,
+  "user": 4.824095000000001
+ },
+ "discovery": {
+  "group": "m5phet.providers",
+  "refused": {},
+  "registered": [
+   "laya_news"
+  ]
+ },
+ "gpu": {
+  "attribution": "MEASURED",
+  "cuda_available": true,
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "device_uuid": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "peak_allocated_bytes": 2466795008,
+  "peak_reserved_bytes": 2667577344,
+  "total_bytes": 33668726784
+ },
+ "label": "restart",
+ "latency_seconds": {
+  "cold_load": 5.148969677014975,
+  "first_inference": 0.599556101980852,
+  "wall_total": 5.910831415007124,
+  "warm_inference_max": 0.599556101980852,
+  "warm_inference_median": 0.011148279998451471,
+  "warm_inference_min": 0.010732781986007467
+ },
+ "model_identity": {
+  "adapter_sha256": "e88cf9c0eb6e887788f5dfb641065342b8e6573acc547fb5a6a7fc861014186f",
+  "checkpoint_sha256": "bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89",
+  "cuda_version": "13.0",
+  "device": "cuda:0",
+  "gpu_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "gpu_uuid_attribution": "MEASURED",
+  "gpu_uuid_observed": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "kind": "LAYA_LOCAL_CHECKPOINT",
+  "sdk_commit": "1e28ac20c0896b1c37a744cd11f740eb98f8b178",
+  "sdk_version": "0.3.11",
+  "torch_version": "2.14.0+cu130"
+ },
+ "peak_rss_bytes": 3391926272,
+ "provider_capabilities": {
+  "device": "cuda:0",
+  "families": [
+   "classification"
+  ],
+  "known_states": [
+   "laya-checkpoint:bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89"
+  ],
+  "operations": [
+   "infer"
+  ],
+  "output_kinds": [
+   "typed_questions"
+  ],
+  "provider": "laya_news",
+  "reading": "probabilities are the pinned SDK's own uncalibrated outputs at its own precision; agreeing with the SDK is fidelity of this wrapper, not calibration and not domain accuracy",
+  "supported": [
+   {
+    "family": "classification",
+    "operation": "infer",
+    "output_kind": "typed_questions"
+   }
+  ],
+  "tasks": [
+   "news_relevance_eurusd.v1",
+   "news_triage.v1"
+  ],
+  "uncertainty_methods": [
+   "UNCALIBRATED_CLASS_PROBABILITIES"
+  ],
+  "weights_present": true
+ },
+ "reading": "latency and memory are this host's, measured in this process. The labels are the model's; their quality is not established here.",
+ "refusals": [
+  {
+   "call_seconds": 0.0002621620078571141,
+   "category": "wrong_language",
+   "event_id": "wrong-language-012",
+   "file": "refusals/00_wrong_language.json",
+   "latency": {
+    "inference_seconds": 0.01116686500608921,
+    "load_kind": "WARM",
+    "load_seconds": 8.998904377222061e-08
+   },
+   "m5phet_status": "INVALID_INPUT",
+   "refusal_reasons": {
+    "relevance": "LANGUAGE_NOT_VALIDATED"
+   },
+   "status": "REFUSED_WITH_INPUT",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "fcb0c8bfb3015298ce5f58bbc42cdb6ae3c39fa02d28eb99f60c129c5b7dc915",
+    "revision_index": 0,
+    "supersedes": []
+   },
+   "why": "the provider returned no population; coverage of the requested rows is not established"
+  },
+  {
+   "call_seconds": 0.0002478449896443635,
+   "category": "future_receipt",
+   "event_id": "future-receipt-013",
+   "file": "refusals/01_future_receipt.json",
+   "latency": {
+    "inference_seconds": 0.01116686500608921,
+    "load_kind": "WARM",
+    "load_seconds": 6.999471224844456e-08
+   },
+   "m5phet_status": "INVALID_INPUT",
+   "refusal_reasons": {
+    "relevance": "NEWS_NOT_AVAILABLE_AT_DECISION"
+   },
+   "status": "REFUSED_WITH_INPUT",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "7481ae88433f053e5f4fee1d26dff6a0430a4f353aaa9b8e4093df188f714fad",
+    "revision_index": 0,
+    "supersedes": []
+   },
+   "why": "the provider returned no population; coverage of the requested rows is not established"
+  },
+  {
+   "call_seconds": 0.00040896699647419155,
+   "category": "overlong_body",
+   "event_id": "overlong-014",
+   "file": "refusals/02_overlong_body.json",
+   "latency": {
+    "inference_seconds": 0.01116686500608921,
+    "load_kind": "WARM",
+    "load_seconds": 6.999471224844456e-08
+   },
+   "m5phet_status": "INVALID_INPUT",
+   "refusal_reasons": {
+    "relevance": "NEWS_SIZE_LIMIT"
+   },
+   "status": "REFUSED_WITH_INPUT",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "5b13505a7a230145666d12a75cb42eeb35b3f44279afb162bc95419218bd1e15",
+    "revision_index": 0,
+    "supersedes": []
+   },
+   "why": "the provider returned no population; coverage of the requested rows is not established"
+  },
+  {
+   "call_seconds": 0.001333649008302018,
+   "category": "over_token_budget",
+   "event_id": "token-budget-015",
+   "file": "refusals/03_over_token_budget.json",
+   "latency": {
+    "inference_seconds": 0.01116686500608921,
+    "load_kind": "WARM",
+    "load_seconds": 8.09959601610899e-08
+   },
+   "m5phet_status": "INVALID_INPUT",
+   "refusal_reasons": {
+    "relevance": "TOKEN_BUDGET_EXCEEDED: select a documented short news field, do not silently truncate"
+   },
+   "status": "REFUSED_WITH_INPUT",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "ef9468de253552fa00ec2ccd7ed57ea92a02fd899a847fe6707cb939051ee26d",
+    "revision_index": 0,
+    "supersedes": []
+   },
+   "why": "the provider returned no population; coverage of the requested rows is not established"
+  },
+  {
+   "call_seconds": 0.0002513810177333653,
+   "category": "asset_out_of_task_scope",
+   "event_id": "other-asset-016",
+   "file": "refusals/04_asset_out_of_task_scope.json",
+   "latency": {
+    "inference_seconds": 0.01116686500608921,
+    "load_kind": "WARM",
+    "load_seconds": 8.998904377222061e-08
+   },
+   "m5phet_status": "INVALID_INPUT",
+   "refusal_reasons": {
+    "relevance": "ASSET_NOT_IN_TASK_SCOPE: news_relevance_eurusd.v1 covers ['EURUSD'], not 'GBPUSD'"
+   },
+   "status": "REFUSED_WITH_INPUT",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "cfb069a45ded241a38ef1d934564c9994dd2bf8a44636163f041c50ad23c76f8",
+    "revision_index": 0,
+    "supersedes": []
+   },
+   "why": "the provider returned no population; coverage of the requested rows is not established"
+  }
+ ],
+ "rows": [
+  {
+   "call_seconds": 5.7491423950123135,
+   "category": "relevant",
+   "event_id": "ecb-hold-001",
+   "file": "events/00_relevant.json",
+   "label": "related",
+   "latency": {
+    "inference_seconds": 0.599556101980852,
+    "load_kind": "COLD",
+    "load_seconds": 5.148969677014975
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.8398,
+    "unclear": 0.0778,
+    "unrelated": 0.0824
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "0121393923d3b0b877204a0c10e9e75db04650b78d68f8a6ea7607ac523a1a47",
+    "revision_index": 0,
+    "supersedes": []
+   }
+  },
+  {
+   "call_seconds": 0.012516604008851573,
+   "category": "relevant",
+   "event_id": "fed-cut-002",
+   "file": "events/01_relevant.json",
+   "label": "related",
+   "latency": {
+    "inference_seconds": 0.012090255011571571,
+    "load_kind": "WARM",
+    "load_seconds": 2.00001522898674e-07
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.4943,
+    "unclear": 0.296,
+    "unrelated": 0.2097
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "a211f217bcd555829b2626361aaefd73520a8eda55439448657c17c77403c61c",
+    "revision_index": 0,
+    "supersedes": []
+   }
+  },
+  {
+   "call_seconds": 0.011435216991230845,
+   "category": "relevant",
+   "event_id": "us-cpi-003",
+   "file": "events/02_relevant.json",
+   "label": "unclear",
+   "latency": {
+    "inference_seconds": 0.011048173008020967,
+    "load_kind": "WARM",
+    "load_seconds": 7.997732609510422e-08
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.0998,
+    "unclear": 0.7638,
+    "unrelated": 0.1364
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "14256b03d8432de892674af774f22897f9ec13014762cd214b787f639f7d1ad6",
+    "revision_index": 0,
+    "supersedes": []
+   }
+  },
+  {
+   "call_seconds": 0.011813075980171561,
+   "category": "relevant",
+   "event_id": "ea-unemployment-004",
+   "file": "events/03_relevant.json",
+   "label": "unclear",
+   "latency": {
+    "inference_seconds": 0.011421482020523399,
+    "load_kind": "WARM",
+    "load_seconds": 8.000642992556095e-08
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.3522,
+    "unclear": 0.4162,
+    "unrelated": 0.2317
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "7ae29c26fdf59c8cb3e47827bf0f35f23a6f7cc9782cca05144f52a58d97e0ce",
+    "revision_index": 0,
+    "supersedes": []
+   }
+  },
+  {
+   "call_seconds": 0.011192853009561077,
+   "category": "relevant",
+   "event_id": "eurusd-rate-005",
+   "file": "events/04_relevant.json",
+   "label": "related",
+   "latency": {
+    "inference_seconds": 0.010806880018208176,
+    "load_kind": "WARM",
+    "load_seconds": 1.2101372703909874e-07
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.7604,
+    "unclear": 0.1616,
+    "unrelated": 0.078
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "500935c916300497c16860d7795193646d73a01ff0f6991f0c1ab743adb130a1",
+    "revision_index": 0,
+    "supersedes": []
+   }
+  },
+  {
+   "call_seconds": 0.011109035986009985,
+   "category": "unrelated",
+   "event_id": "sports-006",
+   "file": "events/05_unrelated.json",
+   "label": "unclear",
+   "latency": {
+    "inference_seconds": 0.010732781986007467,
+    "load_kind": "WARM",
+    "load_seconds": 8.000642992556095e-08
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.1001,
+    "unclear": 0.7477,
+    "unrelated": 0.1522
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "2316130bd291d2e7355bb7f9722d2d56c58366fc5e63d4273f0f03972e9b984c",
+    "revision_index": 0,
+    "supersedes": []
+   }
+  },
+  {
+   "call_seconds": 0.011526018002768978,
+   "category": "unrelated",
+   "event_id": "tech-007",
+   "file": "events/06_unrelated.json",
+   "label": "unclear",
+   "latency": {
+    "inference_seconds": 0.011148279998451471,
+    "load_kind": "WARM",
+    "load_seconds": 1.00000761449337e-07
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.2722,
+    "unclear": 0.6584,
+    "unrelated": 0.0694
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "5737dcda3eba6ca7e30b3a4b9c6432b037dd17cbff4820ec8f8addf9a553140a",
+    "revision_index": 0,
+    "supersedes": []
+   }
+  },
+  {
+   "call_seconds": 0.011481674999231473,
+   "category": "unrelated_names_a_currency",
+   "event_id": "passing-mention-008",
+   "file": "events/07_unrelated_names_a_currency.json",
+   "label": "related",
+   "latency": {
+    "inference_seconds": 0.011095020017819479,
+    "load_kind": "WARM",
+    "load_seconds": 8.000642992556095e-08
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.7898,
+    "unclear": 0.1598,
+    "unrelated": 0.0504
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "74e05b0f75221392bf5d54e3c3a6a685d8576c393e5afcf0b8814fda5bdc3c2e",
+    "revision_index": 0,
+    "supersedes": []
+   }
+  },
+  {
+   "call_seconds": 0.011468248994788155,
+   "category": "ambiguous",
+   "event_id": "fragment-009",
+   "file": "events/08_ambiguous.json",
+   "label": "related",
+   "latency": {
+    "inference_seconds": 0.011092194996308535,
+    "load_kind": "WARM",
+    "load_seconds": 1.00000761449337e-07
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.6834,
+    "unclear": 0.2518,
+    "unrelated": 0.0647
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "1f3f64d8d3d52d4d796cbc5a70c54bb9cfc29fafb35ba4be8ddfa6f1b03efffb",
+    "revision_index": 0,
+    "supersedes": []
+   }
+  },
+  {
+   "call_seconds": 0.011630392982624471,
+   "category": "negated",
+   "event_id": "negated-010",
+   "file": "events/09_negated.json",
+   "label": "related",
+   "latency": {
+    "inference_seconds": 0.011250892013777047,
+    "load_kind": "WARM",
+    "load_seconds": 8.000642992556095e-08
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.7296,
+    "unclear": 0.1802,
+    "unrelated": 0.0902
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "dab8593d679a2710f80abd122a3fe08abe077675d545c2fa276e7848d12915ea",
+    "revision_index": 0,
+    "supersedes": []
+   }
+  },
+  {
+   "call_seconds": 0.011510338983498514,
+   "category": "duplicate_of_ecb-hold-001",
+   "event_id": "ecb-hold-001",
+   "file": "events/10_duplicate_of_ecb-hold-001.json",
+   "label": "related",
+   "latency": {
+    "inference_seconds": 0.011125498014735058,
+    "load_kind": "WARM",
+    "load_seconds": 1.00000761449337e-07
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.8398,
+    "unclear": 0.0778,
+    "unrelated": 0.0824
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "0121393923d3b0b877204a0c10e9e75db04650b78d68f8a6ea7607ac523a1a47",
+    "revision_index": 0,
+    "supersedes": []
+   }
+  },
+  {
+   "call_seconds": 0.011542628984898329,
+   "category": "revision_of_ecb-hold-001",
+   "event_id": "ecb-hold-001",
+   "file": "events/11_revision_of_ecb-hold-001.json",
+   "label": "related",
+   "latency": {
+    "inference_seconds": 0.011164880997966975,
+    "load_kind": "WARM",
+    "load_seconds": 1.100124791264534e-07
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.7813,
+    "unclear": 0.1519,
+    "unrelated": 0.0668
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "08deba0c9c43454e342cf7020e6b43ee20938eae107d3a55a6c0c8ea5e2e4006",
+    "revision_index": 1,
+    "supersedes": [
+     "0121393923d3b0b877204a0c10e9e75db04650b78d68f8a6ea7607ac523a1a47"
+    ]
+   }
+  },
+  {
+   "call_seconds": 0.011555151984794065,
+   "category": "instruction_like",
+   "event_id": "instruction-like-011",
+   "file": "events/12_instruction_like.json",
+   "label": "unrelated",
+   "latency": {
+    "inference_seconds": 0.01116686500608921,
+    "load_kind": "WARM",
+    "load_seconds": 8.998904377222061e-08
+   },
+   "m5phet_status": "OK",
+   "probabilities": {
+    "related": 0.2605,
+    "unclear": 0.2252,
+    "unrelated": 0.5142
+   },
+   "status": "SHADOW_ONLY",
+   "stored": {
+    "disposition": "DUPLICATE",
+    "record_sha256": "ec201bf973ef2bc8728cf8d0052ee6e00e75d8c040c6cb94df77d6194110d802",
+    "revision_index": 0,
+    "supersedes": []
+   }
+  }
+ ],
+ "runtime_warnings": [
+  "RuntimeWarning: laya: this checkpoint ships invalid temperatures or values outside [0.5, 5]; using choice:11+=0.10058280825614929 -> 0.5. Treat confidence from the affected entries as uncalibrated."
+ ],
+ "schema": "news_pilot.v1",
+ "task_id": "news_relevance_eurusd.v1"
+}
