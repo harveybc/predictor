@@ -907,3 +907,23 @@ emparejado (argumentos resueltos de la propia referencia, 321 canales en su orde
 arquitectura aprobada con un unico cambio en la lectura) con causalidad **probada sobre el soporte de objetivos** y el
 solapamiento de contexto del autor declarado; piloto SOLO-TRAIN ejecutado en WORKER_A dentro de 1.800/1.800 s, sin puntuar el
 test y sin afirmacion sobre H1. Lane financiero investigado sin leer un byte. Suite 146 pasan.
+
+**Ejecutado por Satoshi (24-sep, RP144-RP151, pendiente de revision):**
+[retorno](../audits/work_plan/SATOSHI_RP144_RP151_RETURN_2026_09_24.md). Lo primero fue mirar lo que corria: la cola de doce
+celdas de RP135 **termino** y su servicio quedo inactivo (14.011 s de CPU de 24.000 consumidos por los ajustes), asi que el
+**cierre de B corre ahora en la 5090** con los 9.989 s restantes, y el **primer contraste de desarrollo R0/R1/R2 corre en
+WORKER_A** bajo una asignacion NUEVA de 14.400 s de CPU / 8 h declarada antes de empezar. Protocolo B con doce celdas
+entrenadas y metricas registradas (H96 0.125925, H192 0.143650, H336 0.152696 de MSE medio; H720 semilla 2021 0.179536):
+terminales registrados, **no ciencia aceptada**, porque la reduccion oficial, el naive de las mismas filas, la dispersion
+entre semillas y el replay salen del cierre en curso. La composicion de A quedo reparada **en las dos direcciones**: los
+cinco contraejemplos del dictamen estan cerrados y son pruebas (una evidencia solo-metrica debe coincidir con la poblacion
+del registro, un digesto que la raiz no puede responder es IDENTITY_UNVERIFIABLE, una fila debe presentar un enlace en ambos
+lados, un bloque de identidad vacio es NO_COMPARISON, y la donacion se compara con los bytes del propio donante), y ademas
+corregi dos reglas demasiado estrictas que destruian evidencia real: las filas historicas no llevan `accepted_artifacts` y se
+ligan por las identidades de su propio replay y de su regeneracion, y el catalogo y la aceptacion de regeneracion son objetos
+**derivados** que cada cierre reescribe, de modo que no son claves de identidad. El cierre corregido es aditivo y la media de
+cuatro horizontes no cambia: **0.161962/0.259662**. Las tres compuertas del contraste doctoral quedaron reparadas (oraculo
+independiente sobre los lotes entregados, mascaras fijas por identidad de ventana, y prueba de regimen por un paso de
+optimizador observado). Contrato tipado de M5PHET verificado de verdad en entorno aislado con cuatro rechazos ejecutados.
+Laya real: repositorio leido e identidades ancladas registradas, descarga y piloto **no iniciados** con razon. RP148/RP149
+**no iniciados**. Suite 150 pasan.

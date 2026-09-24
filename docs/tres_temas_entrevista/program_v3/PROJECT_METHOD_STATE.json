@@ -3,7 +3,13 @@
  "general_ml_program": {
   "name": "M5PHET",
   "repository": "https://github.com/harveybc/M5PHET",
-  "fronts": ["classification", "regression_forecasting", "representation_unsupervised", "reinforcement_learning", "causal_inference"],
+  "fronts": [
+   "classification",
+   "regression_forecasting",
+   "representation_unsupervised",
+   "reinforcement_learning",
+   "causal_inference"
+  ],
   "optimization": "DOIN cross-cutting; not a sixth required model",
   "selection": "Task-matched reproduced open-source references, license and measured deployment suitability; no universal Laya requirement",
   "implemented_scope": "Classification result contract consumed by news-signal; four other engine fronts planned",
@@ -14,7 +20,13 @@
   "reviewed_commit": "07140d03",
   "disposition": "CHANGES_REQUIRED_COMPOSITION_AND_ML_GATES_NO_GLOBAL_HOLD",
   "scope": "Source inspection and bounded CPU counterprobes; no new original-array reduction or production custody read",
-  "findings": ["metric-only replay pools without shape check", "absent report/binding identities accepted", "target parity bypasses actual adapter batches", "AE validation masks change on repeated access", "reload parity and gradient-only regime proof too weak"],
+  "findings": [
+   "metric-only replay pools without shape check",
+   "absent report/binding identities accepted",
+   "target parity bypasses actual adapter batches",
+   "AE validation masks change on repeated access",
+   "reload parity and gradient-only regime proof too weak"
+  ],
   "numerical_mean": "Retained mean recomputes; no metric-only histories selected in current composition, so no numerical invalidation inferred from that counterexample",
   "review": "../../audits/work_plan/MUSASHI_RP140_RP143_REVIEW_2026_09_24.md"
  },
@@ -23,7 +35,11 @@
   "document": "NEWS_LIVE_PARALLEL_2026_09_24.md",
   "repository": "https://github.com/harveybc/news-signal",
   "status": "ADAPTER_PROTOTYPE_TESTED_REAL_WEIGHTS_AND_BROKERS_PENDING",
-  "allowed_modes": ["SHADOW", "MT5_DEMO", "ALPACA_PAPER"],
+  "allowed_modes": [
+   "SHADOW",
+   "MT5_DEMO",
+   "ALPACA_PAPER"
+  ],
   "real_capital_authorized": false,
   "blocks_scientific_experiments": false,
   "resident_host_candidate": "COORDINATOR RTX4070 8GiB after real-weight admission/latency pilot; not measured inference yet",
@@ -395,7 +411,9 @@
    "owner": "Musashi + Satoshi",
    "status": "IMPLEMENTED",
    "depends_on": [],
-   "evidence": ["https://github.com/harveybc/M5PHET/tree/bcd65b78c12e53e85adc9f2328cb0c0faccb94e8"],
+   "evidence": [
+    "https://github.com/harveybc/M5PHET/tree/bcd65b78c12e53e85adc9f2328cb0c0faccb94e8"
+   ],
    "next_action": "Keep first consumer pinned and verified; design each further task family with its consumer and independent oracle before engine implementation",
    "deliverable": "Task-specific typed results and five-front roadmap; not five completed engines"
   },
@@ -403,8 +421,12 @@
    "id": "NEWS-ADAPTER",
    "owner": "Musashi + Satoshi",
    "status": "IMPLEMENTED",
-   "depends_on": ["M5PHET-CONTRACTS"],
-   "evidence": ["https://github.com/harveybc/news-signal"],
+   "depends_on": [
+    "M5PHET-CONTRACTS"
+   ],
+   "evidence": [
+    "https://github.com/harveybc/news-signal"
+   ],
    "next_action": "Real frozen-weight smoke, offline/device/provenance checks and measured coordinator resources; prototype tested only with fixture/SDK double",
    "deliverable": "Typed news features, no model order authority, actual deployment evidence"
   },
@@ -412,7 +434,9 @@
    "id": "NEWS-SHADOW",
    "owner": "Satoshi",
    "status": "DESIGNED",
-   "depends_on": ["NEWS-ADAPTER"],
+   "depends_on": [
+    "NEWS-ADAPTER"
+   ],
    "evidence": [],
    "next_action": "Implement licensed receipt-time collector, governed inputs and bounded resident inference; prospective calibration design",
    "deliverable": "Working live-data shadow stream and input/model/latency evidence"
@@ -421,7 +445,10 @@
    "id": "NEWS-PAPER",
    "owner": "Satoshi",
    "status": "DESIGNED",
-   "depends_on": ["NEWS-SHADOW", "BUSINESS-CONTRACT"],
+   "depends_on": [
+    "NEWS-SHADOW",
+    "BUSINESS-CONTRACT"
+   ],
    "evidence": [],
    "next_action": "Implement policy through existing LTS risk and both MT5 demo/Alpaca paper, isolated mandates, idempotency/fill/recovery tests",
    "deliverable": "Separate end-to-end broker receipts and matched prospective evaluation, no real-capital release"
@@ -1363,7 +1390,7 @@
  "rp106_rp113": {
   "orders": "docs/handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md (c779711; review MUSASHI_RP98_RP105_REVIEW_2026_09_22.md of 55a339ce)",
   "base": "55a339ce",
- "updated_on": "2026-09-24",
+  "updated_on": "2026-09-24",
   "placement": "owner 22-sep: the ONLY device eligible for new GPU work is WORKER_B's EXTERNAL RTX 5090 (GPU-a9f35631…), admitted by physical UUID before every dispatch; WORKER_B's internal 5070 Ti, WORKER_A's GPU and coordinator heavy work remain held with no automatic release; host CPU bounded and host thermals monitored separately (the external cooler does not cool the laptop)",
   "RP106": {
    "status": "DONE",
@@ -1645,5 +1672,43 @@
    "suite": "146 passed at 87db6944 on WORKER_A, clean worktree, no skips",
    "return": "docs/audits/work_plan/SATOSHI_RP140_RP143_RETURN_2026_09_24.md"
   }
+ },
+ "rp144_rp151": {
+  "orders": "docs/handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md (d4bb3353), after MUSASHI_RP140_RP143_REVIEW_2026_09_24.md",
+  "updated_on": "2026-09-24",
+  "live_state_checked_first": "RP135's twelve-cell fit queue FINISHED and its service inactive; 14,011 CPU s of 24,000 consumed by the fits",
+  "RP144": {
+   "status": "DONE",
+   "what": "the five composition counterexamples are closed and are tests: metric-only evidence must match the record's population, a digest the root cannot answer for is IDENTITY_UNVERIFIABLE, a report row must present a link on both sides, an empty binding block is NO_COMPARISON, and the donor import is checked against the donor file's own bytes",
+   "also_corrected": "two over-strict rules that destroyed real evidence: historical rows carry no accepted_artifacts and bind through their own replay and regeneration identities; the metric catalog and the regeneration acceptance are derived per closure and are NOT identity keys",
+   "result": "the additive corrected closure pools 12/12 with 15 IDENTITY_BOUND and 3 METRIC_AND_SHAPE_BOUND bindings, no refusals, and the four-horizon mean is unchanged at 0.161962/0.259662",
+   "evidence": "docs/audits/evidence/d3_k5_20260917/RP144/"
+  },
+  "RP145": {
+   "status": "RUNNING",
+   "what": "twelve of twelve L512 cells trained with accepted receipts; the closure with replay on the external 5090 runs under the remaining 9,989 CPU s of the same allocation",
+   "recorded_scores": "H96 mean MSE 0.125925; H192 0.143650; H336 0.152696; H720 seed 2021 0.179536. Recorded terminals, not accepted science: the official reduction, same-row naive, seed dispersion and replay come from the closure"
+  },
+  "RP146": {
+   "status": "RUNNING",
+   "gates_repaired": "an independent oracle checks the DELIVERED batches against the raw CSV and the author's train-only statistics at split boundaries and at H96/H720; validation masks are fixed by window identity; the regime proof is an observed optimizer step with R1 moving by exactly 0.0 and the donor checked against its own bytes",
+   "contrast": "the first development R0/R1/R2 contrast started 03:40Z on WORKER_A under a NEW 14,400 CPU s / 8 h allocation: H96, three paired seeds, full 321-channel target, one measured probe fixing one update allowance for every regime, outer test never read"
+  },
+  "RP147": {
+   "status": "INSPECTED_NOT_EXECUTED",
+   "what": "news-signal cloned and read; its own state says real weights, calibration and latency are NOT measured. Pinned identities recorded: M5PHET bcd65b78c12e53e85adc9f2328cb0c0faccb94e8, Laya SDK 1e28ac20c0896b1c37a744cd11f740eb98f8b178",
+   "why_not_executed": "both workers hold heavy jobs and the coordinator is the machine in use; the checkpoint download and bounded pilot are the named next runnable item"
+  },
+  "RP150": {
+   "status": "CONTRACT_VERIFIED",
+   "what": "the pinned M5PHET installs in an isolated environment and its classification result carries schema m5phet.classification.v1, UNCALIBRATED_CLASS_PROBABILITIES, execution_authorized false, three mandatory identity digests and a canonical result_sha256; four refusals executed (uppercase digest, unnormalised distribution, non-maximal label, incomplete task population). This verifies the CONTRACT, not any trained model",
+   "financial": "the RP143 producer-contract investigation stands; nothing read, reserve untouched"
+  },
+  "RP148_RP149": {
+   "status": "NOT_STARTED",
+   "what": "no feed or broker call was made and no entitlement was tested this round"
+  },
+  "tests": "150 passed on WORKER_A across the reproduction and ECL modules",
+  "return": "docs/audits/work_plan/SATOSHI_RP144_RP151_RETURN_2026_09_24.md"
  }
 }
