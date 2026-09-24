@@ -1,0 +1,820 @@
+{
+ "schema": "df_sota_table.v1",
+ "at": "2026-09-24T03:57:43Z",
+ "design_sha256": "bcc7e3d3c09c6744829ca4685e200cdd7c70255097823cf45cd439f3e8145c67",
+ "paper": "Hu, Y. et al. TimeFilter: Patch-Specific Spatial-Temporal Graph Filtration for Time Series Forecasting. ICML 2025 (PMLR v267); arXiv:2501.13041. Author code github.com/TROUBADOUR000/TimeFilter",
+ "protocol": "Lsearched",
+ "published_table": "Table 9 (L searched in {192, 336, 512, 720}; the script offers L = 512 only)",
+ "rows": [
+  {
+   "dataset_protocol": "ECL official processed (TSL), L=512, T=96, split 7/1/2, normalized space",
+   "model_revision": "TimeFilter @ dffde87e4fff",
+   "horizon": 96,
+   "published": {
+    "mse": 0.126,
+    "mae": 0.22
+   },
+   "seeds_expected": [
+    "L512_h96_s2021",
+    "L512_h96_s2022",
+    "L512_h96_s2023"
+   ],
+   "seeds_verified": [
+    "L512_h96_s2021",
+    "L512_h96_s2022",
+    "L512_h96_s2023"
+   ],
+   "verified_all": true,
+   "mse": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.12592519323031107,
+    "sd_ddof1": 0.0004171960213716605,
+    "values": [
+     0.1255514919757843,
+     0.12584877014160156,
+     0.12637531757354736
+    ],
+    "published": 0.126,
+    "difference": -7.48067696889343e-05,
+    "tolerance_agree": 0.0105,
+    "tolerance_partial": 0.0155,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "mae": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.22095813850561777,
+    "sd_ddof1": 0.0005174477867685231,
+    "values": [
+     0.22045329213142395,
+     0.22093379497528076,
+     0.22148732841014862
+    ],
+    "published": 0.22,
+    "difference": 0.0009581385056177671,
+    "tolerance_agree": 0.0125,
+    "tolerance_partial": 0.018500000000000003,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "historically_verified_seeds": [],
+   "metric_basis": [
+    "author_float32"
+   ],
+   "per_seed": {
+    "2021": {
+     "mse": 0.1255514919757843,
+     "mae": 0.22045329213142395,
+     "difference_mse": -0.00044850802421569913,
+     "difference_mae": 0.0004532921314239491
+    },
+    "2022": {
+     "mse": 0.12584877014160156,
+     "mae": 0.22093379497528076,
+     "difference_mse": -0.0001512298583984384,
+     "difference_mae": 0.0009337949752807606
+    },
+    "2023": {
+     "mse": 0.12637531757354736,
+     "mae": 0.22148732841014862,
+     "difference_mse": 0.0003753175735473624,
+     "difference_mae": 0.0014873284101486195
+    }
+   },
+   "scopes": {
+    "recipe_fidelity": "sealed author files, arguments and preparation bound (closure)",
+    "same_device_repeatability": [
+     "PASS"
+    ],
+    "cross_device_portability": [
+     "NOT_TESTED_ON_THIS_DEVICE"
+    ],
+    "published_score_agreement": {
+     "mse": "OPERATIONAL_AGREEMENT",
+     "mae": "OPERATIONAL_AGREEMENT"
+    },
+    "replay_history": {
+     "L512_h96_s2021": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-24T03:48:42Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L512_h96_s2022": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-24T03:49:09Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L512_h96_s2023": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-24T03:49:36Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ]
+    }
+   },
+   "measurement_state": "VERIFIED",
+   "matched_naive": {
+    "mse": 1.5878367830262579,
+    "mae": 0.9454555140073404
+   },
+   "matched_baselines": {
+    "source": "retained catalog of L512_h96_s2021",
+    "windows": 5165,
+    "persistence": {
+     "mse": 1.5878367830840463,
+     "mae": 0.9454555143179588
+    },
+    "seasonal24": {
+     "mse": 0.32109503997258054,
+     "mae": 0.3257686426764087
+    },
+    "skill_vs_persistence": {
+     "mae": 0.7668284762696524,
+     "mse": 0.9209292226704615
+    }
+   },
+   "training_completion": [
+    {
+     "unit": "L512_h96_s2021",
+     "epochs_run": 15,
+     "best_epoch": 14,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L512_h96_s2022",
+     "epochs_run": 15,
+     "best_epoch": 15,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L512_h96_s2023",
+     "epochs_run": 15,
+     "best_epoch": 15,
+     "early_stopped": false,
+     "max_epochs": 15
+    }
+   ],
+   "cost": {
+    "wall_seconds_sum": 3776.440396785736,
+    "cpu_seconds_sum": 3776.0319610000006,
+    "peak_gpu_bytes_max": 7105406976,
+    "hosts": [
+     "gamma"
+    ]
+   },
+   "replay_max_abs_difference": 0.0,
+   "problems": [],
+   "executed_unverified": []
+  },
+  {
+   "dataset_protocol": "ECL official processed (TSL), L=512, T=192, split 7/1/2, normalized space",
+   "model_revision": "TimeFilter @ dffde87e4fff",
+   "horizon": 192,
+   "published": {
+    "mse": 0.143,
+    "mae": 0.237
+   },
+   "seeds_expected": [
+    "L512_h192_s2021",
+    "L512_h192_s2022",
+    "L512_h192_s2023"
+   ],
+   "seeds_verified": [
+    "L512_h192_s2021",
+    "L512_h192_s2022",
+    "L512_h192_s2023"
+   ],
+   "verified_all": true,
+   "mse": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.14365029831727347,
+    "sd_ddof1": 0.0006064090483052548,
+    "values": [
+     0.14405077695846558,
+     0.14295262098312378,
+     0.14394749701023102
+    ],
+    "published": 0.143,
+    "difference": 0.0006502983172734789,
+    "tolerance_agree": 0.0105,
+    "tolerance_partial": 0.0155,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "mae": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.23796974122524261,
+    "sd_ddof1": 0.0003427292241258064,
+    "values": [
+     0.23834234476089478,
+     0.23766794800758362,
+     0.23789893090724945
+    ],
+    "published": 0.237,
+    "difference": 0.0009697412252426263,
+    "tolerance_agree": 0.0125,
+    "tolerance_partial": 0.018500000000000003,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "historically_verified_seeds": [],
+   "metric_basis": [
+    "author_float32"
+   ],
+   "per_seed": {
+    "2021": {
+     "mse": 0.14405077695846558,
+     "mae": 0.23834234476089478,
+     "difference_mse": 0.001050776958465588,
+     "difference_mae": 0.001342344760894787
+    },
+    "2022": {
+     "mse": 0.14295262098312378,
+     "mae": 0.23766794800758362,
+     "difference_mse": -4.7379016876208935e-05,
+     "difference_mae": 0.0006679480075836297
+    },
+    "2023": {
+     "mse": 0.14394749701023102,
+     "mae": 0.23789893090724945,
+     "difference_mse": 0.0009474970102310298,
+     "difference_mae": 0.0008989309072494622
+    }
+   },
+   "scopes": {
+    "recipe_fidelity": "sealed author files, arguments and preparation bound (closure)",
+    "same_device_repeatability": [
+     "PASS"
+    ],
+    "cross_device_portability": [
+     "NOT_TESTED_ON_THIS_DEVICE"
+    ],
+    "published_score_agreement": {
+     "mse": "OPERATIONAL_AGREEMENT",
+     "mae": "OPERATIONAL_AGREEMENT"
+    },
+    "replay_history": {
+     "L512_h192_s2021": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-24T03:50:15Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L512_h192_s2022": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-24T03:50:54Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L512_h192_s2023": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-24T03:51:32Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ]
+    }
+   },
+   "measurement_state": "VERIFIED",
+   "matched_naive": {
+    "mse": 1.596173635249775,
+    "mae": 0.9507093725769902
+   },
+   "matched_baselines": {
+    "source": "retained catalog of L512_h192_s2021",
+    "windows": 5069,
+    "persistence": {
+     "mse": 1.596173635303633,
+     "mae": 0.9507093728703696
+    },
+    "seasonal24": {
+     "mse": 0.30431957094569156,
+     "mae": 0.32374135880743793
+    },
+    "skill_vs_persistence": {
+     "mae": 0.7493005113926721,
+     "mse": 0.9097524412713521
+    }
+   },
+   "training_completion": [
+    {
+     "unit": "L512_h192_s2021",
+     "epochs_run": 15,
+     "best_epoch": 13,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L512_h192_s2022",
+     "epochs_run": 15,
+     "best_epoch": 15,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L512_h192_s2023",
+     "epochs_run": 15,
+     "best_epoch": 11,
+     "early_stopped": false,
+     "max_epochs": 15
+    }
+   ],
+   "cost": {
+    "wall_seconds_sum": 4028.872827529907,
+    "cpu_seconds_sum": 4026.759516,
+    "peak_gpu_bytes_max": 7113263104,
+    "hosts": [
+     "gamma"
+    ]
+   },
+   "replay_max_abs_difference": 0.0,
+   "problems": [],
+   "executed_unverified": []
+  },
+  {
+   "dataset_protocol": "ECL official processed (TSL), L=512, T=336, split 7/1/2, normalized space",
+   "model_revision": "TimeFilter @ dffde87e4fff",
+   "horizon": 336,
+   "published": {
+    "mse": 0.153,
+    "mae": 0.252
+   },
+   "seeds_expected": [
+    "L512_h336_s2021",
+    "L512_h336_s2022",
+    "L512_h336_s2023"
+   ],
+   "seeds_verified": [
+    "L512_h336_s2021",
+    "L512_h336_s2022",
+    "L512_h336_s2023"
+   ],
+   "verified_all": true,
+   "mse": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.1526961624622345,
+    "sd_ddof1": 0.0007058527632760832,
+    "values": [
+     0.15227395296096802,
+     0.15230350196361542,
+     0.15351103246212006
+    ],
+    "published": 0.153,
+    "difference": -0.00030383753776550004,
+    "tolerance_agree": 0.0105,
+    "tolerance_partial": 0.0155,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "mae": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.25134454170862836,
+    "sd_ddof1": 0.00064061737098579,
+    "values": [
+     0.25087615847587585,
+     0.2510828971862793,
+     0.25207456946372986
+    ],
+    "published": 0.252,
+    "difference": -0.0006554582913716467,
+    "tolerance_agree": 0.0125,
+    "tolerance_partial": 0.018500000000000003,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "historically_verified_seeds": [],
+   "metric_basis": [
+    "author_float32"
+   ],
+   "per_seed": {
+    "2021": {
+     "mse": 0.15227395296096802,
+     "mae": 0.25087615847587585,
+     "difference_mse": -0.0007260470390319795,
+     "difference_mae": -0.0011238415241241473
+    },
+    "2022": {
+     "mse": 0.15230350196361542,
+     "mae": 0.2510828971862793,
+     "difference_mse": -0.0006964980363845796,
+     "difference_mae": -0.0009171028137207049
+    },
+    "2023": {
+     "mse": 0.15351103246212006,
+     "mae": 0.25207456946372986,
+     "difference_mse": 0.000511032462120059,
+     "difference_mae": 7.456946372985662e-05
+    }
+   },
+   "scopes": {
+    "recipe_fidelity": "sealed author files, arguments and preparation bound (closure)",
+    "same_device_repeatability": [
+     "PASS"
+    ],
+    "cross_device_portability": [
+     "NOT_TESTED_ON_THIS_DEVICE"
+    ],
+    "published_score_agreement": {
+     "mse": "OPERATIONAL_AGREEMENT",
+     "mae": "OPERATIONAL_AGREEMENT"
+    },
+    "replay_history": {
+     "L512_h336_s2021": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-24T03:52:16Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L512_h336_s2022": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-24T03:53:03Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L512_h336_s2023": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-24T03:53:50Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ]
+    }
+   },
+   "measurement_state": "VERIFIED",
+   "matched_naive": {
+    "mse": 1.6178496658738246,
+    "mae": 0.9613233560116363
+   },
+   "matched_baselines": {
+    "source": "retained catalog of L512_h336_s2021",
+    "windows": 4925,
+    "persistence": {
+     "mse": 1.6178496659215122,
+     "mae": 0.9613233562891667
+    },
+    "seasonal24": {
+     "mse": 0.3273082828720005,
+     "mae": 0.3426867908046854
+    },
+    "skill_vs_persistence": {
+     "mae": 0.7390304346638599,
+     "mse": 0.9058788028145223
+    }
+   },
+   "training_completion": [
+    {
+     "unit": "L512_h336_s2021",
+     "epochs_run": 15,
+     "best_epoch": 15,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L512_h336_s2022",
+     "epochs_run": 15,
+     "best_epoch": 14,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L512_h336_s2023",
+     "epochs_run": 15,
+     "best_epoch": 6,
+     "early_stopped": false,
+     "max_epochs": 15
+    }
+   ],
+   "cost": {
+    "wall_seconds_sum": 4085.3621554374695,
+    "cpu_seconds_sum": 4086.191503,
+    "peak_gpu_bytes_max": 7123664896,
+    "hosts": [
+     "gamma"
+    ]
+   },
+   "replay_max_abs_difference": 0.0,
+   "problems": [],
+   "executed_unverified": []
+  },
+  {
+   "dataset_protocol": "ECL official processed (TSL), L=512, T=720, split 7/1/2, normalized space",
+   "model_revision": "TimeFilter @ dffde87e4fff",
+   "horizon": 720,
+   "published": {
+    "mse": 0.177,
+    "mae": 0.275
+   },
+   "seeds_expected": [
+    "L512_h720_s2021",
+    "L512_h720_s2022",
+    "L512_h720_s2023"
+   ],
+   "seeds_verified": [
+    "L512_h720_s2021",
+    "L512_h720_s2022",
+    "L512_h720_s2023"
+   ],
+   "verified_all": true,
+   "mse": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.17895699044068655,
+    "sd_ddof1": 0.0011747452844701395,
+    "values": [
+     0.1795356571674347,
+     0.1797301471233368,
+     0.17760516703128815
+    ],
+    "published": 0.177,
+    "difference": 0.0019569904406865624,
+    "tolerance_agree": 0.0105,
+    "tolerance_partial": 0.0155,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "mae": {
+    "status": "OPERATIONAL_AGREEMENT",
+    "mean": 0.27531301975250244,
+    "sd_ddof1": 0.0009170987022248014,
+    "values": [
+     0.2755456566810608,
+     0.27609139680862427,
+     0.27430200576782227
+    ],
+    "published": 0.275,
+    "difference": 0.0003130197525024192,
+    "tolerance_agree": 0.0125,
+    "tolerance_partial": 0.018500000000000003,
+    "n_seeds": 3,
+    "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"
+   },
+   "historically_verified_seeds": [],
+   "metric_basis": [
+    "author_float32"
+   ],
+   "per_seed": {
+    "2021": {
+     "mse": 0.1795356571674347,
+     "mae": 0.2755456566810608,
+     "difference_mse": 0.0025356571674347017,
+     "difference_mae": 0.0005456566810607688
+    },
+    "2022": {
+     "mse": 0.1797301471233368,
+     "mae": 0.27609139680862427,
+     "difference_mse": 0.0027301471233368013,
+     "difference_mae": 0.0010913968086242454
+    },
+    "2023": {
+     "mse": 0.17760516703128815,
+     "mae": 0.27430200576782227,
+     "difference_mse": 0.0006051670312881563,
+     "difference_mae": -0.0006979942321777566
+    }
+   },
+   "scopes": {
+    "recipe_fidelity": "sealed author files, arguments and preparation bound (closure)",
+    "same_device_repeatability": [
+     "PASS"
+    ],
+    "cross_device_portability": [
+     "NOT_TESTED_ON_THIS_DEVICE"
+    ],
+    "published_score_agreement": {
+     "mse": "OPERATIONAL_AGREEMENT",
+     "mae": "OPERATIONAL_AGREEMENT"
+    },
+    "replay_history": {
+     "L512_h720_s2021": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-24T03:55:07Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L512_h720_s2022": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-24T03:56:25Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ],
+     "L512_h720_s2023": [
+      {
+       "source": "REPLAYS.json#cuda:0:GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8@2026-09-24T03:57:43Z",
+       "device": "cuda:0",
+       "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+       "property": "same_device_repeatability",
+       "allclose_rule": true,
+       "max_abs_prediction_difference": 0.0,
+       "at": null,
+       "scope": "HISTORICAL_RECORD_ONLY"
+      }
+     ]
+    }
+   },
+   "measurement_state": "VERIFIED",
+   "matched_naive": {
+    "mse": 1.646760789271031,
+    "mae": 0.9753622505083304
+   },
+   "matched_baselines": {
+    "source": "retained catalog of L512_h720_s2021",
+    "windows": 4541,
+    "persistence": {
+     "mse": 1.646760789291007,
+     "mae": 0.9753622507679967
+    },
+    "seasonal24": {
+     "mse": 0.36698765348650936,
+     "mae": 0.37328394060998743
+    },
+    "skill_vs_persistence": {
+     "mae": 0.7174940405421298,
+     "mse": 0.890976477934824
+    }
+   },
+   "training_completion": [
+    {
+     "unit": "L512_h720_s2021",
+     "epochs_run": 15,
+     "best_epoch": 3,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L512_h720_s2022",
+     "epochs_run": 15,
+     "best_epoch": 3,
+     "early_stopped": false,
+     "max_epochs": 15
+    },
+    {
+     "unit": "L512_h720_s2023",
+     "epochs_run": 15,
+     "best_epoch": 8,
+     "early_stopped": false,
+     "max_epochs": 15
+    }
+   ],
+   "cost": {
+    "wall_seconds_sum": 4631.932824373245,
+    "cpu_seconds_sum": 4641.3401570000005,
+    "peak_gpu_bytes_max": 7152927744,
+    "hosts": [
+     "gamma"
+    ]
+   },
+   "replay_max_abs_difference": 0.0,
+   "problems": [],
+   "executed_unverified": []
+  }
+ ],
+ "average_over_horizons": {
+  "mse": {
+   "status": "OPERATIONAL_AGREEMENT",
+   "mean": 0.1503071611126264,
+   "sd_ddof1": 8.528529323357161e-05,
+   "values": [
+    0.15035296976566315,
+    0.1502087600529194,
+    0.15035975351929665
+   ],
+   "published": 0.15,
+   "difference": 0.00030716111262640844,
+   "tolerance_agree": 0.0105,
+   "tolerance_partial": 0.0155,
+   "n_seeds": 3,
+   "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it",
+   "seeds": [
+    2021,
+    2022,
+    2023
+   ],
+   "grain": "average over the four horizons within each seed, then across seeds"
+  },
+  "mae": {
+   "status": "OPERATIONAL_AGREEMENT",
+   "mean": 0.2463963602979978,
+   "sd_ddof1": 7.968907661587126e-05,
+   "values": [
+    0.24630436301231384,
+    0.24644400924444199,
+    0.24644070863723755
+   ],
+   "published": 0.246,
+   "difference": 0.00039636029799780537,
+   "tolerance_agree": 0.0125,
+   "tolerance_partial": 0.018500000000000003,
+   "n_seeds": 3,
+   "scope": "predeclared OPERATIONAL margin (2 x the paper's Table 7 four-horizon-average SD + rounding), borrowed as a heuristic for every horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it",
+   "seeds": [
+    2021,
+    2022,
+    2023
+   ],
+   "grain": "average over the four horizons within each seed, then across seeds"
+  }
+ },
+ "complete": true,
+ "protocol_fidelity": {
+  "source_hashes": "sealed == now",
+  "preparation": "PREPARATION_ACCEPTED_ARTIFACT",
+  "environment": "declared divergence from the author's (torch/numpy/pandas/sklearn/GPU differ; recorded in the lock)",
+  "operational_patches": [
+   "import shims for sktime.datasets and patoolib",
+   "run.py __main__ replicated by main_like_run_py",
+   "exp_long_term_forecasting.metric wrapped to capture preds/trues",
+   "np.Inf restored as an alias of np.inf before importing the author modules"
+  ],
+  "verdict": "FAITHFUL_WITH_DECLARED_ENVIRONMENT_DIVERGENCE"
+ },
+ "agreement_rule": "per horizon and for the four-horizon average (formed within each seed first), the three-seed mean of the replicated metric is in OPERATIONAL_AGREEMENT with the published value when |mean - published| <= 2 x std_paper + 0.0005 (rounding half-unit); OPERATIONAL_PARTIAL when <= 3 x std_paper + 0.0005; OUTSIDE_OPERATIONAL_MARGIN otherwise. std_paper is the paper's std over its three runs of the FOUR-HORIZON AVERAGE (Table 7), borrowed per horizon as a predeclared operational margin \u2014 not a published per-horizon error bar, not statistical equivalence; the replicated seed dispersion is reported beside it and never replaces the criterion",
+ "disposition": {
+  "disposition": "ACTIVE",
+  "task_id": "ecl321_official_tsl",
+  "policy": "docs/tres_temas_entrevista/program_v3/SOTA_FIRST_2026_09_21.md",
+  "why": "the official processed ECL benchmark is the active reproduction task"
+ },
+ "unexecuted": [],
+ "verified_units": [
+  "L512_h192_s2021",
+  "L512_h192_s2022",
+  "L512_h192_s2023",
+  "L512_h336_s2021",
+  "L512_h336_s2022",
+  "L512_h336_s2023",
+  "L512_h720_s2021",
+  "L512_h720_s2022",
+  "L512_h720_s2023",
+  "L512_h96_s2021",
+  "L512_h96_s2022",
+  "L512_h96_s2023"
+ ],
+ "problems": []
+}
