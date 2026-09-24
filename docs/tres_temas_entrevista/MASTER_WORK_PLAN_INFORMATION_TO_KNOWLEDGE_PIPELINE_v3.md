@@ -1,7 +1,8 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
 **Nombre y alcance general aprobados: M5PHET (24-sep UTC).**
-[M5PHET](https://github.com/harveybc/M5PHET) alberga el programa de cinco frentes:
+[M5PHET](https://github.com/harveybc/M5PHET) es un framework de tareas ML tipadas,
+no un programa generico de investigacion. Sus cinco familias de tareas son:
 clasificacion, regresion/forecasting, representacion/no supervisado, RL e inferencia
 causal. DOIN es transversal para evaluacion/busqueda distribuida. No imponer Laya
 en todos: seleccionar herramientas open-source por referencia reproducida, tarea,
@@ -10,6 +11,14 @@ clasificacion consumido realmente por news-signal; los otros motores son roadmap
 no capacidades demostradas. El formulario enlaza ambos repositorios y omite nombre
 personal. No se modifica la historia Git ni se promete anonimato de cuenta.
 La expansion no bloquea el trabajo experimental ni el carril MT5 demo/Alpaca paper.
+Diseno de producto concretado: estado + tarea/esquema -> salida tipada mediante
+proveedor compatible. Reutilizar Laya directamente para sus decisiones; M5PHET
+anade composicion entre motores, no otro clasificador. Primer input estructurado:
+dataset economico existente, con calendario/consenso/actual/revisiones por vintage
+y disponibilidad por campo. Sigue representacion jerarquica de mercado,
+forecasting multihorizonte con incertidumbre declarada y RL con los mismos inputs.
+La inferencia causal exige estudio identificado aparte. Casos UC01-06 y pruebas
+P01-P09/CAL01-CAL12 en M5PHET; especificados, no implementados. Ver RP150 ampliada.
 
 **Actualizacion vigente, 24-sep UTC: experimentos + NEWS-LIVE en paralelo.**
 [Ordenes RP144-RP151](../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md)

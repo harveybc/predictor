@@ -1,7 +1,19 @@
 {
  "schema": "research_program_method_state.v1",
+ "rp151_interim_review": {
+  "reviewed_commit": "f8e9e77f9113144563e914883364c25b148407b6",
+  "scope": "Source inspection plus exact extracted AST probes; no live job/cube inspection or new training",
+  "disposition": "CONTRAST_PATH_CHANGES_REQUIRED_NO_GLOBAL_HOLD",
+  "findings": ["Declared checkpoint selection and trained downstream persistence absent in run_contrast", "Empty or R0-only population passes all four regime summary checks", "Unequal design digests pass assert ending in or True", "Requested steps presented without optimizer observations; CPU/wall prescription conflated"],
+  "reported_progress": "B twelve cells trained, closure running; R0/R1/R2 running; A reported mean preserved; RP147-149 not started",
+  "review": "../../audits/work_plan/MUSASHI_RP144_RP151_INTERIM_REVIEW_2026_09_24.md",
+  "continuation": "../../handoffs/SATOSHI_RP144_RP151_CONTINUATION_2026_09_24.md",
+  "implementation_owner": "Satoshi",
+  "new_compute_budget": false
+ },
  "general_ml_program": {
   "name": "M5PHET",
+  "product_identity": "Typed machine-learning framework; state plus task/schema to structured results, not a generic research program",
   "repository": "https://github.com/harveybc/M5PHET",
   "fronts": [
    "classification",
@@ -12,7 +24,16 @@
   ],
   "optimization": "DOIN cross-cutting; not a sixth required model",
   "selection": "Task-matched reproduced open-source references, license and measured deployment suitability; no universal Laya requirement",
-  "implemented_scope": "Classification result contract consumed by news-signal; four other engine fronts planned",
+  "implemented_scope": "Classification result contract consumed by news-signal; provider runtime and other task adapters designed, not implemented",
+  "product_design": "https://github.com/harveybc/M5PHET/blob/master/docs/IMPLEMENTATION_PLAN.md",
+  "product_design_revision": "4508b98",
+  "implementation_owner": "Satoshi",
+  "review_owner": "Musashi",
+  "implementation_assignment_status": "PUBLISHED_FOR_EXECUTION_NOT_CONFIRMED_STARTED",
+  "implementation_orders": "../../handoffs/SATOSHI_M5PHET_IMPLEMENTATION_2026_09_24.md",
+  "development_method": "Behavioral tests first; top-down design and bottom-up implementation per component; independent lanes parallel",
+  "next_input": "Existing economic dataset: inventory then vintage-aware as-of features; CAL01-CAL12 required before ML consumption",
+  "consumer_cases": ["typed event decisions", "hierarchical market state", "uncertain multi-horizon forecasts", "calendar-aware trading policies", "identified economic-release effects"],
   "contract_revision": "bcd65b78c12e53e85adc9f2328cb0c0faccb94e8",
   "blocks_existing_work": false
  },
