@@ -29,6 +29,18 @@ it is not another research stage or a reset of any compute allocation.
 
 ## First deliverable, highest priority
 
+**Interpreter deployment update:** reuse existing supported Hermes/OpenCode
+language access first; the owner names inexpensive DeepSeek Flash as a candidate.
+Resolve the actual configured model/endpoint and entitlement without exposing
+secrets. A small local pretrained instruction model on an admitted coordinator
+is an alternative behind the same contract, not a prerequisite or a new LLM
+training project. Compare semantic task accuracy, refusals, cost and latency on
+NL02-NL07. Disable tools/code execution for interpretation; validate structured
+task proposals. Reuse retained tasks rather than reinterpreting every tick.
+The existing Alpaca broker integration is not a language backend; inspect any
+separate language installation by that name before assigning that role. Full
+deployment constraints are in M5PHET's `NATURAL_LANGUAGE_INTERFACE.md`.
+
 **English news relevance to EURUSD**, through the installed M5PHET provider
 registry and real Laya, with direct SDK parity. Not three half-built classifiers,
 not a buy/sell classifier and not another schema-only return. Existing event/tone

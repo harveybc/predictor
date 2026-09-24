@@ -3,6 +3,7 @@
  "classification_first_20260924": {
   "public_interface": "Required Laya-like experience across all five families: data/context + natural-language questions -> typed engine answers; not a plugin catalog",
   "natural_language_design": "M5PHET/docs/NATURAL_LANGUAGE_INTERFACE.md; NL01-NL08 specified, not implemented",
+  "interpreter_candidates": "Reuse configured Hermes/OpenCode language access (owner names DeepSeek Flash); optional admitted small local pretrained model. Verify exact identity/access, no LLM training or broker-role conflation",
   "orders": "../../handoffs/SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md",
   "primary_task": "English news relevance to EURUSD via real Laya and M5PHET Registry; direct SDK parity",
   "status": "IMPLEMENTATION_ASSIGNED_REAL_INFERENCE_NOT_VERIFIED",
