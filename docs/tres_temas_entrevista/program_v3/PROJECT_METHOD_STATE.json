@@ -1,5 +1,25 @@
 {
  "schema": "research_program_method_state.v1",
+ "classification_first_20260924": {
+  "orders": "../../handoffs/SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md",
+  "primary_task": "English news relevance to EURUSD via real Laya and M5PHET Registry; direct SDK parity",
+  "status": "IMPLEMENTATION_ASSIGNED_REAL_INFERENCE_NOT_VERIFIED",
+  "provider_owners": {"classification": "news-signal", "forecasting": "predictor/prediction_provider", "hierarchical_regimes": "feature-eng", "causal_inference": "causal-inference", "RL": "agent-multi/gym-fx"},
+  "DOIN": "transversal optional optimization, not RL engine",
+  "implementation_owner": "Satoshi",
+  "parallel_CPU_work": ["forecast and hierarchy adapters", "causal package and calendar", "policy adapter", "remaining pure closure validation"],
+  "new_training_budget": false,
+  "global_hold": false
+ },
+ "rp158_review": {
+  "candidate": "e36c1c6dd05340f7c3a1b53a575cad69625a5580",
+  "scope": "Source, 30 passed focused tests/6 deselected, retained-child validator probes; no inference or live authority",
+  "status": "RETAINED_METRICS_UNCHANGED_REMAINING_TYPED_ELEMENTS_AND_DERIVED_METRIC_CHECKS",
+  "remaining": ["absent/string elements accepted", "negative loss and incorrect finite skill accepted", "pure retained-evidence closure still absent"],
+  "evidence": "../../audits/evidence/RP158_MUSASHI/results.json",
+  "blocks_M5PHET": false,
+  "retrain_or_routine_replay": false
+ },
  "rp157_review": {
   "candidate": "3c25ecab103163a4face96b6f47ffd8280cb8c67",
   "status": "RETAINED_RECORDS_CONSISTENT_CANONICAL_AND_POPULATION_VALIDATION_INCOMPLETE",

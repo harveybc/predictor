@@ -1,6 +1,12 @@
 # Start here: reconcile ALL active assignments, not only M5PHET
 
-**Latest `3c25ecab`: [RP157 review and bounded completion](../audits/work_plan/MUSASHI_RP157_REVIEW_2026_09_24.md).**
+**Current priority after `e36c1c6d`: [classification-first and external providers](SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md).**
+Deliver real Laya relevance classification through M5PHET with native parity.
+Implement other family adapters in parallel in their existing owner repos.
+RP158 retained numbers are consistent; remaining validator maintenance is CPU-only,
+without another checkpoint pass and without holding the application lane.
+
+**Prior `3c25ecab`: [RP157 review and bounded completion](../audits/work_plan/MUSASHI_RP157_REVIEW_2026_09_24.md).**
 Retained metrics are consistent; finish canonical authority and expected-population
 validation without another routine model replay. Laya setup is reported underway;
 collector/calendar/broker CPU lanes proceed during installation.

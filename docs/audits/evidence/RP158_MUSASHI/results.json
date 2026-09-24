@@ -1,0 +1,120 @@
+{
+  "candidate": "e36c1c6d",
+  "cases": {
+    "all_counts_one": {
+      "bound": false,
+      "problems": [
+        "R0_s2021: the complete_validation population reports 1 windows and the support contract declares 2537",
+        "R0_s2021: the complete_validation population declares 78180192 elements, which is not 1 x 96 x 321",
+        "R0_s2021: the label_disjoint_from_selection population reports 1 windows and the support contract declares 1802",
+        "R0_s2021: the label_disjoint_from_selection population declares 55530432 elements, which is not 1 x 96 x 321",
+        "R0_s2022: the complete_validation population reports 1 windows and the support contract declares 2537",
+        "R0_s2022: the complete_validation population declares 78180192 elements, which is not 1 x 96 x 321",
+        "R0_s2022: the label_disjoint_from_selection population reports 1 windows and the support contract declares 1802",
+        "R0_s2022: the label_disjoint_from_selection population declares 55530432 elements, which is not 1 x 96 x 321",
+        "R0_s2023: the complete_validation population reports 1 windows and the support contract declares 2537",
+        "R0_s2023: the complete_validation population declares 78180192 elements, which is not 1 x 96 x 321",
+        "R0_s2023: the label_disjoint_from_selection population reports 1 windows and the support contract declares 1802",
+        "R0_s2023: the label_disjoint_from_selection population declares 55530432 elements, which is not 1 x 96 x 321",
+        "R1_s2021: the complete_validation population reports 1 windows and the support contract declares 2537",
+        "R1_s2021: the complete_validation population declares 78180192 elements, which is not 1 x 96 x 321",
+        "R1_s2021: the label_disjoint_from_selection population reports 1 windows and the support contract declares 1802",
+        "R1_s2021: the label_disjoint_from_selection population declares 55530432 elements, which is not 1 x 96 x 321",
+        "R1_s2022: the complete_validation population reports 1 windows and the support contract declares 2537",
+        "R1_s2022: the complete_validation population declares 78180192 elements, which is not 1 x 96 x 321",
+        "R1_s2022: the label_disjoint_from_selection population reports 1 windows and the support contract declares 1802",
+        "R1_s2022: the label_disjoint_from_selection population declares 55530432 elements, which is not 1 x 96 x 321",
+        "R1_s2023: the complete_validation population reports 1 windows and the support contract declares 2537",
+        "R1_s2023: the complete_validation population declares 78180192 elements, which is not 1 x 96 x 321",
+        "R1_s2023: the label_disjoint_from_selection population reports 1 windows and the support contract declares 1802",
+        "R1_s2023: the label_disjoint_from_selection population declares 55530432 elements, which is not 1 x 96 x 321",
+        "R2_s2021: the complete_validation population reports 1 windows and the support contract declares 2537",
+        "R2_s2021: the complete_validation population declares 78180192 elements, which is not 1 x 96 x 321",
+        "R2_s2021: the label_disjoint_from_selection population reports 1 windows and the support contract declares 1802",
+        "R2_s2021: the label_disjoint_from_selection population declares 55530432 elements, which is not 1 x 96 x 321",
+        "R2_s2022: the complete_validation population reports 1 windows and the support contract declares 2537",
+        "R2_s2022: the complete_validation population declares 78180192 elements, which is not 1 x 96 x 321",
+        "R2_s2022: the label_disjoint_from_selection population reports 1 windows and the support contract declares 1802",
+        "R2_s2022: the label_disjoint_from_selection population declares 55530432 elements, which is not 1 x 96 x 321",
+        "R2_s2023: the complete_validation population reports 1 windows and the support contract declares 2537",
+        "R2_s2023: the complete_validation population declares 78180192 elements, which is not 1 x 96 x 321",
+        "R2_s2023: the label_disjoint_from_selection population reports 1 windows and the support contract declares 1802",
+        "R2_s2023: the label_disjoint_from_selection population declares 55530432 elements, which is not 1 x 96 x 321"
+      ],
+      "reading": "every child is bound to its expected cell, seed, regime, horizon, populations and typed finite reductions before any aggregate is formed",
+      "windows_per_population": {
+        "complete_validation": 1,
+        "label_disjoint_from_selection": 1
+      }
+    },
+    "elements_absent": {
+      "bound": true,
+      "problems": [],
+      "reading": "every child is bound to its expected cell, seed, regime, horizon, populations and typed finite reductions before any aggregate is formed",
+      "windows_per_population": {
+        "complete_validation": 2537,
+        "label_disjoint_from_selection": 1802
+      }
+    },
+    "elements_string": {
+      "bound": true,
+      "problems": [],
+      "reading": "every child is bound to its expected cell, seed, regime, horizon, populations and typed finite reductions before any aggregate is formed",
+      "windows_per_population": {
+        "complete_validation": 2537,
+        "label_disjoint_from_selection": 1802
+      }
+    },
+    "identity_string_false": {
+      "bound": false,
+      "problems": [
+        "R2_s2023: the child's checkpoint identity is 'false', which is not the boolean True; a truthy string is not a reconciliation"
+      ],
+      "reading": "every child is bound to its expected cell, seed, regime, horizon, populations and typed finite reductions before any aggregate is formed",
+      "windows_per_population": {
+        "complete_validation": 2537,
+        "label_disjoint_from_selection": 1802
+      }
+    },
+    "naive_nan": {
+      "bound": false,
+      "problems": [
+        "R2_s2023: the matched persistence mae is nan, not a finite number"
+      ],
+      "reading": "every child is bound to its expected cell, seed, regime, horizon, populations and typed finite reductions before any aggregate is formed",
+      "windows_per_population": {
+        "complete_validation": 2537,
+        "label_disjoint_from_selection": 1802
+      }
+    },
+    "negative_loss": {
+      "bound": true,
+      "problems": [],
+      "reading": "every child is bound to its expected cell, seed, regime, horizon, populations and typed finite reductions before any aggregate is formed",
+      "windows_per_population": {
+        "complete_validation": 2537,
+        "label_disjoint_from_selection": 1802
+      }
+    },
+    "skill_wrong_finite": {
+      "bound": true,
+      "problems": [],
+      "reading": "every child is bound to its expected cell, seed, regime, horizon, populations and typed finite reductions before any aggregate is formed",
+      "windows_per_population": {
+        "complete_validation": 2537,
+        "label_disjoint_from_selection": 1802
+      }
+    }
+  },
+  "population_metrics_equal_RP157": true,
+  "retained_positive": {
+    "bound": true,
+    "problems": [],
+    "reading": "every child is bound to its expected cell, seed, regime, horizon, populations and typed finite reductions before any aggregate is formed",
+    "windows_per_population": {
+      "complete_validation": 2537,
+      "label_disjoint_from_selection": 1802
+    }
+  },
+  "scope": "Retained-child validator checks only; no subprocess inference, GPU or data read."
+}
