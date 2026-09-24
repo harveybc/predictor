@@ -2381,3 +2381,97 @@ def test_RP138_a_declared_transition_never_explains_a_numeric_difference(world, 
         rep = R.close(a, design)
     row = next(r for r in rep["verification"]["rows"] if r["unit"] == unit)
     assert any("VAULT_CHANGED" in str(p) for p in (row.get("problems") or []))
+
+
+# --------------------------------------------------------------------------------------------------------------------------
+# RP140: composing protocol A's evidence from objects bound by identity
+# --------------------------------------------------------------------------------------------------------------------------
+
+def _composed(world, tmp_path, monkeypatch, tag, evidence_mutator=None, root_mutator=None):
+    """A closed, accepted fixture plus a second report standing in for an original-device replay run elsewhere."""
+    root, wh, _held, _rep = _accepted_world(world, tmp_path, monkeypatch, tag=tag)
+    unit = world["cell"]["cell_id"]; design = json.loads((root / "DESIGN.json").read_text())
+    replay_report = tmp_path / f"{tag}_replay_report.json"
+    rep = json.loads((root / "REPORT.json").read_text())
+    for r in rep["verification"]["rows"]:
+        if r["unit"] == unit:
+            r["replay"] = {"unit": unit, "device": "cuda:0", "device_uuid": "GPU-original-device", "device_name": "fixture GPU",
+                           "max_abs_prediction_difference": 0.0, "exact_equal_fraction": 1.0, "elements": 1234,
+                           "allclose_rule": True}
+    if evidence_mutator:
+        evidence_mutator(rep, root, unit)
+    replay_report.write_text(json.dumps(rep, default=str))
+    if root_mutator:
+        root_mutator(root, unit)
+    receipts = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"]
+    out = R.compose_evidence(root, design, evidence=[replay_report], receipts=receipts)
+    return root, unit, design, out
+
+
+def test_RP140_a_bound_replay_is_composed_without_editing_any_report(world, tmp_path, monkeypatch):
+    """The composition binds a replay recorded elsewhere to this root by design, record, checkpoint and prediction identity, and
+    says what it establishes. It never writes a verified flag and never touches the reports it reads."""
+    root, unit, design, out = _composed(world, tmp_path, monkeypatch, "compose_ok")
+    before = R.sha_file(root / "REPORT.json")
+    cell = out["cells"][unit]
+    assert cell["properties"]["replay"]["exact_equal_fraction"] == 1.0
+    assert cell["properties"]["accepted_terminal"] and not out["refusals"]
+    assert cell["admitted"] and all(c.get("bound") for c in cell["admitted"])
+    assert R.sha_file(root / "REPORT.json") == before
+    assert out["scope"].startswith("read-only composition")
+    assert unit in out["summary"]["with_bound_exact_replay"]
+
+
+def test_RP140_exactness_on_an_observed_device_is_not_a_same_device_claim(world, tmp_path, monkeypatch):
+    """The coordinator's real case: predictions reproduced element for element, but the record never measured which physical
+    device trained the cell. The composition must say exactly that and must not call it same-device."""
+    root, unit, design, out = _composed(world, tmp_path, monkeypatch, "compose_attr")
+    cell = out["cells"][unit]
+    attribution = cell["properties"]["training_device_attribution"]["class"]
+    if attribution == "MEASURED":
+        assert cell["composition_class"] in ("SAME_DEVICE_REPLAY_MEASURED", "CROSS_DEVICE_REPLAY")
+    else:
+        assert cell["composition_class"] == "REPLAY_EXACT_ON_OBSERVED_DEVICE"
+        assert "does not establish which physical device trained" in cell["reading"]
+        assert "same device" not in cell["reading"].lower()
+
+
+@pytest.mark.parametrize("case", ["foreign_design", "changed_checkpoint", "changed_predictions"])
+def test_RP140_evidence_that_is_not_this_roots_is_refused_not_composed(case, world, tmp_path, monkeypatch):
+    """A report from another design, or one whose accepted checkpoint or predictions are not this root's, contributes nothing."""
+    def mutate(rep, root, unit):
+        if case == "foreign_design":
+            rep["verification"]["design_sha256"] = "f" * 64
+            rep["design_sha256"] = "f" * 64
+        else:
+            role = "checkpoint" if case == "changed_checkpoint" else "predictions"
+            for r in rep["verification"]["rows"]:
+                if r["unit"] == unit:
+                    r.setdefault("accepted_artifacts", {})[role] = "b" * 64
+    root, unit, design, out = _composed(world, tmp_path, monkeypatch, f"compose_{case}", evidence_mutator=mutate)
+    cell = out["cells"][unit]
+    if case == "foreign_design":
+        assert any("FOREIGN_DESIGN" in str(e.get("refused")) for e in out["evidence_objects"])
+        assert not cell["admitted"]
+    else:
+        assert any(not c.get("bound") for c in cell["refused"])
+        assert any("CHANGED_" in str(c.get("why")) for c in cell["refused"])
+    assert cell["properties"]["replay"] is None
+    assert cell["composition_class"] == "SCORE_WITHOUT_BOUND_REPLAY"
+
+
+def test_RP140_a_missing_terminal_or_a_missing_population_is_named(world, tmp_path, monkeypatch):
+    """Two refusals the orders require: a cell with no accepted terminal receipt, and a sealed cell this root does not hold."""
+    def drop_receipt(root, unit):
+        rec = json.loads((root / "TERMINAL_RECEIPTS.json").read_text())
+        rec["units"].pop(unit, None)
+        (root / "TERMINAL_RECEIPTS.json").write_text(json.dumps(rec))
+    root, unit, design, out = _composed(world, tmp_path, monkeypatch, "compose_noterm", root_mutator=drop_receipt)
+    assert any("MISSING_TERMINAL" in r for r in out["refusals"])
+    assert not out["cells"][unit]["properties"]["accepted_terminal"]
+    # a sealed design cell this root never held
+    design2 = json.loads(json.dumps(design))
+    design2["cells"].append({**design2["cells"][0], "cell_id": "L16_h4_s9999", "seed": 9999})
+    out2 = R.compose_evidence(root, design2, evidence=[], receipts={})
+    assert any("MISSING_POPULATION" in r for r in out2["refusals"])
+    assert out2["cells"]["L16_h4_s9999"]["refused"][0]["why"].startswith("MISSING_POPULATION")

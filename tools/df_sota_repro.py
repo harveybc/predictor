@@ -4203,6 +4203,195 @@ def agreement(published: dict, values: list, metric: str, rule: dict = AGREEMENT
                      "horizon; NOT a published per-horizon error bar and NOT statistical equivalence; the measured seed dispersion is reported beside it"}
 
 
+# --- RP140: composing protocol A's evidence from objects bound by identity ---------------------------------------------------
+
+COMPOSITION_SCHEMA = "df_sota_evidence_composition.v1"
+
+
+def _evidence_kind(payload: dict) -> str:
+    schema = str(payload.get("schema") or "")
+    if payload.get("verification", {}).get("rows") is not None:
+        return "report"
+    if schema.startswith("df_sota_same_device_replay_binding"):
+        return "binding"
+    if schema.startswith("musashi.live_custody_followup"):
+        return "custody_audit"
+    return "unknown"
+
+
+def _root_identity(root: Path, unit: str) -> dict:
+    """What the root itself holds for a cell, by digest. A deleted array is represented by the digest its record preserved."""
+    folder = root / "attempts" / unit
+    rec_path = folder / "cell.json"
+    out = {"record_present": rec_path.is_file()}
+    if not out["record_present"]:
+        return out
+    rec = json.loads(rec_path.read_text())
+    out["record_sha256"] = sha_file(rec_path)
+    out["checkpoint_sha256"] = sha_file(folder / "checkpoint.pth") if (folder / "checkpoint.pth").is_file() else None
+    out["predictions_on_disk"] = (folder / "arrays.npz").is_file()
+    out["predictions_sha256"] = sha_file(folder / "arrays.npz") if out["predictions_on_disk"] else None
+    out["predictions_sha256_recorded"] = rec.get("arrays_sha256")
+    out["pred_body_sha256_recorded"] = rec.get("pred_sha256")
+    out["author_metric_float32"] = rec.get("author_metric_float32")
+    out["independent_metric_float64"] = rec.get("independent_metric_float64")
+    out["metric_basis"] = metric_of(rec)[1]
+    out["attribution"] = device_attribution(rec)
+    return out
+
+
+def compose_evidence(root: Path, design: dict, *, evidence: list, receipts: dict | None = None) -> dict:
+    """RP140: compose what protocol A's retained evidence establishes, from evidence OBJECTS that are bound to this root by
+    identity — design, record, checkpoint, prediction array, report and accepted terminal — never by filename and never by
+    editing a prior row's verified flag. Each object is admitted per cell only when its own recorded identities match this
+    root's; otherwise it is listed as refused, with the reason, and contributes nothing. Numerical replay and the attribution of
+    the device that TRAINED a cell are kept apart: reproducing predictions exactly on an observed device does not establish
+    which physical device produced them."""
+    root = Path(root)
+    design_sha = design["design_sha256"]
+    receipts = receipts if receipts is not None else (
+        (json.loads((root / "TERMINAL_RECEIPTS.json").read_text()) or {}).get("units") or {} if (root / "TERMINAL_RECEIPTS.json").is_file() else {})
+    out = {"schema": COMPOSITION_SCHEMA, "at": now_iso(), "host": socket.gethostname(), "root": str(root),
+           "design_sha256": design_sha, "evidence_objects": [], "cells": {}, "refusals": [],
+           "scope": ("read-only composition: no array was read, nothing was recomputed, no report was edited and no verified flag "
+                     "was set by this function")}
+    objects = []
+    for path in evidence:
+        path = Path(path)
+        entry = {"path": str(path), "present": path.is_file()}
+        if not path.is_file():
+            entry["refused"] = "MISSING_EVIDENCE_FILE"; out["evidence_objects"].append(entry); continue
+        try:
+            payload = json.loads(path.read_text())
+        except Exception as exc:                                    # noqa: BLE001
+            entry["refused"] = f"UNREADABLE: {str(exc)[:80]}"; out["evidence_objects"].append(entry); continue
+        entry["sha256"] = sha_file(path)
+        entry["kind"] = _evidence_kind(payload)
+        declared = payload.get("design_sha256") or (payload.get("verification") or {}).get("design_sha256")
+        entry["declared_design_sha256"] = declared
+        if entry["kind"] == "unknown":
+            entry["refused"] = "UNKNOWN_EVIDENCE_KIND"
+        elif declared is not None and declared != design_sha:
+            entry["refused"] = f"FOREIGN_DESIGN: the object was produced under {str(declared)[:12]}, this root is {design_sha[:12]}"
+        out["evidence_objects"].append(entry)
+        if not entry.get("refused"):
+            objects.append((entry, payload))
+    for cell in design["cells"]:
+        unit = cell["cell_id"]
+        ident = _root_identity(root, unit)
+        row = {"unit": unit, "horizon": cell["horizon"], "seed": cell["seed"], "identity": ident,
+               "admitted": [], "refused": [], "properties": {}}
+        if not ident.get("record_present"):
+            row["refused"].append({"why": "MISSING_POPULATION: this root holds no record for a cell of the sealed design"})
+            out["cells"][unit] = row; out["refusals"].append(f"{unit}: MISSING_POPULATION"); continue
+        receipt = receipts.get(unit)
+        row["terminal_receipt"] = receipt
+        if not receipt:
+            row["refused"].append({"why": "MISSING_TERMINAL: the cell has no accepted terminal receipt in this root"})
+            out["refusals"].append(f"{unit}: MISSING_TERMINAL")
+        for entry, payload in objects:
+            claim = _claim_for(payload, entry, unit, ident)
+            if claim is None:
+                continue
+            (row["admitted"] if claim.get("bound") else row["refused"]).append(claim)
+        replays = [c for c in row["admitted"] if c.get("replay")]
+        best = max(replays, key=lambda c: (bool(c["replay"].get("allclose_rule")), c["replay"].get("exact_equal_fraction") or 0), default=None)
+        closures = [c for c in row["admitted"] if c["kind"] == "report" and c.get("closure")]
+        custody = [c for c in row["admitted"] if c["kind"] == "custody_audit"]
+        attribution = ident["attribution"]
+        row["properties"] = {
+            "score": ident["author_metric_float32"], "metric_basis": ident["metric_basis"],
+            "accepted_terminal": bool(receipt),
+            "closure_verified": any((c["closure"] or {}).get("verified") for c in closures),
+            "closure_verified_historically": any((c["closure"] or {}).get("verified_historically") for c in closures),
+            "custody_audited_live": any(c.get("custody_pass") for c in custody),
+            "replay": None if best is None else {
+                "observed_device_uuid": best["replay"].get("device_uuid"), "observed_device_name": best["replay"].get("device_name"),
+                "max_abs_prediction_difference": best["replay"].get("max_abs_prediction_difference"),
+                "exact_equal_fraction": best["replay"].get("exact_equal_fraction"), "elements": best["replay"].get("elements"),
+                "allclose_rule": best["replay"].get("allclose_rule"), "from_evidence": best["evidence_sha256"]},
+            "training_device_attribution": attribution,
+        }
+        row["composition_class"], row["reading"] = _composition_class(row["properties"], attribution)
+        out["cells"][unit] = row
+    out["summary"] = {
+        "cells": len(out["cells"]),
+        "with_bound_exact_replay": sorted(u for u, r in out["cells"].items()
+                                          if (r["properties"].get("replay") or {}).get("exact_equal_fraction") == 1.0),
+        "with_measured_same_device_replay": sorted(u for u, r in out["cells"].items() if r.get("composition_class") == "SAME_DEVICE_REPLAY_MEASURED"),
+        "replay_exact_device_attribution_unknown": sorted(u for u, r in out["cells"].items() if r.get("composition_class") == "REPLAY_EXACT_ON_OBSERVED_DEVICE"),
+        "without_bound_replay": sorted(u for u, r in out["cells"].items() if not r["properties"].get("replay")),
+        "refusals": out["refusals"]}
+    return out
+
+
+def _composition_class(props: dict, attribution: dict) -> tuple:
+    """Numerical exactness and physical attribution are two different claims and are never merged into one word."""
+    replay = props.get("replay")
+    if not replay:
+        return ("SCORE_WITHOUT_BOUND_REPLAY",
+                "the cell's score is bound to its record and terminal; no replay evidence bound to these identities was supplied")
+    exact = replay.get("exact_equal_fraction") == 1.0 and replay.get("max_abs_prediction_difference") == 0.0
+    observed, trained, cls = replay.get("observed_device_uuid"), attribution.get("uuid"), attribution.get("class")
+    if cls == "MEASURED" and trained and observed == trained:
+        return ("SAME_DEVICE_REPLAY_MEASURED",
+                f"the replay ran on {observed}, which the record MEASURED as the training device"
+                + (" and reproduced every element exactly" if exact else " under the frozen rule"))
+    if cls == "MEASURED" and trained and observed != trained:
+        return ("CROSS_DEVICE_REPLAY",
+                f"the replay ran on {observed}; the record measured training on {trained}: this is portability, not repeatability")
+    return ("REPLAY_EXACT_ON_OBSERVED_DEVICE" if exact else "REPLAY_ON_OBSERVED_DEVICE",
+            f"the predictions were reproduced on {observed}"
+            + (" element for element" if exact else " under the frozen rule")
+            + f", but the training device attribution is {cls}: this does not establish which physical device trained the cell")
+
+
+def _claim_for(payload: dict, entry: dict, unit: str, ident: dict) -> dict | None:
+    """What one evidence object claims about one cell, and whether its own recorded identities bind it to this root."""
+    kind = entry["kind"]
+    base = {"kind": kind, "evidence_sha256": entry["sha256"], "path": entry["path"]}
+    if kind == "report":
+        row = next((r for r in payload["verification"]["rows"] if r.get("unit") == unit), None)
+        if row is None:
+            return None
+        accepted = (row.get("accepted_artifacts") or {})
+        claimed_pred = accepted.get("predictions")
+        mismatch = []
+        if claimed_pred and ident.get("predictions_sha256_recorded") and claimed_pred != ident["predictions_sha256_recorded"]:
+            mismatch.append("CHANGED_PREDICTIONS: the report's accepted predictions digest is not this root's record")
+        claimed_ckpt = accepted.get("checkpoint")
+        if claimed_ckpt and ident.get("checkpoint_sha256") and claimed_ckpt != ident["checkpoint_sha256"]:
+            mismatch.append("CHANGED_CHECKPOINT: the report's accepted checkpoint digest is not the checkpoint in this root")
+        claimed_rec = accepted.get("record")
+        if claimed_rec and ident.get("record_sha256") and claimed_rec != ident["record_sha256"]:
+            mismatch.append("CHANGED_RECORD: the report's accepted record digest is not this root's record")
+        base.update({"bound": not mismatch, "why": "; ".join(mismatch) or None,
+                     "closure": {"verified": row.get("verified"), "verified_historically": row.get("verified_historically"),
+                                 "custody": (row.get("custody") or {}).get("class"), "problems": (row.get("problems") or [])[:2]},
+                     "replay": row.get("replay") if (row.get("replay") or {}).get("device_uuid") else None})
+        return base
+    if kind == "binding":
+        ids = (payload.get("identities") or {}).get(unit)
+        if ids is None:
+            return None
+        equal = all(bool(ids.get(k, {}).get("equal")) for k in ("record", "checkpoint", "predictions") if isinstance(ids.get(k), dict))
+        base.update({"bound": bool(equal and ids.get("row_verified")),
+                     "why": None if equal else "IDENTITY_DIFFERS: the binding's staged objects are not this root's",
+                     "replay": ids.get("replay"), "closure": None})
+        return base
+    if kind == "custody_audit":
+        if payload.get("unit") != unit:
+            return None
+        checks = payload.get("checks") or {}
+        ok = bool(payload.get("live_custody_pass")) and all(checks.get(k) for k in checks)
+        base.update({"bound": ok, "why": None if ok else "CUSTODY_AUDIT_DID_NOT_PASS",
+                     "custody_pass": ok, "closure": None,
+                     "replay": payload.get("previous_report_replay") if (payload.get("previous_report_replay") or {}).get("device_uuid") else None,
+                     "previous_report_sha256": payload.get("previous_report_sha256")})
+        return base
+    return None
+
+
 def table(design: dict, ver: dict, *, root: Path | None = None) -> dict:
     """RP97: dataset/protocol, model/revision, horizon, published, replicated, difference, matched naive, seed dispersion, training
     completion, cost, agreement — normalized official metrics first; nothing unverified enters a mean."""
@@ -4416,7 +4605,7 @@ def close(a, design: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger", "accept-catalog", "backup", "accept-report", "pilot", "retable", "revalidate"])
+    ap.add_argument("command", choices=["seal", "prepare", "preflight", "execute", "child", "close", "lock", "merge", "route-trace", "profile-eval", "delete-predictions", "retire-attempt", "report", "regenerate", "admit", "accept-regenerated", "ledger", "accept-catalog", "backup", "accept-report", "pilot", "retable", "revalidate", "compose"])
     ap.add_argument("--reason", default=None)
     ap.add_argument("--extra-roots", nargs="*", default=None, help="delete-predictions: other roots holding copies of the same cells (staging copies)")
     ap.add_argument("--dry-run", action="store_true")
@@ -4436,6 +4625,7 @@ def main(argv=None) -> int:
     ap.add_argument("--lake", default=LAKE); ap.add_argument("--resource", default=RESOURCE)
     ap.add_argument("--warehouse-url", default="http://127.0.0.1:5057"); ap.add_argument("--warehouse-token-file", type=Path)
     ap.add_argument("--data-path", type=Path, default=None); ap.add_argument("--skip-replay", action="store_true"); ap.add_argument("--replay-device", default="cpu")
+    ap.add_argument("--evidence", nargs="*", default=None, help="compose: evidence objects (reports, replay bindings, custody audits) to bind by identity")
     ap.add_argument("--replay-units", nargs="*", default=None, help="close: replay only these units on this host; the others stay UNVERIFIED (REPLAY_PENDING)")
     ap.add_argument("--bounded", action="store_true", help="child/execute: evaluate through the disk-backed bounded adapter (RP101) instead of the author's test()")
     ap.add_argument("--author-metric-budget-gib", type=float, default=None, help="bounded: run the author's float32 metric() only if its temporaries fit this budget")
@@ -4494,6 +4684,17 @@ def main(argv=None) -> int:
         (a.root / "SOTA_TABLE.md").write_text(markdown(t))
         print(json.dumps({"report_sha256": digest, "rows": [{"horizon": r["horizon"], "state": r["measurement_state"], "baselines": r.get("matched_baselines")} for r in t["rows"]]}, indent=1, default=str))
         return 0
+    if a.command == "compose":
+        receipts = ((json.loads((a.root / "TERMINAL_RECEIPTS.json").read_text()) or {}).get("units") or {}) if (a.root / "TERMINAL_RECEIPTS.json").is_file() else {}
+        out = compose_evidence(a.root, design, evidence=[Path(x) for x in (a.evidence or [])], receipts=receipts)
+        path = a.root / f"EVIDENCE_COMPOSITION.{int(time.time())}.json"
+        write_atomic(path, json.dumps(out, indent=1, default=str))
+        out["written"] = path.name
+        print(json.dumps({"written": path.name, "sha256": sha_file(path), "summary": out["summary"],
+                          "per_cell": {u: {"class": r.get("composition_class"), "replay_exact": (r["properties"].get("replay") or {}).get("exact_equal_fraction"),
+                                           "attribution": (r["properties"].get("training_device_attribution") or {}).get("class")}
+                                       for u, r in out["cells"].items()}}, indent=1, default=str))
+        return 0 if not out["refusals"] else 1
     if a.command == "revalidate":
         C = _module("df_mod_e0_close")
         token = Path(a.warehouse_token_file).read_text().strip().strip('"').strip("'") if getattr(a, "warehouse_token_file", None) else None
