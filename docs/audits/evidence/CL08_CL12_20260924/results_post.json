@@ -1,0 +1,51 @@
+{
+  "scope": "the same five cases the review reproduced, after repair; public surface only, CPU, no inference",
+  "path_escape": {
+    "application_status": "SHADOW_ONLY",
+    "written_outside_store": false,
+    "files_written": [
+      "store/f4/f4cea302b9b6d2c48c88ed03fa669aa40e67d8ad64db6e276712bc17626039cd.json"
+    ],
+    "retained_event_id": "../escaped"
+  },
+  "refusal_then_success": {
+    "first": "REFUSED_WITH_INPUT",
+    "second": "SHADOW_ONLY",
+    "disposition": "REEVALUATION",
+    "retained_statuses": [
+      "REFUSED_WITH_INPUT",
+      "SHADOW_ONLY"
+    ],
+    "successful_is_retrievable": "SHADOW_ONLY"
+  },
+  "different_task": {
+    "new_receipt_task": "news_triage.v1",
+    "disposition": "REEVALUATION",
+    "retained_tasks": [
+      "news_relevance_eurusd.v1",
+      "news_triage.v1"
+    ],
+    "receipt_points_at_its_own_result": "news_triage.v1"
+  },
+  "corrupted_duplicate": {
+    "disposition": "REPLACED_INVALID",
+    "actionable_events": 1,
+    "integrity_failures": 1,
+    "quarantined": 1,
+    "tampered_label_served": false
+  },
+  "retained_population_rewrite": {
+    "baseline": "COMPLETE",
+    "mutated": {
+      "status": "REFUSED",
+      "refusal": "DesignError: /tmp/satoshi-cl08-post-n5lci0ss/retained/run: the retained scoring declares the population counts {'complete_validation': 1, 'label_disjoint_from_selection': 1} and the accepted run record derives {'complete_validation': 2537, 'label_disjoint_from_selection': 1802}; a scoring file does not get to restate the population it was checked against",
+      "summaries_present": false
+    },
+    "authority": {
+      "design": "AUTHENTICATED: the retained design reproduces the digest the run recorded",
+      "population": "AUTHENTICATED_FROM_RUN_RECORD: the counts are derived from the accepted CONTRAST.json through label_disjoint_origins, and the scoring file's own restatement is only cross-checked",
+      "checkpoint_identity": "AUTHENTICATED_FROM_RUN_RECORD: each child's scored checkpoint digest must be the cell's",
+      "metric_values": "SELF_REPORTED_BY_THE_CHILD_RECORDS: a coherent rewrite of a metric and its baseline cannot be detected here. Detecting that needs custody over the child records themselves, which this closure does not have and does not claim"
+    }
+  }
+}

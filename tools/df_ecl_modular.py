@@ -1265,6 +1265,23 @@ def close_contrast(out: dict, run_dir: Path, *, expected, pred_len: int, expecte
     return out
 
 
+def contract_windows_from_run(contrast: dict, pred_len: int) -> dict:
+    """The expected population, derived from the ACCEPTED run record alone.
+
+    `validation_windows_available` and `validation_monitor_windows` were written when the run was prepared and are part of the
+    evidence already accepted. Everything else follows from them by the same pure rule the scoring used, so no dataset is
+    rebuilt and nothing is asked of the file being checked."""
+    populations = contrast.get("populations") or {}
+    available = populations.get("validation_windows_available")
+    monitor = populations.get("validation_monitor_windows")
+    for name, value in (("validation_windows_available", available), ("validation_monitor_windows", monitor)):
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            raise DesignError(f"the run record declares an untyped {name} {value!r}; the accepted population is undeclared "
+                              f"and this closure will not invent it")
+    support = label_disjoint_origins(available, monitor, pred_len=pred_len)
+    return {"complete_validation": available, "label_disjoint_from_selection": support["n_disjoint"]}
+
+
 def close_retained_run(run_dir: Path, *, design: dict | None = None) -> dict:
     """Close a run from what was retained beside it: CONTRAST.json, DESIGN.json and the children inside SCORING.json.
 
@@ -1284,16 +1301,31 @@ def close_retained_run(run_dir: Path, *, design: dict | None = None) -> dict:
             raise DesignError(f"{run_dir}: no retained DESIGN.json and none supplied; the expected cells are undeclared")
         registered = json.loads(design_path.read_text())
     authenticated = authenticate_design(contrast, registered)
-    expected_windows = ((retained.get("child_binding") or {}).get("expected_windows_from_contract"))
-    if not expected_windows:
-        raise DesignError(f"{run_dir}: the retained scoring declares no contract window counts; a closure that recomputes "
-                          f"its own expectations can only agree with itself")
+    # CL12 (Musashi finding 4): the expected counts are DERIVED from the accepted run record, not read out of the file whose
+    # children they are meant to check. Rewriting SCORING.json and every child coherently used to pass, because the only
+    # authority consulted lived inside the rewritten file.
+    expected_windows = contract_windows_from_run(contrast, authenticated["pred_len"])
+    self_reported = ((retained.get("child_binding") or {}).get("expected_windows_from_contract"))
+    if self_reported and self_reported != expected_windows:
+        raise DesignError(
+            f"{run_dir}: the retained scoring declares the population counts {self_reported} and the accepted run record "
+            f"derives {expected_windows}; a scoring file does not get to restate the population it was checked against")
     out = {"schema": "df_ecl_modular_scoring.v3", "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
            "run_dir": str(run_dir), "design_sha256": contrast["design_sha256"],
            "registered_design_sha256": registered["design_sha256"],
            "monitor_windows": (contrast.get("populations") or {}).get("validation_monitor_windows") or 0,
            "expected_cells": authenticated["cells"], "fresh_process_per_cell": False,
            "source": "RETAINED_RECORDS_NO_INFERENCE",
+           # CL12: what each part of this closure rests on, kept apart. Local consistency is not authentication.
+           "authority": {
+               "design": "AUTHENTICATED: the retained design reproduces the digest the run recorded",
+               "population": ("AUTHENTICATED_FROM_RUN_RECORD: the counts are derived from the accepted CONTRAST.json through "
+                              "label_disjoint_origins, and the scoring file's own restatement is only cross-checked"),
+               "checkpoint_identity": "AUTHENTICATED_FROM_RUN_RECORD: each child's scored checkpoint digest must be the cell's",
+               "metric_values": ("SELF_REPORTED_BY_THE_CHILD_RECORDS: a coherent rewrite of a metric and its baseline cannot "
+                                 "be detected here. Detecting that needs custody over the child records themselves, which "
+                                 "this closure does not have and does not claim"),
+           },
            "cells": copy.deepcopy(retained.get("cells") or {}), "problems": []}
     checkpoints = {c: (contrast["cells"].get(c) or {}).get("model_sha256") for c in authenticated["cells"]}
     # a re-closure never overwrites the record it read: the retained scoring stays exactly as it was written

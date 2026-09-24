@@ -1,0 +1,36 @@
+{
+ "capabilities_supported": [
+  {
+   "family": "classification",
+   "operation": "infer",
+   "output_kind": "typed_questions"
+  }
+ ],
+ "classify_without_weights": {
+  "returncode": 2,
+  "status": "REFUSED_WITH_INPUT",
+  "why": "MODEL_NOT_FITTED"
+ },
+ "console_script": "news-signal",
+ "editable_or_pythonpath_substitution": false,
+ "entry_point_discovered": "laya_news",
+ "entry_point_group": "m5phet.providers",
+ "entry_point_refused": {},
+ "fresh_process_store_recovery": {
+  "actionable_events": 0,
+  "inference_performed": false,
+  "integrity_failures": [],
+  "records": 1,
+  "refused_events": 1,
+  "returncode": 0
+ },
+ "imported_m5phet_runtime": true,
+ "installed_inside_venv": true,
+ "m5phet_location": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/cleanenv/lib",
+ "pinned_commit": "e752ed194c65dc42804ead3759a615a07f3ea8f0",
+ "pinned_url": "https://github.com/harveybc/M5PHET.git",
+ "python": "3.12.7",
+ "reading": "resolved by pip from the declared git pin alone: no editable install, no PYTHONPATH and no sibling checkout. Weights are absent in this environment, so the classification refuses MODEL_NOT_FITTED before loading anything, which is the behaviour under test here",
+ "schema": "news_install_verification.v1",
+ "venv": "ISOLATED_CLEAN_VENV"
+}

@@ -1,0 +1,18 @@
+
+tests/test_cl08_counterexamples.py:201: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_cl08_counterexamples.py::test_an_external_identifier_can_never_place_a_file_outside_the_store[../escaped]
+FAILED tests/test_cl08_counterexamples.py::test_an_external_identifier_can_never_place_a_file_outside_the_store[../../escaped]
+FAILED tests/test_cl08_counterexamples.py::test_an_external_identifier_can_never_place_a_file_outside_the_store[/absolute/escaped]
+FAILED tests/test_cl08_counterexamples.py::test_an_external_identifier_can_never_place_a_file_outside_the_store[a/../../escaped]
+FAILED tests/test_cl08_counterexamples.py::test_an_external_identifier_can_never_place_a_file_outside_the_store[..]
+FAILED tests/test_cl08_counterexamples.py::test_an_external_identifier_can_never_place_a_file_outside_the_store[]
+FAILED tests/test_cl08_counterexamples.py::test_an_external_identifier_can_never_place_a_file_outside_the_store[ ]
+FAILED tests/test_cl08_counterexamples.py::test_a_symlinked_store_entry_cannot_redirect_a_write
+FAILED tests/test_cl08_counterexamples.py::test_a_refusal_does_not_answer_for_a_later_successful_evaluation
+FAILED tests/test_cl08_counterexamples.py::test_a_different_task_is_a_different_evaluation
+FAILED tests/test_cl08_counterexamples.py::test_only_an_identical_evaluation_may_be_idempotent
+FAILED tests/test_cl08_counterexamples.py::test_a_tampered_record_is_never_reused_and_never_counted
+FAILED tests/test_cl08_counterexamples.py::test_concurrent_writers_do_not_lose_or_mix_results
+FAILED tests/test_cl08_counterexamples.py::test_the_declared_m5phet_pin_provides_the_runtime_the_application_imports
+14 failed, 4 passed in 0.15s

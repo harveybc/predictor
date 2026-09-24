@@ -214,11 +214,13 @@ def test_F5_an_unexpected_cell_cannot_expand_the_denominator():
 
 # --- RP157: the closure authenticates its design and binds every returned child ------------------------------------------------
 
-def _fake_run(tmp_path, cells, *, design_sha="d" * 64, monitor=640, pred_len=96, seeds=(2021, 2022, 2023)):
+def _fake_run(tmp_path, cells, *, design_sha="d" * 64, monitor=640, pred_len=96, seeds=(2021, 2022, 2023),
+              available=2537):
     run_dir = tmp_path / "run"; run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "CONTRAST.json").write_text(json.dumps({
         "design_sha256": design_sha, "seeds": list(seeds), "pred_len": pred_len,
-        "populations": {"validation_monitor_windows": monitor}, "cells": cells}))
+        "populations": {"validation_monitor_windows": monitor, "validation_windows_available": available},
+        "cells": cells}))
     return run_dir
 
 
@@ -593,15 +595,16 @@ def test_RP158_the_pure_closure_applies_the_same_gates_as_the_dispatching_one(tm
     assert any("does not follow from its own record" in p for p in closed["problems"])
 
 
-def test_RP158_a_closure_without_the_contract_counts_refuses_instead_of_deriving_them(tmp_path):
-    """Recomputing the expectations would mean rebuilding the datasets, and a closure that does that can only agree with itself."""
+def test_RP158_a_closure_without_an_accepted_population_refuses_instead_of_deriving_one(tmp_path):
+    """Superseded by CL12: the expectations come from the ACCEPTED RUN RECORD, so an absent restatement in the scoring file is
+    no longer the thing that matters. What must never happen is a closure inventing the population it then checks against."""
     run_dir = _retained_run(tmp_path)
-    scoring = json.loads((run_dir / "SCORING.json").read_text())
-    scoring["child_binding"] = {}
-    (run_dir / "SCORING.json").write_text(json.dumps(scoring))
+    contrast = json.loads((run_dir / "CONTRAST.json").read_text())
+    contrast["populations"].pop("validation_windows_available")
+    (run_dir / "CONTRAST.json").write_text(json.dumps(contrast))
     with pytest.raises(M.DesignError) as exc:
         M.close_retained_run(run_dir)
-    assert "agree with itself" in str(exc.value)
+    assert "will not invent it" in str(exc.value)
 
 
 def test_RP158_a_scoring_retains_the_design_it_authenticated_so_a_later_closure_needs_no_data(tmp_path, monkeypatch):
@@ -621,3 +624,90 @@ def test_RP158_a_scoring_retains_the_design_it_authenticated_so_a_later_closure_
     with pytest.raises(AssertionError):
         M.score_contrast(Path("/nonexistent"), run_dir, design=design)
     assert (run_dir / "DESIGN.json").read_bytes() == original, "a retained design is never overwritten by a later pass"
+
+
+# --- CL12: the population a closure checks against cannot come from the file it is checking ------------------------------------
+
+def test_CL12_the_expected_population_is_derived_from_the_accepted_run_record():
+    """2537 available windows and a 640-window monitor derive 1802 label-disjoint origins, by the same pure rule the run used."""
+    contrast = {"populations": {"validation_windows_available": 2537, "validation_monitor_windows": 640}}
+    assert M.contract_windows_from_run(contrast, 96) == {"complete_validation": 2537,
+                                                         "label_disjoint_from_selection": 1802}
+
+
+@pytest.mark.parametrize("populations", [{}, {"validation_monitor_windows": 640},
+                                         {"validation_windows_available": "2537", "validation_monitor_windows": 640},
+                                         {"validation_windows_available": True, "validation_monitor_windows": 640}])
+def test_CL12_an_undeclared_accepted_population_refuses_instead_of_being_invented(populations):
+    with pytest.raises(M.DesignError) as exc:
+        M.contract_windows_from_run({"populations": populations}, 96)
+    assert "will not invent it" in str(exc.value)
+
+
+def test_CL12_a_coherent_rewrite_of_the_counts_and_every_child_no_longer_passes(tmp_path, monkeypatch):
+    """Musashi's counterexample: SCORING.json restated its own contract, so rewriting both sides agreed with itself."""
+    import subprocess
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: (_ for _ in ()).throw(AssertionError("no process")))
+    run_dir = _retained_run(tmp_path)
+    assert M.close_retained_run(run_dir)["status"] == "COMPLETE"
+    scoring = json.loads((run_dir / "SCORING.json").read_text())
+    scoring["child_binding"]["expected_windows_from_contract"] = {"complete_validation": 1,
+                                                                 "label_disjoint_from_selection": 1}
+    for child in scoring["cells"].values():
+        for population in child["populations"].values():
+            population.update(windows=1, elements=96 * 321)
+    (run_dir / "SCORING.json").write_text(json.dumps(scoring))
+    with pytest.raises(M.DesignError) as exc:
+        M.close_retained_run(run_dir)
+    assert "does not get to restate the population" in str(exc.value)
+    contrast = json.loads((run_dir / "CONTRAST.json").read_text())
+    assert contrast["populations"]["validation_windows_available"] == 2537, "the authority was not touched by the rewrite"
+
+
+def test_CL12_children_rewritten_without_their_restatement_are_caught_by_the_run_record(tmp_path, monkeypatch):
+    """The subtler version: drop the scoring's restatement entirely and rewrite only the children."""
+    import subprocess
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: (_ for _ in ()).throw(AssertionError("no process")))
+    run_dir = _retained_run(tmp_path)
+    scoring = json.loads((run_dir / "SCORING.json").read_text())
+    scoring["child_binding"] = {}
+    for child in scoring["cells"].values():
+        for population in child["populations"].values():
+            population.update(windows=1, elements=96 * 321)
+    (run_dir / "SCORING.json").write_text(json.dumps(scoring))
+    closed = M.close_retained_run(run_dir)
+    assert closed["status"] == "INCOMPLETE_EVIDENCE"
+    assert closed["by_regime"] is None
+    assert any("support contract declares" in p for p in closed["problems"])
+
+
+def test_CL12_an_omitted_population_is_refused(tmp_path, monkeypatch):
+    import subprocess
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: (_ for _ in ()).throw(AssertionError("no process")))
+    run_dir = _retained_run(tmp_path)
+    scoring = json.loads((run_dir / "SCORING.json").read_text())
+    for child in scoring["cells"].values():
+        child["populations"].pop("label_disjoint_from_selection")
+    (run_dir / "SCORING.json").write_text(json.dumps(scoring))
+    closed = M.close_retained_run(run_dir)
+    assert closed["status"] == "INCOMPLETE_EVIDENCE"
+    assert any("omits the label_disjoint_from_selection population" in p for p in closed["problems"])
+
+
+def test_CL12_a_coherent_metric_rewrite_passes_and_the_closure_says_why_it_cannot_see_it(tmp_path, monkeypatch):
+    """Honesty about the limit: with the counts and the checkpoint authenticated, the NUMBERS are still the child's word."""
+    import subprocess
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: (_ for _ in ()).throw(AssertionError("no process")))
+    run_dir = _retained_run(tmp_path)
+    scoring = json.loads((run_dir / "SCORING.json").read_text())
+    for child in scoring["cells"].values():
+        for population in child["populations"].values():
+            population["author_float32"] = {"mae": 0.10, "mse": 0.05}
+            population["independent_float64"] = {"mae": 0.10, "mse": 0.05}
+            population["skill_mae_vs_persistence"] = 1.0 - 0.10 / 0.86
+    (run_dir / "SCORING.json").write_text(json.dumps(scoring))
+    closed = M.close_retained_run(run_dir)
+    assert closed["status"] == "COMPLETE", "a coherent rewrite is internally consistent; consistency is not custody"
+    assert "SELF_REPORTED_BY_THE_CHILD_RECORDS" in closed["authority"]["metric_values"]
+    assert "AUTHENTICATED_FROM_RUN_RECORD" in closed["authority"]["population"]
+    assert "AUTHENTICATED_FROM_RUN_RECORD" in closed["authority"]["checkpoint_identity"]
