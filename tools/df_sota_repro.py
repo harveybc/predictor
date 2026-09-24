@@ -4392,6 +4392,67 @@ def _claim_for(payload: dict, entry: dict, unit: str, ident: dict) -> dict | Non
     return None
 
 
+
+def composed_table(root: Path, design: dict, composition: dict) -> dict:
+    """RP140: the consolidated protocol-A table, built from the COMPOSITION rather than by editing a report. A cell's score is
+    poolable when its terminal is accepted, a closure verified it (now or historically) and a replay bound to its own identities
+    passes the frozen rule. Fidelity is a separate column and the attribution of the device that TRAINED a cell is a third: no
+    cell of this campaign records a MEASURED training UUID, so the table says so instead of implying same-device repeatability."""
+    pub = design["lock"]["published"]
+    rows, all_pooled = [], True
+    for h in design["horizons"]:
+        units = [c["cell_id"] for c in design["cells"] if c["horizon"] == h]
+        cells = {u: composition["cells"][u] for u in units if u in composition["cells"]}
+        poolable, why_not = [], {}
+        for u, c in cells.items():
+            props = c["properties"]
+            reasons = ([] if props.get("accepted_terminal") else ["no accepted terminal"]) \
+                + ([] if (props.get("closure_verified") or props.get("closure_verified_historically")) else ["no closure verified it"]) \
+                + ([] if (props.get("replay") or {}).get("allclose_rule") else ["no bound replay passes the frozen rule"])
+            (poolable.append(u) if not reasons else why_not.setdefault(u, reasons))
+        scores = {u: cells[u]["properties"]["score"] for u in poolable if cells[u]["properties"].get("score")}
+        row = {"horizon": h, "published": pub["per_horizon"][str(h)], "units": units, "poolable": sorted(poolable),
+               "not_poolable": why_not, "per_seed": {str(cells[u]["seed"]): scores[u] for u in scores}}
+        for m in ("mse", "mae"):
+            vals = [v[m] for v in scores.values()]
+            row[m] = agreement(pub["per_horizon"][str(h)], vals, m) if vals else {"status": "NOT_EXECUTED"}
+        row["fidelity"] = {u: {"class": cells[u]["composition_class"],
+                               "exact_equal_fraction": (cells[u]["properties"].get("replay") or {}).get("exact_equal_fraction"),
+                               "observed_device": (cells[u]["properties"].get("replay") or {}).get("observed_device_uuid")} for u in units if u in cells}
+        row["training_device_attribution"] = {u: (cells[u]["properties"].get("training_device_attribution") or {}).get("class") for u in units if u in cells}
+        row["matched_baselines"] = _baselines_from_catalogs(root, units)
+        row["complete"] = len(poolable) == len(units) and bool(units)
+        all_pooled = all_pooled and row["complete"]
+        rows.append(row)
+    out = {"schema": "df_sota_composed_table.v1", "at": now_iso(), "design_sha256": design["design_sha256"],
+           "source_composition": composition.get("written") or composition.get("at"), "rows": rows,
+           "pooling_rule": ("a cell is pooled when its terminal is accepted, a closure verified it now or historically, and a replay "
+                            "bound to its own record, checkpoint and prediction identities passes the frozen rule atol/rtol 1e-4"),
+           "agreement_rule": ("|mean - published| <= 2*sigma_paper + 0.0005, a PREDECLARED OPERATIONAL BAND: not statistical equivalence "
+                              "and not exact equality to a rounded published table")}
+    attributions = sorted({v for r in rows for v in r["training_device_attribution"].values()})
+    out["four_horizon_mean"] = ({"status": "NOT_COMPUTED", "why": "not every horizon is complete over a denominator of four"} if not all_pooled else
+                                {m: float(np.mean([r[m]["mean"] for r in rows])) for m in ("mse", "mae")})
+    out["device_attribution_scope"] = {
+        "classes_present": attributions,
+        "reading": ("NO cell of this campaign records a MEASURED training-device UUID. Exact reproduction on an observed device is "
+                    "numerical repeatability of the stored predictions under a reloaded checkpoint; it does not establish which "
+                    "physical device produced them. Every 'same device' phrase about this campaign is qualified by this line.")}
+    return out
+
+
+def _baselines_from_catalogs(root: Path, units: list) -> dict:
+    """Matched persistence and seasonal-24 errors on the SAME windows, read from each cell's retained catalog."""
+    out = {}
+    for u in units:
+        vp = Path(root) / "attempts" / u / "METRICS_VAULT.json"
+        if not vp.is_file():
+            out[u] = None; continue
+        g = (json.loads(vp.read_text()) or {}).get("global") or {}
+        out[u] = {k: g.get(k) for k in ("naive_mae", "naive_mse", "seasonal24_mae", "seasonal24_mse", "skill_mae_vs_naive", "skill_mse_vs_naive")}
+    return out
+
+
 def table(design: dict, ver: dict, *, root: Path | None = None) -> dict:
     """RP97: dataset/protocol, model/revision, horizon, published, replicated, difference, matched naive, seed dispersion, training
     completion, cost, agreement — normalized official metrics first; nothing unverified enters a mean."""
@@ -4690,6 +4751,15 @@ def main(argv=None) -> int:
         path = a.root / f"EVIDENCE_COMPOSITION.{int(time.time())}.json"
         write_atomic(path, json.dumps(out, indent=1, default=str))
         out["written"] = path.name
+        tbl = composed_table(a.root, design, out)
+        tpath = a.root / f"COMPOSED_TABLE.{int(time.time())}.json"
+        write_atomic(tpath, json.dumps(tbl, indent=1, default=str))
+        out["composed_table"] = tpath.name
+        print(json.dumps({"table": tpath.name, "four_horizon_mean": tbl["four_horizon_mean"],
+                          "per_horizon": {r["horizon"]: {"pooled": len(r["poolable"]), "of": len(r["units"]),
+                                                          "mse": r["mse"].get("status"), "mae": r["mae"].get("status"),
+                                                          "mean_mse": r["mse"].get("mean"), "mean_mae": r["mae"].get("mean")} for r in tbl["rows"]},
+                          "attribution": tbl["device_attribution_scope"]["classes_present"]}, indent=1, default=str))
         print(json.dumps({"written": path.name, "sha256": sha_file(path), "summary": out["summary"],
                           "per_cell": {u: {"class": r.get("composition_class"), "replay_exact": (r["properties"].get("replay") or {}).get("exact_equal_fraction"),
                                            "attribution": (r["properties"].get("training_device_attribution") or {}).get("class")}

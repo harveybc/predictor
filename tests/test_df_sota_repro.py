@@ -2475,3 +2475,23 @@ def test_RP140_a_missing_terminal_or_a_missing_population_is_named(world, tmp_pa
     out2 = R.compose_evidence(root, design2, evidence=[], receipts={})
     assert any("MISSING_POPULATION" in r for r in out2["refusals"])
     assert out2["cells"]["L16_h4_s9999"]["refused"][0]["why"].startswith("MISSING_POPULATION")
+
+
+def test_RP140_the_composed_table_pools_only_what_the_composition_establishes(world, tmp_path, monkeypatch):
+    """The table is derived from the composition, never from an edited report, and its pooling rule is the stated one: accepted
+    terminal, a closure that verified the cell, and a bound replay passing the frozen rule."""
+    root, unit, design, out = _composed(world, tmp_path, monkeypatch, "table_ok")
+    tbl = R.composed_table(root, design, out)
+    row = next(r for r in tbl["rows"] if r["horizon"] == world["cell"]["horizon"])
+    assert row["poolable"] == [unit] and row["complete"]
+    assert row["mse"]["status"] and row["fidelity"][unit]["exact_equal_fraction"] == 1.0
+    assert "NO cell of this campaign records a MEASURED training-device UUID" in tbl["device_attribution_scope"]["reading"] \
+        or "MEASURED" in tbl["device_attribution_scope"]["classes_present"]
+    assert tbl["pooling_rule"].startswith("a cell is pooled when")
+    # without the bound replay the same cell is not pooled and the horizon is incomplete
+    bare = R.compose_evidence(root, design, evidence=[], receipts=json.loads((root / "TERMINAL_RECEIPTS.json").read_text())["units"])
+    tbl2 = R.composed_table(root, design, bare)
+    row2 = next(r for r in tbl2["rows"] if r["horizon"] == world["cell"]["horizon"])
+    assert row2["poolable"] == [] and not row2["complete"]
+    assert unit in row2["not_poolable"] and "no bound replay passes the frozen rule" in row2["not_poolable"][unit]
+    assert tbl2["four_horizon_mean"]["status"] == "NOT_COMPUTED"
