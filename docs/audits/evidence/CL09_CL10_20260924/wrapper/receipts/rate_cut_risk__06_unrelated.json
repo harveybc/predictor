@@ -1,0 +1,150 @@
+{
+ "as_of": "2026-09-24T12:00:00Z",
+ "asset": "EURUSD",
+ "binding": {
+  "as_of": "2026-09-24T12:00:00Z",
+  "fitted_state_ref": "laya-checkpoint:bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89",
+  "model_sha256": "627f69f66a99550de13711b2e269a765f1a6ce152cddaf3768080d8b22166d91",
+  "population_sha256": "d07fcc6aee6c31333783a6cd3595f96c6307763b0a417992b21912f552f1159d",
+  "provider": "laya_news",
+  "state_digest": "bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89",
+  "state_task_id": "laya_zero_shot_checkpoint",
+  "task_compatibility": "DECLARED_KIND_BY_STATE",
+  "task_id": "adhoc.question.v1:47aa97318614075daed4b87c51d7ed9f3af5ee5b75d867ba9ce9ae3de8b68576",
+  "task_kind": "adhoc.question.v1"
+ },
+ "calibration": "UNCALIBRATED",
+ "entry_point_group": "m5phet.providers",
+ "event_id": "tech-007",
+ "execution_authorized": false,
+ "features": {
+  "rate_cut_risk": {
+   "label": "no_bearing",
+   "probability_decimals": 4,
+   "sdk_answer": {
+    "action": {
+     "act_probability": 1.0
+    },
+    "choice": "no_bearing",
+    "confidence": 0.0516,
+    "probabilities": {
+     "less_likely": 0.363,
+     "more_likely": 0.1884,
+     "no_bearing": 0.4486
+    },
+    "type": "choice"
+   },
+   "uncalibrated_probabilities": {
+    "less_likely": 0.363,
+    "more_likely": 0.1884,
+    "no_bearing": 0.4486
+   },
+   "uncertainty": "UNCALIBRATED_CLASS_PROBABILITIES"
+  }
+ },
+ "governance": "NOT_REGISTERED_BY_THIS_TOOL",
+ "input_sha256": "89a7ceffda11251a664289cea7438c262628442a4ac88271def694a886892115",
+ "latency": {
+  "inference_seconds": 0.010581459995592013,
+  "load_kind": "WARM",
+  "load_seconds": 1.00000761449337e-07
+ },
+ "limitations": [
+  "NO_RETURN_FORECAST",
+  "NO_CALIBRATED_CONFIDENCE",
+  "NO_BROKER_ORDERS",
+  "AGREEMENT_WITH_THE_SDK_IS_WRAPPER_FIDELITY_NOT_DOMAIN_ACCURACY"
+ ],
+ "m5phet_status": "OK",
+ "max_age_seconds": 900,
+ "model": {
+  "kind": "WARM",
+  "seconds": 1.00000761449337e-07,
+  "state_ref": "laya-checkpoint:bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89"
+ },
+ "model_identity": {
+  "adapter_sha256": "e9459d372a1d411e5578f4d399e19bd1eb9a0eda45b04b25dbe9e041564f84f8",
+  "checkpoint_sha256": "bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89",
+  "cuda_version": "13.0",
+  "device": "cuda:0",
+  "gpu_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "gpu_uuid_attribution": "MEASURED",
+  "gpu_uuid_observed": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "kind": "LAYA_LOCAL_CHECKPOINT",
+  "sdk_commit": "1e28ac20c0896b1c37a744cd11f740eb98f8b178",
+  "sdk_version": "0.3.11",
+  "torch_version": "2.14.0+cu130"
+ },
+ "outputs": {
+  "rate_cut_risk": {
+   "payload": {
+    "calibration": "UNCALIBRATED",
+    "label": "no_bearing",
+    "probability_decimals": 4,
+    "sdk_answer": {
+     "action": {
+      "act_probability": 1.0
+     },
+     "choice": "no_bearing",
+     "confidence": 0.0516,
+     "probabilities": {
+      "less_likely": 0.363,
+      "more_likely": 0.1884,
+      "no_bearing": 0.4486
+     },
+     "type": "choice"
+    },
+    "uncalibrated_probabilities": {
+     "less_likely": 0.363,
+     "more_likely": 0.1884,
+     "no_bearing": 0.4486
+    }
+   },
+   "status": "OK",
+   "uncertainty": "UNCALIBRATED_CLASS_PROBABILITIES",
+   "why": null
+  }
+ },
+ "peak_rss_bytes": 3383693312,
+ "produced_by": "M5PHET_REGISTRY",
+ "provider_ref": "laya_news",
+ "published_at": "2026-09-24T11:50:00Z",
+ "question": {
+  "identity_sha256": "47aa97318614075daed4b87c51d7ed9f3af5ee5b75d867ba9ce9ae3de8b68576",
+  "option_order": {
+   "rate_cut_risk": [
+    "more_likely",
+    "less_likely",
+    "no_bearing"
+   ]
+  },
+  "origin": "USER_AUTHORED_QUESTION",
+  "questions": {
+   "rate_cut_risk": {
+    "criteria": {
+     "less_likely": "the facts reported point towards tighter policy",
+     "more_likely": "the facts reported point towards easier policy",
+     "no_bearing": "the news does not bear on the euro-area policy path"
+    },
+    "instructions": "Does this news make a near-term euro-area interest rate cut more likely?",
+    "type": "choice"
+   }
+  },
+  "sha256": "eec323ae0bfeaf4ada9158cd48b1064d0d9f2b9b775073fe0ea8568a67f12e4a"
+ },
+ "question_sha256": "47aa97318614075daed4b87c51d7ed9f3af5ee5b75d867ba9ce9ae3de8b68576",
+ "receipt_sha256": "98e55975a1eaf6d69360cc48df29badcd445a05a2230cef153fb2d199fb7f1cf",
+ "received_at": "2026-09-24T11:50:30Z",
+ "recorded_at": "2026-09-24T17:47:35.840575+00:00",
+ "refusal_reasons": null,
+ "registered_providers": [
+  "laya_news"
+ ],
+ "request_sha256": "7d0e255ab11059574f3e5060a2a63f0f3f3f6c6c67ecf59c7c933b85a5db31b8",
+ "schema": "news_shadow.v2",
+ "source": "regression-bank",
+ "status": "SHADOW_ONLY",
+ "task_id": "adhoc.question.v1:47aa97318614075daed4b87c51d7ed9f3af5ee5b75d867ba9ce9ae3de8b68576",
+ "task_sha256": "eec323ae0bfeaf4ada9158cd48b1064d0d9f2b9b775073fe0ea8568a67f12e4a",
+ "why": null
+}

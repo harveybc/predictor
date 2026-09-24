@@ -1,0 +1,62 @@
+{
+ "distinct_task_identities": 2,
+ "per_question": {
+  "rate_cut_risk": {
+   "compared": 12,
+   "equal": 12,
+   "labels": {
+    "022c5a873073549ac24b5e64d578eceed7f49c99307dce44e6bb89cb3519829e": "no_bearing",
+    "2503b81a33122873b83eca92a1ee6a9ad8603cf21c9ad0d602219ffed444de4f": "no_bearing",
+    "50d74c153867afd52192d63cb533d71b4f76b943ddcd346d4d56926fe99d2b9f": "no_bearing",
+    "7a16fa81f162740a8ebf6b3ebd761b3d9feef9a24d9675a16d210abd764aecb7": "no_bearing",
+    "7f6e9b28b10538ff5993f22ae0d8c9f3dc72657cd18fa0d204cbae866c267685": "no_bearing",
+    "89a7ceffda11251a664289cea7438c262628442a4ac88271def694a886892115": "no_bearing",
+    "a3431add52a72be19c960e6be44dafa9c943c0b1b108f82baba28e44b17b7b09": "no_bearing",
+    "ad3ad1c8faa2f586739246f89bfd97d66909f7bd444efb8d6aba956908539ca1": "no_bearing",
+    "d20bb9b3514ad5e167eae836da80f7ffedc4aa61412b54c9a9da785d77a560a9": "no_bearing",
+    "d78f25b6d5ba9f75949e98f69e2b25a254491e139a4e7d652ab1269a8e91415e": "more_likely",
+    "dc360e1221ff2b70a5cd6d933f9306c4339253c49e2ab1cec3fb65b90cd56555": "no_bearing",
+    "fd501f389c1e42ca26ce919145aa78aec2d9e4fc2b198e89e70e909725d58728": "less_likely"
+   },
+   "mismatches": [],
+   "option_order": [
+    "more_likely",
+    "less_likely",
+    "no_bearing"
+   ],
+   "question": "Does this news make a near-term euro-area interest rate cut more likely?",
+   "questions_sent_match": true,
+   "task_id": "adhoc.question.v1:47aa97318614075daed4b87c51d7ed9f3af5ee5b75d867ba9ce9ae3de8b68576"
+  },
+  "who_is_affected": {
+   "compared": 12,
+   "equal": 12,
+   "labels": {
+    "022c5a873073549ac24b5e64d578eceed7f49c99307dce44e6bb89cb3519829e": "euro_area",
+    "2503b81a33122873b83eca92a1ee6a9ad8603cf21c9ad0d602219ffed444de4f": "united_states",
+    "50d74c153867afd52192d63cb533d71b4f76b943ddcd346d4d56926fe99d2b9f": "euro_area",
+    "7a16fa81f162740a8ebf6b3ebd761b3d9feef9a24d9675a16d210abd764aecb7": "euro_area",
+    "7f6e9b28b10538ff5993f22ae0d8c9f3dc72657cd18fa0d204cbae866c267685": "euro_area",
+    "89a7ceffda11251a664289cea7438c262628442a4ac88271def694a886892115": "euro_area",
+    "a3431add52a72be19c960e6be44dafa9c943c0b1b108f82baba28e44b17b7b09": "euro_area",
+    "ad3ad1c8faa2f586739246f89bfd97d66909f7bd444efb8d6aba956908539ca1": "elsewhere",
+    "d20bb9b3514ad5e167eae836da80f7ffedc4aa61412b54c9a9da785d77a560a9": "euro_area",
+    "d78f25b6d5ba9f75949e98f69e2b25a254491e139a4e7d652ab1269a8e91415e": "united_states",
+    "dc360e1221ff2b70a5cd6d933f9306c4339253c49e2ab1cec3fb65b90cd56555": "euro_area",
+    "fd501f389c1e42ca26ce919145aa78aec2d9e4fc2b198e89e70e909725d58728": "united_states"
+   },
+   "mismatches": [],
+   "option_order": [
+    "euro_area",
+    "united_states",
+    "elsewhere"
+   ],
+   "question": "Whose economy does this news report on?",
+   "questions_sent_match": true,
+   "task_id": "adhoc.question.v1:3ff5d2504d5751ebc5b9fd6a0dbe50072e97f5bccf21d566c6675d63b464e419"
+  }
+ },
+ "same_news_different_questions": true,
+ "schema": "laya_question_parity.v1",
+ "tolerance": "NONE"
+}

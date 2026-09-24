@@ -1,0 +1,61 @@
+START 2026-09-24T17:47:29Z host=gamma
+=== 1/4 the wrapper: two user questions over all 13 items, plus the preset for the error table ===
+/home/harveybc/work/news-signal/src/news_signal/backends.py:130: RuntimeWarning: laya: this checkpoint ships invalid temperatures or values outside [0.5, 5]; using choice:11+=0.10058280825614929 -> 0.5. Treat confidence from the affected entries as uncalibrated.
+  self.agent = Agent(str(Path(directory).resolve()), device=device, fast=False, compile=False)
+{
+ "cl09_questions": 2,
+ "cl09_rows": 26,
+ "cl10_scored": 13,
+ "cl10_errors": 7,
+ "latency": {
+  "median": 0.010912969999480993,
+  "min": 0.010569426987785846,
+  "max": 0.693783576018177
+ },
+ "gpu": {
+  "device_uuid": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+  "peak_allocated_bytes": 2466795008,
+  "attribution": "MEASURED"
+ }
+}
+rc_wrapper=0
+=== 2/4 the independent witness: the SAME user questions, no import of news_signal ===
+rate_cut_risk who_is_affected
+/home/harveybc/work/news-signal/tools/direct_sdk_reference.py:112: RuntimeWarning: laya: this checkpoint ships invalid temperatures or values outside [0.5, 5]; using choice:11+=0.10058280825614929 -> 0.5. Treat confidence from the affected entries as uncalibrated.
+  agent = Agent(str(args.checkpoint), device=args.device, fast=False, compile=False)
+/home/harveybc/.local/state/crispdm-data-foundation/laya-pilot-20260924/questions/direct_rate_cut_risk.json
+rc_direct_rate_cut_risk=0
+/home/harveybc/work/news-signal/tools/direct_sdk_reference.py:112: RuntimeWarning: laya: this checkpoint ships invalid temperatures or values outside [0.5, 5]; using choice:11+=0.10058280825614929 -> 0.5. Treat confidence from the affected entries as uncalibrated.
+  agent = Agent(str(args.checkpoint), device=args.device, fast=False, compile=False)
+/home/harveybc/.local/state/crispdm-data-foundation/laya-pilot-20260924/questions/direct_who_is_affected.json
+rc_direct_who_is_affected=0
+=== 3/4 parity per question, exact fields, no tolerance ===
+{
+ "rate_cut_risk": {
+  "compared": 12,
+  "equal": 12,
+  "mismatches": 0,
+  "questions_sent_match": true
+ },
+ "who_is_affected": {
+  "compared": 12,
+  "equal": 12,
+  "mismatches": 0,
+  "questions_sent_match": true
+ }
+}
+distinct task identities: 2
+rc_parity=0
+=== 4/4 the error table and the token accounting cross-check ===
+scored 13 errors 7
+  us-cpi-003               gold=related   pred=unclear   p={'related': 0.0998, 'unclear': 0.7638, 'unrelated': 0.1364} conf=0.356
+  ea-unemployment-004      gold=related   pred=unclear   p={'related': 0.3522, 'unclear': 0.4162, 'unrelated': 0.2317} conf=0.025
+  sports-006               gold=unrelated pred=unclear   p={'related': 0.1001, 'unclear': 0.7477, 'unrelated': 0.1522} conf=0.3316
+  tech-007                 gold=unrelated pred=unclear   p={'related': 0.2722, 'unclear': 0.6584, 'unrelated': 0.0694} conf=0.2586
+  passing-mention-008      gold=unrelated pred=related   p={'related': 0.7898, 'unclear': 0.1598, 'unrelated': 0.0504} conf=0.4266
+  fragment-009             gold=unclear   pred=related   p={'related': 0.6834, 'unclear': 0.2518, 'unrelated': 0.0647} conf=0.2858
+  negated-010              gold=unrelated pred=related   p={'related': 0.7296, 'unclear': 0.1802, 'unrelated': 0.0902} conf=0.312
+token budget: head 47 kept 47 | options 98 | state max 70 room 363 | all fit: True
+GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519, 30, 0 %, 14 MiB
+GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8, 39, 0 %, 10 MiB
+FINISH 2026-09-24T17:47:45Z

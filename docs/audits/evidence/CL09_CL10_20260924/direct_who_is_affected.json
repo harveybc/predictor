@@ -1,0 +1,401 @@
+{
+ "calls_the_wrapper": false,
+ "checkpoint": "/home/harveybc/.local/state/crispdm-data-foundation/laya-pilot-20260924/checkpoint",
+ "device_uuid_observed": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+ "load_seconds": 2.427791680995142,
+ "peak_rss_bytes": 3388833792,
+ "peak_vram_bytes": 2464952832,
+ "questions_as_sent": {
+  "who_is_affected": {
+   "criteria": {
+    "elsewhere": "another economy, or none in particular",
+    "euro_area": "the euro area or one of its member states",
+    "united_states": "the United States"
+   },
+   "instructions": "Whose economy does this news report on?",
+   "type": "choice"
+  }
+ },
+ "questions_sha256": "19d1ce12ab437389d0d801820d384788aac96a9020ba6195a3268e8caacc8b6e",
+ "schema": "laya_direct_reference.v1",
+ "sdk": {
+  "commit": "1e28ac20c0896b1c37a744cd11f740eb98f8b178",
+  "url": "https://github.com/NandhaKishorM/laya.git",
+  "version": "0.3.11"
+ },
+ "settings": {
+  "compile": false,
+  "device": "cuda:0",
+  "fast": false,
+  "head_max_len": 192,
+  "max_len": 512,
+  "torch_threads": 2
+ },
+ "single": [
+  {
+   "event_id": "ecb-hold-001",
+   "input_sha256": "50d74c153867afd52192d63cb533d71b4f76b943ddcd346d4d56926fe99d2b9f",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "euro_area",
+      "confidence": 0.7197,
+      "probabilities": {
+       "elsewhere": 0.0446,
+       "euro_area": 0.9276,
+       "united_states": 0.0278
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 104,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.6809577200037893,
+   "state_sha256": "94dfc7f0b198fa4745d07f3458cc288863a735ee8bc9d9d08fa36a03b3c292eb"
+  },
+  {
+   "event_id": "fed-cut-002",
+   "input_sha256": "d78f25b6d5ba9f75949e98f69e2b25a254491e139a4e7d652ab1269a8e91415e",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "united_states",
+      "confidence": 0.4059,
+      "probabilities": {
+       "elsewhere": 0.0865,
+       "euro_area": 0.1217,
+       "united_states": 0.7919
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 99,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.011943652993068099,
+   "state_sha256": "f96ba4556b2054a113b20390f957be55567ff2fe11512db00bc3156bccb9294d"
+  },
+  {
+   "event_id": "us-cpi-003",
+   "input_sha256": "2503b81a33122873b83eca92a1ee6a9ad8603cf21c9ad0d602219ffed444de4f",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "united_states",
+      "confidence": 0.9491,
+      "probabilities": {
+       "elsewhere": 0.0052,
+       "euro_area": 0.0035,
+       "united_states": 0.9913
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 100,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.010503562982194126,
+   "state_sha256": "3ffdae2591cf058da1510fc18bd0a61c57b976108e9399ef67b34af58a1870bd"
+  },
+  {
+   "event_id": "ea-unemployment-004",
+   "input_sha256": "a3431add52a72be19c960e6be44dafa9c943c0b1b108f82baba28e44b17b7b09",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "euro_area",
+      "confidence": 0.4355,
+      "probabilities": {
+       "elsewhere": 0.1435,
+       "euro_area": 0.7997,
+       "united_states": 0.0568
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 91,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.010421538987429813,
+   "state_sha256": "5fa533c76497ecec63581d331bb77ef52e4a6a9fbf85d15043595fbd5fda121e"
+  },
+  {
+   "event_id": "eurusd-rate-005",
+   "input_sha256": "fd501f389c1e42ca26ce919145aa78aec2d9e4fc2b198e89e70e909725d58728",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "united_states",
+      "confidence": 0.1253,
+      "probabilities": {
+       "elsewhere": 0.1809,
+       "euro_area": 0.232,
+       "united_states": 0.587
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 98,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.010421279002912343,
+   "state_sha256": "3a132a70e2e50e75a4fe232cccef9b1327e94bb14c0a24a100c00b7f25aa2cde"
+  },
+  {
+   "event_id": "sports-006",
+   "input_sha256": "022c5a873073549ac24b5e64d578eceed7f49c99307dce44e6bb89cb3519829e",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "euro_area",
+      "confidence": 0.3275,
+      "probabilities": {
+       "elsewhere": 0.1877,
+       "euro_area": 0.7347,
+       "united_states": 0.0776
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 94,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.010402254003565758,
+   "state_sha256": "e2a977435406de5891a10ad693d7924655631bc59decb5e483e5a9ee4814d1f0"
+  },
+  {
+   "event_id": "tech-007",
+   "input_sha256": "89a7ceffda11251a664289cea7438c262628442a4ac88271def694a886892115",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "euro_area",
+      "confidence": 0.582,
+      "probabilities": {
+       "elsewhere": 0.1049,
+       "euro_area": 0.8674,
+       "united_states": 0.0277
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 92,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.010399678983958438,
+   "state_sha256": "64a13d0f4aa5258ccf4a9a1c7adcb0c1ff3493900e4d87a4f3cc5c1531514812"
+  },
+  {
+   "event_id": "passing-mention-008",
+   "input_sha256": "7a16fa81f162740a8ebf6b3ebd761b3d9feef9a24d9675a16d210abd764aecb7",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "euro_area",
+      "confidence": 0.0462,
+      "probabilities": {
+       "elsewhere": 0.3233,
+       "euro_area": 0.4674,
+       "united_states": 0.2093
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 93,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.010402995016193017,
+   "state_sha256": "23e5def97889933ef74032a4006523c95540fe7f1f57715405dde92e1962c93f"
+  },
+  {
+   "event_id": "fragment-009",
+   "input_sha256": "dc360e1221ff2b70a5cd6d933f9306c4339253c49e2ab1cec3fb65b90cd56555",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "euro_area",
+      "confidence": 0.494,
+      "probabilities": {
+       "elsewhere": 0.114,
+       "euro_area": 0.8328,
+       "united_states": 0.0531
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 86,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.01057874402613379,
+   "state_sha256": "6c9d3e3351e1a765ed9a5ea8c6c0e58bdad3b903532a55188b08d4a6b5cf4414"
+  },
+  {
+   "event_id": "negated-010",
+   "input_sha256": "7f6e9b28b10538ff5993f22ae0d8c9f3dc72657cd18fa0d204cbae866c267685",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "euro_area",
+      "confidence": 0.1041,
+      "probabilities": {
+       "elsewhere": 0.2898,
+       "euro_area": 0.5474,
+       "united_states": 0.1628
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 111,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.010879787994781509,
+   "state_sha256": "902d2c0f66a78ce673eb08315b290269a238bc0d5201083e8e3f9dada8ee58f4"
+  },
+  {
+   "event_id": "ecb-hold-001",
+   "input_sha256": "50d74c153867afd52192d63cb533d71b4f76b943ddcd346d4d56926fe99d2b9f",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "euro_area",
+      "confidence": 0.7197,
+      "probabilities": {
+       "elsewhere": 0.0446,
+       "euro_area": 0.9276,
+       "united_states": 0.0278
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 104,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.010494677000679076,
+   "state_sha256": "94dfc7f0b198fa4745d07f3458cc288863a735ee8bc9d9d08fa36a03b3c292eb"
+  },
+  {
+   "event_id": "ecb-hold-001",
+   "input_sha256": "d20bb9b3514ad5e167eae836da80f7ffedc4aa61412b54c9a9da785d77a560a9",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "euro_area",
+      "confidence": 0.4916,
+      "probabilities": {
+       "elsewhere": 0.1168,
+       "euro_area": 0.8311,
+       "united_states": 0.0521
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 118,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.010832389001734555,
+   "state_sha256": "9bedab56d36f488d6d731e2293520221250aea4d4011bf9412ddc5ffee6f4cce"
+  },
+  {
+   "event_id": "instruction-like-011",
+   "input_sha256": "ad3ad1c8faa2f586739246f89bfd97d66909f7bd444efb8d6aba956908539ca1",
+   "response": {
+    "answers": {
+     "who_is_affected": {
+      "action": {
+       "act_probability": 1.0
+      },
+      "choice": "elsewhere",
+      "confidence": 0.1672,
+      "probabilities": {
+       "elsewhere": 0.4769,
+       "euro_area": 0.4437,
+       "united_states": 0.0795
+      },
+      "type": "choice"
+     }
+    },
+    "model": "laya-rl-agent",
+    "usage": {
+     "input_tokens": 105,
+     "output_tokens": 0
+    }
+   },
+   "seconds": 0.01076521398499608,
+   "state_sha256": "7d8a40a9bc667af36ac3c580850a9b8130a9c06a4f4deb855090ba115c2b9e5e"
+  }
+ ],
+ "task": "user_authored_question"
+}
