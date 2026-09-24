@@ -21,6 +21,7 @@
   "implemented_scope": "Classification result contract consumed by news-signal; provider runtime and other task adapters designed, not implemented",
   "product_design": "https://github.com/harveybc/M5PHET/blob/master/docs/IMPLEMENTATION_PLAN.md",
   "product_design_revision": "4508b98",
+  "integration_extension": "M5PHET docs/INTEGRATION_AND_OPTIMIZATION.md; INT01-INT12 pending implementation; example apps local-first with durable trace/metrics, optional embedded DuckDB and independent optional governance/DOIN; existing governed campaigns unchanged",
   "implementation_owner": "Satoshi",
   "review_owner": "Musashi",
   "implementation_assignment_status": "PUBLISHED_FOR_EXECUTION_NOT_CONFIRMED_STARTED",

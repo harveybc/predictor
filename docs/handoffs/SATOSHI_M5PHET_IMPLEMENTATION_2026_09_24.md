@@ -59,6 +59,40 @@ Use short progress updates, not requests to continue at each step.
    installable packages, runnable examples, scoped tests, status and dependency
    pins. No duplicate brokers, optimizers, storage hosts or scheduler.
 
+## Storage and DOIN integration, cross-cutting implementation
+
+Read M5PHET `docs/INTEGRATION_AND_OPTIMIZATION.md` and implement INT01-INT12
+alongside the first provider, not after all five families. A local community use
+case must run without mandatory services; our governed campaigns use data-gov,
+data-lake and data-warehouse through existing contracts. Preserve identical task
+semantics but distinguish local provenance from accepted governance. A denied
+governed delivery cannot silently fall back to a local file.
+
+Owner clarification: governance is optional for EXAMPLE APPS too, and independent
+of DOIN. Ship a local-first example with atomic manifest, durable attempt/event
+records, typed metrics and artifact references. Add optional embedded DuckDB
+analytical views as a rebuildable local projection, no server required; no new
+warehouse host or production cube. Use the same task code for the opt-in governed
+example. Recover interrupted writes, preserve metric unit/population/definition,
+and test profile parity and retry idempotence. Historical local import cannot
+retroactively create campaign or delivery authority. These examples do not relax
+the profiles of already-sealed internal governed experiments.
+
+Reuse `doin-core` OptimizationPlugin, InferencePlugin and SyntheticDataPlugin and
+their actual entry-point loaders. The evaluator returns a scalar, not a structured
+prediction or Pareto vector; seal objective/direction/constraints and retain all
+metrics separately. Declare typed/conditional search spaces per family, including
+empty spaces for fixed engines. Preserve data/holdout/clock/target contracts and
+causal identification; do not search for significance or rewrite risk constraints.
+Synthetic consensus verification and real-domain scientific evaluation remain
+distinct. Start with one real candidate plus independent evaluator and governed
+receipt/outbox reconciliation; extend objective adapters per implemented family.
+
+Avoid new stores, arbitrary SQL credentials, tick-by-tick synchronous warehouse
+dependencies or unlimited artifact retention. Verify actual provider upload and
+registration capabilities before using them. Keep integration dependencies optional
+and isolated. No changes to production databases or consensus policy by assumption.
+
 ## Acceptance and execution limits
 
 Exercise actual entrypoints with changed future data, wrong model/calibration,
