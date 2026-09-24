@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/harveybc/Documents/GitHub/.worktrees/predictor-rp132/docs/audits/evidence/M5PHET_SPECIALIZED_7385937/probe.py", line 113, in <module>
+    main()
+  File "/home/harveybc/Documents/GitHub/.worktrees/predictor-rp132/docs/audits/evidence/M5PHET_SPECIALIZED_7385937/probe.py", line 70, in main
+    "payload_contains_nan": out["outputs"]["tone"]["payload"]["probability"] != out["outputs"]["tone"]["payload"]["probability"]}
+                            ~~~^^^^^^^^^^^
+KeyError: 'outputs'
