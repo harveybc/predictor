@@ -4425,14 +4425,20 @@ def _claim_for(payload: dict, entry: dict, unit: str, ident: dict) -> dict | Non
         # RP144: a row binds only when its accepted-artifact identities are PRESENT and equal to this root's. A row that
         # carries none of them says nothing about this cell, however green its own flags are.
         accepted = (row.get("accepted_artifacts") or {})
+        # a HISTORICAL row carries no accepted_artifacts block; the identities it DOES carry are the ones its own replay
+        # recorded, and those are real comparisons against this root rather than an absence of a mismatch
+        replay_ident = ((row.get("replay") or {}).get("identity") or {})
         checks = (("predictions", accepted.get("predictions"), ident.get("predictions_sha256_recorded"), "CHANGED_PREDICTIONS"),
                   ("checkpoint", accepted.get("checkpoint"), ident.get("checkpoint_sha256"), "CHANGED_CHECKPOINT"),
-                  ("record", accepted.get("record"), ident.get("record_sha256"), "CHANGED_RECORD"))
-        mismatch = [f"{code}: the report's accepted {role} digest is not this root's" for role, claimed, mine, code in checks
+                  ("record", accepted.get("record"), ident.get("record_sha256"), "CHANGED_RECORD"),
+                  ("replay.checkpoint", replay_ident.get("checkpoint_sha256"), ident.get("checkpoint_sha256"), "CHANGED_CHECKPOINT"),
+                  ("replay.arrays", replay_ident.get("arrays_sha256"), ident.get("predictions_sha256_recorded"), "CHANGED_PREDICTIONS"),
+                  ("replay.pred_body", replay_ident.get("pred_sha256"), ident.get("pred_body_sha256_recorded"), "CHANGED_PREDICTIONS"))
+        mismatch = [f"{code}: the report's {role} digest is not this root's" for role, claimed, mine, code in checks
                     if claimed and mine and claimed != mine]
         present = [role for role, claimed, mine, _c in checks if claimed and mine and claimed == mine]
         if not mismatch and not present:
-            mismatch.append("NO_ACCEPTED_IDENTITY: the report row carries no accepted artifact digest this root can match")
+            mismatch.append("NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match")
         base.update({"bound": not mismatch, "matched_identities": present, "why": "; ".join(mismatch) or None,
                      "closure": {"verified": row.get("verified"), "verified_historically": row.get("verified_historically"),
                                  "custody": (row.get("custody") or {}).get("class"), "problems": (row.get("problems") or [])[:2]},
