@@ -29,6 +29,17 @@ it is not another research stage or a reset of any compute allocation.
 
 ## First deliverable, highest priority
 
+**RAG considered, not a new prerequisite:** the owner asks to evaluate retrieval
+where useful. First candidate is versioned schema/provider/task documentation for
+the language interface. Use exact metadata lookups and existing retrieval/MCP
+facilities before new infrastructure. Skills guide use; retrieved text never
+grants capability or permission. Market/news/calendar retrieval is a separate
+information-set experiment with receipt/vintage filtering before ranking.
+Compare task correctness, evidence, latency/tokens and storage with/without RAG;
+do not index prediction arrays or upload raw private datasets. Full constraints
+are in M5PHET's natural-language design. No new RAG service/training/storage budget
+and no delay to real Laya parity or independent provider implementation.
+
 **Interpreter deployment update:** reuse existing supported Hermes/OpenCode
 language access first; the owner names inexpensive DeepSeek Flash as a candidate.
 Resolve the actual configured model/endpoint and entitlement without exposing
