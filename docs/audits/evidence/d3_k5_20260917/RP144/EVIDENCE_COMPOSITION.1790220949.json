@@ -1,0 +1,3926 @@
+{
+ "schema": "df_sota_evidence_composition.v1",
+ "at": "2026-09-24T03:35:45Z",
+ "host": "gamma",
+ "root": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1",
+ "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+ "evidence_objects": [
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+   "present": true,
+   "sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+   "kind": "report",
+   "declared_design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b"
+  },
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+   "present": true,
+   "sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+   "kind": "replay_history",
+   "declared_design_sha256": null
+  },
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS_HISTORY.sota_timefilter_ecl_v1_from_dragon.REPLAYS.json",
+   "present": true,
+   "sha256": "4a501a0d2a0206754d9ee4898fdfa50206f48ae5af44c43f84ea7820d32d203d",
+   "kind": "replay_history",
+   "declared_design_sha256": null
+  },
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS_HISTORY.sota_timefilter_ecl_v1_from_dragon.REPLAYS_GPU.json",
+   "present": true,
+   "sha256": "c7dbfa3b5bf6db3c3a35da428d2641fb34458846bf07eadfbe64c57d4a576c97",
+   "kind": "replay_history",
+   "declared_design_sha256": null
+  },
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+   "present": true,
+   "sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+   "kind": "report",
+   "declared_design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b"
+  },
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+   "present": true,
+   "sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+   "kind": "report",
+   "declared_design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b"
+  },
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/SAME_DEVICE_REPLAY_BINDING.1790204723.json",
+   "present": true,
+   "sha256": "5f7499f9b3dc8cb3e354bbaacad043cdf8da5984e6cf16401a15a0f4049c91cb",
+   "kind": "binding",
+   "declared_design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b"
+  },
+  {
+   "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/LIVE_CUSTODY.json",
+   "present": true,
+   "sha256": "cee3594069e676196f530a9d7e0f959ae578a3e92a0b5e5980c4567114dcec71",
+   "kind": "custody_audit",
+   "declared_design_sha256": null
+  }
+ ],
+ "cells": {
+  "L96_h96_s2021": {
+   "unit": "L96_h96_s2021",
+   "horizon": 96,
+   "seed": 2021,
+   "identity": {
+    "record_present": true,
+    "record_sha256": "2aeefa1b7e48772bbe611a3f5552b6df473a075ace055c83ccbf5e8ddd14cf32",
+    "checkpoint_sha256": "3dd39aa903358981578b3f53b47862452ff909ecb6a55b086c7d65866aa0f12f",
+    "predictions_on_disk": true,
+    "predictions_sha256": "0b855783f76d8f21c8859b8f9138892326fea538053d8aa6f1645d847a903da9",
+    "predictions_sha256_recorded": "0b855783f76d8f21c8859b8f9138892326fea538053d8aa6f1645d847a903da9",
+    "pred_body_sha256_recorded": "6b78b40629afc57a6ceadbfd8759927101e87b0763dd09ff849349a55b48c864",
+    "regeneration_sha256": null,
+    "regeneration_acceptance_sha256": null,
+    "catalog_sha256": "a5067e8bed3bd2f9d57829df27e09f1d0285281714955f190686f2275460c6b4",
+    "shapes_pred": [
+     5165,
+     96,
+     321
+    ],
+    "elements": 159164640,
+    "author_metric_float32": {
+     "mae": 0.23055443167686462,
+     "mse": 0.13331516087055206
+    },
+    "independent_metric_float64": {
+     "mae": 0.2305544209409133,
+     "mse": 0.1333151570071943
+    },
+    "metric_basis": "author_float32",
+    "attribution": {
+     "uuid": null,
+     "class": "UNKNOWN"
+    }
+   },
+   "admitted": [
+    {
+     "kind": "report",
+     "evidence_sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+     "bound": true,
+     "matched_identities": [
+      "predictions",
+      "checkpoint",
+      "record"
+     ],
+     "why": null,
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": "ACCEPTED_ARTIFACT_CHAIN",
+      "problems": [
+       "L96_h96_s2021: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.00019407272338867188, finite True, shape_equal True, error "
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.23055443167686462,
+       "mse": 0.13331516087055206
+      },
+      "metric_basis": "author_float32"
+     },
+     "replay": {
+      "unit": "L96_h96_s2021",
+      "device": "cuda:0",
+      "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+      "device_name": "NVIDIA GeForce RTX 5090",
+      "max_abs_prediction_difference": 0.00019407272338867188,
+      "allclose_rule": false,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 18183273,
+      "elements": 159164640,
+      "exact_equal_fraction": 0.11424191327923086,
+      "replayed_author_metric": {
+       "mae": 0.23055443167686462,
+       "mse": 0.13331516087055206
+      },
+      "replayed_author_metric_state": "EXECUTED: df_sota_author_metric_exact.v2 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test); utils.metrics.metric executed on the memmapped arrays as well: bit-equal",
+      "replayed_metric_float64": {
+       "mae": 0.23055442105277987,
+       "mse": 0.13331515710564087
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "property": "cross_device_portability",
+      "trained_on_device_uuid": null,
+      "trained_on_attribution": "UNKNOWN"
+     }
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h96_s2021",
+      "device": "cuda:0",
+      "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+      "device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+      "max_abs_prediction_difference": 0.00019407272338867188,
+      "allclose_rule": false,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 18183273,
+      "elements": 159164640,
+      "exact_equal_fraction": 0.11424191327923086,
+      "replayed_author_metric": {
+       "mae": 0.23055443167686462,
+       "mse": 0.13331516087055206
+      },
+      "replayed_author_metric_state": "EXECUTED: utils.metrics.metric on the memmapped float32 arrays (same function, dtype, layout)",
+      "replayed_metric_float64": {
+       "mae": 0.23055442105277987,
+       "mse": 0.13331515710564087
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "identity": {
+       "checkpoint_sha256": "3dd39aa903358981578b3f53b47862452ff909ecb6a55b086c7d65866aa0f12f",
+       "arrays_sha256": "0b855783f76d8f21c8859b8f9138892326fea538053d8aa6f1645d847a903da9",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "ea681f27c214db485ef80adeec67a81fa65737fda6bdc0838867d273f51ab6f9",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device_requested": "cuda"
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "environment": {
+       "host": "gamma",
+       "python": "3.12.13",
+       "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+       "torch": "2.13.0+cu130",
+       "numpy": "2.5.1",
+       "pandas": "3.0.3",
+       "sklearn": "1.9.0",
+       "scipy": "1.18.0",
+       "cuda": "13.0",
+       "gpus": [
+        "NVIDIA GeForce RTX 5090"
+       ],
+       "cudnn": 92400,
+       "gpu_devices": [
+        {
+         "index": 0,
+         "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+         "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+         "temperature_c": 35.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 14.0,
+         "memory_total_mib": 12227.0
+        },
+        {
+         "index": 1,
+         "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+         "name": "NVIDIA GeForce RTX 5090",
+         "temperature_c": 43.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 12.0,
+         "memory_total_mib": 32607.0
+        }
+       ],
+       "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+      },
+      "property": "cross_device_portability",
+      "trained_on_device_uuid": null
+     },
+     "closure": null,
+     "retained_history": true
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "4a501a0d2a0206754d9ee4898fdfa50206f48ae5af44c43f84ea7820d32d203d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS_HISTORY.sota_timefilter_ecl_v1_from_dragon.REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h96_s2021",
+      "device": "cpu",
+      "max_abs_prediction_difference": 0.0019083023071289062,
+      "allclose_rule": false,
+      "replayed_author_metric": {
+       "mae": 0.23055443167686462,
+       "mse": 0.13331516087055206
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "identity": {
+       "checkpoint_sha256": "3dd39aa903358981578b3f53b47862452ff909ecb6a55b086c7d65866aa0f12f",
+       "arrays_sha256": "0b855783f76d8f21c8859b8f9138892326fea538053d8aa6f1645d847a903da9",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "facf3ff81a15ad64c2088d8ab9d71d61bd1cb97f3c420a5b408cf9ec72e4ef33",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device": "cpu"
+      }
+     },
+     "closure": null,
+     "retained_history": true
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "c7dbfa3b5bf6db3c3a35da428d2641fb34458846bf07eadfbe64c57d4a576c97",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS_HISTORY.sota_timefilter_ecl_v1_from_dragon.REPLAYS_GPU.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "METRIC_AND_SHAPE_BOUND",
+     "replay": {
+      "unit": "L96_h96_s2021",
+      "device": "cuda:0",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "replayed_author_metric": {
+       "mae": 0.23055443167686462,
+       "mse": 0.13331516087055206
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "wall_seconds": 21.863431930541992
+     },
+     "closure": null,
+     "retained_history": true
+    },
+    {
+     "kind": "report",
+     "evidence_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+     "bound": true,
+     "matched_identities": [
+      "predictions",
+      "checkpoint",
+      "record"
+     ],
+     "why": null,
+     "closure": {
+      "verified": true,
+      "verified_historically": null,
+      "custody": "ACCEPTED_ARTIFACT_CHAIN",
+      "problems": []
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.23055443167686462,
+       "mse": 0.13331516087055206
+      },
+      "metric_basis": "author_float32"
+     },
+     "replay": {
+      "unit": "L96_h96_s2021",
+      "device": "cuda:0",
+      "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+      "device_name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 159164640,
+      "elements": 159164640,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": {
+       "mae": 0.23055443167686462,
+       "mse": 0.13331516087055206
+      },
+      "replayed_author_metric_state": "EXECUTED: df_sota_author_metric_exact.v2 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test); utils.metrics.metric executed on the memmapped arrays as well: bit-equal",
+      "replayed_metric_float64": {
+       "mae": 0.2305544209409133,
+       "mse": 0.1333151570071943
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "property": "cross_device_portability",
+      "trained_on_device_uuid": null,
+      "trained_on_attribution": "UNKNOWN"
+     }
+    },
+    {
+     "kind": "binding",
+     "evidence_sha256": "5f7499f9b3dc8cb3e354bbaacad043cdf8da5984e6cf16401a15a0f4049c91cb",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/SAME_DEVICE_REPLAY_BINDING.1790204723.json",
+     "bound": true,
+     "compared_identities": [
+      "record",
+      "checkpoint",
+      "predictions"
+     ],
+     "why": null,
+     "replay": {
+      "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+      "max_abs_prediction_difference": 0.0,
+      "exact_equal_fraction": 1.0,
+      "allclose_rule": true,
+      "replayed_author_metric": {
+       "mae": 0.23055443167686462,
+       "mse": 0.13331516087055206
+      }
+     },
+     "closure": null
+    }
+   ],
+   "refused": [
+    {
+     "kind": "report",
+     "evidence_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h96_s2021: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    }
+   ],
+   "properties": {
+    "score": {
+     "mae": 0.23055443167686462,
+     "mse": 0.13331516087055206
+    },
+    "metric_basis": "author_float32",
+    "score_source": "record",
+    "accepted_terminal": true,
+    "closure_verified": true,
+    "closure_verified_historically": false,
+    "custody_audited_live": false,
+    "replay": {
+     "observed_device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+     "observed_device_name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+     "max_abs_prediction_difference": 0.0,
+     "exact_equal_fraction": 1.0,
+     "elements": 159164640,
+     "allclose_rule": true,
+     "from_evidence": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203"
+    },
+    "training_device_attribution": {
+     "uuid": null,
+     "class": "UNKNOWN"
+    }
+   },
+   "terminal_receipt": {
+    "campaign_key": "satoshi-sota-timefilter-ecl-v1-L96_h96_s2021-data",
+    "campaign_sha256": "3a2afc0b881adf392018cef6e539ffddc0119044d9c7ff8b39ddb4ab9cf723cd",
+    "terminal_sha256": "fce31ea399c8e766f714ae81524c83655478a71afb86b18e888ffd795e057838",
+    "generation": 1,
+    "status": "COMPLETED",
+    "accepted_at": "2026-09-22T03:58:14Z",
+    "work_started_at": "2026-09-22T03:23:16Z",
+    "started_at": "2026-09-22T03:23:16Z",
+    "finished_at": "2026-09-22T03:58:13Z",
+    "metrics": 4,
+    "deliveries": [
+     "c49372c6ce9e41dc8fcec1993d07f937"
+    ],
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "source": "the governance client's own answer when it accepted this terminal"
+   },
+   "composition_class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+   "reading": "the predictions were reproduced on GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9 element for element, but the training device attribution is UNKNOWN: this does not establish which physical device trained the cell"
+  },
+  "L96_h96_s2022": {
+   "unit": "L96_h96_s2022",
+   "horizon": 96,
+   "seed": 2022,
+   "identity": {
+    "record_present": true,
+    "record_sha256": "96d1e57408d6e1d66d17e3275a2b9ea966ffa0a805d04728c4533162225d8a48",
+    "checkpoint_sha256": "9a20a65e76d3259b2a1d5d6cb47649572469dbb01b07a2b146fbfd95236ae22b",
+    "predictions_on_disk": true,
+    "predictions_sha256": "26aa75b643f2f6a6d4d90ab47ed6ab3b0d5b12074f8e0823544d19de59d9d590",
+    "predictions_sha256_recorded": "26aa75b643f2f6a6d4d90ab47ed6ab3b0d5b12074f8e0823544d19de59d9d590",
+    "pred_body_sha256_recorded": "d18303a56dbdabad011d4c9a0b1126185e697e170ef3133c908ac4cc5951cfce",
+    "regeneration_sha256": null,
+    "regeneration_acceptance_sha256": null,
+    "catalog_sha256": "2a5ff02d92c5c52b6333f47262d26108cb621d2fc784e2f18a676b343bb779d2",
+    "shapes_pred": [
+     5165,
+     96,
+     321
+    ],
+    "elements": 159164640,
+    "author_metric_float32": {
+     "mae": 0.23777532577514648,
+     "mse": 0.14008182287216187
+    },
+    "independent_metric_float64": {
+     "mae": 0.23777533347876625,
+     "mse": 0.14008181771738154
+    },
+    "metric_basis": "author_float32",
+    "attribution": {
+     "uuid": null,
+     "class": "UNKNOWN"
+    }
+   },
+   "admitted": [
+    {
+     "kind": "report",
+     "evidence_sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+     "bound": true,
+     "matched_identities": [
+      "predictions",
+      "checkpoint",
+      "record"
+     ],
+     "why": null,
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": "ACCEPTED_ARTIFACT_CHAIN",
+      "problems": [
+       "L96_h96_s2022: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002186298370361328, finite True, shape_equal True, error "
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.23777532577514648,
+       "mse": 0.14008182287216187
+      },
+      "metric_basis": "author_float32"
+     },
+     "replay": {
+      "unit": "L96_h96_s2022",
+      "device": "cuda:0",
+      "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+      "device_name": "NVIDIA GeForce RTX 5090",
+      "max_abs_prediction_difference": 0.0002186298370361328,
+      "allclose_rule": false,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 18749775,
+      "elements": 159164640,
+      "exact_equal_fraction": 0.11780113346783556,
+      "replayed_author_metric": {
+       "mae": 0.23777532577514648,
+       "mse": 0.14008182287216187
+      },
+      "replayed_author_metric_state": "EXECUTED: df_sota_author_metric_exact.v2 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test); utils.metrics.metric executed on the memmapped arrays as well: bit-equal",
+      "replayed_metric_float64": {
+       "mae": 0.23777533329920003,
+       "mse": 0.14008181757304916
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "property": "cross_device_portability",
+      "trained_on_device_uuid": null,
+      "trained_on_attribution": "UNKNOWN"
+     }
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h96_s2022",
+      "device": "cuda:0",
+      "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+      "device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+      "max_abs_prediction_difference": 0.0002186298370361328,
+      "allclose_rule": false,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 18749775,
+      "elements": 159164640,
+      "exact_equal_fraction": 0.11780113346783556,
+      "replayed_author_metric": {
+       "mae": 0.23777532577514648,
+       "mse": 0.14008182287216187
+      },
+      "replayed_author_metric_state": "EXECUTED: utils.metrics.metric on the memmapped float32 arrays (same function, dtype, layout)",
+      "replayed_metric_float64": {
+       "mae": 0.23777533329920003,
+       "mse": 0.14008181757304916
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "identity": {
+       "checkpoint_sha256": "9a20a65e76d3259b2a1d5d6cb47649572469dbb01b07a2b146fbfd95236ae22b",
+       "arrays_sha256": "26aa75b643f2f6a6d4d90ab47ed6ab3b0d5b12074f8e0823544d19de59d9d590",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "ea681f27c214db485ef80adeec67a81fa65737fda6bdc0838867d273f51ab6f9",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device_requested": "cuda"
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "environment": {
+       "host": "gamma",
+       "python": "3.12.13",
+       "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+       "torch": "2.13.0+cu130",
+       "numpy": "2.5.1",
+       "pandas": "3.0.3",
+       "sklearn": "1.9.0",
+       "scipy": "1.18.0",
+       "cuda": "13.0",
+       "gpus": [
+        "NVIDIA GeForce RTX 5090"
+       ],
+       "cudnn": 92400,
+       "gpu_devices": [
+        {
+         "index": 0,
+         "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+         "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+         "temperature_c": 36.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 14.0,
+         "memory_total_mib": 12227.0
+        },
+        {
+         "index": 1,
+         "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+         "name": "NVIDIA GeForce RTX 5090",
+         "temperature_c": 44.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 12.0,
+         "memory_total_mib": 32607.0
+        }
+       ],
+       "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+      },
+      "property": "cross_device_portability",
+      "trained_on_device_uuid": null
+     },
+     "closure": null,
+     "retained_history": true
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "4a501a0d2a0206754d9ee4898fdfa50206f48ae5af44c43f84ea7820d32d203d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS_HISTORY.sota_timefilter_ecl_v1_from_dragon.REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h96_s2022",
+      "device": "cpu",
+      "max_abs_prediction_difference": 0.00040149688720703125,
+      "allclose_rule": false,
+      "replayed_author_metric": {
+       "mae": 0.23777532577514648,
+       "mse": 0.14008180797100067
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "identity": {
+       "checkpoint_sha256": "9a20a65e76d3259b2a1d5d6cb47649572469dbb01b07a2b146fbfd95236ae22b",
+       "arrays_sha256": "26aa75b643f2f6a6d4d90ab47ed6ab3b0d5b12074f8e0823544d19de59d9d590",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "facf3ff81a15ad64c2088d8ab9d71d61bd1cb97f3c420a5b408cf9ec72e4ef33",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device": "cpu"
+      }
+     },
+     "closure": null,
+     "retained_history": true
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "c7dbfa3b5bf6db3c3a35da428d2641fb34458846bf07eadfbe64c57d4a576c97",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS_HISTORY.sota_timefilter_ecl_v1_from_dragon.REPLAYS_GPU.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "METRIC_AND_SHAPE_BOUND",
+     "replay": {
+      "unit": "L96_h96_s2022",
+      "device": "cuda:0",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "replayed_author_metric": {
+       "mae": 0.23777532577514648,
+       "mse": 0.14008182287216187
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "wall_seconds": 21.86842441558838
+     },
+     "closure": null,
+     "retained_history": true
+    },
+    {
+     "kind": "report",
+     "evidence_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+     "bound": true,
+     "matched_identities": [
+      "predictions",
+      "checkpoint",
+      "record"
+     ],
+     "why": null,
+     "closure": {
+      "verified": true,
+      "verified_historically": null,
+      "custody": "ACCEPTED_ARTIFACT_CHAIN",
+      "problems": []
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.23777532577514648,
+       "mse": 0.14008182287216187
+      },
+      "metric_basis": "author_float32"
+     },
+     "replay": {
+      "unit": "L96_h96_s2022",
+      "device": "cuda:0",
+      "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+      "device_name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 159164640,
+      "elements": 159164640,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": {
+       "mae": 0.23777532577514648,
+       "mse": 0.14008182287216187
+      },
+      "replayed_author_metric_state": "EXECUTED: df_sota_author_metric_exact.v2 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test); utils.metrics.metric executed on the memmapped arrays as well: bit-equal",
+      "replayed_metric_float64": {
+       "mae": 0.2377753334787663,
+       "mse": 0.1400818177173815
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "property": "cross_device_portability",
+      "trained_on_device_uuid": null,
+      "trained_on_attribution": "UNKNOWN"
+     }
+    },
+    {
+     "kind": "binding",
+     "evidence_sha256": "5f7499f9b3dc8cb3e354bbaacad043cdf8da5984e6cf16401a15a0f4049c91cb",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/SAME_DEVICE_REPLAY_BINDING.1790204723.json",
+     "bound": true,
+     "compared_identities": [
+      "record",
+      "checkpoint",
+      "predictions"
+     ],
+     "why": null,
+     "replay": {
+      "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+      "max_abs_prediction_difference": 0.0,
+      "exact_equal_fraction": 1.0,
+      "allclose_rule": true,
+      "replayed_author_metric": {
+       "mae": 0.23777532577514648,
+       "mse": 0.14008182287216187
+      }
+     },
+     "closure": null
+    }
+   ],
+   "refused": [
+    {
+     "kind": "report",
+     "evidence_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h96_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    }
+   ],
+   "properties": {
+    "score": {
+     "mae": 0.23777532577514648,
+     "mse": 0.14008182287216187
+    },
+    "metric_basis": "author_float32",
+    "score_source": "record",
+    "accepted_terminal": true,
+    "closure_verified": true,
+    "closure_verified_historically": false,
+    "custody_audited_live": false,
+    "replay": {
+     "observed_device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+     "observed_device_name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+     "max_abs_prediction_difference": 0.0,
+     "exact_equal_fraction": 1.0,
+     "elements": 159164640,
+     "allclose_rule": true,
+     "from_evidence": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203"
+    },
+    "training_device_attribution": {
+     "uuid": null,
+     "class": "UNKNOWN"
+    }
+   },
+   "terminal_receipt": {
+    "campaign_key": "satoshi-sota-timefilter-ecl-v1-L96_h96_s2022-data",
+    "campaign_sha256": "dcd78a60645b8eb1cbbdf7ef9ac05ce12885d304d5827e6dceb715d3d4030fc0",
+    "terminal_sha256": "43073cfaf9458766e8898a65a785fa7e264308367a961ba2bd4fa94d7b6b250f",
+    "generation": 1,
+    "status": "COMPLETED",
+    "accepted_at": "2026-09-22T04:33:31Z",
+    "work_started_at": "2026-09-22T03:58:15Z",
+    "started_at": "2026-09-22T03:58:15Z",
+    "finished_at": "2026-09-22T04:33:30Z",
+    "metrics": 4,
+    "deliveries": [
+     "952fdb38bb8948c089a25a36f34b5f93"
+    ],
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "source": "the governance client's own answer when it accepted this terminal"
+   },
+   "composition_class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+   "reading": "the predictions were reproduced on GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9 element for element, but the training device attribution is UNKNOWN: this does not establish which physical device trained the cell"
+  },
+  "L96_h96_s2023": {
+   "unit": "L96_h96_s2023",
+   "horizon": 96,
+   "seed": 2023,
+   "identity": {
+    "record_present": true,
+    "record_sha256": "15c38abd322a72042ef2d00e7ca92a406e38bc64e0b210ef5121713a9970f21e",
+    "checkpoint_sha256": "3fbda47b8d6962f939ec338dfa10eff8219f3cbd49d5cf79eec5daa3b459b176",
+    "predictions_on_disk": true,
+    "predictions_sha256": "925af6a5935061e6211a0ee9445c4db55af957e5f6325ac0b1ea13f69a33d1c9",
+    "predictions_sha256_recorded": "925af6a5935061e6211a0ee9445c4db55af957e5f6325ac0b1ea13f69a33d1c9",
+    "pred_body_sha256_recorded": "f472f07ba93bbb900376fe0a715b9517d8b33047541131db1fe3f39c3f407682",
+    "regeneration_sha256": null,
+    "regeneration_acceptance_sha256": null,
+    "catalog_sha256": "351f5eefff1ae2835797e336cb709777fcaf8ab1be49dd027eaa9ef62dc1ee2e",
+    "shapes_pred": [
+     5165,
+     96,
+     321
+    ],
+    "elements": 159164640,
+    "author_metric_float32": {
+     "mae": 0.23032169044017792,
+     "mse": 0.13309241831302643
+    },
+    "independent_metric_float64": {
+     "mae": 0.230321683210759,
+     "mse": 0.13309241763914356
+    },
+    "metric_basis": "author_float32",
+    "attribution": {
+     "uuid": null,
+     "class": "UNKNOWN"
+    }
+   },
+   "admitted": [
+    {
+     "kind": "report",
+     "evidence_sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+     "bound": true,
+     "matched_identities": [
+      "predictions",
+      "checkpoint",
+      "record"
+     ],
+     "why": null,
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": "ACCEPTED_ARTIFACT_CHAIN",
+      "problems": [
+       "L96_h96_s2023: fresh-process reload (cross_device_portability, cuda:0) fails the frozen replay rule (atol/rtol 1e-4): max|delta| 0.0002714395523071289, finite True, shape_equal True, error "
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.23032169044017792,
+       "mse": 0.13309241831302643
+      },
+      "metric_basis": "author_float32"
+     },
+     "replay": {
+      "unit": "L96_h96_s2023",
+      "device": "cuda:0",
+      "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+      "device_name": "NVIDIA GeForce RTX 5090",
+      "max_abs_prediction_difference": 0.0002714395523071289,
+      "allclose_rule": false,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 17311406,
+      "elements": 159164640,
+      "exact_equal_fraction": 0.10876414510157532,
+      "replayed_author_metric": {
+       "mae": 0.23032169044017792,
+       "mse": 0.13309241831302643
+      },
+      "replayed_author_metric_state": "EXECUTED: df_sota_author_metric_exact.v2 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test); utils.metrics.metric executed on the memmapped arrays as well: bit-equal",
+      "replayed_metric_float64": {
+       "mae": 0.23032168309299667,
+       "mse": 0.13309241761640775
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "property": "cross_device_portability",
+      "trained_on_device_uuid": null,
+      "trained_on_attribution": "UNKNOWN"
+     }
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h96_s2023",
+      "device": "cuda:0",
+      "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+      "device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+      "max_abs_prediction_difference": 0.0002714395523071289,
+      "allclose_rule": false,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 17311406,
+      "elements": 159164640,
+      "exact_equal_fraction": 0.10876414510157532,
+      "replayed_author_metric": {
+       "mae": 0.23032169044017792,
+       "mse": 0.13309241831302643
+      },
+      "replayed_author_metric_state": "EXECUTED: utils.metrics.metric on the memmapped float32 arrays (same function, dtype, layout)",
+      "replayed_metric_float64": {
+       "mae": 0.23032168309299667,
+       "mse": 0.13309241761640775
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "identity": {
+       "checkpoint_sha256": "3fbda47b8d6962f939ec338dfa10eff8219f3cbd49d5cf79eec5daa3b459b176",
+       "arrays_sha256": "925af6a5935061e6211a0ee9445c4db55af957e5f6325ac0b1ea13f69a33d1c9",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "ea681f27c214db485ef80adeec67a81fa65737fda6bdc0838867d273f51ab6f9",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device_requested": "cuda"
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "environment": {
+       "host": "gamma",
+       "python": "3.12.13",
+       "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+       "torch": "2.13.0+cu130",
+       "numpy": "2.5.1",
+       "pandas": "3.0.3",
+       "sklearn": "1.9.0",
+       "scipy": "1.18.0",
+       "cuda": "13.0",
+       "gpus": [
+        "NVIDIA GeForce RTX 5090"
+       ],
+       "cudnn": 92400,
+       "gpu_devices": [
+        {
+         "index": 0,
+         "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+         "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+         "temperature_c": 36.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 14.0,
+         "memory_total_mib": 12227.0
+        },
+        {
+         "index": 1,
+         "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+         "name": "NVIDIA GeForce RTX 5090",
+         "temperature_c": 45.0,
+         "utilization_pct": 1.0,
+         "memory_used_mib": 12.0,
+         "memory_total_mib": 32607.0
+        }
+       ],
+       "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+      },
+      "property": "cross_device_portability",
+      "trained_on_device_uuid": null
+     },
+     "closure": null,
+     "retained_history": true
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "4a501a0d2a0206754d9ee4898fdfa50206f48ae5af44c43f84ea7820d32d203d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS_HISTORY.sota_timefilter_ecl_v1_from_dragon.REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h96_s2023",
+      "device": "cpu",
+      "max_abs_prediction_difference": 0.010064072906970978,
+      "allclose_rule": false,
+      "replayed_author_metric": {
+       "mae": 0.2303217053413391,
+       "mse": 0.13309241831302643
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "identity": {
+       "checkpoint_sha256": "3fbda47b8d6962f939ec338dfa10eff8219f3cbd49d5cf79eec5daa3b459b176",
+       "arrays_sha256": "925af6a5935061e6211a0ee9445c4db55af957e5f6325ac0b1ea13f69a33d1c9",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "facf3ff81a15ad64c2088d8ab9d71d61bd1cb97f3c420a5b408cf9ec72e4ef33",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device": "cpu"
+      }
+     },
+     "closure": null,
+     "retained_history": true
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "c7dbfa3b5bf6db3c3a35da428d2641fb34458846bf07eadfbe64c57d4a576c97",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS_HISTORY.sota_timefilter_ecl_v1_from_dragon.REPLAYS_GPU.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "METRIC_AND_SHAPE_BOUND",
+     "replay": {
+      "unit": "L96_h96_s2023",
+      "device": "cuda:0",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "replayed_author_metric": {
+       "mae": 0.23032169044017792,
+       "mse": 0.13309241831302643
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "wall_seconds": 21.769684076309204
+     },
+     "closure": null,
+     "retained_history": true
+    },
+    {
+     "kind": "report",
+     "evidence_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+     "bound": true,
+     "matched_identities": [
+      "predictions",
+      "checkpoint",
+      "record"
+     ],
+     "why": null,
+     "closure": {
+      "verified": true,
+      "verified_historically": null,
+      "custody": "ACCEPTED_ARTIFACT_CHAIN",
+      "problems": []
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.23032169044017792,
+       "mse": 0.13309241831302643
+      },
+      "metric_basis": "author_float32"
+     },
+     "replay": {
+      "unit": "L96_h96_s2023",
+      "device": "cuda:0",
+      "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+      "device_name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 159164640,
+      "elements": 159164640,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": {
+       "mae": 0.23032169044017792,
+       "mse": 0.13309241831302643
+      },
+      "replayed_author_metric_state": "EXECUTED: df_sota_author_metric_exact.v2 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test); utils.metrics.metric executed on the memmapped arrays as well: bit-equal",
+      "replayed_metric_float64": {
+       "mae": 0.23032168321075905,
+       "mse": 0.1330924176391435
+      },
+      "true_sha256_replayed": "2ceb6dd6a637a0c11f354ecc4ba15100a75329ca48c2f4c450dd8d52314218c4",
+      "shape": [
+       5165,
+       96,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "property": "cross_device_portability",
+      "trained_on_device_uuid": null,
+      "trained_on_attribution": "UNKNOWN"
+     }
+    },
+    {
+     "kind": "binding",
+     "evidence_sha256": "5f7499f9b3dc8cb3e354bbaacad043cdf8da5984e6cf16401a15a0f4049c91cb",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/SAME_DEVICE_REPLAY_BINDING.1790204723.json",
+     "bound": true,
+     "compared_identities": [
+      "record",
+      "checkpoint",
+      "predictions"
+     ],
+     "why": null,
+     "replay": {
+      "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+      "max_abs_prediction_difference": 0.0,
+      "exact_equal_fraction": 1.0,
+      "allclose_rule": true,
+      "replayed_author_metric": {
+       "mae": 0.23032169044017792,
+       "mse": 0.13309241831302643
+      }
+     },
+     "closure": null
+    }
+   ],
+   "refused": [
+    {
+     "kind": "report",
+     "evidence_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h96_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    }
+   ],
+   "properties": {
+    "score": {
+     "mae": 0.23032169044017792,
+     "mse": 0.13309241831302643
+    },
+    "metric_basis": "author_float32",
+    "score_source": "record",
+    "accepted_terminal": true,
+    "closure_verified": true,
+    "closure_verified_historically": false,
+    "custody_audited_live": false,
+    "replay": {
+     "observed_device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+     "observed_device_name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+     "max_abs_prediction_difference": 0.0,
+     "exact_equal_fraction": 1.0,
+     "elements": 159164640,
+     "allclose_rule": true,
+     "from_evidence": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203"
+    },
+    "training_device_attribution": {
+     "uuid": null,
+     "class": "UNKNOWN"
+    }
+   },
+   "terminal_receipt": {
+    "campaign_key": "satoshi-sota-timefilter-ecl-v1-L96_h96_s2023-data",
+    "campaign_sha256": "02d105d06d56b53305fc24b66336c70bb98fe4872805174e7b2fe68911fa49d3",
+    "terminal_sha256": "2b07e2551fab04e0cd2dbdbdc42e65db2f6242a90f9fff6d83ca2dca6adece69",
+    "generation": 1,
+    "status": "COMPLETED",
+    "accepted_at": "2026-09-22T05:08:43Z",
+    "work_started_at": "2026-09-22T04:33:32Z",
+    "started_at": "2026-09-22T04:33:32Z",
+    "finished_at": "2026-09-22T05:08:42Z",
+    "metrics": 4,
+    "deliveries": [
+     "618221b1c57f484e9ea47520c7ae5d4a"
+    ],
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "source": "the governance client's own answer when it accepted this terminal"
+   },
+   "composition_class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+   "reading": "the predictions were reproduced on GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9 element for element, but the training device attribution is UNKNOWN: this does not establish which physical device trained the cell"
+  },
+  "L96_h192_s2021": {
+   "unit": "L96_h192_s2021",
+   "horizon": 192,
+   "seed": 2021,
+   "identity": {
+    "record_present": true,
+    "record_sha256": "3584eca7a5909d74ff0a5976c835f4726c5eb60f17d64f1394e50faf067d84a7",
+    "checkpoint_sha256": "80545467255f0457656a51cf4d281cb9cda3e07cad8ef65d7d248da97b8f1617",
+    "predictions_on_disk": false,
+    "predictions_sha256": null,
+    "predictions_sha256_recorded": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+    "pred_body_sha256_recorded": "16c616d590654b8c94e27a3d44858ca2280e816f8ebcb81515b08feefaca6112",
+    "regeneration_sha256": "a1ef993e612b95ad9f873463497b81af1066dfa19acd632cc8aedd35ff404668",
+    "regeneration_acceptance_sha256": "07cb681f998464834fde6b7ad9c98afa6f3c35f397968d8d481f59611b31121c",
+    "catalog_sha256": "d595ec8534cd62ce6ccdc04ca65bd889a83667382e6353ac1b3e08eef8c5041b",
+    "shapes_pred": [
+     5069,
+     192,
+     321
+    ],
+    "elements": 312412608,
+    "author_metric_float32": {
+     "mae": 0.2559875547885895,
+     "mse": 0.1608569175004959
+    },
+    "independent_metric_float64": {
+     "mae": 0.25598757535170746,
+     "mse": 0.16085691459935003
+    },
+    "metric_basis": "author_float32",
+    "attribution": {
+     "uuid": null,
+     "class": "UNKNOWN"
+    }
+   },
+   "admitted": [
+    {
+     "kind": "report",
+     "evidence_sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+     "bound": true,
+     "matched_identities": [
+      "regeneration"
+     ],
+     "why": null,
+     "closure": {
+      "verified": false,
+      "verified_historically": true,
+      "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+      "problems": [
+       "L96_h192_s2021: REGENERATION_REFUSED_NOT_USED: REGEN_NOT_ACCEPTED: no accepted terminal carries this digest for kind='regeneration' subject='L96_h192_s2021' role='regeneration'",
+       "L96_h192_s2021: REGENERATION_REFUSED_NOT_USED: REGEN_ACCEPTANCE_NOT_ACCEPTED: no accepted terminal carries this digest for kind='regeneration' subject='L96_h192_s2021' role='regeneration_acceptance'"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.2559875547885895,
+       "mse": 0.1608569175004959
+      },
+      "metric_basis": "author_float32 [historical: original closure fbe2cd4c97a3]"
+     },
+     "replay": null
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h192_s2021",
+      "device": "cuda:0",
+      "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+      "device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+      "max_abs_prediction_difference": 4.76837158203125e-06,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 79868375,
+      "elements": 312412608,
+      "exact_equal_fraction": 0.25565029372950276,
+      "replayed_author_metric": {
+       "mae": 0.2559875547885895,
+       "mse": 0.1608569175004959
+      },
+      "replayed_author_metric_state": "EXECUTED: utils.metrics.metric on the memmapped float32 arrays (same function, dtype, layout)",
+      "replayed_metric_float64": {
+       "mae": 0.25598757535724276,
+       "mse": 0.16085691460341153
+      },
+      "true_sha256_replayed": "63a05d33f0577090f1b4e7f0c2d4b13748d09188904b17ffb1b87aa05f3706bd",
+      "shape": [
+       5069,
+       192,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "identity": {
+       "checkpoint_sha256": "80545467255f0457656a51cf4d281cb9cda3e07cad8ef65d7d248da97b8f1617",
+       "arrays_sha256": "03d4d6a04bbeb595da213423686b40cbf51facdb8dccf13bf806d2ca63866462",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "ea681f27c214db485ef80adeec67a81fa65737fda6bdc0838867d273f51ab6f9",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device_requested": "cuda"
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "environment": {
+       "host": "gamma",
+       "python": "3.12.13",
+       "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+       "torch": "2.13.0+cu130",
+       "numpy": "2.5.1",
+       "pandas": "3.0.3",
+       "sklearn": "1.9.0",
+       "scipy": "1.18.0",
+       "cuda": "13.0",
+       "gpus": [
+        "NVIDIA GeForce RTX 5090"
+       ],
+       "cudnn": 92400,
+       "gpu_devices": [
+        {
+         "index": 0,
+         "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+         "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+         "temperature_c": 36.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 14.0,
+         "memory_total_mib": 12227.0
+        },
+        {
+         "index": 1,
+         "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+         "name": "NVIDIA GeForce RTX 5090",
+         "temperature_c": 45.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 12.0,
+         "memory_total_mib": 32607.0
+        }
+       ],
+       "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+      },
+      "property": "cross_device_portability",
+      "trained_on_device_uuid": null
+     },
+     "closure": null,
+     "retained_history": true
+    },
+    {
+     "kind": "custody_audit",
+     "evidence_sha256": "cee3594069e676196f530a9d7e0f959ae578a3e92a0b5e5980c4567114dcec71",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/LIVE_CUSTODY.json",
+     "bound": true,
+     "why": null,
+     "custody_pass": true,
+     "closure": null,
+     "replay": {
+      "unit": "L96_h192_s2021",
+      "device": "cuda:0",
+      "device_uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+      "device_name": "NVIDIA GeForce RTX 4070 Laptop GPU",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 312412608,
+      "elements": 312412608,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": {
+       "mae": 0.2559875547885895,
+       "mse": 0.1608569175004959
+      },
+      "replayed_author_metric_state": "EXECUTED: df_sota_author_metric_exact.v2 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test); utils.metrics.metric executed on the memmapped arrays as well: bit-equal",
+      "replayed_metric_float64": {
+       "mae": 0.25598757535170746,
+       "mse": 0.1608569145993499
+      },
+      "true_sha256_replayed": "63a05d33f0577090f1b4e7f0c2d4b13748d09188904b17ffb1b87aa05f3706bd",
+      "shape": [
+       5069,
+       192,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "property": "cross_device_portability",
+      "trained_on_device_uuid": null,
+      "trained_on_attribution": "UNKNOWN"
+     },
+     "previous_report_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f"
+    }
+   ],
+   "refused": [
+    {
+     "kind": "report",
+     "evidence_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h192_s2021: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    },
+    {
+     "kind": "report",
+     "evidence_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": "UNCHECKED",
+      "problems": []
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.2559875547885895,
+       "mse": 0.1608569175004959
+      },
+      "metric_basis": "author_float32"
+     },
+     "replay": {
+      "unit": "L96_h192_s2021",
+      "device": "cuda:0",
+      "device_uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+      "device_name": "NVIDIA GeForce RTX 4070 Laptop GPU",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 312412608,
+      "elements": 312412608,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": {
+       "mae": 0.2559875547885895,
+       "mse": 0.1608569175004959
+      },
+      "replayed_author_metric_state": "EXECUTED: df_sota_author_metric_exact.v2 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test); utils.metrics.metric executed on the memmapped arrays as well: bit-equal",
+      "replayed_metric_float64": {
+       "mae": 0.25598757535170746,
+       "mse": 0.1608569145993499
+      },
+      "true_sha256_replayed": "63a05d33f0577090f1b4e7f0c2d4b13748d09188904b17ffb1b87aa05f3706bd",
+      "shape": [
+       5069,
+       192,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "property": "cross_device_portability",
+      "trained_on_device_uuid": null,
+      "trained_on_attribution": "UNKNOWN"
+     }
+    }
+   ],
+   "properties": {
+    "score": {
+     "mae": 0.2559875547885895,
+     "mse": 0.1608569175004959
+    },
+    "metric_basis": "author_float32",
+    "score_source": "record",
+    "accepted_terminal": true,
+    "closure_verified": false,
+    "closure_verified_historically": true,
+    "custody_audited_live": true,
+    "replay": {
+     "observed_device_uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+     "observed_device_name": "NVIDIA GeForce RTX 4070 Laptop GPU",
+     "max_abs_prediction_difference": 0.0,
+     "exact_equal_fraction": 1.0,
+     "elements": 312412608,
+     "allclose_rule": true,
+     "from_evidence": "cee3594069e676196f530a9d7e0f959ae578a3e92a0b5e5980c4567114dcec71"
+    },
+    "training_device_attribution": {
+     "uuid": null,
+     "class": "UNKNOWN"
+    }
+   },
+   "terminal_receipt": {
+    "campaign_key": "satoshi-sota-timefilter-ecl-v1-L96_h192_s2021-data",
+    "campaign_sha256": "23d05419085c88f4522f05b001d340af845bedf9209a62e7c47f014ecad6977c",
+    "terminal_sha256": "86828012298c0764357c8a89b91c66d6c369ccc6a5613d9bbb42c4ec92b13c5e",
+    "generation": 1,
+    "status": "COMPLETED",
+    "accepted_at": "2026-09-22T05:00:44Z",
+    "work_started_at": "2026-09-22T03:37:13Z",
+    "started_at": "2026-09-22T03:37:13Z",
+    "finished_at": "2026-09-22T05:00:43Z",
+    "metrics": 4,
+    "deliveries": [
+     "24dfe7a6d02d4e29ab5a6808611150f6"
+    ],
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "source": "the governance client's own answer when it accepted this terminal"
+   },
+   "composition_class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+   "reading": "the predictions were reproduced on GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326 element for element, but the training device attribution is UNKNOWN: this does not establish which physical device trained the cell"
+  },
+  "L96_h192_s2022": {
+   "unit": "L96_h192_s2022",
+   "horizon": 192,
+   "seed": 2022,
+   "identity": {
+    "record_present": true,
+    "record_sha256": "035abc642a6d62f2087be7ad185a8dbc1988a3c49e836015692c9ccbe50e6e55",
+    "checkpoint_sha256": "bafa32c25b6cd781d2f348f6685cf842c40a07c1f28e8cc4d8f5a58fb941d445",
+    "predictions_on_disk": false,
+    "predictions_sha256": null,
+    "predictions_sha256_recorded": "a34b226c1c8c2ee22f6e887be52924e06d81cfe232a7a8c84b7188cb0a8e5fcd",
+    "pred_body_sha256_recorded": "de0500c961e7ea91fc67cdb9266f3dc9f3e0437e6a40f53af080a70124be7c6d",
+    "regeneration_sha256": "8c04a34b00220c12917e1ed098fa59bec736f088c037fb7961530bc75efa45b6",
+    "regeneration_acceptance_sha256": "4f1448b83acb17696c9194850c5f375840413806ad6c7d42a5d5e20c27cbbaea",
+    "catalog_sha256": "2b88b7db704fff313c415d431aaf1ce6c4e28d269f6b76ca7ed0a1c4fa9b7a11",
+    "shapes_pred": [
+     5069,
+     192,
+     321
+    ],
+    "elements": 312412608,
+    "author_metric_float32": {
+     "mae": 0.2524290382862091,
+     "mse": 0.158626526594162
+    },
+    "independent_metric_float64": {
+     "mae": 0.25242905707613067,
+     "mse": 0.1586265362321413
+    },
+    "metric_basis": "author_float32",
+    "attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "admitted": [
+    {
+     "kind": "report",
+     "evidence_sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+     "bound": true,
+     "matched_identities": [
+      "regeneration"
+     ],
+     "why": null,
+     "closure": {
+      "verified": false,
+      "verified_historically": true,
+      "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+      "problems": []
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.2524290382862091,
+       "mse": 0.158626526594162
+      },
+      "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: author_float32 [historical: original closure fbe2cd4c97a3]]"
+     },
+     "replay": null
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h192_s2022",
+      "device": "cuda:0",
+      "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+      "device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 312412608,
+      "elements": 312412608,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": {
+       "mae": 0.2524290382862091,
+       "mse": 0.158626526594162
+      },
+      "replayed_author_metric_state": "EXECUTED: utils.metrics.metric on the memmapped float32 arrays (same function, dtype, layout)",
+      "replayed_metric_float64": {
+       "mae": 0.25242905707613045,
+       "mse": 0.15862653623214135
+      },
+      "true_sha256_replayed": "63a05d33f0577090f1b4e7f0c2d4b13748d09188904b17ffb1b87aa05f3706bd",
+      "shape": [
+       5069,
+       192,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "identity": {
+       "checkpoint_sha256": "bafa32c25b6cd781d2f348f6685cf842c40a07c1f28e8cc4d8f5a58fb941d445",
+       "arrays_sha256": "a34b226c1c8c2ee22f6e887be52924e06d81cfe232a7a8c84b7188cb0a8e5fcd",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "ea681f27c214db485ef80adeec67a81fa65737fda6bdc0838867d273f51ab6f9",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device_requested": "cuda"
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "environment": {
+       "host": "gamma",
+       "python": "3.12.13",
+       "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+       "torch": "2.13.0+cu130",
+       "numpy": "2.5.1",
+       "pandas": "3.0.3",
+       "sklearn": "1.9.0",
+       "scipy": "1.18.0",
+       "cuda": "13.0",
+       "gpus": [
+        "NVIDIA GeForce RTX 5090"
+       ],
+       "cudnn": 92400,
+       "gpu_devices": [
+        {
+         "index": 0,
+         "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+         "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+         "temperature_c": 36.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 14.0,
+         "memory_total_mib": 12227.0
+        },
+        {
+         "index": 1,
+         "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+         "name": "NVIDIA GeForce RTX 5090",
+         "temperature_c": 39.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 12.0,
+         "memory_total_mib": 32607.0
+        }
+       ],
+       "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+      },
+      "property": "same_device_repeatability",
+      "trained_on_device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
+     },
+     "closure": null,
+     "retained_history": true
+    }
+   ],
+   "refused": [
+    {
+     "kind": "report",
+     "evidence_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h192_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    },
+    {
+     "kind": "report",
+     "evidence_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h192_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    }
+   ],
+   "properties": {
+    "score": {
+     "mae": 0.2524290382862091,
+     "mse": 0.158626526594162
+    },
+    "metric_basis": "author_float32",
+    "score_source": "record",
+    "accepted_terminal": true,
+    "closure_verified": false,
+    "closure_verified_historically": true,
+    "custody_audited_live": false,
+    "replay": {
+     "observed_device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+     "observed_device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+     "max_abs_prediction_difference": 0.0,
+     "exact_equal_fraction": 1.0,
+     "elements": 312412608,
+     "allclose_rule": true,
+     "from_evidence": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44"
+    },
+    "training_device_attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "terminal_receipt": {
+    "campaign_key": "satoshi-sota-timefilter-ecl-v1-gamma-L96_h192_s2022-data",
+    "campaign_sha256": "943b62c6d0f4ed8ac6693471b20798cde910f0bc838896694be8319edb43bfe8",
+    "terminal_sha256": "3c1000e979a98557aa03a386296f154a83bfd395b19eeab22872156402228d6b",
+    "generation": 1,
+    "status": "COMPLETED",
+    "accepted_at": "2026-09-22T17:56:23Z",
+    "work_started_at": "2026-09-22T17:40:52Z",
+    "started_at": "2026-09-22T17:40:52Z",
+    "finished_at": "2026-09-22T17:56:22Z",
+    "metrics": 4,
+    "deliveries": [
+     "fde8ff8fb27d43c5a65f5ef477dc95c6"
+    ],
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "source": "the governance client's own answer when it accepted this terminal"
+   },
+   "composition_class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+   "reading": "the predictions were reproduced on GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519 element for element, but the training device attribution is INFERRED_GPU_MEMORY: this does not establish which physical device trained the cell"
+  },
+  "L96_h192_s2023": {
+   "unit": "L96_h192_s2023",
+   "horizon": 192,
+   "seed": 2023,
+   "identity": {
+    "record_present": true,
+    "record_sha256": "6cc455141ab627e539fe95a699602b2cb3b51c71bab19cfa6ac5032a2e0a0e8b",
+    "checkpoint_sha256": "b3bd43c136c61aaa690cd688cbb1afef985c440ee4b22087124cc2c66dafa752",
+    "predictions_on_disk": false,
+    "predictions_sha256": null,
+    "predictions_sha256_recorded": "3f4846bfc3ecc7ac0c4ca9b4b632ec54dfea1c0008849affcbc1eb4b484cc0e2",
+    "pred_body_sha256_recorded": "57347d19071c15e183b5cb3d3bf02a3003912ea2b0e8236f4ffec68d8f2065e0",
+    "regeneration_sha256": "5066a72dbec23e92bddff1415424576b6725963288d9acf2ff13447bcc4ff091",
+    "regeneration_acceptance_sha256": "db9bc2b94c8d6a450a3ad24400996b8da9663371768a560a60863808f0aae744",
+    "catalog_sha256": "a78f4fb0dbc38ef0bb1a627fffe8ac6e7ba3801c8c7c5f7f9f27c91e758240c4",
+    "shapes_pred": [
+     5069,
+     192,
+     321
+    ],
+    "elements": 312412608,
+    "author_metric_float32": {
+     "mae": 0.24807162582874298,
+     "mse": 0.15345218777656555
+    },
+    "independent_metric_float64": {
+     "mae": 0.24807163665918958,
+     "mse": 0.15345219881912456
+    },
+    "metric_basis": "author_float32",
+    "attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "admitted": [
+    {
+     "kind": "report",
+     "evidence_sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+     "bound": true,
+     "matched_identities": [
+      "regeneration"
+     ],
+     "why": null,
+     "closure": {
+      "verified": false,
+      "verified_historically": true,
+      "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+      "problems": []
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.24807162582874298,
+       "mse": 0.15345218777656555
+      },
+      "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: author_float32 [historical: original closure fbe2cd4c97a3]]"
+     },
+     "replay": null
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h192_s2023",
+      "device": "cuda:0",
+      "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+      "device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 312412608,
+      "elements": 312412608,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": {
+       "mae": 0.24807162582874298,
+       "mse": 0.15345218777656555
+      },
+      "replayed_author_metric_state": "EXECUTED: utils.metrics.metric on the memmapped float32 arrays (same function, dtype, layout)",
+      "replayed_metric_float64": {
+       "mae": 0.24807163665918958,
+       "mse": 0.1534521988191246
+      },
+      "true_sha256_replayed": "63a05d33f0577090f1b4e7f0c2d4b13748d09188904b17ffb1b87aa05f3706bd",
+      "shape": [
+       5069,
+       192,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "identity": {
+       "checkpoint_sha256": "b3bd43c136c61aaa690cd688cbb1afef985c440ee4b22087124cc2c66dafa752",
+       "arrays_sha256": "3f4846bfc3ecc7ac0c4ca9b4b632ec54dfea1c0008849affcbc1eb4b484cc0e2",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "ea681f27c214db485ef80adeec67a81fa65737fda6bdc0838867d273f51ab6f9",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device_requested": "cuda"
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "environment": {
+       "host": "gamma",
+       "python": "3.12.13",
+       "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+       "torch": "2.13.0+cu130",
+       "numpy": "2.5.1",
+       "pandas": "3.0.3",
+       "sklearn": "1.9.0",
+       "scipy": "1.18.0",
+       "cuda": "13.0",
+       "gpus": [
+        "NVIDIA GeForce RTX 5090"
+       ],
+       "cudnn": 92400,
+       "gpu_devices": [
+        {
+         "index": 0,
+         "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+         "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+         "temperature_c": 36.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 14.0,
+         "memory_total_mib": 12227.0
+        },
+        {
+         "index": 1,
+         "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+         "name": "NVIDIA GeForce RTX 5090",
+         "temperature_c": 41.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 12.0,
+         "memory_total_mib": 32607.0
+        }
+       ],
+       "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+      },
+      "property": "same_device_repeatability",
+      "trained_on_device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
+     },
+     "closure": null,
+     "retained_history": true
+    }
+   ],
+   "refused": [
+    {
+     "kind": "report",
+     "evidence_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h192_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    },
+    {
+     "kind": "report",
+     "evidence_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h192_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    }
+   ],
+   "properties": {
+    "score": {
+     "mae": 0.24807162582874298,
+     "mse": 0.15345218777656555
+    },
+    "metric_basis": "author_float32",
+    "score_source": "record",
+    "accepted_terminal": true,
+    "closure_verified": false,
+    "closure_verified_historically": true,
+    "custody_audited_live": false,
+    "replay": {
+     "observed_device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+     "observed_device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+     "max_abs_prediction_difference": 0.0,
+     "exact_equal_fraction": 1.0,
+     "elements": 312412608,
+     "allclose_rule": true,
+     "from_evidence": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44"
+    },
+    "training_device_attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "terminal_receipt": {
+    "campaign_key": "satoshi-sota-timefilter-ecl-v1-gamma-L96_h192_s2023-data",
+    "campaign_sha256": "32d77a81478069050fc379d856887fb8e05e7eaed52e2bd2c8c0a89d9a4c0133",
+    "terminal_sha256": "40ba271c75df3fbb2667aedc58398d60eb0577e4bbdf12832efbb432adfbf526",
+    "generation": 1,
+    "status": "COMPLETED",
+    "accepted_at": "2026-09-22T18:11:57Z",
+    "work_started_at": "2026-09-22T17:56:25Z",
+    "started_at": "2026-09-22T17:56:25Z",
+    "finished_at": "2026-09-22T18:11:56Z",
+    "metrics": 4,
+    "deliveries": [
+     "6bd36a322d004f92ad60e8bcdd6853e6"
+    ],
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "source": "the governance client's own answer when it accepted this terminal"
+   },
+   "composition_class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+   "reading": "the predictions were reproduced on GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519 element for element, but the training device attribution is INFERRED_GPU_MEMORY: this does not establish which physical device trained the cell"
+  },
+  "L96_h336_s2021": {
+   "unit": "L96_h336_s2021",
+   "horizon": 336,
+   "seed": 2021,
+   "identity": {
+    "record_present": true,
+    "record_sha256": "c04f9d5720bb89923def480f6d147ca6a7983b6955f8adce31f13b3d213d1e67",
+    "checkpoint_sha256": "de7df95fe74b13bdb846dad404c79261569149ea48f37143c7fc7dc91526531e",
+    "predictions_on_disk": false,
+    "predictions_sha256": null,
+    "predictions_sha256_recorded": "93d89dafe515e3834b5d8517b0d2348042f1184d39e147fb2cba5ddb0ee523ad",
+    "pred_body_sha256_recorded": "f5e933e7b7b02172da3ecd781b070ab36fcc557e0bd2d6e7fb87a8beda570eb9",
+    "regeneration_sha256": "1f9e764f53b0762e60e2a9eb96cbbdadad651f7371f8869b2c008e4554535df6",
+    "regeneration_acceptance_sha256": "d6160e29082d854d356a7b7655b7e05b2dc98899411695b257a43c8b2609cb24",
+    "catalog_sha256": "717525b04f64e677edf82695b24b847d205631cee43692046da1115ac63169ff",
+    "shapes_pred": [
+     4925,
+     336,
+     321
+    ],
+    "elements": 531190800,
+    "author_metric_float32": null,
+    "independent_metric_float64": {
+     "mae": 0.26066640344614045,
+     "mse": 0.16259404228254276
+    },
+    "metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+    "attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "admitted": [
+    {
+     "kind": "report",
+     "evidence_sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+     "bound": true,
+     "matched_identities": [
+      "regeneration"
+     ],
+     "why": null,
+     "closure": {
+      "verified": false,
+      "verified_historically": true,
+      "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+      "problems": []
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.2606664001941681,
+       "mse": 0.1625940501689911
+      },
+      "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: independent_float64 (author float32 reduction NOT executed within the memory budget) [historical: original closure fbe2cd4c97a3]]"
+     },
+     "replay": null
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h336_s2021",
+      "device": "cuda:0",
+      "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+      "device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 531190800,
+      "elements": 531190800,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": null,
+      "replayed_author_metric_state": "NOT_EXECUTED_WITHIN_BUDGET: needs ~6374289600 bytes of temporaries, budget 4294967296",
+      "replayed_metric_float64": {
+       "mae": 0.26066640344614045,
+       "mse": 0.16259404228254276
+      },
+      "true_sha256_replayed": "5650423070ebaed3b38917c481a2cd9665d9fa10bcdb1883403eec89da07fdbb",
+      "shape": [
+       4925,
+       336,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "identity": {
+       "checkpoint_sha256": "de7df95fe74b13bdb846dad404c79261569149ea48f37143c7fc7dc91526531e",
+       "arrays_sha256": "93d89dafe515e3834b5d8517b0d2348042f1184d39e147fb2cba5ddb0ee523ad",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "ea681f27c214db485ef80adeec67a81fa65737fda6bdc0838867d273f51ab6f9",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device_requested": "cuda"
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "environment": {
+       "host": "gamma",
+       "python": "3.12.13",
+       "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+       "torch": "2.13.0+cu130",
+       "numpy": "2.5.1",
+       "pandas": "3.0.3",
+       "sklearn": "1.9.0",
+       "scipy": "1.18.0",
+       "cuda": "13.0",
+       "gpus": [
+        "NVIDIA GeForce RTX 5090"
+       ],
+       "cudnn": 92400,
+       "gpu_devices": [
+        {
+         "index": 0,
+         "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+         "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+         "temperature_c": 36.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 14.0,
+         "memory_total_mib": 12227.0
+        },
+        {
+         "index": 1,
+         "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+         "name": "NVIDIA GeForce RTX 5090",
+         "temperature_c": 42.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 12.0,
+         "memory_total_mib": 32607.0
+        }
+       ],
+       "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+      },
+      "property": "same_device_repeatability",
+      "trained_on_device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
+     },
+     "closure": null,
+     "retained_history": true
+    }
+   ],
+   "refused": [
+    {
+     "kind": "report",
+     "evidence_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h336_s2021: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    },
+    {
+     "kind": "report",
+     "evidence_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h336_s2021: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    }
+   ],
+   "properties": {
+    "score": {
+     "mae": 0.2606664001941681,
+     "mse": 0.1625940501689911
+    },
+    "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: independent_float64 (author float32 reduction NOT executed within the memory budget) [historical: original closure fbe2cd4c97a3]]",
+    "score_source": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+    "accepted_terminal": true,
+    "closure_verified": false,
+    "closure_verified_historically": true,
+    "custody_audited_live": false,
+    "replay": {
+     "observed_device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+     "observed_device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+     "max_abs_prediction_difference": 0.0,
+     "exact_equal_fraction": 1.0,
+     "elements": 531190800,
+     "allclose_rule": true,
+     "from_evidence": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44"
+    },
+    "training_device_attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "terminal_receipt": {
+    "campaign_key": "satoshi-sota-timefilter-ecl-v1-gamma4-L96_h336_s2021-data",
+    "campaign_sha256": "0f563dacb93a2ffe90b34bb2323477deff14e700b1e12b7637031eaf8313c572",
+    "terminal_sha256": "6f59cb2762f6e53ce1f82f3e66f9aee947ca82e2fce528722f336cbd011d2263",
+    "generation": 1,
+    "status": "COMPLETED",
+    "accepted_at": "2026-09-22T19:35:06Z",
+    "work_started_at": "2026-09-22T19:35:04Z",
+    "started_at": "2026-09-22T19:35:04Z",
+    "finished_at": "2026-09-22T19:35:04Z",
+    "metrics": 4,
+    "deliveries": [
+     "34296e621c92416293127f46ec90bf50"
+    ],
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "source": "the governance client's own answer when it accepted this terminal"
+   },
+   "composition_class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+   "reading": "the predictions were reproduced on GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519 element for element, but the training device attribution is INFERRED_GPU_MEMORY: this does not establish which physical device trained the cell"
+  },
+  "L96_h336_s2022": {
+   "unit": "L96_h336_s2022",
+   "horizon": 336,
+   "seed": 2022,
+   "identity": {
+    "record_present": true,
+    "record_sha256": "83187dff443a4b3f86d30016b3b4a7391e464befb431d817a9a1fb615abe8f56",
+    "checkpoint_sha256": "1f8483faca68fc61f87a51c11630163506a83ce2591504997b72d10cc0524f13",
+    "predictions_on_disk": false,
+    "predictions_sha256": null,
+    "predictions_sha256_recorded": "e24096d4a8815e8e3d28a83841521ee6e71b5612b322d9e438c77cdb793ba782",
+    "pred_body_sha256_recorded": "37affee782cfba13d78b66afe0f97d1f135ad42961f56a940640e4ecf7e1c36d",
+    "regeneration_sha256": "0448090ae8c3567982054cff61d03ee3b6ee3df79cf93aebdaa5b1e5737f3c1c",
+    "regeneration_acceptance_sha256": "cf5770f02fd80dd6d4d6865092c112f916706de9dae125a54f34bca66274e020",
+    "catalog_sha256": "0645f143bb28e693577a25cad3e43a77931383ca8365324b26575320b4d690c5",
+    "shapes_pred": [
+     4925,
+     336,
+     321
+    ],
+    "elements": 531190800,
+    "author_metric_float32": null,
+    "independent_metric_float64": {
+     "mae": 0.26741331167821497,
+     "mse": 0.16817492751600455
+    },
+    "metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+    "attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "admitted": [
+    {
+     "kind": "report",
+     "evidence_sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+     "bound": true,
+     "matched_identities": [
+      "regeneration"
+     ],
+     "why": null,
+     "closure": {
+      "verified": false,
+      "verified_historically": true,
+      "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+      "problems": []
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.26741331815719604,
+       "mse": 0.16817493736743927
+      },
+      "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: independent_float64 (author float32 reduction NOT executed within the memory budget) [historical: original closure fbe2cd4c97a3]]"
+     },
+     "replay": null
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h336_s2022",
+      "device": "cuda:0",
+      "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+      "device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 531190800,
+      "elements": 531190800,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": null,
+      "replayed_author_metric_state": "NOT_EXECUTED_WITHIN_BUDGET: needs ~6374289600 bytes of temporaries, budget 4294967296",
+      "replayed_metric_float64": {
+       "mae": 0.26741331167821497,
+       "mse": 0.16817492751600455
+      },
+      "true_sha256_replayed": "5650423070ebaed3b38917c481a2cd9665d9fa10bcdb1883403eec89da07fdbb",
+      "shape": [
+       4925,
+       336,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "identity": {
+       "checkpoint_sha256": "1f8483faca68fc61f87a51c11630163506a83ce2591504997b72d10cc0524f13",
+       "arrays_sha256": "e24096d4a8815e8e3d28a83841521ee6e71b5612b322d9e438c77cdb793ba782",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "ea681f27c214db485ef80adeec67a81fa65737fda6bdc0838867d273f51ab6f9",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device_requested": "cuda"
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "environment": {
+       "host": "gamma",
+       "python": "3.12.13",
+       "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+       "torch": "2.13.0+cu130",
+       "numpy": "2.5.1",
+       "pandas": "3.0.3",
+       "sklearn": "1.9.0",
+       "scipy": "1.18.0",
+       "cuda": "13.0",
+       "gpus": [
+        "NVIDIA GeForce RTX 5090"
+       ],
+       "cudnn": 92400,
+       "gpu_devices": [
+        {
+         "index": 0,
+         "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+         "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+         "temperature_c": 36.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 14.0,
+         "memory_total_mib": 12227.0
+        },
+        {
+         "index": 1,
+         "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+         "name": "NVIDIA GeForce RTX 5090",
+         "temperature_c": 44.0,
+         "utilization_pct": 1.0,
+         "memory_used_mib": 12.0,
+         "memory_total_mib": 32607.0
+        }
+       ],
+       "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+      },
+      "property": "same_device_repeatability",
+      "trained_on_device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
+     },
+     "closure": null,
+     "retained_history": true
+    }
+   ],
+   "refused": [
+    {
+     "kind": "report",
+     "evidence_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h336_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    },
+    {
+     "kind": "report",
+     "evidence_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h336_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    }
+   ],
+   "properties": {
+    "score": {
+     "mae": 0.26741331815719604,
+     "mse": 0.16817493736743927
+    },
+    "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: independent_float64 (author float32 reduction NOT executed within the memory budget) [historical: original closure fbe2cd4c97a3]]",
+    "score_source": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+    "accepted_terminal": true,
+    "closure_verified": false,
+    "closure_verified_historically": true,
+    "custody_audited_live": false,
+    "replay": {
+     "observed_device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+     "observed_device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+     "max_abs_prediction_difference": 0.0,
+     "exact_equal_fraction": 1.0,
+     "elements": 531190800,
+     "allclose_rule": true,
+     "from_evidence": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44"
+    },
+    "training_device_attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "terminal_receipt": {
+    "campaign_key": "satoshi-sota-timefilter-ecl-v1-gamma4-L96_h336_s2022-data",
+    "campaign_sha256": "ff5dbc98f56417d8d39be741337cae46a4e51146a6c2938cfe96b3c6d27af956",
+    "terminal_sha256": "44f97960ce88aceb6c9814d11e44cb7abc8460bb83bf82255e3a76114b5864f7",
+    "generation": 1,
+    "status": "COMPLETED",
+    "accepted_at": "2026-09-22T19:50:34Z",
+    "work_started_at": "2026-09-22T19:50:32Z",
+    "started_at": "2026-09-22T19:50:32Z",
+    "finished_at": "2026-09-22T19:50:32Z",
+    "metrics": 4,
+    "deliveries": [
+     "5d76fc9c90cc4a05b4cc2b512aa37328"
+    ],
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "source": "the governance client's own answer when it accepted this terminal"
+   },
+   "composition_class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+   "reading": "the predictions were reproduced on GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519 element for element, but the training device attribution is INFERRED_GPU_MEMORY: this does not establish which physical device trained the cell"
+  },
+  "L96_h336_s2023": {
+   "unit": "L96_h336_s2023",
+   "horizon": 336,
+   "seed": 2023,
+   "identity": {
+    "record_present": true,
+    "record_sha256": "3d755c5cea2ae36e440b5721b186e0d8a1f262248484a5ea0d61ea4955fd141c",
+    "checkpoint_sha256": "10f8881ce9d5760bba2f11149d0cdac41937e73b2b5d0b4310efd4677c4a338f",
+    "predictions_on_disk": false,
+    "predictions_sha256": null,
+    "predictions_sha256_recorded": "a0f541f340088465d002b4631536a705e0e1cb77af8bfe13deb55d2c6cf8b538",
+    "pred_body_sha256_recorded": "4f47076264b95ad04252843319c21ef116c27ccb87a792c10e9131e7ec853346",
+    "regeneration_sha256": "d1821129123f77d44eb0ba2da3001426ad5a851bb3456c3f83a5eb79e5e322c1",
+    "regeneration_acceptance_sha256": "7cfa5bdcb802a3d0af0d1b68d3773ae2e6de2933c0ae3fc8c0d15b6e9b4d67ea",
+    "catalog_sha256": "cea95dbcebe6be90c43552f5dbc7f87f8ee7cba70685e81c8dbc93ed5a842976",
+    "shapes_pred": [
+     4925,
+     336,
+     321
+    ],
+    "elements": 531190800,
+    "author_metric_float32": null,
+    "independent_metric_float64": {
+     "mae": 0.26087436697306887,
+     "mse": 0.16267016184468075
+    },
+    "metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+    "attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "admitted": [
+    {
+     "kind": "report",
+     "evidence_sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+     "bound": true,
+     "matched_identities": [
+      "regeneration"
+     ],
+     "why": null,
+     "closure": {
+      "verified": false,
+      "verified_historically": true,
+      "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+      "problems": []
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.26087433099746704,
+       "mse": 0.16267016530036926
+      },
+      "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: independent_float64 (author float32 reduction NOT executed within the memory budget) [historical: original closure fbe2cd4c97a3]]"
+     },
+     "replay": null
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h336_s2023",
+      "device": "cuda:0",
+      "device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+      "device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 531190800,
+      "elements": 531190800,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": null,
+      "replayed_author_metric_state": "NOT_EXECUTED_WITHIN_BUDGET: needs ~6374289600 bytes of temporaries, budget 4294967296",
+      "replayed_metric_float64": {
+       "mae": 0.26087436697306887,
+       "mse": 0.16267016184468075
+      },
+      "true_sha256_replayed": "5650423070ebaed3b38917c481a2cd9665d9fa10bcdb1883403eec89da07fdbb",
+      "shape": [
+       4925,
+       336,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "identity": {
+       "checkpoint_sha256": "10f8881ce9d5760bba2f11149d0cdac41937e73b2b5d0b4310efd4677c4a338f",
+       "arrays_sha256": "a0f541f340088465d002b4631536a705e0e1cb77af8bfe13deb55d2c6cf8b538",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "ea681f27c214db485ef80adeec67a81fa65737fda6bdc0838867d273f51ab6f9",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device_requested": "cuda"
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "environment": {
+       "host": "gamma",
+       "python": "3.12.13",
+       "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+       "torch": "2.13.0+cu130",
+       "numpy": "2.5.1",
+       "pandas": "3.0.3",
+       "sklearn": "1.9.0",
+       "scipy": "1.18.0",
+       "cuda": "13.0",
+       "gpus": [
+        "NVIDIA GeForce RTX 5090"
+       ],
+       "cudnn": 92400,
+       "gpu_devices": [
+        {
+         "index": 0,
+         "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+         "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+         "temperature_c": 36.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 14.0,
+         "memory_total_mib": 12227.0
+        },
+        {
+         "index": 1,
+         "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+         "name": "NVIDIA GeForce RTX 5090",
+         "temperature_c": 45.0,
+         "utilization_pct": 1.0,
+         "memory_used_mib": 12.0,
+         "memory_total_mib": 32607.0
+        }
+       ],
+       "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+      },
+      "property": "same_device_repeatability",
+      "trained_on_device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
+     },
+     "closure": null,
+     "retained_history": true
+    }
+   ],
+   "refused": [
+    {
+     "kind": "report",
+     "evidence_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h336_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    },
+    {
+     "kind": "report",
+     "evidence_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h336_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    }
+   ],
+   "properties": {
+    "score": {
+     "mae": 0.26087433099746704,
+     "mse": 0.16267016530036926
+    },
+    "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: independent_float64 (author float32 reduction NOT executed within the memory budget) [historical: original closure fbe2cd4c97a3]]",
+    "score_source": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+    "accepted_terminal": true,
+    "closure_verified": false,
+    "closure_verified_historically": true,
+    "custody_audited_live": false,
+    "replay": {
+     "observed_device_uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+     "observed_device_name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+     "max_abs_prediction_difference": 0.0,
+     "exact_equal_fraction": 1.0,
+     "elements": 531190800,
+     "allclose_rule": true,
+     "from_evidence": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44"
+    },
+    "training_device_attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "terminal_receipt": {
+    "campaign_key": "satoshi-sota-timefilter-ecl-v1-gamma4-L96_h336_s2023-data",
+    "campaign_sha256": "87dd1ebfd65722f5e6dda2f3a257e5fc6c506bcacee7f27c9c70082234570f70",
+    "terminal_sha256": "127517add253cea9b48b5d84900414bbd78bf0a9f4e63fa925595d671c5d13e1",
+    "generation": 1,
+    "status": "COMPLETED",
+    "accepted_at": "2026-09-22T20:05:12Z",
+    "work_started_at": "2026-09-22T19:49:34Z",
+    "started_at": "2026-09-22T19:49:34Z",
+    "finished_at": "2026-09-22T20:05:11Z",
+    "metrics": 4,
+    "deliveries": [
+     "cefca36cb8e945aa91913d4492671b9c"
+    ],
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "source": "the governance client's own answer when it accepted this terminal"
+   },
+   "composition_class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+   "reading": "the predictions were reproduced on GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519 element for element, but the training device attribution is INFERRED_GPU_MEMORY: this does not establish which physical device trained the cell"
+  },
+  "L96_h720_s2021": {
+   "unit": "L96_h720_s2021",
+   "horizon": 720,
+   "seed": 2021,
+   "identity": {
+    "record_present": true,
+    "record_sha256": "ddb9aaa5e670fb8cffa76dc4e841f31c158d185f95487b798c5512accf22d8b8",
+    "checkpoint_sha256": "7940c8b9551f7636cea3c648c7f53f40cdc05b942c48dbbca5e99396aa34d6bd",
+    "predictions_on_disk": false,
+    "predictions_sha256": null,
+    "predictions_sha256_recorded": "75a2a5490cc6ccfbd044654ae3b918811f322a9b202c2a4684ecafe6109d120d",
+    "pred_body_sha256_recorded": "65730d77077a2847073688f2055fae59d22de8937f9cc6df948d1ddc461d83d0",
+    "regeneration_sha256": "2e94e600cf9254fdfa2b512f0b54ed9f894d25632a755f622ac564612a741134",
+    "regeneration_acceptance_sha256": "77afa6ada2f9f5d3458a1811b8364f980ce9b99d8313326a185b875f9ceb8316",
+    "catalog_sha256": "36329d653f698d301a1177557f6d5641f1247c7f427046e560fe0c3612d558c2",
+    "shapes_pred": [
+     4541,
+     720,
+     321
+    ],
+    "elements": 1049515920,
+    "author_metric_float32": null,
+    "independent_metric_float64": {
+     "mae": 0.28751974018513593,
+     "mse": 0.1871392797732232
+    },
+    "metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+    "attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "admitted": [
+    {
+     "kind": "report",
+     "evidence_sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+     "bound": true,
+     "matched_identities": [
+      "regeneration"
+     ],
+     "why": null,
+     "closure": {
+      "verified": false,
+      "verified_historically": true,
+      "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+      "problems": []
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.28751975297927856,
+       "mse": 0.18713927268981934
+      },
+      "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: author_float32 (recomputed at closure by df_sota_author_metric_exact.v1; the record carries the float64 reduction only) [historical: original closure bc9d3388f1f2]]"
+     },
+     "replay": null
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h720_s2021",
+      "device": "cuda:0",
+      "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+      "device_name": "NVIDIA GeForce RTX 5090",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 1049515920,
+      "elements": 1049515920,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": {
+       "mae": 0.28751975297927856,
+       "mse": 0.18713927268981934
+      },
+      "replayed_author_metric_state": "EXECUTED: df_sota_author_metric_exact.v1 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test)",
+      "replayed_metric_float64": {
+       "mae": 0.28751974018513593,
+       "mse": 0.1871392797732232
+      },
+      "true_sha256_replayed": "1ba5a73cc81c1580e5353049722b1e5489811bd52d637b0f5670f760b4728ef8",
+      "shape": [
+       4541,
+       720,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "identity": {
+       "checkpoint_sha256": "7940c8b9551f7636cea3c648c7f53f40cdc05b942c48dbbca5e99396aa34d6bd",
+       "arrays_sha256": "75a2a5490cc6ccfbd044654ae3b918811f322a9b202c2a4684ecafe6109d120d",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "1d3ea1e2223b0354db766ec09c11e6c95fe869ccea711854b3ed0638e06d2afd",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device_requested": "cuda"
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "environment": {
+       "host": "gamma",
+       "python": "3.12.13",
+       "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+       "torch": "2.13.0+cu130",
+       "numpy": "2.5.1",
+       "pandas": "3.0.3",
+       "sklearn": "1.9.0",
+       "scipy": "1.18.0",
+       "cuda": "13.0",
+       "gpus": [
+        "NVIDIA GeForce RTX 5090"
+       ],
+       "cudnn": 92400,
+       "gpu_devices": [
+        {
+         "index": 0,
+         "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+         "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+         "temperature_c": 35.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 14.0,
+         "memory_total_mib": 12227.0
+        },
+        {
+         "index": 1,
+         "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+         "name": "NVIDIA GeForce RTX 5090",
+         "temperature_c": 42.0,
+         "utilization_pct": 24.0,
+         "memory_used_mib": 12.0,
+         "memory_total_mib": 32607.0
+        }
+       ],
+       "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+      },
+      "property": "same_device_inferred (INFERRED_GPU_MEMORY): NOT certified as same-device",
+      "trained_on_device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+      "trained_on_attribution": "INFERRED_GPU_MEMORY"
+     },
+     "closure": null,
+     "retained_history": true
+    }
+   ],
+   "refused": [
+    {
+     "kind": "report",
+     "evidence_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h720_s2021: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    },
+    {
+     "kind": "report",
+     "evidence_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h720_s2021: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    }
+   ],
+   "properties": {
+    "score": {
+     "mae": 0.28751975297927856,
+     "mse": 0.18713927268981934
+    },
+    "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: author_float32 (recomputed at closure by df_sota_author_metric_exact.v1; the record carries the float64 reduction only) [historical: original closure bc9d3388f1f2]]",
+    "score_source": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+    "accepted_terminal": true,
+    "closure_verified": false,
+    "closure_verified_historically": true,
+    "custody_audited_live": false,
+    "replay": {
+     "observed_device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "observed_device_name": "NVIDIA GeForce RTX 5090",
+     "max_abs_prediction_difference": 0.0,
+     "exact_equal_fraction": 1.0,
+     "elements": 1049515920,
+     "allclose_rule": true,
+     "from_evidence": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44"
+    },
+    "training_device_attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "terminal_receipt": {
+    "campaign_key": "satoshi-sota-timefilter-ecl-v1-gamma5-L96_h720_s2021-data",
+    "campaign_sha256": "c4ad0e79c34127c15ffbcf56d4594d6f5cce3a4b2d842a6585a4722e61bce715",
+    "terminal_sha256": "197010efc82eab51fe1c70d10387cba0cb7148647408a729225aa4900ebe71ee",
+    "generation": 1,
+    "status": "COMPLETED",
+    "accepted_at": "2026-09-23T03:00:37Z",
+    "work_started_at": "2026-09-22T20:31:51Z",
+    "started_at": "2026-09-22T20:31:51Z",
+    "finished_at": "2026-09-22T20:52:20Z",
+    "metrics": 4,
+    "deliveries": [
+     "ef765b6fc7264ab6a8a9ed5a478a6970"
+    ],
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "source": "the governance client's own answer when it accepted this terminal"
+   },
+   "composition_class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+   "reading": "the predictions were reproduced on GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8 element for element, but the training device attribution is INFERRED_GPU_MEMORY: this does not establish which physical device trained the cell"
+  },
+  "L96_h720_s2022": {
+   "unit": "L96_h720_s2022",
+   "horizon": 720,
+   "seed": 2022,
+   "identity": {
+    "record_present": true,
+    "record_sha256": "4bab9166de21883f155839970c5fa71e0c30a1ca3f1883a471f880b33dac70bb",
+    "checkpoint_sha256": "569f7f106ede96272b98244a6d36b97d6351aa0d515cc2f79e46f256e5e38ef6",
+    "predictions_on_disk": false,
+    "predictions_sha256": null,
+    "predictions_sha256_recorded": "5677eb6cf407d5f6cf3e0f33a66e3d57c412544c6bb1b8bda9cbbec977934168",
+    "pred_body_sha256_recorded": "631afe2d8b72b0b643980dc225ab323d87177c1af17c9e8b2f3a15cac1f41186",
+    "regeneration_sha256": "0629efd8187ded1691fe2455a42b2452169146106ec5e47d303ac5acdc592109",
+    "regeneration_acceptance_sha256": "6f1b8a9e1f079800ff4689a6a78e42b1da3180e75c28b695fa22c5520c58fcab",
+    "catalog_sha256": "2b48c8da67335b59d37bbc03187f55698248e66a71f8b4889f5fd76817737e6c",
+    "shapes_pred": [
+     4541,
+     720,
+     321
+    ],
+    "elements": 1049515920,
+    "author_metric_float32": null,
+    "independent_metric_float64": {
+     "mae": 0.2986487311261679,
+     "mse": 0.1981701744187609
+    },
+    "metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+    "attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "admitted": [
+    {
+     "kind": "report",
+     "evidence_sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+     "bound": true,
+     "matched_identities": [
+      "regeneration"
+     ],
+     "why": null,
+     "closure": {
+      "verified": false,
+      "verified_historically": true,
+      "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+      "problems": []
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.29864874482154846,
+       "mse": 0.19817017018795013
+      },
+      "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: author_float32 (recomputed at closure by df_sota_author_metric_exact.v1; the record carries the float64 reduction only) [historical: original closure bc9d3388f1f2]]"
+     },
+     "replay": null
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h720_s2022",
+      "device": "cuda:0",
+      "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+      "device_name": "NVIDIA GeForce RTX 5090",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 1049515920,
+      "elements": 1049515920,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": {
+       "mae": 0.29864874482154846,
+       "mse": 0.19817017018795013
+      },
+      "replayed_author_metric_state": "EXECUTED: df_sota_author_metric_exact.v1 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test)",
+      "replayed_metric_float64": {
+       "mae": 0.2986487311261679,
+       "mse": 0.1981701744187609
+      },
+      "true_sha256_replayed": "1ba5a73cc81c1580e5353049722b1e5489811bd52d637b0f5670f760b4728ef8",
+      "shape": [
+       4541,
+       720,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "identity": {
+       "checkpoint_sha256": "569f7f106ede96272b98244a6d36b97d6351aa0d515cc2f79e46f256e5e38ef6",
+       "arrays_sha256": "5677eb6cf407d5f6cf3e0f33a66e3d57c412544c6bb1b8bda9cbbec977934168",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "1d3ea1e2223b0354db766ec09c11e6c95fe869ccea711854b3ed0638e06d2afd",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device_requested": "cuda"
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "environment": {
+       "host": "gamma",
+       "python": "3.12.13",
+       "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+       "torch": "2.13.0+cu130",
+       "numpy": "2.5.1",
+       "pandas": "3.0.3",
+       "sklearn": "1.9.0",
+       "scipy": "1.18.0",
+       "cuda": "13.0",
+       "gpus": [
+        "NVIDIA GeForce RTX 5090"
+       ],
+       "cudnn": 92400,
+       "gpu_devices": [
+        {
+         "index": 0,
+         "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+         "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+         "temperature_c": 35.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 14.0,
+         "memory_total_mib": 12227.0
+        },
+        {
+         "index": 1,
+         "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+         "name": "NVIDIA GeForce RTX 5090",
+         "temperature_c": 43.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 12.0,
+         "memory_total_mib": 32607.0
+        }
+       ],
+       "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+      },
+      "property": "same_device_inferred (INFERRED_GPU_MEMORY): NOT certified as same-device",
+      "trained_on_device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+      "trained_on_attribution": "INFERRED_GPU_MEMORY"
+     },
+     "closure": null,
+     "retained_history": true
+    }
+   ],
+   "refused": [
+    {
+     "kind": "report",
+     "evidence_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h720_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    },
+    {
+     "kind": "report",
+     "evidence_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h720_s2022: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    }
+   ],
+   "properties": {
+    "score": {
+     "mae": 0.29864874482154846,
+     "mse": 0.19817017018795013
+    },
+    "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: author_float32 (recomputed at closure by df_sota_author_metric_exact.v1; the record carries the float64 reduction only) [historical: original closure bc9d3388f1f2]]",
+    "score_source": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+    "accepted_terminal": true,
+    "closure_verified": false,
+    "closure_verified_historically": true,
+    "custody_audited_live": false,
+    "replay": {
+     "observed_device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "observed_device_name": "NVIDIA GeForce RTX 5090",
+     "max_abs_prediction_difference": 0.0,
+     "exact_equal_fraction": 1.0,
+     "elements": 1049515920,
+     "allclose_rule": true,
+     "from_evidence": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44"
+    },
+    "training_device_attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "terminal_receipt": {
+    "campaign_key": "satoshi-sota-timefilter-ecl-v1-gamma5-L96_h720_s2022-data",
+    "campaign_sha256": "26d52de25b4e311bcc4ff1b265a55fb15625d833de80d103d46da822d3a6d446",
+    "terminal_sha256": "3b06f94e7b82acb6fa3054e194ae5b6628d192728087a868aaca1b4a2d1c9dd8",
+    "generation": 1,
+    "status": "COMPLETED",
+    "accepted_at": "2026-09-23T03:00:41Z",
+    "work_started_at": "2026-09-22T20:52:24Z",
+    "started_at": "2026-09-22T20:52:24Z",
+    "finished_at": "2026-09-22T21:13:07Z",
+    "metrics": 4,
+    "deliveries": [
+     "14d80b4edc0748199d9bd4233e5833b3"
+    ],
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "source": "the governance client's own answer when it accepted this terminal"
+   },
+   "composition_class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+   "reading": "the predictions were reproduced on GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8 element for element, but the training device attribution is INFERRED_GPU_MEMORY: this does not establish which physical device trained the cell"
+  },
+  "L96_h720_s2023": {
+   "unit": "L96_h720_s2023",
+   "horizon": 720,
+   "seed": 2023,
+   "identity": {
+    "record_present": true,
+    "record_sha256": "42e6b105e8f61d568c7620e1ddfa6d3ac2d8f5118ad6208ad755045f27140d55",
+    "checkpoint_sha256": "3409170449418f5178177dc4cdb47ab93d3921d7a5b5f1f349f6c2af9ad73edc",
+    "predictions_on_disk": false,
+    "predictions_sha256": null,
+    "predictions_sha256_recorded": "f9e24ccfc4dd4f07645b1b4c2c072f7f09f4d2a9754eabf58809178a46e7eed4",
+    "pred_body_sha256_recorded": "bc3a7cdabd6ddf6dcd8780b37077065ff3710e5e12820ca23d6eaa603d25a959",
+    "regeneration_sha256": "277a25a38583ae8a8dda181214259b226b72db32e0e52f6042f12bf35b38fad5",
+    "regeneration_acceptance_sha256": "270a3bc67de10cf8854198679730467463db1da611980800b4cc20906950b054",
+    "catalog_sha256": "44d927475a74ba1ad7499243dc6a2deee7b5719dffe3917226c13c3400a9f81a",
+    "shapes_pred": [
+     4541,
+     720,
+     321
+    ],
+    "elements": 1049515920,
+    "author_metric_float32": null,
+    "independent_metric_float64": {
+     "mae": 0.28568391643111174,
+     "mse": 0.18536765092857793
+    },
+    "metric_basis": "independent_float64 (author float32 reduction NOT executed within the memory budget)",
+    "attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "admitted": [
+    {
+     "kind": "report",
+     "evidence_sha256": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPORT.json",
+     "bound": true,
+     "matched_identities": [
+      "regeneration"
+     ],
+     "why": null,
+     "closure": {
+      "verified": false,
+      "verified_historically": true,
+      "custody": "HISTORICAL_BOUND: accepted record/checkpoint retained, arrays deleted under authorization",
+      "problems": []
+     },
+     "row_metric": {
+      "author_metric_float32": {
+       "mae": 0.28568392992019653,
+       "mse": 0.1853676587343216
+      },
+      "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: author_float32 (recomputed at closure by df_sota_author_metric_exact.v1; the record carries the float64 reduction only) [historical: original closure bc9d3388f1f2]]"
+     },
+     "replay": null
+    },
+    {
+     "kind": "replay_history",
+     "evidence_sha256": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/sota_timefilter_ecl_v1/REPLAYS.json",
+     "bound": true,
+     "why": null,
+     "binding_strength": "IDENTITY_BOUND",
+     "replay": {
+      "unit": "L96_h720_s2023",
+      "device": "cuda:0",
+      "device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+      "device_name": "NVIDIA GeForce RTX 5090",
+      "max_abs_prediction_difference": 0.0,
+      "allclose_rule": true,
+      "finite": true,
+      "shape_equal": true,
+      "exact_equal_elements": 1049515920,
+      "elements": 1049515920,
+      "exact_equal_fraction": 1.0,
+      "replayed_author_metric": {
+       "mae": 0.28568392992019653,
+       "mse": 0.1853676587343216
+      },
+      "replayed_author_metric_state": "EXECUTED: df_sota_author_metric_exact.v1 (numpy pairwise float32 replica over the whole population, bit-equal to utils.metrics.metric by construction and by test)",
+      "replayed_metric_float64": {
+       "mae": 0.28568391643111174,
+       "mse": 0.18536765092857793
+      },
+      "true_sha256_replayed": "1ba5a73cc81c1580e5353049722b1e5489811bd52d637b0f5670f760b4728ef8",
+      "shape": [
+       4541,
+       720,
+       321
+      ],
+      "operational_patches": [
+       {
+        "what": "GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 (host malloc thresholds fixed)",
+        "effect": "none on arithmetic: freed host buffers of the author's validation/evaluation return to the OS instead of staying resident; host memory only"
+       }
+      ],
+      "rule": {
+       "atol": 0.0001,
+       "rtol": 0.0001
+      },
+      "identity": {
+       "checkpoint_sha256": "3409170449418f5178177dc4cdb47ab93d3921d7a5b5f1f349f6c2af9ad73edc",
+       "arrays_sha256": "f9e24ccfc4dd4f07645b1b4c2c072f7f09f4d2a9754eabf58809178a46e7eed4",
+       "design_sha256": "9b49010da99dc04ceecc01ed1dd725f8c644496bf10fcd3684ab0271af36682b",
+       "replay_code_sha256": "1d3ea1e2223b0354db766ec09c11e6c95fe869ccea711854b3ed0638e06d2afd",
+       "author_files": {
+        "run.py": "237ac1363c349a248c82dd399e883776d5122d598b7c7fa1e02246d6380a33af",
+        "exp/exp_basic.py": "f27dd173488424cbac8e8ba8ace3ffe7f816622210003c365a377b912a15c1b3",
+        "exp/exp_long_term_forecasting.py": "24c9eb9452380f4cd1ffb5957e9b421bacd76bf6528f5a429394c129acee06a2",
+        "models/TimeFilter.py": "25fbf20a1c5d5471695897156ea3a29d84307b9fa54669e1fe91358c6a2d429c",
+        "layers/TimeFilter_layers.py": "f48eb9af75362ce6219ce4dd7b096238218836a400629ed7604383ff6ab26635",
+        "layers/Embed.py": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+        "layers/StandardNorm.py": "3f690dc5fc0e395d4f1ffe6396717548d18bd04f4518258308bbe5f392703f5f",
+        "data_provider/data_factory.py": "115250c4ce91ba1675403f08314c5d952fd9a318ccc5bb9b9d47f49ea66211ee",
+        "data_provider/data_loader.py": "2bd49540f53f5253ca306c52da93e6773022a8bca386c2ce70bd9821cf688f3f",
+        "utils/tools.py": "2cd6021e400e91c8aa47f2175925ebe1c54a7207cf06f8c22762ee695ace1530",
+        "utils/metrics.py": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df",
+        "utils/timefeatures.py": "319b3da2ef15ccae95162b1b4f4a9a0b0da63fa0062a7f6006a06dd567258d85",
+        "scripts/ECL.sh": "47ba6d50c56fe84445cbdb2a1b820dc9ae8bb86cda1349c3f479e9804def5d0e",
+        "requirements.txt": "d02d51a9d0d298bed74514b533248ffa103f6d9c4af052b248a8cc7aa639f47b"
+       },
+       "device_requested": "cuda"
+      },
+      "path": "fresh process: the author's checkpoint reload and forward pass through the bounded adapter (df_sota_bounded_eval.v1); the reload line is the author's test(test=1) line",
+      "environment": {
+       "host": "gamma",
+       "python": "3.12.13",
+       "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+       "torch": "2.13.0+cu130",
+       "numpy": "2.5.1",
+       "pandas": "3.0.3",
+       "sklearn": "1.9.0",
+       "scipy": "1.18.0",
+       "cuda": "13.0",
+       "gpus": [
+        "NVIDIA GeForce RTX 5090"
+       ],
+       "cudnn": 92400,
+       "gpu_devices": [
+        {
+         "index": 0,
+         "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+         "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+         "temperature_c": 35.0,
+         "utilization_pct": 0.0,
+         "memory_used_mib": 14.0,
+         "memory_total_mib": 12227.0
+        },
+        {
+         "index": 1,
+         "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+         "name": "NVIDIA GeForce RTX 5090",
+         "temperature_c": 44.0,
+         "utilization_pct": 23.0,
+         "memory_used_mib": 12.0,
+         "memory_total_mib": 32607.0
+        }
+       ],
+       "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+      },
+      "property": "same_device_inferred (INFERRED_GPU_MEMORY): NOT certified as same-device",
+      "trained_on_device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+      "trained_on_attribution": "INFERRED_GPU_MEMORY"
+     },
+     "closure": null,
+     "retained_history": true
+    }
+   ],
+   "refused": [
+    {
+     "kind": "report",
+     "evidence_sha256": "a1cfe8cda1150481989cd206475371e83f15d202476ed803dbcdc0c68ebfe203",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.worker-a-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h720_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    },
+    {
+     "kind": "report",
+     "evidence_sha256": "3cf9cc820555f40587a7291fefae0e3e2ecd419d0627ef250b46a3be504e210f",
+     "path": "/home/harveybc/.local/state/crispdm-data-foundation/rp140-composition-inputs/REPORT.coordinator-rp138.json",
+     "bound": false,
+     "matched_identities": [],
+     "why": "NO_ACCEPTED_IDENTITY: the report row carries no artifact or replay digest this root can match",
+     "closure": {
+      "verified": false,
+      "verified_historically": null,
+      "custody": null,
+      "problems": [
+       "L96_h720_s2023: a registered cell has no record, arrays or checkpoint \u2014 missing, not absent"
+      ]
+     },
+     "row_metric": {
+      "author_metric_float32": null,
+      "metric_basis": null
+     },
+     "replay": null
+    }
+   ],
+   "properties": {
+    "score": {
+     "mae": 0.28568392992019653,
+     "mse": 0.1853676587343216
+    },
+    "metric_basis": "author_float32 (regenerated by inference from the retained checkpoint on NVIDIA GeForce RTX 5090, predictions bit-identical to the deleted original, accepted evidence; catalog re-derived and equal to the retained one) [historical row: author_float32 (recomputed at closure by df_sota_author_metric_exact.v1; the record carries the float64 reduction only) [historical: original closure bc9d3388f1f2]]",
+    "score_source": "211e623164e4887a89bd96f870db347a0917c1d667a4b597b20b454e644ec46d",
+    "accepted_terminal": true,
+    "closure_verified": false,
+    "closure_verified_historically": true,
+    "custody_audited_live": false,
+    "replay": {
+     "observed_device_uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "observed_device_name": "NVIDIA GeForce RTX 5090",
+     "max_abs_prediction_difference": 0.0,
+     "exact_equal_fraction": 1.0,
+     "elements": 1049515920,
+     "allclose_rule": true,
+     "from_evidence": "8bd1c0dfdfe23066c3aa3907986a4380045b1964c302f92c9ec782b65206ed44"
+    },
+    "training_device_attribution": {
+     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+     "class": "INFERRED_GPU_MEMORY"
+    }
+   },
+   "terminal_receipt": {
+    "campaign_key": "satoshi-sota-timefilter-ecl-v1-gamma5-L96_h720_s2023-data",
+    "campaign_sha256": "07a9b6c232739082936d0010419f55f8470c2c60b55aac6520d1b5b2386bb1c7",
+    "terminal_sha256": "948737ab66933f10360162952a1fd5c80887dcd817ad3ac90570270a116755be",
+    "generation": 1,
+    "status": "COMPLETED",
+    "accepted_at": "2026-09-23T03:00:45Z",
+    "work_started_at": "2026-09-22T21:13:12Z",
+    "started_at": "2026-09-22T21:13:12Z",
+    "finished_at": "2026-09-22T21:33:53Z",
+    "metrics": 4,
+    "deliveries": [
+     "abe3436db89e43a48f7b52fd3c9d0221"
+    ],
+    "reconciliation": {
+     "http": 200,
+     "missing_units": [],
+     "accounting_only": [],
+     "lake_only": []
+    },
+    "source": "the governance client's own answer when it accepted this terminal"
+   },
+   "composition_class": "REPLAY_EXACT_ON_OBSERVED_DEVICE",
+   "reading": "the predictions were reproduced on GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8 element for element, but the training device attribution is INFERRED_GPU_MEMORY: this does not establish which physical device trained the cell"
+  }
+ },
+ "refusals": [],
+ "scope": "read-only composition: no array was read, nothing was recomputed, no report was edited and no verified flag was set by this function",
+ "summary": {
+  "cells": 12,
+  "with_bound_exact_replay": [
+   "L96_h192_s2021",
+   "L96_h192_s2022",
+   "L96_h192_s2023",
+   "L96_h336_s2021",
+   "L96_h336_s2022",
+   "L96_h336_s2023",
+   "L96_h720_s2021",
+   "L96_h720_s2022",
+   "L96_h720_s2023",
+   "L96_h96_s2021",
+   "L96_h96_s2022",
+   "L96_h96_s2023"
+  ],
+  "with_measured_same_device_replay": [],
+  "replay_exact_device_attribution_unknown": [
+   "L96_h192_s2021",
+   "L96_h192_s2022",
+   "L96_h192_s2023",
+   "L96_h336_s2021",
+   "L96_h336_s2022",
+   "L96_h336_s2023",
+   "L96_h720_s2021",
+   "L96_h720_s2022",
+   "L96_h720_s2023",
+   "L96_h96_s2021",
+   "L96_h96_s2022",
+   "L96_h96_s2023"
+  ],
+  "without_bound_replay": [],
+  "refusals": []
+ }
+}

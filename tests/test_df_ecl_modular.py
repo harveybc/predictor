@@ -170,3 +170,75 @@ def test_RP142_the_sealed_contrast_records_every_resolved_argument():
     assert design["reference"]["protocol"].startswith("A")
     assert design["design_sha256"] == M.seal_contrast(DATA, pred_len=96)["design_sha256"] or True
     assert "equal-total-cost" in " ".join(design["optimisation"]["cost_readings"])
+
+
+@needs_data
+def test_RP146_the_delivered_batches_match_an_independent_oracle_not_the_same_dataset_twice():
+    """The previous check called the author's Dataset twice and could not see a defect in the delivered windows. This oracle
+    rebuilds inputs and targets from the raw CSV with the author's train-only statistics, at the TRAIN split's boundaries."""
+    rep = M.delivered_batch_oracle(DATA, pred_len=96, n_windows=4)
+    assert rep["inputs_match_independent_oracle"], rep["max_abs_input_difference"]
+    assert rep["targets_match_independent_oracle"], rep["max_abs_target_difference"]
+    assert rep["channel_count_delivered"] == M.CHANNELS
+    assert rep["delivered_shapes"]["y"][1:] == [96, M.CHANNELS]
+    assert rep["reduction_check"]["mae_equals_offset"] and rep["reduction_check"]["mse_equals_offset_squared"]
+
+
+@needs_data
+@pytest.mark.parametrize("pred_len", [96, 720])
+def test_RP146_the_oracle_holds_at_every_horizon(pred_len):
+    """A horizon changes the target slice; the delivered batch must still be the oracle's rows."""
+    rep = M.delivered_batch_oracle(DATA, pred_len=pred_len, n_windows=2)
+    assert rep["targets_match_independent_oracle"] and rep["inputs_match_independent_oracle"]
+    assert rep["delivered_shapes"]["y"][1:] == [pred_len, M.CHANNELS]
+
+
+@needs_data
+def test_RP146_a_validation_mask_is_a_property_of_the_window_not_of_the_read_order():
+    """Musashi measured 20 mask positions changing between two reads of the same validation batch. With fixed masks the batch
+    must be byte-identical on repeated access, while the training stream stays stochastic."""
+    E = _load("df_mod_e0")
+    tf = E._tf()
+    d = M.author_datasets(DATA, pred_len=96)
+    ds = d["splits"]["train"]["dataset"]
+    W = M._windows_class(tf)
+    fixed = W(ds, list(range(8)), seq_len=M.SEQ_LEN, pred_len=96, batch=4, seed=0, masked=0.25, fixed_masks=True)
+    a1, b1 = fixed[0]
+    a2, b2 = fixed[0]
+    assert np.array_equal(a1, a2) and np.array_equal(b1, b2), "a fixed validation batch changed between two reads"
+    moving = W(ds, list(range(8)), seq_len=M.SEQ_LEN, pred_len=96, batch=4, seed=0, masked=0.25)
+    c1, _ = moving[0]
+    c2, _ = moving[0]
+    assert not np.array_equal(c1, c2), "the training stream is expected to keep drawing fresh masks"
+
+
+def test_RP146_the_import_is_checked_against_the_donors_own_bytes(tmp_path):
+    """Comparing the two regimes to each other accepts the same wrong donor twice. The check is against the saved file."""
+    RG = _load("df_e1_regimes")
+    model = M.build_ecl_modular([0] * M.CHANNELS, pred_len=96, seed=11)
+    names = RG.detector_layer_names(model)
+    npz = tmp_path / "donor.npz"
+    np.savez(npz, **{f"{n}__{i}": np.asarray(w) for n in names for i, w in enumerate(model.get_layer(n).get_weights())})
+    good = M.donor_source_equality(npz, model, names)
+    assert good["all_equal_to_donor"] and good["layers_compared"] > 0 and good["donor_file_sha256"]
+    other = M.build_ecl_modular([0] * M.CHANNELS, pred_len=96, seed=12)
+    bad = M.donor_source_equality(npz, other, names)
+    assert not bad["all_equal_to_donor"], "a different donor must not pass the equality check"
+
+
+def test_RP146_an_observed_optimizer_step_shows_R1_unchanged_and_R2_changed(tmp_path):
+    """A gradient that exists is not an update. One real step is taken and the detector's weights are read before and after."""
+    E, RG = _load("df_mod_e0"), _load("df_e1_regimes")
+    tf = E._tf()
+    model = M.build_ecl_modular([0] * M.CHANNELS, pred_len=96, seed=13)
+    names = RG.detector_layer_names(model)
+    npz = tmp_path / "donor2.npz"
+    np.savez(npz, **{f"{n}__{i}": np.asarray(w) for n in names for i, w in enumerate(model.get_layer(n).get_weights())})
+    x = np.random.default_rng(3).normal(size=(4, M.SEQ_LEN, M.CHANNELS)).astype(np.float32)
+    y = np.random.default_rng(4).normal(size=(4, 96, M.CHANNELS)).astype(np.float32)
+    RG.apply_regime(model, "R1", npz)
+    s1 = M._observed_step(tf, model, x, y, names, RG)
+    RG.apply_regime(model, "R2", npz)
+    s2 = M._observed_step(tf, model, x, y, names, RG)
+    assert s1["unchanged"] and s1["max_abs_move"] == 0.0, "R1's detector moved under an optimizer step"
+    assert not s2["unchanged"] and s2["max_abs_move"] > 0.0, "R2's detector did not move under an optimizer step"

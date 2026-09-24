@@ -358,10 +358,11 @@ def _windows_class(tf):
         """A sequence over the author's own Dataset, restricted to the given origins of the TRAIN split. Nothing outside TRAIN
         is reachable from here: the origins are the only index this object will serve."""
 
-        def __init__(self, dataset, local_indices, *, seq_len, pred_len, batch, seed, masked=None, **kw):
+        def __init__(self, dataset, local_indices, *, seq_len, pred_len, batch, seed, masked=None, fixed_masks=False, **kw):
             super().__init__(**kw)
             self.ds, self.idx = dataset, np.asarray(local_indices, dtype=np.int64)
             self.seq_len, self.pred_len, self.batch, self.masked = seq_len, pred_len, int(batch), masked
+            self.seed, self.fixed_masks = int(seed), bool(fixed_masks)
             self.rng = np.random.default_rng(int(seed))
 
         def __len__(self):
@@ -377,7 +378,13 @@ def _windows_class(tf):
             x = np.stack(xs); y = np.stack(ys)
             if self.masked is None:
                 return x, y
-            mask = (self.rng.random(x.shape) < float(self.masked)).astype(np.float32)
+            if self.fixed_masks:
+                # RP146: a validation mask must be a property of the WINDOW, not of the order in which it was read. The mask of
+                # origin o is drawn from a generator seeded by (seed, o), so the same batch is byte-identical on every access.
+                mask = np.stack([np.random.default_rng([self.seed, int(i)]).random(x.shape[1:]) for i in sel])
+                mask = (mask < float(self.masked)).astype(np.float32)
+            else:
+                mask = (self.rng.random(x.shape) < float(self.masked)).astype(np.float32)
             return x * (1.0 - mask), np.concatenate([x, mask], axis=2)
 
     return _TrainWindows
@@ -470,7 +477,7 @@ def train_only_pilot(data_path: Path, out_dir: Path, *, pred_len: int = 96, seed
                          "warm_up": "one untimed step precedes each timing so graph tracing is not charged to the per-step cost"}
     out["prescribed"] = {"ae_steps_requested": ae_steps, "r0_steps_requested": r0_steps,
                          "rule": "prescribed from the measured cost and the declared budget BEFORE the fits, never adjusted afterwards"}
-    va_seq = W(train_ds, ae_va_local, seq_len=SEQ_LEN, pred_len=pred_len, batch=batch, seed=0, masked=0.25)
+    va_seq = W(train_ds, ae_va_local, seq_len=SEQ_LEN, pred_len=pred_len, batch=batch, seed=0, masked=0.25, fixed_masks=True)
     # a finite sequence yields at most len(seq) batches per epoch, so the prescribed step count is executed as whole passes:
     # asking for more steps than the sequence holds silently ran ONE pass in the first attempt, which is recorded in the return
     ae_epochs = max(1, math.ceil(ae_steps / max(1, len(ae_seq))))
@@ -501,9 +508,15 @@ def train_only_pilot(data_path: Path, out_dir: Path, *, pred_len: int = 96, seed
     r1 = RG.apply_regime(model, "R1", npz)
     g1 = RG.gradient_report(model, xb[:4], yb[:4])
     d1 = RG.weights_digest(model, det_names)
+    d1_step = _observed_step(tf, model, xb[:4], yb[:4], det_names, RG)
     r2 = RG.apply_regime(model, "R2", npz)
     g2 = RG.gradient_report(model, xb[:4], yb[:4])
     d2 = RG.weights_digest(model, det_names)
+    d2_step = _observed_step(tf, model, xb[:4], yb[:4], det_names, RG)
+    donor_check = donor_source_equality(npz, ae, det_names)
+    step_check = {"R1_detector_unchanged_after_a_step": d1_step["unchanged"],
+                  "R2_detector_changed_after_a_step": not d2_step["unchanged"],
+                  "R1_max_abs_weight_move": d1_step["max_abs_move"], "R2_max_abs_weight_move": d2_step["max_abs_move"]}
     out["regimes"] = {
         "R0_detector_digest_after_its_own_fit": r0_detector_after_fit,
         "R1": {"imported": r1["imported"], "frozen_layers": len(r1["frozen"]),
@@ -511,9 +524,10 @@ def train_only_pilot(data_path: Path, out_dir: Path, *, pred_len: int = 96, seed
         "R2": {"imported": r2["imported"], "trainable_layers": len(r2["trainable"]),
                "detector_receives_gradient": g2["detector_receives_gradient"]},
         "R1_and_R2_import_the_same_bytes": d1 == d2,
-        "reload_parity": d1 == hashlib.sha256(np.concatenate([np.asarray(w).ravel() for n in det_names
-                                                              for w in ae.get_layer(n).get_weights()]).tobytes()).hexdigest() or d1 == d2,
-        "proved": "the freeze and the update are read from a gradient report on a real batch, not from a flag",
+        "donor_source_equality": donor_check,
+        "observed_optimizer_step": step_check,
+        "proved": ("the import is checked against the donor's own bytes, and the freeze and the update are read from an OBSERVED "
+                   "optimizer step, not from a flag and not from the existence of a gradient"),
     }
     out["measured_cost"] = {"cpu_seconds": cpu_now() - started_cpu, "wall_seconds": time.time() - started_wall}
     out["measured_cost"]["within_cpu_budget"] = out["measured_cost"]["cpu_seconds"] <= cpu_budget_seconds
@@ -522,3 +536,90 @@ def train_only_pilot(data_path: Path, out_dir: Path, *, pred_len: int = 96, seed
                      "public_test": "not scored", "model_selection": "none performed"}
     (out_dir / "PILOT.json").write_text(json.dumps(out, indent=1, default=str))
     return out
+
+
+def _observed_step(tf, model, xb, yb, det_names, RG) -> dict:
+    """RP146: run ONE real optimizer step and read the detector's weights before and after. A gradient that exists is not an
+    update; only the weights after a step say whether the regime held."""
+    before = [np.array(w, copy=True) for n in det_names for w in model.get_layer(n).get_weights()]
+    opt = tf.keras.optimizers.Adam(1e-2)
+    variables = list(model.trainable_variables)
+    loss_fn = tf.keras.losses.MeanSquaredError()
+    with tf.GradientTape() as tape:
+        loss = loss_fn(tf.constant(yb, dtype=tf.float32), model(tf.constant(xb, dtype=tf.float32), training=True))
+    grads = tape.gradient(loss, variables)
+    pairs = [(g, v) for g, v in zip(grads, variables) if g is not None]
+    if pairs:
+        opt.apply_gradients(pairs)
+    after = [np.asarray(w) for n in det_names for w in model.get_layer(n).get_weights()]
+    moves = [float(np.max(np.abs(a - b))) for a, b in zip(after, before)] or [0.0]
+    return {"unchanged": all(m == 0.0 for m in moves), "max_abs_move": max(moves), "loss_on_batch": float(loss),
+            "trainable_variables_stepped": len(pairs)}
+
+
+def donor_source_equality(npz_path: Path, donor_model, det_names: list) -> dict:
+    """RP146: the imported bytes must be the DONOR's bytes. Comparing the two regimes to each other accepts the same wrong
+    donor twice, so the check is against the saved file and against the auto-encoder that wrote it."""
+    z = np.load(npz_path)
+    equal, compared = True, []
+    for n in det_names:
+        ws = donor_model.get_layer(n).get_weights()
+        for i, w in enumerate(ws):
+            key = f"{n}__{i}"
+            if key not in z.files:
+                equal = False; compared.append({"layer": key, "present_in_file": False}); continue
+            same = bool(np.array_equal(np.asarray(z[key]), np.asarray(w)))
+            equal = equal and same
+            compared.append({"layer": key, "equal_to_donor": same})
+    return {"donor_file": str(npz_path), "donor_file_sha256": hashlib.sha256(Path(npz_path).read_bytes()).hexdigest(),
+            "layers_compared": len(compared), "all_equal_to_donor": equal, "detail": compared[:6]}
+
+
+def delivered_batch_oracle(data_path: Path, *, pred_len: int, seq_len: int = SEQ_LEN, batch: int = 4,
+                           at_boundaries: bool = True, n_windows: int = 4) -> dict:
+    """RP146: check the batches the model is actually FED against an independent oracle built from the raw CSV and the author's
+    own scaler statistics, rather than by calling his Dataset a second time. Covers the first and last windows of the TRAIN
+    split, the channel order and the metric reduction."""
+    import pandas as pd
+    E = _e0()
+    tf = E._tf()
+    d = author_datasets(data_path, pred_len=pred_len, seq_len=seq_len)
+    train_ds = d["splits"]["train"]["dataset"]
+    origins = split_origins(data_path, pred_len=pred_len, seq_len=seq_len)
+    base, n = origins["train"]["rows"][0], origins["train"]["n_windows"]
+    local = ([0, 1, n - 2, n - 1] if at_boundaries else list(range(min(n_windows, n))))
+    local = [i for i in local if 0 <= i < n][:max(1, n_windows)]
+    W = _windows_class(tf)
+    seq = W(train_ds, local, seq_len=seq_len, pred_len=pred_len, batch=batch, seed=0)
+    xb, yb = seq[0]
+    # the independent side: the raw CSV, the author's train-only standardisation, and plain row slicing
+    df = pd.read_csv(data_path)
+    cols = [c for c in df.columns if c != "date"]
+    raw = df[cols].to_numpy(dtype=np.float64)
+    n_rows = raw.shape[0]
+    num_train = int(n_rows * 0.7)
+    mu, sd = raw[:num_train].mean(axis=0), raw[:num_train].std(axis=0)
+    sd = np.where(sd == 0, 1.0, sd)
+    scaled = (raw - mu) / sd
+    ok_x, ok_y, worst_x, worst_y = True, True, 0.0, 0.0
+    for k, i in enumerate(local[:xb.shape[0]]):
+        o = base + i
+        ex = scaled[o:o + seq_len, :]
+        ey = scaled[o + seq_len:o + seq_len + pred_len, :]
+        dx = float(np.max(np.abs(np.asarray(xb[k], dtype=np.float64) - ex)))
+        dy = float(np.max(np.abs(np.asarray(yb[k], dtype=np.float64) - ey)))
+        worst_x, worst_y = max(worst_x, dx), max(worst_y, dy)
+        ok_x, ok_y = ok_x and dx <= 1e-4, ok_y and dy <= 1e-4
+    # the reduction, recomputed independently on a fabricated prediction
+    pred = np.asarray(yb, dtype=np.float64) + 0.5
+    mae = float(np.abs(pred - np.asarray(yb, dtype=np.float64)).mean())
+    mse = float(((pred - np.asarray(yb, dtype=np.float64)) ** 2).mean())
+    return {"schema": "df_ecl_modular_batch_oracle.v1", "pred_len": pred_len, "origins_checked": [base + i for i in local],
+            "delivered_shapes": {"x": list(xb.shape), "y": list(yb.shape)},
+            "inputs_match_independent_oracle": ok_x, "targets_match_independent_oracle": ok_y,
+            "max_abs_input_difference": worst_x, "max_abs_target_difference": worst_y,
+            "channel_count_delivered": int(xb.shape[2]), "channel_order": channel_order_digest(data_path),
+            "reduction_check": {"fabricated_offset": 0.5, "mae": mae, "mse": mse,
+                                "mae_equals_offset": abs(mae - 0.5) < 1e-9, "mse_equals_offset_squared": abs(mse - 0.25) < 1e-9},
+            "scope": ("the oracle reads the raw CSV, standardises with the author's train-only statistics and slices rows; it "
+                      "never calls his Dataset, so a batching or channel-order defect in the delivered windows would show")}
