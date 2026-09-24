@@ -1,0 +1,95 @@
+{
+  "candidate": "3c25ecab",
+  "cases": {
+    "consistent_wrong_counts": {
+      "authenticated_horizon": 96,
+      "authentication_claim": "the digest was recomputed from the design's own content and equals the run's recorded digest",
+      "naive_mean_finite": true,
+      "problems": [],
+      "requested_and_returned_horizon": 96,
+      "status": "COMPLETE",
+      "windows_accepted": {
+        "complete_validation": 1,
+        "label_disjoint_from_selection": 1
+      }
+    },
+    "contradictory_design_horizon": {
+      "authenticated_horizon": 192,
+      "authentication_claim": "the digest was recomputed from the design's own content and equals the run's recorded digest",
+      "naive_mean_finite": true,
+      "problems": [],
+      "requested_and_returned_horizon": 96,
+      "status": "COMPLETE",
+      "windows_accepted": {
+        "complete_validation": 2537,
+        "label_disjoint_from_selection": 1802
+      }
+    },
+    "empty_canonical_cover": {
+      "authenticated_horizon": 96,
+      "authentication_claim": "the digest was recomputed from the design's own content and equals the run's recorded digest",
+      "naive_mean_finite": true,
+      "problems": [],
+      "requested_and_returned_horizon": 96,
+      "status": "COMPLETE",
+      "windows_accepted": {
+        "complete_validation": 2537,
+        "label_disjoint_from_selection": 1802
+      }
+    },
+    "missing_canonical_cover": {
+      "authenticated_horizon": 96,
+      "authentication_claim": "the digest was recomputed from the design's own content and equals the run's recorded digest",
+      "naive_mean_finite": true,
+      "problems": [],
+      "requested_and_returned_horizon": 96,
+      "status": "COMPLETE",
+      "windows_accepted": {
+        "complete_validation": 2537,
+        "label_disjoint_from_selection": 1802
+      }
+    },
+    "nonfinite_naive": {
+      "authenticated_horizon": 96,
+      "authentication_claim": "the digest was recomputed from the design's own content and equals the run's recorded digest",
+      "naive_mean_finite": false,
+      "problems": [],
+      "requested_and_returned_horizon": 96,
+      "status": "COMPLETE",
+      "windows_accepted": {
+        "complete_validation": 2537,
+        "label_disjoint_from_selection": 1802
+      }
+    },
+    "string_false_identity": {
+      "authenticated_horizon": 96,
+      "authentication_claim": "the digest was recomputed from the design's own content and equals the run's recorded digest",
+      "naive_mean_finite": true,
+      "problems": [],
+      "requested_and_returned_horizon": 96,
+      "status": "COMPLETE",
+      "windows_accepted": {
+        "complete_validation": 2537,
+        "label_disjoint_from_selection": 1802
+      }
+    }
+  },
+  "retained_published_rows": {
+    "matches_RP156_population_metrics_exactly": true,
+    "model_digest_strings_match_prior_run_records": true,
+    "population_checks": {
+      "complete_validation": {
+        "elements_per_cell": 78180192,
+        "nine_cells_consistent": true,
+        "windows": 2537
+      },
+      "label_disjoint_from_selection": {
+        "elements_per_cell": 55530432,
+        "nine_cells_consistent": true,
+        "windows": 1802
+      }
+    },
+    "scope": "Published JSON records, not disk checkpoints or live authority"
+  },
+  "scope": "Actual RP157 parent scorer, published child fixtures, no inference or live data.\n\nTests acceptance at the subprocess transport boundary; deliberately malformed\nrequests/results are not claims about the retained scientific rows.\n"
+}

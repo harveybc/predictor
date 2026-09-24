@@ -1,5 +1,16 @@
 {
  "schema": "research_program_method_state.v1",
+ "rp157_review": {
+  "candidate": "3c25ecab103163a4face96b6f47ffd8280cb8c67",
+  "status": "RETAINED_RECORDS_CONSISTENT_CANONICAL_AND_POPULATION_VALIDATION_INCOMPLETE",
+  "scope": "Source, published records, six parent-scorer transport-fixture probes and 19 CPU tests; no live authority or model inference",
+  "findings": ["missing or empty identity_covers skips recomputation; declared and dispatched horizon can disagree", "all children can agree on wrong counts; naive nonfiniteness and string identity accepted"],
+  "retained_results": "Nine RP157 population records equal RP156; expected counts/elements and finite model/naive values checked; R2 relative MAE improvement remains about0.694 percent, development only",
+  "orders_and_review": "../../audits/work_plan/MUSASHI_RP157_REVIEW_2026_09_24.md",
+  "next_action": "Complete contract matrix using retained child evidence without inference, while real Laya setup/pilot and independent CPU application lanes continue",
+  "new_compute_budget": false,
+  "global_hold": false
+ },
  "rp156_review": {
   "candidate": "b3a064d5cdba3fb4dd49087d0516ac4c300cda6b",
   "status": "CORRECTED_DEVELOPMENT_SCORES_RETAINED_ACCEPTANCE_GAPS_APPLICATIONS_STILL_DUE",
@@ -131,7 +142,8 @@
   "authority": "Owner approved parallel Laya track and coordinator-hosting investigation, 2026-09-24 UTC",
   "document": "NEWS_LIVE_PARALLEL_2026_09_24.md",
   "repository": "https://github.com/harveybc/news-signal",
-  "status": "ADAPTER_PROTOTYPE_TESTED_REAL_WEIGHTS_AND_BROKERS_PENDING",
+  "status": "LAYA_ISOLATED_SDK_AND_SNAPSHOT_SETUP_IN_PROGRESS_REPORTED_REAL_PILOT_AND_BROKERS_PENDING",
+  "setup_observation_scope": "Owner supplied Satoshi report after RP157; not independently inspected live; Hub checkpoint name convaiinnovations/laya, resolved immutable snapshot revision must be recorded",
   "allowed_modes": ["SHADOW", "MT5_DEMO", "ALPACA_PAPER"],
   "real_capital_authorized": false,
   "blocks_scientific_experiments": false,

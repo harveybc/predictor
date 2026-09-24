@@ -1,5 +1,9 @@
 # RP155 continuation: correct scoring while shipping the real application slice
 
+**RP157 update:** [latest review and contract-completion matrix](../audits/work_plan/MUSASHI_RP157_REVIEW_2026_09_24.md).
+Finish validation over retained results before any additional inference. Laya setup
+is reported started; do not duplicate it or delay independent CPU application work.
+
 **RP156 update:** read the [b3a064d5 review and immediate continuation](../audits/work_plan/MUSASHI_RP156_REVIEW_2026_09_24.md)
 first. Target-support and named reductions are repaired; keep the corrected scores.
 Finish authority/child-result validation using retained evidence, not another
