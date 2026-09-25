@@ -1,0 +1,486 @@
+{
+  "refused": [
+    {
+      "feature": null,
+      "kind": "feature_grouping",
+      "question": "grouping_cut",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "baseline_hand",
+      "why": "the choice 'k=1' is not one of the declared options ['k=2', 'k=3', 'k=4', 'k=5', 'k=6']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "group_extractor",
+      "question": "extractor",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "baseline_hand",
+      "why": "the choice 'tcn' is not one of the declared options ['default', 'ann', 'rnn', 'transformer', 'lstm', 'cnn', 'vae', 'vae_small']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "feature_grouping",
+      "question": "grouping_cut",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "quantile_hand",
+      "why": "the choice 'k=1' is not one of the declared options ['k=2', 'k=3', 'k=4', 'k=5', 'k=6']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "group_extractor",
+      "question": "extractor",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "quantile_hand",
+      "why": "the choice 'NOT_APPLICABLE_SINGLE_WINDOW_CORE' is not one of the declared options ['default', 'ann', 'rnn', 'transformer', 'lstm', 'cnn', 'vae', 'vae_small']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "feature_grouping",
+      "question": "grouping_cut",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "candidate_short_memory",
+      "why": "the choice 'k=1' is not one of the declared options ['k=2', 'k=3', 'k=4', 'k=5', 'k=6']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "group_extractor",
+      "question": "extractor",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "candidate_short_memory",
+      "why": "the choice 'tcn' is not one of the declared options ['default', 'ann', 'rnn', 'transformer', 'lstm', 'cnn', 'vae', 'vae_small']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "feature_grouping",
+      "question": "grouping_cut",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "candidate_seasonal_lag_74",
+      "why": "the choice 'k=1' is not one of the declared options ['k=2', 'k=3', 'k=4', 'k=5', 'k=6']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "group_extractor",
+      "question": "extractor",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "candidate_seasonal_lag_74",
+      "why": "the choice 'tcn' is not one of the declared options ['default', 'ann', 'rnn', 'transformer', 'lstm', 'cnn', 'vae', 'vae_small']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "feature_grouping",
+      "question": "grouping_cut",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "candidate_seasonal_lag_1443",
+      "why": "the choice 'k=1' is not one of the declared options ['k=2', 'k=3', 'k=4', 'k=5', 'k=6']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "group_extractor",
+      "question": "extractor",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "candidate_seasonal_lag_1443",
+      "why": "the choice 'tcn' is not one of the declared options ['default', 'ann', 'rnn', 'transformer', 'lstm', 'cnn', 'vae', 'vae_small']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "feature_grouping",
+      "question": "grouping_cut",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "candidate_seasonal_lag_2892",
+      "why": "the choice 'k=1' is not one of the declared options ['k=2', 'k=3', 'k=4', 'k=5', 'k=6']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "group_extractor",
+      "question": "extractor",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "candidate_seasonal_lag_2892",
+      "why": "the choice 'tcn' is not one of the declared options ['default', 'ann', 'rnn', 'transformer', 'lstm', 'cnn', 'vae', 'vae_small']; a person may not add an option to a set the executing repository declared"
+    }
+  ],
+  "written": [
+    {
+      "chosen": "hand_household_w60",
+      "feature": null,
+      "kind": "representation",
+      "question": "candidate",
+      "record": "710db9857784e0856eb9a3d6b71bced2e11074c080a706801da896c6a16971f3",
+      "stage": "baseline_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_active_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "c24359f0e943126be052ae4d6bbfee6df2a3e1a31bdd9a3161a86df3a8864bee",
+      "stage": "baseline_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_reactive_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "90f5253e084166be924c5231c8c2d2d65dde977b822a6d67b7b121ab8654a7f8",
+      "stage": "baseline_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Voltage",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "34017e3eee68e617388843f55094a922d03d714d33bc39b7a31433f2a8764b14",
+      "stage": "baseline_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_intensity",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "c1f4d971043aa7245337e9b66fa9cc65697fd663154378b3879bb4d86c3598f4",
+      "stage": "baseline_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_1",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "d413be1e0fc175b03a178d81d366614d34534113eb517080bf39383f0f36eb3b",
+      "stage": "baseline_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_2",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "0e0f4eee6510b7031873030b5d9a9d7b25c8804a18379d044faf963d1cd6116b",
+      "stage": "baseline_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_3",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "84afae4107ba608c84926d53ea27bfc18aa6610d398ad085645437f385ee905e",
+      "stage": "baseline_hand"
+    },
+    {
+      "chosen": "hand_household_w60",
+      "feature": null,
+      "kind": "representation",
+      "question": "candidate",
+      "record": "5c4e379c9c5d6fd0e56bc033390cdc41e9fc7f7e78afdb02c5ac185031244c62",
+      "stage": "quantile_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_active_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "89244dc1e11c9576f3deaa10ac038a2f6e3d279f7a20317e175e8e4cc0ee91e0",
+      "stage": "quantile_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_reactive_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "550c4b59409cd9ffb459e1c69393e62ef6d6a41c2f776e3d0e12625fcd9bb331",
+      "stage": "quantile_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Voltage",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "73cbfe704a050252a78832e6b7ffbb1a947672b0a742e934736ab3c9c91c1561",
+      "stage": "quantile_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_intensity",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "499d64c1821d78d4c9bff78852fd3917cb66facc9dce03e26e1df8308aacedba",
+      "stage": "quantile_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_1",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "a6fe6e61f6c76a921c8ba8a00432e235293800e30355cd691ee6f51ddd75553f",
+      "stage": "quantile_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_2",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "2287ff26948ad34c830fb8a9461965030bc205f7af09d5b93576fed43bf11c08",
+      "stage": "quantile_hand"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_3",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "b7b54fc969c9f82f6ffc0fb28a2f22d7b6c8771794c8dba8bf673fe95f19e3b6",
+      "stage": "quantile_hand"
+    },
+    {
+      "chosen": "short_memory",
+      "feature": null,
+      "kind": "representation",
+      "question": "candidate",
+      "record": "e4cae5e80b20bd0af6a965de994fcb1ea24ffa7d6e09c903dfe411ce9ae5931a",
+      "stage": "candidate_short_memory"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_active_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "0278acc4e5f5fb02373e253a4b1e18148c9d1745ccff36b50e51743278488854",
+      "stage": "candidate_short_memory"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_reactive_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "b37ec1581e5f5e687c5546021530805154cbd73017effe902d67596be09c0235",
+      "stage": "candidate_short_memory"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Voltage",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "4c76460e7bf61b730c7ae732b4bb4276a9225500c66e11d00c31496c0b814e03",
+      "stage": "candidate_short_memory"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_intensity",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "3a962d2e618ac77df83a5bde6cc5b8d0a93c5ff6bab4b30f94532f6eacf64645",
+      "stage": "candidate_short_memory"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_1",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "702ffd860839280423a69b8e1bb9b0e1f6d85286d0d00fdfb8c071a7082b22fe",
+      "stage": "candidate_short_memory"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_2",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "dc3654371156eeabb2cb93042be329a48c907ea33f111ad40d6213577335024d",
+      "stage": "candidate_short_memory"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_3",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "598a2291a6ae6dd42ab368aaa3fa5c7f57ba194ff7139f61c508ee6899776e6e",
+      "stage": "candidate_short_memory"
+    },
+    {
+      "chosen": "seasonal_lag_74",
+      "feature": null,
+      "kind": "representation",
+      "question": "candidate",
+      "record": "b6c4847f164dcf0edcaacdffa1e28046a788b01e5df2ee63704f4a452dc160d8",
+      "stage": "candidate_seasonal_lag_74"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_active_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "0c16e6c369bf4015f5192836de2c59df243b896eb8983eaa155f513a064cadd0",
+      "stage": "candidate_seasonal_lag_74"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_reactive_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "d587cf2c784ae151096943457c559fad5598798a0617216343c282b039f68b0f",
+      "stage": "candidate_seasonal_lag_74"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Voltage",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "22c5b75aa334670895d47206eb2ef60beac867076fb164f8e0cbb01b92999c05",
+      "stage": "candidate_seasonal_lag_74"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_intensity",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "65f903fc4e3b133b2363b5e91bad1c50523fe90059377341e731d23d65ac1bee",
+      "stage": "candidate_seasonal_lag_74"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_1",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "2b30f9df4c4dbb137d675d3951dba7a46440f617aee8f2fb111cd6087e63403b",
+      "stage": "candidate_seasonal_lag_74"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_2",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "943f1bc823077e3b19fdab2c74ad64b7a9b3517188a170764a4bc648c915f200",
+      "stage": "candidate_seasonal_lag_74"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_3",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "81e60c8cf595e3edfe3cef797109b7b081e9ea97cc0992c7cca22e0c56cf5da8",
+      "stage": "candidate_seasonal_lag_74"
+    },
+    {
+      "chosen": "seasonal_lag_1443",
+      "feature": null,
+      "kind": "representation",
+      "question": "candidate",
+      "record": "9866c0bd6d5cc14284e5b88e5c6493c1118e819aecc6c0b39fd493c8490fd635",
+      "stage": "candidate_seasonal_lag_1443"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_active_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "0106a5c0e16194a707a877874d29c4c7812af5816b9653e5296c097e8b98a5e2",
+      "stage": "candidate_seasonal_lag_1443"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_reactive_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "fa6017f6ec34c860c2ace2d0f8e502323d3b85346b3c52dd70d92f68d829f310",
+      "stage": "candidate_seasonal_lag_1443"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Voltage",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "4946b17902398c2410698fd1c38df8ef49c6c08f1eebdddc880e4fbfefa66ab9",
+      "stage": "candidate_seasonal_lag_1443"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_intensity",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "46d474bf2b139a08b7724d300fbe3c3cdaee07f06a95ebf2c8833c791b096900",
+      "stage": "candidate_seasonal_lag_1443"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_1",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "265ba78fddb22b025ad0d62019846eaa221c200c8810373a0e27bb7446b540f5",
+      "stage": "candidate_seasonal_lag_1443"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_2",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "aa25f2824b48f0d64c3caeacf00ff0eb67a9cfa8094b6e08ca5c427e43dd2730",
+      "stage": "candidate_seasonal_lag_1443"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_3",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "ef9ee8850d1cf83d54c268642cd148b1da487b5021a0c94aae76058a078bfb58",
+      "stage": "candidate_seasonal_lag_1443"
+    },
+    {
+      "chosen": "seasonal_lag_2892",
+      "feature": null,
+      "kind": "representation",
+      "question": "candidate",
+      "record": "63ac7fc81554b8ddedc2eff8c1d7f3f31b7fb6beabaeef404c7038f93485427a",
+      "stage": "candidate_seasonal_lag_2892"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_active_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "63b2f90936762b5c6c853adf5612b5201d26d57d9447420e5410e0a63c78bdef",
+      "stage": "candidate_seasonal_lag_2892"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_reactive_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "157ce9e4696b379ebb7555840d70fa48fec229176201073c083daaff645b238d",
+      "stage": "candidate_seasonal_lag_2892"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Voltage",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "1edd7d84314f122b1550b6a491a3dd6afed7bf5af9d9d99846bdb15a317945e3",
+      "stage": "candidate_seasonal_lag_2892"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_intensity",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "e015e70be7d1b81b5fcea90aeffe786030ad5c89191597d826acf11e2fcc0c58",
+      "stage": "candidate_seasonal_lag_2892"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_1",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "fd05264a088e77164f39f9db828cf5cfe8ae11b7859c6060d2abad692473109a",
+      "stage": "candidate_seasonal_lag_2892"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_2",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "153ca68ee3ec5334631d461f684fe9271f70968e4324d64071b51a6c2352548e",
+      "stage": "candidate_seasonal_lag_2892"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_3",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "65f1c1ccc24e1ccea5bcb5eb48c572478afb538252c89e03d0fafc14e4eba40b",
+      "stage": "candidate_seasonal_lag_2892"
+    }
+  ]
+}

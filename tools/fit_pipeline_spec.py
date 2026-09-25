@@ -230,10 +230,15 @@ def build_config(spec: dict, *, columns, horizon: int, epochs: int, patience: in
                  seed: int, head: str, quantiles) -> dict:
     """The predictor configuration this spec implies. Every value here comes from the spec or from a declared flag."""
     representation = spec["representation"]
-    windows = representation.get("windows") or []
+    windows = [int(value) for value in (representation.get("windows") or [])]
     if not windows:
         raise SpecError("the representation declares no window")
-    window = int(windows[0])
+    # The LONGEST window the representation declares is the memory the candidate claims, and it is the one fitted here.
+    # A design candidate may name several -- WP06's `seasonal_lag_1443` declares [197, 1443], the seasonal peak with the
+    # decay window kept beside it -- and this harness builds ONE input block, so taking the first would silently fit the
+    # shorter memory and publish three different candidates as the same graph. What is not fitted is declared: every
+    # window the spec named is written into the run manifest beside the one used.
+    window = max(windows)
     core = (spec.get("core") or {}).get("key")
     if not core:
         raise SpecError("the spec declares no core")
@@ -245,6 +250,15 @@ def build_config(spec: dict, *, columns, horizon: int, epochs: int, patience: in
     target = representation["target"]["column"]
     if target not in columns:
         raise SpecError(f"the target {target!r} is not a column of the data")
+    # A representation may declare derived or calendar features by name. This harness fits the columns of the sealed
+    # dataset and builds none of them: building one would produce a different file, and the holdout identity -- the
+    # protocol digest and the corpus seal -- is computed over the file the population was sealed from. So a declared
+    # feature that is not already a column is refused by name instead of being quietly dropped.
+    declared_features = [name for name in (representation.get("features") or ()) if name not in columns]
+    if declared_features:
+        raise SpecError(f"FEATURE_NOT_IN_DATA: the representation declares {declared_features}, which the sealed "
+                        f"dataset does not carry; this harness builds no feature, and adding a column would change "
+                        f"the file the holdout was sealed from")
     config = {
         "predictor_plugin": core,
         "target_column": target,
@@ -522,6 +536,9 @@ def main(argv=None) -> int:
         "head": args.head,
         "quantiles": list(config["quantiles"]) if args.head == "quantile" else None,
         "columns": list(data["columns"]),
+        "windows_declared": [int(value) for value in (spec["representation"].get("windows") or ())],
+        "window_selected_by": "max(representation.windows): the longest memory the candidate declares; a shorter window "
+                              "in the same list is not fitted by this single-block harness and is recorded here",
         "target": config["target_column"],
         "horizons": [args.horizon],
         "window": window,

@@ -1,0 +1,12 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1790329281.810587 2244583 cuda_platform.cc:52] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+Traceback (most recent call last):
+  File "/home/harveybc/Documents/GitHub/.worktrees/predictor-rp132/tools/fit_pipeline_spec.py", line 590, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/harveybc/Documents/GitHub/.worktrees/predictor-rp132/tools/fit_pipeline_spec.py", line 437, in main
+    config = build_config(spec, columns=data["columns"], horizon=args.horizon, epochs=args.epochs,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/harveybc/Documents/GitHub/.worktrees/predictor-rp132/tools/fit_pipeline_spec.py", line 259, in build_config
+    raise SpecError(f"FEATURE_NOT_IN_DATA: the representation declares {declared_features}, which the sealed "
+SpecError: FEATURE_NOT_IN_DATA: the representation declares ['hour_of_day'], which the sealed dataset does not carry; this harness builds no feature, and adding a column would change the file the holdout was sealed from

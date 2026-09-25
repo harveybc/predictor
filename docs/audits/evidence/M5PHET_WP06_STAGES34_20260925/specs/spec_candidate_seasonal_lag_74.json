@@ -1,0 +1,140 @@
+{
+  "chosen_by": "HUMAN",
+  "core": {
+    "chosen_by": "HAND",
+    "decision": null,
+    "encoder_mapping": {
+      "branches": {
+        "all": {
+          "encoder": "tcn",
+          "extractor": "HAND",
+          "mapped_by": "hand, from the household pilot's core_kind 'tcn_w'",
+          "status": "MAPPED",
+          "why": "'tcn' is the dilated causal residual Conv1D family of 'fused_branches', the inline family closest to the pilot's tcn_w core"
+        }
+      },
+      "core": "fused_branches",
+      "status": "MAPPED"
+    },
+    "key": "fused_branches",
+    "why": "the household pilot's core is 'tcn_w' in native df_e1 code, which no predictor.plugins entry point names; the declared plugin closest to it is 'fused_branches' with one branch and its 'tcn' encoder"
+  },
+  "decisions": [
+    "0c16e6c369bf4015f5192836de2c59df243b896eb8983eaa155f513a064cadd0",
+    "22c5b75aa334670895d47206eb2ef60beac867076fb164f8e0cbb01b92999c05",
+    "2b30f9df4c4dbb137d675d3951dba7a46440f617aee8f2fb111cd6087e63403b",
+    "65f903fc4e3b133b2363b5e91bad1c50523fe90059377341e731d23d65ac1bee",
+    "81e60c8cf595e3edfe3cef797109b7b081e9ea97cc0992c7cca22e0c56cf5da8",
+    "943f1bc823077e3b19fdab2c74ad64b7a9b3517188a170764a4bc648c915f200",
+    "b6c4847f164dcf0edcaacdffa1e28046a788b01e5df2ee63704f4a452dc160d8",
+    "d587cf2c784ae151096943457c559fad5598798a0617216343c282b039f68b0f"
+  ],
+  "decisions_refused": [
+    {
+      "feature": null,
+      "kind": "feature_grouping",
+      "question": "grouping_cut",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "why": "the choice 'k=1' is not one of the declared options ['k=2', 'k=3', 'k=4', 'k=5', 'k=6']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "group_extractor",
+      "question": "extractor",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "why": "the choice 'tcn' is not one of the declared options ['default', 'ann', 'rnn', 'transformer', 'lstm', 'cnn', 'vae', 'vae_small']; a person may not add an option to a set the executing repository declared"
+    }
+  ],
+  "execution_authorized": false,
+  "extractors": {
+    "all": {
+      "decision": null,
+      "plugin": "HAND"
+    }
+  },
+  "features": [
+    "Global_active_power",
+    "Global_reactive_power",
+    "Voltage",
+    "Global_intensity",
+    "Sub_metering_1",
+    "Sub_metering_2",
+    "Sub_metering_3"
+  ],
+  "grouping": {
+    "chosen_by": "HAND",
+    "decision": null,
+    "groups": [
+      {
+        "group_id": "all",
+        "members": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ]
+      }
+    ],
+    "k": 1,
+    "why": "held at the baseline_hand grouping: every meter column in one block. The candidate is a REPRESENTATION, and it declares no grouping; taking another one here would confound the contrast this stage exists to measure."
+  },
+  "preprocessing": {},
+  "provenance": "DEVELOPMENT",
+  "representation": {
+    "calendar": {
+      "clock": "receipt",
+      "columns": []
+    },
+    "candidate_id": "seasonal_lag_74",
+    "differencing": {
+      "order": 0
+    },
+    "exogenous": [
+      "Global_intensity",
+      "Global_reactive_power",
+      "Sub_metering_1",
+      "Sub_metering_2",
+      "Sub_metering_3",
+      "Voltage"
+    ],
+    "features": [],
+    "holdout": {
+      "fraction": 0.2
+    },
+    "lags": [
+      1,
+      74
+    ],
+    "not_decided": {
+      "calendar.clock": "a file of timestamps cannot say whether they are a publication clock or a receipt clock; 'receipt' is written so the spec validates and a person must confirm it (--clock)",
+      "exogenous": "the other numeric columns are offered as names only; whether each is available at prediction time is not a property of this file",
+      "holdout": "the cut is a decision about what must stay unseen, which no test on the data can make; {\"fraction\": 0.2} is a convention, not a measurement",
+      "sampling.timezone": "the timestamps carry no offset, so 'UTC' is what --timezone declared, not what was read"
+    },
+    "provenance": "DEVELOPMENT",
+    "sampling": {
+      "step_seconds": 60,
+      "timezone": "UTC"
+    },
+    "schema": "m5phet.representation.v1",
+    "target": {
+      "column": "Global_active_power",
+      "transform": "level"
+    },
+    "why": {
+      "features": "none: the peak's period matches no calendar period feature-eng builds a feature for",
+      "lags": "ACF peak at lag 74 -> lags [1, 74]",
+      "transform": "level: the stationarity verdict is STATIONARY (adf+kpss agree)",
+      "windows": "ACF peak at lag 74 (rho 0.356627, band 0.011206, computed on the levels) -> window 74"
+    },
+    "windows": [
+      74
+    ]
+  },
+  "schema": "m5phet.pipeline.v1",
+  "stage": "candidate_seasonal_lag_74",
+  "why": "WP06 stage 3: the design candidate 'seasonal_lag_74', fitted with the rest of the pipeline held at exactly what the baseline_hand stage uses (one group of every meter column, the 'tcn' encoder family of 'fused_branches', no per-feature preprocessor declared, the same epochs, patience, seed, batch size and deterministic ops). The representation is therefore the only thing that differs from the baseline, and the only thing a difference in the table can be attributed to."
+}

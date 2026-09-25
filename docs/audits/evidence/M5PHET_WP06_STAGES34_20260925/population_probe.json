@@ -1,0 +1,23 @@
+{
+  "seal_window_1443": {
+    "first_origin": "2009-09-21T12:47:00",
+    "last_origin": "2009-09-27T11:44:00",
+    "protocol_digest": "a392af58d93027a7cd312fdf6ae428d0e71a99e9e2182d84aae85a13dc7b67cc",
+    "seal": "a8c7f07f6d6ce4ea7ebe1d9c38491d34425aa68eca394c214ce2911e8b1fd564",
+    "sealed_rows": 8578
+  },
+  "seal_window_197": {
+    "first_origin": "2009-09-20T16:01:00",
+    "last_origin": "2009-09-27T11:44:00",
+    "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+    "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+    "sealed_rows": 9824
+  },
+  "seal_window_2892": {
+    "first_origin": "2009-09-22T12:56:00",
+    "last_origin": "2009-09-27T11:44:00",
+    "protocol_digest": "40f6ff9a3a1543077b7feb695163a58be508b00701377ff6109dd5b6d8df8a9d",
+    "seal": "97155a063e254a2ac1e2430ccb685d8d01deb683851d0206108f4b4c19d37fb3",
+    "sealed_rows": 7129
+  }
+}

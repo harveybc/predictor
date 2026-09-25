@@ -1,0 +1,9 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1790329286.001216 2244680 cuda_platform.cc:52] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+Traceback (most recent call last):
+  File "/home/harveybc/Documents/GitHub/.worktrees/predictor-rp132/tools/fit_pipeline_spec.py", line 590, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/harveybc/Documents/GitHub/.worktrees/predictor-rp132/tools/fit_pipeline_spec.py", line 441, in main
+    raise SpecError(f"the stage's window {config['window_size']} exceeds the sealing window {args.seal_window}; "
+SpecError: the stage's window 2892 exceeds the sealing window 197; the sealed population would not hold its history
