@@ -46,3 +46,33 @@ feature-extractor does not declare — `human_choice` refused those keys 14 time
 
 Acceptance after the round on 8766: examples 11/11, prose 14/14, refusals 2/2, envelope questions 15/15,
 `execution_authorized` false. M5PHET suite 545/1.
+
+## WP21(b) — Laya as a first-layer decision evaluator: it abstained on all 256 bars
+
+`first_layer.py` asks Laya one `choice` per bar over `[long, flat, short]`, with the state built from the window's
+**summary** (last close, log returns over declared lookbacks, realized volatilities, the position held, the fitted
+policy's own column names — ~20 numbers against the window's 2,656, asserted by size and content). Two operational
+facts: the provider budgets head+options+state against one 512-token limit and refuses `TOKEN_BUDGET_EXCEEDED` rather
+than truncate, so the state shows 12 of the 83 declared column names and says so; and each call takes ~20 s, so 256
+bars took ~85 minutes.
+
+**Result: 256 asked, 0 above the measured 0.8 threshold, 256 abstentions.** Top probability 0.575–0.705, mean 0.634 —
+entirely inside the band where WP09 measured this checkpoint at chance (0.327 correct below 0.8 against a 0.333 chance
+rate; 0.873 at or above). And the gate is not what flattened it: recovered from the abstention records, the
+checkpoint's **own argmax was `flat` on all 256 bars**, so ungated the series would have been identical.
+
+| stage | environment training reward (total) | naive `flat`, same rows | comparability | rank |
+|---|---|---|---|---|
+| laya_first_layer | 0.000000 | 0.000000 | COMPARABLE | 1 |
+| flat | 0.000000 | itself | COMPARABLE | 1 |
+| fitted_sac | −0.003888 | 0.000000 | COMPARABLE | 3 |
+
+`compare_stages` refuses to rank them at all: `policy_profitability` is refused by name — "a proposed action is not a
+realised return: no order was placed, no fill, slippage, financing or timing exists, and the market did not respond to
+it" — and every row is `NO_NEW_MEASUREMENT`, flagged `UNDERPOWERED 256/500` against a minimum declared before the run.
+`decide.outcome` refused all 256 links with `ABSTENTION_HAS_NO_OUTCOME`: an abstention is not a choice, and a row
+cannot rank a choice that was not made.
+
+A training-reward total on 256 development bars of one instrument is not evidence about any market. The 0.8 threshold
+was measured on a classification corpus, not on a trading question; carrying it here is an assumption, named as one in
+every record.
