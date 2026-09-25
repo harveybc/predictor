@@ -1,0 +1,387 @@
+{
+  "schema": "m5phet.representation_design.v1",
+  "dataset": {
+    "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06/household_dev_slice.csv",
+    "sha256": "72db05b9cd48005f59b7347b870b149243cac0a35725a984bbcc625624524d81",
+    "columns": [
+      "timestamp_label",
+      "Global_active_power",
+      "Global_reactive_power",
+      "Voltage",
+      "Global_intensity",
+      "Sub_metering_1",
+      "Sub_metering_2",
+      "Sub_metering_3"
+    ],
+    "time_column": "timestamp_label",
+    "time_format": "%d/%m/%Y %H:%M:%S",
+    "rows_read": 50400,
+    "truncated": false
+  },
+  "target": "Global_active_power",
+  "tests": {
+    "sampling": {
+      "step_seconds": 60,
+      "step_rule": "the most frequent positive difference between consecutive timestamps",
+      "regular_fraction": 1.0,
+      "intervals": 50399,
+      "gaps_longer_than_step": 0,
+      "repeated_timestamps": 0,
+      "backwards_steps": 0,
+      "min_step_seconds": 60.0,
+      "max_step_seconds": 60.0,
+      "first": "2009-08-23T12:45:00",
+      "last": "2009-09-27T12:44:00",
+      "timestamps_carry_an_offset": false,
+      "note": "the autocorrelation and stationarity tests below read the rows as EQUALLY spaced; where regular_fraction is below 1.0 that reading is an approximation the file does not support"
+    },
+    "missingness": {
+      "rows": 50400,
+      "missing_tokens": [
+        "",
+        "?",
+        "NA",
+        "N/A",
+        "NaN",
+        "nan",
+        "null",
+        "NULL",
+        "None"
+      ],
+      "numeric_columns": [
+        "Global_active_power",
+        "Global_intensity",
+        "Global_reactive_power",
+        "Sub_metering_1",
+        "Sub_metering_2",
+        "Sub_metering_3",
+        "Voltage"
+      ],
+      "non_numeric_columns": {},
+      "per_column": {
+        "Global_active_power": {
+          "missing": 1,
+          "missing_fraction": 2e-05
+        },
+        "Global_reactive_power": {
+          "missing": 1,
+          "missing_fraction": 2e-05
+        },
+        "Voltage": {
+          "missing": 1,
+          "missing_fraction": 2e-05
+        },
+        "Global_intensity": {
+          "missing": 1,
+          "missing_fraction": 2e-05
+        },
+        "Sub_metering_1": {
+          "missing": 1,
+          "missing_fraction": 2e-05
+        },
+        "Sub_metering_2": {
+          "missing": 1,
+          "missing_fraction": 2e-05
+        },
+        "Sub_metering_3": {
+          "missing": 1,
+          "missing_fraction": 2e-05
+        }
+      }
+    },
+    "analysis_segment": {
+      "start_row": 0,
+      "rows": 30590,
+      "first": "2009-08-23T12:45:00",
+      "last": "2009-09-13T18:34:00",
+      "rule": "the longest run of 'Global_active_power' with no missing cell; the tests below read only these rows"
+    },
+    "stationarity": {
+      "rows_used": 20000,
+      "rows_rule": "the first 20000 rows of the analysis segment at most; the head, never the end a holdout will be cut from",
+      "heuristic": {
+        "method": "autocorrelation persistence of the levels",
+        "lag1_autocorrelation": 0.95464,
+        "mean_autocorrelation_to_lag": 20,
+        "mean_autocorrelation": 0.685507,
+        "rule": "lag-1 autocorrelation >= 0.95 AND the mean autocorrelation over those lags >= 0.5 -> NON_STATIONARY",
+        "verdict": "NON_STATIONARY",
+        "caveat": "this is a rule over two numbers, not a hypothesis test, and carries no p-value"
+      },
+      "adf": {
+        "status": "OK",
+        "statistic": -11.044669,
+        "p_value": 0.0,
+        "used_lag": 40,
+        "nobs": 19959,
+        "autolag": "AIC",
+        "null_hypothesis": "a unit root is present",
+        "verdict": "STATIONARY",
+        "rule": "p <= 0.05 rejects the unit root -> STATIONARY"
+      },
+      "kpss": {
+        "status": "OK",
+        "statistic": 0.186656,
+        "p_value": 0.1,
+        "lags": 83,
+        "regression": "c",
+        "null_hypothesis": "the series is stationary around a constant",
+        "p_value_is_bounded": true,
+        "verdict": "STATIONARY",
+        "rule": "p <= 0.05 rejects stationarity -> NON_STATIONARY"
+      },
+      "verdict": "STATIONARY",
+      "verdict_source": "adf+kpss agree"
+    },
+    "seasonality": {
+      "computed_on": "levels",
+      "computed_on_reason": "the stationarity verdict is STATIONARY, so the levels carry the periodicity",
+      "rows_used": 30590,
+      "max_lag": 15295,
+      "estimator": "biased autocorrelation by FFT, normalised at lag 0",
+      "status": "OK",
+      "significance_band": 0.011206,
+      "band_rule": "1.96 / sqrt(rows_used), the white-noise band of the estimator",
+      "peaks": [
+        {
+          "lag": 74,
+          "autocorrelation": 0.356627,
+          "period_seconds": 4440
+        },
+        {
+          "lag": 1443,
+          "autocorrelation": 0.277748,
+          "period_seconds": 86580
+        },
+        {
+          "lag": 2892,
+          "autocorrelation": 0.244256,
+          "period_seconds": 173520
+        }
+      ],
+      "peaks_found": 338,
+      "peak_rule": "the highest local maxima outside the band, one per bump: a peak within 10% of the lag of a higher one is the same bump of the estimator and not a second period",
+      "decay_lag": 197,
+      "decay_rule": "the first lag whose autocorrelation falls inside the band"
+    }
+  },
+  "candidates": [
+    {
+      "schema": "m5phet.representation.v1",
+      "sampling": {
+        "step_seconds": 60,
+        "timezone": "UTC"
+      },
+      "target": {
+        "column": "Global_active_power",
+        "transform": "level"
+      },
+      "windows": [
+        197
+      ],
+      "lags": [
+        1,
+        197
+      ],
+      "differencing": {
+        "order": 0
+      },
+      "calendar": {
+        "clock": "receipt",
+        "columns": []
+      },
+      "features": [],
+      "holdout": {
+        "fraction": 0.2
+      },
+      "provenance": "DEVELOPMENT",
+      "candidate_id": "short_memory",
+      "why": {
+        "windows": "the autocorrelation of the levels falls inside the +-0.011206 band at lag 197 -> window 197",
+        "lags": "lag 1 always, and the decay lag 197 as the last lag still outside the band",
+        "transform": "level: the stationarity verdict is STATIONARY (adf+kpss agree)",
+        "features": "none: no periodic peak motivates a calendar feature in this candidate"
+      },
+      "not_decided": {
+        "calendar.clock": "a file of timestamps cannot say whether they are a publication clock or a receipt clock; 'receipt' is written so the spec validates and a person must confirm it (--clock)",
+        "holdout": "the cut is a decision about what must stay unseen, which no test on the data can make; {\"fraction\": 0.2} is a convention, not a measurement",
+        "sampling.timezone": "the timestamps carry no offset, so 'UTC' is what --timezone declared, not what was read",
+        "exogenous": "the other numeric columns are offered as names only; whether each is available at prediction time is not a property of this file"
+      },
+      "exogenous": [
+        "Global_intensity",
+        "Global_reactive_power",
+        "Sub_metering_1",
+        "Sub_metering_2",
+        "Sub_metering_3",
+        "Voltage"
+      ]
+    },
+    {
+      "schema": "m5phet.representation.v1",
+      "sampling": {
+        "step_seconds": 60,
+        "timezone": "UTC"
+      },
+      "target": {
+        "column": "Global_active_power",
+        "transform": "level"
+      },
+      "windows": [
+        74
+      ],
+      "lags": [
+        1,
+        74
+      ],
+      "differencing": {
+        "order": 0
+      },
+      "calendar": {
+        "clock": "receipt",
+        "columns": []
+      },
+      "features": [],
+      "holdout": {
+        "fraction": 0.2
+      },
+      "provenance": "DEVELOPMENT",
+      "candidate_id": "seasonal_lag_74",
+      "why": {
+        "windows": "ACF peak at lag 74 (rho 0.356627, band 0.011206, computed on the levels) -> window 74",
+        "lags": "ACF peak at lag 74 -> lags [1, 74]",
+        "transform": "level: the stationarity verdict is STATIONARY (adf+kpss agree)",
+        "features": "none: the peak's period matches no calendar period feature-eng builds a feature for"
+      },
+      "not_decided": {
+        "calendar.clock": "a file of timestamps cannot say whether they are a publication clock or a receipt clock; 'receipt' is written so the spec validates and a person must confirm it (--clock)",
+        "holdout": "the cut is a decision about what must stay unseen, which no test on the data can make; {\"fraction\": 0.2} is a convention, not a measurement",
+        "sampling.timezone": "the timestamps carry no offset, so 'UTC' is what --timezone declared, not what was read",
+        "exogenous": "the other numeric columns are offered as names only; whether each is available at prediction time is not a property of this file"
+      },
+      "exogenous": [
+        "Global_intensity",
+        "Global_reactive_power",
+        "Sub_metering_1",
+        "Sub_metering_2",
+        "Sub_metering_3",
+        "Voltage"
+      ]
+    },
+    {
+      "schema": "m5phet.representation.v1",
+      "sampling": {
+        "step_seconds": 60,
+        "timezone": "UTC"
+      },
+      "target": {
+        "column": "Global_active_power",
+        "transform": "level"
+      },
+      "windows": [
+        197,
+        1443
+      ],
+      "lags": [
+        1,
+        1443
+      ],
+      "differencing": {
+        "order": 0
+      },
+      "calendar": {
+        "clock": "receipt",
+        "columns": [
+          "hour_of_day"
+        ]
+      },
+      "features": [
+        "hour_of_day"
+      ],
+      "holdout": {
+        "fraction": 0.2
+      },
+      "provenance": "DEVELOPMENT",
+      "candidate_id": "seasonal_lag_1443",
+      "why": {
+        "windows": "ACF peak at lag 1443 (rho 0.277748, band 0.011206, computed on the levels) -> window 1443; the decay lag 197 is kept as the shorter window",
+        "lags": "ACF peak at lag 1443 -> lags [1, 1443]",
+        "transform": "level: the stationarity verdict is STATIONARY (adf+kpss agree)",
+        "features": "the peak's period is 86580 s, which is the period hour_of_day encodes -> features ['hour_of_day']"
+      },
+      "not_decided": {
+        "calendar.clock": "a file of timestamps cannot say whether they are a publication clock or a receipt clock; 'receipt' is written so the spec validates and a person must confirm it (--clock)",
+        "holdout": "the cut is a decision about what must stay unseen, which no test on the data can make; {\"fraction\": 0.2} is a convention, not a measurement",
+        "sampling.timezone": "the timestamps carry no offset, so 'UTC' is what --timezone declared, not what was read",
+        "exogenous": "the other numeric columns are offered as names only; whether each is available at prediction time is not a property of this file"
+      },
+      "exogenous": [
+        "Global_intensity",
+        "Global_reactive_power",
+        "Sub_metering_1",
+        "Sub_metering_2",
+        "Sub_metering_3",
+        "Voltage"
+      ]
+    },
+    {
+      "schema": "m5phet.representation.v1",
+      "sampling": {
+        "step_seconds": 60,
+        "timezone": "UTC"
+      },
+      "target": {
+        "column": "Global_active_power",
+        "transform": "level"
+      },
+      "windows": [
+        197,
+        2892
+      ],
+      "lags": [
+        1,
+        2892
+      ],
+      "differencing": {
+        "order": 0
+      },
+      "calendar": {
+        "clock": "receipt",
+        "columns": []
+      },
+      "features": [],
+      "holdout": {
+        "fraction": 0.2
+      },
+      "provenance": "DEVELOPMENT",
+      "candidate_id": "seasonal_lag_2892",
+      "why": {
+        "windows": "ACF peak at lag 2892 (rho 0.244256, band 0.011206, computed on the levels) -> window 2892; the decay lag 197 is kept as the shorter window",
+        "lags": "ACF peak at lag 2892 -> lags [1, 2892]",
+        "transform": "level: the stationarity verdict is STATIONARY (adf+kpss agree)",
+        "features": "none: the peak's period matches no calendar period feature-eng builds a feature for"
+      },
+      "not_decided": {
+        "calendar.clock": "a file of timestamps cannot say whether they are a publication clock or a receipt clock; 'receipt' is written so the spec validates and a person must confirm it (--clock)",
+        "holdout": "the cut is a decision about what must stay unseen, which no test on the data can make; {\"fraction\": 0.2} is a convention, not a measurement",
+        "sampling.timezone": "the timestamps carry no offset, so 'UTC' is what --timezone declared, not what was read",
+        "exogenous": "the other numeric columns are offered as names only; whether each is available at prediction time is not a property of this file"
+      },
+      "exogenous": [
+        "Global_intensity",
+        "Global_reactive_power",
+        "Sub_metering_1",
+        "Sub_metering_2",
+        "Sub_metering_3",
+        "Voltage"
+      ]
+    }
+  ],
+  "candidates_skipped": [],
+  "environment": {
+    "python": "3.12.7",
+    "numpy": "2.5.3",
+    "statsmodels": "0.15.0"
+  },
+  "fitted": "NOTHING: this job reads a dataset profile and emits candidate specs; no model is trained here"
+}
