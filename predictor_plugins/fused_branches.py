@@ -12,7 +12,7 @@ Declared configuration (everything else is the common training configuration the
 other plugins take, inherited from ``common.base``):
 
 ``branches``
-    ``[{"name": str, "columns": [str|int], "encoder": "cnn"|"lstm"|"dense"|"tcn"}]``.
+    ``[{"name": str, "columns": [str|int], "encoder": "cnn"|"lstm"|"rnn"|"dense"|"tcn"}]``.
     One branch per feature group. ``columns`` are column NAMES resolved against
     ``feature_names`` (the preprocessor's own key for the channel order), or raw
     channel indices. Omitted, the branches are derived from the input shapes.
@@ -54,7 +54,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 from tensorflow.keras.layers import (
     Add, Concatenate, Conv1D, Dense, Dropout, Flatten, GlobalAveragePooling1D,
-    Input, LSTM, Lambda,
+    Input, GRU, LSTM, Lambda,
 )
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.models import Model
@@ -68,6 +68,7 @@ from .common.losses import mae_magnitude, random_normal_initializer_44
 ENCODERS: Dict[str, str] = {
     "cnn": "causal Conv1D stack, average-pooled over time",
     "lstm": "stacked LSTM, last state",
+    "rnn": "stacked GRU, last state (the feature-extractor 'rnn' family)",
     "dense": "flattened window through a dense stack",
     "tcn": "dilated causal residual Conv1D blocks, average-pooled over time",
 }
@@ -256,6 +257,10 @@ class Plugin(BaseBayesianKerasPredictor):
             for layer in range(depth):
                 last = layer == depth - 1
                 x = LSTM(units, return_sequences=not last, name=f"{name}_lstm_{layer}")(x)
+        elif kind == "rnn":
+            for layer in range(depth):
+                last = layer == depth - 1
+                x = GRU(units, return_sequences=not last, name=f"{name}_gru_{layer}")(x)
         elif kind == "tcn":
             x = Conv1D(units, 1, padding="same", name=f"{name}_tcn_project")(x)
             for layer in range(depth):
