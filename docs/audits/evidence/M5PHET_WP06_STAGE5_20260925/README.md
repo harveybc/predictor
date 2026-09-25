@@ -202,6 +202,7 @@ loses no fit). No third optimizer was written.
 | `table/calibration.{json,md}` | the WP23 calibration report |
 | `search_decision.json`, `winner_decisions.json`, `link_outcomes.json` | the decision records and their outcomes |
 | `collect.py`, `build_table.py`, `search_decision.py`, `winner_decisions.py`, `link_outcomes.py` | the scripts that produced the four files above, in order |
+| `acceptance/families-8781.json`, `acceptance/envelopes-8781.json` | the two harnesses after the `m5phet.decide` change, on a verification instance of this branch (port 8781, its own state directory; the owner's 8765 was not touched): examples 11/11, prose 14/14, refusals 2/2, families 5/5, questions 15/15, `any_execution_authorized` false |
 
 `predictions.csv` (9824 rows per stage) and the fitted graphs stay in the run directory; their sha256 digests are in
 each stage's `artifact_digests.sha256`, so a copy can be checked against what was scored.
