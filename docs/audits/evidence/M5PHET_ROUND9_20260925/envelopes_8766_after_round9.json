@@ -1,0 +1,1897 @@
+{
+ "schema": "m5phet_envelope_verification.v1",
+ "areas": {
+  "classification": {
+   "provider": "laya_news",
+   "question_types": {
+    "choice": {
+     "required": [
+      "options"
+     ],
+     "optional": [
+      "instructions"
+     ]
+    }
+   },
+   "parameters": {},
+   "aliases": {},
+   "combinations": [],
+   "data_requirement": {
+    "required": null,
+    "why": "this provider does not declare whether it needs attached data"
+   },
+   "chooser": "NOT_CONFIGURED"
+  },
+  "forecasting": {
+   "provider": "predictor_forecast",
+   "question_types": {
+    "point_forecast": {
+     "required": [
+      "horizon"
+     ],
+     "optional": [
+      "target",
+      "bundle"
+     ]
+    },
+    "interval": {
+     "required": [
+      "horizon",
+      "confidence_level"
+     ],
+     "optional": [
+      "target",
+      "bundle"
+     ]
+    },
+    "anomaly_risk": {
+     "required": [
+      "threshold"
+     ],
+     "optional": [
+      "horizon",
+      "target",
+      "bundle"
+     ]
+    }
+   },
+   "parameters": {
+    "target": [
+     "Global_active_power",
+     "direction_long"
+    ],
+    "horizon": [
+     60,
+     1
+    ],
+    "bundle": [
+     "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7",
+     "phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99",
+     "quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8",
+     "searched-w21-household-outer-20260925:87f7b6b407b7832258e55f292b876c6dde186feef449564affbc0fd924cbb669"
+    ]
+   },
+   "aliases": {
+    "target": {
+     "Global_active_power": [
+      "Global active power",
+      "global active power",
+      "household power",
+      "active power",
+      "power consumption",
+      "consumption",
+      "potencia",
+      "consumo"
+     ],
+     "direction_long": [
+      "direction long",
+      "direction long probability"
+     ]
+    },
+    "horizon": {
+     "60": [
+      "60 steps",
+      "60 minutes",
+      "60 pasos",
+      "60 minutos",
+      "one hour",
+      "an hour",
+      "next hour",
+      "una hora",
+      "la proxima hora",
+      "próxima hora"
+     ],
+     "1": [
+      "1 steps",
+      "1 pasos",
+      "next step",
+      "one step",
+      "un paso",
+      "proximo paso",
+      "próximo paso"
+     ]
+    },
+    "bundle": {
+     "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7": [
+      "e1-household-r0-s1"
+     ],
+     "phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99": [
+      "phase-1c-direction-cnn-direction-long"
+     ],
+     "quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8": [
+      "quantile-household-95-20260925",
+      "quantile",
+      "interval",
+      "rango",
+      "intervalo",
+      "con incertidumbre",
+      "with an interval"
+     ],
+     "searched-w21-household-outer-20260925:87f7b6b407b7832258e55f292b876c6dde186feef449564affbc0fd924cbb669": [
+      "searched-w21-household-outer-20260925"
+     ]
+    }
+   },
+   "combinations": [
+    {
+     "target": "Global_active_power",
+     "horizon": 60
+    },
+    {
+     "target": "direction_long",
+     "horizon": 1
+    },
+    {
+     "target": "Global_active_power",
+     "horizon": 60
+    },
+    {
+     "target": "Global_active_power",
+     "horizon": 60
+    }
+   ],
+   "data_requirement": {
+    "required": true,
+    "why": "a forecast is made from the caller's own window of observations; this provider holds none",
+    "shape": "either raw rows in the series' own units -- a CSV or a list of row objects carrying the fitted input columns by name, at the bundle's own sampling step, at least `window` of them (the last ones are used and the bundle's own scaler is applied here) -- or an already-standardized window: a JSON object with exactly columns, values, scale and scaler_digest (the catalog example carries one that runs)"
+   },
+   "chooser": "NOT_CONFIGURED"
+  },
+  "causal": {
+   "provider": "causal_inference",
+   "question_types": {
+    "ate": {
+     "required": [],
+     "optional": []
+    },
+    "cate": {
+     "required": [],
+     "optional": [
+      "subgroup",
+      "condition"
+     ]
+    },
+    "impulse_response": {
+     "required": [
+      "event",
+      "outcome"
+     ],
+     "optional": [
+      "horizons"
+     ]
+    },
+    "sensitivity": {
+     "required": [
+      "events",
+      "outcome",
+      "window"
+     ],
+     "optional": []
+    },
+    "counterfactual_path": {
+     "required": [
+      "window",
+      "zero_out"
+     ],
+     "optional": [
+      "outcome",
+      "horizons"
+     ]
+    }
+   },
+   "parameters": {
+    "study": [
+     "ATE of treatment on outcome",
+     "demo-modifier-v1",
+     "laya-above-threshold-modifier-v1",
+     "wp20-spec-modifier-v1"
+    ],
+    "event": [
+     "United States | CPI",
+     "United States | Crude Oil Inventories",
+     "United States | Initial Jobless Claims",
+     "United States | Nonfarm Payrolls"
+    ]
+   },
+   "aliases": {
+    "study": {
+     "wp20-spec-modifier-v1": [
+      "causal-ate:4bda9dbb0812c656fab4cb502be09f6f001879637c75e41ef14131cb9a4fd6a9",
+      "4bda9dbb0812c656fab4cb502be09f6f001879637c75e41ef14131cb9a4fd6a9",
+      "4bda9dbb0812",
+      "CATE of treatment on outcome",
+      "conditional effect of treatment on outcome",
+      "effect of treatment on outcome by baseline",
+      "effect of treatment on outcome within baseline",
+      "baseline subgroups",
+      "effect modifier study",
+      "modifier study",
+      "study with an effect modifier",
+      "conditional effect study",
+      "heterogeneous effect study",
+      "subgroup study",
+      "estudio con modificador",
+      "estudio con modificador de efecto",
+      "estudio de efecto condicional",
+      "estudio por subgrupos"
+     ],
+     "laya-above-threshold-modifier-v1": [
+      "causal-ate:a1f430bd03b4a1c13cf4a2ef7c8be96866c7722aba1471f2df86e6166a631954",
+      "a1f430bd03b4a1c13cf4a2ef7c8be96866c7722aba1471f2df86e6166a631954",
+      "a1f430bd03b4",
+      "CATE of treatment on outcome",
+      "conditional effect of treatment on outcome",
+      "effect of treatment on outcome by baseline",
+      "effect of treatment on outcome within baseline",
+      "baseline subgroups",
+      "effect modifier study",
+      "modifier study",
+      "study with an effect modifier",
+      "conditional effect study",
+      "heterogeneous effect study",
+      "subgroup study",
+      "estudio con modificador",
+      "estudio con modificador de efecto",
+      "estudio de efecto condicional",
+      "estudio por subgrupos"
+     ],
+     "demo-modifier-v1": [
+      "causal-ate:ec5189d57572e7b8b0c0f89e8dd3c3d14ccde4041af1a528d5b4a2ed3f8e250f",
+      "ec5189d57572e7b8b0c0f89e8dd3c3d14ccde4041af1a528d5b4a2ed3f8e250f",
+      "ec5189d57572",
+      "CATE of treatment on outcome",
+      "conditional effect of treatment on outcome",
+      "effect of treatment on outcome by baseline",
+      "effect of treatment on outcome within baseline",
+      "baseline subgroups",
+      "effect modifier study",
+      "modifier study",
+      "study with an effect modifier",
+      "conditional effect study",
+      "heterogeneous effect study",
+      "subgroup study",
+      "estudio con modificador",
+      "estudio con modificador de efecto",
+      "estudio de efecto condicional",
+      "estudio por subgrupos"
+     ],
+     "ATE of treatment on outcome": [
+      "causal-ate:f18fafdaa95e22a5b5cf147c80f87ad0836691c3d550c13bd695992fc0a2602b",
+      "f18fafdaa95e22a5b5cf147c80f87ad0836691c3d550c13bd695992fc0a2602b",
+      "f18fafdaa95e",
+      "treatment on outcome",
+      "effect of treatment on outcome",
+      "average effect of treatment on outcome",
+      "effect of treatment upon outcome",
+      "demo study",
+      "synthetic study",
+      "development study"
+     ]
+    },
+    "event": {
+     "United States | CPI": [
+      "CPI",
+      "United States CPI",
+      "CPI (United States)"
+     ],
+     "United States | Crude Oil Inventories": [
+      "Crude Oil Inventories",
+      "United States Crude Oil Inventories",
+      "Crude Oil Inventories (United States)"
+     ],
+     "United States | Initial Jobless Claims": [
+      "Initial Jobless Claims",
+      "United States Initial Jobless Claims",
+      "Initial Jobless Claims (United States)"
+     ],
+     "United States | Nonfarm Payrolls": [
+      "Nonfarm Payrolls",
+      "United States Nonfarm Payrolls",
+      "Nonfarm Payrolls (United States)"
+     ]
+    }
+   },
+   "combinations": [],
+   "data_requirement": {
+    "required": null,
+    "why": "this provider does not declare whether it needs attached data"
+   },
+   "chooser": "NOT_CONFIGURED"
+  },
+  "rl": {
+   "provider": "trading_policy",
+   "question_types": {
+    "next_action": {
+     "required": [],
+     "optional": []
+    },
+    "value_estimation": {
+     "required": [],
+     "optional": []
+    }
+   },
+   "parameters": {
+    "policy_id": [
+     "eth_4h_sac_current_stack_anchor_v1"
+    ]
+   },
+   "aliases": {
+    "policy_id": {
+     "eth_4h_sac_current_stack_anchor_v1": [
+      "policy",
+      "model",
+      "agent",
+      "politica",
+      "política",
+      "modelo",
+      "eth 4h sac current stack anchor v1"
+     ]
+    }
+   },
+   "combinations": [],
+   "data_requirement": {
+    "required": null,
+    "why": "this provider does not declare whether it needs attached data"
+   },
+   "chooser": "NOT_CONFIGURED"
+  },
+  "unsupervised": {
+   "provider": "feature-eng-hierarchical-regimes",
+   "question_types": {
+    "clustering": {
+     "required": [],
+     "optional": [
+      "method",
+      "expected_clusters",
+      "level"
+     ]
+    },
+    "cluster_description": {
+     "required": [
+      "target_metric"
+     ],
+     "optional": [
+      "level"
+     ]
+    }
+   },
+   "parameters": {
+    "task_id": [
+     "ohlc-demo-regimes-v1"
+    ],
+    "model_version": [
+     "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f"
+    ],
+    "target_metric": [
+     "none (assignment only)",
+     "highest body_pipettes",
+     "lowest body_pipettes",
+     "body_pipettes > 0",
+     "body_pipettes < 0",
+     "highest range_pipettes",
+     "lowest range_pipettes",
+     "range_pipettes > 0",
+     "range_pipettes < 0"
+    ]
+   },
+   "aliases": {
+    "task_id": {
+     "ohlc-demo-regimes-v1": [
+      "regimes",
+      "regimenes",
+      "regímenes",
+      "hierarchical regimes",
+      "regimenes jerarquicos",
+      "regímenes jerárquicos",
+      "regime",
+      "regimen",
+      "régimen",
+      "cluster",
+      "clusters",
+      "group",
+      "groups",
+      "grupo",
+      "grupos",
+      "ohlc demo regimes v1"
+     ]
+    },
+    "model_version": {
+     "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f": [
+      "regimes",
+      "regimenes",
+      "regímenes",
+      "hierarchical regimes",
+      "regimenes jerarquicos",
+      "regímenes jerárquicos",
+      "regime",
+      "regimen",
+      "régimen",
+      "cluster",
+      "clusters",
+      "group",
+      "groups",
+      "grupo",
+      "grupos",
+      "9b27b0297de9",
+      "model version",
+      "fitted model",
+      "version del modelo"
+     ]
+    },
+    "target_metric": {
+     "none (assignment only)": [
+      "assign",
+      "assigns",
+      "show",
+      "asigna",
+      "asignar",
+      "asignale",
+      "muestra",
+      "mostrar"
+     ],
+     "highest body_pipettes": [
+      "highest body_pipettes",
+      "largest body pipettes",
+      "biggest body pipettes",
+      "highest body pipettes",
+      "widest body pipettes",
+      "longest body pipettes",
+      "large body pipettes",
+      "big body pipettes",
+      "wide body pipettes",
+      "long body pipettes",
+      "strong body pipettes",
+      "high body pipettes",
+      "largest body",
+      "biggest body",
+      "highest body",
+      "widest body",
+      "longest body",
+      "large body",
+      "big body",
+      "wide body",
+      "long body",
+      "strong body",
+      "high body",
+      "mayor cuerpo",
+      "maximo cuerpo",
+      "máximo cuerpo",
+      "gran cuerpo",
+      "cuerpo alto",
+      "cuerpo alta",
+      "cuerpo grande",
+      "cuerpo amplio",
+      "cuerpo amplia",
+      "cuerpo ancho",
+      "cuerpo ancha",
+      "cuerpo largo",
+      "cuerpo larga",
+      "cuerpo fuerte",
+      "cuerpo mas alto",
+      "cuerpo más alto"
+     ],
+     "lowest body_pipettes": [
+      "lowest body_pipettes",
+      "smallest body pipettes",
+      "lowest body pipettes",
+      "narrowest body pipettes",
+      "shortest body pipettes",
+      "small body pipettes",
+      "low body pipettes",
+      "narrow body pipettes",
+      "short body pipettes",
+      "weak body pipettes",
+      "smallest body",
+      "lowest body",
+      "narrowest body",
+      "shortest body",
+      "small body",
+      "low body",
+      "narrow body",
+      "short body",
+      "weak body",
+      "menor cuerpo",
+      "minimo cuerpo",
+      "mínimo cuerpo",
+      "cuerpo bajo",
+      "cuerpo baja",
+      "cuerpo pequeno",
+      "cuerpo pequeño",
+      "cuerpo pequena",
+      "cuerpo pequeña",
+      "cuerpo estrecho",
+      "cuerpo estrecha",
+      "cuerpo angosto",
+      "cuerpo corto",
+      "cuerpo corta",
+      "cuerpo debil",
+      "cuerpo débil",
+      "cuerpo mas bajo",
+      "cuerpo más bajo"
+     ],
+     "body_pipettes > 0": [
+      "body_pipettes > 0",
+      "positive body pipettes",
+      "bullish body pipettes",
+      "rising body pipettes",
+      "body pipettes above zero",
+      "body pipettes over zero",
+      "positive body",
+      "bullish body",
+      "rising body",
+      "body above zero",
+      "body over zero",
+      "cuerpo positivo",
+      "cuerpo positiva",
+      "cuerpo alcista",
+      "cuerpo por encima de cero",
+      "cuerpo mayor que cero"
+     ],
+     "body_pipettes < 0": [
+      "body_pipettes < 0",
+      "negative body pipettes",
+      "bearish body pipettes",
+      "falling body pipettes",
+      "body pipettes below zero",
+      "body pipettes under zero",
+      "negative body",
+      "bearish body",
+      "falling body",
+      "body below zero",
+      "body under zero",
+      "cuerpo negativo",
+      "cuerpo negativa",
+      "cuerpo bajista",
+      "cuerpo por debajo de cero",
+      "cuerpo menor que cero"
+     ],
+     "highest range_pipettes": [
+      "highest range_pipettes",
+      "largest range pipettes",
+      "biggest range pipettes",
+      "highest range pipettes",
+      "widest range pipettes",
+      "longest range pipettes",
+      "large range pipettes",
+      "big range pipettes",
+      "wide range pipettes",
+      "long range pipettes",
+      "strong range pipettes",
+      "high range pipettes",
+      "largest range",
+      "biggest range",
+      "highest range",
+      "widest range",
+      "longest range",
+      "large range",
+      "big range",
+      "wide range",
+      "long range",
+      "strong range",
+      "high range",
+      "mayor rango",
+      "maximo rango",
+      "máximo rango",
+      "gran rango",
+      "rango alto",
+      "rango alta",
+      "rango grande",
+      "rango amplio",
+      "rango amplia",
+      "rango ancho",
+      "rango ancha",
+      "rango largo",
+      "rango larga",
+      "rango fuerte",
+      "rango mas alto",
+      "rango más alto"
+     ],
+     "lowest range_pipettes": [
+      "lowest range_pipettes",
+      "smallest range pipettes",
+      "lowest range pipettes",
+      "narrowest range pipettes",
+      "shortest range pipettes",
+      "small range pipettes",
+      "low range pipettes",
+      "narrow range pipettes",
+      "short range pipettes",
+      "weak range pipettes",
+      "smallest range",
+      "lowest range",
+      "narrowest range",
+      "shortest range",
+      "small range",
+      "low range",
+      "narrow range",
+      "short range",
+      "weak range",
+      "menor rango",
+      "minimo rango",
+      "mínimo rango",
+      "rango bajo",
+      "rango baja",
+      "rango pequeno",
+      "rango pequeño",
+      "rango pequena",
+      "rango pequeña",
+      "rango estrecho",
+      "rango estrecha",
+      "rango angosto",
+      "rango corto",
+      "rango corta",
+      "rango debil",
+      "rango débil",
+      "rango mas bajo",
+      "rango más bajo"
+     ],
+     "range_pipettes > 0": [
+      "range_pipettes > 0",
+      "positive range pipettes",
+      "bullish range pipettes",
+      "rising range pipettes",
+      "range pipettes above zero",
+      "range pipettes over zero",
+      "positive range",
+      "bullish range",
+      "rising range",
+      "range above zero",
+      "range over zero",
+      "rango positivo",
+      "rango positiva",
+      "rango alcista",
+      "rango por encima de cero",
+      "rango mayor que cero"
+     ],
+     "range_pipettes < 0": [
+      "range_pipettes < 0",
+      "negative range pipettes",
+      "bearish range pipettes",
+      "falling range pipettes",
+      "range pipettes below zero",
+      "range pipettes under zero",
+      "negative range",
+      "bearish range",
+      "falling range",
+      "range below zero",
+      "range under zero",
+      "rango negativo",
+      "rango negativa",
+      "rango bajista",
+      "rango por debajo de cero",
+      "rango menor que cero"
+     ]
+    }
+   },
+   "combinations": [],
+   "data_requirement": {
+    "required": null,
+    "why": "this provider does not declare whether it needs attached data"
+   },
+   "chooser": "NOT_CONFIGURED"
+  }
+ },
+ "envelopes": [
+  {
+   "area": "forecasting",
+   "message_status": "PARTIAL",
+   "questions": [
+    {
+     "question": "prediccion",
+     "type": "point_forecast",
+     "expected": "REFUSED:STATE_REQUIRED",
+     "got": "REFUSED:STATE_REQUIRED",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": null,
+     "why": "'Global_active_power' is served by more than one configured bundle (e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7 and quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8 and searched-w21-household-outer-20260925:87f7b6b407b7832258e55f292b876c6dde186feef449564affbc0fd924cbb669) and this request declares nothing that tells them apart; name it: `bundle` in the question (its state_ref, its state_id, or its head -- `quantile` or `point`), or `state_ref` in the state; ask for an `interval`, which only a bundle with a quantile head can answer; or ask for a `point_forecast`, which prefers the bundle without a quantile head when exactly one has none",
+     "preview": {
+      "status": "REFUSED",
+      "refusal": "STATE_REQUIRED",
+      "why": "'Global_active_power' is served by more than one configured bundle (e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7 and quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8 and searched-w21-household-outer-20260925:87f7b6b407b7832258e55f292b876c6dde186feef449564affbc0fd924cbb669) and this request declares nothing that tells them apart; name it: `bundle` in the question (its state_ref, its state_id, or its head -- `quantile` or `point`), or `state_ref` in the state; ask for an `interval`, which only a bundle with a quantile head can answer; or ask for a `point_forecast`, which prefers the bundle without a quantile head when exactly one has none",
+      "type": "point_forecast"
+     }
+    },
+    {
+     "question": "rango",
+     "type": "interval",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": null,
+     "why": null,
+     "preview": {
+      "type": "interval",
+      "values": [
+       [
+        0.03167128562927246,
+        2.82295298576355
+       ]
+      ],
+      "confidence_level": 0.95,
+      "quantiles": [
+       0.025,
+       0.975
+      ],
+      "point": 0.31064319610595703
+     }
+    },
+    {
+     "question": "riesgo",
+     "type": "anomaly_risk",
+     "expected": "REFUSED:NOT_ESTIMABLE",
+     "got": "REFUSED:NOT_ESTIMABLE",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": null,
+     "why": "no configured bundle that serves 'Global_active_power' can: e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7: it emits a point estimate and no predictive distribution; an interval would require a quantile or ensemble head this bundle does not have; quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8: it carries 5 fitted quantiles [0.025, 0.05, 0.5, 0.95, 0.975], which are 5 points of a predictive distribution and not the distribution: the probability of crossing a threshold would have to be interpolated between them, or extrapolated beyond them, and neither was fitted; searched-w21-household-outer-20260925:87f7b6b407b7832258e55f292b876c6dde186feef449564affbc0fd924cbb669: it emits a point estimate and no predictive distribution; an interval would require a quantile or ensemble head this bundle does not have",
+     "preview": {
+      "status": "REFUSED",
+      "refusal": "NOT_ESTIMABLE",
+      "why": "no configured bundle that serves 'Global_active_power' can: e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7: it emits a point estimate and no predictive distribution; an interval would require a quantile or ensemble head this bundle does not have; quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8: it carries 5 fitted quantiles [0.025, 0.05, 0.5, 0.95, 0.975], which are 5 points of a predictive distribution and not the distribution: the probability of crossing a threshold would have to be interpolated between them, or extrapolated beyond them, and neither was fitted; searched-w21-household-outer-20260925:87f7b6b407b7832258e55f292b876c6dde186feef449564affbc0fd924cbb669: it emits a point estimate and no predictive distribution; an interval would require a quantile or ensemble head this bundle does not have",
+      "type": "anomaly_risk"
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration_plugin": "default",
+   "narration": "La pregunta \"pronostica la potencia\" fue rechazada (state: REFUSED, motivo: STATE_REQUIRED): \"Global_active_power\" está servida por más de un bundle configurado y la petición no declaraba nada que los distinguiera, así que no se pudo elegir cuál usar.\n\nLa pregunta \"dame un rango\" sí se respondió (st",
+   "answers": {
+    "prediccion": {
+     "status": "REFUSED",
+     "refusal": "STATE_REQUIRED",
+     "why": "'Global_active_power' is served by more than one configured bundle (e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7 and quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8 and searched-w21-household-outer-20260925:87f7b6b407b7832258e55f292b876c6dde186feef449564affbc0fd924cbb669) and this request declares nothing that tells them apart; name it: `bundle` in the question (its state_ref, its state_id, or its head -- `quantile` or `point`), or `state_ref` in the state; ask for an `interval`, which only a bundle with a quantile head can answer; or ask for a `point_forecast`, which prefers the bundle without a quantile head when exactly one has none",
+     "type": "point_forecast"
+    },
+    "rango": {
+     "type": "interval",
+     "values": [
+      [
+       0.03167128562927246,
+       2.82295298576355
+      ]
+     ],
+     "confidence_level": 0.95,
+     "quantiles": [
+      0.025,
+      0.975
+     ],
+     "point": 0.31064319610595703,
+     "unit": "kW",
+     "scale": "original",
+     "targets": [
+      "Global_active_power"
+     ],
+     "horizons": [
+      60
+     ],
+     "state_ref": "quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8",
+     "as_of": "2026-09-25T18:41:58.787226+00:00",
+     "uncertainty": "fitted_quantiles",
+     "execution_authorized": false,
+     "input_restandardized_from": "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7",
+     "status": "OK"
+    },
+    "riesgo": {
+     "status": "REFUSED",
+     "refusal": "NOT_ESTIMABLE",
+     "why": "no configured bundle that serves 'Global_active_power' can: e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7: it emits a point estimate and no predictive distribution; an interval would require a quantile or ensemble head this bundle does not have; quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8: it carries 5 fitted quantiles [0.025, 0.05, 0.5, 0.95, 0.975], which are 5 points of a predictive distribution and not the distribution: the probability of crossing a threshold would have to be interpolated between them, or extrapolated beyond them, and neither was fitted; searched-w21-household-outer-20260925:87f7b6b407b7832258e55f292b876c6dde186feef449564affbc0fd924cbb669: it emits a point estimate and no predictive distribution; an interval would require a quantile or ensemble head this bundle does not have",
+     "type": "anomaly_risk"
+    }
+   },
+   "answered": 1,
+   "refused": 2,
+   "execution_authorized": false
+  },
+  {
+   "area": "causal",
+   "message_status": "PARTIAL",
+   "questions": [
+    {
+     "question": "efecto",
+     "type": "ate",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": null,
+     "why": null,
+     "preview": {
+      "type": "ate",
+      "status": "OK",
+      "execution_authorized": false,
+      "estimand": "ATE",
+      "study_estimand": "ATE"
+     }
+    },
+    {
+     "question": "jovenes",
+     "type": "cate",
+     "expected": "REFUSED:NOT_ESTIMABLE",
+     "got": "REFUSED:NOT_ESTIMABLE",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": null,
+     "why": "the retained study estimates an average effect (ATE of treatment on outcome, constant across units) and was not fitted with an effect modifier, so a conditional effect under 'baseline == 1' cannot be read from it, and it is not derived by subsetting the population and refitting during inference; answering this needs a study fitted explicitly with that modifier declared and a heterogeneous-effect estimand -- this provider serves one when it is retained (`python -m causal_inference_provider prepare-demo --with-modifier` fits the synthetic development one), and it is named as its own study, not read out of this one.",
+     "preview": {
+      "status": "REFUSED",
+      "refusal": "NOT_ESTIMABLE",
+      "why": "the retained study estimates an average effect (ATE of treatment on outcome, constant across units) and was not fitted with an effect modifier, so a conditional effect under 'baseline == 1' cannot be read from it, and it is not derived by subsetting the population and refitting during inference; answering this needs a study fitted explicitly with that modifier declared and a heterogeneous-effect estimand -- this provider serves one when it is retained (`python -m causal_inference_provider prepare-demo --with-modifier` fits the synthetic development one), and it is named as its own study, not read out of this one.",
+      "type": "cate"
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration_plugin": "default",
+   "narration": "La pregunta \"efecto\" sí se respondió: estimación del efecto promedio del tratamiento sobre el resultado (ATE) = 2.0293820021534623 unidades de resultado sintético, con intervalo de confianza al 95% [1.931308938896731, 2.1274550654101936], que no incluye el cero. Sin embargo, la pregunta \"en jovenes\"",
+   "answers": {
+    "efecto": {
+     "type": "ate",
+     "status": "OK",
+     "execution_authorized": false,
+     "estimand": "ATE",
+     "study_estimand": "ATE",
+     "effect_size": 2.0293820021534623,
+     "unit": "synthetic outcome units",
+     "confidence_interval": [
+      1.931308938896731,
+      2.1274550654101936
+     ],
+     "confidence_level": 0.95,
+     "conclusion": "The estimated average effect of treatment on outcome is positive: 2.029 synthetic outcome units (contrast 1 versus 0); the 95% interval [1.931, 2.127] excludes zero. This holds only under the declared assumptions: consistency, constant_effect, iid_sampling, no_interference, nuisance_models_correct, positivity, pre_treatment_adjustment, sufficient_adjustment.",
+     "assumptions": [
+      "consistency",
+      "constant_effect",
+      "iid_sampling",
+      "no_interference",
+      "nuisance_models_correct",
+      "positivity",
+      "pre_treatment_adjustment",
+      "sufficient_adjustment"
+     ],
+     "causal_graph": {
+      "treatment": "treatment",
+      "outcome": "outcome",
+      "confounders": [
+       "baseline"
+      ]
+     },
+     "effect_modifiers": [],
+     "population": {
+      "data_sha256": "e9b579d5b83e6036904ae5e6a60eee4a53f1e9c07f2a8293ddd61220d8d3d503",
+      "n_rows": 2400
+     },
+     "diagnostics": {
+      "analysis_id": "2019936003c4e50658afa6c9800f8fcef400ce5f4830edc28a16a40f75c26e9f",
+      "confidence_level": 0.95,
+      "config_sha256": "26ce0e873125f434b23bc2c6acf7e085471d625ead250e3a04c7e6afba4404fd",
+      "contrast": {
+       "control": 0,
+       "treated": 1
+      },
+      "cv_folds": 3,
+      "data_sha256": "e9b579d5b83e6036904ae5e6a60eee4a53f1e9c07f2a8293ddd61220d8d3d503",
+      "engine": "econml.dml.LinearDML",
+      "identification": "conditional_on_user_assumptions",
+      "n_control": 1197,
+      "n_rows": 2400,
+      "n_treated": 1203,
+      "overlap_screen": "passed_not_proven",
+      "propensity_max": 0.81588584413428,
+      "propensity_min": 0.19881879309866177,
+      "seed": 1729,
+      "uncertainty_method": "econml_statsmodels_HC1_normal",
+      "versions": {
+       "causal-inference-m5phet": "0.1.0",
+       "econml": "0.16.0",
+       "numpy": "2.2.6",
+       "pandas": "2.3.3",
+       "scikit-learn": "1.6.1",
+       "scipy": "1.15.3",
+       "statsmodels": "0.15.0"
+      }
+     },
+     "state_ref": "causal-ate:f18fafdaa95e22a5b5cf147c80f87ad0836691c3d550c13bd695992fc0a2602b",
+     "development": true,
+     "not_carried": {
+      "p_value": "the retained artifact carries an estimate and an HC1 normal interval but no p-value; one is not derived from the interval here, because that would be a number the study never reported"
+     }
+    },
+    "jovenes": {
+     "status": "REFUSED",
+     "refusal": "NOT_ESTIMABLE",
+     "why": "the retained study estimates an average effect (ATE of treatment on outcome, constant across units) and was not fitted with an effect modifier, so a conditional effect under 'baseline == 1' cannot be read from it, and it is not derived by subsetting the population and refitting during inference; answering this needs a study fitted explicitly with that modifier declared and a heterogeneous-effect estimand -- this provider serves one when it is retained (`python -m causal_inference_provider prepare-demo --with-modifier` fits the synthetic development one), and it is named as its own study, not read out of this one.",
+     "type": "cate"
+    }
+   },
+   "answered": 1,
+   "refused": 1,
+   "execution_authorized": false
+  },
+  {
+   "area": "rl",
+   "message_status": "OK",
+   "questions": [
+    {
+     "question": "accion",
+     "type": "next_action",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": null,
+     "why": null,
+     "preview": {
+      "type": "next_action",
+      "action": [
+       0.05912280082702637
+      ],
+      "unit": "target position fraction of the policy's own action scale",
+      "action_space": "Box(-1, 1, (1,), float32)",
+      "deterministic": true
+     }
+    },
+    {
+     "question": "retorno",
+     "type": "value_estimation",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": null,
+     "why": null,
+     "preview": {
+      "type": "value_estimation",
+      "expected_return": 3.7995848655700684,
+      "uncertainty_bounds": [
+       3.7995848655700684,
+       4.006697177886963
+      ],
+      "critic_values": [
+       4.006697177886963,
+       3.7995848655700684
+      ],
+      "n_critics": 2
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration_plugin": "default",
+   "narration": "La política propone una accion de 0.05912280082702637 (determinista, en la escala Box(-1, 1) de la politica; su distribucion gaussiana pre-squash tiene media 0.059191830456256866 y desviacion 0.8433380126953125). No es una orden ni un tamano de posicion: es una propuesta del modelo, y execution_auth",
+   "answers": {
+    "accion": {
+     "type": "next_action",
+     "action": [
+      0.05912280082702637
+     ],
+     "unit": "target position fraction of the policy's own action scale",
+     "action_space": "Box(-1, 1, (1,), float32)",
+     "deterministic": true,
+     "out_of_declared_range": [],
+     "confidence": null,
+     "confidence_absent_because": "not emitted: a SAC actor returns one action and a Gaussian over its pre-squash value. The Gaussian's spread is reported under action_distribution; it describes the actor, and no number here says how likely the action is to be right",
+     "reading": "the action this fitted policy returns for this observation. It is a proposal from a model, not advice, not a position size and not an order",
+     "policy_id": "eth_4h_sac_current_stack_anchor_v1",
+     "execution_authorized": false,
+     "observation_source": "BUILT_FROM_MARKET_DATA",
+     "observation_build": {
+      "observation_length": 2724,
+      "observation_sha256": "343fc502f4f607be2b6744857554afea99568fb27c6e2b09ea9e08e6c82cdd0b",
+      "rows_supplied": 256,
+      "rows_consumed": 256,
+      "scaling_rows_used": 256,
+      "contract": {
+       "schema": "gym_fx.observation_contract.v1",
+       "contract_sha256": "ce246e2b25b00dcaea233a7ead7c03d6a1ee54aa38e2aed64d0deece443d27d3",
+       "observation_length": 2724,
+       "required_rows": 256,
+       "window_size": 32,
+       "feature_count": 83,
+       "feature_order": [
+        "return_1",
+        "log_return_1",
+        "return_5",
+        "log_return_5",
+        "return_10",
+        "log_return_10",
+        "return_20",
+        "log_return_20",
+        "return_60",
+        "log_return_60",
+        "sma_10",
+        "ema_10",
+        "close_sma_ratio_10",
+        "sma_20",
+        "ema_20",
+        "close_sma_ratio_20",
+        "sma_50",
+        "ema_50",
+        "close_sma_ratio_50",
+        "sma_100",
+        "ema_100",
+        "close_sma_ratio_100",
+        "sma_200",
+        "ema_200",
+        "close_sma_ratio_200",
+        "macd",
+        "macd_signal",
+        "macd_hist",
+        "rsi_7",
+        "rsi_14",
+        "rsi_21",
+        "stoch_k",
+        "stoch_d",
+        "williams_r_14",
+        "cci_14",
+        "roc_10",
+        "roc_20",
+        "roc_60",
+        "mom_10",
+        "mom_20",
+        "bb_upper",
+        "bb_middle",
+        "bb_lower",
+        "bb_pct_b",
+        "bb_width",
+        "atr_14",
+        "natr_14",
+        "hist_vol_10",
+        "hist_vol_20",
+        "hist_vol_60",
+        "ema_cross_10_50",
+        "ema_cross_20_100",
+        "trend_slope_50",
+        "trend_strength_50",
+        "obv",
+        "obv_delta_20",
+        "volume_sma_10",
+        "volume_sma_20",
+        "volume_ratio_20",
+        "vwap_60",
+        "mfi_14",
+        "statistical__log_return_1",
+        "roll_mean_ret_20",
+        "roll_std_ret_20",
+        "roll_skew_ret_20",
+        "roll_kurt_ret_20",
+        "roll_mean_ret_60",
+        "roll_std_ret_60",
+        "roll_skew_ret_60",
+        "roll_kurt_ret_60",
+        "roll_mean_ret_252",
+        "roll_std_ret_252",
+        "roll_skew_ret_252",
+        "roll_kurt_ret_252",
+        "realized_var_12",
+        "realized_var_48",
+        "autocorr_lag1_100",
+        "autocorr_lag5_100",
+        "sqret_autocorr_lag1_100",
+        "vol_regime_high",
+        "vol_regime_low",
+        "hurst_proxy_200",
+        "zscore_close_100"
+       ],
+       "binary_columns": [
+        "ema_cross_10_50",
+        "ema_cross_20_100",
+        "vol_regime_high",
+        "vol_regime_low"
+       ],
+       "price_column": "CLOSE",
+       "feature_scaling": "rolling_zscore",
+       "feature_scaling_window": 256,
+       "feature_clip": 10.0,
+       "include_price_window": true,
+       "include_agent_state": true,
+       "agent_state_contract": "legacy_episode_v1",
+       "block_layout": [
+        {
+         "block": "equity_norm",
+         "elements": 1
+        },
+        {
+         "block": "features",
+         "elements": 2656
+        },
+        {
+         "block": "position",
+         "elements": 1
+        },
+        {
+         "block": "prices",
+         "elements": 32
+        },
+        {
+         "block": "returns",
+         "elements": 32
+        },
+        {
+         "block": "steps_remaining_norm",
+         "elements": 1
+        },
+        {
+         "block": "unrealized_pnl_norm",
+         "elements": 1
+        }
+       ],
+       "flatten_order": "blocks concatenated in sorted key order, each block raveled in C (row-major) order",
+       "features_layout": "window rows outer, feature columns inner (row-major)"
+      },
+      "agent_state": {
+       "position": 0,
+       "equity": 10000.0,
+       "initial_cash": 10000.0,
+       "price": 2971.64,
+       "entry_price": 0.0,
+       "holding_bars": 0,
+       "bar_index": 0,
+       "total_bars": 1
+      },
+      "agent_state_note": "the agent-state block is the env's own state, not the market's: position, equity against initial cash, unrealized PnL and the episode coordinate. A row of prices does not contain it, so the caller states it. A builder that assumed it would be answering a different question from the one asked, and the action would not look any different",
+      "agent_state_source": "DECLARED_DEFAULT_IN_THE_BUNDLE",
+      "agent_state_values": {
+       "position": 0,
+       "equity": 10000.0,
+       "initial_cash": 10000.0,
+       "bar_index": 0,
+       "total_bars": 1,
+       "entry_price": 0.0,
+       "holding_bars": 0
+      },
+      "price_at_the_last_row": 2971.64,
+      "built_by": "gym_fx.observation_builder",
+      "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+     },
+     "action_distribution": {
+      "family": "gaussian_pre_squash",
+      "squash": "tanh",
+      "mean": [
+       0.059191830456256866
+      ],
+      "log_std": [
+       -0.1703874170780182
+      ],
+      "std": [
+       0.8433380126953125
+      ],
+      "state_dependent_exploration": false,
+      "reading": "the actor's own distribution for this observation: a Gaussian over the pre-squash action, with the reported action at tanh(mean). It is the policy's stochastic spread, NOT a probability of the action being right and NOT a distribution over outcomes"
+     },
+     "status": "OK"
+    },
+    "retorno": {
+     "type": "value_estimation",
+     "expected_return": 3.7995848655700684,
+     "uncertainty_bounds": [
+      3.7995848655700684,
+      4.006697177886963
+     ],
+     "critic_values": [
+      4.006697177886963,
+      3.7995848655700684
+     ],
+     "n_critics": 2,
+     "evaluated_at_action": [
+      0.05912280082702637
+     ],
+     "discount_gamma": 0.99,
+     "estimator": "min_of_twin_q_critics",
+     "reading": "the critic's estimate of discounted return under the training reward, not a realised profit. expected_return is the minimum of the twin Q critics at the actor's action, as SAC itself uses it; uncertainty_bounds are the two critics' minimum and maximum, which is their disagreement and nothing more",
+     "policy_id": "eth_4h_sac_current_stack_anchor_v1",
+     "execution_authorized": false,
+     "observation_source": "BUILT_FROM_MARKET_DATA",
+     "observation_build": {
+      "observation_length": 2724,
+      "observation_sha256": "343fc502f4f607be2b6744857554afea99568fb27c6e2b09ea9e08e6c82cdd0b",
+      "rows_supplied": 256,
+      "rows_consumed": 256,
+      "scaling_rows_used": 256,
+      "contract": {
+       "schema": "gym_fx.observation_contract.v1",
+       "contract_sha256": "ce246e2b25b00dcaea233a7ead7c03d6a1ee54aa38e2aed64d0deece443d27d3",
+       "observation_length": 2724,
+       "required_rows": 256,
+       "window_size": 32,
+       "feature_count": 83,
+       "feature_order": [
+        "return_1",
+        "log_return_1",
+        "return_5",
+        "log_return_5",
+        "return_10",
+        "log_return_10",
+        "return_20",
+        "log_return_20",
+        "return_60",
+        "log_return_60",
+        "sma_10",
+        "ema_10",
+        "close_sma_ratio_10",
+        "sma_20",
+        "ema_20",
+        "close_sma_ratio_20",
+        "sma_50",
+        "ema_50",
+        "close_sma_ratio_50",
+        "sma_100",
+        "ema_100",
+        "close_sma_ratio_100",
+        "sma_200",
+        "ema_200",
+        "close_sma_ratio_200",
+        "macd",
+        "macd_signal",
+        "macd_hist",
+        "rsi_7",
+        "rsi_14",
+        "rsi_21",
+        "stoch_k",
+        "stoch_d",
+        "williams_r_14",
+        "cci_14",
+        "roc_10",
+        "roc_20",
+        "roc_60",
+        "mom_10",
+        "mom_20",
+        "bb_upper",
+        "bb_middle",
+        "bb_lower",
+        "bb_pct_b",
+        "bb_width",
+        "atr_14",
+        "natr_14",
+        "hist_vol_10",
+        "hist_vol_20",
+        "hist_vol_60",
+        "ema_cross_10_50",
+        "ema_cross_20_100",
+        "trend_slope_50",
+        "trend_strength_50",
+        "obv",
+        "obv_delta_20",
+        "volume_sma_10",
+        "volume_sma_20",
+        "volume_ratio_20",
+        "vwap_60",
+        "mfi_14",
+        "statistical__log_return_1",
+        "roll_mean_ret_20",
+        "roll_std_ret_20",
+        "roll_skew_ret_20",
+        "roll_kurt_ret_20",
+        "roll_mean_ret_60",
+        "roll_std_ret_60",
+        "roll_skew_ret_60",
+        "roll_kurt_ret_60",
+        "roll_mean_ret_252",
+        "roll_std_ret_252",
+        "roll_skew_ret_252",
+        "roll_kurt_ret_252",
+        "realized_var_12",
+        "realized_var_48",
+        "autocorr_lag1_100",
+        "autocorr_lag5_100",
+        "sqret_autocorr_lag1_100",
+        "vol_regime_high",
+        "vol_regime_low",
+        "hurst_proxy_200",
+        "zscore_close_100"
+       ],
+       "binary_columns": [
+        "ema_cross_10_50",
+        "ema_cross_20_100",
+        "vol_regime_high",
+        "vol_regime_low"
+       ],
+       "price_column": "CLOSE",
+       "feature_scaling": "rolling_zscore",
+       "feature_scaling_window": 256,
+       "feature_clip": 10.0,
+       "include_price_window": true,
+       "include_agent_state": true,
+       "agent_state_contract": "legacy_episode_v1",
+       "block_layout": [
+        {
+         "block": "equity_norm",
+         "elements": 1
+        },
+        {
+         "block": "features",
+         "elements": 2656
+        },
+        {
+         "block": "position",
+         "elements": 1
+        },
+        {
+         "block": "prices",
+         "elements": 32
+        },
+        {
+         "block": "returns",
+         "elements": 32
+        },
+        {
+         "block": "steps_remaining_norm",
+         "elements": 1
+        },
+        {
+         "block": "unrealized_pnl_norm",
+         "elements": 1
+        }
+       ],
+       "flatten_order": "blocks concatenated in sorted key order, each block raveled in C (row-major) order",
+       "features_layout": "window rows outer, feature columns inner (row-major)"
+      },
+      "agent_state": {
+       "position": 0,
+       "equity": 10000.0,
+       "initial_cash": 10000.0,
+       "price": 2971.64,
+       "entry_price": 0.0,
+       "holding_bars": 0,
+       "bar_index": 0,
+       "total_bars": 1
+      },
+      "agent_state_note": "the agent-state block is the env's own state, not the market's: position, equity against initial cash, unrealized PnL and the episode coordinate. A row of prices does not contain it, so the caller states it. A builder that assumed it would be answering a different question from the one asked, and the action would not look any different",
+      "agent_state_source": "DECLARED_DEFAULT_IN_THE_BUNDLE",
+      "agent_state_values": {
+       "position": 0,
+       "equity": 10000.0,
+       "initial_cash": 10000.0,
+       "bar_index": 0,
+       "total_bars": 1,
+       "entry_price": 0.0,
+       "holding_bars": 0
+      },
+      "price_at_the_last_row": 2971.64,
+      "built_by": "gym_fx.observation_builder",
+      "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+     },
+     "status": "OK"
+    }
+   },
+   "answered": 2,
+   "refused": 0,
+   "execution_authorized": false
+  },
+  {
+   "area": "rl",
+   "message_status": "REFUSED",
+   "questions": [
+    {
+     "question": "accion",
+     "type": "next_action",
+     "expected": "REFUSED:STATE_REQUIRED",
+     "got": "REFUSED:STATE_REQUIRED",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": "TOO_FEW_ROWS",
+     "why": "TOO_FEW_ROWS: 5 row(s) supplied and this policy needs 256: 32 for the window and 256 for the rolling scaler that normalizes it. Padding the window to length would build a different observation, and the policy would answer it without anyone noticing",
+     "preview": {
+      "status": "REFUSED",
+      "refusal": "STATE_REQUIRED",
+      "why": "TOO_FEW_ROWS: 5 row(s) supplied and this policy needs 256: 32 for the window and 256 for the rolling scaler that normalizes it. Padding the window to length would build a different observation, and the policy would answer it without anyone noticing",
+      "type": "next_action"
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration_plugin": "default",
+   "narration": "La pregunta fue rechazada (REFUSED, código STATE_REQUIRED). El motivo: TOO_FEW_ROWS: se suministraron 5 filas y esta política necesita 256: 32 para la ventana y 256 para el escalador móvil que la normaliza. Rellenar la ventana para alcanzar esa longitud construiría una observación distinta, y la pol",
+   "answers": {
+    "accion": {
+     "status": "REFUSED",
+     "refusal": "STATE_REQUIRED",
+     "why": "TOO_FEW_ROWS: 5 row(s) supplied and this policy needs 256: 32 for the window and 256 for the rolling scaler that normalizes it. Padding the window to length would build a different observation, and the policy would answer it without anyone noticing",
+     "type": "next_action"
+    }
+   },
+   "answered": 0,
+   "refused": 1,
+   "execution_authorized": false
+  },
+  {
+   "area": "rl",
+   "message_status": "REFUSED",
+   "questions": [
+    {
+     "question": "accion",
+     "type": "next_action",
+     "expected": "REFUSED:STATE_REQUIRED",
+     "got": "REFUSED:STATE_REQUIRED",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": "MISSING_COLUMNS",
+     "why": "MISSING_COLUMNS: this table has 89 columns and is missing 1 of the 83 this policy was fitted on, the first being ['zscore_close_100']",
+     "preview": {
+      "status": "REFUSED",
+      "refusal": "STATE_REQUIRED",
+      "why": "MISSING_COLUMNS: this table has 89 columns and is missing 1 of the 83 this policy was fitted on, the first being ['zscore_close_100']",
+      "type": "next_action"
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration_plugin": "default",
+   "narration": "La consulta fue rechazada (REFUSED), con código STATE_REQUIRED. El motivo: la tabla tiene 89 columnas y le falta 1 de las 83 sobre las que se ajustó la política; la primera columna faltante es zscore_close_100. No se respondió la pregunta de acción y no se propone ninguna acción.",
+   "answers": {
+    "accion": {
+     "status": "REFUSED",
+     "refusal": "STATE_REQUIRED",
+     "why": "MISSING_COLUMNS: this table has 89 columns and is missing 1 of the 83 this policy was fitted on, the first being ['zscore_close_100']",
+     "type": "next_action"
+    }
+   },
+   "answered": 0,
+   "refused": 1,
+   "execution_authorized": false
+  },
+  {
+   "area": "rl",
+   "message_status": "REFUSED",
+   "questions": [
+    {
+     "question": "accion",
+     "type": "next_action",
+     "expected": "REFUSED:STATE_REQUIRED",
+     "got": "REFUSED:STATE_REQUIRED",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": "OBSERVATION_SIZE_MISMATCH",
+     "why": "OBSERVATION_SIZE_MISMATCH: this policy observes 2724 values and 10 were supplied; padding or trimming would be a different observation",
+     "preview": {
+      "status": "REFUSED",
+      "refusal": "STATE_REQUIRED",
+      "why": "OBSERVATION_SIZE_MISMATCH: this policy observes 2724 values and 10 were supplied; padding or trimming would be a different observation",
+      "type": "next_action"
+     }
+    },
+    {
+     "question": "valor",
+     "type": "value_estimation",
+     "expected": "REFUSED:STATE_REQUIRED",
+     "got": "REFUSED:STATE_REQUIRED",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": "OBSERVATION_SIZE_MISMATCH",
+     "why": "OBSERVATION_SIZE_MISMATCH: this policy observes 2724 values and 10 were supplied; padding or trimming would be a different observation",
+     "preview": {
+      "status": "REFUSED",
+      "refusal": "STATE_REQUIRED",
+      "why": "OBSERVATION_SIZE_MISMATCH: this policy observes 2724 values and 10 were supplied; padding or trimming would be a different observation",
+      "type": "value_estimation"
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration_plugin": "default",
+   "narration": "Las dos preguntas (accion y valor) fueron rechazadas con el estado STATE_REQUIRED. Motivo en ambas: OBSERVATION_SIZE_MISMATCH: la politica observa 2724 valores y se le suministraron 10; rellenar o recortar el vector lo convertira en una observacion distinta. Por eso no se propone ninguna accion.",
+   "answers": {
+    "accion": {
+     "status": "REFUSED",
+     "refusal": "STATE_REQUIRED",
+     "why": "OBSERVATION_SIZE_MISMATCH: this policy observes 2724 values and 10 were supplied; padding or trimming would be a different observation",
+     "type": "next_action"
+    },
+    "valor": {
+     "status": "REFUSED",
+     "refusal": "STATE_REQUIRED",
+     "why": "OBSERVATION_SIZE_MISMATCH: this policy observes 2724 values and 10 were supplied; padding or trimming would be a different observation",
+     "type": "value_estimation"
+    }
+   },
+   "answered": 0,
+   "refused": 2,
+   "execution_authorized": false
+  },
+  {
+   "area": "unsupervised",
+   "message_status": "OK",
+   "questions": [
+    {
+     "question": "segmentacion",
+     "type": "clustering",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": null,
+     "why": null,
+     "preview": {
+      "type": "clustering",
+      "status": "OK",
+      "execution_authorized": false,
+      "basis": "assignment of the supplied rows under the fitted reference; nothing fitted or selected here",
+      "reference": {
+       "task_id": "ohlc-demo-regimes-v1",
+       "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+       "features": [
+        "body_pipettes",
+        "range_pipettes"
+       ],
+       "engine": "sklearn.AgglomerativeClustering:ward",
+       "assignment": "sklearn.NearestNeighbors:1-reference-path"
+      }
+     }
+    },
+    {
+     "question": "perfil",
+     "type": "cluster_description",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": null,
+     "why": null,
+     "preview": {
+      "type": "cluster_description",
+      "status": "OK",
+      "execution_authorized": false,
+      "basis": "the cluster whose supplied rows satisfy target_metric most (largest share, then count, then lowest id); centroid is the mean of the supplied rows assigned to it, in the caller's units",
+      "reference": {
+       "task_id": "ohlc-demo-regimes-v1",
+       "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f"
+      }
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration_plugin": "default",
+   "narration": "Segmentación: OK. 8 filas segmentadas bajo la referencia ohlc-demo-regimes-v1; k óptimo [2, 4]. Con k=4 la distribución de clusters es: cluster 0 = 0.25 (2 filas), cluster 1 = 0.125 (1 fila), cluster 2 = 0.625 (5 filas). Silhouette de 0.2827649752252609 con k=4, frente a 0.23696695699600165 con k=2.",
+   "answers": {
+    "segmentacion": {
+     "type": "clustering",
+     "status": "OK",
+     "execution_authorized": false,
+     "basis": "assignment of the supplied rows under the fitted reference; nothing fitted or selected here",
+     "reference": {
+      "task_id": "ohlc-demo-regimes-v1",
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "features": [
+       "body_pipettes",
+       "range_pipettes"
+      ],
+      "engine": "sklearn.AgglomerativeClustering:ward",
+      "assignment": "sklearn.NearestNeighbors:1-reference-path"
+     },
+     "optimal_k": [
+      2,
+      4
+     ],
+     "optimal_k_basis": "fitted, not selected here",
+     "rows": 8,
+     "cluster_distribution": {
+      "2": {
+       "0": 0.875,
+       "1": 0.125
+      },
+      "4": {
+       "0": 0.25,
+       "1": 0.125,
+       "2": 0.625
+      }
+     },
+     "cluster_counts": {
+      "2": {
+       "0": 7,
+       "1": 1
+      },
+      "4": {
+       "0": 2,
+       "1": 1,
+       "2": 5
+      }
+     },
+     "clusters_occupied": {
+      "2": 2,
+      "4": 3
+     },
+     "assignments": [
+      {
+       "row_id": "12.05.2003 05:00:00.000",
+       "cluster_path": [
+        0,
+        1,
+        1
+       ]
+      },
+      {
+       "row_id": "12.05.2003 09:00:00.000",
+       "cluster_path": [
+        0,
+        0,
+        2
+       ]
+      },
+      {
+       "row_id": "12.05.2003 13:00:00.000",
+       "cluster_path": [
+        0,
+        0,
+        2
+       ]
+      },
+      {
+       "row_id": "12.05.2003 17:00:00.000",
+       "cluster_path": [
+        0,
+        0,
+        0
+       ]
+      },
+      {
+       "row_id": "12.05.2003 21:00:00.000",
+       "cluster_path": [
+        0,
+        0,
+        2
+       ]
+      },
+      {
+       "row_id": "13.05.2003 01:00:00.000",
+       "cluster_path": [
+        0,
+        0,
+        2
+       ]
+      },
+      {
+       "row_id": "13.05.2003 05:00:00.000",
+       "cluster_path": [
+        0,
+        0,
+        2
+       ]
+      },
+      {
+       "row_id": "13.05.2003 09:00:00.000",
+       "cluster_path": [
+        0,
+        0,
+        0
+       ]
+      }
+     ],
+     "silhouette_score": {
+      "2": 0.23696695699600165,
+      "4": 0.2827649752252609
+     },
+     "silhouette_basis": "sklearn.metrics.silhouette_score, euclidean, over the supplied rows in the reference's fitted StandardScaler space against their assigned labels; only the clusters the supplied rows occupy take part"
+    },
+    "perfil": {
+     "type": "cluster_description",
+     "status": "OK",
+     "execution_authorized": false,
+     "basis": "the cluster whose supplied rows satisfy target_metric most (largest share, then count, then lowest id); centroid is the mean of the supplied rows assigned to it, in the caller's units",
+     "reference": {
+      "task_id": "ohlc-demo-regimes-v1",
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f"
+     },
+     "level": 4,
+     "target_metric": "body_pipettes > 0",
+     "matched_cluster": 1,
+     "rows_in_cluster": 1,
+     "rows_satisfying": 1,
+     "share_satisfying": 1.0,
+     "share_by_cluster": {
+      "1": 1.0,
+      "0": 0.5,
+      "2": 0.0
+     },
+     "metric_column": "body_pipettes",
+     "metric_form": ">",
+     "centroid_features": {
+      "body_pipettes": 371.00000000001023,
+      "range_pipettes": 554.9999999999944
+     },
+     "centroid_units": "original (as supplied); not the reference's scaled coordinates",
+     "member_row_ids": [
+      "12.05.2003 05:00:00.000"
+     ]
+    }
+   },
+   "answered": 2,
+   "refused": 0,
+   "execution_authorized": false
+  },
+  {
+   "area": "classification",
+   "message_status": "OK",
+   "questions": [
+    {
+     "question": "economia",
+     "type": "choice",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": null,
+     "why": null,
+     "preview": {
+      "type": "choice",
+      "status": "OK",
+      "label": "euro_area",
+      "backend": "laya",
+      "instructions": "Which economy is named in this news?"
+     }
+    },
+    {
+     "question": "tono",
+     "type": "choice",
+     "expected": "OK",
+     "got": "OK",
+     "as_expected": true,
+     "number_in_refusal": false,
+     "why_expected": null,
+     "why": null,
+     "preview": {
+      "type": "choice",
+      "status": "OK",
+      "label": "neutral",
+      "backend": "laya",
+      "instructions": "What tone does the news take?"
+     }
+    }
+   ],
+   "narration_source": "INTERPRETER",
+   "narration_plugin": "default",
+   "narration": "La noticia habla de la economía de la eurozona (Euro area): el modelo la identifica con probabilidad 0.9666, frente a 0.0096 para Estados Unidos y 0.0239 para \"otra economía\".\n\nEn cuanto al tono, el resultado es neutral: 0.7511 para \"neither\" (ni más ajuste ni más laxitud), 0.1575 para dovish y 0.09",
+   "answers": {
+    "economia": {
+     "type": "choice",
+     "status": "OK",
+     "label": "euro_area",
+     "backend": "laya",
+     "instructions": "Which economy is named in this news?",
+     "options": [
+      [
+       "euro_area",
+       "Euro area"
+      ],
+      [
+       "united_states",
+       "United States"
+      ],
+      [
+       "other",
+       "Another economy"
+      ]
+     ],
+     "wording": "these probabilities belong to this exact instruction and option text; a rewording of the question is a different input to the model",
+     "uncalibrated_probabilities": {
+      "euro_area": 0.9666,
+      "united_states": 0.0096,
+      "other": 0.0239
+     },
+     "probability_decimals": 4,
+     "calibration": "UNCALIBRATED",
+     "uncertainty": "UNCALIBRATED_CLASS_PROBABILITIES",
+     "sdk_answer": {
+      "type": "choice",
+      "choice": "euro_area",
+      "probabilities": {
+       "euro_area": 0.9666,
+       "united_states": 0.0096,
+       "other": 0.0239
+      },
+      "confidence": 0.8485,
+      "action": {
+       "act_probability": 1.0
+      }
+     },
+     "reading": "probabilities are the pinned SDK's own uncalibrated head outputs at its own precision; the label is the SDK's argmax; nothing here is calibrated, and agreeing with the SDK is fidelity of this wrapper, not domain accuracy",
+     "population": {
+      "event_ids": [
+       "manual:aa441a8913da859168bb245f83a882e17596b038cdcbcd8dbaa35cef1b717c82"
+      ],
+      "asset": "EURUSD",
+      "input_sha256": "b94c4a9c397bd249cd0cff864d41640158133706d0d06ccd76c7740f1d4455d7"
+     },
+     "provenance": {
+      "task_id": "adhoc.question.v1:f25228054866729529dc100b14806462214613bc4736cc3f4d5ea069570c2d1c",
+      "questions_sha256": "a40abb7b35ae924ce6a4c4d07bdbdea0dde8fa124412c2a4d32916737ba2dee1",
+      "state_sha256": "385cd7cfbfee0b5e71832b9377e4e26041abc5aec37e6e6b45578c7408cb3ed2",
+      "input_sha256": "b94c4a9c397bd249cd0cff864d41640158133706d0d06ccd76c7740f1d4455d7",
+      "response_sha256": "270235cee5acf50453b6ac02c03432e6978b812c9c9f3935932deed1b28b4426",
+      "inference_seconds": 0.6138131539919414,
+      "token_budget_checked": false
+     },
+     "execution_authorized": false
+    },
+    "tono": {
+     "type": "choice",
+     "status": "OK",
+     "label": "neutral",
+     "backend": "laya",
+     "instructions": "What tone does the news take?",
+     "options": [
+      [
+       "hawkish",
+       "tighter policy"
+      ],
+      [
+       "dovish",
+       "easier policy"
+      ],
+      [
+       "neutral",
+       "neither"
+      ]
+     ],
+     "wording": "these probabilities belong to this exact instruction and option text; a rewording of the question is a different input to the model",
+     "uncalibrated_probabilities": {
+      "hawkish": 0.0914,
+      "dovish": 0.1575,
+      "neutral": 0.7511
+     },
+     "probability_decimals": 4,
+     "calibration": "UNCALIBRATED",
+     "uncertainty": "UNCALIBRATED_CLASS_PROBABILITIES",
+     "sdk_answer": {
+      "type": "choice",
+      "choice": "neutral",
+      "probabilities": {
+       "hawkish": 0.0914,
+       "dovish": 0.1575,
+       "neutral": 0.7511
+      },
+      "confidence": 0.3403,
+      "action": {
+       "act_probability": 1.0
+      }
+     },
+     "reading": "probabilities are the pinned SDK's own uncalibrated head outputs at its own precision; the label is the SDK's argmax; nothing here is calibrated, and agreeing with the SDK is fidelity of this wrapper, not domain accuracy",
+     "population": {
+      "event_ids": [
+       "manual:aa441a8913da859168bb245f83a882e17596b038cdcbcd8dbaa35cef1b717c82"
+      ],
+      "asset": "EURUSD",
+      "input_sha256": "b94c4a9c397bd249cd0cff864d41640158133706d0d06ccd76c7740f1d4455d7"
+     },
+     "provenance": {
+      "task_id": "adhoc.question.v1:f25228054866729529dc100b14806462214613bc4736cc3f4d5ea069570c2d1c",
+      "questions_sha256": "a40abb7b35ae924ce6a4c4d07bdbdea0dde8fa124412c2a4d32916737ba2dee1",
+      "state_sha256": "385cd7cfbfee0b5e71832b9377e4e26041abc5aec37e6e6b45578c7408cb3ed2",
+      "input_sha256": "b94c4a9c397bd249cd0cff864d41640158133706d0d06ccd76c7740f1d4455d7",
+      "response_sha256": "270235cee5acf50453b6ac02c03432e6978b812c9c9f3935932deed1b28b4426",
+      "inference_seconds": 0.6138131539919414,
+      "token_budget_checked": false
+     },
+     "execution_authorized": false
+    }
+   },
+   "answered": 2,
+   "refused": 0,
+   "execution_authorized": false
+  }
+ ],
+ "summary": {
+  "questions_as_expected": 15,
+  "questions": 15,
+  "any_execution_authorized": false
+ }
+}

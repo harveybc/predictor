@@ -74,3 +74,47 @@ instead of refusing 28 corpora as one ambiguous election.
 
 Calibration remains `NO_NEW_MEASUREMENT`: 0 scorable of 30 required, over 28 contests. That is the honest state — the
 labels do not exist because the checkpoint declines to choose at the threshold its own calibration justifies.
+
+## WP26 — the search's advantage survived rows that ranked nothing
+
+A nested split frozen before any fit (the tool refuses to overwrite it): inner rows 0–30,239, **outer rows
+30,240–40,319, 9,567 sealed origins, seal `d4ac73f0adde`, protocol `48b783f88f54`**, naive `last_value` 0.667173 kW.
+Disjointness checked, not asserted. Declared costs: a harder week (naive 0.667 vs 0.599) and 25 % less training data;
+named residual `OUTER_ROWS_WERE_TRAINING_ROWS_OF_THE_EARLIER_ROUND` — those rows ranked nothing and were scored by
+nothing, and the WP26 re-fits never read them at all.
+
+Four stages × five seeds, everything else identical, 20 fits, GPU checked before each dispatch:
+
+| stage | window | outer MAE (mean of 5) | sd | mean skill |
+|---|---|---|---|---|
+| searched_0588f5747b62 | 21 | **0.563236** | 0.005856 | 0.155787 |
+| searched_b373275495e2 (the search's winner) | 21 | 0.566487 | 0.003412 | 0.150915 |
+| searched_b367cba9b237 | 34 | 0.568555 | 0.003141 | 0.147816 |
+| baseline_hand | 60 | 0.600899 | 0.009188 | 0.099337 |
+
+Paired difference of the search's winner against the hand window: **−0.034412 kW (−5.73 %)**, t-interval over seeds
+[−0.047875, −0.020948] and row-level bootstrap [−0.038550, −0.030221] — both exclude zero. All 15 searched fits rank
+above all 5 hand fits with no overlap.
+
+**So the published 4.50 % was not an artefact of selecting on the seal** — on this earlier, harder week the margin is
+larger. What did *not* survive is the ordering inside the top three (they sit inside each other's seed spread), so
+what is confirmed is that **a short window (21–34) beats 60 on this series at this horizon**, not any particular
+champion. Both intervals are declared for what they measure: the t-interval is fit-to-fit variability under one split;
+the bootstrap treats a contiguous week of one household as exchangeable and is optimistic by an unestimated amount.
+
+## WP27 — served, and three defects found on the way
+The bundle exported is the representation **the search chose**, not the outer-seal leader — picking that one now would
+be selection on the outer holdout a round later — at the median of its five seeds. It carries its `representation_spec`
+by value and its `measured_error` with seal, protocol and report digest; `provenance.quality` stays `UNMEASURED`
+because the package still scores nothing: it quotes a report with its conditions.
+
+Three defects had to be fixed first: the winner's subset-branch graph was **unloadable by anything** (Keras serialised
+the channel gather as a closure's bare name — every subset model this repository ever saved is affected); the `bundle`
+slot the provider declares was **never read**, so a sentence could name an engine and be ignored; and a blank state was
+refused as a bundle named `''`. Control after the fix: a re-fit reproduces MAE 0.5658380994350456 / RMSE
+0.8908290889272082 / 17 epochs to every published digit.
+
+The owner's instance now serves four bundles: `pronostica Global_active_power a 60 pasos con
+searched-w21-household-outer-20260925` answers with nothing but the sentence pinning the engine, and a bare
+"pronostica la potencia" is now refused naming all three candidates — the correct consequence of two point bundles on
+one target. Acceptance after the merge: **examples 12/12, prose 14/14, refusals 2/2, envelope questions 15/15**.
