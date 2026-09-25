@@ -1,0 +1,835 @@
+{
+  "schema": "m5phet.feature_groups.v1",
+  "source": {
+    "metric_sheet_schema": "m5phet.feature_metrics.v1",
+    "dataset": {
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06/household_dev_slice.csv",
+      "sha256": "72db05b9cd48005f59b7347b870b149243cac0a35725a984bbcc625624524d81",
+      "columns": [
+        "timestamp_label",
+        "Global_active_power",
+        "Global_reactive_power",
+        "Voltage",
+        "Global_intensity",
+        "Sub_metering_1",
+        "Sub_metering_2",
+        "Sub_metering_3"
+      ],
+      "time_column": "timestamp_label",
+      "time_format": "%d/%m/%Y %H:%M:%S",
+      "rows_read": 50400,
+      "truncated": false
+    },
+    "target": "Global_active_power",
+    "lags": [
+      1,
+      74,
+      197,
+      1443,
+      2892
+    ]
+  },
+  "features": [
+    "Global_active_power",
+    "Global_intensity",
+    "Global_reactive_power",
+    "Sub_metering_1",
+    "Sub_metering_2",
+    "Sub_metering_3",
+    "Voltage"
+  ],
+  "excluded_features": {},
+  "distance": {
+    "kind": "correlation",
+    "rule": "1 - |pearson|, over the rows each pair has in common",
+    "matrix": [
+      [
+        0.0,
+        0.001367,
+        0.711525,
+        0.437247,
+        0.752337,
+        0.313063,
+        0.458408
+      ],
+      [
+        0.001367,
+        0.0,
+        0.684742,
+        0.432428,
+        0.746245,
+        0.324782,
+        0.45556
+      ],
+      [
+        0.711525,
+        0.684742,
+        0.0,
+        0.85006,
+        0.880053,
+        0.858978,
+        0.881886
+      ],
+      [
+        0.437247,
+        0.432428,
+        0.85006,
+        0.0,
+        0.970525,
+        0.916887,
+        0.757183
+      ],
+      [
+        0.752337,
+        0.746245,
+        0.880053,
+        0.970525,
+        0.0,
+        0.985258,
+        0.892503
+      ],
+      [
+        0.313063,
+        0.324782,
+        0.858978,
+        0.916887,
+        0.985258,
+        0.0,
+        0.529755
+      ],
+      [
+        0.458408,
+        0.45556,
+        0.881886,
+        0.757183,
+        0.892503,
+        0.529755,
+        0.0
+      ]
+    ],
+    "order": [
+      "Global_active_power",
+      "Global_intensity",
+      "Global_reactive_power",
+      "Sub_metering_1",
+      "Sub_metering_2",
+      "Sub_metering_3",
+      "Voltage"
+    ]
+  },
+  "absolute_correlation": {
+    "matrix": [
+      [
+        1.0,
+        0.998633,
+        0.288475,
+        0.562753,
+        0.247663,
+        0.686937,
+        0.541592
+      ],
+      [
+        0.998633,
+        1.0,
+        0.315258,
+        0.567572,
+        0.253755,
+        0.675218,
+        0.54444
+      ],
+      [
+        0.288475,
+        0.315258,
+        1.0,
+        0.14994,
+        0.119947,
+        0.141022,
+        0.118114
+      ],
+      [
+        0.562753,
+        0.567572,
+        0.14994,
+        1.0,
+        0.029475,
+        0.083113,
+        0.242817
+      ],
+      [
+        0.247663,
+        0.253755,
+        0.119947,
+        0.029475,
+        1.0,
+        0.014742,
+        0.107497
+      ],
+      [
+        0.686937,
+        0.675218,
+        0.141022,
+        0.083113,
+        0.014742,
+        1.0,
+        0.470245
+      ],
+      [
+        0.541592,
+        0.54444,
+        0.118114,
+        0.242817,
+        0.107497,
+        0.470245,
+        1.0
+      ]
+    ],
+    "order": [
+      "Global_active_power",
+      "Global_intensity",
+      "Global_reactive_power",
+      "Sub_metering_1",
+      "Sub_metering_2",
+      "Sub_metering_3",
+      "Voltage"
+    ],
+    "rule": "|pearson| as the metric sheet measured it; the summaries below quote it"
+  },
+  "linkage": {
+    "method": "average",
+    "backend": "scipy.cluster.hierarchy.linkage 1.18.1",
+    "merges": [
+      [
+        0,
+        1,
+        0.001367,
+        2
+      ],
+      [
+        5,
+        7,
+        0.318922,
+        3
+      ],
+      [
+        6,
+        8,
+        0.481241,
+        4
+      ],
+      [
+        3,
+        9,
+        0.635936,
+        5
+      ],
+      [
+        2,
+        10,
+        0.797438,
+        6
+      ],
+      [
+        4,
+        11,
+        0.871154,
+        7
+      ]
+    ],
+    "merge_format": "[left, right, distance, size], scipy's format; clusters beyond the feature count are the merges above, in order",
+    "cut_rule": "a cut at k applies the first (features - k) merges; both backends are cut by this module, so only the merges have to agree"
+  },
+  "max_k": 6,
+  "max_k_rule": "min(6, features - 1), the declared default",
+  "cuts": {
+    "2": {
+      "between_group_mean_abs_correlation": 0.128847,
+      "between_rule": "the mean |corr| over the pairs whose two features are in different groups",
+      "groups": [
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "INCONCLUSIVE": 1,
+              "STATIONARY": 5
+            },
+            "members": 6,
+            "members_with_it": 5,
+            "unanimous": false,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g1",
+          "members": [
+            "Global_active_power",
+            "Global_intensity",
+            "Global_reactive_power",
+            "Sub_metering_1",
+            "Sub_metering_3",
+            "Voltage"
+          ],
+          "shared_acf_peaks": [],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 6,
+          "summary": "g1: Global_active_power, Global_intensity, Global_reactive_power, Sub_metering_1, Sub_metering_3, Voltage -- mean |corr| 0.426 among its 6 members; STATIONARY (5 of 6); no autocorrelation peak shared",
+          "within_mean_abs_correlation": 0.425742
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g2",
+          "members": [
+            "Sub_metering_2"
+          ],
+          "shared_acf_peaks": [
+            61,
+            5544,
+            8629
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g2: Sub_metering_2 -- a single feature, so it has no within-group correlation; STATIONARY (all of 1); its own autocorrelation peaks at lags [61, 5544, 8629]",
+          "within_mean_abs_correlation": null
+        }
+      ],
+      "k": 2,
+      "silhouette": 0.298061,
+      "silhouette_rule": "the mean silhouette over the declared distance matrix, a singleton scored 0",
+      "sizes": [
+        6,
+        1
+      ],
+      "within_group_mean_abs_correlation": 0.425742,
+      "within_rule": "the mean |corr| over the pairs inside a group, averaged over the groups that have a pair; a cut of singletons has none and the value is null"
+    },
+    "3": {
+      "between_group_mean_abs_correlation": 0.151045,
+      "between_rule": "the mean |corr| over the pairs whose two features are in different groups",
+      "groups": [
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 5
+            },
+            "members": 5,
+            "members_with_it": 5,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g1",
+          "members": [
+            "Global_active_power",
+            "Global_intensity",
+            "Sub_metering_1",
+            "Sub_metering_3",
+            "Voltage"
+          ],
+          "shared_acf_peaks": [],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 5,
+          "summary": "g1: Global_active_power, Global_intensity, Sub_metering_1, Sub_metering_3, Voltage -- mean |corr| 0.537 among its 5 members; STATIONARY (all of 5); no autocorrelation peak shared",
+          "within_mean_abs_correlation": 0.537332
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "INCONCLUSIVE": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "INCONCLUSIVE"
+          },
+          "group_id": "g2",
+          "members": [
+            "Global_reactive_power"
+          ],
+          "shared_acf_peaks": [
+            23,
+            46,
+            68
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g2: Global_reactive_power -- a single feature, so it has no within-group correlation; INCONCLUSIVE (all of 1); its own autocorrelation peaks at lags [23, 46, 68]",
+          "within_mean_abs_correlation": null
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g3",
+          "members": [
+            "Sub_metering_2"
+          ],
+          "shared_acf_peaks": [
+            61,
+            5544,
+            8629
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g3: Sub_metering_2 -- a single feature, so it has no within-group correlation; STATIONARY (all of 1); its own autocorrelation peaks at lags [61, 5544, 8629]",
+          "within_mean_abs_correlation": null
+        }
+      ],
+      "k": 3,
+      "silhouette": 0.307549,
+      "silhouette_rule": "the mean silhouette over the declared distance matrix, a singleton scored 0",
+      "sizes": [
+        5,
+        1,
+        1
+      ],
+      "within_group_mean_abs_correlation": 0.537332,
+      "within_rule": "the mean |corr| over the pairs inside a group, averaged over the groups that have a pair; a cut of singletons has none and the value is null"
+    },
+    "4": {
+      "between_group_mean_abs_correlation": 0.17251,
+      "between_rule": "the mean |corr| over the pairs whose two features are in different groups",
+      "groups": [
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 4
+            },
+            "members": 4,
+            "members_with_it": 4,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g1",
+          "members": [
+            "Global_active_power",
+            "Global_intensity",
+            "Sub_metering_3",
+            "Voltage"
+          ],
+          "shared_acf_peaks": [
+            1442
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 4,
+          "summary": "g1: Global_active_power, Global_intensity, Sub_metering_3, Voltage -- mean |corr| 0.653 among its 4 members; STATIONARY (all of 4); autocorrelation peaks shared at lags [1442]",
+          "within_mean_abs_correlation": 0.652844
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "INCONCLUSIVE": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "INCONCLUSIVE"
+          },
+          "group_id": "g2",
+          "members": [
+            "Global_reactive_power"
+          ],
+          "shared_acf_peaks": [
+            23,
+            46,
+            68
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g2: Global_reactive_power -- a single feature, so it has no within-group correlation; INCONCLUSIVE (all of 1); its own autocorrelation peaks at lags [23, 46, 68]",
+          "within_mean_abs_correlation": null
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g3",
+          "members": [
+            "Sub_metering_1"
+          ],
+          "shared_acf_peaks": [
+            23,
+            30,
+            77
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g3: Sub_metering_1 -- a single feature, so it has no within-group correlation; STATIONARY (all of 1); its own autocorrelation peaks at lags [23, 30, 77]",
+          "within_mean_abs_correlation": null
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g4",
+          "members": [
+            "Sub_metering_2"
+          ],
+          "shared_acf_peaks": [
+            61,
+            5544,
+            8629
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g4: Sub_metering_2 -- a single feature, so it has no within-group correlation; STATIONARY (all of 1); its own autocorrelation peaks at lags [61, 5544, 8629]",
+          "within_mean_abs_correlation": null
+        }
+      ],
+      "k": 4,
+      "silhouette": 0.245656,
+      "silhouette_rule": "the mean silhouette over the declared distance matrix, a singleton scored 0",
+      "sizes": [
+        4,
+        1,
+        1,
+        1
+      ],
+      "within_group_mean_abs_correlation": 0.652844,
+      "within_rule": "the mean |corr| over the pairs inside a group, averaged over the groups that have a pair; a cut of singletons has none and the value is null"
+    },
+    "5": {
+      "between_group_mean_abs_correlation": 0.211133,
+      "between_rule": "the mean |corr| over the pairs whose two features are in different groups",
+      "groups": [
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 3
+            },
+            "members": 3,
+            "members_with_it": 3,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g1",
+          "members": [
+            "Global_active_power",
+            "Global_intensity",
+            "Sub_metering_3"
+          ],
+          "shared_acf_peaks": [
+            1443
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 3,
+          "summary": "g1: Global_active_power, Global_intensity, Sub_metering_3 -- mean |corr| 0.787 among its 3 members; STATIONARY (all of 3); autocorrelation peaks shared at lags [1443]",
+          "within_mean_abs_correlation": 0.786929
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "INCONCLUSIVE": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "INCONCLUSIVE"
+          },
+          "group_id": "g2",
+          "members": [
+            "Global_reactive_power"
+          ],
+          "shared_acf_peaks": [
+            23,
+            46,
+            68
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g2: Global_reactive_power -- a single feature, so it has no within-group correlation; INCONCLUSIVE (all of 1); its own autocorrelation peaks at lags [23, 46, 68]",
+          "within_mean_abs_correlation": null
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g3",
+          "members": [
+            "Sub_metering_1"
+          ],
+          "shared_acf_peaks": [
+            23,
+            30,
+            77
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g3: Sub_metering_1 -- a single feature, so it has no within-group correlation; STATIONARY (all of 1); its own autocorrelation peaks at lags [23, 30, 77]",
+          "within_mean_abs_correlation": null
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g4",
+          "members": [
+            "Sub_metering_2"
+          ],
+          "shared_acf_peaks": [
+            61,
+            5544,
+            8629
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g4: Sub_metering_2 -- a single feature, so it has no within-group correlation; STATIONARY (all of 1); its own autocorrelation peaks at lags [61, 5544, 8629]",
+          "within_mean_abs_correlation": null
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g5",
+          "members": [
+            "Voltage"
+          ],
+          "shared_acf_peaks": [
+            1440,
+            2881,
+            5760
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g5: Voltage -- a single feature, so it has no within-group correlation; STATIONARY (all of 1); its own autocorrelation peaks at lags [1440, 2881, 5760]",
+          "within_mean_abs_correlation": null
+        }
+      ],
+      "k": 5,
+      "silhouette": 0.23733,
+      "silhouette_rule": "the mean silhouette over the declared distance matrix, a singleton scored 0",
+      "sizes": [
+        3,
+        1,
+        1,
+        1,
+        1
+      ],
+      "within_group_mean_abs_correlation": 0.786929,
+      "within_rule": "the mean |corr| over the pairs inside a group, averaged over the groups that have a pair; a cut of singletons has none and the value is null"
+    },
+    "6": {
+      "between_group_mean_abs_correlation": 0.254583,
+      "between_rule": "the mean |corr| over the pairs whose two features are in different groups",
+      "groups": [
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 2
+            },
+            "members": 2,
+            "members_with_it": 2,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g1",
+          "members": [
+            "Global_active_power",
+            "Global_intensity"
+          ],
+          "shared_acf_peaks": [
+            74,
+            1443,
+            2892
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 2,
+          "summary": "g1: Global_active_power, Global_intensity -- mean |corr| 0.999 among its 2 members; STATIONARY (all of 2); autocorrelation peaks shared at lags [74, 1443, 2892]",
+          "within_mean_abs_correlation": 0.998633
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "INCONCLUSIVE": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "INCONCLUSIVE"
+          },
+          "group_id": "g2",
+          "members": [
+            "Global_reactive_power"
+          ],
+          "shared_acf_peaks": [
+            23,
+            46,
+            68
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g2: Global_reactive_power -- a single feature, so it has no within-group correlation; INCONCLUSIVE (all of 1); its own autocorrelation peaks at lags [23, 46, 68]",
+          "within_mean_abs_correlation": null
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g3",
+          "members": [
+            "Sub_metering_1"
+          ],
+          "shared_acf_peaks": [
+            23,
+            30,
+            77
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g3: Sub_metering_1 -- a single feature, so it has no within-group correlation; STATIONARY (all of 1); its own autocorrelation peaks at lags [23, 30, 77]",
+          "within_mean_abs_correlation": null
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g4",
+          "members": [
+            "Sub_metering_2"
+          ],
+          "shared_acf_peaks": [
+            61,
+            5544,
+            8629
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g4: Sub_metering_2 -- a single feature, so it has no within-group correlation; STATIONARY (all of 1); its own autocorrelation peaks at lags [61, 5544, 8629]",
+          "within_mean_abs_correlation": null
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g5",
+          "members": [
+            "Sub_metering_3"
+          ],
+          "shared_acf_peaks": [
+            55,
+            97,
+            1441
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g5: Sub_metering_3 -- a single feature, so it has no within-group correlation; STATIONARY (all of 1); its own autocorrelation peaks at lags [55, 97, 1441]",
+          "within_mean_abs_correlation": null
+        },
+        {
+          "dominant_stationarity": {
+            "counts": {
+              "STATIONARY": 1
+            },
+            "members": 1,
+            "members_with_it": 1,
+            "unanimous": true,
+            "verdict": "STATIONARY"
+          },
+          "group_id": "g6",
+          "members": [
+            "Voltage"
+          ],
+          "shared_acf_peaks": [
+            1440,
+            2881,
+            5760
+          ],
+          "shared_acf_peaks_rule": "a lag every member has a peak within 10% of; the median of the matched lags is reported",
+          "size": 1,
+          "summary": "g6: Voltage -- a single feature, so it has no within-group correlation; STATIONARY (all of 1); its own autocorrelation peaks at lags [1440, 2881, 5760]",
+          "within_mean_abs_correlation": null
+        }
+      ],
+      "k": 6,
+      "silhouette": 0.284489,
+      "silhouette_rule": "the mean silhouette over the declared distance matrix, a singleton scored 0",
+      "sizes": [
+        2,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "within_group_mean_abs_correlation": 0.998633,
+      "within_rule": "the mean |corr| over the pairs inside a group, averaged over the groups that have a pair; a cut of singletons has none and the value is null"
+    }
+  },
+  "silhouette_by_k": {
+    "2": 0.298061,
+    "3": 0.307549,
+    "4": 0.245656,
+    "5": 0.23733,
+    "6": 0.284489
+  },
+  "recommended_k": 3,
+  "recommended_k_rule": "the largest mean silhouette over the declared distance matrix; ties go to the smaller k",
+  "recommendation_status": "DETERMINISTIC_RECOMMENDATION: this job computes it from the metric sheet alone. It is not a confirmation, and no chooser was asked here; WP18 step 3 gives that confirmation to Laya through m5phet.decide, which records it elsewhere.",
+  "decimals": {
+    "correlation": 6,
+    "distance": 6,
+    "silhouette": 6
+  },
+  "environment": {
+    "python": "3.12.7",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1"
+  },
+  "fitted": "NOTHING: this job clusters measurements of columns; no model is trained and no row is read"
+}

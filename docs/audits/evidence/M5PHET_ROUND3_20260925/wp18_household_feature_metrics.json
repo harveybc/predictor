@@ -1,0 +1,1842 @@
+{
+  "schema": "m5phet.feature_metrics.v1",
+  "dataset": {
+    "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06/household_dev_slice.csv",
+    "sha256": "72db05b9cd48005f59b7347b870b149243cac0a35725a984bbcc625624524d81",
+    "columns": [
+      "timestamp_label",
+      "Global_active_power",
+      "Global_reactive_power",
+      "Voltage",
+      "Global_intensity",
+      "Sub_metering_1",
+      "Sub_metering_2",
+      "Sub_metering_3"
+    ],
+    "time_column": "timestamp_label",
+    "time_format": "%d/%m/%Y %H:%M:%S",
+    "rows_read": 50400,
+    "truncated": false
+  },
+  "target": "Global_active_power",
+  "lags": [
+    1,
+    74,
+    197,
+    1443,
+    2892
+  ],
+  "lags_source": "the union of the candidate lags of the design document /tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06/candidates.json",
+  "decimals": {
+    "correlation": 6,
+    "distribution": 6,
+    "fraction": 6,
+    "mutual_information": 6,
+    "statistic": 6
+  },
+  "sampling": {
+    "step_seconds": 60,
+    "step_rule": "the most frequent positive difference between consecutive timestamps",
+    "regular_fraction": 1.0,
+    "intervals": 50399,
+    "gaps_longer_than_step": 0,
+    "repeated_timestamps": 0,
+    "backwards_steps": 0,
+    "min_step_seconds": 60.0,
+    "max_step_seconds": 60.0,
+    "first": "2009-08-23T12:45:00",
+    "last": "2009-09-27T12:44:00",
+    "timestamps_carry_an_offset": false,
+    "note": "the autocorrelation and stationarity tests below read the rows as EQUALLY spaced; where regular_fraction is below 1.0 that reading is an approximation the file does not support"
+  },
+  "excluded_columns": {},
+  "features": {
+    "Global_active_power": {
+      "acf": {
+        "band_rule": "1.96 / sqrt(rows_used), the white-noise band of the estimator",
+        "computed_on": "levels",
+        "computed_on_reason": "the stationarity verdict is STATIONARY, so the levels carry the periodicity",
+        "decay_lag": 197,
+        "decay_rule": "the first lag whose autocorrelation falls inside the band",
+        "estimator": "biased autocorrelation by FFT, normalised at lag 0",
+        "max_lag": 15295,
+        "peak_rule": "the highest local maxima outside the band, one per bump: a peak within 10% of the lag of a higher one is the same bump of the estimator and not a second period",
+        "peaks": [
+          {
+            "autocorrelation": 0.356627,
+            "lag": 74,
+            "period_seconds": 4440
+          },
+          {
+            "autocorrelation": 0.277748,
+            "lag": 1443,
+            "period_seconds": 86580
+          },
+          {
+            "autocorrelation": 0.244256,
+            "lag": 2892,
+            "period_seconds": 173520
+          }
+        ],
+        "peaks_found": 338,
+        "rows_used": 30590,
+        "significance_band": 0.011206,
+        "status": "OK"
+      },
+      "analysis_segment": {
+        "first": "2009-08-23T12:45:00",
+        "last": "2009-09-13T18:34:00",
+        "rows": 30590,
+        "rule": "the longest run of 'Global_active_power' with no missing cell; the two tests below read only these rows",
+        "start_row": 0,
+        "status": "OK"
+      },
+      "cross_correlation_to_target": {
+        "by_lag": [
+          {
+            "correlation": 0.96333,
+            "lag": 1,
+            "rows_used": 50397,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.400569,
+            "lag": 74,
+            "rows_used": 50324,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.018524,
+            "lag": 197,
+            "rows_used": 50201,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.340283,
+            "lag": 1443,
+            "rows_used": 48955,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.283918,
+            "lag": 2892,
+            "rows_used": 47506,
+            "status": "OK"
+          }
+        ],
+        "lags": [
+          1,
+          74,
+          197,
+          1443,
+          2892
+        ],
+        "rule": "Pearson correlation of feature[t - lag] against target[t], over rows where both are finite"
+      },
+      "distribution": {
+        "excess_kurtosis": 4.239147,
+        "excess_kurtosis_rule": "g2 = m4 / m2**2 - 3; zero for a normal column",
+        "maximum": 7.826,
+        "mean": 0.943664,
+        "minimum": 0.128,
+        "quantile_01": 0.134,
+        "quantile_99": 4.20404,
+        "quantile_rule": "numpy linear interpolation between order statistics",
+        "rows_rule": "the finite cells of the column; missing cells are excluded, never imputed",
+        "rows_used": 50399,
+        "shape_status": "OK",
+        "skew": 1.793036,
+        "skew_rule": "g1 = m3 / m2**1.5, the moment estimator, uncorrected for sample size",
+        "status": "OK",
+        "std": 0.911385,
+        "std_rule": "the sample standard deviation, ddof=1; None when a single row is finite",
+        "variance": 0.830606,
+        "variance_rule": "the population second central moment, ddof=0, which the shape numbers below divide by"
+      },
+      "dtype": {
+        "distinct_finite_values": 2325,
+        "first_cell": "0.14",
+        "source": "numeric text",
+        "storage": "float64",
+        "storage_rule": "every numeric column is read as float64 with the declared missing tokens as NaN",
+        "values_are_integral": false
+      },
+      "is_target": true,
+      "missing": 1,
+      "missing_fraction": 2e-05,
+      "missing_rule": "cells equal to one of ['', '?', 'NA', 'N/A', 'NaN', 'nan', 'null', 'NULL', 'None'] or unreadable as a float, divided by the 50400 rows read",
+      "name": "Global_active_power",
+      "rows": 50400,
+      "scale": {
+        "magnitude": 0,
+        "max_absolute": 7.826,
+        "median_absolute": 0.48,
+        "rule": "floor(log10(max |x|)) over the finite cells",
+        "status": "OK"
+      },
+      "stationarity": {
+        "adf": {
+          "autolag": "AIC",
+          "nobs": 19959,
+          "null_hypothesis": "a unit root is present",
+          "p_value": 0.0,
+          "rule": "p <= 0.05 rejects the unit root -> STATIONARY",
+          "statistic": -11.044669,
+          "status": "OK",
+          "used_lag": 40,
+          "verdict": "STATIONARY"
+        },
+        "heuristic": {
+          "caveat": "this is a rule over two numbers, not a hypothesis test, and carries no p-value",
+          "lag1_autocorrelation": 0.95464,
+          "mean_autocorrelation": 0.685507,
+          "mean_autocorrelation_to_lag": 20,
+          "method": "autocorrelation persistence of the levels",
+          "rule": "lag-1 autocorrelation >= 0.95 AND the mean autocorrelation over those lags >= 0.5 -> NON_STATIONARY",
+          "verdict": "NON_STATIONARY"
+        },
+        "kpss": {
+          "lags": 83,
+          "null_hypothesis": "the series is stationary around a constant",
+          "p_value": 0.1,
+          "p_value_is_bounded": true,
+          "regression": "c",
+          "rule": "p <= 0.05 rejects stationarity -> NON_STATIONARY",
+          "statistic": 0.186656,
+          "status": "OK",
+          "verdict": "STATIONARY"
+        },
+        "rows_rule": "the first 20000 rows of the analysis segment at most; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "verdict": "STATIONARY",
+        "verdict_source": "adf+kpss agree"
+      }
+    },
+    "Global_intensity": {
+      "acf": {
+        "band_rule": "1.96 / sqrt(rows_used), the white-noise band of the estimator",
+        "computed_on": "levels",
+        "computed_on_reason": "the stationarity verdict is STATIONARY, so the levels carry the periodicity",
+        "decay_lag": 206,
+        "decay_rule": "the first lag whose autocorrelation falls inside the band",
+        "estimator": "biased autocorrelation by FFT, normalised at lag 0",
+        "max_lag": 15295,
+        "peak_rule": "the highest local maxima outside the band, one per bump: a peak within 10% of the lag of a higher one is the same bump of the estimator and not a second period",
+        "peaks": [
+          {
+            "autocorrelation": 0.35583,
+            "lag": 74,
+            "period_seconds": 4440
+          },
+          {
+            "autocorrelation": 0.272584,
+            "lag": 1443,
+            "period_seconds": 86580
+          },
+          {
+            "autocorrelation": 0.238193,
+            "lag": 2891,
+            "period_seconds": 173460
+          }
+        ],
+        "peaks_found": 332,
+        "rows_used": 30590,
+        "significance_band": 0.011206,
+        "status": "OK"
+      },
+      "analysis_segment": {
+        "first": "2009-08-23T12:45:00",
+        "last": "2009-09-13T18:34:00",
+        "rows": 30590,
+        "rule": "the longest run of 'Global_intensity' with no missing cell; the two tests below read only these rows",
+        "start_row": 0,
+        "status": "OK"
+      },
+      "cross_correlation_to_target": {
+        "by_lag": [
+          {
+            "correlation": 0.961994,
+            "lag": 1,
+            "rows_used": 50397,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.401413,
+            "lag": 74,
+            "rows_used": 50324,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.020412,
+            "lag": 197,
+            "rows_used": 50201,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.337314,
+            "lag": 1443,
+            "rows_used": 48955,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.280315,
+            "lag": 2892,
+            "rows_used": 47506,
+            "status": "OK"
+          }
+        ],
+        "lags": [
+          1,
+          74,
+          197,
+          1443,
+          2892
+        ],
+        "rule": "Pearson correlation of feature[t - lag] against target[t], over rows where both are finite"
+      },
+      "distribution": {
+        "excess_kurtosis": 4.574588,
+        "excess_kurtosis_rule": "g2 = m4 / m2**2 - 3; zero for a normal column",
+        "maximum": 33.4,
+        "mean": 4.04868,
+        "minimum": 0.6,
+        "quantile_01": 0.6,
+        "quantile_99": 17.8,
+        "quantile_rule": "numpy linear interpolation between order statistics",
+        "rows_rule": "the finite cells of the column; missing cells are excluded, never imputed",
+        "rows_used": 50399,
+        "shape_status": "OK",
+        "skew": 1.842153,
+        "skew_rule": "g1 = m3 / m2**1.5, the moment estimator, uncorrected for sample size",
+        "status": "OK",
+        "std": 3.798499,
+        "std_rule": "the sample standard deviation, ddof=1; None when a single row is finite",
+        "variance": 14.428305,
+        "variance_rule": "the population second central moment, ddof=0, which the shape numbers below divide by"
+      },
+      "dtype": {
+        "distinct_finite_values": 146,
+        "first_cell": "0.6",
+        "source": "numeric text",
+        "storage": "float64",
+        "storage_rule": "every numeric column is read as float64 with the declared missing tokens as NaN",
+        "values_are_integral": false
+      },
+      "is_target": false,
+      "missing": 1,
+      "missing_fraction": 2e-05,
+      "missing_rule": "cells equal to one of ['', '?', 'NA', 'N/A', 'NaN', 'nan', 'null', 'NULL', 'None'] or unreadable as a float, divided by the 50400 rows read",
+      "name": "Global_intensity",
+      "rows": 50400,
+      "scale": {
+        "magnitude": 1,
+        "max_absolute": 33.4,
+        "median_absolute": 2.2,
+        "rule": "floor(log10(max |x|)) over the finite cells",
+        "status": "OK"
+      },
+      "stationarity": {
+        "adf": {
+          "autolag": "AIC",
+          "nobs": 19959,
+          "null_hypothesis": "a unit root is present",
+          "p_value": 0.0,
+          "rule": "p <= 0.05 rejects the unit root -> STATIONARY",
+          "statistic": -11.058485,
+          "status": "OK",
+          "used_lag": 40,
+          "verdict": "STATIONARY"
+        },
+        "heuristic": {
+          "caveat": "this is a rule over two numbers, not a hypothesis test, and carries no p-value",
+          "lag1_autocorrelation": 0.953521,
+          "mean_autocorrelation": 0.678053,
+          "mean_autocorrelation_to_lag": 20,
+          "method": "autocorrelation persistence of the levels",
+          "rule": "lag-1 autocorrelation >= 0.95 AND the mean autocorrelation over those lags >= 0.5 -> NON_STATIONARY",
+          "verdict": "NON_STATIONARY"
+        },
+        "kpss": {
+          "lags": 83,
+          "null_hypothesis": "the series is stationary around a constant",
+          "p_value": 0.1,
+          "p_value_is_bounded": true,
+          "regression": "c",
+          "rule": "p <= 0.05 rejects stationarity -> NON_STATIONARY",
+          "statistic": 0.17536,
+          "status": "OK",
+          "verdict": "STATIONARY"
+        },
+        "rows_rule": "the first 20000 rows of the analysis segment at most; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "verdict": "STATIONARY",
+        "verdict_source": "adf+kpss agree"
+      }
+    },
+    "Global_reactive_power": {
+      "acf": {
+        "band_rule": "1.96 / sqrt(rows_used), the white-noise band of the estimator",
+        "computed_on": "first difference",
+        "computed_on_reason": "the stationarity verdict is INCONCLUSIVE, and the autocorrelation of such a series decays with the sample rather than with the process; peaks are read on the first difference instead",
+        "decay_lag": 2,
+        "decay_rule": "the first lag whose autocorrelation falls inside the band",
+        "estimator": "biased autocorrelation by FFT, normalised at lag 0",
+        "max_lag": 15294,
+        "peak_rule": "the highest local maxima outside the band, one per bump: a peak within 10% of the lag of a higher one is the same bump of the estimator and not a second period",
+        "peaks": [
+          {
+            "autocorrelation": 0.243056,
+            "lag": 23,
+            "period_seconds": 1380
+          },
+          {
+            "autocorrelation": 0.145168,
+            "lag": 46,
+            "period_seconds": 2760
+          },
+          {
+            "autocorrelation": 0.083476,
+            "lag": 68,
+            "period_seconds": 4080
+          }
+        ],
+        "peaks_found": 568,
+        "rows_used": 30589,
+        "significance_band": 0.011207,
+        "status": "OK"
+      },
+      "analysis_segment": {
+        "first": "2009-08-23T12:45:00",
+        "last": "2009-09-13T18:34:00",
+        "rows": 30590,
+        "rule": "the longest run of 'Global_reactive_power' with no missing cell; the two tests below read only these rows",
+        "start_row": 0,
+        "status": "OK"
+      },
+      "cross_correlation_to_target": {
+        "by_lag": [
+          {
+            "correlation": 0.271019,
+            "lag": 1,
+            "rows_used": 50397,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.131411,
+            "lag": 74,
+            "rows_used": 50324,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.052047,
+            "lag": 197,
+            "rows_used": 50201,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.051865,
+            "lag": 1443,
+            "rows_used": 48955,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.006849,
+            "lag": 2892,
+            "rows_used": 47506,
+            "status": "OK"
+          }
+        ],
+        "lags": [
+          1,
+          74,
+          197,
+          1443,
+          2892
+        ],
+        "rule": "Pearson correlation of feature[t - lag] against target[t], over rows where both are finite"
+      },
+      "distribution": {
+        "excess_kurtosis": 1.069141,
+        "excess_kurtosis_rule": "g2 = m4 / m2**2 - 3; zero for a normal column",
+        "maximum": 0.894,
+        "mean": 0.163992,
+        "minimum": 0.0,
+        "quantile_01": 0.0,
+        "quantile_99": 0.518,
+        "quantile_rule": "numpy linear interpolation between order statistics",
+        "rows_rule": "the finite cells of the column; missing cells are excluded, never imputed",
+        "rows_used": 50399,
+        "shape_status": "OK",
+        "skew": 0.810776,
+        "skew_rule": "g1 = m3 / m2**1.5, the moment estimator, uncorrected for sample size",
+        "status": "OK",
+        "std": 0.124107,
+        "std_rule": "the sample standard deviation, ddof=1; None when a single row is finite",
+        "variance": 0.015402,
+        "variance_rule": "the population second central moment, ddof=0, which the shape numbers below divide by"
+      },
+      "dtype": {
+        "distinct_finite_values": 368,
+        "first_cell": "0.0",
+        "source": "numeric text",
+        "storage": "float64",
+        "storage_rule": "every numeric column is read as float64 with the declared missing tokens as NaN",
+        "values_are_integral": false
+      },
+      "is_target": false,
+      "missing": 1,
+      "missing_fraction": 2e-05,
+      "missing_rule": "cells equal to one of ['', '?', 'NA', 'N/A', 'NaN', 'nan', 'null', 'NULL', 'None'] or unreadable as a float, divided by the 50400 rows read",
+      "name": "Global_reactive_power",
+      "rows": 50400,
+      "scale": {
+        "magnitude": -1,
+        "max_absolute": 0.894,
+        "median_absolute": 0.138,
+        "rule": "floor(log10(max |x|)) over the finite cells",
+        "status": "OK"
+      },
+      "stationarity": {
+        "adf": {
+          "autolag": "AIC",
+          "nobs": 19954,
+          "null_hypothesis": "a unit root is present",
+          "p_value": 0.0,
+          "rule": "p <= 0.05 rejects the unit root -> STATIONARY",
+          "statistic": -12.338312,
+          "status": "OK",
+          "used_lag": 45,
+          "verdict": "STATIONARY"
+        },
+        "heuristic": {
+          "caveat": "this is a rule over two numbers, not a hypothesis test, and carries no p-value",
+          "lag1_autocorrelation": 0.927266,
+          "mean_autocorrelation": 0.404802,
+          "mean_autocorrelation_to_lag": 20,
+          "method": "autocorrelation persistence of the levels",
+          "rule": "lag-1 autocorrelation >= 0.95 AND the mean autocorrelation over those lags >= 0.5 -> NON_STATIONARY",
+          "verdict": "STATIONARY"
+        },
+        "kpss": {
+          "lags": 75,
+          "null_hypothesis": "the series is stationary around a constant",
+          "p_value": 0.01,
+          "p_value_is_bounded": true,
+          "regression": "c",
+          "rule": "p <= 0.05 rejects stationarity -> NON_STATIONARY",
+          "statistic": 2.225136,
+          "status": "OK",
+          "verdict": "NON_STATIONARY"
+        },
+        "rows_rule": "the first 20000 rows of the analysis segment at most; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "verdict": "INCONCLUSIVE",
+        "verdict_source": "adf and kpss disagree"
+      }
+    },
+    "Sub_metering_1": {
+      "acf": {
+        "band_rule": "1.96 / sqrt(rows_used), the white-noise band of the estimator",
+        "computed_on": "levels",
+        "computed_on_reason": "the stationarity verdict is STATIONARY, so the levels carry the periodicity",
+        "decay_lag": 247,
+        "decay_rule": "the first lag whose autocorrelation falls inside the band",
+        "estimator": "biased autocorrelation by FFT, normalised at lag 0",
+        "max_lag": 15295,
+        "peak_rule": "the highest local maxima outside the band, one per bump: a peak within 10% of the lag of a higher one is the same bump of the estimator and not a second period",
+        "peaks": [
+          {
+            "autocorrelation": 0.278592,
+            "lag": 77,
+            "period_seconds": 4620
+          },
+          {
+            "autocorrelation": 0.245189,
+            "lag": 23,
+            "period_seconds": 1380
+          },
+          {
+            "autocorrelation": 0.209228,
+            "lag": 30,
+            "period_seconds": 1800
+          }
+        ],
+        "peaks_found": 404,
+        "rows_used": 30590,
+        "significance_band": 0.011206,
+        "status": "OK"
+      },
+      "analysis_segment": {
+        "first": "2009-08-23T12:45:00",
+        "last": "2009-09-13T18:34:00",
+        "rows": 30590,
+        "rule": "the longest run of 'Sub_metering_1' with no missing cell; the two tests below read only these rows",
+        "start_row": 0,
+        "status": "OK"
+      },
+      "cross_correlation_to_target": {
+        "by_lag": [
+          {
+            "correlation": 0.527992,
+            "lag": 1,
+            "rows_used": 50397,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.188682,
+            "lag": 74,
+            "rows_used": 50324,
+            "status": "OK"
+          },
+          {
+            "correlation": -0.002099,
+            "lag": 197,
+            "rows_used": 50201,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.104405,
+            "lag": 1443,
+            "rows_used": 48955,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.072629,
+            "lag": 2892,
+            "rows_used": 47506,
+            "status": "OK"
+          }
+        ],
+        "lags": [
+          1,
+          74,
+          197,
+          1443,
+          2892
+        ],
+        "rule": "Pearson correlation of feature[t - lag] against target[t], over rows where both are finite"
+      },
+      "distribution": {
+        "excess_kurtosis": 33.638641,
+        "excess_kurtosis_rule": "g2 = m4 / m2**2 - 3; zero for a normal column",
+        "maximum": 75.0,
+        "mean": 1.201988,
+        "minimum": 0.0,
+        "quantile_01": 0.0,
+        "quantile_99": 38.0,
+        "quantile_rule": "numpy linear interpolation between order statistics",
+        "rows_rule": "the finite cells of the column; missing cells are excluded, never imputed",
+        "rows_used": 50399,
+        "shape_status": "OK",
+        "skew": 5.813101,
+        "skew_rule": "g1 = m3 / m2**1.5, the moment estimator, uncorrected for sample size",
+        "status": "OK",
+        "std": 6.42308,
+        "std_rule": "the sample standard deviation, ddof=1; None when a single row is finite",
+        "variance": 41.255139,
+        "variance_rule": "the population second central moment, ddof=0, which the shape numbers below divide by"
+      },
+      "dtype": {
+        "distinct_finite_values": 56,
+        "first_cell": "0.0",
+        "source": "numeric text",
+        "storage": "float64",
+        "storage_rule": "every numeric column is read as float64 with the declared missing tokens as NaN",
+        "values_are_integral": true
+      },
+      "is_target": false,
+      "missing": 1,
+      "missing_fraction": 2e-05,
+      "missing_rule": "cells equal to one of ['', '?', 'NA', 'N/A', 'NaN', 'nan', 'null', 'NULL', 'None'] or unreadable as a float, divided by the 50400 rows read",
+      "name": "Sub_metering_1",
+      "rows": 50400,
+      "scale": {
+        "magnitude": 1,
+        "max_absolute": 75.0,
+        "median_absolute": 0.0,
+        "rule": "floor(log10(max |x|)) over the finite cells",
+        "status": "OK"
+      },
+      "stationarity": {
+        "adf": {
+          "autolag": "AIC",
+          "nobs": 19957,
+          "null_hypothesis": "a unit root is present",
+          "p_value": 0.0,
+          "rule": "p <= 0.05 rejects the unit root -> STATIONARY",
+          "statistic": -17.100484,
+          "status": "OK",
+          "used_lag": 42,
+          "verdict": "STATIONARY"
+        },
+        "heuristic": {
+          "caveat": "this is a rule over two numbers, not a hypothesis test, and carries no p-value",
+          "lag1_autocorrelation": 0.914958,
+          "mean_autocorrelation": 0.400808,
+          "mean_autocorrelation_to_lag": 20,
+          "method": "autocorrelation persistence of the levels",
+          "rule": "lag-1 autocorrelation >= 0.95 AND the mean autocorrelation over those lags >= 0.5 -> NON_STATIONARY",
+          "verdict": "STATIONARY"
+        },
+        "kpss": {
+          "lags": 78,
+          "null_hypothesis": "the series is stationary around a constant",
+          "p_value": 0.1,
+          "p_value_is_bounded": true,
+          "regression": "c",
+          "rule": "p <= 0.05 rejects stationarity -> NON_STATIONARY",
+          "statistic": 0.038507,
+          "status": "OK",
+          "verdict": "STATIONARY"
+        },
+        "rows_rule": "the first 20000 rows of the analysis segment at most; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "verdict": "STATIONARY",
+        "verdict_source": "adf+kpss agree"
+      }
+    },
+    "Sub_metering_2": {
+      "acf": {
+        "band_rule": "1.96 / sqrt(rows_used), the white-noise band of the estimator",
+        "computed_on": "levels",
+        "computed_on_reason": "the stationarity verdict is STATIONARY, so the levels carry the periodicity",
+        "decay_lag": 202,
+        "decay_rule": "the first lag whose autocorrelation falls inside the band",
+        "estimator": "biased autocorrelation by FFT, normalised at lag 0",
+        "max_lag": 15295,
+        "peak_rule": "the highest local maxima outside the band, one per bump: a peak within 10% of the lag of a higher one is the same bump of the estimator and not a second period",
+        "peaks": [
+          {
+            "autocorrelation": 0.20189,
+            "lag": 8629,
+            "period_seconds": 517740
+          },
+          {
+            "autocorrelation": 0.149422,
+            "lag": 61,
+            "period_seconds": 3660
+          },
+          {
+            "autocorrelation": 0.133561,
+            "lag": 5544,
+            "period_seconds": 332640
+          }
+        ],
+        "peaks_found": 398,
+        "rows_used": 30590,
+        "significance_band": 0.011206,
+        "status": "OK"
+      },
+      "analysis_segment": {
+        "first": "2009-08-23T12:45:00",
+        "last": "2009-09-13T18:34:00",
+        "rows": 30590,
+        "rule": "the longest run of 'Sub_metering_2' with no missing cell; the two tests below read only these rows",
+        "start_row": 0,
+        "status": "OK"
+      },
+      "cross_correlation_to_target": {
+        "by_lag": [
+          {
+            "correlation": 0.229347,
+            "lag": 1,
+            "rows_used": 50397,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.029003,
+            "lag": 74,
+            "rows_used": 50324,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.032256,
+            "lag": 197,
+            "rows_used": 50201,
+            "status": "OK"
+          },
+          {
+            "correlation": -0.002489,
+            "lag": 1443,
+            "rows_used": 48955,
+            "status": "OK"
+          },
+          {
+            "correlation": -0.019731,
+            "lag": 2892,
+            "rows_used": 47506,
+            "status": "OK"
+          }
+        ],
+        "lags": [
+          1,
+          74,
+          197,
+          1443,
+          2892
+        ],
+        "rule": "Pearson correlation of feature[t - lag] against target[t], over rows where both are finite"
+      },
+      "distribution": {
+        "excess_kurtosis": 117.985472,
+        "excess_kurtosis_rule": "g2 = m4 / m2**2 - 3; zero for a normal column",
+        "maximum": 74.0,
+        "mean": 0.842179,
+        "minimum": 0.0,
+        "quantile_01": 0.0,
+        "quantile_99": 20.0,
+        "quantile_rule": "numpy linear interpolation between order statistics",
+        "rows_rule": "the finite cells of the column; missing cells are excluded, never imputed",
+        "rows_used": 50399,
+        "shape_status": "OK",
+        "skew": 10.061027,
+        "skew_rule": "g1 = m3 / m2**1.5, the moment estimator, uncorrected for sample size",
+        "status": "OK",
+        "std": 3.54981,
+        "std_rule": "the sample standard deviation, ddof=1; None when a single row is finite",
+        "variance": 12.600899,
+        "variance_rule": "the population second central moment, ddof=0, which the shape numbers below divide by"
+      },
+      "dtype": {
+        "distinct_finite_values": 51,
+        "first_cell": "0.0",
+        "source": "numeric text",
+        "storage": "float64",
+        "storage_rule": "every numeric column is read as float64 with the declared missing tokens as NaN",
+        "values_are_integral": true
+      },
+      "is_target": false,
+      "missing": 1,
+      "missing_fraction": 2e-05,
+      "missing_rule": "cells equal to one of ['', '?', 'NA', 'N/A', 'NaN', 'nan', 'null', 'NULL', 'None'] or unreadable as a float, divided by the 50400 rows read",
+      "name": "Sub_metering_2",
+      "rows": 50400,
+      "scale": {
+        "magnitude": 1,
+        "max_absolute": 74.0,
+        "median_absolute": 0.0,
+        "rule": "floor(log10(max |x|)) over the finite cells",
+        "status": "OK"
+      },
+      "stationarity": {
+        "adf": {
+          "autolag": "AIC",
+          "nobs": 19958,
+          "null_hypothesis": "a unit root is present",
+          "p_value": 0.0,
+          "rule": "p <= 0.05 rejects the unit root -> STATIONARY",
+          "statistic": -15.508416,
+          "status": "OK",
+          "used_lag": 41,
+          "verdict": "STATIONARY"
+        },
+        "heuristic": {
+          "caveat": "this is a rule over two numbers, not a hypothesis test, and carries no p-value",
+          "lag1_autocorrelation": 0.911179,
+          "mean_autocorrelation": 0.525806,
+          "mean_autocorrelation_to_lag": 20,
+          "method": "autocorrelation persistence of the levels",
+          "rule": "lag-1 autocorrelation >= 0.95 AND the mean autocorrelation over those lags >= 0.5 -> NON_STATIONARY",
+          "verdict": "STATIONARY"
+        },
+        "kpss": {
+          "lags": 79,
+          "null_hypothesis": "the series is stationary around a constant",
+          "p_value": 0.1,
+          "p_value_is_bounded": true,
+          "regression": "c",
+          "rule": "p <= 0.05 rejects stationarity -> NON_STATIONARY",
+          "statistic": 0.232219,
+          "status": "OK",
+          "verdict": "STATIONARY"
+        },
+        "rows_rule": "the first 20000 rows of the analysis segment at most; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "verdict": "STATIONARY",
+        "verdict_source": "adf+kpss agree"
+      }
+    },
+    "Sub_metering_3": {
+      "acf": {
+        "band_rule": "1.96 / sqrt(rows_used), the white-noise band of the estimator",
+        "computed_on": "levels",
+        "computed_on_reason": "the stationarity verdict is STATIONARY, so the levels carry the periodicity",
+        "decay_lag": 213,
+        "decay_rule": "the first lag whose autocorrelation falls inside the band",
+        "estimator": "biased autocorrelation by FFT, normalised at lag 0",
+        "max_lag": 15295,
+        "peak_rule": "the highest local maxima outside the band, one per bump: a peak within 10% of the lag of a higher one is the same bump of the estimator and not a second period",
+        "peaks": [
+          {
+            "autocorrelation": 0.363366,
+            "lag": 55,
+            "period_seconds": 3300
+          },
+          {
+            "autocorrelation": 0.226278,
+            "lag": 1441,
+            "period_seconds": 86460
+          },
+          {
+            "autocorrelation": 0.213795,
+            "lag": 97,
+            "period_seconds": 5820
+          }
+        ],
+        "peaks_found": 316,
+        "rows_used": 30590,
+        "significance_band": 0.011206,
+        "status": "OK"
+      },
+      "analysis_segment": {
+        "first": "2009-08-23T12:45:00",
+        "last": "2009-09-13T18:34:00",
+        "rows": 30590,
+        "rule": "the longest run of 'Sub_metering_3' with no missing cell; the two tests below read only these rows",
+        "start_row": 0,
+        "status": "OK"
+      },
+      "cross_correlation_to_target": {
+        "by_lag": [
+          {
+            "correlation": 0.671451,
+            "lag": 1,
+            "rows_used": 50397,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.289928,
+            "lag": 74,
+            "rows_used": 50324,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.051857,
+            "lag": 197,
+            "rows_used": 50201,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.234152,
+            "lag": 1443,
+            "rows_used": 48955,
+            "status": "OK"
+          },
+          {
+            "correlation": 0.191815,
+            "lag": 2892,
+            "rows_used": 47506,
+            "status": "OK"
+          }
+        ],
+        "lags": [
+          1,
+          74,
+          197,
+          1443,
+          2892
+        ],
+        "rule": "Pearson correlation of feature[t - lag] against target[t], over rows where both are finite"
+      },
+      "distribution": {
+        "excess_kurtosis": -0.775233,
+        "excess_kurtosis_rule": "g2 = m4 / m2**2 - 3; zero for a normal column",
+        "maximum": 31.0,
+        "mean": 6.612413,
+        "minimum": 0.0,
+        "quantile_01": 0.0,
+        "quantile_99": 29.0,
+        "quantile_rule": "numpy linear interpolation between order statistics",
+        "rows_rule": "the finite cells of the column; missing cells are excluded, never imputed",
+        "rows_used": 50399,
+        "shape_status": "OK",
+        "skew": 0.893971,
+        "skew_rule": "g1 = m3 / m2**1.5, the moment estimator, uncorrected for sample size",
+        "status": "OK",
+        "std": 8.50775,
+        "std_rule": "the sample standard deviation, ddof=1; None when a single row is finite",
+        "variance": 72.380382,
+        "variance_rule": "the population second central moment, ddof=0, which the shape numbers below divide by"
+      },
+      "dtype": {
+        "distinct_finite_values": 32,
+        "first_cell": "1.0",
+        "source": "numeric text",
+        "storage": "float64",
+        "storage_rule": "every numeric column is read as float64 with the declared missing tokens as NaN",
+        "values_are_integral": true
+      },
+      "is_target": false,
+      "missing": 1,
+      "missing_fraction": 2e-05,
+      "missing_rule": "cells equal to one of ['', '?', 'NA', 'N/A', 'NaN', 'nan', 'null', 'NULL', 'None'] or unreadable as a float, divided by the 50400 rows read",
+      "name": "Sub_metering_3",
+      "rows": 50400,
+      "scale": {
+        "magnitude": 1,
+        "max_absolute": 31.0,
+        "median_absolute": 1.0,
+        "rule": "floor(log10(max |x|)) over the finite cells",
+        "status": "OK"
+      },
+      "stationarity": {
+        "adf": {
+          "autolag": "AIC",
+          "nobs": 19953,
+          "null_hypothesis": "a unit root is present",
+          "p_value": 0.0,
+          "rule": "p <= 0.05 rejects the unit root -> STATIONARY",
+          "statistic": -11.039137,
+          "status": "OK",
+          "used_lag": 46,
+          "verdict": "STATIONARY"
+        },
+        "heuristic": {
+          "caveat": "this is a rule over two numbers, not a hypothesis test, and carries no p-value",
+          "lag1_autocorrelation": 0.961789,
+          "mean_autocorrelation": 0.711513,
+          "mean_autocorrelation_to_lag": 20,
+          "method": "autocorrelation persistence of the levels",
+          "rule": "lag-1 autocorrelation >= 0.95 AND the mean autocorrelation over those lags >= 0.5 -> NON_STATIONARY",
+          "verdict": "NON_STATIONARY"
+        },
+        "kpss": {
+          "lags": 83,
+          "null_hypothesis": "the series is stationary around a constant",
+          "p_value": 0.1,
+          "p_value_is_bounded": true,
+          "regression": "c",
+          "rule": "p <= 0.05 rejects stationarity -> NON_STATIONARY",
+          "statistic": 0.141545,
+          "status": "OK",
+          "verdict": "STATIONARY"
+        },
+        "rows_rule": "the first 20000 rows of the analysis segment at most; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "verdict": "STATIONARY",
+        "verdict_source": "adf+kpss agree"
+      }
+    },
+    "Voltage": {
+      "acf": {
+        "band_rule": "1.96 / sqrt(rows_used), the white-noise band of the estimator",
+        "computed_on": "levels",
+        "computed_on_reason": "the stationarity verdict is STATIONARY, so the levels carry the periodicity",
+        "decay_lag": 377,
+        "decay_rule": "the first lag whose autocorrelation falls inside the band",
+        "estimator": "biased autocorrelation by FFT, normalised at lag 0",
+        "max_lag": 15295,
+        "peak_rule": "the highest local maxima outside the band, one per bump: a peak within 10% of the lag of a higher one is the same bump of the estimator and not a second period",
+        "peaks": [
+          {
+            "autocorrelation": 0.28118,
+            "lag": 1440,
+            "period_seconds": 86400
+          },
+          {
+            "autocorrelation": 0.227495,
+            "lag": 2881,
+            "period_seconds": 172860
+          },
+          {
+            "autocorrelation": 0.213789,
+            "lag": 5760,
+            "period_seconds": 345600
+          }
+        ],
+        "peaks_found": 241,
+        "rows_used": 30590,
+        "significance_band": 0.011206,
+        "status": "OK"
+      },
+      "analysis_segment": {
+        "first": "2009-08-23T12:45:00",
+        "last": "2009-09-13T18:34:00",
+        "rows": 30590,
+        "rule": "the longest run of 'Voltage' with no missing cell; the two tests below read only these rows",
+        "start_row": 0,
+        "status": "OK"
+      },
+      "cross_correlation_to_target": {
+        "by_lag": [
+          {
+            "correlation": -0.526589,
+            "lag": 1,
+            "rows_used": 50397,
+            "status": "OK"
+          },
+          {
+            "correlation": -0.307019,
+            "lag": 74,
+            "rows_used": 50324,
+            "status": "OK"
+          },
+          {
+            "correlation": -0.052427,
+            "lag": 197,
+            "rows_used": 50201,
+            "status": "OK"
+          },
+          {
+            "correlation": -0.226211,
+            "lag": 1443,
+            "rows_used": 48955,
+            "status": "OK"
+          },
+          {
+            "correlation": -0.222064,
+            "lag": 2892,
+            "rows_used": 47506,
+            "status": "OK"
+          }
+        ],
+        "lags": [
+          1,
+          74,
+          197,
+          1443,
+          2892
+        ],
+        "rule": "Pearson correlation of feature[t - lag] against target[t], over rows where both are finite"
+      },
+      "distribution": {
+        "excess_kurtosis": 1.049762,
+        "excess_kurtosis_rule": "g2 = m4 / m2**2 - 3; zero for a normal column",
+        "maximum": 248.38,
+        "mean": 241.116249,
+        "minimum": 228.29,
+        "quantile_01": 234.77,
+        "quantile_99": 245.83,
+        "quantile_rule": "numpy linear interpolation between order statistics",
+        "rows_rule": "the finite cells of the column; missing cells are excluded, never imputed",
+        "rows_used": 50399,
+        "shape_status": "OK",
+        "skew": -0.551958,
+        "skew_rule": "g1 = m3 / m2**1.5, the moment estimator, uncorrected for sample size",
+        "status": "OK",
+        "std": 2.195839,
+        "std_rule": "the sample standard deviation, ddof=1; None when a single row is finite",
+        "variance": 4.821613,
+        "variance_rule": "the population second central moment, ddof=0, which the shape numbers below divide by"
+      },
+      "dtype": {
+        "distinct_finite_values": 1518,
+        "first_cell": "240.01",
+        "source": "numeric text",
+        "storage": "float64",
+        "storage_rule": "every numeric column is read as float64 with the declared missing tokens as NaN",
+        "values_are_integral": false
+      },
+      "is_target": false,
+      "missing": 1,
+      "missing_fraction": 2e-05,
+      "missing_rule": "cells equal to one of ['', '?', 'NA', 'N/A', 'NaN', 'nan', 'null', 'NULL', 'None'] or unreadable as a float, divided by the 50400 rows read",
+      "name": "Voltage",
+      "rows": 50400,
+      "scale": {
+        "magnitude": 2,
+        "max_absolute": 248.38,
+        "median_absolute": 241.29,
+        "rule": "floor(log10(max |x|)) over the finite cells",
+        "status": "OK"
+      },
+      "stationarity": {
+        "adf": {
+          "autolag": "AIC",
+          "nobs": 19969,
+          "null_hypothesis": "a unit root is present",
+          "p_value": 0.0,
+          "rule": "p <= 0.05 rejects the unit root -> STATIONARY",
+          "statistic": -9.724972,
+          "status": "OK",
+          "used_lag": 30,
+          "verdict": "STATIONARY"
+        },
+        "heuristic": {
+          "caveat": "this is a rule over two numbers, not a hypothesis test, and carries no p-value",
+          "lag1_autocorrelation": 0.968197,
+          "mean_autocorrelation": 0.803677,
+          "mean_autocorrelation_to_lag": 20,
+          "method": "autocorrelation persistence of the levels",
+          "rule": "lag-1 autocorrelation >= 0.95 AND the mean autocorrelation over those lags >= 0.5 -> NON_STATIONARY",
+          "verdict": "NON_STATIONARY"
+        },
+        "kpss": {
+          "lags": 85,
+          "null_hypothesis": "the series is stationary around a constant",
+          "p_value": 0.1,
+          "p_value_is_bounded": true,
+          "regression": "c",
+          "rule": "p <= 0.05 rejects stationarity -> NON_STATIONARY",
+          "statistic": 0.31441,
+          "status": "OK",
+          "verdict": "STATIONARY"
+        },
+        "rows_rule": "the first 20000 rows of the analysis segment at most; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "verdict": "STATIONARY",
+        "verdict_source": "adf+kpss agree"
+      }
+    }
+  },
+  "pairs": {
+    "Global_active_power::Global_intensity": {
+      "features": [
+        "Global_active_power",
+        "Global_intensity"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 2.732052
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.998633
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.996265
+      }
+    },
+    "Global_active_power::Global_reactive_power": {
+      "features": [
+        "Global_active_power",
+        "Global_reactive_power"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.979452
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.288475
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.374233
+      }
+    },
+    "Global_active_power::Sub_metering_1": {
+      "features": [
+        "Global_active_power",
+        "Sub_metering_1"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.146166
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.562753
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.372603
+      }
+    },
+    "Global_active_power::Sub_metering_2": {
+      "features": [
+        "Global_active_power",
+        "Sub_metering_2"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.138422
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.247663
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.165227
+      }
+    },
+    "Global_active_power::Sub_metering_3": {
+      "features": [
+        "Global_active_power",
+        "Sub_metering_3"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.59859
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.686937
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.647381
+      }
+    },
+    "Global_active_power::Voltage": {
+      "features": [
+        "Global_active_power",
+        "Voltage"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.267731
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": -0.541592
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": -0.507463
+      }
+    },
+    "Global_intensity::Global_reactive_power": {
+      "features": [
+        "Global_intensity",
+        "Global_reactive_power"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.784219
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.315258
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.394263
+      }
+    },
+    "Global_intensity::Sub_metering_1": {
+      "features": [
+        "Global_intensity",
+        "Sub_metering_1"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.128964
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.567572
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.372417
+      }
+    },
+    "Global_intensity::Sub_metering_2": {
+      "features": [
+        "Global_intensity",
+        "Sub_metering_2"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.115366
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.253755
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.180244
+      }
+    },
+    "Global_intensity::Sub_metering_3": {
+      "features": [
+        "Global_intensity",
+        "Sub_metering_3"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.56964
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.675218
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.645747
+      }
+    },
+    "Global_intensity::Voltage": {
+      "features": [
+        "Global_intensity",
+        "Voltage"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.227084
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": -0.54444
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": -0.515293
+      }
+    },
+    "Global_reactive_power::Sub_metering_1": {
+      "features": [
+        "Global_reactive_power",
+        "Sub_metering_1"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.041211
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.14994
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.147476
+      }
+    },
+    "Global_reactive_power::Sub_metering_2": {
+      "features": [
+        "Global_reactive_power",
+        "Sub_metering_2"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.17348
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.119947
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.468171
+      }
+    },
+    "Global_reactive_power::Sub_metering_3": {
+      "features": [
+        "Global_reactive_power",
+        "Sub_metering_3"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.105671
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.141022
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.089576
+      }
+    },
+    "Global_reactive_power::Voltage": {
+      "features": [
+        "Global_reactive_power",
+        "Voltage"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.155669
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": -0.118114
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": -0.089497
+      }
+    },
+    "Sub_metering_1::Sub_metering_2": {
+      "features": [
+        "Sub_metering_1",
+        "Sub_metering_2"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.001362
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.029475
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.024959
+      }
+    },
+    "Sub_metering_1::Sub_metering_3": {
+      "features": [
+        "Sub_metering_1",
+        "Sub_metering_3"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.023591
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.083113
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": 0.120378
+      }
+    },
+    "Sub_metering_1::Voltage": {
+      "features": [
+        "Sub_metering_1",
+        "Voltage"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.062156
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": -0.242817
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": -0.216848
+      }
+    },
+    "Sub_metering_2::Sub_metering_3": {
+      "features": [
+        "Sub_metering_2",
+        "Sub_metering_3"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.003729
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": 0.014742
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": -0.000731
+      }
+    },
+    "Sub_metering_2::Voltage": {
+      "features": [
+        "Sub_metering_2",
+        "Voltage"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.015007
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": -0.107497
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": -0.05345
+      }
+    },
+    "Sub_metering_3::Voltage": {
+      "features": [
+        "Sub_metering_3",
+        "Voltage"
+      ],
+      "mutual_information": {
+        "caveat": "an estimate, not a bound: it is not normalised and it is not comparable across row counts",
+        "estimator": "sklearn.feature_selection.mutual_info_regression",
+        "lower_bound": 0.0,
+        "n_neighbors": 3,
+        "random_state": 0,
+        "rows_rule": "the first 20000 rows the pair has in common; the head, never the end a holdout will be cut from",
+        "rows_used": 20000,
+        "status": "OK",
+        "units": "nats",
+        "value": 0.183447
+      },
+      "pearson": {
+        "rows_used": 50399,
+        "rule": "the linear correlation over the rows both columns have finite",
+        "status": "OK",
+        "value": -0.470245
+      },
+      "rows_in_common": 50399,
+      "spearman": {
+        "rows_used": 50399,
+        "rule": "the linear correlation of the average ranks, ties shared",
+        "status": "OK",
+        "value": -0.401357
+      }
+    }
+  },
+  "environment": {
+    "python": "3.12.7",
+    "numpy": "2.5.3",
+    "statsmodels": "0.15.0",
+    "sklearn": "1.9.1"
+  },
+  "fitted": "NOTHING: this job measures a dataset's columns and the numbers between them; no model is trained"
+}
