@@ -50,6 +50,7 @@ from __future__ import annotations
 
 from typing import Optional, Any, Dict, List, Sequence
 
+import keras
 import tensorflow as tf
 import tensorflow_probability as tfp
 from tensorflow.keras.layers import (
@@ -106,14 +107,35 @@ def _is_shape_pair(value: Any) -> bool:
             and all(isinstance(part, int) for part in value))
 
 
-def _gather_columns(indices: Sequence[int]):
-    """A picklable-by-closure slice of the channel axis, for one branch."""
-    frozen = tuple(int(i) for i in indices)
+@keras.saving.register_keras_serializable(package="predictor_plugins.fused_branches")
+class GatherColumns(keras.layers.Layer):
+    """The channel-axis slice one branch reads, carrying its own indices into the saved graph.
 
-    def _slice(tensor, frozen=frozen):
-        return tf.gather(tensor, tf.constant(frozen, dtype=tf.int32), axis=-1)
+    This was a ``Lambda`` over a closure until 2026-09-25, and a closure does not survive being written to disk: Keras
+    serialises such a layer as the bare NAME of the inner function, so every saved graph whose branch read a SUBSET of
+    the columns could be fitted, scored and then never loaded again -- ``Could not locate function '_slice'`` -- by
+    anything but the process that built it. That made those models unservable and unreviewable, which is the same
+    defect twice. A registered layer that writes its ``indices`` into its own config is loadable by anybody, and the
+    indices are read from the file instead of being re-derived by the reader from the column names, which would look
+    exactly like the original and could gather other columns.
 
-    return _slice
+    Graphs saved before this change still carry the old ``Lambda``; nothing here can repair them, and a fit is cheap.
+    """
+
+    def __init__(self, indices: Sequence[int], **kwargs):
+        super().__init__(**kwargs)
+        self.indices = tuple(int(index) for index in indices)
+
+    def call(self, tensor):
+        return tf.gather(tensor, tf.constant(self.indices, dtype=tf.int32), axis=-1)
+
+    def compute_output_shape(self, input_shape):
+        return tuple(input_shape[:-1]) + (len(self.indices),)
+
+    def get_config(self):
+        config = super().get_config()
+        config["indices"] = list(self.indices)
+        return config
 
 
 class Plugin(BaseBayesianKerasPredictor):
@@ -312,8 +334,7 @@ class Plugin(BaseBayesianKerasPredictor):
                 if list(indices) == list(range(channels)):
                     sliced = shared
                 else:
-                    sliced = Lambda(_gather_columns(indices), output_shape=(window, len(indices)),
-                                    name=f"{branch['name']}_columns")(shared)
+                    sliced = GatherColumns(indices, name=f"{branch['name']}_columns")(shared)
                 branch_tensors.append(sliced)
         else:
             inputs = [Input(shape=branch["shape"], name=f"{branch['name']}_input") for branch in plan]

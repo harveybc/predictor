@@ -1,0 +1,252 @@
+{
+  "branches": [
+    {
+      "columns": [
+        "Voltage",
+        "Global_intensity",
+        "Sub_metering_3"
+      ],
+      "encoder": "tcn",
+      "name": "all"
+    }
+  ],
+  "columns": [
+    "Global_active_power",
+    "Global_reactive_power",
+    "Voltage",
+    "Global_intensity",
+    "Sub_metering_1",
+    "Sub_metering_2",
+    "Sub_metering_3"
+  ],
+  "config": {
+    "activation": "relu",
+    "batch_size": 256,
+    "bayesian_head": false,
+    "branches": [
+      {
+        "columns": [
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_3"
+        ],
+        "encoder": "tcn",
+        "name": "all"
+      }
+    ],
+    "disable_postfit_uncertainty": true,
+    "dropout_rate": 0.0,
+    "early_patience": 15,
+    "encoder_kernel_size": 3,
+    "encoder_layers": 1,
+    "encoder_units": 32,
+    "epochs": 200,
+    "feature_names": [
+      "Global_active_power",
+      "Global_reactive_power",
+      "Voltage",
+      "Global_intensity",
+      "Sub_metering_1",
+      "Sub_metering_2",
+      "Sub_metering_3"
+    ],
+    "fusion": "concat",
+    "grouping_applied": "APPLIED",
+    "head_activation": "relu",
+    "head_units": [
+      64
+    ],
+    "learning_rate": 0.001,
+    "plotted_horizon": 60,
+    "predicted_horizons": [
+      60
+    ],
+    "predictor_plugin": "fused_branches",
+    "quiet": true,
+    "seed": 5,
+    "target_column": "Global_active_power",
+    "window_size": 21
+  },
+  "data": {
+    "holdout_start_row": 30240,
+    "non_finite_rows": 1,
+    "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp26/household_inner_outer.csv",
+    "rows": 40320
+  },
+  "execution_authorized": false,
+  "fitted_at": "2026-09-25T18:05:35Z",
+  "head": "point",
+  "horizons": [
+    60
+  ],
+  "numpy": "2.5.1",
+  "plugin_module": "predictor_plugins.fused_branches:Plugin",
+  "population": {
+    "dropped_for_non_finite": 257,
+    "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+    "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+    "seal_window": 197,
+    "sealed_at": "2026-09-25T18:00:00Z",
+    "sealed_rows": 9567
+  },
+  "preprocessing": {
+    "Global_active_power": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": null,
+      "declared_plugin": null,
+      "preprocessing_applied": "NONE_DECLARED",
+      "why": "the spec names no preprocessor for this feature"
+    },
+    "Global_intensity": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": null,
+      "declared_plugin": null,
+      "preprocessing_applied": "NONE_DECLARED",
+      "why": "the spec names no preprocessor for this feature"
+    },
+    "Global_reactive_power": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": null,
+      "declared_plugin": null,
+      "preprocessing_applied": "NONE_DECLARED",
+      "why": "the spec names no preprocessor for this feature"
+    },
+    "Sub_metering_1": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": null,
+      "declared_plugin": null,
+      "preprocessing_applied": "NONE_DECLARED",
+      "why": "the spec names no preprocessor for this feature"
+    },
+    "Sub_metering_2": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": null,
+      "declared_plugin": null,
+      "preprocessing_applied": "NONE_DECLARED",
+      "why": "the spec names no preprocessor for this feature"
+    },
+    "Sub_metering_3": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": null,
+      "declared_plugin": null,
+      "preprocessing_applied": "NONE_DECLARED",
+      "why": "the spec names no preprocessor for this feature"
+    },
+    "Voltage": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": null,
+      "declared_plugin": null,
+      "preprocessing_applied": "NONE_DECLARED",
+      "why": "the spec names no preprocessor for this feature"
+    }
+  },
+  "quantiles": null,
+  "representation_applied": {
+    "differencing_order": 0,
+    "differencing_reading": "differencing.order is applied to the INPUT channels: the d-th difference of every column, over the d+window-1 raw rows before the origin. The label is what target.transform declares and is never differenced here, because the d-th difference of the target at the origin plus the horizon cannot be turned back into a level from what the origin carries, and the sealed rows are levels in kW",
+    "feature_subset": [
+      "Global_intensity",
+      "Sub_metering_3",
+      "Voltage"
+    ],
+    "feature_subset_applied_by": "the branch's own gather over the channel axis: a column no branch names is read by no encoder, so the subset is the graph's and not a note",
+    "target_scaler": "the input scaler's mean and sd for the target column (level, no differencing)",
+    "target_transform": "level",
+    "target_transform_applied_as": "origin-anchored: the label is a function of the realised value at the origin and at the origin plus the horizon, and the prediction is turned back into kW from the origin's own value"
+  },
+  "scaler": {
+    "fitted_on": "the first 30240 rows of household_inner_outer.csv (TRAIN only; the sealed holdout is never read for it)",
+    "kind": "per_column_zscore",
+    "mean": [
+      0.8602671296295982,
+      0.16933835978835798,
+      241.21702910052994,
+      3.715092592592741,
+      1.2191468253968254,
+      0.807936507936508,
+      5.9348214285714285
+    ],
+    "sd": [
+      0.8614374703261961,
+      0.12570035466713833,
+      2.1417794740100446,
+      3.592608482107708,
+      6.546932502936802,
+      3.2266791250232467,
+      8.206165681546867
+    ]
+  },
+  "schema": "predictor.fitted_forecast.v1",
+  "spec": {
+    "decisions": [],
+    "path": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/specs/spec_searched_b373275495e2.json",
+    "provenance": "DEVELOPMENT",
+    "representation": {
+      "calendar": {
+        "clock": "receipt",
+        "columns": []
+      },
+      "candidate_id": "searched_b373275495e2",
+      "differencing": {
+        "order": 0
+      },
+      "exogenous": [
+        "Global_intensity",
+        "Sub_metering_3",
+        "Voltage"
+      ],
+      "features": [],
+      "holdout": {
+        "fraction": 0.2
+      },
+      "lags": [
+        1
+      ],
+      "provenance": "DEVELOPMENT",
+      "sampling": {
+        "step_seconds": 60,
+        "timezone": "UTC"
+      },
+      "schema": "m5phet.representation.v1",
+      "target": {
+        "column": "Global_active_power",
+        "transform": "level"
+      },
+      "why": {
+        "features": "none: this search adds no derived or calendar feature, only chooses among the file's own columns",
+        "lags": "searched: a subset of the design job's motivated lags, each no longer than the window",
+        "transform": "searched: one of the transforms the representation schema declares",
+        "windows": "searched: the window is a gene of the declared space, bounded by the sealing window"
+      },
+      "windows": [
+        21
+      ]
+    },
+    "representation_id": null,
+    "schema": "m5phet.pipeline.v1",
+    "sha256": "54953941b9ceda17610da767c6e79a90ee757d5a6922f3e434c2c7f22e89396a"
+  },
+  "stage": "searched_b373275495e2__seed5",
+  "step_seconds": 60,
+  "target": "Global_active_power",
+  "tensorflow": "2.21.0",
+  "training": {
+    "batch_size": 256,
+    "deterministic_ops": true,
+    "device": "gpu",
+    "epochs_declared": 200,
+    "epochs_run": 17,
+    "final_val_loss": 0.4453447163105011,
+    "fit_origins": 27144,
+    "loop": "keras `fit` driven by this tool with the plugin's OWN callbacks (`BaseKerasPredictor._build_callbacks`: early stopping on val_loss with restore_best_weights, and ReduceLROnPlateau). `BaseKerasPredictor.train` takes a dict of per-horizon targets, and Keras 3 does not unpack a dict for a single-output graph; this comparison declares one horizon, so the dict path is not available. Nothing about the optimiser, the loss or the callbacks differs",
+    "patience": 15,
+    "seed": 5,
+    "validation_origins": 3016
+  },
+  "wall_seconds": 10.942,
+  "window": 21,
+  "window_selected_by": "max(representation.windows): the longest memory the candidate declares; a shorter window in the same list is not fitted by this single-block harness and is recorded here",
+  "windows_declared": [
+    21
+  ]
+}

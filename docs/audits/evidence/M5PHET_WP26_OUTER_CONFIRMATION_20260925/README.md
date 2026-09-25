@@ -156,3 +156,100 @@ The tools are `predictor/tools/nested_split.py` (declares and freezes the split)
 - **the outer seal was used once per fit**, after the fit, and is not read by anything that chooses;
 - **nothing was re-ranked into the earlier table.** That table stands as the record of what the earlier rows measured;
   it now carries a pointer to this one.
+
+---
+
+# WP27: the confirmed representation is served, with the error it actually measured
+
+WP26 confirmed, so WP27 exported. **What was exported is the representation the SEARCH chose**
+(`searched_b373275495e2`, window 21), not the one with the lowest outer-seal mean (`searched_0588f5747b62`).
+Choosing the latter *now* would be selection on the outer holdout — the exact error this whole package exists to
+correct, committed one round later — and the three candidates sit inside each other's seed spread anyway. The rule
+was declared before the export and is stated here so it can be checked: **the stage the earlier round selected, at the
+seed whose outer-seal MAE is the MEDIAN of its five** (seed 5, MAE 0.5658380994350456), so neither the best nor the
+worst graph of the five is the one being served.
+
+| | |
+|---|---|
+| bundle | `searched-w21-household-outer-20260925`, installed beside the others in the owner's bundle directory |
+| state_ref | `searched-w21-household-outer-20260925:87f7b6b407b7832258e55f292b876c6dde186feef449564affbc0fd924cbb669` |
+| task_id | `predictor.searched-w21-household-outer-20260925.W21_h60` |
+| `representation_spec` | by value: `searched_b373275495e2`, window 21, lags [1], transform `level`, differencing 0, columns `Voltage`, `Global_intensity`, `Sub_metering_3` |
+| `measured_error` | mae **0.5658380994350456** kW, rmse 0.8908290889272082, skill 0.15188751208001805, naive `last_value` 0.6671734085920351 — on seal `d4ac73f0adde05d1…`, protocol `48b783f88f541e33…`, **9,567 sealed rows**, report sha256 `61c206f6…` |
+| `provenance.quality` | `UNMEASURED`, unchanged — `prediction_provider` scored nothing; the number above is the evaluation report **quoted with its conditions**, and the manifest says so in the block itself |
+| parity | `PASS` (native graph against the served bundle, on the first TRAIN window; no sealed row is read by the export) |
+
+## One defect had to be fixed before the winner could be served at all
+
+The winning representation reads **three of the seven** columns, so its graph carries a gather over the channel axis.
+`predictor_plugins/fused_branches.py` built that gather as a `Lambda` over a **closure**, and Keras serialises such a
+layer as the bare NAME of the inner function: every saved graph whose branch read a column subset could be fitted,
+scored, and then **never loaded again** — `Could not locate function '_slice'` — by anything, including the process
+that saved it. Those models were unservable and unreviewable, which is the same defect twice, and it went unnoticed
+because every bundle exported before this one used all seven columns.
+
+`GatherColumns` replaces it: a registered layer that writes its own `indices` into its config, so the graph is
+self-describing and `prediction_provider`'s exporter rebuilds the layer **from the file** rather than re-deriving the
+indices from column names (a re-derivation would look exactly like the original and could gather other columns) and
+rather than importing predictor into a servable package.
+
+**The control.** The stage was re-fitted with the new layer, the same seed, the same inner rows and the same
+everything else, and returns **MAE 0.5658380994350456, RMSE 0.8908290889272082, skill 0.15188751208001805, 17
+epochs** — identical to every published digit of the Lambda-based fit, under the same seal. The layer changed the
+graph's ability to be loaded and nothing else. `bundle/refit_report.json` beside `stages/searched_b373275495e2__seed5/report.json`
+is the check. Graphs saved before this change stay unloadable; nothing here can repair them, and a fit costs 16 s.
+
+## Two more things the sentence path needed
+
+- **the `bundle` slot was inert.** The forecast provider declares it (a sentence may name an engine by its `state_id`,
+  its `state_ref`, or a head only it has) and `chat_request` never read the resolved value — so "forecast X with
+  `<state_id>`" resolved the slot and then built the request as if nothing had been said. The declared ladder is now
+  the one that runs: fitted state first, named bundle second, kind of answer last;
+- **a blank value was treated as a name.** The workbench's own defaults carry `state: ""`, and an optional slot nobody
+  filled comes back empty; both reached the name resolver and were refused as a bundle called `''`, which turned the
+  documented third rung into an error nobody could act on.
+
+Verified on a verification instance of my own (port **8782**, its own state directory, killed afterwards; the owner's
+8765 was never touched), with the four bundles configured:
+
+```
+pronostica Global_active_power a 60 pasos con searched-w21-household-outer-20260925
+  -> OK, fitted_state_ref searched-w21-household-outer-20260925:87f7b6b4…,
+     task_id predictor.searched-w21-household-outer-20260925.W21_h60
+```
+and the same in English. Nothing pinned the engine but the sentence.
+
+## Acceptance, and the one number that changed
+
+| harness | result | file |
+|---|---|---|
+| `tools/verify_families.py` | examples **12/12**, prose **14/14**, refusals **2/2**, families **5/5**, `any_execution_authorized` false | `acceptance/families-8782.json` |
+| `tools/verify_envelopes.py` | questions **15/15**, `any_execution_authorized` false | `acceptance/envelopes-8782.json` |
+| forecast catalog | the four bundles with their `representation_spec` and `measured_error` | `acceptance/catalog-forecast.json` |
+| `prediction_provider` suite | **142 passed / 13 skipped** (with `M5PHET_FORECAST_BUNDLE` and `M5PHET_FORECAST_TEST_BUNDLE` set; without them 80/73, because most of the suite refuses to run against a synthetic bundle) | — |
+
+**examples is 12 and not 11** because each configured bundle contributes its own catalog example and there is now a
+fourth. That is the documented behaviour of the harness, not a change made here.
+
+**`verify_envelopes.py` was changed, and the change is named rather than buried.** With a second POINT bundle serving
+`Global_active_power` at horizon 60, the envelope's bare `prediccion` question — which declares no bundle — is refused
+`STATE_REQUIRED`, naming all three candidates and the three ways to tell them apart. That is the disambiguation rule
+working exactly as designed. The harness had that expectation **frozen** as `OK`; its sibling `interval_expectation`
+was already written as a rule asserted against the running catalog, for precisely this reason and in its own words
+("installing the quantile bundle the work plan asks for made the harness fail, and reading the failure as the
+product's fault"). So `point_expectation` now asserts the product's rule the same way. Measured both ways, on the same
+instance: **14/15 with the frozen expectation, 15/15 with the rule asserted**, and the provider's behaviour is
+identical in both — nothing in the product was weakened to make a number green.
+
+The owner's consequence, stated plainly: on the owner's own workbench a bare "pronostica la potencia" is now refused
+until the person names an engine or asks for an interval, because two point bundles serve that series. The refusal
+names both and says how to choose; `searched-w21-household-outer-20260925` is one of the names it accepts.
+
+## Files (WP27)
+
+| path | what |
+|---|---|
+| `bundle/manifest.json` | the exported v2 bundle's manifest, with `representation_spec` and `measured_error` by value |
+| `bundle/parity.json` | the export's native-versus-served parity record |
+| `bundle/refit_report.json`, `bundle/refit_fit_manifest.json` | the control: the same stage re-fitted with the serialisable layer, reproducing every published digit |
+| `acceptance/families-8782.json`, `acceptance/envelopes-8782.json`, `acceptance/catalog-forecast.json` | the two harnesses and the forecast catalog on the verification instance |

@@ -1,0 +1,351 @@
+{
+ "capabilities_bundles": [
+  {
+   "targets": [
+    "Global_active_power"
+   ],
+   "horizons": [
+    60
+   ],
+   "unit": "kW",
+   "scale": "original",
+   "state_ref": "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7",
+   "task_id": "e1.household.W60_h60",
+   "family": "regression_forecasting",
+   "window": 60,
+   "step_seconds": 60,
+   "heads": [
+    "point"
+   ],
+   "title": "DEVELOPMENT: retained household-power model, 60-minute forecast",
+   "quantiles": [],
+   "fitted_confidence_levels": [],
+   "representation_spec": "REPRESENTATION_NOT_RECORDED",
+   "measured_error": "ERROR_NOT_RECORDED"
+  },
+  {
+   "targets": [
+    "direction_long"
+   ],
+   "horizons": [
+    1
+   ],
+   "unit": "probability",
+   "scale": "probability",
+   "state_ref": "phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99",
+   "task_id": "predictor.phase-1c-direction-cnn-direction-long.W71_h1",
+   "family": "binary_classification",
+   "window": 71,
+   "step_seconds": 14400,
+   "heads": [
+    "point"
+   ],
+   "title": "DEVELOPMENT: retained predictor direction_cnn example, direction_long probability",
+   "quantiles": [],
+   "fitted_confidence_levels": [],
+   "representation_spec": "REPRESENTATION_NOT_RECORDED",
+   "measured_error": "ERROR_NOT_RECORDED"
+  },
+  {
+   "targets": [
+    "Global_active_power"
+   ],
+   "horizons": [
+    60
+   ],
+   "unit": "kW",
+   "scale": "original",
+   "state_ref": "quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8",
+   "task_id": "predictor.quantile-household-95-20260925.W60_h60",
+   "family": "regression_forecasting",
+   "window": 60,
+   "step_seconds": 60,
+   "heads": [
+    "quantile"
+   ],
+   "title": "DEVELOPMENT: household power, quantile head (0.025/0.05/0.5/0.95/0.975) at 60 steps",
+   "quantiles": [
+    0.025,
+    0.05,
+    0.5,
+    0.95,
+    0.975
+   ],
+   "fitted_confidence_levels": [
+    0.9,
+    0.95
+   ],
+   "representation_spec": {
+    "calendar": {
+     "clock": "receipt",
+     "columns": []
+    },
+    "candidate_id": "hand_household_w60",
+    "differencing": {
+     "order": 0
+    },
+    "exogenous": [
+     "Global_reactive_power",
+     "Voltage",
+     "Global_intensity",
+     "Sub_metering_1",
+     "Sub_metering_2",
+     "Sub_metering_3"
+    ],
+    "features": [],
+    "holdout": {
+     "fraction": 0.2
+    },
+    "lags": [
+     1
+    ],
+    "provenance": "DEVELOPMENT",
+    "sampling": {
+     "step_seconds": 60,
+     "timezone": "UTC"
+    },
+    "schema": "m5phet.representation.v1",
+    "target": {
+     "column": "Global_active_power",
+     "transform": "level"
+    },
+    "why": {
+     "features": "none: the hand configuration adds no calendar or derived feature",
+     "lags": "none beyond the window itself; the hand configuration declares no lag features",
+     "transform": "level: the household pilot forecasts the level of Global_active_power",
+     "windows": "60: the window the household DEV resource e1_household_dev_pilot_v1 declares (DATA.json 'window'), fixed by hand before any of this work"
+    },
+    "windows": [
+     60
+    ]
+   },
+   "measured_error": "ERROR_NOT_RECORDED"
+  },
+  {
+   "targets": [
+    "Global_active_power"
+   ],
+   "horizons": [
+    60
+   ],
+   "unit": "kW",
+   "scale": "original",
+   "state_ref": "searched-w21-household-outer-20260925:87f7b6b407b7832258e55f292b876c6dde186feef449564affbc0fd924cbb669",
+   "task_id": "predictor.searched-w21-household-outer-20260925.W21_h60",
+   "family": "regression_forecasting",
+   "window": 21,
+   "step_seconds": 60,
+   "heads": [
+    "point"
+   ],
+   "title": "DEVELOPMENT: searched representation (window 21), household power at 60 steps, confirmed on the outer seal",
+   "quantiles": [],
+   "fitted_confidence_levels": [],
+   "representation_spec": {
+    "calendar": {
+     "clock": "receipt",
+     "columns": []
+    },
+    "candidate_id": "searched_b373275495e2",
+    "differencing": {
+     "order": 0
+    },
+    "exogenous": [
+     "Global_intensity",
+     "Sub_metering_3",
+     "Voltage"
+    ],
+    "features": [],
+    "holdout": {
+     "fraction": 0.2
+    },
+    "lags": [
+     1
+    ],
+    "provenance": "DEVELOPMENT",
+    "sampling": {
+     "step_seconds": 60,
+     "timezone": "UTC"
+    },
+    "schema": "m5phet.representation.v1",
+    "target": {
+     "column": "Global_active_power",
+     "transform": "level"
+    },
+    "why": {
+     "features": "none: this search adds no derived or calendar feature, only chooses among the file's own columns",
+     "lags": "searched: a subset of the design job's motivated lags, each no longer than the window",
+     "transform": "searched: one of the transforms the representation schema declares",
+     "windows": "searched: the window is a gene of the declared space, bounded by the sealing window"
+    },
+    "windows": [
+     21
+    ]
+   },
+   "measured_error": {
+    "source": "m5phet-evaluation-report/1",
+    "metric_set": "forecast",
+    "values": {
+     "mae": 0.5658380994350456,
+     "rmse": 0.8908290889272082,
+     "skill_mae": 0.15188751208001805,
+     "skill_rmse": 0.17816545796441308
+    },
+    "baseline": {
+     "name": "last_value",
+     "mae": 0.6671734085920351,
+     "rmse": 1.0839518703128856,
+     "same_rows_as_model": true
+    },
+    "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
+    "target": "Global_active_power",
+    "horizon": "h+60",
+    "corpus_seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+    "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+    "sealed_rows": 9567,
+    "sealed_at": "2026-09-25T18:00:00Z",
+    "label_provenance": "REALISED_OUTCOME",
+    "label_source": "household_inner_outer.csv (household DEV slice, 1-minute grid, original units)",
+    "report_sha256": "61c206f650fb718f53f2390219a557dac14137d439d29b05f5d1331e72acc411",
+    "computed_by": "M5PHET/evaluation, not this package; this package scored nothing and its provenance.quality stays UNMEASURED",
+    "conditions": "this error is the value measured on the sealed population named above and on no other rows. It is not a guarantee for other rows, other weeks or other households, and it says nothing about whether those rows were used to choose this model -- read the round that produced them"
+   }
+  }
+ ],
+ "examples": [
+  {
+   "title": "DEVELOPMENT: retained household-power model, 60-minute forecast",
+   "prompt": "forecast Global_active_power at 60 steps",
+   "representation_spec": "REPRESENTATION_NOT_RECORDED",
+   "measured_error": "ERROR_NOT_RECORDED"
+  },
+  {
+   "title": "DEVELOPMENT: retained predictor direction_cnn example, direction_long probability",
+   "prompt": "what is the direction_long probability at horizon 1?",
+   "representation_spec": "REPRESENTATION_NOT_RECORDED",
+   "measured_error": "ERROR_NOT_RECORDED"
+  },
+  {
+   "title": "DEVELOPMENT: household power, quantile head (0.025/0.05/0.5/0.95/0.975) at 60 steps",
+   "prompt": "forecast Global_active_power at 60 steps",
+   "representation_spec": {
+    "calendar": {
+     "clock": "receipt",
+     "columns": []
+    },
+    "candidate_id": "hand_household_w60",
+    "differencing": {
+     "order": 0
+    },
+    "exogenous": [
+     "Global_reactive_power",
+     "Voltage",
+     "Global_intensity",
+     "Sub_metering_1",
+     "Sub_metering_2",
+     "Sub_metering_3"
+    ],
+    "features": [],
+    "holdout": {
+     "fraction": 0.2
+    },
+    "lags": [
+     1
+    ],
+    "provenance": "DEVELOPMENT",
+    "sampling": {
+     "step_seconds": 60,
+     "timezone": "UTC"
+    },
+    "schema": "m5phet.representation.v1",
+    "target": {
+     "column": "Global_active_power",
+     "transform": "level"
+    },
+    "why": {
+     "features": "none: the hand configuration adds no calendar or derived feature",
+     "lags": "none beyond the window itself; the hand configuration declares no lag features",
+     "transform": "level: the household pilot forecasts the level of Global_active_power",
+     "windows": "60: the window the household DEV resource e1_household_dev_pilot_v1 declares (DATA.json 'window'), fixed by hand before any of this work"
+    },
+    "windows": [
+     60
+    ]
+   },
+   "measured_error": "ERROR_NOT_RECORDED"
+  },
+  {
+   "title": "DEVELOPMENT: searched representation (window 21), household power at 60 steps, confirmed on the outer seal",
+   "prompt": "forecast Global_active_power at 60 steps",
+   "representation_spec": {
+    "calendar": {
+     "clock": "receipt",
+     "columns": []
+    },
+    "candidate_id": "searched_b373275495e2",
+    "differencing": {
+     "order": 0
+    },
+    "exogenous": [
+     "Global_intensity",
+     "Sub_metering_3",
+     "Voltage"
+    ],
+    "features": [],
+    "holdout": {
+     "fraction": 0.2
+    },
+    "lags": [
+     1
+    ],
+    "provenance": "DEVELOPMENT",
+    "sampling": {
+     "step_seconds": 60,
+     "timezone": "UTC"
+    },
+    "schema": "m5phet.representation.v1",
+    "target": {
+     "column": "Global_active_power",
+     "transform": "level"
+    },
+    "why": {
+     "features": "none: this search adds no derived or calendar feature, only chooses among the file's own columns",
+     "lags": "searched: a subset of the design job's motivated lags, each no longer than the window",
+     "transform": "searched: one of the transforms the representation schema declares",
+     "windows": "searched: the window is a gene of the declared space, bounded by the sealing window"
+    },
+    "windows": [
+     21
+    ]
+   },
+   "measured_error": {
+    "source": "m5phet-evaluation-report/1",
+    "metric_set": "forecast",
+    "values": {
+     "mae": 0.5658380994350456,
+     "rmse": 0.8908290889272082,
+     "skill_mae": 0.15188751208001805,
+     "skill_rmse": 0.17816545796441308
+    },
+    "baseline": {
+     "name": "last_value",
+     "mae": 0.6671734085920351,
+     "rmse": 1.0839518703128856,
+     "same_rows_as_model": true
+    },
+    "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
+    "target": "Global_active_power",
+    "horizon": "h+60",
+    "corpus_seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+    "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+    "sealed_rows": 9567,
+    "sealed_at": "2026-09-25T18:00:00Z",
+    "label_provenance": "REALISED_OUTCOME",
+    "label_source": "household_inner_outer.csv (household DEV slice, 1-minute grid, original units)",
+    "report_sha256": "61c206f650fb718f53f2390219a557dac14137d439d29b05f5d1331e72acc411",
+    "computed_by": "M5PHET/evaluation, not this package; this package scored nothing and its provenance.quality stays UNMEASURED",
+    "conditions": "this error is the value measured on the sealed population named above and on no other rows. It is not a guarantee for other rows, other weeks or other households, and it says nothing about whether those rows were used to choose this model -- read the round that produced them"
+   }
+  }
+ ]
+}
