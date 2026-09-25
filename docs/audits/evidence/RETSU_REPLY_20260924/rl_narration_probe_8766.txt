@@ -1,0 +1,12 @@
+Three runs of the RL envelope on 127.0.0.1:8766 (hermes / deepseek-v4-pro) after the guard change, 2026-09-24.
+Answers: action 0.05912280082702637; expected_return 3.7995848655700684; bounds [3.7995848655700684, 4.006697177886963].
+
+run 0  DETERMINISTIC  discarded -- "'ganancia' claims a profit, a loss or an order; the answers carry none"
+       The model's text denied it: "- Si el retorno es ganancia real: no, es una estimación del crítico, no beneficio
+       realizado." The guard splits on ':' so "Si el retorno es ganancia real" stood alone without its negation.
+       Conservative: the person saw the deterministic rendering, which carries no such word at all.
+run 1  INTERPRETER    kept -- "...no una ganancia realizada." (negation in the same sentence)
+run 2  INTERPRETER    kept -- "...No es una ganancia realizada."
+
+Over the full envelope run of the same instance: 16 narrations kept, 2 discarded (both RL, both 'ganancia'/'beneficio').
+On the llama3.2:3b instance (8768): 10 kept, 0 discarded.

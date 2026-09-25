@@ -1,0 +1,5 @@
+predictor      8ff6e0d3  Preserve Retsu's audit of the M5PHET envelope, unmodified (satoshi/rp132-rp134-20260923)
+M5PHET         b423e16   Answer Retsu's audit of the envelope: guard reads words, window on the sentence path, second interpreter (musashi/chat-workbench-20260924)
+news-signal    1583974   Every classification answer carries the exact wording it was scored with (master)
+prediction_provider 4bdd3c4  Forecast examples say what their number is, apart from the payload shape (musashi/m5phet-forecast-20260924)
+agent-multi    c4d7fa95  Name the two policy examples as two inputs with two actions (satoshi/m5phet-policy-provider-20260924)
