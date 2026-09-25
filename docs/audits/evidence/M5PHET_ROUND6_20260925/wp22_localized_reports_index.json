@@ -1,0 +1,102 @@
+{
+ "note": "localized-clock held-out reports, one per (event type, horizon, outcome) and stage; full set in the scratchpad",
+ "n": 80,
+ "sample": [
+  {
+   "stage": "local_projection",
+   "file": "united_states_cpi__15__log_return__local_projection.json",
+   "mae": 0.0001966534319517053,
+   "rmse": 0.0002349210884253077,
+   "skill_mae": 0.06341580334748986,
+   "skill_rmse": 0.08152091587088495
+  },
+  {
+   "stage": "naive",
+   "file": "united_states_cpi__15__log_return__naive.json",
+   "mae": 0.00020996877019126913,
+   "rmse": 0.0002557718433491118,
+   "skill_mae": 0.0,
+   "skill_rmse": 0.0
+  },
+  {
+   "stage": "local_projection",
+   "file": "united_states_cpi__15__realized_vol__local_projection.json",
+   "mae": 6.604378037924663e-07,
+   "rmse": 9.103792841731285e-07,
+   "skill_mae": -0.735224680388243,
+   "skill_rmse": -0.7930127911892151
+  },
+  {
+   "stage": "naive",
+   "file": "united_states_cpi__15__realized_vol__naive.json",
+   "mae": 3.8060650661371327e-07,
+   "rmse": 5.077371944286687e-07,
+   "skill_mae": 0.0,
+   "skill_rmse": 0.0
+  },
+  {
+   "stage": "local_projection",
+   "file": "united_states_cpi__240__log_return__local_projection.json",
+   "mae": 0.0010246746201011585,
+   "rmse": 0.001339253579532098,
+   "skill_mae": -0.1673876459819701,
+   "skill_rmse": -0.15881896447311483
+  },
+  {
+   "stage": "naive",
+   "file": "united_states_cpi__240__log_return__naive.json",
+   "mae": 0.000877750097517294,
+   "rmse": 0.0011557056111357498,
+   "skill_mae": 0.0,
+   "skill_rmse": 0.0
+  },
+  {
+   "stage": "local_projection",
+   "file": "united_states_cpi__240__realized_vol__local_projection.json",
+   "mae": 4.339815057116375e-06,
+   "rmse": 5.70319638168241e-06,
+   "skill_mae": 0.12383471885823483,
+   "skill_rmse": 0.10775893395089398
+  },
+  {
+   "stage": "naive",
+   "file": "united_states_cpi__240__realized_vol__naive.json",
+   "mae": 4.953192223573379e-06,
+   "rmse": 6.391990459413045e-06,
+   "skill_mae": 0.0,
+   "skill_rmse": 0.0
+  },
+  {
+   "stage": "local_projection",
+   "file": "united_states_cpi__30__log_return__local_projection.json",
+   "mae": 0.000263074107029215,
+   "rmse": 0.0003277960396699549,
+   "skill_mae": 0.026212978318564062,
+   "skill_rmse": 0.028719453095630065
+  },
+  {
+   "stage": "naive",
+   "file": "united_states_cpi__30__log_return__naive.json",
+   "mae": 0.0002701556923350298,
+   "rmse": 0.0003374885255497956,
+   "skill_mae": 0.0,
+   "skill_rmse": 0.0
+  },
+  {
+   "stage": "local_projection",
+   "file": "united_states_cpi__30__realized_vol__local_projection.json",
+   "mae": 7.446747476509112e-07,
+   "rmse": 1.0220868349213775e-06,
+   "skill_mae": -0.280872187128973,
+   "skill_rmse": -0.3948201926138817
+  },
+  {
+   "stage": "naive",
+   "file": "united_states_cpi__30__realized_vol__naive.json",
+   "mae": 5.813809958041729e-07,
+   "rmse": 7.327731849120961e-07,
+   "skill_mae": 0.0,
+   "skill_rmse": 0.0
+  }
+ ]
+}

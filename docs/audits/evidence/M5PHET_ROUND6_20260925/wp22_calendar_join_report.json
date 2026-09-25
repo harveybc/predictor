@@ -1,0 +1,4893 @@
+{
+  "schema": "m5phet.joined_calendar.v1",
+  "provenance": "DEVELOPMENT_OBSERVED_CLOCK",
+  "publication_clock": {
+    "mode": "OBSERVED_ACTUAL_PUBLICATION",
+    "consensus_clock": "ASSUMED_BEFORE_RELEASE",
+    "declared_by": "the announcement archive for the actual; the operator for the consensus",
+    "identification_caveat": "the instant the ACTUAL became public is the one the announcement archive observed. The instant the consensus became public was not observed by anyone here, and is assumed only to precede the release -- the standard assumption of the macro-announcement literature, and a far weaker one than assuming the release happened when it was scheduled"
+  },
+  "archive": {
+    "path": "/home/harveybc/Documents/GitHub/feature-eng/tests/data/economic_calendar_2011_2021.csv",
+    "sha256": "5172b322bfaf7bb568a0bb37cc2f806e8bd18ed51c5703c1098c8609a6249383",
+    "columns": [
+      "event_date",
+      "event_time",
+      "country",
+      "volatility",
+      "description",
+      "evaluation",
+      "data_format",
+      "actual",
+      "forecast",
+      "previous"
+    ],
+    "rows_read": 121658
+  },
+  "announcements": {
+    "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp22e/announcements.csv",
+    "sha256": "611f4a682384c39e0ff0c0a0bc23398934e3daf55d29ee309b8da7ed5b4beb1d",
+    "columns": [
+      "currency",
+      "indicator",
+      "date",
+      "val",
+      "announcement_datetime_utc"
+    ],
+    "rows_read": 18147,
+    "announcements_with_an_instant": 18015,
+    "column_names": {
+      "currency": "currency",
+      "indicator": "indicator",
+      "published": "announcement_datetime_utc",
+      "value": "val",
+      "period": "date"
+    },
+    "first": "2024-12-12T08:30:00+00:00",
+    "last": "2026-05-01T23:36:47+00:00"
+  },
+  "matching": {
+    "keys": [
+      "currency (from the country, through the declared table)",
+      "normalised release name (with the declared synonyms)",
+      "calendar date (the archive's own date, or the UTC date of its instant when a zone is declared)"
+    ],
+    "normalisation": "lowercase; every character that is not a letter or a digit becomes a space; runs of spaces collapse; leading and trailing spaces are removed. No stemming, no stop-word removal, no fuzzy distance: a near match is not a match",
+    "archive_timezone": null,
+    "archive_timezone_reading": "not declared: the join date is the archive's own calendar date, exactly as written, and no wall clock was reinterpreted as an instant",
+    "country_currency": {
+      "australia": "AUD",
+      "brazil": "BRL",
+      "canada": "CAD",
+      "china": "CNY",
+      "denmark": "DKK",
+      "euro zone": "EUR",
+      "japan": "JPY",
+      "new zealand": "NZD",
+      "poland": "PLN",
+      "singapore": "SGD",
+      "sweden": "SEK",
+      "switzerland": "CHF",
+      "united kingdom": "GBP",
+      "united states": "USD"
+    },
+    "synonyms_declared": {
+      "average hourly earnings": "average hourly earnings",
+      "core cpi": "core inflation",
+      "core pce price index": "core pce",
+      "cpi": "inflation",
+      "cpi mom": "inflation mom",
+      "gdp": "gdp",
+      "industrial production": "industrial production",
+      "jolts job openings": "job openings",
+      "manufacturing pmi": "pmi",
+      "michigan consumer expectations": "consumer expectations",
+      "michigan consumer sentiment": "consumer sentiment",
+      "nonfarm payrolls": "non farm payrolls",
+      "unemployment rate": "unemployment"
+    },
+    "synonyms_used": {},
+    "synonyms_declared_but_unused": [
+      "average hourly earnings",
+      "core cpi",
+      "core pce price index",
+      "cpi",
+      "cpi mom",
+      "gdp",
+      "industrial production",
+      "jolts job openings",
+      "manufacturing pmi",
+      "michigan consumer expectations",
+      "michigan consumer sentiment",
+      "nonfarm payrolls",
+      "unemployment rate"
+    ],
+    "date_boundary": "a consensus row whose date is not the UTC date of the announcement does not match; it is dropped NO_OBSERVED_ANNOUNCEMENT rather than paired with the neighbouring day"
+  },
+  "counts": {
+    "archive_rows_read": 121658,
+    "announcements_read": 18147,
+    "announcements_with_an_instant": 18015,
+    "consensus_rows_with_an_actual_and_a_consensus": 54275,
+    "joined": 0,
+    "join_rate": 0.0,
+    "announcements_matched": 0,
+    "announcements_no_consensus_row_claimed": 18015,
+    "by_event_type": {
+      "Australia | AIG Construction Index": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | AIG Manufacturing Index": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | ANZ Job Advertisements": {
+        "consensus_rows_with_an_actual": 5,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Building Approvals": {
+        "consensus_rows_with_an_actual": 126,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Building Capital Expenditure": {
+        "consensus_rows_with_an_actual": 12,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Business inventories": {
+        "consensus_rows_with_an_actual": 31,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | CPI": {
+        "consensus_rows_with_an_actual": 72,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Company Gross Operating Profits": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Construction Work Done": {
+        "consensus_rows_with_an_actual": 42,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Current Account": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Employment Change": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Export Price Index": {
+        "consensus_rows_with_an_actual": 23,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Full Employment Change": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | GDP": {
+        "consensus_rows_with_an_actual": 73,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | HIA New Home Sales": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Home Loans": {
+        "consensus_rows_with_an_actual": 108,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | House Price Index": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Housing Credit": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Housing Starts": {
+        "consensus_rows_with_an_actual": 7,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Import Price Index": {
+        "consensus_rows_with_an_actual": 37,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Invest Housing Finance": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | MI Inflation Expectations": {
+        "consensus_rows_with_an_actual": 5,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 25,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | NAB Business Confidence": {
+        "consensus_rows_with_an_actual": 22,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Net Exports Contribution": {
+        "consensus_rows_with_an_actual": 24,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | New Motor Vehicle Sales": {
+        "consensus_rows_with_an_actual": 8,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | PPI": {
+        "consensus_rows_with_an_actual": 43,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Participation Rate": {
+        "consensus_rows_with_an_actual": 90,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Plant/Machinery Capital Expenditure": {
+        "consensus_rows_with_an_actual": 11,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Private New Capital Expenditure": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Private Sector Credit": {
+        "consensus_rows_with_an_actual": 110,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | RBA Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 112,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Retail Sales": {
+        "consensus_rows_with_an_actual": 157,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Services PMI": {
+        "consensus_rows_with_an_actual": 26,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Trade Balance": {
+        "consensus_rows_with_an_actual": 120,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Trimmed Mean CPI": {
+        "consensus_rows_with_an_actual": 72,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Wage Price Index": {
+        "consensus_rows_with_an_actual": 72,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Weighted mean CPI": {
+        "consensus_rows_with_an_actual": 62,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Australia | Westpac Consumer Sentiment": {
+        "consensus_rows_with_an_actual": 8,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Brazilian Service Sector Growth": {
+        "consensus_rows_with_an_actual": 42,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Budget Balance": {
+        "consensus_rows_with_an_actual": 64,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Budget Surplus": {
+        "consensus_rows_with_an_actual": 75,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | CAGED Net Payroll Jobs": {
+        "consensus_rows_with_an_actual": 50,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | CNI Factory Utilization": {
+        "consensus_rows_with_an_actual": 17,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | CPI": {
+        "consensus_rows_with_an_actual": 202,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Current Account (USD)": {
+        "consensus_rows_with_an_actual": 89,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Debt-to-GDP ratio": {
+        "consensus_rows_with_an_actual": 96,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | FGV Consumer confidence": {
+        "consensus_rows_with_an_actual": 49,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Federal Tax Revenue": {
+        "consensus_rows_with_an_actual": 45,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Foreign Exchange Flows": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Foreign direct investment (USD)": {
+        "consensus_rows_with_an_actual": 88,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | GDP": {
+        "consensus_rows_with_an_actual": 73,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | IBC-Br Economic Activity": {
+        "consensus_rows_with_an_actual": 85,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | IGP-DI Inflation Index": {
+        "consensus_rows_with_an_actual": 72,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | IGP-M Inflation Index": {
+        "consensus_rows_with_an_actual": 74,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | IPC-Fipe Inflation Index": {
+        "consensus_rows_with_an_actual": 50,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Industrial Production": {
+        "consensus_rows_with_an_actual": 206,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 81,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Long Term Interest Rate TJLP": {
+        "consensus_rows_with_an_actual": 12,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Markit Composite PMI": {
+        "consensus_rows_with_an_actual": 34,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Markit Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Markit Services PMI": {
+        "consensus_rows_with_an_actual": 33,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Mid-Month CPI": {
+        "consensus_rows_with_an_actual": 158,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Retail Sales": {
+        "consensus_rows_with_an_actual": 215,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Trade Balance": {
+        "consensus_rows_with_an_actual": 120,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Brazil | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 96,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | ADP Nonfarm Employment Change": {
+        "consensus_rows_with_an_actual": 4,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | BoC Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 84,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Budget Balance": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Building Permits": {
+        "consensus_rows_with_an_actual": 120,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | CPI": {
+        "consensus_rows_with_an_actual": 232,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Capacity Utilization Rate": {
+        "consensus_rows_with_an_actual": 40,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Common CPI": {
+        "consensus_rows_with_an_actual": 16,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Core CPI": {
+        "consensus_rows_with_an_actual": 144,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Core Retail Sales": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Current Account": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Employment Change": {
+        "consensus_rows_with_an_actual": 125,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Exports": {
+        "consensus_rows_with_an_actual": 39,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Foreign Securities Purchases": {
+        "consensus_rows_with_an_actual": 87,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Full Employment Change": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | GDP": {
+        "consensus_rows_with_an_actual": 141,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | GDP Annualized": {
+        "consensus_rows_with_an_actual": 32,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | GDP Implicit Price": {
+        "consensus_rows_with_an_actual": 4,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Housing Starts": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | IPPI": {
+        "consensus_rows_with_an_actual": 131,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Imports": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Ivey PMI": {
+        "consensus_rows_with_an_actual": 115,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Labor Productivity": {
+        "consensus_rows_with_an_actual": 35,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Leading Indicators": {
+        "consensus_rows_with_an_actual": 17,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Manufacturing Sales": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Median CPI": {
+        "consensus_rows_with_an_actual": 17,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | New Housing Price Index": {
+        "consensus_rows_with_an_actual": 116,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | New Motor Vehicle Sales": {
+        "consensus_rows_with_an_actual": 12,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Part Time Employment Change": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Participation Rate": {
+        "consensus_rows_with_an_actual": 68,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | RBC Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 12,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | RMPI": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Retail Sales": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Trade Balance": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Trimmed CPI": {
+        "consensus_rows_with_an_actual": 17,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 125,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Canada | Wholesale Sales": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | CPI": {
+        "consensus_rows_with_an_actual": 227,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Caixin Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 134,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Caixin Services PMI": {
+        "consensus_rows_with_an_actual": 61,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Chinese Composite PMI": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Chinese Industrial Production YTD": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Chinese Total Social Financing": {
+        "consensus_rows_with_an_actual": 10,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Chinese Unemployment Rate": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Exports": {
+        "consensus_rows_with_an_actual": 96,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | FDI": {
+        "consensus_rows_with_an_actual": 3,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | FX Reserves (USD)": {
+        "consensus_rows_with_an_actual": 43,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Fixed Asset Investment": {
+        "consensus_rows_with_an_actual": 113,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | GDP": {
+        "consensus_rows_with_an_actual": 74,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | House Prices": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Imports": {
+        "consensus_rows_with_an_actual": 93,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Industrial Production": {
+        "consensus_rows_with_an_actual": 114,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | M2 Money Stock": {
+        "consensus_rows_with_an_actual": 122,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 109,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | New Loans": {
+        "consensus_rows_with_an_actual": 88,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Non-Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 21,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Outstanding Loan Growth": {
+        "consensus_rows_with_an_actual": 59,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | PBoC Loan Prime Rate": {
+        "consensus_rows_with_an_actual": 7,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | PPI": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Retail Sales": {
+        "consensus_rows_with_an_actual": 114,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "China | Trade Balance (USD)": {
+        "consensus_rows_with_an_actual": 121,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Business Climate": {
+        "consensus_rows_with_an_actual": 83,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Business and Consumer Survey": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | CPI": {
+        "consensus_rows_with_an_actual": 343,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | CPI ex Tobacco": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Consumer Confidence": {
+        "consensus_rows_with_an_actual": 228,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Core CPI": {
+        "consensus_rows_with_an_actual": 251,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Current Account": {
+        "consensus_rows_with_an_actual": 98,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Current Account n.s.a.": {
+        "consensus_rows_with_an_actual": 18,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Deposit Facility Rate": {
+        "consensus_rows_with_an_actual": 50,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | ECB Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 99,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | ECB Marginal Lending Facility": {
+        "consensus_rows_with_an_actual": 13,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Employment Change": {
+        "consensus_rows_with_an_actual": 66,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | GDP": {
+        "consensus_rows_with_an_actual": 199,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | HICP ex Energy &amp, Food": {
+        "consensus_rows_with_an_actual": 42,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | HICP ex Energy and Food": {
+        "consensus_rows_with_an_actual": 23,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Industrial New Orders": {
+        "consensus_rows_with_an_actual": 18,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Industrial Production": {
+        "consensus_rows_with_an_actual": 219,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Industrial Sentiment": {
+        "consensus_rows_with_an_actual": 95,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Labor Cost Index": {
+        "consensus_rows_with_an_actual": 12,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Loans to Non Financial Corporations": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | M3 Money Supply": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 248,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Markit Composite PMI": {
+        "consensus_rows_with_an_actual": 158,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Money-M3 3-Month-Moving Average": {
+        "consensus_rows_with_an_actual": 11,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | PPI": {
+        "consensus_rows_with_an_actual": 214,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Private Sector Loans": {
+        "consensus_rows_with_an_actual": 107,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Retail Sales": {
+        "consensus_rows_with_an_actual": 212,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Sentix Investor Confidence": {
+        "consensus_rows_with_an_actual": 125,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Services PMI": {
+        "consensus_rows_with_an_actual": 248,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Services Sentiment": {
+        "consensus_rows_with_an_actual": 79,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Trade Balance": {
+        "consensus_rows_with_an_actual": 107,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | Wages in euro zone": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Euro Zone | ZEW Economic Sentiment": {
+        "consensus_rows_with_an_actual": 113,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | France Jobseekers Total": {
+        "consensus_rows_with_an_actual": 9,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French Business Survey": {
+        "consensus_rows_with_an_actual": 122,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French CPI": {
+        "consensus_rows_with_an_actual": 219,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French Consumer Confidence": {
+        "consensus_rows_with_an_actual": 121,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French Consumer Spending": {
+        "consensus_rows_with_an_actual": 119,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French Current Account": {
+        "consensus_rows_with_an_actual": 29,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French GDP": {
+        "consensus_rows_with_an_actual": 100,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French Government Budget Balance": {
+        "consensus_rows_with_an_actual": 30,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French HICP": {
+        "consensus_rows_with_an_actual": 231,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French Industrial Production": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 244,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French Markit Composite PMI": {
+        "consensus_rows_with_an_actual": 146,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French Non-Farm Payrolls": {
+        "consensus_rows_with_an_actual": 72,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French PPI": {
+        "consensus_rows_with_an_actual": 52,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French Services PMI": {
+        "consensus_rows_with_an_actual": 245,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French Trade Balance": {
+        "consensus_rows_with_an_actual": 112,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "France | French Unemployment Rate": {
+        "consensus_rows_with_an_actual": 34,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | Gemran Current Account Balance n.s.a": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Business Expectations": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German CPI": {
+        "consensus_rows_with_an_actual": 461,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Composite PMI": {
+        "consensus_rows_with_an_actual": 148,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Current Assessment": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Exports": {
+        "consensus_rows_with_an_actual": 79,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Factory Orders": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German GDP": {
+        "consensus_rows_with_an_actual": 153,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German GDP Annual": {
+        "consensus_rows_with_an_actual": 6,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German HICP": {
+        "consensus_rows_with_an_actual": 310,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German House Price Index": {
+        "consensus_rows_with_an_actual": 7,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Ifo Business Climate Index": {
+        "consensus_rows_with_an_actual": 125,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Import Price Index": {
+        "consensus_rows_with_an_actual": 197,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Imports": {
+        "consensus_rows_with_an_actual": 79,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Industrial Production": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 245,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German PPI": {
+        "consensus_rows_with_an_actual": 233,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Retail Sales": {
+        "consensus_rows_with_an_actual": 225,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Services PMI": {
+        "consensus_rows_with_an_actual": 246,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Trade Balance": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Unemployment Change": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Unemployment Rate": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German Unemployment n.s.a.": {
+        "consensus_rows_with_an_actual": 40,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German WPI": {
+        "consensus_rows_with_an_actual": 105,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German ZEW Current Conditions": {
+        "consensus_rows_with_an_actual": 91,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | German ZEW Economic Sentiment": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Germany | GfK German Consumer Climate": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Hong Kong | CPI": {
+        "consensus_rows_with_an_actual": 52,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Hong Kong | Exports": {
+        "consensus_rows_with_an_actual": 25,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Hong Kong | Foreign Reserves (USD)": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Hong Kong | GDP": {
+        "consensus_rows_with_an_actual": 38,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Hong Kong | Imports": {
+        "consensus_rows_with_an_actual": 25,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Hong Kong | Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 7,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Hong Kong | Retail Sales": {
+        "consensus_rows_with_an_actual": 46,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Hong Kong | Trade Balance": {
+        "consensus_rows_with_an_actual": 68,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Hong Kong | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 56,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | Bank Loan Growth": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | CPI": {
+        "consensus_rows_with_an_actual": 100,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | Cash Reserve Ratio": {
+        "consensus_rows_with_an_actual": 39,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | Current Account (USD)": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | Current Account 45f GDP": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | GDP Annual": {
+        "consensus_rows_with_an_actual": 3,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | GDP Quarterly (YoY)": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | Industrial Production": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 59,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | Nikkei Markit Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 80,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | Nikkei Services PMI": {
+        "consensus_rows_with_an_actual": 29,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | Reverse REPO Rate": {
+        "consensus_rows_with_an_actual": 40,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | Trade Balance": {
+        "consensus_rows_with_an_actual": 116,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "India | WPI Inflation": {
+        "consensus_rows_with_an_actual": 117,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Business Confidence": {
+        "consensus_rows_with_an_actual": 116,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian CPI": {
+        "consensus_rows_with_an_actual": 436,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Composite PMI": {
+        "consensus_rows_with_an_actual": 4,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Consumer Confidence": {
+        "consensus_rows_with_an_actual": 114,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian GDP": {
+        "consensus_rows_with_an_actual": 157,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian HICP": {
+        "consensus_rows_with_an_actual": 331,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Industrial New Orders": {
+        "consensus_rows_with_an_actual": 58,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Industrial Production": {
+        "consensus_rows_with_an_actual": 216,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Industrial Sales": {
+        "consensus_rows_with_an_actual": 17,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 105,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Monthly Unemployment Rate": {
+        "consensus_rows_with_an_actual": 122,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian PPI": {
+        "consensus_rows_with_an_actual": 88,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Quarterly Unemployment Rate": {
+        "consensus_rows_with_an_actual": 32,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Retail Sales": {
+        "consensus_rows_with_an_actual": 130,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Services PMI": {
+        "consensus_rows_with_an_actual": 105,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Trade Balance": {
+        "consensus_rows_with_an_actual": 104,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Trade Balance EU": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Italy | Italian Wage Inflation": {
+        "consensus_rows_with_an_actual": 8,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Adjusted Current Account": {
+        "consensus_rows_with_an_actual": 106,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Adjusted Trade Balance": {
+        "consensus_rows_with_an_actual": 112,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | All Industries Activity Index": {
+        "consensus_rows_with_an_actual": 109,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Average Cash Earnings": {
+        "consensus_rows_with_an_actual": 105,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | BSI Large Manufacturing Conditions": {
+        "consensus_rows_with_an_actual": 31,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Bank Lending": {
+        "consensus_rows_with_an_actual": 55,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | BoJ Core CPI": {
+        "consensus_rows_with_an_actual": 38,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | BoJ Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 111,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Capacity Utilization": {
+        "consensus_rows_with_an_actual": 19,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Capital Spending": {
+        "consensus_rows_with_an_actual": 37,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Coincident Indicator": {
+        "consensus_rows_with_an_actual": 3,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Construction Orders": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Core Machinery Orders": {
+        "consensus_rows_with_an_actual": 218,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Corporate Services Price Index (CSPI)": {
+        "consensus_rows_with_an_actual": 108,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Current Account n.s.a.": {
+        "consensus_rows_with_an_actual": 95,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Economy Watchers Current Index": {
+        "consensus_rows_with_an_actual": 109,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Exports": {
+        "consensus_rows_with_an_actual": 95,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | GDP": {
+        "consensus_rows_with_an_actual": 144,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | GDP Capital Expenditure": {
+        "consensus_rows_with_an_actual": 51,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | GDP External Demand": {
+        "consensus_rows_with_an_actual": 31,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | GDP Price Index": {
+        "consensus_rows_with_an_actual": 71,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | GDP Private Consumption": {
+        "consensus_rows_with_an_actual": 40,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Household Confidence": {
+        "consensus_rows_with_an_actual": 106,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Household Spending": {
+        "consensus_rows_with_an_actual": 201,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Housing Starts": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Imports": {
+        "consensus_rows_with_an_actual": 95,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Industrial Production": {
+        "consensus_rows_with_an_actual": 239,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Jobs/applications ratio": {
+        "consensus_rows_with_an_actual": 76,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Large Retailers&#39; Sales": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Leading Index": {
+        "consensus_rows_with_an_actual": 184,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | M2 Money Stock": {
+        "consensus_rows_with_an_actual": 107,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 143,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Monetary Base": {
+        "consensus_rows_with_an_actual": 103,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | National CPI": {
+        "consensus_rows_with_an_actual": 64,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | National Core CPI": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Overall wage income of employees": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Overtime Pay": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | PPI": {
+        "consensus_rows_with_an_actual": 215,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Retail Sales": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Services PMI": {
+        "consensus_rows_with_an_actual": 18,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tankan All Big Industry CAPEX": {
+        "consensus_rows_with_an_actual": 27,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tankan All Small Industry CAPEX": {
+        "consensus_rows_with_an_actual": 27,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tankan Big Manufacturing Outlook Index": {
+        "consensus_rows_with_an_actual": 27,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tankan Large Manufacturers Index": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tankan Large Non-Manufacturers Diffusion Index": {
+        "consensus_rows_with_an_actual": 32,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tankan Large Non-Manufacturers Index": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tankan Small Manufacturers Diffusion Index": {
+        "consensus_rows_with_an_actual": 30,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tankan Small Manufacturing Index": {
+        "consensus_rows_with_an_actual": 32,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tankan Small Non-Manufacturers Diffusion Index": {
+        "consensus_rows_with_an_actual": 30,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tankan Small Non-Manufacturing Index": {
+        "consensus_rows_with_an_actual": 29,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tertiary Industry Activity Index": {
+        "consensus_rows_with_an_actual": 109,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tokyo CPI": {
+        "consensus_rows_with_an_actual": 58,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Tokyo Core CPI": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Trade Balance": {
+        "consensus_rows_with_an_actual": 95,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Japan | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | ANZ Business Confidence": {
+        "consensus_rows_with_an_actual": 14,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Building Consents": {
+        "consensus_rows_with_an_actual": 48,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Business NZ PMI": {
+        "consensus_rows_with_an_actual": 6,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | CPI": {
+        "consensus_rows_with_an_actual": 72,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Core Retail Sales": {
+        "consensus_rows_with_an_actual": 31,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Current Account": {
+        "consensus_rows_with_an_actual": 68,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Current Account 45f GDP": {
+        "consensus_rows_with_an_actual": 27,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Electronic Card Retail Sales": {
+        "consensus_rows_with_an_actual": 68,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Employment Change": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Exports": {
+        "consensus_rows_with_an_actual": 58,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | External Migration &amp, Visitors": {
+        "consensus_rows_with_an_actual": 6,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | FPI": {
+        "consensus_rows_with_an_actual": 12,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | GDP": {
+        "consensus_rows_with_an_actual": 68,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | GDP Annual Average": {
+        "consensus_rows_with_an_actual": 27,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | GDP Expenditure": {
+        "consensus_rows_with_an_actual": 24,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | GlobalDairyTrade Price Index": {
+        "consensus_rows_with_an_actual": 7,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Imports": {
+        "consensus_rows_with_an_actual": 58,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Labor Cost Index": {
+        "consensus_rows_with_an_actual": 66,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | PPI Input": {
+        "consensus_rows_with_an_actual": 31,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | PPI Output": {
+        "consensus_rows_with_an_actual": 30,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Participation Rate": {
+        "consensus_rows_with_an_actual": 25,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | RBNZ Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 76,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Retail Sales": {
+        "consensus_rows_with_an_actual": 35,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Retail Sales Quarterly Vs. Year Ago": {
+        "consensus_rows_with_an_actual": 9,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Terms of Trade - Exports Prices": {
+        "consensus_rows_with_an_actual": 22,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Terms of Trade - Exports Volume": {
+        "consensus_rows_with_an_actual": 20,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Terms of Trade - Imports Prices": {
+        "consensus_rows_with_an_actual": 22,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Terms of Trade Index": {
+        "consensus_rows_with_an_actual": 38,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Trade Balance": {
+        "consensus_rows_with_an_actual": 167,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Visitor Arrivals": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "New Zealand | Westpac Consumer Sentiment": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | Business Confidence": {
+        "consensus_rows_with_an_actual": 36,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | CPI": {
+        "consensus_rows_with_an_actual": 203,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | Central Bank reserves (USD)": {
+        "consensus_rows_with_an_actual": 7,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | GDP": {
+        "consensus_rows_with_an_actual": 50,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | GDP Monthly": {
+        "consensus_rows_with_an_actual": 16,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | GDP Quarterly": {
+        "consensus_rows_with_an_actual": 15,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | Government Budget Balance": {
+        "consensus_rows_with_an_actual": 32,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | House Price Index": {
+        "consensus_rows_with_an_actual": 9,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | Industrial Production": {
+        "consensus_rows_with_an_actual": 112,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 87,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | Markit Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 10,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | Markit Services PMI": {
+        "consensus_rows_with_an_actual": 11,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | PPI": {
+        "consensus_rows_with_an_actual": 60,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | Retail Sales": {
+        "consensus_rows_with_an_actual": 111,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | Russian Forex Intervention": {
+        "consensus_rows_with_an_actual": 21,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | Russian Real Wage Growth": {
+        "consensus_rows_with_an_actual": 25,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | Trade Balance": {
+        "consensus_rows_with_an_actual": 112,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Russia | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 117,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Singapore | CPI": {
+        "consensus_rows_with_an_actual": 83,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Singapore | GDP": {
+        "consensus_rows_with_an_actual": 128,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Singapore | Industrial Production": {
+        "consensus_rows_with_an_actual": 207,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Singapore | Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 45,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Singapore | Non-Oil Exports": {
+        "consensus_rows_with_an_actual": 154,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Singapore | Retail Sales": {
+        "consensus_rows_with_an_actual": 110,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Singapore | Trade Balance": {
+        "consensus_rows_with_an_actual": 14,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Singapore | URA Property Index": {
+        "consensus_rows_with_an_actual": 4,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Singapore | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 45,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Budget Balance": {
+        "consensus_rows_with_an_actual": 4,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | CPI": {
+        "consensus_rows_with_an_actual": 191,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Core CPI": {
+        "consensus_rows_with_an_actual": 160,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Current Account": {
+        "consensus_rows_with_an_actual": 27,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Current Account 45f GDP": {
+        "consensus_rows_with_an_actual": 26,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Foreign Reserves (USD)": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | GDP": {
+        "consensus_rows_with_an_actual": 27,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | GDP Annualized": {
+        "consensus_rows_with_an_actual": 36,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Gold Production": {
+        "consensus_rows_with_an_actual": 3,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 56,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | M3 Money Supply": {
+        "consensus_rows_with_an_actual": 72,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 24,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Manufacturing Production": {
+        "consensus_rows_with_an_actual": 72,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Mining Production": {
+        "consensus_rows_with_an_actual": 73,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Net FX Reserves  (USD)": {
+        "consensus_rows_with_an_actual": 36,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | PPI": {
+        "consensus_rows_with_an_actual": 187,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Prime Rate": {
+        "consensus_rows_with_an_actual": 7,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Private Sector Credit": {
+        "consensus_rows_with_an_actual": 76,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Retail Sales": {
+        "consensus_rows_with_an_actual": 106,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | South Africa Standard Bank PMI": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Total Vehicle Sales": {
+        "consensus_rows_with_an_actual": 4,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Trade Balance": {
+        "consensus_rows_with_an_actual": 102,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Unemployment": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Africa | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 17,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | CPI": {
+        "consensus_rows_with_an_actual": 224,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Consumer Confidence": {
+        "consensus_rows_with_an_actual": 63,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Current Account": {
+        "consensus_rows_with_an_actual": 6,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Export Price Index": {
+        "consensus_rows_with_an_actual": 11,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Exports": {
+        "consensus_rows_with_an_actual": 91,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | FX Reserves - USD": {
+        "consensus_rows_with_an_actual": 5,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | GDP": {
+        "consensus_rows_with_an_actual": 148,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Import Price Index": {
+        "consensus_rows_with_an_actual": 10,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Imports": {
+        "consensus_rows_with_an_actual": 91,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Industrial Production": {
+        "consensus_rows_with_an_actual": 222,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 107,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Manufacturing BSI Index": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Nikkei Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 11,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | PPI": {
+        "consensus_rows_with_an_actual": 37,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Retail Sales": {
+        "consensus_rows_with_an_actual": 49,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Service Sector Output": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Trade Balance": {
+        "consensus_rows_with_an_actual": 81,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "South Korea | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 89,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish Business Confidence": {
+        "consensus_rows_with_an_actual": 45,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish CPI": {
+        "consensus_rows_with_an_actual": 308,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish Consumer Confidence": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish Current account": {
+        "consensus_rows_with_an_actual": 10,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish GDP": {
+        "consensus_rows_with_an_actual": 137,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish Government Budget Balance": {
+        "consensus_rows_with_an_actual": 32,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish HICP": {
+        "consensus_rows_with_an_actual": 288,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish House Price Index": {
+        "consensus_rows_with_an_actual": 10,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish Industrial Production": {
+        "consensus_rows_with_an_actual": 117,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 110,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish PPI": {
+        "consensus_rows_with_an_actual": 52,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish Retail Sales": {
+        "consensus_rows_with_an_actual": 87,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish Services PMI": {
+        "consensus_rows_with_an_actual": 109,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish Trade Balance": {
+        "consensus_rows_with_an_actual": 61,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish Unemployment Change": {
+        "consensus_rows_with_an_actual": 82,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish Unemployment Rate": {
+        "consensus_rows_with_an_actual": 39,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Spain | Spanish industrial New Orders": {
+        "consensus_rows_with_an_actual": 36,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | CPI": {
+        "consensus_rows_with_an_actual": 216,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | Consumption Indicator": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | Employment Level": {
+        "consensus_rows_with_an_actual": 21,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | GDP": {
+        "consensus_rows_with_an_actual": 73,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | Industrial Production": {
+        "consensus_rows_with_an_actual": 5,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | Industrial orders": {
+        "consensus_rows_with_an_actual": 5,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | KOF Leading Indicators": {
+        "consensus_rows_with_an_actual": 84,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | PPI": {
+        "consensus_rows_with_an_actual": 171,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | Retail Sales": {
+        "consensus_rows_with_an_actual": 104,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | SECO Consumer Climate": {
+        "consensus_rows_with_an_actual": 36,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | SNB Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 40,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | SVME PMI": {
+        "consensus_rows_with_an_actual": 98,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | Trade Balance": {
+        "consensus_rows_with_an_actual": 107,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | Unemployment Rate n.s.a.": {
+        "consensus_rows_with_an_actual": 88,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | Unemployment Rate s.a.": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | ZEW Expectations": {
+        "consensus_rows_with_an_actual": 32,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "Switzerland | procure.ch PMI": {
+        "consensus_rows_with_an_actual": 26,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Average Earnings Index +Bonus": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Average Earnings ex Bonus": {
+        "consensus_rows_with_an_actual": 95,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | BBA Mortgage Approvals": {
+        "consensus_rows_with_an_actual": 81,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | BRC Retail Sales Monitor": {
+        "consensus_rows_with_an_actual": 83,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | BRC Shop Price Index": {
+        "consensus_rows_with_an_actual": 20,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | BoE Consumer Credit": {
+        "consensus_rows_with_an_actual": 107,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | BoE Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 106,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | BoE MPC vote cut": {
+        "consensus_rows_with_an_actual": 54,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | BoE MPC vote hike": {
+        "consensus_rows_with_an_actual": 54,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | BoE MPC vote unchanged": {
+        "consensus_rows_with_an_actual": 62,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | BoE QE Total": {
+        "consensus_rows_with_an_actual": 91,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Business Investment": {
+        "consensus_rows_with_an_actual": 105,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | CBI Distributive Trades Survey": {
+        "consensus_rows_with_an_actual": 122,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | CBI Industrial Trends Orders": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | CPI": {
+        "consensus_rows_with_an_actual": 233,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | CPIH": {
+        "consensus_rows_with_an_actual": 14,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Claimant Count Change": {
+        "consensus_rows_with_an_actual": 122,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Composite PMI": {
+        "consensus_rows_with_an_actual": 34,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Construction Output": {
+        "consensus_rows_with_an_actual": 61,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Construction PMI": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Core CPI": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Core CPI MoM": {
+        "consensus_rows_with_an_actual": 21,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Core PPI Output": {
+        "consensus_rows_with_an_actual": 180,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Core RPI": {
+        "consensus_rows_with_an_actual": 82,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Core Retail Sales": {
+        "consensus_rows_with_an_actual": 190,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Current Account": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Employment Change 3M/3M": {
+        "consensus_rows_with_an_actual": 39,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Exports": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | GDP": {
+        "consensus_rows_with_an_actual": 243,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | GfK Consumer Confidence": {
+        "consensus_rows_with_an_actual": 126,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Gross Mortgage Approvals": {
+        "consensus_rows_with_an_actual": 23,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Halifax House Price Index": {
+        "consensus_rows_with_an_actual": 201,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | House Price Index": {
+        "consensus_rows_with_an_actual": 102,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Housing Equity Withdrawal": {
+        "consensus_rows_with_an_actual": 33,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Imports": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Index of Services": {
+        "consensus_rows_with_an_actual": 108,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Industrial Production": {
+        "consensus_rows_with_an_actual": 232,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Inflation Expectations": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | M4 Money Supply": {
+        "consensus_rows_with_an_actual": 104,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 142,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Manufacturing Production": {
+        "consensus_rows_with_an_actual": 219,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Monthly GDP 3M/3M Change": {
+        "consensus_rows_with_an_actual": 16,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Mortgage Approvals": {
+        "consensus_rows_with_an_actual": 128,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Mortgage Lending": {
+        "consensus_rows_with_an_actual": 108,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | NIESR GDP Estimate": {
+        "consensus_rows_with_an_actual": 23,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | NIESR Monthly GDP Tracker": {
+        "consensus_rows_with_an_actual": 8,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Nationwide Consumer Confidence": {
+        "consensus_rows_with_an_actual": 18,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Nationwide HPI": {
+        "consensus_rows_with_an_actual": 210,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Net Lending to Individuals": {
+        "consensus_rows_with_an_actual": 106,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | PPI Input": {
+        "consensus_rows_with_an_actual": 232,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | PPI Output": {
+        "consensus_rows_with_an_actual": 232,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Public Sector Net Borrowing": {
+        "consensus_rows_with_an_actual": 121,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Public Sector Net Borrowing Ex. Interest": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Public Sector Net Cash Requirement": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | RICS House Price Balance": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | RPI": {
+        "consensus_rows_with_an_actual": 219,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Retail Sales": {
+        "consensus_rows_with_an_actual": 233,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Rightmove House Price Index": {
+        "consensus_rows_with_an_actual": 3,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Services PMI": {
+        "consensus_rows_with_an_actual": 142,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Trade Balance": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Trade Balance Non-EU": {
+        "consensus_rows_with_an_actual": 73,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | U.K. Construction Output": {
+        "consensus_rows_with_an_actual": 53,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United Kingdom | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | 10-Year Note Auction": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | 2-Year Note Auction": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | 30-Year Bond Auction": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | 5-Year Note Auction": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | 7-Year Note Auction": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | ADP Nonfarm Employment Change": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | API Weekly Crude Oil Stock": {
+        "consensus_rows_with_an_actual": 323,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | API Weekly Cushing Crude Oil Stock": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | API Weekly Distillates Stocks": {
+        "consensus_rows_with_an_actual": 57,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | API Weekly Gasoline Stock": {
+        "consensus_rows_with_an_actual": 127,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Average Hourly Earnings": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Average Hourly Earnings (YoY)": {
+        "consensus_rows_with_an_actual": 35,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Average Weekly Hours": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Bloomberg Consumer Confidence": {
+        "consensus_rows_with_an_actual": 11,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Building Permits": {
+        "consensus_rows_with_an_actual": 193,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Business Inventories": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | CB Consumer Confidence": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | CPI": {
+        "consensus_rows_with_an_actual": 232,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | CPI Index. n.s.a.": {
+        "consensus_rows_with_an_actual": 80,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Cap Goods Ship Non Defense Ex Air": {
+        "consensus_rows_with_an_actual": 18,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Capacity Utilization Rate": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Chicago Fed National Activity": {
+        "consensus_rows_with_an_actual": 78,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Chicago PMI": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Construction Spending": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Consumer Credit": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Continuing Jobless Claims": {
+        "consensus_rows_with_an_actual": 532,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Core CPI": {
+        "consensus_rows_with_an_actual": 232,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Core CPI Index": {
+        "consensus_rows_with_an_actual": 17,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Core Durable Goods Orders": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Core PCE Price Index": {
+        "consensus_rows_with_an_actual": 194,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Core PCE Prices": {
+        "consensus_rows_with_an_actual": 50,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Core PPI": {
+        "consensus_rows_with_an_actual": 232,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Core Retail Sales": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Corporate Profits": {
+        "consensus_rows_with_an_actual": 20,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Crude Oil Inventories": {
+        "consensus_rows_with_an_actual": 538,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Current Account": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Cushing Crude Oil Inventories": {
+        "consensus_rows_with_an_actual": 45,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Dallas Fed Mfg Business Index": {
+        "consensus_rows_with_an_actual": 81,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Domestic Car Sales": {
+        "consensus_rows_with_an_actual": 16,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Domestic Truck Sales": {
+        "consensus_rows_with_an_actual": 46,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Durable Goods Orders": {
+        "consensus_rows_with_an_actual": 128,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Durables Excluding Defense": {
+        "consensus_rows_with_an_actual": 27,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | EIA Weekly Distillates Stocks": {
+        "consensus_rows_with_an_actual": 412,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | EIA Weekly Refinery Utilization Rates": {
+        "consensus_rows_with_an_actual": 82,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Employment Cost Index": {
+        "consensus_rows_with_an_actual": 41,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Existing Home Sales": {
+        "consensus_rows_with_an_actual": 218,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Export Price Index": {
+        "consensus_rows_with_an_actual": 93,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Factory Orders": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Fed Interest Rate Decision": {
+        "consensus_rows_with_an_actual": 81,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Fed Labor Market Conditions Index": {
+        "consensus_rows_with_an_actual": 15,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Federal Budget Balance": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | GDP": {
+        "consensus_rows_with_an_actual": 122,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | GDP Price Index": {
+        "consensus_rows_with_an_actual": 122,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | GDP Sales": {
+        "consensus_rows_with_an_actual": 30,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Gasoline Inventories": {
+        "consensus_rows_with_an_actual": 537,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Goods Orders Non Defense Ex Air": {
+        "consensus_rows_with_an_actual": 91,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Goods Trade Balance": {
+        "consensus_rows_with_an_actual": 48,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Government Payrolls": {
+        "consensus_rows_with_an_actual": 3,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | House Price Index": {
+        "consensus_rows_with_an_actual": 118,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Housing Starts": {
+        "consensus_rows_with_an_actual": 190,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | IBD/TIPP Economic Optimism": {
+        "consensus_rows_with_an_actual": 104,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | ISM Manufacturing Employment": {
+        "consensus_rows_with_an_actual": 78,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | ISM Manufacturing New Orders Index": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | ISM Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | ISM Manufacturing Prices": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | ISM NY Business Conditions": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | ISM Non-Manufacturing Business Activity": {
+        "consensus_rows_with_an_actual": 75,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | ISM Non-Manufacturing Employment": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | ISM Non-Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | ISM Non-Manufacturing Prices": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Import Price Index": {
+        "consensus_rows_with_an_actual": 139,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Import Price Index ex Petroleum": {
+        "consensus_rows_with_an_actual": 6,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Industrial Production": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Initial Jobless Claims": {
+        "consensus_rows_with_an_actual": 538,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | JOLTs Job Openings": {
+        "consensus_rows_with_an_actual": 90,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | KC Fed Composite Index": {
+        "consensus_rows_with_an_actual": 45,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | KC Fed Manufacturing Index": {
+        "consensus_rows_with_an_actual": 12,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | MBA Delinquency Rates": {
+        "consensus_rows_with_an_actual": 3,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Manufacturing PMI": {
+        "consensus_rows_with_an_actual": 209,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Manufacturing Payrolls": {
+        "consensus_rows_with_an_actual": 78,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Manufacturing Production": {
+        "consensus_rows_with_an_actual": 80,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Markit Composite PMI": {
+        "consensus_rows_with_an_actual": 56,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Michigan 5-Year Inflation Expectations": {
+        "consensus_rows_with_an_actual": 12,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Michigan Consumer Expectations": {
+        "consensus_rows_with_an_actual": 152,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Michigan Consumer Sentiment": {
+        "consensus_rows_with_an_actual": 247,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Michigan Current Conditions": {
+        "consensus_rows_with_an_actual": 160,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Michigan Inflation Expectations": {
+        "consensus_rows_with_an_actual": 14,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | NAHB Housing Market Index": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | NFIB Small Business Optimism": {
+        "consensus_rows_with_an_actual": 108,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | NY Empire State Manufacturing Index": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Natural Gas Storage": {
+        "consensus_rows_with_an_actual": 533,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | New Home Sales": {
+        "consensus_rows_with_an_actual": 214,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Nonfarm Payrolls": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Nonfarm Productivity": {
+        "consensus_rows_with_an_actual": 83,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Overall Net Capital Flow": {
+        "consensus_rows_with_an_actual": 14,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | PCE Deflator": {
+        "consensus_rows_with_an_actual": 18,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | PCE Price index": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | PCE Prices": {
+        "consensus_rows_with_an_actual": 35,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | PCE price index": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | PPI": {
+        "consensus_rows_with_an_actual": 232,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Participation Rate": {
+        "consensus_rows_with_an_actual": 7,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Pending Home Sales": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Personal Income": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Personal Spending": {
+        "consensus_rows_with_an_actual": 123,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Philadelphia Fed Manufacturing Index": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Philly Fed New Orders": {
+        "consensus_rows_with_an_actual": 1,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Private Nonfarm Payrolls": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | QE MBS": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | QE Total": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | QE Treasuries": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Real Consumer Spending": {
+        "consensus_rows_with_an_actual": 46,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Real Earnings": {
+        "consensus_rows_with_an_actual": 43,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Real Personal Consumption": {
+        "consensus_rows_with_an_actual": 32,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Retail Control": {
+        "consensus_rows_with_an_actual": 79,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Retail Sales": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Retail Sales Ex Gas/Autos": {
+        "consensus_rows_with_an_actual": 42,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Richmond Manufacturing Index": {
+        "consensus_rows_with_an_actual": 111,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | S&amp,P/CS HPI Composite - 20 n.s.a.": {
+        "consensus_rows_with_an_actual": 137,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | S&amp,P/CS HPI Composite - 20 s.a.": {
+        "consensus_rows_with_an_actual": 78,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | S&amp;P/CS HPI Composite - 20 n.s.a.": {
+        "consensus_rows_with_an_actual": 44,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Services PMI": {
+        "consensus_rows_with_an_actual": 175,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | TIC Net Long-Term Transactions": {
+        "consensus_rows_with_an_actual": 102,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Total Vehicle Sales": {
+        "consensus_rows_with_an_actual": 110,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Trade Balance": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | U.S. Baker Hughes Oil Rig Count": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | US Foreign Buying. T-bonds": {
+        "consensus_rows_with_an_actual": 2,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | US Leading Index": {
+        "consensus_rows_with_an_actual": 17,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Unemployment Rate": {
+        "consensus_rows_with_an_actual": 124,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Unit Labor Costs": {
+        "consensus_rows_with_an_actual": 81,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Wholesale Inventories": {
+        "consensus_rows_with_an_actual": 149,
+        "joined": 0,
+        "join_rate": 0.0
+      },
+      "United States | Wholesale Trade Sales": {
+        "consensus_rows_with_an_actual": 17,
+        "joined": 0,
+        "join_rate": 0.0
+      }
+    }
+  },
+  "excluded": {
+    "counts": {
+      "NO_OBSERVED_ANNOUNCEMENT": 54275,
+      "AMBIGUOUS_MATCH": 0,
+      "NO_CONSENSUS": 59520,
+      "NO_ACTUAL": 0
+    },
+    "no_observed_announcement_by_reason": {
+      "COUNTRY_NOT_IN_TABLE": 14246,
+      "RELEASE_NAME_NOT_IN_THE_ANNOUNCEMENT_ARCHIVE": 25263,
+      "NOTHING_ANNOUNCED_ON_THAT_DATE": 14766
+    },
+    "counts_reading": "every count is of CONSENSUS ROWS. NO_OBSERVED_ANNOUNCEMENT means no announcement carries that (economy, release, calendar date); AMBIGUOUS_MATCH means the key is answered by more than one row on one side or the other, and both sides are dropped rather than paired by position",
+    "rows": [
+      {
+        "archive_row": 1,
+        "event_type": "United Kingdom | Average Earnings ex Bonus",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 2,
+        "event_type": "United Kingdom | BoE Consumer Credit",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 3,
+        "event_type": "United Kingdom | BoE QE Total",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 4,
+        "event_type": "United Kingdom | Core PPI Output",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 5,
+        "event_type": "United Kingdom | Core PPI Output",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 6,
+        "event_type": "United Kingdom | Core Retail Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 7,
+        "event_type": "United Kingdom | Core Retail Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 8,
+        "event_type": "United Kingdom | Core RPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 9,
+        "event_type": "United Kingdom | Core RPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 10,
+        "event_type": "United Kingdom | CPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 11,
+        "event_type": "United Kingdom | Halifax House Price Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 12,
+        "event_type": "United Kingdom | Industrial Production",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 13,
+        "event_type": "United Kingdom | Manufacturing Production",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 14,
+        "event_type": "United Kingdom | Mortgage Lending",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 15,
+        "event_type": "United Kingdom | Nationwide HPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 16,
+        "event_type": "United Kingdom | PPI Input",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 17,
+        "event_type": "United Kingdom | PPI Output",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 18,
+        "event_type": "United Kingdom | Public Sector Net Cash Requirement",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 19,
+        "event_type": "United Kingdom | Retail Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 20,
+        "event_type": "United Kingdom | RPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 21,
+        "event_type": "United Kingdom | Trade Balance Non-EU",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 22,
+        "event_type": "United States | 10-Year Note Auction",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 23,
+        "event_type": "United States | 3-Month Bill Auction",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 24,
+        "event_type": "United States | 3-Year Note Auction",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 25,
+        "event_type": "United States | 30-Year Bond Auction",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 26,
+        "event_type": "United States | 5-Year Note Auction",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 27,
+        "event_type": "United States | 7-Year Note Auction",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 28,
+        "event_type": "United States | All Car Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 29,
+        "event_type": "United States | All Truck Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 30,
+        "event_type": "United States | Building Permits",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 31,
+        "event_type": "United States | CB Employment Trends Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 32,
+        "event_type": "United States | Chain Store Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 33,
+        "event_type": "United States | Chain Store Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 34,
+        "event_type": "United States | Chain Store Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 35,
+        "event_type": "United States | Challenger Job Cuts",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 36,
+        "event_type": "United States | Cleveland CPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 37,
+        "event_type": "United States | Core CPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 38,
+        "event_type": "United States | Core CPI Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 39,
+        "event_type": "United States | Core PCE Price Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 40,
+        "event_type": "United States | CPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 41,
+        "event_type": "United States | CPI Index. n.s.a.",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 42,
+        "event_type": "United States | Dallas Fed Mfg Business Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 43,
+        "event_type": "United States | Dallas Fed PCE",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 44,
+        "event_type": "United States | Dallas Fed Services Revenues",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 45,
+        "event_type": "United States | Domestic Truck Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 46,
+        "event_type": "United States | Durables Excluding Defense",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 47,
+        "event_type": "United States | ECRI Weekly Annualized",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 48,
+        "event_type": "United States | ECRI Weekly Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 49,
+        "event_type": "United States | EIA Weekly Distillates Stocks",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 50,
+        "event_type": "United States | Existing Home Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 51,
+        "event_type": "United States | Export Price Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 52,
+        "event_type": "United States | Factory orders ex transportation",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 53,
+        "event_type": "United States | US Foreign Buying. T-bonds",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 54,
+        "event_type": "United States | Goods Orders Non Defense Ex Air",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 55,
+        "event_type": "United States | Government Payrolls",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 56,
+        "event_type": "United States | House Price Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 57,
+        "event_type": "United States | Housing Starts",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 58,
+        "event_type": "United States | ISM Manufacturing Employment",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 59,
+        "event_type": "United States | ISM Manufacturing New Orders Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 60,
+        "event_type": "United States | ISM Non-Manufacturing Business Activity",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 61,
+        "event_type": "United States | ISM Non-Manufacturing Employment",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 62,
+        "event_type": "United States | ISM Non-Manufacturing New Orders",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 63,
+        "event_type": "United States | ISM Non-Manufacturing Prices",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 64,
+        "event_type": "United States | Jobless Claims 4-Week Avg.",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 65,
+        "event_type": "United States | JOLTs Job Openings",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 66,
+        "event_type": "United States | KC Fed Composite Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 67,
+        "event_type": "United States | KC Fed Manufacturing Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 68,
+        "event_type": "United States | Manufacturing Production",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 69,
+        "event_type": "United States | Manufacturing Payrolls",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 70,
+        "event_type": "United States | MBA 30-Year Mortgage Rate",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 71,
+        "event_type": "United States | MBA Purchase Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 72,
+        "event_type": "United States | Michigan 5-Year Inflation Expectations",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 73,
+        "event_type": "United States | Michigan Consumer Expectations",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 74,
+        "event_type": "United States | Michigan Current Conditions",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 75,
+        "event_type": "United States | Midwest Manufacturing",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 76,
+        "event_type": "United States | House Price Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 77,
+        "event_type": "United States | Mortgage Market Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 78,
+        "event_type": "United States | Mortgage Refinance Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 79,
+        "event_type": "United States | New Home Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 80,
+        "event_type": "United States | ISM - NY Business Conditions",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 81,
+        "event_type": "United States | NFIB Small Business Optimism",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 82,
+        "event_type": "United States | Overall Net Capital Flow",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 83,
+        "event_type": "United States | Pending Home Sales Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 84,
+        "event_type": "United States | Philly Fed Business Conditions",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 85,
+        "event_type": "United States | Philly Fed CAPEX Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 86,
+        "event_type": "United States | Philly Fed Employment",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 87,
+        "event_type": "United States | Philly Fed New Orders",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 88,
+        "event_type": "United States | Philly Fed Prices Paid",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 89,
+        "event_type": "United States | PPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 90,
+        "event_type": "United States | Real Earnings",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 91,
+        "event_type": "United States | Real Personal Consumption",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 92,
+        "event_type": "United States | Redbook",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 93,
+        "event_type": "United States | Redbook",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 94,
+        "event_type": "United States | Retail Control",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 95,
+        "event_type": "United States | Retail Sales Ex Gas/Autos",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 96,
+        "event_type": "United States | Richmond Manufacturing Shipments",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 97,
+        "event_type": "United States | Richmond Services Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 98,
+        "event_type": "United States | S&amp;P/CS HPI Composite - 20 s.a.",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 99,
+        "event_type": "United States | S&amp;P/CS HPI Composite - 20 n.s.a.",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 100,
+        "event_type": "United States | Texas Services Sector Outlook",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 101,
+        "event_type": "United States | TIC Net Long-Term Transactions including Swaps",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 102,
+        "event_type": "Canada | Budget Balance",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 103,
+        "event_type": "Canada | Budget Balance",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 104,
+        "event_type": "Canada | Ivey PMI n.s.a",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 105,
+        "event_type": "Canada | Core CPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 106,
+        "event_type": "Canada | CPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 107,
+        "event_type": "Canada | Exports",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 108,
+        "event_type": "Canada | Foreign Securities Purchases by Canadians",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 109,
+        "event_type": "Canada | Full Employment Change",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 110,
+        "event_type": "Canada | Imports",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 111,
+        "event_type": "Canada | IPPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 112,
+        "event_type": "Canada | Part Time Employment Change",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 113,
+        "event_type": "Canada | Participation Rate",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 114,
+        "event_type": "Canada | RMPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 115,
+        "event_type": "Italy | Italian Business Confidence",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 116,
+        "event_type": "Italy | Italian Consumer Confidence",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 117,
+        "event_type": "Italy | Italian CPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 118,
+        "event_type": "Italy | Italian HICP",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 119,
+        "event_type": "Italy | Italian HICP",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 120,
+        "event_type": "Italy | Italian Industrial New Orders",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 121,
+        "event_type": "Italy | Italian Industrial New Orders",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 122,
+        "event_type": "Italy | Italian Industrial Production",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 123,
+        "event_type": "Italy | Italian Industrial Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 124,
+        "event_type": "Italy | Italian Industrial Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 125,
+        "event_type": "Italy | Italian PPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 126,
+        "event_type": "Italy | Italian PPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 127,
+        "event_type": "Italy | Italian Retail Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 128,
+        "event_type": "Italy | Italian Trade Balance EU",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 129,
+        "event_type": "Italy | Italian Trade Balance Non-EU",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 130,
+        "event_type": "Italy | Italian Wage Inflation",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 131,
+        "event_type": "Italy | Italian Wage Inflation",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 132,
+        "event_type": "South Korea | CPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 133,
+        "event_type": "South Korea | Current Account",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 134,
+        "event_type": "South Korea | Exports",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 135,
+        "event_type": "South Korea | Export Price Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 136,
+        "event_type": "South Korea | FX Reserves - USD",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 137,
+        "event_type": "South Korea | Imports",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 138,
+        "event_type": "South Korea | Import Price Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 139,
+        "event_type": "South Korea | Industrial Production",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 140,
+        "event_type": "South Korea | M2 Money supply",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 141,
+        "event_type": "South Korea | Manufacturing BSI Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 142,
+        "event_type": "South Korea | PPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 143,
+        "event_type": "South Korea | PPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 144,
+        "event_type": "South Korea | Service Sector Output",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 145,
+        "event_type": "Switzerland | KOF Leading Indicators",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 146,
+        "event_type": "Switzerland | CPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 147,
+        "event_type": "Switzerland | PPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 148,
+        "event_type": "Switzerland | Unemployment Rate n.s.a.",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 149,
+        "event_type": "India | Bank Loan Growth",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 150,
+        "event_type": "India | Cash Reserve Ratio",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 151,
+        "event_type": "India | Cumulative Industrial Production",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 152,
+        "event_type": "India | Deposit Growth",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 153,
+        "event_type": "India | Exports (USD)",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 154,
+        "event_type": "India | Federal Fiscal Deficit",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 155,
+        "event_type": "India | FX Reserves. USD",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 156,
+        "event_type": "India | Imports (USD)",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 157,
+        "event_type": "India | Infrastructure Output",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 158,
+        "event_type": "India | Interest Rate Decision",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 159,
+        "event_type": "India | M3 Money Supply",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 160,
+        "event_type": "India | Manufacturing Output",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 161,
+        "event_type": "India | Reverse REPO Rate",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 162,
+        "event_type": "India | WPI Food",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 163,
+        "event_type": "India | WPI Fuel",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 164,
+        "event_type": "India | WPI Inflation",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 165,
+        "event_type": "India | WPI Manufacturing Inflation",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 166,
+        "event_type": "Germany | German CPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 167,
+        "event_type": "Germany | German Exports",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 168,
+        "event_type": "Germany | German HICP",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 169,
+        "event_type": "Germany | German HICP",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 170,
+        "event_type": "Germany | German Import Price Index",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 171,
+        "event_type": "Germany | German Imports",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 172,
+        "event_type": "Germany | German PPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 173,
+        "event_type": "Germany | German Retail Sales",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 174,
+        "event_type": "Germany | German Unemployment",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 175,
+        "event_type": "Germany | German Unemployment n.s.a.",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 176,
+        "event_type": "Germany | German WPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 177,
+        "event_type": "Germany | German ZEW Current Conditions",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 178,
+        "event_type": "France | French Current Account",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 179,
+        "event_type": "France | French Exports",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 180,
+        "event_type": "France | French HICP",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 181,
+        "event_type": "France | French HICP",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 182,
+        "event_type": "France | French Imports",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 183,
+        "event_type": "France | French PPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 184,
+        "event_type": "Australia | ANZ Internet Job Ads",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 185,
+        "event_type": "Australia | ANZ Newspaper Job Ads",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 186,
+        "event_type": "Australia | Exports",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 187,
+        "event_type": "Australia | Full Employment Change",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 188,
+        "event_type": "Australia | Housing Credit",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 189,
+        "event_type": "Australia | Imports",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 190,
+        "event_type": "Australia | Invest Housing Finance",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 191,
+        "event_type": "Australia | NAB Business Survey",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 192,
+        "event_type": "Australia | Participation Rate",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 193,
+        "event_type": "Australia | Private House Approvals",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 194,
+        "event_type": "Spain | Spanish CPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 195,
+        "event_type": "Spain | Spanish CPI",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 196,
+        "event_type": "Spain | Spanish Current account",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 197,
+        "event_type": "Spain | Spanish HICP",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 198,
+        "event_type": "Spain | Spanish HICP",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 199,
+        "event_type": "Brazil | Debt-to-GDP ratio",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      },
+      {
+        "archive_row": 200,
+        "event_type": "Brazil | IBC-Br Economic Activity",
+        "date": "2011-01-01",
+        "code": "NO_CONSENSUS",
+        "reason": null,
+        "why": "this row carries no consensus, so there is nothing for an observed instant to date"
+      }
+    ],
+    "examples_truncated_at": 200,
+    "examples_not_listed": {
+      "NO_OBSERVED_ANNOUNCEMENT": 54275,
+      "NO_CONSENSUS": 59320
+    }
+  },
+  "rows": [],
+  "fitted": "NOTHING: this job joins two archives; no model is fitted and no value is transformed",
+  "reading": "every row's `published_at` is an OBSERVED instant from the announcement archive, and its `consensus` and `actual` are the consensus archive's own numbers. `event_time` is the instant the consensus archive scheduled the release for, kept beside the observed one so the two can be compared, and never used as a publication clock. A join rate below 1 is not a failure of this job: it is the measure of how much of the question these two archives can answer"
+}
