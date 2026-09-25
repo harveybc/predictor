@@ -48,7 +48,7 @@ claimed to be.
 """
 from __future__ import annotations
 
-from typing import Any, Dict, List, Sequence
+from typing import Optional, Any, Dict, List, Sequence
 
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -71,6 +71,20 @@ ENCODERS: Dict[str, str] = {
     "rnn": "stacked GRU, last state (the feature-extractor 'rnn' family)",
     "dense": "flattened window through a dense stack",
     "tcn": "dilated causal residual Conv1D blocks, average-pooled over time",
+}
+#: feature-extractor's registered encoder keys, declared here as the inline family each one IS -- a person's
+#: declaration reviewed in this repository, never a runtime guess. WP18 (2026-09-25) chose `default` and `ann` for
+#: two groups and the pipeline could not map them because the keys differ between repositories although the
+#: architectures are the same family. `None` means "no inline family implements it": that branch stays NOT_MAPPED.
+EXTRACTOR_FAMILIES: Dict[str, Optional[str]] = {
+    "default": "dense",       # per-channel Dense branches over the window -> dense
+    "ann": "dense",           # per-channel Dense branches over the window -> dense
+    "cnn": "cnn",             # two strided Conv1D layers -> cnn
+    "vae": "cnn",             # two strided Conv1D layers, no sampling step (WP25 finding) -> cnn
+    "lstm": "lstm",           # attention + two BiLSTM; the recurrent family -> lstm (attention not reproduced)
+    "rnn": "rnn",             # two recurrent layers (SimpleRNN/GRU) -> rnn
+    "transformer": None,      # attention + strided Conv1D: no inline attention encoder here
+    "vae_small": None,        # per-step CVAE inference network: not a window encoder
 }
 #: the fusions this plugin implements
 FUSIONS: Dict[str, str] = {

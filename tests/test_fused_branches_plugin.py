@@ -205,3 +205,11 @@ def test_setup_py_declares_the_entry_point_and_the_label_is_one_truthful_line():
     assert "fused_branches=predictor_plugins.fused_branches:Plugin" in setup_py.read_text(encoding="utf-8")
     label = (Plugin.__doc__ or "").strip().splitlines()[0]
     assert label and len(label) <= 60 and label.endswith(".")
+
+
+def test_the_declared_extractor_families_name_only_inline_encoders():
+    """Every feature-extractor key maps to an inline encoder this plugin implements, or to None with no guess."""
+    from predictor_plugins.fused_branches import ENCODERS, EXTRACTOR_FAMILIES
+    for key, family in EXTRACTOR_FAMILIES.items():
+        assert family is None or family in ENCODERS, (key, family)
+    assert EXTRACTOR_FAMILIES["ann"] == "dense" and EXTRACTOR_FAMILIES["transformer"] is None
