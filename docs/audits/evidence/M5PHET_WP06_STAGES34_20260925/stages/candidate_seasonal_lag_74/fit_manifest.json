@@ -82,7 +82,7 @@
     "rows": 50400
   },
   "execution_authorized": false,
-  "fitted_at": "2026-09-25T09:37:54Z",
+  "fitted_at": "2026-09-25T09:46:10Z",
   "head": "point",
   "horizons": [
     60
@@ -185,8 +185,60 @@
     ],
     "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s34/specs/spec_candidate_seasonal_lag_74.json",
     "provenance": "DEVELOPMENT",
+    "representation": {
+      "calendar": {
+        "clock": "receipt",
+        "columns": []
+      },
+      "candidate_id": "seasonal_lag_74",
+      "differencing": {
+        "order": 0
+      },
+      "exogenous": [
+        "Global_intensity",
+        "Global_reactive_power",
+        "Sub_metering_1",
+        "Sub_metering_2",
+        "Sub_metering_3",
+        "Voltage"
+      ],
+      "features": [],
+      "holdout": {
+        "fraction": 0.2
+      },
+      "lags": [
+        1,
+        74
+      ],
+      "not_decided": {
+        "calendar.clock": "a file of timestamps cannot say whether they are a publication clock or a receipt clock; 'receipt' is written so the spec validates and a person must confirm it (--clock)",
+        "exogenous": "the other numeric columns are offered as names only; whether each is available at prediction time is not a property of this file",
+        "holdout": "the cut is a decision about what must stay unseen, which no test on the data can make; {\"fraction\": 0.2} is a convention, not a measurement",
+        "sampling.timezone": "the timestamps carry no offset, so 'UTC' is what --timezone declared, not what was read"
+      },
+      "provenance": "DEVELOPMENT",
+      "sampling": {
+        "step_seconds": 60,
+        "timezone": "UTC"
+      },
+      "schema": "m5phet.representation.v1",
+      "target": {
+        "column": "Global_active_power",
+        "transform": "level"
+      },
+      "why": {
+        "features": "none: the peak's period matches no calendar period feature-eng builds a feature for",
+        "lags": "ACF peak at lag 74 -> lags [1, 74]",
+        "transform": "level: the stationarity verdict is STATIONARY (adf+kpss agree)",
+        "windows": "ACF peak at lag 74 (rho 0.356627, band 0.011206, computed on the levels) -> window 74"
+      },
+      "windows": [
+        74
+      ]
+    },
     "representation_id": null,
-    "schema": "m5phet.pipeline.v1"
+    "schema": "m5phet.pipeline.v1",
+    "sha256": "db7a40fd1470d94a1247e9228f829bb0eac9f204198404e09f1ac288ffea362e"
   },
   "stage": "candidate_seasonal_lag_74",
   "step_seconds": 60,
@@ -205,7 +257,7 @@
     "seed": 1,
     "validation_origins": 4006
   },
-  "wall_seconds": 18.023,
+  "wall_seconds": 16.8,
   "window": 74,
   "window_selected_by": "max(representation.windows): the longest memory the candidate declares; a shorter window in the same list is not fitted by this single-block harness and is recorded here",
   "windows_declared": [

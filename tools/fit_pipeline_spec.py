@@ -45,6 +45,7 @@ them, or the stages are not comparable):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -527,10 +528,15 @@ def main(argv=None) -> int:
         "schema": RUN_SCHEMA,
         "stage": args.stage,
         "fitted_at": started_at,
+        # The spec is carried by VALUE, not only by path: an export has to be able to say which representation produced
+        # the bundle it serves, and a path is not an answer -- the file may have changed, or may not exist on the host
+        # that reads the manifest. The digest binds the file this run actually read.
         "spec": {"path": str(args.spec), "schema": spec["schema"],
                  "representation_id": spec.get("representation_id"),
                  "decisions": list(spec.get("decisions") or ()),
-                 "provenance": spec.get("provenance")},
+                 "provenance": spec.get("provenance"),
+                 "sha256": hashlib.sha256(args.spec.read_bytes()).hexdigest(),
+                 "representation": json.loads(json.dumps(spec["representation"], sort_keys=True))},
         "config": config,
         "plugin_module": module_ref,
         "head": args.head,

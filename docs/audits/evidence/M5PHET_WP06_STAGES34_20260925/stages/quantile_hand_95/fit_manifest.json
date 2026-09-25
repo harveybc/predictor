@@ -1,19 +1,5 @@
 {
-  "branches": [
-    {
-      "columns": [
-        "Global_active_power",
-        "Global_reactive_power",
-        "Voltage",
-        "Global_intensity",
-        "Sub_metering_1",
-        "Sub_metering_2",
-        "Sub_metering_3"
-      ],
-      "encoder": "tcn",
-      "name": "all"
-    }
-  ],
+  "branches": "NOT_APPLICABLE_SINGLE_WINDOW_CORE",
   "columns": [
     "Global_active_power",
     "Global_reactive_power",
@@ -27,21 +13,6 @@
     "activation": "relu",
     "batch_size": 256,
     "bayesian_head": false,
-    "branches": [
-      {
-        "columns": [
-          "Global_active_power",
-          "Global_reactive_power",
-          "Voltage",
-          "Global_intensity",
-          "Sub_metering_1",
-          "Sub_metering_2",
-          "Sub_metering_3"
-        ],
-        "encoder": "tcn",
-        "name": "all"
-      }
-    ],
     "disable_postfit_uncertainty": true,
     "dropout_rate": 0.0,
     "early_patience": 15,
@@ -58,8 +29,7 @@
       "Sub_metering_2",
       "Sub_metering_3"
     ],
-    "fusion": "concat",
-    "grouping_applied": "APPLIED",
+    "grouping_applied": "NOT_APPLICABLE_SINGLE_WINDOW_CORE",
     "head_activation": "relu",
     "head_units": [
       64
@@ -69,11 +39,18 @@
     "predicted_horizons": [
       60
     ],
-    "predictor_plugin": "fused_branches",
+    "predictor_plugin": "quantile_ann",
+    "quantiles": [
+      0.025,
+      0.05,
+      0.5,
+      0.95,
+      0.975
+    ],
     "quiet": true,
     "seed": 1,
     "target_column": "Global_active_power",
-    "window_size": 197
+    "window_size": 60
   },
   "data": {
     "holdout_start_row": 40320,
@@ -82,13 +59,13 @@
     "rows": 50400
   },
   "execution_authorized": false,
-  "fitted_at": "2026-09-25T09:45:45Z",
-  "head": "point",
+  "fitted_at": "2026-09-25T10:05:27Z",
+  "head": "quantile",
   "horizons": [
     60
   ],
   "numpy": "2.5.1",
-  "plugin_module": "predictor_plugins.fused_branches:Plugin",
+  "plugin_module": "predictor_plugins.quantile_ann:Plugin",
   "population": {
     "dropped_for_non_finite": 0,
     "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
@@ -148,7 +125,13 @@
       "why": "the spec names no preprocessor for this feature"
     }
   },
-  "quantiles": null,
+  "quantiles": [
+    0.025,
+    0.05,
+    0.5,
+    0.95,
+    0.975
+  ],
   "scaler": {
     "fitted_on": "the first 40320 rows of household_dev_slice.csv (TRAIN only; the sealed holdout is never read for it)",
     "kind": "per_column_zscore",
@@ -173,49 +156,33 @@
   },
   "schema": "predictor.fitted_forecast.v1",
   "spec": {
-    "decisions": [
-      "0278acc4e5f5fb02373e253a4b1e18148c9d1745ccff36b50e51743278488854",
-      "3a962d2e618ac77df83a5bde6cc5b8d0a93c5ff6bab4b30f94532f6eacf64645",
-      "4c76460e7bf61b730c7ae732b4bb4276a9225500c66e11d00c31496c0b814e03",
-      "598a2291a6ae6dd42ab368aaa3fa5c7f57ba194ff7139f61c508ee6899776e6e",
-      "702ffd860839280423a69b8e1bb9b0e1f6d85286d0d00fdfb8c071a7082b22fe",
-      "b37ec1581e5f5e687c5546021530805154cbd73017effe902d67596be09c0235",
-      "dc3654371156eeabb2cb93042be329a48c907ea33f111ad40d6213577335024d",
-      "e4cae5e80b20bd0af6a965de994fcb1ea24ffa7d6e09c903dfe411ce9ae5931a"
-    ],
-    "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s34/specs/spec_candidate_short_memory.json",
+    "decisions": [],
+    "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s34/specs/spec_quantile_hand_95.json",
     "provenance": "DEVELOPMENT",
     "representation": {
       "calendar": {
         "clock": "receipt",
         "columns": []
       },
-      "candidate_id": "short_memory",
+      "candidate_id": "hand_household_w60",
       "differencing": {
         "order": 0
       },
       "exogenous": [
-        "Global_intensity",
         "Global_reactive_power",
+        "Voltage",
+        "Global_intensity",
         "Sub_metering_1",
         "Sub_metering_2",
-        "Sub_metering_3",
-        "Voltage"
+        "Sub_metering_3"
       ],
       "features": [],
       "holdout": {
         "fraction": 0.2
       },
       "lags": [
-        1,
-        197
+        1
       ],
-      "not_decided": {
-        "calendar.clock": "a file of timestamps cannot say whether they are a publication clock or a receipt clock; 'receipt' is written so the spec validates and a person must confirm it (--clock)",
-        "exogenous": "the other numeric columns are offered as names only; whether each is available at prediction time is not a property of this file",
-        "holdout": "the cut is a decision about what must stay unseen, which no test on the data can make; {\"fraction\": 0.2} is a convention, not a measurement",
-        "sampling.timezone": "the timestamps carry no offset, so 'UTC' is what --timezone declared, not what was read"
-      },
       "provenance": "DEVELOPMENT",
       "sampling": {
         "step_seconds": 60,
@@ -227,20 +194,20 @@
         "transform": "level"
       },
       "why": {
-        "features": "none: no periodic peak motivates a calendar feature in this candidate",
-        "lags": "lag 1 always, and the decay lag 197 as the last lag still outside the band",
-        "transform": "level: the stationarity verdict is STATIONARY (adf+kpss agree)",
-        "windows": "the autocorrelation of the levels falls inside the +-0.011206 band at lag 197 -> window 197"
+        "features": "none: the hand configuration adds no calendar or derived feature",
+        "lags": "none beyond the window itself; the hand configuration declares no lag features",
+        "transform": "level: the household pilot forecasts the level of Global_active_power",
+        "windows": "60: the window the household DEV resource e1_household_dev_pilot_v1 declares (DATA.json 'window'), fixed by hand before any of this work"
       },
       "windows": [
-        197
+        60
       ]
     },
     "representation_id": null,
     "schema": "m5phet.pipeline.v1",
-    "sha256": "43a0da5f25e3f0d570f6c3d3aab97ce7cf777f1f60f620551ed06aa79e1caf7d"
+    "sha256": "4df0ee93b05e521110f067c20a00b5004eb264447e5e6007850f64e4dc442fd1"
   },
-  "stage": "candidate_short_memory",
+  "stage": "quantile_hand_95",
   "step_seconds": 60,
   "target": "Global_active_power",
   "tensorflow": "2.21.0",
@@ -249,18 +216,18 @@
     "deterministic_ops": true,
     "device": "gpu",
     "epochs_declared": 200,
-    "epochs_run": 28,
-    "final_val_loss": 0.4133588671684265,
-    "fit_origins": 35826,
+    "epochs_run": 22,
+    "final_val_loss": 0.14009541273117065,
+    "fit_origins": 36072,
     "loop": "keras `fit` driven by this tool with the plugin's OWN callbacks (`BaseKerasPredictor._build_callbacks`: early stopping on val_loss with restore_best_weights, and ReduceLROnPlateau). `BaseKerasPredictor.train` takes a dict of per-horizon targets, and Keras 3 does not unpack a dict for a single-output graph; this comparison declares one horizon, so the dict path is not available. Nothing about the optimiser, the loss or the callbacks differs",
     "patience": 15,
     "seed": 1,
-    "validation_origins": 3981
+    "validation_origins": 4009
   },
-  "wall_seconds": 20.969,
-  "window": 197,
+  "wall_seconds": 17.89,
+  "window": 60,
   "window_selected_by": "max(representation.windows): the longest memory the candidate declares; a shorter window in the same list is not fitted by this single-block harness and is recorded here",
   "windows_declared": [
-    197
+    60
   ]
 }

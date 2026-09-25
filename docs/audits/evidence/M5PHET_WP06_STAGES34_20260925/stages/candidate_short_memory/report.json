@@ -2,7 +2,7 @@
   "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
   "family": "forecast",
   "flags": [],
-  "generated_at": "2026-09-25T09:37:50Z",
+  "generated_at": "2026-09-25T09:46:06Z",
   "horizon": "h+60",
   "label_producer": "the electric meter record of the household power dataset, as sliced by the governed resource e1_household_dev_pilot_v1 of the CRISP-DM data foundation",
   "label_provenance": "REALISED_OUTCOME",

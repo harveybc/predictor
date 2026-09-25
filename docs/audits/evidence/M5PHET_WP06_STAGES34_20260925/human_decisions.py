@@ -55,6 +55,12 @@ STAGES = {
                       "extractor": "NOT_APPLICABLE_SINGLE_WINDOW_CORE",
                       "representation_why": "WP07 fits a quantile head on the SAME hand representation, so that the "
                                             "interval is not confounded with a change of window"},
+    "quantile_hand_95": {"representation": "hand_household_w60", "grouping": "k=1",
+                         "extractor": "NOT_APPLICABLE_SINGLE_WINDOW_CORE",
+                         "representation_why": "WP07's quantile head refitted with five quantiles so the 0.95 "
+                                               "two-sided level the acceptance harness asks for is a pair this model "
+                                               "fitted; the representation is the SAME hand one, so the interval is "
+                                               "not confounded with a change of window"},
     "candidate_short_memory": {"representation": "short_memory", "grouping": "k=1", "extractor": "tcn",
                                "representation_why": "WP06 stage 3 fits one model per design candidate; this stage is "
                                                      "the candidate `short_memory` and nothing else about the "

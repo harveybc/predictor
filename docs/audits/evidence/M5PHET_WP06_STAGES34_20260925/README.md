@@ -51,7 +51,7 @@ records. Two questions could not be answered from the declared options and nothi
 - `group_extractor/extractor`: their encoder is `tcn` (an inline family of `fused_branches`) or
   `NOT_APPLICABLE_SINGLE_WINDOW_CORE`, and `feature-extractor` declares no such plugin — refused, 6 times.
 
-`link_outcomes.py` links each stage's records to **its** row of this table: 42 linked, 16 refused `NOT_COMPARABLE`
+`link_outcomes.py` links each stage's records to **its** row of this table: 50 linked, 16 refused `NOT_COMPARABLE`
 (the records of the two candidates with no measured row). The outcomes live in
 `~/.local/state/m5phet/decision_outcomes-wp06-stage34-20260925`, a directory of their own, because the previous
 round's outcomes bind rows of the superseded two-stage table and merging them would count the same decisions twice
@@ -59,8 +59,9 @@ under two ranks.
 
 `table/calibration.md` is the report. `NO_BEST_RANKED_OPTION` is gone for the two questions the rank-1 stage can
 answer (`feature_preprocessing/preprocessing` → `normalizer`, `representation/candidate` → `hand_household_w60`). For
-the other two it now names the reason instead: `baseline_hand` is rank 1, `COMPARABLE`, and carries no record for
-those questions — WP23's `COMPARABLE_BUT_NO_DECISION_RECORD`, printed per stage and per question.
+the other two it now names the reason instead: `quantile_hand_95` is rank 1, `COMPARABLE`, and carries no record for
+those questions, because its pipeline has no grouping cut among the declared ones and no feature-extractor plugin —
+WP23's `COMPARABLE_BUT_NO_DECISION_RECORD`, printed per stage and per question.
 
 ## Caveat on the decision store
 
@@ -77,3 +78,55 @@ report counts those records; nothing else here does — every outcome linked abo
 - `table/table.{json,md}` — the closure table over seven stages
 - `table/calibration.{json,md}` — the WP23 calibration report
 - `population_probe.json`, `link_outcomes.json`, `human_decisions.json` and the scripts that produced them
+
+## A sixth stage, and why it is here (WP07)
+
+`quantile_hand_95` is the same hand representation and the same `quantile_ann` core as `quantile_hand`, refitted with
+five quantiles `[0.025, 0.05, 0.5, 0.95, 0.975]` instead of three. The reason is a capability, not a score: the
+acceptance harness asks for a **0.95** interval, the WP07 bundle fitted only the pair covering 0.90, and the question
+was refused `CONFIDENCE_LEVEL_NOT_FITTED` — correctly, and unusably. Nothing else about the stage changed, and no
+hyper-parameter was touched.
+
+It then came first in the table (MAE 0.526294, skill 0.121858), ahead of `baseline_hand` (0.537108). That was not the
+purpose and was not tuned for: the quantile head's median is fitted by the pinball loss over five quantiles, and on
+these rows that median happens to be a better point forecast than the point head's. Its measured 0.95 interval covers
+**0.925998** of the sealed rows (mean width 2.890335 kW), which is the honest coverage claim and is below its nominal
+level.
+
+## What the closure table says about the designed representations
+
+No designed representation beat the hand window on this slice. `seasonal_lag_74` (0.545436) and `short_memory`
+(0.578034) are both worse than `baseline_hand` (0.537108), and the two long candidates could not be scored here at
+all. The designed-representation stage of the doctoral comparison therefore has a negative result on the household
+series, recorded as such.
+
+## Reproducibility
+
+Both fitted candidates were refitted after the fitting tool began recording the representation by value; the two runs
+produced identical MAE, RMSE, skill and epoch counts (`stages/*/report.json` before and after are equal in every
+metric). The artifacts kept here are the second run's, which are the ones the bundles were exported from.
+
+## The exported bundles (WP06 done-when, part 2)
+
+`bundles/` holds the manifest and the parity record of each bundle exported from these fits:
+`candidate-short-memory`, `candidate-seasonal-lag-74` (a new directory,
+`~/.local/state/m5phet/forecast-bundles-wp06-candidates-20260925`, nothing overwritten) and `quantile-household-95`.
+Each manifest carries the WP06 `representation_spec` **by value**. A bundle exported before the tool recorded it —
+the owner's retained household model and the direction model — serves `REPRESENTATION_NOT_RECORDED`, which
+`acceptance/FINAL-catalog-forecast.json` shows verbatim beside the two that do record one.
+
+The two candidates that were never fitted have no bundle: there is no graph to export, and none was fabricated.
+
+## The owner's instance (WP07 done-when, part 3)
+
+`quantile-household-95` is installed beside the household bundle in the directory the owner's workbench reads. On port
+8777, with my own state directory and all three bundles configured:
+
+- `pronostica la potencia y dame un rango` returns a point (0.541226 kW, from the retained household bundle) **and**
+  an interval ([0.031671, 2.822953] kW at 0.95, quantiles 0.025/0.975, from the quantile bundle), both with units.
+  The interval's answer carries `input_restandardized_from`: the attached window was standardized for the other
+  engine and was re-expressed in this one's scale, and the answer says so rather than hiding it;
+- `tools/verify_families.py`: examples 11/11, prose 14/14, refusals 2/2, families 5/5 (`acceptance/FINAL-families.json`).
+  The example count is 11 and not 9 because each configured bundle contributes its own catalog example, and there is
+  now a third;
+- `tools/verify_envelopes.py`: 15/15 (`acceptance/FINAL-envelopes.json`), `execution_authorized` false throughout.

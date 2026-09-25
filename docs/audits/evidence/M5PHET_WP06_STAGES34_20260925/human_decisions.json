@@ -37,6 +37,22 @@
       "kind": "feature_grouping",
       "question": "grouping_cut",
       "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "quantile_hand_95",
+      "why": "the choice 'k=1' is not one of the declared options ['k=2', 'k=3', 'k=4', 'k=5', 'k=6']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "group_extractor",
+      "question": "extractor",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "quantile_hand_95",
+      "why": "the choice 'NOT_APPLICABLE_SINGLE_WINDOW_CORE' is not one of the declared options ['default', 'ann', 'rnn', 'transformer', 'lstm', 'cnn', 'vae', 'vae_small']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "feature_grouping",
+      "question": "grouping_cut",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
       "stage": "candidate_short_memory",
       "why": "the choice 'k=1' is not one of the declared options ['k=2', 'k=3', 'k=4', 'k=5', 'k=6']; a person may not add an option to a set the executing repository declared"
     },
@@ -225,6 +241,70 @@
       "question": "preprocessing",
       "record": "b7b54fc969c9f82f6ffc0fb28a2f22d7b6c8771794c8dba8bf673fe95f19e3b6",
       "stage": "quantile_hand"
+    },
+    {
+      "chosen": "hand_household_w60",
+      "feature": null,
+      "kind": "representation",
+      "question": "candidate",
+      "record": "335e7a4d8620bc333ef1f8bbd92c6ab1d3771961eef4c7384edc4fe9e3d844e6",
+      "stage": "quantile_hand_95"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_active_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "33c437756adc0120e8372da050de888bee7533b1e5a5fbe556bda6984e871e0b",
+      "stage": "quantile_hand_95"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_reactive_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "8af20e6f301dea771d299485a6a44f1d7f1101d76cd5a6fc399d0b1da7b6d2a1",
+      "stage": "quantile_hand_95"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Voltage",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "93e702bb4e4fcfeaf6370a8dd720897b086caa9cdbade181c96af9f37f6526ba",
+      "stage": "quantile_hand_95"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_intensity",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "412a15577bfe12afc9fcdfc7c28cd9884aa6b5f9a990854eca8aa523328b56cf",
+      "stage": "quantile_hand_95"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_1",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "a7ddd268479d4613d558ab4ed1f8b55e742c0f6ffa6be66649bd89753a395698",
+      "stage": "quantile_hand_95"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_2",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "a9f760b902fbdd2611153581f7fea90959450068b814afa31c555bf31f28328c",
+      "stage": "quantile_hand_95"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_3",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "7f1f52ba24d29a8e5abd638b6699570390df1ccb031780cf33f33141d640b637",
+      "stage": "quantile_hand_95"
     },
     {
       "chosen": "short_memory",

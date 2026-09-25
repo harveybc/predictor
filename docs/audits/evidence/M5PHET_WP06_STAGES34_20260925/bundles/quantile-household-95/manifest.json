@@ -1,0 +1,274 @@
+{
+  "schema": "prediction_provider.forecast_bundle.v2",
+  "engine": "tensorflow_saved_model",
+  "exposure": "DEV_FIT_HOLDOUT_SEALED_BEFORE_SCORING",
+  "representation_spec": {
+    "calendar": {
+      "clock": "receipt",
+      "columns": []
+    },
+    "candidate_id": "hand_household_w60",
+    "differencing": {
+      "order": 0
+    },
+    "exogenous": [
+      "Global_reactive_power",
+      "Voltage",
+      "Global_intensity",
+      "Sub_metering_1",
+      "Sub_metering_2",
+      "Sub_metering_3"
+    ],
+    "features": [],
+    "holdout": {
+      "fraction": 0.2
+    },
+    "lags": [
+      1
+    ],
+    "provenance": "DEVELOPMENT",
+    "sampling": {
+      "step_seconds": 60,
+      "timezone": "UTC"
+    },
+    "schema": "m5phet.representation.v1",
+    "target": {
+      "column": "Global_active_power",
+      "transform": "level"
+    },
+    "why": {
+      "features": "none: the hand configuration adds no calendar or derived feature",
+      "lags": "none beyond the window itself; the hand configuration declares no lag features",
+      "transform": "level: the household pilot forecasts the level of Global_active_power",
+      "windows": "60: the window the household DEV resource e1_household_dev_pilot_v1 declares (DATA.json 'window'), fixed by hand before any of this work"
+    },
+    "windows": [
+      60
+    ]
+  },
+  "state_id": "quantile-household-95-20260925",
+  "task_id": "predictor.quantile-household-95-20260925.W60_h60",
+  "title": "DEVELOPMENT: household power, quantile head (0.025/0.05/0.5/0.95/0.975) at 60 steps",
+  "family": "regression_forecasting",
+  "heads": [
+    "quantile"
+  ],
+  "columns": [
+    "Global_active_power",
+    "Global_reactive_power",
+    "Voltage",
+    "Global_intensity",
+    "Sub_metering_1",
+    "Sub_metering_2",
+    "Sub_metering_3"
+  ],
+  "targets": [
+    "Global_active_power"
+  ],
+  "horizons": [
+    60
+  ],
+  "window": 60,
+  "step_seconds": 60,
+  "unit": "kW",
+  "scale": "original",
+  "readout": "target_scaler_inverse",
+  "input_scale": "train_standardized",
+  "horizon_meaning": "the realised value of Global_active_power exactly 60 rows (3600 s) after the last row of the window, which is what the fit was trained against",
+  "aliases": {
+    "Global_active_power": [
+      "household power",
+      "active power",
+      "power consumption",
+      "consumption",
+      "potencia",
+      "consumo"
+    ]
+  },
+  "horizon_aliases": {
+    "60": [
+      "one hour",
+      "an hour",
+      "next hour",
+      "una hora",
+      "la proxima hora",
+      "pr\u00f3xima hora"
+    ]
+  },
+  "scaler": {
+    "kind": "per_column_zscore",
+    "mean": [
+      0.9267001165703355,
+      0.16383977777226302,
+      241.12848012103598,
+      3.9818993526626603,
+      1.2409037922567523,
+      0.8666137553014708,
+      6.353059351670428
+    ],
+    "sd": [
+      0.9110952435114994,
+      0.12455246136445655,
+      2.2028354774074126,
+      3.798499268796413,
+      6.560146284228113,
+      3.6374303833265396,
+      8.400405329263549
+    ],
+    "fitted_on": "the first 40320 rows of household_dev_slice.csv (TRAIN only; the sealed holdout is never read for it)"
+  },
+  "scaler_digest": "4441e08d8a1c5e396ce97d902f987cfb8492b424cc0a1b3803a22542ce7e9100",
+  "files": {
+    "saved_model/fingerprint.pb": "d04bd80432b4bc31b59b35216c0455ce487df504cf6bd698cde696ddada190d1",
+    "saved_model/saved_model.pb": "9a1c77f62dfb6a8bd547a9655945ae2bc7bb71085daedeab6db840fd9cc99a4d",
+    "saved_model/variables/variables.data-00000-of-00001": "b91bda366dc6d4d5aee78114c6f33c05a73b3000a2cb8f87d197de31ae0e091e",
+    "saved_model/variables/variables.index": "782ba2b5ec9cc7d54c8e6edc5364d158ac69fb1e086b9ecb07e70fcc43eb9779"
+  },
+  "provenance": {
+    "trained_on": "household_dev_slice.csv, rows 0..40320 (TRAIN only); the holdout was sealed as 33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc before the fit",
+    "trained_by": "predictor tools/fit_pipeline_spec.py, stage quantile_hand_95, plugin predictor_plugins.quantile_ann:Plugin, spec spec_quantile_hand_95.json",
+    "trained_at": "2026-09-25T10:05:27Z",
+    "quality": "UNMEASURED",
+    "quality_note": "this export neither trained nor scored anything. The fit was measured by M5PHET/evaluation under protocol d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4 against corpus seal 33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc (9824 rows); that report is the only place those numbers may be quoted from, with its conditions",
+    "artifact_hashes": {
+      "model": "7b1a1368cf2dc45357d6874b0b5604809e4d5ce2879cb6a8120665584b55dae9",
+      "fit_manifest": "bff51323502cee4e771d9448c79aa0549f8a2992b65d553f086dcd159e0d2e4e",
+      "report": "2a982800e24ce037f035cfbd4b3beddb86f2956f566499204353e144d5fe7d48"
+    },
+    "evaluation": {
+      "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+      "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "sealed_at": "2026-09-25T00:00:00Z",
+      "report_sha256": "2a982800e24ce037f035cfbd4b3beddb86f2956f566499204353e144d5fe7d48"
+    },
+    "representation_spec_ref": {
+      "decisions": [],
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s34/specs/spec_quantile_hand_95.json",
+      "provenance": "DEVELOPMENT",
+      "representation": {
+        "calendar": {
+          "clock": "receipt",
+          "columns": []
+        },
+        "candidate_id": "hand_household_w60",
+        "differencing": {
+          "order": 0
+        },
+        "exogenous": [
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "features": [],
+        "holdout": {
+          "fraction": 0.2
+        },
+        "lags": [
+          1
+        ],
+        "provenance": "DEVELOPMENT",
+        "sampling": {
+          "step_seconds": 60,
+          "timezone": "UTC"
+        },
+        "schema": "m5phet.representation.v1",
+        "target": {
+          "column": "Global_active_power",
+          "transform": "level"
+        },
+        "why": {
+          "features": "none: the hand configuration adds no calendar or derived feature",
+          "lags": "none beyond the window itself; the hand configuration declares no lag features",
+          "transform": "level: the household pilot forecasts the level of Global_active_power",
+          "windows": "60: the window the household DEV resource e1_household_dev_pilot_v1 declares (DATA.json 'window'), fixed by hand before any of this work"
+        },
+        "windows": [
+          60
+        ]
+      },
+      "representation_id": null,
+      "schema": "m5phet.pipeline.v1",
+      "sha256": "4df0ee93b05e521110f067c20a00b5004eb264447e5e6007850f64e4dc442fd1"
+    },
+    "preprocessing": {
+      "Global_active_power": {
+        "applied_instead": "train_only_per_column_zscore",
+        "decision": null,
+        "declared_plugin": null,
+        "preprocessing_applied": "NONE_DECLARED",
+        "why": "the spec names no preprocessor for this feature"
+      },
+      "Global_intensity": {
+        "applied_instead": "train_only_per_column_zscore",
+        "decision": null,
+        "declared_plugin": null,
+        "preprocessing_applied": "NONE_DECLARED",
+        "why": "the spec names no preprocessor for this feature"
+      },
+      "Global_reactive_power": {
+        "applied_instead": "train_only_per_column_zscore",
+        "decision": null,
+        "declared_plugin": null,
+        "preprocessing_applied": "NONE_DECLARED",
+        "why": "the spec names no preprocessor for this feature"
+      },
+      "Sub_metering_1": {
+        "applied_instead": "train_only_per_column_zscore",
+        "decision": null,
+        "declared_plugin": null,
+        "preprocessing_applied": "NONE_DECLARED",
+        "why": "the spec names no preprocessor for this feature"
+      },
+      "Sub_metering_2": {
+        "applied_instead": "train_only_per_column_zscore",
+        "decision": null,
+        "declared_plugin": null,
+        "preprocessing_applied": "NONE_DECLARED",
+        "why": "the spec names no preprocessor for this feature"
+      },
+      "Sub_metering_3": {
+        "applied_instead": "train_only_per_column_zscore",
+        "decision": null,
+        "declared_plugin": null,
+        "preprocessing_applied": "NONE_DECLARED",
+        "why": "the spec names no preprocessor for this feature"
+      },
+      "Voltage": {
+        "applied_instead": "train_only_per_column_zscore",
+        "decision": null,
+        "declared_plugin": null,
+        "preprocessing_applied": "NONE_DECLARED",
+        "why": "the spec names no preprocessor for this feature"
+      }
+    },
+    "training": {
+      "batch_size": 256,
+      "deterministic_ops": true,
+      "device": "gpu",
+      "epochs_declared": 200,
+      "epochs_run": 22,
+      "final_val_loss": 0.14009541273117065,
+      "fit_origins": 36072,
+      "loop": "keras `fit` driven by this tool with the plugin's OWN callbacks (`BaseKerasPredictor._build_callbacks`: early stopping on val_loss with restore_best_weights, and ReduceLROnPlateau). `BaseKerasPredictor.train` takes a dict of per-horizon targets, and Keras 3 does not unpack a dict for a single-output graph; this comparison declares one horizon, so the dict path is not available. Nothing about the optimiser, the loss or the callbacks differs",
+      "patience": 15,
+      "seed": 1,
+      "validation_origins": 4009
+    },
+    "keras": "3.15.0",
+    "tensorflow": "2.21.0",
+    "numpy": "2.5.1",
+    "parity_population": "the first TRAIN history window of the training file; no label was read",
+    "origin_row_in_train_file": 59
+  },
+  "quantiles": [
+    0.025,
+    0.05,
+    0.5,
+    0.95,
+    0.975
+  ]
+}

@@ -44,7 +44,7 @@
             "same_rows_as_model": true
           },
           "orientation": "error",
-          "rank": 1,
+          "rank": 2,
           "reason": null,
           "refusal": null,
           "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
@@ -151,7 +151,7 @@
             "same_rows_as_model": true
           },
           "orientation": "error",
-          "rank": 3,
+          "rank": 4,
           "reason": null,
           "refusal": null,
           "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
@@ -198,7 +198,7 @@
             "same_rows_as_model": true
           },
           "orientation": "error",
-          "rank": 5,
+          "rank": 6,
           "reason": null,
           "refusal": null,
           "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
@@ -245,7 +245,7 @@
             "same_rows_as_model": true
           },
           "orientation": "error",
-          "rank": 4,
+          "rank": 5,
           "reason": null,
           "refusal": null,
           "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
@@ -292,7 +292,7 @@
             "same_rows_as_model": true
           },
           "orientation": "error",
-          "rank": 2,
+          "rank": 3,
           "reason": null,
           "refusal": null,
           "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
@@ -300,6 +300,53 @@
           "skill_source": "report:metric_sets[0].values.skill_mae",
           "source": "report.json",
           "stage": "quantile_hand",
+          "status": "MEASURED",
+          "target": "Global_active_power"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "compared_to": "baseline_hand",
+          "conditions": {
+            "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+            "flags": [],
+            "label_provenance": "REALISED_OUTCOME",
+            "label_source": "household_dev_slice.csv (household DEV slice, 1-minute grid, original units)",
+            "minimum_rows": 1000,
+            "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+            "report_file": "report.json",
+            "report_generated_at": "2026-09-25T10:05:45Z",
+            "scored_rows": 9824,
+            "sealed_at": "2026-09-25T00:00:00Z",
+            "sealed_row_count": 9824
+          },
+          "horizon": "h+60",
+          "literature": {
+            "metric": "NOT_CARRIED",
+            "scale": "NOT_CARRIED",
+            "source": "NOT_CARRIED",
+            "value": "NOT_CARRIED"
+          },
+          "metric": "mae",
+          "metric_set": "forecast",
+          "metric_set_index": 0,
+          "model_error": 0.526293524060822,
+          "naive": {
+            "error": 0.5993265472312703,
+            "name": "last_value",
+            "note": null,
+            "rows": 9824,
+            "same_rows_as_model": true
+          },
+          "orientation": "error",
+          "rank": 1,
+          "reason": null,
+          "refusal": null,
+          "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
+          "skill": 0.12185848183739156,
+          "skill_source": "report:metric_sets[0].values.skill_mae",
+          "source": "report.json",
+          "stage": "quantile_hand_95",
           "status": "MEASURED",
           "target": "Global_active_power"
         }
@@ -352,6 +399,14 @@
       "report_file": "report.json",
       "report_generated_at": "2026-09-25T08:16:28Z",
       "stage": "quantile_hand"
+    },
+    {
+      "area": "forecast",
+      "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+      "report_file": "report.json",
+      "report_generated_at": "2026-09-25T10:05:45Z",
+      "stage": "quantile_hand_95"
     }
   ],
   "not_measured": [
@@ -385,7 +440,8 @@
     "candidate_seasonal_lag_74",
     "candidate_short_memory",
     "laya_chosen",
-    "quantile_hand"
+    "quantile_hand",
+    "quantile_hand_95"
   ],
   "version": "m5phet-evaluation-stage-comparison/1"
 }

@@ -1,0 +1,198 @@
+{
+ "capabilities_bundles": [
+  {
+   "targets": [
+    "Global_active_power"
+   ],
+   "horizons": [
+    60
+   ],
+   "unit": "kW",
+   "scale": "original",
+   "state_ref": "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7",
+   "task_id": "e1.household.W60_h60",
+   "family": "regression_forecasting",
+   "window": 60,
+   "step_seconds": 60,
+   "heads": [
+    "point"
+   ],
+   "title": "DEVELOPMENT: retained household-power model, 60-minute forecast",
+   "quantiles": [],
+   "fitted_confidence_levels": [],
+   "representation_spec": "REPRESENTATION_NOT_RECORDED"
+  },
+  {
+   "targets": [
+    "direction_long"
+   ],
+   "horizons": [
+    1
+   ],
+   "unit": "probability",
+   "scale": "probability",
+   "state_ref": "phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99",
+   "task_id": "predictor.phase-1c-direction-cnn-direction-long.W71_h1",
+   "family": "binary_classification",
+   "window": 71,
+   "step_seconds": 14400,
+   "heads": [
+    "point"
+   ],
+   "title": "DEVELOPMENT: retained predictor direction_cnn example, direction_long probability",
+   "quantiles": [],
+   "fitted_confidence_levels": [],
+   "representation_spec": "REPRESENTATION_NOT_RECORDED"
+  },
+  {
+   "targets": [
+    "Global_active_power"
+   ],
+   "horizons": [
+    60
+   ],
+   "unit": "kW",
+   "scale": "original",
+   "state_ref": "quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8",
+   "task_id": "predictor.quantile-household-95-20260925.W60_h60",
+   "family": "regression_forecasting",
+   "window": 60,
+   "step_seconds": 60,
+   "heads": [
+    "quantile"
+   ],
+   "title": "DEVELOPMENT: household power, quantile head (0.025/0.05/0.5/0.95/0.975) at 60 steps",
+   "quantiles": [
+    0.025,
+    0.05,
+    0.5,
+    0.95,
+    0.975
+   ],
+   "fitted_confidence_levels": [
+    0.9,
+    0.95
+   ],
+   "representation_spec": {
+    "calendar": {
+     "clock": "receipt",
+     "columns": []
+    },
+    "candidate_id": "hand_household_w60",
+    "differencing": {
+     "order": 0
+    },
+    "exogenous": [
+     "Global_reactive_power",
+     "Voltage",
+     "Global_intensity",
+     "Sub_metering_1",
+     "Sub_metering_2",
+     "Sub_metering_3"
+    ],
+    "features": [],
+    "holdout": {
+     "fraction": 0.2
+    },
+    "lags": [
+     1
+    ],
+    "provenance": "DEVELOPMENT",
+    "sampling": {
+     "step_seconds": 60,
+     "timezone": "UTC"
+    },
+    "schema": "m5phet.representation.v1",
+    "target": {
+     "column": "Global_active_power",
+     "transform": "level"
+    },
+    "why": {
+     "features": "none: the hand configuration adds no calendar or derived feature",
+     "lags": "none beyond the window itself; the hand configuration declares no lag features",
+     "transform": "level: the household pilot forecasts the level of Global_active_power",
+     "windows": "60: the window the household DEV resource e1_household_dev_pilot_v1 declares (DATA.json 'window'), fixed by hand before any of this work"
+    },
+    "windows": [
+     60
+    ]
+   }
+  }
+ ],
+ "examples": [
+  {
+   "title": "DEVELOPMENT: retained household-power model, 60-minute forecast",
+   "prompt": "forecast Global_active_power at 60 steps",
+   "representation_spec": "REPRESENTATION_NOT_RECORDED",
+   "heads": [
+    "point"
+   ],
+   "unit": "kW",
+   "family": "regression_forecasting"
+  },
+  {
+   "title": "DEVELOPMENT: retained predictor direction_cnn example, direction_long probability",
+   "prompt": "what is the direction_long probability at horizon 1?",
+   "representation_spec": "REPRESENTATION_NOT_RECORDED",
+   "heads": [
+    "point"
+   ],
+   "unit": "probability",
+   "family": "binary_classification"
+  },
+  {
+   "title": "DEVELOPMENT: household power, quantile head (0.025/0.05/0.5/0.95/0.975) at 60 steps",
+   "prompt": "forecast Global_active_power at 60 steps",
+   "representation_spec": {
+    "calendar": {
+     "clock": "receipt",
+     "columns": []
+    },
+    "candidate_id": "hand_household_w60",
+    "differencing": {
+     "order": 0
+    },
+    "exogenous": [
+     "Global_reactive_power",
+     "Voltage",
+     "Global_intensity",
+     "Sub_metering_1",
+     "Sub_metering_2",
+     "Sub_metering_3"
+    ],
+    "features": [],
+    "holdout": {
+     "fraction": 0.2
+    },
+    "lags": [
+     1
+    ],
+    "provenance": "DEVELOPMENT",
+    "sampling": {
+     "step_seconds": 60,
+     "timezone": "UTC"
+    },
+    "schema": "m5phet.representation.v1",
+    "target": {
+     "column": "Global_active_power",
+     "transform": "level"
+    },
+    "why": {
+     "features": "none: the hand configuration adds no calendar or derived feature",
+     "lags": "none beyond the window itself; the hand configuration declares no lag features",
+     "transform": "level: the household pilot forecasts the level of Global_active_power",
+     "windows": "60: the window the household DEV resource e1_household_dev_pilot_v1 declares (DATA.json 'window'), fixed by hand before any of this work"
+    },
+    "windows": [
+     60
+    ]
+   },
+   "heads": [
+    "quantile"
+   ],
+   "unit": "kW",
+   "family": "regression_forecasting"
+  }
+ ],
+ "chat_slots_note": "slots are declared per provider; the bundle slot appears when several bundles are configured"
+}

@@ -1,0 +1,22 @@
+{
+  "native_values": [
+    [
+      0.6201152801513672
+    ]
+  ],
+  "provider_values": [
+    [
+      0.6201152801513672
+    ]
+  ],
+  "rtol": 1e-06,
+  "atol": 1e-06,
+  "max_absolute_error": 0.0,
+  "state_digest": "a27b42fd75a38f96870af2262d06bfc47280f4d9b33fd7b60793d93a25f27d6f",
+  "model_sha256": "cf9577f9d1f99cebde72e3725a0a400b8ca47ced6a5c80c780c0228d413bd084",
+  "input_sha256": "fa639058be9f4acd59ee729a2eac5a0f6076df99683b997a186c66b715de89b0",
+  "population": "TRAIN history only",
+  "no_training": true,
+  "no_heldout_scoring": true,
+  "device": "CPU"
+}

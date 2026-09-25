@@ -1,0 +1,107 @@
+{
+  "chosen_by": "HAND",
+  "core": {
+    "chosen_by": "HAND",
+    "decision": null,
+    "encoder_mapping": {
+      "branches": {},
+      "core": "quantile_ann",
+      "status": "NOT_MULTI_BRANCH"
+    },
+    "key": "quantile_ann",
+    "quantiles": [
+      0.025,
+      0.05,
+      0.5,
+      0.95,
+      0.975
+    ],
+    "why": "WP07 names this plugin: a dense trunk over the window with a monotone head fitted by the pinball loss over the declared quantiles [0.025, 0.05, 0.5, 0.95, 0.975]. It is a single-window core and declares no branches. The pairs (0.025, 0.975) and (0.05, 0.95) are what make the 0.95 and 0.90 two-sided levels answerable: the WP07 bundle fitted only the second, so the 0.95 interval the acceptance harness asks for was refused CONFIDENCE_LEVEL_NOT_FITTED -- correctly, and unusably. A level is answered because it was fitted, never because it was asked for"
+  },
+  "decisions": [],
+  "execution_authorized": false,
+  "extractors": {
+    "all": {
+      "decision": null,
+      "plugin": "NOT_APPLICABLE_SINGLE_WINDOW_CORE"
+    }
+  },
+  "features": [
+    "Global_active_power",
+    "Global_reactive_power",
+    "Voltage",
+    "Global_intensity",
+    "Sub_metering_1",
+    "Sub_metering_2",
+    "Sub_metering_3"
+  ],
+  "grouping": {
+    "chosen_by": "HAND",
+    "decision": null,
+    "groups": [
+      {
+        "group_id": "all",
+        "members": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ]
+      }
+    ],
+    "k": 1,
+    "why": "the quantile core takes one window; this group is recorded for the record and the run manifest says grouping_applied: NOT_APPLICABLE_SINGLE_WINDOW_CORE"
+  },
+  "preprocessing": {},
+  "provenance": "DEVELOPMENT",
+  "representation": {
+    "calendar": {
+      "clock": "receipt",
+      "columns": []
+    },
+    "candidate_id": "hand_household_w60",
+    "differencing": {
+      "order": 0
+    },
+    "exogenous": [
+      "Global_reactive_power",
+      "Voltage",
+      "Global_intensity",
+      "Sub_metering_1",
+      "Sub_metering_2",
+      "Sub_metering_3"
+    ],
+    "features": [],
+    "holdout": {
+      "fraction": 0.2
+    },
+    "lags": [
+      1
+    ],
+    "provenance": "DEVELOPMENT",
+    "sampling": {
+      "step_seconds": 60,
+      "timezone": "UTC"
+    },
+    "schema": "m5phet.representation.v1",
+    "target": {
+      "column": "Global_active_power",
+      "transform": "level"
+    },
+    "why": {
+      "features": "none: the hand configuration adds no calendar or derived feature",
+      "lags": "none beyond the window itself; the hand configuration declares no lag features",
+      "transform": "level: the household pilot forecasts the level of Global_active_power",
+      "windows": "60: the window the household DEV resource e1_household_dev_pilot_v1 declares (DATA.json 'window'), fixed by hand before any of this work"
+    },
+    "windows": [
+      60
+    ]
+  },
+  "schema": "m5phet.pipeline.v1",
+  "stage": "quantile_hand_95",
+  "why": "WP07: the same household representation the hand stage uses (window 60, the seven meter columns as one block), fitted with a QUANTILE head instead of a point head. Nothing about the representation differs from baseline_hand, so what the closure table shows between those two rows is the cost of the head, not of the representation. This stage refits the same representation and core with five quantiles instead of three; nothing else about it changes."
+}
