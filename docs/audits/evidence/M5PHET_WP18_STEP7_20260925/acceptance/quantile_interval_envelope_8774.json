@@ -1,3 +1,13 @@
+{
+  "answers": {
+    "prediccion": {
+      "as_of": "2026-09-25T08:57:12.005517+00:00",
+      "execution_authorized": false,
+      "horizons": [
+        60
+      ],
+      "scale": "original",
+      "state_ref": "quantile-household-dev-20260925:82a03b90fccc4ef0ce2b051e0ccf1eb006df0e2ebd394735aedd99273b590473",
       "status": "OK",
       "targets": [
         "Global_active_power"
@@ -10,7 +20,7 @@
       ]
     },
     "rango": {
-      "as_of": "2026-09-25T08:42:47.290297+00:00",
+      "as_of": "2026-09-25T08:57:18.509186+00:00",
       "confidence_level": 0.9,
       "execution_authorized": false,
       "horizons": [
@@ -45,6 +55,6 @@
     }
   },
   "execution_authorized": false,
-  "narration": "Pron\u00f3stico puntual (horizonte 60): 0.49528419971466064 kW.\nRango al 90% de confianza: [0.12776559591293335, 2.1672215461730957] kW.\n\nLa pregunta del rango al 95% fue rechazada (REFUSED, motivo CONFIDENCE_LEVEL_NOT_FITTED): el modelo solo ajust\u00f3 los cuantiles [0.05, 0.5, 0.95], cuyos pares sim\u00e9tricos cubren el 90%; el nivel 0.95 no est\u00e1 ajustado, as\u00ed que se niega en vez de ampliar o estrechar el qu",
+  "narration": "prediccion (point_forecast): values=[0.49528419971466064], unit=kW, scale=original, targets=[\"Global_active_power\"], horizons=[60], state_ref=quantile-household-dev-20260925:82a03b90fccc4ef0ce2b051e0ccf1eb006df0e2ebd...\nrango (interval): values=[[0.12776559591293335, 2.1672215461730957]], confidence_level=0.9, quantiles=[0.05, 0.95], point=0.49528419971466064, unit=kW, scale=original\nrango95: not ",
   "status": "PARTIAL"
 }
