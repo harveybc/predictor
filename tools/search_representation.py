@@ -21,6 +21,10 @@ What makes it a search and not a tuning run:
   beyond its window, a differencing order under a transform that already differences, or no column at all, produces a
   refusal with the code and the genome that caused it. Moving it to the nearest legal point would make the search
   report a space it did not search;
+* **the card is checked before every dispatch.** ``--device gpu`` means "use the GPU if nothing else is holding it":
+  ``device_for`` reads the driver before each fit and falls back to the CPU, recording why in the ledger, when another
+  job has the card or the card cannot be asked. (Added after the two rounds of 2026-09-25, which checked the card once
+  per round instead; their ledgers therefore carry no ``device`` field.)
 * **nothing is tuned to make a candidate win.** The only thing a genome changes is the representation. Every number
   that decides how long a fit runs or how it is optimised is declared once, on the command line, and is the same for
   every point and for the stages measured before this one.
@@ -95,6 +99,51 @@ OK = "OK"
 LAG_EXCEEDS_WINDOW = "LAG_EXCEEDS_WINDOW"
 NO_LAG_DECLARED = "NO_LAG_DECLARED"
 NO_FEATURE_SELECTED = "NO_FEATURE_SELECTED"
+
+
+#: how much of the GPU another process may hold before a dispatch falls back to the CPU. A display server sits on a
+#: few hundred MiB of an otherwise idle card; a training job does not.
+GPU_BUSY_MIB = 1536
+
+
+def gpu_holders(nvidia_smi="nvidia-smi"):
+    """(used MiB, compute processes) as the driver reports them, or `None` when the card cannot be asked.
+
+    Read before every dispatch, not once per round: the owner's other work may start at any time, and a fit that has
+    to share the card is both slower and no longer running under the conditions the other stages ran under.
+    """
+    try:
+        used = subprocess.run([nvidia_smi, "--query-gpu=memory.used", "--format=csv,noheader,nounits"],
+                              capture_output=True, text=True, timeout=30)
+        apps = subprocess.run([nvidia_smi, "--query-compute-apps=pid,used_memory", "--format=csv,noheader"],
+                              capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if used.returncode != 0:
+        return None
+    first = used.stdout.strip().splitlines()
+    if not first:
+        return None
+    try:
+        megabytes = int(first[0].strip())
+    except ValueError:
+        return None
+    processes = [line for line in apps.stdout.strip().splitlines() if line.strip()]
+    return megabytes, processes
+
+
+def device_for(requested, *, nvidia_smi="nvidia-smi"):
+    """The device this dispatch may use, and why. A card another job is holding is left alone, not shared."""
+    if requested != "gpu":
+        return requested, "the command asked for the CPU"
+    reading = gpu_holders(nvidia_smi)
+    if reading is None:
+        return "cpu", "the GPU could not be asked what it is holding, so this dispatch does not assume it is free"
+    megabytes, processes = reading
+    if megabytes > GPU_BUSY_MIB:
+        return "cpu", (f"the GPU holds {megabytes} MiB and {len(processes)} compute process(es), above the declared "
+                       f"{GPU_BUSY_MIB} MiB: another job has it and this dispatch does not share it")
+    return "gpu", f"the GPU holds {megabytes} MiB, below the declared {GPU_BUSY_MIB} MiB"
 
 
 class SearchError(RuntimeError):
@@ -242,6 +291,7 @@ def identity(spec_representation, *, feature_eng_src):
 
 def fit(spec_path: Path, *, stage: str, out_dir: Path, args) -> dict:
     """One evaluation: the fit harness, under the memory guard, reporting the report's own MAE. Never recomputed here."""
+    device, why = device_for(args.device)
     command = [args.crispdm_run, "-m", args.memory, "-t", str(args.wall_seconds), "-n", args.guard_name, "--",
                args.python, str(REPO_ROOT / "tools" / "fit_pipeline_spec.py"),
                "--spec", str(spec_path), "--data", str(args.data), "--stage", stage,
@@ -249,7 +299,7 @@ def fit(spec_path: Path, *, stage: str, out_dir: Path, args) -> dict:
                "--seal-window", str(args.seal_window), "--horizon", str(args.horizon),
                "--holdout-fraction", str(args.holdout_fraction), "--sealed-at", args.sealed_at,
                "--epochs", str(args.epochs), "--patience", str(args.patience),
-               "--batch-size", str(args.batch_size), "--seed", str(args.seed), "--device", args.device,
+               "--batch-size", str(args.batch_size), "--seed", str(args.seed), "--device", device,
                "--expect-seal", args.expect_seal]
     started = time.time()
     finished = subprocess.run(command, capture_output=True, text=True)
@@ -269,7 +319,8 @@ def fit(spec_path: Path, *, stage: str, out_dir: Path, args) -> dict:
     if not summary["seal"].startswith(args.expect_seal):
         return {"status": REFUSED, "refusal": "NOT_COMPARABLE",
                 "why": f"the fit sealed {summary['seal'][:12]}, not {args.expect_seal}", "seconds": seconds}
-    return {"status": OK, "mae": mae, "rmse": float(metric_set["values"]["rmse"]),
+    return {"status": OK, "device": device, "device_why": why, "mae": mae,
+            "rmse": float(metric_set["values"]["rmse"]),
             "skill_mae": float(metric_set["values"]["skill_mae"]),
             "naive_mae": float(metric_set["baseline"]["mae"]), "seal": summary["seal"],
             "sealed_rows": int(summary["sealed_rows"]), "epochs_run": int(summary["epochs_run"]),

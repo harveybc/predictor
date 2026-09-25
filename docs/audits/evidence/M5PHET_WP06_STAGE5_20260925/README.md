@@ -55,8 +55,16 @@ sub-range 3…73, where only the lag set {1} can be legal (hence its 404 refusal
 Both rounds share the objective, the seal, the held-fixed configuration and the ledger format; they are one search
 and one decision record.
 
-Fits cost 22.6 s on average (max 51.4 s) on the local RTX 4070, 65 fits in 24.0 minutes of fitting, under
-`crispdm-run -m 10G -t 3600 -n wp06s --`, well inside the ~2 hours declared.
+Fits cost 22.6 s on average (max 51.4 s) on the coordinator's own RTX 4070, 65 fits in 24.0 minutes of fitting,
+every one of them under `crispdm-run -m 10G -t 3600 -n wp06s --`, well inside the ~2 hours declared.
+
+Two things about that card, said plainly. It is **not** the worker's external 5090 that §0 rule 4 of the work plan
+reserves; the WP06 stages 3-4 round fitted on this same local GPU (`training.device: "gpu"` in its manifests) and this
+round reproduces its number on it, which is the only way the control means anything. And the card was verified idle
+**before each of the three dispatch groups** (the control, round 1, round 2) — 686-849 MiB held, 0 % utilisation, no
+compute process but the display — *not* before each individual fit inside a round. `device_for()` in
+`tools/search_representation.py` now does check before every dispatch and falls back to the CPU, naming why, when the
+card is held; it was added after these two rounds ran, so their ledgers carry no `device` field.
 
 ## What was refused, by name, and never repaired
 

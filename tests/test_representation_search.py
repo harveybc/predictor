@@ -182,3 +182,22 @@ def test_the_ledger_counts_refusals_by_name(tmp_path):
     assert written["evaluated"] == 1 and written["refused"] == 2
     assert written["refusals_by_name"] == {search.LAG_EXCEEDS_WINDOW: 2}
     assert set(search.load_ledger(path)) == {"a", "b", "c"}
+
+
+# ------------------------------------------------------------------- the card is checked before every dispatch
+
+def test_a_busy_card_sends_the_dispatch_to_the_cpu_and_says_why(monkeypatch):
+    monkeypatch.setattr(search, "gpu_holders", lambda nvidia_smi="nvidia-smi": (7400, ["1234, 7000 MiB"]))
+    device, why = search.device_for("gpu")
+    assert device == "cpu" and "another job has it" in why
+
+
+def test_a_free_card_is_used_and_an_unreadable_one_is_not_assumed_free(monkeypatch):
+    monkeypatch.setattr(search, "gpu_holders", lambda nvidia_smi="nvidia-smi": (812, []))
+    assert search.device_for("gpu")[0] == "gpu"
+    monkeypatch.setattr(search, "gpu_holders", lambda nvidia_smi="nvidia-smi": None)
+    device, why = search.device_for("gpu")
+    assert device == "cpu" and "does not assume it is free" in why
+    # and a run that asked for the CPU never touches the card at all
+    monkeypatch.setattr(search, "gpu_holders", lambda nvidia_smi="nvidia-smi": (_ for _ in ()).throw(AssertionError))
+    assert search.device_for("cpu")[0] == "cpu"
