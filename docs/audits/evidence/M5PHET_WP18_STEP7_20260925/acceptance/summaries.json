@@ -1,0 +1,45 @@
+{
+  "note": "two configurations of the SAME code (prediction_provider @91dbb8c). 'owner_two_bundles' is the directory the owner's workbench is configured with today; 'with_quantile_bundle' is that directory plus the WP07 quantile bundle, which serves the same target at the same horizon as the retained household bundle",
+  "owner_two_bundles": {
+    "envelopes": {
+      "any_execution_authorized": false,
+      "questions": 15,
+      "questions_as_expected": 15
+    },
+    "families": {
+      "any_execution_authorized": false,
+      "examples": 9,
+      "examples_answering": 9,
+      "examples_that_resolve": 9,
+      "families": 5,
+      "families_answering": 5,
+      "prose": 14,
+      "prose_answered": 14,
+      "prose_declared": 14,
+      "refusals": 2,
+      "refusals_correct": 2
+    }
+  },
+  "port": 8774,
+  "with_quantile_bundle": {
+    "envelopes": {
+      "any_execution_authorized": false,
+      "questions": 15,
+      "questions_as_expected": 12
+    },
+    "families": {
+      "any_execution_authorized": false,
+      "examples": 10,
+      "examples_answering": 8,
+      "examples_that_resolve": 8,
+      "families": 5,
+      "families_answering": 5,
+      "prose": 14,
+      "prose_answered": 12,
+      "prose_declared": 14,
+      "refusals": 2,
+      "refusals_correct": 2
+    },
+    "why": "every forecast question that names only `target_variable` is refused STATE_REQUIRED, because two configured bundles serve Global_active_power at horizon 60 and the provider refuses to pick one. That is the provider's own declared rule; the harness was not edited"
+  }
+}

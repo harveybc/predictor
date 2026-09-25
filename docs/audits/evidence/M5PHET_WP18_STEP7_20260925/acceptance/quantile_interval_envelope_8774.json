@@ -1,0 +1,50 @@
+      "status": "OK",
+      "targets": [
+        "Global_active_power"
+      ],
+      "type": "point_forecast",
+      "uncertainty": "fitted_quantiles",
+      "unit": "kW",
+      "values": [
+        0.49528419971466064
+      ]
+    },
+    "rango": {
+      "as_of": "2026-09-25T08:42:47.290297+00:00",
+      "confidence_level": 0.9,
+      "execution_authorized": false,
+      "horizons": [
+        60
+      ],
+      "point": 0.49528419971466064,
+      "quantiles": [
+        0.05,
+        0.95
+      ],
+      "scale": "original",
+      "state_ref": "quantile-household-dev-20260925:82a03b90fccc4ef0ce2b051e0ccf1eb006df0e2ebd394735aedd99273b590473",
+      "status": "OK",
+      "targets": [
+        "Global_active_power"
+      ],
+      "type": "interval",
+      "uncertainty": "fitted_quantiles",
+      "unit": "kW",
+      "values": [
+        [
+          0.12776559591293335,
+          2.1672215461730957
+        ]
+      ]
+    },
+    "rango95": {
+      "refusal": "CONFIDENCE_LEVEL_NOT_FITTED",
+      "status": "REFUSED",
+      "type": "interval",
+      "why": "quantile-household-dev-20260925:82a03b90fccc4ef0ce2b051e0ccf1eb006df0e2ebd394735aedd99273b590473 fitted the quantiles [0.05, 0.5, 0.95], whose symmetric pairs cover [0.9]; 0.95 is not one of them. A level this model was not fitted for is refused, not widened or narrowed from one that was"
+    }
+  },
+  "execution_authorized": false,
+  "narration": "Pron\u00f3stico puntual (horizonte 60): 0.49528419971466064 kW.\nRango al 90% de confianza: [0.12776559591293335, 2.1672215461730957] kW.\n\nLa pregunta del rango al 95% fue rechazada (REFUSED, motivo CONFIDENCE_LEVEL_NOT_FITTED): el modelo solo ajust\u00f3 los cuantiles [0.05, 0.5, 0.95], cuyos pares sim\u00e9tricos cubren el 90%; el nivel 0.95 no est\u00e1 ajustado, as\u00ed que se niega en vez de ampliar o estrechar el qu",
+  "status": "PARTIAL"
+}
