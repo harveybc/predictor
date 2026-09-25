@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-"""
+"""Sliding windows of typical_price from the CSVs, optionally as returns, reshaped 3-D.
+
 Default Preprocessor Plugin
 
 Este plugin se encarga del preprocesamiento de datos para la predicción de EUR/USD.

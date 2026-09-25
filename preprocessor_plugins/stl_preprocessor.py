@@ -1,3 +1,4 @@
+"""Denormalizes, windows, and targets log returns from real-unit baselines."""
 import numpy as np
 import pandas as pd
 from .helpers import load_normalization_json, denormalize_all_datasets, load_normalized_csv, exclude_columns_from_datasets
@@ -8,7 +9,8 @@ _QUIET = _os.environ.get('PREDICTOR_QUIET', '0') == '1'
 
 
 class STLPreprocessorZScore:
-    """
+    """Denormalizes, windows, and targets log returns from real-unit baselines.
+
     1. Load already normalized CSV data ✅
     2. Denormalize all input datasets using JSON parameters
     3. Create sliding windows from denormalized data
