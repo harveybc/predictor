@@ -1,0 +1,2315 @@
+{
+ "abstention": {
+  "confidence": "CONFIDENCE_NOT_REPORTED",
+  "plugin": "command",
+  "rule": "NOT_CONFIGURED",
+  "why": "the 'command' interpreter returns text; it reports no confidence for the values it chooses among the declared ones. With a threshold declared, a sentence whose parameters only a model could settle is refused as CONFIDENCE_NOT_REPORTED rather than passed as if the rule had run"
+ },
+ "base": "http://127.0.0.1:<verification port>",
+ "interpreter": {
+  "available": true,
+  "command": "hermes",
+  "model": "deepseek-v4-flash (OpenCode Go)",
+  "plugin": "command",
+  "reading": "the model chooses among declared values; it cannot introduce one",
+  "reports_confidence": false
+ },
+ "interpreter_path": {
+  "interpreter": {
+   "available": true,
+   "command": "hermes",
+   "model": "deepseek-v4-flash (OpenCode Go)",
+   "plugin": "command",
+   "reading": "the model chooses among declared values; it cannot introduce one",
+   "reports_confidence": false
+  },
+  "protocol": "Interpreter.propose(sentence, slots) is called N times per sentence with the area's declared values and aliases as published by /api/tasks/catalog -- what interpret() shows a model when the words settle nothing. A proposal outside the declared values is not kept, exactly as interpret() does not keep it. No deterministic pass runs first: this is the model's own reading of the sentence and nothing else.",
+  "runs_per_sentence": 5,
+  "sentences": [
+   {
+    "kind": "NO_SLOTS",
+    "matched": 0,
+    "prompt": "Which economy is named in this news?",
+    "provider": "laya_news",
+    "runs": 0
+   },
+   {
+    "kind": "NO_SLOTS",
+    "matched": 0,
+    "prompt": "¿De qué economía habla esta noticia?",
+    "provider": "laya_news",
+    "runs": 0
+   },
+   {
+    "distinct_resolutions": [
+     "{\"horizon\": 60, \"target\": \"Global_active_power\"}"
+    ],
+    "expected": {
+     "horizon": 60,
+     "target": "Global_active_power"
+    },
+    "kind": "INTERPRETED",
+    "matched": 5,
+    "per_field_matched": {
+     "horizon": 5,
+     "target": 5
+    },
+    "prompt": "predict household power one hour ahead",
+    "provider": "predictor_forecast",
+    "results": [
+     {
+      "parameters": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "seconds": 10.22,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "seconds": 8.67,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "seconds": 7.8,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "seconds": 7.18,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "seconds": 8.44,
+      "status": "OK"
+     }
+    ],
+    "runs": 5,
+    "seconds_mean": 8.46,
+    "stable": true,
+    "verdicts": {
+     "CORRECT": 5
+    }
+   },
+   {
+    "distinct_resolutions": [
+     "{\"horizon\": 60, \"target\": \"Global_active_power\"}"
+    ],
+    "expected": {
+     "horizon": 60,
+     "target": "Global_active_power"
+    },
+    "kind": "INTERPRETED",
+    "matched": 5,
+    "per_field_matched": {
+     "horizon": 5,
+     "target": 5
+    },
+    "prompt": "¿cuánta potencia habrá en la próxima hora?",
+    "provider": "predictor_forecast",
+    "results": [
+     {
+      "parameters": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "seconds": 9.07,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "seconds": 10.25,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "seconds": 7.88,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "seconds": 8.2,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      },
+      "seconds": 7.56,
+      "status": "OK"
+     }
+    ],
+    "runs": 5,
+    "seconds_mean": 8.59,
+    "stable": true,
+    "verdicts": {
+     "CORRECT": 5
+    }
+   },
+   {
+    "distinct_resolutions": [
+     "{\"horizon\": 1, \"target\": \"direction_long\"}"
+    ],
+    "expected": {
+     "horizon": 1,
+     "target": "direction_long"
+    },
+    "kind": "INTERPRETED",
+    "matched": 5,
+    "per_field_matched": {
+     "horizon": 5,
+     "target": 5
+    },
+    "prompt": "what is the direction_long probability at horizon 1?",
+    "provider": "predictor_forecast",
+    "results": [
+     {
+      "parameters": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "seconds": 9.65,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "seconds": 7.49,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "seconds": 7.67,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "seconds": 8.67,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "seconds": 6.78,
+      "status": "OK"
+     }
+    ],
+    "runs": 5,
+    "seconds_mean": 8.05,
+    "stable": true,
+    "verdicts": {
+     "CORRECT": 5
+    }
+   },
+   {
+    "distinct_resolutions": [
+     "{\"horizon\": 1, \"target\": \"direction_long\"}"
+    ],
+    "expected": {
+     "horizon": 1,
+     "target": "direction_long"
+    },
+    "kind": "INTERPRETED",
+    "matched": 5,
+    "per_field_matched": {
+     "horizon": 5,
+     "target": 5
+    },
+    "prompt": "¿cuál es la probabilidad de direction_long a horizonte 1?",
+    "provider": "predictor_forecast",
+    "results": [
+     {
+      "parameters": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "seconds": 6.95,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "seconds": 6.36,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "seconds": 8.9,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "seconds": 6.78,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "problems": {},
+      "proposed": {
+       "horizon": 1,
+       "target": "direction_long"
+      },
+      "seconds": 6.77,
+      "status": "OK"
+     }
+    ],
+    "runs": 5,
+    "seconds_mean": 7.15,
+    "stable": true,
+    "verdicts": {
+     "CORRECT": 5
+    }
+   },
+   {
+    "distinct_resolutions": [
+     "{\"target_metric\": \"highest body_pipettes\"}",
+     "{\"target_metric\": \"none (assignment only)\"}"
+    ],
+    "expected": {
+     "target_metric": "highest body_pipettes"
+    },
+    "kind": "INTERPRETED",
+    "matched": 3,
+    "per_field_matched": {
+     "target_metric": 3
+    },
+    "prompt": "describe el grupo de velas con cuerpo alto",
+    "provider": "feature-eng-hierarchical-regimes",
+    "results": [
+     {
+      "parameters": {
+       "target_metric": "highest body_pipettes"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "highest body_pipettes"
+      },
+      "seconds": 7.16,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "none (assignment only)"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "none (assignment only)"
+      },
+      "seconds": 9.31,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "highest body_pipettes"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "highest body_pipettes"
+      },
+      "seconds": 6.98,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "none (assignment only)"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "none (assignment only)"
+      },
+      "seconds": 7.05,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "highest body_pipettes"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "highest body_pipettes"
+      },
+      "seconds": 6.45,
+      "status": "OK"
+     }
+    ],
+    "runs": 5,
+    "seconds_mean": 7.39,
+    "stable": false,
+    "verdicts": {
+     "CORRECT": 3,
+     "WRONG_VALUE": 2
+    }
+   },
+   {
+    "distinct_resolutions": [
+     "{\"target_metric\": \"body_pipettes > 0\"}",
+     "{\"target_metric\": \"highest body_pipettes\"}",
+     "{\"target_metric\": null}"
+    ],
+    "expected": {
+     "target_metric": "highest body_pipettes"
+    },
+    "kind": "INTERPRETED",
+    "matched": 3,
+    "per_field_matched": {
+     "target_metric": 3
+    },
+    "prompt": "describe the cluster with a large body",
+    "provider": "feature-eng-hierarchical-regimes",
+    "results": [
+     {
+      "parameters": {
+       "target_metric": "highest body_pipettes"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "highest body_pipettes"
+      },
+      "seconds": 6.78,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "body_pipettes > 0"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "body_pipettes > 0"
+      },
+      "seconds": 6.74,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "highest body_pipettes"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "highest body_pipettes"
+      },
+      "seconds": 9.93,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "highest body_pipettes"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "highest body_pipettes"
+      },
+      "seconds": 7.17,
+      "status": "OK"
+     },
+     {
+      "parameters": {},
+      "problems": {
+       "target_metric": "NOT_PROPOSED"
+      },
+      "proposed": {
+       "target_metric": null
+      },
+      "seconds": 7.25,
+      "status": "OK"
+     }
+    ],
+    "runs": 5,
+    "seconds_mean": 7.57,
+    "stable": false,
+    "verdicts": {
+     "CORRECT": 3,
+     "DECLINED": 1,
+     "WRONG_VALUE": 1
+    }
+   },
+   {
+    "distinct_resolutions": [
+     "{\"target_metric\": \"none (assignment only)\"}",
+     "{\"target_metric\": null}"
+    ],
+    "expected": {
+     "target_metric": "none (assignment only)"
+    },
+    "kind": "INTERPRETED",
+    "matched": 3,
+    "per_field_matched": {
+     "target_metric": 3
+    },
+    "prompt": "assign hierarchical regimes to these rows",
+    "provider": "feature-eng-hierarchical-regimes",
+    "results": [
+     {
+      "parameters": {
+       "target_metric": "none (assignment only)"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "none (assignment only)"
+      },
+      "seconds": 9.03,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "none (assignment only)"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "none (assignment only)"
+      },
+      "seconds": 11.81,
+      "status": "OK"
+     },
+     {
+      "parameters": {},
+      "problems": {
+       "target_metric": "NOT_PROPOSED"
+      },
+      "proposed": {
+       "target_metric": null
+      },
+      "seconds": 6.91,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "none (assignment only)"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "none (assignment only)"
+      },
+      "seconds": 6.7,
+      "status": "OK"
+     },
+     {
+      "parameters": {},
+      "problems": {
+       "target_metric": "NOT_PROPOSED"
+      },
+      "proposed": {
+       "target_metric": null
+      },
+      "seconds": 6.65,
+      "status": "OK"
+     }
+    ],
+    "runs": 5,
+    "seconds_mean": 8.22,
+    "stable": false,
+    "verdicts": {
+     "CORRECT": 3,
+     "DECLINED": 2
+    }
+   },
+   {
+    "distinct_resolutions": [
+     "{\"target_metric\": \"none (assignment only)\"}"
+    ],
+    "expected": {
+     "target_metric": "none (assignment only)"
+    },
+    "kind": "INTERPRETED",
+    "matched": 5,
+    "per_field_matched": {
+     "target_metric": 5
+    },
+    "prompt": "asigna los regímenes jerárquicos a estas filas",
+    "provider": "feature-eng-hierarchical-regimes",
+    "results": [
+     {
+      "parameters": {
+       "target_metric": "none (assignment only)"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "none (assignment only)"
+      },
+      "seconds": 8.19,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "none (assignment only)"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "none (assignment only)"
+      },
+      "seconds": 9.62,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "none (assignment only)"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "none (assignment only)"
+      },
+      "seconds": 6.67,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "none (assignment only)"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "none (assignment only)"
+      },
+      "seconds": 8.93,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "target_metric": "none (assignment only)"
+      },
+      "problems": {},
+      "proposed": {
+       "target_metric": "none (assignment only)"
+      },
+      "seconds": 8.38,
+      "status": "OK"
+     }
+    ],
+    "runs": 5,
+    "seconds_mean": 8.36,
+    "stable": true,
+    "verdicts": {
+     "CORRECT": 5
+    }
+   },
+   {
+    "distinct_resolutions": [
+     "{\"study\": \"ATE of treatment on outcome\"}"
+    ],
+    "expected": {
+     "study": "ATE of treatment on outcome"
+    },
+    "kind": "INTERPRETED",
+    "matched": 5,
+    "per_field_matched": {
+     "study": 5
+    },
+    "prompt": "Report ATE of treatment on outcome, with its uncertainty.",
+    "provider": "causal_inference",
+    "results": [
+     {
+      "parameters": {
+       "study": "ATE of treatment on outcome"
+      },
+      "problems": {},
+      "proposed": {
+       "study": "ATE of treatment on outcome"
+      },
+      "seconds": 9.21,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "study": "ATE of treatment on outcome"
+      },
+      "problems": {},
+      "proposed": {
+       "study": "ATE of treatment on outcome"
+      },
+      "seconds": 6.4,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "study": "ATE of treatment on outcome"
+      },
+      "problems": {},
+      "proposed": {
+       "study": "ATE of treatment on outcome"
+      },
+      "seconds": 6.61,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "study": "ATE of treatment on outcome"
+      },
+      "problems": {},
+      "proposed": {
+       "study": "ATE of treatment on outcome"
+      },
+      "seconds": 7.54,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "study": "ATE of treatment on outcome"
+      },
+      "problems": {},
+      "proposed": {
+       "study": "ATE of treatment on outcome"
+      },
+      "seconds": 9.15,
+      "status": "OK"
+     }
+    ],
+    "runs": 5,
+    "seconds_mean": 7.78,
+    "stable": true,
+    "verdicts": {
+     "CORRECT": 5
+    }
+   },
+   {
+    "distinct_resolutions": [
+     "{\"study\": \"ATE of treatment on outcome\"}"
+    ],
+    "expected": {
+     "study": "ATE of treatment on outcome"
+    },
+    "kind": "INTERPRETED",
+    "matched": 5,
+    "per_field_matched": {
+     "study": 5
+    },
+    "prompt": "¿Cuál es el ATE of treatment on outcome y su incertidumbre?",
+    "provider": "causal_inference",
+    "results": [
+     {
+      "parameters": {
+       "study": "ATE of treatment on outcome"
+      },
+      "problems": {},
+      "proposed": {
+       "study": "ATE of treatment on outcome"
+      },
+      "seconds": 7.36,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "study": "ATE of treatment on outcome"
+      },
+      "problems": {},
+      "proposed": {
+       "study": "ATE of treatment on outcome"
+      },
+      "seconds": 6.67,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "study": "ATE of treatment on outcome"
+      },
+      "problems": {},
+      "proposed": {
+       "study": "ATE of treatment on outcome"
+      },
+      "seconds": 9.31,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "study": "ATE of treatment on outcome"
+      },
+      "problems": {},
+      "proposed": {
+       "study": "ATE of treatment on outcome"
+      },
+      "seconds": 7.62,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "study": "ATE of treatment on outcome"
+      },
+      "problems": {},
+      "proposed": {
+       "study": "ATE of treatment on outcome"
+      },
+      "seconds": 6.87,
+      "status": "OK"
+     }
+    ],
+    "runs": 5,
+    "seconds_mean": 7.57,
+    "stable": true,
+    "verdicts": {
+     "CORRECT": 5
+    }
+   },
+   {
+    "distinct_resolutions": [
+     "{\"policy_id\": \"eth_4h_sac_current_stack_anchor_v1\"}"
+    ],
+    "expected": {
+     "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+    },
+    "kind": "INTERPRETED",
+    "matched": 5,
+    "per_field_matched": {
+     "policy_id": 5
+    },
+    "prompt": "What action does eth_4h_sac_current_stack_anchor_v1 propose?",
+    "provider": "trading_policy",
+    "results": [
+     {
+      "parameters": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      },
+      "problems": {},
+      "proposed": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      },
+      "seconds": 7.79,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      },
+      "problems": {},
+      "proposed": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      },
+      "seconds": 10.23,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      },
+      "problems": {},
+      "proposed": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      },
+      "seconds": 10.13,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      },
+      "problems": {},
+      "proposed": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      },
+      "seconds": 6.97,
+      "status": "OK"
+     },
+     {
+      "parameters": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      },
+      "problems": {},
+      "proposed": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      },
+      "seconds": 6.75,
+      "status": "OK"
+     }
+    ],
+    "runs": 5,
+    "seconds_mean": 8.37,
+    "stable": true,
+    "verdicts": {
+     "CORRECT": 5
+    }
+   },
+   {
+    "distinct_resolutions": [
+     "{\"policy_id\": \"eth_4h_sac_current_stack_anchor_v1\"}",
+     "{\"policy_id\": null}"
+    ],
+    "expected": {
+     "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+    },
+    "kind": "INTERPRETED",
+    "matched": 1,
+    "per_field_matched": {
+     "policy_id": 1
+    },
+    "prompt": "¿Qué acción propone la política para estas barras?",
+    "provider": "trading_policy",
+    "results": [
+     {
+      "parameters": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      },
+      "problems": {},
+      "proposed": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      },
+      "seconds": 9.42,
+      "status": "OK"
+     },
+     {
+      "parameters": {},
+      "problems": {
+       "policy_id": "NOT_PROPOSED"
+      },
+      "proposed": {
+       "policy_id": null
+      },
+      "seconds": 8.1,
+      "status": "OK"
+     },
+     {
+      "parameters": {},
+      "problems": {
+       "policy_id": "NOT_PROPOSED"
+      },
+      "proposed": {
+       "policy_id": null
+      },
+      "seconds": 6.66,
+      "status": "OK"
+     },
+     {
+      "parameters": {},
+      "problems": {
+       "policy_id": "NOT_PROPOSED"
+      },
+      "proposed": {
+       "policy_id": null
+      },
+      "seconds": 10.44,
+      "status": "OK"
+     },
+     {
+      "parameters": {},
+      "problems": {
+       "policy_id": "NOT_PROPOSED"
+      },
+      "proposed": {
+       "policy_id": null
+      },
+      "seconds": 10.34,
+      "status": "OK"
+     }
+    ],
+    "runs": 5,
+    "seconds_mean": 8.99,
+    "stable": false,
+    "verdicts": {
+     "CORRECT": 1,
+     "DECLINED": 4
+    }
+   }
+  ],
+  "summary": {
+   "failed_calls": 0,
+   "matched": 50,
+   "reliability": 0.8333,
+   "reliability_when_it_chose": 0.9434,
+   "runs": 60,
+   "sentences": 12,
+   "sentences_fully_correct": 8,
+   "sentences_never_correct": 0,
+   "sentences_stable": 8,
+   "verdicts": {
+    "CORRECT": 50,
+    "DECLINED": 7,
+    "INTERPRETER_FAILED": 0,
+    "OUTSIDE_DECLARED": 0,
+    "WRONG_VALUE": 3
+   }
+  }
+ },
+ "measured_at": "2026-09-25T17:08:21.149002+00:00",
+ "protocol": "each sentence of tools/verify_families.py PROSE is sent N times to POST /api/chats/{id}/preview, which resolves it into the typed request and runs nothing; a run matches when every field named in tools/measure_interpreter.py EXPECTED resolves to its expected value. Expectations come from the engines' declared vocabularies and the shipped example each sentence is written against, never from a model's answer.",
+ "runs_per_sentence": 5,
+ "schema": "m5phet_interpreter_reliability.v1",
+ "sentences": [
+  {
+   "example": "Noticia · Clasificación",
+   "kind": "NO_SLOTS",
+   "matched": 0,
+   "prompt": "Which economy is named in this news?",
+   "provider": "laya_news",
+   "runs": 0,
+   "why": "this provider declares no slots; the sentence is the question itself and carries no parameter for an interpreter to choose"
+  },
+  {
+   "example": "Noticia · Clasificación",
+   "kind": "NO_SLOTS",
+   "matched": 0,
+   "prompt": "¿De qué economía habla esta noticia?",
+   "provider": "laya_news",
+   "runs": 0,
+   "why": "this provider declares no slots; the sentence is the question itself and carries no parameter for an interpreter to choose"
+  },
+  {
+   "distinct_resolutions": [
+    "{\"horizon\": 60, \"target\": \"Global_active_power\"}"
+   ],
+   "example": "DEVELOPMENT: retained household-power model, 60-minute forecast",
+   "expected": {
+    "horizon": 60,
+    "target": "Global_active_power"
+   },
+   "fields_the_model_chose": [],
+   "kind": "DETERMINISTIC",
+   "matched": 5,
+   "prompt": "predict household power one hour ahead",
+   "provider": "predictor_forecast",
+   "results": [
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7",
+      "horizon": 60,
+      "target": "Global_active_power"
+     },
+     "refusal": null,
+     "seconds": 10.102,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8",
+      "horizon": 60,
+      "target": "Global_active_power"
+     },
+     "refusal": null,
+     "seconds": 16.114,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7",
+      "horizon": 60,
+      "target": "Global_active_power"
+     },
+     "refusal": null,
+     "seconds": 16.481,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7",
+      "horizon": 60,
+      "target": "Global_active_power"
+     },
+     "refusal": null,
+     "seconds": 15.392,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7",
+      "horizon": 60,
+      "target": "Global_active_power"
+     },
+     "refusal": null,
+     "seconds": 30.021,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "scored_fields": [
+    "horizon",
+    "target"
+   ],
+   "seconds_mean": 17.62,
+   "single_valued_fields": [],
+   "stable": true
+  },
+  {
+   "distinct_resolutions": [
+    "{\"horizon\": 60, \"target\": \"Global_active_power\"}"
+   ],
+   "example": "DEVELOPMENT: retained household-power model, 60-minute forecast",
+   "expected": {
+    "horizon": 60,
+    "target": "Global_active_power"
+   },
+   "fields_the_model_chose": [],
+   "kind": "DETERMINISTIC",
+   "matched": 5,
+   "prompt": "¿cuánta potencia habrá en la próxima hora?",
+   "provider": "predictor_forecast",
+   "results": [
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8",
+      "horizon": 60,
+      "target": "Global_active_power"
+     },
+     "refusal": null,
+     "seconds": 12.503,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "horizon": 60,
+      "target": "Global_active_power"
+     },
+     "refusal": null,
+     "seconds": 6.921,
+     "sources": {
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "horizon": 60,
+      "target": "Global_active_power"
+     },
+     "refusal": null,
+     "seconds": 7.065,
+     "sources": {
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8",
+      "horizon": 60,
+      "target": "Global_active_power"
+     },
+     "refusal": null,
+     "seconds": 8.507,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "horizon": 60,
+      "target": "Global_active_power"
+     },
+     "refusal": null,
+     "seconds": 9.206,
+     "sources": {
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "scored_fields": [
+    "horizon",
+    "target"
+   ],
+   "seconds_mean": 8.84,
+   "single_valued_fields": [],
+   "stable": true
+  },
+  {
+   "distinct_resolutions": [
+    "{\"horizon\": 1, \"target\": \"direction_long\"}"
+   ],
+   "example": "DEVELOPMENT: retained predictor direction_cnn example, direction_long probability",
+   "expected": {
+    "horizon": 1,
+    "target": "direction_long"
+   },
+   "fields_the_model_chose": [],
+   "kind": "DETERMINISTIC",
+   "matched": 5,
+   "prompt": "what is the direction_long probability at horizon 1?",
+   "provider": "predictor_forecast",
+   "results": [
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99",
+      "horizon": 1,
+      "target": "direction_long"
+     },
+     "refusal": null,
+     "seconds": 10.632,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99",
+      "horizon": 1,
+      "target": "direction_long"
+     },
+     "refusal": null,
+     "seconds": 7.514,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99",
+      "horizon": 1,
+      "target": "direction_long"
+     },
+     "refusal": null,
+     "seconds": 8.282,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99",
+      "horizon": 1,
+      "target": "direction_long"
+     },
+     "refusal": null,
+     "seconds": 11.957,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "horizon": 1,
+      "target": "direction_long"
+     },
+     "refusal": null,
+     "seconds": 9.123,
+     "sources": {
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "scored_fields": [
+    "horizon",
+    "target"
+   ],
+   "seconds_mean": 9.5,
+   "single_valued_fields": [],
+   "stable": true
+  },
+  {
+   "distinct_resolutions": [
+    "{\"horizon\": 1, \"target\": \"direction_long\"}"
+   ],
+   "example": "DEVELOPMENT: retained predictor direction_cnn example, direction_long probability",
+   "expected": {
+    "horizon": 1,
+    "target": "direction_long"
+   },
+   "fields_the_model_chose": [],
+   "kind": "DETERMINISTIC",
+   "matched": 5,
+   "prompt": "¿cuál es la probabilidad de direction_long a horizonte 1?",
+   "provider": "predictor_forecast",
+   "results": [
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "horizon": 1,
+      "target": "direction_long"
+     },
+     "refusal": null,
+     "seconds": 7.65,
+     "sources": {
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99",
+      "horizon": 1,
+      "target": "direction_long"
+     },
+     "refusal": null,
+     "seconds": 87.356,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99",
+      "horizon": 1,
+      "target": "direction_long"
+     },
+     "refusal": null,
+     "seconds": 14.459,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99",
+      "horizon": 1,
+      "target": "direction_long"
+     },
+     "refusal": null,
+     "seconds": 10.318,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "bundle": "phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99",
+      "horizon": 1,
+      "target": "direction_long"
+     },
+     "refusal": null,
+     "seconds": 14.238,
+     "sources": {
+      "bundle": "INTERPRETER",
+      "horizon": "QUESTION_TEXT",
+      "target": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "scored_fields": [
+    "horizon",
+    "target"
+   ],
+   "seconds_mean": 26.8,
+   "single_valued_fields": [],
+   "stable": true
+  },
+  {
+   "distinct_resolutions": [
+    "{\"target_metric\": \"highest body_pipettes\"}"
+   ],
+   "example": "DEVELOPMENT: 8 historical OHLC rows, no market-performance claim",
+   "expected": {
+    "target_metric": "highest body_pipettes"
+   },
+   "fields_the_model_chose": [],
+   "kind": "DETERMINISTIC",
+   "matched": 5,
+   "prompt": "describe el grupo de velas con cuerpo alto",
+   "provider": "feature-eng-hierarchical-regimes",
+   "results": [
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "highest body_pipettes",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.013,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "highest body_pipettes",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "highest body_pipettes",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "highest body_pipettes",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "highest body_pipettes",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "scored_fields": [
+    "target_metric"
+   ],
+   "seconds_mean": 0.01,
+   "single_valued_fields": [],
+   "stable": true
+  },
+  {
+   "distinct_resolutions": [
+    "{\"target_metric\": \"highest body_pipettes\"}"
+   ],
+   "example": "DEVELOPMENT: 8 historical OHLC rows, no market-performance claim",
+   "expected": {
+    "target_metric": "highest body_pipettes"
+   },
+   "fields_the_model_chose": [],
+   "kind": "DETERMINISTIC",
+   "matched": 5,
+   "prompt": "describe the cluster with a large body",
+   "provider": "feature-eng-hierarchical-regimes",
+   "results": [
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "highest body_pipettes",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "highest body_pipettes",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "highest body_pipettes",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "highest body_pipettes",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "highest body_pipettes",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "scored_fields": [
+    "target_metric"
+   ],
+   "seconds_mean": 0.01,
+   "single_valued_fields": [],
+   "stable": true
+  },
+  {
+   "distinct_resolutions": [
+    "{\"target_metric\": \"none (assignment only)\"}"
+   ],
+   "example": "DEVELOPMENT: 8 historical OHLC rows, no market-performance claim",
+   "expected": {
+    "target_metric": "none (assignment only)"
+   },
+   "fields_the_model_chose": [],
+   "kind": "DETERMINISTIC",
+   "matched": 5,
+   "prompt": "assign hierarchical regimes to these rows",
+   "provider": "feature-eng-hierarchical-regimes",
+   "results": [
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "none (assignment only)",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.013,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "none (assignment only)",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "none (assignment only)",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "none (assignment only)",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "none (assignment only)",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.014,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "scored_fields": [
+    "target_metric"
+   ],
+   "seconds_mean": 0.01,
+   "single_valued_fields": [],
+   "stable": true
+  },
+  {
+   "distinct_resolutions": [
+    "{\"target_metric\": \"none (assignment only)\"}"
+   ],
+   "example": "DEVELOPMENT: 8 historical OHLC rows, no market-performance claim",
+   "expected": {
+    "target_metric": "none (assignment only)"
+   },
+   "fields_the_model_chose": [],
+   "kind": "DETERMINISTIC",
+   "matched": 5,
+   "prompt": "asigna los regímenes jerárquicos a estas filas",
+   "provider": "feature-eng-hierarchical-regimes",
+   "results": [
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "none (assignment only)",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "none (assignment only)",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "none (assignment only)",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "none (assignment only)",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "model_version": "9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f",
+      "target_metric": "none (assignment only)",
+      "task_id": "ohlc-demo-regimes-v1"
+     },
+     "refusal": null,
+     "seconds": 0.012,
+     "sources": {
+      "model_version": "QUESTION_TEXT",
+      "target_metric": "QUESTION_TEXT",
+      "task_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "scored_fields": [
+    "target_metric"
+   ],
+   "seconds_mean": 0.01,
+   "single_valued_fields": [],
+   "stable": true
+  },
+  {
+   "distinct_resolutions": [
+    "{\"study\": \"ATE of treatment on outcome\"}"
+   ],
+   "example": "SYNTHETIC/DEVELOPMENT: confounded ATE, known effect 2",
+   "expected": {
+    "study": "ATE of treatment on outcome"
+   },
+   "fields_the_model_chose": [],
+   "kind": "DETERMINISTIC",
+   "matched": 5,
+   "prompt": "Report ATE of treatment on outcome, with its uncertainty.",
+   "provider": "causal_inference",
+   "results": [
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "study": "ATE of treatment on outcome"
+     },
+     "refusal": null,
+     "seconds": 6.175,
+     "sources": {
+      "study": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "study": "ATE of treatment on outcome"
+     },
+     "refusal": null,
+     "seconds": 8.925,
+     "sources": {
+      "study": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "study": "ATE of treatment on outcome"
+     },
+     "refusal": null,
+     "seconds": 11.043,
+     "sources": {
+      "study": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "study": "ATE of treatment on outcome"
+     },
+     "refusal": null,
+     "seconds": 8.409,
+     "sources": {
+      "study": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "study": "ATE of treatment on outcome"
+     },
+     "refusal": null,
+     "seconds": 6.244,
+     "sources": {
+      "study": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "scored_fields": [
+    "study"
+   ],
+   "seconds_mean": 8.16,
+   "single_valued_fields": [],
+   "stable": true
+  },
+  {
+   "distinct_resolutions": [
+    "{\"study\": \"ATE of treatment on outcome\"}"
+   ],
+   "example": "SYNTHETIC/DEVELOPMENT: confounded ATE, known effect 2",
+   "expected": {
+    "study": "ATE of treatment on outcome"
+   },
+   "fields_the_model_chose": [],
+   "kind": "DETERMINISTIC",
+   "matched": 5,
+   "prompt": "¿Cuál es el ATE of treatment on outcome y su incertidumbre?",
+   "provider": "causal_inference",
+   "results": [
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "study": "ATE of treatment on outcome"
+     },
+     "refusal": null,
+     "seconds": 6.241,
+     "sources": {
+      "study": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "study": "ATE of treatment on outcome"
+     },
+     "refusal": null,
+     "seconds": 6.557,
+     "sources": {
+      "study": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "study": "ATE of treatment on outcome"
+     },
+     "refusal": null,
+     "seconds": 8.918,
+     "sources": {
+      "study": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "study": "ATE of treatment on outcome"
+     },
+     "refusal": null,
+     "seconds": 6.563,
+     "sources": {
+      "study": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "study": "ATE of treatment on outcome"
+     },
+     "refusal": null,
+     "seconds": 6.657,
+     "sources": {
+      "study": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "scored_fields": [
+    "study"
+   ],
+   "seconds_mean": 6.99,
+   "single_valued_fields": [],
+   "stable": true
+  },
+  {
+   "distinct_resolutions": [
+    "{\"policy_id\": \"eth_4h_sac_current_stack_anchor_v1\"}"
+   ],
+   "example": "DEVELOPMENT: an all-zero observation vector; its action is this input's, not the bars example's",
+   "expected": {
+    "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+   },
+   "fields_the_model_chose": [],
+   "kind": "DETERMINISTIC",
+   "matched": 5,
+   "prompt": "What action does eth_4h_sac_current_stack_anchor_v1 propose?",
+   "provider": "trading_policy",
+   "results": [
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+     },
+     "refusal": null,
+     "seconds": 0.004,
+     "sources": {
+      "policy_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+     },
+     "refusal": null,
+     "seconds": 0.004,
+     "sources": {
+      "policy_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+     },
+     "refusal": null,
+     "seconds": 0.005,
+     "sources": {
+      "policy_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+     },
+     "refusal": null,
+     "seconds": 0.005,
+     "sources": {
+      "policy_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+     },
+     "refusal": null,
+     "seconds": 0.004,
+     "sources": {
+      "policy_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "scored_fields": [
+    "policy_id"
+   ],
+   "seconds_mean": 0.0,
+   "single_valued_fields": [
+    "policy_id"
+   ],
+   "stable": true
+  },
+  {
+   "distinct_resolutions": [
+    "{\"policy_id\": \"eth_4h_sac_current_stack_anchor_v1\"}"
+   ],
+   "example": "DEVELOPMENT: market data in, proposed action out (256 rows of 83 fitted columns); a different input from the zero-vector example, so a different action",
+   "expected": {
+    "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+   },
+   "fields_the_model_chose": [],
+   "kind": "DETERMINISTIC",
+   "matched": 5,
+   "prompt": "¿Qué acción propone la política para estas barras?",
+   "provider": "trading_policy",
+   "results": [
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+     },
+     "refusal": null,
+     "seconds": 0.031,
+     "sources": {
+      "policy_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+     },
+     "refusal": null,
+     "seconds": 0.03,
+     "sources": {
+      "policy_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+     },
+     "refusal": null,
+     "seconds": 0.03,
+     "sources": {
+      "policy_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+     },
+     "refusal": null,
+     "seconds": 0.03,
+     "sources": {
+      "policy_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    },
+    {
+     "interpreted": "OK",
+     "parameters": {
+      "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+     },
+     "refusal": null,
+     "seconds": 0.031,
+     "sources": {
+      "policy_id": "QUESTION_TEXT"
+     },
+     "status": "OK",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "scored_fields": [
+    "policy_id"
+   ],
+   "seconds_mean": 0.03,
+   "single_valued_fields": [
+    "policy_id"
+   ],
+   "stable": true
+  }
+ ],
+ "summary": {
+  "deterministic_matched": 60,
+  "deterministic_runs": 60,
+  "deterministic_sentences": 12,
+  "end_to_end_matched": 60,
+  "end_to_end_runs": 60,
+  "interpreter_matched": 0,
+  "interpreter_reliability": null,
+  "interpreter_runs": 0,
+  "interpreter_sentences": 0,
+  "interpreter_sentences_stable": 0,
+  "sentences_declared": 14,
+  "sentences_no_slots": 2,
+  "sentences_with_parameters": 12,
+  "sentences_without_an_example": 0
+ }
+}
