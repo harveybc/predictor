@@ -44,3 +44,45 @@ instead of choosing a declared value — remains ungated and unmeasured. `openai
 against a fake loopback server only; no cloud consent exists.
 
 M5PHET master 6e8509d, suite 578 passed / 1 skipped; acceptance 11/11 · 14/14 · 2/2 and 15/15.
+
+## WP06 stage 5 — the search, and the hand window did NOT survive it
+
+Objective = the closure table's own number (held-out MAE on the identical seal `33820b552ddf`, 9,824 origins,
+protocol `d0ebd9a4bc75`); everything but the representation held at `baseline_hand`'s configuration. Optimiser:
+predictor's own DEAP operator set (integer genes over declared bounds, `cxTwoPoint`, per-gene redraw,
+`selTournament(3)`, elitism 1, resume ledger) — **not** DOIN, because DOIN's predictor domain re-verifies on
+synthetic rows, which would have put a second scoring path beside the seal. No third optimiser was written.
+
+| rank | stage | window | MAE (kW) | skill |
+|---|---|---|---|---|
+| 1 | searched_b373275495e2 | **21** | **0.512925** | 0.144164 |
+| 2 | searched_0588f5747b62 | 21 | 0.512970 | 0.144089 |
+| 3 | searched_b367cba9b237 | 34 | 0.521704 | 0.129516 |
+| 4 | quantile_hand_95 | 60 | 0.526294 | 0.121858 |
+| 5 | searched_77a56b176915 | 31 | 0.526542 | 0.121444 |
+| 6 | **baseline_hand** | 60 | 0.537108 | 0.103813 |
+| 6 | control_baseline_hand_refit | 60 | 0.537108 | 0.103813 |
+| 14 | laya_chosen | 60 | 0.557190 | 0.070307 |
+| 72 | searched_facdd5812c0f | 184 | 0.697646 | −0.164049 |
+
+**Four searched representations beat the hand window, and every one is SHORTER than it** (21–34 against 60) — the
+design job's four candidates had all been longer, which is why none of them won. The effect is the window, not the
+column subset: rank 3 keeps all seven columns. Best spec beats `baseline_hand` by 0.024183 kW (4.50 %). One fit per
+point, one seed, no interval on the difference — stated as the caveat it is.
+
+**The control is what makes this readable:** `baseline_hand` refitted through the modified harness reproduces
+0.5371084250158522 at 18 epochs exactly, so the new transform/differencing code left the level path untouched.
+
+531 of 596 sampled points were refused and counted, never repaired (`LAG_EXCEEDS_WINDOW` 407, `NO_LAG_DECLARED` 84,
+`AMBIGUOUS_DIFFERENCING` 37 raised by `validate_spec` itself, `NO_FEATURE_SELECTED` 3). A second round was declared
+because the first exposed a bias in the space — window and lags were coupled, so no measured point had a window below
+74 and the region where the winners live had never been tested.
+
+`m5phet.decide` gained the third chooser: `search_choice` writes `chosen_by: SEARCH`, no probabilities, no backend, and
+a `why` that must name the objective and the budget. Because a searched stage is now rank 1, three calibration groups
+lost their label to `NO_BEST_RANKED_OPTION` — the winning representation is not one of the five options that question
+declares, and **a search may not add an option to a question Laya was asked**. Calibration stays
+`NO_NEW_MEASUREMENT` (best group 7 scorable of 30).
+
+Harness limitation found and recorded: `lags` decides nothing the window does not — two specs differing only in lags
+produced byte-identical configs and identical MAE.
