@@ -1,0 +1,447 @@
+{
+  "areas": [
+    {
+      "area": "forecast",
+      "bound_by_seal": [],
+      "orientation": "error",
+      "reference_stage": "baseline_hand",
+      "refusal_reason": null,
+      "refused_metric": null,
+      "rows": [
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "compared_to": "baseline_hand",
+          "conditions": {
+            "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+            "flags": [],
+            "label_provenance": "REALISED_OUTCOME",
+            "label_source": "household_dev_slice.csv (household DEV slice, 1-minute grid, original units)",
+            "minimum_rows": 1000,
+            "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+            "report_file": "report.json",
+            "report_generated_at": "2026-09-25T08:15:49Z",
+            "scored_rows": 9824,
+            "sealed_at": "2026-09-25T00:00:00Z",
+            "sealed_row_count": 9824
+          },
+          "horizon": "h+60",
+          "literature": {
+            "metric": "NOT_CARRIED",
+            "scale": "NOT_CARRIED",
+            "source": "NOT_CARRIED",
+            "value": "NOT_CARRIED"
+          },
+          "metric": "mae",
+          "metric_set": "forecast",
+          "metric_set_index": 0,
+          "model_error": 0.5371084250158522,
+          "naive": {
+            "error": 0.5993265472312703,
+            "name": "last_value",
+            "note": null,
+            "rows": 9824,
+            "same_rows_as_model": true
+          },
+          "orientation": "error",
+          "rank": 2,
+          "reason": null,
+          "refusal": null,
+          "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
+          "skill": 0.10381339272029466,
+          "skill_source": "report:metric_sets[0].values.skill_mae",
+          "source": "report.json",
+          "stage": "baseline_hand",
+          "status": "MEASURED",
+          "target": "Global_active_power"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "conditions": null,
+          "horizon": "NOT_CARRIED",
+          "literature": {
+            "metric": "NOT_CARRIED",
+            "scale": "NOT_CARRIED",
+            "source": "NOT_CARRIED",
+            "value": "NOT_CARRIED"
+          },
+          "metric": "NOT_CARRIED",
+          "model_error": null,
+          "naive": {
+            "error": "NOT_CARRIED",
+            "name": "NOT_CARRIED",
+            "note": null,
+            "same_rows_as_model": false
+          },
+          "orientation": "error",
+          "rank": null,
+          "reason": "FEATURE_NOT_IN_DATA: the representation declares ['hour_of_day'], which the sealed dataset does not carry; this harness builds no feature, and adding a column would change the file the holdout was sealed from. Its window 1443 also exceeds the sealing window 197: sealing at 1443 leaves 8578 origins instead of 9824, seal a8c7f07f6d6c instead of 33820b552ddf, so it cannot be scored on this holdout at all",
+          "refusal": null,
+          "scale": "NOT_CARRIED",
+          "skill": null,
+          "skill_source": "NOT_DEFINED: no measurement",
+          "stage": "candidate_seasonal_lag_1443",
+          "status": "NO_NEW_MEASUREMENT",
+          "target": "NOT_CARRIED"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "conditions": null,
+          "horizon": "NOT_CARRIED",
+          "literature": {
+            "metric": "NOT_CARRIED",
+            "scale": "NOT_CARRIED",
+            "source": "NOT_CARRIED",
+            "value": "NOT_CARRIED"
+          },
+          "metric": "NOT_CARRIED",
+          "model_error": null,
+          "naive": {
+            "error": "NOT_CARRIED",
+            "name": "NOT_CARRIED",
+            "note": null,
+            "same_rows_as_model": false
+          },
+          "orientation": "error",
+          "rank": null,
+          "reason": "the stage's window 2892 exceeds the sealing window 197; the sealed population would not hold its history. Sealing at 2892 leaves 7129 origins instead of 9824, seal 97155a063e25 instead of 33820b552ddf, so the candidate is NOT_COMPARABLE rather than scored on other rows",
+          "refusal": null,
+          "scale": "NOT_CARRIED",
+          "skill": null,
+          "skill_source": "NOT_DEFINED: no measurement",
+          "stage": "candidate_seasonal_lag_2892",
+          "status": "NO_NEW_MEASUREMENT",
+          "target": "NOT_CARRIED"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "compared_to": "baseline_hand",
+          "conditions": {
+            "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+            "flags": [],
+            "label_provenance": "REALISED_OUTCOME",
+            "label_source": "household_dev_slice.csv (household DEV slice, 1-minute grid, original units)",
+            "minimum_rows": 1000,
+            "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+            "report_file": "report.json",
+            "report_generated_at": "2026-09-25T09:38:12Z",
+            "scored_rows": 9824,
+            "sealed_at": "2026-09-25T00:00:00Z",
+            "sealed_row_count": 9824
+          },
+          "horizon": "h+60",
+          "literature": {
+            "metric": "NOT_CARRIED",
+            "scale": "NOT_CARRIED",
+            "source": "NOT_CARRIED",
+            "value": "NOT_CARRIED"
+          },
+          "metric": "mae",
+          "metric_set": "forecast",
+          "metric_set_index": 0,
+          "model_error": 0.5454359012816791,
+          "naive": {
+            "error": 0.5993265472312703,
+            "name": "last_value",
+            "note": null,
+            "rows": 9824,
+            "same_rows_as_model": true
+          },
+          "orientation": "error",
+          "rank": 4,
+          "reason": null,
+          "refusal": null,
+          "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
+          "skill": 0.08991866987796848,
+          "skill_source": "report:metric_sets[0].values.skill_mae",
+          "source": "report.json",
+          "stage": "candidate_seasonal_lag_74",
+          "status": "MEASURED",
+          "target": "Global_active_power"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "compared_to": "baseline_hand",
+          "conditions": {
+            "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+            "flags": [],
+            "label_provenance": "REALISED_OUTCOME",
+            "label_source": "household_dev_slice.csv (household DEV slice, 1-minute grid, original units)",
+            "minimum_rows": 1000,
+            "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+            "report_file": "report.json",
+            "report_generated_at": "2026-09-25T09:37:50Z",
+            "scored_rows": 9824,
+            "sealed_at": "2026-09-25T00:00:00Z",
+            "sealed_row_count": 9824
+          },
+          "horizon": "h+60",
+          "literature": {
+            "metric": "NOT_CARRIED",
+            "scale": "NOT_CARRIED",
+            "source": "NOT_CARRIED",
+            "value": "NOT_CARRIED"
+          },
+          "metric": "mae",
+          "metric_set": "forecast",
+          "metric_set_index": 0,
+          "model_error": 0.5780335472557449,
+          "naive": {
+            "error": 0.5993265472312703,
+            "name": "last_value",
+            "note": null,
+            "rows": 9824,
+            "same_rows_as_model": true
+          },
+          "orientation": "error",
+          "rank": 6,
+          "reason": null,
+          "refusal": null,
+          "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
+          "skill": 0.0355282109125542,
+          "skill_source": "report:metric_sets[0].values.skill_mae",
+          "source": "report.json",
+          "stage": "candidate_short_memory",
+          "status": "MEASURED",
+          "target": "Global_active_power"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "compared_to": "baseline_hand",
+          "conditions": {
+            "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+            "flags": [],
+            "label_provenance": "REALISED_OUTCOME",
+            "label_source": "household_dev_slice.csv (household DEV slice, 1-minute grid, original units)",
+            "minimum_rows": 1000,
+            "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+            "report_file": "report.json",
+            "report_generated_at": "2026-09-25T08:16:08Z",
+            "scored_rows": 9824,
+            "sealed_at": "2026-09-25T00:00:00Z",
+            "sealed_row_count": 9824
+          },
+          "horizon": "h+60",
+          "literature": {
+            "metric": "NOT_CARRIED",
+            "scale": "NOT_CARRIED",
+            "source": "NOT_CARRIED",
+            "value": "NOT_CARRIED"
+          },
+          "metric": "mae",
+          "metric_set": "forecast",
+          "metric_set_index": 0,
+          "model_error": 0.5571896423024371,
+          "naive": {
+            "error": 0.5993265472312703,
+            "name": "last_value",
+            "note": null,
+            "rows": 9824,
+            "same_rows_as_model": true
+          },
+          "orientation": "error",
+          "rank": 5,
+          "reason": null,
+          "refusal": null,
+          "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
+          "skill": 0.07030708905436378,
+          "skill_source": "report:metric_sets[0].values.skill_mae",
+          "source": "report.json",
+          "stage": "laya_chosen",
+          "status": "MEASURED",
+          "target": "Global_active_power"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "compared_to": "baseline_hand",
+          "conditions": {
+            "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+            "flags": [],
+            "label_provenance": "REALISED_OUTCOME",
+            "label_source": "household_dev_slice.csv (household DEV slice, 1-minute grid, original units)",
+            "minimum_rows": 1000,
+            "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+            "report_file": "report.json",
+            "report_generated_at": "2026-09-25T08:16:28Z",
+            "scored_rows": 9824,
+            "sealed_at": "2026-09-25T00:00:00Z",
+            "sealed_row_count": 9824
+          },
+          "horizon": "h+60",
+          "literature": {
+            "metric": "NOT_CARRIED",
+            "scale": "NOT_CARRIED",
+            "source": "NOT_CARRIED",
+            "value": "NOT_CARRIED"
+          },
+          "metric": "mae",
+          "metric_set": "forecast",
+          "metric_set_index": 0,
+          "model_error": 0.5386701163737786,
+          "naive": {
+            "error": 0.5993265472312703,
+            "name": "last_value",
+            "note": null,
+            "rows": 9824,
+            "same_rows_as_model": true
+          },
+          "orientation": "error",
+          "rank": 3,
+          "reason": null,
+          "refusal": null,
+          "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
+          "skill": 0.10120764904826651,
+          "skill_source": "report:metric_sets[0].values.skill_mae",
+          "source": "report.json",
+          "stage": "quantile_hand",
+          "status": "MEASURED",
+          "target": "Global_active_power"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "compared_to": "baseline_hand",
+          "conditions": {
+            "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+            "flags": [],
+            "label_provenance": "REALISED_OUTCOME",
+            "label_source": "household_dev_slice.csv (household DEV slice, 1-minute grid, original units)",
+            "minimum_rows": 1000,
+            "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+            "report_file": "report.json",
+            "report_generated_at": "2026-09-25T10:05:45Z",
+            "scored_rows": 9824,
+            "sealed_at": "2026-09-25T00:00:00Z",
+            "sealed_row_count": 9824
+          },
+          "horizon": "h+60",
+          "literature": {
+            "metric": "NOT_CARRIED",
+            "scale": "NOT_CARRIED",
+            "source": "NOT_CARRIED",
+            "value": "NOT_CARRIED"
+          },
+          "metric": "mae",
+          "metric_set": "forecast",
+          "metric_set_index": 0,
+          "model_error": 0.526293524060822,
+          "naive": {
+            "error": 0.5993265472312703,
+            "name": "last_value",
+            "note": null,
+            "rows": 9824,
+            "same_rows_as_model": true
+          },
+          "orientation": "error",
+          "rank": 1,
+          "reason": null,
+          "refusal": null,
+          "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
+          "skill": 0.12185848183739156,
+          "skill_source": "report:metric_sets[0].values.skill_mae",
+          "source": "report.json",
+          "stage": "quantile_hand_95",
+          "status": "MEASURED",
+          "target": "Global_active_power"
+        }
+      ]
+    }
+  ],
+  "computed_here": [
+    "skill (only where the report carries none)",
+    "comparability verdicts",
+    "rank"
+  ],
+  "decimals": 6,
+  "inputs": [
+    {
+      "area": "forecast",
+      "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+      "report_file": "report.json",
+      "report_generated_at": "2026-09-25T08:15:49Z",
+      "stage": "baseline_hand"
+    },
+    {
+      "area": "forecast",
+      "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+      "report_file": "report.json",
+      "report_generated_at": "2026-09-25T09:38:12Z",
+      "stage": "candidate_seasonal_lag_74"
+    },
+    {
+      "area": "forecast",
+      "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+      "report_file": "report.json",
+      "report_generated_at": "2026-09-25T09:37:50Z",
+      "stage": "candidate_short_memory"
+    },
+    {
+      "area": "forecast",
+      "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+      "report_file": "report.json",
+      "report_generated_at": "2026-09-25T08:16:08Z",
+      "stage": "laya_chosen"
+    },
+    {
+      "area": "forecast",
+      "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+      "report_file": "report.json",
+      "report_generated_at": "2026-09-25T08:16:28Z",
+      "stage": "quantile_hand"
+    },
+    {
+      "area": "forecast",
+      "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+      "report_file": "report.json",
+      "report_generated_at": "2026-09-25T10:05:45Z",
+      "stage": "quantile_hand_95"
+    }
+  ],
+  "not_measured": [
+    {
+      "area": "forecast",
+      "reason": "FEATURE_NOT_IN_DATA: the representation declares ['hour_of_day'], which the sealed dataset does not carry; this harness builds no feature, and adding a column would change the file the holdout was sealed from. Its window 1443 also exceeds the sealing window 197: sealing at 1443 leaves 8578 origins instead of 9824, seal a8c7f07f6d6c instead of 33820b552ddf, so it cannot be scored on this holdout at all",
+      "stage": "candidate_seasonal_lag_1443"
+    },
+    {
+      "area": "forecast",
+      "reason": "the stage's window 2892 exceeds the sealing window 197; the sealed population would not hold its history. Sealing at 2892 leaves 7129 origins instead of 9824, seal 97155a063e25 instead of 33820b552ddf, so the candidate is NOT_COMPARABLE rather than scored on other rows",
+      "stage": "candidate_seasonal_lag_2892"
+    }
+  ],
+  "read_from_reports": [
+    "model error",
+    "metric",
+    "scale",
+    "target",
+    "horizon",
+    "naive reference and its error",
+    "skill where the scorer computed it",
+    "literature value and source",
+    "conditions"
+  ],
+  "report_version": "m5phet-evaluation-report/1",
+  "stages": [
+    "baseline_hand",
+    "candidate_seasonal_lag_1443",
+    "candidate_seasonal_lag_2892",
+    "candidate_seasonal_lag_74",
+    "candidate_short_memory",
+    "laya_chosen",
+    "quantile_hand",
+    "quantile_hand_95"
+  ],
+  "version": "m5phet-evaluation-stage-comparison/1"
+}

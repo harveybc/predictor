@@ -1,0 +1,604 @@
+{
+  "bin_width": 0.1,
+  "decimals": 6,
+  "decision_schema": "m5phet.decision.v1",
+  "expected_calibration_error_definition": "expected calibration error = sum over non-empty bins of (n_bin / n_scored) * |agreement_bin - mean_argmax_probability_bin|, where agreement_bin is the fraction of that bin's outcomes whose argmax was the best-ranked option. It is a gap between what the head claimed and what the closure table found; it is not an accuracy, and it says nothing about whether the ranked-first pipeline was any good.",
+  "groups": [
+    {
+      "agreement_rate": null,
+      "agreements": null,
+      "best_ranked_option": null,
+      "bins": [],
+      "excluded": {
+        "ambiguous_argmax": 0,
+        "human_choice_not_scored": 0,
+        "probability_out_of_range": 0
+      },
+      "expected_calibration_error": null,
+      "human_stages": [],
+      "kind": "feature_grouping",
+      "missing": 29,
+      "n_human_linked": 0,
+      "n_linked": 1,
+      "n_scorable_linked": 1,
+      "n_scored": 0,
+      "options": [
+        [
+          "k=2",
+          "2 groups, sizes 6|1; within 0.426, between 0.129, silhouette 0.298"
+        ],
+        [
+          "k=3",
+          "3 groups, sizes 5|1|1; within 0.537, between 0.151, silhouette 0.308"
+        ],
+        [
+          "k=4",
+          "4 groups, sizes 4|1|1|1; within 0.653, between 0.173, silhouette 0.246"
+        ],
+        [
+          "k=5",
+          "5 groups, sizes 3|1|1|1|1; within 0.787, between 0.211, silhouette 0.237"
+        ],
+        [
+          "k=6",
+          "6 groups, sizes 2|1|1|1|1|1; within 0.999, between 0.255, silhouette 0.284"
+        ]
+      ],
+      "question": "grouping_cut",
+      "reason": "NO_NEW_MEASUREMENT: NO_BEST_RANKED_OPTION: no linked outcome came from a stage the table ranked first, so no option is the label the others are scored against; the table's first-ranked stage is 'quantile_hand_95', which carries no decision record for this question (COMPARABLE_BUT_NO_DECISION_RECORD); 1 scorable linked outcome(s) of 1, 30 required \u2014 29 missing",
+      "stage_coverage": [
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 2,
+          "stage": "baseline_hand",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_1443",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_2892",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 4,
+          "stage": "candidate_seasonal_lag_74",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "candidate_short_memory",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 5,
+          "stage": "laya_chosen",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 3,
+          "stage": "quantile_hand",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 1,
+          "stage": "quantile_hand_95",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        }
+      ],
+      "stages": [
+        "laya_chosen"
+      ],
+      "status": "NO_NEW_MEASUREMENT"
+    },
+    {
+      "agreement_rate": null,
+      "agreements": null,
+      "best_ranked_option": "normalizer",
+      "bins": [],
+      "excluded": {
+        "ambiguous_argmax": 0,
+        "human_choice_not_scored": 35,
+        "probability_out_of_range": 0
+      },
+      "expected_calibration_error": null,
+      "human_stages": [
+        "baseline_hand",
+        "candidate_seasonal_lag_74",
+        "candidate_short_memory",
+        "quantile_hand",
+        "quantile_hand_95"
+      ],
+      "kind": "feature_preprocessing",
+      "missing": 23,
+      "n_human_linked": 35,
+      "n_linked": 42,
+      "n_scorable_linked": 7,
+      "n_scored": 0,
+      "options": [
+        [
+          "default_preprocessor",
+          "Default Preprocessor Plugin"
+        ],
+        [
+          "stl_preprocessor",
+          "stl_preprocessor"
+        ],
+        [
+          "default_plugin",
+          "Plugin to preprocess the dataset for feature extraction..."
+        ],
+        [
+          "normalizer",
+          "1.60139 1.16481"
+        ],
+        [
+          "unbiaser",
+          "Unbiaser Plugin to apply unbiasing methods to the dataset."
+        ],
+        [
+          "trimmer",
+          "trimmer"
+        ],
+        [
+          "feature_selector",
+          "Feature Selector Plugin to perform feature selection on the..."
+        ],
+        [
+          "cleaner",
+          "cleaner"
+        ]
+      ],
+      "question": "preprocessing",
+      "reason": "NO_NEW_MEASUREMENT: 7 scorable linked outcome(s) of 42, 30 required \u2014 23 missing",
+      "stage_coverage": [
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 2,
+          "stage": "baseline_hand",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_1443",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_2892",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 4,
+          "stage": "candidate_seasonal_lag_74",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "candidate_short_memory",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 5,
+          "stage": "laya_chosen",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 3,
+          "stage": "quantile_hand",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 1,
+          "stage": "quantile_hand_95",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        }
+      ],
+      "stages": [
+        "baseline_hand",
+        "candidate_seasonal_lag_74",
+        "candidate_short_memory",
+        "laya_chosen",
+        "quantile_hand",
+        "quantile_hand_95"
+      ],
+      "status": "NO_NEW_MEASUREMENT"
+    },
+    {
+      "agreement_rate": null,
+      "agreements": null,
+      "best_ranked_option": null,
+      "bins": [],
+      "excluded": {
+        "ambiguous_argmax": 0,
+        "human_choice_not_scored": 0,
+        "probability_out_of_range": 0
+      },
+      "expected_calibration_error": null,
+      "human_stages": [],
+      "kind": "group_extractor",
+      "missing": 28,
+      "n_human_linked": 0,
+      "n_linked": 2,
+      "n_scorable_linked": 2,
+      "n_scored": 0,
+      "options": [
+        [
+          "default",
+          "Encoder of per-channel Dense branches over the window."
+        ],
+        [
+          "ann",
+          "Encoder of per-channel Dense branches over the window."
+        ],
+        [
+          "rnn",
+          "Encoder of two recurrent layers (SimpleRNN or GRU)."
+        ],
+        [
+          "transformer",
+          "Encoder: positional encoding, attention, strided Conv1D."
+        ],
+        [
+          "lstm",
+          "Encoder: positional encoding, attention, two BiLSTM layers."
+        ],
+        [
+          "cnn",
+          "Encoder of two strided Conv1D layers over the input window."
+        ],
+        [
+          "vae",
+          "Encoder of two strided Conv1D layers, with no sampling step."
+        ],
+        [
+          "vae_small",
+          "Per-step CVAE inference network: mean and log-variance."
+        ]
+      ],
+      "question": "extractor",
+      "reason": "NO_NEW_MEASUREMENT: NO_BEST_RANKED_OPTION: no linked outcome came from a stage the table ranked first, so no option is the label the others are scored against; the table's first-ranked stage is 'quantile_hand_95', which carries no decision record for this question (COMPARABLE_BUT_NO_DECISION_RECORD); 2 scorable linked outcome(s) of 2, 30 required \u2014 28 missing",
+      "stage_coverage": [
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 2,
+          "stage": "baseline_hand",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_1443",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_2892",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 4,
+          "stage": "candidate_seasonal_lag_74",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "candidate_short_memory",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 5,
+          "stage": "laya_chosen",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 3,
+          "stage": "quantile_hand",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 1,
+          "stage": "quantile_hand_95",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        }
+      ],
+      "stages": [
+        "laya_chosen"
+      ],
+      "status": "NO_NEW_MEASUREMENT"
+    },
+    {
+      "agreement_rate": null,
+      "agreements": null,
+      "best_ranked_option": "hand_household_w60",
+      "bins": [],
+      "excluded": {
+        "ambiguous_argmax": 0,
+        "human_choice_not_scored": 5,
+        "probability_out_of_range": 0
+      },
+      "expected_calibration_error": null,
+      "human_stages": [
+        "baseline_hand",
+        "candidate_seasonal_lag_74",
+        "candidate_short_memory",
+        "quantile_hand",
+        "quantile_hand_95"
+      ],
+      "kind": "representation",
+      "missing": 30,
+      "n_human_linked": 5,
+      "n_linked": 5,
+      "n_scorable_linked": 0,
+      "n_scored": 0,
+      "options": [
+        [
+          "hand_household_w60",
+          "window [60], lags [1]: the window the household DEV resource e1_household_dev_pilot_v1 declares, fixed by hand before this work"
+        ],
+        [
+          "short_memory",
+          "windows [197], lags [1, 197]: the ACF of the levels falls inside the +-0.011206 band at lag 197"
+        ],
+        [
+          "seasonal_lag_74",
+          "windows [74], lags [1, 74]: ACF peak at lag 74 (rho 0.356627)"
+        ],
+        [
+          "seasonal_lag_1443",
+          "windows [197, 1443], lags [1, 1443], feature hour_of_day: ACF peak at lag 1443 (rho 0.277748), period 86580 s"
+        ],
+        [
+          "seasonal_lag_2892",
+          "windows [197, 2892], lags [1, 2892]: ACF peak at lag 2892 (rho 0.244256)"
+        ]
+      ],
+      "question": "candidate",
+      "reason": "NO_NEW_MEASUREMENT: 0 scorable linked outcome(s) of 5, 30 required \u2014 30 missing",
+      "stage_coverage": [
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 2,
+          "stage": "baseline_hand",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_1443",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_2892",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 4,
+          "stage": "candidate_seasonal_lag_74",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "candidate_short_memory",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 5,
+          "stage": "laya_chosen",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 3,
+          "stage": "quantile_hand",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 1,
+          "stage": "quantile_hand_95",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        }
+      ],
+      "stages": [
+        "baseline_hand",
+        "candidate_seasonal_lag_74",
+        "candidate_short_memory",
+        "quantile_hand",
+        "quantile_hand_95"
+      ],
+      "status": "NO_NEW_MEASUREMENT"
+    }
+  ],
+  "inventory": {
+    "directories": [
+      "/home/harveybc/.local/state/m5phet/decisions",
+      "/home/harveybc/.local/state/m5phet/decisions-wp06-stage34-20260925"
+    ],
+    "groups": [
+      {
+        "kind": "dataset_choice",
+        "linked": 0,
+        "question": "dataset",
+        "records": 1,
+        "unlinked": 1
+      },
+      {
+        "kind": "feature_grouping",
+        "linked": 1,
+        "question": "grouping_cut",
+        "records": 1,
+        "unlinked": 0
+      },
+      {
+        "kind": "feature_preprocessing",
+        "linked": 42,
+        "question": "preprocessing",
+        "records": 63,
+        "unlinked": 21
+      },
+      {
+        "kind": "group_extractor",
+        "linked": 2,
+        "question": "extractor",
+        "records": 4,
+        "unlinked": 2
+      },
+      {
+        "kind": "representation",
+        "linked": 5,
+        "question": "candidate",
+        "records": 8,
+        "unlinked": 3
+      },
+      {
+        "kind": "trading_decision",
+        "linked": 0,
+        "question": "exposure",
+        "records": 195,
+        "unlinked": 195
+      }
+    ],
+    "linked": 50,
+    "records": 272,
+    "unlinked": 222,
+    "unreadable": []
+  },
+  "linked_outcomes": 50,
+  "minimum_linked": 30,
+  "outcome_schema": "m5phet.decision_outcome.v1",
+  "rule": "A decision record becomes a label only when a closure-table row exists for the pipeline it led to, that row is COMPARABLE, and it carries a rank. The label is the rank \u2014 never a person's opinion of the choice.",
+  "table": {
+    "file": "table.json",
+    "ranked_first": [
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 1,
+        "stage": "quantile_hand_95",
+        "status": "MEASURED"
+      }
+    ],
+    "stages": [
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 2,
+        "stage": "baseline_hand",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "NO_NEW_MEASUREMENT",
+        "rank": null,
+        "stage": "candidate_seasonal_lag_1443",
+        "status": "NO_NEW_MEASUREMENT"
+      },
+      {
+        "area": "forecast",
+        "comparability": "NO_NEW_MEASUREMENT",
+        "rank": null,
+        "stage": "candidate_seasonal_lag_2892",
+        "status": "NO_NEW_MEASUREMENT"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 4,
+        "stage": "candidate_seasonal_lag_74",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 6,
+        "stage": "candidate_short_memory",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 5,
+        "stage": "laya_chosen",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 3,
+        "stage": "quantile_hand",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 1,
+        "stage": "quantile_hand_95",
+        "status": "MEASURED"
+      }
+    ],
+    "version": "m5phet-evaluation-stage-comparison/1"
+  },
+  "unreadable": [],
+  "version": "m5phet-decision-calibration/1"
+}
