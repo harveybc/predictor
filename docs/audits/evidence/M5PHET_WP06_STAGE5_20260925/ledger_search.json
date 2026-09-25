@@ -1,0 +1,6747 @@
+{
+  "budget": {
+    "generations": 6,
+    "initial_population": 120,
+    "maximum_evaluations": 80,
+    "population": 24,
+    "sentence": "The budget of this search is 120 genomes drawn for generation 0 and 24 individuals for each of the 5 generations after it, at most 80 fits dispatched; every legal point is fitted once and every refused point is counted and never fitted."
+  },
+  "data": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06/household_dev_slice.csv",
+  "dispatched_fits": 47,
+  "evaluated": 47,
+  "evaluations": [
+    {
+      "candidate_id": "searched_0674562ba097",
+      "epochs_run": 16,
+      "genome": [
+        77,
+        1,
+        1,
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1
+      ],
+      "mae": 0.5795960467475214,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "log_return",
+        "window": 77
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_0674562ba097/report.json",
+      "representation_id": "0674562ba097817842a916842454fced42adb0b724e0308bcc64147f403b9d0a",
+      "rmse": 0.9083524235549884,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 16.766,
+      "skill_mae": 0.03292111883729931,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_0674562ba097.json",
+      "stage": "searched_0674562ba097",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_0776944c4ff2",
+      "epochs_run": 19,
+      "genome": [
+        178,
+        0,
+        1,
+        0,
+        2,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1
+      ],
+      "mae": 0.5730717978020462,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "log_return",
+        "window": 178
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_0776944c4ff2/report.json",
+      "representation_id": "0776944c4ff2e5f95c63edcc1822be6b73793f1d9287649f5ac6387b295e7b61",
+      "rmse": 0.885079426496728,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 18.062,
+      "skill_mae": 0.043807085720654504,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_0776944c4ff2.json",
+      "stage": "searched_0776944c4ff2",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_084674eed382",
+      "epochs_run": 50,
+      "genome": [
+        147,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "mae": 0.5598611441689489,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 147
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_084674eed382/report.json",
+      "representation_id": "084674eed382928e9be14e3e99e4f2d3829c9a0e35c8476c3f1f6f5f492e4d26",
+      "rmse": 0.7951593378586851,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 34.678,
+      "skill_mae": 0.06584958274356623,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_084674eed382.json",
+      "stage": "searched_084674eed382",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_09d549875516",
+      "epochs_run": 18,
+      "genome": [
+        164,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "mae": 0.6184028015869262,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 164
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_09d549875516/report.json",
+      "representation_id": "09d5498755161bcbaa6033053eaf146200fc2019d9050acf19487148f4f26b7c",
+      "rmse": 0.8350501378647964,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 17.855,
+      "skill_mae": -0.03182948334890745,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_09d549875516.json",
+      "stage": "searched_09d549875516",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_1193e09305cd",
+      "epochs_run": 17,
+      "genome": [
+        85,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5626849660282348,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "level",
+        "window": 85
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_1193e09305cd/report.json",
+      "representation_id": "1193e09305cd0ba26a84d2e6dbe6bc99d4921e40fa686f7d7c39717dacd70597",
+      "rmse": 0.8265570409877196,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 17.058,
+      "skill_mae": 0.061137924512621566,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_1193e09305cd.json",
+      "stage": "searched_1193e09305cd",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_171cf2419e9a",
+      "epochs_run": 19,
+      "genome": [
+        178,
+        0,
+        1,
+        0,
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "mae": 0.6509410505325213,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "level",
+        "window": 178
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_171cf2419e9a/report.json",
+      "representation_id": "171cf2419e9a4532efca1d906570d7ddee8b618007feaf89e8b0447ee6d7d6f2",
+      "rmse": 0.8633814561872218,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 18.457,
+      "skill_mae": -0.08612083602786536,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_171cf2419e9a.json",
+      "stage": "searched_171cf2419e9a",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_1b12e9bcdd0a",
+      "epochs_run": 16,
+      "genome": [
+        147,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "mae": 0.5990630686320074,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 147
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_1b12e9bcdd0a/report.json",
+      "representation_id": "1b12e9bcdd0a9f246238845da7ce668e4116b9d27c3aa4fe7889ef1b99a24451",
+      "rmse": 0.8993375629420041,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 16.855,
+      "skill_mae": 0.00043962444260159383,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_1b12e9bcdd0a.json",
+      "stage": "searched_1b12e9bcdd0a",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_20a2053478d7",
+      "epochs_run": 21,
+      "genome": [
+        168,
+        1,
+        1,
+        0,
+        2,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1
+      ],
+      "mae": 0.5733303263856393,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "log_return",
+        "window": 168
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_20a2053478d7/report.json",
+      "representation_id": "20a2053478d74f598d829d29874f55539f47eaef82918c7079a051b53e1b6283",
+      "rmse": 0.8851198859744364,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 18.961,
+      "skill_mae": 0.04337572057457939,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_20a2053478d7.json",
+      "stage": "searched_20a2053478d7",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_2110bc311492",
+      "epochs_run": 20,
+      "genome": [
+        147,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "mae": 0.5954669340460029,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "diff",
+        "window": 147
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_2110bc311492/report.json",
+      "representation_id": "2110bc3114928daf6de7bb189e4f4c12600c205643f18117c901aeab7d92ff8a",
+      "rmse": 0.8961190044659192,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 19.065,
+      "skill_mae": 0.00643991694193724,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_2110bc311492.json",
+      "stage": "searched_2110bc311492",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_2cbef989a359",
+      "epochs_run": 36,
+      "genome": [
+        103,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5651627206005585,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "level",
+        "window": 103
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_2cbef989a359/report.json",
+      "representation_id": "2cbef989a35911c19cf6dbcac6cf5397cd30ab6cd9284819d0d9c39d93d6f180",
+      "rmse": 0.7917256547686942,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 25.566,
+      "skill_mae": 0.057003693209552675,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_2cbef989a359.json",
+      "stage": "searched_2cbef989a359",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_2d178b6054e8",
+      "epochs_run": 29,
+      "genome": [
+        178,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5819285583700202,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "level",
+        "window": 178
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_2d178b6054e8/report.json",
+      "representation_id": "2d178b6054e8608bc2187b62a2627417abbbd871dadacebae76aa6d18417af8d",
+      "rmse": 0.8055354342217683,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 24.774,
+      "skill_mae": 0.029029231128879895,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_2d178b6054e8.json",
+      "stage": "searched_2d178b6054e8",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_2fbc35eb0452",
+      "epochs_run": 56,
+      "genome": [
+        103,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5483918423350391,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 103
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_2fbc35eb0452/report.json",
+      "representation_id": "2fbc35eb0452123dbd1a63e6e1f946551d4e99348b10ca3a5f0771e238b67666",
+      "rmse": 0.7830565107804656,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 35.272,
+      "skill_mae": 0.08498656555685047,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_2fbc35eb0452.json",
+      "stage": "searched_2fbc35eb0452",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_307f0eb865bc",
+      "epochs_run": 33,
+      "genome": [
+        167,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5625624558254259,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "level",
+        "window": 167
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_307f0eb865bc/report.json",
+      "representation_id": "307f0eb865bc837147a6055243096e927d742e6056469502ba90e4986d0b9fdd",
+      "rmse": 0.8049180780180891,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 26.97,
+      "skill_mae": 0.06134233762159347,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_307f0eb865bc.json",
+      "stage": "searched_307f0eb865bc",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_3413de1c1b38",
+      "epochs_run": 17,
+      "genome": [
+        103,
+        1,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5770905418312576,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "log_return",
+        "window": 103
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_3413de1c1b38/report.json",
+      "representation_id": "3413de1c1b388223a16e111a9b6d416682216c4a3a014f3cf687908315e48345",
+      "rmse": 0.8962258173967547,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 17.654,
+      "skill_mae": 0.03710165268456256,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_3413de1c1b38.json",
+      "stage": "searched_3413de1c1b38",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_46688543dd04",
+      "epochs_run": 18,
+      "genome": [
+        153,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "mae": 0.5970136671251803,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 153
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_46688543dd04/report.json",
+      "representation_id": "46688543dd047db1f7a752fde0fe976bf0670f89f23209b2388f23fcb5ab8711",
+      "rmse": 0.8889378994236397,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 17.153,
+      "skill_mae": 0.003859131748418121,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_46688543dd04.json",
+      "stage": "searched_46688543dd04",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_47fa500b6248",
+      "epochs_run": 18,
+      "genome": [
+        103,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.6021199818508816,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 103
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_47fa500b6248/report.json",
+      "representation_id": "47fa500b62480d7ee6571e1a7d718896d3c3adee5444a4725ccfdda91178bc28",
+      "rmse": 0.8958696569572208,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 18.263,
+      "skill_mae": -0.004660955922136445,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_47fa500b6248.json",
+      "stage": "searched_47fa500b6248",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_4cf8ab4540c1",
+      "epochs_run": 16,
+      "genome": [
+        167,
+        0,
+        1,
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5842468920136897,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "log_return",
+        "window": 167
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_4cf8ab4540c1/report.json",
+      "representation_id": "4cf8ab4540c1759f460cb496e4302ac526423935e10db862f73584dcf37f9a01",
+      "rmse": 0.9032322823186427,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 17.766,
+      "skill_mae": 0.025160999937754447,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_4cf8ab4540c1.json",
+      "stage": "searched_4cf8ab4540c1",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_5d2e12cc0eed",
+      "epochs_run": 19,
+      "genome": [
+        153,
+        1,
+        1,
+        0,
+        0,
+        2,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "mae": 0.6304317831154302,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 153
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_5d2e12cc0eed/report.json",
+      "representation_id": "5d2e12cc0eed7cb5f71b70aa4952051c45294347e730f2cc41423a1978bd155e",
+      "rmse": 0.8514023018534965,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 18.658,
+      "skill_mae": -0.05190031382367066,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_5d2e12cc0eed.json",
+      "stage": "searched_5d2e12cc0eed",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_6339ea8a9155",
+      "epochs_run": 31,
+      "genome": [
+        103,
+        1,
+        1,
+        0,
+        0,
+        2,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5707465620647568,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 103
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_6339ea8a9155/report.json",
+      "representation_id": "6339ea8a9155315a4b8a8449545077dfca46dba08aae30cc8bbb3210d689b6d6",
+      "rmse": 0.8133463391477186,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 23.558,
+      "skill_mae": 0.0476868333274163,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_6339ea8a9155.json",
+      "stage": "searched_6339ea8a9155",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_6d9169f946b4",
+      "epochs_run": 17,
+      "genome": [
+        103,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5984869990857036,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 103
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_6d9169f946b4/report.json",
+      "representation_id": "6d9169f946b445689eb0d3a7d9944f8bdd409ae1b3f8bd7b723b71296c0ccb54",
+      "rmse": 0.913068346423368,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 17.663,
+      "skill_mae": 0.0014008192185800405,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_6d9169f946b4.json",
+      "stage": "searched_6d9169f946b4",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_6e04fdef5774",
+      "epochs_run": 63,
+      "genome": [
+        77,
+        0,
+        1,
+        0,
+        0,
+        2,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "mae": 0.5682405165040164,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "level",
+        "window": 77
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_6e04fdef5774/report.json",
+      "representation_id": "6e04fdef5774ab1fcdae2c2a746561088aaf80bf134220cc06ac591d93e59ec0",
+      "rmse": 0.8068866585411162,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 36.673,
+      "skill_mae": 0.05186826926132859,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_6e04fdef5774.json",
+      "stage": "searched_6e04fdef5774",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_76c22bc6b1ef",
+      "epochs_run": 36,
+      "genome": [
+        103,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5651627206005585,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 103
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_76c22bc6b1ef/report.json",
+      "representation_id": "76c22bc6b1ef820f1e3f00563e43e409dfa6b51bcd0f9363fd2020f6152b4359",
+      "rmse": 0.7917256547686942,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 25.967,
+      "skill_mae": 0.057003693209552675,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_76c22bc6b1ef.json",
+      "stage": "searched_76c22bc6b1ef",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_7ca9e5afc53d",
+      "epochs_run": 22,
+      "genome": [
+        103,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "mae": 0.5908194730091596,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 103
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_7ca9e5afc53d/report.json",
+      "representation_id": "7ca9e5afc53dad7f4dafe48d877a2f9ace0d68a6658ee606e31641c1e5096a93",
+      "rmse": 0.801684288099231,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 19.256,
+      "skill_mae": 0.014194389121274797,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_7ca9e5afc53d.json",
+      "stage": "searched_7ca9e5afc53d",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_823ac370f1ad",
+      "epochs_run": 27,
+      "genome": [
+        191,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "mae": 0.5777051272738796,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "level",
+        "window": 191
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_823ac370f1ad/report.json",
+      "representation_id": "823ac370f1ad8bb1b85ec2ba7d9f2e3964adeee9f781033f91d7fdee405214ba",
+      "rmse": 0.8053622512456701,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 22.459,
+      "skill_mae": 0.036076192615321245,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_823ac370f1ad.json",
+      "stage": "searched_823ac370f1ad",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_950e4a6f52e7",
+      "epochs_run": 56,
+      "genome": [
+        103,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5483918423350391,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "level",
+        "window": 103
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_950e4a6f52e7/report.json",
+      "representation_id": "950e4a6f52e7ae8b6bedad06fcb6747c3b24c0ba5234986f476ab99ad47feb88",
+      "rmse": 0.7830565107804656,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 36.083,
+      "skill_mae": 0.08498656555685047,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_950e4a6f52e7.json",
+      "stage": "searched_950e4a6f52e7",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_a11e6ca7a741",
+      "epochs_run": 34,
+      "genome": [
+        114,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "mae": 0.5676087732389071,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 114
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_a11e6ca7a741/report.json",
+      "representation_id": "a11e6ca7a741f27a1d56ee7eb23708fcfe37e86fad68e2509527e528c72fb6eb",
+      "rmse": 0.7966261441888934,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 25.06,
+      "skill_mae": 0.0529223578346244,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_a11e6ca7a741.json",
+      "stage": "searched_a11e6ca7a741",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_a2cb801138e5",
+      "epochs_run": 17,
+      "genome": [
+        74,
+        0,
+        1,
+        0,
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "mae": 0.6132341272949033,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Sub_metering_1"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "level",
+        "window": 74
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_a2cb801138e5/report.json",
+      "representation_id": "a2cb801138e528a9c991e728b8dcf5659285679cc25ca0ee73d4952f008c9d90",
+      "rmse": 0.8209538923603216,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 17.163,
+      "skill_mae": -0.02320534628055837,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_a2cb801138e5.json",
+      "stage": "searched_a2cb801138e5",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_a31a7ba0626a",
+      "epochs_run": 19,
+      "genome": [
+        171,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1
+      ],
+      "mae": 0.5955031176075533,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "diff",
+        "window": 171
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_a31a7ba0626a/report.json",
+      "representation_id": "a31a7ba0626acb0eabcb9b9e4c5598b31b94200e0cb3052d51f0b0ea5d868a90",
+      "rmse": 0.8963717792787979,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 19.159,
+      "skill_mae": 0.006379543241293528,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_a31a7ba0626a.json",
+      "stage": "searched_a31a7ba0626a",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_a8b019b54346",
+      "epochs_run": 20,
+      "genome": [
+        147,
+        1,
+        1,
+        0,
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "mae": 0.6349833732983146,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 147
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_a8b019b54346/report.json",
+      "representation_id": "a8b019b54346c1469aa4ca10576e77ed69af569c6763b78e86abe8cff52f92be",
+      "rmse": 0.8499629837976173,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 19.256,
+      "skill_mae": -0.05949482169907094,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_a8b019b54346.json",
+      "stage": "searched_a8b019b54346",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_aac15a098ad2",
+      "epochs_run": 20,
+      "genome": [
+        103,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5639491903606606,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 103
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_aac15a098ad2/report.json",
+      "representation_id": "aac15a098ad2619bd6e582bc80e14cbcb7f6371c011f4712dcebbf8ae1ab6add",
+      "rmse": 0.8145266009850693,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 18.462,
+      "skill_mae": 0.05902851631392558,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_aac15a098ad2.json",
+      "stage": "searched_aac15a098ad2",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_ac4a22eb1230",
+      "epochs_run": 22,
+      "genome": [
+        103,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "mae": 0.5725557335661386,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "level",
+        "window": 103
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_ac4a22eb1230/report.json",
+      "representation_id": "ac4a22eb12305b83c83a842dd5ac397b043ba2ec0ff228e5a254fa8bf05c98ff",
+      "rmse": 0.7904460903532154,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 19.869,
+      "skill_mae": 0.04466815926777434,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_ac4a22eb1230.json",
+      "stage": "searched_ac4a22eb1230",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_b05e0334316d",
+      "epochs_run": 92,
+      "genome": [
+        74,
+        1,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "mae": 0.5622012091635006,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Sub_metering_1"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "log_return",
+        "window": 74
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_b05e0334316d/report.json",
+      "representation_id": "b05e0334316dad4877d289ddad7157aaf3977b5019bd3bb42424cc35b3a9bc62",
+      "rmse": 0.8767267436717553,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 51.383,
+      "skill_mae": 0.061945091935738494,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_b05e0334316d.json",
+      "stage": "searched_b05e0334316d",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_b4b57ce4a1c1",
+      "epochs_run": 16,
+      "genome": [
+        178,
+        1,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "mae": 0.588541005386792,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "log_return",
+        "window": 178
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_b4b57ce4a1c1/report.json",
+      "representation_id": "b4b57ce4a1c1a2ee88c6976ef34c45edbade233cee6d5874bab6b6e06cf20e98",
+      "rmse": 0.9133244343308783,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 17.157,
+      "skill_mae": 0.017996102282311188,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_b4b57ce4a1c1.json",
+      "stage": "searched_b4b57ce4a1c1",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_be36156f3bf4",
+      "epochs_run": 19,
+      "genome": [
+        167,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5974918484020547,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "diff",
+        "window": 167
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_be36156f3bf4/report.json",
+      "representation_id": "be36156f3bf4b10d847abb32a4a2c04945bc42b61604341c3b8a70fe0972ccc9",
+      "rmse": 0.8884229075588752,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 19.563,
+      "skill_mae": 0.0030612674137187046,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_be36156f3bf4.json",
+      "stage": "searched_be36156f3bf4",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_bfef0502223e",
+      "epochs_run": 26,
+      "genome": [
+        167,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.590911905372175,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "level",
+        "window": 167
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_bfef0502223e/report.json",
+      "representation_id": "bfef0502223e21c73bf2d802514d6e668df5f27809e7028c66e59539035d68d2",
+      "rmse": 0.8140935102021566,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 21.36,
+      "skill_mae": 0.014040162075197204,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_bfef0502223e.json",
+      "stage": "searched_bfef0502223e",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_c373fe3307f8",
+      "epochs_run": 17,
+      "genome": [
+        167,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5960160733223745,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "diff",
+        "window": 167
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_c373fe3307f8/report.json",
+      "representation_id": "c373fe3307f89ec965f876100f880b5ff3b75ad3907a5a1e01a6a2a33aaba3cd",
+      "rmse": 0.8924964205529244,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 18.261,
+      "skill_mae": 0.0055236563843023,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_c373fe3307f8.json",
+      "stage": "searched_c373fe3307f8",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_cd9b33614278",
+      "epochs_run": 18,
+      "genome": [
+        134,
+        0,
+        1,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "mae": 0.6247790130199692,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_intensity",
+          "Sub_metering_1"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "level",
+        "window": 134
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_cd9b33614278/report.json",
+      "representation_id": "cd9b33614278fcad5b04bb1a487a150d3a38f338b1490689923561c1cb8d0165",
+      "rmse": 0.8346584449880813,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 17.866,
+      "skill_mae": -0.0424684437995988,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_cd9b33614278.json",
+      "stage": "searched_cd9b33614278",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_d218899cb73a",
+      "epochs_run": 25,
+      "genome": [
+        147,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "mae": 0.6006548852280108,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 147
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_d218899cb73a/report.json",
+      "representation_id": "d218899cb73a0dcbdc95cc0d1bb8592ce6a4139f69511234457f53c60f0a6602",
+      "rmse": 0.8924147486423483,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 22.162,
+      "skill_mae": -0.002216384378227687,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_d218899cb73a.json",
+      "stage": "searched_d218899cb73a",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_d4d33029f643",
+      "epochs_run": 19,
+      "genome": [
+        153,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5967123155982325,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 153
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_d4d33029f643/report.json",
+      "representation_id": "d4d33029f6432030e20f6d87d86899d091f1a953053af76f53f8f53f176fc526",
+      "rmse": 0.8226455354877503,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 18.466,
+      "skill_mae": 0.004361948665739801,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_d4d33029f643.json",
+      "stage": "searched_d4d33029f643",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_d6c43538cecf",
+      "epochs_run": 49,
+      "genome": [
+        107,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "mae": 0.6058048592579091,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_reactive_power",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "level",
+        "window": 107
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_d6c43538cecf/report.json",
+      "representation_id": "d6c43538cecf1767b89d62ccba70880234582798448574cf373f42931b445050",
+      "rmse": 0.8131928047344553,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 32.181,
+      "skill_mae": -0.01080931932110607,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_d6c43538cecf.json",
+      "stage": "searched_d6c43538cecf",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_d7d48211d891",
+      "epochs_run": 23,
+      "genome": [
+        147,
+        1,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "mae": 0.5880295817583134,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Sub_metering_1"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "log_return",
+        "window": 147
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_d7d48211d891/report.json",
+      "representation_id": "d7d48211d891a6a70fa71a6174ebc388c81f513e3bf220eabb8a6bfdabb1d44c",
+      "rmse": 0.9151711228313741,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 20.161,
+      "skill_mae": 0.018849432792766962,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_d7d48211d891.json",
+      "stage": "searched_d7d48211d891",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_da1b5199aa5e",
+      "epochs_run": 24,
+      "genome": [
+        147,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "mae": 0.5677837731123735,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "level",
+        "window": 147
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_da1b5199aa5e/report.json",
+      "representation_id": "da1b5199aa5e92be007bc4004b5acda58f0e6e18bfdce4e1594241fc1a47ce95",
+      "rmse": 0.7927068597681907,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 21.18,
+      "skill_mae": 0.052630363638347166,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_da1b5199aa5e.json",
+      "stage": "searched_da1b5199aa5e",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_e5cb543af015",
+      "epochs_run": 51,
+      "genome": [
+        74,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "mae": 0.5866360804492039,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 74
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_e5cb543af015/report.json",
+      "representation_id": "e5cb543af0157571e836d48be55cf506e1fc0e22b27038b172c65e979ec4825a",
+      "rmse": 0.7998302574874019,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 32.772,
+      "skill_mae": 0.021174544729735456,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_e5cb543af015.json",
+      "stage": "searched_e5cb543af015",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_f05ee7a86b74",
+      "epochs_run": 53,
+      "genome": [
+        74,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "mae": 0.5622683374165584,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Sub_metering_1"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 74
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_f05ee7a86b74/report.json",
+      "representation_id": "f05ee7a86b74745294b0725d15cb2f88ca41707c6fab6b4d9907c970e8e3df7d",
+      "rmse": 0.8739193123600917,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 34.376,
+      "skill_mae": 0.06183308579590052,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_f05ee7a86b74.json",
+      "stage": "searched_f05ee7a86b74",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_f66120cdd5ba",
+      "epochs_run": 18,
+      "genome": [
+        93,
+        0,
+        1,
+        0,
+        0,
+        2,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "mae": 0.6114260697316486,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "level",
+        "window": 93
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_f66120cdd5ba/report.json",
+      "representation_id": "f66120cdd5ba3610c957395e3445cf5002af423ff03a672e1568fc3b92d62cb3",
+      "rmse": 0.8198465613461997,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 17.554,
+      "skill_mae": -0.020188530870649535,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_f66120cdd5ba.json",
+      "stage": "searched_f66120cdd5ba",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_fac763681e83",
+      "epochs_run": 20,
+      "genome": [
+        147,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "mae": 0.5961984933995943,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 147
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_fac763681e83/report.json",
+      "representation_id": "fac763681e83658a1187917e3f5cd6b751d29131c295947fe9e7565f93040d38",
+      "rmse": 0.8923519853898898,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 19.659,
+      "skill_mae": 0.005219281285180566,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_fac763681e83.json",
+      "stage": "searched_fac763681e83",
+      "status": "OK"
+    },
+    {
+      "candidate_id": "searched_facdd5812c0f",
+      "epochs_run": 16,
+      "genome": [
+        184,
+        1,
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "mae": 0.6976457225048406,
+      "naive_mae": 0.5993265472312703,
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_reactive_power",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "level",
+        "window": 184
+      },
+      "report": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/stages/searched_facdd5812c0f/report.json",
+      "representation_id": "facdd5812c0fcc189a94548c3528695690e7cf8b37a64b58f5e3b21522b496d2",
+      "rmse": 0.8855558018887228,
+      "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+      "sealed_rows": 9824,
+      "seconds": 17.161,
+      "skill_mae": -0.16404942468805817,
+      "spec": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06s/search/specs/spec_searched_facdd5812c0f.json",
+      "stage": "searched_facdd5812c0f",
+      "status": "OK"
+    },
+    {
+      "genome": [
+        100,
+        1,
+        0,
+        0,
+        2,
+        2,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "log_return",
+        "window": 100
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[100, 1, 0, 0, 2, 2, 0, 0, 1, 0, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'log_return' already differences the target and differencing.order is 2; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        103,
+        0,
+        1,
+        0,
+        2,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "log_return",
+        "window": 103
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[103, 0, 1, 0, 2, 1, 1, 0, 1, 0, 1, 1, 0]",
+      "status": "REFUSED",
+      "why": "target.transform 'log_return' already differences the target and differencing.order is 1; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        103,
+        0,
+        1,
+        0,
+        2,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "log_return",
+        "window": 103
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[103, 0, 1, 0, 2, 1, 1, 0, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'log_return' already differences the target and differencing.order is 1; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        103,
+        1,
+        0,
+        0,
+        2,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "log_return",
+        "window": 103
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[103, 1, 0, 0, 2, 1, 1, 0, 1, 1, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'log_return' already differences the target and differencing.order is 1; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        103,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 103
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[103, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'diff' already differences the target and differencing.order is 1; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        103,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 103
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[103, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'diff' already differences the target and differencing.order is 1; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        114,
+        0,
+        1,
+        0,
+        1,
+        2,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "diff",
+        "window": 114
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[114, 0, 1, 0, 1, 2, 0, 0, 0, 0, 1, 1, 0]",
+      "status": "REFUSED",
+      "why": "target.transform 'diff' already differences the target and differencing.order is 2; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        137,
+        0,
+        1,
+        0,
+        1,
+        2,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_intensity",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "diff",
+        "window": 137
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[137, 0, 1, 0, 1, 2, 0, 0, 0, 1, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'diff' already differences the target and differencing.order is 2; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        161,
+        0,
+        1,
+        0,
+        2,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "log_return",
+        "window": 161
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[161, 0, 1, 0, 2, 1, 1, 1, 1, 0, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'log_return' already differences the target and differencing.order is 1; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        164,
+        0,
+        1,
+        0,
+        2,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "log_return",
+        "window": 164
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[164, 0, 1, 0, 2, 1, 1, 0, 0, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'log_return' already differences the target and differencing.order is 1; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        167,
+        0,
+        1,
+        0,
+        1,
+        2,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "diff",
+        "window": 167
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[167, 0, 1, 0, 1, 2, 1, 1, 0, 1, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'diff' already differences the target and differencing.order is 2; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        177,
+        1,
+        1,
+        0,
+        2,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Voltage",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "log_return",
+        "window": 177
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[177, 1, 1, 0, 2, 1, 0, 0, 1, 0, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'log_return' already differences the target and differencing.order is 1; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        178,
+        0,
+        1,
+        0,
+        1,
+        2,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "diff",
+        "window": 178
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[178, 0, 1, 0, 1, 2, 0, 0, 0, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'diff' already differences the target and differencing.order is 2; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        193,
+        1,
+        1,
+        0,
+        2,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "log_return",
+        "window": 193
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[193, 1, 1, 0, 2, 1, 1, 0, 0, 1, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'log_return' already differences the target and differencing.order is 1; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        36,
+        1,
+        0,
+        0,
+        1,
+        2,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "diff",
+        "window": 36
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[36, 1, 0, 0, 1, 2, 0, 1, 0, 1, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'diff' already differences the target and differencing.order is 2; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        71,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Voltage",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "diff",
+        "window": 71
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[71, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "target.transform 'diff' already differences the target and differencing.order is 1; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        96,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_intensity",
+          "Sub_metering_1"
+        ],
+        "lags": [
+          1
+        ],
+        "transform": "diff",
+        "window": 96
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[96, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "target.transform 'diff' already differences the target and differencing.order is 1; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        97,
+        0,
+        1,
+        0,
+        1,
+        2,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "diff",
+        "window": 97
+      },
+      "refusal": "AMBIGUOUS_DIFFERENCING",
+      "representation_id": "refused:AMBIGUOUS_DIFFERENCING:[97, 0, 1, 0, 1, 2, 0, 1, 1, 0, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "target.transform 'diff' already differences the target and differencing.order is 2; declare the transform with order 0, or the level with an order, but not both"
+    },
+    {
+      "genome": [
+        101,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "level",
+        "window": 101
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[101, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 101; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        101,
+        0,
+        1,
+        1,
+        2,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "log_return",
+        "window": 101
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[101, 0, 1, 1, 2, 0, 1, 1, 0, 1, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 101; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        102,
+        0,
+        0,
+        1,
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "level",
+        "window": 102
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[102, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 102; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        102,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "level",
+        "window": 102
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[102, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 102; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        103,
+        0,
+        1,
+        1,
+        0,
+        2,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 103
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[103, 0, 1, 1, 0, 2, 1, 1, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 103; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        103,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "level",
+        "window": 103
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[103, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 103; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        104,
+        0,
+        1,
+        1,
+        0,
+        2,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 104
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[104, 0, 1, 1, 0, 2, 1, 0, 0, 1, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 104; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        108,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "log_return",
+        "window": 108
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[108, 1, 1, 1, 2, 1, 1, 1, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 108; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        113,
+        0,
+        1,
+        1,
+        2,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_reactive_power",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "log_return",
+        "window": 113
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[113, 0, 1, 1, 2, 0, 0, 1, 0, 0, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 113; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        114,
+        0,
+        0,
+        1,
+        0,
+        2,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_reactive_power",
+          "Global_intensity"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "level",
+        "window": 114
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[114, 0, 0, 1, 0, 2, 0, 1, 0, 1, 0, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 114; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        114,
+        1,
+        0,
+        1,
+        2,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "log_return",
+        "window": 114
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[114, 1, 0, 1, 2, 1, 1, 1, 0, 1, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 114; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        114,
+        1,
+        1,
+        1,
+        2,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_reactive_power",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "log_return",
+        "window": 114
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[114, 1, 1, 1, 2, 1, 0, 1, 0, 0, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 114; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        115,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Global_intensity"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "diff",
+        "window": 115
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[115, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 115; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        118,
+        1,
+        1,
+        1,
+        1,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "diff",
+        "window": 118
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[118, 1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 118; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        119,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 119
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[119, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 119; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        12,
+        0,
+        1,
+        1,
+        2,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "log_return",
+        "window": 12
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[12, 0, 1, 1, 2, 0, 1, 0, 0, 1, 1, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 12; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        121,
+        1,
+        0,
+        1,
+        2,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "log_return",
+        "window": 121
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[121, 1, 0, 1, 2, 1, 1, 1, 0, 0, 0, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 121; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        123,
+        0,
+        0,
+        1,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "level",
+        "window": 123
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[123, 0, 0, 1, 0, 2, 0, 0, 0, 0, 1, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 123; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        131,
+        0,
+        1,
+        1,
+        2,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_intensity",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "log_return",
+        "window": 131
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[131, 0, 1, 1, 2, 1, 1, 0, 0, 1, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 131; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        139,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 139
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[139, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 139; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        143,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 143
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[143, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 143; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        146,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "diff",
+        "window": 146
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[146, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 146; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        149,
+        1,
+        0,
+        1,
+        0,
+        2,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "level",
+        "window": 149
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[149, 1, 0, 1, 0, 2, 1, 1, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 149; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        15,
+        0,
+        1,
+        0,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "log_return",
+        "window": 15
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[15, 0, 1, 0, 2, 1, 1, 1, 1, 1, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 15; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        156,
+        1,
+        0,
+        1,
+        0,
+        2,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_reactive_power",
+          "Sub_metering_1"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "level",
+        "window": 156
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[156, 1, 0, 1, 0, 2, 0, 1, 0, 0, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 156; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        156,
+        1,
+        0,
+        1,
+        0,
+        2,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Sub_metering_1"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "level",
+        "window": 156
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[156, 1, 0, 1, 0, 2, 1, 1, 0, 0, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 156; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        156,
+        1,
+        0,
+        1,
+        1,
+        2,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "diff",
+        "window": 156
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[156, 1, 0, 1, 1, 2, 1, 0, 1, 0, 1, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 156; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        156,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "diff",
+        "window": 156
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[156, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 156; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        159,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 159
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[159, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 159; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        16,
+        0,
+        1,
+        0,
+        2,
+        2,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "log_return",
+        "window": 16
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[16, 0, 1, 0, 2, 2, 0, 0, 0, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 16; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        16,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Sub_metering_1"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 16
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[16, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 16; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        164,
+        0,
+        1,
+        1,
+        2,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_intensity",
+          "Sub_metering_1"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "log_return",
+        "window": 164
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[164, 0, 1, 1, 2, 1, 0, 0, 0, 1, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 164; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        167,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 167
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[167, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 167; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        170,
+        1,
+        0,
+        1,
+        1,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "diff",
+        "window": 170
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[170, 1, 0, 1, 1, 2, 0, 0, 0, 0, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 170; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        171,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "diff",
+        "window": 171
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[171, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 171; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        172,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_1"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "diff",
+        "window": 172
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[172, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 172; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        173,
+        0,
+        1,
+        1,
+        0,
+        2,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 173
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[173, 0, 1, 1, 0, 2, 1, 0, 1, 1, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 173; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        174,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_intensity",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 174
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[174, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 174; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        175,
+        0,
+        0,
+        1,
+        1,
+        2,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "diff",
+        "window": 175
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[175, 0, 0, 1, 1, 2, 0, 0, 1, 0, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 175; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        176,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "diff",
+        "window": 176
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[176, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 176; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        178,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "diff",
+        "window": 178
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[178, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 178; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        181,
+        0,
+        0,
+        1,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "log_return",
+        "window": 181
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[181, 0, 0, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 181; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        185,
+        1,
+        0,
+        1,
+        2,
+        2,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_reactive_power"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "log_return",
+        "window": 185
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[185, 1, 0, 1, 2, 2, 0, 1, 0, 0, 0, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 185; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        186,
+        0,
+        0,
+        1,
+        1,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Sub_metering_3"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "diff",
+        "window": 186
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[186, 0, 0, 1, 1, 2, 0, 0, 0, 0, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 186; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        187,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "diff",
+        "window": 187
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[187, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 187; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        26,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_reactive_power",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 26
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[26, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 26; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        26,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "diff",
+        "window": 26
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[26, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 26; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        26,
+        1,
+        1,
+        1,
+        2,
+        2,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "log_return",
+        "window": 26
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[26, 1, 1, 1, 2, 2, 1, 0, 0, 1, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 26; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        27,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "diff",
+        "window": 27
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[27, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 27; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        27,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "diff",
+        "window": 27
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[27, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 27; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        3,
+        1,
+        1,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_intensity"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 3
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[3, 1, 1, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 3; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        32,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 32
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[32, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 32; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        37,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "diff",
+        "window": 37
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[37, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 37; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        38,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "diff",
+        "window": 38
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[38, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 38; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        4,
+        0,
+        1,
+        0,
+        2,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "log_return",
+        "window": 4
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[4, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 4; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        4,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 4
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[4, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 4; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        4,
+        1,
+        1,
+        1,
+        2,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_reactive_power",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "log_return",
+        "window": 4
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[4, 1, 1, 1, 2, 1, 0, 1, 0, 0, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 4; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        40,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 40
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[40, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 40; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        41,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "diff",
+        "window": 41
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[41, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 41; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        41,
+        1,
+        1,
+        0,
+        2,
+        2,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "log_return",
+        "window": 41
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[41, 1, 1, 0, 2, 2, 0, 1, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 41; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        42,
+        1,
+        1,
+        0,
+        2,
+        2,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "log_return",
+        "window": 42
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[42, 1, 1, 0, 2, 2, 0, 1, 1, 1, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 42; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        43,
+        0,
+        1,
+        1,
+        2,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "log_return",
+        "window": 43
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[43, 0, 1, 1, 2, 1, 1, 0, 1, 0, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 43; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        45,
+        0,
+        1,
+        1,
+        2,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "log_return",
+        "window": 45
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[45, 0, 1, 1, 2, 1, 0, 1, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 45; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        46,
+        1,
+        1,
+        0,
+        2,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Voltage",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "log_return",
+        "window": 46
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[46, 1, 1, 0, 2, 1, 0, 0, 1, 0, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 46; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        49,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "level",
+        "window": 49
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[49, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 49; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        49,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 49
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[49, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 49; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        49,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 49
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[49, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 49; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        5,
+        1,
+        1,
+        0,
+        1,
+        2,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 5
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[5, 1, 1, 0, 1, 2, 1, 0, 1, 1, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 5; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        51,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "level",
+        "window": 51
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[51, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 51; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        54,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 54
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[54, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 54; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        56,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "level",
+        "window": 56
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[56, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 56; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        60,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_reactive_power",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "diff",
+        "window": 60
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[60, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 60; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        60,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Sub_metering_1"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 60
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[60, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 60; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        63,
+        1,
+        1,
+        0,
+        0,
+        2,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 63
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[63, 1, 1, 0, 0, 2, 1, 1, 0, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 63; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        63,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "diff",
+        "window": 63
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[63, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 63; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        64,
+        1,
+        1,
+        1,
+        0,
+        2,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 64
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[64, 1, 1, 1, 0, 2, 1, 1, 1, 0, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 64; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        65,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "diff",
+        "window": 65
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[65, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 65; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        68,
+        0,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "diff",
+        "window": 68
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[68, 0, 1, 1, 1, 2, 1, 1, 1, 0, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 68; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        7,
+        0,
+        0,
+        1,
+        2,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "log_return",
+        "window": 7
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[7, 0, 0, 1, 2, 0, 1, 1, 0, 1, 0, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 7; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        7,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Voltage",
+          "Global_intensity"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "level",
+        "window": 7
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[7, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 7; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        73,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "level",
+        "window": 73
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[73, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 73; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        73,
+        1,
+        1,
+        0,
+        2,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_reactive_power",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "log_return",
+        "window": 73
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[73, 1, 1, 0, 2, 0, 0, 1, 0, 0, 1, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 73; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        75,
+        0,
+        0,
+        1,
+        1,
+        2,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "diff",
+        "window": 75
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[75, 0, 0, 1, 1, 2, 1, 1, 0, 1, 1, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 75; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        78,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Sub_metering_1"
+        ],
+        "lags": [
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 78
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[78, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 78; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        79,
+        0,
+        0,
+        1,
+        1,
+        2,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_reactive_power",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "diff",
+        "window": 79
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[79, 0, 0, 1, 1, 2, 0, 1, 0, 0, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 79; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        79,
+        1,
+        1,
+        1,
+        1,
+        2,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "diff",
+        "window": 79
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[79, 1, 1, 1, 1, 2, 0, 0, 0, 1, 1, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 79; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        8,
+        0,
+        1,
+        0,
+        1,
+        2,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          74
+        ],
+        "transform": "diff",
+        "window": 8
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[8, 0, 1, 0, 1, 2, 0, 0, 0, 0, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 8; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        8,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Voltage"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "diff",
+        "window": 8
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[8, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 8; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        8,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74
+        ],
+        "transform": "level",
+        "window": 8
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[8, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 74 and the window 8; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        83,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_reactive_power"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 83
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[83, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 83; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        84,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_reactive_power",
+          "Global_intensity",
+          "Sub_metering_1"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "level",
+        "window": 84
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[84, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 84; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        90,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_reactive_power",
+          "Sub_metering_2"
+        ],
+        "lags": [
+          1,
+          197
+        ],
+        "transform": "level",
+        "window": 90
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[90, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 90; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        92,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_reactive_power",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          1,
+          74,
+          197
+        ],
+        "transform": "level",
+        "window": 92
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[92, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 92; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        94,
+        0,
+        0,
+        1,
+        2,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [
+          197
+        ],
+        "transform": "log_return",
+        "window": 94
+      },
+      "refusal": "LAG_EXCEEDS_WINDOW",
+      "representation_id": "refused:LAG_EXCEEDS_WINDOW:[94, 0, 0, 1, 2, 0, 1, 1, 1, 0, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome declares the lag 197 and the window 94; this harness fits one contiguous window, so a lag beyond it is history the graph never sees. It is the refusal that kept seasonal_lag_1443 and seasonal_lag_2892 out of the sealed comparison and it is reused, not worked around"
+    },
+    {
+      "genome": [
+        112,
+        0,
+        0,
+        0,
+        2,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_3"
+        ],
+        "lags": [],
+        "transform": "log_return",
+        "window": 112
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[112, 0, 0, 0, 2, 1, 1, 0, 1, 0, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        124,
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [],
+        "transform": "log_return",
+        "window": 124
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[124, 0, 0, 0, 2, 1, 0, 0, 0, 1, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        129,
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [],
+        "transform": "log_return",
+        "window": 129
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[129, 0, 0, 0, 2, 0, 1, 0, 1, 0, 1, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        131,
+        0,
+        0,
+        0,
+        2,
+        2,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2"
+        ],
+        "lags": [],
+        "transform": "log_return",
+        "window": 131
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[131, 0, 0, 0, 2, 2, 0, 1, 1, 1, 1, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        147,
+        0,
+        0,
+        0,
+        1,
+        2,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Voltage",
+          "Sub_metering_2"
+        ],
+        "lags": [],
+        "transform": "diff",
+        "window": 147
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[147, 0, 0, 0, 1, 2, 0, 0, 1, 0, 0, 1, 0]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        164,
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1"
+        ],
+        "lags": [],
+        "transform": "log_return",
+        "window": 164
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[164, 0, 0, 0, 2, 0, 1, 0, 1, 1, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        169,
+        0,
+        0,
+        0,
+        1,
+        2,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 2,
+        "features": [
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_3"
+        ],
+        "lags": [],
+        "transform": "diff",
+        "window": 169
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[169, 0, 0, 0, 1, 2, 0, 0, 1, 1, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        171,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ],
+        "lags": [],
+        "transform": "level",
+        "window": 171
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[171, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        186,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [],
+        "transform": "diff",
+        "window": 186
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[186, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        26,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [],
+        "transform": "level",
+        "window": 26
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[26, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        26,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Voltage",
+          "Sub_metering_1",
+          "Sub_metering_3"
+        ],
+        "lags": [],
+        "transform": "level",
+        "window": 26
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[26, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        33,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "point": {
+        "differencing_order": 0,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Sub_metering_3"
+        ],
+        "lags": [],
+        "transform": "diff",
+        "window": 33
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[33, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        36,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Voltage",
+          "Sub_metering_1"
+        ],
+        "lags": [],
+        "transform": "diff",
+        "window": 36
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[36, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        36,
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Voltage",
+          "Sub_metering_1"
+        ],
+        "lags": [],
+        "transform": "log_return",
+        "window": 36
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[36, 0, 0, 0, 2, 1, 0, 0, 1, 0, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    },
+    {
+      "genome": [
+        57,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "point": {
+        "differencing_order": 1,
+        "features": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1"
+        ],
+        "lags": [],
+        "transform": "diff",
+        "window": 57
+      },
+      "refusal": "NO_LAG_DECLARED",
+      "representation_id": "refused:NO_LAG_DECLARED:[57, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0]",
+      "status": "REFUSED",
+      "why": "the genome selects no lag; the design job motivated five, three of them are in this space, and a representation that names none of them declares no memory to read"
+    }
+  ],
+  "generations": [
+    {
+      "best": 0.5483918423350391,
+      "generation": 0
+    },
+    {
+      "best": 0.5483918423350391,
+      "generation": 1
+    },
+    {
+      "best": 0.5483918423350391,
+      "generation": 2
+    },
+    {
+      "best": 0.5483918423350391,
+      "generation": 3
+    },
+    {
+      "best": 0.5483918423350391,
+      "generation": 4
+    },
+    {
+      "best": 0.5483918423350391,
+      "generation": 5
+    }
+  ],
+  "hand_spec": "docs/audits/evidence/M5PHET_WP18_STEP7_20260925/wp18_household_pipeline_spec_hand.json",
+  "held_fixed": {
+    "batch_size": 256,
+    "core": "fused_branches",
+    "device": "gpu",
+    "encoder": "tcn",
+    "epochs": 200,
+    "horizon": 60,
+    "patience": 15,
+    "seal_window": 197,
+    "seed": 1,
+    "why": "everything but the representation is the baseline_hand stage's own configuration; a hyper-parameter moved to make a point win would make the table unreadable"
+  },
+  "objective": "the held-out mean absolute error in kW of the report the closure table reads, on the corpus sealed 33820b552ddf (sealing window 197, horizon 60); minimised",
+  "operators": {
+    "crossover": "cxTwoPoint",
+    "cxpb": 0.5,
+    "elitism": 1,
+    "indpb": 0.2,
+    "library": "deap",
+    "mutation": "per-gene uniform redraw within the declared bounds",
+    "mutpb": 0.3,
+    "selection": "selTournament(tournsize=3)",
+    "why": "the operator set optimizer_plugins/default_optimizer.py already uses in this repository; a second genetic optimizer would be a second answer to a question that has one"
+  },
+  "refusals_by_name": {
+    "AMBIGUOUS_DIFFERENCING": 18,
+    "LAG_EXCEEDS_WINDOW": 94,
+    "NO_LAG_DECLARED": 15
+  },
+  "refused": 127,
+  "schema": "predictor.representation_search.v1",
+  "seed": 1,
+  "space": {
+    "differencing_order": {
+      "gene": 5,
+      "high": 2,
+      "low": 0,
+      "type": "int",
+      "why": "0..MAX_ORDER of the spec; an order above 0 under a transform that already differences is refused by the spec as AMBIGUOUS_DIFFERENCING"
+    },
+    "features": {
+      "genes": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "type": "bit",
+      "values": [
+        "Global_active_power",
+        "Global_reactive_power",
+        "Voltage",
+        "Global_intensity",
+        "Sub_metering_1",
+        "Sub_metering_2",
+        "Sub_metering_3"
+      ],
+      "why": "the seven meter columns of the sealed file; the subset a branch reads is the subset the graph gathers, and the empty subset is refused"
+    },
+    "lags": {
+      "excluded": {
+        "1443": "LAG_EXCEEDS_SEALING_WINDOW: the design candidate seasonal_lag_1443 was refused for this reason (sealing at 1443 leaves 8578 origins under seal a8c7f07f6d6c, not 9824 under 33820b552ddf)",
+        "2892": "LAG_EXCEEDS_SEALING_WINDOW: the design candidate seasonal_lag_2892 was refused for this reason (sealing at 2892 leaves 7129 origins under seal 97155a063e25, not 9824 under 33820b552ddf)"
+      },
+      "genes": [
+        1,
+        2,
+        3
+      ],
+      "motivated_set": [
+        1,
+        74,
+        197,
+        1443,
+        2892
+      ],
+      "type": "bit",
+      "values": [
+        1,
+        74,
+        197
+      ],
+      "why": "the design job's own motivated set -- the one-step lag, the autocorrelation peaks outside the white-noise band (74, 1443, 2892) and the decay lag (197) -- less the two peaks no point of this comparison could be scored under, which are excluded by the refusal that already removed the candidates naming them. A lag beyond the genome's own window is still refused"
+    },
+    "transform": {
+      "gene": 4,
+      "high": 2,
+      "low": 0,
+      "type": "int",
+      "values": [
+        "level",
+        "diff",
+        "log_return"
+      ],
+      "why": "the values m5phet.representation.v1 declares, and no others"
+    },
+    "window": {
+      "gene": 0,
+      "high": 197,
+      "low": 3,
+      "type": "int",
+      "why": "the sealing window of this comparison is 197 rows: a stage whose window exceeds it cannot be scored on the sealed population at all, and that refusal is reused here as the bound of the space rather than worked around. The lower bound is the encoder's kernel size"
+    }
+  }
+}

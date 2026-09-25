@@ -17,6 +17,11 @@ What this tool is, and what it refuses to be:
   recomputes the identical seal. A stage whose seal differs is not comparable and ``compare_stages`` says so;
 * the naive reference (last observed value of the target at the origin) is computed by the evaluation package on
   **exactly** the sealed rows, never on a convenient subset;
+* it builds the representation the spec declares -- the window, the target transform (``level``, ``diff``,
+  ``log_return``), the differencing order of the input channels and the columns each branch reads -- and every
+  prediction is turned back into the target's own units before it is scored, because the truth of a sealed row is a
+  level in kW whatever the stage modelled. ``--expect-seal`` refuses, before a weight is fitted, a run that would
+  compute a seal other than the one it was told it is joining;
 * it never writes a quality claim anywhere but the report, and the report carries the protocol digest, the seal and the
   counts that every ratio in it rests on.
 
@@ -206,6 +211,75 @@ def sealed_population(data, *, holdout_fraction: float, seal_window: int, horizo
         origins.append(origin)
     return {"holdout_start": start, "rows": tuple(rows), "labels": labels, "origins": np.asarray(origins, dtype=int),
             "dropped": (last - first + 1) - len(rows)}
+
+
+#: the target transforms `m5phet.representation.v1` declares (`feature_eng_m5phet.representation.TRANSFORMS`). They are
+#: implemented here as ORIGIN-ANCHORED transforms of the label: what the model regresses is a function of the realised
+#: value at the origin and at the origin plus the horizon, and of nothing else. That is the only reading under which a
+#: prediction can be turned back into kW from information the origin already carries, which is what scoring on the
+#: sealed holdout requires: the truth of a sealed row is a level in kW and never changes, whatever the stage models.
+TRANSFORMS = ("level", "diff", "log_return")
+
+#: the refusal when a transform is undefined on the rows it would be fitted or scored on
+TRANSFORM_NOT_DEFINED = "TRANSFORM_NOT_DEFINED_FOR_COLUMN"
+
+#: the reading of `differencing.order` this harness applies, recorded in every manifest. The spec says a transform and
+#: a differencing order are not two ways of saying the same thing -- the transform is what the TARGET is modelled
+#: under, the order is "extra differences applied on top" -- and does not say on top of what. Two readings are
+#: possible and only one of them can be scored: differencing the TARGET makes the level at the origin plus the horizon
+#: unrecoverable (the d-th difference at t+h needs the levels at t+h-1 .. t+h-d, which the origin does not carry), so
+#: every such stage would be NOT_COMPARABLE with the sealed rows by construction. This harness therefore differences
+#: the INPUT channels -- the window the encoder reads -- and leaves the label to `target.transform`. A stage that
+#: wanted the other reading is a different harness, not a flag.
+DIFFERENCING_READING = (
+    "differencing.order is applied to the INPUT channels: the d-th difference of every column, over the d+window-1 raw "
+    "rows before the origin. The label is what target.transform declares and is never differenced here, because the "
+    "d-th difference of the target at the origin plus the horizon cannot be turned back into a level from what the "
+    "origin carries, and the sealed rows are levels in kW")
+
+
+def difference(values, order: int):
+    """The `order`-th difference of every column, aligned to the original rows; the first `order` rows are not defined.
+
+    Returned with NaN in those rows rather than dropped, so every index in this matrix still means the same instant it
+    means in the raw file -- an origin is a row number of the sealed population and must not be shifted by a modelling
+    choice.
+    """
+    if order == 0:
+        return values
+    out = np.full_like(values, np.nan)
+    current = values
+    for _ in range(int(order)):
+        current = current[1:] - current[:-1]
+    out[int(order):] = current
+    return out
+
+
+def target_values(raw_target, origins, *, horizon: int, transform: str):
+    """What the model regresses, per origin, in the transform's own units. Refused by name where it is undefined."""
+    if transform not in TRANSFORMS:
+        raise SpecError(f"UNKNOWN_TRANSFORM: {transform!r} is not one of {list(TRANSFORMS)}")
+    here = raw_target[origins]
+    later = raw_target[origins + horizon]
+    if transform == "level":
+        return later.astype(np.float64)
+    if transform == "diff":
+        return (later - here).astype(np.float64)
+    if (here <= 0).any() or (later <= 0).any():
+        raise SpecError(f"{TRANSFORM_NOT_DEFINED}: the transform 'log_return' is the difference of the logarithm and "
+                        f"the target column is not strictly positive on "
+                        f"{int((here <= 0).sum() + (later <= 0).sum())} of the {2 * len(origins)} values it would be "
+                        f"read at; a transform is never applied to a subset of the rows a stage is scored on")
+    return (np.log(later) - np.log(here)).astype(np.float64)
+
+
+def invert_to_level(predicted, anchors, *, transform: str):
+    """The predicted target back in the column's own units, from the anchor (the realised value at each origin)."""
+    if transform == "level":
+        return predicted
+    if transform == "diff":
+        return anchors + predicted
+    return anchors * np.exp(predicted)
 
 
 def training_origins(data, *, holdout_start: int, window: int, horizon: int):
@@ -401,6 +475,9 @@ def main(argv=None) -> int:
     parser.add_argument("--seal-window", type=int, required=True,
                         help="the history length the sealed population is defined by; the same for every stage of one "
                              "comparison, and never smaller than any stage's own window")
+    parser.add_argument("--expect-seal", default=None,
+                        help="the corpus seal (or its prefix) this stage is joining; the run is refused "
+                             "NOT_COMPARABLE before any weight is fitted if it seals another population")
     parser.add_argument("--holdout-fraction", type=float, default=0.2)
     parser.add_argument("--sealed-at", required=True)
     parser.add_argument("--epochs", type=int, default=30)
@@ -438,9 +515,17 @@ def main(argv=None) -> int:
     config = build_config(spec, columns=data["columns"], horizon=args.horizon, epochs=args.epochs,
                           patience=args.patience, batch_size=args.batch_size, seed=args.seed,
                           head=args.head, quantiles=args.quantiles)
-    if config["window_size"] > args.seal_window:
-        raise SpecError(f"the stage's window {config['window_size']} exceeds the sealing window {args.seal_window}; "
+    representation = spec["representation"]
+    transform = str(representation["target"]["transform"])
+    order = int((representation.get("differencing") or {}).get("order", 0))
+    window = config["window_size"]
+    if window > args.seal_window:
+        raise SpecError(f"the stage's window {window} exceeds the sealing window {args.seal_window}; "
                         f"the sealed population would not hold its history")
+    if window + order > args.seal_window:
+        raise SpecError(f"WINDOW_PLUS_DIFFERENCING_EXCEEDS_SEALING_WINDOW: the stage's window {window} and "
+                        f"differencing order {order} need {window + order} rows of history before each origin and "
+                        f"the sealing window is {args.seal_window}; the sealed population would not hold it")
     data["target_index"] = data["columns"].index(config["target_column"])
 
     population = sealed_population(data, holdout_fraction=args.holdout_fraction,
@@ -449,27 +534,57 @@ def main(argv=None) -> int:
         args.evaluation_src, population["rows"], population["labels"], data_path=args.data,
         sealed_at=args.sealed_at, seal_window=args.seal_window, horizon=args.horizon,
         holdout_fraction=args.holdout_fraction, minimum_rows=args.minimum_rows)
+    # The seal is what makes two stages one comparison. A stage that was told which seal it is joining and computes
+    # another one has not been scored on the population it claims: it is refused here, before a weight is fitted,
+    # rather than scored on other rows and compared anyway.
+    if args.expect_seal and not seal.seal.startswith(args.expect_seal):
+        raise SpecError(f"NOT_COMPARABLE: this run sealed {seal.seal} over {len(population['rows'])} origins and was "
+                        f"told to join the comparison sealed at {args.expect_seal}; the two are different populations "
+                        f"and one number computed on each is two different questions")
+
+    # the input channels: the representation's differencing order, applied to the columns the encoder reads
+    inputs = difference(data["values"], order)
+    finite_inputs = data["finite"] & np.isfinite(inputs).all(axis=1)
 
     # the scaler: TRAIN rows only, by construction -- the holdout rows are never read for it
-    train_rows = data["values"][:population["holdout_start"]]
-    usable = data["finite"][:population["holdout_start"]]
+    train_rows = inputs[:population["holdout_start"]]
+    usable = finite_inputs[:population["holdout_start"]]
     mean = train_rows[usable].mean(axis=0)
     sd = train_rows[usable].std(axis=0)
     if not np.isfinite(mean).all() or not np.isfinite(sd).all() or (sd <= 0).any():
         raise SpecError("a train column has a non-finite or zero spread; it cannot be standardised")
-    scaled = np.where(data["finite"][:, None], (data["values"] - mean) / sd, np.nan).astype(np.float32)
+    scaled = np.where(finite_inputs[:, None], (inputs - mean) / sd, np.nan).astype(np.float32)
 
-    window = config["window_size"]
-    origins = training_origins(data, holdout_start=population["holdout_start"], window=window, horizon=args.horizon)
+    # An origin needs `order` extra raw rows before its window, because the first difference of the first row of the
+    # window is not defined without the row before it. The rule for which rows may be fitted on is otherwise the one
+    # every stage of this comparison uses: the whole contiguous span from the start of the history to the label.
+    origins = training_origins(data, holdout_start=population["holdout_start"], window=window + order,
+                               horizon=args.horizon)
     cut = int(len(origins) * (1.0 - args.validation_fraction))
     fit_origins, val_origins = origins[:cut], origins[cut:]
     target_index = data["target_index"]
-    y_all = ((data["values"][:, target_index] - mean[target_index]) / sd[target_index]).astype(np.float32)
+    raw_target = data["values"][:, target_index]
+
+    # the target scaler, fitted on the TRAIN origins only and in the transform's own units. For the level under no
+    # differencing it IS the input scaler's own mean and sd for that column, so the legacy path is unchanged to the bit.
+    if transform == "level" and order == 0:
+        target_mean, target_sd = float(mean[target_index]), float(sd[target_index])
+        target_scaler = "the input scaler's mean and sd for the target column (level, no differencing)"
+    else:
+        train_targets = target_values(raw_target, origins, horizon=args.horizon, transform=transform)
+        target_mean, target_sd = float(train_targets.mean()), float(train_targets.std())
+        if not np.isfinite(target_mean) or not np.isfinite(target_sd) or target_sd <= 0:
+            raise SpecError(f"the target under the transform {transform!r} has a non-finite or zero spread on the "
+                            f"train origins; it cannot be standardised")
+        target_scaler = (f"mean and sd of the target under the transform {transform!r} over the {len(origins)} TRAIN "
+                         f"origins; the sealed holdout is never read for it")
 
     x_train = windows_for(scaled, fit_origins, window)
     x_val = windows_for(scaled, val_origins, window)
-    y_train = y_all[fit_origins + args.horizon].reshape(-1, 1)
-    y_val = y_all[val_origins + args.horizon].reshape(-1, 1)
+    y_train = ((target_values(raw_target, fit_origins, horizon=args.horizon, transform=transform) - target_mean)
+               / target_sd).astype(np.float32).reshape(-1, 1)
+    y_val = ((target_values(raw_target, val_origins, horizon=args.horizon, transform=transform) - target_mean)
+             / target_sd).astype(np.float32).reshape(-1, 1)
 
     plugin, module_ref, epochs_run, history = fit_stage(
         config, x_train, y_train, x_val, y_val, repo_root=REPO_ROOT, epochs=args.epochs, head=args.head)
@@ -477,7 +592,10 @@ def main(argv=None) -> int:
     x_hold = windows_for(scaled, population["origins"], window)
     raw = plugin.model.predict(x_hold, batch_size=args.batch_size, verbose=0)
     raw = np.asarray(raw[0] if isinstance(raw, list) else raw, dtype=np.float64)
-    values = raw * float(sd[target_index]) + float(mean[target_index])
+    # back to the transform's units, then back to kW from the value realised AT the origin. The truth of a sealed row
+    # is a level in kW whatever the stage modelled, so this inversion -- and not the seal -- is what a transform changes.
+    anchors = raw_target[population["origins"]].astype(np.float64).reshape(-1, 1)
+    values = invert_to_level(raw * target_sd + target_mean, anchors, transform=transform)
 
     rows = protocol.population
     truth = dict(population["labels"])
@@ -548,6 +666,19 @@ def main(argv=None) -> int:
         "target": config["target_column"],
         "horizons": [args.horizon],
         "window": window,
+        "representation_applied": {
+            "target_transform": transform,
+            "target_transform_applied_as": ("origin-anchored: the label is a function of the realised value at the "
+                                            "origin and at the origin plus the horizon, and the prediction is turned "
+                                            "back into kW from the origin's own value"),
+            "differencing_order": order,
+            "differencing_reading": DIFFERENCING_READING,
+            "target_scaler": target_scaler,
+            "feature_subset": sorted({column for branch in (config.get("branches") or ())
+                                      for column in branch["columns"]}) or list(data["columns"]),
+            "feature_subset_applied_by": ("the branch's own gather over the channel axis: a column no branch names is "
+                                          "read by no encoder, so the subset is the graph's and not a note"),
+        },
         "step_seconds": int(np.median(data["steps"])),
         "scaler": {"kind": "per_column_zscore", "mean": mean.tolist(), "sd": sd.tolist(),
                    "fitted_on": f"the first {population['holdout_start']} rows of {args.data.name} (TRAIN only; the "

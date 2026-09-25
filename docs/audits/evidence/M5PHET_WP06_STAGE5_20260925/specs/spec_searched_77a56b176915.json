@@ -1,0 +1,97 @@
+{
+  "chosen_by": "SEARCH",
+  "core": {
+    "chosen_by": "HAND",
+    "decision": null,
+    "encoder_mapping": {
+      "branches": {
+        "all": {
+          "encoder": "tcn",
+          "extractor": "HAND",
+          "mapped_by": "hand, from the household pilot's core_kind 'tcn_w'",
+          "status": "MAPPED",
+          "why": "'tcn' is the dilated causal residual Conv1D family of 'fused_branches', the inline family closest to the pilot's tcn_w core"
+        }
+      },
+      "core": "fused_branches",
+      "status": "MAPPED"
+    },
+    "key": "fused_branches",
+    "why": "the household pilot's core is 'tcn_w' in native df_e1 code, which no predictor.plugins entry point names; the declared plugin closest to it is 'fused_branches' with one branch and its 'tcn' encoder"
+  },
+  "decisions": [],
+  "execution_authorized": false,
+  "extractors": {
+    "all": {
+      "decision": null,
+      "plugin": "HAND"
+    }
+  },
+  "features": [
+    "Global_active_power",
+    "Global_reactive_power",
+    "Voltage",
+    "Global_intensity",
+    "Sub_metering_1",
+    "Sub_metering_2",
+    "Sub_metering_3"
+  ],
+  "grouping": {
+    "chosen_by": "SEARCH",
+    "decision": null,
+    "groups": [
+      {
+        "group_id": "all",
+        "members": [
+          "Global_intensity"
+        ]
+      }
+    ],
+    "k": 1,
+    "why": "the baseline_hand grouping shape -- one block -- holding the columns the search selected; the cut k is not a gene of this space"
+  },
+  "preprocessing": {},
+  "provenance": "DEVELOPMENT",
+  "representation": {
+    "calendar": {
+      "clock": "receipt",
+      "columns": []
+    },
+    "candidate_id": "searched_77a56b176915",
+    "differencing": {
+      "order": 0
+    },
+    "exogenous": [
+      "Global_intensity"
+    ],
+    "features": [],
+    "holdout": {
+      "fraction": 0.2
+    },
+    "lags": [
+      1
+    ],
+    "provenance": "DEVELOPMENT",
+    "sampling": {
+      "step_seconds": 60,
+      "timezone": "UTC"
+    },
+    "schema": "m5phet.representation.v1",
+    "target": {
+      "column": "Global_active_power",
+      "transform": "diff"
+    },
+    "why": {
+      "features": "none: this search adds no derived or calendar feature, only chooses among the file's own columns",
+      "lags": "searched: a subset of the design job's motivated lags, each no longer than the window",
+      "transform": "searched: one of the transforms the representation schema declares",
+      "windows": "searched: the window is a gene of the declared space, bounded by the sealing window"
+    },
+    "windows": [
+      31
+    ]
+  },
+  "schema": "m5phet.pipeline.v1",
+  "stage": "searched_77a56b176915",
+  "why": "WP06 stage 5: the searched representation 'searched_77a56b176915', fitted with the rest of the pipeline held at exactly what the baseline_hand stage uses (the same core, the same encoder, no per-feature preprocessor declared, the same epochs, patience, seed, batch size and deterministic ops). The representation is the only thing that differs from the baseline, and the only thing a difference in the table can be attributed to. The budget of this search is 400 genomes drawn for generation 0 and 16 individuals for each of the 3 generations after it, at most 40 fits dispatched; every legal point is fitted once and every refused point is counted and never fitted."
+}

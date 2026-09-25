@@ -1,0 +1,87 @@
+{
+  "refused": [
+    {
+      "feature": null,
+      "kind": "representation",
+      "question": "candidate",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "searched_b373275495e2",
+      "why": "the choice 'searched' is not one of the declared options ['hand_household_w60', 'short_memory', 'seasonal_lag_74', 'seasonal_lag_1443', 'seasonal_lag_2892']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "feature_grouping",
+      "question": "grouping_cut",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "searched_b373275495e2",
+      "why": "the choice 'k=1' is not one of the declared options ['k=2', 'k=3', 'k=4', 'k=5', 'k=6']; a person may not add an option to a set the executing repository declared"
+    },
+    {
+      "feature": null,
+      "kind": "group_extractor",
+      "question": "extractor",
+      "refusal": "CHOICE_OUTSIDE_OPTIONS",
+      "stage": "searched_b373275495e2",
+      "why": "the choice 'tcn' is not one of the declared options ['default', 'ann', 'rnn', 'transformer', 'lstm', 'cnn', 'vae', 'vae_small']; a person may not add an option to a set the executing repository declared"
+    }
+  ],
+  "stage": "searched_b373275495e2",
+  "written": [
+    {
+      "chosen": "normalizer",
+      "feature": "Global_active_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "eae1c2e76b0e140597279933ea53e2285da1f797a1e8bcb4f205d3100e292a5a",
+      "stage": "searched_b373275495e2"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_reactive_power",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "5d938313e9d808df3e61a14e9b65270057a19e57412c3733f48666fcb40adf7b",
+      "stage": "searched_b373275495e2"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Voltage",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "64ea5d9ed22d139d674778ee8e9cf7da20ecde2980ec8873ba01c503f4ada812",
+      "stage": "searched_b373275495e2"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Global_intensity",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "6f54b65ed13bd3a380dbe452d5d092f25b41cea8fee2032becc1db9400e445fd",
+      "stage": "searched_b373275495e2"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_1",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "60047d7d2a522cfbfc28a5d3e191a59d115f3344f93831278f760da4fa929987",
+      "stage": "searched_b373275495e2"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_2",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "5595bbb26a7eb1c995cca8433fe37f4c5b088e6952cda1f1409963daafd4c81d",
+      "stage": "searched_b373275495e2"
+    },
+    {
+      "chosen": "normalizer",
+      "feature": "Sub_metering_3",
+      "kind": "feature_preprocessing",
+      "question": "preprocessing",
+      "record": "93c63900a8c8f684016e2dba35b9adc9a219ccf9dbede5d6e10ecb35b3b51c9a",
+      "stage": "searched_b373275495e2"
+    }
+  ]
+}

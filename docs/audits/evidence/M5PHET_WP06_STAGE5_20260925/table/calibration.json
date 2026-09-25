@@ -1,0 +1,3748 @@
+{
+  "bin_width": 0.1,
+  "decimals": 6,
+  "decision_schema": "m5phet.decision.v1",
+  "expected_calibration_error_definition": "expected calibration error = sum over non-empty bins of (n_bin / n_scored) * |agreement_bin - mean_argmax_probability_bin|, where agreement_bin is the fraction of that bin's outcomes whose argmax was the best-ranked option. It is a gap between what the head claimed and what the closure table found; it is not an accuracy, and it says nothing about whether the ranked-first pipeline was any good.",
+  "groups": [
+    {
+      "agreement_rate": null,
+      "agreements": null,
+      "best_ranked_option": null,
+      "bins": [],
+      "excluded": {
+        "ambiguous_argmax": 0,
+        "human_choice_not_scored": 0,
+        "probability_out_of_range": 0,
+        "search_choice_not_scored": 0
+      },
+      "expected_calibration_error": null,
+      "human_stages": [],
+      "kind": "feature_grouping",
+      "missing": 29,
+      "n_human_linked": 0,
+      "n_linked": 1,
+      "n_scorable_linked": 1,
+      "n_scored": 0,
+      "n_search_linked": 0,
+      "options": [
+        [
+          "k=2",
+          "2 groups, sizes 6|1; within 0.426, between 0.129, silhouette 0.298"
+        ],
+        [
+          "k=3",
+          "3 groups, sizes 5|1|1; within 0.537, between 0.151, silhouette 0.308"
+        ],
+        [
+          "k=4",
+          "4 groups, sizes 4|1|1|1; within 0.653, between 0.173, silhouette 0.246"
+        ],
+        [
+          "k=5",
+          "5 groups, sizes 3|1|1|1|1; within 0.787, between 0.211, silhouette 0.237"
+        ],
+        [
+          "k=6",
+          "6 groups, sizes 2|1|1|1|1|1; within 0.999, between 0.255, silhouette 0.284"
+        ]
+      ],
+      "question": "grouping_cut",
+      "reason": "NO_NEW_MEASUREMENT: NO_BEST_RANKED_OPTION: no linked outcome came from a stage the table ranked first, so no option is the label the others are scored against; the table's first-ranked stage is 'searched_b373275495e2', which carries no decision record for this question (COMPARABLE_BUT_NO_DECISION_RECORD); 1 scorable linked outcome(s) of 1, 30 required \u2014 29 missing",
+      "search_stages": [],
+      "stage_coverage": [
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "baseline_hand",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_1443",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_2892",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 10,
+          "stage": "candidate_seasonal_lag_74",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 36,
+          "stage": "candidate_short_memory",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "control_baseline_hand_refit",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 14,
+          "stage": "laya_chosen",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 8,
+          "stage": "quantile_hand",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 4,
+          "stage": "quantile_hand_95",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 2,
+          "stage": "searched_0588f5747b62",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 37,
+          "stage": "searched_0674562ba097",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 31,
+          "stage": "searched_0776944c4ff2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 18,
+          "stage": "searched_084674eed382",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 64,
+          "stage": "searched_09d549875516",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 22,
+          "stage": "searched_1193e09305cd",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 68,
+          "stage": "searched_171cf2419e9a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 58,
+          "stage": "searched_1b12e9bcdd0a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 32,
+          "stage": "searched_20a2053478d7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 50,
+          "stage": "searched_2110bc311492",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 13,
+          "stage": "searched_26d0472122bb",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 24,
+          "stage": "searched_2cbef989a359",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 39,
+          "stage": "searched_2d178b6054e8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 43,
+          "stage": "searched_2ec15e75bf53",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 11,
+          "stage": "searched_2fbc35eb0452",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 21,
+          "stage": "searched_307f0eb865bc",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 34,
+          "stage": "searched_3413de1c1b38",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 69,
+          "stage": "searched_447078aa750c",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 55,
+          "stage": "searched_46688543dd04",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 60,
+          "stage": "searched_47fa500b6248",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 40,
+          "stage": "searched_4cf8ab4540c1",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 9,
+          "stage": "searched_583a29124bf9",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 66,
+          "stage": "searched_5d2e12cc0eed",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 29,
+          "stage": "searched_6339ea8a9155",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 49,
+          "stage": "searched_6d7f4a8ee8b8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 57,
+          "stage": "searched_6d9169f946b4",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 28,
+          "stage": "searched_6e04fdef5774",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 24,
+          "stage": "searched_76c22bc6b1ef",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 5,
+          "stage": "searched_77a56b176915",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 70,
+          "stage": "searched_7c737b3d6103",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 46,
+          "stage": "searched_7ca9e5afc53d",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 35,
+          "stage": "searched_823ac370f1ad",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 11,
+          "stage": "searched_950e4a6f52e7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 33,
+          "stage": "searched_971e06d8577b",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 26,
+          "stage": "searched_a11e6ca7a741",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 63,
+          "stage": "searched_a2cb801138e5",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 51,
+          "stage": "searched_a31a7ba0626a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 67,
+          "stage": "searched_a8b019b54346",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 23,
+          "stage": "searched_aac15a098ad2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 30,
+          "stage": "searched_ac4a22eb1230",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 19,
+          "stage": "searched_b05e0334316d",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 3,
+          "stage": "searched_b367cba9b237",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 1,
+          "stage": "searched_b373275495e2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 44,
+          "stage": "searched_b4b57ce4a1c1",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 17,
+          "stage": "searched_ba03485899ff",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 56,
+          "stage": "searched_be36156f3bf4",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 47,
+          "stage": "searched_bfef0502223e",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 45,
+          "stage": "searched_c041c8f818b7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 16,
+          "stage": "searched_c17f531a9162",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 52,
+          "stage": "searched_c373fe3307f8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 65,
+          "stage": "searched_cd9b33614278",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 59,
+          "stage": "searched_d218899cb73a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 54,
+          "stage": "searched_d4d33029f643",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 61,
+          "stage": "searched_d6c43538cecf",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 42,
+          "stage": "searched_d7d48211d891",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 27,
+          "stage": "searched_da1b5199aa5e",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 15,
+          "stage": "searched_dbf0b617d9fd",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 71,
+          "stage": "searched_e592e93a71b3",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 41,
+          "stage": "searched_e5cb543af015",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 38,
+          "stage": "searched_eb0563232978",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 20,
+          "stage": "searched_f05ee7a86b74",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 62,
+          "stage": "searched_f66120cdd5ba",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 53,
+          "stage": "searched_fac763681e83",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 72,
+          "stage": "searched_facdd5812c0f",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 48,
+          "stage": "searched_ff53ed820adf",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        }
+      ],
+      "stages": [
+        "laya_chosen"
+      ],
+      "status": "NO_NEW_MEASUREMENT"
+    },
+    {
+      "agreement_rate": null,
+      "agreements": null,
+      "best_ranked_option": "normalizer",
+      "bins": [],
+      "excluded": {
+        "ambiguous_argmax": 0,
+        "human_choice_not_scored": 42,
+        "probability_out_of_range": 0,
+        "search_choice_not_scored": 0
+      },
+      "expected_calibration_error": null,
+      "human_stages": [
+        "baseline_hand",
+        "candidate_seasonal_lag_74",
+        "candidate_short_memory",
+        "quantile_hand",
+        "quantile_hand_95",
+        "searched_b373275495e2"
+      ],
+      "kind": "feature_preprocessing",
+      "missing": 23,
+      "n_human_linked": 42,
+      "n_linked": 49,
+      "n_scorable_linked": 7,
+      "n_scored": 0,
+      "n_search_linked": 0,
+      "options": [
+        [
+          "default_preprocessor",
+          "Default Preprocessor Plugin"
+        ],
+        [
+          "stl_preprocessor",
+          "stl_preprocessor"
+        ],
+        [
+          "default_plugin",
+          "Plugin to preprocess the dataset for feature extraction..."
+        ],
+        [
+          "normalizer",
+          "1.60139 1.16481"
+        ],
+        [
+          "unbiaser",
+          "Unbiaser Plugin to apply unbiasing methods to the dataset."
+        ],
+        [
+          "trimmer",
+          "trimmer"
+        ],
+        [
+          "feature_selector",
+          "Feature Selector Plugin to perform feature selection on the..."
+        ],
+        [
+          "cleaner",
+          "cleaner"
+        ]
+      ],
+      "question": "preprocessing",
+      "reason": "NO_NEW_MEASUREMENT: 7 scorable linked outcome(s) of 49, 30 required \u2014 23 missing",
+      "search_stages": [],
+      "stage_coverage": [
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "baseline_hand",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_1443",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_2892",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 10,
+          "stage": "candidate_seasonal_lag_74",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 36,
+          "stage": "candidate_short_memory",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "control_baseline_hand_refit",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 14,
+          "stage": "laya_chosen",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 8,
+          "stage": "quantile_hand",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 4,
+          "stage": "quantile_hand_95",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 2,
+          "stage": "searched_0588f5747b62",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 37,
+          "stage": "searched_0674562ba097",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 31,
+          "stage": "searched_0776944c4ff2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 18,
+          "stage": "searched_084674eed382",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 64,
+          "stage": "searched_09d549875516",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 22,
+          "stage": "searched_1193e09305cd",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 68,
+          "stage": "searched_171cf2419e9a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 58,
+          "stage": "searched_1b12e9bcdd0a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 32,
+          "stage": "searched_20a2053478d7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 50,
+          "stage": "searched_2110bc311492",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 13,
+          "stage": "searched_26d0472122bb",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 24,
+          "stage": "searched_2cbef989a359",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 39,
+          "stage": "searched_2d178b6054e8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 43,
+          "stage": "searched_2ec15e75bf53",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 11,
+          "stage": "searched_2fbc35eb0452",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 21,
+          "stage": "searched_307f0eb865bc",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 34,
+          "stage": "searched_3413de1c1b38",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 69,
+          "stage": "searched_447078aa750c",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 55,
+          "stage": "searched_46688543dd04",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 60,
+          "stage": "searched_47fa500b6248",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 40,
+          "stage": "searched_4cf8ab4540c1",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 9,
+          "stage": "searched_583a29124bf9",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 66,
+          "stage": "searched_5d2e12cc0eed",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 29,
+          "stage": "searched_6339ea8a9155",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 49,
+          "stage": "searched_6d7f4a8ee8b8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 57,
+          "stage": "searched_6d9169f946b4",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 28,
+          "stage": "searched_6e04fdef5774",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 24,
+          "stage": "searched_76c22bc6b1ef",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 5,
+          "stage": "searched_77a56b176915",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 70,
+          "stage": "searched_7c737b3d6103",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 46,
+          "stage": "searched_7ca9e5afc53d",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 35,
+          "stage": "searched_823ac370f1ad",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 11,
+          "stage": "searched_950e4a6f52e7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 33,
+          "stage": "searched_971e06d8577b",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 26,
+          "stage": "searched_a11e6ca7a741",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 63,
+          "stage": "searched_a2cb801138e5",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 51,
+          "stage": "searched_a31a7ba0626a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 67,
+          "stage": "searched_a8b019b54346",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 23,
+          "stage": "searched_aac15a098ad2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 30,
+          "stage": "searched_ac4a22eb1230",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 19,
+          "stage": "searched_b05e0334316d",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 3,
+          "stage": "searched_b367cba9b237",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 1,
+          "stage": "searched_b373275495e2",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 44,
+          "stage": "searched_b4b57ce4a1c1",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 17,
+          "stage": "searched_ba03485899ff",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 56,
+          "stage": "searched_be36156f3bf4",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 47,
+          "stage": "searched_bfef0502223e",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 45,
+          "stage": "searched_c041c8f818b7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 16,
+          "stage": "searched_c17f531a9162",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 52,
+          "stage": "searched_c373fe3307f8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 65,
+          "stage": "searched_cd9b33614278",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 59,
+          "stage": "searched_d218899cb73a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 54,
+          "stage": "searched_d4d33029f643",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 61,
+          "stage": "searched_d6c43538cecf",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 42,
+          "stage": "searched_d7d48211d891",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 27,
+          "stage": "searched_da1b5199aa5e",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 15,
+          "stage": "searched_dbf0b617d9fd",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 71,
+          "stage": "searched_e592e93a71b3",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 41,
+          "stage": "searched_e5cb543af015",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 38,
+          "stage": "searched_eb0563232978",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 20,
+          "stage": "searched_f05ee7a86b74",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 62,
+          "stage": "searched_f66120cdd5ba",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 53,
+          "stage": "searched_fac763681e83",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 72,
+          "stage": "searched_facdd5812c0f",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 48,
+          "stage": "searched_ff53ed820adf",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        }
+      ],
+      "stages": [
+        "baseline_hand",
+        "candidate_seasonal_lag_74",
+        "candidate_short_memory",
+        "laya_chosen",
+        "quantile_hand",
+        "quantile_hand_95",
+        "searched_b373275495e2"
+      ],
+      "status": "NO_NEW_MEASUREMENT"
+    },
+    {
+      "agreement_rate": null,
+      "agreements": null,
+      "best_ranked_option": null,
+      "bins": [],
+      "excluded": {
+        "ambiguous_argmax": 0,
+        "human_choice_not_scored": 0,
+        "probability_out_of_range": 0,
+        "search_choice_not_scored": 0
+      },
+      "expected_calibration_error": null,
+      "human_stages": [],
+      "kind": "group_extractor",
+      "missing": 28,
+      "n_human_linked": 0,
+      "n_linked": 2,
+      "n_scorable_linked": 2,
+      "n_scored": 0,
+      "n_search_linked": 0,
+      "options": [
+        [
+          "default",
+          "Encoder of per-channel Dense branches over the window."
+        ],
+        [
+          "ann",
+          "Encoder of per-channel Dense branches over the window."
+        ],
+        [
+          "rnn",
+          "Encoder of two recurrent layers (SimpleRNN or GRU)."
+        ],
+        [
+          "transformer",
+          "Encoder: positional encoding, attention, strided Conv1D."
+        ],
+        [
+          "lstm",
+          "Encoder: positional encoding, attention, two BiLSTM layers."
+        ],
+        [
+          "cnn",
+          "Encoder of two strided Conv1D layers over the input window."
+        ],
+        [
+          "vae",
+          "Encoder of two strided Conv1D layers, with no sampling step."
+        ],
+        [
+          "vae_small",
+          "Per-step CVAE inference network: mean and log-variance."
+        ]
+      ],
+      "question": "extractor",
+      "reason": "NO_NEW_MEASUREMENT: NO_BEST_RANKED_OPTION: no linked outcome came from a stage the table ranked first, so no option is the label the others are scored against; the table's first-ranked stage is 'searched_b373275495e2', which carries no decision record for this question (COMPARABLE_BUT_NO_DECISION_RECORD); 2 scorable linked outcome(s) of 2, 30 required \u2014 28 missing",
+      "search_stages": [],
+      "stage_coverage": [
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "baseline_hand",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_1443",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_2892",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 10,
+          "stage": "candidate_seasonal_lag_74",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 36,
+          "stage": "candidate_short_memory",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "control_baseline_hand_refit",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 14,
+          "stage": "laya_chosen",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 8,
+          "stage": "quantile_hand",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 4,
+          "stage": "quantile_hand_95",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 2,
+          "stage": "searched_0588f5747b62",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 37,
+          "stage": "searched_0674562ba097",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 31,
+          "stage": "searched_0776944c4ff2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 18,
+          "stage": "searched_084674eed382",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 64,
+          "stage": "searched_09d549875516",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 22,
+          "stage": "searched_1193e09305cd",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 68,
+          "stage": "searched_171cf2419e9a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 58,
+          "stage": "searched_1b12e9bcdd0a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 32,
+          "stage": "searched_20a2053478d7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 50,
+          "stage": "searched_2110bc311492",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 13,
+          "stage": "searched_26d0472122bb",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 24,
+          "stage": "searched_2cbef989a359",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 39,
+          "stage": "searched_2d178b6054e8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 43,
+          "stage": "searched_2ec15e75bf53",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 11,
+          "stage": "searched_2fbc35eb0452",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 21,
+          "stage": "searched_307f0eb865bc",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 34,
+          "stage": "searched_3413de1c1b38",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 69,
+          "stage": "searched_447078aa750c",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 55,
+          "stage": "searched_46688543dd04",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 60,
+          "stage": "searched_47fa500b6248",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 40,
+          "stage": "searched_4cf8ab4540c1",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 9,
+          "stage": "searched_583a29124bf9",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 66,
+          "stage": "searched_5d2e12cc0eed",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 29,
+          "stage": "searched_6339ea8a9155",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 49,
+          "stage": "searched_6d7f4a8ee8b8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 57,
+          "stage": "searched_6d9169f946b4",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 28,
+          "stage": "searched_6e04fdef5774",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 24,
+          "stage": "searched_76c22bc6b1ef",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 5,
+          "stage": "searched_77a56b176915",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 70,
+          "stage": "searched_7c737b3d6103",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 46,
+          "stage": "searched_7ca9e5afc53d",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 35,
+          "stage": "searched_823ac370f1ad",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 11,
+          "stage": "searched_950e4a6f52e7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 33,
+          "stage": "searched_971e06d8577b",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 26,
+          "stage": "searched_a11e6ca7a741",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 63,
+          "stage": "searched_a2cb801138e5",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 51,
+          "stage": "searched_a31a7ba0626a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 67,
+          "stage": "searched_a8b019b54346",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 23,
+          "stage": "searched_aac15a098ad2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 30,
+          "stage": "searched_ac4a22eb1230",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 19,
+          "stage": "searched_b05e0334316d",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 3,
+          "stage": "searched_b367cba9b237",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 1,
+          "stage": "searched_b373275495e2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 44,
+          "stage": "searched_b4b57ce4a1c1",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 17,
+          "stage": "searched_ba03485899ff",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 56,
+          "stage": "searched_be36156f3bf4",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 47,
+          "stage": "searched_bfef0502223e",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 45,
+          "stage": "searched_c041c8f818b7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 16,
+          "stage": "searched_c17f531a9162",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 52,
+          "stage": "searched_c373fe3307f8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 65,
+          "stage": "searched_cd9b33614278",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 59,
+          "stage": "searched_d218899cb73a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 54,
+          "stage": "searched_d4d33029f643",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 61,
+          "stage": "searched_d6c43538cecf",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 42,
+          "stage": "searched_d7d48211d891",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 27,
+          "stage": "searched_da1b5199aa5e",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 15,
+          "stage": "searched_dbf0b617d9fd",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 71,
+          "stage": "searched_e592e93a71b3",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 41,
+          "stage": "searched_e5cb543af015",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 38,
+          "stage": "searched_eb0563232978",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 20,
+          "stage": "searched_f05ee7a86b74",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 62,
+          "stage": "searched_f66120cdd5ba",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 53,
+          "stage": "searched_fac763681e83",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 72,
+          "stage": "searched_facdd5812c0f",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 48,
+          "stage": "searched_ff53ed820adf",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        }
+      ],
+      "stages": [
+        "laya_chosen"
+      ],
+      "status": "NO_NEW_MEASUREMENT"
+    },
+    {
+      "agreement_rate": null,
+      "agreements": null,
+      "best_ranked_option": null,
+      "bins": [],
+      "excluded": {
+        "ambiguous_argmax": 0,
+        "human_choice_not_scored": 5,
+        "probability_out_of_range": 0,
+        "search_choice_not_scored": 0
+      },
+      "expected_calibration_error": null,
+      "human_stages": [
+        "baseline_hand",
+        "candidate_seasonal_lag_74",
+        "candidate_short_memory",
+        "quantile_hand",
+        "quantile_hand_95"
+      ],
+      "kind": "representation",
+      "missing": 30,
+      "n_human_linked": 5,
+      "n_linked": 5,
+      "n_scorable_linked": 0,
+      "n_scored": 0,
+      "n_search_linked": 0,
+      "options": [
+        [
+          "hand_household_w60",
+          "window [60], lags [1]: the window the household DEV resource e1_household_dev_pilot_v1 declares, fixed by hand before this work"
+        ],
+        [
+          "short_memory",
+          "windows [197], lags [1, 197]: the ACF of the levels falls inside the +-0.011206 band at lag 197"
+        ],
+        [
+          "seasonal_lag_74",
+          "windows [74], lags [1, 74]: ACF peak at lag 74 (rho 0.356627)"
+        ],
+        [
+          "seasonal_lag_1443",
+          "windows [197, 1443], lags [1, 1443], feature hour_of_day: ACF peak at lag 1443 (rho 0.277748), period 86580 s"
+        ],
+        [
+          "seasonal_lag_2892",
+          "windows [197, 2892], lags [1, 2892]: ACF peak at lag 2892 (rho 0.244256)"
+        ]
+      ],
+      "question": "candidate",
+      "reason": "NO_NEW_MEASUREMENT: NO_BEST_RANKED_OPTION: no linked outcome came from a stage the table ranked first, so no option is the label the others are scored against; the table's first-ranked stage is 'searched_b373275495e2', which carries no decision record for this question (COMPARABLE_BUT_NO_DECISION_RECORD); 0 scorable linked outcome(s) of 5, 30 required \u2014 30 missing",
+      "search_stages": [],
+      "stage_coverage": [
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "baseline_hand",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_1443",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_2892",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 10,
+          "stage": "candidate_seasonal_lag_74",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 36,
+          "stage": "candidate_short_memory",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "control_baseline_hand_refit",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 14,
+          "stage": "laya_chosen",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 8,
+          "stage": "quantile_hand",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 4,
+          "stage": "quantile_hand_95",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 2,
+          "stage": "searched_0588f5747b62",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 37,
+          "stage": "searched_0674562ba097",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 31,
+          "stage": "searched_0776944c4ff2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 18,
+          "stage": "searched_084674eed382",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 64,
+          "stage": "searched_09d549875516",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 22,
+          "stage": "searched_1193e09305cd",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 68,
+          "stage": "searched_171cf2419e9a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 58,
+          "stage": "searched_1b12e9bcdd0a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 32,
+          "stage": "searched_20a2053478d7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 50,
+          "stage": "searched_2110bc311492",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 13,
+          "stage": "searched_26d0472122bb",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 24,
+          "stage": "searched_2cbef989a359",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 39,
+          "stage": "searched_2d178b6054e8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 43,
+          "stage": "searched_2ec15e75bf53",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 11,
+          "stage": "searched_2fbc35eb0452",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 21,
+          "stage": "searched_307f0eb865bc",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 34,
+          "stage": "searched_3413de1c1b38",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 69,
+          "stage": "searched_447078aa750c",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 55,
+          "stage": "searched_46688543dd04",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 60,
+          "stage": "searched_47fa500b6248",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 40,
+          "stage": "searched_4cf8ab4540c1",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 9,
+          "stage": "searched_583a29124bf9",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 66,
+          "stage": "searched_5d2e12cc0eed",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 29,
+          "stage": "searched_6339ea8a9155",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 49,
+          "stage": "searched_6d7f4a8ee8b8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 57,
+          "stage": "searched_6d9169f946b4",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 28,
+          "stage": "searched_6e04fdef5774",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 24,
+          "stage": "searched_76c22bc6b1ef",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 5,
+          "stage": "searched_77a56b176915",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 70,
+          "stage": "searched_7c737b3d6103",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 46,
+          "stage": "searched_7ca9e5afc53d",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 35,
+          "stage": "searched_823ac370f1ad",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 11,
+          "stage": "searched_950e4a6f52e7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 33,
+          "stage": "searched_971e06d8577b",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 26,
+          "stage": "searched_a11e6ca7a741",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 63,
+          "stage": "searched_a2cb801138e5",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 51,
+          "stage": "searched_a31a7ba0626a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 67,
+          "stage": "searched_a8b019b54346",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 23,
+          "stage": "searched_aac15a098ad2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 30,
+          "stage": "searched_ac4a22eb1230",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 19,
+          "stage": "searched_b05e0334316d",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 3,
+          "stage": "searched_b367cba9b237",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 1,
+          "stage": "searched_b373275495e2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 44,
+          "stage": "searched_b4b57ce4a1c1",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 17,
+          "stage": "searched_ba03485899ff",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 56,
+          "stage": "searched_be36156f3bf4",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 47,
+          "stage": "searched_bfef0502223e",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 45,
+          "stage": "searched_c041c8f818b7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 16,
+          "stage": "searched_c17f531a9162",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 52,
+          "stage": "searched_c373fe3307f8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 65,
+          "stage": "searched_cd9b33614278",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 59,
+          "stage": "searched_d218899cb73a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 54,
+          "stage": "searched_d4d33029f643",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 61,
+          "stage": "searched_d6c43538cecf",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 42,
+          "stage": "searched_d7d48211d891",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 27,
+          "stage": "searched_da1b5199aa5e",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 15,
+          "stage": "searched_dbf0b617d9fd",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 71,
+          "stage": "searched_e592e93a71b3",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 41,
+          "stage": "searched_e5cb543af015",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 38,
+          "stage": "searched_eb0563232978",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 20,
+          "stage": "searched_f05ee7a86b74",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 62,
+          "stage": "searched_f66120cdd5ba",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 53,
+          "stage": "searched_fac763681e83",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 72,
+          "stage": "searched_facdd5812c0f",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 48,
+          "stage": "searched_ff53ed820adf",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        }
+      ],
+      "stages": [
+        "baseline_hand",
+        "candidate_seasonal_lag_74",
+        "candidate_short_memory",
+        "quantile_hand",
+        "quantile_hand_95"
+      ],
+      "status": "NO_NEW_MEASUREMENT"
+    },
+    {
+      "agreement_rate": null,
+      "agreements": null,
+      "best_ranked_option": "searched_b373275495e2",
+      "bins": [],
+      "excluded": {
+        "ambiguous_argmax": 0,
+        "human_choice_not_scored": 0,
+        "probability_out_of_range": 0,
+        "search_choice_not_scored": 1
+      },
+      "expected_calibration_error": null,
+      "human_stages": [],
+      "kind": "representation",
+      "missing": 30,
+      "n_human_linked": 0,
+      "n_linked": 1,
+      "n_scorable_linked": 0,
+      "n_scored": 0,
+      "n_search_linked": 1,
+      "options": [
+        [
+          "searched_0588f5747b62",
+          "window 21, lags [1], transform level, differencing order 0, columns Voltage, Global_intensity, Sub_metering_1, Sub_metering_2"
+        ],
+        [
+          "searched_0674562ba097",
+          "window 77, lags [1, 74], transform log_return, differencing order 0, columns Voltage, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_0776944c4ff2",
+          "window 178, lags [74], transform log_return, differencing order 0, columns Global_active_power, Global_reactive_power, Global_intensity, Sub_metering_3"
+        ],
+        [
+          "searched_084674eed382",
+          "window 147, lags [1, 74], transform level, differencing order 1, columns Global_active_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_2"
+        ],
+        [
+          "searched_09d549875516",
+          "window 164, lags [1, 74], transform level, differencing order 0, columns Global_reactive_power, Voltage, Sub_metering_1, Sub_metering_2"
+        ],
+        [
+          "searched_1193e09305cd",
+          "window 85, lags [1], transform level, differencing order 0, columns Global_intensity, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_171cf2419e9a",
+          "window 178, lags [74], transform level, differencing order 2, columns Global_active_power, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_1b12e9bcdd0a",
+          "window 147, lags [1, 74], transform diff, differencing order 0, columns Voltage, Global_intensity, Sub_metering_1, Sub_metering_2"
+        ],
+        [
+          "searched_20a2053478d7",
+          "window 168, lags [1, 74], transform log_return, differencing order 0, columns Global_active_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_3"
+        ],
+        [
+          "searched_2110bc311492",
+          "window 147, lags [1], transform diff, differencing order 0, columns Global_active_power, Voltage, Global_intensity, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_26d0472122bb",
+          "window 23, lags [1], transform log_return, differencing order 0, columns Global_reactive_power, Voltage, Global_intensity, Sub_metering_2"
+        ],
+        [
+          "searched_2cbef989a359",
+          "window 103, lags [1], transform level, differencing order 1, columns Global_active_power, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_2d178b6054e8",
+          "window 178, lags [74], transform level, differencing order 1, columns Global_active_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_2ec15e75bf53",
+          "window 30, lags [1], transform level, differencing order 0, columns Global_reactive_power, Voltage"
+        ],
+        [
+          "searched_2fbc35eb0452",
+          "window 103, lags [1, 74], transform level, differencing order 1, columns Global_active_power, Voltage, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_307f0eb865bc",
+          "window 167, lags [74], transform level, differencing order 1, columns Global_active_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_3413de1c1b38",
+          "window 103, lags [1], transform log_return, differencing order 0, columns Voltage, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_447078aa750c",
+          "window 23, lags [1], transform level, differencing order 2, columns Global_active_power, Global_reactive_power, Sub_metering_1, Sub_metering_2"
+        ],
+        [
+          "searched_46688543dd04",
+          "window 153, lags [1, 74], transform diff, differencing order 0, columns Global_active_power, Global_reactive_power, Global_intensity, Sub_metering_1, Sub_metering_3"
+        ],
+        [
+          "searched_47fa500b6248",
+          "window 103, lags [1, 74], transform diff, differencing order 0, columns Global_reactive_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_4cf8ab4540c1",
+          "window 167, lags [74], transform log_return, differencing order 0, columns Voltage, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_583a29124bf9",
+          "window 66, lags [1], transform level, differencing order 0, columns Voltage, Global_intensity, Sub_metering_1, Sub_metering_2"
+        ],
+        [
+          "searched_5d2e12cc0eed",
+          "window 153, lags [1, 74], transform level, differencing order 2, columns Global_active_power, Global_reactive_power, Global_intensity, Sub_metering_1, Sub_metering_3"
+        ],
+        [
+          "searched_6339ea8a9155",
+          "window 103, lags [1, 74], transform level, differencing order 2, columns Global_active_power, Voltage, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_6d7f4a8ee8b8",
+          "window 43, lags [1], transform level, differencing order 1, columns Global_reactive_power, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_6d9169f946b4",
+          "window 103, lags [1, 74], transform diff, differencing order 0, columns Voltage, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_6e04fdef5774",
+          "window 77, lags [74], transform level, differencing order 2, columns Global_active_power, Voltage, Global_intensity, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_76c22bc6b1ef",
+          "window 103, lags [1, 74], transform level, differencing order 1, columns Global_active_power, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_77a56b176915",
+          "window 31, lags [1], transform diff, differencing order 0, columns Global_intensity"
+        ],
+        [
+          "searched_7c737b3d6103",
+          "window 21, lags [1], transform level, differencing order 2, columns Global_reactive_power, Sub_metering_1"
+        ],
+        [
+          "searched_7ca9e5afc53d",
+          "window 103, lags [1, 74], transform level, differencing order 1, columns Global_active_power, Voltage, Sub_metering_1, Sub_metering_2"
+        ],
+        [
+          "searched_823ac370f1ad",
+          "window 191, lags [1], transform level, differencing order 1, columns Voltage, Global_intensity, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_950e4a6f52e7",
+          "window 103, lags [1], transform level, differencing order 1, columns Global_active_power, Voltage, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_971e06d8577b",
+          "window 10, lags [1], transform level, differencing order 0, columns Global_reactive_power, Sub_metering_3"
+        ],
+        [
+          "searched_a11e6ca7a741",
+          "window 114, lags [1, 74], transform level, differencing order 1, columns Global_active_power, Global_reactive_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_2"
+        ],
+        [
+          "searched_a2cb801138e5",
+          "window 74, lags [74], transform level, differencing order 2, columns Global_active_power, Sub_metering_1"
+        ],
+        [
+          "searched_a31a7ba0626a",
+          "window 171, lags [74], transform diff, differencing order 0, columns Voltage, Global_intensity, Sub_metering_3"
+        ],
+        [
+          "searched_a8b019b54346",
+          "window 147, lags [1, 74], transform level, differencing order 2, columns Global_active_power, Sub_metering_2"
+        ],
+        [
+          "searched_aac15a098ad2",
+          "window 103, lags [1, 74], transform level, differencing order 0, columns Global_active_power, Voltage, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_ac4a22eb1230",
+          "window 103, lags [1], transform level, differencing order 1, columns Global_active_power, Voltage, Sub_metering_1, Sub_metering_3"
+        ],
+        [
+          "searched_b05e0334316d",
+          "window 74, lags [1], transform log_return, differencing order 0, columns Sub_metering_1"
+        ],
+        [
+          "searched_b367cba9b237",
+          "window 34, lags [1], transform level, differencing order 0, columns Global_active_power, Global_reactive_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_b373275495e2",
+          "window 21, lags [1], transform level, differencing order 0, columns Voltage, Global_intensity, Sub_metering_3"
+        ],
+        [
+          "searched_b4b57ce4a1c1",
+          "window 178, lags [1], transform log_return, differencing order 0, columns Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_ba03485899ff",
+          "window 53, lags [1], transform level, differencing order 2, columns Global_active_power, Global_reactive_power, Sub_metering_3"
+        ],
+        [
+          "searched_be36156f3bf4",
+          "window 167, lags [74], transform diff, differencing order 0, columns Global_active_power, Global_reactive_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_bfef0502223e",
+          "window 167, lags [74], transform level, differencing order 1, columns Global_reactive_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_c041c8f818b7",
+          "window 70, lags [1], transform diff, differencing order 0, columns Global_reactive_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_3"
+        ],
+        [
+          "searched_c17f531a9162",
+          "window 43, lags [1], transform level, differencing order 1, columns Global_active_power, Global_intensity, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_c373fe3307f8",
+          "window 167, lags [74], transform diff, differencing order 0, columns Voltage, Global_intensity, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_cd9b33614278",
+          "window 134, lags [74], transform level, differencing order 2, columns Global_intensity, Sub_metering_1"
+        ],
+        [
+          "searched_d218899cb73a",
+          "window 147, lags [1, 74], transform diff, differencing order 0, columns Global_active_power, Global_reactive_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_2"
+        ],
+        [
+          "searched_d4d33029f643",
+          "window 153, lags [1, 74], transform level, differencing order 0, columns Global_active_power, Global_reactive_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_d6c43538cecf",
+          "window 107, lags [74], transform level, differencing order 1, columns Global_reactive_power, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_d7d48211d891",
+          "window 147, lags [1], transform log_return, differencing order 0, columns Sub_metering_1"
+        ],
+        [
+          "searched_da1b5199aa5e",
+          "window 147, lags [1], transform level, differencing order 1, columns Global_active_power, Voltage, Global_intensity, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_dbf0b617d9fd",
+          "window 36, lags [1], transform log_return, differencing order 0, columns Global_reactive_power, Global_intensity, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_e592e93a71b3",
+          "window 66, lags [1], transform level, differencing order 2, columns Global_reactive_power, Sub_metering_1"
+        ],
+        [
+          "searched_e5cb543af015",
+          "window 74, lags [1, 74], transform level, differencing order 1, columns Global_active_power, Voltage, Global_intensity, Sub_metering_1, Sub_metering_2"
+        ],
+        [
+          "searched_eb0563232978",
+          "window 32, lags [1], transform diff, differencing order 0, columns Global_reactive_power, Voltage, Global_intensity, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_f05ee7a86b74",
+          "window 74, lags [1, 74], transform diff, differencing order 0, columns Sub_metering_1"
+        ],
+        [
+          "searched_f66120cdd5ba",
+          "window 93, lags [74], transform level, differencing order 2, columns Voltage, Global_intensity, Sub_metering_1"
+        ],
+        [
+          "searched_fac763681e83",
+          "window 147, lags [1, 74], transform diff, differencing order 0, columns Voltage, Global_intensity, Sub_metering_1, Sub_metering_2, Sub_metering_3"
+        ],
+        [
+          "searched_facdd5812c0f",
+          "window 184, lags [1], transform level, differencing order 2, columns Global_reactive_power, Sub_metering_1, Sub_metering_2"
+        ],
+        [
+          "searched_ff53ed820adf",
+          "window 60, lags [1], transform level, differencing order 1, columns Global_active_power, Global_reactive_power, Voltage, Global_intensity, Sub_metering_1"
+        ]
+      ],
+      "question": "searched_candidate",
+      "reason": "NO_NEW_MEASUREMENT: 0 scorable linked outcome(s) of 1, 30 required \u2014 30 missing",
+      "search_stages": [
+        "searched_b373275495e2"
+      ],
+      "stage_coverage": [
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "baseline_hand",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_1443",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "rank": null,
+          "stage": "candidate_seasonal_lag_2892",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 10,
+          "stage": "candidate_seasonal_lag_74",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 36,
+          "stage": "candidate_short_memory",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 6,
+          "stage": "control_baseline_hand_refit",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 14,
+          "stage": "laya_chosen",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 8,
+          "stage": "quantile_hand",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 4,
+          "stage": "quantile_hand_95",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 2,
+          "stage": "searched_0588f5747b62",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 37,
+          "stage": "searched_0674562ba097",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 31,
+          "stage": "searched_0776944c4ff2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 18,
+          "stage": "searched_084674eed382",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 64,
+          "stage": "searched_09d549875516",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 22,
+          "stage": "searched_1193e09305cd",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 68,
+          "stage": "searched_171cf2419e9a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 58,
+          "stage": "searched_1b12e9bcdd0a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 32,
+          "stage": "searched_20a2053478d7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 50,
+          "stage": "searched_2110bc311492",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 13,
+          "stage": "searched_26d0472122bb",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 24,
+          "stage": "searched_2cbef989a359",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 39,
+          "stage": "searched_2d178b6054e8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 43,
+          "stage": "searched_2ec15e75bf53",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 11,
+          "stage": "searched_2fbc35eb0452",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 21,
+          "stage": "searched_307f0eb865bc",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 34,
+          "stage": "searched_3413de1c1b38",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 69,
+          "stage": "searched_447078aa750c",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 55,
+          "stage": "searched_46688543dd04",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 60,
+          "stage": "searched_47fa500b6248",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 40,
+          "stage": "searched_4cf8ab4540c1",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 9,
+          "stage": "searched_583a29124bf9",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 66,
+          "stage": "searched_5d2e12cc0eed",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 29,
+          "stage": "searched_6339ea8a9155",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 49,
+          "stage": "searched_6d7f4a8ee8b8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 57,
+          "stage": "searched_6d9169f946b4",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 28,
+          "stage": "searched_6e04fdef5774",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 24,
+          "stage": "searched_76c22bc6b1ef",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 5,
+          "stage": "searched_77a56b176915",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 70,
+          "stage": "searched_7c737b3d6103",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 46,
+          "stage": "searched_7ca9e5afc53d",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 35,
+          "stage": "searched_823ac370f1ad",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 11,
+          "stage": "searched_950e4a6f52e7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 33,
+          "stage": "searched_971e06d8577b",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 26,
+          "stage": "searched_a11e6ca7a741",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 63,
+          "stage": "searched_a2cb801138e5",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 51,
+          "stage": "searched_a31a7ba0626a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 67,
+          "stage": "searched_a8b019b54346",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 23,
+          "stage": "searched_aac15a098ad2",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 30,
+          "stage": "searched_ac4a22eb1230",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 19,
+          "stage": "searched_b05e0334316d",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 3,
+          "stage": "searched_b367cba9b237",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 1,
+          "stage": "searched_b373275495e2",
+          "verdict": "USABLE_FOR_CALIBRATION"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 44,
+          "stage": "searched_b4b57ce4a1c1",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 17,
+          "stage": "searched_ba03485899ff",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 56,
+          "stage": "searched_be36156f3bf4",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 47,
+          "stage": "searched_bfef0502223e",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 45,
+          "stage": "searched_c041c8f818b7",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 16,
+          "stage": "searched_c17f531a9162",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 52,
+          "stage": "searched_c373fe3307f8",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 65,
+          "stage": "searched_cd9b33614278",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 59,
+          "stage": "searched_d218899cb73a",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 54,
+          "stage": "searched_d4d33029f643",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 61,
+          "stage": "searched_d6c43538cecf",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 42,
+          "stage": "searched_d7d48211d891",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 27,
+          "stage": "searched_da1b5199aa5e",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 15,
+          "stage": "searched_dbf0b617d9fd",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 71,
+          "stage": "searched_e592e93a71b3",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 41,
+          "stage": "searched_e5cb543af015",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 38,
+          "stage": "searched_eb0563232978",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 20,
+          "stage": "searched_f05ee7a86b74",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 62,
+          "stage": "searched_f66120cdd5ba",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 53,
+          "stage": "searched_fac763681e83",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 72,
+          "stage": "searched_facdd5812c0f",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        },
+        {
+          "area": "forecast",
+          "comparability": "COMPARABLE",
+          "rank": 48,
+          "stage": "searched_ff53ed820adf",
+          "verdict": "COMPARABLE_BUT_NO_DECISION_RECORD"
+        }
+      ],
+      "stages": [
+        "searched_b373275495e2"
+      ],
+      "status": "NO_NEW_MEASUREMENT"
+    }
+  ],
+  "inventory": {
+    "directories": [
+      "/home/harveybc/.local/state/m5phet/decisions",
+      "/home/harveybc/.local/state/m5phet/decisions-wp06-stage34-20260925",
+      "/home/harveybc/.local/state/m5phet/decisions-wp06-stage5-20260925"
+    ],
+    "groups": [
+      {
+        "kind": "dataset_choice",
+        "linked": 0,
+        "question": "dataset",
+        "records": 1,
+        "unlinked": 1
+      },
+      {
+        "kind": "feature_grouping",
+        "linked": 1,
+        "question": "grouping_cut",
+        "records": 1,
+        "unlinked": 0
+      },
+      {
+        "kind": "feature_preprocessing",
+        "linked": 49,
+        "question": "preprocessing",
+        "records": 70,
+        "unlinked": 21
+      },
+      {
+        "kind": "group_extractor",
+        "linked": 2,
+        "question": "extractor",
+        "records": 4,
+        "unlinked": 2
+      },
+      {
+        "kind": "representation",
+        "linked": 5,
+        "question": "candidate",
+        "records": 8,
+        "unlinked": 3
+      },
+      {
+        "kind": "representation",
+        "linked": 1,
+        "question": "searched_candidate",
+        "records": 1,
+        "unlinked": 0
+      },
+      {
+        "kind": "trading_decision",
+        "linked": 0,
+        "question": "exposure",
+        "records": 256,
+        "unlinked": 256
+      }
+    ],
+    "linked": 58,
+    "records": 341,
+    "unlinked": 283,
+    "unreadable": []
+  },
+  "linked_outcomes": 58,
+  "minimum_linked": 30,
+  "outcome_schema": "m5phet.decision_outcome.v1",
+  "rule": "A decision record becomes a label only when a closure-table row exists for the pipeline it led to, that row is COMPARABLE, and it carries a rank. The label is the rank \u2014 never a person's opinion of the choice.",
+  "table": {
+    "file": "table.json",
+    "ranked_first": [
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 1,
+        "stage": "searched_b373275495e2",
+        "status": "MEASURED"
+      }
+    ],
+    "stages": [
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 6,
+        "stage": "baseline_hand",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "NO_NEW_MEASUREMENT",
+        "rank": null,
+        "stage": "candidate_seasonal_lag_1443",
+        "status": "NO_NEW_MEASUREMENT"
+      },
+      {
+        "area": "forecast",
+        "comparability": "NO_NEW_MEASUREMENT",
+        "rank": null,
+        "stage": "candidate_seasonal_lag_2892",
+        "status": "NO_NEW_MEASUREMENT"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 10,
+        "stage": "candidate_seasonal_lag_74",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 36,
+        "stage": "candidate_short_memory",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 6,
+        "stage": "control_baseline_hand_refit",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 14,
+        "stage": "laya_chosen",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 8,
+        "stage": "quantile_hand",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 4,
+        "stage": "quantile_hand_95",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 2,
+        "stage": "searched_0588f5747b62",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 37,
+        "stage": "searched_0674562ba097",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 31,
+        "stage": "searched_0776944c4ff2",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 18,
+        "stage": "searched_084674eed382",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 64,
+        "stage": "searched_09d549875516",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 22,
+        "stage": "searched_1193e09305cd",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 68,
+        "stage": "searched_171cf2419e9a",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 58,
+        "stage": "searched_1b12e9bcdd0a",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 32,
+        "stage": "searched_20a2053478d7",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 50,
+        "stage": "searched_2110bc311492",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 13,
+        "stage": "searched_26d0472122bb",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 24,
+        "stage": "searched_2cbef989a359",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 39,
+        "stage": "searched_2d178b6054e8",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 43,
+        "stage": "searched_2ec15e75bf53",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 11,
+        "stage": "searched_2fbc35eb0452",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 21,
+        "stage": "searched_307f0eb865bc",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 34,
+        "stage": "searched_3413de1c1b38",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 69,
+        "stage": "searched_447078aa750c",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 55,
+        "stage": "searched_46688543dd04",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 60,
+        "stage": "searched_47fa500b6248",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 40,
+        "stage": "searched_4cf8ab4540c1",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 9,
+        "stage": "searched_583a29124bf9",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 66,
+        "stage": "searched_5d2e12cc0eed",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 29,
+        "stage": "searched_6339ea8a9155",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 49,
+        "stage": "searched_6d7f4a8ee8b8",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 57,
+        "stage": "searched_6d9169f946b4",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 28,
+        "stage": "searched_6e04fdef5774",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 24,
+        "stage": "searched_76c22bc6b1ef",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 5,
+        "stage": "searched_77a56b176915",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 70,
+        "stage": "searched_7c737b3d6103",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 46,
+        "stage": "searched_7ca9e5afc53d",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 35,
+        "stage": "searched_823ac370f1ad",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 11,
+        "stage": "searched_950e4a6f52e7",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 33,
+        "stage": "searched_971e06d8577b",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 26,
+        "stage": "searched_a11e6ca7a741",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 63,
+        "stage": "searched_a2cb801138e5",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 51,
+        "stage": "searched_a31a7ba0626a",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 67,
+        "stage": "searched_a8b019b54346",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 23,
+        "stage": "searched_aac15a098ad2",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 30,
+        "stage": "searched_ac4a22eb1230",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 19,
+        "stage": "searched_b05e0334316d",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 3,
+        "stage": "searched_b367cba9b237",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 1,
+        "stage": "searched_b373275495e2",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 44,
+        "stage": "searched_b4b57ce4a1c1",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 17,
+        "stage": "searched_ba03485899ff",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 56,
+        "stage": "searched_be36156f3bf4",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 47,
+        "stage": "searched_bfef0502223e",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 45,
+        "stage": "searched_c041c8f818b7",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 16,
+        "stage": "searched_c17f531a9162",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 52,
+        "stage": "searched_c373fe3307f8",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 65,
+        "stage": "searched_cd9b33614278",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 59,
+        "stage": "searched_d218899cb73a",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 54,
+        "stage": "searched_d4d33029f643",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 61,
+        "stage": "searched_d6c43538cecf",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 42,
+        "stage": "searched_d7d48211d891",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 27,
+        "stage": "searched_da1b5199aa5e",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 15,
+        "stage": "searched_dbf0b617d9fd",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 71,
+        "stage": "searched_e592e93a71b3",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 41,
+        "stage": "searched_e5cb543af015",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 38,
+        "stage": "searched_eb0563232978",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 20,
+        "stage": "searched_f05ee7a86b74",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 62,
+        "stage": "searched_f66120cdd5ba",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 53,
+        "stage": "searched_fac763681e83",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 72,
+        "stage": "searched_facdd5812c0f",
+        "status": "MEASURED"
+      },
+      {
+        "area": "forecast",
+        "comparability": "COMPARABLE",
+        "rank": 48,
+        "stage": "searched_ff53ed820adf",
+        "status": "MEASURED"
+      }
+    ],
+    "version": "m5phet-evaluation-stage-comparison/1"
+  },
+  "unreadable": [],
+  "version": "m5phet-decision-calibration/1"
+}

@@ -1,0 +1,13 @@
+{
+  "chosen": "searched_b373275495e2",
+  "chosen_by": "SEARCH",
+  "decisions_dir": "/home/harveybc/.local/state/m5phet/decisions-wp06-stage5-20260925",
+  "kind": "representation",
+  "mae": 0.5129252569915641,
+  "options": 65,
+  "question": "searched_candidate",
+  "record": "145dc0416ae2eb9155b7b36a2025247ba8caf33742f3e334a4f3fc67d83f5a95",
+  "stage": "searched_b373275495e2",
+  "state_sha256": "2c9a7ebfcfcf994151578b62009400a4e7a9ae3e8f863cbceb219aae2868d57a",
+  "tied": 1
+}
