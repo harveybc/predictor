@@ -1,0 +1,50 @@
+{
+  "accuracy": 0.3933333333333333,
+  "calibration": {
+    "bins": 10,
+    "brier": 0.6472929861999999,
+    "expected_calibration_error": 0.13151177777777778,
+    "statement": "The provider declares these probabilities uncalibrated. These numbers measure by how much; nothing here recalibrates them.",
+    "status": "UNCALIBRATED"
+  },
+  "corpus_id": "7e4789e5835d6e19c2c4627db289459a9f8492d02c783d8b1f6a2ecd8749ae6f",
+  "corpus_seal": "31257d47b87aa3cbc9bc915d0fda418ad40e19dbbccd7b447e351af4f0f9af61",
+  "label_provenance": "INDEPENDENT_LABELS (INDEPENDENT_SYSTEM in the evaluation package's vocabulary): economic calendar country field (dataset column 3)",
+  "macro_f1": 0.37775954555995367,
+  "n": 450,
+  "naive": {
+    "keyword_baseline": 0.17599601009211993,
+    "majority_class": 0.16666666666666666,
+    "metric": "macro_f1",
+    "same_rows": true
+  },
+  "protocol_digest": "b9aefb3cf32daff28a4c8b698a02fbc5b52021c6b82cce704e813f50d6102176",
+  "question": {
+    "instructions": "Which economy is named in this news?",
+    "name": "economy",
+    "options": [
+      [
+        "euro_area",
+        "the euro area"
+      ],
+      [
+        "united_states",
+        "the United States"
+      ],
+      [
+        "other",
+        "another economy"
+      ]
+    ],
+    "type": "choice"
+  },
+  "reading": "macro-F1 on 450 sealed, independently labelled rows of one task: which economy a calendar release line names. It is not a general claim about this classifier on other tasks or other texts.",
+  "schema": "news_signal.quality.v1",
+  "skill": {
+    "error_definition": "error = 1 - macro_f1",
+    "model_error": 0.6222404544400464,
+    "naive_error": 0.8333333333333334,
+    "skill": 0.2533114546719444,
+    "status": "OK"
+  }
+}

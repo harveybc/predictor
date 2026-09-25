@@ -1,0 +1,229 @@
+{
+  "corpus_seal": "31257d47b87aa3cbc9bc915d0fda418ad40e19dbbccd7b447e351af4f0f9af61",
+  "family": "classification",
+  "flags": [],
+  "generated_at": "2026-09-25T09:04:00Z",
+  "horizon": "none (single item)",
+  "label_producer": "the economic calendar's compiler, distributed with the dataset",
+  "label_provenance": "INDEPENDENT_SYSTEM",
+  "label_source": "economic calendar country field (dataset column 3)",
+  "literature": {
+    "metric": "macro_f1",
+    "scale": "three-class zero-shot",
+    "source": "NOT_CARRIED: no published macro-F1 was found that is matched to this protocol -- zero-shot, three classes, economic-calendar release lines, labels from the calendar's country field. Published zero-shot financial-text numbers are sentiment or relevance tasks on other corpora, so quoting one here would put an unmatched number in the comparison column.",
+    "value": null
+  },
+  "metric_sets": [
+    {
+      "baseline": {
+        "accuracy": 0.3333333333333333,
+        "class": "euro_area",
+        "macro_f1": 0.16666666666666666,
+        "name": "majority_class",
+        "rows": 450,
+        "same_rows_as_model": true,
+        "tied_classes": [
+          "euro_area",
+          "united_states",
+          "other"
+        ]
+      },
+      "counts": {
+        "abstained_rows": 0,
+        "declared_rows": 450,
+        "scored_rows": 450,
+        "support_by_class": {
+          "euro_area": 150,
+          "other": 150,
+          "united_states": 150
+        }
+      },
+      "family": "classification",
+      "name": "classification",
+      "notes": [
+        "Coverage and abstention are reported beside every ratio: accuracy over the scored rows is not accuracy over the population."
+      ],
+      "rows_declared": 450,
+      "values": {
+        "abstention_rate": 0.0,
+        "accuracy": 0.3933333333333333,
+        "confusion": {
+          "euro_area": {
+            "euro_area": 94,
+            "other": 27,
+            "united_states": 29
+          },
+          "other": {
+            "euro_area": 68,
+            "other": 38,
+            "united_states": 44
+          },
+          "united_states": {
+            "euro_area": 61,
+            "other": 44,
+            "united_states": 45
+          }
+        },
+        "correct": 177,
+        "coverage": 1.0,
+        "macro_f1": 0.37775954555995367,
+        "macro_f1_classes": [
+          "euro_area",
+          "united_states",
+          "other"
+        ],
+        "per_class": {
+          "euro_area": {
+            "f1": 0.5040214477211796,
+            "precision": 0.42152466367713004,
+            "predicted": 223,
+            "recall": 0.6266666666666667,
+            "support": 150
+          },
+          "other": {
+            "f1": 0.29343629343629346,
+            "precision": 0.3486238532110092,
+            "predicted": 109,
+            "recall": 0.25333333333333335,
+            "support": 150
+          },
+          "united_states": {
+            "f1": 0.3358208955223881,
+            "precision": 0.3813559322033898,
+            "predicted": 118,
+            "recall": 0.3,
+            "support": 150
+          }
+        }
+      }
+    },
+    {
+      "baseline": null,
+      "counts": {
+        "declared_rows": 450,
+        "scored_rows": 450
+      },
+      "family": "classification",
+      "name": "calibration",
+      "notes": [
+        "Calibration is measured, never applied: the provider's probabilities stay uncalibrated."
+      ],
+      "rows_declared": 450,
+      "values": {
+        "brier": 0.6472929861999999,
+        "brier_definition": "multiclass Brier, summed over classes: mean over rows of sum_c (p_c - 1{truth=c})^2, range [0, 2]",
+        "expected_calibration_error": 0.13151177777777778,
+        "reliability": {
+          "bin_count": 10,
+          "bins": [
+            {
+              "accuracy": null,
+              "bin": [
+                0.0,
+                0.1
+              ],
+              "count": 0,
+              "mean_confidence": null
+            },
+            {
+              "accuracy": null,
+              "bin": [
+                0.1,
+                0.2
+              ],
+              "count": 0,
+              "mean_confidence": null
+            },
+            {
+              "accuracy": null,
+              "bin": [
+                0.2,
+                0.3
+              ],
+              "count": 0,
+              "mean_confidence": null
+            },
+            {
+              "accuracy": 0.3208955223880597,
+              "bin": [
+                0.3,
+                0.4
+              ],
+              "count": 134,
+              "mean_confidence": 0.37158731343283585
+            },
+            {
+              "accuracy": 0.35526315789473684,
+              "bin": [
+                0.4,
+                0.5
+              ],
+              "count": 152,
+              "mean_confidence": 0.4405381578947368
+            },
+            {
+              "accuracy": 0.29310344827586204,
+              "bin": [
+                0.5,
+                0.6
+              ],
+              "count": 58,
+              "mean_confidence": 0.5365568965517241
+            },
+            {
+              "accuracy": 0.2727272727272727,
+              "bin": [
+                0.6,
+                0.7
+              ],
+              "count": 22,
+              "mean_confidence": 0.6502909090909091
+            },
+            {
+              "accuracy": 0.3103448275862069,
+              "bin": [
+                0.7,
+                0.8
+              ],
+              "count": 29,
+              "mean_confidence": 0.7477137931034482
+            },
+            {
+              "accuracy": 0.7083333333333334,
+              "bin": [
+                0.8,
+                0.9
+              ],
+              "count": 24,
+              "mean_confidence": 0.8438458333333334
+            },
+            {
+              "accuracy": 1.0,
+              "bin": [
+                0.9,
+                1.0
+              ],
+              "count": 31,
+              "mean_confidence": 0.9657064516129032
+            }
+          ],
+          "expected_calibration_error": 0.13151177777777778,
+          "rows": 450
+        },
+        "statement": "The provider declares these probabilities uncalibrated. These numbers measure by how much; nothing here recalibrates them."
+      }
+    }
+  ],
+  "minimum_rows": 300,
+  "protocol_digest": "b9aefb3cf32daff28a4c8b698a02fbc5b52021c6b82cce704e813f50d6102176",
+  "scale": "macro-F1 over three classes (euro_area, united_states, other), higher is better",
+  "sealed_at": "2026-09-25T00:00:00Z",
+  "sealed_row_count": 450,
+  "stage": "laya_zero_shot",
+  "statements": [
+    "Labels come from 'economic calendar country field (dataset column 3)', produced by \"the economic calendar's compiler, distributed with the dataset\", under provenance INDEPENDENT_SYSTEM.",
+    "Seal 31257d47b87aa3cbc9bc915d0fda418ad40e19dbbccd7b447e351af4f0f9af61 over 450 rows, sealed at 2026-09-25T00:00:00Z, under protocol b9aefb3cf32daff28a4c8b698a02fbc5b52021c6b82cce704e813f50d6102176. A variant or prompt chosen after these scores were seen would carry this same seal, so the order is checkable."
+  ],
+  "target": "economy_named_in_release",
+  "version": "m5phet-evaluation-report/1"
+}

@@ -1,0 +1,180 @@
+{
+  "classes": [
+    "euro_area",
+    "united_states",
+    "other"
+  ],
+  "corpus_id": "7e4789e5835d6e19c2c4627db289459a9f8492d02c783d8b1f6a2ecd8749ae6f",
+  "counts": {
+    "ambiguous_texts_dropped": 0,
+    "duplicate_texts_collapsed": 6,
+    "excluded_member_state": 17221,
+    "per_class": {
+      "euro_area": 150,
+      "other": 150,
+      "united_states": 150
+    },
+    "per_year": {
+      "2011": {
+        "euro_area": 14,
+        "other": 14,
+        "united_states": 14
+      },
+      "2012": {
+        "euro_area": 14,
+        "other": 14,
+        "united_states": 14
+      },
+      "2013": {
+        "euro_area": 14,
+        "other": 14,
+        "united_states": 14
+      },
+      "2014": {
+        "euro_area": 14,
+        "other": 14,
+        "united_states": 14
+      },
+      "2015": {
+        "euro_area": 14,
+        "other": 14,
+        "united_states": 14
+      },
+      "2016": {
+        "euro_area": 14,
+        "other": 14,
+        "united_states": 14
+      },
+      "2017": {
+        "euro_area": 14,
+        "other": 14,
+        "united_states": 14
+      },
+      "2018": {
+        "euro_area": 13,
+        "other": 13,
+        "united_states": 13
+      },
+      "2019": {
+        "euro_area": 13,
+        "other": 13,
+        "united_states": 13
+      },
+      "2020": {
+        "euro_area": 13,
+        "other": 13,
+        "united_states": 13
+      },
+      "2021": {
+        "euro_area": 13,
+        "other": 13,
+        "united_states": 13
+      }
+    },
+    "rows_read": 121658,
+    "sampled": 450,
+    "undeclared_country": 0,
+    "unique_candidate_texts": 104431,
+    "unusable_row": 0,
+    "wrong_field_count": 0
+  },
+  "excluded_countries": {
+    "France": "EURO_AREA_MEMBER_STATE",
+    "Germany": "EURO_AREA_MEMBER_STATE",
+    "Italy": "EURO_AREA_MEMBER_STATE",
+    "Spain": "EURO_AREA_MEMBER_STATE"
+  },
+  "exclusion_reason": "A release by a euro-area member state has a contestable class under this mapping, so the row would measure the definition rather than the model. Such rows are dropped and counted, never relabelled.",
+  "keyword_baseline": {
+    "default": "other",
+    "order": [
+      "euro_area",
+      "united_states",
+      "other"
+    ],
+    "rules": [
+      [
+        "euro_area",
+        [
+          "euro zone"
+        ]
+      ],
+      [
+        "united_states",
+        [
+          "united states"
+        ]
+      ]
+    ],
+    "statement": "the class whose country name occurs verbatim in the release line, else other"
+  },
+  "label_producer": "the economic calendar's compiler, distributed with the dataset",
+  "label_provenance": "INDEPENDENT_LABELS",
+  "label_source": "economic calendar country field (dataset column 3)",
+  "label_statement": "The label of every row is the calendar's own country field. No author of this system wrote, reviewed or adjudicated any label, and no row was written for this test: this is INDEPENDENT_LABELS, not AUTHOR_WRITTEN_SMOKE.",
+  "mapping": {
+    "Australia": "other",
+    "Brazil": "other",
+    "Canada": "other",
+    "China": "other",
+    "Euro Zone": "euro_area",
+    "Hong Kong": "other",
+    "India": "other",
+    "Japan": "other",
+    "New Zealand": "other",
+    "Russia": "other",
+    "Singapore": "other",
+    "South Africa": "other",
+    "South Korea": "other",
+    "Switzerland": "other",
+    "United Kingdom": "other",
+    "United States": "united_states"
+  },
+  "question": {
+    "instructions": "Which economy is named in this news?",
+    "name": "economy",
+    "options": [
+      [
+        "euro_area",
+        "the euro area"
+      ],
+      [
+        "united_states",
+        "the United States"
+      ],
+      [
+        "other",
+        "another economy"
+      ]
+    ],
+    "type": "choice"
+  },
+  "rows_per_class": 150,
+  "schema": "news_signal.quality_corpus.v1",
+  "seed": 1729,
+  "source": {
+    "columns": [
+      "event_date",
+      "event_time",
+      "country",
+      "volatility",
+      "description",
+      "evaluation",
+      "data_format",
+      "actual",
+      "forecast",
+      "previous"
+    ],
+    "file_name": "economic_calendar_2011_2021.csv",
+    "name": "economic_calendar_2011_2021",
+    "sha256": "5172b322bfaf7bb568a0bb37cc2f806e8bd18ed51c5703c1098c8609a6249383"
+  },
+  "template": {
+    "asset": "MACRO",
+    "body": "Economic calendar release on {date} at {HH:MM} UTC. {description}: actual {actual}, consensus {consensus}, previous {previous}. Expected volatility: {volatility}.",
+    "consensus_column": "forecast",
+    "headline": "the calendar description, stripped, truncated to 500 characters",
+    "value_rule": "a value is quoted with its unit only when it matches ^-?\\d+(\\.\\d+)?$, else 'not reported'",
+    "version": "wp09.release_line.v1"
+  }
+}

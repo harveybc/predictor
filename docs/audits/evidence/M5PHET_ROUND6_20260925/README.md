@@ -73,3 +73,33 @@ GPU note: the fits ran on omega's RTX 4070 (16 seconds each), not the preferred 
 TensorFlow environment cannot open its GPU libraries (`Cannot dlopen some GPU libraries`, CUDA-13 wheels beside cu12);
 building a CUDA TF environment there while a ~900-item Laya measurement held that GPU was not worth it for a 16-second
 fit. Nothing on the worker was modified.
+
+## WP09 — the first measured quality of the classification area
+
+Corpus: 450 release lines, 150 per class, seed 1729, stratified over 2011–2021, labels = the economic calendar's own
+`country` field (`INDEPENDENT_LABELS`: nobody in this system wrote or adjudicated one). Euro-area member states are
+**excluded and counted**, never relabelled — a German release called `other` would mark the model wrong for a
+defensible `euro_area`, and the reverse likewise; such a row measures the definition, not the model. Corpus id
+`7e4789e5…`, protocol `b9aefb3c…`, seal `31257d47…`. All 450 answers came from `backend: laya`, one state_ref, one
+wording, asked once; no prompt was tuned.
+
+| arm | macro-F1 | accuracy | model error (1−F1) | naive (majority, same rows) | skill |
+|---|---|---|---|---|---|
+| laya_zero_shot | **0.377760** | 0.393333 | 0.622240 | 0.833333 | 0.253311 |
+| keyword_baseline (country name verbatim) | 0.175996 | 0.337778 | 0.824004 | 0.833333 | 0.011195 |
+| majority_class | 0.166667 | 0.333333 | — | — | — |
+
+Chance on this balanced three-class task is 0.3333 accuracy / 0.1667 macro-F1. Laya beats both references and is far
+from useful: a standing bias toward `euro_area` (223 of 450 predictions) and per-class F1 0.504 / 0.336 / 0.293.
+
+Calibration of the uncalibrated head: **ECE 0.1315**, multiclass Brier 0.6473. The reliability bins say something
+usable: **below 0.8 confidence the checkpoint is at chance**; the 55 rows it answers above 0.8 are 85 % correct, and the
+31 above 0.9 are 100 % correct. That is the same shape WP17/WP18/WP20 saw when it chose configurations — this
+checkpoint knows a little, and knows when, but only at the top of its range.
+
+Literature value `NOT_CARRIED`: no published macro-F1 matched to this protocol was found, and quoting an unmatched one
+would put a false number in the comparison column.
+
+The catalog now publishes it: `laya_news.capabilities.quality` carries corpus id, n, macro-F1, accuracy, calibration,
+protocol digest and seal — read from a file the operator points `NEWS_SIGNAL_QUALITY` at, `NOT_MEASURED` when absent.
+Verified on the owner's own instance after the worker's export was moved before its `exec` (it had been dead code).

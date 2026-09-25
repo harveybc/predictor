@@ -1,0 +1,113 @@
+{
+  "corpus_seal": "31257d47b87aa3cbc9bc915d0fda418ad40e19dbbccd7b447e351af4f0f9af61",
+  "family": "classification",
+  "flags": [],
+  "generated_at": "2026-09-25T09:04:00Z",
+  "horizon": "none (single item)",
+  "label_producer": "the economic calendar's compiler, distributed with the dataset",
+  "label_provenance": "INDEPENDENT_SYSTEM",
+  "label_source": "economic calendar country field (dataset column 3)",
+  "literature": {
+    "metric": "macro_f1",
+    "scale": "three-class zero-shot",
+    "source": "NOT_CARRIED: no published macro-F1 was found that is matched to this protocol -- zero-shot, three classes, economic-calendar release lines, labels from the calendar's country field. Published zero-shot financial-text numbers are sentiment or relevance tasks on other corpora, so quoting one here would put an unmatched number in the comparison column.",
+    "value": null
+  },
+  "metric_sets": [
+    {
+      "baseline": {
+        "accuracy": 0.3333333333333333,
+        "class": "euro_area",
+        "macro_f1": 0.16666666666666666,
+        "name": "majority_class",
+        "rows": 450,
+        "same_rows_as_model": true,
+        "tied_classes": [
+          "euro_area",
+          "united_states",
+          "other"
+        ]
+      },
+      "counts": {
+        "abstained_rows": 0,
+        "declared_rows": 450,
+        "scored_rows": 450,
+        "support_by_class": {
+          "euro_area": 150,
+          "other": 150,
+          "united_states": 150
+        }
+      },
+      "family": "classification",
+      "name": "classification",
+      "notes": [
+        "Coverage and abstention are reported beside every ratio: accuracy over the scored rows is not accuracy over the population."
+      ],
+      "rows_declared": 450,
+      "values": {
+        "abstention_rate": 0.0,
+        "accuracy": 0.3377777777777778,
+        "confusion": {
+          "euro_area": {
+            "euro_area": 2,
+            "other": 148,
+            "united_states": 0
+          },
+          "other": {
+            "euro_area": 0,
+            "other": 150,
+            "united_states": 0
+          },
+          "united_states": {
+            "euro_area": 0,
+            "other": 150,
+            "united_states": 0
+          }
+        },
+        "correct": 152,
+        "coverage": 1.0,
+        "macro_f1": 0.17599601009211993,
+        "macro_f1_classes": [
+          "euro_area",
+          "united_states",
+          "other"
+        ],
+        "per_class": {
+          "euro_area": {
+            "f1": 0.02631578947368421,
+            "precision": 1.0,
+            "predicted": 2,
+            "recall": 0.013333333333333334,
+            "support": 150
+          },
+          "other": {
+            "f1": 0.5016722408026756,
+            "precision": 0.33482142857142855,
+            "predicted": 448,
+            "recall": 1.0,
+            "support": 150
+          },
+          "united_states": {
+            "f1": 0.0,
+            "precision": null,
+            "predicted": 0,
+            "recall": 0.0,
+            "support": 150
+          }
+        }
+      }
+    }
+  ],
+  "minimum_rows": 300,
+  "protocol_digest": "b9aefb3cf32daff28a4c8b698a02fbc5b52021c6b82cce704e813f50d6102176",
+  "scale": "macro-F1 over three classes (euro_area, united_states, other), higher is better",
+  "sealed_at": "2026-09-25T00:00:00Z",
+  "sealed_row_count": 450,
+  "stage": "keyword_baseline",
+  "statements": [
+    "Labels come from 'economic calendar country field (dataset column 3)', produced by \"the economic calendar's compiler, distributed with the dataset\", under provenance INDEPENDENT_SYSTEM.",
+    "Seal 31257d47b87aa3cbc9bc915d0fda418ad40e19dbbccd7b447e351af4f0f9af61 over 450 rows, sealed at 2026-09-25T00:00:00Z, under protocol b9aefb3cf32daff28a4c8b698a02fbc5b52021c6b82cce704e813f50d6102176. A variant or prompt chosen after these scores were seen would carry this same seal, so the order is checkable."
+  ],
+  "target": "economy_named_in_release",
+  "version": "m5phet-evaluation-report/1"
+}
