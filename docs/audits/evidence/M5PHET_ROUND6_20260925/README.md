@@ -39,3 +39,37 @@ Re-running the whole chain from where the releases actually happened (`wp22_proj
 No study was registered from the localized run: a placebo that fails everywhere is not something to serve.
 
 NO_NEW_MEASUREMENT of any market claim. `execution_authorized: false` throughout.
+
+## The first closure table (WP18 step 7 + WP13), and the first measured interval (WP07)
+
+Full evidence: `../M5PHET_WP18_STEP7_20260925/`. One seal for every stage — the last 20 % of the household DEV slice,
+population = the forecast origins whose whole 197-row window and whole 60-row horizon lie inside it, 9,824 rows, seal
+`33820b552ddf`, protocol `d0ebd9a4bc75`, labels `REALISED_OUTCOME`; same epochs, same patience, deterministic ops,
+refits byte-identical.
+
+| stage | MAE (kW, h+60) | naive `last_value` | skill | rank |
+|---|---|---|---|---|
+| baseline_hand (predictor's own household configuration, one block of seven columns, window 60) | 0.537108 | 0.599327 | 0.103813 | 1 |
+| quantile_hand (WP07's quantile head, same seal) | 0.538670 | 0.599327 | 0.101208 | 2 |
+| laya_chosen (window 197, two groups, both dense) | 0.557190 | 0.599327 | 0.070307 | 3 |
+| searched (WP06 stage 5) | — | — | — | DOES NOT EXIST |
+
+**Laya's configuration lost to the hand baseline.** Nothing was adjusted; literature value `NOT_CARRIED` because no
+literature number has been read into a report on this machine.
+
+WP07: the quantile bundle (`[0.05, 0.5, 0.95]`, pinball loss, monotone by construction) answers `interval` and its
+**measured coverage on the sealed holdout is 0.8781 against a nominal 0.90** — slightly too narrow, misses asymmetric
+(7.35 % below, 4.85 % above), mean width 2.455 kW. A level with no fitted pair is refused `CONFIDENCE_LEVEL_NOT_FITTED`;
+point bundles keep refusing `interval` with the old wording. The bundle lives in its own directory and is NOT in the
+owner's live workbench: two bundles serving the same target make every sentence that names only `target_variable`
+ambiguous, and the provider correctly refuses that.
+
+**Calibration is structurally blocked, and that is the finding:** 10 of 13 decision records linked, every group
+`NO_NEW_MEASUREMENT` (23-29 short of 30) **and** `NO_BEST_RANKED_OPTION` — the rank-1 stage has no decision records
+because a person wrote it. The plan's WP23 now requires every stage entering a closure table to carry decision records
+for the same question set, or to say it cannot be used for calibration.
+
+GPU note: the fits ran on omega's RTX 4070 (16 seconds each), not the preferred 5090, because the worker's only
+TensorFlow environment cannot open its GPU libraries (`Cannot dlopen some GPU libraries`, CUDA-13 wheels beside cu12);
+building a CUDA TF environment there while a ~900-item Laya measurement held that GPU was not worth it for a 16-second
+fit. Nothing on the worker was modified.
