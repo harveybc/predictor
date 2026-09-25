@@ -1,0 +1,1997 @@
+{
+ "abstention": {
+  "confidence": "CONFIDENCE_NOT_REPORTED",
+  "covered": false,
+  "reliability": "NOT_MEASURED",
+  "why": "orchestrate.route asks the model for a WHOLE envelope as free text; no shipped plugin reports a confidence for that -- not even openai_compatible, whose endpoint can return logprobs, because route calls _ask and _ask discards them. So the rule is not applied on this path at all. What does apply is check_proposal: an area nobody serves, a question type no provider declares, a governed value the engine does not have or a column the data lacks is refused by name and does not run, and how often the router is right is published as route.reliability"
+ },
+ "base": "http://127.0.0.1:8784",
+ "corpus": "tools/verify_families.py PROSE and tools/verify_envelopes.py prompts (18 sentences; expectations in tools/measure_route.py CASES)",
+ "interpreter": {
+  "available": true,
+  "command": "hermes",
+  "model": "deepseek-v4-flash (OpenCode Go)",
+  "plugin": "command",
+  "reading": "the model chooses among declared values; it cannot introduce one",
+  "reliability": {
+   "corpus": "tools/verify_families.py PROSE (14 sentences; expectations in tools/measure_interpreter.py)",
+   "measured_at": "2026-09-25T17:08:21.149002+00:00",
+   "measured_interpreter": {
+    "model": "deepseek-v4-flash (OpenCode Go)",
+    "plugin": "command"
+   },
+   "n": {
+    "runs": 60,
+    "runs_per_sentence": 5,
+    "sentences": 12
+   },
+   "protocol": "Interpreter.propose(sentence, slots) is called N times per sentence with the area's declared values and aliases as published by /api/tasks/catalog -- what interpret() shows a model when the words settle nothing. A proposal outside the declared values is not kept, exactly as interpret() does not keep it. No deterministic pass runs first: this is the model's own reading of the sentence and nothing else.",
+   "reliability": 0.8333,
+   "reliability_when_it_chose": 0.9434,
+   "report_sha256": "c57d91a8ca1e2e4cdce5c14e77ab95b00994b4e3c0bfc3e0fcd5806c3c9e48e3",
+   "verdicts": {
+    "CORRECT": 50,
+    "DECLINED": 7,
+    "INTERPRETER_FAILED": 0,
+    "OUTSIDE_DECLARED": 0,
+    "WRONG_VALUE": 3
+   }
+  },
+  "reports_confidence": false
+ },
+ "measured_at": "2026-09-25T18:19:12.398506+00:00",
+ "protocol": "each sentence of tools/measure_route.py CASES is routed N times through POST /api/chats/{id}/tasks/propose, which builds the envelope and runs nothing. A run is CORRECT when the proposal validates against check_proposal AND its area, the set of its question types and every governed value the sentence names are the expected ones. The expectations come from the harnesses the sentences belong to (tools/verify_families.py PROSE and tools/verify_envelopes.py's envelopes) and from the engines' declared vocabularies -- never from a model's answer.",
+ "route": {
+  "confidence": "CONFIDENCE_NOT_REPORTED",
+  "gate": "a proposal that fails check_proposal is refused by name and does not run; no confidence is reported for this path, so a declared abstention threshold is not applied to it",
+  "reliability": "NOT_MEASURED"
+ },
+ "runs_per_sentence": 5,
+ "schema": "m5phet_route_reliability.v1",
+ "sentences": [
+  {
+   "area": "classification",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"classification\", \"types\": [\"choice\"], \"values\": {}}"
+   ],
+   "example": "Noticia · Clasificación",
+   "kind": "ROUTED",
+   "prompt": "Which economy is named in this news?",
+   "provider": "laya_news",
+   "results": [
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 15.07,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 14.79,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 19.57,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 7.7,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 14.15,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 14.26,
+   "stable": true,
+   "types": [
+    "choice"
+   ],
+   "values": {},
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": null
+  },
+  {
+   "area": "classification",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"classification\", \"types\": [\"choice\"], \"values\": {}}"
+   ],
+   "example": "Noticia · Clasificación",
+   "kind": "ROUTED",
+   "prompt": "¿De qué economía habla esta noticia?",
+   "provider": "laya_news",
+   "results": [
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 22.23,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 6.86,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 10.25,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 10.04,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 7.13,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 11.3,
+   "stable": true,
+   "types": [
+    "choice"
+   ],
+   "values": {},
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": null
+  },
+  {
+   "area": "classification",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"classification\", \"types\": [\"choice\"], \"values\": {}}"
+   ],
+   "example": "Noticia · Clasificación",
+   "kind": "ROUTED",
+   "prompt": "de que economia habla y con que tono",
+   "provider": "laya_news",
+   "results": [
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 11.4,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 15.66,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 16.35,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 15.47,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "classification",
+      "types": [
+       "choice"
+      ],
+      "values": {}
+     },
+     "seconds": 9.39,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 13.65,
+   "stable": true,
+   "types": [
+    "choice"
+   ],
+   "values": {},
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": "the envelope tools/verify_envelopes.py runs for this prompt asks two `choice` questions"
+  },
+  {
+   "area": "forecasting",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"forecasting\", \"types\": [\"point_forecast\"], \"values\": {\"horizon\": 60, \"target\": \"Global_active_power\"}}"
+   ],
+   "example": "DEVELOPMENT: retained household-power model, 60-minute forecast",
+   "kind": "ROUTED",
+   "prompt": "predict household power one hour ahead",
+   "provider": "predictor_forecast",
+   "results": [
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      }
+     },
+     "seconds": 17.13,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      }
+     },
+     "seconds": 18.16,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      }
+     },
+     "seconds": 19.72,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      }
+     },
+     "seconds": 24.93,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      }
+     },
+     "seconds": 8.0,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 17.59,
+   "stable": true,
+   "types": [
+    "point_forecast"
+   ],
+   "values": {
+    "horizon": 60,
+    "target": "Global_active_power"
+   },
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": null
+  },
+  {
+   "area": "forecasting",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"forecasting\", \"types\": [\"point_forecast\"], \"values\": {\"horizon\": 60, \"target\": \"Global_active_power\"}}"
+   ],
+   "example": "DEVELOPMENT: retained household-power model, 60-minute forecast",
+   "kind": "ROUTED",
+   "prompt": "¿cuánta potencia habrá en la próxima hora?",
+   "provider": "predictor_forecast",
+   "results": [
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      }
+     },
+     "seconds": 10.48,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      }
+     },
+     "seconds": 7.41,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      }
+     },
+     "seconds": 8.66,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      }
+     },
+     "seconds": 19.41,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 60,
+       "target": "Global_active_power"
+      }
+     },
+     "seconds": 10.06,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 11.2,
+   "stable": true,
+   "types": [
+    "point_forecast"
+   ],
+   "values": {
+    "horizon": 60,
+    "target": "Global_active_power"
+   },
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": null
+  },
+  {
+   "area": "forecasting",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"forecasting\", \"types\": [\"point_forecast\"], \"values\": {\"horizon\": 1, \"target\": \"direction_long\"}}"
+   ],
+   "example": "DEVELOPMENT: retained predictor direction_cnn example, direction_long probability",
+   "kind": "ROUTED",
+   "prompt": "what is the direction_long probability at horizon 1?",
+   "provider": "predictor_forecast",
+   "results": [
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 1,
+       "target": "direction_long"
+      }
+     },
+     "seconds": 8.42,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 1,
+       "target": "direction_long"
+      }
+     },
+     "seconds": 8.88,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 1,
+       "target": "direction_long"
+      }
+     },
+     "seconds": 7.58,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 1,
+       "target": "direction_long"
+      }
+     },
+     "seconds": 8.37,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 1,
+       "target": "direction_long"
+      }
+     },
+     "seconds": 12.31,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 9.11,
+   "stable": true,
+   "types": [
+    "point_forecast"
+   ],
+   "values": {
+    "horizon": 1,
+    "target": "direction_long"
+   },
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": null
+  },
+  {
+   "area": "forecasting",
+   "correct": 4,
+   "distinct_resolutions": [
+    "{\"area\": \"forecasting\", \"types\": [\"point_forecast\"], \"values\": {\"horizon\": 1, \"target\": \"direction_long\"}}"
+   ],
+   "example": "DEVELOPMENT: retained predictor direction_cnn example, direction_long probability",
+   "kind": "ROUTED",
+   "prompt": "¿cuál es la probabilidad de direction_long a horizonte 1?",
+   "provider": "predictor_forecast",
+   "results": [
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 1,
+       "target": "direction_long"
+      }
+     },
+     "seconds": 27.31,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "problem_kinds": [
+       "MALFORMED_ENVELOPE"
+      ],
+      "problems": [
+       "STATE_REQUIRED: `state` must be a mapping describing what is being asked about"
+      ],
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 1,
+       "target": "direction_long"
+      }
+     },
+     "seconds": 8.4,
+     "status": "INVALID_PROPOSAL",
+     "verdict": "INVALID_PROPOSAL",
+     "why": "the proposal names something the catalog or the data does not have; see problems"
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 1,
+       "target": "direction_long"
+      }
+     },
+     "seconds": 7.79,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 1,
+       "target": "direction_long"
+      }
+     },
+     "seconds": 10.73,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "point_forecast"
+      ],
+      "values": {
+       "horizon": 1,
+       "target": "direction_long"
+      }
+     },
+     "seconds": 17.75,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 14.4,
+   "stable": true,
+   "types": [
+    "point_forecast"
+   ],
+   "values": {
+    "horizon": 1,
+    "target": "direction_long"
+   },
+   "verdicts": {
+    "CORRECT": 4,
+    "INVALID_PROPOSAL": 1
+   },
+   "why_expected": null
+  },
+  {
+   "area": "forecasting",
+   "correct": 1,
+   "distinct_resolutions": [
+    "{\"area\": \"forecasting\", \"types\": [\"interval\", \"point_forecast\"], \"values\": {\"target\": \"Global_active_power\"}}",
+    "{\"area\": \"forecasting\", \"types\": [\"interval\"], \"values\": {\"target\": \"Global_active_power\"}}"
+   ],
+   "example": "DEVELOPMENT: retained household-power model, 60-minute forecast",
+   "kind": "ROUTED",
+   "prompt": "pronostica la potencia y dame un rango",
+   "provider": "predictor_forecast",
+   "results": [
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "interval"
+      ],
+      "values": {
+       "target": "Global_active_power"
+      },
+      "wanted_types": [
+       "interval",
+       "point_forecast"
+      ]
+     },
+     "seconds": 13.84,
+     "status": "OK",
+     "verdict": "WRONG_TYPE",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "interval",
+       "point_forecast"
+      ],
+      "values": {
+       "target": "Global_active_power"
+      }
+     },
+     "seconds": 17.12,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "interval"
+      ],
+      "values": {
+       "target": "Global_active_power"
+      },
+      "wanted_types": [
+       "interval",
+       "point_forecast"
+      ]
+     },
+     "seconds": 12.79,
+     "status": "OK",
+     "verdict": "WRONG_TYPE",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "interval"
+      ],
+      "values": {
+       "target": "Global_active_power"
+      },
+      "wanted_types": [
+       "interval",
+       "point_forecast"
+      ]
+     },
+     "seconds": 8.5,
+     "status": "OK",
+     "verdict": "WRONG_TYPE",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "forecasting",
+      "types": [
+       "interval"
+      ],
+      "values": {
+       "target": "Global_active_power"
+      },
+      "wanted_types": [
+       "interval",
+       "point_forecast"
+      ]
+     },
+     "seconds": 14.56,
+     "status": "OK",
+     "verdict": "WRONG_TYPE",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 13.36,
+   "stable": false,
+   "types": [
+    "interval",
+    "point_forecast"
+   ],
+   "values": {
+    "target": "Global_active_power"
+   },
+   "verdicts": {
+    "CORRECT": 1,
+    "WRONG_TYPE": 4
+   },
+   "why_expected": "the envelope tools/verify_envelopes.py runs for this prompt asks a point_forecast and an interval; the sentence names no horizon, so no horizon is scored"
+  },
+  {
+   "area": "unsupervised",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"unsupervised\", \"types\": [\"cluster_description\"], \"values\": {\"target_metric\": \"highest body_pipettes\"}}"
+   ],
+   "example": "DEVELOPMENT: 8 historical OHLC rows, no market-performance claim",
+   "kind": "ROUTED",
+   "prompt": "describe el grupo de velas con cuerpo alto",
+   "provider": "feature-eng-hierarchical-regimes",
+   "results": [
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {
+       "target_metric": "highest body_pipettes"
+      }
+     },
+     "seconds": 12.61,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {
+       "target_metric": "highest body_pipettes"
+      }
+     },
+     "seconds": 15.17,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {
+       "target_metric": "highest body_pipettes"
+      }
+     },
+     "seconds": 13.43,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {
+       "target_metric": "highest body_pipettes"
+      }
+     },
+     "seconds": 8.49,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {
+       "target_metric": "highest body_pipettes"
+      }
+     },
+     "seconds": 8.57,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 11.65,
+   "stable": true,
+   "types": [
+    "cluster_description"
+   ],
+   "values": {
+    "target_metric": "highest body_pipettes"
+   },
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": null
+  },
+  {
+   "area": "unsupervised",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"unsupervised\", \"types\": [\"cluster_description\"], \"values\": {\"target_metric\": \"highest body_pipettes\"}}"
+   ],
+   "example": "DEVELOPMENT: 8 historical OHLC rows, no market-performance claim",
+   "kind": "ROUTED",
+   "prompt": "describe the cluster with a large body",
+   "provider": "feature-eng-hierarchical-regimes",
+   "results": [
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {
+       "target_metric": "highest body_pipettes"
+      }
+     },
+     "seconds": 10.14,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {
+       "target_metric": "highest body_pipettes"
+      }
+     },
+     "seconds": 10.41,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {
+       "target_metric": "highest body_pipettes"
+      }
+     },
+     "seconds": 7.78,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {
+       "target_metric": "highest body_pipettes"
+      }
+     },
+     "seconds": 8.9,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {
+       "target_metric": "highest body_pipettes"
+      }
+     },
+     "seconds": 8.3,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 9.11,
+   "stable": true,
+   "types": [
+    "cluster_description"
+   ],
+   "values": {
+    "target_metric": "highest body_pipettes"
+   },
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": null
+  },
+  {
+   "area": "unsupervised",
+   "correct": 2,
+   "distinct_resolutions": [
+    "{\"area\": \"unsupervised\", \"types\": [\"cluster_description\"], \"values\": {}}",
+    "{\"area\": \"unsupervised\", \"types\": [\"clustering\"], \"values\": {}}"
+   ],
+   "example": "DEVELOPMENT: 8 historical OHLC rows, no market-performance claim",
+   "kind": "ROUTED",
+   "prompt": "assign hierarchical regimes to these rows",
+   "provider": "feature-eng-hierarchical-regimes",
+   "results": [
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {},
+      "wanted_types": [
+       "clustering"
+      ]
+     },
+     "seconds": 11.65,
+     "status": "OK",
+     "verdict": "WRONG_TYPE",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {},
+      "wanted_types": [
+       "clustering"
+      ]
+     },
+     "seconds": 10.1,
+     "status": "OK",
+     "verdict": "WRONG_TYPE",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {},
+      "wanted_types": [
+       "clustering"
+      ]
+     },
+     "seconds": 9.05,
+     "status": "OK",
+     "verdict": "WRONG_TYPE",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "clustering"
+      ],
+      "values": {}
+     },
+     "seconds": 18.07,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "clustering"
+      ],
+      "values": {}
+     },
+     "seconds": 8.88,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 11.55,
+   "stable": false,
+   "types": [
+    "clustering"
+   ],
+   "values": {},
+   "verdicts": {
+    "CORRECT": 2,
+    "WRONG_TYPE": 3
+   },
+   "why_expected": null
+  },
+  {
+   "area": "unsupervised",
+   "correct": 3,
+   "distinct_resolutions": [
+    "{\"area\": \"unsupervised\", \"types\": [\"cluster_description\"], \"values\": {}}",
+    "{\"area\": \"unsupervised\", \"types\": [\"clustering\"], \"values\": {}}"
+   ],
+   "example": "DEVELOPMENT: 8 historical OHLC rows, no market-performance claim",
+   "kind": "ROUTED",
+   "prompt": "asigna los regímenes jerárquicos a estas filas",
+   "provider": "feature-eng-hierarchical-regimes",
+   "results": [
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {},
+      "wanted_types": [
+       "clustering"
+      ]
+     },
+     "seconds": 8.89,
+     "status": "OK",
+     "verdict": "WRONG_TYPE",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "clustering"
+      ],
+      "values": {}
+     },
+     "seconds": 15.76,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "clustering"
+      ],
+      "values": {}
+     },
+     "seconds": 19.14,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "clustering"
+      ],
+      "values": {}
+     },
+     "seconds": 9.43,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description"
+      ],
+      "values": {},
+      "wanted_types": [
+       "clustering"
+      ]
+     },
+     "seconds": 18.77,
+     "status": "OK",
+     "verdict": "WRONG_TYPE",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 14.4,
+   "stable": false,
+   "types": [
+    "clustering"
+   ],
+   "values": {},
+   "verdicts": {
+    "CORRECT": 3,
+    "WRONG_TYPE": 2
+   },
+   "why_expected": null
+  },
+  {
+   "area": "unsupervised",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"unsupervised\", \"types\": [\"cluster_description\", \"clustering\"], \"values\": {}}"
+   ],
+   "example": "DEVELOPMENT: 8 historical OHLC rows, no market-performance claim",
+   "kind": "ROUTED",
+   "prompt": "segmenta estas filas y describe el cluster alto",
+   "provider": "feature-eng-hierarchical-regimes",
+   "results": [
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description",
+       "clustering"
+      ],
+      "values": {}
+     },
+     "seconds": 13.04,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description",
+       "clustering"
+      ],
+      "values": {}
+     },
+     "seconds": 15.45,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description",
+       "clustering"
+      ],
+      "values": {}
+     },
+     "seconds": 14.63,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description",
+       "clustering"
+      ],
+      "values": {}
+     },
+     "seconds": 11.53,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "unsupervised",
+      "types": [
+       "cluster_description",
+       "clustering"
+      ],
+      "values": {}
+     },
+     "seconds": 10.72,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 13.07,
+   "stable": true,
+   "types": [
+    "cluster_description",
+    "clustering"
+   ],
+   "values": {},
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": "the envelope tools/verify_envelopes.py runs for this prompt asks a clustering and a cluster_description; 'el cluster alto' names no declared metric, so none is scored"
+  },
+  {
+   "area": "causal",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"causal\", \"types\": [\"ate\"], \"values\": {\"study\": \"ATE of treatment on outcome\"}}"
+   ],
+   "example": "SYNTHETIC/DEVELOPMENT: confounded ATE, known effect 2",
+   "kind": "ROUTED",
+   "prompt": "Report ATE of treatment on outcome, with its uncertainty.",
+   "provider": "causal_inference",
+   "results": [
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "ate"
+      ],
+      "values": {
+       "study": "ATE of treatment on outcome"
+      }
+     },
+     "seconds": 6.5,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "ate"
+      ],
+      "values": {
+       "study": "ATE of treatment on outcome"
+      }
+     },
+     "seconds": 11.46,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "ate"
+      ],
+      "values": {
+       "study": "ATE of treatment on outcome"
+      }
+     },
+     "seconds": 9.03,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "ate"
+      ],
+      "values": {
+       "study": "ATE of treatment on outcome"
+      }
+     },
+     "seconds": 14.3,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "ate"
+      ],
+      "values": {
+       "study": "ATE of treatment on outcome"
+      }
+     },
+     "seconds": 8.82,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 10.02,
+   "stable": true,
+   "types": [
+    "ate"
+   ],
+   "values": {
+    "study": "ATE of treatment on outcome"
+   },
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": null
+  },
+  {
+   "area": "causal",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"causal\", \"types\": [\"ate\"], \"values\": {\"study\": \"ATE of treatment on outcome\"}}"
+   ],
+   "example": "SYNTHETIC/DEVELOPMENT: confounded ATE, known effect 2",
+   "kind": "ROUTED",
+   "prompt": "¿Cuál es el ATE of treatment on outcome y su incertidumbre?",
+   "provider": "causal_inference",
+   "results": [
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "ate"
+      ],
+      "values": {
+       "study": "ATE of treatment on outcome"
+      }
+     },
+     "seconds": 7.48,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "ate"
+      ],
+      "values": {
+       "study": "ATE of treatment on outcome"
+      }
+     },
+     "seconds": 7.16,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "ate"
+      ],
+      "values": {
+       "study": "ATE of treatment on outcome"
+      }
+     },
+     "seconds": 9.69,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "ate"
+      ],
+      "values": {
+       "study": "ATE of treatment on outcome"
+      }
+     },
+     "seconds": 6.99,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "ate"
+      ],
+      "values": {
+       "study": "ATE of treatment on outcome"
+      }
+     },
+     "seconds": 11.16,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 8.5,
+   "stable": true,
+   "types": [
+    "ate"
+   ],
+   "values": {
+    "study": "ATE of treatment on outcome"
+   },
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": null
+  },
+  {
+   "area": "causal",
+   "correct": 1,
+   "distinct_resolutions": [
+    "{\"area\": \"causal\", \"types\": [\"ate\", \"cate\"], \"values\": {}}",
+    "{\"area\": \"causal\", \"types\": [\"cate\"], \"values\": {}}",
+    "{\"area\": null, \"types\": [], \"values\": {}}"
+   ],
+   "example": "SYNTHETIC/DEVELOPMENT: confounded ATE, known effect 2",
+   "kind": "ROUTED",
+   "prompt": "cual fue el efecto del tratamiento y en jovenes",
+   "provider": "causal_inference",
+   "results": [
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "cate"
+      ],
+      "values": {},
+      "wanted_types": [
+       "ate",
+       "cate"
+      ]
+     },
+     "seconds": 16.63,
+     "status": "OK",
+     "verdict": "WRONG_TYPE",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "cate"
+      ],
+      "values": {},
+      "wanted_types": [
+       "ate",
+       "cate"
+      ]
+     },
+     "seconds": 16.84,
+     "status": "OK",
+     "verdict": "WRONG_TYPE",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "ate",
+       "cate"
+      ],
+      "values": {}
+     },
+     "seconds": 19.56,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": null,
+      "types": [],
+      "values": {},
+      "why": "the interpreter could not be consulted (Command '['hermes', '--ignore-user-config', '-m', 'deepseek-v4-flash', '--provider', 'opencode-go', '-z', 'Return ONLY one compact JSON object and no prose.\\nYou are routing a request to a machine-learning engine. Choose the area, describe the state, and write the questions, using ONLY the areas and question types listed. Where an area lists allowed_values for a field (target, horizon, policy_id, study, ...), that field MUST take one of those values -- they are what the fitted engine has, and a column name from the data is NOT a substitute. value_meanings gives the ordinary phrasings each value stands for (e.g. which horizon means \\'one hour\\'). Where fitted_combinations is given, the fields of a question MUST together match ONE listed combination. Use data column names only for fields that have no allowed_values. Never invent a column, a type or a field. If the request cannot be served, return {\"area\": null, \"why\": \"<one sentence>\"}.\\nRequest: \"cual fue el efecto del tratamiento y en jovenes\"\\nData profile (the shape only; you are not shown rows): {\"kind\": \"object\", \"columns\": [\"data_sha256\", \"n_rows\"], \"rows\": 1}\\nAreas and the question types each answers, with required and optional fields: {\"classification\": {\"provider\": \"laya_news\", \"question_types\": {\"choice\": {\"required\": [\"options\"], \"optional\": [\"instructions\"]}}, \"allowed_values\": {}, \"value_meanings\": {}, \"fitted_combinations\": []}, \"forecasting\": {\"provider\": \"predictor_forecast\", \"question_types\": {\"point_forecast\": {\"required\": [\"horizon\"], \"optional\": [\"target\", \"bundle\"]}, \"interval\": {\"required\": [\"horizon\", \"confidence_level\"], \"optional\": [\"target\", \"bundle\"]}, \"anomaly_risk\": {\"required\": [\"threshold\"], \"optional\": [\"horizon\", \"target\", \"bundle\"]}}, \"allowed_values\": {\"target\": [\"Global_active_power\", \"direction_long\"], \"horizon\": [60, 1], \"bundle\": [\"e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7\", \"phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99\", \"quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8\"]}, \"value_meanings\": {\"target\": {\"Global_active_power\": [\"Global active power\", \"global active power\", \"household power\", \"active power\", \"power consumption\", \"consumption\", \"potencia\", \"consumo\"], \"direction_long\": [\"direction long\", \"direction long probability\"]}, \"horizon\": {\"60\": [\"60 steps\", \"60 minutes\", \"60 pasos\", \"60 minutos\", \"one hour\", \"an hour\", \"next hour\", \"una hora\", \"la proxima hora\", \"pr\\\\u00f3xima hora\"], \"1\": [\"1 steps\", \"1 pasos\", \"next step\", \"one step\", \"un paso\", \"proximo paso\", \"pr\\\\u00f3ximo paso\"]}, \"bundle\": {\"e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7\": [\"e1-household-r0-s1\"], \"phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99\": [\"phase-1c-direction-cnn-direction-long\"], \"quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8\": [\"quantile-household-95-20260925\", \"quantile\", \"interval\", \"rango\", \"intervalo\", \"con incertidumbre\", \"with an interval\"]}}, \"fitted_combinations\": [{\"target\": \"Global_active_power\", \"horizon\": 60}, {\"target\": \"direction_long\", \"horizon\": 1}, {\"target\": \"Global_active_power\", \"horizon\": 60}]}, \"causal\": {\"provider\": \"causal_inference\", \"question_types\": {\"ate\": {\"required\": [], \"optional\": []}, \"cate\": {\"required\": [], \"optional\": [\"subgroup\", \"condition\"]}, \"impulse_response\": {\"required\": [\"event\", \"outcome\"], \"optional\": [\"horizons\"]}, \"sensitivity\": {\"required\": [\"events\", \"outcome\", \"window\"], \"optional\": []}, \"counterfactual_path\": {\"required\": [\"window\", \"zero_out\"], \"optional\": [\"outcome\", \"horizons\"]}}, \"allowed_values\": {\"study\": [\"ATE of treatment on outcome\", \"demo-modifier-v1\", \"laya-above-threshold-modifier-v1\", \"wp20-spec-modifier-v1\"], \"event\": [\"United States | CPI\", \"United States | Crude Oil Inventories\", \"United States | Initial Jobless Claims\", \"United States | Nonfarm Payrolls\"]}, \"value_meanings\": {\"study\": {\"wp20-spec-modifier-v1\": [\"causal-ate:4bda9dbb0812c656fab4cb502be09f6f001879637c75e41ef14131cb9a4fd6a9\", \"4bda9dbb0812c656fab4cb502be09f6f001879637c75e41ef14131cb9a4fd6a9\", \"4bda9dbb0812\", \"CATE of treatment on outcome\", \"conditional effect of treatment on outcome\", \"effect of treatment on outcome by baseline\", \"effect of treatment on outcome within baseline\", \"baseline subgroups\", \"effect modifier study\", \"modifier study\", \"study with an effect modifier\", \"conditional effect study\", \"heterogeneous effect study\", \"subgroup study\", \"estudio con modificador\", \"estudio con modificador de efecto\", \"estudio de efecto condicional\", \"estudio por subgrupos\"], \"laya-above-threshold-modifier-v1\": [\"causal-ate:a1f430bd03b4a1c13cf4a2ef7c8be96866c7722aba1471f2df86e6166a631954\", \"a1f430bd03b4a1c13cf4a2ef7c8be96866c7722aba1471f2df86e6166a631954\", \"a1f430bd03b4\", \"CATE of treatment on outcome\", \"conditional effect of treatment on outcome\", \"effect of treatment on outcome by baseline\", \"effect of treatment on outcome within baseline\", \"baseline subgroups\", \"effect modifier study\", \"modifier study\", \"study with an effect modifier\", \"conditional effect study\", \"heterogeneous effect study\", \"subgroup study\", \"estudio con modificador\", \"estudio con modificador de efecto\", \"estudio de efecto condicional\", \"estudio por subgrupos\"], \"demo-modifier-v1\": [\"causal-ate:ec5189d57572e7b8b0c0f89e8dd3c3d14ccde4041af1a528d5b4a2ed3f8e250f\", \"ec5189d57572e7b8b0c0f89e8dd3c3d14ccde4041af1a528d5b4a2ed3f8e250f\", \"ec5189d57572\", \"CATE of treatment on outcome\", \"conditional effect of treatment on outcome\", \"effect of treatment on outcome by baseline\", \"effect of treatment on outcome within baseline\", \"baseline subgroups\", \"effect modifier study\", \"modifier study\", \"study with an effect modifier\", \"conditional effect study\", \"heterogeneous effect study\", \"subgroup study\", \"estudio con modificador\", \"estudio con modificador de efecto\", \"estudio de efecto condicional\", \"estudio por subgrupos\"], \"ATE of treatment on outcome\": [\"causal-ate:f18fafdaa95e22a5b5cf147c80f87ad0836691c3d550c13bd695992fc0a2602b\", \"f18fafdaa95e22a5b5cf147c80f87ad0836691c3d550c13bd695992fc0a2602b\", \"f18fafdaa95e\", \"treatment on outcome\", \"effect of treatment on outcome\", \"average effect of treatment on outcome\", \"effect of treatment upon outcome\", \"demo study\", \"synthetic study\", \"development study\"]}, \"event\": {\"United States | CPI\": [\"CPI\", \"United States CPI\", \"CPI (United States)\"], \"United States | Crude Oil Inventories\": [\"Crude Oil Inventories\", \"United States Crude Oil Inventories\", \"Crude Oil Inventories (United States)\"], \"United States | Initial Jobless Claims\": [\"Initial Jobless Claims\", \"United States Initial Jobless Claims\", \"Initial Jobless Claims (United States)\"], \"United States | Nonfarm Payrolls\": [\"Nonfarm Payrolls\", \"United States Nonfarm Payrolls\", \"Nonfarm Payrolls (United States)\"]}}, \"fitted_combinations\": []}, \"rl\": {\"provider\": \"trading_policy\", \"question_types\": {\"next_action\": {\"required\": [], \"optional\": []}, \"value_estimation\": {\"required\": [], \"optional\": []}}, \"allowed_values\": {\"policy_id\": [\"eth_4h_sac_current_stack_anchor_v1\"]}, \"value_meanings\": {\"policy_id\": {\"eth_4h_sac_current_stack_anchor_v1\": [\"policy\", \"model\", \"agent\", \"politica\", \"pol\\\\u00edtica\", \"modelo\", \"eth 4h sac current stack anchor v1\"]}}, \"fitted_combinations\": []}, \"unsupervised\": {\"provider\": \"feature-eng-hierarchical-regimes\", \"question_types\": {\"clustering\": {\"required\": [], \"optional\": [\"method\", \"expected_clusters\", \"level\"]}, \"cluster_description\": {\"required\": [\"target_metric\"], \"optional\": [\"level\"]}}, \"allowed_values\": {\"task_id\": [\"ohlc-demo-regimes-v1\"], \"model_version\": [\"9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f\"], \"target_metric\": [\"none (assignment only)\", \"highest body_pipettes\", \"lowest body_pipettes\", \"body_pipettes > 0\", \"body_pipettes < 0\", \"highest range_pipettes\", \"lowest range_pipettes\", \"range_pipettes > 0\", \"range_pipettes < 0\"]}, \"value_meanings\": {\"task_id\": {\"ohlc-demo-regimes-v1\": [\"regimes\", \"regimenes\", \"reg\\\\u00edmenes\", \"hierarchical regimes\", \"regimenes jerarquicos\", \"reg\\\\u00edmenes jer\\\\u00e1rquicos\", \"regime\", \"regimen\", \"r\\\\u00e9gimen\", \"cluster\", \"clusters\", \"group\", \"groups\", \"grupo\", \"grupos\", \"ohlc demo regimes v1\"]}, \"model_version\": {\"9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f\": [\"regimes\", \"regimenes\", \"reg\\\\u00edmenes\", \"hierarchical regimes\", \"regimenes jerarquicos\", \"reg\\\\u00edmenes jer\\\\u00e1rquicos\", \"regime\", \"regimen\", \"r\\\\u00e9gimen\", \"cluster\", \"clusters\", \"group\", \"groups\", \"grupo\", \"grupos\", \"9b27b0297de9\", \"model version\", \"fitted model\", \"version del modelo\"]}, \"target_metric\": {\"none (assignment only)\": [\"assign\", \"assigns\", \"show\", \"asigna\", \"asignar\", \"asignale\", \"muestra\", \"mostrar\"], \"highest body_pipettes\": [\"highest body_pipettes\", \"largest body pipettes\", \"biggest body pipettes\", \"highest body pipettes\", \"widest body pipettes\", \"longest body pipettes\", \"large body pipettes\", \"big body pipettes\", \"wide body pipettes\", \"long body pipettes\", \"strong body pipettes\", \"high body pipettes\", \"largest body\", \"biggest body\", \"highest body\", \"widest body\", \"longest body\", \"large body\", \"big body\", \"wide body\", \"long body\", \"strong body\", \"high body\", \"mayor cuerpo\", \"maximo cuerpo\", \"m\\\\u00e1ximo cuerpo\", \"gran cuerpo\", \"cuerpo alto\", \"cuerpo alta\", \"cuerpo grande\", \"cuerpo amplio\", \"cuerpo amplia\", \"cuerpo ancho\", \"cuerpo ancha\", \"cuerpo largo\", \"cuerpo larga\", \"cuerpo fuerte\", \"cuerpo mas alto\", \"cuerpo m\\\\u00e1s alto\"], \"lowest body_pipettes\": [\"lowest body_pipettes\", \"smallest body pipettes\", \"lowest body pipettes\", \"narrowest body pipettes\", \"shortest body pipettes\", \"small body pipettes\", \"low body pipettes\", \"narrow body pipettes\", \"short body pipettes\", \"weak body pipettes\", \"smallest body\", \"lowest body\", \"narrowest body\", \"shortest body\", \"small body\", \"low body\", \"narrow body\", \"short body\", \"weak body\", \"menor cuerpo\", \"minimo cuerpo\", \"m\\\\u00ednimo cuerpo\", \"cuerpo bajo\", \"cuerpo baja\", \"cuerpo pequeno\", \"cuerpo peque\\\\u00f1o\", \"cuerpo pequena\", \"cuerpo peque\\\\u00f1a\", \"cuerpo estrecho\", \"cuerpo estrecha\", \"cuerpo angosto\", \"cuerpo corto\", \"cuerpo corta\", \"cuerpo debil\", \"cuerpo d\\\\u00e9bil\", \"cuerpo mas bajo\", \"cuerpo m\\\\u00e1s bajo\"], \"body_pipettes > 0\": [\"body_pipettes > 0\", \"positive body pipettes\", \"bullish body pipettes\", \"rising body pipettes\", \"body pipettes above zero\", \"body pipettes over zero\", \"positive body\", \"bullish body\", \"rising body\", \"body above zero\", \"body over zero\", \"cuerpo positivo\", \"cuerpo positiva\", \"cuerpo alcista\", \"cuerpo por encima de cero\", \"cuerpo mayor que cero\"], \"body_pipettes < 0\": [\"body_pipettes < 0\", \"negative body pipettes\", \"bearish body pipettes\", \"falling body pipettes\", \"body pipettes below zero\", \"body pipettes under zero\", \"negative body\", \"bearish body\", \"falling body\", \"body below zero\", \"body under zero\", \"cuerpo negativo\", \"cuerpo negativa\", \"cuerpo bajista\", \"cuerpo por debajo de cero\", \"cuerpo menor que cero\"], \"highest range_pipettes\": [\"highest range_pipettes\", \"largest range pipettes\", \"biggest range pipettes\", \"highest range pipettes\", \"widest range pipettes\", \"longest range pipettes\", \"large range pipettes\", \"big range pipettes\", \"wide range pipettes\", \"long range pipettes\", \"strong range pipettes\", \"high range pipettes\", \"largest range\", \"biggest range\", \"highest range\", \"widest range\", \"longest range\", \"large range\", \"big range\", \"wide range\", \"long range\", \"strong range\", \"high range\", \"mayor rango\", \"maximo rango\", \"m\\\\u00e1ximo rango\", \"gran rango\", \"rango alto\", \"rango alta\", \"rango grande\", \"rango amplio\", \"rango amplia\", \"rango ancho\", \"rango ancha\", \"rango largo\", \"rango larga\", \"rango fuerte\", \"rango mas alto\", \"rango m\\\\u00e1s alto\"], \"lowest range_pipettes\": [\"lowest range_pipettes\", \"smallest range pipettes\", \"lowest range pipettes\", \"narrowest range pipettes\", \"shortest range pipettes\", \"small range pipettes\", \"low range pipettes\", \"narrow range pipettes\", \"short range pipettes\", \"weak range pipettes\", \"smallest range\", \"lowest range\", \"narrowest range\", \"shortest range\", \"small range\", \"low range\", \"narrow range\", \"short range\", \"weak range\", \"menor rango\", \"minimo rango\", \"m\\\\u00ednimo rango\", \"rango bajo\", \"rango baja\", \"rango pequeno\", \"rango peque\\\\u00f1o\", \"rango pequena\", \"rango peque\\\\u00f1a\", \"rango estrecho\", \"rango estrecha\", \"rango angosto\", \"rango corto\", \"rango corta\", \"rango debil\", \"rango d\\\\u00e9bil\", \"rango mas bajo\", \"rango m\\\\u00e1s bajo\"], \"range_pipettes > 0\": [\"range_pipettes > 0\", \"positive range pipettes\", \"bullish range pipettes\", \"rising range pipettes\", \"range pipettes above zero\", \"range pipettes over zero\", \"positive range\", \"bullish range\", \"rising range\", \"range above zero\", \"range over zero\", \"rango positivo\", \"rango positiva\", \"rango alcista\", \"rango por encima de cero\", \"rango mayor que cero\"], \"range_pipettes < 0\": [\"range_pipettes < 0\", \"negative range pipettes\", \"bearish range pipettes\", \"falling range pipettes\", \"range pipettes below zero\", \"range pipettes under zero\", \"negative range\", \"bearish range\", \"falling range\", \"range below zero\", \"range under zero\", \"rango negativo\", \"rango negativa\", \"rango bajista\", \"rango por debajo de cero\", \"rango menor que cero\"]}}, \"fitted_combinations\": []}}\\nAnswer shape: {\"area\": \"<area>\", \"state\": {...}, \"questions\": {\"<name>\": {\"type\": \"<type>\", ...}}}']' timed out after 90 seconds)"
+     },
+     "seconds": 90.13,
+     "status": "REFUSED",
+     "verdict": "REFUSED",
+     "why": "the interpreter could not be consulted (Command '['hermes', '--ignore-user-config', '-m', 'deepseek-v4-flash', '--provider', 'opencode-go', '-z', 'Return ONLY one compact JSON object and no prose.\\nYou are routing a request to a machine-learning engine. Choose the area, describe the state, and write the questions, using ONLY the areas and question types listed. Where an area lists allowed_values for a field (target, horizon, policy_id, study, ...), that field MUST take one of those values -- they are what the fitted engine has, and a column name from the data is NOT a substitute. value_meanings gives the ordinary phrasings each value stands for (e.g. which horizon means \\'one hour\\'). Where fitted_combinations is given, the fields of a question MUST together match ONE listed combination. Use data column names only for fields that have no allowed_values. Never invent a column, a type or a field. If the request cannot be served, return {\"area\": null, \"why\": \"<one sentence>\"}.\\nRequest: \"cual fue el efecto del tratamiento y en jovenes\"\\nData profile (the shape only; you are not shown rows): {\"kind\": \"object\", \"columns\": [\"data_sha256\", \"n_rows\"], \"rows\": 1}\\nAreas and the question types each answers, with required and optional fields: {\"classification\": {\"provider\": \"laya_news\", \"question_types\": {\"choice\": {\"required\": [\"options\"], \"optional\": [\"instructions\"]}}, \"allowed_values\": {}, \"value_meanings\": {}, \"fitted_combinations\": []}, \"forecasting\": {\"provider\": \"predictor_forecast\", \"question_types\": {\"point_forecast\": {\"required\": [\"horizon\"], \"optional\": [\"target\", \"bundle\"]}, \"interval\": {\"required\": [\"horizon\", \"confidence_level\"], \"optional\": [\"target\", \"bundle\"]}, \"anomaly_risk\": {\"required\": [\"threshold\"], \"optional\": [\"horizon\", \"target\", \"bundle\"]}}, \"allowed_values\": {\"target\": [\"Global_active_power\", \"direction_long\"], \"horizon\": [60, 1], \"bundle\": [\"e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7\", \"phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99\", \"quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8\"]}, \"value_meanings\": {\"target\": {\"Global_active_power\": [\"Global active power\", \"global active power\", \"household power\", \"active power\", \"power consumption\", \"consumption\", \"potencia\", \"consumo\"], \"direction_long\": [\"direction long\", \"direction long probability\"]}, \"horizon\": {\"60\": [\"60 steps\", \"60 minutes\", \"60 pasos\", \"60 minutos\", \"one hour\", \"an hour\", \"next hour\", \"una hora\", \"la proxima hora\", \"pr\\\\u00f3xima hora\"], \"1\": [\"1 steps\", \"1 pasos\", \"next step\", \"one step\", \"un paso\", \"proximo paso\", \"pr\\\\u00f3ximo paso\"]}, \"bundle\": {\"e1-household-r0-s1:15bd0451df2825747935dc9e8b865670acb7bbdf9406cfa937e136f032ccc1d7\": [\"e1-household-r0-s1\"], \"phase-1c-direction-cnn-direction-long:6f14a78ee2a1c6a4c623234bd3144799d01dd7f6188e94163c77f60759d2ea99\": [\"phase-1c-direction-cnn-direction-long\"], \"quantile-household-95-20260925:a6d20c4b7a90463493dbabba880f46cb1682ccdf8a522182790abbb02924b4f8\": [\"quantile-household-95-20260925\", \"quantile\", \"interval\", \"rango\", \"intervalo\", \"con incertidumbre\", \"with an interval\"]}}, \"fitted_combinations\": [{\"target\": \"Global_active_power\", \"horizon\": 60}, {\"target\": \"direction_long\", \"horizon\": 1}, {\"target\": \"Global_active_power\", \"horizon\": 60}]}, \"causal\": {\"provider\": \"causal_inference\", \"question_types\": {\"ate\": {\"required\": [], \"optional\": []}, \"cate\": {\"required\": [], \"optional\": [\"subgroup\", \"condition\"]}, \"impulse_response\": {\"required\": [\"event\", \"outcome\"], \"optional\": [\"horizons\"]}, \"sensitivity\": {\"required\": [\"events\", \"outcome\", \"window\"], \"optional\": []}, \"counterfactual_path\": {\"required\": [\"window\", \"zero_out\"], \"optional\": [\"outcome\", \"horizons\"]}}, \"allowed_values\": {\"study\": [\"ATE of treatment on outcome\", \"demo-modifier-v1\", \"laya-above-threshold-modifier-v1\", \"wp20-spec-modifier-v1\"], \"event\": [\"United States | CPI\", \"United States | Crude Oil Inventories\", \"United States | Initial Jobless Claims\", \"United States | Nonfarm Payrolls\"]}, \"value_meanings\": {\"study\": {\"wp20-spec-modifier-v1\": [\"causal-ate:4bda9dbb0812c656fab4cb502be09f6f001879637c75e41ef14131cb9a4fd6a9\", \"4bda9dbb0812c656fab4cb502be09f6f001879637c75e41ef14131cb9a4fd6a9\", \"4bda9dbb0812\", \"CATE of treatment on outcome\", \"conditional effect of treatment on outcome\", \"effect of treatment on outcome by baseline\", \"effect of treatment on outcome within baseline\", \"baseline subgroups\", \"effect modifier study\", \"modifier study\", \"study with an effect modifier\", \"conditional effect study\", \"heterogeneous effect study\", \"subgroup study\", \"estudio con modificador\", \"estudio con modificador de efecto\", \"estudio de efecto condicional\", \"estudio por subgrupos\"], \"laya-above-threshold-modifier-v1\": [\"causal-ate:a1f430bd03b4a1c13cf4a2ef7c8be96866c7722aba1471f2df86e6166a631954\", \"a1f430bd03b4a1c13cf4a2ef7c8be96866c7722aba1471f2df86e6166a631954\", \"a1f430bd03b4\", \"CATE of treatment on outcome\", \"conditional effect of treatment on outcome\", \"effect of treatment on outcome by baseline\", \"effect of treatment on outcome within baseline\", \"baseline subgroups\", \"effect modifier study\", \"modifier study\", \"study with an effect modifier\", \"conditional effect study\", \"heterogeneous effect study\", \"subgroup study\", \"estudio con modificador\", \"estudio con modificador de efecto\", \"estudio de efecto condicional\", \"estudio por subgrupos\"], \"demo-modifier-v1\": [\"causal-ate:ec5189d57572e7b8b0c0f89e8dd3c3d14ccde4041af1a528d5b4a2ed3f8e250f\", \"ec5189d57572e7b8b0c0f89e8dd3c3d14ccde4041af1a528d5b4a2ed3f8e250f\", \"ec5189d57572\", \"CATE of treatment on outcome\", \"conditional effect of treatment on outcome\", \"effect of treatment on outcome by baseline\", \"effect of treatment on outcome within baseline\", \"baseline subgroups\", \"effect modifier study\", \"modifier study\", \"study with an effect modifier\", \"conditional effect study\", \"heterogeneous effect study\", \"subgroup study\", \"estudio con modificador\", \"estudio con modificador de efecto\", \"estudio de efecto condicional\", \"estudio por subgrupos\"], \"ATE of treatment on outcome\": [\"causal-ate:f18fafdaa95e22a5b5cf147c80f87ad0836691c3d550c13bd695992fc0a2602b\", \"f18fafdaa95e22a5b5cf147c80f87ad0836691c3d550c13bd695992fc0a2602b\", \"f18fafdaa95e\", \"treatment on outcome\", \"effect of treatment on outcome\", \"average effect of treatment on outcome\", \"effect of treatment upon outcome\", \"demo study\", \"synthetic study\", \"development study\"]}, \"event\": {\"United States | CPI\": [\"CPI\", \"United States CPI\", \"CPI (United States)\"], \"United States | Crude Oil Inventories\": [\"Crude Oil Inventories\", \"United States Crude Oil Inventories\", \"Crude Oil Inventories (United States)\"], \"United States | Initial Jobless Claims\": [\"Initial Jobless Claims\", \"United States Initial Jobless Claims\", \"Initial Jobless Claims (United States)\"], \"United States | Nonfarm Payrolls\": [\"Nonfarm Payrolls\", \"United States Nonfarm Payrolls\", \"Nonfarm Payrolls (United States)\"]}}, \"fitted_combinations\": []}, \"rl\": {\"provider\": \"trading_policy\", \"question_types\": {\"next_action\": {\"required\": [], \"optional\": []}, \"value_estimation\": {\"required\": [], \"optional\": []}}, \"allowed_values\": {\"policy_id\": [\"eth_4h_sac_current_stack_anchor_v1\"]}, \"value_meanings\": {\"policy_id\": {\"eth_4h_sac_current_stack_anchor_v1\": [\"policy\", \"model\", \"agent\", \"politica\", \"pol\\\\u00edtica\", \"modelo\", \"eth 4h sac current stack anchor v1\"]}}, \"fitted_combinations\": []}, \"unsupervised\": {\"provider\": \"feature-eng-hierarchical-regimes\", \"question_types\": {\"clustering\": {\"required\": [], \"optional\": [\"method\", \"expected_clusters\", \"level\"]}, \"cluster_description\": {\"required\": [\"target_metric\"], \"optional\": [\"level\"]}}, \"allowed_values\": {\"task_id\": [\"ohlc-demo-regimes-v1\"], \"model_version\": [\"9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f\"], \"target_metric\": [\"none (assignment only)\", \"highest body_pipettes\", \"lowest body_pipettes\", \"body_pipettes > 0\", \"body_pipettes < 0\", \"highest range_pipettes\", \"lowest range_pipettes\", \"range_pipettes > 0\", \"range_pipettes < 0\"]}, \"value_meanings\": {\"task_id\": {\"ohlc-demo-regimes-v1\": [\"regimes\", \"regimenes\", \"reg\\\\u00edmenes\", \"hierarchical regimes\", \"regimenes jerarquicos\", \"reg\\\\u00edmenes jer\\\\u00e1rquicos\", \"regime\", \"regimen\", \"r\\\\u00e9gimen\", \"cluster\", \"clusters\", \"group\", \"groups\", \"grupo\", \"grupos\", \"ohlc demo regimes v1\"]}, \"model_version\": {\"9b27b0297de98658ca61f502ccd0bd8010b7192dc5f854333236a0822d81614f\": [\"regimes\", \"regimenes\", \"reg\\\\u00edmenes\", \"hierarchical regimes\", \"regimenes jerarquicos\", \"reg\\\\u00edmenes jer\\\\u00e1rquicos\", \"regime\", \"regimen\", \"r\\\\u00e9gimen\", \"cluster\", \"clusters\", \"group\", \"groups\", \"grupo\", \"grupos\", \"9b27b0297de9\", \"model version\", \"fitted model\", \"version del modelo\"]}, \"target_metric\": {\"none (assignment only)\": [\"assign\", \"assigns\", \"show\", \"asigna\", \"asignar\", \"asignale\", \"muestra\", \"mostrar\"], \"highest body_pipettes\": [\"highest body_pipettes\", \"largest body pipettes\", \"biggest body pipettes\", \"highest body pipettes\", \"widest body pipettes\", \"longest body pipettes\", \"large body pipettes\", \"big body pipettes\", \"wide body pipettes\", \"long body pipettes\", \"strong body pipettes\", \"high body pipettes\", \"largest body\", \"biggest body\", \"highest body\", \"widest body\", \"longest body\", \"large body\", \"big body\", \"wide body\", \"long body\", \"strong body\", \"high body\", \"mayor cuerpo\", \"maximo cuerpo\", \"m\\\\u00e1ximo cuerpo\", \"gran cuerpo\", \"cuerpo alto\", \"cuerpo alta\", \"cuerpo grande\", \"cuerpo amplio\", \"cuerpo amplia\", \"cuerpo ancho\", \"cuerpo ancha\", \"cuerpo largo\", \"cuerpo larga\", \"cuerpo fuerte\", \"cuerpo mas alto\", \"cuerpo m\\\\u00e1s alto\"], \"lowest body_pipettes\": [\"lowest body_pipettes\", \"smallest body pipettes\", \"lowest body pipettes\", \"narrowest body pipettes\", \"shortest body pipettes\", \"small body pipettes\", \"low body pipettes\", \"narrow body pipettes\", \"short body pipettes\", \"weak body pipettes\", \"smallest body\", \"lowest body\", \"narrowest body\", \"shortest body\", \"small body\", \"low body\", \"narrow body\", \"short body\", \"weak body\", \"menor cuerpo\", \"minimo cuerpo\", \"m\\\\u00ednimo cuerpo\", \"cuerpo bajo\", \"cuerpo baja\", \"cuerpo pequeno\", \"cuerpo peque\\\\u00f1o\", \"cuerpo pequena\", \"cuerpo peque\\\\u00f1a\", \"cuerpo estrecho\", \"cuerpo estrecha\", \"cuerpo angosto\", \"cuerpo corto\", \"cuerpo corta\", \"cuerpo debil\", \"cuerpo d\\\\u00e9bil\", \"cuerpo mas bajo\", \"cuerpo m\\\\u00e1s bajo\"], \"body_pipettes > 0\": [\"body_pipettes > 0\", \"positive body pipettes\", \"bullish body pipettes\", \"rising body pipettes\", \"body pipettes above zero\", \"body pipettes over zero\", \"positive body\", \"bullish body\", \"rising body\", \"body above zero\", \"body over zero\", \"cuerpo positivo\", \"cuerpo positiva\", \"cuerpo alcista\", \"cuerpo por encima de cero\", \"cuerpo mayor que cero\"], \"body_pipettes < 0\": [\"body_pipettes < 0\", \"negative body pipettes\", \"bearish body pipettes\", \"falling body pipettes\", \"body pipettes below zero\", \"body pipettes under zero\", \"negative body\", \"bearish body\", \"falling body\", \"body below zero\", \"body under zero\", \"cuerpo negativo\", \"cuerpo negativa\", \"cuerpo bajista\", \"cuerpo por debajo de cero\", \"cuerpo menor que cero\"], \"highest range_pipettes\": [\"highest range_pipettes\", \"largest range pipettes\", \"biggest range pipettes\", \"highest range pipettes\", \"widest range pipettes\", \"longest range pipettes\", \"large range pipettes\", \"big range pipettes\", \"wide range pipettes\", \"long range pipettes\", \"strong range pipettes\", \"high range pipettes\", \"largest range\", \"biggest range\", \"highest range\", \"widest range\", \"longest range\", \"large range\", \"big range\", \"wide range\", \"long range\", \"strong range\", \"high range\", \"mayor rango\", \"maximo rango\", \"m\\\\u00e1ximo rango\", \"gran rango\", \"rango alto\", \"rango alta\", \"rango grande\", \"rango amplio\", \"rango amplia\", \"rango ancho\", \"rango ancha\", \"rango largo\", \"rango larga\", \"rango fuerte\", \"rango mas alto\", \"rango m\\\\u00e1s alto\"], \"lowest range_pipettes\": [\"lowest range_pipettes\", \"smallest range pipettes\", \"lowest range pipettes\", \"narrowest range pipettes\", \"shortest range pipettes\", \"small range pipettes\", \"low range pipettes\", \"narrow range pipettes\", \"short range pipettes\", \"weak range pipettes\", \"smallest range\", \"lowest range\", \"narrowest range\", \"shortest range\", \"small range\", \"low range\", \"narrow range\", \"short range\", \"weak range\", \"menor rango\", \"minimo rango\", \"m\\\\u00ednimo rango\", \"rango bajo\", \"rango baja\", \"rango pequeno\", \"rango peque\\\\u00f1o\", \"rango pequena\", \"rango peque\\\\u00f1a\", \"rango estrecho\", \"rango estrecha\", \"rango angosto\", \"rango corto\", \"rango corta\", \"rango debil\", \"rango d\\\\u00e9bil\", \"rango mas bajo\", \"rango m\\\\u00e1s bajo\"], \"range_pipettes > 0\": [\"range_pipettes > 0\", \"positive range pipettes\", \"bullish range pipettes\", \"rising range pipettes\", \"range pipettes above zero\", \"range pipettes over zero\", \"positive range\", \"bullish range\", \"rising range\", \"range above zero\", \"range over zero\", \"rango positivo\", \"rango positiva\", \"rango alcista\", \"rango por encima de cero\", \"rango mayor que cero\"], \"range_pipettes < 0\": [\"range_pipettes < 0\", \"negative range pipettes\", \"bearish range pipettes\", \"falling range pipettes\", \"range pipettes below zero\", \"range pipettes under zero\", \"negative range\", \"bearish range\", \"falling range\", \"range below zero\", \"range under zero\", \"rango negativo\", \"rango negativa\", \"rango bajista\", \"rango por debajo de cero\", \"rango menor que cero\"]}}, \"fitted_combinations\": []}}\\nAnswer shape: {\"area\": \"<area>\", \"state\": {...}, \"questions\": {\"<name>\": {\"type\": \"<type>\", ...}}}']' timed out after 90 seconds)"
+    },
+    {
+     "detail": {
+      "area": "causal",
+      "types": [
+       "cate"
+      ],
+      "values": {},
+      "wanted_types": [
+       "ate",
+       "cate"
+      ]
+     },
+     "seconds": 10.33,
+     "status": "OK",
+     "verdict": "WRONG_TYPE",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 30.7,
+   "stable": false,
+   "types": [
+    "ate",
+    "cate"
+   ],
+   "values": {},
+   "verdicts": {
+    "CORRECT": 1,
+    "REFUSED": 1,
+    "WRONG_TYPE": 3
+   },
+   "why_expected": "the envelope tools/verify_envelopes.py runs for this prompt asks an ate and a cate; the sentence names no study in the study's own words, so none is scored"
+  },
+  {
+   "area": "rl",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"rl\", \"types\": [\"next_action\"], \"values\": {\"policy_id\": \"eth_4h_sac_current_stack_anchor_v1\"}}"
+   ],
+   "example": "DEVELOPMENT: an all-zero observation vector; its action is this input's, not the bars example's",
+   "kind": "ROUTED",
+   "prompt": "What action does eth_4h_sac_current_stack_anchor_v1 propose?",
+   "provider": "trading_policy",
+   "results": [
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action"
+      ],
+      "values": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      }
+     },
+     "seconds": 7.87,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action"
+      ],
+      "values": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      }
+     },
+     "seconds": 10.51,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action"
+      ],
+      "values": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      }
+     },
+     "seconds": 9.12,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action"
+      ],
+      "values": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      }
+     },
+     "seconds": 7.04,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action"
+      ],
+      "values": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      }
+     },
+     "seconds": 6.89,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 8.29,
+   "stable": true,
+   "types": [
+    "next_action"
+   ],
+   "values": {
+    "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+   },
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": null
+  },
+  {
+   "area": "rl",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"rl\", \"types\": [\"next_action\"], \"values\": {}}"
+   ],
+   "example": "DEVELOPMENT: market data in, proposed action out (256 rows of 83 fitted columns); a different input from the zero-vector example, so a different action",
+   "kind": "ROUTED",
+   "prompt": "¿Qué acción propone la política para estas barras?",
+   "provider": "trading_policy",
+   "results": [
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action"
+      ],
+      "values": {}
+     },
+     "seconds": 9.7,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action"
+      ],
+      "values": {}
+     },
+     "seconds": 8.53,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action"
+      ],
+      "values": {}
+     },
+     "seconds": 9.41,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action"
+      ],
+      "values": {}
+     },
+     "seconds": 9.16,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action"
+      ],
+      "values": {}
+     },
+     "seconds": 8.34,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 9.03,
+   "stable": true,
+   "types": [
+    "next_action"
+   ],
+   "values": {},
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": null
+  },
+  {
+   "area": "rl",
+   "correct": 5,
+   "distinct_resolutions": [
+    "{\"area\": \"rl\", \"types\": [\"next_action\", \"value_estimation\"], \"values\": {\"policy_id\": \"eth_4h_sac_current_stack_anchor_v1\"}}"
+   ],
+   "example": "DEVELOPMENT: market data in, proposed action out (256 rows of 83 fitted columns); a different input from the zero-vector example, so a different action",
+   "kind": "ROUTED",
+   "prompt": "que accion propone y que retorno espera",
+   "provider": "trading_policy",
+   "results": [
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action",
+       "value_estimation"
+      ],
+      "values": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      }
+     },
+     "seconds": 13.58,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action",
+       "value_estimation"
+      ],
+      "values": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      }
+     },
+     "seconds": 10.04,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action",
+       "value_estimation"
+      ],
+      "values": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      }
+     },
+     "seconds": 9.21,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action",
+       "value_estimation"
+      ],
+      "values": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      }
+     },
+     "seconds": 16.53,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    },
+    {
+     "detail": {
+      "area": "rl",
+      "types": [
+       "next_action",
+       "value_estimation"
+      ],
+      "values": {
+       "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+      }
+     },
+     "seconds": 9.93,
+     "status": "OK",
+     "verdict": "CORRECT",
+     "why": null
+    }
+   ],
+   "runs": 5,
+   "seconds_mean": 11.86,
+   "stable": true,
+   "types": [
+    "next_action",
+    "value_estimation"
+   ],
+   "values": {
+    "policy_id": "eth_4h_sac_current_stack_anchor_v1"
+   },
+   "verdicts": {
+    "CORRECT": 5
+   },
+   "why_expected": "the envelope tools/verify_envelopes.py runs for this prompt asks a next_action and a value_estimation, with the policy named in its state"
+  }
+ ],
+ "summary": {
+  "correct": 81,
+  "invalid_proposal_problems": {
+   "MALFORMED_ENVELOPE": 1
+  },
+  "reliability": 0.8526,
+  "reliability_when_it_proposed": 0.8617,
+  "runs": 95,
+  "sentences": 19,
+  "sentences_always_correct": 14,
+  "sentences_never_correct": 0,
+  "sentences_stable": 15,
+  "sentences_without_an_example": 0,
+  "verdicts": {
+   "CORRECT": 81,
+   "INVALID_PROPOSAL": 1,
+   "REFUSED": 1,
+   "WRONG_AREA": 0,
+   "WRONG_TYPE": 12,
+   "WRONG_VALUE": 0
+  }
+ }
+}

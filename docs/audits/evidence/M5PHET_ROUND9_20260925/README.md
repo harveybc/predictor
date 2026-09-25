@@ -118,3 +118,41 @@ The owner's instance now serves four bundles: `pronostica Global_active_power a 
 searched-w21-household-outer-20260925` answers with nothing but the sentence pinning the engine, and a bare
 "pronostica la potencia" is now refused naming all three candidates — the correct consequence of two point bundles on
 one target. Acceptance after the merge: **examples 12/12, prose 14/14, refusals 2/2, envelope questions 15/15**.
+
+## WP30 — the router measured, and the gate stated no wider than it is
+
+`command` / deepseek-v4-flash, 19 sentences × 5 routings = 95, report `aac62e58…`:
+
+| | strict | when it did propose | n |
+|---|---|---|---|
+| router (`orchestrate.route`) | **0.8526** (81/95) | 0.8617 | 19 sentences, 95 runs |
+| interpreter (`interpret`) | 0.8333 (50/60) | 0.9434 | 12 sentences, 60 runs |
+
+The two conditionals exclude different things (the interpreter's excludes 7 `DECLINED`, the router's 1 `REFUSED`), so
+they are two populations and neither rate is evidence about the other. What IS comparable is the failure kind:
+
+**over 95 routings the router never named a different engine and never named a target, horizon, study, policy or
+metric an engine does not have.** Every miss is envelope *shape* — one question where the sentence asks for two, or
+`cluster_description` where the sentence asks only for the assignment — which is an under-answer visible in the review
+window before anything runs. The interpreter's misses, by contrast, are `WRONG_VALUE`. Weakest sentences: `pronostica
+la potencia y dame un rango` 1/5 and `cual fue el efecto del tratamiento y en jovenes` 1/5 — both ask for two things.
+
+`/api/catalog.abstention.paths` now says exactly which paths the rule covers: `decide` covered, `interpret` only where
+the plugin reports a confidence, **`route` not covered at all** — no shipped plugin reports a confidence for a
+free-text envelope, not even `openai_compatible`, because `route` calls `_ask` and `_ask` discards the logprobs.
+
+## WP31 — every answer carries what is known about its area
+
+A rendered forecasting answer now ends with, for example: `quality (forecasting): MAE 0.526293524060822 [kW …];
+interval coverage 0.9259975570032574 at nominal 0.95; skill 0.12185848183739156 vs last_value — 9824 scored rows,
+labels REALISED_OUTCOME, protocol d0ebd9a4bc…, seal 33820b552ddf…`. Classification carries macro-F1 0.3778 and ECE
+0.1315 over 450 rows; unsupervised is `NOT_MEASURED` **on purpose** (the WP19 report measured a reference this instance
+does not serve, and another state's measurement is not published as this one's); causal and policy are `REFUSED` with
+the evaluation package's own reasons. Nothing is computed at render time: a report is accepted only because the
+bundle's manifest names its sha256, and the local report path is never published.
+
+The narration guard bit once and was not relaxed: `policy_profitability`'s own refusal text ends in a clause the guard
+reads as a claim of profit, so that line names the refusal and lets the reason travel verbatim in `quality.why`.
+
+Final acceptance on 8766: examples 12/12, prose 14/14, refusals 2/2, envelope questions 15/15, outputs 16/16 faithful
+with 0 figures the answers do not carry. M5PHET master e2eddd6, suite 646 passed / 1 skipped.
