@@ -1,0 +1,890 @@
+{
+  "assembled_nothing": "every value in every corpus is a value of its source file or a declared arithmetic of them; no value is generated, imputed or interpolated here",
+  "corpora": [
+    {
+      "derivation": "the bars of calendar year 2006 only, in UTC, and the same bar geometry in pipettes as the 4-hour corpus; no row of this corpus is a row of any other year's",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "eurusd_5m_2006",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/eurusd_5m_2006.csv",
+      "rows": 5617,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 73018,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 73018,
+        "stride": 13
+      },
+      "sha256": "cd85cf024536e8a4391d453d957871b3606f7dffad6f84cf202974450131630a",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/eurusd/5m.parquet",
+        "reader": "parquet_bars",
+        "sha256": "d527b46a9c35100934f95d1048feb860d265c10f5211174a956f39d8e89b9891"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the bars of calendar year 2009 only, in UTC, and the same bar geometry in pipettes as the 4-hour corpus; no row of this corpus is a row of any other year's",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "eurusd_5m_2009",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/eurusd_5m_2009.csv",
+      "rows": 5731,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 74500,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 74500,
+        "stride": 13
+      },
+      "sha256": "73c26094294d176152617b4f590cdcae956efe4ce871eb0880fa531f3fb2bb90",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/eurusd/5m.parquet",
+        "reader": "parquet_bars",
+        "sha256": "d527b46a9c35100934f95d1048feb860d265c10f5211174a956f39d8e89b9891"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the bars of calendar year 2012 only, in UTC, and the same bar geometry in pipettes as the 4-hour corpus; no row of this corpus is a row of any other year's",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "eurusd_5m_2012",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/eurusd_5m_2012.csv",
+      "rows": 5739,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 74603,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 74603,
+        "stride": 13
+      },
+      "sha256": "f54526f8dcab674131c99768ec38df511f60c86aefd85d9f807ed0df69cbbab3",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/eurusd/5m.parquet",
+        "reader": "parquet_bars",
+        "sha256": "d527b46a9c35100934f95d1048feb860d265c10f5211174a956f39d8e89b9891"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the bars of calendar year 2015 only, in UTC, and the same bar geometry in pipettes as the 4-hour corpus; no row of this corpus is a row of any other year's",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "eurusd_5m_2015",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/eurusd_5m_2015.csv",
+      "rows": 5736,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 74560,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 74560,
+        "stride": 13
+      },
+      "sha256": "56be711317608d4c27c20e2204c2dd0a5a46f177cdea2a520d2f65261e837c94",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/eurusd/5m.parquet",
+        "reader": "parquet_bars",
+        "sha256": "d527b46a9c35100934f95d1048feb860d265c10f5211174a956f39d8e89b9891"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the bars of calendar year 2018 only, in UTC, and the same bar geometry in pipettes as the 4-hour corpus; no row of this corpus is a row of any other year's",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "eurusd_5m_2018",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/eurusd_5m_2018.csv",
+      "rows": 5747,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 74707,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 74707,
+        "stride": 13
+      },
+      "sha256": "ad8cbd87d2cbb8694810247be4ca5f8a1fd0005fff36e29e06900046031a96b7",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/eurusd/5m.parquet",
+        "reader": "parquet_bars",
+        "sha256": "d527b46a9c35100934f95d1048feb860d265c10f5211174a956f39d8e89b9891"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the bars of calendar year 2021 only, in UTC, and the same bar geometry in pipettes as the 4-hour corpus; no row of this corpus is a row of any other year's",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "eurusd_5m_2021",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/eurusd_5m_2021.csv",
+      "rows": 5740,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 74611,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 74611,
+        "stride": 13
+      },
+      "sha256": "54bb6c88d304ccbad083ea4d4c3de454b562e9ce0e1c5702fbe20d55c15e1368",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/eurusd/5m.parquet",
+        "reader": "parquet_bars",
+        "sha256": "d527b46a9c35100934f95d1048feb860d265c10f5211174a956f39d8e89b9891"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the five return features the feature store already carries for this instrument, copied; rows whose window features are not yet defined are dropped and counted",
+      "features": [
+        "log_return",
+        "abs_return",
+        "vol_20",
+        "ret_20",
+        "z_score_20"
+      ],
+      "id": "fx_daily_aud_jpy",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_daily_aud_jpy.csv",
+      "rows": 5445,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 19,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 5445,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 5464,
+        "stride": 1
+      },
+      "sha256": "9a3e8be1d948bedfe41cadbb9aa049ab3ecb7c0b919a200f0fdace24adddb894",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/AUD_JPY_daily.csv",
+        "reader": "feature_store_csv",
+        "sha256": "17e6f66b11c6a0b5b5cb74f645b922c3129cedfa40c02690bda6b338981c67f7"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the five return features the feature store already carries for this instrument, copied; rows whose window features are not yet defined are dropped and counted",
+      "features": [
+        "log_return",
+        "abs_return",
+        "vol_20",
+        "ret_20",
+        "z_score_20"
+      ],
+      "id": "fx_daily_aud_usd",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_daily_aud_usd.csv",
+      "rows": 5086,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 19,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 5086,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 5105,
+        "stride": 1
+      },
+      "sha256": "98d5b71cc11fd1e898d6e4ae519e94dc890f7d198191029ded36966ab9d635b5",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/AUD_USD_daily.csv",
+        "reader": "feature_store_csv",
+        "sha256": "f3de13e702ab9a03501527a47a70d10907bd4b4648433fc369623427e88099f1"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the five return features the feature store already carries for this instrument, copied; rows whose window features are not yet defined are dropped and counted",
+      "features": [
+        "log_return",
+        "abs_return",
+        "vol_20",
+        "ret_20",
+        "z_score_20"
+      ],
+      "id": "fx_daily_btc_usd",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_daily_btc_usd.csv",
+      "rows": 4104,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 19,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 4104,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 4123,
+        "stride": 1
+      },
+      "sha256": "bdc77ff9fe7267a78bbaaf39ab8903ff90a8fd3ffe1e64e45515fbb742c2ae79",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/BTC_USD_daily.csv",
+        "reader": "feature_store_csv",
+        "sha256": "186a32d3c3cfabfa854070165c1d8436eba8b47eaca0e6f0eea0305468e1d121"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the five return features the feature store already carries for this instrument, copied; rows whose window features are not yet defined are dropped and counted",
+      "features": [
+        "log_return",
+        "abs_return",
+        "vol_20",
+        "ret_20",
+        "z_score_20"
+      ],
+      "id": "fx_daily_cl",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_daily_cl.csv",
+      "rows": 5241,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 40,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 5241,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 5281,
+        "stride": 1
+      },
+      "sha256": "27c602d989618ae0d6d4f977384e6ffbf631c7b000bbb2ad136a9aafdbb946b9",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/CL_daily.csv",
+        "reader": "feature_store_csv",
+        "sha256": "b3fcbabfc5eef75a2552cd14cf66d3c7a4d18bb8217765eb3775fd32d211a084"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the five return features the feature store already carries for this instrument, copied; rows whose window features are not yet defined are dropped and counted",
+      "features": [
+        "log_return",
+        "abs_return",
+        "vol_20",
+        "ret_20",
+        "z_score_20"
+      ],
+      "id": "fx_daily_eth_usd",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_daily_eth_usd.csv",
+      "rows": 2955,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 19,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 2955,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 2974,
+        "stride": 1
+      },
+      "sha256": "6dff4d23c39994c3013ee04a26dcc30bf9dffacba2d2556450adc1345461ebc8",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/ETH_USD_daily.csv",
+        "reader": "feature_store_csv",
+        "sha256": "10036a5438d09c48b7d823ba03bc2fc1633fe287b54a56a2cf768050b02ef068"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the five return features the feature store already carries for this instrument, copied; rows whose window features are not yet defined are dropped and counted",
+      "features": [
+        "log_return",
+        "abs_return",
+        "vol_20",
+        "ret_20",
+        "z_score_20"
+      ],
+      "id": "fx_daily_eur_jpy",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_daily_eur_jpy.csv",
+      "rows": 5429,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 19,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 5429,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 5448,
+        "stride": 1
+      },
+      "sha256": "eaa12df32f85c0646c22962f7162d0d57e1a9a5d4e5501a8cfcabd49d705de32",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/EUR_JPY_daily.csv",
+        "reader": "feature_store_csv",
+        "sha256": "28e4e3321fbc534ffa40f1992a550fceac2599bb78ea91aa794d5d348f8e0d04"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the five return features the feature store already carries for this instrument, copied; rows whose window features are not yet defined are dropped and counted",
+      "features": [
+        "log_return",
+        "abs_return",
+        "vol_20",
+        "ret_20",
+        "z_score_20"
+      ],
+      "id": "fx_daily_eur_usd",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_daily_eur_usd.csv",
+      "rows": 5426,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 19,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 5426,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 5445,
+        "stride": 1
+      },
+      "sha256": "ee66add2dcbc17cf6355b2bfd08f85ae9e74d8a9f5bed2ded09488d6df3a8d5a",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/EUR_USD_daily.csv",
+        "reader": "feature_store_csv",
+        "sha256": "6f14a94eb36399c450ffc76bcbdecbf65ef563789911f15f943067ee9986db4b"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the five return features the feature store already carries for this instrument, copied; rows whose window features are not yet defined are dropped and counted",
+      "features": [
+        "log_return",
+        "abs_return",
+        "vol_20",
+        "ret_20",
+        "z_score_20"
+      ],
+      "id": "fx_daily_gbp_jpy",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_daily_gbp_jpy.csv",
+      "rows": 5442,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 19,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 5442,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 5461,
+        "stride": 1
+      },
+      "sha256": "ada84c00b1542d34d5900477db95d2917fde17e31d5c7ee5a53d845b2c38f6fc",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/GBP_JPY_daily.csv",
+        "reader": "feature_store_csv",
+        "sha256": "bddeef692a76f419b459ee4fa4f651748ddac2ce98b11e6d0aa4a212e418625f"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the five return features the feature store already carries for this instrument, copied; rows whose window features are not yet defined are dropped and counted",
+      "features": [
+        "log_return",
+        "abs_return",
+        "vol_20",
+        "ret_20",
+        "z_score_20"
+      ],
+      "id": "fx_daily_gbp_usd",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_daily_gbp_usd.csv",
+      "rows": 5438,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 19,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 5438,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 5457,
+        "stride": 1
+      },
+      "sha256": "b0d5586dc8205e2a50a4c2f5a3e7c93f8a419f020ba77a3dc0e1cef9e275b0a7",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/GBP_USD_daily.csv",
+        "reader": "feature_store_csv",
+        "sha256": "e15f30e1c6847f74a7a28fbabe2d71b9c3b9d34bb5edd533898a07d8c57f8720"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the five return features the feature store already carries for this instrument, copied; rows whose window features are not yet defined are dropped and counted",
+      "features": [
+        "log_return",
+        "abs_return",
+        "vol_20",
+        "ret_20",
+        "z_score_20"
+      ],
+      "id": "fx_daily_usd_jpy",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_daily_usd_jpy.csv",
+      "rows": 5426,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 19,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 5426,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 5445,
+        "stride": 1
+      },
+      "sha256": "452d91705bbdc5b2c40b74b69f7f5f2cad391ca45aa7c5447fca6e96823a4059",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/USD_JPY_daily.csv",
+        "reader": "feature_store_csv",
+        "sha256": "3e680e13362a1a6f1fb492ab6c574d85de0a4066b0abf77ddf406bafe4ac16e8"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the five return features the feature store already carries for this instrument, copied; rows whose window features are not yet defined are dropped and counted",
+      "features": [
+        "log_return",
+        "abs_return",
+        "vol_20",
+        "ret_20",
+        "z_score_20"
+      ],
+      "id": "fx_daily_xau_usd",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_daily_xau_usd.csv",
+      "rows": 5258,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 19,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 5258,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 5277,
+        "stride": 1
+      },
+      "sha256": "832a1b8cf189780db9d6c06f0fbe8ce554322812bdd371c5ad37dd1904f74cda",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/XAU_USD_daily.csv",
+        "reader": "feature_store_csv",
+        "sha256": "a22c866f0c46c0a10d10fc160a83ac9caf9fab2105eb01f3b97245fd1880a277"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "every hourly bar this instrument's series carries, in UTC, as the same bar geometry in pipettes; a different instrument is a different problem",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "fx_hourly_audusd",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_hourly_audusd.csv",
+      "rows": 5902,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 129844,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 129844,
+        "stride": 22
+      },
+      "sha256": "bbe91c0ee26630625baf7f51edf5aaf3a507b2939732246345f122c76790ea0b",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/audusd/1h.parquet",
+        "reader": "parquet_bars",
+        "sha256": "74ebc93e4858e909f93159ac4872ba3bc28a21c9478d36382eb379c7759d8752"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "every hourly bar this instrument's series carries, in UTC, as the same bar geometry in pipettes; a different instrument is a different problem",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "fx_hourly_eurgbp",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_hourly_eurgbp.csv",
+      "rows": 5903,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 129852,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 129852,
+        "stride": 22
+      },
+      "sha256": "8a0b393a06898043915da220879e84f3f9a469db2a8c4efe5330a0a73360cc8d",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/eurgbp/1h.parquet",
+        "reader": "parquet_bars",
+        "sha256": "a584c80adff84fdff5be829ef360e0c3ab2ece7abeb32dc0dae95445fff7ffa4"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "every hourly bar this instrument's series carries, in UTC, as the same bar geometry in pipettes; a different instrument is a different problem",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "fx_hourly_eurjpy",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_hourly_eurjpy.csv",
+      "rows": 5902,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 129842,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 129842,
+        "stride": 22
+      },
+      "sha256": "b106913d8d4f2123adb097f31e426cd883fda34d1f8fb1e2fd4a33270b7ce2cf",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/eurjpy/1h.parquet",
+        "reader": "parquet_bars",
+        "sha256": "36b2b48ffcb71bc64543e87e98359fd73fe9ec65950cbe322597e4b067e81977"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "every hourly bar this instrument's series carries, in UTC, as the same bar geometry in pipettes; a different instrument is a different problem",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "fx_hourly_gbpjpy",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_hourly_gbpjpy.csv",
+      "rows": 5900,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 129782,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 129782,
+        "stride": 22
+      },
+      "sha256": "d32f0ce53fc2b10350225b3d4eed26f11d1c3702f04449c6e86c0757b96d365c",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/gbpjpy/1h.parquet",
+        "reader": "parquet_bars",
+        "sha256": "b5dad5abfa836a319a618ef7db9cd5b5b06e117767eb8b974a9c37c510914a93"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "every hourly bar this instrument's series carries, in UTC, as the same bar geometry in pipettes; a different instrument is a different problem",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "fx_hourly_gbpusd",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_hourly_gbpusd.csv",
+      "rows": 5903,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 129852,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 129852,
+        "stride": 22
+      },
+      "sha256": "0396f4170990e9f6087c6f4a7671046efa7661e0f628268d63160fa286df0ebc",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/gbpusd/1h.parquet",
+        "reader": "parquet_bars",
+        "sha256": "1f592325c162459ccf68a5cb75df4f72a47b3c8b6430a48a67c73e206771ab88"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "every hourly bar this instrument's series carries, in UTC, as the same bar geometry in pipettes; a different instrument is a different problem",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "fx_hourly_nzdusd",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_hourly_nzdusd.csv",
+      "rows": 5994,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 125859,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 125859,
+        "stride": 21
+      },
+      "sha256": "887442921d4dc6d89225bbf93e1856fc26ca4538d92fcdc56c2a7228d6528f58",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/nzdusd/1h.parquet",
+        "reader": "parquet_bars",
+        "sha256": "e8f73febcee5f9e0ed30ac4f1d2244087d150f36478c119b81a34025904867e4"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "every hourly bar this instrument's series carries, in UTC, as the same bar geometry in pipettes; a different instrument is a different problem",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "fx_hourly_usdcad",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_hourly_usdcad.csv",
+      "rows": 5886,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 123602,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 123602,
+        "stride": 21
+      },
+      "sha256": "a73552e22f5c32e03ae5a6acefa73e171dec7b178f58f296314721d598e24475",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/usdcad/1h.parquet",
+        "reader": "parquet_bars",
+        "sha256": "30aa6d04298df0cb3dc54e292b50c29c849fbd6f3a73f1a5a5c8a646fcec7bdd"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "every hourly bar this instrument's series carries, in UTC, as the same bar geometry in pipettes; a different instrument is a different problem",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "fx_hourly_usdchf",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_hourly_usdchf.csv",
+      "rows": 5902,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 129829,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 129829,
+        "stride": 22
+      },
+      "sha256": "e28f40e08d59796707c0655166c9c6d589e8c09d01274f03aad1dc15275be3f6",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/usdchf/1h.parquet",
+        "reader": "parquet_bars",
+        "sha256": "d066d3dc64414706956d69a1659db8c651cb7fa03a51e195fdd8c66e529b22db"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "every hourly bar this instrument's series carries, in UTC, as the same bar geometry in pipettes; a different instrument is a different problem",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "fx_hourly_usdjpy",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/fx_hourly_usdjpy.csv",
+      "rows": 5903,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 129852,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 129852,
+        "stride": 22
+      },
+      "sha256": "46dd89306e3608942d2a859a31101d3cbd70389c4b5e557334131396b305a147",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/usdjpy/1h.parquet",
+        "reader": "parquet_bars",
+        "sha256": "1d93daa0a55290220a612098c427ec07e0b0996738e859288d2af91199018fd7"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "the standardised input panel of DATA.npz multiplied back by the scaler_sd and scaler_mean the same file carries, which recovers the raw column values exactly; the clock is a declared minute index from 1970-01-01T00:00:00Z at the panel's own one-minute sampling, because DATA.npz carries no absolute origin",
+      "features": [
+        "Global_reactive_power",
+        "Voltage",
+        "Global_intensity",
+        "Sub_metering_1",
+        "Sub_metering_2",
+        "Sub_metering_3",
+        "Global_active_power"
+      ],
+      "id": "household_dev_pilot",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/household_dev_pilot.csv",
+      "rows": 5600,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 1,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 50399,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 50400,
+        "stride": 9
+      },
+      "sha256": "1c0eae18aea57e88a06db0197b4075b8e94d86285cc289429a1c872d45982d8e",
+      "source": {
+        "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_dev_pilot_v1/DATA.npz",
+        "reader": "household_panel",
+        "sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    },
+    {
+      "derivation": "bar geometry in pipettes (price difference x 100000) from the file's own OPEN, HIGH, LOW and CLOSE: body = close - open, range = high - low, upper wick = high - max(open, close), lower wick = min(open, close) - low",
+      "features": [
+        "body_pipettes",
+        "range_pipettes",
+        "upper_wick_pipettes",
+        "lower_wick_pipettes"
+      ],
+      "id": "ohlc_demo_eurusd_4h",
+      "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp29recheck/corpora/ohlc_demo_eurusd_4h.csv",
+      "rows": 5772,
+      "selection": {
+        "cap": 6000,
+        "dropped_nonfinite": 0,
+        "dropped_unreadable_clock": 0,
+        "finite_rows": 28860,
+        "rule": "an evenly spaced stride over the finite rows of the source, first row included, capped at the declared row cap",
+        "source_rows": 28860,
+        "stride": 5
+      },
+      "sha256": "8aedc41251910577908bf033107228d9df70cb8851c9376586f64c77f33c285c",
+      "source": {
+        "path": "/home/harveybc/Documents/GitHub/feature-eng/tests/data/EURUSD_ForexTrading_4hrs_05.05.2003_to_16.10.2021.csv",
+        "reader": "ohlc_csv",
+        "sha256": "d18bdd94dca353756dc99032f9c2891c4a0662285234f9e6dd2b728c2f48df1d"
+      },
+      "time_column": "timestamp",
+      "time_format": "%Y-%m-%dT%H:%M:%S%z",
+      "value_decimals": 10
+    }
+  ],
+  "distinct_corpora": 28,
+  "distinct_source_files": 23,
+  "max_rows": 6000,
+  "min_rows": 320,
+  "refused": [],
+  "schema": "m5phet.corpus_inventory.v1",
+  "source_files": [
+    "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_dev_pilot_v1/DATA.npz",
+    "/home/harveybc/Documents/GitHub/feature-eng/tests/data/EURUSD_ForexTrading_4hrs_05.05.2003_to_16.10.2021.csv",
+    "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/audusd/1h.parquet",
+    "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/eurgbp/1h.parquet",
+    "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/eurjpy/1h.parquet",
+    "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/eurusd/5m.parquet",
+    "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/gbpjpy/1h.parquet",
+    "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/gbpusd/1h.parquet",
+    "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/nzdusd/1h.parquet",
+    "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/usdcad/1h.parquet",
+    "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/usdchf/1h.parquet",
+    "/home/harveybc/Documents/GitHub/financial-data/market_data/forex/g10/usdjpy/1h.parquet",
+    "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/AUD_JPY_daily.csv",
+    "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/AUD_USD_daily.csv",
+    "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/BTC_USD_daily.csv",
+    "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/CL_daily.csv",
+    "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/ETH_USD_daily.csv",
+    "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/EUR_JPY_daily.csv",
+    "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/EUR_USD_daily.csv",
+    "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/GBP_JPY_daily.csv",
+    "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/GBP_USD_daily.csv",
+    "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/USD_JPY_daily.csv",
+    "/home/harveybc/Documents/GitHub/financial-data/trading_research/feature_store/XAU_USD_daily.csv"
+  ]
+}

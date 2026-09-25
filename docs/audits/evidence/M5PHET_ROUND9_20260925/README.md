@@ -46,3 +46,31 @@ The abstention work made `m5phet.interpret` call `propose_with_confidence` on **
 implementation outside the package — feature-eng's own test doubles first. Asking an object for a method it does not
 declare is precisely the mistake this framework exists to refuse. Fixed in M5PHET `f7db7f9`: the older protocol is used
 as it is and its silence about confidence is never read as one; feature-eng is green again (465 passed).
+
+## WP29 — twenty-eight corpora, and a chooser whose answer does not depend on the state
+
+Twenty-eight corpora over twenty-three distinct source files (the household panel, the 4-hour EUR/USD fixture, six
+disjoint calendar years of the 5-minute series, nine other G10 pairs at one hour, eleven daily instruments), each with
+its own content digest; six foundation sets were excluded because their panels are byte-identical to the household one.
+Nothing fabricated.
+
+**The count, not a rate:** with the measured threshold in force, the checkpoint answered **nothing** at or above it —
+28 method questions, 28 distinct state digests, **28 abstentions**, 0 answers ≥ 0.8. The parameter question was
+therefore never put to it. Every abstention is recorded with `chosen: null` and every link refused
+`ABSTENTION_HAS_NO_OUTCOME`.
+
+**The sharper finding is how it abstained:** on all 28 corpora the head put **the same option first**
+(`agglomerative`), top probability 0.3171–0.4360 (mean 0.3730) against a chance level of 0.25 over four options, with
+the whole ordering unchanged. That is not a chooser that read the state and was unsure — it is a chooser whose answer
+does not depend on the state. Together with WP20 (0 of 4 roles) and WP21 (0 of 256 bars, same argmax throughout), that
+is three independent measurements of the same thing.
+
+**Two machinery corrections, both required and both tested:** `compare_stages` could not rank the regimes area at all
+(no metric keys), so every regimes report was `NO_NEW_MEASUREMENT` and every link would have been refused — it now
+ranks on `silhouette`, with `regime_accuracy` still refused by name and the rendering saying in words that the rank
+orders an internal index and says nothing about whether the clusters mean anything. And **a rank belongs to one
+contest**: `decide.outcome` now carries the row's corpus seal, and the report settles the winner inside each contest
+instead of refusing 28 corpora as one ambiguous election.
+
+Calibration remains `NO_NEW_MEASUREMENT`: 0 scorable of 30 required, over 28 contests. That is the honest state — the
+labels do not exist because the checkpoint declines to choose at the threshold its own calibration justifies.
