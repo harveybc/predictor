@@ -1,0 +1,52 @@
+{
+  "activation": "relu",
+  "batch_size": 256,
+  "bayesian_head": false,
+  "branches": [
+    {
+      "columns": [
+        "Global_active_power",
+        "Global_reactive_power",
+        "Voltage",
+        "Global_intensity",
+        "Sub_metering_1",
+        "Sub_metering_2",
+        "Sub_metering_3"
+      ],
+      "encoder": "tcn",
+      "name": "all"
+    }
+  ],
+  "disable_postfit_uncertainty": true,
+  "dropout_rate": 0.0,
+  "early_patience": 15,
+  "encoder_kernel_size": 3,
+  "encoder_layers": 1,
+  "encoder_units": 32,
+  "epochs": 200,
+  "feature_names": [
+    "Global_active_power",
+    "Global_reactive_power",
+    "Voltage",
+    "Global_intensity",
+    "Sub_metering_1",
+    "Sub_metering_2",
+    "Sub_metering_3"
+  ],
+  "fusion": "concat",
+  "grouping_applied": "APPLIED",
+  "head_activation": "relu",
+  "head_units": [
+    64
+  ],
+  "learning_rate": 0.001,
+  "plotted_horizon": 60,
+  "predicted_horizons": [
+    60
+  ],
+  "predictor_plugin": "fused_branches",
+  "quiet": true,
+  "seed": 4,
+  "target_column": "Global_active_power",
+  "window_size": 34
+}

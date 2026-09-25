@@ -1,0 +1,70 @@
+{
+  "derived": {
+    "holdout_fraction": 0.25,
+    "how": "the first 40320 data lines of the source file, header preserved, bytes otherwise unchanged",
+    "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp26/household_inner_outer.csv",
+    "rows": 40320,
+    "sha256": "f6fd4f62917577ad608b737538f2c1192864a08e208a6de8c59df0ce6b070e73"
+  },
+  "earlier_round": {
+    "checked": "no outer origin is an origin of the earlier seal, and the highest source row the outer population reads is 40319, below the earlier holdout's first row 40320",
+    "disjoint": true,
+    "holdout_fraction": 0.2,
+    "holdout_start_row": 40320,
+    "seal": "33820b552ddf",
+    "sealed_origins": 9824
+  },
+  "execution_authorized": false,
+  "frozen_at": "2026-09-25T18:00:00Z",
+  "inner": {
+    "first_stamp": "2009-08-23T12:45:00",
+    "last_stamp": "2009-09-13T12:44:00",
+    "row_range": [
+      0,
+      30239
+    ],
+    "rows": 30240,
+    "used_for": "fitting, the fit's own validation split, and any search; never scored on here"
+  },
+  "outer": {
+    "dropped_for_non_finite": 257,
+    "first_origin": "2009-09-13T16:01:00",
+    "first_stamp": "2009-09-13T12:45:00",
+    "horizon": 60,
+    "last_origin": "2009-09-20T11:44:00",
+    "last_stamp": "2009-09-20T12:44:00",
+    "minimum_rows": 1000,
+    "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+    "row_range": [
+      30240,
+      40319
+    ],
+    "rows": 10080,
+    "scored_by": "once per fitted stage, after the fit, never during it",
+    "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+    "seal_window": 197,
+    "sealed_at": "2026-09-25T18:00:00Z",
+    "sealed_origins": 9567
+  },
+  "rule": {
+    "outer_is_not_the_final_block": "The earlier round's seal consumes the tail (source rows 40320 .. 50399), so the final block by time is not available. The outer block is the last contiguous block BEFORE it.",
+    "residual": {
+      "code": "OUTER_ROWS_WERE_TRAINING_ROWS_OF_THE_EARLIER_ROUND",
+      "sentence": "The outer rows ranked nothing and were scored on by nothing, but the earlier round's fits did read them as TRAINING rows. The re-fits this split governs never read them at all -- the derived file's holdout begins where the outer block begins. A block untouched in every sense does not exist inside this slice, and one taken from outside it would be another file and another provenance."
+    },
+    "sentence": "Take the source slice's rows before the earlier round's holdout begins (rows 0 .. 40319); the INNER region is the first 30240 of them and the OUTER holdout is the last 10080. The outer population is every forecast origin inside the outer block whose whole 197-row sealing window and whole 60-row horizon lie inside it -- the same population rule, sealing window and horizon the earlier round declared, applied to a disjoint block.",
+    "what_that_costs": [
+      "a different week: the outer block runs 2009-09-13T12:45:00 .. 2009-09-20T12:44:00, one week earlier than the population the published 4.50 % was measured on; nothing here shows the two weeks are the same regime",
+      "less training data: the inner region holds 30240 rows against the 40320 rows the earlier fits trained on, 25 % fewer, so every number confirmed here is confirmed under a smaller fit than the one it confirms"
+    ]
+  },
+  "schema": "predictor.nested_split.v1",
+  "source": {
+    "first_stamp": "2009-08-23T12:45:00",
+    "last_stamp": "2009-09-27T12:44:00",
+    "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06/household_dev_slice.csv",
+    "rows": 50400,
+    "sha256": "72db05b9cd48005f59b7347b870b149243cac0a35725a984bbcc625624524d81"
+  },
+  "why": "WP26: the winner of the 2026-09-25 search was selected ON the population it was scored on. This split declares an outer holdout that ranked nothing, so the winner can be scored once on rows no search read as an objective."
+}

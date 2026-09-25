@@ -8,6 +8,18 @@ table**, and rebuilds the closure table and the calibration report over all of t
 the identical seal, the best by **0.024183 kW** (4.50 % of the hand error), and every one of them declares a window
 **shorter** than the hand's 60 rows. The designed candidates of stage 3 had all been longer.
 
+> **QUALIFIED 2026-09-25 (WP26) — the 4.50 % below was SELECTED ON THE SEAL it was measured on.** All 72 stages of
+> this round were scored on the one population `33820b552ddf` and the best of them was then reported, so that number
+> is a selection statistic, not a held-out one, and nothing in this round may be quoted as a generalisation result on
+> its own. **It was confirmed afterwards on rows that ranked nothing**, and the confirmation is where the
+> out-of-sample claim lives: `docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/`. On a frozen outer
+> holdout (seal `d4ac73f0adde`, 9,567 origins, disjoint from this one), `baseline_hand` and this round's top three
+> were re-fitted with five seeds each and scored once: the search's winner beats the hand window by **0.034412 kW,
+> 5.73 %**, paired 95 % t-interval over seeds **[−0.047875, −0.020948] kW**, which excludes zero. What did **not**
+> survive is the ordering inside the top three: the rank-2 stage of the table below has the lowest outer-seal mean,
+> and the three sit inside each other's seed spread. Read the 4.50 % as "a short window beat 60 on these rows", never
+> as "window 21 is the best representation".
+
 ## The objective, and what was held fixed
 
 The objective is one scalar: the **held-out mean absolute error in kW read out of the `m5phet-evaluation-report/1`

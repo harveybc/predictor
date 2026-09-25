@@ -4,6 +4,16 @@ The design job (WP06 stage 2) emitted four candidate representations for the hou
 model per candidate, scores every fit on the **same sealed holdout** the earlier stages were scored on, and rebuilds
 the closure table over all of them.
 
+> **POINTER 2026-09-25 (WP26).** Every stage of this round, and of the search round that followed it
+> (`M5PHET_WP06_STAGE5_20260925`), was scored on the single population `33820b552ddf`. That round then *selected* its
+> winner on that same population, which makes its headline 4.50 % a selection statistic rather than a held-out one.
+> The confirmation on rows that ranked nothing is in
+> `docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/`: a frozen outer holdout (seal `d4ac73f0adde`, 9,567
+> origins, disjoint from `33820b552ddf`), `baseline_hand` and the top three re-fitted with five seeds each and scored
+> once, the searched representations ahead of the hand window by 5.4–6.3 % with paired 95 % intervals over the seeds
+> that exclude zero. The negative result of *this* round — no **designed** representation beat the hand window — is
+> unaffected: it was never a selection, both designed candidates were fitted and scored once each.
+
 ## What was held fixed, and why
 
 Every candidate spec (`specs/`) differs from `baseline_hand` in the **representation and nothing else**: the same single

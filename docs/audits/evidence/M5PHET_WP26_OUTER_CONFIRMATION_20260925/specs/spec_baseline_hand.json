@@ -1,0 +1,88 @@
+{
+  "schema": "m5phet.pipeline.v1",
+  "stage": "baseline_hand",
+  "chosen_by": "HAND",
+  "why": "the representation predictor's own household configuration uses today, written as a pipeline spec so the same fitting tool can run it. Its source is the governed DEV resource e1_household_dev_pilot_v1 (DATA.json: window 60, horizon 60, the seven meter columns as ONE input block) and the design of tools/df_e1_pilot.py, whose core is 'tcn_w'. That core is native df_e1 code and is not a predictor.plugins entry point, so the closest DECLARED plugin is used here: the fusing core 'fused_branches' with a SINGLE branch holding every column and its 'tcn' encoder (dilated causal residual Conv1D blocks). What differs from the laya_chosen stage is therefore the representation and the grouping, not the plugin family.",
+  "provenance": "DEVELOPMENT",
+  "execution_authorized": false,
+  "decisions": [],
+  "features": [
+    "Global_active_power",
+    "Global_reactive_power",
+    "Voltage",
+    "Global_intensity",
+    "Sub_metering_1",
+    "Sub_metering_2",
+    "Sub_metering_3"
+  ],
+  "representation": {
+    "schema": "m5phet.representation.v1",
+    "candidate_id": "hand_household_w60",
+    "provenance": "DEVELOPMENT",
+    "target": {"column": "Global_active_power", "transform": "level"},
+    "windows": [60],
+    "lags": [1],
+    "differencing": {"order": 0},
+    "features": [],
+    "exogenous": [
+      "Global_reactive_power",
+      "Voltage",
+      "Global_intensity",
+      "Sub_metering_1",
+      "Sub_metering_2",
+      "Sub_metering_3"
+    ],
+    "calendar": {"clock": "receipt", "columns": []},
+    "sampling": {"step_seconds": 60, "timezone": "UTC"},
+    "holdout": {"fraction": 0.2},
+    "why": {
+      "windows": "60: the window the household DEV resource e1_household_dev_pilot_v1 declares (DATA.json 'window'), fixed by hand before any of this work",
+      "transform": "level: the household pilot forecasts the level of Global_active_power",
+      "lags": "none beyond the window itself; the hand configuration declares no lag features",
+      "features": "none: the hand configuration adds no calendar or derived feature"
+    }
+  },
+  "grouping": {
+    "decision": null,
+    "chosen_by": "HAND",
+    "k": 1,
+    "why": "the hand configuration feeds every meter column to one encoder; there is no grouping step in it",
+    "groups": [
+      {
+        "group_id": "all",
+        "members": [
+          "Global_active_power",
+          "Global_reactive_power",
+          "Voltage",
+          "Global_intensity",
+          "Sub_metering_1",
+          "Sub_metering_2",
+          "Sub_metering_3"
+        ]
+      }
+    ]
+  },
+  "extractors": {
+    "all": {"plugin": "HAND", "decision": null}
+  },
+  "preprocessing": {},
+  "core": {
+    "key": "fused_branches",
+    "chosen_by": "HAND",
+    "decision": null,
+    "why": "the household pilot's core is 'tcn_w' in native df_e1 code, which no predictor.plugins entry point names; the declared plugin closest to it is 'fused_branches' with one branch and its 'tcn' encoder",
+    "encoder_mapping": {
+      "core": "fused_branches",
+      "status": "MAPPED",
+      "branches": {
+        "all": {
+          "encoder": "tcn",
+          "extractor": "HAND",
+          "status": "MAPPED",
+          "mapped_by": "hand, from the household pilot's core_kind 'tcn_w'",
+          "why": "'tcn' is the dilated causal residual Conv1D family of 'fused_branches', the inline family closest to the pilot's tcn_w core"
+        }
+      }
+    }
+  }
+}

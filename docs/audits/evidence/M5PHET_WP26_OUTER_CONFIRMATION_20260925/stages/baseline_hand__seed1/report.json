@@ -1,0 +1,48 @@
+{
+  "corpus_seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+  "family": "forecast",
+  "flags": [],
+  "generated_at": "2026-09-25T17:53:05Z",
+  "horizon": "h+60",
+  "label_producer": "the electric meter record of the household power dataset, as sliced by the governed resource e1_household_dev_pilot_v1 of the CRISP-DM data foundation",
+  "label_provenance": "REALISED_OUTCOME",
+  "label_source": "household_inner_outer.csv (household DEV slice, 1-minute grid, original units)",
+  "metric_sets": [
+    {
+      "baseline": {
+        "mae": 0.6671734085920351,
+        "name": "last_value",
+        "rmse": 1.0839518703128856,
+        "rows": 9567,
+        "same_rows_as_model": true
+      },
+      "counts": {
+        "baseline_rows": 9567,
+        "declared_rows": 9567,
+        "scored_rows": 9567
+      },
+      "family": "forecast",
+      "name": "forecast",
+      "notes": [],
+      "rows_declared": 9567,
+      "values": {
+        "mae": 0.6010836775665187,
+        "rmse": 0.9226204727925836,
+        "skill_mae": 0.0990593002874447,
+        "skill_rmse": 0.14883631085366666
+      }
+    }
+  ],
+  "minimum_rows": 1000,
+  "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+  "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
+  "sealed_at": "2026-09-25T18:00:00Z",
+  "sealed_row_count": 9567,
+  "stage": "baseline_hand__seed1",
+  "statements": [
+    "Labels come from 'household_inner_outer.csv (household DEV slice, 1-minute grid, original units)', produced by 'the electric meter record of the household power dataset, as sliced by the governed resource e1_household_dev_pilot_v1 of the CRISP-DM data foundation', under provenance REALISED_OUTCOME.",
+    "Seal d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0 over 9567 rows, sealed at 2026-09-25T18:00:00Z, under protocol 48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2. A variant or prompt chosen after these scores were seen would carry this same seal, so the order is checkable."
+  ],
+  "target": "Global_active_power",
+  "version": "m5phet-evaluation-report/1"
+}

@@ -1,0 +1,538 @@
+{
+  "comparisons": {
+    "searched_0588f5747b62": {
+      "paired_over_rows": {
+        "draws": 10000,
+        "excludes_zero": true,
+        "high": -0.03321797988531228,
+        "interval": "percentile bootstrap over the sealed rows, two-sided 95 %",
+        "low": -0.04203324431323889,
+        "mean": -0.037662198538375026,
+        "n_rows": 9567,
+        "quantity": "per sealed row, the seed-averaged absolute error of this stage minus that of the reference, in kW",
+        "seed": 20260925,
+        "what_it_measures": "row-sampling uncertainty of the same difference on this outer holdout; the rows are a contiguous week of one household and are not independent, so this interval is optimistic by an amount this tool does not estimate"
+      },
+      "paired_over_seeds": {
+        "df": 4,
+        "direction": "the stage beats the reference",
+        "excludes_zero": true,
+        "high": -0.02206785848116628,
+        "interval": "Student-t, two-sided 95 %, df = seeds - 1",
+        "low": -0.05325653859558377,
+        "mean": -0.037662198538375026,
+        "n": 5,
+        "pairing": "by seed: the two stages are fitted with the same seed, the same inner rows, the same declared epochs, patience, batch size and deterministic ops; only the representation differs",
+        "sd": 0.01255943107339242,
+        "standard_error": 0.00561674832776572,
+        "t_quantile_95": 2.7764,
+        "what_it_measures": "fit-to-fit variability under THIS split and THIS outer holdout. It is not a sampling interval over datasets, weeks or households, and a seed is not a draw from a population of problems"
+      },
+      "reference": "baseline_hand"
+    },
+    "searched_b367cba9b237": {
+      "paired_over_rows": {
+        "draws": 10000,
+        "excludes_zero": true,
+        "high": -0.029039010119702165,
+        "interval": "percentile bootstrap over the sealed rows, two-sided 95 %",
+        "low": -0.03566349750899664,
+        "mean": -0.03234399480344316,
+        "n_rows": 9567,
+        "quantity": "per sealed row, the seed-averaged absolute error of this stage minus that of the reference, in kW",
+        "seed": 20260925,
+        "what_it_measures": "row-sampling uncertainty of the same difference on this outer holdout; the rows are a contiguous week of one household and are not independent, so this interval is optimistic by an amount this tool does not estimate"
+      },
+      "paired_over_seeds": {
+        "df": 4,
+        "direction": "the stage beats the reference",
+        "excludes_zero": true,
+        "high": -0.019853584218776,
+        "interval": "Student-t, two-sided 95 %, df = seeds - 1",
+        "low": -0.04483440538811029,
+        "mean": -0.032343994803443146,
+        "n": 5,
+        "pairing": "by seed: the two stages are fitted with the same seed, the same inner rows, the same declared epochs, patience, batch size and deterministic ops; only the representation differs",
+        "sd": 0.010059576118066064,
+        "standard_error": 0.004498779204965835,
+        "t_quantile_95": 2.7764,
+        "what_it_measures": "fit-to-fit variability under THIS split and THIS outer holdout. It is not a sampling interval over datasets, weeks or households, and a seed is not a draw from a population of problems"
+      },
+      "reference": "baseline_hand"
+    },
+    "searched_b373275495e2": {
+      "paired_over_rows": {
+        "draws": 10000,
+        "excludes_zero": true,
+        "high": -0.030221152863806295,
+        "interval": "percentile bootstrap over the sealed rows, two-sided 95 %",
+        "low": -0.03855031497446349,
+        "mean": -0.034411591710454444,
+        "n_rows": 9567,
+        "quantity": "per sealed row, the seed-averaged absolute error of this stage minus that of the reference, in kW",
+        "seed": 20260925,
+        "what_it_measures": "row-sampling uncertainty of the same difference on this outer holdout; the rows are a contiguous week of one household and are not independent, so this interval is optimistic by an amount this tool does not estimate"
+      },
+      "paired_over_seeds": {
+        "df": 4,
+        "direction": "the stage beats the reference",
+        "excludes_zero": true,
+        "high": -0.020948066770063535,
+        "interval": "Student-t, two-sided 95 %, df = seeds - 1",
+        "low": -0.04787511665084531,
+        "mean": -0.03441159171045442,
+        "n": 5,
+        "pairing": "by seed: the two stages are fitted with the same seed, the same inner rows, the same declared epochs, patience, batch size and deterministic ops; only the representation differs",
+        "sd": 0.01084330679422195,
+        "standard_error": 0.0048492742185531216,
+        "t_quantile_95": 2.7764,
+        "what_it_measures": "fit-to-fit variability under THIS split and THIS outer holdout. It is not a sampling interval over datasets, weeks or households, and a seed is not a draw from a population of problems"
+      },
+      "reference": "baseline_hand"
+    }
+  },
+  "execution_authorized": false,
+  "held_fixed": {
+    "batch_size": 256,
+    "core": "as each spec declares (all four declare fused_branches with the tcn encoder)",
+    "deterministic_ops": true,
+    "epochs": 200,
+    "patience": 15,
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "why": "everything but the representation and the seed is identical across stages; a hyper-parameter moved for one stage would make the difference unreadable"
+  },
+  "per_stage": {
+    "baseline_hand": {
+      "epochs_or_refusals": [
+        "OK",
+        "OK",
+        "OK",
+        "OK",
+        "OK"
+      ],
+      "mae_max": 0.6132701904697596,
+      "mae_mean": 0.6008986505532782,
+      "mae_min": 0.5910894574201758,
+      "mae_per_seed": [
+        0.6010836775665187,
+        0.5930200758533337,
+        0.6132701904697596,
+        0.606029851456603,
+        0.5910894574201758
+      ],
+      "mae_sd": 0.009188452900735132,
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "skill_mae_mean": 0.09933663000541257
+    },
+    "searched_0588f5747b62": {
+      "epochs_or_refusals": [
+        "OK",
+        "OK",
+        "OK",
+        "OK",
+        "OK"
+      ],
+      "mae_max": 0.5724213526749489,
+      "mae_mean": 0.5632364520149031,
+      "mae_min": 0.556345943624547,
+      "mae_per_seed": [
+        0.556345943624547,
+        0.5724213526749489,
+        0.561511380730086,
+        0.5639963832820023,
+        0.5619071997629316
+      ],
+      "mae_sd": 0.005855804471425413,
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "skill_mae_mean": 0.1557870191446548
+    },
+    "searched_b367cba9b237": {
+      "epochs_or_refusals": [
+        "OK",
+        "OK",
+        "OK",
+        "OK",
+        "OK"
+      ],
+      "mae_max": 0.5721387380409655,
+      "mae_mean": 0.568554655749835,
+      "mae_min": 0.5644287243960051,
+      "mae_per_seed": [
+        0.5712325883158971,
+        0.5672113323181532,
+        0.5644287243960051,
+        0.5721387380409655,
+        0.5677618956781543
+      ],
+      "mae_sd": 0.0031413876156821214,
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "skill_mae_mean": 0.14781577258949735
+    },
+    "searched_b373275495e2": {
+      "epochs_or_refusals": [
+        "OK",
+        "OK",
+        "OK",
+        "OK",
+        "OK"
+      ],
+      "mae_max": 0.5720192630618643,
+      "mae_mean": 0.5664870588428237,
+      "mae_min": 0.5634692709456065,
+      "mae_per_seed": [
+        0.5634692709456065,
+        0.5720192630618643,
+        0.567085388749024,
+        0.5640232720225783,
+        0.5658380994350456
+      ],
+      "mae_sd": 0.003411807431515373,
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "skill_mae_mean": 0.15091481232996698
+    }
+  },
+  "reference": "baseline_hand",
+  "runs": {
+    "baseline_hand": {
+      "1": {
+        "device": "gpu",
+        "device_why": "the GPU holds 770 MiB, below the declared 1536 MiB",
+        "mae": 0.6010836775665187,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/baseline_hand__seed1",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.9226204727925836,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 16.557,
+        "skill_mae": 0.0990593002874447,
+        "status": "OK"
+      },
+      "2": {
+        "device": "gpu",
+        "device_why": "the GPU holds 762 MiB, below the declared 1536 MiB",
+        "mae": 0.5930200758533337,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/baseline_hand__seed2",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.9124615719633328,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 17.96,
+        "skill_mae": 0.11114551596891487,
+        "status": "OK"
+      },
+      "3": {
+        "device": "gpu",
+        "device_why": "the GPU holds 763 MiB, below the declared 1536 MiB",
+        "mae": 0.6132701904697596,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/baseline_hand__seed3",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.952847584633215,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 18.658,
+        "skill_mae": 0.08079341506735072,
+        "status": "OK"
+      },
+      "4": {
+        "device": "gpu",
+        "device_why": "the GPU holds 768 MiB, below the declared 1536 MiB",
+        "mae": 0.606029851456603,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/baseline_hand__seed4",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.9384538383365338,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 17.662,
+        "skill_mae": 0.0916456746447164,
+        "status": "OK"
+      },
+      "5": {
+        "device": "gpu",
+        "device_why": "the GPU holds 768 MiB, below the declared 1536 MiB",
+        "mae": 0.5910894574201758,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/baseline_hand__seed5",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.9276093160811233,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 14.157,
+        "skill_mae": 0.11403924405863619,
+        "status": "OK"
+      }
+    },
+    "searched_0588f5747b62": {
+      "1": {
+        "device": "gpu",
+        "device_why": "the GPU holds 768 MiB, below the declared 1536 MiB",
+        "mae": 0.556345943624547,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_0588f5747b62__seed1",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.879223251549232,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 15.358,
+        "skill_mae": 0.16611493135101418,
+        "status": "OK"
+      },
+      "2": {
+        "device": "gpu",
+        "device_why": "the GPU holds 761 MiB, below the declared 1536 MiB",
+        "mae": 0.5724213526749489,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_0588f5747b62__seed2",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.8947577268085515,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 15.061,
+        "skill_mae": 0.14202013254252088,
+        "status": "OK"
+      },
+      "3": {
+        "device": "gpu",
+        "device_why": "the GPU holds 768 MiB, below the declared 1536 MiB",
+        "mae": 0.561511380730086,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_0588f5747b62__seed3",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.8872302823394418,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 15.152,
+        "skill_mae": 0.15837266069241618,
+        "status": "OK"
+      },
+      "4": {
+        "device": "gpu",
+        "device_why": "the GPU holds 755 MiB, below the declared 1536 MiB",
+        "mae": 0.5639963832820023,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_0588f5747b62__seed4",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.884682714950186,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 14.253,
+        "skill_mae": 0.15464798803623148,
+        "status": "OK"
+      },
+      "5": {
+        "device": "gpu",
+        "device_why": "the GPU holds 848 MiB, below the declared 1536 MiB",
+        "mae": 0.5619071997629316,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_0588f5747b62__seed5",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.8846938326474069,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 16.562,
+        "skill_mae": 0.1577793831010912,
+        "status": "OK"
+      }
+    },
+    "searched_b367cba9b237": {
+      "1": {
+        "device": "gpu",
+        "device_why": "the GPU holds 841 MiB, below the declared 1536 MiB",
+        "mae": 0.5712325883158971,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_b367cba9b237__seed1",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.8923009701120391,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 14.257,
+        "skill_mae": 0.1438019247179022,
+        "status": "OK"
+      },
+      "2": {
+        "device": "gpu",
+        "device_why": "the GPU holds 858 MiB, below the declared 1536 MiB",
+        "mae": 0.5672113323181532,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_b367cba9b237__seed2",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.889287182725549,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 14.254,
+        "skill_mae": 0.14982922728415715,
+        "status": "OK"
+      },
+      "3": {
+        "device": "gpu",
+        "device_why": "the GPU holds 888 MiB, below the declared 1536 MiB",
+        "mae": 0.5644287243960051,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_b367cba9b237__seed3",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.8932512501769151,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 15.052,
+        "skill_mae": 0.15399996893289936,
+        "status": "OK"
+      },
+      "4": {
+        "device": "gpu",
+        "device_why": "the GPU holds 890 MiB, below the declared 1536 MiB",
+        "mae": 0.5721387380409655,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_b367cba9b237__seed4",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.8904132458248742,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 14.053,
+        "skill_mae": 0.14244373250970144,
+        "status": "OK"
+      },
+      "5": {
+        "device": "gpu",
+        "device_why": "the GPU holds 892 MiB, below the declared 1536 MiB",
+        "mae": 0.5677618956781543,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_b367cba9b237__seed5",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.885684425120707,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 13.953,
+        "skill_mae": 0.14900400950282666,
+        "status": "OK"
+      }
+    },
+    "searched_b373275495e2": {
+      "1": {
+        "device": "gpu",
+        "device_why": "the GPU holds 761 MiB, below the declared 1536 MiB",
+        "mae": 0.5634692709456065,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_b373275495e2__seed1",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.892756508510208,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 13.952,
+        "skill_mae": 0.1554380559999835,
+        "status": "OK"
+      },
+      "2": {
+        "device": "gpu",
+        "device_why": "the GPU holds 755 MiB, below the declared 1536 MiB",
+        "mae": 0.5720192630618643,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_b373275495e2__seed2",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.8981560061607777,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 14.148,
+        "skill_mae": 0.14262280886011125,
+        "status": "OK"
+      },
+      "3": {
+        "device": "gpu",
+        "device_why": "the GPU holds 767 MiB, below the declared 1536 MiB",
+        "mae": 0.567085388749024,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_b373275495e2__seed3",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.8950754950954741,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 14.052,
+        "skill_mae": 0.15001799914992286,
+        "status": "OK"
+      },
+      "4": {
+        "device": "gpu",
+        "device_why": "the GPU holds 762 MiB, below the declared 1536 MiB",
+        "mae": 0.5640232720225783,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_b373275495e2__seed4",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.8924285799104981,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 15.153,
+        "skill_mae": 0.1546076855597992,
+        "status": "OK"
+      },
+      "5": {
+        "device": "gpu",
+        "device_why": "the GPU holds 767 MiB, below the declared 1536 MiB",
+        "mae": 0.5658380994350456,
+        "naive_mae": 0.6671734085920351,
+        "out": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/stages/searched_b373275495e2__seed5",
+        "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+        "rmse": 0.8908290889272082,
+        "seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+        "sealed_rows": 9567,
+        "seconds": 14.66,
+        "skill_mae": 0.15188751208001805,
+        "status": "OK"
+      }
+    }
+  },
+  "schema": "predictor.outer_confirmation.v1",
+  "split": {
+    "inner_rows": 30240,
+    "outer_origins": 9567,
+    "outer_seal": "d4ac73f0adde05d100c09e1768b388b35c557848e66141fd99d5b491e94ed0a0",
+    "path": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/nested_split.json",
+    "protocol_digest": "48b783f88f541e33ac3a2f5cf37636604a7158040a40793983c789bf354c87c2",
+    "residual": "OUTER_ROWS_WERE_TRAINING_ROWS_OF_THE_EARLIER_ROUND"
+  },
+  "stages": {
+    "baseline_hand": {
+      "spec": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/specs/spec_baseline_hand.json"
+    },
+    "searched_0588f5747b62": {
+      "spec": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/specs/spec_searched_0588f5747b62.json"
+    },
+    "searched_b367cba9b237": {
+      "spec": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/specs/spec_searched_b367cba9b237.json"
+    },
+    "searched_b373275495e2": {
+      "spec": "docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/specs/spec_searched_b373275495e2.json"
+    }
+  }
+}
