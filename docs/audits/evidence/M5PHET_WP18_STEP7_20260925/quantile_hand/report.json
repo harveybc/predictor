@@ -1,0 +1,70 @@
+{
+  "corpus_seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+  "family": "forecast",
+  "flags": [],
+  "generated_at": "2026-09-25T08:16:28Z",
+  "horizon": "h+60",
+  "label_producer": "the electric meter record of the household power dataset, as sliced by the governed resource e1_household_dev_pilot_v1 of the CRISP-DM data foundation",
+  "label_provenance": "REALISED_OUTCOME",
+  "label_source": "household_dev_slice.csv (household DEV slice, 1-minute grid, original units)",
+  "metric_sets": [
+    {
+      "baseline": {
+        "mae": 0.5993265472312703,
+        "name": "last_value",
+        "rmse": 0.9437151162739945,
+        "rows": 9824,
+        "same_rows_as_model": true
+      },
+      "counts": {
+        "baseline_rows": 9824,
+        "declared_rows": 9824,
+        "scored_rows": 9824
+      },
+      "family": "forecast",
+      "name": "forecast",
+      "notes": [],
+      "rows_declared": 9824,
+      "values": {
+        "mae": 0.5386701163737786,
+        "rmse": 0.8123321752774195,
+        "skill_mae": 0.10120764904826651,
+        "skill_rmse": 0.1392188582453836
+      }
+    },
+    {
+      "baseline": null,
+      "counts": {
+        "declared_rows": 9824,
+        "inside_rows": 8626,
+        "scored_rows": 9824
+      },
+      "family": "forecast",
+      "name": "interval_coverage",
+      "notes": [
+        "Coverage is the share of sealed rows whose realised value fell inside the fitted interval. It is a measurement of this interval on these rows and nothing else: it is not a guarantee for other rows, and a nominal level is a claim the fit makes, never one this number confirms."
+      ],
+      "rows_declared": 9824,
+      "values": {
+        "above_upper": 0.048452768729641695,
+        "below_lower": 0.07349348534201955,
+        "empirical_coverage": 0.8780537459283387,
+        "mean_interval_width": 2.4554423718117757,
+        "median_interval_width": 2.2617317095338976,
+        "nominal_level": 0.9
+      }
+    }
+  ],
+  "minimum_rows": 1000,
+  "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+  "scale": "kW (mean absolute error in kW, 60 steps of 60 s ahead)",
+  "sealed_at": "2026-09-25T00:00:00Z",
+  "sealed_row_count": 9824,
+  "stage": "quantile_hand",
+  "statements": [
+    "Labels come from 'household_dev_slice.csv (household DEV slice, 1-minute grid, original units)', produced by 'the electric meter record of the household power dataset, as sliced by the governed resource e1_household_dev_pilot_v1 of the CRISP-DM data foundation', under provenance REALISED_OUTCOME.",
+    "Seal 33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc over 9824 rows, sealed at 2026-09-25T00:00:00Z, under protocol d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4. A variant or prompt chosen after these scores were seen would carry this same seal, so the order is checkable."
+  ],
+  "target": "Global_active_power",
+  "version": "m5phet-evaluation-report/1"
+}

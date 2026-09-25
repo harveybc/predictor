@@ -21,6 +21,8 @@ setup(
             'tcn=predictor_plugins.predictor_plugin_tcn:Plugin',
             # Fusing core over several input branches (WP24; one encoder per feature group)
             'fused_branches=predictor_plugins.fused_branches:Plugin',
+            # Quantile head fitted with the pinball loss (WP07; the first graph here with a predictive distribution)
+            'quantile_ann=predictor_plugins.quantile_ann:Plugin',
             'base=predictor_plugin.predictor_plugin_base:Plugin',
             # Binary classification plugins
             'binary_ann=predictor_plugins.binary.predictor_plugin_binary_ann:Plugin',

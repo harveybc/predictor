@@ -1,0 +1,14 @@
+{
+  "above_upper": 0.048452768729641695,
+  "below_lower": 0.07349348534201955,
+  "empirical_coverage": 0.8780537459283387,
+  "mean_interval_width": 2.4554423718117757,
+  "median_interval_width": 2.2617317095338976,
+  "nominal_level": 0.9,
+  "quantile_pair": [
+    0.05,
+    0.95
+  ],
+  "rows": 9824,
+  "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc"
+}

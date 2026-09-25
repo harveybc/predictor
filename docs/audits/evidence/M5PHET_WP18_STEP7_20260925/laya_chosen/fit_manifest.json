@@ -1,0 +1,224 @@
+{
+  "branches": [
+    {
+      "columns": [
+        "Global_active_power",
+        "Global_intensity",
+        "Global_reactive_power",
+        "Sub_metering_1",
+        "Sub_metering_3",
+        "Voltage"
+      ],
+      "encoder": "dense",
+      "name": "g1"
+    },
+    {
+      "columns": [
+        "Sub_metering_2"
+      ],
+      "encoder": "dense",
+      "name": "g2"
+    }
+  ],
+  "columns": [
+    "Global_active_power",
+    "Global_reactive_power",
+    "Voltage",
+    "Global_intensity",
+    "Sub_metering_1",
+    "Sub_metering_2",
+    "Sub_metering_3"
+  ],
+  "config": {
+    "activation": "relu",
+    "batch_size": 256,
+    "bayesian_head": false,
+    "branches": [
+      {
+        "columns": [
+          "Global_active_power",
+          "Global_intensity",
+          "Global_reactive_power",
+          "Sub_metering_1",
+          "Sub_metering_3",
+          "Voltage"
+        ],
+        "encoder": "dense",
+        "name": "g1"
+      },
+      {
+        "columns": [
+          "Sub_metering_2"
+        ],
+        "encoder": "dense",
+        "name": "g2"
+      }
+    ],
+    "disable_postfit_uncertainty": true,
+    "dropout_rate": 0.0,
+    "early_patience": 15,
+    "encoder_kernel_size": 3,
+    "encoder_layers": 1,
+    "encoder_units": 32,
+    "epochs": 200,
+    "feature_names": [
+      "Global_active_power",
+      "Global_reactive_power",
+      "Voltage",
+      "Global_intensity",
+      "Sub_metering_1",
+      "Sub_metering_2",
+      "Sub_metering_3"
+    ],
+    "fusion": "concat",
+    "grouping_applied": "APPLIED",
+    "head_activation": "relu",
+    "head_units": [
+      64
+    ],
+    "learning_rate": 0.001,
+    "plotted_horizon": 60,
+    "predicted_horizons": [
+      60
+    ],
+    "predictor_plugin": "fused_branches",
+    "quiet": true,
+    "seed": 1,
+    "target_column": "Global_active_power",
+    "window_size": 197
+  },
+  "data": {
+    "holdout_start_row": 40320,
+    "non_finite_rows": 1,
+    "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/wp06/household_dev_slice.csv",
+    "rows": 50400
+  },
+  "execution_authorized": false,
+  "fitted_at": "2026-09-25T08:15:53Z",
+  "head": "point",
+  "horizons": [
+    60
+  ],
+  "numpy": "2.5.1",
+  "plugin_module": "predictor_plugins.fused_branches:Plugin",
+  "population": {
+    "dropped_for_non_finite": 0,
+    "protocol_digest": "d0ebd9a4bc7535e679705f1e0d92745cdff5cfa0e4a0dd9d3d322e14fea15df4",
+    "seal": "33820b552ddffff02b1d4aafe72266be281c94ecab85025ae55b9e2c230024fc",
+    "seal_window": 197,
+    "sealed_at": "2026-09-25T00:00:00Z",
+    "sealed_rows": 9824
+  },
+  "preprocessing": {
+    "Global_active_power": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": "c7cb869ea475658f704c280630a6166517945141df7817fe9dea210bc0d9a1bd",
+      "declared_plugin": "default_plugin",
+      "preprocessing_applied": "DECLARED_NOT_APPLIED",
+      "why": "the registered preprocessor plugins of this stack are whole-dataset pipeline stages (they trim a dataset, split it into D1-D6 and write normalisation files for a declared column order); none of them exposes a per-feature transform, and this harness has no place to apply one to a single column. The feature is fitted on the standard scaling every bundle here uses instead: per-column z-score with mean and standard deviation fitted on the TRAIN rows only"
+    },
+    "Global_intensity": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": "e476c0e711eddc60794183dc0053e09dd1c957ddb3470c26bc7c65221d515622",
+      "declared_plugin": "default_plugin",
+      "preprocessing_applied": "DECLARED_NOT_APPLIED",
+      "why": "the registered preprocessor plugins of this stack are whole-dataset pipeline stages (they trim a dataset, split it into D1-D6 and write normalisation files for a declared column order); none of them exposes a per-feature transform, and this harness has no place to apply one to a single column. The feature is fitted on the standard scaling every bundle here uses instead: per-column z-score with mean and standard deviation fitted on the TRAIN rows only"
+    },
+    "Global_reactive_power": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": "fb0ed58d925dbe065b8f552aa4e5b5fea2c746b402cb032c2a0977ac9bd72bd4",
+      "declared_plugin": "default_plugin",
+      "preprocessing_applied": "DECLARED_NOT_APPLIED",
+      "why": "the registered preprocessor plugins of this stack are whole-dataset pipeline stages (they trim a dataset, split it into D1-D6 and write normalisation files for a declared column order); none of them exposes a per-feature transform, and this harness has no place to apply one to a single column. The feature is fitted on the standard scaling every bundle here uses instead: per-column z-score with mean and standard deviation fitted on the TRAIN rows only"
+    },
+    "Sub_metering_1": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": "cf8e690674314705e200e433e3266fb0ba6764145fb96b6e3d9f012d44a25710",
+      "declared_plugin": "default_plugin",
+      "preprocessing_applied": "DECLARED_NOT_APPLIED",
+      "why": "the registered preprocessor plugins of this stack are whole-dataset pipeline stages (they trim a dataset, split it into D1-D6 and write normalisation files for a declared column order); none of them exposes a per-feature transform, and this harness has no place to apply one to a single column. The feature is fitted on the standard scaling every bundle here uses instead: per-column z-score with mean and standard deviation fitted on the TRAIN rows only"
+    },
+    "Sub_metering_2": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": "81713949e7f35218469d7e04c445f65ccfbb6ca62d342b1179dbddb9b4c078ff",
+      "declared_plugin": "default_plugin",
+      "preprocessing_applied": "DECLARED_NOT_APPLIED",
+      "why": "the registered preprocessor plugins of this stack are whole-dataset pipeline stages (they trim a dataset, split it into D1-D6 and write normalisation files for a declared column order); none of them exposes a per-feature transform, and this harness has no place to apply one to a single column. The feature is fitted on the standard scaling every bundle here uses instead: per-column z-score with mean and standard deviation fitted on the TRAIN rows only"
+    },
+    "Sub_metering_3": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": "32f04a64f62e7f562177ee7821045ddd1c6127aa9855887c34a6c07a3b3876b2",
+      "declared_plugin": "default_plugin",
+      "preprocessing_applied": "DECLARED_NOT_APPLIED",
+      "why": "the registered preprocessor plugins of this stack are whole-dataset pipeline stages (they trim a dataset, split it into D1-D6 and write normalisation files for a declared column order); none of them exposes a per-feature transform, and this harness has no place to apply one to a single column. The feature is fitted on the standard scaling every bundle here uses instead: per-column z-score with mean and standard deviation fitted on the TRAIN rows only"
+    },
+    "Voltage": {
+      "applied_instead": "train_only_per_column_zscore",
+      "decision": "2dfb9ad769acaeb736e43b6da071bb0b2fa81d70dbba5eca18ce16e6ad81fd1e",
+      "declared_plugin": "default_plugin",
+      "preprocessing_applied": "DECLARED_NOT_APPLIED",
+      "why": "the registered preprocessor plugins of this stack are whole-dataset pipeline stages (they trim a dataset, split it into D1-D6 and write normalisation files for a declared column order); none of them exposes a per-feature transform, and this harness has no place to apply one to a single column. The feature is fitted on the standard scaling every bundle here uses instead: per-column z-score with mean and standard deviation fitted on the TRAIN rows only"
+    }
+  },
+  "quantiles": null,
+  "scaler": {
+    "fitted_on": "the first 40320 rows of household_dev_slice.csv (TRAIN only; the sealed holdout is never read for it)",
+    "kind": "per_column_zscore",
+    "mean": [
+      0.9267001165703355,
+      0.16383977777226302,
+      241.12848012103598,
+      3.9818993526626603,
+      1.2409037922567523,
+      0.8666137553014708,
+      6.353059351670428
+    ],
+    "sd": [
+      0.9110952435114994,
+      0.12455246136445655,
+      2.2028354774074126,
+      3.798499268796413,
+      6.560146284228113,
+      3.6374303833265396,
+      8.400405329263549
+    ]
+  },
+  "schema": "predictor.fitted_forecast.v1",
+  "spec": {
+    "decisions": [
+      "2dfb9ad769acaeb736e43b6da071bb0b2fa81d70dbba5eca18ce16e6ad81fd1e",
+      "32f04a64f62e7f562177ee7821045ddd1c6127aa9855887c34a6c07a3b3876b2",
+      "81713949e7f35218469d7e04c445f65ccfbb6ca62d342b1179dbddb9b4c078ff",
+      "99ba1497853c554f2d61c43148824d6a34e2c4b3e212e582fee320f10d456633",
+      "ab09ba0c285346ed78612e6be2b87f3446dbb1beeb056ae6634d5e21fb5c6679",
+      "c7cb869ea475658f704c280630a6166517945141df7817fe9dea210bc0d9a1bd",
+      "cf8e690674314705e200e433e3266fb0ba6764145fb96b6e3d9f012d44a25710",
+      "d184c200eb5a8d617f7a562adb272353ea5b408839f6b8a196d391bf0e060964",
+      "e476c0e711eddc60794183dc0053e09dd1c957ddb3470c26bc7c65221d515622",
+      "fb0ed58d925dbe065b8f552aa4e5b5fea2c746b402cb032c2a0977ac9bd72bd4"
+    ],
+    "path": "docs/audits/evidence/M5PHET_ROUND4_20260925/wp18_household_pipeline_spec_laya.json",
+    "provenance": "DEVELOPMENT",
+    "representation_id": "e74ec65c03729e446ecdc03b5bfcd9515d05a97c5f497844b6042fa17014e3ac",
+    "schema": "m5phet.pipeline.v1"
+  },
+  "stage": "laya_chosen",
+  "step_seconds": 60,
+  "target": "Global_active_power",
+  "tensorflow": "2.21.0",
+  "training": {
+    "batch_size": 256,
+    "deterministic_ops": true,
+    "device": "gpu",
+    "epochs_declared": 200,
+    "epochs_run": 17,
+    "final_val_loss": 0.3823678195476532,
+    "fit_origins": 35826,
+    "loop": "keras `fit` driven by this tool with the plugin's OWN callbacks (`BaseKerasPredictor._build_callbacks`: early stopping on val_loss with restore_best_weights, and ReduceLROnPlateau). `BaseKerasPredictor.train` takes a dict of per-horizon targets, and Keras 3 does not unpack a dict for a single-output graph; this comparison declares one horizon, so the dict path is not available. Nothing about the optimiser, the loss or the callbacks differs",
+    "patience": 15,
+    "seed": 1,
+    "validation_origins": 3981
+  },
+  "wall_seconds": 15.586,
+  "window": 197
+}

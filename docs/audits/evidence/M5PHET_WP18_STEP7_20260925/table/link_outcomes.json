@@ -1,0 +1,107 @@
+{
+  "linked": [
+    {
+      "chosen": "default_plugin",
+      "kind": "feature_preprocessing",
+      "outcome": "12b6761db5b0d8d229246775a7d898335cc6c2a1a96afe4d420ed7acf2ee3a87",
+      "question": "preprocessing",
+      "record": "2dfb9ad769acaeb736e43b6da071bb0b2fa81d70dbba5eca18ce16e6ad81fd1e",
+      "stage": "laya_chosen",
+      "status": "OK"
+    },
+    {
+      "chosen": "default_plugin",
+      "kind": "feature_preprocessing",
+      "outcome": "957dbac420659d7033df6dea9593ab567c3e5aa2116443af6d14048ae69c7d09",
+      "question": "preprocessing",
+      "record": "32f04a64f62e7f562177ee7821045ddd1c6127aa9855887c34a6c07a3b3876b2",
+      "stage": "laya_chosen",
+      "status": "OK"
+    },
+    {
+      "chosen": "default_plugin",
+      "kind": "feature_preprocessing",
+      "outcome": "20ce49c911aa81d7281e2990c9b663a189a668af1c91620af1bdbbac7247a91b",
+      "question": "preprocessing",
+      "record": "81713949e7f35218469d7e04c445f65ccfbb6ca62d342b1179dbddb9b4c078ff",
+      "stage": "laya_chosen",
+      "status": "OK"
+    },
+    {
+      "chosen": "ann",
+      "kind": "group_extractor",
+      "outcome": "923b3f31a296a0472a6872ac837405147c518af854b62655b16933dd9a81682c",
+      "question": "extractor",
+      "record": "99ba1497853c554f2d61c43148824d6a34e2c4b3e212e582fee320f10d456633",
+      "stage": "laya_chosen",
+      "status": "OK"
+    },
+    {
+      "chosen": "k=2",
+      "kind": "feature_grouping",
+      "outcome": "6fa9aa82cf3f66cfdfc4518eff67009004b89194d181ce8c88d2ba409358c7ae",
+      "question": "grouping_cut",
+      "record": "ab09ba0c285346ed78612e6be2b87f3446dbb1beeb056ae6634d5e21fb5c6679",
+      "stage": "laya_chosen",
+      "status": "OK"
+    },
+    {
+      "chosen": "default_plugin",
+      "kind": "feature_preprocessing",
+      "outcome": "2fc0a449347db9e7b93c53e5f8e3454f156eefcdcfdaf47c0a82aa0a31ab9edf",
+      "question": "preprocessing",
+      "record": "c7cb869ea475658f704c280630a6166517945141df7817fe9dea210bc0d9a1bd",
+      "stage": "laya_chosen",
+      "status": "OK"
+    },
+    {
+      "chosen": "default_plugin",
+      "kind": "feature_preprocessing",
+      "outcome": "0e578cf193b83a313232c569baf5b24f1aebb0021619e27c175b947bcfbb2d62",
+      "question": "preprocessing",
+      "record": "cf8e690674314705e200e433e3266fb0ba6764145fb96b6e3d9f012d44a25710",
+      "stage": "laya_chosen",
+      "status": "OK"
+    },
+    {
+      "chosen": "default",
+      "kind": "group_extractor",
+      "outcome": "693f23da410a7851f80d1ef7a93c63cb3a1b237f4051fa6454d8079f9e97102f",
+      "question": "extractor",
+      "record": "d184c200eb5a8d617f7a562adb272353ea5b408839f6b8a196d391bf0e060964",
+      "stage": "laya_chosen",
+      "status": "OK"
+    },
+    {
+      "chosen": "default_plugin",
+      "kind": "feature_preprocessing",
+      "outcome": "f8c1fc36b828342f98c0465cddb734f1a83e81b8ab04544c398eeea75b591847",
+      "question": "preprocessing",
+      "record": "e476c0e711eddc60794183dc0053e09dd1c957ddb3470c26bc7c65221d515622",
+      "stage": "laya_chosen",
+      "status": "OK"
+    },
+    {
+      "chosen": "default_plugin",
+      "kind": "feature_preprocessing",
+      "outcome": "f6bfe21623ef295244650de6de801c4926d8740b39462a9e1c56b2b2e9f40a6f",
+      "question": "preprocessing",
+      "record": "fb0ed58d925dbe065b8f552aa4e5b5fea2c746b402cb032c2a0977ac9bd72bd4",
+      "stage": "laya_chosen",
+      "status": "OK"
+    }
+  ],
+  "refused": [],
+  "skipped_not_in_spec": [
+    {
+      "chosen": "lstm",
+      "kind": "group_extractor",
+      "record": "34e522e26e9287c74a6c0cc421af5a73e194749335d42b3f8fb493b2bceb51ba"
+    },
+    {
+      "chosen": "rnn",
+      "kind": "group_extractor",
+      "record": "c7951a3a3af50cd816aa5129f9e56d06137175dbc157f594a7961816bf853eee"
+    }
+  ]
+}

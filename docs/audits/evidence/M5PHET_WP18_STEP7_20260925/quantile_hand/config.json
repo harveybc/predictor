@@ -1,0 +1,41 @@
+{
+  "activation": "relu",
+  "batch_size": 256,
+  "bayesian_head": false,
+  "disable_postfit_uncertainty": true,
+  "dropout_rate": 0.0,
+  "early_patience": 15,
+  "encoder_kernel_size": 3,
+  "encoder_layers": 1,
+  "encoder_units": 32,
+  "epochs": 200,
+  "feature_names": [
+    "Global_active_power",
+    "Global_reactive_power",
+    "Voltage",
+    "Global_intensity",
+    "Sub_metering_1",
+    "Sub_metering_2",
+    "Sub_metering_3"
+  ],
+  "grouping_applied": "NOT_APPLICABLE_SINGLE_WINDOW_CORE",
+  "head_activation": "relu",
+  "head_units": [
+    64
+  ],
+  "learning_rate": 0.001,
+  "plotted_horizon": 60,
+  "predicted_horizons": [
+    60
+  ],
+  "predictor_plugin": "quantile_ann",
+  "quantiles": [
+    0.05,
+    0.5,
+    0.95
+  ],
+  "quiet": true,
+  "seed": 1,
+  "target_column": "Global_active_power",
+  "window_size": 60
+}
