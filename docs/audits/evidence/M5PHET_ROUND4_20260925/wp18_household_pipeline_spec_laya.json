@@ -1,0 +1,174 @@
+{
+  "as_of": "2026-09-25T06:52:06.515587+00:00",
+  "catalogs": {
+    "core": [],
+    "extractor": [
+      "default",
+      "ann",
+      "rnn",
+      "transformer",
+      "lstm",
+      "cnn",
+      "cnn_signed",
+      "vae",
+      "vae_small"
+    ],
+    "preprocessing": [
+      "default_preprocessor",
+      "stl_preprocessor",
+      "default_plugin",
+      "normalizer",
+      "unbiaser",
+      "trimmer",
+      "feature_selector",
+      "cleaner"
+    ]
+  },
+  "core": {
+    "decision": null,
+    "plan": "a fusing core has to be added to predictor as a new predictor.plugins entry point (one Input per group branch, a declared fusion, then the existing multi-horizon heads) and the probe re-run; that work is not part of WP18 steps 2-6",
+    "plugin": "NOT_AVAILABLE_MULTI_BRANCH",
+    "why": "every declared predictor.plugins core was probed and none builds a Keras model with two or more inputs from two branches, so there is nothing to choose between"
+  },
+  "decisions": [
+    "2dfb9ad769acaeb736e43b6da071bb0b2fa81d70dbba5eca18ce16e6ad81fd1e",
+    "32f04a64f62e7f562177ee7821045ddd1c6127aa9855887c34a6c07a3b3876b2",
+    "34e522e26e9287c74a6c0cc421af5a73e194749335d42b3f8fb493b2bceb51ba",
+    "81713949e7f35218469d7e04c445f65ccfbb6ca62d342b1179dbddb9b4c078ff",
+    "ab09ba0c285346ed78612e6be2b87f3446dbb1beeb056ae6634d5e21fb5c6679",
+    "c7951a3a3af50cd816aa5129f9e56d06137175dbc157f594a7961816bf853eee",
+    "c7cb869ea475658f704c280630a6166517945141df7817fe9dea210bc0d9a1bd",
+    "cf8e690674314705e200e433e3266fb0ba6764145fb96b6e3d9f012d44a25710",
+    "e476c0e711eddc60794183dc0053e09dd1c957ddb3470c26bc7c65221d515622",
+    "fb0ed58d925dbe065b8f552aa4e5b5fea2c746b402cb032c2a0977ac9bd72bd4"
+  ],
+  "execution_authorized": false,
+  "extractors": {
+    "g1": {
+      "decision": "c7951a3a3af50cd816aa5129f9e56d06137175dbc157f594a7961816bf853eee",
+      "plugin": "rnn"
+    },
+    "g2": {
+      "decision": "34e522e26e9287c74a6c0cc421af5a73e194749335d42b3f8fb493b2bceb51ba",
+      "plugin": "lstm"
+    }
+  },
+  "features": [
+    "Global_active_power",
+    "Global_intensity",
+    "Global_reactive_power",
+    "Sub_metering_1",
+    "Sub_metering_2",
+    "Sub_metering_3",
+    "Voltage"
+  ],
+  "fitted": false,
+  "grouping": {
+    "decision": "ab09ba0c285346ed78612e6be2b87f3446dbb1beeb056ae6634d5e21fb5c6679",
+    "groups": [
+      {
+        "group_id": "g1",
+        "members": [
+          "Global_active_power",
+          "Global_intensity",
+          "Global_reactive_power",
+          "Sub_metering_1",
+          "Sub_metering_3",
+          "Voltage"
+        ]
+      },
+      {
+        "group_id": "g2",
+        "members": [
+          "Sub_metering_2"
+        ]
+      }
+    ],
+    "k": 2
+  },
+  "note": "a configuration chosen by an uncalibrated chooser; nothing in it has been fitted, scored or authorized, and the closure table of WP18 step 7 is what judges it",
+  "preprocessing": {
+    "Global_active_power": {
+      "decision": "c7cb869ea475658f704c280630a6166517945141df7817fe9dea210bc0d9a1bd",
+      "plugin": "default_plugin"
+    },
+    "Global_intensity": {
+      "decision": "e476c0e711eddc60794183dc0053e09dd1c957ddb3470c26bc7c65221d515622",
+      "plugin": "default_plugin"
+    },
+    "Global_reactive_power": {
+      "decision": "fb0ed58d925dbe065b8f552aa4e5b5fea2c746b402cb032c2a0977ac9bd72bd4",
+      "plugin": "default_plugin"
+    },
+    "Sub_metering_1": {
+      "decision": "cf8e690674314705e200e433e3266fb0ba6764145fb96b6e3d9f012d44a25710",
+      "plugin": "default_plugin"
+    },
+    "Sub_metering_2": {
+      "decision": "81713949e7f35218469d7e04c445f65ccfbb6ca62d342b1179dbddb9b4c078ff",
+      "plugin": "default_plugin"
+    },
+    "Sub_metering_3": {
+      "decision": "32f04a64f62e7f562177ee7821045ddd1c6127aa9855887c34a6c07a3b3876b2",
+      "plugin": "default_plugin"
+    },
+    "Voltage": {
+      "decision": "2dfb9ad769acaeb736e43b6da071bb0b2fa81d70dbba5eca18ce16e6ad81fd1e",
+      "plugin": "default_plugin"
+    }
+  },
+  "provenance": "DEVELOPMENT",
+  "representation": {
+    "calendar": {
+      "clock": "receipt",
+      "columns": []
+    },
+    "candidate_id": "short_memory",
+    "differencing": {
+      "order": 0
+    },
+    "exogenous": [
+      "Global_intensity",
+      "Global_reactive_power",
+      "Sub_metering_1",
+      "Sub_metering_2",
+      "Sub_metering_3",
+      "Voltage"
+    ],
+    "features": [],
+    "holdout": {
+      "fraction": 0.2
+    },
+    "lags": [
+      1,
+      197
+    ],
+    "not_decided": {
+      "calendar.clock": "a file of timestamps cannot say whether they are a publication clock or a receipt clock; 'receipt' is written so the spec validates and a person must confirm it (--clock)",
+      "exogenous": "the other numeric columns are offered as names only; whether each is available at prediction time is not a property of this file",
+      "holdout": "the cut is a decision about what must stay unseen, which no test on the data can make; {\"fraction\": 0.2} is a convention, not a measurement",
+      "sampling.timezone": "the timestamps carry no offset, so 'UTC' is what --timezone declared, not what was read"
+    },
+    "provenance": "DEVELOPMENT",
+    "sampling": {
+      "step_seconds": 60,
+      "timezone": "UTC"
+    },
+    "schema": "m5phet.representation.v1",
+    "target": {
+      "column": "Global_active_power",
+      "transform": "level"
+    },
+    "why": {
+      "features": "none: no periodic peak motivates a calendar feature in this candidate",
+      "lags": "lag 1 always, and the decay lag 197 as the last lag still outside the band",
+      "transform": "level: the stationarity verdict is STATIONARY (adf+kpss agree)",
+      "windows": "the autocorrelation of the levels falls inside the +-0.011206 band at lag 197 -> window 197"
+    },
+    "windows": [
+      197
+    ]
+  },
+  "representation_id": "e74ec65c03729e446ecdc03b5bfcd9515d05a97c5f497844b6042fa17014e3ac",
+  "schema": "m5phet.pipeline.v1"
+}

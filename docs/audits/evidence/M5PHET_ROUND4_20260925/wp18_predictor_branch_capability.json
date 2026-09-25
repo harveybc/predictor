@@ -1,0 +1,239 @@
+{
+  "group": "predictor.plugins",
+  "multi_branch": [],
+  "note": "a MULTI_BRANCH verdict says the model builds, not that it is any good; a NOT_PROBED plugin is not offered as an option, because an unknown capability is not a declared one",
+  "probe": {
+    "attempts": [
+      "list_of_shapes",
+      "tuple_of_shapes",
+      "mapping_of_shapes"
+    ],
+    "branch_channels": [
+      3,
+      2
+    ],
+    "config": {
+      "batch_size": 4,
+      "epochs": 1,
+      "hidden_units": 8,
+      "initial_layer_size": 8,
+      "intermediate_layers": 1,
+      "mc_samples": 2,
+      "num_hidden_layers": 1,
+      "predicted_horizons": [
+        1
+      ]
+    },
+    "device": "CPU (CUDA_VISIBLE_DEVICES is empty)",
+    "python": "3.12.7",
+    "question": "does this plugin build a Keras model with two or more inputs when handed two input branches?",
+    "tensorflow": "2.18.0",
+    "verdicts_declared": [
+      "MULTI_BRANCH",
+      "SINGLE_BRANCH_ONLY",
+      "NOT_PROBED"
+    ],
+    "window": 8
+  },
+  "probed_on": "2026-09-25",
+  "registry": "predictor/setup.py",
+  "schema": "m5phet.branch_capability.v1",
+  "verdicts": {
+    "ann": {
+      "entry_point": "ann",
+      "inputs": 1,
+      "target": "predictor_plugins.predictor_plugin_ann:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "base": {
+      "entry_point": "base",
+      "inputs": null,
+      "target": "predictor_plugin.predictor_plugin_base:Plugin",
+      "verdict": "NOT_PROBED",
+      "why": "the module could not be imported: ModuleNotFoundError: No module named 'predictor_plugin'"
+    },
+    "binary_ann": {
+      "entry_point": "binary_ann",
+      "inputs": 1,
+      "target": "predictor_plugins.binary.predictor_plugin_binary_ann:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "binary_cnn": {
+      "entry_point": "binary_cnn",
+      "inputs": 1,
+      "target": "predictor_plugins.binary.predictor_plugin_binary_cnn:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "binary_logistic": {
+      "entry_point": "binary_logistic",
+      "inputs": 1,
+      "target": "predictor_plugins.binary.predictor_plugin_binary_logistic:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "binary_lstm": {
+      "entry_point": "binary_lstm",
+      "inputs": 1,
+      "target": "predictor_plugins.binary.predictor_plugin_binary_lstm:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "binary_mimo": {
+      "entry_point": "binary_mimo",
+      "inputs": 1,
+      "target": "predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "binary_n_beats": {
+      "entry_point": "binary_n_beats",
+      "inputs": 1,
+      "target": "predictor_plugins.binary.predictor_plugin_binary_n_beats:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: TypeError: can't multiply sequence by non-int of type 'tuple' | tuple_of_shapes: TypeError: can't multiply sequence by non-int of type 'tuple' | mapping_of_shapes: TypeError: can't multiply sequence by non-int of type 'str'"
+    },
+    "binary_tcn": {
+      "entry_point": "binary_tcn",
+      "inputs": 1,
+      "target": "predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "binary_tft": {
+      "entry_point": "binary_tft",
+      "inputs": 1,
+      "target": "predictor_plugins.binary.predictor_plugin_binary_tft:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "binary_transformer": {
+      "entry_point": "binary_transformer",
+      "inputs": 1,
+      "target": "predictor_plugins.binary.predictor_plugin_binary_transformer:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "cnn": {
+      "entry_point": "cnn",
+      "inputs": null,
+      "target": "predictor_plugins.predictor_plugin_cnn:Plugin",
+      "verdict": "NOT_PROBED",
+      "why": "neither branches nor one tensor could be built here, so this plugin's branch capability is unknown; the one-tensor control raised SystemExit: 1"
+    },
+    "default_predictor": {
+      "entry_point": "default_predictor",
+      "inputs": 1,
+      "target": "predictor_plugins.predictor_plugin_ann:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "direction_ann": {
+      "entry_point": "direction_ann",
+      "inputs": 1,
+      "target": "predictor_plugins.direction.predictor_plugin_direction_ann:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "direction_cnn": {
+      "entry_point": "direction_cnn",
+      "inputs": 1,
+      "target": "predictor_plugins.direction.predictor_plugin_direction_cnn:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "direction_logistic": {
+      "entry_point": "direction_logistic",
+      "inputs": 1,
+      "target": "predictor_plugins.direction.predictor_plugin_direction_logistic:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "direction_lstm": {
+      "entry_point": "direction_lstm",
+      "inputs": 1,
+      "target": "predictor_plugins.direction.predictor_plugin_direction_lstm:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "direction_mimo": {
+      "entry_point": "direction_mimo",
+      "inputs": 1,
+      "target": "predictor_plugins.direction.predictor_plugin_direction_mimo:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "direction_n_beats": {
+      "entry_point": "direction_n_beats",
+      "inputs": 1,
+      "target": "predictor_plugins.direction.predictor_plugin_direction_n_beats:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: TypeError: can't multiply sequence by non-int of type 'tuple' | tuple_of_shapes: TypeError: can't multiply sequence by non-int of type 'tuple' | mapping_of_shapes: TypeError: can't multiply sequence by non-int of type 'str'"
+    },
+    "direction_tcn": {
+      "entry_point": "direction_tcn",
+      "inputs": 1,
+      "target": "predictor_plugins.direction.predictor_plugin_direction_tcn:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "direction_tft": {
+      "entry_point": "direction_tft",
+      "inputs": 1,
+      "target": "predictor_plugins.direction.predictor_plugin_direction_tft:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "direction_transformer": {
+      "entry_point": "direction_transformer",
+      "inputs": 1,
+      "target": "predictor_plugins.direction.predictor_plugin_direction_transformer:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "lstm": {
+      "entry_point": "lstm",
+      "inputs": 1,
+      "target": "predictor_plugins.predictor_plugin_lstm:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "mimo": {
+      "entry_point": "mimo",
+      "inputs": 1,
+      "target": "predictor_plugins.predictor_plugin_mimo:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "n_beats": {
+      "entry_point": "n_beats",
+      "inputs": 1,
+      "target": "predictor_plugins.predictor_plugin_n_beats:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: TypeError: can't multiply sequence by non-int of type 'tuple' | tuple_of_shapes: TypeError: can't multiply sequence by non-int of type 'tuple' | mapping_of_shapes: TypeError: can't multiply sequence by non-int of type 'str'"
+    },
+    "tcn": {
+      "entry_point": "tcn",
+      "inputs": 1,
+      "target": "predictor_plugins.predictor_plugin_tcn:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "tft": {
+      "entry_point": "tft",
+      "inputs": 1,
+      "target": "predictor_plugins.predictor_plugin_tft:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    },
+    "transformer": {
+      "entry_point": "transformer",
+      "inputs": 1,
+      "target": "predictor_plugins.predictor_plugin_transformer:Plugin",
+      "verdict": "SINGLE_BRANCH_ONLY",
+      "why": "the one-tensor control built a model with 1 input(s) while every two-branch attempt failed: list_of_shapes: ValueError: Invalid dtype: tuple | tuple_of_shapes: ValueError: Invalid dtype: tuple | mapping_of_shapes: ValueError: Cannot convert '('group_0', 'group_1')' to a shape. Found invalid entry 'group_0' of type '<class 'str'>'. "
+    }
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "areas": [
+    {
+      "area": "regimes",
+      "bound_by_seal": [],
+      "orientation": "score",
+      "reference_stage": null,
+      "refusal_reason": "an unsupervised assignment has no ground truth: cluster identities are arbitrary and no row carries a correct regime, so agreement between two assignments is stability, never correctness. If independently produced regime labels exist, declare them in the protocol and score them as a classification",
+      "refused_metric": "regime_accuracy",
+      "rows": [
+        {
+          "area": "regimes",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "conditions": {
+            "corpus_seal": "94bf06df7b411684d778740dfbcf46491b2b5f8e393016a5749892c00941b121",
+            "flags": [
+              "AUTHOR_WRITTEN_SMOKE"
+            ],
+            "label_provenance": "AUTHOR_WRITTEN_SMOKE",
+            "label_source": "NOT_CARRIED",
+            "minimum_rows": 32,
+            "protocol_digest": "196e1cd9834512a0b98efdd7cdca7612062bd1a662de8fcfa38a18949058294c",
+            "report_file": "report_hand_baseline.json",
+            "report_generated_at": "2026-09-25T06:54:36Z",
+            "scored_rows": 10080,
+            "sealed_at": "2026-09-25T06:54:36Z",
+            "sealed_row_count": 10080
+          },
+          "horizon": "NOT_CARRIED",
+          "literature": {
+            "metric": "NOT_CARRIED",
+            "scale": "NOT_CARRIED",
+            "source": "NOT_CARRIED",
+            "value": "NOT_CARRIED"
+          },
+          "metric": "regime_accuracy (refused)",
+          "model_error": null,
+          "naive": {
+            "error": "NOT_CARRIED",
+            "name": "NOT_CARRIED",
+            "note": null,
+            "same_rows_as_model": false
+          },
+          "orientation": "score",
+          "rank": null,
+          "reason": "regime_accuracy is refused by this package: an unsupervised assignment has no ground truth: cluster identities are arbitrary and no row carries a correct regime, so agreement between two assignments is stability, never correctness. If independently produced regime labels exist, declare them in the protocol and score them as a classification. The report carries what this area can report; none of it is a quality claim.",
+          "refusal": {
+            "metric": "regime_accuracy",
+            "reason": "an unsupervised assignment has no ground truth: cluster identities are arbitrary and no row carries a correct regime, so agreement between two assignments is stability, never correctness. If independently produced regime labels exist, declare them in the protocol and score them as a classification"
+          },
+          "scale": "NOT_CARRIED",
+          "skill": null,
+          "skill_source": "NOT_DEFINED: regime_accuracy is refused by name",
+          "source": "report_hand_baseline.json",
+          "stage": "hand_baseline",
+          "status": "NO_NEW_MEASUREMENT",
+          "target": "NOT_CARRIED"
+        },
+        {
+          "area": "regimes",
+          "comparability": "NO_NEW_MEASUREMENT",
+          "conditions": {
+            "corpus_seal": "94bf06df7b411684d778740dfbcf46491b2b5f8e393016a5749892c00941b121",
+            "flags": [
+              "AUTHOR_WRITTEN_SMOKE"
+            ],
+            "label_provenance": "AUTHOR_WRITTEN_SMOKE",
+            "label_source": "NOT_CARRIED",
+            "minimum_rows": 32,
+            "protocol_digest": "196e1cd9834512a0b98efdd7cdca7612062bd1a662de8fcfa38a18949058294c",
+            "report_file": "report_laya_chosen.json",
+            "report_generated_at": "2026-09-25T06:54:33Z",
+            "scored_rows": 10080,
+            "sealed_at": "2026-09-25T06:54:33Z",
+            "sealed_row_count": 10080
+          },
+          "horizon": "NOT_CARRIED",
+          "literature": {
+            "metric": "NOT_CARRIED",
+            "scale": "NOT_CARRIED",
+            "source": "NOT_CARRIED",
+            "value": "NOT_CARRIED"
+          },
+          "metric": "regime_accuracy (refused)",
+          "model_error": null,
+          "naive": {
+            "error": "NOT_CARRIED",
+            "name": "NOT_CARRIED",
+            "note": null,
+            "same_rows_as_model": false
+          },
+          "orientation": "score",
+          "rank": null,
+          "reason": "regime_accuracy is refused by this package: an unsupervised assignment has no ground truth: cluster identities are arbitrary and no row carries a correct regime, so agreement between two assignments is stability, never correctness. If independently produced regime labels exist, declare them in the protocol and score them as a classification. The report carries what this area can report; none of it is a quality claim.",
+          "refusal": {
+            "metric": "regime_accuracy",
+            "reason": "an unsupervised assignment has no ground truth: cluster identities are arbitrary and no row carries a correct regime, so agreement between two assignments is stability, never correctness. If independently produced regime labels exist, declare them in the protocol and score them as a classification"
+          },
+          "scale": "NOT_CARRIED",
+          "skill": null,
+          "skill_source": "NOT_DEFINED: regime_accuracy is refused by name",
+          "source": "report_laya_chosen.json",
+          "stage": "laya_chosen",
+          "status": "NO_NEW_MEASUREMENT",
+          "target": "NOT_CARRIED"
+        }
+      ]
+    }
+  ],
+  "computed_here": [
+    "skill (only where the report carries none)",
+    "comparability verdicts",
+    "rank"
+  ],
+  "decimals": 6,
+  "inputs": [
+    {
+      "area": "regimes",
+      "corpus_seal": "94bf06df7b411684d778740dfbcf46491b2b5f8e393016a5749892c00941b121",
+      "protocol_digest": "196e1cd9834512a0b98efdd7cdca7612062bd1a662de8fcfa38a18949058294c",
+      "report_file": "report_hand_baseline.json",
+      "report_generated_at": "2026-09-25T06:54:36Z",
+      "stage": "hand_baseline"
+    },
+    {
+      "area": "regimes",
+      "corpus_seal": "94bf06df7b411684d778740dfbcf46491b2b5f8e393016a5749892c00941b121",
+      "protocol_digest": "196e1cd9834512a0b98efdd7cdca7612062bd1a662de8fcfa38a18949058294c",
+      "report_file": "report_laya_chosen.json",
+      "report_generated_at": "2026-09-25T06:54:33Z",
+      "stage": "laya_chosen"
+    }
+  ],
+  "read_from_reports": [
+    "model error",
+    "metric",
+    "scale",
+    "target",
+    "horizon",
+    "naive reference and its error",
+    "skill where the scorer computed it",
+    "literature value and source",
+    "conditions"
+  ],
+  "report_version": "m5phet-evaluation-report/1",
+  "stages": [
+    "hand_baseline",
+    "laya_chosen"
+  ],
+  "version": "m5phet-evaluation-stage-comparison/1"
+}
