@@ -1,11 +1,218 @@
 {
- "schema": "withdrawn_artifact_placeholder.v1",
+ "arms_derived": {
+  "daily_lag": {
+   "crop": null,
+   "depth_blocks": 5,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "features": "daily_lag",
+   "parameters": 8208,
+   "raw_window": 60,
+   "receptive_field_samples": 63,
+   "role": "ARM",
+   "train_days": 28,
+   "usable_context_samples": 60,
+   "window_after_crop": 60
+  },
+  "long_window_crop60": {
+   "crop": 60,
+   "depth_blocks": 5,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "features": "base",
+   "parameters": 8127,
+   "raw_window": 1440,
+   "receptive_field_samples": 63,
+   "role": "EXACT_INFORMATION_NULL: the raw input is cropped to its last 60 rows before the extractor",
+   "train_days": 28,
+   "usable_context_samples": 60,
+   "window_after_crop": 60
+  },
+  "long_window_local_support_67": {
+   "crop": null,
+   "depth_blocks": 5,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "features": "base",
+   "parameters": 8127,
+   "raw_window": 1440,
+   "receptive_field_samples": 63,
+   "role": "EXTRA_CONTEXT_67_SAMPLES (measured): NOT a null; the clamped core still reaches branch 5 + core 63 - 1 = 67 raw samples",
+   "train_days": 28,
+   "usable_context_samples": 63,
+   "window_after_crop": 1440
+  },
+  "long_window_own_depth": {
+   "crop": null,
+   "depth_blocks": 10,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512
+   ],
+   "features": "base",
+   "parameters": 12047,
+   "raw_window": 1440,
+   "receptive_field_samples": 2047,
+   "role": "ARM",
+   "train_days": 28,
+   "usable_context_samples": 1440,
+   "window_after_crop": 1440
+  },
+  "modular_w60": {
+   "crop": null,
+   "depth_blocks": 5,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16
+   ],
+   "features": "base",
+   "parameters": 8127,
+   "raw_window": 60,
+   "receptive_field_samples": 63,
+   "role": "ARM",
+   "train_days": 28,
+   "usable_context_samples": 60,
+   "window_after_crop": 60
+  },
+  "short_window_deep_core": {
+   "crop": null,
+   "depth_blocks": 10,
+   "dilations": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512
+   ],
+   "features": "base",
+   "parameters": 12047,
+   "raw_window": 60,
+   "receptive_field_samples": 2047,
+   "role": "ARM",
+   "train_days": 28,
+   "usable_context_samples": 60,
+   "window_after_crop": 60
+  }
+ },
  "block": "Q2_CONTEXT_DEEP",
- "what_stood_here": "the v1 sealed design of this block (and, for EXTENSION_SEAL.json, the crossing record that quoted it verbatim)",
- "withdrawn_design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
- "reason": "WITHDRAWN_FOR_CARRYING_A_MACHINE_HOST_NAME",
- "why_the_bytes_are_not_here": "the withdrawn body named the coordinator machine by its host name. AGENTS.md and the owner's standing rule forbid a machine host name in this repository, so the bytes are served nowhere on this branch, at any commit. The withdrawn design is identified by its digest, which is enough to prove what was withdrawn and to detect any copy of it",
- "superseding_design_sha256": "27ed712d88e0b1a84a3a7d48d5a8dcd899274389f8cc7341df196705dbb0300d",
- "read_instead": "docs/audits/evidence/E1_Q2_CONTEXT_DEEP_20260926/SEAL_WITHDRAWAL.json (at this branch's tip): why v1 was withdrawn, how v2 differs from it leaf by leaf, and the binding of the twelve landed fits",
- "history_note": "this branch's five commits were rebuilt on 2026-09-26 for this reason. Nothing else in any of their trees was changed except one sentence of tools/df_e1_block.py and one of FOOTPRINT_BASIS.json, which carried the same name"
+ "common_evaluation_rule": "the intersection over the block's arms of admissible validation origins, with a finite label and a finite daily lookup, derived at prepare BEFORE any score; every arm scores on it",
+ "contrasts_declared_before_any_score": {
+  "causal_channel": "daily_lag - modular_w60",
+  "context_at_matched_depth_10": "long_window_own_depth - short_window_deep_core",
+  "context_at_matched_depth_5": "long_window_local_support_67 - modular_w60",
+  "depth_at_matched_context_1440": "long_window_own_depth - long_window_local_support_67",
+  "depth_at_matched_context_60": "short_window_deep_core - modular_w60",
+  "exact_information_null": "long_window_crop60 - modular_w60, expected 0 by RP87 and measured, not assumed",
+  "interaction": "(long_window_own_depth - short_window_deep_core) - (long_window_local_support_67 - modular_w60)",
+  "pairing": "every contrast is taken WITHIN a seed and then reported per seed with its sign count; no interval is claimed from n = 3 and a direction is never called an effect on n = 3",
+  "volume": "held fixed BY CONSTRUCTION: one COMMON_INTERSECTION train origin set for every arm"
+ },
+ "crossing_window_x_depth": {
+  "window_1440__depth_10": [
+   "long_window_own_depth"
+  ],
+  "window_1440__depth_5": [
+   "long_window_local_support_67"
+  ],
+  "window_60__depth_10": [
+   "short_window_deep_core"
+  ],
+  "window_60__depth_5": [
+   "modular_w60"
+  ]
+ },
+ "design_sha256": "27ed712d88e0b1a84a3a7d48d5a8dcd899274389f8cc7341df196705dbb0300d",
+ "extends": {
+  "block": "Q2_CONTEXT_BOUNDED",
+  "design_sha256": "47a270eec01f203cdde2812deb1458db525e86d762c2b17f2b79a2ba571e17ea",
+  "what_is_added": [
+   "long_window_local_support_67",
+   "long_window_own_depth"
+  ],
+  "what_is_refitted": "all six arms, under one budget, so no arm is compared across budgets"
+ },
+ "informed_by": "SEALED BEFORE ANY SCORE OF ANY CELL OF THIS BLOCK. It extends Q2_CONTEXT_BOUNDED (design 47a270eec01f203cdde2812deb1458db525e86d762c2b17f2b79a2ba571e17ea, twelve fits, four arms) with the two W1440 FULL-DEPTH arms that block declared it could not hold, and it refits ALL six arms under one budget so no arm is compared across budgets. The ceiling is 600 observed updates instead of 4 000, and that number comes from the RETAINED cost pilots' own measured rates on the coordinator host and from nothing else: long_window_own_depth 4.165 CPU s per train update and 8 458 399 744 B peak RSS, long_window_local_support_67 4.4427 CPU s per update and 10 279 276 544 B peak RSS, modular_w60 0.0390, daily_lag 0.0392, long_window_crop60 0.0410 and short_window_deep_core 0.0710 CPU s per update with peak RSS under 1 GiB. At the 4 000-update ceiling the two deep arms would cost 17 507 s and 18 406 s of CPU PER CELL (about 30 CPU hours and roughly 19 h of wall for their six cells) and hold 7.9 and 9.6 GiB resident; at 600 updates they cost about 2 630 s and 2 760 s per cell. The reduction is a RESOURCE declaration made when no cell of this block had a score, never a removal or a re-budgeting after a score was seen (reading rule 3). Its cost is stated in the question field: every cell of every arm is CENSORED_BY_BUDGET and the block carries the UNDERTRAINED_AT_CEILING rule to say so per arm. No arm, seed, recipe field other than max_updates, scaler, row, cadence, monitor, patience or metric of Q2_CONTEXT_BOUNDED is otherwise changed",
+ "limits": {
+  "campaign_cpu_seconds": 32400,
+  "child_cpu_seconds": 5400,
+  "child_wall_seconds": 7200,
+  "closure_reserve_seconds": 2000,
+  "parallel_children": 1,
+  "why": "one cell resident at a time (parallel_children 1) because a single W1440 full-depth cell holds 7.9-9.6 GiB; the per-child CPU and wall ceilings are 1.9x and 2.6x the projected cost of the most expensive cell at this update ceiling, so a slower host loses no cell to a resource kill; the campaign ceiling covers the 18 fits, the 6 cost pilots, the closure and its reserve with headroom"
+ },
+ "question": "context beyond the hour, SEPARATED from receiver depth and from train volume, at a MATCHED update budget. Volume is held fixed BY CONSTRUCTION: train_population COMMON_INTERSECTION, so every arm trains on the SAME origins. The crossing is raw input window {60, 1440} x causal core depth {5 dilated blocks, 10 dilated blocks}: (60,5) modular_w60, (60,10) short_window_deep_core, (1440,5) long_window_local_support_67, (1440,10) long_window_own_depth, with long_window_crop60 as the exact-information null and daily_lag as the causal daily-lag channel. WHAT IT CANNOT SEPARATE, declared before any score: in this architecture family the receptive field is 1 + 2*sum(dilations), so a raw window longer than 67 samples is only USED when depth grows; the (1440,5) cell carries the long window's padding and 67 samples of reach, NOT 1440 samples of information, and context beyond 67 samples is confounded with depth BY CONSTRUCTION of the family. Only the depth-10 row can carry long context, so the context contrast at matched depth and matched volume is long_window_own_depth - short_window_deep_core, and the depth contrast at matched context is short_window_deep_core - modular_w60 and long_window_own_depth - long_window_local_support_67. SECOND DECLARED LIMIT: every cell is fitted to a ceiling of 600 observed updates, so every cell is CENSORED_BY_BUDGET wherever its best checkpoint fell; an arm whose validation MAE_z improved by more than 0.005 over its last 200 updates in 2 or more of its 3 seeds is UNDERTRAINED_AT_CEILING and its contrast is NOT read as a context or depth effect",
+ "reading_rules": [
+  "three seeds on one task are development evidence",
+  "a fit that reached the update ceiling is CENSORED wherever its best checkpoint fell",
+  "no cell is removed after its score is seen",
+  "a published number under another protocol never enters the comparison column"
+ ],
+ "recipe": {
+  "batch": 64,
+  "budget_declaration": "600 observed updates, not the 4 000 of Q2_CONTEXT_BOUNDED, chosen BEFORE any cell of this block had a score from the retained cost pilots' own measured rates on this host: the two W1440 full-depth arms cost 4.165 and 4.4427 CPU s per train update, i.e. 17 507 s and 18 406 s of CPU per cell at a 4 000-update ceiling and roughly 19 h of wall for their six cells, against about 2 630 s and 2 760 s per cell at 600. Consequence, declared here and not discovered later: with validation every 200 updates there are 3 checkpoint opportunities and patience 3 can never expire, so EVERY cell of EVERY arm reaches the ceiling and is CENSORED_BY_BUDGET wherever its best checkpoint fell. Nothing in this block claims convergence, and the UNDERTRAINED_AT_CEILING rule in the block's question field refuses to read a contrast as an effect for an arm still improving at the ceiling.",
+  "checkpoint_opportunities": 3,
+  "learning_rate": 0.003,
+  "loss": "mae",
+  "max_updates": 600,
+  "min_delta": 0.0,
+  "monitor": "validation MAE in scaled units (equals MAE_z with the common sigma)",
+  "optimizer": "adam",
+  "patience_events": 3,
+  "restore_best": true,
+  "role": "HOUSEHOLD CONTINUITY REFERENCE (MAE+Adam) with validation in OBSERVED updates; it selects no trading loss",
+  "validate_every_updates": 200
+ },
+ "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels mean 0 / sd 1; the lag channel takes the target's scaler; one evaluation sigma = the target's train sd",
+ "schema": "q2_context_deep_extension_seal.v1",
+ "sealed_at_state": "SEALED_NOT_EXECUTED",
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "train_population": "COMMON_INTERSECTION",
+ "train_population_why": "the three W1440 arms withdraw the train origins whose support reaches a padded row and the lag arm those whose daily lookup is non-finite; every arm of this block, the baseline included, trains on the SAME origins, so window length, depth and volume are never conflated",
+ "undertrained_at_ceiling_rule": {
+  "declared": "before any cell of this block was fitted",
+  "statistic": "improvement in validation MAE_z over the last 200 observed updates, i.e. val_mae(second-to-last event) - val_mae(last event), from each cell's own retained events",
+  "threshold": 0.005,
+  "verdict": "an arm whose improvement exceeds the threshold in 2 or more of its 3 seeds is UNDERTRAINED_AT_CEILING, and no contrast involving it is read as a context or depth effect"
+ },
+ "what_this_seal_does_not_settle": [
+  "nothing at convergence: every cell reaches the 600-update ceiling and is CENSORED_BY_BUDGET",
+  "no context effect beyond 67 raw samples at depth 5: the architecture family cannot reach further without depth, so that cell of the crossing does not exist and is not claimed to",
+  "nothing verified: this host holds no data-gov service key, so no terminal is ever accepted and the authoritative verifier reports no model error at all for every unit",
+  "no causal effect: a difference between two forecast errors is not a causal claim, and no retained-row error verifies one"
+ ]
 }

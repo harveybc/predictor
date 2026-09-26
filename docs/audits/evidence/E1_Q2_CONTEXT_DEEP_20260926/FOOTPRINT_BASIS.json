@@ -9,7 +9,7 @@
    "measured_by": "resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024, recorded as `cost.peak_rss_bytes` by tools/df_e1_block.run_cell",
    "scope_of_the_measurement": "the single python process that ran the cell. It excludes the parent driver process in the same cgroup, excludes any child, and excludes the cgroup's page cache and kernel memory",
    "where_it_was_used": "the sealed design's `informed_by` field, this round's gate thresholds (--peak-bytes), and the Q2_CONTEXT_BOUNDED design's restriction argument",
-   "label_required": "MAIN_PROCESS_RSS_ONLY — NOT a tree or cgroup peak",
+   "label_required": "MAIN_PROCESS_RSS_ONLY \u2014 NOT a tree or cgroup peak",
    "provenance": "retained cost pilots of Q2_CONTEXT v1, run on this same coordinator host on 2026-09-21"
   },
   {
@@ -17,14 +17,14 @@
    "basis": "CGROUP_PEAK_OF_THE_WHOLE_SCOPE",
    "measured_by": "systemd's accounting for the transient scope (`Consumed ... 7.4G memory peak`), i.e. memory.peak for the cgroup containing the driver process AND the cell child AND the cgroup's page cache",
    "scope_of_the_measurement": "the process TREE plus cgroup-charged page and kernel memory: this is the figure a placement decision must use",
-   "label_required": "CGROUP/TREE PEAK — the correct basis",
+   "label_required": "CGROUP/TREE PEAK \u2014 the correct basis",
    "note": "this is the measurement against which the requested 9 GiB MemoryMax and 8.1 GiB MemoryHigh must be judged, and it is what shows the job was throttled (Pgscan 61 467 701) without ever reaching its MemoryMax"
   },
   {
    "figure": "7.05 GiB reported by this session's scratchpad memory probe for long_window_own_depth (10 updates + two full validation predicts)",
    "basis": "MAIN_PROCESS_RSS_ONLY",
    "measured_by": "resource.getrusage(resource.RUSAGE_SELF).ru_maxrss in the probe itself",
-   "label_required": "MAIN_PROCESS_RSS_ONLY — NOT a tree or cgroup peak",
+   "label_required": "MAIN_PROCESS_RSS_ONLY \u2014 NOT a tree or cgroup peak",
    "cgroup_peak_of_the_same_probe": "6.7G, from systemd's accounting for its scope",
    "unresolved_and_reported_as_such": "the main-process RSS high-water mark (7.05 GiB) is LARGER than the cgroup peak systemd recorded for the same scope (6.7G). The two are sampled differently - ru_maxrss is a kernel high-water mark for one process, memory.peak is the cgroup's peak charged usage - and this round does not resolve the discrepancy. It is reported, not explained away, and neither figure is used as a tree peak"
   },
@@ -37,5 +37,6 @@
   }
  ],
  "consequence_for_this_round": "every peak-RSS number in the published tables, and every --peak-bytes threshold the memory gate used, is MAIN_PROCESS_RSS_ONLY and is labelled so wherever it appears. The design's `informed_by` field, sealed before any fit, carries the same main-process figures; that text is not rewritten after the fact, and this file is the correction of record beside it",
- "consequence_for_the_next_round": "a cost pilot that is to justify a placement must record the cgroup peak of its own scope, not resource.getrusage of one process. tools/df_e1_block.run_cell records only the latter, which is a defect of the cost basis and is reported here, not repaired mid-round"
+ "consequence_for_the_next_round": "a cost pilot that is to justify a placement must record the cgroup peak of its own scope, not resource.getrusage of one process. tools/df_e1_block.run_cell records only the latter, which is a defect of the cost basis and is reported here, not repaired mid-round",
+ "consequence_for_the_next_round_REPAIRED_2026_09_26": "the defect named in `consequence_for_the_next_round` is now repaired in code, after the stand-down and outside this round's measurements: tools/df_e1_block.run_cell records `cost.cgroup_memory_peak_bytes` (memory.peak of its own cgroup; None when unreadable, which says the cell has NO tree peak rather than falling back to the wrong basis) and labels `cost.peak_rss_bytes` with `peak_rss_bytes_basis: MAIN_PROCESS_RSS_ONLY`. No figure in THIS file is restated: every one was measured by the unrepaired runner and keeps its basis label. See SEAL_WITHDRAWAL.json for why touching that file was admissible and what it cost"
 }

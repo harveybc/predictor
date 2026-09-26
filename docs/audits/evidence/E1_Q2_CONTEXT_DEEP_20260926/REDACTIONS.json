@@ -69,6 +69,11 @@
    "docs/audits/evidence/STORAGE_CAPACITY_2026_09_22/inventory.py",
    "docs/audits/evidence/archive_contract_20260915/README.md"
   ],
-  "reading": "that the name was already committed elsewhere does not excuse adding it; it is listed so the owner can decide one policy for all of them rather than one for this round"
+  "reading": "that the name was already committed elsewhere does not excuse adding it; it is listed so the owner can decide one policy for all of them rather than one for this round",
+  "SUPERSEDED_ON_2026_09_26_BY": "SEAL_WITHDRAWAL.json in this directory",
+  "correction_of_the_reasoning_above": "the three reasons recorded in `why_it_is_REPORTED_and_not_repaired` were reported as structural and they were not. (1) is true and is why v1 was not edited in place; the remedy it does not reach is withdrawal plus a v2 seal. (2) was measured and is false in substance: nine of the ten committed designs that pin tools/df_e1_block.py already pin a stale digest of it, so strict_code already refused them; the only design the edit cost was v1, the one being withdrawn, and v2 pins the repaired file so the two unstarted W1440 arms stay runnable. (3) confuses re-sealing with supersession: v1 is withdrawn by digest and the twelve fits are NOT re-bound to v2. The priority was wrong: the owner's rule against a machine host name outranks the checkability of a digest that, with zero verified rows and a FAILED closure, guards nothing admissible",
+  "status_now": "REPAIRED: DESIGN.json and EXTENSION_SEAL.json of this directory carry v2 (c80fdd48...), v1 (7d0bf921...) is withdrawn, and the branch history that served v1 was rewritten",
+  "root_cause_also_repaired": "tools/df_e1_block.run_cell no longer writes os.uname().nodename into cell records; it writes an opaque salted host id. That line is the machine source of the pre-existing breach measured on origin/master",
+  "third_offending_file_this_lane_did_not_report": "tools/df_e1_block.py itself carried the name, in the BLOCKS registry literal that DESIGN.json and EXTENSION_SEAL.json copy. The breach was three committed files, not two"
  }
 }

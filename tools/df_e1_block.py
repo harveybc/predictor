@@ -241,6 +241,32 @@ def sha_obj(obj) -> str:
     return _module("df_mod_e0").sha_obj(obj)
 
 
+def cgroup_memory_peak_bytes() -> int | None:
+    """`memory.peak` of THIS process's own cgroup: the peak charged to the whole scope -- the driver, every child
+    and the cgroup's page and kernel memory. This, not resource.getrusage(RUSAGE_SELF).ru_maxrss, is the basis a
+    placement decision or a MemoryMax must be judged against (RP: cost-basis correction, 2026-09-26). Returns None
+    when the cgroup is not readable, and the caller then has NO tree peak and must say so."""
+    try:
+        rel = Path("/proc/self/cgroup").read_text().strip().split(":")[-1].lstrip("/")
+        f = Path("/sys/fs/cgroup") / rel / "memory.peak"
+        return int(f.read_text().split()[0]) if f.is_file() else None
+    except Exception:                                                   # noqa: BLE001
+        return None
+
+
+def host_identity() -> dict:
+    """The executing host, recorded WITHOUT its name. AGENTS.md forbids a machine host name in this repository and
+    every cell record published from here is evidence, so the name is never written: what is recorded is a stable
+    opaque id (a salted digest of the nodename, equal across runs on one host, different across hosts) plus the
+    scope the guard placed the job in. Comparing two records still answers `same host or not`; nothing identifies
+    the machine. The salt is a fixed literal, so the id is reproducible from the same nodename."""
+    node = os.uname().nodename.encode()
+    return {"host_id": hashlib.sha256(b"df_e1_block.host_id.v1|" + node).hexdigest()[:16],
+            "host_name_recorded": False,
+            "why": "AGENTS.md forbids a machine host name in this repository; an opaque per-host id is recorded instead",
+            "scope": os.environ.get("CRISPDM_SCOPE")}
+
+
 def write(path: Path, value):
     _module("df_d3_campaign").write_once(Path(path), value)
 
@@ -842,7 +868,16 @@ def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, pilot: bool
                        "seconds_per_update": training["cpu"]["train_update_seconds"]/max(1, training["updates"]),
                        "seconds_per_validation_event": training["validation_cpu_seconds"]/max(1, training["validation_events"]),
                        "accounting": "seconds_per_update = TRAIN-UPDATE CPU only (validation, restore, setup and replay apart; RP77/A6)",
-                       "peak_rss_bytes": int(ru.ru_maxrss)*1024, "host": os.uname().nodename},
+                       "peak_rss_bytes": int(ru.ru_maxrss)*1024,
+                       "peak_rss_bytes_basis": "MAIN_PROCESS_RSS_ONLY: resource.getrusage(RUSAGE_SELF).ru_maxrss of the "
+                                               "cell process alone. NOT a process-tree or cgroup peak; it excludes the "
+                                               "driver in the same cgroup, every child, and cgroup-charged page and "
+                                               "kernel memory. Never use it as the footprint of a placement decision",
+                       "cgroup_memory_peak_bytes": cgroup_memory_peak_bytes(),
+                       "cgroup_memory_peak_basis": "CGROUP/TREE PEAK: memory.peak of this process's own cgroup -- the "
+                                                   "correct basis for a footprint and for judging a MemoryMax. None "
+                                                   "means the cgroup was unreadable and this cell has NO tree peak",
+                       "host": None, "host_identity": host_identity()},
               "arrays_sha256": sha_file(out_dir/"arrays.npz"), "weights_file_sha256": sha_file(out_dir/"weights.weights.h5")}
     write(out_dir/"cell.json", record)
     return record
@@ -1120,7 +1155,7 @@ def cmd_execute(a):
         raise BlockRefusal("REFUSED: the cost pilot did not project inside the ceiling")
     cells = [c for c in design["cells"] if not a.seeds or c["seed"] in a.seeds]           # a host block = the cells of its seeds
     run_units(a, design, cells, parallel=a.parallel or LIMITS["parallel_children"])
-    print(json.dumps({"host": os.uname().nodename, "cells": [c["cell_id"] for c in cells], "spent_cpu_seconds": spent_cpu(a.root)}))
+    print(json.dumps({"host_identity": host_identity(), "cells": [c["cell_id"] for c in cells], "spent_cpu_seconds": spent_cpu(a.root)}))
 
 
 def merge(into: Path, sources: list) -> dict:
@@ -1161,7 +1196,8 @@ def merge(into: Path, sources: list) -> dict:
             rc["units"][unit] = rc_src[unit]
             if unit in dl_src.get("units", {}):
                 dl["units"][unit] = dl_src["units"][unit]
-            out["units"][unit] = {"from": str(src), "host": json.loads((src/"attempts"/unit/"cell.json").read_text())["cost"].get("host")}
+            _c = json.loads((src/"attempts"/unit/"cell.json").read_text())["cost"]
+            out["units"][unit] = {"from": str(src), "host_id": (_c.get("host_identity") or {}).get("host_id") or _c.get("host")}
         rc_path.write_text(json.dumps(rc, indent=1)); dl_path.write_text(json.dumps(dl, indent=1, default=str))
     (into/"MERGE.json").write_text(json.dumps(out, indent=1))
     return out
@@ -1316,7 +1352,10 @@ def close(a) -> dict:
                      "verified": bool(r and r.get("verified")), "custody": (r or {}).get("custody"), "parameters": rec["parameters"],
                      "updates": rec["training"]["updates"], "validation_events": rec["training"]["validation_events"], "best_update": rec["training"]["best_update"],
                      "stop": rec["training"]["stop_reason"], "triggers": rec["training"].get("triggers"), "censoring": rec["training"]["censoring"]["verdict"],
-                     "host": rec["cost"].get("host"), "cpu_seconds": rec["cost"]["cpu_seconds"], "peak_rss_bytes": rec["cost"]["peak_rss_bytes"],
+                     "host_id": (rec["cost"].get("host_identity") or {}).get("host_id") or rec["cost"].get("host"),
+                     "cpu_seconds": rec["cost"]["cpu_seconds"], "peak_rss_bytes": rec["cost"]["peak_rss_bytes"],
+                     "peak_rss_bytes_basis": rec["cost"].get("peak_rss_bytes_basis", "MAIN_PROCESS_RSS_ONLY (unlabelled record)"),
+                     "cgroup_memory_peak_bytes": rec["cost"].get("cgroup_memory_peak_bytes"),
                      "reload_max_error": rec["reload_max_error"], "initial_weights_sha256": rec["initial_weights_sha256"],
                      "environment": rec.get("environment")})
     unpaired = [k for k, v in inits.items() if len(v) != 1]
@@ -1340,7 +1379,7 @@ def close(a) -> dict:
                                    "sd_mae_z_ddof1": float(np.std(v, ddof=1)) if len(v) > 1 else None,
                                    "mean_mae_kw": float(np.mean([r["mae_kw"] for r in rows if r["arm"] == arm])),
                                    "censored_fits": sum(1 for r in rows if r["arm"] == arm and r["censoring"] == "CENSORED_BY_BUDGET"),
-                                   "hosts": sorted({r["host"] for r in rows if r["arm"] == arm})} for arm in arms}
+                                   "host_ids": sorted({str(r.get("host_id") or r.get("host")) for r in rows if r["arm"] == arm})} for arm in arms}
         if len(arms) == 2:
             a0, a1 = arms
             d = [next(r["mae_z"] for r in rows if r["arm"] == a1 and r["seed"] == s) - next(r["mae_z"] for r in rows if r["arm"] == a0 and r["seed"] == s)
