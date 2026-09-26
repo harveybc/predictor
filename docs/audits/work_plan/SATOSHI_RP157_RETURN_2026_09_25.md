@@ -153,11 +153,42 @@ measurement itself ran on the worker GPU. That is the measured cause, not a pref
                 NOT_IDENTIFIED, now also PLACEBO_FAILED on all 40 triples. No study was registered from that run
     tests       tests/test_calendar_clock.py (13), tests/test_calendar_join.py (14), tests/test_economic_calendar.py (20)
 
-### 3.3 Demo/paper broker refusal and recovery interfaces — NOT DONE
+### 3.3 Demo/paper broker refusal and recovery interfaces — DONE, in a parallel lane
 
-Nothing was implemented, no branch exists, no broker call was made and no entitlement was tested. There is no partial work to
-review and nothing that could be mistaken for a fill. It is the lane that did not start this round; the two above and the
-closure completion took the time. No external object is missing for it — it is unstarted, not blocked.
+    repo/branch `lts` · `satoshi/rp157-broker-refusal-recovery-20260925` @ `889c5f2` (pushed; the owner's own
+                checkout was never written to and stays clean on its branch)
+    files       app/broker_refusal.py (new) · tests/unit/test_broker_refusal_recovery.py (new, 75 tests) ·
+                alpaca_paper_lab.py · alpaca_l1.py · capital_demo_lab.py · oanda_practice_lab.py (minimal, forced)
+    suite       1044 passed / 348 skipped BEFORE → 1119 passed / 348 skipped AFTER, zero regressions
+    interface   eight refusal kinds (venue rejection, insufficient entitlement, market closed, instrument not
+                permitted, duplicate client order id, stale quote, transport failure, authentication failure) and
+                four declared recoveries (bounded retry, resume from the persisted client order id, reconcile an
+                unknown fill, refuse to proceed). No "ignored" member exists; an empty venue reason refuses to be
+                constructed; entitlement, authentication, market-closed, instrument and duplicate can never carry a
+                retry; an unknown state can never be declared non-blocking
+    the axis    read versus mutating: the same transport failure is a blip on a GET and an UNPROVEN ORDER on a
+                POST — the first retries on the runners' existing cadence, the second reconciles and blocks new
+                orders. That distinction is what the lane exists for
+    no sniffing classification reads exception type/errno through the explicit __cause__ chain, the HTTP status and
+                the venue's own machine code only; the venue's words travel verbatim. Two tests pin it: identical
+                facts under adversarial prose give an identical verdict, and an AST test forbids the module to call
+                lower/startswith/find/split/match at all
+    gap closed  AlpacaL1Executor journalled `effect_unknown` before every broker call and set `halt=hold` on a
+                protection failure, and read back neither — so a fresh idempotency key could place new risk while an
+                earlier effect's outcome was still unproven (the IBKR executor has read its hold since finding 064).
+                `new_risk_blocker()` now refuses in `submit()` and DEFERS in `consume_pending()`: a hold is not a
+                reason to drop a decision, and certainly not to submit it
+    honest gap  Alpaca's numeric code table is left EMPTY rather than guessed — it was not observable without
+                contacting the venue, so an unrecognised code stays a fail-closed venue rejection. Naming those codes
+                needs venue documentation or one observed refusal: an entitlement-mandate item, not a code change.
+                The OANDA and IBKR code tables are transcribed from venue documentation and not verified against a
+                live venue; by construction no venue code can map to a retry, so a wrong entry can only relabel one
+                fail-closed refusal as another
+    not covered `ibkr_l1_tws` needs a live TWS socket even to instantiate (only its documented error-code space is
+                classified); the MT5 bridge refuses inbound EA traffic and is not an outbound adapter;
+                `capital_demo_lab` is GET-only and has no order path to recover
+    boundary    nothing placed an order, contacted a venue or enabled execution; no lts unit, runner or watchdog was
+                started, stopped or inspected; `execution_authorized` semantics and the no-real-capital rule stand
 
 ---
 
@@ -195,4 +226,4 @@ would have stopped there rather than manufacture its own authority.
 (b) The design re-derivation in §1.4: admissible because it reproduces the run's recorded digest, or still too close to a
 fresh seal for the authority you asked for. (c) Whether refusing a caller override — rather than silently adopting the
 authenticated horizon — is the behaviour you meant at the dispatch boundary. (d) The closure's explicit statement that metric
-values are self-reported, and whether that limit is stated at the right place. (e) The broker lane named as not done.
+values are self-reported, and whether that limit is stated at the right place. (e) The broker lane, delivered in parallel after this section was first written: its read-versus-mutating axis, the Alpaca hold that was journalled and never read, and the deliberately empty Alpaca code table.
