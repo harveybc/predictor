@@ -1,6 +1,6 @@
 # The measured resolution of the E1 household protocol
 
-Generated 2026-09-26T18:07:18Z from retained artifacts. **No training was performed.**
+Generated 2026-09-26T19:26:10Z from retained artifacts. **No training was performed.**
 
 ## The resolution
 
@@ -18,13 +18,20 @@ sigma = 0.01136346 kW on 6 df (95% CI 0.00732254 - 0.02502309), pooled within-ar
 | tcn_mse-core_mse | -0.010982 | [-0.038616, +0.016652] | 0.2294 | 0.031106 | BELOW_THE_RESOLUTION | 18 |
 | core_mae-core_mse | -0.049160 | [-0.068156, -0.030164] | 0.0080 | 0.031106 | AT_THE_RESOLUTION_BOUNDARY | 3 |
 
-## The dynamic range the effects live inside
+## How much structure the labels carried — NOT a resolution
+
+**Retracted**: that this is a noise floor, and any module ruling derived from comparing it to the effect. Shuffling labels destroys the signal; it measures label structure, not the seed-to-seed dispersion of a contrast. It is read by nothing above.
 
 - untrained, before any update: **1.597428 kW**
 - fitted on 40080 **scrambled** train labels: **0.601542 kW**
 - persistence naive on the same rows: **0.617372 kW**
 - the best retained arm (core_mae): **0.497770 kW**
-- the whole label-information span: **0.103772 kW**
+- the span this measures: **0.103772 kW**
+
+## The estimand, declared before the comparison
+
+- declared: **equal_updates** (of recipe_under_early_stopping, equal_cost, equal_updates)
+- offering the same CEILING does not imply the same updates CONSUMED. `core_mae` 11 762 / `tcn_mse` 11 762 / `core_mse` 10 270 stands as an OBSERVATION. What it invalidates depends on the estimand: under `equal_updates` it invalidates the comparison; under `recipe_under_early_stopping` it does not. RP63's design declared neither, listing `update_ceiling` and `patience` among its held factors and not `optimiser_updates`, so its contrast has no declared estimand and therefore no single interpretation. That is the defect, not the numbers
 
 ## Ruling
 
@@ -33,6 +40,7 @@ sigma = 0.01136346 kW on 6 df (95% CI 0.00732254 - 0.02502309), pooled within-ar
 - the resolution is **3.17x** the effect
 - seeds required per arm for that effect: **23** (69 fits for the three-arm design)
 - seeds required per arm for a flat 0.01 kW effect: **22**
+- at the most favourable end of sigma's own interval the resolution is still **0.020045 kW**, **2.04x** the effect
 - **UNANSWERABLE_BY_THIS_PROTOCOL_AT_THIS_SEED_COUNT**
 
 problems: none

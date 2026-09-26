@@ -221,8 +221,64 @@ def report(root: Path, *, resolution: dict | None = None) -> dict:
            "contrasts": contrasts,
            "cpu_seconds": sum(float(json.loads((root / "attempts" / k / "cell.json").read_text())
                                     ["cost"]["cpu_seconds_process"]) for k in cells)}
+    # The repaired protocol is also a NEW measurement of the instrument's own noise: three arms, three
+    # seeds, budgets matched by construction. Whether matching the budget makes the instrument sharper
+    # is a question the re-contrast can answer and the unmatched run could not.
+    if len(by_seed) >= 2 and all(len(v) >= 2 for v in by_seed.values()):
+        pooled = R.pooled_within_arm_sd(by_seed)
+        band = R.estimator_band(pooled["pooled_sd"], pooled["df"], min(len(v) for v in by_seed.values()))
+        iv = R.sd_interval(pooled["pooled_sd"], pooled["df"])
+        out["resolution_under_the_repaired_protocol"] = {
+            "sigma_kW": pooled["pooled_sd"], "sigma_df": pooled["df"],
+            "sigma_ci95_kW": [iv["lo"], iv["hi"]],
+            "per_arm_sd_kW": {a: e["sd"] for a, e in pooled["per_arm"].items()},
+            "homoscedasticity_bartlett": pooled["homoscedasticity_bartlett"],
+            "resolution_kW": band["governing_kW"],
+            "resolution_band_kW": band["band_kW"],
+            "seeds_required_for_a_flat_0p01_kW": R.seeds_required(pooled["pooled_sd"], 0.01, paired=False,
+                                                                 arms_pooled=len(by_seed)),
+            "reading": ("this sigma is measured on the arms of the RECIPE contrast, not on the module's own "
+                        "R0/R1/R2 arms; it says what the repaired protocol's noise is on these three arms and "
+                        "is not a substitute for re-measuring the module's own three")}
     if resolution:
         r = resolution["resolution"]
+        # LIKE FOR LIKE. The unmatched run's governing sigma was pooled over R0/R1/R2 and the matched
+        # run has no R arms, so the two sigmas are not comparable as they stand. The only arms present
+        # in BOTH runs under both protocols are the MSE-monitored `core_mse` and `tcn_mse`; those two,
+        # and only those two, answer whether the repair sharpened the instrument. Pooling all three
+        # matched arms would drag `core_mae`'s near-zero spread into the estimate, and Bartlett's test
+        # on the matched three refuses that pooling anyway — which is reported rather than ignored.
+        common = [a for a in ("core_mse", "tcn_mse") if a in by_seed]
+        prev_cells = resolution.get("cells") or {}
+        prev_by_arm = {}
+        for c in prev_cells.values():
+            if c.get("arm") in common and c.get("run_root", "").endswith("phase1_v1b"):
+                prev_by_arm.setdefault(c["arm"], []).append(c["mae_kW"])
+        if len(common) == len(prev_by_arm) == 2:
+            before = R.pooled_within_arm_sd(prev_by_arm)
+            after = R.pooled_within_arm_sd({a: by_seed[a] for a in common})
+            n = min(len(v) for v in by_seed.values())
+            b_band = R.estimator_band(before["pooled_sd"], before["df"], n)
+            a_band = R.estimator_band(after["pooled_sd"], after["df"], n)
+            out["like_for_like_against_the_unmatched_run"] = {
+                "arms_present_in_both_runs": common,
+                "sigma_unmatched_kW": before["pooled_sd"], "sigma_matched_kW": after["pooled_sd"],
+                "sigma_ratio_matched_over_unmatched": after["pooled_sd"] / before["pooled_sd"],
+                "sigma_df": before["df"],
+                "per_arm_sd_unmatched_kW": {a: e["sd"] for a, e in before["per_arm"].items()},
+                "per_arm_sd_matched_kW": {a: e["sd"] for a, e in after["per_arm"].items()},
+                "resolution_unmatched_kW": b_band["governing_kW"],
+                "resolution_matched_kW": a_band["governing_kW"],
+                "seeds_for_a_flat_0p01_kW_unmatched": R.seeds_required(before["pooled_sd"], 0.01, paired=False,
+                                                                     arms_pooled=len(common)),
+                "seeds_for_a_flat_0p01_kW_matched": R.seeds_required(after["pooled_sd"], 0.01, paired=False,
+                                                                   arms_pooled=len(common)),
+                "what_this_licenses": ("that the repair sharpened the instrument ON THESE TWO ARMS, by this "
+                                       "ratio, at this seed count"),
+                "what_this_does_NOT_license": ("any number for MOD-CORE-PRETRAIN's own R0/R1/R2 arms. Those "
+                                               "three were never run under the repaired protocol; carrying "
+                                               "this ratio across to them is a projection, and a projection "
+                                               "is not a resolution")}
         prev = {c["name"]: c for c in resolution["contrasts"]}
         out["against_the_resolution"] = []
         for c in contrasts:

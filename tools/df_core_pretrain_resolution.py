@@ -10,9 +10,17 @@ training is that every measurement a resolution is made of was already taken and
     a cross-runner replicate of one configuration     phase-1 ``core_mse`` IS the successor run's
                                                       ``R0`` -- same design, same seeds, same
                                                       per-seed update counts, two different runners
-    the scrambled-label floor                         RP60's full-scale negative control
-    the untrained reference                           the same control's ``mae_before_any_update``
     the paired differences to be resolved             the arm contrasts the two rounds published
+
+RETRACTION, 2026-09-26. An earlier reading treated RP60's scrambled-label difference as this
+instrument's noise floor, and concluded that the floor was five times the effect to be resolved. That
+reasoning is WITHDRAWN and nothing here uses it. Shuffling the train labels destroys the signal; the
+difference it produces measures how much structure the labels carried -- a property of the task and
+the data -- not the seed-to-seed dispersion of a fitted contrast. It is reported under
+``label_structure``, it is labelled as not a resolution, and neither ``resolution`` nor ``ruling``
+reads it: the resolution comes only from dispersion among runs that share one configuration. Also
+withdrawn: mixing kW with persistence-scaled units inside one comparison. The two scales are reported
+side by side and never subtracted from or divided by one another.
 
 A resolution is a statement of the form
 
@@ -29,8 +37,8 @@ Nothing here is read as true from a return or a disposition. Every arm mean, eve
 deviation and every paired difference is recomputed in float64 from the per-cell ``arrays.npz`` --
 the stored predictions and labels -- and the per-cell record's own score is checked against the
 recomputation rather than trusted for it. The scrambled-label control is the one number read from a
-retained JSON, because its weights were not kept; it is labelled as such in the output and the arm
-it is compared against is recomputed here.
+retained JSON, because its weights were not kept; it is labelled as such in the output, it is not a
+resolution, and the arm it is reported beside is recomputed here.
 
     python tools/df_core_pretrain_resolution.py --out RESOLUTION.json [--markdown RESOLUTION.md]
 """
@@ -158,8 +166,20 @@ def naive_on_the_same_rows(root: Path, cell_id: str) -> dict:
 
 
 def scrambled_label_control() -> dict:
-    """RP60's full-scale negative control, as retained. Its weights were NOT kept: this is the one
-    number in the whole tool that is read rather than recomputed, and it says so."""
+    """RP60's full-scale negative control, as retained -- and NOT a resolution floor.
+
+    RETRACTION (2026-09-26, on the coordinator's correction, accepted). An earlier reading treated the
+    scrambled-label difference as this instrument's noise floor and concluded that the floor was five
+    times the effect to be resolved. That reasoning is WITHDRAWN and is not used anywhere in this tool.
+    Shuffling the train labels destroys the signal; the difference it produces measures **how much
+    structure the labels carried**, which is a property of the task and the data, not the seed-to-seed
+    dispersion of a fitted contrast. A resolution can only come from dispersion among runs that share
+    the same configuration. Nothing in `resolution` or in `ruling` reads this function's output, and a
+    rule pins that the resolution is reproducible from the cells alone.
+
+    Its weights were NOT kept: this is the one number in the whole tool that is read rather than
+    recomputed, and it says so.
+    """
     p = EVID / "RP60" / "OPTIMISATION_PROBE_FULL_SCALE.json"
     doc = json.loads(p.read_text())
     blk = doc["shuffled_labels_full_scale"]
@@ -432,16 +452,22 @@ def build() -> dict:
                                            == control["scrambled_updates"])
 
     best = min(arm_vals, key=lambda k: float(np.mean(arm_vals[k])))
-    dynamic_range = {
+    label_structure = {
+        "what_this_measures": ("how much structure the train labels carried under this protocol -- a "
+                               "property of the task and the data"),
+        "what_this_is_NOT": ("a resolution, a noise floor, or the dispersion of a contrast. Shuffling "
+                             "labels destroys the signal; it does not sample the seed-to-seed variation "
+                             "of a fitted comparison. RETRACTED: the earlier reading that called this a "
+                             "noise floor five times the effect, and any module block derived from it"),
         "untrained_kW": control["untrained_mae_kW"],
         "scrambled_labels_kW": control["scrambled_mae_kW"],
         "persistence_naive_same_rows_kW": sorted(naive_vals)[0],
         "best_retained_arm": best, "best_retained_arm_mean_kW": float(np.mean(arm_vals[best])),
-        "label_information_span_kW": control["scrambled_mae_kW"] - float(np.mean(arm_vals[best])),
+        "label_structure_span_kW": control["scrambled_mae_kW"] - float(np.mean(arm_vals[best])),
         "scrambled_is_already_better_than_the_naive": control["scrambled_mae_kW"] < sorted(naive_vals)[0],
-        "reading": ("the span from a fit that was given NO usable label information to the best arm this "
-                    "protocol has produced is the whole range inside which every recipe, architecture and "
-                    "pretraining effect must be separated")}
+        "used_in_the_resolution": False, "used_in_the_ruling": False,
+        "scales_never_mixed": ("kW and persistence-scaled units are reported in separate fields and are "
+                               "never subtracted from or divided by one another")}
 
     # the resolution, for the module's own arms and at the module's own seed count
     n_now = 3
@@ -477,7 +503,14 @@ def build() -> dict:
         "what_this_is_not": ["not a bound on the task's achievable error",
                              "not a claim about any arm's accuracy",
                              "not transferable to another task, split, horizon or seed count",
-                             "not a statement about a single fit: it is about a DIFFERENCE OF ARM MEANS"]}
+                             "not a statement about a single fit: it is about a DIFFERENCE OF ARM MEANS"],
+        "derived_only_from": ("the within-arm dispersion of runs that share one configuration (3 seeds per "
+                              "arm, everything else held fixed) and the paired differences across the "
+                              "retained replicas"),
+        "not_derived_from": ["the scrambled-label control, which measures label structure and is not a "
+                             "noise floor (see `label_structure` and `ruling.retraction`)",
+                             "any quantity in persistence-scaled units: kW and scaled units are reported "
+                             "side by side and never mixed inside one comparison"]}
 
     verdicts = []
     for c in contrasts:
@@ -523,16 +556,51 @@ def build() -> dict:
         "seeds_required": req,
         "seeds_required_for_a_flat_0p01_kW": seeds_required(sigma, 0.01, paired=False, arms_pooled=len(MODULE_ARMS)),
         "fits_required_for_the_three_arm_design": None if req["n_per_arm"] is None else 3 * req["n_per_arm"],
-        "convergence_with_the_scrambled_label_floor": {
-            "resolution_kW": governing, "paired_resolution_kW": band["paired_kW"],
-            "scrambled_label_gap_kW": control["recomputed_gap_kW"],
-            "reading": ("two independent routes -- seed variance at n=3, and the whole worth of true labels under "
-                        "this protocol -- land on the same order of magnitude; they are NOT the same quantity and "
-                        "are not averaged, but a protocol whose resolution is the size of its entire label signal "
-                        "has no room left for a fifth of that signal")},
+        "retraction": {
+            "withdrawn": ("that a scrambled-label difference is a resolution floor, and any ruling on this "
+                          "module derived from comparing it to the effect"),
+            "why": ("shuffling labels destroys the signal and measures the structure the labels carried, "
+                    "not the seed-to-seed dispersion of a fitted contrast"),
+            "also_withdrawn": "mixing kW with persistence-scaled units in one comparison",
+            "what_the_ruling_below_rests_on_instead": ("the pooled within-arm standard deviation of the "
+                                                       "module's own three arms -- dispersion among runs that "
+                                                       "share one configuration -- and the paired differences "
+                                                       "across the retained replicas, with the estimator, its "
+                                                       "assumptions and its interval named in `resolution`"),
+            "the_scrambled_number_is_reported_at": "label_structure, and is read by nothing here"},
+        "robust_across_the_sigma_interval": {
+            "resolution_at_the_most_favourable_sigma_kW": resolution["resolution_ci95_kW"][0],
+            "effect_kW": largest["absolute_effect_kW"],
+            "still_above_the_effect": resolution["resolution_ci95_kW"][0] > largest["absolute_effect_kW"],
+            "ratio_at_the_most_favourable_sigma": resolution["resolution_ci95_kW"][0]/largest["absolute_effect_kW"],
+            "reading": ("the ruling does not rest on a point estimate of sigma: even at the LOWER end of "
+                        "sigma's own 95% interval, the resolution still exceeds the effect by this ratio")},
         "verdict": ("ANSWERABLE at n=3" if largest["state_against_the_resolution"] == "ABOVE_THE_RESOLUTION"
                     else "UNANSWERABLE_BY_THIS_PROTOCOL_AT_THIS_SEED_COUNT")}
 
+    estimand = {
+        "declared_before_the_comparison": True,
+        "candidates": {
+            "recipe_under_early_stopping": ("each arm gets the stopping rule its own recipe implies; the "
+                                            "budget is part of the treatment. RP63's numbers ARE a valid "
+                                            "estimate of THIS estimand -- but RP63 declared no estimand"),
+            "equal_cost": "each arm gets the same CPU seconds; updates then differ by per-update cost",
+            "equal_updates": "each arm gets the same number of optimiser updates; cost then differs"},
+        "declared_here": "equal_updates",
+        "why": ("the question MOD-CORE-PRETRAIN asks is whether a pretrained component changes what the "
+                "same amount of optimisation reaches, so the optimisation must be the same amount"),
+        "consequence_for_the_retained_run": ("offering the same CEILING does not imply the same updates "
+                                             "CONSUMED. `core_mae` 11 762 / `tcn_mse` 11 762 / `core_mse` "
+                                             "10 270 stands as an OBSERVATION. What it invalidates depends "
+                                             "on the estimand: under `equal_updates` it invalidates the "
+                                             "comparison; under `recipe_under_early_stopping` it does not. "
+                                             "RP63's design declared neither, listing `update_ceiling` and "
+                                             "`patience` among its held factors and not `optimiser_updates`, "
+                                             "so its contrast has no declared estimand and therefore no "
+                                             "single interpretation. That is the defect, not the numbers"),
+        "equal_updates_is_not_equal_cost": ("the arms differ in per-update cost, so a run matched on updates "
+                                            "is NOT matched on CPU seconds, and that is declared rather than "
+                                            "discovered afterwards")}
     return {"schema": SCHEMA,
             "at": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
             "authority": "the owner's grant of 2026-09-26; Satoshi, successor technical lead",
@@ -551,8 +619,9 @@ def build() -> dict:
             "seed_main_effect": seed_effect,
             "contrasts": contrasts,
             "scrambled_label_control": control,
-            "dynamic_range": dynamic_range,
+            "label_structure": label_structure,
             "budget": budget_leg(cells, INDEPENDENT_ARMS),
+            "estimand": estimand,
             "resolution": resolution,
             "effect_verdicts": verdicts,
             "ruling": ruling,
@@ -586,14 +655,20 @@ def markdown(doc: dict) -> str:
         L.append(f"| {v['contrast']} | {v['effect_kW']:+.6f} | "
                  f"[{c['ci95_kW'][0]:+.6f}, {c['ci95_kW'][1]:+.6f}] | {c['p_value']:.4f} | "
                  f"{v['resolution_kW']:.6f} | {v['state_against_the_resolution']} | {n if n else 'n/a'} |")
-    dr = doc["dynamic_range"]
-    L += ["", "## The dynamic range the effects live inside", "",
-          f"- untrained, before any update: **{dr['untrained_kW']:.6f} kW**",
+    ls = doc["label_structure"]
+    L += ["", "## How much structure the labels carried — NOT a resolution", "",
+          "**Retracted**: that this is a noise floor, and any module ruling derived from comparing it to "
+          "the effect. Shuffling labels destroys the signal; it measures label structure, not the "
+          "seed-to-seed dispersion of a contrast. It is read by nothing above.", "",
+          f"- untrained, before any update: **{ls['untrained_kW']:.6f} kW**",
           f"- fitted on {doc['scrambled_label_control']['train_windows_scrambled']} **scrambled** train labels: "
-          f"**{dr['scrambled_labels_kW']:.6f} kW**",
-          f"- persistence naive on the same rows: **{dr['persistence_naive_same_rows_kW']:.6f} kW**",
-          f"- the best retained arm ({dr['best_retained_arm']}): **{dr['best_retained_arm_mean_kW']:.6f} kW**",
-          f"- the whole label-information span: **{dr['label_information_span_kW']:.6f} kW**", "",
+          f"**{ls['scrambled_labels_kW']:.6f} kW**",
+          f"- persistence naive on the same rows: **{ls['persistence_naive_same_rows_kW']:.6f} kW**",
+          f"- the best retained arm ({ls['best_retained_arm']}): **{ls['best_retained_arm_mean_kW']:.6f} kW**",
+          f"- the span this measures: **{ls['label_structure_span_kW']:.6f} kW**", "",
+          "## The estimand, declared before the comparison", "",
+          f"- declared: **{doc['estimand']['declared_here']}** (of {', '.join(doc['estimand']['candidates'])})",
+          f"- {doc['estimand']['consequence_for_the_retained_run']}", "",
           "## Ruling", "",
           f"- effect the module must resolve: **{ru['which_effect']} = {ru['effect_the_module_must_resolve_kW']:.6f} kW**",
           f"- resolution at n=3: **{ru['resolution_kW']:.6f} kW**",
@@ -601,6 +676,9 @@ def markdown(doc: dict) -> str:
           f"- seeds required per arm for that effect: **{ru['seeds_required'].get('n_per_arm')}** "
           f"({ru['fits_required_for_the_three_arm_design']} fits for the three-arm design)",
           f"- seeds required per arm for a flat 0.01 kW effect: **{ru['seeds_required_for_a_flat_0p01_kW'].get('n_per_arm')}**",
+          f"- at the most favourable end of sigma's own interval the resolution is still "
+          f"**{ru['robust_across_the_sigma_interval']['resolution_at_the_most_favourable_sigma_kW']:.6f} kW**, "
+          f"**{ru['robust_across_the_sigma_interval']['ratio_at_the_most_favourable_sigma']:.2f}x** the effect",
           f"- **{ru['verdict']}**", "",
           f"problems: {doc['problems'] or 'none'}", ""]
     return "\n".join(L)

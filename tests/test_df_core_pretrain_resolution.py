@@ -318,6 +318,57 @@ class TestTheResolutionIsDerivedFromArtifacts:
         assert c["partner_is_budget_matched"] is False           # the control's own asymmetry, named
         assert c["custody"] == "READ_FROM_RETAINED_JSON_WEIGHTS_NOT_KEPT"
 
+    def test_the_scrambled_control_is_not_a_resolution_and_is_labelled_so(self, doc):
+        """RETRACTED: a scrambled-label difference is not a noise floor.
+
+        Shuffling labels destroys the signal and measures the structure the labels carried, not the
+        seed-to-seed dispersion of a contrast. The retraction must be carried by the ARTIFACT, not only
+        by a document that quotes it.
+        """
+        ls = doc["label_structure"]
+        assert ls["used_in_the_resolution"] is False and ls["used_in_the_ruling"] is False
+        assert ls["what_this_is_NOT"].startswith("a resolution, a noise floor")
+        assert "RETRACTED" in ls["what_this_is_NOT"]
+        assert "noise floor five times the effect" in ls["what_this_is_NOT"]
+        r = doc["ruling"]["retraction"]
+        assert "resolution floor" in r["withdrawn"]
+        assert "mixing kW with persistence-scaled units" in r["also_withdrawn"]
+        assert "pooled within-arm standard deviation" in r["what_the_ruling_below_rests_on_instead"]
+        assert "dynamic_range" not in doc            # the field that carried the withdrawn framing
+
+    def test_the_resolution_is_reproducible_from_the_cells_alone(self, doc):
+        """The strongest form of the retraction: rebuild the resolution from the per-cell arrays only,
+        with the control's numbers nowhere in the computation, and get the published value."""
+        R = _load("df_core_pretrain_resolution")
+        vals = {}
+        for c in doc["cells"].values():
+            if c["arm"] in ("R0", "R1", "R2"):
+                vals.setdefault(c["arm"], []).append(c["mae_kW"])
+        pooled = R.pooled_within_arm_sd(vals)
+        band = R.estimator_band(pooled["pooled_sd"], pooled["df"], 3)
+        assert math.isclose(pooled["pooled_sd"], doc["resolution"]["sigma_kW"], rel_tol=0, abs_tol=1e-15)
+        assert math.isclose(band["governing_kW"], doc["resolution"]["resolution_kW"], rel_tol=0, abs_tol=1e-15)
+
+    def test_the_ruling_survives_the_worst_case_of_its_own_sigma_interval(self, doc):
+        """A ruling that only holds at the point estimate is not a ruling. At the LOWER end of sigma's
+        own 95% interval the resolution must still exceed the effect."""
+        rb = doc["ruling"]["robust_across_the_sigma_interval"]
+        assert bool(rb["still_above_the_effect"]) is True
+        assert rb["ratio_at_the_most_favourable_sigma"] > 1.0
+        assert rb["resolution_at_the_most_favourable_sigma_kW"] == doc["resolution"]["resolution_ci95_kW"][0]
+
+    def test_the_estimand_is_declared_before_the_comparison(self, doc):
+        """Offering the same ceiling does not imply the same updates consumed. Which of the three
+        estimands is being estimated must be declared, and the retained run declared none."""
+        e = doc["estimand"]
+        assert e["declared_before_the_comparison"] is True
+        assert e["declared_here"] in e["candidates"]
+        assert set(e["candidates"]) == {"recipe_under_early_stopping", "equal_cost", "equal_updates"}
+        assert "OBSERVATION" in e["consequence_for_the_retained_run"]
+        assert "no declared estimand" in e["consequence_for_the_retained_run"]
+        assert "not equal cost" in e["equal_updates_is_not_equal_cost"].lower() or \
+               "NOT matched on CPU" in e["equal_updates_is_not_equal_cost"]
+
     def test_the_ruling_is_computed_and_flips_when_sigma_would_allow_it(self, doc):
         """The verdict must be a function of the measurements. Shrink sigma by a factor the
         measurements do not support and the same code must return the other answer."""

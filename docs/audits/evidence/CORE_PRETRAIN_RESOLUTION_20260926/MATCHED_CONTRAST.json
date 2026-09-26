@@ -1,6 +1,6 @@
 {
  "schema": "df_core_pretrain_matched_report.v1",
- "at": "2026-09-26T19:04:34Z",
+ "at": "2026-09-26T19:27:16Z",
  "host_kind": "local",
  "custody": "UNGOVERNED_LOCAL_RECONTRAST",
  "design_sha256": "53b824e8a1ac1d9f092ad4629b2fd0757d4de06d6de0f002e3befcebc3f5b279",
@@ -484,6 +484,82 @@
   }
  ],
  "cpu_seconds": 1580.956,
+ "resolution_under_the_repaired_protocol": {
+  "sigma_kW": 0.003594906073850915,
+  "sigma_df": 6,
+  "sigma_ci95_kW": [
+   0.0023165337761255744,
+   0.007916220844003492
+  ],
+  "per_arm_sd_kW": {
+   "core_mae": 0.00017059323350203512,
+   "core_mse": 0.003189394649803557,
+   "tcn_mse": 0.005344970416748662
+  },
+  "homoscedasticity_bartlett": {
+   "statistic": 9.068857383106124,
+   "p_value": 0.010733037350150328,
+   "reading": "the arms do NOT share one variance; a single pooled number understates the noise of the noisier arms and overstates the quieter ones"
+  },
+  "resolution_kW": 0.009840691558207458,
+  "resolution_band_kW": [
+   0.009840691558207458,
+   0.015742548979824213
+  ],
+  "seeds_required_for_a_flat_0p01_kW": {
+   "n_per_arm": 4,
+   "effect_kW": 0.01,
+   "sigma_used": 0.003594906073850915,
+   "alpha": 0.05,
+   "power": 0.8,
+   "paired": false,
+   "arms_pooled": 3,
+   "note": "n per arm; a two-arm contrast costs 2n fits, a three-arm contrast 3n"
+  },
+  "reading": "this sigma is measured on the arms of the RECIPE contrast, not on the module's own R0/R1/R2 arms; it says what the repaired protocol's noise is on these three arms and is not a substitute for re-measuring the module's own three"
+ },
+ "like_for_like_against_the_unmatched_run": {
+  "arms_present_in_both_runs": [
+   "core_mse",
+   "tcn_mse"
+  ],
+  "sigma_unmatched_kW": 0.006558121162086508,
+  "sigma_matched_kW": 0.004401190008856351,
+  "sigma_ratio_matched_over_unmatched": 0.6711053211856312,
+  "sigma_df": 4,
+  "per_arm_sd_unmatched_kW": {
+   "core_mse": 0.007804002710283614,
+   "tcn_mse": 0.005011531507543358
+  },
+  "per_arm_sd_matched_kW": {
+   "core_mse": 0.003189394649803557,
+   "tcn_mse": 0.005344970416748662
+  },
+  "resolution_unmatched_kW": 0.0199055523121388,
+  "resolution_matched_kW": 0.01335872207781529,
+  "seeds_for_a_flat_0p01_kW_unmatched": {
+   "n_per_arm": 8,
+   "effect_kW": 0.01,
+   "sigma_used": 0.006558121162086508,
+   "alpha": 0.05,
+   "power": 0.8,
+   "paired": false,
+   "arms_pooled": 2,
+   "note": "n per arm; a two-arm contrast costs 2n fits, a three-arm contrast 3n"
+  },
+  "seeds_for_a_flat_0p01_kW_matched": {
+   "n_per_arm": 5,
+   "effect_kW": 0.01,
+   "sigma_used": 0.004401190008856351,
+   "alpha": 0.05,
+   "power": 0.8,
+   "paired": false,
+   "arms_pooled": 2,
+   "note": "n per arm; a two-arm contrast costs 2n fits, a three-arm contrast 3n"
+  },
+  "what_this_licenses": "that the repair sharpened the instrument ON THESE TWO ARMS, by this ratio, at this seed count",
+  "what_this_does_NOT_license": "any number for MOD-CORE-PRETRAIN's own R0/R1/R2 arms. Those three were never run under the repaired protocol; carrying this ratio across to them is a projection, and a projection is not a resolution"
+ },
  "against_the_resolution": [
   {
    "contrast": "core_mae-core_mse",
