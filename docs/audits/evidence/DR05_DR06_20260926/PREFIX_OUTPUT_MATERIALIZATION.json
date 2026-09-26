@@ -8,10 +8,10 @@
  "store": "/home/harveybc/.local/state/crispdm-data-foundation/dr05_prefix_store_20260926",
  "reserve": "NOT_OPENED",
  "code_identity": {
-  "revision": "6820fcae2b28c93f223b830791b585d7f9f43649",
-  "worktree_has_uncommitted_changes": true,
+  "revision": "ed27bb89aa5e7fedb033a4d13d90456e29fea1cb",
+  "worktree_has_uncommitted_changes": false,
   "module_sha256": {
-   "df_dr05_prefix_output.py": "5c77ef8fdb1e8ea819317ee435537ea420e108bf0b1502a4478f1dc6104e8c9c",
+   "df_dr05_prefix_output.py": "b4533f9dc134a440399ce0c62abedbd4be3e9996414a7fef1fb1060c9a18c099",
    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c",
    "df_e1_block.py": "b2fb1e9ec96e9a105d6c75f1606c62aa31436b7d3c69ddec489e061082e10e3b",
@@ -19,7 +19,7 @@
   }
  },
  "version": {
-  "version": "dr05.prefix.57970b5e4d0aa302",
+  "version": "dr05.prefix.fd0fde9b2a913257",
   "derived_from": {
    "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
    "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
@@ -28,7 +28,7 @@
    "donor_weights_sha256": "c374076c49c9631803bd16f85b4a577a67466a38e60371040af7d4ebe4ae3845",
    "prefix_ends_at": "fusion_seq",
    "code_module_sha256": {
-    "df_dr05_prefix_output.py": "5c77ef8fdb1e8ea819317ee435537ea420e108bf0b1502a4478f1dc6104e8c9c",
+    "df_dr05_prefix_output.py": "b4533f9dc134a440399ce0c62abedbd4be3e9996414a7fef1fb1060c9a18c099",
     "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
     "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c",
     "df_e1_block.py": "b2fb1e9ec96e9a105d6c75f1606c62aa31436b7d3c69ddec489e061082e10e3b",
@@ -226,7 +226,7 @@
      "origins": 10020
     }
    },
-   "version": "dr05.prefix.57970b5e4d0aa302"
+   "version": "dr05.prefix.fd0fde9b2a913257"
   },
   {
    "stage": "groups",
@@ -308,7 +308,7 @@
      "origins": 10020
     }
    },
-   "version": "dr05.prefix.57970b5e4d0aa302"
+   "version": "dr05.prefix.fd0fde9b2a913257"
   },
   {
    "stage": "detector",
@@ -372,7 +372,7 @@
      "origins": 10020
     }
    },
-   "version": "dr05.prefix.57970b5e4d0aa302"
+   "version": "dr05.prefix.fd0fde9b2a913257"
   },
   {
    "stage": "adapter",
@@ -439,7 +439,7 @@
      "origins": 10020
     }
    },
-   "version": "dr05.prefix.57970b5e4d0aa302"
+   "version": "dr05.prefix.fd0fde9b2a913257"
   },
   {
    "stage": "fusion",
@@ -497,10 +497,10 @@
      "origins": 10020
     }
    },
-   "version": "dr05.prefix.57970b5e4d0aa302"
+   "version": "dr05.prefix.fd0fde9b2a913257"
   }
  ],
- "manifest_sha256": "c7a8e9e68661fe20a84f8d2002f8864832ba43fff5cd3c4ca9ee869c6d0456ff",
+ "manifest_sha256": "589a9e935f2aaa62db8da95b1d0b97bd6c1aa742673cdfd618f6ae6f379c9276",
  "proofs": {
   "direct_against_cache": {
    "proof": "direct_against_cache",
@@ -530,7 +530,7 @@
    "pid_differs": true,
    "report": {
     "store": "/home/harveybc/.local/state/crispdm-data-foundation/dr05_prefix_store_20260926",
-    "version": "dr05.prefix.57970b5e4d0aa302",
+    "version": "dr05.prefix.fd0fde9b2a913257",
     "per_split": {
      "train": {
       "file_sha256": "8a24071667bfedbeaf882b2869f3482b289e42f06ff3d3adb8d531745c382522",
@@ -677,5 +677,8 @@
   "a second panel or a second family. One panel, one donor, two splits",
   "anything about the reserve beyond its absence",
   "any H-CORE comparison. The core is downstream of the cut and nothing here fits one"
- ]
+ ],
+ "admissibility": {
+  "reasons_it_would_be_inadmissible": []
+ }
 }

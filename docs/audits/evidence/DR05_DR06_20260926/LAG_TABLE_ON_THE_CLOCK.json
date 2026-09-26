@@ -1,5 +1,10 @@
 {
  "schema": "df_dr06_lag_clock.v1",
+ "code_identity": {
+  "revision": "ed27bb89aa5e7fedb033a4d13d90456e29fea1cb",
+  "worktree_has_uncommitted_changes": false,
+  "tool_sha256": "4dd54b4209dc681f58772bbd087a8daae60987e01a13db5c4a3bb528bea5474f"
+ },
  "scope": "the retained training support of the household panel. No reserved split is read",
  "estimators": {
   "acf": {
@@ -63,7 +68,7 @@
   "a_consumer_that_reads_this_as_a_choice_is_reading_it_wrong": true
  },
  "is_this_training": "no. Reanalysis of retained bytes: nothing is fitted, built or scored",
- "published_artifact": "/home/harveybc/Documents/GitHub/.worktrees/predictor-dr056-20260926/docs/audits/evidence/d3_k5_20260917/RP59/DATA_TARGET_PREPROCESSING_AUDIT.json",
+ "published_artifact": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/pin-dr056/docs/audits/evidence/d3_k5_20260917/RP59/DATA_TARGET_PREPROCESSING_AUDIT.json",
  "run_root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3",
  "as_published_values": {
   "1": 0.9633449780917276,

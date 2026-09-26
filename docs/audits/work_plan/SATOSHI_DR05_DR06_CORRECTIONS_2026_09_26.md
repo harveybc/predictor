@@ -40,7 +40,7 @@ process's memory. §5 records that episode as the only admission event of this w
 worktree was byte-clean — so the pinned-checkout requirement of DR06 is a measured fact in the artifact
 rather than a sentence here. The primary checkout's untracked files (the owner's presentation sources,
 a PowerPoint lock file, evidence directories) were **not cleaned, not staged and not committed**; this
-work never ran there. §5.3 gives the revision each artifact was produced at.
+work never ran there. §5.3 and §6 give the revision each artifact was finally produced at.
 
 ---
 
@@ -217,7 +217,7 @@ requires it to be flagged.
 
 Donor: run root `e1_household_successor_v3`, cell **`R1_s1`** — detector imported from the auto-encoder
 `ae_s1` and frozen (weight change 0.0 on every detector layer in the retained record), adapters fitted in
-the cell. Store version **`dr05.prefix.57970b5e4d0aa302`**.
+the cell. Store version **`dr05.prefix.fd0fde9b2a913257`**.
 
 ### 3.3 The five stages, each with its learned state, clock, rows/split, shape and version
 
@@ -431,6 +431,37 @@ as they were.
   are open.
 - `check_plan`'s `PASS` is documentary coverage. It validates no scientific evidence and replaces no
   seal.
+
+---
+
+## 6. The pinned execution revision
+
+Both artifacts above were **finally produced from a clean, pinned execution checkout** — a detached
+worktree at the commit that carries the two tools — so that the code identity in each record is a
+committed revision and not a dirty tree:
+
+| | |
+|---|---|
+| pinned revision | **`ed27bb89aa5e7fedb033a4d13d90456e29fea1cb`** |
+| `git status --porcelain` in that checkout | **empty** |
+| recorded in the artifacts as | `code_identity.revision`, with `worktree_has_uncommitted_changes: false` in **both** |
+| store version produced there | **`dr05.prefix.fd0fde9b2a913257`** |
+| `prefix_output_train.npy` | `(40080, 60, 24)` f32, 230 860 928 B, `8a24071667bfedbeaf882b2869f3482b289e42f06ff3d3adb8d531745c382522` |
+| `prefix_output_validation.npy` | `(10020, 60, 24)` f32, 57 715 328 B, `0e6dd5bb871553621fa1f5b12343dfce7fff6425c5bf3d5d203defc894e17432` |
+| `MANIFEST.json` | `589a9e935f2aaa62db8da95b1d0b97bd6c1aa742673cdfd618f6ae6f379c9276` |
+
+**One result worth keeping from having run it twice.** The store was first built from an uncommitted
+worktree and then rebuilt from the pinned checkout after the tool gained its admissibility rule. The
+tool's own digest changed, so the **store version changed** — `dr05.prefix.57970b5e4d0aa302` →
+`dr05.prefix.fd0fde9b2a913257`, which is the version binding working as designed. The **array digests
+did not change at all**: both `8a240716…` and `0e6dd5bb…` are identical across the two runs. The
+representation is reproducible from the same prefix and the same bytes, and the version is strict about
+the code that produced it. Only the pinned artifacts are retained.
+
+The primary checkout at `/home/harveybc/Documents/GitHub/predictor` was **not used for any of this** and
+was **not modified**: the owner's untracked presentation sources, the PowerPoint lock file and the
+untracked evidence directories are exactly as they were found. Nothing was cleaned, staged or committed
+there to make an identity check pass.
 
 ---
 
