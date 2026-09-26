@@ -1,5 +1,13 @@
 # Start here: the one dispatch index, and the lanes it carries
 
+**Post-reboot continuation, 2026-09-26 evening:** execute
+[RR01-RR07](SATOSHI_POST_REBOOT_ORDERS_2026_09_26.md), using the
+[live recovery inspection](../audits/work_plan/MUSASHI_POST_REBOOT_STATUS_2026_09_26.md).
+Several DR deliveries below are now published; do not redo them. The coordinator
+lost VSCode and two verification scopes to the 16:27 pressure incident before
+reboot. Heavy coordinator work remains held; independently admitted worker work
+continues. A/B and the nine-cell ECL contrast must not be relaunched.
+
 **Superseded as a state document, 2026-09-26.** State now lives in ONE place, one row
 per lane: [`EXPERIMENT_EXECUTION_QUEUE.json`](../tres_temas_entrevista/program_v3/EXPERIMENT_EXECUTION_QUEUE.json)
 (`research_dispatch_index.v2`), summarized in
