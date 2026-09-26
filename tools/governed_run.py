@@ -232,7 +232,13 @@ def strict_code_identity(repo_root) -> dict:
         cwd=repo_root, capture_output=True, text=True, check=True,
     ).stdout.strip()
     if dirty:
-        raise GovernedRunError("governing run requires a clean checkout")
+        # Name what is uncommitted: the refusal is about uncommitted SOURCE, and an
+        # engineer must not have to re-derive which path dirtied the checkout.
+        offenders = dirty.splitlines()
+        shown = "; ".join(offenders[:10])
+        if len(offenders) > 10:
+            shown += f"; ... and {len(offenders) - 10} more"
+        raise GovernedRunError("governing run requires a clean checkout; uncommitted: " + shown)
     return {"kind": "git_commit", "value": head}
 
 

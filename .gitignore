@@ -195,3 +195,20 @@ docs/tesis_representaciones_modulares/referencias/*
 # Frozen audit evidence is tracked deliberately: the LaTeX *.log/*.out
 # rules above must never swallow a PRE/POST reproduction output.
 !docs/audits/evidence/**
+
+# ...but an interpreter or tool cache under an evidence directory is GENERATED,
+# never evidence. Without these rules the negation above un-ignores them, an
+# untracked docs/audits/evidence/<dir>/__pycache__/ appears in
+# `git status --untracked-files=all`, and tools/governed_run.py
+# strict_code_identity() refuses the checkout as dirty -- so merely importing a
+# retained reproducer turns the suite red with no source change at all.
+# Re-ignoring them keeps that refusal about uncommitted SOURCE, which is what it
+# is for: any .py, .json, .csv, .log or .out under evidence still dirties the
+# tree until it is committed.
+docs/audits/evidence/**/__pycache__/
+docs/audits/evidence/**/*.py[cod]
+docs/audits/evidence/**/*$py.class
+docs/audits/evidence/**/.pytest_cache/
+docs/audits/evidence/**/.ipynb_checkpoints/
+docs/audits/evidence/**/.mypy_cache/
+docs/audits/evidence/**/.ruff_cache/
