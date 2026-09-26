@@ -101,6 +101,29 @@ BLOCKS = {
                     "why": "a long window or a lag withdraws the train origins whose support reaches a non-finite padded row; every arm of "
                            "this block, the baseline included, trains on the SAME origins so context is never conflated with volume"},
     "Q3_VOLUME":   {"arms": ["volume_56d", "volume_112d"], "question": "more history with the evaluation, scaler and cadence FIXED"},
+    "Q2_CONTEXT_BOUNDED": {"arms": ["modular_w60", "daily_lag", "long_window_crop60", "short_window_deep_core"],
+                    "question": "the part of the Q2_CONTEXT question a 30 GiB host can fit: does a causal daily-lag channel, or a "
+                                "deeper dilated core at W60, change error against the W60 baseline and against the W1440 exact-crop "
+                                "information null? The two W1440 FULL-DEPTH arms of Q2_CONTEXT (long_window_own_depth, "
+                                "long_window_local_support_67) are NOT in this block, so this block does NOT separate context from "
+                                "depth and does NOT answer the Q2_CONTEXT question: it measures the three arms whose retained cost "
+                                "pilots fit this host, and leaves the long-window treatment unmeasured",
+                    "train_population": "COMMON_INTERSECTION",
+                    "why": "the W1440 crop arm withdraws the train origins whose support reaches a padded row and the lag arm those "
+                           "whose daily lookup is non-finite; every arm of this block, the baseline included, trains on the SAME "
+                           "origins so an input difference is never conflated with volume",
+                    "primary_factorial": ["modular_w60", "daily_lag"],
+                    "secondary_control": ["long_window_crop60"],
+                    "informed_by": "RESTRICTED BEFORE ANY SCORE from the arms of Q2_CONTEXT v1 (design "
+                                   "6d1aaecaf27c581c709a745a4f976c2e9dcc05594815b2ee1a9747595f4398b1, state "
+                                   "BUDGET_LIMITED_BEFORE_ANY_OUTCOME, zero cells fitted), on the two RETAINED cost pilots' own "
+                                   "measurements and on nothing else: long_window_own_depth 4.165 CPU s per update and 8 458 399 744 B "
+                                   "peak RSS, long_window_local_support_67 4.443 CPU s per update and 10 279 276 544 B peak RSS, i.e. "
+                                   "17 507 s and 18 406 s per cell at the 4 000-update ceiling and a resident set that would take this "
+                                   "host's memory away from its owner; the three arms kept cost 287 s, 312 s and 488 s per cell at the "
+                                   "ceiling with peak RSS under 1 GiB. The restriction is a resource declaration made before any score "
+                                   "of any cell existed, never a removal after a score was seen (reading rule 3); no arm, seed, "
+                                   "recipe, scaler, row, cadence or ceiling of Q2_CONTEXT v1 is otherwise changed"},
     "CONTEXT_DAILY_LAG": {"arms": ["modular_w60", "daily_lag"],
                           "question": "does a causal daily-lag channel y(t+h-1440) add predictive information to the W60 receiver, without paying for "
                                       "W1440 or changing receiver depth? (RP87; scoped as THIS feature addition, not an abstract information-only effect)",
@@ -203,7 +226,7 @@ def seal(block: str, *, source_run: Path = SOURCE_RUN, seeds=SEEDS, reuse: dict 
         comp = {**B.decide(ours, B.gasparin_2019()), "against": "gasparin_2019",
                 "rule": "the adapted GRU is measured under OUR contract; Table 5 stays in the source notes"}
     else:
-        contrast = ("permitted_inputs" if block in ("Q1_CALENDAR", "Q2_CONTEXT") else "split_rule")
+        contrast = ("permitted_inputs" if block in ("Q1_CALENDAR", "Q2_CONTEXT", "Q2_CONTEXT_BOUNDED") else "split_rule")
         theirs = B.replace(ours, task_id=f"{ours.task_id}.{block}", varying_factors=(contrast,),
                            estimand=BLOCKS[block]["question"])
         ours_c = B.replace(ours, varying_factors=(contrast,), estimand=BLOCKS[block]["question"])
