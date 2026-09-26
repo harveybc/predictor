@@ -1,0 +1,70 @@
+{
+ "schema": "q2_context_deep_terminations.v1",
+ "recorded_at": "2026-09-26T19:30Z",
+ "recorded_by": "Satoshi, successor technical lead, under the owner's grant of 2026-09-26 and the coordinator's stand-down of the same day",
+ "why_this_file": "the coordinator's stand-down requires every termination recorded with its unit, its limit, its attempt and the cost lost, and requires a cgroup-limit kill distinguished from a user-session memory-pressure kill. None of these is converted into a retry with a bigger cap; the retries this round's driver was configured for were stopped and the arms that were not started stay not started",
+ "source_of_every_field": "systemd's own journal for the user manager (scope Started / Consumed lines) and systemd-oomd's own kill lines; nothing here is inferred from a process exit code alone",
+ "mechanisms": {
+  "CGROUP_MEMORY_MAX": "the kernel cgroup out-of-memory killer fired because the job's own cgroup reached its MemoryMax. The journal shows `Failed with result 'oom-kill'` with NO systemd-oomd kill line. The cap contained the kill to the job that asked for it",
+  "USER_SESSION_MEMORY_PRESSURE": "systemd-oomd killed the scope because PSI memory pressure for the WHOLE user@1000.service exceeded its 50.00% limit for more than 20 s with reclaim activity, and this scope was the top candidate by usage. The job's own cgroup was NOT at its MemoryMax. No per-job cap prevents this: the trigger is the session's aggregate state, which no single job controls"
+ },
+ "terminations_today": [
+  {
+   "n": 1, "at": "2026-09-26T12:59:55Z (07:59:55 local)",
+   "scope": "crispdm-q2ctx-1790427407-4121087.scope",
+   "mechanism": "CGROUP_MEMORY_MAX",
+   "evidence": "journal: \"Failed with result 'oom-kill'\" with no systemd-oomd kill line for this scope",
+   "mine": false,
+   "attribution": "a `q2ctx`-named scope of the earlier Q2_CONTEXT round, before this session began; recorded because the coordinator asked for the day's terminations, not claimed as this round's",
+   "cost_lost": "not recorded by this session"
+  },
+  {
+   "n": 2, "at": "2026-09-26T13:14:07Z (08:14:07 local)",
+   "scope": "crispdm-q2ctx-1790427407-4121086.scope",
+   "mechanism": "CGROUP_MEMORY_MAX",
+   "evidence": "journal: \"Failed with result 'oom-kill'\" with no systemd-oomd kill line for this scope",
+   "mine": false,
+   "attribution": "as above",
+   "cost_lost": "not recorded by this session"
+  },
+  {
+   "n": 3, "at": "2026-09-26T18:10:54Z (13:10:54 local)",
+   "scope": "crispdm-huntdgst-1790445652-429546.scope",
+   "mechanism": "USER_SESSION_MEMORY_PRESSURE",
+   "evidence": "systemd-oomd: \"Killed /user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-huntdgst-1790445652-429546.scope due to memory pressure for /user.slice/user-1000.slice/user@1000.service being 55.11% > 50.00% for > 20s with reclaim activity\"; cgroup usage at kill 2.8G, Pgscan 1104650",
+   "mine": false,
+   "attribution": "a git-object digest hunt of another agent on this host; recorded because it is the same mechanism that took this round's cell 25 minutes later, and because it shows the host was already shedding jobs",
+   "cost_lost": "not recorded by this session"
+  },
+  {
+   "n": 4, "at": "2026-09-26T18:34:46Z (13:34:46 local)",
+   "scope": "crispdm-q2deep-1790446297-443210.scope",
+   "mechanism": "USER_SESSION_MEMORY_PRESSURE",
+   "evidence": "systemd-oomd: \"Killed ... crispdm-q2deep-1790446297-443210.scope due to memory pressure for /user.slice/user-1000.slice/user@1000.service being 55.45% > 50.00% for > 20s with reclaim activity\"; at the kill: cgroup Current Memory Usage 7.4G, Pgscan 61467701, Pressure Avg10 34.59 / Avg60 29.48 / Avg300 23.83",
+   "mine": true,
+   "unit": "pilot_long_window_own_depth",
+   "arm": "long_window_own_depth",
+   "role": "COST_PILOT (200 updates, validates inside train, never reads the DEV validation)",
+   "attempt": "attempt 1 of 1 for this unit; NOT retried, and the driver's remaining retries were stopped by the stand-down",
+   "requested_limit": "crispdm-run -m 9G, i.e. cgroup MemoryMax 9 GiB and MemoryHigh 8.1 GiB (crispdm-run sets MemoryHigh to 90 % of the request), MemorySwapMax 0",
+   "cgroup_memory_max_reached": false,
+   "cgroup_peak_at_kill": "7.4G, i.e. 1.6 GiB below its own MemoryMax: this was NOT a cgroup-limit kill",
+   "cost_lost": {"cpu_seconds": 1292.106, "wall_seconds": 1389.019,
+                 "from": "systemd: \"Consumed 21min 32.106s CPU time over 23min 9.019s wall clock time, 7.4G memory peak\"",
+                 "artifact_produced": "none: run_cell writes its attempt folder only after training, scoring and the reload check succeed, so a killed cell leaves no record and no number"},
+   "mem_available_at_launch": "14021795840 B (13.06 GiB), read by tools/df_memory_gated_run.py immediately before the launch and logged in MEMORY_GATE.jsonl",
+   "what_this_shows_about_the_guard": "the launch reading was the highest of the whole session and the job still died 23 minutes later, because the reading held no commitment for the duration of the load. A read-then-launch admission test cannot protect a 23-minute 7.4 GiB job on a host where other agents' jobs arrive after the reading"
+  }
+ ],
+ "arms_not_started_and_kept_not_started": {
+  "long_window_own_depth_s1": "held by the gate at cap 10G for 1 395 s of polling, launched never; the stand-down stopped the poller",
+  "long_window_own_depth_s2": "never reached",
+  "long_window_own_depth_s3": "never reached",
+  "long_window_local_support_67_s1": "never reached",
+  "long_window_local_support_67_s2": "never reached",
+  "long_window_local_support_67_s3": "never reached",
+  "pilot_long_window_own_depth": "terminated once (n=4 above) and NOT retried",
+  "pilot_long_window_local_support_67": "held by the gate at cap 11G for 495 s of polling, launched never; stopped",
+  "rule_applied": "an out-of-memory termination was not converted into a retry with a bigger cap, and no arm that had not already started was started"
+ }
+}
