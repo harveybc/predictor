@@ -188,7 +188,8 @@ validator.
 
 ```
 DEFREP — items 1 and 2 of the 2026-09-26 defect order (item 3 is in data-gov)
-repo/branch/tip: predictor / satoshi/defect-repairs-and-fred-20260926 / b24f71e4
+repo/branch: predictor / satoshi/defect-repairs-and-fred-20260926
+commits: 6544ea38 (item 1, the dirty-tree trap) · a268b9e3 (item 2, the origin-policy validator)
 files: .gitignore (re-ignore caches under evidence)
        tools/governed_run.py (strict_code_identity names what is uncommitted; semantics unchanged)
        tools/df_e1_block.py (TRAIN_POPULATIONS, train_population_report, validate_train_population;
