@@ -1,0 +1,152 @@
+[
+ {
+  "case_id": "centered_rolling_window",
+  "code_sha256": "118e4017dca7320aa843dc08ddb68651804c8e138cce154c5edcbd18004e8586",
+  "cuts_tested": 100,
+  "level": null,
+  "n": 100,
+  "operator_kind": "NEGATIVE_CONTROL",
+  "operator_params": {
+   "class": "centered_rolling_window"
+  },
+  "outcome": "DETECTED",
+  "reason": "PREFIX_ALL_T: prefix differs at t=2 (outputs ['y'], availability/reason equal=False)",
+  "run_id": "c167_mechanics_sample_118e4017dca7320aa843dc08",
+  "test_class": "NEGATIVE_CONTROL"
+ },
+ {
+  "case_id": "filtfilt",
+  "code_sha256": "118e4017dca7320aa843dc08ddb68651804c8e138cce154c5edcbd18004e8586",
+  "cuts_tested": 100,
+  "level": null,
+  "n": 100,
+  "operator_kind": "NEGATIVE_CONTROL",
+  "operator_params": {
+   "class": "filtfilt"
+  },
+  "outcome": "DETECTED",
+  "reason": "PREFIX_ALL_T: prefix differs at t=0 (outputs ['y'], availability/reason equal=False)",
+  "run_id": "c167_mechanics_sample_118e4017dca7320aa843dc08",
+  "test_class": "NEGATIVE_CONTROL"
+ },
+ {
+  "case_id": "shift_minus_k",
+  "code_sha256": "118e4017dca7320aa843dc08ddb68651804c8e138cce154c5edcbd18004e8586",
+  "cuts_tested": 100,
+  "level": null,
+  "n": 100,
+  "operator_kind": "NEGATIVE_CONTROL",
+  "operator_params": {
+   "class": "shift_minus_k"
+  },
+  "outcome": "DETECTED",
+  "reason": "PREFIX_ALL_T: prefix differs at t=0 (outputs ['y'], availability/reason equal=False)",
+  "run_id": "c167_mechanics_sample_118e4017dca7320aa843dc08",
+  "test_class": "NEGATIVE_CONTROL"
+ },
+ {
+  "case_id": "same_convolution_or_right_padding",
+  "code_sha256": "118e4017dca7320aa843dc08ddb68651804c8e138cce154c5edcbd18004e8586",
+  "cuts_tested": 100,
+  "level": null,
+  "n": 100,
+  "operator_kind": "NEGATIVE_CONTROL",
+  "operator_params": {
+   "class": "same_convolution_or_right_padding"
+  },
+  "outcome": "DETECTED",
+  "reason": "PREFIX_ALL_T: prefix differs at t=0 (outputs ['y'], availability/reason equal=False)",
+  "run_id": "c167_mechanics_sample_118e4017dca7320aa843dc08",
+  "test_class": "NEGATIVE_CONTROL"
+ },
+ {
+  "case_id": "full_series_dwt_as_time_row",
+  "code_sha256": "118e4017dca7320aa843dc08ddb68651804c8e138cce154c5edcbd18004e8586",
+  "cuts_tested": 100,
+  "level": null,
+  "n": 100,
+  "operator_kind": "NEGATIVE_CONTROL",
+  "operator_params": {
+   "class": "full_series_dwt_as_time_row"
+  },
+  "outcome": "DETECTED",
+  "reason": "PREFIX_ALL_T: prefix differs at t=0 (outputs ['y'], availability/reason equal=True)",
+  "run_id": "c167_mechanics_sample_118e4017dca7320aa843dc08",
+  "test_class": "NEGATIVE_CONTROL"
+ },
+ {
+  "case_id": "full_series_fft_reconstruction_feature",
+  "code_sha256": "118e4017dca7320aa843dc08ddb68651804c8e138cce154c5edcbd18004e8586",
+  "cuts_tested": 100,
+  "level": null,
+  "n": 100,
+  "operator_kind": "NEGATIVE_CONTROL",
+  "operator_params": {
+   "class": "full_series_fft_reconstruction_feature"
+  },
+  "outcome": "DETECTED",
+  "reason": "PREFIX_ALL_T: prefix differs at t=0 (outputs ['y'], availability/reason equal=True)",
+  "run_id": "c167_mechanics_sample_118e4017dca7320aa843dc08",
+  "test_class": "NEGATIVE_CONTROL"
+ },
+ {
+  "case_id": "phase_compensation_shift_back",
+  "code_sha256": "118e4017dca7320aa843dc08ddb68651804c8e138cce154c5edcbd18004e8586",
+  "cuts_tested": 100,
+  "level": null,
+  "n": 100,
+  "operator_kind": "NEGATIVE_CONTROL",
+  "operator_params": {
+   "class": "phase_compensation_shift_back"
+  },
+  "outcome": "DETECTED",
+  "reason": "PREFIX_ALL_T: prefix differs at t=4 (outputs ['y'], availability/reason equal=False)",
+  "run_id": "c167_mechanics_sample_118e4017dca7320aa843dc08",
+  "test_class": "NEGATIVE_CONTROL"
+ },
+ {
+  "case_id": "fit_with_calibration_or_confirmation_rows",
+  "code_sha256": "118e4017dca7320aa843dc08ddb68651804c8e138cce154c5edcbd18004e8586",
+  "cuts_tested": 1,
+  "level": null,
+  "n": 100,
+  "operator_kind": "NEGATIVE_CONTROL",
+  "operator_params": {
+   "class": "fit_with_calibration_or_confirmation_rows"
+  },
+  "outcome": "DETECTED",
+  "reason": "train range over calibration/confirmation: REFUSED: fit range [0, 100) is not inside the TRAIN partition [0, 60); confirmation role: REFUSED: fit role 'CONFIRMATION' is not allowed by the design ['TRAIN', 'CALIBRATION']",
+  "run_id": "c167_mechanics_sample_118e4017dca7320aa843dc08",
+  "test_class": "NEGATIVE_CONTROL"
+ },
+ {
+  "case_id": "reorder_by_timestamp_later_than_materialized",
+  "code_sha256": "118e4017dca7320aa843dc08ddb68651804c8e138cce154c5edcbd18004e8586",
+  "cuts_tested": 1,
+  "level": null,
+  "n": 100,
+  "operator_kind": "NEGATIVE_CONTROL",
+  "operator_params": {
+   "class": "reorder_by_timestamp_later_than_materialized"
+  },
+  "outcome": "DETECTED",
+  "reason": "source order: REFUSED: timestamps are not strictly increasing (unordered or duplicated rows; no duplicate policy is declared); after materialization: REFUSED: matrix digest does not re-derive (bytes changed after materialization)",
+  "run_id": "c167_mechanics_sample_118e4017dca7320aa843dc08",
+  "test_class": "NEGATIVE_CONTROL"
+ },
+ {
+  "case_id": "state_reused_from_another_series",
+  "code_sha256": "118e4017dca7320aa843dc08ddb68651804c8e138cce154c5edcbd18004e8586",
+  "cuts_tested": 1,
+  "level": null,
+  "n": 100,
+  "operator_kind": "NEGATIVE_CONTROL",
+  "operator_params": {
+   "class": "state_reused_from_another_series"
+  },
+  "outcome": "DETECTED",
+  "reason": "state of series A stepped on series B: REFUSED: state belongs to another series (dataset or contract differs)",
+  "run_id": "c167_mechanics_sample_118e4017dca7320aa843dc08",
+  "test_class": "NEGATIVE_CONTROL"
+ }
+]

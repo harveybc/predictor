@@ -1,0 +1,1093 @@
+{
+ "schema": "df_rp49_rp64_audit.v1",
+ "authority": "the owner's grant of 2026-09-26: this audit stands in place of the absent MUSASHI_RP49_RP56_REVIEW and MUSASHI_RP57_RP64_REVIEW. It is published under Satoshi's name and no reviewer's name appears on it",
+ "rule": "a module is unblocked only if its own retained artifacts sustain it; a claim whose artifact is gone is UNVERIFIABLE_ARTIFACT_ABSENT, never accepted",
+ "run_roots": {
+  "successor": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3",
+  "successor_present": true,
+  "phase1": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b",
+  "phase1_present": true
+ },
+ "counts": {
+  "VERIFIED": 60,
+  "REFUTED": 9,
+  "UNVERIFIABLE_ARTIFACT_ABSENT": 0
+ },
+ "sections": {
+  "RP49_RP56_identity": [
+   {
+    "claim": "the sealed successor design re-derives its own digest",
+    "state": "VERIFIED",
+    "declared": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+    "recomputed": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7"
+   },
+   {
+    "claim": "the design the run executed IS the design that was sealed before it ran",
+    "state": "VERIFIED",
+    "sealed_file_sha256": "a612eda185c0b5a1fac5e93e3446da26c96fd969e953a8e2304412b57944b228",
+    "run_file_sha256": "a612eda185c0b5a1fac5e93e3446da26c96fd969e953a8e2304412b57944b228",
+    "objects_identical": true
+   },
+   {
+    "claim": "the closure's data_sha256 is the digest of the prepared DATA bytes",
+    "state": "VERIFIED",
+    "declared": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+    "recomputed": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194"
+   },
+   {
+    "claim": "the retained RESULTS copy is byte-identical to the run root's",
+    "state": "VERIFIED",
+    "evidence_sha256": "78bdc41cc8f03b5581ee692c54300079cf479fb744fcd174b05be039c8349df8",
+    "run_root_sha256": "78bdc41cc8f03b5581ee692c54300079cf479fb744fcd174b05be039c8349df8"
+   },
+   {
+    "claim": "the retained CLOSE copy is byte-identical to the run root's",
+    "state": "VERIFIED",
+    "evidence_sha256": "9f5aeedc8e3504109e4bacffdbca9b5df59c7a59524c3db361cbc1fbda47698d",
+    "run_root_sha256": "9f5aeedc8e3504109e4bacffdbca9b5df59c7a59524c3db361cbc1fbda47698d"
+   }
+  ],
+  "RP49_RP56_population": [
+   {
+    "claim": "the closure's sealed population is 15 units, every one present, none absent, no stranger",
+    "state": "VERIFIED",
+    "declared": 15,
+    "present": 15
+   },
+   {
+    "claim": "15 units verified, 15 governed, 0 refused",
+    "state": "VERIFIED",
+    "counts": {
+     "declared": 15,
+     "verified": 15,
+     "refused": 0,
+     "metrics_verified": 15,
+     "inference_verified": 11,
+     "regime_verified": 14
+    },
+    "governed": 15
+   },
+   {
+    "claim": "verified + NOT_APPLICABLE = declared, per fact",
+    "state": "VERIFIED",
+    "inference_not_applicable": [
+     "pilot_ae",
+     "ae_s1",
+     "ae_s2",
+     "ae_s3"
+    ],
+    "regime_not_applicable": [
+     "controls"
+    ]
+   },
+   {
+    "claim": "the warehouse population of 16 is the closure's 15 plus exactly one more unit, which the return never names",
+    "state": "VERIFIED",
+    "warehouse_population": 16,
+    "the_sixteenth": [
+     "prepare"
+    ],
+    "reading": "16/16 counts the governance unit 'prepare'; it is not a sixteenth cell, and no cell is missing from the 15"
+   }
+  ],
+  "RP49_RP56_numbers": [
+   {
+    "claim": "every cell's published scaled error is its own MAE over the run's own denominator",
+    "state": "VERIFIED",
+    "denominator": 0.6162615768463073,
+    "cells": 9
+   },
+   {
+    "claim": "R0 mean 0.8875 sd 0.0127",
+    "state": "VERIFIED",
+    "recomputed_mean": 0.8874951608271097,
+    "recomputed_sd": 0.012662401831580532,
+    "published_mean": 0.8874951608271097,
+    "published_sd": 0.012662401831580532,
+    "per_seed": [
+     0.8965322309244448,
+     0.8929307677900018,
+     0.8730224837668821
+    ]
+   },
+   {
+    "claim": "R1 mean 0.9034 sd 0.0175",
+    "state": "VERIFIED",
+    "recomputed_mean": 0.9034055940628739,
+    "recomputed_sd": 0.017461963337275458,
+    "published_mean": 0.9034055940628739,
+    "published_sd": 0.017461963337275458,
+    "per_seed": [
+     0.9086736747596948,
+     0.8839161196375496,
+     0.9176269877913773
+    ]
+   },
+   {
+    "claim": "R2 mean 0.8968 sd 0.0236",
+    "state": "VERIFIED",
+    "recomputed_mean": 0.8967950632932982,
+    "recomputed_sd": 0.023553593139257638,
+    "published_mean": 0.8967950632932982,
+    "published_sd": 0.023553593139257638,
+    "per_seed": [
+     0.8799275427751168,
+     0.9237054794577801,
+     0.8867521676469975
+    ]
+   },
+   {
+    "claim": "paired R1_minus_R0 +0.0159",
+    "state": "VERIFIED",
+    "recomputed": 0.015910433235764354,
+    "published": 0.015910433235764354
+   },
+   {
+    "claim": "paired R2_minus_R0 +0.0093",
+    "state": "VERIFIED",
+    "recomputed": 0.009299902466188578,
+    "published": 0.009299902466188578
+   },
+   {
+    "claim": "paired R2_minus_R1 -0.0066",
+    "state": "VERIFIED",
+    "recomputed": -0.006610530769575777,
+    "published": -0.006610530769575777
+   },
+   {
+    "claim": "control linear_ridge 0.8852",
+    "state": "VERIFIED",
+    "published": 0.8851672468675469,
+    "mae": 0.5454945633272991
+   },
+   {
+    "claim": "control persistence 1.0018",
+    "state": "VERIFIED",
+    "published": 1.0018019605369508,
+    "mae": 0.6173720558882235
+   },
+   {
+    "claim": "control seasonal_naive_daily 1.1873",
+    "state": "VERIFIED",
+    "published": 1.1872544207304976,
+    "mae": 0.7316592814371257
+   },
+   {
+    "claim": "four of the nine fits stopped at the update ceiling and are CENSORED_BY_BUDGET",
+    "state": "VERIFIED",
+    "censored": [
+     "R0_s2",
+     "R1_s2",
+     "R1_s3",
+     "R2_s2"
+    ],
+    "at_the_ceiling": true
+   },
+   {
+    "claim": "every fit's restored checkpoint agrees with the argmin of its own curve",
+    "state": "VERIFIED",
+    "per_cell": {
+     "R0_s1": [
+      3,
+      3
+     ],
+     "R1_s1": [
+      3,
+      3
+     ],
+     "R2_s1": [
+      2,
+      2
+     ],
+     "R0_s2": [
+      5,
+      5
+     ],
+     "R1_s2": [
+      5,
+      5
+     ],
+     "R2_s2": [
+      6,
+      6
+     ],
+     "R0_s3": [
+      1,
+      1
+     ],
+     "R1_s3": [
+      4,
+      4
+     ],
+     "R2_s3": [
+      1,
+      1
+     ]
+    }
+   },
+   {
+    "claim": "AE cost 137.156 s total, 22.86 s amortised per consuming fit",
+    "state": "VERIFIED",
+    "ae_cpu": 137.156,
+    "consuming_fits": 6,
+    "amortised": 22.859333333333336
+   },
+   {
+    "claim": "the published root CPU figure is the sum of its own components",
+    "state": "VERIFIED",
+    "components": 2535.5040000000004,
+    "published": 2535.5039999999995
+   },
+   {
+    "claim": "2 535.5 CPU seconds of an 11 000-second cap",
+    "state": "REFUTED",
+    "quoted_against_the_cap": 2535.504,
+    "the_runner_charges_to_the_cap": 2785.5039999999995,
+    "already_spent_seconds": 250.0,
+    "cap_seconds": 11000.0,
+    "reading": "the figure the return sets against the cap is the root-only total; the report charges root + already_spent to the same cap. Both are far inside it, and the difference is the accounting, not the science"
+   }
+  ],
+  "RP49_RP56_replay": [
+   {
+    "claim": "the retained closure replay covers the rows the published metric is computed on",
+    "state": "REFUTED",
+    "replayed_windows_per_unit": 512,
+    "metric_rows": 10020,
+    "coverage_percent": 5.11,
+    "reading": "the replay is a real fresh-process reload, but of the FIRST 512 contiguous origins: 5.11% of the metric's rows, and at 59/60 overlap barely more than one situation by the programme's own reading rule"
+   },
+   {
+    "claim": "the published metric reproduces from the saved weights on EVERY evaluation row, not only the closure's first 512",
+    "state": "VERIFIED",
+    "tolerance_kw": 1e-05,
+    "windows": 10020,
+    "cells": {
+     "R0_s1": {
+      "n": 10020,
+      "max_abs_diff": 9.5367431640625e-07,
+      "mae_replay": 0.552498366144579,
+      "mae_published": 0.5524983663230361,
+      "mase_replay": 0.8965322306348648,
+      "mase_published": 0.8965322309244448
+     },
+     "R0_s2": {
+      "n": 10020,
+      "max_abs_diff": 7.152557373046875e-07,
+      "mae_replay": 0.5502789227676248,
+      "mae_published": 0.5502789229728504,
+      "mase_replay": 0.8929307674569847,
+      "mase_published": 0.8929307677900018
+     },
+     "R0_s3": {
+      "n": 10020,
+      "max_abs_diff": 7.152557373046875e-07,
+      "mae_replay": 0.5380102120907244,
+      "mae_published": 0.5380102124684585,
+      "mase_replay": 0.8730224831539377,
+      "mase_published": 0.8730224837668821
+     },
+     "R1_s1": {
+      "n": 10020,
+      "max_abs_diff": 1.3113021850585938e-06,
+      "mae_replay": 0.5599806724135034,
+      "mae_published": 0.5599806716461382,
+      "mase_replay": 0.9086736760048888,
+      "mase_published": 0.9086736747596948
+     },
+     "R1_s2": {
+      "n": 10020,
+      "max_abs_diff": 1.1324882507324219e-06,
+      "mae_replay": 0.5447235423569193,
+      "mae_published": 0.5447235416877055,
+      "mase_replay": 0.8839161207234745,
+      "mase_published": 0.8839161196375496
+     },
+     "R1_s3": {
+      "n": 10020,
+      "max_abs_diff": 1.1324882507324219e-06,
+      "mae_replay": 0.56549825437571,
+      "mae_published": 0.5654982544530414,
+      "mase_replay": 0.9176269876658926,
+      "mase_published": 0.9176269877913773
+     },
+     "R2_s1": {
+      "n": 10020,
+      "max_abs_diff": 1.1920928955078125e-06,
+      "mae_replay": 0.5422655348277615,
+      "mae_published": 0.54226553502109,
+      "mase_replay": 0.879927542461405,
+      "mase_published": 0.8799275427751168
+     },
+     "R2_s2": {
+      "n": 10020,
+      "max_abs_diff": 9.5367431640625e-07,
+      "mae_replay": 0.5692441965643994,
+      "mae_published": 0.5692441953122259,
+      "mase_replay": 0.9237054814896665,
+      "mase_published": 0.9237054794577801
+     },
+     "R2_s3": {
+      "n": 10020,
+      "max_abs_diff": 1.0728836059570312e-06,
+      "mae_replay": 0.5464712890286884,
+      "mae_published": 0.5464712891060197,
+      "mase_replay": 0.8867521675215128,
+      "mase_published": 0.8867521676469975
+     }
+    }
+   }
+  ],
+  "RP49_RP56_guards": [
+   {
+    "claim": "this round's five guards each die under their own mutation (5 killed of 5)",
+    "state": "VERIFIED",
+    "mutants": [
+     "M11_deliveries_written_without_the_lock",
+     "M12_terminals_written_without_the_lock",
+     "M13_chronology_compared_as_text",
+     "M14_the_first_report_file_wins",
+     "M15_one_spool_for_every_unit"
+    ]
+   },
+   {
+    "claim": "the negative-control classes full_series_dwt_as_time_row, centered_rolling_window, filtfilt and phase_compensation_shift_back are all DETECTED",
+    "state": "VERIFIED",
+    "controls": {
+     "centered_rolling_window": "DETECTED",
+     "filtfilt": "DETECTED",
+     "shift_minus_k": "DETECTED",
+     "same_convolution_or_right_padding": "DETECTED",
+     "full_series_dwt_as_time_row": "DETECTED",
+     "full_series_fft_reconstruction_feature": "DETECTED",
+     "phase_compensation_shift_back": "DETECTED",
+     "fit_with_calibration_or_confirmation_rows": "DETECTED",
+     "reorder_by_timestamp_later_than_materialized": "DETECTED",
+     "state_reused_from_another_series": "DETECTED"
+    }
+   },
+   {
+    "claim": "RP49-RP56 full suite: 3 failed, 2289 passed, 39 skipped, 8 errors",
+    "state": "VERIFIED",
+    "last_line": "3 failed, 2289 passed, 39 skipped, 2559 warnings, 8 errors in 1973.90s (0:32:53)"
+   },
+   {
+    "claim": "RP57-RP64 full suite: 3 failed, 2323 passed, 39 skipped, 8 errors",
+    "state": "VERIFIED",
+    "last_line": "3 failed, 2323 passed, 39 skipped, 2559 warnings, 8 errors in 2086.13s (0:34:46)"
+   }
+  ],
+  "RP57_RP64_phase1": [
+   {
+    "claim": "design 5cb8263d... sealed before running",
+    "state": "VERIFIED",
+    "declared": "5cb8263d359f15008ddc0ba0a997cdafd75036b8dd5621af0d31e5f9a8a4b231",
+    "recomputed": "5cb8263d359f15008ddc0ba0a997cdafd75036b8dd5621af0d31e5f9a8a4b231"
+   },
+   {
+    "claim": "the phase ran on the successor run's own rows",
+    "state": "VERIFIED",
+    "phase1_data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194"
+   },
+   {
+    "claim": "executed for 2 024.5 CPU seconds, nine cells",
+    "state": "VERIFIED",
+    "cells": 9,
+    "spent": 2024.488,
+    "sum_of_cell_cpu": 2024.488
+   },
+   {
+    "claim": "core_mae MAE 0.4978 sd 0.0002 (n=3)",
+    "state": "VERIFIED",
+    "recomputed_mean": 0.49777021276170386,
+    "recomputed_sd": 0.0001705932335020351,
+    "per_seed": [
+     0.4975795385093508,
+     0.4978227182589842,
+     0.49790838151677647
+    ]
+   },
+   {
+    "claim": "tcn_mse MAE 0.5359 sd 0.005 (n=3)",
+    "state": "VERIFIED",
+    "recomputed_mean": 0.5359480866370087,
+    "recomputed_sd": 0.005011531507543358,
+    "per_seed": [
+     0.5302045159451977,
+     0.5382083208139785,
+     0.53943142315185
+    ]
+   },
+   {
+    "claim": "core_mse MAE 0.5469 sd 0.0078 (n=3)",
+    "state": "VERIFIED",
+    "recomputed_mean": 0.546930215604513,
+    "recomputed_sd": 0.007804002710283614,
+    "per_seed": [
+     0.5380103335307268,
+     0.5502814474169365,
+     0.5524988658658758
+    ]
+   },
+   {
+    "claim": "the reference TCN block is parameter-matched: 8 061 against ours 8 127",
+    "state": "VERIFIED",
+    "tcn": [
+     8061
+    ],
+    "ours": [
+     8127
+    ]
+   },
+   {
+    "claim": "Four of nine cells are CENSORED_BY_BUDGET",
+    "state": "REFUTED",
+    "measured": 5,
+    "censored": [
+     "core_mae_s1",
+     "core_mae_s2",
+     "core_mse_s2",
+     "tcn_mse_s2",
+     "tcn_mse_s3"
+    ],
+    "reading": "the retained report says five. Four is the successor run's count, not this phase's"
+   },
+   {
+    "claim": "the arms of the recipe contrast were trained to the same budget",
+    "state": "REFUTED",
+    "updates_by_arm": {
+     "core_mae": 11762,
+     "core_mse": 10270,
+     "tcn_mse": 11762
+    },
+    "reading": "the monitor that changed with the loss also changed when early stopping fired, so the winning core_mae arm ran 11 762 optimiser updates against core_mse's 10 270: the 0.049 kW is a recipe AND budget difference, which Musashi's monitor-fixed factorial addresses and RP63 itself does not"
+   },
+   {
+    "claim": "core_mse_s1 = 0.5525, reproducing R0_s1 of the finished run exactly through a different runner",
+    "state": "REFUTED",
+    "phase1": 0.5524988658658758,
+    "successor": 0.5524983663230361,
+    "difference": 4.995428397602808e-07,
+    "reading": "a cross-runner reproduction to 5.0e-07 kW in the mean, not an identity: the predictions differ by up to 6.5e-05 kW, which is ABOVE this repository's own replay tolerance of 1e-05"
+   }
+  ],
+  "RP57_RP64_phase1_replay": [
+   {
+    "claim": "phase 1 carries a closure of its own",
+    "state": "REFUTED",
+    "files_in_the_run_root": [
+     "DATA.npz",
+     "DELIVERIES.json",
+     "DELIVERIES.json.lock",
+     "DESIGN.json",
+     "REPORT.json",
+     "REPORT.pilot.json",
+     "TERMINAL_RECEIPTS.json",
+     "TERMINAL_RECEIPTS.json.lock",
+     "attempts",
+     "cache"
+    ],
+    "reading": "nine cells, every unit registered, delivered, reported and reconciled - and never closed: there is no CLOSE.json and no closure_replays here, so the successor run's own standard (a fresh process reloads the saved weights and regathers the windows) was not applied to this phase"
+   },
+   {
+    "claim": "phase 1's published MAE reproduces from its own saved weights, on every evaluation row, in a fresh process",
+    "state": "VERIFIED",
+    "tolerance_kw": 1e-05,
+    "cells": {
+     "core_mae_s1": {
+      "arm": "core_mae",
+      "n": 10020,
+      "max_abs_diff": 5.960464477539062e-07,
+      "mae_replay": 0.4978227184642098,
+      "mae_published": 0.4978227182589842,
+      "labels_equal_the_panel_targets": true,
+      "parameters_replay": 8127,
+      "parameters_published": 8127
+     },
+     "core_mae_s2": {
+      "arm": "core_mae",
+      "n": 10020,
+      "max_abs_diff": 4.76837158203125e-07,
+      "mae_replay": 0.49790838161195355,
+      "mae_published": 0.49790838151677647,
+      "labels_equal_the_panel_targets": true,
+      "parameters_replay": 8127,
+      "parameters_published": 8127
+     },
+     "core_mae_s3": {
+      "arm": "core_mae",
+      "n": 10020,
+      "max_abs_diff": 4.76837158203125e-07,
+      "mae_replay": 0.49757953888708484,
+      "mae_published": 0.4975795385093508,
+      "labels_equal_the_panel_targets": true,
+      "parameters_replay": 8127,
+      "parameters_published": 8127
+     },
+     "core_mse_s1": {
+      "arm": "core_mse",
+      "n": 10020,
+      "max_abs_diff": 8.344650268554688e-07,
+      "mae_replay": 0.5524988670704607,
+      "mae_published": 0.5524988658658758,
+      "labels_equal_the_panel_targets": true,
+      "parameters_replay": 8127,
+      "parameters_published": 8127
+     },
+     "core_mse_s2": {
+      "arm": "core_mse",
+      "n": 10020,
+      "max_abs_diff": 7.152557373046875e-07,
+      "mae_replay": 0.5502814468280284,
+      "mae_published": 0.5502814474169365,
+      "labels_equal_the_panel_targets": true,
+      "parameters_replay": 8127,
+      "parameters_published": 8127
+     },
+     "core_mse_s3": {
+      "arm": "core_mse",
+      "n": 10020,
+      "max_abs_diff": 7.152557373046875e-07,
+      "mae_replay": 0.5380103331470442,
+      "mae_published": 0.5380103335307268,
+      "labels_equal_the_panel_targets": true,
+      "parameters_replay": 8127,
+      "parameters_published": 8127
+     },
+     "tcn_mse_s1": {
+      "arm": "tcn_mse",
+      "n": 10020,
+      "max_abs_diff": 0.0,
+      "mae_replay": 0.5382083208139785,
+      "mae_published": 0.5382083208139785,
+      "labels_equal_the_panel_targets": true,
+      "parameters_replay": 8061,
+      "parameters_published": 8061
+     },
+     "tcn_mse_s2": {
+      "arm": "tcn_mse",
+      "n": 10020,
+      "max_abs_diff": 0.0,
+      "mae_replay": 0.5302045159451977,
+      "mae_published": 0.5302045159451977,
+      "labels_equal_the_panel_targets": true,
+      "parameters_replay": 8061,
+      "parameters_published": 8061
+     },
+     "tcn_mse_s3": {
+      "arm": "tcn_mse",
+      "n": 10020,
+      "max_abs_diff": 0.0,
+      "mae_replay": 0.53943142315185,
+      "mae_published": 0.53943142315185,
+      "labels_equal_the_panel_targets": true,
+      "parameters_replay": 8061,
+      "parameters_published": 8061
+     }
+    }
+   }
+  ],
+  "RP57_RP64_reanalysis": [
+   {
+    "claim": "192 metric rows",
+    "state": "VERIFIED",
+    "recounted_under_the_publisher_s_own_rule": 192,
+    "declared": 192
+   },
+   {
+    "claim": "the published rows bind to the report whose digest they carry",
+    "state": "VERIFIED",
+    "report_sha256": "848c6ccb4c2b6ea761ea52a032a1e8adf15f2a446f9386b66729dad856fff1cb",
+    "retained_file_sha256": "848c6ccb4c2b6ea761ea52a032a1e8adf15f2a446f9386b66729dad856fff1cb",
+    "reading": "the receipt names a path in a session scratchpad that is gone, but the bytes are retained in the repository under RP57/ and their digest matches"
+   },
+   {
+    "claim": "identical for all nine cells against the run's own RESULTS.json",
+    "state": "VERIFIED",
+    "cells": 9
+   },
+   {
+    "claim": "a zero-error reference yields an undefined skill; no epsilon manufactures a win",
+    "state": "VERIFIED",
+    "skills_omitted_for_a_zero_error_reference": [],
+    "reading": "no reference is zero-error on these rows, so the branch is untaken here; the rule is exercised by tests/test_rp49_rp64_audit.py instead"
+   }
+  ],
+  "RP57_RP64_denominators": [
+   {
+    "claim": "the denominator is the mean absolute change over the HORIZON on the train origins",
+    "state": "VERIFIED",
+    "recomputed": 0.6162615768463073,
+    "prepared": 0.6162615768463073,
+    "train_origins": 40080
+   },
+   {
+    "claim": "the one-step value on the same slice is 0.0851237797 over 40 257 finite pairs",
+    "state": "VERIFIED",
+    "recomputed": 0.08512377971532901,
+    "finite_pairs": 40257,
+    "support": [
+     0,
+     40259
+    ],
+    "reading": "the return says 'the same slice' without naming it; the support that reproduces the number to ten digits is row 0 to the last train LABEL row"
+   },
+   {
+    "claim": "MASE is reported at m = 1 and m = 1440, each with its support",
+    "state": "VERIFIED",
+    "m1_denominator": 0.08512377971532901,
+    "m1_pairs": 40257,
+    "m1440_denominator": 0.6611885207893246,
+    "m1440_pairs": 38818,
+    "published_m1": 6.49052906450702,
+    "recomputed_m1": 6.49052906450702,
+    "published_m1440": 0.8356139723409981,
+    "recomputed_m1440": 0.8356139723409981
+   }
+  ],
+  "RP57_RP64_legacy": [
+   {
+    "claim": "tables inventoried 167 (113 reconstructable, 54 published-summary-only)",
+    "state": "VERIFIED",
+    "entries": 167,
+    "by_status": {
+     "RECONSTRUCTED_FROM_PREDICTIONS_AND_LABELS": 113,
+     "PUBLISHED_SUMMARY_ONLY": 54
+    }
+   },
+   {
+    "claim": "CAUSALITY_UNVERIFIED 114; no decomposition declared or consumed 53",
+    "state": "VERIFIED",
+    "by_disposition": {
+     "CAUSALITY_UNVERIFIED": 114,
+     "NO_DECOMPOSITION_DECLARED_OR_CONSUMED": 53
+    }
+   },
+   {
+    "claim": "exactly one published table ever carried a naive comparison",
+    "state": "VERIFIED",
+    "the_one": [
+     "examples/results/phase_1_daily/phase_1_tcn_neat_1d_results.csv"
+    ]
+   },
+   {
+    "claim": "85 of 167 published legacy tables beat the naive by 50% or more",
+    "state": "VERIFIED",
+    "flagged": 85,
+    "re_derived_by_the_artifact_s_own_rule": 85,
+    "measurable_base": 113,
+    "unmeasurable": 54,
+    "reading": "85 of the 113 tables whose predictions can be recomputed (75%), not 85 of 167: the other 54 carry no reconstructable predictions and were never tested for the flag at all"
+   },
+   {
+    "claim": "the phase-3 family by 96-97% at one to six hours",
+    "state": "REFUTED",
+    "phase_3_tables_measured": 24,
+    "best_horizon_skill_range": [
+     27.72,
+     97.23
+    ],
+    "at_or_above_96": [
+     "examples/results/phase_3_1/phase_3_1_cnn_25200_1h_results.csv",
+     "examples/results/phase_3_3/phase_3_2_cnn_25200_1h_results.csv",
+     "examples/results/phase_3_3/phase_3_2_lstm_25200_1h_results.csv",
+     "examples/results/phase_3_3/phase_3_2_transformer_25200_1h_results.csv"
+    ],
+    "reading": "four of the 24 phase-3-named tables reach 96-97% at their best horizon; the family's best-horizon skill spans 27.7% to 97.2%. The extraordinary skill is real and none of it is usable as a benchmark; the FAMILY is not at 96-97%"
+   }
+  ],
+  "RP57_RP64_legacy_recomputed": [
+   {
+    "claim": "examples/results/phase_3_3/phase_3_2_cnn_25200_1h_results.csv: the model and the naive are on identical rows, and the skill re-derives from the committed predictions",
+    "state": "VERIFIED",
+    "horizons": {
+     "H1": {
+      "n": 5984,
+      "mae": 7.807999665775646e-05,
+      "naive": 0.0005349987633689838,
+      "skill_percent": 85.40557436692514,
+      "artifact_mae": 7.807999665775646e-05,
+      "artifact_naive": 0.0005349987633689838,
+      "artifact_skill": 85.40557436692514
+     },
+     "H2": {
+      "n": 5984,
+      "mae": 2.618512700534799e-05,
+      "naive": 0.0007564108957219257,
+      "skill_percent": 96.53824037260111,
+      "artifact_mae": 2.618512700534799e-05,
+      "artifact_naive": 0.0007564108957219257,
+      "artifact_skill": 96.53824037260111
+     },
+     "H3": {
+      "n": 5984,
+      "mae": 8.057565173796929e-05,
+      "naive": 0.0009280487967914441,
+      "skill_percent": 91.31773544488775,
+      "artifact_mae": 8.057565173796929e-05,
+      "artifact_naive": 0.0009280487967914441,
+      "artifact_skill": 91.31773544488775
+     },
+     "H4": {
+      "n": 5984,
+      "mae": 2.9882286096256067e-05,
+      "naive": 0.0010776042780748657,
+      "skill_percent": 97.22697035412288,
+      "artifact_mae": 2.9882286096256067e-05,
+      "artifact_naive": 0.0010776042780748657,
+      "artifact_skill": 97.22697035412288
+     },
+     "H5": {
+      "n": 5984,
+      "mae": 4.444486965240571e-05,
+      "naive": 0.0012157504679144383,
+      "skill_percent": 96.34424408417883,
+      "artifact_mae": 4.444486965240571e-05,
+      "artifact_naive": 0.0012157504679144386,
+      "artifact_skill": 96.34424408417883
+     },
+     "H6": {
+      "n": 5984,
+      "mae": 7.872864304812928e-05,
+      "naive": 0.001337633823529412,
+      "skill_percent": 94.1143352042041,
+      "artifact_mae": 7.872864304812928e-05,
+      "artifact_naive": 0.001337633823529412,
+      "artifact_skill": 94.1143352042041
+     }
+    }
+   },
+   {
+    "claim": "examples/results/phase_3_3/phase_3_2_lstm_25200_1h_results.csv: the model and the naive are on identical rows, and the skill re-derives from the committed predictions",
+    "state": "VERIFIED",
+    "horizons": {
+     "H1": {
+      "n": 5984,
+      "mae": 2.8605715240641695e-05,
+      "naive": 0.0005349987633689838,
+      "skill_percent": 94.65312497911091,
+      "artifact_mae": 2.8605715240641695e-05,
+      "artifact_naive": 0.0005349987633689838,
+      "artifact_skill": 94.65312497911091
+     },
+     "H2": {
+      "n": 5984,
+      "mae": 3.846298462566783e-05,
+      "naive": 0.0007564108957219257,
+      "skill_percent": 94.91506734723085,
+      "artifact_mae": 3.846298462566783e-05,
+      "artifact_naive": 0.0007564108957219257,
+      "artifact_skill": 94.91506734723085
+     },
+     "H3": {
+      "n": 5984,
+      "mae": 4.1455113636363125e-05,
+      "naive": 0.0009280487967914441,
+      "skill_percent": 95.53308901647344,
+      "artifact_mae": 4.1455113636363125e-05,
+      "artifact_naive": 0.0009280487967914441,
+      "artifact_skill": 95.53308901647344
+     },
+     "H4": {
+      "n": 5984,
+      "mae": 4.127852606951926e-05,
+      "naive": 0.0010776042780748657,
+      "skill_percent": 96.16941701983002,
+      "artifact_mae": 4.127852606951926e-05,
+      "artifact_naive": 0.0010776042780748657,
+      "artifact_skill": 96.16941701983002
+     },
+     "H5": {
+      "n": 5984,
+      "mae": 4.082242647058686e-05,
+      "naive": 0.0012157504679144383,
+      "skill_percent": 96.64220351560992,
+      "artifact_mae": 4.082242647058686e-05,
+      "artifact_naive": 0.0012157504679144386,
+      "artifact_skill": 96.64220351560992
+     },
+     "H6": {
+      "n": 5984,
+      "mae": 4.6625401069518215e-05,
+      "naive": 0.001337633823529412,
+      "skill_percent": 96.51433746296166,
+      "artifact_mae": 4.6625401069518215e-05,
+      "artifact_naive": 0.001337633823529412,
+      "artifact_skill": 96.51433746296166
+     }
+    }
+   },
+   {
+    "claim": "examples/results/phase_3_1/phase_3_1_cnn_25200_1h_results.csv: the model and the naive are on identical rows, and the skill re-derives from the committed predictions",
+    "state": "VERIFIED",
+    "horizons": {
+     "H1": {
+      "n": 5984,
+      "mae": 3.4407921122995205e-05,
+      "naive": 0.0005349987633689838,
+      "skill_percent": 93.56859800827905,
+      "artifact_mae": 3.4407921122995205e-05,
+      "artifact_naive": 0.0005349987633689838,
+      "artifact_skill": 93.56859800827905
+     },
+     "H2": {
+      "n": 5984,
+      "mae": 3.3767713903742624e-05,
+      "naive": 0.0007564108957219257,
+      "skill_percent": 95.53579752820531,
+      "artifact_mae": 3.3767713903742624e-05,
+      "artifact_naive": 0.0007564108957219257,
+      "artifact_skill": 95.53579752820531
+     },
+     "H3": {
+      "n": 5984,
+      "mae": 5.537528409090948e-05,
+      "naive": 0.0009280487967914441,
+      "skill_percent": 94.03314951946932,
+      "artifact_mae": 5.537528409090948e-05,
+      "artifact_naive": 0.0009280487967914441,
+      "artifact_skill": 94.03314951946932
+     },
+     "H4": {
+      "n": 5984,
+      "mae": 4.506281751337048e-05,
+      "naive": 0.0010776042780748657,
+      "skill_percent": 95.81824066308691,
+      "artifact_mae": 4.506281751337048e-05,
+      "artifact_naive": 0.0010776042780748657,
+      "artifact_skill": 95.81824066308691
+     },
+     "H5": {
+      "n": 5984,
+      "mae": 4.28466744652398e-05,
+      "naive": 0.0012157504679144383,
+      "skill_percent": 96.47570158547903,
+      "artifact_mae": 4.28466744652398e-05,
+      "artifact_naive": 0.0012157504679144386,
+      "artifact_skill": 96.47570158547903
+     },
+     "H6": {
+      "n": 5984,
+      "mae": 5.450036764705996e-05,
+      "naive": 0.001337633823529412,
+      "skill_percent": 95.92561381983762,
+      "artifact_mae": 5.450036764705996e-05,
+      "artifact_naive": 0.001337633823529412,
+      "artifact_skill": 95.92561381983762
+     }
+    }
+   },
+   {
+    "claim": "examples/results/phase_1/phase_1_ann_12600_1h_results.csv: the model and the naive are on identical rows, and the skill re-derives from the committed predictions",
+    "state": "VERIFIED",
+    "horizons": {
+     "H1": {
+      "n": 5984,
+      "mae": 0.000541188185160426,
+      "naive": 0.000725070421122994,
+      "skill_percent": 25.360603688365867,
+      "artifact_mae": 0.000541188185160426,
+      "artifact_naive": 0.0007250704211229942,
+      "artifact_skill": 25.36060368836589
+     },
+     "H2": {
+      "n": 5984,
+      "mae": 0.0002678408088235287,
+      "naive": 0.0010277260026737955,
+      "skill_percent": 73.93850032725673,
+      "artifact_mae": 0.0002678408088235287,
+      "artifact_naive": 0.0010277260026737955,
+      "artifact_skill": 73.93850032725673
+     },
+     "H3": {
+      "n": 5984,
+      "mae": 0.0003738676804812828,
+      "naive": 0.0012624083890374325,
+      "skill_percent": 70.38456938912206,
+      "artifact_mae": 0.0003738676804812828,
+      "artifact_naive": 0.0012624083890374323,
+      "artifact_skill": 70.38456938912205
+     },
+     "H4": {
+      "n": 5984,
+      "mae": 0.000284436129679145,
+      "naive": 0.0014766355949197862,
+      "skill_percent": 80.73755429858805,
+      "artifact_mae": 0.000284436129679145,
+      "artifact_naive": 0.0014766355949197862,
+      "artifact_skill": 80.73755429858805
+     },
+     "H5": {
+      "n": 5984,
+      "mae": 0.00037855345922459727,
+      "naive": 0.0016747393716577542,
+      "skill_percent": 77.39627636210146,
+      "artifact_mae": 0.00037855345922459727,
+      "artifact_naive": 0.0016747393716577538,
+      "artifact_skill": 77.39627636210146
+     },
+     "H6": {
+      "n": 5984,
+      "mae": 0.00023547117312834267,
+      "naive": 0.0018543636029411759,
+      "skill_percent": 87.30177982598096,
+      "artifact_mae": 0.00023547117312834267,
+      "artifact_naive": 0.0018543636029411759,
+      "artifact_skill": 87.30177982598096
+     }
+    }
+   }
+  ],
+  "RP57_RP64_leak_signature": [
+   {
+    "claim": "every representation's skill re-derives from its own MAE and its own naive",
+    "state": "VERIFIED",
+    "per_representation": {
+     "RAW": -0.23950291842189664,
+     "TRAILING_WAVELET": -5.418151767501955,
+     "WHOLE_SERIES_DWT": 6.001527687219344,
+     "WHOLE_SERIES_RECONSTRUCTION": 5.14093425788219,
+     "CENTRED_SMOOTHER": 46.76322802416373
+    }
+   },
+   {
+    "claim": "the leak signature subtracts two skills measured on the same rows",
+    "state": "REFUTED",
+    "evaluation_rows": {
+     "RAW": 1525,
+     "TRAILING_WAVELET": 1512,
+     "WHOLE_SERIES_DWT": 1525,
+     "WHOLE_SERIES_RECONSTRUCTION": 1525,
+     "CENTRED_SMOOTHER": 1525
+    },
+    "leaking": 5.14093425788219,
+    "causal": -5.418151767501955,
+    "difference": 10.559086025384145,
+    "reading": "TRAILING_WAVELET is scored on 1 512 rows against a naive of 0.0018573, the other four on 1 525 rows against 0.0018591: the trailing transform consumes a lead-in, so the contrast the 'signature' field computes crosses two populations. The gap is 0.85% of the rows and the conclusion (a causal trailing wavelet does not produce the published magnitude) survives, but RP57's own standard in the same round is 'on the SAME rows'"
+   }
+  ],
+  "RP57_RP64_data": [
+   {
+    "claim": "a perfect one-minute grid over the consumed slice, zero missing minutes, no duplicated stamps",
+    "state": "VERIFIED",
+    "times": {
+     "known": true,
+     "column": "timestamp_label",
+     "unparseable_labels": 0,
+     "modal_step_seconds": 60.0,
+     "rows_at_the_modal_step": 50399,
+     "other_steps_seen": {},
+     "duplicated_stamps": 0,
+     "first": "2009-08-23 12:45:00",
+     "last": "2009-09-27 12:44:00",
+     "rows_present": 50400,
+     "rows_expected_on_a_perfect_grid": 50400,
+     "missing_minutes": 0,
+     "timezone_declared": "NAIVE_WALL_CLOCK",
+     "daylight_saving_note": "wall-clock labels with no zone: a spring transition appears as a one-hour gap and an autumn one as a repeated hour. Both are reported above as steps and duplicates; neither is closed up.",
+     "consumed_slice_rows": [
+      1412361,
+      1462761
+     ]
+    }
+   },
+   {
+    "claim": "the label is Y[origin+60] and equals the panel column element by element",
+    "state": "VERIFIED",
+    "label": {
+     "label_is": "Y[origin + 60] over the consumed slice",
+     "Y_equals_the_panel_column": true,
+     "rows_compared": 50399,
+     "non_finite_rows_in_the_slice": 1,
+     "first_labels": [
+      1.598,
+      1.586,
+      1.594
+     ],
+     "first_origins": [
+      40320,
+      40321,
+      40322
+     ],
+     "checked_element_by_element": true
+    }
+   },
+   {
+    "claim": "the scaled slice is centred on the window grain and the two grains differ by 0.0017 in scaled units",
+    "state": "VERIFIED",
+    "scaler_grains": {
+     "mean": 0.001669919988868725,
+     "sd": 0.0014052851942971678
+    }
+   },
+   {
+    "claim": "Train autocorrelation is 0.963 at one minute, 0.403 at sixty and 0.317 at a day: the daily lag carries LESS linear structure than the hour",
+    "state": "VERIFIED",
+    "train_rows_used": 40199,
+    "published": {
+     "1": 0.9633449780917276,
+     "60": 0.4030024231300615,
+     "1440": 0.31718580057541035,
+     "10080": 0.2655930481297192
+    },
+    "recomputed_under_the_tool_s_estimator": {
+     "1": 0.9633449780917276,
+     "60": 0.4030024231300615,
+     "1440": 0.31718580057541035,
+     "10080": 0.2655930481297192
+    },
+    "lag_truncated_pearson": {
+     "1": 0.9633610997536324,
+     "60": 0.40328253345218784,
+     "1440": 0.3351571550096535,
+     "10080": 0.36686408713442276
+    },
+    "bias_factor_n_minus_k_over_n": {
+     "1": 0.9999751237592975,
+     "60": 0.9985074255578497,
+     "1440": 0.9641782133883927,
+     "10080": 0.7492474937187492
+    },
+    "reading": "the four numbers re-derive exactly under df_e1_data_audit's biased ACF (a fixed whole-series denominator), whose shrinkage is (n-k)/n: 0.9985 at an hour but 0.7492 at a week. The day-below-hour reading survives the correction (0.335 < 0.403). The published list's apparent decay to the weekly lag does NOT: bias-corrected the week is 0.367, ABOVE the day's 0.335"
+   }
+  ],
+  "RP57_RP64_optimisation": [
+   {
+    "claim": "a head forced to emit the last observed target reproduces the persistence control (difference 2e-7)",
+    "state": "VERIFIED",
+    "difference": 2.1628627777658949e-07,
+    "route_mae": 0.6173720561051231,
+    "control_mae": 0.6173720558882235
+   },
+   {
+    "claim": "on a fixed 256-window subset the loss falls from 6.99 to 0.0055",
+    "state": "VERIFIED",
+    "before": 6.993788719177246,
+    "after": 0.005536708049476147
+   },
+   {
+    "claim": "the counted updates ARE the optimiser's steps (400 = optimizer.iterations)",
+    "state": "VERIFIED",
+    "counted": 400,
+    "optimizer_iterations": 400
+   },
+   {
+    "claim": "0.6015 scrambled against 0.5525 true; the entire label-derived advantage is 0.049 kW",
+    "state": "VERIFIED",
+    "scrambled": 0.6015421143728339,
+    "true": 0.5524983663230361,
+    "gap": 0.04904374804979783
+   },
+   {
+    "claim": "the full-scale negative control is compared against a matched true-label arm",
+    "state": "REFUTED",
+    "scrambled_updates": 4000,
+    "scrambled_restored_epoch": 6,
+    "true_label_partner": "R0_s1",
+    "partner_updates": 3762,
+    "partner_best_epoch": 3,
+    "reading": "the scrambled arm ran to the ceiling (4 000 updates, epoch 6 restored); its comparison partner is the finished run's R0_s1, which early-stopped at 3 762 updates and restored epoch 3. The control is a control, and the round's own corrections document withdraws the general claim; the budget and selection asymmetry is named here and nowhere else"
+   }
+  ]
+ }
+}
