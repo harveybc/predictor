@@ -1,0 +1,596 @@
+{
+ "schema": "crispdm.rp59_lag_and_splits.v1",
+ "authority": "the owner's grant of 2026-09-26; Satoshi, successor technical lead",
+ "repairs": [
+  "the lag table restated under both estimators, with its supersession stated",
+  "materialization verified PER SPLIT from the bytes, with named refusals"
+ ],
+ "lag_table": {
+  "estimators": {
+   "as_published": "biased ACF: sum((x_t - xbar)(x_{t+k} - xbar)) / sum((x_t - xbar)^2), one fixed whole-series denominator over all n centred rows (tools/df_e1_data_audit.py::autocorrelation)",
+   "bias_corrected": "lag-truncated Pearson: corrcoef(x[:-k], x[k:]), each of the n-k overlapping pairs weighted once and each leg centred and scaled on its own n-k rows"
+  },
+  "supersession": {
+   "supersedes": "the four-row autocorrelation list of SATOSHI_PROGRAM_RP57_RP64_RETURN_2026_09_21 (RP59), and the `autocorrelation.autocorrelation_by_lag_minutes` block of docs/audits/evidence/d3_k5_20260917/RP59/DATA_TARGET_PREPROCESSING_AUDIT.json",
+   "why": "the published list is correct arithmetic under a BIASED estimator whose shrinkage grows with the lag (0.7492 at a week), and it was printed as a decay without naming that estimator. Bias-corrected, the weekly lag rises ABOVE the daily one, reversing the printed order of the last two rows",
+   "what_is_withdrawn": "nothing. No published value is wrong on its own support and none is removed: both columns are published side by side, each with its estimator named, and the reading that reverses is stated beside the one that survives",
+   "not_carried_invisibly": "this corpus never carries superseded evidence invisibly: the as-published column is retained in full, labelled as published, in every artifact this repair writes"
+  },
+  "published_artifact": "docs/audits/evidence/d3_k5_20260917/RP59/DATA_TARGET_PREPROCESSING_AUDIT.json",
+  "run_root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3/DATA.npz",
+  "as_published": {
+   "1": 0.9633449780917276,
+   "60": 0.4030024231300615,
+   "1440": 0.31718580057541035,
+   "10080": 0.2655930481297192
+  },
+  "published_train_rows_used": 40199,
+  "train_rows_used": 40199,
+  "recomputed_as_published": {
+   "1": 0.9633449780917276,
+   "60": 0.4030024231300615,
+   "1440": 0.31718580057541035,
+   "10080": 0.2655930481297192
+  },
+  "bias_corrected": {
+   "1": 0.9633610997536324,
+   "60": 0.40328253345218784,
+   "1440": 0.3351571550096535,
+   "10080": 0.36686408713442276
+  },
+  "shrinkage_n_minus_k_over_n": {
+   "1": 0.9999751237592975,
+   "60": 0.9985074255578497,
+   "1440": 0.9641782133883927,
+   "10080": 0.7492474937187492
+  },
+  "as_published_re_derives": true,
+  "train_rows_match_the_published_support": true,
+  "rows": [
+   {
+    "lag_minutes": 1,
+    "lag_named": "one minute",
+    "as_published_biased_acf": 0.9633449780917276,
+    "shrinkage_n_minus_k_over_n": 0.9999751237592975,
+    "bias_corrected_lag_truncated_pearson": 0.9633610997536324,
+    "biased_over_corrected": 0.9999832651931774
+   },
+   {
+    "lag_minutes": 60,
+    "lag_named": "one hour",
+    "as_published_biased_acf": 0.4030024231300615,
+    "shrinkage_n_minus_k_over_n": 0.9985074255578497,
+    "bias_corrected_lag_truncated_pearson": 0.40328253345218784,
+    "biased_over_corrected": 0.999305424116119
+   },
+   {
+    "lag_minutes": 1440,
+    "lag_named": "one day",
+    "as_published_biased_acf": 0.31718580057541035,
+    "shrinkage_n_minus_k_over_n": 0.9641782133883927,
+    "bias_corrected_lag_truncated_pearson": 0.3351571550096535,
+    "biased_over_corrected": 0.9463793203706914
+   },
+   {
+    "lag_minutes": 10080,
+    "lag_named": "one week",
+    "as_published_biased_acf": 0.2655930481297192,
+    "shrinkage_n_minus_k_over_n": 0.7492474937187492,
+    "bias_corrected_lag_truncated_pearson": 0.36686408713442276,
+    "biased_over_corrected": 0.723954885320795
+   }
+  ],
+  "ordering_by_strength": {
+   "as_published": [
+    1,
+    60,
+    1440,
+    10080
+   ],
+   "bias_corrected": [
+    1,
+    60,
+    10080,
+    1440
+   ],
+   "the_order_changes": true
+  },
+  "readings": {
+   "survives": {
+    "claim": "the daily lag carries LESS linear structure than the hour, so a daily context is a hypothesis and not a certainty",
+    "as_published": "0.317186 < 0.403002",
+    "bias_corrected": "0.335157 < 0.403283",
+    "state": "VERIFIED"
+   },
+   "reverses": {
+    "claim": "the four values decay monotonically with the lag, so the weekly grain carries less linear structure than the daily one",
+    "as_published": "0.265593 < 0.317186",
+    "bias_corrected": "0.366864 > 0.335157 -- the printed order is reversed",
+    "state": "REFUTED",
+    "as_published_is_below_the_corrected_value_by_percent": 27.6045114679205,
+    "the_corrected_value_is_above_the_published_one_by_percent": 38.130154278451386,
+    "two_framings_of_one_gap": "the disposition's '27%' is the first of these (the published number read against the corrected one); the second is the same gap read the other way. Both are printed so neither can be quoted as a correction of the other"
+   }
+  },
+  "state": "VERIFIED",
+  "for_mod_frozen_prefix": "a temporal prefix must be chosen on the bias-corrected column. Under it the hour is the strongest sub-daily grain (0.403283) and the WEEK (0.366864) stands ABOVE the day (0.335157); the published list would have ranked the week last. Neither column licenses a claim that a weekly context IMPROVES a forecast: these are linear autocorrelations of the target, not measured skill."
+ },
+ "materialization": {
+  "run_root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3",
+  "identity": {
+   "DATA_npz_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+   "declared_data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+   "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+   "re_derives": true
+  },
+  "delivered_bytes": {
+   "path_digest_matches_the_delivery": true,
+   "panel_rows": 2075259,
+   "panel_rows_match_the_declaration": true
+  },
+  "declared_blocks": {
+   "family_split_rule": {
+    "fractions": {
+     "train": 0.7,
+     "validation": 0.15,
+     "test": 0.15
+    },
+    "source": "tools/df_e1_tasks.py::SPLIT_FRACTIONS and its edge rule",
+    "panel_rows": 2075259,
+    "edges_in_panel_rows": {
+     "train": [
+      0,
+      1452681
+     ],
+     "validation": [
+      1452681,
+      1763969
+     ],
+     "test": [
+      1763969,
+      2075259
+     ]
+    }
+   },
+   "consumed_slice_in_panel_rows": [
+    1412361,
+    1462761
+   ],
+   "slice_rows": 50400,
+   "within_slice_fractions": {
+    "train": 0.8,
+    "validation": 0.2
+   },
+   "train_block_in_slice_rows": [
+    0,
+    40320
+   ],
+   "validation_block_in_slice_rows": [
+    40320,
+    50400
+   ],
+   "train_block_in_panel_rows": [
+    1412361,
+    1452681
+   ],
+   "validation_block_in_panel_rows": [
+    1452681,
+    1462761
+   ],
+   "test_block_in_panel_rows": [
+    1763969,
+    2075259
+   ],
+   "the_within_slice_boundary_IS_the_family_train_validation_edge": true
+  },
+  "splits": [
+   {
+    "split": "train",
+    "state": "VERIFIED",
+    "checks": {
+     "the_materialized_origins_are_exactly_the_admissible_declared_origins": true,
+     "the_declared_origin_count_re_derives_from_the_design_s_own_rule": true,
+     "the_materialized_count_matches_the_declaration": true,
+     "the_withdrawal_arithmetic_re_derives": true,
+     "the_materialized_target_rows_ARE_the_panel_rows_this_split_declares": true,
+     "the_scaled_inputs_invert_to_the_panel_s_own_columns": true,
+     "the_origins_are_strictly_inside_the_declared_block": true,
+     "the_origins_are_sorted_and_unique": true
+    },
+    "declared": {
+     "block_in_slice_rows": [
+      0,
+      40320
+     ],
+     "block_in_panel_rows": [
+      1412361,
+      1452681
+     ],
+     "origin_range_inclusive": [
+      59,
+      40199
+     ],
+     "origins_declared": 40141,
+     "enumerator_origins": 40141,
+     "enumerator_admissible": 40081,
+     "enumerator_withdrawn_non_finite_inputs": 60,
+     "enumerator_targets_valid_all": 40080
+    },
+    "materialized": {
+     "origins": 40080,
+     "origin_range_inclusive": [
+      59,
+      40199
+     ],
+     "rows_touched_inclusive": [
+      0,
+      40259
+     ],
+     "rows_touched": 40260,
+     "withdrawn_for_non_finite_inputs": 60,
+     "withdrawn_for_a_non_finite_label": 1,
+     "non_finite_rows_in_the_slice": [
+      30590
+     ],
+     "largest_inversion_error_kW": 2.1716783038527865e-07
+    },
+    "purge_declared": 120
+   },
+   {
+    "split": "validation",
+    "state": "VERIFIED",
+    "checks": {
+     "the_materialized_origins_are_exactly_the_admissible_declared_origins": true,
+     "the_declared_origin_count_re_derives_from_the_design_s_own_rule": true,
+     "the_materialized_count_matches_the_declaration": true,
+     "the_withdrawal_arithmetic_re_derives": true,
+     "the_materialized_target_rows_ARE_the_panel_rows_this_split_declares": true,
+     "the_scaled_inputs_invert_to_the_panel_s_own_columns": true,
+     "the_origins_are_strictly_inside_the_declared_block": true,
+     "the_origins_are_sorted_and_unique": true
+    },
+    "declared": {
+     "block_in_slice_rows": [
+      40320,
+      50400
+     ],
+     "block_in_panel_rows": [
+      1452681,
+      1462761
+     ],
+     "origin_range_inclusive": [
+      40320,
+      50339
+     ],
+     "origins_declared": 10020,
+     "enumerator_origins": 10020,
+     "enumerator_admissible": 10020,
+     "enumerator_withdrawn_non_finite_inputs": 0,
+     "enumerator_targets_valid_all": 10020
+    },
+    "materialized": {
+     "origins": 10020,
+     "origin_range_inclusive": [
+      40320,
+      50339
+     ],
+     "rows_touched_inclusive": [
+      40261,
+      50399
+     ],
+     "rows_touched": 10139,
+     "withdrawn_for_non_finite_inputs": 0,
+     "withdrawn_for_a_non_finite_label": 0,
+     "non_finite_rows_in_the_slice": [
+      30590
+     ],
+     "largest_inversion_error_kW": 2.1628627777658949e-07
+    },
+    "purge_declared": 120
+   },
+   {
+    "split": "pretrain_train",
+    "state": "VERIFIED",
+    "checks": {
+     "every_retained_cell_materializes_exactly_the_declared_origins": true,
+     "the_count_matches_the_declaration": true,
+     "no_row_of_the_dev_validation_split_is_reached": true,
+     "disjoint_from_the_other_pre_training_split": true
+    },
+    "declared": {
+     "rule": "masked reconstruction (mask ratio 0.30 of time x channel positions) on DEV TRAIN windows; the internal validation is a PURGED TAIL of those same train origins, so the supervised DEV validation is never consumed by pre-training; decoder separate and never connected at inference",
+     "internal_validation_fraction": 0.15,
+     "purge_between": 120,
+     "declared_internal_validation_origins": 6012,
+     "declared_pretrain_origins": 33948
+    },
+    "cells_checked": [
+     "ae_s1",
+     "ae_s2",
+     "ae_s3",
+     "pilot_ae"
+    ],
+    "per_cell": {
+     "ae_s1": {
+      "ae_train_origins": 33948,
+      "ae_validation_origins": 6012,
+      "is_exactly_the_declared_head_of_the_dev_train_origins": true,
+      "is_exactly_the_declared_purged_tail_of_the_dev_train_origins": true,
+      "observed_origin_gap": 121,
+      "subset_of_the_dev_train_origins": true,
+      "disjoint_from_each_other": true,
+      "never_touches_a_dev_validation_ROW": true
+     },
+     "ae_s2": {
+      "ae_train_origins": 33948,
+      "ae_validation_origins": 6012,
+      "is_exactly_the_declared_head_of_the_dev_train_origins": true,
+      "is_exactly_the_declared_purged_tail_of_the_dev_train_origins": true,
+      "observed_origin_gap": 121,
+      "subset_of_the_dev_train_origins": true,
+      "disjoint_from_each_other": true,
+      "never_touches_a_dev_validation_ROW": true
+     },
+     "ae_s3": {
+      "ae_train_origins": 33948,
+      "ae_validation_origins": 6012,
+      "is_exactly_the_declared_head_of_the_dev_train_origins": true,
+      "is_exactly_the_declared_purged_tail_of_the_dev_train_origins": true,
+      "observed_origin_gap": 121,
+      "subset_of_the_dev_train_origins": true,
+      "disjoint_from_each_other": true,
+      "never_touches_a_dev_validation_ROW": true
+     },
+     "pilot_ae": {
+      "ae_train_origins": 33948,
+      "ae_validation_origins": 6012,
+      "is_exactly_the_declared_head_of_the_dev_train_origins": true,
+      "is_exactly_the_declared_purged_tail_of_the_dev_train_origins": true,
+      "observed_origin_gap": 121,
+      "subset_of_the_dev_train_origins": true,
+      "disjoint_from_each_other": true,
+      "never_touches_a_dev_validation_ROW": true
+     }
+    }
+   },
+   {
+    "split": "pretrain_internal_validation",
+    "state": "VERIFIED",
+    "checks": {
+     "every_retained_cell_materializes_exactly_the_declared_origins": true,
+     "the_count_matches_the_declaration": true,
+     "no_row_of_the_dev_validation_split_is_reached": true,
+     "disjoint_from_the_other_pre_training_split": true
+    },
+    "declared": {
+     "rule": "masked reconstruction (mask ratio 0.30 of time x channel positions) on DEV TRAIN windows; the internal validation is a PURGED TAIL of those same train origins, so the supervised DEV validation is never consumed by pre-training; decoder separate and never connected at inference",
+     "internal_validation_fraction": 0.15,
+     "purge_between": 120,
+     "declared_internal_validation_origins": 6012,
+     "declared_pretrain_origins": 33948
+    },
+    "cells_checked": [
+     "ae_s1",
+     "ae_s2",
+     "ae_s3",
+     "pilot_ae"
+    ],
+    "per_cell": {
+     "ae_s1": {
+      "ae_train_origins": 33948,
+      "ae_validation_origins": 6012,
+      "is_exactly_the_declared_head_of_the_dev_train_origins": true,
+      "is_exactly_the_declared_purged_tail_of_the_dev_train_origins": true,
+      "observed_origin_gap": 121,
+      "subset_of_the_dev_train_origins": true,
+      "disjoint_from_each_other": true,
+      "never_touches_a_dev_validation_ROW": true
+     },
+     "ae_s2": {
+      "ae_train_origins": 33948,
+      "ae_validation_origins": 6012,
+      "is_exactly_the_declared_head_of_the_dev_train_origins": true,
+      "is_exactly_the_declared_purged_tail_of_the_dev_train_origins": true,
+      "observed_origin_gap": 121,
+      "subset_of_the_dev_train_origins": true,
+      "disjoint_from_each_other": true,
+      "never_touches_a_dev_validation_ROW": true
+     },
+     "ae_s3": {
+      "ae_train_origins": 33948,
+      "ae_validation_origins": 6012,
+      "is_exactly_the_declared_head_of_the_dev_train_origins": true,
+      "is_exactly_the_declared_purged_tail_of_the_dev_train_origins": true,
+      "observed_origin_gap": 121,
+      "subset_of_the_dev_train_origins": true,
+      "disjoint_from_each_other": true,
+      "never_touches_a_dev_validation_ROW": true
+     },
+     "pilot_ae": {
+      "ae_train_origins": 33948,
+      "ae_validation_origins": 6012,
+      "is_exactly_the_declared_head_of_the_dev_train_origins": true,
+      "is_exactly_the_declared_purged_tail_of_the_dev_train_origins": true,
+      "observed_origin_gap": 121,
+      "subset_of_the_dev_train_origins": true,
+      "disjoint_from_each_other": true,
+      "never_touches_a_dev_validation_ROW": true
+     }
+    }
+   },
+   {
+    "split": "test",
+    "state": "REFUSED_UNMATERIALIZED_BY_DESIGN",
+    "refusal": "REFUSED: nothing was materialized for the test split, so there is no materialization to verify. Its absence is verified instead, and this verdict is never reported as a passed materialization check",
+    "checks": {
+     "materialization_of_this_split": null
+    },
+    "absence_verified": {
+     "the_consumed_slice_ends_before_the_declared_test_block": true,
+     "no_retained_array_carries_a_test_population": true,
+     "every_retained_cell_declares_NO_TEST_ACCESS": true,
+     "the_design_declares_the_reserve_unread": true
+    },
+    "absence_state": "VERIFIED",
+    "declared": {
+     "block_in_panel_rows": [
+      1763969,
+      2075259
+     ],
+     "rows": 311290,
+     "family_usable_windows_declared": 298224,
+     "consumed_slice_in_panel_rows": [
+      1412361,
+      1462761
+     ]
+    },
+    "materialized": {
+     "origins": 0,
+     "rows_touched": 0,
+     "arrays_carrying_test_rows": [],
+     "cells_scanned": 15,
+     "exposures": {
+      "R0_s1": "NO_TEST_ACCESS",
+      "R0_s2": "NO_TEST_ACCESS",
+      "R0_s3": "NO_TEST_ACCESS",
+      "R1_s1": "NO_TEST_ACCESS",
+      "R1_s2": "NO_TEST_ACCESS",
+      "R1_s3": "NO_TEST_ACCESS",
+      "R2_s1": "NO_TEST_ACCESS",
+      "R2_s2": "NO_TEST_ACCESS",
+      "R2_s3": "NO_TEST_ACCESS",
+      "ae_s1": "NO_TEST_ACCESS",
+      "ae_s2": "NO_TEST_ACCESS",
+      "ae_s3": "NO_TEST_ACCESS",
+      "controls": "NO_TEST_ACCESS",
+      "pilot_ae": "NO_TEST_ACCESS",
+      "pilot_fit": "NO_TEST_ACCESS"
+     }
+    }
+   }
+  ],
+  "exclusivity": {
+   "splits_compared": [
+    "pretrain_internal_validation",
+    "pretrain_train",
+    "train",
+    "validation"
+   ],
+   "touched_row_footprints": {
+    "pretrain_internal_validation": [
+     34129,
+     40259
+    ],
+    "pretrain_train": [
+     0,
+     34127
+    ],
+    "train": [
+     0,
+     40259
+    ],
+    "validation": [
+     40261,
+     50399
+    ]
+   },
+   "pairs": {
+    "pretrain_internal_validation|pretrain_train": {
+     "shared_origins": 0,
+     "shared_touched_rows": 0,
+     "origins_disjoint": true,
+     "rows_disjoint": true,
+     "nesting_declared": false,
+     "reading": "these two splits must share no origin and no row"
+    },
+    "pretrain_internal_validation|train": {
+     "shared_origins": 6012,
+     "shared_touched_rows": 6131,
+     "origins_disjoint": false,
+     "rows_disjoint": false,
+     "nesting_declared": true,
+     "reading": "the pre-training splits are DECLARED subsets of the dev train origins, so sharing rows with `train` is the declaration, not a leak; what must be disjoint is each of them from `validation`"
+    },
+    "pretrain_internal_validation|validation": {
+     "shared_origins": 0,
+     "shared_touched_rows": 0,
+     "origins_disjoint": true,
+     "rows_disjoint": true,
+     "nesting_declared": false,
+     "reading": "these two splits must share no origin and no row"
+    },
+    "pretrain_train|train": {
+     "shared_origins": 33948,
+     "shared_touched_rows": 34128,
+     "origins_disjoint": false,
+     "rows_disjoint": false,
+     "nesting_declared": true,
+     "reading": "the pre-training splits are DECLARED subsets of the dev train origins, so sharing rows with `train` is the declaration, not a leak; what must be disjoint is each of them from `validation`"
+    },
+    "pretrain_train|validation": {
+     "shared_origins": 0,
+     "shared_touched_rows": 0,
+     "origins_disjoint": true,
+     "rows_disjoint": true,
+     "nesting_declared": false,
+     "reading": "these two splits must share no origin and no row"
+    },
+    "train|validation": {
+     "shared_origins": 0,
+     "shared_touched_rows": 0,
+     "origins_disjoint": true,
+     "rows_disjoint": true,
+     "nesting_declared": false,
+     "reading": "these two splits must share no origin and no row"
+    }
+   },
+   "state": "VERIFIED",
+   "test_split": "not compared: nothing is materialized for it (see the `test` entry)"
+  },
+  "purge": {
+   "declared_purge_task": 120,
+   "declared_purge_dev_subpartition": 120,
+   "observed_origin_gap": 121,
+   "train_rows_touched_inclusive": [
+    0,
+    40259
+   ],
+   "validation_rows_touched_inclusive": [
+    40261,
+    50399
+   ],
+   "observed_untouched_rows_between_the_splits": 1,
+   "rows_untouched_by_either": [
+    40260
+   ],
+   "checks": {
+    "the_design_declares_one_purge_in_both_places": true,
+    "the_observed_origin_gap_is_the_declared_purge_on_inclusive_endpoints": true,
+    "the_observed_origin_gap_is_at_least_the_declared_purge": true,
+    "no_row_is_touched_by_both_splits": true,
+    "the_last_train_LABEL_row_precedes_the_first_validation_WINDOW_row": true
+   },
+   "state": "VERIFIED",
+   "what_this_repairs": "RP59/DATA_TARGET_PREPROCESSING_AUDIT.json reports `purge_declared: null` because df_e1_data_audit.split_step looks for the purge in DATA.json, which does not carry it. The declaration lives in DESIGN.json (task.purge and dev_subpartition.purge_between_splits) and is bound to the observed boundary here, which is what the audit required",
+   "reading": "the purge is a boundary on ORIGINS, so the three numbers are one fact: a declared purge of 120 shows up as an inclusive origin gap of 121 and leaves 1 row(s) touched by neither split"
+  },
+  "state": "VERIFIED",
+  "per_split_state": {
+   "train": "VERIFIED",
+   "validation": "VERIFIED",
+   "pretrain_train": "VERIFIED",
+   "pretrain_internal_validation": "VERIFIED",
+   "test": "REFUSED_UNMATERIALIZED_BY_DESIGN"
+  },
+  "refusals": {
+   "test": "REFUSED: nothing was materialized for the test split, so there is no materialization to verify. Its absence is verified instead, and this verdict is never reported as a passed materialization check"
+  }
+ },
+ "sibling_root": {
+  "root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b",
+  "DATA_npz_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+  "identical_to_the_audited_root": true,
+  "state": "VERIFIED",
+  "reading": "identical prepared bytes mean identical splits: every per-split verdict above holds for this root without recomputation"
+ }
+}

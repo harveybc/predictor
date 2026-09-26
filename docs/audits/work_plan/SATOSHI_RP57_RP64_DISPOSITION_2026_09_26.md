@@ -239,6 +239,11 @@ must "fix all preprocessing/grouping/D/I/A/fusion states" would read to choose c
 published it would send that module the wrong way about the weekly grain. Restating it with its
 estimator named, or recomputing it lag-truncated, costs nothing and no run.
 
+**DONE, 2026-09-26.** The table is restated under both estimators, with the shrinkage per lag
+and an explicit supersession note, in
+[`SATOSHI_RP59_LAG_TABLE_AND_MATERIALIZATION_2026_09_26`](SATOSHI_RP59_LAG_TABLE_AND_MATERIALIZATION_2026_09_26.md)
+§1. Neither published value is withdrawn; both columns are published side by side.
+
 ### 5.3 The leak signature subtracts two skills measured on different rows
 
 `RP58/LEAK_SIGNATURE_CALIBRATION.json` reports five representations in one column, and the

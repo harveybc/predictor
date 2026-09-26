@@ -250,6 +250,13 @@ disposition §5.2), and governed sequence materialization must be verified **per
 artifact of either range does — there is one split pair on one panel and the test split was
 deliberately never read.
 
+**Both are DONE, 2026-09-26**, in
+[`SATOSHI_RP59_LAG_TABLE_AND_MATERIALIZATION_2026_09_26`](SATOSHI_RP59_LAG_TABLE_AND_MATERIALIZATION_2026_09_26.md):
+the lag table restated under both estimators (§1), and materialization verified per split from the
+bytes — `train`, `validation` and the two pre-training splits VERIFIED, `test` REFUSED by name because
+nothing was materialized for it (§2). That document also states what this module may and may not rely
+on (§3). Neither repair blocked the module from starting and neither changes its ruling.
+
 ### MOD-CORE-PRETRAIN — **BLOCKED**
 
 Not for want of a review, and not because the pretraining evidence is bad: it is good and it is
