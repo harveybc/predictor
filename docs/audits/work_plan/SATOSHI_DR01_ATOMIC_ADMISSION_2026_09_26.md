@@ -122,7 +122,7 @@ job was not disturbed. **Future launches only.**
 
 ### 2.4 Tests (DR01.4): simulated clock, simulated resources, no real RAM pressured
 
-`tests/test_crispdm_admission.py`, **27 tests, all green**. Readings come from a JSON file
+`tests/test_crispdm_admission.py`, **30 tests, all green**. Readings come from a JSON file
 (`CRISPDM_ADMISSION_RESOURCES_JSON`) and the clock from `CRISPDM_ADMISSION_NOW`; nothing allocates
 memory and nothing is signalled. `tests/conftest.py` additionally gives *every* test in the
 repository its own lease directory over a simulated, generous host, so no test is ever decided by
@@ -144,9 +144,35 @@ Each case the order names, and where it is:
 
 Beyond the minimum: the reservation is held for the whole load and not merely the read (a second
 process is queued while the child runs); a refusal starts nothing and never reaches `systemd-run`;
-the pilot-evidence and tree-peak rules; deployment by rename; and a source-level test that no
-executable line in the admission path drops caches, touches swap, disables oomd, raises a ceiling
-or sends a kill other than the operator's own TERM/INT forwarded to its own child.
+the pilot-evidence and tree-peak rules; deployment by rename; a lease id that stays one filesystem
+segment whatever the caller calls the job; and a source-level test that no executable line in the
+admission path drops caches, touches swap, disables oomd, raises a ceiling or sends a kill other
+than the operator's own TERM/INT forwarded to its own child.
+
+### 2.5 Three defects the live verification found, and what they were
+
+Reported because they are the difference between a reservation that works and one that looks like
+it works. All three were found by running the deployed launcher against the live host, all three
+are fixed, and each has a test:
+
+* **A lease id is a path.** A caller's job name carries slashes (`df-utility-fab/v0/case/…`), and
+  the lease could not be written at all — an admission that writes nothing holds nothing. The id
+  is now one sanitised segment; the full name stays in the lease.
+* **A teardown zombie is not a live child.** `cgroup.procs` still lists tasks that are already
+  zombies while a scope tears down, and a zombie holds no memory. Reading that as "alive" made a
+  launcher refuse to release its own reservation the moment its load finished (11 such refusals in
+  the live ledger), so it leaked until a later sweep. Each listed task is now checked, and — more
+  importantly — **the holder's own reaped child is the whole answer**: when a launcher waited for
+  its child, the cgroup is not consulted at all. The cgroup witness is for the detached dispatcher
+  units nobody waits for.
+* **An ancestor cgroup may not witness a reservation.** Under the `PRLIMIT_AS` fallback,
+  `df_isolated_runner`'s child shares its parent's scope, so the lease recorded the *enclosing*
+  scope — a cgroup that outlives the task and could never let it be released. A witness cgroup must
+  now be the unit's own, checked by name.
+
+After the fix, a nested launch (a `crispdm-run` inside a `crispdm-run`), a plain launch, and
+another agent's concurrent 4 GiB job all admitted, armed and released cleanly, each with its
+observed cgroup tree peak in the ledger and zero refused releases.
 
 ## 3. Which launch paths now share the reservation
 

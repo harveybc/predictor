@@ -578,3 +578,57 @@ def test_2026_09_26_a_lease_id_is_one_filesystem_segment_whatever_the_caller_cal
     assert "/" not in d["lease_id"] and d["lease_id"].endswith(tuple("0123456789abcdef"))
     assert (host.store_dir / "leases" / f"{d['lease_id']}.json").exists()
     assert d["lease"]["name"] == "df-utility-fab/v0/mad_extremes_trailing/transformed"
+
+
+def test_2026_09_26_an_inherited_ancestor_cgroup_may_not_witness_a_reservation(host):
+    """A DETACHED unit is witnessed by its cgroup.  It must be that unit's OWN cgroup: a runner
+    whose child shares an enclosing scope would otherwise record the ancestor, which outlives the
+    task, so the reservation could never be released."""
+    outer = "user.slice/crispdm-batch.slice/crispdm-outer.scope"
+    host.tick(A.ARM_GRACE_SECONDS + 10)          # past the grace window, so only a witness speaks
+
+    lease_id = host.acquire("inner", 2 * GIB)["lease_id"]
+    A.arm(host.store, host.res, lease_id, host.now, cgroup=outer, unit="crispdm-inner.scope")
+    host.patch(alive={outer: True})
+    host.tick(A.ARM_GRACE_SECONDS + 10)
+    assert A.release(host.store, host.res, lease_id, host.now)["ok"] is True, \
+        "an ancestor's liveness must not hold this reservation open"
+
+    # the same cgroup, correctly named as this unit's own, does witness it
+    lease_id = host.acquire("inner2", 2 * GIB)["lease_id"]
+    A.arm(host.store, host.res, lease_id, host.now, cgroup=outer, unit="crispdm-outer.scope")
+    host.tick(A.ARM_GRACE_SECONDS + 10)
+    assert A.release(host.store, host.res, lease_id, host.now)["code"] == "CHILD_STILL_ALIVE"
+
+
+def test_2026_09_26_a_supervised_child_that_has_been_reaped_frees_its_reservation_at_once(host):
+    """When a holder waited for its own child, the child's death is the whole answer: the scope
+    cgroup may still list tasks winding down for a few milliseconds, and letting that speak made
+    the launcher refuse to release its own reservation the instant its load finished."""
+    unit = "crispdm-x.scope"
+    cg = f"user.slice/crispdm-batch.slice/{unit}"
+    lease_id = host.acquire("supervised", 2 * GIB)["lease_id"]
+    A.arm(host.store, host.res, lease_id, host.now, pid=888003, cgroup=cg, unit=unit)
+    host.patch(alive={"888003": False, cg: True})          # reaped, cgroup still winding down
+    out = A.release(host.store, host.res, lease_id, host.now)
+    assert out["ok"] is True and out["code"] == "RELEASED"
+    assert host.live_lease_ids() == []
+
+
+def test_2026_09_26_a_teardown_zombie_in_the_cgroup_is_not_a_live_child(tmp_path):
+    """`cgroup.procs` can still list a task that is already a zombie while a scope tears down, and
+    a zombie holds no memory.  Reading that as 'alive' made the launcher refuse to release its own
+    reservation the moment its load finished."""
+    root = tmp_path / "cgroup"
+    cg = root / "user.slice/crispdm-batch.slice/crispdm-x.scope"
+    cg.mkdir(parents=True)
+    res = A.SystemResources(cgroup_root=root)
+
+    (cg / "cgroup.procs").write_text("")
+    assert res.cgroup_alive("user.slice/crispdm-batch.slice/crispdm-x.scope") is False
+
+    (cg / "cgroup.procs").write_text("999999999\n")        # a pid that does not exist any more
+    assert res.cgroup_alive("user.slice/crispdm-batch.slice/crispdm-x.scope") is False
+
+    (cg / "cgroup.procs").write_text(f"{os.getpid()}\n")   # a task that really is running
+    assert res.cgroup_alive("user.slice/crispdm-batch.slice/crispdm-x.scope") is True

@@ -251,10 +251,14 @@ class Task:
         except BaseException:
             self.reservation.close()
             raise
+        # Only this task's OWN scope may witness its reservation.  _cgroup_dir returns the
+        # ENCLOSING scope under the PRLIMIT_AS fallback, and a witness that outlives the task
+        # would keep the reservation from ever being released.
         cg = _cgroup_dir(self.proc.pid)
+        own = cg is not None and cg.name.endswith(".scope") and self.unit in cg.name
         self.reservation.arm(pid=self.proc.pid,
-                             cgroup=(str(cg).replace("/sys/fs/cgroup/", "", 1) if cg else None),
-                             unit=f"{self.unit}.scope" if self.mechanism == "SYSTEMD_USER_SCOPE" else None)
+                             cgroup=(str(cg).replace("/sys/fs/cgroup/", "", 1) if own else None),
+                             unit=f"{self.unit}.scope" if own else None)
         return self
 
     def _poll_cgroup(self):

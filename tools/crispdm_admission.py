@@ -214,14 +214,21 @@ class SystemResources:
             return None
 
     def cgroup_alive(self, cgroup) -> bool:
+        """Does this cgroup still hold a RUNNING task?
+
+        `cgroup.procs` being non-empty is not the question: during a scope's teardown it can
+        still list tasks that are already zombies, and a zombie holds no memory.  Reading it as
+        "alive" made a launcher refuse to release its own reservation the instant its load
+        finished, so the reservation leaked until a later sweep.  Each listed task is checked.
+        """
         if not cgroup:
             return False
-        d = self.cgroup_root / str(cgroup).lstrip("/")
-        procs = d / "cgroup.procs"
+        procs = self.cgroup_root / str(cgroup).lstrip("/") / "cgroup.procs"
         try:
-            return bool(procs.read_text().strip())
+            pids = procs.read_text().split()
         except OSError:
             return False
+        return any(self.pid_alive(pid) for pid in pids)
 
     def pid_alive(self, pid, starttime=None) -> bool:
         if not pid:
@@ -353,20 +360,39 @@ class Lease:
         """Is the load this reservation is for still running?
 
         A reservation is written BEFORE the load exists, so the absence of a witness is not by
-        itself evidence of death.  The rule, in order of how much it proves:
+        itself evidence of death.  The witnesses, in the order of how much each proves:
 
-        * a live scope cgroup, or a live pid whose /proc start time still matches: alive;
-        * a pid was recorded and that pid is gone: DEAD, immediately -- the holder's own child is
-          an authoritative witness, so a short run's reservation is freed the moment it ends;
-        * no pid was recorded (a detached unit whose only witness is its cgroup), or the lease is
-          not armed yet: alive while inside the arming grace window, because the unit may not have
-          created its cgroup yet.  This errs toward HOLDING memory, never toward over-admitting.
+        1. **The holder's own child pid**, pinned to its /proc start time so a recycled pid cannot
+           impersonate it.  When a holder supervises its child and has reaped it, the load is over
+           by definition, and the reservation must be freed at that instant.  Consulting the scope
+           cgroup as well was wrong here and was observed to be wrong: for a few milliseconds
+           after the child is reaped the cgroup still lists tasks that are winding down, so the
+           launcher refused to release its own reservation and it leaked until a later sweep.
+        2. **This load's own scope cgroup**, for a DETACHED unit that no holder waits for (the
+           ssh dispatcher's fire-and-forget services).  It must be the unit's own cgroup and not
+           an ancestor the child merely inherited, and it counts only while it holds a task that
+           is not already a zombie.
+        3. **The arming grace window**, while a lease has no witness yet -- it is written before
+           the unit exists, and a unit takes a moment to create its cgroup.  This errs toward
+           HOLDING memory, never toward over-admitting.
         """
-        if self.cgroup and res.cgroup_alive(self.cgroup):
-            return True
         if self.armed and self.pid:
             return bool(res.pid_alive(self.pid, self.pid_starttime))
+        if self.cgroup and self._cgroup_is_my_own() and res.cgroup_alive(self.cgroup):
+            return True
         return now < (self.armed_at or self.created_at) + ARM_GRACE_SECONDS
+
+    def _cgroup_is_my_own(self) -> bool:
+        """A witness must be THIS load's own cgroup, never an ancestor it merely inherited.
+
+        A runner whose child shares its parent's scope (the PRLIMIT_AS fallback, or any tool that
+        spawns a plain subprocess) would otherwise record the enclosing scope as its witness -- a
+        cgroup that stays alive for as long as everything else in it does, so the reservation
+        could never be released.
+        """
+        if not self.unit:
+            return True                     # cgroup-only witness: nothing better to compare with
+        return str(self.cgroup).rstrip("/").endswith("/" + str(self.unit).lstrip("/"))
 
     def observed_bytes(self, res):
         return res.cgroup_current_bytes(self.cgroup) if self.cgroup else None

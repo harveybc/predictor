@@ -5,3 +5,8 @@ B exit=0
 A: A completed at its normal boundary
 --- state after A finished ---
 live leases: 0 | host_free_for_new: 10332250112
+
+Note on this transcript: "B exit=0" is the exit status of the `sed` at the end of B's pipeline,
+not of crispdm-run; B's own refusal is the two lines above it and B's command never ran. The
+"2 live reservations" B was measured against were A's and, at that moment, another agent's 4 GiB
+job, which had taken its reservation through the same launcher.
