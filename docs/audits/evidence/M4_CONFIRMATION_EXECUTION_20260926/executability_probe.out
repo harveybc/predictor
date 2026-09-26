@@ -1,0 +1,22 @@
+M4 CONFIRMATION -- executability probe (no CONFIRMATION bytes)
+
+[PASS] the probe output root does not exist beforehand
+[PASS] execute refuses at the two-record gate -- REFUSED: Musashi design-review record is ABSENT — planning may report counts, execution refuses befo
+[PASS] and refuses BEFORE creating the output root
+[PASS] the design-review record is still ABSENT
+[PASS] the owner execution record is still ABSENT
+[PASS] the sealed bank refuses CONFIRMATION construction -- REFUSED: CONFIRMATION generators are RESERVED — construction is closed in this order (only
+[PASS] construction is opened only by an explicit allow_confirmation flag
+[PASS] whose default is False
+[PASS] _run_intervention_unit_v5 constructs via gb.generate(u['role'], ...)
+[PASS] and never passes allow_confirmation — so it CANNOT run a CONFIRMATION unit
+[PASS] execute_confirmation writes the pre-result ledger
+[PASS] and then RETURNS, with the note that unit execution lies beyond it
+[PASS] execute_confirmation contains no unit-execution loop at all
+
+the census the ledger would enumerate: 3024 units = 21 slots x 48 generators x 3 seeds, 4 checkpoints each
+census_sha256 = 12cfd9ad785b41e788ffce575ec575ab2a78ab772151b5e3b94c8f0c71169ea0
+
+CONCLUSION: with both records installed the frozen code path would write a 3024-unit PENDING ledger and fit ZERO units. The C35 step-7 execution body does not exist in the frozen tools.
+
+checks: 13   failed: 0
