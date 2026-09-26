@@ -1,0 +1,249 @@
+{
+ "arms": [
+  "mae_adam",
+  "mae_adamw",
+  "huber_adam",
+  "huber_adamw"
+ ],
+ "cells": [
+  {
+   "arm": "mae_adam",
+   "cell_id": "mae_adam_s1",
+   "seed": 1
+  },
+  {
+   "arm": "mae_adamw",
+   "cell_id": "mae_adamw_s1",
+   "seed": 1
+  },
+  {
+   "arm": "huber_adam",
+   "cell_id": "huber_adam_s1",
+   "seed": 1
+  },
+  {
+   "arm": "huber_adamw",
+   "cell_id": "huber_adamw_s1",
+   "seed": 1
+  },
+  {
+   "arm": "mae_adam",
+   "cell_id": "mae_adam_s2",
+   "seed": 2
+  },
+  {
+   "arm": "mae_adamw",
+   "cell_id": "mae_adamw_s2",
+   "seed": 2
+  },
+  {
+   "arm": "huber_adam",
+   "cell_id": "huber_adam_s2",
+   "seed": 2
+  },
+  {
+   "arm": "huber_adamw",
+   "cell_id": "huber_adamw_s2",
+   "seed": 2
+  },
+  {
+   "arm": "mae_adam",
+   "cell_id": "mae_adam_s3",
+   "seed": 3
+  },
+  {
+   "arm": "mae_adamw",
+   "cell_id": "mae_adamw_s3",
+   "seed": 3
+  },
+  {
+   "arm": "huber_adam",
+   "cell_id": "huber_adam_s3",
+   "seed": 3
+  },
+  {
+   "arm": "huber_adamw",
+   "cell_id": "huber_adamw_s3",
+   "seed": 3
+  }
+ ],
+ "design_sha256": "be2e776e5c64a8422a6411447a4cbeba6e5607c7158456f9a64f89a4244b6965",
+ "factors_held": [
+  "model",
+  "data",
+  "rows",
+  "scaler",
+  "seeds",
+  "monitor",
+  "learning_rate",
+  "batch",
+  "update_ceiling",
+  "early_stopping_patience"
+ ],
+ "factors_moved": [
+  "loss",
+  "optimizer"
+ ],
+ "governance": "one campaign and one verified delivery per unit before it runs; a terminal through the outbox and a reconciled campaign after it",
+ "graph": {
+  "arch": "A",
+  "assignment": [
+   0,
+   1,
+   0,
+   2,
+   2,
+   2,
+   0
+  ],
+  "core": "causal dilated Conv1D stack with dilations [1, 2, 4, 8, 16] (kernel 3, 16 filters, residual), reach 60 positions: derived from W, not searched",
+  "core_kind": "tcn_w",
+  "fusion": "sequence",
+  "grouping": "held constant: physical groups (power: active history, reactive, intensity | voltage | sub-metering 1-3); profile-based grouping is a separate factor not varied here",
+  "initial_weights": "keras set_random_seed(seed) before build: the SAME initial checkpoint for R0/R1/R2 of a seed (digest recorded per unit)",
+  "input_columns": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3",
+   "Global_active_power"
+  ],
+  "layers": {
+   "adapter": "TimeDistributed Dense(8), linear",
+   "core": "Conv1D(16, k=3, causal, ELU) on the channel-concatenated branch sequences, last position",
+   "detector (per branch)": "2 residual causal Conv1D blocks: Conv1D(16, k=3, d=1, ELU) + 1x1 projection skip",
+   "head": "Dense(p) increment over the last observation (persistence skip); the target channel is read out",
+   "integrator": "identity (ARCH-A)",
+   "readout": "the model output at the target's input channel; only that channel is trained and scored"
+  },
+  "loss": "per-arm recipe; common validation MAE monitor",
+  "optimizer": "per-arm Adam or AdamW recipe",
+  "regimes": {
+   "R0": "random detector, trainable; no pretraining in this factorial"
+  }
+ },
+ "metrics": {
+  "mae": "kW on the common evaluation set, recomputed from arrays at closure",
+  "persistence_scaled_error_horizon_train": "MAE / mean|Y[t+h]-Y[t]| over train origins"
+ },
+ "phase": "DEVELOPMENT",
+ "pilots": [],
+ "purpose": "HUBER_ADAMW_FACTORIAL_DEVELOPMENT",
+ "reading_rules": [
+  "three seeds on one task are development evidence, not a confirmation",
+  "an arm that stops at the update ceiling is CENSORED: what it would reach with more budget is unknown, in either direction",
+  "no cell is removed after its score is seen"
+ ],
+ "recipes": {
+  "huber_adam": {
+   "delta": 1.0,
+   "loss": "huber",
+   "monitor": "val_mae",
+   "optimizer": "adam",
+   "weight_decay": 0.0
+  },
+  "huber_adamw": {
+   "delta": 1.0,
+   "loss": "huber",
+   "monitor": "val_mae",
+   "optimizer": "adamw",
+   "weight_decay": 0.004
+  },
+  "mae_adam": {
+   "delta": 1.0,
+   "loss": "mae",
+   "monitor": "val_mae",
+   "optimizer": "adam",
+   "weight_decay": 0.0
+  },
+  "mae_adamw": {
+   "delta": 1.0,
+   "loss": "mae",
+   "monitor": "val_mae",
+   "optimizer": "adamw",
+   "weight_decay": 0.004
+  }
+ },
+ "reference_model": {
+  "block": "weight_norm(Conv1d) -> chomp -> ReLU -> Dropout, twice, + 1x1 residual, then ReLU",
+  "defaults_in_the_source": {
+   "dilation": "2**i per level",
+   "dropout": 0.2,
+   "init": "conv weights ~ N(0, 0.01)",
+   "kernel_size": 2
+  },
+  "implementation": "https://github.com/locuslab/TCN/blob/master/TCN/tcn.py",
+  "ours_for_contrast": "one Conv1D(k=3, ELU) + 1x1 projection skip, no weight norm, no dropout, no activation after the sum",
+  "paper": "Bai, Kolter & Koltun 2018, An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling (arXiv:1803.01271)"
+ },
+ "replicas": {
+  "pairing": "every arm of a seed starts from the same initial weights where the graph is the same; the reference block is a different graph and cannot share them, which is stated, not hidden",
+  "seeds": [
+   1,
+   2,
+   3
+  ]
+ },
+ "resource_limits": {
+  "campaign_cpu_seconds": 14400,
+  "child_cpu_seconds": 1800,
+  "parallel_children": 4
+ },
+ "schema": "df_e1_huber_design.v1",
+ "source_code": {
+  "df_e1_governed.py": "8f41e8033849f50e51f184f14ec256a6b8a7635b71d44cc8adb3a46f90051574",
+  "df_e1_huber.py": "c61dd03d34e25c239749f41c7cb8bb029606751ceb335d63cf330b262bc4c5d8",
+  "df_e1_phase1.py": "32ed88b17e15f380f8c556433ab5989d4d6799406074c494d8e485a5a0cdee0a",
+  "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+  "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+ },
+ "source_run": {
+  "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+  "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+  "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "reading": "the prepared DATA of that run is consumed by digest; nothing is re-enumerated, so every arm sees exactly the rows it saw",
+  "root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3"
+ },
+ "task": {
+  "context_physical_seconds": 3540,
+  "family_usable_windows": {
+   "test": 298224,
+   "train": 1440653,
+   "validation": 305221
+  },
+  "features": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3"
+  ],
+  "horizon_physical_seconds": 3600,
+  "horizon_steps": 60,
+  "id": "W60_h60",
+  "model_reach_physical_seconds": 3600,
+  "model_reach_steps": 60,
+  "purge": 120,
+  "reach_measured_by": "perturbation and gradient per input row (tools/df_e1_receiver.py), not asserted",
+  "reach_note": "ARCH-A with the sequence fusion depends on the last `model_reach_steps` samples of the window (branch 5 + core 3 - 1); the window is the declared context, the reach is what the prediction can depend on (RP28: full real reach declared)",
+  "target": [
+   "Global_active_power"
+  ],
+  "target_history_as_feature": true,
+  "window_steps": 60
+ },
+ "training": {
+  "batch": 64,
+  "early_stopping": {
+   "patience_epochs": 3,
+   "restore_best": true
+  },
+  "learning_rate": 0.003,
+  "max_updates": 4000,
+  "monitor": "val_mae"
+ },
+ "what_this_is": "a diagnostic contrast of training objective and architecture on the rows a finished run already used; it is not a new experiment on new data and it does not revisit pretraining"
+}
