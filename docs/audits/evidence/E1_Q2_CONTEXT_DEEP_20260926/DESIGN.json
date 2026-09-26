@@ -1,0 +1,11 @@
+{
+ "schema": "withdrawn_artifact_placeholder.v1",
+ "block": "Q2_CONTEXT_DEEP",
+ "what_stood_here": "the v1 sealed design of this block (and, for EXTENSION_SEAL.json, the crossing record that quoted it verbatim)",
+ "withdrawn_design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+ "reason": "WITHDRAWN_FOR_CARRYING_A_MACHINE_HOST_NAME",
+ "why_the_bytes_are_not_here": "the withdrawn body named the coordinator machine by its host name. AGENTS.md and the owner's standing rule forbid a machine host name in this repository, so the bytes are served nowhere on this branch, at any commit. The withdrawn design is identified by its digest, which is enough to prove what was withdrawn and to detect any copy of it",
+ "superseding_design_sha256": "27ed712d88e0b1a84a3a7d48d5a8dcd899274389f8cc7341df196705dbb0300d",
+ "read_instead": "docs/audits/evidence/E1_Q2_CONTEXT_DEEP_20260926/SEAL_WITHDRAWAL.json (at this branch's tip): why v1 was withdrawn, how v2 differs from it leaf by leaf, and the binding of the twelve landed fits",
+ "history_note": "this branch's five commits were rebuilt on 2026-09-26 for this reason. Nothing else in any of their trees was changed except one sentence of tools/df_e1_block.py and one of FOOTPRINT_BASIS.json, which carried the same name"
+}

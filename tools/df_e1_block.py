@@ -124,6 +124,50 @@ BLOCKS = {
                                    "ceiling with peak RSS under 1 GiB. The restriction is a resource declaration made before any score "
                                    "of any cell existed, never a removal after a score was seen (reading rule 3); no arm, seed, "
                                    "recipe, scaler, row, cadence or ceiling of Q2_CONTEXT v1 is otherwise changed"},
+    "Q2_CONTEXT_DEEP": {"arms": ["modular_w60", "daily_lag", "long_window_crop60", "short_window_deep_core",
+                             "long_window_local_support_67", "long_window_own_depth"],
+                    "question": "context beyond the hour, SEPARATED from receiver depth and from train volume, at a MATCHED update "
+                                "budget. Volume is held fixed BY CONSTRUCTION: train_population COMMON_INTERSECTION, so every arm "
+                                "trains on the SAME origins. The crossing is raw input window {60, 1440} x causal core depth "
+                                "{5 dilated blocks, 10 dilated blocks}: (60,5) modular_w60, (60,10) short_window_deep_core, "
+                                "(1440,5) long_window_local_support_67, (1440,10) long_window_own_depth, with long_window_crop60 "
+                                "as the exact-information null and daily_lag as the causal daily-lag channel. WHAT IT CANNOT "
+                                "SEPARATE, declared before any score: in this architecture family the receptive field is "
+                                "1 + 2*sum(dilations), so a raw window longer than 67 samples is only USED when depth grows; the "
+                                "(1440,5) cell carries the long window's padding and 67 samples of reach, NOT 1440 samples of "
+                                "information, and context beyond 67 samples is confounded with depth BY CONSTRUCTION of the "
+                                "family. Only the depth-10 row can carry long context, so the context contrast at matched depth "
+                                "and matched volume is long_window_own_depth - short_window_deep_core, and the depth contrast at "
+                                "matched context is short_window_deep_core - modular_w60 and long_window_own_depth - "
+                                "long_window_local_support_67. SECOND DECLARED LIMIT: every cell is fitted to a ceiling of 600 "
+                                "observed updates, so every cell is CENSORED_BY_BUDGET wherever its best checkpoint fell; an arm "
+                                "whose validation MAE_z improved by more than 0.005 over its last 200 updates in 2 or more of its "
+                                "3 seeds is UNDERTRAINED_AT_CEILING and its contrast is NOT read as a context or depth effect",
+                    "train_population": "COMMON_INTERSECTION",
+                    "why": "the three W1440 arms withdraw the train origins whose support reaches a padded row and the lag arm "
+                           "those whose daily lookup is non-finite; every arm of this block, the baseline included, trains on the "
+                           "SAME origins, so window length, depth and volume are never conflated",
+                    "primary_factorial": ["modular_w60", "short_window_deep_core", "long_window_local_support_67",
+                                          "long_window_own_depth"],
+                    "secondary_control": ["long_window_crop60", "daily_lag"],
+                    "informed_by": "SEALED BEFORE ANY SCORE OF ANY CELL OF THIS BLOCK. It extends Q2_CONTEXT_BOUNDED (design "
+                                   "47a270eec01f203cdde2812deb1458db525e86d762c2b17f2b79a2ba571e17ea, twelve fits, four arms) "
+                                   "with the two W1440 FULL-DEPTH arms that block declared it could not hold, and it refits ALL "
+                                   "six arms under one budget so no arm is compared across budgets. The ceiling is 600 observed "
+                                   "updates instead of 4 000, and that number comes from the RETAINED cost pilots' own measured "
+                                   "rates on the coordinator host and from nothing else: long_window_own_depth 4.165 CPU s per "
+                                   "train update and 8 458 399 744 B peak RSS, long_window_local_support_67 4.4427 CPU s per "
+                                   "update and 10 279 276 544 B peak RSS, modular_w60 0.0390, daily_lag 0.0392, "
+                                   "long_window_crop60 0.0410 and short_window_deep_core 0.0710 CPU s per update with peak RSS "
+                                   "under 1 GiB. At the 4 000-update ceiling the two deep arms would cost 17 507 s and 18 406 s "
+                                   "of CPU PER CELL (about 30 CPU hours and roughly 19 h of wall for their six cells) and hold "
+                                   "7.9 and 9.6 GiB resident; at 600 updates they cost about 2 630 s and 2 760 s per cell. The "
+                                   "reduction is a RESOURCE declaration made when no cell of this block had a score, never a "
+                                   "removal or a re-budgeting after a score was seen (reading rule 3). Its cost is stated in the "
+                                   "question field: every cell of every arm is CENSORED_BY_BUDGET and the block carries the "
+                                   "UNDERTRAINED_AT_CEILING rule to say so per arm. No arm, seed, recipe field other than "
+                                   "max_updates, scaler, row, cadence, monitor, patience or metric of Q2_CONTEXT_BOUNDED is "
+                                   "otherwise changed"},
     "CONTEXT_DAILY_LAG": {"arms": ["modular_w60", "daily_lag"],
                           "question": "does a causal daily-lag channel y(t+h-1440) add predictive information to the W60 receiver, without paying for "
                                       "W1440 or changing receiver depth? (RP87; scoped as THIS feature addition, not an abstract information-only effect)",
@@ -226,7 +270,7 @@ def seal(block: str, *, source_run: Path = SOURCE_RUN, seeds=SEEDS, reuse: dict 
         comp = {**B.decide(ours, B.gasparin_2019()), "against": "gasparin_2019",
                 "rule": "the adapted GRU is measured under OUR contract; Table 5 stays in the source notes"}
     else:
-        contrast = ("permitted_inputs" if block in ("Q1_CALENDAR", "Q2_CONTEXT", "Q2_CONTEXT_BOUNDED") else "split_rule")
+        contrast = ("permitted_inputs" if block in ("Q1_CALENDAR", "Q2_CONTEXT", "Q2_CONTEXT_BOUNDED", "Q2_CONTEXT_DEEP") else "split_rule")
         theirs = B.replace(ours, task_id=f"{ours.task_id}.{block}", varying_factors=(contrast,),
                            estimand=BLOCKS[block]["question"])
         ours_c = B.replace(ours, varying_factors=(contrast,), estimand=BLOCKS[block]["question"])
