@@ -1,0 +1,32 @@
+# E1 seal — sealed transcript, 2026-09-26
+# host: CPU only, CUDA_VISIBLE_DEVICES='', under crispdm-run -m 4G -t 600 -n e1seal
+# interpreter: Python 3.12.13 (anaconda env trading-stack)
+# repo: satoshi/rp132-rp134-20260923 @ ccdbef02c7062f7aad965ed9e5ac2e270a9f2724
+
+$ python tools/df_e1_seal.py --out E1_SEAL.json --markdown E1_SEAL.md
+{
+ "verdict": "E1_PARTIAL_SEAL",
+ "gaps": [
+  "ML_BASELINES_CAUSALITY_UNVERIFIED",
+  "ML_BASELINES_SEPARATE_VOLUME_CONTEXT_CALENDAR",
+  "POST_HUBER_EXTERNAL_ACCEPTANCE",
+  "MOD_E1_EXTERNAL_REVIEW",
+  "RP136_RP139_MATCHED_ECL_ADAPTER"
+ ],
+ "conditions": {
+  "RP17_RP24_NO_SEAL_13E_V1": "PROHIBITION_OBSERVED",
+  "ML_BASELINES_CAUSALITY_UNVERIFIED": "NOT_DISCHARGEABLE_BY_ARTIFACTS",
+  "ML_BASELINES_SEPARATE_VOLUME_CONTEXT_CALENDAR": "UNMET",
+  "HUBER_NO_RETURN_TO_R0_R1_R2_YET": "PROHIBITION_OBSERVED",
+  "POST_HUBER_PHASE2_CORRECTED": "DISCHARGED",
+  "POST_HUBER_EXTERNAL_ACCEPTANCE": "NOT_DISCHARGEABLE_BY_ARTIFACTS",
+  "MOD_E1_EXTERNAL_REVIEW": "NOT_DISCHARGEABLE_BY_ARTIFACTS",
+  "OWNER_CLOSURE_TABLE_FROM_ARTIFACTS": "DISCHARGED",
+  "RP136_RP139_MATCHED_ECL_ADAPTER": "UNMET"
+ },
+ "artifacts_sealed": 30
+}
+
+$ python -m pytest tests/test_df_e1_seal.py -q
+.........................                                                [100%]
+25 passed in 0.33s

@@ -1,0 +1,1861 @@
+{
+ "schema": "df_e1_seal.v1",
+ "at": "2026-09-26T09:13:46Z",
+ "what_this_is": "the E1 seal built only from retained artifacts: identities recomputed, rules copied as stated, numbers copied as measured, and every condition of the review chain typed. Nothing was fitted, loaded, scored or replayed to produce it",
+ "verdict": "E1_PARTIAL_SEAL",
+ "gaps": [
+  "ML_BASELINES_CAUSALITY_UNVERIFIED",
+  "ML_BASELINES_SEPARATE_VOLUME_CONTEXT_CALENDAR",
+  "POST_HUBER_EXTERNAL_ACCEPTANCE",
+  "MOD_E1_EXTERNAL_REVIEW",
+  "RP136_RP139_MATCHED_ECL_ADAPTER"
+ ],
+ "verdict_rule": "E1_SEALED only when every condition is DISCHARGED or PROHIBITION_OBSERVED; E1_PARTIAL_SEAL otherwise. Identity, rules and numbers are sealed either way \u2014 they are facts about bytes",
+ "sealed": {
+  "identity": {
+   "docs/audits/evidence/d3_k5_20260917/RP30/E1_PILOT_DESIGN.json": {
+    "kind": "design",
+    "why": "the original household DEV pilot: ARCH-A under R0/R1/R2 with controls",
+    "file_sha256": "2de672ba58d9ce2732b8af7fe1fabe531bd3aeede221263dfa10caccfb95cbe1",
+    "bytes": 9277,
+    "schema": "df_e1_pilot_design.v1",
+    "design_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+    "design_sha256_recomputed": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+    "state": null
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP38/E1_PILOT_DESIGN_V2_SEALED_NOT_EXECUTED.json": {
+    "kind": "design",
+    "why": "the successor pilot design, sealed before it ran",
+    "file_sha256": "a612eda185c0b5a1fac5e93e3446da26c96fd969e953a8e2304412b57944b228",
+    "bytes": 10622,
+    "schema": "df_e1_pilot_design.v1",
+    "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+    "design_sha256_recomputed": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+    "state": null
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP63/PHASE1_DESIGN_SEALED.json": {
+    "kind": "design",
+    "why": "diagnostic phase 1: one factor at a time on the rows already used",
+    "file_sha256": "639ce8a7896c61f33f42f76fb5229ca63b951333e019531ce8db985fb01fd0f6",
+    "bytes": 6933,
+    "schema": "df_e1_phase1_design.v1",
+    "design_sha256": "5cb8263d359f15008ddc0ba0a997cdafd75036b8dd5621af0d31e5f9a8a4b231",
+    "design_sha256_recomputed": "5cb8263d359f15008ddc0ba0a997cdafd75036b8dd5621af0d31e5f9a8a4b231",
+    "state": null
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json": {
+    "kind": "design",
+    "why": "phase 2 v1, 27 cells, superseded by v2",
+    "file_sha256": "c9fd59178bb72877ad5ab6e527865488e3653cd3e5e619c88aa556fcde799adf",
+    "bytes": 15881,
+    "schema": "df_e1_phase2_design.v1",
+    "design_sha256": "6b47509400ef5e7be9427f11b5e801d6affcc109d781c67d67fbf20d8406d8c4",
+    "design_sha256_recomputed": "6b47509400ef5e7be9427f11b5e801d6affcc109d781c67d67fbf20d8406d8c4",
+    "state": "SEALED_NOT_EXECUTED"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP66/PHASE2_DESIGN_SEALED_v2.json": {
+    "kind": "design",
+    "why": "phase 2 v2, 36 cells, carrying the post-Huber corrections",
+    "file_sha256": "ea5c96560891ff97267990baae239a60e3f45ac50d3736f30a63cfc85cc872d3",
+    "bytes": 25421,
+    "schema": "df_e1_phase2_design.v2",
+    "design_sha256": "0dcb92b9c05ad14324a77a21b0a41a5eabe70b811321edbd17a6294e74e330fa",
+    "design_sha256_recomputed": "0dcb92b9c05ad14324a77a21b0a41a5eabe70b811321edbd17a6294e74e330fa",
+    "state": "SEALED_NOT_EXECUTED"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP66/blocks/e1_block_dev_matched_v1/DESIGN.json": {
+    "kind": "design",
+    "why": "DEV_MATCHED v1 (abandoned root, preserved)",
+    "file_sha256": "7656f01ac0de6e70cf6ac5dd1aa140ada3536a29b2a7a6596fc7b5935f90ec75",
+    "bytes": 8632,
+    "schema": "df_e1_block_design.v1",
+    "design_sha256": "6f35d165bb96cea8d134f959980bf30df5d28879261ceadd73aef55cfd6c4019",
+    "design_sha256_recomputed": "6f35d165bb96cea8d134f959980bf30df5d28879261ceadd73aef55cfd6c4019",
+    "state": "SEALED_NOT_EXECUTED"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP66/blocks/e1_block_dev_matched_v2/DESIGN.json": {
+    "kind": "design",
+    "why": "DEV_MATCHED v2",
+    "file_sha256": "357577d29890118ac87514d1329c2ce8f3a659e7eae1d21b3cbd15b09ea32418",
+    "bytes": 8632,
+    "schema": "df_e1_block_design.v1",
+    "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
+    "design_sha256_recomputed": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
+    "state": "SEALED_NOT_EXECUTED"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP66/blocks/e1_block_q1_calendar_v1/DESIGN.json": {
+    "kind": "design",
+    "why": "Q1_CALENDAR",
+    "file_sha256": "4a58098640392a3877fc75800a0875897926e0e6c65c31cf28be32c966366259",
+    "bytes": 10635,
+    "schema": "df_e1_block_design.v1",
+    "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+    "design_sha256_recomputed": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+    "state": "SEALED_NOT_EXECUTED"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP66/blocks/e1_block_q2_context_v1/DESIGN.json": {
+    "kind": "design",
+    "why": "Q2_CONTEXT \u2014 the block that never produced an outcome",
+    "file_sha256": "96ebcb1c55744f1b029b777553a3bcc5971979753904c714066bec6cc4002dbd",
+    "bytes": 13175,
+    "schema": "df_e1_block_design.v1",
+    "design_sha256": "6d1aaecaf27c581c709a745a4f976c2e9dcc05594815b2ee1a9747595f4398b1",
+    "design_sha256_recomputed": "6d1aaecaf27c581c709a745a4f976c2e9dcc05594815b2ee1a9747595f4398b1",
+    "state": "SEALED_NOT_EXECUTED"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP66/blocks/e1_block_q3_volume_v1/DESIGN.json": {
+    "kind": "design",
+    "why": "Q3_VOLUME",
+    "file_sha256": "fe51f31861c2e9c859503683a638c3fe6e09b2c27485b04b6b4450c5039b2c82",
+    "bytes": 10231,
+    "schema": "df_e1_block_design.v1",
+    "design_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad",
+    "design_sha256_recomputed": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad",
+    "state": "SEALED_NOT_EXECUTED"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP74/blocks/e1_block_arch_x_calendar_v1/DESIGN.json": {
+    "kind": "design",
+    "why": "ARCH_X_CALENDAR, 15 cells across three hosts",
+    "file_sha256": "adc0956cd46522408d62c17522de8c54251b5ee9cf012b1f527b26e1fd722df2",
+    "bytes": 13820,
+    "schema": "df_e1_block_design.v1",
+    "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+    "design_sha256_recomputed": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+    "state": "SEALED_NOT_EXECUTED"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_context_daily_lag_v1/DESIGN.json": {
+    "kind": "design",
+    "why": "CONTEXT_DAILY_LAG",
+    "file_sha256": "74669ad99e7c88f53da2e751d9859bb86609380f963626a445b6b8324855257a",
+    "bytes": 11361,
+    "schema": "df_e1_block_design.v1",
+    "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+    "design_sha256_recomputed": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+    "state": "SEALED_NOT_EXECUTED"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP34/E1_PILOT_CLOSE_REPAIRED.json": {
+    "kind": "closure",
+    "why": "the repaired closure of the original pilot",
+    "file_sha256": "c3783e704042d9384eaf49bac1f2008c66c16cc3337017a7313fa4b352debf71",
+    "bytes": 22097,
+    "schema": "df_e1_close.v1",
+    "design_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP55/E1_SUCCESSOR_CLOSE.json": {
+    "kind": "closure",
+    "why": "the closure of the successor run",
+    "file_sha256": "9f5aeedc8e3504109e4bacffdbca9b5df59c7a59524c3db361cbc1fbda47698d",
+    "bytes": 47756,
+    "schema": "df_e1_close.v1",
+    "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP82/CLOSURE_TABLE_RP89.json": {
+    "kind": "closure_table",
+    "why": "the owner-facing closure table over the E1 rounds: model error, naive error on identical rows, skill, literature value and comparability",
+    "file_sha256": "857bcd1b6a2c50b51041a81d836e80d1a2e665315b4536e477d43cd1f58b1e29",
+    "bytes": 283119,
+    "schema": "owner_closure_table.v2",
+    "design_sha256": null
+   },
+   "docs/audits/evidence/HUBER_ADAMW_2026_09_21/REPORT.json": {
+    "kind": "report_unbound_design",
+    "why": "the Huber/AdamW factorial: its design digest be2e776e\u2026 has no retained artifact here, so its identity cannot be recomputed",
+    "file_sha256": "70ba33f100df089667312ca8b5e91d7bb417c1e3b9c3640192ca3d33fa499cd9",
+    "bytes": 5481,
+    "schema": null,
+    "design_sha256": "be2e776e5c64a8422a6411447a4cbeba6e5607c7158456f9a64f89a4244b6965"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_dev_matched_v2/REPORT.json": {
+    "kind": "report",
+    "why": "DEV_MATCHED outcome",
+    "file_sha256": "e199751293c837b231186b2f3d469ac6280e2ed88a5567e8c1c25631883ae5d7",
+    "bytes": 9811,
+    "schema": "df_e1_block_report.v2",
+    "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_q1_calendar_v1/REPORT.json": {
+    "kind": "report",
+    "why": "Q1_CALENDAR outcome",
+    "file_sha256": "f0ebdbf72ffc5b342255c3e0114abfd01e30ca917c4ccc4e5cd166b8db879027",
+    "bytes": 9953,
+    "schema": "df_e1_block_report.v2",
+    "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_q3_volume_v1/REPORT.json": {
+    "kind": "report",
+    "why": "Q3_VOLUME outcome",
+    "file_sha256": "3dc8ebbefe634270f678492f807dfefd6b658a7a8cbcbe72982f72379eddd965",
+    "bytes": 9744,
+    "schema": "df_e1_block_report.v2",
+    "design_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_arch_x_calendar_v1/REPORT.json": {
+    "kind": "report",
+    "why": "ARCH_X_CALENDAR outcome",
+    "file_sha256": "fa9ac315659a1c790504b07ff21f725b4e3d91a1388918d352c524ecf72e346a",
+    "bytes": 23536,
+    "schema": "df_e1_block_report.v2",
+    "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572"
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_context_daily_lag_v1/REPORT.json": {
+    "kind": "report",
+    "why": "CONTEXT_DAILY_LAG outcome",
+    "file_sha256": "3f15e065eac778698a5b097f8240ddf73f63dcbadd4b89639725b40fd39d7509",
+    "bytes": 10486,
+    "schema": "df_e1_block_report.v2",
+    "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d"
+   },
+   "docs/audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md": {
+    "kind": "document",
+    "why": "the review that forbids sealing 13E v1",
+    "file_sha256": "6a11b0fa447a867845d4d9eb8c67fe32ad06a02211bc7f00225e2f23c6f547d9",
+    "bytes": 9747
+   },
+   "docs/audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md": {
+    "kind": "document",
+    "why": "the ML-baselines review: comparators, diagnoses and the legacy lineage",
+    "file_sha256": "4ec0cba3391f68511036e287679c37c1a9293165eaed315e3c08d5d77fd29b69",
+    "bytes": 8043
+   },
+   "docs/audits/work_plan/MUSASHI_HUBER_ADAMW_RESULTS_2026_09_21.md": {
+    "kind": "document",
+    "why": "the Huber/AdamW measured comparison",
+    "file_sha256": "1f164c2cec5ceae8917c78f04195953f953da1db8c9e9b3a2e202cb7c63ef695",
+    "bytes": 7421
+   },
+   "docs/audits/work_plan/MUSASHI_POST_HUBER_REVIEW_2026_09_21.md": {
+    "kind": "document",
+    "why": "the post-Huber review",
+    "file_sha256": "55f3155808ad6a31f8292974dfbbb056cc94211259246bc8c7be65ff5125759b",
+    "bytes": 8864
+   },
+   "docs/audits/work_plan/MUSASHI_RP136_RP139_REVIEW_2026_09_23.md": {
+    "kind": "document",
+    "why": "the newest E1 precondition: a matched ECL adapter",
+    "file_sha256": "bf60cefd008077247339ec0875c30a111cc5dd8fb712b80ac6880c41875a3a8e",
+    "bytes": 4330
+   },
+   "docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md": {
+    "kind": "document",
+    "why": "the return that asks for review 'before any E1 sealing'",
+    "file_sha256": "883b9e239f5b20c8321a56e20e296fd365aa0a2839da92b586ac3fb94553a710",
+    "bytes": 14062
+   },
+   "docs/audits/work_plan/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md": {
+    "kind": "document",
+    "why": "the return that says MOD-E1 is VERIFIED, not externally reviewed",
+    "file_sha256": "bdbd40736b2333766663ad17501ca17bdf269599c968ef4da9876d3103dd7347",
+    "bytes": 14798
+   },
+   "docs/audits/work_plan/SATOSHI_PROGRAM_RP57_RP64_RETURN_2026_09_21.md": {
+    "kind": "document",
+    "why": "the return that answers the ML-baselines review",
+    "file_sha256": "e18ff6daf49217b2c641518ff3ae5448c8db6b694d74ddfd66baaf34d625802f",
+    "bytes": 13762
+   },
+   "docs/tres_temas_entrevista/program_v3/13E_E1_TASK_SHEET_2026_09_19.md": {
+    "kind": "document",
+    "why": "the E1 task sheet, v1 \u2014 still unsealed by its own words",
+    "file_sha256": "5fff9956dc60689b8c2149fa8b39b8fa10e00097442fdfc438892d0573088124",
+    "bytes": 6949
+   }
+  },
+  "rules_as_stated": {
+   "docs/audits/evidence/d3_k5_20260917/RP63/PHASE1_DESIGN_SEALED.json": {
+    "design_sha256": "5cb8263d359f15008ddc0ba0a997cdafd75036b8dd5621af0d31e5f9a8a4b231",
+    "rules": {
+     "reading_rules": [
+      "three seeds on one task are development evidence, not a confirmation",
+      "an arm that stops at the update ceiling is CENSORED: what it would reach with more budget is unknown, in either direction",
+      "no cell is removed after its score is seen"
+     ]
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json": {
+    "design_sha256": "6b47509400ef5e7be9427f11b5e801d6affcc109d781c67d67fbf20d8406d8c4",
+    "rules": {
+     "reading_rules": [
+      "three seeds on one task are development evidence",
+      "R0/R1/R2 return only after Q1-Q3 with the adequate objective common to every arm",
+      "no pretraining moved in this phase"
+     ],
+     "acceptance_before_runner_changes": [
+      "tests/test_df_e1_calendar.py",
+      "tests/test_df_e1_phase2_acceptance.py",
+      "the causal battery's negative controls stay DETECTED",
+      "governance before consumption, observed update counts, per-cell artifacts, outbox and warehouse content checks unchanged from phase 1"
+     ],
+     "held_constant": [
+      "architecture family (ARCH-A branches, tcn_w core) except where the question moves it",
+      "training recipe (continuity reference)",
+      "forecast task W60_h60",
+      "validation population",
+      "scaler grain (train windows)",
+      "three paired seeds",
+      "no pretraining"
+     ],
+     "benchmark_contract": {
+      "checkpoint_selection": "best validation, patience 3, restored",
+      "comparability": {
+       "against": "gasparin_2019",
+       "fields_that_differ": [
+        "target_construction",
+        "resolution_seconds",
+        "horizon_steps",
+        "split_rule",
+        "missing_policy",
+        "target_transform",
+        "scaler_fit_population",
+        "metric_formula",
+        "metric_aggregation"
+       ],
+       "mode": "NOT_COMPARABLE",
+       "ours_sha256": "6c8c9ff7be91d4d7edf853c4a94b530aadcce49219845457c9499e2f5b3d9168",
+       "resolution": "a re-execution of the reference method under OUR contract on the same rows (MATCHED_DOMAIN_COMPARISON), or an exact reproduction of THEIR protocol (REPRODUCTION); never their published number in our comparison column",
+       "theirs_sha256": "330d7a26e4e3af93e9ba494acc7850b9b1c2d11b79ebb1bcf711656c5f1d94fb",
+       "why": "identity fields differ: ['target_construction', 'resolution_seconds', 'horizon_steps', 'split_rule', 'missing_policy', 'target_transform', 'scaler_fit_population', 'metric_formula', 'metric_aggregation']; a published score under another protocol is not a comparator"
+      },
+      "contract_sha256": "6c8c9ff7be91d4d7edf853c4a94b530aadcce49219845457c9499e2f5b3d9168",
+      "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+      "horizon_seconds": 3600,
+      "horizon_steps": 60,
+      "input_window_steps": 60,
+      "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+      "metric_formula": "MAE = mean |yhat - y| over the common evaluation set, in kW; MAE_z = MAE / sd_train",
+      "metric_scale": "kW (and z with sd_train 0.9125164391265214)",
+      "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+      "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+      "notes": [],
+      "reference_method": null,
+      "replicas": "3 paired seeds; development, not confirmation",
+      "resolution_seconds": 60,
+      "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+      "schema": "benchmark_contract.v1",
+      "source": {
+       "contract_sha256": "9f4c972043be998150cd09dafaceaf05ed5e9d4e6c9efef4263a8c29d6d53027",
+       "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+       "kind": "OURS",
+       "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+      },
+      "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test rows 1763969..2075259 never read",
+      "target": "Global_active_power",
+      "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+      "target_transform": "zscore_train",
+      "task_id": "uci_235.W60_h60.DEV_28d_7d",
+      "tuning_budget": "none: declared settings",
+      "version": "1"
+     },
+     "state": "SEALED_NOT_EXECUTED"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP66/PHASE2_DESIGN_SEALED_v2.json": {
+    "design_sha256": "0dcb92b9c05ad14324a77a21b0a41a5eabe70b811321edbd17a6294e74e330fa",
+    "rules": {
+     "reading_rules": [
+      "three seeds on one task are development evidence",
+      "unrun blocks stay NOT_EXECUTED, never 'no effect'",
+      "no cell is removed after its score is seen",
+      "no adequacy margin, cell or epoch is changed from partial outcomes"
+     ],
+     "held_constant": [
+      "forecast task W60/h60 on the successor rows",
+      "the COMMON train-only scaler (28 d, W60 windows) and one evaluation sigma",
+      "the common evaluation set derived at prepare",
+      "the continuity recipe with validation in observed updates",
+      "three paired seeds",
+      "no pretraining"
+     ],
+     "benchmark_contract": {
+      "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+      "comparability": {
+       "against": "gasparin_2019",
+       "comparator_state": "NONE",
+       "declared_contrast": [],
+       "fields_that_differ": [
+        "target_transform"
+       ],
+       "mode": "NOT_COMPARABLE",
+       "ours_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+       "resolution": "read the primary source (or its code) and fill the field; a placeholder is not a protocol",
+       "rule": "the adapted GRU is measured under OUR contract; Table 5 stays in the source notes",
+       "theirs_sha256": "972d9470a6661a3ef8088d350d37e1c8a09e084bd94e2fbcba5b36ebdae494e4",
+       "why": "unknown identity fields cannot match as proof: ['target_transform']"
+      },
+      "contract_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+      "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+      "estimand": null,
+      "horizon_seconds": 3600,
+      "horizon_steps": 60,
+      "input_window_steps": 60,
+      "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+      "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+      "metric_scale": "z_train",
+      "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+      "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+      "notes": [],
+      "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+      "reference_method": null,
+      "replicas": "3 paired seeds; development",
+      "resolution_seconds": 60,
+      "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+      "schema": "benchmark_contract.v2",
+      "source": {
+       "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+       "evaluation_origins": 10020,
+       "kind": "OURS",
+       "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+       "sd_train": 0.9125164391265214,
+       "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+      },
+      "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+      "target": "Global_active_power",
+      "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+      "target_transform": "zscore_train",
+      "task_id": "uci_235.W60_h60.DEV_28d_7d",
+      "tuning_budget": "none: declared settings",
+      "varying_factors": [],
+      "version": "2"
+     },
+     "limits": {
+      "campaign_cpu_seconds": 14400,
+      "child_cpu_seconds": 3600,
+      "child_wall_seconds": 4800,
+      "closure_reserve_seconds": 2000,
+      "parallel_children": 3
+     },
+     "state": "SEALED_NOT_EXECUTED"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP66/blocks/e1_block_dev_matched_v1/DESIGN.json": {
+    "design_sha256": "6f35d165bb96cea8d134f959980bf30df5d28879261ceadd73aef55cfd6c4019",
+    "rules": {
+     "reading_rules": [
+      "three seeds on one task are development evidence",
+      "a fit that reached the update ceiling is CENSORED wherever its best checkpoint fell",
+      "no cell is removed after its score is seen",
+      "a published number under another protocol never enters the comparison column"
+     ],
+     "common_evaluation_rule": "the intersection over the block's arms of admissible validation origins, with a finite label and a finite daily lookup, derived at prepare BEFORE any score; every arm scores on it",
+     "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels mean 0 / sd 1; the lag channel takes the target's scaler; one evaluation sigma = the target's train sd",
+     "benchmark_contract": {
+      "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+      "comparability": {
+       "against": "gasparin_2019",
+       "comparator_state": "NONE",
+       "declared_contrast": [],
+       "fields_that_differ": [
+        "target_transform"
+       ],
+       "mode": "NOT_COMPARABLE",
+       "ours_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+       "resolution": "read the primary source (or its code) and fill the field; a placeholder is not a protocol",
+       "rule": "the adapted GRU is measured under OUR contract; Table 5 stays in the source notes",
+       "theirs_sha256": "972d9470a6661a3ef8088d350d37e1c8a09e084bd94e2fbcba5b36ebdae494e4",
+       "why": "unknown identity fields cannot match as proof: ['target_transform']"
+      },
+      "contract_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+      "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+      "estimand": null,
+      "horizon_seconds": 3600,
+      "horizon_steps": 60,
+      "input_window_steps": 60,
+      "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+      "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+      "metric_scale": "z_train",
+      "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+      "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+      "notes": [],
+      "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+      "reference_method": null,
+      "replicas": "3 paired seeds; development",
+      "resolution_seconds": 60,
+      "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+      "schema": "benchmark_contract.v2",
+      "source": {
+       "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+       "evaluation_origins": 10020,
+       "kind": "OURS",
+       "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+       "sd_train": 0.9125164391265214,
+       "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+      },
+      "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+      "target": "Global_active_power",
+      "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+      "target_transform": "zscore_train",
+      "task_id": "uci_235.W60_h60.DEV_28d_7d",
+      "tuning_budget": "none: declared settings",
+      "varying_factors": [],
+      "version": "2"
+     },
+     "limits": {
+      "campaign_cpu_seconds": 14400,
+      "child_cpu_seconds": 3600,
+      "child_wall_seconds": 4800,
+      "closure_reserve_seconds": 2000,
+      "parallel_children": 3
+     },
+     "state": "SEALED_NOT_EXECUTED"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP66/blocks/e1_block_dev_matched_v2/DESIGN.json": {
+    "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
+    "rules": {
+     "reading_rules": [
+      "three seeds on one task are development evidence",
+      "a fit that reached the update ceiling is CENSORED wherever its best checkpoint fell",
+      "no cell is removed after its score is seen",
+      "a published number under another protocol never enters the comparison column"
+     ],
+     "common_evaluation_rule": "the intersection over the block's arms of admissible validation origins, with a finite label and a finite daily lookup, derived at prepare BEFORE any score; every arm scores on it",
+     "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels mean 0 / sd 1; the lag channel takes the target's scaler; one evaluation sigma = the target's train sd",
+     "benchmark_contract": {
+      "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+      "comparability": {
+       "against": "gasparin_2019",
+       "comparator_state": "NONE",
+       "declared_contrast": [],
+       "fields_that_differ": [
+        "target_transform"
+       ],
+       "mode": "NOT_COMPARABLE",
+       "ours_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+       "resolution": "read the primary source (or its code) and fill the field; a placeholder is not a protocol",
+       "rule": "the adapted GRU is measured under OUR contract; Table 5 stays in the source notes",
+       "theirs_sha256": "972d9470a6661a3ef8088d350d37e1c8a09e084bd94e2fbcba5b36ebdae494e4",
+       "why": "unknown identity fields cannot match as proof: ['target_transform']"
+      },
+      "contract_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+      "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+      "estimand": null,
+      "horizon_seconds": 3600,
+      "horizon_steps": 60,
+      "input_window_steps": 60,
+      "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+      "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+      "metric_scale": "z_train",
+      "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+      "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+      "notes": [],
+      "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+      "reference_method": null,
+      "replicas": "3 paired seeds; development",
+      "resolution_seconds": 60,
+      "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+      "schema": "benchmark_contract.v2",
+      "source": {
+       "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+       "evaluation_origins": 10020,
+       "kind": "OURS",
+       "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+       "sd_train": 0.9125164391265214,
+       "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+      },
+      "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+      "target": "Global_active_power",
+      "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+      "target_transform": "zscore_train",
+      "task_id": "uci_235.W60_h60.DEV_28d_7d",
+      "tuning_budget": "none: declared settings",
+      "varying_factors": [],
+      "version": "2"
+     },
+     "limits": {
+      "campaign_cpu_seconds": 14400,
+      "child_cpu_seconds": 3600,
+      "child_wall_seconds": 4800,
+      "closure_reserve_seconds": 2000,
+      "parallel_children": 3
+     },
+     "state": "SEALED_NOT_EXECUTED"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP66/blocks/e1_block_q1_calendar_v1/DESIGN.json": {
+    "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+    "rules": {
+     "reading_rules": [
+      "three seeds on one task are development evidence",
+      "a fit that reached the update ceiling is CENSORED wherever its best checkpoint fell",
+      "no cell is removed after its score is seen",
+      "a published number under another protocol never enters the comparison column"
+     ],
+     "common_evaluation_rule": "the intersection over the block's arms of admissible validation origins, with a finite label and a finite daily lookup, derived at prepare BEFORE any score; every arm scores on it",
+     "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels mean 0 / sd 1; the lag channel takes the target's scaler; one evaluation sigma = the target's train sd",
+     "benchmark_contract": {
+      "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+      "comparability": {
+       "against": "the block's own baseline under one declared estimand",
+       "comparator_state": "NONE",
+       "declared_contrast": [
+        "permitted_inputs"
+       ],
+       "fields_that_differ": [],
+       "mode": "REPRODUCTION",
+       "ours_sha256": "497a01eeacc2f1b46afba5c7d700775638da86100f55b53bc7f07de6fdf9354f",
+       "reference_evidence": {
+        "state": "PLANNED_REFERENCE",
+        "why": "no reference run root was given"
+       },
+       "resolution": null,
+       "theirs_sha256": "1f827a24c8c0b0eb7469fc5254c744cf48d787cdc062a81a8113352ada839c92",
+       "why": "every identity field matches (contrast declared on ['permitted_inputs']); the paper's metric is reported first"
+      },
+      "contract_sha256": "497a01eeacc2f1b46afba5c7d700775638da86100f55b53bc7f07de6fdf9354f",
+      "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+      "estimand": "does the wall-clock position add information at h60? baseline modular_w60 reused from DEV_MATCHED when its contract matches",
+      "horizon_seconds": 3600,
+      "horizon_steps": 60,
+      "input_window_steps": 60,
+      "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+      "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+      "metric_scale": "z_train",
+      "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+      "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+      "notes": [],
+      "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+      "reference_method": null,
+      "replicas": "3 paired seeds; development",
+      "resolution_seconds": 60,
+      "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+      "schema": "benchmark_contract.v2",
+      "source": {
+       "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+       "evaluation_origins": 10020,
+       "kind": "OURS",
+       "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+       "sd_train": 0.9125164391265214,
+       "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+      },
+      "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+      "target": "Global_active_power",
+      "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+      "target_transform": "zscore_train",
+      "task_id": "uci_235.W60_h60.DEV_28d_7d",
+      "tuning_budget": "none: declared settings",
+      "varying_factors": [
+       "permitted_inputs"
+      ],
+      "version": "2"
+     },
+     "limits": {
+      "campaign_cpu_seconds": 14400,
+      "child_cpu_seconds": 3600,
+      "child_wall_seconds": 4800,
+      "closure_reserve_seconds": 2000,
+      "parallel_children": 3
+     },
+     "state": "SEALED_NOT_EXECUTED"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP66/blocks/e1_block_q2_context_v1/DESIGN.json": {
+    "design_sha256": "6d1aaecaf27c581c709a745a4f976c2e9dcc05594815b2ee1a9747595f4398b1",
+    "rules": {
+     "reading_rules": [
+      "three seeds on one task are development evidence",
+      "a fit that reached the update ceiling is CENSORED wherever its best checkpoint fell",
+      "no cell is removed after its score is seen",
+      "a published number under another protocol never enters the comparison column"
+     ],
+     "common_evaluation_rule": "the intersection over the block's arms of admissible validation origins, with a finite label and a finite daily lookup, derived at prepare BEFORE any score; every arm scores on it",
+     "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels mean 0 / sd 1; the lag channel takes the target's scaler; one evaluation sigma = the target's train sd",
+     "benchmark_contract": {
+      "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+      "comparability": {
+       "against": "the block's own baseline under one declared estimand",
+       "comparator_state": "NONE",
+       "declared_contrast": [
+        "permitted_inputs"
+       ],
+       "fields_that_differ": [],
+       "mode": "REPRODUCTION",
+       "ours_sha256": "ddf26de62a9fa18cc026bbe23871c697df6770a7b127cab395b8921b17446a3f",
+       "reference_evidence": {
+        "state": "PLANNED_REFERENCE",
+        "why": "no reference run root was given"
+       },
+       "resolution": null,
+       "theirs_sha256": "fa3f7fb0ade25d88b3c85c79cbecb35c7229b01df8eccd2ffe30472dbc943439",
+       "why": "every identity field matches (contrast declared on ['permitted_inputs']); the paper's metric is reported first"
+      },
+      "contract_sha256": "ddf26de62a9fa18cc026bbe23871c697df6770a7b127cab395b8921b17446a3f",
+      "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+      "estimand": "information beyond the hour, separated from depth and from padding",
+      "horizon_seconds": 3600,
+      "horizon_steps": 60,
+      "input_window_steps": 60,
+      "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+      "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+      "metric_scale": "z_train",
+      "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+      "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+      "notes": [],
+      "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+      "reference_method": null,
+      "replicas": "3 paired seeds; development",
+      "resolution_seconds": 60,
+      "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+      "schema": "benchmark_contract.v2",
+      "source": {
+       "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+       "evaluation_origins": 10020,
+       "kind": "OURS",
+       "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+       "sd_train": 0.9125164391265214,
+       "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+      },
+      "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+      "target": "Global_active_power",
+      "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+      "target_transform": "zscore_train",
+      "task_id": "uci_235.W60_h60.DEV_28d_7d",
+      "tuning_budget": "none: declared settings",
+      "varying_factors": [
+       "permitted_inputs"
+      ],
+      "version": "2"
+     },
+     "limits": {
+      "campaign_cpu_seconds": 14400,
+      "child_cpu_seconds": 3600,
+      "child_wall_seconds": 4800,
+      "closure_reserve_seconds": 2000,
+      "parallel_children": 3
+     },
+     "state": "SEALED_NOT_EXECUTED"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP66/blocks/e1_block_q3_volume_v1/DESIGN.json": {
+    "design_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad",
+    "rules": {
+     "reading_rules": [
+      "three seeds on one task are development evidence",
+      "a fit that reached the update ceiling is CENSORED wherever its best checkpoint fell",
+      "no cell is removed after its score is seen",
+      "a published number under another protocol never enters the comparison column"
+     ],
+     "common_evaluation_rule": "the intersection over the block's arms of admissible validation origins, with a finite label and a finite daily lookup, derived at prepare BEFORE any score; every arm scores on it",
+     "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels mean 0 / sd 1; the lag channel takes the target's scaler; one evaluation sigma = the target's train sd",
+     "benchmark_contract": {
+      "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+      "comparability": {
+       "against": "the block's own baseline under one declared estimand",
+       "comparator_state": "NONE",
+       "declared_contrast": [
+        "split_rule"
+       ],
+       "fields_that_differ": [],
+       "mode": "REPRODUCTION",
+       "ours_sha256": "62c51165a492863a6345883caff1dd3de1347d926cfdbdbc9963b3a1b2741d81",
+       "reference_evidence": {
+        "state": "PLANNED_REFERENCE",
+        "why": "no reference run root was given"
+       },
+       "resolution": null,
+       "theirs_sha256": "fd2ee29449abbd6ec30fa075512d0d1815e9fd560f2b9c6e5f9a1bbd37ad5c66",
+       "why": "every identity field matches (contrast declared on ['split_rule']); the paper's metric is reported first"
+      },
+      "contract_sha256": "62c51165a492863a6345883caff1dd3de1347d926cfdbdbc9963b3a1b2741d81",
+      "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+      "estimand": "more history with the evaluation, scaler and cadence FIXED",
+      "horizon_seconds": 3600,
+      "horizon_steps": 60,
+      "input_window_steps": 60,
+      "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+      "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+      "metric_scale": "z_train",
+      "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+      "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+      "notes": [],
+      "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+      "reference_method": null,
+      "replicas": "3 paired seeds; development",
+      "resolution_seconds": 60,
+      "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+      "schema": "benchmark_contract.v2",
+      "source": {
+       "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+       "evaluation_origins": 10020,
+       "kind": "OURS",
+       "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+       "sd_train": 0.9125164391265214,
+       "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+      },
+      "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+      "target": "Global_active_power",
+      "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+      "target_transform": "zscore_train",
+      "task_id": "uci_235.W60_h60.DEV_28d_7d",
+      "tuning_budget": "none: declared settings",
+      "varying_factors": [
+       "split_rule"
+      ],
+      "version": "2"
+     },
+     "limits": {
+      "campaign_cpu_seconds": 14400,
+      "child_cpu_seconds": 3600,
+      "child_wall_seconds": 4800,
+      "closure_reserve_seconds": 2000,
+      "parallel_children": 3
+     },
+     "state": "SEALED_NOT_EXECUTED"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP74/blocks/e1_block_arch_x_calendar_v1/DESIGN.json": {
+    "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+    "rules": {
+     "reading_rules": [
+      "three seeds on one task are development evidence",
+      "a fit that reached the update ceiling is CENSORED wherever its best checkpoint fell",
+      "no cell is removed after its score is seen",
+      "a published number under another protocol never enters the comparison column"
+     ],
+     "common_evaluation_rule": "the intersection over the block's arms of admissible validation origins, with a finite label and a finite daily lookup, derived at prepare BEFORE any score; every arm scores on it",
+     "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels mean 0 / sd 1; the lag channel takes the target's scaler; one evaluation sigma = the target's train sd",
+     "benchmark_contract": {
+      "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+      "comparability": {
+       "against": "the block's own baseline under one declared estimand",
+       "comparator_state": "NONE",
+       "declared_contrast": [
+        "split_rule"
+       ],
+       "fields_that_differ": [],
+       "mode": "REPRODUCTION",
+       "ours_sha256": "18de862d05c1af653e8ffbb74d6e68a31081c2f07c4d8d0153834fd0be306b4a",
+       "reference_evidence": {
+        "state": "PLANNED_REFERENCE",
+        "why": "no reference run root was given"
+       },
+       "resolution": null,
+       "theirs_sha256": "c33ba0c1c8278f9eaff8a44efdb9aecdf60416c9b56e6d0e39b47ab606620688",
+       "why": "every identity field matches (contrast declared on ['split_rule']); the paper's metric is reported first"
+      },
+      "contract_sha256": "18de862d05c1af653e8ffbb74d6e68a31081c2f07c4d8d0153834fd0be306b4a",
+      "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+      "estimand": "architecture {modular, adapted GRU} x inputs {original 7, original + real calendar}, three paired seeds (12 cells), plus the modular randomised-calendar control (3 cells): an architecture difference separated from an input-information difference, with the equal-capacity calendar check retained",
+      "horizon_seconds": 3600,
+      "horizon_steps": 60,
+      "input_window_steps": 60,
+      "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+      "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+      "metric_scale": "z_train",
+      "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+      "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+      "notes": [],
+      "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+      "reference_method": null,
+      "replicas": "3 paired seeds; development",
+      "resolution_seconds": 60,
+      "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+      "schema": "benchmark_contract.v2",
+      "source": {
+       "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+       "evaluation_origins": 10020,
+       "kind": "OURS",
+       "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+       "sd_train": 0.9125164391265214,
+       "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+      },
+      "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+      "target": "Global_active_power",
+      "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+      "target_transform": "zscore_train",
+      "task_id": "uci_235.W60_h60.DEV_28d_7d",
+      "tuning_budget": "none: declared settings",
+      "varying_factors": [
+       "split_rule"
+      ],
+      "version": "2"
+     },
+     "limits": {
+      "campaign_cpu_seconds": 14400,
+      "child_cpu_seconds": 3600,
+      "child_wall_seconds": 4800,
+      "closure_reserve_seconds": 2000,
+      "parallel_children": 3
+     },
+     "tier": "TIER2: RP79: patience 10 events (2 000 non-improving updates); informed by prior DEV behaviour",
+     "state": "SEALED_NOT_EXECUTED"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_context_daily_lag_v1/DESIGN.json": {
+    "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+    "rules": {
+     "reading_rules": [
+      "three seeds on one task are development evidence",
+      "a fit that reached the update ceiling is CENSORED wherever its best checkpoint fell",
+      "no cell is removed after its score is seen",
+      "a published number under another protocol never enters the comparison column"
+     ],
+     "common_evaluation_rule": "the intersection over the block's arms of admissible validation origins, with a finite label and a finite daily lookup, derived at prepare BEFORE any score; every arm scores on it",
+     "scaler_rule": "COMMON: the source run's train-only scaler (28 d, W60 windows) for every arm and tier; calendar channels mean 0 / sd 1; the lag channel takes the target's scaler; one evaluation sigma = the target's train sd",
+     "benchmark_contract": {
+      "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+      "comparability": {
+       "against": "the block's own baseline under one declared estimand",
+       "comparator_state": "NONE",
+       "declared_contrast": [
+        "split_rule"
+       ],
+       "fields_that_differ": [],
+       "mode": "REPRODUCTION",
+       "ours_sha256": "8372b4b36c769aded30d6cce2892dce6b1b82dda4dd51c23e8626b51ecaa5c4c",
+       "reference_evidence": {
+        "state": "PLANNED_REFERENCE",
+        "why": "no reference run root was given"
+       },
+       "resolution": null,
+       "theirs_sha256": "898752b4ae5692d99b1a4e5654a41a76edacb1f505145b89e2f11cab3dc77708",
+       "why": "every identity field matches (contrast declared on ['split_rule']); the paper's metric is reported first"
+      },
+      "contract_sha256": "8372b4b36c769aded30d6cce2892dce6b1b82dda4dd51c23e8626b51ecaa5c4c",
+      "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+      "estimand": "does a causal daily-lag channel y(t+h-1440) add predictive information to the W60 receiver, without paying for W1440 or changing receiver depth? (RP87; scoped as THIS feature addition, not an abstract information-only effect)",
+      "horizon_seconds": 3600,
+      "horizon_steps": 60,
+      "input_window_steps": 60,
+      "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+      "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+      "metric_scale": "z_train",
+      "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+      "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+      "notes": [],
+      "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+      "reference_method": null,
+      "replicas": "3 paired seeds; development",
+      "resolution_seconds": 60,
+      "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+      "schema": "benchmark_contract.v2",
+      "source": {
+       "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+       "evaluation_origins": 10020,
+       "kind": "OURS",
+       "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+       "sd_train": 0.9125164391265214,
+       "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+      },
+      "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+      "target": "Global_active_power",
+      "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+      "target_transform": "zscore_train",
+      "task_id": "uci_235.W60_h60.DEV_28d_7d",
+      "tuning_budget": "none: declared settings",
+      "varying_factors": [
+       "split_rule"
+      ],
+      "version": "2"
+     },
+     "limits": {
+      "campaign_cpu_seconds": 14400,
+      "child_cpu_seconds": 3600,
+      "child_wall_seconds": 4800,
+      "closure_reserve_seconds": 2000,
+      "parallel_children": 3
+     },
+     "tier": "TIER2: RP79: patience 10 events (2 000 non-improving updates); informed by prior DEV behaviour",
+     "state": "SEALED_NOT_EXECUTED"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP34/E1_PILOT_CLOSE_REPAIRED.json": {
+    "design_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+    "rules": {
+     "population_rule": "the population is the sealed design's enumeration; absence is declared by id, never by a count",
+     "replay_rule": "a fresh process reloads the saved weights and regathers the windows from DATA; a gradient summary is never accepted in place of this",
+     "governance_meaning": "HISTORICAL_UNGOVERNED units are preserved development evidence: they were not delivered, registered or accepted by governance when they ran and are never presented as prospective governed evidence"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP55/E1_SUCCESSOR_CLOSE.json": {
+    "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+    "rules": {
+     "population_rule": "the population is the sealed design's enumeration; absence is declared by id, never by a count",
+     "replay_rule": "a fresh process reloads the saved weights and regathers the windows from DATA; a gradient summary is never accepted in place of this",
+     "governance_meaning": "HISTORICAL_UNGOVERNED units are preserved development evidence: they were not delivered, registered or accepted by governance when they ran and are never presented as prospective governed evidence"
+    }
+   }
+  },
+  "numbers_as_measured": {
+   "closures": {
+    "docs/audits/evidence/d3_k5_20260917/RP34/E1_PILOT_CLOSE_REPAIRED.json": {
+     "design_sha256": "807a4a30577d2ea49c5ea05e4841f2c84a2ae690d800f8dbc9d242f4f259817b",
+     "at": "2026-09-19T22:54:29Z",
+     "verdict": "ALL_VERIFIED",
+     "counts": {
+      "declared": 15,
+      "verified": 15,
+      "refused": 0,
+      "metrics_verified": 15,
+      "inference_verified": 11,
+      "regime_verified": 14
+     },
+     "governance": {
+      "units_governed": 0,
+      "units_historical_ungoverned": 15
+     },
+     "population": {
+      "declared": 15,
+      "absent_ids": [],
+      "strangers_on_disk": []
+     },
+     "register_problems": [],
+     "unit_scopes": {
+      "SCIENTIFICALLY_VERIFIED_HISTORICAL_UNGOVERNED": 15
+     },
+     "facts_not_applicable": {
+      "inference": [
+       "ae_s1",
+       "ae_s2",
+       "ae_s3",
+       "pilot_ae"
+      ],
+      "regime": [
+       "controls"
+      ]
+     },
+     "replay_windows_per_unit": 256,
+     "replay_tolerance_kw": 1e-05,
+     "reading": "every declared unit verified; the NOT_APPLICABLE facts above are the auto-encoder units (no forecast to replay) and the controls (no detector regime), so the verdict hides no unreplayed forecast"
+    },
+    "docs/audits/evidence/d3_k5_20260917/RP55/E1_SUCCESSOR_CLOSE.json": {
+     "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+     "at": "2026-09-20T19:13:19Z",
+     "verdict": "ALL_VERIFIED",
+     "counts": {
+      "declared": 15,
+      "verified": 15,
+      "refused": 0,
+      "metrics_verified": 15,
+      "inference_verified": 11,
+      "regime_verified": 14
+     },
+     "governance": {
+      "units_governed": 15,
+      "units_historical_ungoverned": 0
+     },
+     "population": {
+      "declared": 15,
+      "absent_ids": [],
+      "strangers_on_disk": []
+     },
+     "register_problems": [],
+     "unit_scopes": {
+      "VERIFIED_AND_GOVERNED": 15
+     },
+     "facts_not_applicable": {
+      "inference": [
+       "ae_s1",
+       "ae_s2",
+       "ae_s3",
+       "pilot_ae"
+      ],
+      "regime": [
+       "controls"
+      ]
+     },
+     "replay_windows_per_unit": 512,
+     "replay_tolerance_kw": 1e-05,
+     "reading": "every declared unit verified; the NOT_APPLICABLE facts above are the auto-encoder units (no forecast to replay) and the controls (no detector regime), so the verdict hides no unreplayed forecast"
+    }
+   },
+   "blocks_with_an_outcome": {
+    "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_dev_matched_v2/REPORT.json": {
+     "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
+     "block": "DEV_MATCHED",
+     "verified": true,
+     "problems": [],
+     "scope": "DEVELOPMENT; paired seeds within host blocks; one previously inspected DEV validation week; no test rows read",
+     "common_evaluation_rows": 10020,
+     "spent_cpu_seconds": 373.504281321,
+     "closure_code_drift": {
+      "df_e1_block.py": {
+       "sealed": "51f7eb46ea44a830c501138bb05b3818008ca36f441af4b8c86c56294111b6b3",
+       "now": "dbd27e0c22a6deb32ea96f00117cbd382e512187c2f8838629462780cbc7502d"
+      }
+     },
+     "summary": {
+      "gru_adapted_w60": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.5312730733988859,
+       "sd_mae_z_ddof1": 0.0012989654908230766,
+       "mean_mae_kw": 0.4847954131417544,
+       "censored_fits": 0,
+       "hosts": [
+        "omega"
+       ]
+      },
+      "modular_w60": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.5680454624284962,
+       "sd_mae_z_ddof1": 0.003027058849163215,
+       "mean_mae_kw": 0.5183508226372294,
+       "censored_fits": 0,
+       "hosts": [
+        "omega"
+       ]
+      }
+     }
+    },
+    "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_q1_calendar_v1/REPORT.json": {
+     "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+     "block": "Q1_CALENDAR",
+     "verified": true,
+     "problems": [],
+     "scope": "DEVELOPMENT; paired seeds within host blocks; one previously inspected DEV validation week; no test rows read",
+     "common_evaluation_rows": 10020,
+     "spent_cpu_seconds": 940.363754531,
+     "closure_code_drift": {
+      "df_e1_block.py": {
+       "sealed": "798711c4d99b0939335b7624089784f6caa4a74382e261fcf0e6fa34c7a92600",
+       "now": "dbd27e0c22a6deb32ea96f00117cbd382e512187c2f8838629462780cbc7502d"
+      }
+     },
+     "summary": {
+      "calendar": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.4868190602068945,
+       "sd_mae_z_ddof1": 0.009935859831960624,
+       "mean_mae_kw": 0.44423039531891506,
+       "censored_fits": 0,
+       "hosts": [
+        "omega"
+       ]
+      },
+      "randomised_calendar_control": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.5528714748662735,
+       "sd_mae_z_ddof1": 0.016420210110386597,
+       "mean_mae_kw": 0.5045043095395999,
+       "censored_fits": 0,
+       "hosts": [
+        "omega"
+       ]
+      }
+     }
+    },
+    "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_q3_volume_v1/REPORT.json": {
+     "design_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad",
+     "block": "Q3_VOLUME",
+     "verified": true,
+     "problems": [],
+     "scope": "DEVELOPMENT; paired seeds within host blocks; one previously inspected DEV validation week; no test rows read",
+     "common_evaluation_rows": 10020,
+     "spent_cpu_seconds": 533.7034325440001,
+     "closure_code_drift": {
+      "df_e1_block.py": {
+       "sealed": "09a37e7e711017609953be637d3ee176c92926d0f8d332108418b826b184389c",
+       "now": "dbd27e0c22a6deb32ea96f00117cbd382e512187c2f8838629462780cbc7502d"
+      }
+     },
+     "summary": {
+      "volume_112d": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.5574586765056853,
+       "sd_mae_z_ddof1": 0.004022739844480407,
+       "mean_mae_kw": 0.5086902064451513,
+       "censored_fits": 0,
+       "hosts": [
+        "omega"
+       ]
+      },
+      "volume_56d": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.5607992962676427,
+       "sd_mae_z_ddof1": 0.0066391282809296175,
+       "mean_mae_kw": 0.5117385768948084,
+       "censored_fits": 0,
+       "hosts": [
+        "omega"
+       ]
+      }
+     }
+    },
+    "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_arch_x_calendar_v1/REPORT.json": {
+     "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+     "block": "ARCH_X_CALENDAR",
+     "verified": true,
+     "problems": [],
+     "scope": "DEVELOPMENT; paired seeds within host blocks; one previously inspected DEV validation week; no test rows read",
+     "common_evaluation_rows": 10020,
+     "spent_cpu_seconds": 1766.502954294,
+     "closure_code_drift": {
+      "df_e1_block.py": {
+       "sealed": "8a9a7f9184553103f41ea5519c283e20d79bcf25fb1dfdff9c1ad84d30ffc91f",
+       "now": "dbd27e0c22a6deb32ea96f00117cbd382e512187c2f8838629462780cbc7502d"
+      }
+     },
+     "summary": {
+      "calendar": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.4926536821342989,
+       "sd_mae_z_ddof1": 0.008862015330485024,
+       "mean_mae_kw": 0.44955458374375956,
+       "censored_fits": 2,
+       "hosts": [
+        "dragon",
+        "gamma",
+        "omega"
+       ]
+      },
+      "gru_adapted_w60": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.5289929887869543,
+       "sd_mae_z_ddof1": 0.002374334260668047,
+       "mean_mae_kw": 0.48271479845076753,
+       "censored_fits": 1,
+       "hosts": [
+        "dragon",
+        "gamma",
+        "omega"
+       ]
+      },
+      "gru_calendar_w60": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.4798379201299228,
+       "sd_mae_z_ddof1": 0.003816481335350469,
+       "mean_mae_kw": 0.4378599902348334,
+       "censored_fits": 1,
+       "hosts": [
+        "dragon",
+        "gamma",
+        "omega"
+       ]
+      },
+      "modular_w60": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.539087465425902,
+       "sd_mae_z_ddof1": 0.0013305335194186557,
+       "mean_mae_kw": 0.4919261743281859,
+       "censored_fits": 2,
+       "hosts": [
+        "dragon",
+        "gamma",
+        "omega"
+       ]
+      },
+      "randomised_calendar_control": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.5446140832033518,
+       "sd_mae_z_ddof1": 0.005809784349451513,
+       "mean_mae_kw": 0.4969693039028775,
+       "censored_fits": 1,
+       "hosts": [
+        "dragon",
+        "gamma",
+        "omega"
+       ]
+      }
+     }
+    },
+    "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_context_daily_lag_v1/REPORT.json": {
+     "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+     "block": "CONTEXT_DAILY_LAG",
+     "verified": true,
+     "problems": [],
+     "scope": "DEVELOPMENT; paired seeds within host blocks; one previously inspected DEV validation week; no test rows read",
+     "common_evaluation_rows": 10020,
+     "spent_cpu_seconds": 883.306794664,
+     "closure_code_drift": "none: closed under the sealed code",
+     "summary": {
+      "daily_lag": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.5338938977417748,
+       "sd_mae_z_ddof1": 0.0042784802247021565,
+       "mean_mae_kw": 0.4871869584387034,
+       "censored_fits": 2,
+       "hosts": [
+        "dragon",
+        "gamma",
+        "omega"
+       ]
+      },
+      "modular_w60": {
+       "n_seeds": 3,
+       "mean_mae_z": 0.5416406091317078,
+       "sd_mae_z_ddof1": 0.00455064877631524,
+       "mean_mae_kw": 0.4942559599311858,
+       "censored_fits": 3,
+       "hosts": [
+        "dragon",
+        "gamma",
+        "omega"
+       ]
+      }
+     }
+    }
+   },
+   "blocks_without_an_outcome": [
+    {
+     "block": "Q2_CONTEXT",
+     "root": "docs/audits/evidence/d3_k5_20260917/RP66/blocks/e1_block_q2_context_v1",
+     "state": "BUDGET_LIMITED_BEFORE_ANY_OUTCOME",
+     "reports_present": [
+      "REPORT.pilot.json"
+     ],
+     "pilot_cpu_seconds": 2259.558384892,
+     "cells_with_an_outcome": 0,
+     "reading": "pilots only; no cell of this block was fitted to a score, so it says nothing about its question \u2014 not 'no effect'"
+    }
+   ],
+   "owner_closure_table": {
+    "path": "docs/audits/evidence/d3_k5_20260917/RP82/CLOSURE_TABLE_RP89.json",
+    "schema": "owner_closure_table.v2",
+    "at": "2026-09-21T18:45:16Z",
+    "generated_by": "tools/df_closure_table.py",
+    "problems": [],
+    "verified_rows": 39,
+    "preserved_qualified_rows": 31,
+    "custody_classes": {
+     "ACCEPTED_ARTIFACT_CHAIN": 51,
+     "METRIC_ANCHORED": 19
+    },
+    "preparation_classes": {
+     "PREPARATION_ACCEPTED_ARTIFACT": 39,
+     "PREPARATION_LOCAL_ONLY": 31
+    },
+    "custody_rule": "verified = clean arrays AND accepted artifact chain (predictions + record digests in the warehouse's canonical payload) AND the prepared data anchored by the accepted prepare terminal AND the denominator equal to the contract's sd_train; METRIC_ANCHORED = a historical score equal to the metric the accepted terminal carries, arrays not independently anchored (preserved, qualified); UNANCHORED/UNCHECKED = nothing accepted anchors the score (a problem for new results)",
+    "rules_as_stated": {
+     "skill": "1 - error_model/error_naive; lower-is-better; UNDEFINED when the naive is zero",
+     "scales": "kW and z reported in separate columns, never compared across",
+     "literature": "a published value under another protocol is shown for the record and never placed in the comparison column; NOT_COMPARABLE carries its reason and the planned matched comparison",
+     "missing_forecast": "a registered forecast unit without arrays or without a warehouse terminal is a problem, whatever NO_NEW_MEASUREMENT says about the round"
+    },
+    "runs": {
+     "ARCH_X_CALENDAR_RP79": {
+      "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
+      "design_identity_recomputes": true,
+      "design_artifact_retained_here": true
+     },
+     "CONTEXT_DAILY_LAG_RP87": {
+      "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
+      "design_identity_recomputes": true,
+      "design_artifact_retained_here": true
+     },
+     "DEV_MATCHED_RP72": {
+      "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
+      "design_identity_recomputes": true,
+      "design_artifact_retained_here": true
+     },
+     "Q1_CALENDAR_RP72": {
+      "design_sha256": "1e306894ee94453ab33667275df89e5e89028ce3ddc46da58093500ffb3d5c6f",
+      "design_identity_recomputes": true,
+      "design_artifact_retained_here": true
+     },
+     "Q3_VOLUME_RP72": {
+      "design_sha256": "fbbda9f3c75ea9515b87b27d49ff63101e574fba0ef7d9237a51f6581989fbad",
+      "design_identity_recomputes": true,
+      "design_artifact_retained_here": true
+     },
+     "huber_adamw_musashi": {
+      "design_sha256": "be2e776e5c64a8422a6411447a4cbeba6e5607c7158456f9a64f89a4244b6965",
+      "design_identity_recomputes": true,
+      "design_artifact_retained_here": false
+     },
+     "phase1_RP63": {
+      "design_sha256": "5cb8263d359f15008ddc0ba0a997cdafd75036b8dd5621af0d31e5f9a8a4b231",
+      "design_identity_recomputes": true,
+      "design_artifact_retained_here": true
+     },
+     "successor_RP55": {
+      "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+      "design_identity_recomputes": true,
+      "design_artifact_retained_here": true
+     }
+    },
+    "rows_total": 70,
+    "rows_missing_a_required_column": [],
+    "per_arm": {
+     "ARCH_X_CALENDAR_RP79::calendar": {
+      "run": "ARCH_X_CALENDAR_RP79",
+      "arm": "calendar",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.44955458374375956,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.27182550707291425,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "ARCH_X_CALENDAR_RP79::gru_adapted_w60": {
+      "run": "ARCH_X_CALENDAR_RP79",
+      "arm": "gru_adapted_w60",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.48271479845076753,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.21811362557335442,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "ARCH_X_CALENDAR_RP79::gru_calendar_w60": {
+      "run": "ARCH_X_CALENDAR_RP79",
+      "arm": "gru_calendar_w60",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.4378599902348334,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.29076804487874525,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "ARCH_X_CALENDAR_RP79::modular_w60": {
+      "run": "ARCH_X_CALENDAR_RP79",
+      "arm": "modular_w60",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.4919261743281859,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.2031933262343022,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "ARCH_X_CALENDAR_RP79::randomised_calendar_control": {
+      "run": "ARCH_X_CALENDAR_RP79",
+      "arm": "randomised_calendar_control",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.4969693039028776,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.19502462224682404,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "CONTEXT_DAILY_LAG_RP87::daily_lag": {
+      "run": "CONTEXT_DAILY_LAG_RP87",
+      "arm": "daily_lag",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.4871869584387034,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.21086976031369056,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "CONTEXT_DAILY_LAG_RP87::modular_w60": {
+      "run": "CONTEXT_DAILY_LAG_RP87",
+      "arm": "modular_w60",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.4942559599311858,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.1994196121816827,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "DEV_MATCHED_RP72::gru_adapted_w60": {
+      "run": "DEV_MATCHED_RP72",
+      "arm": "gru_adapted_w60",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.4847954131417544,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.2147435107922546,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "DEV_MATCHED_RP72::modular_w60": {
+      "run": "DEV_MATCHED_RP72",
+      "arm": "modular_w60",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.5183508226372295,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.16039150510064873,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "Q1_CALENDAR_RP72::calendar": {
+      "run": "Q1_CALENDAR_RP72",
+      "arm": "calendar",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.44423039531891506,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.2804494614195109,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "Q1_CALENDAR_RP72::randomised_calendar_control": {
+      "run": "Q1_CALENDAR_RP72",
+      "arm": "randomised_calendar_control",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.5045043095395999,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.18281965513686702,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "Q3_VOLUME_RP72::volume_112d": {
+      "run": "Q3_VOLUME_RP72",
+      "arm": "volume_112d",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.5086902064451513,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.1760394698893681,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "Q3_VOLUME_RP72::volume_56d": {
+      "run": "Q3_VOLUME_RP72",
+      "arm": "volume_56d",
+      "n_rows": 3,
+      "verified_rows": 3,
+      "mean_model_error_kw": 0.5117385768948083,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.17110181451513629,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "huber_adamw_musashi::huber_adam": {
+      "run": "huber_adamw_musashi",
+      "arm": "huber_adam",
+      "n_rows": 3,
+      "verified_rows": 0,
+      "mean_model_error_kw": 0.5206619299700557,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.1566480455274726,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "huber_adamw_musashi::huber_adamw": {
+      "run": "huber_adamw_musashi",
+      "arm": "huber_adamw",
+      "n_rows": 3,
+      "verified_rows": 0,
+      "mean_model_error_kw": 0.5224786265980619,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.15370541699305926,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "huber_adamw_musashi::mae_adam": {
+      "run": "huber_adamw_musashi",
+      "arm": "mae_adam",
+      "n_rows": 3,
+      "verified_rows": 0,
+      "mean_model_error_kw": 0.4963816588162424,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.19597647142922628,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "huber_adamw_musashi::mae_adamw": {
+      "run": "huber_adamw_musashi",
+      "arm": "mae_adamw",
+      "n_rows": 3,
+      "verified_rows": 0,
+      "mean_model_error_kw": 0.4950732454162079,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.1980957986445666,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "phase1_RP63::core_mae": {
+      "run": "phase1_RP63",
+      "arm": "core_mae",
+      "n_rows": 3,
+      "verified_rows": 0,
+      "mean_model_error_kw": 0.49777021276170386,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.1937273350580251,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "phase1_RP63::core_mse": {
+      "run": "phase1_RP63",
+      "arm": "core_mse",
+      "n_rows": 3,
+      "verified_rows": 0,
+      "mean_model_error_kw": 0.546930215604513,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.11409949577708796,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "phase1_RP63::tcn_mse": {
+      "run": "phase1_RP63",
+      "arm": "tcn_mse",
+      "n_rows": 3,
+      "verified_rows": 0,
+      "mean_model_error_kw": 0.5359480866370087,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.13188800574083123,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "successor_RP55::R0": {
+      "run": "successor_RP55",
+      "arm": "R0",
+      "n_rows": 3,
+      "verified_rows": 0,
+      "mean_model_error_kw": 0.5469291672547817,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.11410119386128437,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "successor_RP55::R1": {
+      "run": "successor_RP55",
+      "arm": "R1",
+      "n_rows": 3,
+      "verified_rows": 0,
+      "mean_model_error_kw": 0.5567341559289617,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.09821937902910276,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "successor_RP55::R2": {
+      "run": "successor_RP55",
+      "arm": "R2",
+      "n_rows": 3,
+      "verified_rows": 0,
+      "mean_model_error_kw": 0.5526603398131119,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.10481801930929613,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     },
+     "successor_RP55::linear_ridge": {
+      "run": "successor_RP55",
+      "arm": "linear_ridge",
+      "n_rows": 1,
+      "verified_rows": 0,
+      "mean_model_error_kw": 0.5454945633272991,
+      "mean_naive_error_kw": 0.6173720558882235,
+      "mean_skill_vs_naive": 0.11642492055704257,
+      "naive_definition": "persistence at the horizon on the identical evaluation origins",
+      "evaluation_rows": [
+       10020
+      ],
+      "comparability_status": [
+       "NOT_COMPARABLE"
+      ]
+     }
+    },
+    "reading": "every row carries the model error, the naive on the identical evaluation rows at the identical horizon and scale, the measured skill, and a literature comparison typed NOT_COMPARABLE with its reason. The seal checked those invariants per row; it did not recompute the errors, which would require the arrays"
+   }
+  }
+ },
+ "conditions": [
+  {
+   "id": "RP17_RP24_NO_SEAL_13E_V1",
+   "source": "docs/audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
+   "quote": "No sellar 13E v1 como experimento de preentrenamiento.",
+   "state": "PROHIBITION_OBSERVED",
+   "evidence": "13E v1 still carries the heading 'E1 design (proposal references; to be sealed after review)' and the sentence 'the E1 campaign is NOT launched on the v1 eligible: true'; no retained artifact seals it",
+   "note": "this seal does not seal 13E v1 either"
+  },
+  {
+   "id": "ML_BASELINES_CAUSALITY_UNVERIFIED",
+   "source": "docs/audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md",
+   "quote": "CAUSALITY_UNVERIFIED, no apto como benchmark hasta reconstruir ambos linajes.",
+   "state": "NOT_DISCHARGEABLE_BY_ARTIFACTS",
+   "evidence": "the answering return records both lineages as UNBOUND: the producer of the decomposed inputs is not in this repository",
+   "what_would_discharge_it": "a reconstruction of a phase-3 run's consumed representation, from a producer that is not in this repository. No amount of work here reaches it"
+  },
+  {
+   "id": "ML_BASELINES_SEPARATE_VOLUME_CONTEXT_CALENDAR",
+   "source": "docs/audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md",
+   "quote": "exige medir informacion adicional y separar volumen, contexto y calendario sin cambiar todo a la vez",
+   "state": "UNMET",
+   "evidence": "calendar=measured, volume=measured, context block(s) with no outcome: ['Q2_CONTEXT']",
+   "what_would_discharge_it": "fitting the Q2_CONTEXT cells. That is training, and this round is not authorised to run it"
+  },
+  {
+   "id": "HUBER_NO_RETURN_TO_R0_R1_R2_YET",
+   "source": "docs/audits/work_plan/MUSASHI_HUBER_ADAMW_RESULTS_2026_09_21.md",
+   "quote": "No return to R0/R1/R2 yet.",
+   "state": "PROHIBITION_OBSERVED",
+   "evidence": "no post-Huber block carries an R0/R1/R2 arm; the arms measured are calendar, daily_lag, gru_adapted_w60, gru_calendar_w60, modular_w60, randomised_calendar_control, volume_112d, volume_56d"
+  },
+  {
+   "id": "POST_HUBER_PHASE2_CORRECTED",
+   "source": "docs/audits/work_plan/MUSASHI_POST_HUBER_REVIEW_2026_09_21.md",
+   "quote": "phase-2 context and volume controls still change more than stated",
+   "state": "DISCHARGED",
+   "evidence": "v1 6b47509400ef\u2026 (df_e1_phase2_design.v1, state SEALED_NOT_EXECUTED) is preserved and superseded by v2 0dcb92b9c05a\u2026 (df_e1_phase2_design.v2, state SEALED_NOT_EXECUTED); both digests re-derive"
+  },
+  {
+   "id": "POST_HUBER_EXTERNAL_ACCEPTANCE",
+   "source": "docs/audits/work_plan/MUSASHI_POST_HUBER_REVIEW_2026_09_21.md",
+   "quote": "do not accept the new verifier guarantees or phase-2/financial design as ready unchanged",
+   "state": "NOT_DISCHARGEABLE_BY_ARTIFACTS",
+   "evidence": "the correction is an artifact; its acceptance is a review",
+   "what_would_discharge_it": "a Musashi review that accepts phase-2 v2 and the verifier guarantees"
+  },
+  {
+   "id": "MOD_E1_EXTERNAL_REVIEW",
+   "source": "docs/audits/work_plan/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md",
+   "quote": "MOD-E1 is **VERIFIED, not externally reviewed**",
+   "state": "NOT_DISCHARGEABLE_BY_ARTIFACTS",
+   "evidence": "the return declares it itself; and no external review of the E1 rounds exists: absent ['MUSASHI_RP49_RP56_REVIEW_2026_09_20.md', 'MUSASHI_RP57_RP64_REVIEW_2026_09_21.md']",
+   "what_would_discharge_it": "a review of the RP49-RP56 and RP57-RP64 returns. Only Musashi writes it; no agent can substitute for it"
+  },
+  {
+   "id": "OWNER_CLOSURE_TABLE_FROM_ARTIFACTS",
+   "source": "owner standing order, 2026-09-21",
+   "quote": "every closure carries the table \u2014 model error with its scale, the naive on the same rows, the skill, the literature value with its source, comparability, NOT_COMPARABLE with its reason \u2014 generated from artifacts",
+   "state": "DISCHARGED",
+   "evidence": "docs/audits/evidence/d3_k5_20260917/RP82/CLOSURE_TABLE_RP89.json (owner_closure_table.v2, 2026-09-21T18:45:16Z) covers 70 rows over 8 runs with problems []; 39 verified and 31 preserved with a qualified scope; every row carries all thirteen required columns and every run's design identity recomputes",
+   "note": "the seal binds this table; it does not regenerate it, and it recomputed no error from arrays"
+  },
+  {
+   "id": "RP136_RP139_MATCHED_ECL_ADAPTER",
+   "source": "docs/audits/work_plan/MUSASHI_RP136_RP139_REVIEW_2026_09_23.md",
+   "quote": "Required before matched ECL fitting: current E1 target code is a single channel at one offset.",
+   "state": "UNMET",
+   "evidence": "every retained block design still names a single-target, single-offset contract: REGISTRY household_W60_h60; no full-output adapter artifact is retained",
+   "what_would_discharge_it": "a full-output adapter with independent target/scaler/reduction parity, and a fit against it. Both are training"
+  }
+ ],
+ "disclosures": {
+  "design_digests_without_a_retained_artifact": {
+   "be2e776e5c64a8422a6411447a4cbeba6e5607c7158456f9a64f89a4244b6965": "the frozen Huber/AdamW v2 design. Its digest is pinned by docs/audits/work_plan/MUSASHI_HUBER_ADAMW_RESULTS_2026_09_21.md and carried by the closure table and the Huber report, but the design document itself is not in this repository, so this seal cannot recompute it from bytes"
+  },
+  "closure_code_drift": {
+   "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_dev_matched_v2/REPORT.json": {
+    "df_e1_block.py": {
+     "sealed": "51f7eb46ea44a830c501138bb05b3818008ca36f441af4b8c86c56294111b6b3",
+     "now": "dbd27e0c22a6deb32ea96f00117cbd382e512187c2f8838629462780cbc7502d"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_q1_calendar_v1/REPORT.json": {
+    "df_e1_block.py": {
+     "sealed": "798711c4d99b0939335b7624089784f6caa4a74382e261fcf0e6fa34c7a92600",
+     "now": "dbd27e0c22a6deb32ea96f00117cbd382e512187c2f8838629462780cbc7502d"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_q3_volume_v1/REPORT.json": {
+    "df_e1_block.py": {
+     "sealed": "09a37e7e711017609953be637d3ee176c92926d0f8d332108418b826b184389c",
+     "now": "dbd27e0c22a6deb32ea96f00117cbd382e512187c2f8838629462780cbc7502d"
+    }
+   },
+   "docs/audits/evidence/d3_k5_20260917/RP82/blocks/e1_block_arch_x_calendar_v1/REPORT.json": {
+    "df_e1_block.py": {
+     "sealed": "8a9a7f9184553103f41ea5519c283e20d79bcf25fb1dfdff9c1ad84d30ffc91f",
+     "now": "dbd27e0c22a6deb32ea96f00117cbd382e512187c2f8838629462780cbc7502d"
+    }
+   }
+  },
+  "closure_code_drift_reading": "these blocks were closed under code whose digest the report records and which has since changed. The recorded numbers are the numbers that were measured; a reader who wants them reproduced under today's code must say so and pay for a replay. The seal does not claim they reproduce",
+  "not_a_governance_validator": "this module reads retained evidence. It does not contact the warehouse, the governance service or any host, and it never promotes a HISTORICAL_UNGOVERNED unit"
+ }
+}
