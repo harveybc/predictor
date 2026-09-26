@@ -19,6 +19,14 @@
   "tools/df_mod_e0_close.py": "329adcb9cf737d019f4e67a1203e3f8e9fc685dd91f681203cca8f95ff84ee02",
   "tools/df_sota_repro.py": "cab8fab36d79552f61269bcf1fbcd20ee2df2b04a3a1d83382d83409abac5207"
  },
+ "df_sota_repro_replay_identity_check": {
+  "measured": {
+   "after_the_guard": "1d3ea1e2223b0354db766ec09c11e6c95fe869ccea711854b3ed0638e06d2afd",
+   "at_ee30935a": "1d3ea1e2223b0354db766ec09c11e6c95fe869ccea711854b3ed0638e06d2afd",
+   "verdict": "UNCHANGED -- every cached replay stays valid; the guard sits in main(), outside that set"
+  },
+  "what": "df_sota_repro.replay_code_sha256() hashes the SOURCE OF THE REPLAY-PATH FUNCTIONS (replay_cell, main_like_run_py, build_args, author_env, fix_seeds, capture_metric, setting_of, author_parser) by inspect.getsource -- deliberately, 'so that a cached replay is invalidated by a change of that path and not by unrelated edits of this file'."
+ },
  "method": "the digest of each file was searched across the repository; every gate that RECOMPUTES a tool digest and COMPARES it was read; and the sealed DESIGN.json of every run root on this host was counted. Provenance receipts that merely RECORD the digest of the code that ran are not seals: they stay true whatever the file becomes.",
  "question": "For each of the eight per-cell fit runners of DR01 s3(a): is it pinned by a seal that must stay checkable?",
  "runners": {

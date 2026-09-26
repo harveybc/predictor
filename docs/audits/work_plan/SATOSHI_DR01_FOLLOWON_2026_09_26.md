@@ -181,6 +181,11 @@ Each gate fires **immediately after argument parsing**, before the runner reads 
 a directory, so a refusal costs nothing and starts nothing. No second reservation is taken anywhere:
 a covered runner keeps running inside its parent's one.
 
+One identity was checked explicitly rather than assumed: `df_sota_repro.replay_code_sha256()`
+hashes only its replay-path functions, by `inspect.getsource`, precisely so unrelated edits do not
+invalidate cached replays. Measured before and after the guard landed, it is the same value
+(`1d3ea1e2…d2afd`), so every cached replay stays valid.
+
 ### Tests — both directions, for the guard and for each of the four
 
 `tests/test_df_admission_guard.py`, **22 tests, all green** (nothing allocates memory, starts a fit
