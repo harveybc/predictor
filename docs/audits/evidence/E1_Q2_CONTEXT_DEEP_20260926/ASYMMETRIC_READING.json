@@ -1,0 +1,24 @@
+{
+ "schema": "q2_context_deep_asymmetric_reading.v1",
+ "declared_at": "2026-09-26, after the twelve cheap cells landed and BEFORE any cell of long_window_own_depth or long_window_local_support_67 existed",
+ "declared_by": "Satoshi, successor technical lead, under the owner's grant of 2026-09-26",
+ "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+ "full_disclosure_of_what_was_already_seen_when_this_was_declared": {
+  "seen": "the twelve cells of modular_w60, daily_lag, long_window_crop60 and short_window_deep_core at the 600-update ceiling, i.e. both terms of the depth contrast at context 60 and both terms of the exact-information null",
+  "not_seen": "no cell of long_window_own_depth and no cell of long_window_local_support_67 - neither had been fitted, and the first attempt at long_window_own_depth_s1 was still running when this file was written",
+  "why_this_matters": "the rule below governs the CONTEXT contrast, whose long-window term did not exist yet; it is therefore a reading rule declared before its own subject, not after it"
+ },
+ "the_problem_this_rule_answers": {
+  "fact": "the 600-update ceiling was forced by this host's memory and CPU, and with validation every 200 updates it gives 3 checkpoint opportunities, so every cell is CENSORED_BY_BUDGET and the UNDERTRAINED_AT_CEILING rule sealed in the design can flag ANY arm, the cheap ones included",
+  "consequence": "a matched update budget is matched in UPDATES, not in progress toward each arm's own plateau; a model with 24x more input rows per update has more to learn per parameter and can be further from its plateau at the same update count",
+  "direction_of_the_bias": "the budget therefore works AGAINST the long-context arm, not for it"
+ },
+ "rule": {
+  "if_the_long_context_arm_lands_WORSE": "the contrast is CONFOUNDED_WITH_BUDGET and settles nothing: a larger error is exactly what undertraining predicts, so it is evidence about the budget and not about context. It is published as it landed and read as NOT_IDENTIFYING",
+  "if_the_long_context_arm_lands_BETTER": "the direction is INFORMATIVE_AGAINST_THE_CONFOUND, because the confound predicts the opposite sign: an arm that wins while carrying the budget handicap wins in spite of it, not because of it. It is still three seeds, so it is a direction and never an effect, and it still carries every censoring and custody qualification",
+  "if_the_two_are_indistinguishable": "NOT_IDENTIFYING: at this budget the measurement cannot separate a null context effect from a context effect masked by undertraining",
+  "what_this_rule_never_does": "it never converts a direction into an effect, never claims an interval from n = 3, never promotes or selects anything, and never replaces the UNDERTRAINED_AT_CEILING verdict - both are reported"
+ },
+ "the_seal_gap_this_block_addresses": "ML_BASELINES_SEPARATE_VOLUME_CONTEXT_CALENDAR",
+ "what_would_be_needed_to_meet_it_at_convergence": "every arm fitted until its validation error plateaus rather than until a budget ends. From the retained pilots' measured rate (4.165 CPU s per train update for long_window_own_depth) and from the bounded block's own stopping behaviour (best checkpoints at 800-2400 updates under a 4 000-update ceiling), that is of the order of 2 000-4 000 updates per cell, i.e. 2.5-5 hours of wall per cell and 15-30 hours for the six W1440 full-depth cells, at a 7.4 GiB resident set on a host whose systemd-oomd killed exactly such a job after 23 minutes for session memory pressure of 55.45% over the 50% limit. That is a placement fact about this coordinator, recorded here, not a claim about the science"
+}
