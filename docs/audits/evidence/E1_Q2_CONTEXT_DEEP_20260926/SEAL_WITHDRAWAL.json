@@ -36,7 +36,7 @@
  },
  "the_three_refusal_reasons_of_the_previous_round_answered": {
   "1_editing_the_published_copy_breaks_its_digest": "TRUE, and that is why v1 was NOT edited. It was withdrawn and replaced by a design whose own digest recomputes over its own body. Nothing in this directory now claims a digest it does not have",
-  "2_editing_tools_df_e1_block_py_makes_validate_strict_code_refuse_the_design": "TRUE OF V1 ONLY, and measured: of the ten sealed designs committed in this repository that pin `source_code.df_e1_block.py`, NINE already pin a digest the current file does not have, because that file is a living tool and has drifted many times in normal practice. v1 was the only design still matching it. So the cost of the edit was exactly one strict_code validation -- the withdrawn design's. v2 pins the repaired file and validates with strict_code=True, so the block's two unstarted W1440 FULL-DEPTH arms remain runnable, which was the stated worry",
+  "2_editing_tools_df_e1_block_py_makes_validate_strict_code_refuse_the_design": "TRUE OF V1 ONLY, and measured: of the FOURTEEN committed design records in this repository that pin `source_code.df_e1_block.py` (thirteen sealed block designs plus RP82/fin_cost_pilot/DESIGN.json), THIRTEEN already pinned a digest the pre-edit file did not have, because that file is a living tool and has drifted many times in normal practice. v1 was the only design still matching it. So the cost of the edit was exactly one strict_code validation -- the withdrawn design's. v2 pins the repaired file and validates with strict_code=True, so the block's two unstarted W1440 FULL-DEPTH arms remain runnable, which was the stated worry",
   "3_a_design_is_never_re_sealed_after_a_score": "the rule holds, and it is not what happened. v1 is not re-sealed: it is withdrawn, by digest, in this file, and the twelve fits are NOT re-bound to v2. v2 is a new seal in state SEALED_NOT_EXECUTED with no cell of its own fitted"
  },
  "the_twelve_landed_fits": {
@@ -53,18 +53,29 @@
   "the_defect": "tools/df_e1_block.run_cell recorded ONLY getrusage(RUSAGE_SELF).ru_maxrss as `cost.peak_rss_bytes`, with no cgroup or tree peak anywhere in the cell record. Every cost pilot that ever justified a placement from this runner justified it from the wrong basis",
   "repaired": true,
   "repair": "run_cell now records `cost.cgroup_memory_peak_bytes` from memory.peak of its own cgroup (helper `cgroup_memory_peak_bytes`, None when unreadable, and a None says the cell has NO tree peak rather than silently falling back), and labels `cost.peak_rss_bytes` with `peak_rss_bytes_basis: MAIN_PROCESS_RSS_ONLY ...`. Both bases are reported side by side in the closure rows",
-  "why_the_repair_was_allowed_here": "the owner's condition was: repair only if it does not touch a file pinned by a seal that must stay checkable. It touches tools/df_e1_block.py, pinned by ten committed designs. NINE of those ten already pin a stale digest of that file and are already outside strict_code (normal drift, not caused here). The TENTH is v1, which is withdrawn by this record and must NOT stay checkable. No seal that must stay checkable is harmed, and v2 pins the repaired file",
+  "why_the_repair_was_allowed_here": "the owner's condition was: repair only if it does not touch a file pinned by a seal that must stay checkable. It touches tools/df_e1_block.py, pinned by fourteen committed design records. THIRTEEN of those fourteen already pinned a stale digest of that file and were already outside strict_code (normal drift, not caused here). The FOURTEENTH is v1, which is withdrawn by this record and must NOT stay checkable. No seal that must stay checkable is harmed, and v2 pins the repaired file",
   "second_defect_found_and_repaired_in_the_same_line": "run_cell also wrote `cost.host = os.uname().nodename` into EVERY cell record. That one line is the machine source of the pre-existing breach: 45 committed cell.json files on origin/master carry the coordinator host name because a tool put it there, and 44 of those 45 have their blob digest pinned in a TERMINALS or CLOSURE_TABLE artifact, so they cannot now be redacted without breaking a pin. run_cell now records `cost.host_identity` -- a salted 16-hex opaque per-host id, stable across runs on one host and different across hosts, with `host_name_recorded: false` -- and `cost.host` is None. `same host or not` is still answerable; the machine is not named"
  },
  "files_of_this_directory_that_still_name_the_withdrawn_v1_digest": [
-  "REPORT.json", "TABLES.md", "CLOSURE_TABLE.json", "CLOSURE_TABLE.md", "BLOCK_DATA.json",
-  "UNANCHORED_MEASUREMENT_TABLE.json", "UNGOVERNED_RUN.json", "REPLAYS.json", "BASELINES.json",
-  "ASYMMETRIC_READING.json", "BENCHMARK_CONTRACT_REGISTRY.json", "FOOTPRINT_BASIS.json", "MEMORY_GATE.jsonl"
+  "REPORT.json",
+  "TABLES.md",
+  "CLOSURE_TABLE.json",
+  "CLOSURE_TABLE.md",
+  "BLOCK_DATA.json",
+  "UNANCHORED_MEASUREMENT_TABLE.json",
+  "UNGOVERNED_RUN.json",
+  "REPLAYS.json",
+  "BASELINES.json",
+  "ASYMMETRIC_READING.json",
+  "BENCHMARK_CONTRACT_REGISTRY.json",
+  "FOOTPRINT_BASIS.json",
+  "MEMORY_GATE.jsonl"
  ],
  "why_those_are_not_rewritten": "they are records of what was actually run, under v1, and they name v1's digest correctly. Rewriting them to say v2 would forge a binding. None of them carries the host name: they were redacted at publication by tools/df_e1_publish_evidence.py (REPORT.json 12 occurrences, TABLES.md 1) and their digests are not load-bearing",
  "verification_commands": [
   "python -c \"import json,hashlib; d=json.load(open('DESIGN.json')); b={k:v for k,v in d.items() if k!='design_sha256'}; print(hashlib.sha256(json.dumps(b,sort_keys=True,separators=(',',':'),default=str).encode()).hexdigest()==d['design_sha256'])\"",
   "python tools/df_e1_block.py validate --design docs/audits/evidence/E1_Q2_CONTEXT_DEEP_20260926/DESIGN.json",
   "grep -riE '(^|[^a-z0-9])<the coordinator host name>([^a-z0-9]|$)' docs/audits/evidence/E1_Q2_CONTEXT_DEEP_20260926 tools/df_e1_block.py   # expect no match"
- ]
+ ],
+ "count_correction_2026_09_26": "an earlier wording of this file said ten designs / nine stale. Re-measured: fourteen records pin source_code.df_e1_block.py and thirteen were already stale. The conclusion is unchanged and stronger"
 }

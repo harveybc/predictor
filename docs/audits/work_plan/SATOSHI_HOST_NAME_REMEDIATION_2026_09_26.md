@@ -45,7 +45,7 @@ The lane reported the breach instead of repairing it, on the ground that the nam
 | reason given | verdict | measurement |
 |---|---|---|
 | (1) editing the published copy breaks the digest that makes the seal checkable | **true** — and it is why v1 was *not* edited in place. It does not reach the remedy it excludes: withdraw v1, seal v2 | — |
-| (2) editing `tools/df_e1_block.py` changes a sha the design pins in `source_code`, so `validate(strict_code=True)` would refuse the design, and the block's two unstarted W1440 arms must stay runnable | **false in substance** | Of the **ten** sealed designs committed in this repository that pin `source_code.df_e1_block.py`, **nine already pin a digest the current file does not have** — that file is a living tool and has drifted many times in ordinary practice, so `strict_code` was already refusing all nine. v1 was the only design still matching it. The edit therefore cost exactly one strict validation: the withdrawn design's. v2 pins the repaired file and validates with `strict_code=True`, so the two unstarted arms remain runnable |
+| (2) editing `tools/df_e1_block.py` changes a sha the design pins in `source_code`, so `validate(strict_code=True)` would refuse the design, and the block's two unstarted W1440 arms must stay runnable | **false in substance** | Of the **fourteen** committed design records in this repository that pin `source_code.df_e1_block.py` (thirteen sealed block designs plus `RP82/fin_cost_pilot/DESIGN.json`), **thirteen already pinned a digest the pre-edit file did not have** — that file is a living tool and has drifted many times in ordinary practice, so `strict_code` was already refusing all thirteen. v1 was the only design still matching it. The edit therefore cost exactly one strict validation: the withdrawn design's. v2 pins the repaired file and validates with `strict_code=True`, so the two unstarted arms remain runnable |
 | (3) re-sealing is not available: cells already have scores, and a design is never re-sealed after a score | **true as stated, and not what was done** | v1 is not re-sealed. It is **withdrawn by digest**, and the twelve landed fits are **not** re-bound to v2 |
 
 The priority was inverted. A seal exists to prove a design predated its scores. With **zero verified rows**, custody
@@ -158,9 +158,9 @@ a placement from this runner justified it from the wrong basis. `tools/df_e1_blo
 Both bases are reported side by side in the closure rows.
 
 **Why the repair was admissible here, against the owner's condition** (*repair only if it does not touch a file pinned
-by a seal that must stay checkable*): it touches `tools/df_e1_block.py`, pinned by ten committed designs. **Nine of
-the ten already pin a stale digest of that file** and are already outside `strict_code` through ordinary drift, not
-through anything done here. **The tenth is v1**, which this record withdraws and which must *not* stay checkable. So
+by a seal that must stay checkable*): it touches `tools/df_e1_block.py`, pinned by fourteen committed design records. **Thirteen of
+the fourteen already pinned a stale digest of that file** and are already outside `strict_code` through ordinary drift, not
+through anything done here. **The fourteenth is v1**, which this record withdraws and which must *not* stay checkable. So
 **no seal that must stay checkable is harmed**, and v2 pins the repaired file.
 
 **A second defect found in the same line, and repaired.** `run_cell` also wrote
@@ -249,7 +249,7 @@ blob sha256 is pinned in some other file on `master`** (a `TERMINALS` receipt, a
 | **B. machine-generated cell records** (`cost.host` from `os.uname().nodename`) | 45 | 44 | 46 | **Yes for 44.** Their blob digests are pinned in `TERMINALS/<unit>.json` and in `CLOSURE_TABLE_RP74/RP81/RP89.json`. One is free |
 | **C. other evidence JSON** — `DELIVERIES.json` ×12, `REPORT.json` ×7 (+6 per-host variants), `SOTA_TABLE.<host>.json` ×4, `RUN_LEDGER.json` ×4, `TERMINAL_RECEIPTS.json` ×3, deletion receipts, per-host CPU ledgers, RP30 `TERMINALS/*` ×14 | 105 | 33 | 483 | **Yes for 33** (pinned in a manifest, a freeze, a closure table or `E1_SEAL.json`); **no for 72** |
 | **D. ordinary documents** — return packets, READMEs, suite-summary `.txt`, the three `STEP_*_FINAL.md` methodology chapters | 44 | 6 | 153 | **No for 38.** **Yes for 6**: three `SATOSHI_PROGRAM_RP*_RETURN` packets pinned in `E1_SEAL.json` and three `STEP_*_FINAL.md` pinned in two `D3/D4 …DESIGN.v1.json` records and their Retsu letters |
-| **E. code** — 2 per-host sweep scripts at the repo root, 5 test files with the name as a **string fixture**, 4 evidence repro scripts, `analyze_candidate_history.py`, `tools/df_fin_loss_opt_design.py` | 13 | 0 | 16 | **No** for the content itself. But editing a **tool** changes a sha that sealed designs pin in `source_code`; that must be measured per tool before each edit (for `df_e1_block.py` it was measured today: 9 of 10 designs already stale) |
+| **E. code** — 2 per-host sweep scripts at the repo root, 5 test files with the name as a **string fixture**, 4 evidence repro scripts, `analyze_candidate_history.py`, `tools/df_fin_loss_opt_design.py` | 13 | 0 | 16 | **No** for the content itself. But editing a **tool** changes a sha that sealed designs pin in `source_code`; that must be measured per tool before each edit (for `df_e1_block.py` it was measured today: 13 of 14 already stale) |
 | **F. example config, and the committed lock file** | 2 | 0 | 2 | **No** |
 | **total** | **212** | **86** | **705** | **86 break something; 126 are free to redact** |
 
@@ -295,7 +295,7 @@ touch, and only with those 86 named in a record.
 *What:* change the 40 call sites to an opaque per-host id of the kind installed in `df_e1_block.py` today, and add a
 repository pattern guard (a pre-commit hook or a CI check) that refuses a commit introducing a fleet host name.
 *Cost:* ~13 code files; each tool edit changes a sha that sealed designs may pin in `source_code`, so each needs the
-same per-tool measurement done today (`df_e1_block.py`: 9 of 10 designs already stale, so the edit cost one
+same per-tool measurement done today (`df_e1_block.py`: 13 of 14 already stale, so the edit cost one
 validation) — cheap but not free, and it must be measured rather than assumed. The existing 212 files stay.
 *Benefit:* the breach stops growing; the exposure becomes a finite, closed set the owner can then decide about once.
 
@@ -362,3 +362,15 @@ audit identities across the corpus is the kind of damage that cannot be walked b
 - **A force-push does not retract what was already fetched.** Anyone who fetched this branch in the hours before the
   rewrite still holds v1's bytes locally, and the forge keeps the unreachable objects addressable for a period. No
   fork or clone of this branch is known outside the fleet.
+
+---
+
+## 5. Correction to this document and to the commit that carried it
+
+The first version of this document, and the message of the commit
+`Withdraw the seal that named a machine, seal v2, and repair the cost basis`, said **ten** committed designs pin
+`source_code.df_e1_block.py` and **nine** were already stale. Re-measured over every record on this branch that
+carries that field: **fourteen** records pin it (thirteen sealed block designs plus `RP82/fin_cost_pilot/DESIGN.json`),
+and **thirteen** of the fourteen already pinned a digest the pre-edit file did not have. The one that matched was the
+withdrawn v1 design. The conclusion is unchanged and in fact stronger: the edit cost exactly one strict validation,
+the withdrawn design's. The number in that commit message is wrong and is corrected here rather than by rewriting it.
