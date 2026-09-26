@@ -1,0 +1,39 @@
+M4 CONFIRMATION census -- independent re-derivation
+agent-multi tip : 0e99ad1add3635dd4f0e151936d6fe4bf6379592
+reviewed tip    : 5e7a8fd430c8231a049baf03f00e720ba24ec994
+
+[PASS] design: declared design_sha256 is the order pin
+[PASS] design: design_sha256 RE-DERIVES from the bytes -- d7280a92047d9889...
+[PASS] amendment: declared amendment_sha256 is the order pin
+[PASS] amendment: amendment_sha256 RE-DERIVES from the bytes -- 43e0804e1e6e583b...
+[PASS] adjudication: declared record_sha256 is the order pin
+[PASS] adjudication: record_sha256 RE-DERIVES from the bytes -- b35b6fd969aa1620...
+[PASS] successor: declared successor_sha256 is the order pin
+[PASS] successor: successor_sha256 RE-DERIVES from the bytes -- 6a50d97ddfb3a8e8...
+[PASS] 28 reserved slots -- 28
+[PASS] 21 eligible slots -- 21
+[PASS] 7 typed ineligible slots -- 7
+[PASS] the successor's eligible slots are the adjudication's, BY IDENTITY
+[PASS] exactly two incomplete generators -- intervention::CALIBRATION::state_space::clean::w64::g0, intervention::CALIBRATION::state_space::clean::w64::g6
+[PASS] zero calibration-incomplete cells
+[PASS] M2 gain is the accepted -0.41982887 -- -0.41982887
+[PASS] 48 generators per eligible slot -- 48
+[PASS] 3 nested seeds per generator -- 3
+[PASS] attrition floor 39 re-derives as max(3, ceil(48*0.8)) -- 39
+[PASS] the family is 16 slots
+[PASS] the 16 slots are the SEALED design's family, unchanged
+[PASS] 3024 unit ids = 21 x 48 x 3 -- 3024
+[PASS] every unit id is distinct
+[PASS] every unit id carries the CONFIRMATION role
+
+re-derived census_sha256 = 12cfd9ad785b41e788ffce575ec575ab2a78ab772151b5e3b94c8f0c71169ea0
+[PASS] the re-derived census digest equals the one the documents assert
+[PASS] the frozen planner runs
+[PASS] the frozen planner's census digest equals mine
+[PASS] planner units_total 3024
+[PASS] the planner claims no authority -- PLAN_ONLY_NO_AUTHORITY
+
+planner: {"units_total": 3024, "eligible_slots": 21, "generators_per_slot": 48, "seeds_per_generator": 3, "checkpoints_per_unit": 4, "update_bounds": {"calibration_stop_max_updates": 4000, "cadence_updates": 50, "post_stop_bounded_updates": 500}, "musashi_review_record_present": false, "owner_execution_record_present": false, "execution_open": false}
+
+checks: 28   failed: 0
+CENSUS REPRODUCES -- execution may proceed to the record gate

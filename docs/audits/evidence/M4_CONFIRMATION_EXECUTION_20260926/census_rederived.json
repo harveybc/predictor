@@ -1,0 +1,56 @@
+{
+ "census": {
+  "schema": "m4_confirmation_census.v1",
+  "successor_sha256": "6a50d97ddfb3a8e8dd1b5fbc83ebd95e60e1c087b3fc5e01697c2d783a50608c",
+  "eligible_slots": 21,
+  "generators_per_slot": 48,
+  "seeds_per_generator": 3,
+  "units_total": 3024,
+  "unit_ids_sha256": "c378bf1355ec88a9a61b58c757e7a680f09c84ea8db3e05d7c50bb5155897b5a",
+  "checkpoint_kinds": [
+   "initialization",
+   "calibration_stop",
+   "pre_stop",
+   "post_stop_bounded"
+  ],
+  "update_bounds": {
+   "calibration_stop_max_updates": 4000,
+   "cadence_updates": 50,
+   "post_stop_bounded_updates": 500
+  }
+ },
+ "census_sha256": "12cfd9ad785b41e788ffce575ec575ab2a78ab772151b5e3b94c8f0c71169ea0",
+ "unit_ids_total": 3024,
+ "eligible_cells": [
+  "am::clean::w16",
+  "am::clean::w64",
+  "am::white::w16",
+  "am::white::w64",
+  "chirp::clean::w16",
+  "chirp::clean::w64",
+  "chirp::white::w16",
+  "chirp::white::w64",
+  "dnf3::clean::w16",
+  "dnf3::clean::w64",
+  "identity::clean::w16",
+  "identity::clean::w64",
+  "majority::clean::w16",
+  "majority::clean::w64",
+  "sine::clean::w16",
+  "sine::clean::w64",
+  "sine::white::w16",
+  "sine::white::w64",
+  "state_space::clean::w16",
+  "state_space::white::w16",
+  "state_space::white::w64"
+ ],
+ "ineligible_cells": [
+  "{'cell': 'discontinuity::clean::w16', 'typed_status': 'INELIGIBLE_UNDER_PROPOSED_RULE'}",
+  "{'cell': 'discontinuity::clean::w64', 'typed_status': 'INELIGIBLE_UNDER_PROPOSED_RULE'}",
+  "{'cell': 'discontinuity::white::w16', 'typed_status': 'INELIGIBLE_UNDER_PROPOSED_RULE'}",
+  "{'cell': 'discontinuity::white::w64', 'typed_status': 'INELIGIBLE_UNDER_PROPOSED_RULE'}",
+  "{'cell': 'parity4::clean::w16', 'typed_status': 'INELIGIBLE_UNDER_PROPOSED_RULE'}",
+  "{'cell': 'parity4::clean::w64', 'typed_status': 'INELIGIBLE_UNDER_PROPOSED_RULE'}",
+  "{'cell': 'state_space::clean::w64', 'typed_status': 'INELIGIBLE_UNDER_PROPOSED_RULE'}"
+ ]
+}
