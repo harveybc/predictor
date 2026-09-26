@@ -1,0 +1,76 @@
+DR01 follow-on, 2026-09-26: remote admission proven from the coordinator, by role.
+
+Roles only.  No host name, address, account or token appears in this file.  Every request below
+reserved bookkeeping only: the loads were `sleep`, which allocates nothing, and no real memory was
+ever pressured.  Nothing was killed; nothing was started, stopped or reloaded beyond the transient
+units and scopes the proof itself required, each of which ended by itself or was released by the
+dispatcher that created it.
+
+===============================================================================================
+1. WORKER_A -- two remote requests of the SAME size through the role's newly deployed launcher
+===============================================================================================
+The size was chosen from the role's own reading (host_free_for_new 3 166 695 424 B), at 60% of it,
+so that one fits and two cannot: cap 1811 MiB = 1 898 971 136 B.
+
+  first   $HOME/.local/bin/crispdm-run -m 1811M -t 3m -n dr01deploy-a1 -- sleep 60
+          ADMITTED, reservation written and armed.
+          state while it ran:
+            live_leases 1
+            lease dr01deploy-a1-1790454303-455750-c31e3c  cap 1.769G  armed True
+            held_unrealised 1.766G   host_free_for_new 1.556G
+
+  second  $HOME/.local/bin/crispdm-run -m 1811M -t 1m -n dr01deploy-a2 -- true
+          exit 75
+          crispdm-run: QUEUED HOST_HEADROOM -- 1.77G requested; 1.56G free
+            (MemAvailable 6.33G - 3.00G desktop reserve - 1.77G held by 1 live reservation(s))
+          crispdm-run: REFUSED nothing was started, and no limit, slice or kernel setting was changed
+
+  after: live_leases 0 -- the first released its own reservation when its load ended; nothing leaked.
+
+===============================================================================================
+2. WORKER_B -- four requests of the SAME size (1 342 177 280 B), the fourth through df_dispatch
+===============================================================================================
+1 342 177 280 B is exactly the request df_placement derives for the proof job (cpu_bytes 1 GiB
++ the 25% margin), so every request in this section is the same size.
+
+  (a) remote dispatch is alive again.  df_dispatch.py, job dr01deploy-wb-1, roles ["WORKER_B"]:
+        PLACED on WORKER_B, request_bytes 1342177280
+        attempt-1 LAUNCHED -> COMPLETED, exit 0, wall 25.836 s, cgroup tree peak 1 835 008 B
+      A second identical dispatch (root DISPATCH_QUEUED) also LAUNCHED -> COMPLETED
+      (wall 25.776 s, tree peak 2 121 728 B): two live reservations were held at that moment and
+      the request genuinely still fit, so it was admitted.  Correct, and recorded as such.
+
+  (b) three live reservations of that same size, then the fourth request:
+        state on WORKER_B:
+          live_leases 3, each cap_bytes 1342177280, all armed
+            crispdm-dispatch-dr01deploy-wb-1-41f580d6086b7d45-1790454794-3105461-659a31
+            dr01deploy-b1-1790454784-3105001-6b6473
+            dr01deploy-b2-1790454784-3105063-8edea3
+          held_unrealised 4 021 014 528   host_free_for_new 177 700 864
+        three further launcher requests of the same size, while those were live, were each queued:
+          crispdm-run: QUEUED HOST_HEADROOM -- 1.25G requested; 235.12M free
+            (MemAvailable 6.97G - 3.00G desktop reserve - 3.74G held by 3 live reservation(s))
+          crispdm-run: REFUSED nothing was started, and no limit, slice or kernel setting was changed
+          (and the same at 244.18M and 176.68M free)
+
+  (c) the SAME request through df_dispatch from the coordinator, root DISPATCH_QUEUED2:
+        attempt-1  REFUSED_AT_LAUNCH, exit 75, nothing started, reason carried back verbatim from
+                   the role's own admission module:
+          "1.25G requested; 171.34M free (MemAvailable 6.91G - 3.00G desktop reserve
+            - 3.74G held by 3 live reservation(s))", "verdict": "QUEUED"
+        the dispatcher requeued it, and once those reservations were released:
+        attempt-2  LAUNCHED -> COMPLETED, exit 0, wall 29.094 s, cgroup tree peak 2 289 664 B
+
+  after: live_leases 0 on WORKER_B -- nothing leaked.
+
+===============================================================================================
+3. WORKER_A -- remote dispatch end to end there too
+===============================================================================================
+  df_dispatch.py, job dr01deploy-wa-2, roles ["WORKER_A"], request_bytes 66 060 288:
+    attempt-1 LAUNCHED -> COMPLETED, exit 0, wall 17.321 s, cgroup tree peak 2 621 440 B
+
+  An earlier, larger job on this role (dr01deploy-wa-1, request_bytes 1 006 632 960) was never
+  launched and correctly WAITED: df_placement's own 5 GiB host reserve left
+  RAM_REQUEST_1006632960_OVER_HEADROOM_80441344 while another lane's load held the role's memory.
+  That is placement waiting for capacity, not the DR01 refusal; it ended on its own wall limit
+  without a receipt, and is reported here rather than omitted.

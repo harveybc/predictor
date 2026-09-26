@@ -1,0 +1,103 @@
+{
+ "bytes_at_ee30935a": {
+  "tools/df_d2_r4_replay.py": "7014e488643ce2ac3c318ae7ed13e81b277c71acfb767b80fcb669cf4e810ec8",
+  "tools/df_d2_unit_worker.py": "deac99f82c4985ae09cd61530becda0de5603c9b50c8ae3466ad52340a1488c8",
+  "tools/df_e1_block.py": "b2fb1e9ec96e9a105d6c75f1606c62aa31436b7d3c69ddec489e061082e10e3b",
+  "tools/df_e1_close.py": "4cdd8b0728e94917d6b6e6c6f94ea30ed9c7b1f779df273839bab6d3706700db",
+  "tools/df_e1_huber.py": "1742b5732bfe0231dc23cf8f055e7a11585dcb2c3ba89e2586927a63fb4a6807",
+  "tools/df_fin_runner.py": "6aecbc25b76491b8615a6930175cfdff1259eb8e6231dbe8fc3370952ce5e0cc",
+  "tools/df_mod_e0_close.py": "1447b88bf82f9e05e2286e72f17e8a88efe4d0fd1a8c2d631a40c85660a3011f",
+  "tools/df_sota_repro.py": "e098ff150306183f8ae64de464ea7b9ba12a6fd6672c67a9453ea1da1789a808"
+ },
+ "bytes_now": {
+  "tools/df_d2_r4_replay.py": "1891aeb7b64163eb638b392c9faebe121def62aed0b0947043c1c4c3f484adcb",
+  "tools/df_d2_unit_worker.py": "deac99f82c4985ae09cd61530becda0de5603c9b50c8ae3466ad52340a1488c8",
+  "tools/df_e1_block.py": "b2fb1e9ec96e9a105d6c75f1606c62aa31436b7d3c69ddec489e061082e10e3b",
+  "tools/df_e1_close.py": "284ae873d76639e61b50ae4abfdb2b725e12690cee249f70657b0a7c48977663",
+  "tools/df_e1_huber.py": "1742b5732bfe0231dc23cf8f055e7a11585dcb2c3ba89e2586927a63fb4a6807",
+  "tools/df_fin_runner.py": "6aecbc25b76491b8615a6930175cfdff1259eb8e6231dbe8fc3370952ce5e0cc",
+  "tools/df_mod_e0_close.py": "329adcb9cf737d019f4e67a1203e3f8e9fc685dd91f681203cca8f95ff84ee02",
+  "tools/df_sota_repro.py": "cab8fab36d79552f61269bcf1fbcd20ee2df2b04a3a1d83382d83409abac5207"
+ },
+ "method": "the digest of each file was searched across the repository; every gate that RECOMPUTES a tool digest and COMPARES it was read; and the sealed DESIGN.json of every run root on this host was counted. Provenance receipts that merely RECORD the digest of the code that ran are not seals: they stay true whatever the file becomes.",
+ "question": "For each of the eight per-cell fit runners of DR01 s3(a): is it pinned by a seal that must stay checkable?",
+ "runners": {
+  "df_d2_r4_replay": {
+   "disposition": "GATED on --replay",
+   "gate": null,
+   "guard_added": true,
+   "recorded_only": [
+    "docs/audits/evidence/repro_runs/d2_support_r1/r4_diagnostic/R4_DIAGNOSTIC_RECEIPT.json comparator_code_sha256 -- written at run time by df_d2_r4_diagnostic_campaign.py, never compared back"
+   ]
+  },
+  "df_d2_unit_worker": {
+   "correction_to_dr01": "its unit children are started through df_isolated_runner.Task(...).start(), which DOES reserve (DR01 s3.4); the residual exposure is the bare parent and the df_snr subprocess inside an already-reserved child",
+   "disposition": "DEFERRED",
+   "gate": "a member of df_d2_design.D2_CODE_FILES, so its bytes enter lab_code_sha256(), which df_d2_unit_worker.run_units COMPARES on resume (prior[-1][1]['code_sha256'] == code)",
+   "guard_added": false,
+   "pinned_in": [
+    "RUN_MANIFEST.json code_sha256_at_creation and every D2 terminal's code_sha256",
+    "docs/audits/evidence/repro_runs/d2_support_r1/r3/R3_REVIEW_RECEIPT.json lab_code_sha256s_now.df_d2_unit_worker"
+   ]
+  },
+  "df_e1_block": {
+   "disposition": "DEFERRED",
+   "gate": "df_e1_block.code_drift(design) raises BlockRefusal('REFUSED: scientific source changed') for a new fit; replay_identity() puts sha_file(__file__) -- the WHOLE FILE -- in the identity a cached replay must match",
+   "guard_added": false,
+   "live_sealed_roots_on_this_host": 14,
+   "pinned_in": [
+    "design['source_code']['df_e1_block.py'] in every e1_block run root",
+    "docs/audits/evidence/d3_k5_20260917/RP90/REVIEW_REPRODUCED_POST.json replay_code_sha256 (2 entries)"
+   ]
+  },
+  "df_e1_close": {
+   "disposition": "GATED on a replaying close and on the --replay worker",
+   "gate": null,
+   "guard_added": true,
+   "recorded_only": [
+    "docs/audits/evidence/d3_k5_20260917/RP90/SOTA_LAKE_{REHEARSAL,ADOPTION_RECEIPT}.json list df_e1_close.py's digest in a tools inventory; nothing compares it back"
+   ]
+  },
+  "df_e1_huber": {
+   "disposition": "DEFERRED",
+   "gate": "df_e1_huber.validate() raises ValueError('scientific source changed: df_e1_huber.py')",
+   "guard_added": false,
+   "live_sealed_roots_on_this_host": 2,
+   "pinned_in": [
+    "design['source_code']['df_e1_huber.py']"
+   ]
+  },
+  "df_fin_runner": {
+   "disposition": "DEFERRED",
+   "gate": "df_fin_runner.validate() raises FinRefusal('REFUSED: scientific source changed: df_fin_runner.py')",
+   "guard_added": false,
+   "live_sealed_roots_on_this_host": 1,
+   "pinned_in": [
+    "design['source_code']['df_fin_runner.py']"
+   ]
+  },
+  "df_mod_e0_close": {
+   "disposition": "GATED on a replaying close",
+   "gate": null,
+   "guard_added": true,
+   "recorded_only": []
+  },
+  "df_sota_repro": {
+   "disposition": "GATED on execute/child/pilot/regenerate/profile-eval/route-trace and on close unless --skip-replay",
+   "gate": null,
+   "guard_added": true,
+   "recorded_only": [
+    "its own replay_code_sha256() hashes ONLY the replay-path functions by inspect.getsource, deliberately 'so that a cached replay is invalidated by a change of that path and not by unrelated edits of this file' -- none of those functions was touched",
+    "its code_drift(design)/source_digests() pin the AUTHOR's upstream files, not this file"
+   ]
+  }
+ },
+ "schema": "crispdm.dr01_followon.seal_check.v1",
+ "unchanged_vs_ee30935a": [
+  "tools/df_d2_unit_worker.py",
+  "tools/df_e1_block.py",
+  "tools/df_e1_huber.py",
+  "tools/df_fin_runner.py"
+ ],
+ "worktree_locality": "every sealed digest found on this host matches NEITHER master NOR ee30935a NOR this branch: each campaign sealed the bytes of the worktree it ran from, so these drift gates are checkable inside that worktree only. The four were deferred anyway, because the mechanism is live and re-sealing to make an edit convenient is forbidden."
+}

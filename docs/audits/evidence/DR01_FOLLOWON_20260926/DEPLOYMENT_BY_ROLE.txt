@@ -1,0 +1,52 @@
+DR01 follow-on, 2026-09-26: the launcher and its admission module deployed to the two worker
+roles with the repository's own installer, tools/install_crispdm_launcher.sh.
+
+Roles only.  No host name, address, account or token appears in this file.
+
+Tracked bytes in this checkout (the origin the deployed copies must equal):
+  ae4115dd4851bfb75c0899fb9cecb139bd16bb37ea9a1b9bbaf021055fd38d02  tools/crispdm-run
+  8989afcb8ccb66eca9431d69dd7904fd52905ad6351f257ee52919ebb0bb9f9b  tools/crispdm_admission.py
+  05e7d8b878d0d387b4ba6b4a2e00bba69221769487957d546af5aa99c8c9aad9  tools/install_crispdm_launcher.sh
+
+Before (both worker roles, identical):
+  ~/.local/bin/crispdm-run                       ad52f2def29c4c62a58886251d721a84025346fda05f5b477e65c37d31097e4b  (the pre-DR01 text)
+  ~/.local/libexec/crispdm/crispdm_admission.py  ABSENT   <- why df_dispatch refused at launch
+  ~/.local/state/crispdm/admission               absent
+
+How: the three tracked files were staged into a NEW directory on each role
+(~/.local/src/crispdm-dr01/, nothing existing touched) and the tracked installer was run there.
+It writes each file to a temporary name IN THE DESTINATION DIRECTORY and renames it over the old
+one, so FUTURE LAUNCHES ONLY: a crispdm-run already running keeps executing the text it opened,
+and no limit, cgroup or environment of any running child was touched.  Nothing was started,
+stopped, restarted or reloaded; no ceiling, swap or oomd setting was read or written; nothing was
+killed.  Each role had another lane's load live in its batch slice at the time; neither was
+disturbed.
+
+WORKER_A
+  installed ~/.local/bin/crispdm-run
+    was ad52f2def29c4c62a58886251d721a84025346fda05f5b477e65c37d31097e4b
+    now ae4115dd4851bfb75c0899fb9cecb139bd16bb37ea9a1b9bbaf021055fd38d02
+  installed ~/.local/libexec/crispdm/crispdm_admission.py
+    was ABSENT
+    now 8989afcb8ccb66eca9431d69dd7904fd52905ad6351f257ee52919ebb0bb9f9b
+  install_crispdm_launcher.sh --check: deployed == tracked for both files, exit 0
+
+WORKER_B
+  installed ~/.local/bin/crispdm-run
+    was ad52f2def29c4c62a58886251d721a84025346fda05f5b477e65c37d31097e4b
+    now ae4115dd4851bfb75c0899fb9cecb139bd16bb37ea9a1b9bbaf021055fd38d02
+  installed ~/.local/libexec/crispdm/crispdm_admission.py
+    was ABSENT
+    now 8989afcb8ccb66eca9431d69dd7904fd52905ad6351f257ee52919ebb0bb9f9b
+  install_crispdm_launcher.sh --check: deployed == tracked for both files, exit 0
+
+COORDINATOR (unchanged by this order, checked only)
+  install_crispdm_launcher.sh --check: deployed == tracked for both files, exit 0
+
+The module then answered on each role (python3 3.14.4 there, 3.12 on the coordinator):
+  WORKER_A  state: live_leases 0, MemAvailable 6 411 808 768, slice MemoryMax 15 032 385 536,
+                   slice memory.current 626 327 552, desktop reserve 3 221 225 472,
+                   host_free_for_new 3 190 583 296, PSI some/avg10 0.00
+  WORKER_B  state: live_leases 0, MemAvailable 7 207 772 160, slice MemoryMax 8 589 934 592,
+                   slice memory.current 211 226 624, desktop reserve 3 221 225 472,
+                   host_free_for_new 3 986 546 688, PSI some/avg10 0.00

@@ -1,0 +1,90 @@
+{
+ "note": "Terminal fields of the proof dispatches. Roles only; no alias, host name or path outside $HOME.",
+ "roots": {
+  "DISPATCH_ALIVE": {
+   "receipts": [
+    {
+     "attached_by": "LAUNCHED",
+     "attempt": 1,
+     "exit_code": 0,
+     "job_id": "dr01deploy-wb-1",
+     "memory_peak_bytes": 1835008,
+     "reason": "",
+     "request_bytes": 1342177280,
+     "role": "WORKER_B",
+     "status": "COMPLETED",
+     "wall_seconds": 25.836
+    }
+   ],
+   "sealed": true
+  },
+  "DISPATCH_ALIVE_A": {
+   "receipts": [],
+   "sealed": false
+  },
+  "DISPATCH_ALIVE_A2": {
+   "receipts": [
+    {
+     "attached_by": "LAUNCHED",
+     "attempt": 1,
+     "exit_code": 0,
+     "job_id": "dr01deploy-wa-2",
+     "memory_peak_bytes": 2621440,
+     "reason": "",
+     "request_bytes": 66060288,
+     "role": "WORKER_A",
+     "status": "COMPLETED",
+     "wall_seconds": 17.321
+    }
+   ],
+   "sealed": true
+  },
+  "DISPATCH_QUEUED": {
+   "receipts": [
+    {
+     "attached_by": "LAUNCHED",
+     "attempt": 1,
+     "exit_code": 0,
+     "job_id": "dr01deploy-wb-1",
+     "memory_peak_bytes": 2121728,
+     "reason": "",
+     "request_bytes": 1342177280,
+     "role": "WORKER_B",
+     "status": "COMPLETED",
+     "wall_seconds": 25.776
+    }
+   ],
+   "sealed": true
+  },
+  "DISPATCH_QUEUED2": {
+   "receipts": [
+    {
+     "attached_by": null,
+     "attempt": 1,
+     "exit_code": 75,
+     "job_id": "dr01deploy-wb-1",
+     "memory_peak_bytes": null,
+     "reason": "imed_lease_ids\": [], \"request_cap_bytes\": 1342177280, \"slice\": \"crispdm-batch.slice\", \"slice_memory_current\": 216862720, \"slice_memory_max\": 8589934592}, \"reason\": \"1.25G requested; 171.34M free (MemAvailable 6.91G - 3.00G desktop reserve - 3.74G held by 3 live reservation(s))\", \"verdict\": \"QUEUED\"}",
+     "request_bytes": 1342177280,
+     "role": "WORKER_B",
+     "status": "REFUSED_AT_LAUNCH",
+     "wall_seconds": null
+    },
+    {
+     "attached_by": "LAUNCHED",
+     "attempt": 2,
+     "exit_code": 0,
+     "job_id": "dr01deploy-wb-1",
+     "memory_peak_bytes": 2289664,
+     "reason": "",
+     "request_bytes": 1342177280,
+     "role": "WORKER_B",
+     "status": "COMPLETED",
+     "wall_seconds": 29.094
+    }
+   ],
+   "sealed": true
+  }
+ },
+ "schema": "crispdm.dr01_followon.dispatch_proof.v1"
+}

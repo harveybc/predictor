@@ -1,0 +1,50 @@
+{
+ "declared_reserve": {
+  "desktop_reserve_bytes": 3221225472,
+  "per_role_reasoning": {
+   "COORDINATOR": "3 GiB of 30.53 GiB total (9.8%); the owner's session runs here.",
+   "WORKER_A": "3 GiB of 30.58 GiB total (9.8%); same absolute reserve, and its 14 GiB batch ceiling is read live on the role, not copied.",
+   "WORKER_B": "3 GiB of 14.29 GiB total (21.0%) -- substantially less RAM than the coordinator. Nothing was copied from the coordinator: every per-host input (MemTotal, MemAvailable, the slice MemoryMax, the user-slice PSI) is read ON the role at each admission, and on this role the 8 GiB batch ceiling, not the reserve, is what binds. The one constant is conservative here, never permissive."
+  },
+  "where": "tools/crispdm_admission.py DESKTOP_RESERVE_BYTES, the single place the value exists"
+ },
+ "note": "Roles only. No host name, address, account or token appears here or in any file of this folder.",
+ "read_at": "2026-09-26T20:20:07+00:00",
+ "read_with": "tools/df_host_capacity.py (read-only probe, aliases redacted)",
+ "roles": {
+  "COORDINATOR": {
+   "batch_slice_memory_current_bytes_at_read": 6157901824,
+   "batch_slice_memory_high_bytes": 12884901888,
+   "batch_slice_memory_max_bytes": 15032385536,
+   "cpus": 16,
+   "crispdm_run_present": true,
+   "mem_available_bytes_at_read": 13531484160,
+   "mem_total_bytes": 32778354688,
+   "memguard_active": true,
+   "reachable": true
+  },
+  "WORKER_A": {
+   "batch_slice_memory_current_bytes_at_read": 626327552,
+   "batch_slice_memory_high_bytes": 12884901888,
+   "batch_slice_memory_max_bytes": 15032385536,
+   "cpus": 32,
+   "crispdm_run_present": true,
+   "mem_available_bytes_at_read": 9479704576,
+   "mem_total_bytes": 32831782912,
+   "memguard_active": true,
+   "reachable": true
+  },
+  "WORKER_B": {
+   "batch_slice_memory_current_bytes_at_read": 211226624,
+   "batch_slice_memory_high_bytes": 7516192768,
+   "batch_slice_memory_max_bytes": 8589934592,
+   "cpus": 32,
+   "crispdm_run_present": true,
+   "mem_available_bytes_at_read": 7510597632,
+   "mem_total_bytes": 15340744704,
+   "memguard_active": true,
+   "reachable": true
+  }
+ },
+ "schema": "crispdm.dr01_followon.capacity_by_role.v1"
+}
