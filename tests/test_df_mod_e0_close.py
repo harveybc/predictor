@@ -147,7 +147,24 @@ def _load_arrays(attempt):
         return {k: z[k].copy() for k in z.files}
 
 
+def _reserved_scope(name="closure"):
+    """DR01 follow-on (order 2026-09-26): df_mod_e0_close refuses to replay outside a reserved
+    scope, because its fresh-process replays run in ITS cgroup under ITS MemoryMax and it must not
+    take a second reservation of its own.  The fleet gives it that scope with crispdm-run; a test
+    declares the same coverage inside its own sandbox lease store (tests/conftest.py), over this
+    process's cgroup.  Nothing is allocated, no fit is started and no real memory is read."""
+    A = _load("crispdm_admission")
+    store, res = A.Store(), A.resources_from_env()
+    d = A.acquire(store, res, A.Request(name=name, cap_bytes=2 << 30, wall_seconds=1800,
+                                       slice_name=A.DEFAULT_SLICE), A.now_from_env())
+    assert d["verdict"] == A.ADMITTED, d
+    cgroup = Path("/proc/self/cgroup").read_text().strip().splitlines()[0].split("::", 1)[1]
+    A.arm(store, res, d["lease_id"], A.now_from_env(), pid=os.getpid(), cgroup=cgroup.lstrip("/"))
+    return d["lease_id"]
+
+
 def _cli(root, out, *extra):
+    _reserved_scope(f"cli-{Path(out).name}")
     proc = subprocess.run([sys.executable, "-B", str(TOOLS / "df_mod_e0_close.py"), "--root", str(root), "--out-dir", str(out), "--no-live", *extra],
                           capture_output=True, text=True, env={**os.environ, "CUDA_VISIBLE_DEVICES": ""}, timeout=1800)
     return proc.returncode, proc.stdout, proc.stderr

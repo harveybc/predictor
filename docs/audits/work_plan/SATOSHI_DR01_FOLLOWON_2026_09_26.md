@@ -207,6 +207,23 @@ sandbox in `tests/conftest.py`):
 | a path that fits nothing stays ungated, per runner (4) | `…a_path_that_fits_nothing_is_not_gated[<tool>]` |
 | the four seal-pinned runners are still pinned and were not edited | `…the_seal_pinned_runners_are_still_pinned_and_were_not_edited` |
 
+### Every existing caller of the four gated CLIs, checked — and the one the guard broke
+
+A gate is only safe if the callers already satisfy it. All of them were read:
+
+| caller | how it calls the gated tool | effect of the gate |
+|---|---|---|
+| `df_e1_pilot` | `_load("df_e1_close")` — imports the **module** and calls its functions; `run_isolated` reserves through `df_isolated_runner` | none; and the ancestor-pid path exists precisely so a `PRLIMIT_AS` reservation still counts as coverage |
+| `df_mod_e0_mutants`, `df_e1_mutants` | run **pytest** on a mutated copy of the tree | none; they inherit whatever the test declares |
+| `df_d2_r4_diagnostic_campaign` | `df_d2_r4_replay.py --compare` | none; `--compare` is ungated |
+| `tests/test_df_mod_e0_close.py::_cli` | runs `df_mod_e0_close.py --root … --no-live` **with replays**, i.e. bare | **broken by the gate** — four tests exited 75 |
+
+The last one is a regression the gate itself surfaced, and it is fixed the honest way rather than by
+loosening the gate: `_cli` now declares the coverage the fleet gives that closure with
+`crispdm-run`, by writing and arming one reservation over the test process's own cgroup in the
+sandbox lease store. Nothing is allocated and no fit is started by that. Reported here because a
+guard that quietly broke four tests would be the same class of defect as the one it closes.
+
 That last test is the tripwire for §4: it fails the day one of the four stops being pinned, which
 is exactly when the guard can be added there.
 
