@@ -1,0 +1,113 @@
+{
+ "schema": "df_e1_origin_policy_finding.v1",
+ "date": "2026-09-26",
+ "author": "Satoshi, successor technical lead, under the owner's grant of 2026-09-26",
+ "label": "Q2V1-ORIGIN-POLICY",
+ "no_global_finding_number": "No number from the program's finding allocator is claimed: the allocator is fragmented across git refs and only Musashi rules on it. This is a labelled finding against one preparation, nothing more.",
+ "against": "the sealed v1 preparation of the Q2_CONTEXT block, e1_block_q2_context_v1",
+ "claim": "The retained v1 preparation holds PER-ARM train origins. Its own sealed DESIGN.json carries no train_population key at all, while the block catalogue in tools/df_e1_block.py declares COMMON_INTERSECTION for Q2_CONTEXT, so a reader of the catalogue would believe the sealed preparation trains every arm on the same origins. It does not.",
+ "verified_from": "the retained bytes named under v1/v2 below, read by this probe",
+ "consequence_had_it_been_fitted": "the input contrast would have been confounded with train volume: arms would have trained on different numbers of origins while the block's declared question is an input difference at fixed volume",
+ "published_numbers_affected": 0,
+ "why_none": "state SEALED_NOT_EXECUTED / BUDGET_LIMITED_BEFORE_ANY_OUTCOME; no cell of e1_block_q2_context_v1 was ever fitted, by this round or any other",
+ "usability": {
+  "e1_block_q2_context_v1": "UNUSABLE_FOR_ANY_COMPARISON_THAT_ASSUMES_COMMON_TRAIN_ORIGINS",
+  "still_usable_for": "its own retained cost pilots (CPU seconds and peak RSS per update), which measure resource cost per arm and do not compare arms to each other",
+  "not_repaired_in_place": "the sealed preparation is retained as it is. Nothing in it is rewritten: this record and the validator sit beside it."
+ },
+ "repair": {
+  "validator": "tools/df_e1_block.py validate_train_population(), called by prepare() before a preparation seals and by load_data() before anything is fitted on one",
+  "tests": "tests/test_df_e1_train_population_validator.py"
+ },
+ "v1": {
+  "root": "docs/audits/evidence/d3_k5_20260917/RP66/blocks/e1_block_q2_context_v1",
+  "design_sha256": "6d1aaecaf27c581c709a745a4f976c2e9dcc05594815b2ee1a9747595f4398b1",
+  "declared_train_population": "UNDECLARED (no such key)",
+  "arms": [
+   "daily_lag",
+   "long_window_own_depth",
+   "long_window_crop60",
+   "long_window_local_support_67",
+   "short_window_deep_core"
+  ],
+  "bytes": {
+   "design_json_sha256": "96ebcb1c55744f1b029b777553a3bcc5971979753904c714066bec6cc4002dbd",
+   "block_data_json_sha256": "1ff89258ec176a73bbc8c18e9bcce81fdaf5d03fa49d95ca43d860bc5e0d035a",
+   "block_data_npz_sha256": "e895239741e7dc0bed1ca03b0977fabcd55b73131d025dc41de4f75c0fa1167e",
+   "block_data_npz_read_from": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/BLOCK_DATA.npz"
+  },
+  "arrays_checked": [
+   "daily_lag",
+   "long_window_crop60",
+   "long_window_local_support_67",
+   "long_window_own_depth",
+   "short_window_deep_core"
+  ],
+  "report": {
+   "declared_policy": "UNDECLARED",
+   "held_train_origins": {
+    "daily_lag": 40020,
+    "long_window_own_depth": 38700,
+    "long_window_crop60": 38700,
+    "long_window_local_support_67": 38700,
+    "short_window_deep_core": 40080
+   },
+   "held_identical_counts": false,
+   "held_identical_origins": false,
+   "before_intersection_recorded": {
+    "daily_lag": null,
+    "long_window_own_depth": null,
+    "long_window_crop60": null,
+    "long_window_local_support_67": null,
+    "short_window_deep_core": null
+   },
+   "common_train_origins_recorded": null
+  },
+  "verdict": "REFUSED",
+  "refusal": "REFUSED: the design declares no train_population and the preparation holds per-arm train origins (daily_lag=40020, long_window_own_depth=38700, long_window_crop60=38700, long_window_local_support_67=38700, short_window_deep_core=40080); it cannot be read as a common-origin comparison, and an input contrast over it would be confounded with train volume"
+ },
+ "v2_for_contrast": {
+  "root": "docs/audits/evidence/E1_Q2_CONTEXT_BOUNDED_20260926",
+  "design_sha256": "47a270eec01f203cdde2812deb1458db525e86d762c2b17f2b79a2ba571e17ea",
+  "declared_train_population": "COMMON_INTERSECTION",
+  "arms": [
+   "modular_w60",
+   "daily_lag",
+   "long_window_crop60",
+   "short_window_deep_core"
+  ],
+  "bytes": {
+   "design_json_sha256": "af2dd0a7e45267fe5b985598db866d11658d748efaa4562543f6407a11777544",
+   "block_data_json_sha256": "9a4573bc5f7b3dcf9d0b16c9da970a15c7bd8d8c8be84f5ff320c2060cb11908",
+   "block_data_npz_sha256": "43c93db381de4e4281b0b00ae1b577e3f860ad29a477b13ac6dc86e2bbed5350",
+   "block_data_npz_read_from": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_bounded_v1/BLOCK_DATA.npz"
+  },
+  "arrays_checked": [
+   "daily_lag",
+   "long_window_crop60",
+   "modular_w60",
+   "short_window_deep_core"
+  ],
+  "report": {
+   "declared_policy": "COMMON_INTERSECTION",
+   "held_train_origins": {
+    "modular_w60": 38700,
+    "daily_lag": 38700,
+    "long_window_crop60": 38700,
+    "short_window_deep_core": 38700
+   },
+   "held_identical_counts": true,
+   "held_identical_origins": true,
+   "before_intersection_recorded": {
+    "modular_w60": 40080,
+    "daily_lag": 40020,
+    "long_window_crop60": 38700,
+    "short_window_deep_core": 40080
+   },
+   "common_train_origins_recorded": 38700
+  },
+  "verdict": "ACCEPTED",
+  "refusal": null
+ },
+ "reading": "the validator refuses v1's bytes and accepts v2's; v2 is the 2026-09-26 bounded block, which declares COMMON_INTERSECTION and holds it."
+}

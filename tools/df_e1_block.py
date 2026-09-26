@@ -60,6 +60,10 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 SCHEMA = "df_e1_block_design.v1"
 SCHEMA_DATA = "df_e1_block_data.v1"
+#: The origin policies a design may declare. A preparation is read against the policy its OWN
+#: design carries; "UNDECLARED" is not a policy, it is the absence of one (designs sealed before
+#: the intersection existed carry no key at all) and is refused the moment the held origins differ.
+TRAIN_POPULATIONS = ("COMMON_INTERSECTION", "PER_ARM_ADMISSIBLE")
 DAY = 1440
 W0, H0 = 60, 60
 SEEDS = (1, 2, 3)
@@ -456,6 +460,93 @@ def feasibility_train_before(arm: str, ts_ns, inputs_finite, label_finite, train
     return admissible_origins(ts_ns, inputs_finite, label_finite, W=W0, h=H0, lo=train_end_local - 28*DAY + W0 - 1, hi=train_end_local - (W0+H0))
 
 
+def train_population_report(design: dict, rec: dict, *, origins: dict | None = None) -> dict:
+    """The origins a preparation actually HOLDS, read against the policy its design declares.
+
+    `rec` is the preparation's own BLOCK_DATA record; `counts_from_identities[arm]["labels"]` is the
+    post-intersection count, i.e. the origins the arm would really train on. `origins`, when given,
+    is the arm -> train-origin array mapping (from BLOCK_DATA.npz or from prepare() itself) and makes
+    the check exact instead of count-only: two arms can hold the same NUMBER of different origins.
+    """
+    policy = design.get("train_population", "UNDECLARED")
+    arms = [a["arm"] for a in design["arms"]]
+    counts = rec.get("counts_from_identities") or {}
+    feasibility = rec.get("feasibility") or {}
+    binding = rec.get("binding_to_source") or {}
+    held = {arm: (counts.get(arm) or {}).get("labels") for arm in arms}
+    identical = None
+    if origins is not None and all(arm in origins for arm in arms):
+        first = np.asarray(origins[arms[0]])
+        identical = all(np.array_equal(first, np.asarray(origins[a])) for a in arms)
+    return {
+        "declared_policy": policy,
+        "held_train_origins": held,
+        "held_identical_counts": len(set(held.values())) == 1 and None not in held.values(),
+        "held_identical_origins": identical,
+        "before_intersection_recorded": {
+            arm: (feasibility.get(arm) or {}).get("train_admissible_before_intersection") for arm in arms
+        },
+        "common_train_origins_recorded": binding.get("common_train_origins"),
+    }
+
+
+def validate_train_population(design: dict, rec: dict, *, origins: dict | None = None) -> dict:
+    """Refuse a preparation whose declared origin policy disagrees with the origins it HOLDS.
+
+    Q2_CONTEXT v1 is why this exists. Its sealed design (`6d1aaecaf27c581c...`, sealed before the
+    commit that introduced the intersection) carries no `train_population` key at all, while its
+    retained BLOCK_DATA holds PER-ARM train origins -- 40 020 / 38 700 / 38 700 / 38 700 / 40 080 --
+    and its record carries neither `train_admissible_before_intersection` nor `common_train_origins`.
+    The block catalogue today declares `COMMON_INTERSECTION` for Q2_CONTEXT, so an audit reading the
+    catalogue would believe the sealed preparation honoured it. Had a cell ever been fitted on those
+    bytes, the input contrast would have been confounded with train volume: different arms trained on
+    different origins while the block claimed they shared them. No cell was, so nothing published
+    moves -- and this refusal is what keeps it that way.
+
+    Returns the report on agreement; raises BlockRefusal, naming the disagreement, otherwise.
+    """
+    report = train_population_report(design, rec, origins=origins)
+    policy, held = report["declared_policy"], report["held_train_origins"]
+    shown = ", ".join(f"{arm}={held[arm]}" for arm in held)
+    if None in held.values():
+        raise BlockRefusal(
+            f"REFUSED: the preparation records no held train-origin count for every declared arm ({shown})")
+    if policy != "UNDECLARED" and policy not in TRAIN_POPULATIONS:
+        raise BlockRefusal(f"REFUSED: unknown train_population {policy!r}; the vocabulary is {list(TRAIN_POPULATIONS)}")
+    if policy == "UNDECLARED":
+        # Not a policy: the absence of one. Harmless while the arms happen to hold the same origins,
+        # unusable the moment they do not, because no declaration says which reading is intended.
+        if not report["held_identical_counts"] or report["held_identical_origins"] is False:
+            raise BlockRefusal(
+                "REFUSED: the design declares no train_population and the preparation holds per-arm train "
+                f"origins ({shown}); it cannot be read as a common-origin comparison, and an input contrast "
+                "over it would be confounded with train volume")
+        return report
+    if policy == "COMMON_INTERSECTION":
+        if not report["held_identical_counts"]:
+            raise BlockRefusal(
+                f"REFUSED: the design declares train_population COMMON_INTERSECTION but the preparation holds "
+                f"per-arm train origins ({shown}); the input contrast would be confounded with train volume")
+        if report["held_identical_origins"] is False:
+            raise BlockRefusal(
+                "REFUSED: the design declares train_population COMMON_INTERSECTION and the per-arm train-origin "
+                "counts agree, but the origin SETS are not identical")
+        missing = [arm for arm, value in report["before_intersection_recorded"].items() if value is None]
+        if missing:
+            raise BlockRefusal(
+                "REFUSED: the design declares train_population COMMON_INTERSECTION but the preparation records no "
+                f"train_admissible_before_intersection for {missing}; there is no evidence the intersection was applied")
+        common = report["common_train_origins_recorded"]
+        if common is None:
+            raise BlockRefusal(
+                "REFUSED: the design declares train_population COMMON_INTERSECTION but the preparation's "
+                "binding_to_source records no common_train_origins")
+        if int(common) != int(next(iter(held.values()))):
+            raise BlockRefusal(
+                f"REFUSED: the recorded common_train_origins {common} is not the count the arms hold ({shown})")
+    return report
+
+
 def prepare(design: dict, root: Path, *, frame=None) -> dict:
     """Read the delivered panel rows the block declares, build every channel, enumerate every arm's origins from
     row identities, derive the COMMON evaluation mask, apply the COMMON scaler — before any score.
@@ -565,6 +656,9 @@ def prepare(design: dict, root: Path, *, frame=None) -> dict:
            "common_evaluation": {"n": int(common.size), "first_row": int(common.min()) if common.size else None,
                                  "last_row": int(common.max()) if common.size else None},
            "binding_to_source": binding, "data_sha256": sha_file(root/"BLOCK_DATA.npz")}
+    # the origins this preparation HOLDS must agree with the policy the design declares, checked on the
+    # arrays themselves before the record is written: a preparation that contradicts its own design never seals
+    validate_train_population(design, rec, origins={arm: o["train"] for arm, o in origins.items()})
     (root/"BLOCK_DATA.json").write_text(json.dumps(rec, indent=1))
     return rec
 
@@ -574,7 +668,13 @@ def load_data(root: Path, design: dict) -> dict:
     if rec["design_sha256"] != design["design_sha256"] or sha_file(Path(root)/"BLOCK_DATA.npz") != rec["data_sha256"]:
         raise BlockRefusal("REFUSED: BLOCK_DATA belongs to another design or was altered")
     with np.load(Path(root)/"BLOCK_DATA.npz", allow_pickle=False) as z:
-        return {k: z[k] for k in z.files}
+        data = {k: z[k] for k in z.files}
+    # a retained preparation is read at CONSUMPTION too: nothing is fitted on origins that contradict the
+    # design's declared policy, whatever the preparation was sealed by and whenever it was sealed
+    validate_train_population(design, rec, origins={
+        a["arm"]: data[f"train_origins__{a['arm']}"] for a in design["arms"]
+        if f"train_origins__{a['arm']}" in data})
+    return data
 
 
 def arm_inputs(data: dict, spec: dict, *, assignment: list) -> tuple:
