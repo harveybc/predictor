@@ -268,7 +268,7 @@ def replay_successor(windows: int | None = None, work: Path | None = None) -> li
                              "barely more than one situation by the programme's own reading rule")]
     if windows:
         import importlib.util
-        spec = importlib.util.spec_from_file_location("df_e1_close", HERE / "df_e1_close.py")
+        spec = importlib.util.spec_from_file_location("_rpaudit_df_e1_close", HERE / "df_e1_close.py")
         C = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(C)
         D = np.load(SUCCESSOR_ROOT / "DATA.npz")
@@ -392,14 +392,11 @@ def phase1_replay(windows: int | None = None) -> list:
         return out
     import importlib.util
     import numpy as _np
-    spec = importlib.util.spec_from_file_location("df_e1_phase1", HERE / "df_e1_phase1.py")
+    spec = importlib.util.spec_from_file_location("_rpaudit_df_e1_phase1", HERE / "df_e1_phase1.py")
     PH = importlib.util.module_from_spec(spec)
-    import sys as _sys
-    _sys.modules["df_e1_phase1"] = PH
-    spec.loader.exec_module(PH)
-    spec2 = importlib.util.spec_from_file_location("df_e1_pilot", HERE / "df_e1_pilot.py")
-    P = importlib.util.module_from_spec(spec2)
-    _sys.modules["df_e1_pilot"] = P
+    spec.loader.exec_module(PH)                          # never registered in sys.modules: the tools
+    spec2 = importlib.util.spec_from_file_location("_rpaudit_df_e1_pilot", HERE / "df_e1_pilot.py")
+    P = importlib.util.module_from_spec(spec2)           # load their own dependencies themselves
     spec2.loader.exec_module(P)
     design = json.loads((PHASE1_ROOT / "DESIGN.json").read_text())
     z = _np.load(PHASE1_ROOT / "DATA.npz")

@@ -39,9 +39,11 @@ if str(REPO) not in sys.path:
 
 
 def _load(name: str, where: Path = TOOLS):
-    spec = importlib.util.spec_from_file_location(name, where / f"{name}.py")
+    """Load a tool WITHOUT registering it in ``sys.modules``: these rules run beside batteries that
+    load the same tools their own way, and a shared module object would let one test's state reach
+    another's."""
+    spec = importlib.util.spec_from_file_location(f"_rpaudit_{name}", where / f"{name}.py")
     mod = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod
     spec.loader.exec_module(mod)
     return mod
 
