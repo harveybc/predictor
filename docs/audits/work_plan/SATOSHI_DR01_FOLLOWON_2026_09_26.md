@@ -172,6 +172,11 @@ Where it is now mandatory, and on which paths:
 | `df_mod_e0_close` | a close that will replay | `--no-replay`, `--local-from` |
 | `df_sota_repro` | `execute`, `child`, `pilot`, `regenerate`, `profile-eval`, `route-trace`, and `close` unless `--skip-replay` | `seal`, `report`, `lock`, `merge`, `ledger`, `admit`, `accept-*`, `retable`, `revalidate`, `backup`, `delete-predictions`, `retire-attempt` |
 
+The mechanism was exercised on a worker role itself, where the fits actually run: bare,
+`inside-scope` exits 1 with `covered: false`; inside a `crispdm-run` scope it exits 0 and names
+the covering lease (last section of
+[REMOTE_PAIR_PROOF.txt](../evidence/DR01_FOLLOWON_20260926/REMOTE_PAIR_PROOF.txt)).
+
 Each gate fires **immediately after argument parsing**, before the runner reads a design or creates
 a directory, so a refusal costs nothing and starts nothing. No second reservation is taken anywhere:
 a covered runner keeps running inside its parent's one.

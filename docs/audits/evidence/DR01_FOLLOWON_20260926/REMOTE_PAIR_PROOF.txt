@@ -74,3 +74,21 @@ so that one fits and two cannot: cap 1811 MiB = 1 898 971 136 B.
   RAM_REQUEST_1006632960_OVER_HEADROOM_80441344 while another lane's load held the role's memory.
   That is placement waiting for capacity, not the DR01 refusal; it ended on its own wall limit
   without a receipt, and is reported here rather than omitted.
+
+===============================================================================================
+4. WORKER_B -- the proof the fit guard depends on, exercised on the role itself
+===============================================================================================
+`crispdm_admission.py inside-scope` is what tools/df_admission_guard.py asks, and its exit code is
+the verdict.  On the role, both directions (user id and session numbers left as the role printed
+them; no host name, address or account name appears):
+
+  bare
+    {"cgroup": "/user.slice/user-1000.slice/session-…scope", "covered": false,
+     "covering_lease_ids": [], "live_lease_ids": []}
+    exit=1
+
+  inside a reserved scope (crispdm-run -m 512M -t 2m -n dr01deploy-scope -- …)
+    {"cgroup": ".../crispdm.slice/crispdm-batch.slice/crispdm-dr01deploy-scope-…scope",
+     "covered": true, "covering_lease_ids": ["dr01deploy-scope-…-1648d8"],
+     "live_lease_ids": ["dr01deploy-scope-…-1648d8"]}
+    exit=0
