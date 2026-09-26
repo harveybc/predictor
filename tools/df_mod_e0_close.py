@@ -845,6 +845,13 @@ def main(argv=None) -> int:
     parser.add_argument("--local-from", type=Path, default=None,
                         help="reuse the local closure of a prior CLOSE.json of this very root (the live closure is a separate result)")
     args = parser.parse_args(argv)
+    # DR01 follow-on (order 2026-09-26): the fresh-process replays are plain subprocesses in THIS
+    # process's cgroup and share ITS MemoryMax, so this runner must not reserve for itself (the same
+    # bytes would be counted twice); it proves a live reservation covers it.  Bare, it is refused
+    # (exit 75) rather than replaying uncapped.  --no-replay / --local-from only read files.
+    if not args.no_replay and args.local_from is None:
+        _load("df_admission_guard").require_reserved_scope(
+            "df_mod_e0_close", "replay", mem="8G", wall="4h", name="e0close")
     out_dir = args.out_dir or (args.root / "closure_v2")
     if (out_dir / "CLOSE.json").exists():
         raise SystemExit(f"REFUSED: {out_dir / 'CLOSE.json'} exists; a closure is never written over")

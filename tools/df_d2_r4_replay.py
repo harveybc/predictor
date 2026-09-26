@@ -429,6 +429,13 @@ def main(argv=None) -> int:
     ap.add_argument("--tolerance-db", type=float, default=1e-9,
                     help="the original AT9 criterion: bytes/float equality of the replayed estimate")
     a = ap.parse_args(argv)
+    # DR01 follow-on (order 2026-09-26): --replay spawns df_snr children as plain subprocesses in
+    # THIS process's cgroup, under ITS MemoryMax.  Taking a second reservation would count the same
+    # bytes twice, so the obligation is to prove a live one covers this scope; bare, it is refused
+    # (exit 75) instead of replaying uncapped.  --compare only reads retained files: not gated.
+    if a.replay:
+        _load("df_admission_guard").require_reserved_scope(
+            "df_d2_r4_replay", "replay", mem="4G", wall="2h", name="d2r4replay")
     design = json.loads(a.design.read_text(encoding="utf-8"))
     a.out.mkdir(parents=True, exist_ok=True)
     subset = json.loads(a.subset.read_text(encoding="utf-8"))

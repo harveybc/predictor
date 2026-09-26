@@ -672,6 +672,14 @@ def main(argv=None) -> int:
     ap.add_argument("--no-replay", action="store_true")
     ap.add_argument("--replay", type=Path, default=None, help="internal: the fresh-process reload of one unit")
     a = ap.parse_args(argv)
+    # DR01 follow-on (order 2026-09-26): a replay reloads checkpoints and runs the model in THIS
+    # process's cgroup, under ITS MemoryMax; the fresh-process children share it.  This runner must
+    # not take a second reservation of its own (the same bytes would be counted twice), so it proves
+    # a live one covers it.  Bare, it is refused (exit 75) instead of replaying uncapped.  A
+    # --no-replay close only reads retained files and is not gated.
+    if a.replay is not None or not a.no_replay:
+        _load("df_admission_guard").require_reserved_scope(
+            "df_e1_close", "replay", mem="6G", wall="4h", name="e1close")
     if a.replay is not None:
         return replay_worker(a.replay)
     if a.root is None:

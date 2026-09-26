@@ -4101,6 +4101,16 @@ def main(argv=None) -> int:
     ap.add_argument("--require-gpu-uuid", default=None, help="the physical CUDA UUID of the ONLY device admitted for new GPU work (owner policy); no fallback")
     ap.add_argument("--malloc-tunables", default=MALLOC_TUNABLES_DEFAULT, help="operational: GLIBC_TUNABLES of cell and replay processes ('none' to leave the host allocator alone); host memory only")
     a = ap.parse_args(argv)
+    # DR01 follow-on (order 2026-09-26): the cell and replay children are plain subprocesses in THIS
+    # process's cgroup and share ITS MemoryMax.  A second reservation would count the same bytes
+    # twice and queue this run against itself, so the obligation is to PROVE a live reservation
+    # covers this scope.  Bare, a fitting or replaying command is refused (exit 75) instead of
+    # running uncapped and invisible to admission.  The read-only commands are not gated; `close`
+    # is, unless --skip-replay leaves it pure table work.
+    if a.command in ("execute", "child", "pilot", "regenerate", "profile-eval", "route-trace") \
+            or (a.command == "close" and not a.skip_replay):
+        _module("df_admission_guard").require_reserved_scope(
+            "df_sota_repro", f"run {a.command}", mem="12G", wall="8h", name="sotarepro")
     if a.command == "seal":
         a.root.mkdir(parents=True, exist_ok=True)
         if (a.root / "DESIGN.json").is_file():
