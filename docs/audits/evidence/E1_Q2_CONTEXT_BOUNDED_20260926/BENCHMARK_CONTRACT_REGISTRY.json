@@ -1,0 +1,395 @@
+{
+ "schema": "benchmark_contract_registry.v2",
+ "contract_schema": "benchmark_contract.v2",
+ "ours": {
+  "household_W60_h60": {
+   "task_id": "uci_235.W60_h60.DEV_28d_7d",
+   "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+   "source": {
+    "kind": "OURS",
+    "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+    "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "sd_train": 0.9125164391265214,
+    "evaluation_origins": 10020,
+    "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+   },
+   "target": "Global_active_power",
+   "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+   "resolution_seconds": 60,
+   "horizon_steps": 60,
+   "horizon_seconds": 3600,
+   "input_window_steps": 60,
+   "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+   "target_transform": "zscore_train",
+   "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+   "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+   "metric_scale": "z_train",
+   "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+   "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+   "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+   "reference_method": null,
+   "tuning_budget": "none: declared settings",
+   "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+   "replicas": "3 paired seeds; development",
+   "varying_factors": [],
+   "estimand": null,
+   "version": "2",
+   "notes": []
+  },
+  "fx_eurusd_1h": {
+   "task_id": "fx.eurusd.1h.FIN-LOSS-OPT.h6h",
+   "dataset_id": "financial_files:market_data/forex/g10/eurusd/1h.parquet",
+   "source": {
+    "kind": "OURS_DESIGNED",
+    "coverage": "129 873 rows, 2005-01-03 01:00 .. 2025-12-31 16:00, time column 'datetime'",
+    "holdout": "deny_from 2025-01-01; reserve never read",
+    "state": "DESIGNED, NOT_STARTED"
+   },
+   "target": "close",
+   "target_construction": "hourly bar close as served; the target of an origin is the bar whose timestamp is origin + h hours ELAPSED (tools/df_fin_task.map_targets); an origin without that exact bar is excluded and counted",
+   "resolution_seconds": 3600,
+   "horizon_steps": 6,
+   "horizon_seconds": 21600,
+   "input_window_steps": 60,
+   "split_rule": "weekly walk-forward folds (Monday 00:00 UTC .. Sunday 23:00 UTC); DEV = the last 26 weeks before 2025-01-01",
+   "missing_policy": "non-finite bars withdrawn; weekend/holiday gaps kept; an origin whose elapsed-time target bar is absent is excluded with reason",
+   "target_transform": "zscore_train",
+   "scaler_fit_population": "train rows of the fold, shared by every arm of the fold",
+   "metric_formula": "MAE_z = mean|yhat-y|/sd_train per horizon and fold; RMSE_z; skill = 1 - MAE_z_model/MAE_z_naive",
+   "metric_scale": "z_train",
+   "metric_aggregation": "per horizon, fold, seed and arm; paired by origin",
+   "naive_baseline": "persistence: the origin's close, on identical origins",
+   "permitted_inputs": "OHLCV of the served bars (5 channels), window 60",
+   "reference_method": null,
+   "tuning_budget": "equal enumerated candidates per loss family",
+   "checkpoint_selection": "common monitor, restore best",
+   "replicas": "paired seeds within host blocks",
+   "varying_factors": [],
+   "estimand": null,
+   "version": "2",
+   "notes": [
+    "no literature reference bound: NOT_COMPARABLE until a matched re-execution exists"
+   ]
+  },
+  "rl_weekly": {
+   "task_id": "e3.weekly_long_flat",
+   "dataset_id": "financial_files (asset declared per campaign)",
+   "source": {
+    "kind": "OURS",
+    "contract": "docs/tres_temas_entrevista/program_v3/13C_E3_WEEKLY_CYCLE_CONTRACT_2026_09_18.md"
+   },
+   "target": "net weekly return with capital and costs explicit",
+   "target_construction": "weeks Monday 00:00 UTC .. Sunday 23:00 UTC",
+   "resolution_seconds": 3600,
+   "horizon_steps": 168,
+   "horizon_seconds": 604800,
+   "input_window_steps": null,
+   "split_rule": "weekly cycle: cutoff <= fit_start < fit_end <= release <= first_decision",
+   "missing_policy": "per environment contract",
+   "target_transform": "none",
+   "scaler_fit_population": "n/a",
+   "metric_formula": "net return, drawdown, Sharpe (weekly periodicity stated), turnover, exposure, observed steps",
+   "metric_scale": "native",
+   "metric_aggregation": "per week and asset; uncertainty across weeks/regimes",
+   "naive_baseline": "trivial policies: flat, buy-and-hold, random with the same turnover; a competent non-modular control",
+   "permitted_inputs": "the environment's observation contract at decision time",
+   "reference_method": null,
+   "tuning_budget": null,
+   "checkpoint_selection": null,
+   "replicas": null,
+   "varying_factors": [],
+   "estimand": null,
+   "version": "2",
+   "notes": [
+    "RL keeps its own reward/return/risk and execution contract; no forecast MAE is invented for the agent"
+   ]
+  },
+  "ecl321_official_tsl": {
+   "task_id": "ecl321_official_tsl",
+   "dataset_id": "public.thuml.time_series_library.electricity",
+   "source": {
+    "kind": "OURS_REPRODUCTION",
+    "file_sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+    "origin": "https://huggingface.co/datasets/thuml/Time-Series-Library (revision 2b66e59ee19dac8f6f19fb5d4997f289fdfea357)",
+    "rows": 26304,
+    "channels": 321,
+    "split_rows": {
+     "train": 18412,
+     "vali": 2632,
+     "test": 5260
+    },
+    "reference": "TimeFilter (Hu et al., ICML 2025, arXiv:2501.13041), author code github.com/TROUBADOUR000/TimeFilter"
+   },
+   "target": "all 321 client series (features M: every channel is input and target; 'OT' is client 320 renamed by the distributor)",
+   "target_construction": "hourly consumption values as distributed (Autoformer/TimesNet processed ECL); nothing aggregated here",
+   "resolution_seconds": 3600,
+   "horizon_steps": 96,
+   "horizon_seconds": 345600,
+   "input_window_steps": 96,
+   "split_rule": "chronological: train rows [0, 18412), vali rows [18412-L, 18412+2632), test rows [26304-5260-L, 26304); Dataset_Custom borders of the author loader",
+   "missing_policy": "none needed: the distributed file has no missing values (receipted)",
+   "target_transform": "zscore_train",
+   "scaler_fit_population": "StandardScaler fit on the train rows [0, train) of every channel; applied to all rows",
+   "metric_formula": "MSE = mean (yhat - y)^2 and MAE = mean |yhat - y| over every test window x horizon step x channel, normalized space",
+   "metric_scale": "z_train",
+   "metric_aggregation": "one mean over all elements of the test set per horizon; the paper also averages the four horizons",
+   "naive_baseline": "persistence of the last observed value of the window at every step and channel, same windows",
+   "permitted_inputs": "the L-step window of all 321 channels (plus the loader's calendar marks, unused by the model)",
+   "reference_method": "TimeFilter, Table 8 (L=96): 96 0.133/0.230, 192 0.154/0.248, 336 0.162/0.261, 720 0.184/0.284; avg 0.158/0.256 (MSE/MAE)",
+   "tuning_budget": "none: the author script's settings, frozen",
+   "checkpoint_selection": "lowest validation MSE epoch, EarlyStopping patience 3, restored",
+   "replicas": "3 seeds (the paper reports three runs)",
+   "varying_factors": [],
+   "estimand": null,
+   "version": "2",
+   "notes": []
+  }
+ },
+ "dispositions": {
+  "household_W60_h60": "HISTORICAL_DEV_ONLY",
+  "fx_eurusd_1h": "DEFERRED_MANDATORY_STAGE",
+  "rl_weekly": "DEFERRED_MANDATORY_STAGE",
+  "ecl321_official_tsl": "ACTIVE"
+ },
+ "validity": {
+  "household_W60_h60": [],
+  "fx_eurusd_1h": [],
+  "rl_weekly": [],
+  "ecl321_official_tsl": [],
+  "gasparin_2019": [],
+  "saad_saoud_2022": [],
+  "vaygan_2021": [],
+  "kim_cho_2019": []
+ },
+ "literature": {
+  "gasparin_2019": {
+   "task_id": "IHEPC.15min.day_ahead_96.MIMO",
+   "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+   "source": {
+    "kind": "PRIMARY",
+    "citation": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "read_at": "arXiv PDF v1, sections 7.1-7.4, Tables 3, 4, 5",
+    "code": "NOT PUBLIC"
+   },
+   "target": "Global_active_power",
+   "target_construction": "resampled to 15-minute values from the 1-minute series (Sec. 7.2)",
+   "resolution_seconds": 900,
+   "horizon_steps": 96,
+   "horizon_seconds": 86400,
+   "input_window_steps": 384,
+   "split_rule": "test = last year (Table 3: 35 040 samples); remaining data train/validation keeping one month every five",
+   "missing_policy": "missing values (~1.25%) reconstructed with the mean power of the same time slot across years (split side unstated)",
+   "target_transform": "unknown",
+   "scaler_fit_population": "not stated for IHEPC",
+   "metric_formula": "RMSE and MAE averaged over N test pairs and the 96 steps (Sec. 7.1); NRMSE% with train max/min; R2",
+   "metric_scale": "native",
+   "metric_aggregation": "mean over test pairs and 96 steps; mean +- sd of 10 repeated trainings",
+   "naive_baseline": "NONE REPORTED",
+   "permitted_inputs": "historical load only (Sec. 7.2)",
+   "reference_method": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+   "tuning_budget": "grid search; Table 4 IHEPC column: GRU L=1 n_H=50 lambda=0.0005 dropout=0; LSTM L=1 n_H=20 lambda=0.001; TCN L=8, k=2, M=32, lambda=0.005, dropout=0.1 (TCN has NO n_H entry)",
+   "checkpoint_selection": "best configuration on validation, one evaluation on test",
+   "replicas": "10 repeated trainings",
+   "varying_factors": [],
+   "estimand": null,
+   "version": "2",
+   "notes": [
+    "no naive baseline reported",
+    "Table 3 gives sample counts, not an exact window enumeration",
+    "optimizer, seeds, exact dates and code are not stated: limitations, not facts to invent"
+   ]
+  },
+  "saad_saoud_2022": {
+   "task_id": "IHEPC.multires.one_step.SWT",
+   "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+   "source": {
+    "kind": "PRIMARY",
+    "citation": "Saad Saoud, AlMarzouqi, Hussein (2022), Cascaded Deep Hybrid Models for Multistep Household Energy Consumption Forecasting, arXiv:2207.02589v2",
+    "read_at": "arXiv PDF v2, Sec. 2-3, Tables 1-3",
+    "code": "NOT PUBLIC"
+   },
+   "target": "Global_active_power",
+   "target_construction": "hourly series of global active power (aggregation rule not stated)",
+   "resolution_seconds": 3600,
+   "horizon_steps": 1,
+   "horizon_seconds": 3600,
+   "input_window_steps": null,
+   "split_rule": "first three years train, remaining year test (Sec. 3)",
+   "missing_policy": "not stated",
+   "target_transform": "swt_whole_series",
+   "scaler_fit_population": "not stated; the SWT is computed on the whole series before any split",
+   "metric_formula": "RMSE, MAE, MAPE on the test set (Table 1)",
+   "metric_scale": "native",
+   "metric_aggregation": "one value per resolution",
+   "naive_baseline": "NONE REPORTED",
+   "permitted_inputs": "the target's own SWT sub-bands",
+   "reference_method": "Table 1 hourly (RMSE/MAE kW): CNN-LSTM 0.5957/0.3317, Transformer-SWT 0.4183/0.2637",
+   "tuning_budget": "RMSProp lr 0.001, batch 32, 100 epochs",
+   "checkpoint_selection": "not stated",
+   "replicas": "not stated",
+   "varying_factors": [],
+   "estimand": null,
+   "version": "2",
+   "notes": [
+    "whole-series wavelet before the split: the causal battery's full_series_dwt_as_time_row class; CAUSALITY_UNVERIFIED"
+   ]
+  },
+  "vaygan_2021": {
+   "task_id": "IHEPC.minute.time_pooling",
+   "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+   "source": {
+    "kind": "PRIMARY",
+    "citation": "Vaygan, Rajabi, Estebsari (2021), Short-Term Load Forecasting Using Time Pooling Deep Recurrent Neural Network, arXiv:2109.12498",
+    "read_at": "arXiv PDF v1, Sec. III-IV, Table I",
+    "code": "NOT PUBLIC"
+   },
+   "target": "Global_active_power",
+   "target_construction": "1-minute global active power, kW",
+   "resolution_seconds": 60,
+   "horizon_steps": 1,
+   "horizon_seconds": 60,
+   "input_window_steps": null,
+   "split_rule": "weeks of 10 080 minutes pooled into N=720 half-day groups, M=14; train/test 67/23 within the pools",
+   "missing_policy": "missing data completed by averaging over available data",
+   "target_transform": "unknown",
+   "scaler_fit_population": "not stated",
+   "metric_formula": "RMSE and MAE over N test samples (eq. 16-17)",
+   "metric_scale": "native",
+   "metric_aggregation": "one value",
+   "naive_baseline": "NONE REPORTED",
+   "permitted_inputs": "the target's own history",
+   "reference_method": "Table I (RMSE/MAE): SVR 0.96/0.77, ARIMA 0.81/0.75, RNN 0.75/0.55, DRNN 0.39/0.20, TPRNN 0.37/0.19",
+   "tuning_budget": "not stated",
+   "checkpoint_selection": "not stated",
+   "replicas": "not stated",
+   "varying_factors": [],
+   "estimand": null,
+   "version": "2",
+   "notes": [
+    "the forecast horizon is never declared: horizon_steps=1 is an ASSUMPTION recorded as such",
+    "train and test are drawn from pooled groups inside the same weeks"
+   ]
+  },
+  "kim_cho_2019": {
+   "task_id": "IHEPC.CNN-LSTM.multires",
+   "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+   "source": {
+    "kind": "PRIMARY_PAYWALLED",
+    "citation": "Kim & Cho (2019), Predicting residential energy consumption using CNN-LSTM neural networks, Energy 182:72-81, doi:10.1016/j.energy.2019.05.230",
+    "read_at": "abstract only",
+    "code": "NOT PUBLIC"
+   },
+   "target": "Global_active_power",
+   "target_construction": "unknown (paywalled)",
+   "resolution_seconds": 60,
+   "horizon_steps": 1,
+   "horizon_seconds": 60,
+   "input_window_steps": null,
+   "split_rule": "unknown (paywalled)",
+   "missing_policy": "unknown",
+   "target_transform": "unknown",
+   "scaler_fit_population": "unknown",
+   "metric_formula": "RMSE (abstract); values not public",
+   "metric_scale": "unknown",
+   "metric_aggregation": "unknown",
+   "naive_baseline": "NONE REPORTED",
+   "permitted_inputs": "unknown",
+   "reference_method": null,
+   "tuning_budget": null,
+   "checkpoint_selection": null,
+   "replicas": null,
+   "varying_factors": [],
+   "estimand": null,
+   "version": "2",
+   "notes": [
+    "every 'unknown' here is a placeholder that can NEVER match another unknown as proof: the identity comparison treats it as different by construction (see decide())",
+    "recorded, not used"
+   ]
+  }
+ },
+ "decisions_against_household_W60_h60": {
+  "gasparin_2019": {
+   "mode": "NOT_COMPARABLE",
+   "why": "unknown identity fields cannot match as proof: ['target_transform']",
+   "fields_that_differ": [
+    "target_transform"
+   ],
+   "declared_contrast": [],
+   "comparator_state": "NONE",
+   "reference_evidence": {
+    "state": "NONE",
+    "why": "an unknown protocol has no reference lane; read the source first"
+   },
+   "ours_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+   "theirs_sha256": "972d9470a6661a3ef8088d350d37e1c8a09e084bd94e2fbcba5b36ebdae494e4",
+   "resolution": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+  },
+  "saad_saoud_2022": {
+   "mode": "NOT_COMPARABLE",
+   "why": "identity fields differ: ['target_construction', 'resolution_seconds', 'horizon_steps', 'split_rule', 'missing_policy', 'target_transform', 'scaler_fit_population', 'metric_formula', 'metric_scale', 'metric_aggregation', 'permitted_inputs']; a published score under another protocol is not a comparator",
+   "fields_that_differ": [
+    "target_construction",
+    "resolution_seconds",
+    "horizon_steps",
+    "split_rule",
+    "missing_policy",
+    "target_transform",
+    "scaler_fit_population",
+    "metric_formula",
+    "metric_scale",
+    "metric_aggregation",
+    "permitted_inputs"
+   ],
+   "declared_contrast": [],
+   "comparator_state": "NONE",
+   "reference_evidence": {
+    "state": "PLANNED_REFERENCE",
+    "why": "no reference run root was given"
+   },
+   "ours_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+   "theirs_sha256": "fb049b872483448fe83d8dc555ee142018650f7adfeb9721e9d7e39709491e74",
+   "resolution": "a re-execution of the reference method under OUR contract, CLOSED under this contract digest (MATCHED_DOMAIN_COMPARISON), or an exact reproduction of THEIR protocol (REPRODUCTION); never their published number in our comparison column"
+  },
+  "vaygan_2021": {
+   "mode": "NOT_COMPARABLE",
+   "why": "unknown identity fields cannot match as proof: ['target_transform']",
+   "fields_that_differ": [
+    "target_transform"
+   ],
+   "declared_contrast": [],
+   "comparator_state": "NONE",
+   "reference_evidence": {
+    "state": "NONE",
+    "why": "an unknown protocol has no reference lane; read the source first"
+   },
+   "ours_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+   "theirs_sha256": "013bb7988243763bac0b610bff23a538589208ea29c6732e7ba295debf6addb1",
+   "resolution": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+  },
+  "kim_cho_2019": {
+   "mode": "NOT_COMPARABLE",
+   "why": "unknown identity fields cannot match as proof: ['metric_aggregation', 'metric_scale', 'missing_policy', 'permitted_inputs', 'scaler_fit_population', 'split_rule', 'target_construction', 'target_transform']",
+   "fields_that_differ": [
+    "metric_aggregation",
+    "metric_scale",
+    "missing_policy",
+    "permitted_inputs",
+    "scaler_fit_population",
+    "split_rule",
+    "target_construction",
+    "target_transform"
+   ],
+   "declared_contrast": [],
+   "comparator_state": "NONE",
+   "reference_evidence": {
+    "state": "NONE",
+    "why": "an unknown protocol has no reference lane; read the source first"
+   },
+   "ours_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+   "theirs_sha256": "302c042e339088d66b79dce2745203810e24540f8a3284e7588e39ac8960e318",
+   "resolution": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+  }
+ },
+ "reading": "every decision is NOT_COMPARABLE because identity fields differ; the MATCHED lane opens only with a closed reference run under our contract digest (VERIFIED_COMPARATOR), never with a flag"
+}

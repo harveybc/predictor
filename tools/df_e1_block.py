@@ -1238,7 +1238,14 @@ def close(a) -> dict:
         with np.load(folder/"arrays.npz", allow_pickle=False) as z:
             if not np.allclose(z["pred"], z["reload_pred"], rtol=1e-6, atol=1e-6):
                 problems.append(f"{unit}: reload parity")
-        inits.setdefault((cell["seed"], rec["arm_spec"]["family"], rec["channels"], rec["arm_spec"]["window"]), set()).add(rec["initial_weights_sha256"])
+        # 2026-09-26: the key must name EVERY field that changes the graph, or two arms that are different models collide
+        # and the check reports a false "unpaired" problem. `dilations` and `crop` change the built graph (and therefore the
+        # parameter count and the draw order), so they belong in the key exactly like `family`, `channels` and `window`.
+        # What the check still enforces is its real intent: two arms with the SAME graph and the same seed, differing only in
+        # the DATA they are fed (calendar vs randomised_calendar_control), must start from the same initial weights.
+        inits.setdefault((cell["seed"], rec["arm_spec"]["family"], rec["channels"], rec["arm_spec"]["window"],
+                          tuple(rec["arm_spec"].get("dilations") or ()), rec["arm_spec"].get("crop")),
+                         set()).add(rec["initial_weights_sha256"])
         r = rows_by_unit.get(unit)
         # the checkpoint CONSUMED is hashed now and bound to the accepted record's claim (the record is in the accepted chain)
         ident = replay_identity(root, unit, design, cell)

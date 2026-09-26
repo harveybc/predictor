@@ -1,0 +1,433 @@
+{
+ "steps": [
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T11:31:40Z",
+   "design_sha256": "47a270eec01f203cdde2812deb1458db525e86d762c2b17f2b79a2ba571e17ea",
+   "block": "Q2_CONTEXT_BOUNDED",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "24fdb67fca3c98781de1c1b56f69ff3dce02d8469f48e3de5c39991d1440d97f",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "prepare",
+   "data_sha256": "43c93db381de4e4281b0b00ae1b577e3f860ad29a477b13ac6dc86e2bbed5350",
+   "common_evaluation": {
+    "n": 10020,
+    "first_row": 41700,
+    "last_row": 51719
+   },
+   "binding_to_source": {
+    "baseline_arm_checked": "modular_w60",
+    "train_origins_equal_source": true,
+    "common_train_origins": 38700,
+    "common_train_subset_of_source": true,
+    "common_evaluation_equals_source": true,
+    "common_evaluation_subset_of_source": true
+   }
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T11:33:46Z",
+   "design_sha256": "47a270eec01f203cdde2812deb1458db525e86d762c2b17f2b79a2ba571e17ea",
+   "block": "Q2_CONTEXT_BOUNDED",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "24fdb67fca3c98781de1c1b56f69ff3dce02d8469f48e3de5c39991d1440d97f",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "pilot_modular_w60",
+     "mae_z": 0.6276298230729058,
+     "mae_kw": 0.5727225312400966,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 200,
+     "cpu_seconds": 16.909288580000002,
+     "peak_rss_bytes": 930979840,
+     "ok": true
+    },
+    {
+     "unit": "pilot_daily_lag",
+     "mae_z": 0.5748439277501417,
+     "mae_kw": 0.5245545340040626,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 200,
+     "cpu_seconds": 17.040684673,
+     "peak_rss_bytes": 933089280,
+     "ok": true
+    },
+    {
+     "unit": "pilot_long_window_crop60",
+     "mae_z": 0.641076791062543,
+     "mae_kw": 0.5849931105870487,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 200,
+     "cpu_seconds": 19.901828708,
+     "peak_rss_bytes": 935727104,
+     "ok": true
+    },
+    {
+     "unit": "pilot_short_window_deep_core",
+     "mae_z": 0.6301009512539849,
+     "mae_kw": 0.5749774763285201,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 200,
+     "cpu_seconds": 28.593824823,
+     "peak_rss_bytes": 965820416,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T11:46:59Z",
+   "design_sha256": "47a270eec01f203cdde2812deb1458db525e86d762c2b17f2b79a2ba571e17ea",
+   "block": "Q2_CONTEXT_BOUNDED",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "24fdb67fca3c98781de1c1b56f69ff3dce02d8469f48e3de5c39991d1440d97f",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "modular_w60_s1",
+     "mae_z": 0.5524666173627166,
+     "mae_kw": 0.5041348704121006,
+     "stop": "EARLY_STOPPING",
+     "censoring": "STOPPED_ON_VALIDATION",
+     "updates": 1800,
+     "cpu_seconds": 54.146360533999996,
+     "peak_rss_bytes": 1010495488,
+     "ok": true
+    },
+    {
+     "unit": "daily_lag_s1",
+     "mae_z": 0.5395281758880651,
+     "mae_kw": 0.4923283298698047,
+     "stop": "EARLY_STOPPING",
+     "censoring": "STOPPED_ON_VALIDATION",
+     "updates": 1600,
+     "cpu_seconds": 50.562130396,
+     "peak_rss_bytes": 1012396032,
+     "ok": true
+    },
+    {
+     "unit": "long_window_crop60_s1",
+     "mae_z": 0.5524666173627166,
+     "mae_kw": 0.5041348704121006,
+     "stop": "EARLY_STOPPING",
+     "censoring": "STOPPED_ON_VALIDATION",
+     "updates": 1800,
+     "cpu_seconds": 62.309241334,
+     "peak_rss_bytes": 1016352768,
+     "ok": true
+    },
+    {
+     "unit": "short_window_deep_core_s1",
+     "mae_z": 0.5528683275596197,
+     "mae_kw": 0.5045014375705393,
+     "stop": "EARLY_STOPPING",
+     "censoring": "STOPPED_ON_VALIDATION",
+     "updates": 1400,
+     "cpu_seconds": 93.664817217,
+     "peak_rss_bytes": 1060450304,
+     "ok": true
+    },
+    {
+     "unit": "modular_w60_s2",
+     "mae_z": 0.5373901387827926,
+     "mae_kw": 0.490377335863781,
+     "stop": "EARLY_STOPPING",
+     "censoring": "STOPPED_ON_VALIDATION",
+     "updates": 3000,
+     "cpu_seconds": 82.543933304,
+     "peak_rss_bytes": 1009807360,
+     "ok": true
+    },
+    {
+     "unit": "daily_lag_s2",
+     "mae_z": 0.5379772352139524,
+     "mae_kw": 0.49091307100856685,
+     "stop": "EARLY_STOPPING",
+     "censoring": "STOPPED_ON_VALIDATION",
+     "updates": 2000,
+     "cpu_seconds": 62.608347072,
+     "peak_rss_bytes": 1012502528,
+     "ok": true
+    },
+    {
+     "unit": "long_window_crop60_s2",
+     "mae_z": 0.5373901387827926,
+     "mae_kw": 0.490377335863781,
+     "stop": "EARLY_STOPPING",
+     "censoring": "STOPPED_ON_VALIDATION",
+     "updates": 3000,
+     "cpu_seconds": 95.928759159,
+     "peak_rss_bytes": 1017958400,
+     "ok": true
+    },
+    {
+     "unit": "short_window_deep_core_s2",
+     "mae_z": 0.5489084658895532,
+     "mae_kw": 0.5008879986999367,
+     "stop": "EARLY_STOPPING",
+     "censoring": "STOPPED_ON_VALIDATION",
+     "updates": 1800,
+     "cpu_seconds": 120.056180008,
+     "peak_rss_bytes": 1062305792,
+     "ok": true
+    },
+    {
+     "unit": "modular_w60_s3",
+     "mae_z": 0.5509913490572662,
+     "mae_kw": 0.5027886638312548,
+     "stop": "EARLY_STOPPING",
+     "censoring": "STOPPED_ON_VALIDATION",
+     "updates": 1800,
+     "cpu_seconds": 58.973436998,
+     "peak_rss_bytes": 1011609600,
+     "ok": true
+    },
+    {
+     "unit": "daily_lag_s3",
+     "mae_z": 0.5478946564338255,
+     "mae_kw": 0.4999628809054433,
+     "stop": "EARLY_STOPPING",
+     "censoring": "STOPPED_ON_VALIDATION",
+     "updates": 1800,
+     "cpu_seconds": 60.705971856,
+     "peak_rss_bytes": 1010909184,
+     "ok": true
+    },
+    {
+     "unit": "long_window_crop60_s3",
+     "mae_z": 0.5509913490572662,
+     "mae_kw": 0.5027886638312548,
+     "stop": "EARLY_STOPPING",
+     "censoring": "STOPPED_ON_VALIDATION",
+     "updates": 1800,
+     "cpu_seconds": 66.34410742899999,
+     "peak_rss_bytes": 1016729600,
+     "ok": true
+    },
+    {
+     "unit": "short_window_deep_core_s3",
+     "mae_z": 0.5492799963745383,
+     "mae_kw": 0.5012270263751223,
+     "stop": "EARLY_STOPPING",
+     "censoring": "STOPPED_ON_VALIDATION",
+     "updates": 1800,
+     "cpu_seconds": 122.44020814599999,
+     "peak_rss_bytes": 1063337984,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T12:19:14Z",
+   "design_sha256": "47a270eec01f203cdde2812deb1458db525e86d762c2b17f2b79a2ba571e17ea",
+   "block": "Q2_CONTEXT_BOUNDED",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "24fdb67fca3c98781de1c1b56f69ff3dce02d8469f48e3de5c39991d1440d97f",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "close",
+   "closure_verified": false,
+   "closure_problems": [
+    "daily_lag_s1: a registered forecast unit has NO accepted terminal receipt",
+    "daily_lag_s2: a registered forecast unit has NO accepted terminal receipt",
+    "daily_lag_s3: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_crop60_s1: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_crop60_s2: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_crop60_s3: a registered forecast unit has NO accepted terminal receipt",
+    "modular_w60_s1: a registered forecast unit has NO accepted terminal receipt",
+    "modular_w60_s2: a registered forecast unit has NO accepted terminal receipt",
+    "modular_w60_s3: a registered forecast unit has NO accepted terminal receipt",
+    "short_window_deep_core_s1: a registered forecast unit has NO accepted terminal receipt",
+    "short_window_deep_core_s2: a registered forecast unit has NO accepted terminal receipt",
+    "short_window_deep_core_s3: a registered forecast unit has NO accepted terminal receipt",
+    "closure without a warehouse read: no accepted custody, nothing is verified",
+    "unpaired initial weights within a seed for the same graph: [(1, 'modular', 7, 60), (2, 'modular', 7, 60), (3, 'modular', 7, 60)]"
+   ],
+   "verdict": "refused: REFUSED: closure failed: ['daily_lag_s1: a registered forecast unit has NO accepted terminal receipt', 'daily_lag_s2: a registered forecast unit has NO accepted terminal receipt', 'daily_lag_s3: a registered forecast unit has NO accepted terminal receipt', 'long_window_crop60_s1: a registered forecast unit has NO accepted terminal receipt', 'long_window_crop60_s2: a registered forecast unit has NO accepted terminal receipt']"
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T12:24:14Z",
+   "design_sha256": "47a270eec01f203cdde2812deb1458db525e86d762c2b17f2b79a2ba571e17ea",
+   "block": "Q2_CONTEXT_BOUNDED",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "24fdb67fca3c98781de1c1b56f69ff3dce02d8469f48e3de5c39991d1440d97f",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "close",
+   "closure_verified": false,
+   "closure_problems": [
+    "daily_lag_s1: a registered forecast unit has NO accepted terminal receipt",
+    "daily_lag_s2: a registered forecast unit has NO accepted terminal receipt",
+    "daily_lag_s3: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_crop60_s1: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_crop60_s2: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_crop60_s3: a registered forecast unit has NO accepted terminal receipt",
+    "modular_w60_s1: a registered forecast unit has NO accepted terminal receipt",
+    "modular_w60_s2: a registered forecast unit has NO accepted terminal receipt",
+    "modular_w60_s3: a registered forecast unit has NO accepted terminal receipt",
+    "short_window_deep_core_s1: a registered forecast unit has NO accepted terminal receipt",
+    "short_window_deep_core_s2: a registered forecast unit has NO accepted terminal receipt",
+    "short_window_deep_core_s3: a registered forecast unit has NO accepted terminal receipt",
+    "closure without a warehouse read: no accepted custody, nothing is verified"
+   ],
+   "verdict": "refused: REFUSED: closure failed: ['daily_lag_s1: a registered forecast unit has NO accepted terminal receipt', 'daily_lag_s2: a registered forecast unit has NO accepted terminal receipt', 'daily_lag_s3: a registered forecast unit has NO accepted terminal receipt', 'long_window_crop60_s1: a registered forecast unit has NO accepted terminal receipt', 'long_window_crop60_s2: a registered forecast unit has NO accepted terminal receipt']"
+  }
+ ]
+}

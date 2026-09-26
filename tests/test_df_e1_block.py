@@ -605,3 +605,35 @@ def test_RP90_a_corrupt_checkpoint_fails_the_actual_closure_even_with_cached_rep
     with pytest.raises(K.BlockRefusal, match="closure failed"):
         K.close(SimpleNamespace(root=root, warehouse_token_file=token, warehouse_url="synthetic://", replay_evidence=ev, skip_replay=True))
     assert "bound_by" not in json.loads((root/"REPORT.json").read_text())["replays"][unit]
+
+
+def test_2026_09_26_the_initial_weight_pairing_key_names_every_graph_field(tmp_path):
+    """A block that fits `modular_w60` (8 127 parameters) beside `short_window_deep_core` (12 047 parameters) has two arms
+    that share (seed, family, channels, window) and are DIFFERENT models: they cannot have equal initial weights, and the
+    closure reported a false 'unpaired initial weights' problem. `dilations` and `crop` change the built graph, so they are
+    part of the key. The check's real intent -- same graph, same seed, different input DATA must share initial weights --
+    is unchanged and is asserted here too."""
+    K = _load("df_e1_block")
+    a_plain = K.arm_spec("modular_w60")
+    a_deep = K.arm_spec("short_window_deep_core")
+    a_crop = K.arm_spec("long_window_crop60")
+    a_cal = K.arm_spec("calendar")
+    a_rand = K.arm_spec("randomised_calendar_control")
+
+    def key(spec, *, seed, channels):
+        return (seed, spec["family"], channels, spec["window"],
+                tuple(spec.get("dilations") or ()), spec.get("crop"))
+
+    # different graphs no longer collide
+    assert key(a_plain, seed=1, channels=7) != key(a_deep, seed=1, channels=7)
+    assert key(a_plain, seed=1, channels=7) != key(a_crop, seed=1, channels=7)
+    # the same graph fed different data still shares one key, so the pairing check still applies to it
+    assert key(a_cal, seed=1, channels=11) == key(a_rand, seed=1, channels=11)
+    # and the built models agree with that: equal parameter counts where the key is equal, unequal where it is not
+    asg = [0, 1, 0, 2, 2, 2, 0]
+    n_plain = K.n_params(K.build_model(a_plain, asg, 7, 6, 1))
+    n_deep = K.n_params(K.build_model(a_deep, asg, 7, 6, 1))
+    assert n_plain != n_deep
+    asg11 = asg + [3, 3, 3, 3]
+    assert (K.n_params(K.build_model(a_cal, asg11, 11, 6, 1))
+            == K.n_params(K.build_model(a_rand, asg11, 11, 6, 1)))

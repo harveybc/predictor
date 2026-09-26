@@ -537,3 +537,37 @@ def test_RP90_a_zero_error_household_row_is_preserved_verified_and_never_ranks_e
     K = _load("df_e1_block")
     assert K._module("df_benchmark_contract").disposition(design)["disposition"] == "HISTORICAL_DEV_ONLY"
 
+
+
+# --- 2026-09-26: a run with NO accepted terminal at all must be TYPED, not a traceback ---------------------------
+
+def test_a_run_with_no_receipts_file_at_all_is_typed_as_unanchored_and_never_raises(tmp_path):
+    """`_block_root(with_receipts=False)` existed and no test ever used it; `rows_from_run` read TERMINAL_RECEIPTS.json
+    unguarded while its two sibling readers guarded it, so a root with no accepted terminal at all -- an ungoverned run --
+    died with FileNotFoundError before a single row was built. This pins BOTH halves of the correct behaviour:
+
+      * the tool reaches its own typed branch instead of crashing; and
+      * that branch emits a row with NO numbers. A score with no accepted terminal is not reported as a model error at
+        all, not as a qualified one. An absent receipts file is the SAME state as an empty one.
+    """
+    root, design, wh, Y, o = _block_root(tmp_path, with_receipts=False)
+    assert not (root/"TERMINAL_RECEIPTS.json").exists()
+    v = T.verify_run(root, label="ungoverned", registry=B.registry(), warehouse=None)
+    units = {r["unit"]: r for r in v["rows"]}
+    assert set(units) == {c["cell_id"] for c in design["cells"]}
+    for u, r in units.items():
+        assert r["verified"] is False and r["preserved_with_qualified_scope"] is False
+        assert any("NO accepted terminal receipt" in p for p in r["problems"]), (u, r["problems"])
+        # the policy: no accepted terminal -> no number. Every error column is None, and the skill with it
+        assert r["model_error"] is None and r["naive_error"] is None
+        assert r["skill_vs_naive"]["status"] == "UNDEFINED" and r["skill_vs_naive"]["value"] is None
+        # the columns that describe the CONTRACT rather than the measurement are still stated
+        assert r["comparability_status"] == "NOT_COMPARABLE" and r["metric_and_scale"]
+    assert v["verified_units"] == []
+    assert v["preparation_custody"]["class"] == "PREPARATION_LOCAL_ONLY"
+    assert any("NO accepted terminal receipt" in p for p in v["problems"])
+    # an EMPTY receipts file was always legal; an absent one must be the same state, not a different one
+    (root/"TERMINAL_RECEIPTS.json").write_text(json.dumps({"units": {}}))
+    empty = T.verify_run(root, label="ungoverned", registry=B.registry(), warehouse=None)
+    assert [r["problems"] for r in empty["rows"]] == [r["problems"] for r in v["rows"]]
+    assert [r["model_error"] for r in empty["rows"]] == [r["model_error"] for r in v["rows"]]

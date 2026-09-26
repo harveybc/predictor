@@ -518,7 +518,10 @@ def rows_from_run(root: Path, *, label: str, registry: dict, warehouse=None) -> 
     root = Path(root)
     _REG.clear(); _REG.update(registry)
     design = json.loads((root/"DESIGN.json").read_text())
-    receipts = (json.loads((root/"TERMINAL_RECEIPTS.json").read_text()) or {}).get("units") or {}
+    # an absent receipts file is the SAME state as an empty one: no unit is anchored. Guarded like the two sibling
+    # readers (preparation_custody, _verify_fin_run) so a run with no accepted terminal at all reaches the per-unit
+    # "NO accepted terminal receipt" problem below instead of dying with FileNotFoundError before any row is built
+    receipts = (json.loads((root/"TERMINAL_RECEIPTS.json").read_text()) or {}).get("units") or {} if (root/"TERMINAL_RECEIPTS.json").is_file() else {}
     roles = unit_roles(design)
     data, meta, _ = _source_data(root, design)
     rows, skipped = [], []

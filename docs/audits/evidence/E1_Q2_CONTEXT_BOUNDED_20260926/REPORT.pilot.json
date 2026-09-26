@@ -1,0 +1,67 @@
+{
+ "schema": "df_e1_block_pilot_report.v1",
+ "design_sha256": "47a270eec01f203cdde2812deb1458db525e86d762c2b17f2b79a2ba571e17ea",
+ "spent_cpu_seconds": 82.445626784,
+ "projection": {
+  "per_arm": {
+   "modular_w60": {
+    "seconds_per_update": 0.03900941687000001,
+    "seconds_per_validation_event_pilot": 0.8796161744999997,
+    "restore_seconds_pilot": 0.5600759960000001,
+    "setup_seconds_pilot": 2.402366491,
+    "pilot_validation_rows": 8519,
+    "peak_rss_bytes": 930979840,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "daily_lag": {
+    "seconds_per_update": 0.03922864881999999,
+    "seconds_per_validation_event_pilot": 0.8924357967500007,
+    "restore_seconds_pilot": 0.560872474,
+    "setup_seconds_pilot": 2.358646678,
+    "pilot_validation_rows": 8519,
+    "peak_rss_bytes": 933089280,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "long_window_crop60": {
+    "seconds_per_update": 0.04100888015500001,
+    "seconds_per_validation_event_pilot": 1.2851296675,
+    "restore_seconds_pilot": 0.9273728420000005,
+    "setup_seconds_pilot": 2.39521234,
+    "pilot_validation_rows": 8519,
+    "peak_rss_bytes": 935727104,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   },
+   "short_window_deep_core": {
+    "seconds_per_update": 0.071048057435,
+    "seconds_per_validation_event_pilot": 1.6233052717499996,
+    "restore_seconds_pilot": 1.2824551060000005,
+    "setup_seconds_pilot": 2.416133819,
+    "pilot_validation_rows": 8519,
+    "peak_rss_bytes": 965820416,
+    "accounting": "train-update CPU / updates; validation per event; restore and setup once"
+   }
+  },
+  "per_cell_at_ceiling_seconds": {
+   "modular_w60_s1": 179.79078439355197,
+   "daily_lag_s1": 180.92649654870078,
+   "long_window_crop60_s1": 197.75274977463084,
+   "short_window_deep_core_s1": 326.3032311045828,
+   "modular_w60_s2": 179.79078439355197,
+   "daily_lag_s2": 180.92649654870078,
+   "long_window_crop60_s2": 197.75274977463084,
+   "short_window_deep_core_s2": 326.3032311045828,
+   "modular_w60_s3": 179.79078439355197,
+   "daily_lag_s3": 180.92649654870078,
+   "long_window_crop60_s3": 197.75274977463084,
+   "short_window_deep_core_s3": 326.3032311045828
+  },
+  "total_at_ceiling_seconds": 2654.319785464399,
+  "with_headroom_25_percent": 3317.8997318304987,
+  "closure_reserve_seconds": 2000,
+  "accounting": "train-update rate x ceiling + validation events (scaled to the evaluation rows) + restore + setup, each once",
+  "assumption": "every cell runs to the ceiling with every validation event; early stopping can only lower it"
+ },
+ "fits_the_ceiling": true,
+ "decision": "EXECUTE",
+ "governance": "NON_GOVERNING: produced by tools/df_e1_block_ungoverned.py, no accepted terminal"
+}

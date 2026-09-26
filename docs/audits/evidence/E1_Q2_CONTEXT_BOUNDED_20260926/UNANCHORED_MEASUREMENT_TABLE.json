@@ -1,0 +1,663 @@
+{
+ "schema": "unanchored_measurement_table.v1",
+ "at": "2026-09-26T12:24:14Z",
+ "design_sha256": "47a270eec01f203cdde2812deb1458db525e86d762c2b17f2b79a2ba571e17ea",
+ "block": "Q2_CONTEXT_BOUNDED",
+ "run": "Q2_CONTEXT_BOUNDED_20260926",
+ "what_this_is": "the five columns the owner's closure-table rule names, recomputed from each cell's retained arrays for a run with NO accepted terminal, which the owner_closure_table.v2 generator can therefore only print as null. Not an owner closure table. No row is verified. Nothing may promote, select or rank on it",
+ "why_not_an_owner_closure_table": "tools/df_closure_table.py reports no model error for a unit without an accepted terminal receipt; this host holds no data-gov service key",
+ "owner_closure_table": {
+  "path": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/q2/CLOSURE_TABLE.json",
+  "rows": 12,
+  "verified_rows": 0,
+  "custody_classes": {
+   "UNCHECKED": 12
+  },
+  "problems": [
+   "Q2_CONTEXT_BOUNDED_20260926/daily_lag_s1: a registered forecast unit has NO accepted terminal receipt",
+   "Q2_CONTEXT_BOUNDED_20260926/daily_lag_s2: a registered forecast unit has NO accepted terminal receipt",
+   "Q2_CONTEXT_BOUNDED_20260926/daily_lag_s3: a registered forecast unit has NO accepted terminal receipt",
+   "Q2_CONTEXT_BOUNDED_20260926/long_window_crop60_s1: a registered forecast unit has NO accepted terminal receipt",
+   "Q2_CONTEXT_BOUNDED_20260926/long_window_crop60_s2: a registered forecast unit has NO accepted terminal receipt",
+   "Q2_CONTEXT_BOUNDED_20260926/long_window_crop60_s3: a registered forecast unit has NO accepted terminal receipt",
+   "Q2_CONTEXT_BOUNDED_20260926/modular_w60_s1: a registered forecast unit has NO accepted terminal receipt",
+   "Q2_CONTEXT_BOUNDED_20260926/modular_w60_s2: a registered forecast unit has NO accepted terminal receipt",
+   "Q2_CONTEXT_BOUNDED_20260926/modular_w60_s3: a registered forecast unit has NO accepted terminal receipt",
+   "Q2_CONTEXT_BOUNDED_20260926/short_window_deep_core_s1: a registered forecast unit has NO accepted terminal receipt",
+   "Q2_CONTEXT_BOUNDED_20260926/short_window_deep_core_s2: a registered forecast unit has NO accepted terminal receipt",
+   "Q2_CONTEXT_BOUNDED_20260926/short_window_deep_core_s3: a registered forecast unit has NO accepted terminal receipt"
+  ]
+ },
+ "naive_definition": "persistence at the horizon on the identical evaluation origins",
+ "sigma_evaluation": 0.9125164391265214,
+ "common_evaluation_rows": 10020,
+ "rows": [
+  {
+   "unit": "modular_w60_s1",
+   "arm": "modular_w60",
+   "seed": 1,
+   "role": "forecast",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.5041348704121006,
+   "model_error_z": 0.5524666173627166,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "skill_vs_naive": {
+    "value": 0.1834180611126085,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "worse_than_naive": false,
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "binding": {
+    "level": "RECORD_DIGEST_LOCAL_ONLY",
+    "arrays_sha256": "b9194fff5a5934c2824e18a06f4204c6f6be4196cd327fa5267d9450e4c5a9b8",
+    "weights_file_sha256": "bca1f562bd909e552792f2713bc28c79d538c380a5a306fd04f2a11761179bca"
+   },
+   "custody": {
+    "class": "UNANCHORED_NO_ACCEPTED_TERMINAL",
+    "why": "no data-gov service key on this host, so no terminal was ever accepted; the arrays are bound to the record that produced them and to nothing else"
+   },
+   "verified": false,
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "scope": "E1_BLOCK_Q2_CONTEXT_BOUNDED"
+  },
+  {
+   "unit": "daily_lag_s1",
+   "arm": "daily_lag",
+   "seed": 1,
+   "role": "forecast",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.4923283298698047,
+   "model_error_z": 0.5395281758880651,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "skill_vs_naive": {
+    "value": 0.2025419272314105,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "worse_than_naive": false,
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "binding": {
+    "level": "RECORD_DIGEST_LOCAL_ONLY",
+    "arrays_sha256": "9b901f539deb6c75813ca49f56fab2b4858febd2fecaf4a6b61a168df6c9e152",
+    "weights_file_sha256": "a5972d54189305b8e19b0a777284388aa94a7a421720e48344028153cb37a046"
+   },
+   "custody": {
+    "class": "UNANCHORED_NO_ACCEPTED_TERMINAL",
+    "why": "no data-gov service key on this host, so no terminal was ever accepted; the arrays are bound to the record that produced them and to nothing else"
+   },
+   "verified": false,
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "scope": "E1_BLOCK_Q2_CONTEXT_BOUNDED"
+  },
+  {
+   "unit": "long_window_crop60_s1",
+   "arm": "long_window_crop60",
+   "seed": 1,
+   "role": "forecast",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.5041348704121006,
+   "model_error_z": 0.5524666173627166,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "skill_vs_naive": {
+    "value": 0.1834180611126085,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "worse_than_naive": false,
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "binding": {
+    "level": "RECORD_DIGEST_LOCAL_ONLY",
+    "arrays_sha256": "b9194fff5a5934c2824e18a06f4204c6f6be4196cd327fa5267d9450e4c5a9b8",
+    "weights_file_sha256": "65178663b8f75d098aa86c31ac957ebc295cea11d3ab5fd7f496c82294172926"
+   },
+   "custody": {
+    "class": "UNANCHORED_NO_ACCEPTED_TERMINAL",
+    "why": "no data-gov service key on this host, so no terminal was ever accepted; the arrays are bound to the record that produced them and to nothing else"
+   },
+   "verified": false,
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "scope": "E1_BLOCK_Q2_CONTEXT_BOUNDED"
+  },
+  {
+   "unit": "short_window_deep_core_s1",
+   "arm": "short_window_deep_core",
+   "seed": 1,
+   "role": "forecast",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.5045014375705393,
+   "model_error_z": 0.5528683275596197,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "skill_vs_naive": {
+    "value": 0.1828243070627733,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "worse_than_naive": false,
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "binding": {
+    "level": "RECORD_DIGEST_LOCAL_ONLY",
+    "arrays_sha256": "4dcfee43936402eee24c8f242b56720cafd1bc0ece1ae8c05014f8dd70e53f09",
+    "weights_file_sha256": "5dedaf075335bce93139c06ad97573f8e688597d91a73657966ae4f8db09bc10"
+   },
+   "custody": {
+    "class": "UNANCHORED_NO_ACCEPTED_TERMINAL",
+    "why": "no data-gov service key on this host, so no terminal was ever accepted; the arrays are bound to the record that produced them and to nothing else"
+   },
+   "verified": false,
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "scope": "E1_BLOCK_Q2_CONTEXT_BOUNDED"
+  },
+  {
+   "unit": "modular_w60_s2",
+   "arm": "modular_w60",
+   "seed": 2,
+   "role": "forecast",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.490377335863781,
+   "model_error_z": 0.5373901387827926,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "skill_vs_naive": {
+    "value": 0.2057020864699376,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "worse_than_naive": false,
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "binding": {
+    "level": "RECORD_DIGEST_LOCAL_ONLY",
+    "arrays_sha256": "1880a9e4858365fc2e8c07b9bb1cca00bf41f0836ebb5edf4f40a45bd3bac810",
+    "weights_file_sha256": "1d4775762df1f806976e0a5102bba75c9f0b17a041dadd50ef90e8971eb0966d"
+   },
+   "custody": {
+    "class": "UNANCHORED_NO_ACCEPTED_TERMINAL",
+    "why": "no data-gov service key on this host, so no terminal was ever accepted; the arrays are bound to the record that produced them and to nothing else"
+   },
+   "verified": false,
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "scope": "E1_BLOCK_Q2_CONTEXT_BOUNDED"
+  },
+  {
+   "unit": "daily_lag_s2",
+   "arm": "daily_lag",
+   "seed": 2,
+   "role": "forecast",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.49091307100856685,
+   "model_error_z": 0.5379772352139524,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "skill_vs_naive": {
+    "value": 0.20483431939224717,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "worse_than_naive": false,
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "binding": {
+    "level": "RECORD_DIGEST_LOCAL_ONLY",
+    "arrays_sha256": "68e794815ca4f470442cd1ceb01054dfbf33a17da5a2642318bdf2a9866fa940",
+    "weights_file_sha256": "7edf71e64808619f7ec188ac9af57b3e9331bf0a6efddf764b3197b6b70a1814"
+   },
+   "custody": {
+    "class": "UNANCHORED_NO_ACCEPTED_TERMINAL",
+    "why": "no data-gov service key on this host, so no terminal was ever accepted; the arrays are bound to the record that produced them and to nothing else"
+   },
+   "verified": false,
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "scope": "E1_BLOCK_Q2_CONTEXT_BOUNDED"
+  },
+  {
+   "unit": "long_window_crop60_s2",
+   "arm": "long_window_crop60",
+   "seed": 2,
+   "role": "forecast",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.490377335863781,
+   "model_error_z": 0.5373901387827926,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "skill_vs_naive": {
+    "value": 0.2057020864699376,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "worse_than_naive": false,
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "binding": {
+    "level": "RECORD_DIGEST_LOCAL_ONLY",
+    "arrays_sha256": "1880a9e4858365fc2e8c07b9bb1cca00bf41f0836ebb5edf4f40a45bd3bac810",
+    "weights_file_sha256": "69a800db87b7878a1a750a0d69193ade1c25822c5e78cd6f7f5d8bd3ec8adfa1"
+   },
+   "custody": {
+    "class": "UNANCHORED_NO_ACCEPTED_TERMINAL",
+    "why": "no data-gov service key on this host, so no terminal was ever accepted; the arrays are bound to the record that produced them and to nothing else"
+   },
+   "verified": false,
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "scope": "E1_BLOCK_Q2_CONTEXT_BOUNDED"
+  },
+  {
+   "unit": "short_window_deep_core_s2",
+   "arm": "short_window_deep_core",
+   "seed": 2,
+   "role": "forecast",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.5008879986999367,
+   "model_error_z": 0.5489084658895532,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "skill_vs_naive": {
+    "value": 0.18867724264050023,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "worse_than_naive": false,
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "binding": {
+    "level": "RECORD_DIGEST_LOCAL_ONLY",
+    "arrays_sha256": "7045dd515d54ce83c22f7c6f1a5e6d5bb3e02502b7bac3da920557cd3540f4e2",
+    "weights_file_sha256": "9bc95ebfe6c38f2c6bf2fe395785f06f9487f321b5430a568d86bcccb00f2662"
+   },
+   "custody": {
+    "class": "UNANCHORED_NO_ACCEPTED_TERMINAL",
+    "why": "no data-gov service key on this host, so no terminal was ever accepted; the arrays are bound to the record that produced them and to nothing else"
+   },
+   "verified": false,
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "scope": "E1_BLOCK_Q2_CONTEXT_BOUNDED"
+  },
+  {
+   "unit": "modular_w60_s3",
+   "arm": "modular_w60",
+   "seed": 3,
+   "role": "forecast",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.5027886638312548,
+   "model_error_z": 0.5509913490572662,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "skill_vs_naive": {
+    "value": 0.18559860454343968,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "worse_than_naive": false,
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "binding": {
+    "level": "RECORD_DIGEST_LOCAL_ONLY",
+    "arrays_sha256": "40b80b6e3f318fbd503db56d94c6f828c090bb80df5fd6851c79a584cb8aff55",
+    "weights_file_sha256": "a0ce1d0c0770aff2123794f9fb1d27c03c9ef00f49176b4b2d39d516f85d4b84"
+   },
+   "custody": {
+    "class": "UNANCHORED_NO_ACCEPTED_TERMINAL",
+    "why": "no data-gov service key on this host, so no terminal was ever accepted; the arrays are bound to the record that produced them and to nothing else"
+   },
+   "verified": false,
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "scope": "E1_BLOCK_Q2_CONTEXT_BOUNDED"
+  },
+  {
+   "unit": "daily_lag_s3",
+   "arm": "daily_lag",
+   "seed": 3,
+   "role": "forecast",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.4999628809054433,
+   "model_error_z": 0.5478946564338255,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "skill_vs_naive": {
+    "value": 0.19017571958915713,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "worse_than_naive": false,
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "binding": {
+    "level": "RECORD_DIGEST_LOCAL_ONLY",
+    "arrays_sha256": "579abad7b009e831e6a1bf3d61922bb12fdc350eeaa3a2ab8f09a57708f16397",
+    "weights_file_sha256": "78d7983eed1dab16a8b6e6193364df2ec56f953585b4eac2f3d6c52c736aae2d"
+   },
+   "custody": {
+    "class": "UNANCHORED_NO_ACCEPTED_TERMINAL",
+    "why": "no data-gov service key on this host, so no terminal was ever accepted; the arrays are bound to the record that produced them and to nothing else"
+   },
+   "verified": false,
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "scope": "E1_BLOCK_Q2_CONTEXT_BOUNDED"
+  },
+  {
+   "unit": "long_window_crop60_s3",
+   "arm": "long_window_crop60",
+   "seed": 3,
+   "role": "forecast",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.5027886638312548,
+   "model_error_z": 0.5509913490572662,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "skill_vs_naive": {
+    "value": 0.18559860454343968,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "worse_than_naive": false,
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "binding": {
+    "level": "RECORD_DIGEST_LOCAL_ONLY",
+    "arrays_sha256": "40b80b6e3f318fbd503db56d94c6f828c090bb80df5fd6851c79a584cb8aff55",
+    "weights_file_sha256": "ded39ca8ab4df1d55ade191847f24fce2a577615b9e9c4f2b2db7570dca9f93b"
+   },
+   "custody": {
+    "class": "UNANCHORED_NO_ACCEPTED_TERMINAL",
+    "why": "no data-gov service key on this host, so no terminal was ever accepted; the arrays are bound to the record that produced them and to nothing else"
+   },
+   "verified": false,
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "scope": "E1_BLOCK_Q2_CONTEXT_BOUNDED"
+  },
+  {
+   "unit": "short_window_deep_core_s3",
+   "arm": "short_window_deep_core",
+   "seed": 3,
+   "role": "forecast",
+   "task_horizon_split": "uci_235.W60_h60.DEV_28d_7d | h=60 steps (3600 s) | DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+   "metric_and_scale": "MAE, kW (minute-averaged active power); MAE_z = MAE/sd_train in its own column",
+   "model_error": 0.5012270263751223,
+   "model_error_z": 0.5492799963745383,
+   "naive_error": 0.6173720558882235,
+   "naive_error_z": 0.6765599274892891,
+   "naive_definition": "persistence at the horizon on the identical evaluation origins",
+   "skill_vs_naive": {
+    "value": 0.18812809618666892,
+    "status": "MEASURED",
+    "reading": "positive = smaller error than the naive; not accuracy, not profit"
+   },
+   "worse_than_naive": false,
+   "model_population": 10020,
+   "naive_population": 10020,
+   "model_horizon": 60,
+   "naive_horizon": 60,
+   "model_scale": "kW",
+   "naive_scale": "kW",
+   "literature_value_and_source": {
+    "status": "NOT_COMPARABLE",
+    "comparator_state": "NONE",
+    "source": "Gasparin, Lukovic, Alippi (2019/2022), Deep Learning for Time Series Forecasting: The Electric Load Case, arXiv:1907.09207; CAAI Trans. Intell. Technol. 7(1), doi:10.1049/cit2.12060",
+    "published_value": "Table 5 (RMSE/MAE kW): FNN 0.76/0.53, DFNN 0.75/0.53, TCN 0.76/0.54, ERNN-MIMO 0.79/0.56, LSTM-MIMO 0.75/0.53, GRU-MIMO 0.75/0.52, seq2seq-TF 0.78/0.57, seq2seq-SG 0.76/0.53",
+    "published_or_reproduced": "PUBLISHED (not reproduced here)",
+    "placed_in_comparison_column": false,
+    "why_not": "unknown identity fields cannot match as proof: ['target_transform']",
+    "planned_matched_comparison": "read the primary source (or its code) and fill the field; a placeholder is not a protocol"
+   },
+   "comparability_status": "NOT_COMPARABLE",
+   "binding": {
+    "level": "RECORD_DIGEST_LOCAL_ONLY",
+    "arrays_sha256": "3c3eb2ab2ffd40c0ec8fd7c607e552a0b0ec35b7ed6868a27a4185bdfe87bad0",
+    "weights_file_sha256": "f9899daf2f8d06d2498ebdbbf1c43361841526ee697fab63092ca77d5b08c96c"
+   },
+   "custody": {
+    "class": "UNANCHORED_NO_ACCEPTED_TERMINAL",
+    "why": "no data-gov service key on this host, so no terminal was ever accepted; the arrays are bound to the record that produced them and to nothing else"
+   },
+   "verified": false,
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "scope": "E1_BLOCK_Q2_CONTEXT_BOUNDED"
+  }
+ ],
+ "worse_than_naive_rows": 0,
+ "paired_differences_mae_z_vs_baseline": {
+  "baseline_arm": "modular_w60",
+  "by_arm": {
+   "daily_lag": [
+    -0.012938441474651508,
+    0.0005870964311597282,
+    -0.0030966926234407
+   ],
+   "long_window_crop60": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "short_window_deep_core": [
+    0.000401710196903049,
+    0.011518327106760595,
+    -0.001711352682727929
+   ]
+  },
+  "reading": "three paired seeds on one task; both signs reported; no interval claimed from n = 3; not a verified causal effect"
+ },
+ "references": {
+  "persistence": {
+   "mae_kw": 0.6173720558882235,
+   "mae_z": 0.6765599274892891,
+   "rmse_kw": 0.966454889734754,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": 0.0,
+   "rows": 10020,
+   "definition": "y(t)"
+  },
+  "daily_seasonal": {
+   "mae_kw": 0.7316592814371257,
+   "mae_z": 0.8018039457321824,
+   "rmse_kw": 1.0890280496910867,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": -0.1851188832712476,
+   "rows": 10020,
+   "definition": "y(t+h-1440)"
+  },
+  "train_constant": {
+   "mae_kw": 0.7099498873054924,
+   "mae_z": 0.778013257476293,
+   "rmse_kw": 0.8983773206116347,
+   "naive_mae_kw": 0.6173720558882235,
+   "skill_vs_naive": -0.14995468378314514,
+   "rows": 10020,
+   "definition": "mean of the train labels of the 28 d tier; computed on the common evaluation set at closure, no fit, no terminal"
+  }
+ }
+}

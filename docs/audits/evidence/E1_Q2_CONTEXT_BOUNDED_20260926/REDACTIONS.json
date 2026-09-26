@@ -1,0 +1,52 @@
+{
+ "schema": "df_e1_publish_evidence.v1",
+ "run_root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_bounded_v1",
+ "files": {
+  "DESIGN.json": {
+   "from": "DESIGN.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "BLOCK_DATA.json": {
+   "from": "BLOCK_DATA.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "REPORT.pilot.json": {
+   "from": "REPORT.pilot.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "REPORT.json": {
+   "from": "REPORT.json",
+   "host_name_occurrences_replaced": 12
+  },
+  "BASELINES.json": {
+   "from": "BASELINES.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "UNGOVERNED_RUN.json": {
+   "from": "UNGOVERNED_RUN.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "REPLAYS.json": {
+   "from": "REPLAYS.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "CLOSURE_TABLE.json": {
+   "from": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/q2/CLOSURE_TABLE.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "CLOSURE_TABLE.md": {
+   "from": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/q2/CLOSURE_TABLE.md",
+   "host_name_occurrences_replaced": 0
+  },
+  "TABLES.md": {
+   "from": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/q2/TABLES.md",
+   "host_name_occurrences_replaced": 0
+  },
+  "UNANCHORED_MEASUREMENT_TABLE.json": {
+   "from": "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/q2/UNANCHORED_MEASUREMENT_TABLE.json",
+   "host_name_occurrences_replaced": 0
+  }
+ },
+ "rule": "every occurrence of this host's name replaced by the literal '<worker-host>'; nothing else changed",
+ "why": "this repository is public and AGENTS.md forbids a machine host name in it"
+}
