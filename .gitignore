@@ -195,3 +195,6 @@ docs/tesis_representaciones_modulares/referencias/*
 # Frozen audit evidence is tracked deliberately: the LaTeX *.log/*.out
 # rules above must never swallow a PRE/POST reproduction output.
 !docs/audits/evidence/**
+
+# LibreOffice lock files: they embed the editing user and machine name
+.~lock.*#
