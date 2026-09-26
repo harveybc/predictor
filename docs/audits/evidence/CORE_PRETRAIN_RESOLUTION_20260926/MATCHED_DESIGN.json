@@ -1,0 +1,311 @@
+{
+ "schema": "df_e1_phase1_design.v1",
+ "purpose": "E1_DIAGNOSTIC_PHASE_1",
+ "phase": "DEVELOPMENT",
+ "what_this_is": "RP63's recipe and architecture contrast, RE-RUN with the arms matched on optimiser updates and one arm-independent monitor; the measurement the MOD-CORE-PRETRAIN block names as its second prerequisite",
+ "factors_moved": [
+  "training_and_loss",
+  "architecture"
+ ],
+ "factors_held": [
+  "input_information",
+  "train_volume",
+  "pretraining",
+  "data",
+  "rows",
+  "labels",
+  "scaler",
+  "batch",
+  "update_ceiling",
+  "patience",
+  "seeds",
+  "monitor",
+  "optimiser_updates"
+ ],
+ "source_run": {
+  "root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3",
+  "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+  "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+  "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "reading": "the prepared DATA of that run is consumed by digest; nothing is re-enumerated, so every arm sees exactly the rows it saw",
+  "phase1_root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b",
+  "data_sha256_expected": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194"
+ },
+ "task": {
+  "id": "W60_h60",
+  "window_steps": 60,
+  "horizon_steps": 60,
+  "context_physical_seconds": 3540,
+  "horizon_physical_seconds": 3600,
+  "purge": 120,
+  "model_reach_steps": 60,
+  "model_reach_physical_seconds": 3600,
+  "reach_measured_by": "perturbation and gradient per input row (tools/df_e1_receiver.py), not asserted",
+  "reach_note": "ARCH-A with the sequence fusion depends on the last `model_reach_steps` samples of the window (branch 5 + core 3 - 1); the window is the declared context, the reach is what the prediction can depend on (RP28: full real reach declared)",
+  "target": [
+   "Global_active_power"
+  ],
+  "features": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3"
+  ],
+  "target_history_as_feature": true,
+  "family_usable_windows": {
+   "train": 1440653,
+   "validation": 305221,
+   "test": 298224
+  }
+ },
+ "graph": {
+  "arch": "A",
+  "fusion": "sequence",
+  "core_kind": "tcn_w",
+  "assignment": [
+   0,
+   1,
+   0,
+   2,
+   2,
+   2,
+   0
+  ],
+  "input_columns": [
+   "Global_reactive_power",
+   "Voltage",
+   "Global_intensity",
+   "Sub_metering_1",
+   "Sub_metering_2",
+   "Sub_metering_3",
+   "Global_active_power"
+  ],
+  "core": "causal dilated Conv1D stack with dilations [1, 2, 4, 8, 16] (kernel 3, 16 filters, residual), reach 60 positions: derived from W, not searched",
+  "grouping": "held constant: physical groups (power: active history, reactive, intensity | voltage | sub-metering 1-3); profile-based grouping is a separate factor not varied here",
+  "layers": {
+   "detector (per branch)": "2 residual causal Conv1D blocks: Conv1D(16, k=3, d=1, ELU) + 1x1 projection skip",
+   "integrator": "identity (ARCH-A)",
+   "adapter": "TimeDistributed Dense(8), linear",
+   "core": "Conv1D(16, k=3, causal, ELU) on the channel-concatenated branch sequences, last position",
+   "head": "Dense(p) increment over the last observation (persistence skip); the target channel is read out",
+   "readout": "the model output at the target's input channel; only that channel is trained and scored"
+  },
+  "loss": "mse on the train-only-scaled target",
+  "optimizer": "adam lr 0.003",
+  "initial_weights": "keras set_random_seed(seed) before build: the SAME initial checkpoint for R0/R1/R2 of a seed (digest recorded per unit)",
+  "regimes": {
+   "R0": "random detector, trainable",
+   "R1": "detector from ae_s (masked AE, train windows only), frozen",
+   "R2": "detector from ae_s, adjustable (same imported weights as R1)"
+  }
+ },
+ "training": {
+  "batch": 64,
+  "max_updates": 4000,
+  "learning_rate": 0.003,
+  "early_stopping": {
+   "patience_epochs": 3,
+   "restore_best": true
+  },
+  "monitor": "val_mae",
+  "budget_match": "FIXED_UPDATES",
+  "monitor_declaration": "one fixed, arm-independent monitor for every arm: the measure the question is judged by. The trained loss never chooses the stopping epoch or the restored checkpoint"
+ },
+ "reference_model": {
+  "paper": "Bai, Kolter & Koltun 2018, An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling (arXiv:1803.01271)",
+  "implementation": "https://github.com/locuslab/TCN/blob/master/TCN/tcn.py",
+  "block": "weight_norm(Conv1d) -> chomp -> ReLU -> Dropout, twice, + 1x1 residual, then ReLU",
+  "defaults_in_the_source": {
+   "kernel_size": 2,
+   "dropout": 0.2,
+   "dilation": "2**i per level",
+   "init": "conv weights ~ N(0, 0.01)"
+  },
+  "ours_for_contrast": "one Conv1D(k=3, ELU) + 1x1 projection skip, no weight norm, no dropout, no activation after the sum"
+ },
+ "arms": [
+  {
+   "arm": "core_mse",
+   "what_differs": "our core, MSE loss in z-space, early stopping on validation MSE \u2014 the run's own recipe"
+  },
+  {
+   "arm": "core_mae",
+   "what_differs": "our core, MAE loss in z-space, early stopping on validation MAE \u2014 aligned with the measure the question is judged by"
+  },
+  {
+   "arm": "tcn_mse",
+   "what_differs": "the reference TCN block (Bai/locuslab, ported and parameter-matched), MSE loss, early stopping on validation MSE \u2014 the architecture contrast at the run's own recipe"
+  }
+ ],
+ "replicas": {
+  "seeds": [
+   1,
+   2,
+   3
+  ],
+  "pairing": "every arm of a seed starts from the same initial weights where the graph is the same; the reference block is a different graph and cannot share them, which is stated, not hidden"
+ },
+ "cells": [
+  {
+   "cell_id": "core_mse_s1",
+   "arm": "core_mse",
+   "seed": 1
+  },
+  {
+   "cell_id": "core_mse_s2",
+   "arm": "core_mse",
+   "seed": 2
+  },
+  {
+   "cell_id": "core_mse_s3",
+   "arm": "core_mse",
+   "seed": 3
+  },
+  {
+   "cell_id": "core_mae_s1",
+   "arm": "core_mae",
+   "seed": 1
+  },
+  {
+   "cell_id": "core_mae_s2",
+   "arm": "core_mae",
+   "seed": 2
+  },
+  {
+   "cell_id": "core_mae_s3",
+   "arm": "core_mae",
+   "seed": 3
+  },
+  {
+   "cell_id": "tcn_mse_s1",
+   "arm": "tcn_mse",
+   "seed": 1
+  },
+  {
+   "cell_id": "tcn_mse_s2",
+   "arm": "tcn_mse",
+   "seed": 2
+  },
+  {
+   "cell_id": "tcn_mse_s3",
+   "arm": "tcn_mse",
+   "seed": 3
+  }
+ ],
+ "pilots": [
+  {
+   "cell_id": "pilot_core_mse",
+   "arm": "core_mse",
+   "seed": 1,
+   "max_updates": 200
+  },
+  {
+   "cell_id": "pilot_core_mae",
+   "arm": "core_mae",
+   "seed": 1,
+   "max_updates": 200
+  },
+  {
+   "cell_id": "pilot_tcn_mse",
+   "arm": "tcn_mse",
+   "seed": 1,
+   "max_updates": 200
+  }
+ ],
+ "metrics": {
+  "mae": "kW on the common evaluation set, recomputed from arrays at closure",
+  "persistence_scaled_error_horizon_train": "MAE / mean|Y[t+h]-Y[t]| over train origins"
+ },
+ "governance": "one campaign and one verified delivery per unit before it runs; a terminal through the outbox and a reconciled campaign after it",
+ "reading_rules": [
+  "three seeds on one task are development evidence, not a confirmation",
+  "every arm ran the same number of optimiser updates, so no difference between arms carries a budget the others did not get",
+  "an arm that stops at the update ceiling is CENSORED: what it would reach with more budget is unknown, in either direction",
+  "no cell is removed after its score is seen"
+ ],
+ "benchmark_contract": {
+  "task_id": "uci_235.W60_h60.DEV_28d_7d",
+  "dataset_id": "public.uci.235.individual_household_electric_power_consumption",
+  "source": {
+   "kind": "OURS",
+   "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+   "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "sd_train": 0.9125164391265214,
+   "evaluation_origins": 10020,
+   "task_sheet": "docs/tres_temas_entrevista/program_v3/E1_TASKS.json"
+  },
+  "target": "Global_active_power",
+  "target_construction": "minute-averaged active power, kW, as published; not aggregated",
+  "resolution_seconds": 60,
+  "horizon_steps": 60,
+  "horizon_seconds": 3600,
+  "input_window_steps": 60,
+  "split_rule": "DEV slice rows 1412361..1462761 (28 d train / 7 d validation) inside the family's train span; family test never read",
+  "missing_policy": "rows with a non-finite input withdrawn from the enumeration; nothing imputed",
+  "target_transform": "zscore_train",
+  "scaler_fit_population": "train windows (each row weighted by the windows containing it)",
+  "metric_formula": "MAE = mean |yhat - y| over the common evaluation set; MAE_z = MAE / sd_train",
+  "metric_scale": "z_train",
+  "metric_aggregation": "mean over 10020 evaluation origins, one horizon",
+  "naive_baseline": "persistence at the horizon, y(t), on identical origins",
+  "permitted_inputs": "the 7 declared channels (6 features + the target's own history), window 60",
+  "reference_method": null,
+  "tuning_budget": "none: declared settings",
+  "checkpoint_selection": "best validation MAE, patience 3 epochs, restored",
+  "replicas": "3 paired seeds; development",
+  "varying_factors": [],
+  "estimand": null,
+  "version": "2",
+  "notes": [],
+  "schema": "benchmark_contract.v2",
+  "contract_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+  "comparability": {
+   "mode": "NOT_COMPARABLE",
+   "why": "unknown identity fields cannot match as proof: ['target_transform']",
+   "fields_that_differ": [
+    "target_transform"
+   ],
+   "declared_contrast": [],
+   "comparator_state": "NONE",
+   "reference_evidence": {
+    "state": "NONE",
+    "why": "an unknown protocol has no reference lane; read the source first"
+   },
+   "ours_sha256": "5acb8678278c8ea341d7ab8d2cf79d3c2d3694223c0039018fd48ec14b047ad6",
+   "theirs_sha256": "972d9470a6661a3ef8088d350d37e1c8a09e084bd94e2fbcba5b36ebdae494e4",
+   "resolution": "read the primary source (or its code) and fill the field; a placeholder is not a protocol",
+   "against": "gasparin_2019",
+   "rule": "decided from the identity fields, never from a score"
+  }
+ },
+ "repairs": {
+  "parent_design_sha256": "5cb8263d359f15008ddc0ba0a997cdafd75036b8dd5621af0d31e5f9a8a4b231",
+  "parent_monitor": "each arm monitors the loss it trains on; the arm's identifier says which",
+  "parent_total_updates_by_arm": {
+   "core_mae": 11762,
+   "core_mse": 10270,
+   "tcn_mse": 11762
+  },
+  "defect_1": "the monitor was the arm's own trained loss, so it chose the stopping epoch",
+  "defect_2": "the monitor also chose the restored checkpoint, on a different curve per arm",
+  "consequence": "the arms were given different optimiser-update counts and the winner got more",
+  "repair": "one fixed monitor (val_mae) for every arm, and a fixed update count for every cell"
+ },
+ "custody": {
+  "class": "UNGOVERNED_LOCAL_RECONTRAST",
+  "why": "this round may not start or contact a governance or warehouse service, so no campaign is registered and no terminal is reported; the prepared DATA is consumed from the retained phase-1 root by digest",
+  "what_this_forfeits": [
+   "no accepted delivery precedes the fits",
+   "no accepted terminal anchors the metrics",
+   "the rows of its closure table can never read `verified`"
+  ],
+  "what_it_keeps": [
+   "the same prepared bytes, checked by digest before any fit",
+   "metrics recomputed in float64 from the saved arrays",
+   "a fresh-process replay of every cell from its saved weights"
+  ]
+ },
+ "design_sha256": "53b824e8a1ac1d9f092ad4629b2fd0757d4de06d6de0f002e3befcebc3f5b279"
+}

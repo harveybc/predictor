@@ -518,7 +518,13 @@ def rows_from_run(root: Path, *, label: str, registry: dict, warehouse=None) -> 
     root = Path(root)
     _REG.clear(); _REG.update(registry)
     design = json.loads((root/"DESIGN.json").read_text())
-    receipts = (json.loads((root/"TERMINAL_RECEIPTS.json").read_text()) or {}).get("units") or {}
+    # An absent receipts FILE is the same fact as an absent receipt: no unit is anchored. Reading it
+    # with no guard raised FileNotFoundError and no table was produced at all, which is worse than a
+    # table of problems -- the tool's own rule is that a forecast unit without an accepted terminal is
+    # a PROBLEM, not an absence, and a crash reports neither. Every unit below then becomes an
+    # unanchored row with its reason, and nothing can read `verified`.
+    rp = root/"TERMINAL_RECEIPTS.json"
+    receipts = ((json.loads(rp.read_text()) or {}).get("units") or {}) if rp.is_file() else {}
     roles = unit_roles(design)
     data, meta, _ = _source_data(root, design)
     rows, skipped = [], []
@@ -528,8 +534,29 @@ def rows_from_run(root: Path, *, label: str, registry: dict, warehouse=None) -> 
             continue
         receipt = receipts.get(unit)
         if receipt is None:
-            rows.append(_row(root, design, unit, role, None, {"campaign_sha256": ""}, [f"{unit}: a registered {role} unit "
-                             "has NO accepted terminal receipt"], data, meta, None, None, None))
+            why = ("has NO accepted terminal receipt" if rp.is_file() else
+                   "has NO accepted terminal receipt: this run root carries no TERMINAL_RECEIPTS.json at all, "
+                   "so nothing in it is governed")
+            problem = f"{unit}: a registered {role} unit " + why
+            # The unit is UNANCHORED, and that is final -- no row below can read `verified`. But the
+            # numbers are still produced and still checked against DATA: a closure table that OMITS a
+            # measurement because its custody is weak hides the measurement instead of qualifying it,
+            # and the owner's rule is that every number carries its own scale, naive and comparability.
+            # Previously such a unit yielded one empty row; now it yields its scored row, marked.
+            if (root/"attempts"/unit/"arrays.npz").is_file():
+                got = verify_unit(root, design, unit, role, {"campaign_sha256": ""}, data, meta, warehouse=None)
+                for r in got:
+                    r["problems"] = [problem]+list(r.get("problems") or [])
+                    r["custody"] = {"class": "UNANCHORED_NO_TERMINAL",
+                                    "why": "no accepted terminal exists for this unit; the arrays were scored and "
+                                           "checked against DATA, and nothing anchors them",
+                                    "scope": "LOCAL_MEASUREMENT_ONLY"}
+                    r["verified"] = False
+                    r["preserved_with_qualified_scope"] = False
+                rows += got
+                continue
+            rows.append(_row(root, design, unit, role, None, {"campaign_sha256": ""}, [problem],
+                             data, meta, None, None, None))
             continue
         rows += verify_unit(root, design, unit, role, receipt, data, meta, warehouse=warehouse)
     strangers = sorted(set(receipts)-set(roles))

@@ -1,0 +1,197 @@
+FFFFFFFFFF                                                               [100%]
+=================================== FAILURES ===================================
+___ TestTheMonitorRepair.test_the_retained_phase1_design_is_refused_by_name ____
+
+self = <tests.test_df_core_pretrain_resolution.TestTheMonitorRepair object at 0x7164f3e5e1e0>
+
+    def test_the_retained_phase1_design_is_refused_by_name(self):
+        """The design that produced the confound declares an arm-dependent monitor and no budget rule.
+    
+        It must be REFUSED, not defaulted. This is the rule that makes the defect unreachable by
+        omission: before this round the same design ran without a word.
+        """
+        P = _load("df_e1_phase1")
+        design = json.loads((EVID / "RP63" / "PHASE1_DESIGN_SEALED.json").read_text())
+        assert design["training"]["monitor"].startswith("each arm monitors the loss it trains on")
+        assert "budget_match" not in design["training"]
+>       with pytest.raises(P.ProtocolRefusal, match="not one of the arm-independent monitors"):
+                           ^^^^^^^^^^^^^^^^^
+E       AttributeError: module '_respec_df_e1_phase1' has no attribute 'ProtocolRefusal'
+
+tests/test_df_core_pretrain_resolution.py:81: AttributeError
+_ TestTheMonitorRepair.test_the_legacy_protocol_is_reachable_only_by_naming_it _
+
+self = <tests.test_df_core_pretrain_resolution.TestTheMonitorRepair object at 0x7164f4e4d3d0>
+
+    def test_the_legacy_protocol_is_reachable_only_by_naming_it(self):
+        P = _load("df_e1_phase1")
+        design = json.loads((EVID / "RP63" / "PHASE1_DESIGN_SEALED.json").read_text())
+>       design["training"]["budget_match"] = P.LEGACY_PROTOCOL
+                                             ^^^^^^^^^^^^^^^^^
+E       AttributeError: module '_respec_df_e1_phase1' has no attribute 'LEGACY_PROTOCOL'
+
+tests/test_df_core_pretrain_resolution.py:87: AttributeError
+_ TestTheMonitorRepair.test_a_fixed_monitor_without_a_budget_rule_is_still_refused _
+
+self = <tests.test_df_core_pretrain_resolution.TestTheMonitorRepair object at 0x7164f11805f0>
+
+    def test_a_fixed_monitor_without_a_budget_rule_is_still_refused(self):
+        """Fixing the monitor is only HALF the repair, and the post-RP63 factorial did only that half."""
+        P = _load("df_e1_phase1")
+>       with pytest.raises(P.ProtocolRefusal, match="declares no budget rule"):
+                           ^^^^^^^^^^^^^^^^^
+E       AttributeError: module '_respec_df_e1_phase1' has no attribute 'ProtocolRefusal'
+
+tests/test_df_core_pretrain_resolution.py:97: AttributeError
+_ TestTheMonitorRepair.test_the_retained_rp63_run_is_refused_as_unmatched_with_its_own_numbers _
+
+self = <tests.test_df_core_pretrain_resolution.TestTheMonitorRepair object at 0x7164f1180890>
+
+    def test_the_retained_rp63_run_is_refused_as_unmatched_with_its_own_numbers(self):
+        """The 1 492-update spread, read off the retained report and named in the refusal."""
+        P = _load("df_e1_phase1")
+        rep = json.loads((EVID / "RP63" / "PHASE1_REPORT.json").read_text())
+        cells = {k: v for k, v in rep["cells"].items() if not k.startswith("pilot")}
+>       audit = P.budget_audit(cells)
+                ^^^^^^^^^^^^^^
+E       AttributeError: module '_respec_df_e1_phase1' has no attribute 'budget_audit'
+
+tests/test_df_core_pretrain_resolution.py:107: AttributeError
+_ TestTheMonitorRepair.test_a_matched_set_is_accepted_and_one_changed_cell_is_enough_to_refuse_it _
+
+self = <tests.test_df_core_pretrain_resolution.TestTheMonitorRepair object at 0x7164f1180b30>
+
+    def test_a_matched_set_is_accepted_and_one_changed_cell_is_enough_to_refuse_it(self):
+        P = _load("df_e1_phase1")
+        matched = {f"{arm}_s{s}": {"arm": arm, "updates": 4000}
+                   for arm in ("core_mae", "core_mse", "tcn_mse") for s in (1, 2, 3)}
+>       got = P.require_budget_match(matched)
+              ^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module '_respec_df_e1_phase1' has no attribute 'require_budget_match'
+
+tests/test_df_core_pretrain_resolution.py:118: AttributeError
+_ TestTheMonitorRepair.test_the_fit_requires_the_monitor_and_the_budget_rule_to_be_named _
+
+self = <tests.test_df_core_pretrain_resolution.TestTheMonitorRepair object at 0x7164f1180dd0>
+
+    def test_the_fit_requires_the_monitor_and_the_budget_rule_to_be_named(self):
+        """No default. The old signature had no such argument, so this rule cannot pass on it."""
+        import inspect
+        P = _load("df_e1_phase1")
+        sig = inspect.signature(P._fit)
+        for name in ("monitor", "budget_match"):
+>           assert name in sig.parameters, f"_fit does not take {name}"
+E           AssertionError: _fit does not take monitor
+E           assert 'monitor' in mappingproxy(OrderedDict({'arm': <Parameter "arm: 'str'">, 'model': <Parameter "model">, 'train_ds': <Parameter "train...': <Parameter "max_updates">, 'patience': <Parameter "patience">, 'lr': <Parameter "lr">, 'seed': <Parameter "seed">}))
+E            +  where mappingproxy(OrderedDict({'arm': <Parameter "arm: 'str'">, 'model': <Parameter "model">, 'train_ds': <Parameter "train...': <Parameter "max_updates">, 'patience': <Parameter "patience">, 'lr': <Parameter "lr">, 'seed': <Parameter "seed">})) = <Signature (arm: 'str', model, train_ds, val_ds, *, max_updates, patience, lr, seed) -> 'dict'>.parameters
+
+tests/test_df_core_pretrain_resolution.py:131: AssertionError
+_ TestTheMonitorRepair.test_an_arm_dependent_monitor_is_refused_inside_the_fit_too _
+
+self = <tests.test_df_core_pretrain_resolution.TestTheMonitorRepair object at 0x7164f1181070>
+
+    def test_an_arm_dependent_monitor_is_refused_inside_the_fit_too(self):
+        P = _load("df_e1_phase1")
+>       with pytest.raises(P.ProtocolRefusal, match="not an arm-independent monitor"):
+                           ^^^^^^^^^^^^^^^^^
+E       AttributeError: module '_respec_df_e1_phase1' has no attribute 'ProtocolRefusal'
+
+tests/test_df_core_pretrain_resolution.py:137: AttributeError
+__ TestTheMonitorRepair.test_the_sealed_identity_separates_the_two_protocols ___
+
+self = <tests.test_df_core_pretrain_resolution.TestTheMonitorRepair object at 0x7164f1181310>
+
+    def test_the_sealed_identity_separates_the_two_protocols(self):
+        """A run under the repaired protocol may not share a design digest with the defective one."""
+        if not (SUCCESSOR_ROOT / "DESIGN.json").is_file():
+            pytest.skip("the successor run root is not on this host")
+        P = _load("df_e1_phase1")
+        fixed = P.seal(SUCCESSOR_ROOT)
+>       legacy = P.seal(SUCCESSOR_ROOT, budget_match=P.LEGACY_PROTOCOL)
+                                                     ^^^^^^^^^^^^^^^^^
+E       AttributeError: module '_respec_df_e1_phase1' has no attribute 'LEGACY_PROTOCOL'
+
+tests/test_df_core_pretrain_resolution.py:147: AttributeError
+_ TestTheMonitorRepair.test_two_arms_under_the_repair_get_the_same_updates_and_the_same_monitor _
+
+self = <tests.test_df_core_pretrain_resolution.TestTheMonitorRepair object at 0x7164f11815b0>
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-804/test_two_arms_under_the_repair0')
+
+    @needs_roots
+    def test_two_arms_under_the_repair_get_the_same_updates_and_the_same_monitor(self, tmp_path):
+        """The behavioural rule. Tiny synthetic data, a real fit, two different losses.
+    
+        Under the repair both arms run exactly the ceiling and both select on the same curve. The old
+        loop cannot satisfy this: its stopping epoch is chosen by the loss under test, which is the
+        whole defect.
+        """
+        P = _load("df_e1_phase1")
+        PI = _load("df_e1_pilot")
+        E = _load("df_mod_e0")
+        tf = E._tf()
+        rng = np.random.default_rng(7)
+        n, W, h, p = 260, 8, 4, 2
+        Xs = rng.normal(size=(n, p)).astype(np.float32)
+        Y = np.cumsum(rng.normal(size=n)) * 0.1 + 1.0
+        origins = np.arange(W, n - h - 1, dtype=np.int64)
+        Dataset = PI._dataset_class()
+        kw = dict(scaler_mean=np.array([0.0, 0.0]), scaler_sd=np.array([1.0, 1.0]))
+        records = {}
+        for arm in ("core_mse", "core_mae"):
+            tr = Dataset(Xs, Y, origins[:180], W, h, 0, 32, shuffle=True, seed=1, **kw)
+            va = Dataset(Xs, Y, origins[180:], W, h, 0, 32, shuffle=False, seed=1, **kw)
+            model = tf.keras.Sequential([tf.keras.layers.Input((W, p)), tf.keras.layers.Flatten(),
+                                         tf.keras.layers.Dense(4, activation="relu"),
+                                         tf.keras.layers.Dense(1)])
+            records[arm] = P._fit(arm, model, tr, va, max_updates=18, patience=1, lr=0.01, seed=1,
+>                                 monitor=P.FIXED_MONITOR, budget_match=P.BUDGET_FIXED,
+                                          ^^^^^^^^^^^^^^^
+                                  ckpt_dir=tmp_path / arm)
+E           AttributeError: module '_respec_df_e1_phase1' has no attribute 'FIXED_MONITOR'
+
+tests/test_df_core_pretrain_resolution.py:184: AttributeError
+----------------------------- Captured stderr call -----------------------------
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1790447735.593798  470395 cuda_platform.cc:52] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+_ TestTheMonitorRepair.test_under_the_legacy_protocol_the_monitor_follows_the_loss_and_is_named_as_such _
+
+self = <tests.test_df_core_pretrain_resolution.TestTheMonitorRepair object at 0x7164f1181880>
+tmp_path = PosixPath('/tmp/pytest-of-harveybc/pytest-804/test_under_the_legacy_protocol0')
+
+    @needs_roots
+    def test_under_the_legacy_protocol_the_monitor_follows_the_loss_and_is_named_as_such(self, tmp_path):
+        """The old behaviour, reproduced ON PURPOSE, and now labelled by the record itself."""
+        P = _load("df_e1_phase1")
+        PI = _load("df_e1_pilot")
+        E = _load("df_mod_e0")
+        tf = E._tf()
+        rng = np.random.default_rng(11)
+        n, W, h, p = 200, 8, 4, 2
+        Xs = rng.normal(size=(n, p)).astype(np.float32)
+        Y = np.cumsum(rng.normal(size=n)) * 0.1 + 1.0
+        origins = np.arange(W, n - h - 1, dtype=np.int64)
+        Dataset = PI._dataset_class()
+        kw = dict(scaler_mean=np.array([0.0, 0.0]), scaler_sd=np.array([1.0, 1.0]))
+        tr = Dataset(Xs, Y, origins[:140], W, h, 0, 32, shuffle=True, seed=1, **kw)
+        va = Dataset(Xs, Y, origins[140:], W, h, 0, 32, shuffle=False, seed=1, **kw)
+        model = tf.keras.Sequential([tf.keras.layers.Input((W, p)), tf.keras.layers.Flatten(),
+                                     tf.keras.layers.Dense(4, activation="relu"),
+                                     tf.keras.layers.Dense(1)])
+        rec = P._fit("core_mse", model, tr, va, max_updates=10, patience=1, lr=0.01, seed=1,
+>                    monitor=P.LEGACY_MONITOR, budget_match=P.BUDGET_EARLY, ckpt_dir=tmp_path)
+                             ^^^^^^^^^^^^^^^^
+E       AttributeError: module '_respec_df_e1_phase1' has no attribute 'LEGACY_MONITOR'
+
+tests/test_df_core_pretrain_resolution.py:223: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_df_core_pretrain_resolution.py::TestTheMonitorRepair::test_the_retained_phase1_design_is_refused_by_name
+FAILED tests/test_df_core_pretrain_resolution.py::TestTheMonitorRepair::test_the_legacy_protocol_is_reachable_only_by_naming_it
+FAILED tests/test_df_core_pretrain_resolution.py::TestTheMonitorRepair::test_a_fixed_monitor_without_a_budget_rule_is_still_refused
+FAILED tests/test_df_core_pretrain_resolution.py::TestTheMonitorRepair::test_the_retained_rp63_run_is_refused_as_unmatched_with_its_own_numbers
+FAILED tests/test_df_core_pretrain_resolution.py::TestTheMonitorRepair::test_a_matched_set_is_accepted_and_one_changed_cell_is_enough_to_refuse_it
+FAILED tests/test_df_core_pretrain_resolution.py::TestTheMonitorRepair::test_the_fit_requires_the_monitor_and_the_budget_rule_to_be_named
+FAILED tests/test_df_core_pretrain_resolution.py::TestTheMonitorRepair::test_an_arm_dependent_monitor_is_refused_inside_the_fit_too
+FAILED tests/test_df_core_pretrain_resolution.py::TestTheMonitorRepair::test_the_sealed_identity_separates_the_two_protocols
+FAILED tests/test_df_core_pretrain_resolution.py::TestTheMonitorRepair::test_two_arms_under_the_repair_get_the_same_updates_and_the_same_monitor
+FAILED tests/test_df_core_pretrain_resolution.py::TestTheMonitorRepair::test_under_the_legacy_protocol_the_monitor_follows_the_loss_and_is_named_as_such
+10 failed in 2.76s

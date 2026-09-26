@@ -1,0 +1,1160 @@
+{
+ "schema": "core_pretrain_resolution.v1",
+ "at": "2026-09-26T18:07:18Z",
+ "authority": "the owner's grant of 2026-09-26; Satoshi, successor technical lead",
+ "what_this_answers": "item one of the MOD-CORE-PRETRAIN block: a measured resolution for this protocol on this task, from artifacts already retained, with no new training",
+ "training_performed": false,
+ "roots": {
+  "phase1": "/home/harveybc/.local/state/crispdm-data-foundation/e1_phase1_v1b",
+  "successor": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3"
+ },
+ "cells": {
+  "core_mae_s1": {
+   "cell_id": "core_mae_s1",
+   "n_rows": 10020,
+   "mae_kW": 0.4978227182589842,
+   "scaled_error": 0.8078107364839635,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "658ef5aab9349ae782d30e16018a95f8acfefc025ccad337a13bb7e9a9734c84",
+   "record_mae": 0.4978227182589842,
+   "record_agrees": true,
+   "updates": 4000,
+   "epochs": 7,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 5,
+   "stop_reason": "UPDATE_BUDGET",
+   "censored_by_budget": true,
+   "seed": 1,
+   "arm": "core_mae",
+   "run_root": "e1_phase1_v1b"
+  },
+  "core_mae_s2": {
+   "cell_id": "core_mae_s2",
+   "n_rows": 10020,
+   "mae_kW": 0.49790838151677647,
+   "scaled_error": 0.807949741187503,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "602d336699648eefc44305b610ddce15d45833aa08e6024a572edba3df85c772",
+   "record_mae": 0.49790838151677647,
+   "record_agrees": true,
+   "updates": 4000,
+   "epochs": 7,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 6,
+   "stop_reason": "UPDATE_BUDGET",
+   "censored_by_budget": true,
+   "seed": 2,
+   "arm": "core_mae",
+   "run_root": "e1_phase1_v1b"
+  },
+  "core_mae_s3": {
+   "cell_id": "core_mae_s3",
+   "n_rows": 10020,
+   "mae_kW": 0.4975795385093508,
+   "scaled_error": 0.8074161317272013,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "69fb5154fee320bd49d6da558038aa9a7f2e8b5b1cc6ba5c806c8d645e7937da",
+   "record_mae": 0.4975795385093508,
+   "record_agrees": true,
+   "updates": 3762,
+   "epochs": 6,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 3,
+   "stop_reason": "EARLY_STOPPING",
+   "censored_by_budget": false,
+   "seed": 3,
+   "arm": "core_mae",
+   "run_root": "e1_phase1_v1b"
+  },
+  "core_mse_s1": {
+   "cell_id": "core_mse_s1",
+   "n_rows": 10020,
+   "mae_kW": 0.5524988658658758,
+   "scaled_error": 0.896533041526401,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "dfbb5a0397a13714d20d0984c7476c80b42a16b97da06bbe7d061a617f1b9e0c",
+   "record_mae": 0.5524988658658758,
+   "record_agrees": true,
+   "updates": 3762,
+   "epochs": 6,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 3,
+   "stop_reason": "EARLY_STOPPING",
+   "censored_by_budget": false,
+   "seed": 1,
+   "arm": "core_mse",
+   "run_root": "e1_phase1_v1b"
+  },
+  "core_mse_s2": {
+   "cell_id": "core_mse_s2",
+   "n_rows": 10020,
+   "mae_kW": 0.5502814474169365,
+   "scaled_error": 0.892934864174039,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "10ea8634602f7665367d9d80de7cfbd4fe161631b47101e1c4254cb046ed3980",
+   "record_mae": 0.5502814474169365,
+   "record_agrees": true,
+   "updates": 4000,
+   "epochs": 7,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 5,
+   "stop_reason": "UPDATE_BUDGET",
+   "censored_by_budget": true,
+   "seed": 2,
+   "arm": "core_mse",
+   "run_root": "e1_phase1_v1b"
+  },
+  "core_mse_s3": {
+   "cell_id": "core_mse_s3",
+   "n_rows": 10020,
+   "mae_kW": 0.5380103335307268,
+   "scaled_error": 0.8730226802131199,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "251dee65e1d062904e82afc67f647e9b8e7c4dd8f0e8d7955a3d01b1020fb286",
+   "record_mae": 0.5380103335307268,
+   "record_agrees": true,
+   "updates": 2508,
+   "epochs": 4,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 1,
+   "stop_reason": "EARLY_STOPPING",
+   "censored_by_budget": false,
+   "seed": 3,
+   "arm": "core_mse",
+   "run_root": "e1_phase1_v1b"
+  },
+  "tcn_mse_s1": {
+   "cell_id": "tcn_mse_s1",
+   "n_rows": 10020,
+   "mae_kW": 0.5382083208139785,
+   "scaled_error": 0.8733439517164723,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "04748d4935bd31f37f5e6e8fdef290856cf336988c244202e247c9ac8818b665",
+   "record_mae": 0.5382083208139785,
+   "record_agrees": true,
+   "updates": 3762,
+   "epochs": 6,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 3,
+   "stop_reason": "EARLY_STOPPING",
+   "censored_by_budget": false,
+   "seed": 1,
+   "arm": "tcn_mse",
+   "run_root": "e1_phase1_v1b"
+  },
+  "tcn_mse_s2": {
+   "cell_id": "tcn_mse_s2",
+   "n_rows": 10020,
+   "mae_kW": 0.5302045159451977,
+   "scaled_error": 0.8603562770512109,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "6e2203621d5cd346aec0482d414854636c85be294fa2cc189654bb8d7ee3c6a7",
+   "record_mae": 0.5302045159451977,
+   "record_agrees": true,
+   "updates": 4000,
+   "epochs": 7,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 6,
+   "stop_reason": "UPDATE_BUDGET",
+   "censored_by_budget": true,
+   "seed": 2,
+   "arm": "tcn_mse",
+   "run_root": "e1_phase1_v1b"
+  },
+  "tcn_mse_s3": {
+   "cell_id": "tcn_mse_s3",
+   "n_rows": 10020,
+   "mae_kW": 0.53943142315185,
+   "scaled_error": 0.8753286646757495,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "100a0476fd91b1f0659667503aa239cff678701f25f22a525c6cc7a6455a45af",
+   "record_mae": 0.53943142315185,
+   "record_agrees": true,
+   "updates": 4000,
+   "epochs": 7,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 4,
+   "stop_reason": "UPDATE_BUDGET",
+   "censored_by_budget": true,
+   "seed": 3,
+   "arm": "tcn_mse",
+   "run_root": "e1_phase1_v1b"
+  },
+  "R0_s1": {
+   "cell_id": "R0_s1",
+   "n_rows": 10020,
+   "mae_kW": 0.5524983663230361,
+   "scaled_error": 0.8965322309244448,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "f4741613e027ab97b8f665384a80a926003b77300e590e0e9605e3adf217aab3",
+   "record_mae": 0.5524983663230361,
+   "record_agrees": true,
+   "updates": 3762,
+   "epochs": 6,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 3,
+   "stop_reason": "EARLY_STOPPING",
+   "censored_by_budget": false,
+   "seed": 1,
+   "arm": "R0",
+   "run_root": "e1_household_successor_v3"
+  },
+  "R0_s2": {
+   "cell_id": "R0_s2",
+   "n_rows": 10020,
+   "mae_kW": 0.5502789229728504,
+   "scaled_error": 0.8929307677900018,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "1b4714c89672fea10e10f1abf492c9208de83fea799a96475beb33c5efbbafb7",
+   "record_mae": 0.5502789229728504,
+   "record_agrees": true,
+   "updates": 4000,
+   "epochs": 7,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 5,
+   "stop_reason": "UPDATE_BUDGET",
+   "censored_by_budget": true,
+   "seed": 2,
+   "arm": "R0",
+   "run_root": "e1_household_successor_v3"
+  },
+  "R0_s3": {
+   "cell_id": "R0_s3",
+   "n_rows": 10020,
+   "mae_kW": 0.5380102124684585,
+   "scaled_error": 0.8730224837668821,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "a3788af72ef50c309cc37a06477e0624a17902f4619831583b53e505df05a729",
+   "record_mae": 0.5380102124684585,
+   "record_agrees": true,
+   "updates": 2508,
+   "epochs": 4,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 1,
+   "stop_reason": "EARLY_STOPPING",
+   "censored_by_budget": false,
+   "seed": 3,
+   "arm": "R0",
+   "run_root": "e1_household_successor_v3"
+  },
+  "R1_s1": {
+   "cell_id": "R1_s1",
+   "n_rows": 10020,
+   "mae_kW": 0.5599806716461382,
+   "scaled_error": 0.9086736747596948,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "18d889f86abbd9f87d3ecdb0f697f74e89826a3bf4f0ebc12b20f1eb913307a2",
+   "record_mae": 0.5599806716461382,
+   "record_agrees": true,
+   "updates": 3762,
+   "epochs": 6,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 3,
+   "stop_reason": "EARLY_STOPPING",
+   "censored_by_budget": false,
+   "seed": 1,
+   "arm": "R1",
+   "run_root": "e1_household_successor_v3"
+  },
+  "R1_s2": {
+   "cell_id": "R1_s2",
+   "n_rows": 10020,
+   "mae_kW": 0.5447235416877055,
+   "scaled_error": 0.8839161196375496,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "68ed592bb5606078b3ea53573ff099de981b1b0936e00d84b1b5dfd41cd36a39",
+   "record_mae": 0.5447235416877055,
+   "record_agrees": true,
+   "updates": 4000,
+   "epochs": 7,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 5,
+   "stop_reason": "UPDATE_BUDGET",
+   "censored_by_budget": true,
+   "seed": 2,
+   "arm": "R1",
+   "run_root": "e1_household_successor_v3"
+  },
+  "R1_s3": {
+   "cell_id": "R1_s3",
+   "n_rows": 10020,
+   "mae_kW": 0.5654982544530414,
+   "scaled_error": 0.9176269877913773,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "15bf66c733f56ccb84a79bbfe32c29f9d8a53ab2686ef1e6b3b86f4d94676064",
+   "record_mae": 0.5654982544530414,
+   "record_agrees": true,
+   "updates": 4000,
+   "epochs": 7,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 4,
+   "stop_reason": "UPDATE_BUDGET",
+   "censored_by_budget": true,
+   "seed": 3,
+   "arm": "R1",
+   "run_root": "e1_household_successor_v3"
+  },
+  "R2_s1": {
+   "cell_id": "R2_s1",
+   "n_rows": 10020,
+   "mae_kW": 0.54226553502109,
+   "scaled_error": 0.8799275427751168,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "2bf0520639bd05a77bbefc374551a2b188e78083cbcdb7c240453f7b3a063f18",
+   "record_mae": 0.54226553502109,
+   "record_agrees": true,
+   "updates": 3135,
+   "epochs": 5,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 2,
+   "stop_reason": "EARLY_STOPPING",
+   "censored_by_budget": false,
+   "seed": 1,
+   "arm": "R2",
+   "run_root": "e1_household_successor_v3"
+  },
+  "R2_s2": {
+   "cell_id": "R2_s2",
+   "n_rows": 10020,
+   "mae_kW": 0.5692441953122259,
+   "scaled_error": 0.9237054794577801,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "da3bd34a1607b1a7441379193d34ef25950e5d35233820ca880a554b54f20ed9",
+   "record_mae": 0.5692441953122259,
+   "record_agrees": true,
+   "updates": 4000,
+   "epochs": 7,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 6,
+   "stop_reason": "UPDATE_BUDGET",
+   "censored_by_budget": true,
+   "seed": 2,
+   "arm": "R2",
+   "run_root": "e1_household_successor_v3"
+  },
+  "R2_s3": {
+   "cell_id": "R2_s3",
+   "n_rows": 10020,
+   "mae_kW": 0.5464712891060197,
+   "scaled_error": 0.8867521676469975,
+   "denominator_kW": 0.6162615768463073,
+   "origins_sha256": "99dacc947b68e0f7e5a44a48b1915a6ac03ac05e5d2071fd0aa85f0e9b0464b9",
+   "arrays_sha256": "07b7291cd1af3adadc06f64e48e6c8a5f616bc95bd51d62415f36c0bb442637b",
+   "record_mae": 0.5464712891060197,
+   "record_agrees": true,
+   "updates": 2508,
+   "epochs": 4,
+   "steps_per_epoch": 627,
+   "restored_checkpoint_epoch": 1,
+   "stop_reason": "EARLY_STOPPING",
+   "censored_by_budget": false,
+   "seed": 3,
+   "arm": "R2",
+   "run_root": "e1_household_successor_v3"
+  }
+ },
+ "naive_same_rows": {
+  "core_mae_s1": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "core_mae_s2": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "core_mae_s3": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "core_mse_s1": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "core_mse_s2": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "core_mse_s3": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "tcn_mse_s1": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "tcn_mse_s2": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "tcn_mse_s3": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "R0_s1": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "R0_s2": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "R0_s3": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "R1_s1": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "R1_s2": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "R1_s3": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "R2_s1": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "R2_s2": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  },
+  "R2_s3": {
+   "naive_kW": 0.6173720558882235,
+   "n_rows": 10020,
+   "horizon_steps": 60,
+   "definition": "persistence at the horizon on the identical evaluation origins"
+  }
+ },
+ "arm_means_kW": {
+  "core_mae": 0.49777021276170386,
+  "core_mse": 0.546930215604513,
+  "tcn_mse": 0.5359480866370087,
+  "R0": 0.5469291672547817,
+  "R1": 0.5567341559289617,
+  "R2": 0.5526603398131119
+ },
+ "arm_sds_kW": {
+  "core_mae": 0.00017059323350203512,
+  "core_mse": 0.007804002710283614,
+  "tcn_mse": 0.005011531507543358,
+  "R0": 0.00780335171939139,
+  "R1": 0.010761137061061776,
+  "R2": 0.01451517444839528
+ },
+ "arm_means_scaled": {
+  "core_mae": 0.8077255364662226,
+  "core_mse": 0.8874968619711866,
+  "tcn_mse": 0.8696762978144776,
+  "R0": 0.8874951608271097,
+  "R1": 0.9034055940628739,
+  "R2": 0.8967950632932982
+ },
+ "cross_runner_replicate": {
+  "pair": [
+   "core_mse",
+   "R0"
+  ],
+  "per_seed_absolute_difference_kW": [
+   4.995428397602808e-07,
+   2.524444086104971e-06,
+   1.210622683212037e-07
+  ],
+  "max_absolute_difference_kW": 2.524444086104971e-06,
+  "updates_match_per_seed": true,
+  "sd_of_this_configuration_in_run_a": 0.007804002710283614,
+  "sd_of_this_configuration_in_run_b": 0.00780335171939139,
+  "reading": "the runner contributes ~1e-6 kW while the seed contributes ~1e-2 kW: the noise this instrument must beat is seed noise, not implementation noise, and the two arms are ONE configuration -- pooling them as two would halve the apparent variance of a single configuration's seeds"
+ },
+ "pooled_within_arm_sd": {
+  "five_independent_arms": {
+   "pooled_sd": 0.009083384485078621,
+   "df": 10,
+   "sum_of_squares": 0.00082507873703767,
+   "per_arm": {
+    "core_mae": {
+     "n": 3,
+     "mean": 0.49777021276170386,
+     "sd": 0.00017059323350203512
+    },
+    "core_mse": {
+     "n": 3,
+     "mean": 0.546930215604513,
+     "sd": 0.007804002710283614
+    },
+    "tcn_mse": {
+     "n": 3,
+     "mean": 0.5359480866370087,
+     "sd": 0.005011531507543358
+    },
+    "R1": {
+     "n": 3,
+     "mean": 0.5567341559289617,
+     "sd": 0.010761137061061776
+    },
+    "R2": {
+     "n": 3,
+     "mean": 0.5526603398131119,
+     "sd": 0.01451517444839528
+    }
+   },
+   "homoscedasticity_bartlett": {
+    "statistic": 13.61064486090644,
+    "p_value": 0.008647227180609462,
+    "reading": "the arms do NOT share one variance; a single pooled number understates the noise of the noisier arms and overstates the quieter ones"
+   }
+  },
+  "the_modules_own_three_arms": {
+   "pooled_sd": 0.011363459833619234,
+   "df": 6,
+   "sum_of_squares": 0.0007747693163416661,
+   "per_arm": {
+    "R0": {
+     "n": 3,
+     "mean": 0.5469291672547817,
+     "sd": 0.00780335171939139
+    },
+    "R1": {
+     "n": 3,
+     "mean": 0.5567341559289617,
+     "sd": 0.010761137061061776
+    },
+    "R2": {
+     "n": 3,
+     "mean": 0.5526603398131119,
+     "sd": 0.01451517444839528
+    }
+   },
+   "homoscedasticity_bartlett": {
+    "statistic": 0.6071550556835438,
+    "p_value": 0.7381726579802954,
+    "reading": "no evidence against one shared variance across these arms"
+   }
+  },
+  "every_mse_monitored_arm": {
+   "pooled_sd": 0.010155174376488055,
+   "df": 8,
+   "sum_of_squares": 0.0008250205329350365,
+   "per_arm": {
+    "core_mse": {
+     "n": 3,
+     "mean": 0.546930215604513,
+     "sd": 0.007804002710283614
+    },
+    "tcn_mse": {
+     "n": 3,
+     "mean": 0.5359480866370087,
+     "sd": 0.005011531507543358
+    },
+    "R1": {
+     "n": 3,
+     "mean": 0.5567341559289617,
+     "sd": 0.010761137061061776
+    },
+    "R2": {
+     "n": 3,
+     "mean": 0.5526603398131119,
+     "sd": 0.01451517444839528
+    }
+   },
+   "homoscedasticity_bartlett": {
+    "statistic": 1.8353190523711544,
+    "p_value": 0.607279439471607,
+    "reading": "no evidence against one shared variance across these arms"
+   }
+  }
+ },
+ "seed_main_effect": {
+  "ss_seed": 3.046256335468956e-06,
+  "df_seed": 2,
+  "ss_residual": 0.0008220324807022012,
+  "df_residual": 8,
+  "F": 0.01482304608142377,
+  "p_value": 0.9853132693647446,
+  "sd_residual_after_removing_a_seed_effect": 0.01013676773373915,
+  "reading": "a seed main effect shared by the arms would make seed-pairing reduce the noise; if it is absent, pairing buys nothing and the resolution is set by the within-arm SD itself"
+ },
+ "contrasts": [
+  {
+   "name": "R1-R0",
+   "what": "pretraining, frozen detector -- MOD-CORE-PRETRAIN's own effect",
+   "n_seeds": 3,
+   "per_seed_differences_kW": [
+    0.007482305323102123,
+    -0.005555381285144878,
+    0.02748804198458288
+   ],
+   "mean_difference_kW": 0.00980498867418004,
+   "sd_of_differences_kW": 0.016643710487977952,
+   "standard_error_kW": 0.00960925073054827,
+   "ci95_kW": [
+    -0.031540280212460484,
+    0.05115025756082056
+   ],
+   "t": 1.0203697404845011,
+   "p_value": 0.41488890219627284,
+   "sign": "a POSITIVE difference means the first arm has the LARGER error (worse)"
+  },
+  {
+   "name": "R2-R0",
+   "what": "pretraining, fine-tuned detector -- MOD-CORE-PRETRAIN's own effect",
+   "n_seeds": 3,
+   "per_seed_differences_kW": [
+    -0.010232831301946077,
+    0.018965272339375505,
+    0.008461076637561238
+   ],
+   "mean_difference_kW": 0.005731172558330222,
+   "sd_of_differences_kW": 0.014789239205371275,
+   "standard_error_kW": 0.008538571236330873,
+   "ci95_kW": [
+    -0.031007334279829046,
+    0.04246967939648949
+   ],
+   "t": 0.6712097843658651,
+   "p_value": 0.5712255240221569,
+   "sign": "a POSITIVE difference means the first arm has the LARGER error (worse)"
+  },
+  {
+   "name": "R2-R1",
+   "what": "fine-tuning against freezing",
+   "n_seeds": 3,
+   "per_seed_differences_kW": [
+    -0.0177151366250482,
+    0.024520653624520383,
+    -0.01902696534702164
+   ],
+   "mean_difference_kW": -0.004073816115849819,
+   "sd_of_differences_kW": 0.024772222315502076,
+   "standard_error_kW": 0.01430224922228038,
+   "ci95_kW": [
+    -0.06561142777365161,
+    0.057463795541951974
+   ],
+   "t": -0.2848374442743966,
+   "p_value": 0.8025545053998486,
+   "sign": "a POSITIVE difference means the first arm has the LARGER error (worse)"
+  },
+  {
+   "name": "tcn_mse-core_mse",
+   "what": "the reference block against ours, parameter-matched",
+   "n_seeds": 3,
+   "per_seed_differences_kW": [
+    -0.014290545051897308,
+    -0.020076931471738835,
+    0.001421089621123195
+   ],
+   "mean_difference_kW": -0.010982128967504315,
+   "sd_of_differences_kW": 0.011124317528185173,
+   "standard_error_kW": 0.006422627719448582,
+   "ci95_kW": [
+    -0.03861646565675431,
+    0.016652207721745686
+   ],
+   "t": -1.7099121180959858,
+   "p_value": 0.22940956795011574,
+   "sign": "a POSITIVE difference means the first arm has the LARGER error (worse)"
+  },
+  {
+   "name": "core_mae-core_mse",
+   "what": "the recipe contrast (loss and monitor moved together)",
+   "n_seeds": 3,
+   "per_seed_differences_kW": [
+    -0.0546761476068916,
+    -0.052373065900160054,
+    -0.040430795021375976
+   ],
+   "mean_difference_kW": -0.04916000284280921,
+   "sd_of_differences_kW": 0.007646917563914151,
+   "standard_error_kW": 0.004414949913996713,
+   "ci95_kW": [
+    -0.06815599914197432,
+    -0.030164006543644102
+   ],
+   "t": -11.134894800721815,
+   "p_value": 0.007969150972530226,
+   "sign": "a POSITIVE difference means the first arm has the LARGER error (worse)"
+  }
+ ],
+ "scrambled_label_control": {
+  "source_file": "docs/audits/evidence/d3_k5_20260917/RP60/OPTIMISATION_PROBE_FULL_SCALE.json",
+  "source_sha256": "2b15d8405877b95246b782cc5337618aae01af89e91bfb6beadce00d5ab0c217",
+  "custody": "READ_FROM_RETAINED_JSON_WEIGHTS_NOT_KEPT",
+  "scrambled_mae_kW": 0.6015421143728339,
+  "untrained_mae_kW": 1.5974282218473161,
+  "scrambled_updates": 4000,
+  "scrambled_restored_epoch": 6,
+  "compared_against_unit": "R0_s1",
+  "declared_gap_kW": 0.04904374804979783,
+  "persistence_kW": 0.6173720558882235,
+  "train_windows_scrambled": 40080,
+  "scope": "one seed at full train scale; the evaluation labels are untouched",
+  "recomputed_partner_mae_kW": 0.5524983663230361,
+  "recomputed_gap_kW": 0.04904374804979783,
+  "declared_gap_reproduces": true,
+  "partner_is_budget_matched": false
+ },
+ "dynamic_range": {
+  "untrained_kW": 1.5974282218473161,
+  "scrambled_labels_kW": 0.6015421143728339,
+  "persistence_naive_same_rows_kW": 0.617372055888,
+  "best_retained_arm": "core_mae",
+  "best_retained_arm_mean_kW": 0.49777021276170386,
+  "label_information_span_kW": 0.10377190161113004,
+  "scrambled_is_already_better_than_the_naive": true,
+  "reading": "the span from a fit that was given NO usable label information to the best arm this protocol has produced is the whole range inside which every recipe, architecture and pretraining effect must be separated"
+ },
+ "budget": {
+  "per_arm": {
+   "core_mae": {
+    "updates_per_seed": [
+     4000,
+     4000,
+     3762
+    ],
+    "total_updates": 11762,
+    "mae_per_seed_kW": [
+     0.4978227182589842,
+     0.49790838151677647,
+     0.4975795385093508
+    ],
+    "censored_by_budget": [
+     true,
+     true,
+     false
+    ],
+    "n_censored": 2,
+    "within_arm_pearson_r_updates_vs_error": 0.9679677382007187
+   },
+   "core_mse": {
+    "updates_per_seed": [
+     3762,
+     4000,
+     2508
+    ],
+    "total_updates": 10270,
+    "mae_per_seed_kW": [
+     0.5524988658658758,
+     0.5502814474169365,
+     0.5380103335307268
+    ],
+    "censored_by_budget": [
+     false,
+     true,
+     false
+    ],
+    "n_censored": 1,
+    "within_arm_pearson_r_updates_vs_error": 0.9577970822391138
+   },
+   "tcn_mse": {
+    "updates_per_seed": [
+     3762,
+     4000,
+     4000
+    ],
+    "total_updates": 11762,
+    "mae_per_seed_kW": [
+     0.5382083208139785,
+     0.5302045159451977,
+     0.53943142315185
+    ],
+    "censored_by_budget": [
+     false,
+     true,
+     true
+    ],
+    "n_censored": 2,
+    "within_arm_pearson_r_updates_vs_error": -0.39058324043485193
+   },
+   "R1": {
+    "updates_per_seed": [
+     3762,
+     4000,
+     4000
+    ],
+    "total_updates": 11762,
+    "mae_per_seed_kW": [
+     0.5599806716461382,
+     0.5447235416877055,
+     0.5654982544530414
+    ],
+    "censored_by_budget": [
+     false,
+     true,
+     true
+    ],
+    "n_censored": 2,
+    "within_arm_pearson_r_updates_vs_error": -0.2612702606524451
+   },
+   "R2": {
+    "updates_per_seed": [
+     3135,
+     4000,
+     2508
+    ],
+    "total_updates": 9643,
+    "mae_per_seed_kW": [
+     0.54226553502109,
+     0.5692441953122259,
+     0.5464712891060197
+    ],
+    "censored_by_budget": [
+     false,
+     true,
+     false
+    ],
+    "n_censored": 1,
+    "within_arm_pearson_r_updates_vs_error": 0.8380230616723237
+   }
+  },
+  "arms": [
+   "core_mae",
+   "core_mse",
+   "tcn_mse",
+   "R1",
+   "R2"
+  ],
+  "within_arm_pooled_slope_kW_per_update": 1.1481697636690154e-05,
+  "within_arm_pooled_pearson_r": 0.634644684573615,
+  "reading": "a POSITIVE slope means more updates went with a larger (worse) error in these arms, so raising a short arm to the common ceiling would push its mean UP, not down",
+  "caveat": "the update counts are themselves outcomes of early stopping, so this relation is observational within the retained cells and is not the causal effect of budget; only a budget-matched re-run measures that"
+ },
+ "resolution": {
+  "statement_grain": "one two-arm contrast of mean MAE on the run's own evaluation rows",
+  "task": "household minute-level active power, window 60, horizon 60 steps",
+  "evaluation_rows": 10020,
+  "n_seeds_per_arm": 3,
+  "governing_arms": [
+   "R0",
+   "R1",
+   "R2"
+  ],
+  "why_these_arms": "MOD-CORE-PRETRAIN's own contrast is R0 vs R1 vs R2, and Bartlett's test finds no evidence against one shared variance across exactly those three (p=0.7382), while it does across all five arms (p=0.0086) -- so the three are poolable and the five are not",
+  "sigma_kW": 0.011363459833619234,
+  "sigma_df": 6,
+  "sigma_ci95_kW": [
+   0.007322538608088523,
+   0.02502308982402181
+  ],
+  "resolution_kW": 0.031106321266674578,
+  "resolution_ci95_kW": [
+   0.02004470836927165,
+   0.06849817595588464
+  ],
+  "resolution_scaled": 0.050475840836710716,
+  "resolution_ci95_scaled": [
+   0.03252629909502001,
+   0.11115113862269521
+  ],
+  "resolution_band_over_estimators_kW": [
+   0.031106321266674578,
+   0.04976202975433696
+  ],
+  "estimator_band": {
+   "paired_kW": 0.04976202975433696,
+   "unpaired_kW": 0.034490967546111945,
+   "unpaired_with_sigma_at_pooled_df_kW": 0.031106321266674578,
+   "band_kW": [
+    0.031106321266674578,
+    0.04976202975433696
+   ],
+   "governing_kW": 0.031106321266674578,
+   "governing_estimator": "the most favourable of the three, so the ruling cannot be blamed on a pessimistic test",
+   "paired": {
+    "n_seeds_per_arm": 3,
+    "paired": true,
+    "alpha": 0.05,
+    "power": 0.8,
+    "sigma_used": 0.011363459833619234,
+    "sigma_df": 6,
+    "test_df": 2,
+    "standard_error_of_the_difference": 0.009278226101659652,
+    "mde_kW": 0.04976202975433696,
+    "mde_kW_if_sigma_were_known_to_pooled_df": 0.031106321266674578,
+    "detectable_at_50pc_power_kW": 0.0399209848635386,
+    "formula": "(t_{1-alpha/2,df_test} + t_{power,df_test}) * sqrt(2/n) * sigma"
+   },
+   "unpaired": {
+    "n_seeds_per_arm": 3,
+    "paired": false,
+    "alpha": 0.05,
+    "power": 0.8,
+    "sigma_used": 0.011363459833619234,
+    "sigma_df": 6,
+    "test_df": 4,
+    "standard_error_of_the_difference": 0.009278226101659652,
+    "mde_kW": 0.034490967546111945,
+    "mde_kW_if_sigma_were_known_to_pooled_df": 0.031106321266674578,
+    "detectable_at_50pc_power_kW": 0.025760485444871344,
+    "formula": "(t_{1-alpha/2,df_test} + t_{power,df_test}) * sqrt(2/n) * sigma"
+   }
+  },
+  "resolution_at_50pc_power_kW": 0.025760485444871344,
+  "interval_estimator": {
+   "sd": 0.011363459833619234,
+   "df": 6,
+   "conf": 0.95,
+   "lo": 0.007322538608088523,
+   "hi": 0.02502308982402181,
+   "estimator": "chi-square interval on sigma from a pooled within-arm variance",
+   "assumptions": [
+    "within-arm residuals normal",
+    "independent across seeds",
+    "one variance shared by the arms that were pooled"
+   ]
+  },
+  "if_all_five_arms_are_pooled": {
+   "n_seeds_per_arm": 3,
+   "paired": false,
+   "alpha": 0.05,
+   "power": 0.8,
+   "sigma_used": 0.009083384485078621,
+   "sigma_df": 10,
+   "test_df": 4,
+   "standard_error_of_the_difference": 0.0074165523753186476,
+   "mde_kW": 0.027570363610280823,
+   "mde_kW_if_sigma_were_known_to_pooled_df": 0.023044686921617888,
+   "detectable_at_50pc_power_kW": 0.02059165053989653,
+   "formula": "(t_{1-alpha/2,df_test} + t_{power,df_test}) * sqrt(2/n) * sigma"
+  },
+  "denominator_kW": 0.6162615768463073,
+  "what_this_is_not": [
+   "not a bound on the task's achievable error",
+   "not a claim about any arm's accuracy",
+   "not transferable to another task, split, horizon or seed count",
+   "not a statement about a single fit: it is about a DIFFERENCE OF ARM MEANS"
+  ]
+ },
+ "effect_verdicts": [
+  {
+   "contrast": "R1-R0",
+   "effect_kW": 0.00980498867418004,
+   "absolute_effect_kW": 0.00980498867418004,
+   "resolution_kW": 0.031106321266674578,
+   "resolution_ci95_kW": [
+    0.02004470836927165,
+    0.06849817595588464
+   ],
+   "state_against_the_resolution": "BELOW_THE_RESOLUTION",
+   "realized_ci95_excludes_zero": "False",
+   "realized_p_value": 0.41488890219627284,
+   "realized_sd_of_differences_kW": 0.016643710487977952,
+   "seeds_required_for_this_effect": {
+    "n_per_arm": 23,
+    "effect_kW": 0.00980498867418004,
+    "sigma_used": 0.011363459833619234,
+    "alpha": 0.05,
+    "power": 0.8,
+    "paired": false,
+    "arms_pooled": 3,
+    "note": "n per arm; a two-arm contrast costs 2n fits, a three-arm contrast 3n"
+   },
+   "reading": "the effect is below the resolution and the test agrees: nothing is established"
+  },
+  {
+   "contrast": "R2-R0",
+   "effect_kW": 0.005731172558330222,
+   "absolute_effect_kW": 0.005731172558330222,
+   "resolution_kW": 0.031106321266674578,
+   "resolution_ci95_kW": [
+    0.02004470836927165,
+    0.06849817595588464
+   ],
+   "state_against_the_resolution": "BELOW_THE_RESOLUTION",
+   "realized_ci95_excludes_zero": "False",
+   "realized_p_value": 0.5712255240221569,
+   "realized_sd_of_differences_kW": 0.014789239205371275,
+   "seeds_required_for_this_effect": {
+    "n_per_arm": 63,
+    "effect_kW": 0.005731172558330222,
+    "sigma_used": 0.011363459833619234,
+    "alpha": 0.05,
+    "power": 0.8,
+    "paired": false,
+    "arms_pooled": 3,
+    "note": "n per arm; a two-arm contrast costs 2n fits, a three-arm contrast 3n"
+   },
+   "reading": "the effect is below the resolution and the test agrees: nothing is established"
+  },
+  {
+   "contrast": "R2-R1",
+   "effect_kW": -0.004073816115849819,
+   "absolute_effect_kW": 0.004073816115849819,
+   "resolution_kW": 0.031106321266674578,
+   "resolution_ci95_kW": [
+    0.02004470836927165,
+    0.06849817595588464
+   ],
+   "state_against_the_resolution": "BELOW_THE_RESOLUTION",
+   "realized_ci95_excludes_zero": "False",
+   "realized_p_value": 0.8025545053998486,
+   "realized_sd_of_differences_kW": 0.024772222315502076,
+   "seeds_required_for_this_effect": {
+    "n_per_arm": 124,
+    "effect_kW": 0.004073816115849819,
+    "sigma_used": 0.011363459833619234,
+    "alpha": 0.05,
+    "power": 0.8,
+    "paired": false,
+    "arms_pooled": 3,
+    "note": "n per arm; a two-arm contrast costs 2n fits, a three-arm contrast 3n"
+   },
+   "reading": "the effect is below the resolution and the test agrees: nothing is established"
+  },
+  {
+   "contrast": "tcn_mse-core_mse",
+   "effect_kW": -0.010982128967504315,
+   "absolute_effect_kW": 0.010982128967504315,
+   "resolution_kW": 0.031106321266674578,
+   "resolution_ci95_kW": [
+    0.02004470836927165,
+    0.06849817595588464
+   ],
+   "state_against_the_resolution": "BELOW_THE_RESOLUTION",
+   "realized_ci95_excludes_zero": "False",
+   "realized_p_value": 0.22940956795011574,
+   "realized_sd_of_differences_kW": 0.011124317528185173,
+   "seeds_required_for_this_effect": {
+    "n_per_arm": 18,
+    "effect_kW": 0.010982128967504315,
+    "sigma_used": 0.011363459833619234,
+    "alpha": 0.05,
+    "power": 0.8,
+    "paired": false,
+    "arms_pooled": 3,
+    "note": "n per arm; a two-arm contrast costs 2n fits, a three-arm contrast 3n"
+   },
+   "reading": "the effect is below the resolution and the test agrees: nothing is established"
+  },
+  {
+   "contrast": "core_mae-core_mse",
+   "effect_kW": -0.04916000284280921,
+   "absolute_effect_kW": 0.04916000284280921,
+   "resolution_kW": 0.031106321266674578,
+   "resolution_ci95_kW": [
+    0.02004470836927165,
+    0.06849817595588464
+   ],
+   "state_against_the_resolution": "AT_THE_RESOLUTION_BOUNDARY",
+   "realized_ci95_excludes_zero": "True",
+   "realized_p_value": 0.007969150972530226,
+   "realized_sd_of_differences_kW": 0.007646917563914151,
+   "seeds_required_for_this_effect": {
+    "n_per_arm": 3,
+    "effect_kW": 0.04916000284280921,
+    "sigma_used": 0.011363459833619234,
+    "alpha": 0.05,
+    "power": 0.8,
+    "paired": false,
+    "arms_pooled": 3,
+    "note": "n per arm; a two-arm contrast costs 2n fits, a three-arm contrast 3n"
+   },
+   "reading": "the effect is below what this protocol can be relied on to separate at n=3, yet THIS realisation reached significance: it did so on its own realised difference SD (0.007647 kW), which is smaller than the pooled sigma (0.011363 kW) that the resolution is built on. A result at or under the resolution is not repeatable by design, whatever one realisation returned"
+  }
+ ],
+ "ruling": {
+  "module": "MOD-CORE-PRETRAIN",
+  "effect_the_module_must_resolve_kW": 0.00980498867418004,
+  "which_effect": "R1-R0",
+  "every_module_effect_kW": {
+   "R1-R0": 0.00980498867418004,
+   "R2-R0": 0.005731172558330222,
+   "R2-R1": -0.004073816115849819
+  },
+  "resolution_kW": 0.031106321266674578,
+  "resolution_ci95_kW": [
+   0.02004470836927165,
+   0.06849817595588464
+  ],
+  "effect_is_above_the_resolution": false,
+  "every_module_effect_state": {
+   "R1-R0": "BELOW_THE_RESOLUTION",
+   "R2-R0": "BELOW_THE_RESOLUTION",
+   "R2-R1": "BELOW_THE_RESOLUTION"
+  },
+  "ratio_resolution_over_effect": 3.172499459238376,
+  "seeds_required": {
+   "n_per_arm": 23,
+   "effect_kW": 0.00980498867418004,
+   "sigma_used": 0.011363459833619234,
+   "alpha": 0.05,
+   "power": 0.8,
+   "paired": false,
+   "arms_pooled": 3,
+   "note": "n per arm; a two-arm contrast costs 2n fits, a three-arm contrast 3n"
+  },
+  "seeds_required_for_a_flat_0p01_kW": {
+   "n_per_arm": 22,
+   "effect_kW": 0.01,
+   "sigma_used": 0.011363459833619234,
+   "alpha": 0.05,
+   "power": 0.8,
+   "paired": false,
+   "arms_pooled": 3,
+   "note": "n per arm; a two-arm contrast costs 2n fits, a three-arm contrast 3n"
+  },
+  "fits_required_for_the_three_arm_design": 69,
+  "convergence_with_the_scrambled_label_floor": {
+   "resolution_kW": 0.031106321266674578,
+   "paired_resolution_kW": 0.04976202975433696,
+   "scrambled_label_gap_kW": 0.04904374804979783,
+   "reading": "two independent routes -- seed variance at n=3, and the whole worth of true labels under this protocol -- land on the same order of magnitude; they are NOT the same quantity and are not averaged, but a protocol whose resolution is the size of its entire label signal has no room left for a fifth of that signal"
+  },
+  "verdict": "UNANSWERABLE_BY_THIS_PROTOCOL_AT_THIS_SEED_COUNT"
+ },
+ "problems": []
+}

@@ -49,6 +49,114 @@ ARMS = (
 )
 SEEDS = (1, 2, 3)
 
+# --- the monitor defect, and its repair -----------------------------------------------------------
+#
+# RP63 monitored `val_loss` for every arm. `val_loss` IS the arm's own trained loss, so changing the
+# loss silently changed TWO further things that no contrast is allowed to move:
+#
+#   (1) WHEN early stopping fired, hence how many optimiser updates each arm was given. The retained
+#       run: `core_mae` and `tcn_mse` 11 762 updates each, `core_mse` 10 270 -- a 14.5% budget
+#       difference between the winning arm and the arm it beat, named in
+#       SATOSHI_RP57_RP64_DISPOSITION_2026_09_26 section 5.1.
+#   (2) WHICH checkpoint was restored: `restore_best_weights` restored the argmin of a DIFFERENT
+#       curve in each arm, and for the `*_mae` arms that curve is the very measure the comparison is
+#       judged on. The MAE arm was allowed to select its checkpoint on the judged measure; the MSE
+#       arms were not. This leg is not named anywhere in either disposition.
+#
+# Both legs come from one line. The repair is one fixed, arm-independent monitor for every arm, plus
+# a budget that is matched by construction rather than by luck, and a runner that REFUSES a design
+# which declares neither.
+FIXED_MONITOR = "val_mae"                       # the measure the question is judged by, in every arm
+MONITORS = (FIXED_MONITOR, "val_mse")           # any arm-independent metric name may be fixed
+LEGACY_MONITOR = "val_loss"                     # arm-DEPENDENT: the defect, reachable only by name
+BUDGET_FIXED = "FIXED_UPDATES"                  # every cell runs exactly the ceiling; matched by construction
+BUDGET_EARLY = "EARLY_STOPPING"                 # the budget is an outcome; arms may and did drift
+LEGACY_PROTOCOL = "LEGACY_PER_ARM_MONITOR_UNMATCHED_BUDGET"
+MONITOR_DECLARATION = ("one fixed, arm-independent monitor for every arm: the measure the question is "
+                       "judged by. The trained loss never chooses the stopping epoch or the restored "
+                       "checkpoint")
+
+
+class ProtocolRefusal(ValueError):
+    """A design whose monitor or budget would confound the contrast it is built to measure."""
+
+
+def resolve_protocol(design: dict) -> dict:
+    """The monitor and budget rule this design declares -- or a refusal naming the defect.
+
+    A design that says nothing is REFUSED rather than defaulted, because silence is exactly how the
+    retained phase-1 design reached execution: it declared 'each arm monitors the loss it trains on'
+    and nothing about the budget, and both legs of the confound followed from that sentence.
+    """
+    t = design.get("training") or {}
+    monitor = t.get("monitor")
+    budget = t.get("budget_match")
+    if budget == LEGACY_PROTOCOL:
+        # reachable, but only by naming it: reproducing the defective run is a legitimate act
+        return {"monitor": LEGACY_MONITOR, "budget_match": BUDGET_EARLY,
+                "monitor_is_arm_independent": False, "budget_is_matched_by_construction": False,
+                "declared": LEGACY_PROTOCOL,
+                "defect": ("this protocol lets the trained loss choose both the stopping epoch and the "
+                           "restored checkpoint; its arms are not budget-matched and its contrasts are "
+                           "confounded with both")}
+    if monitor not in MONITORS:
+        raise ProtocolRefusal(
+            f"REFUSED: this design declares the monitor {monitor!r}, which is not one of the "
+            f"arm-independent monitors {MONITORS}. An arm-dependent monitor makes the trained loss "
+            f"choose the stopping epoch and the restored checkpoint, so the contrast measures the "
+            f"recipe and its own budget together. Declare training.monitor={FIXED_MONITOR!r}, or "
+            f"training.budget_match={LEGACY_PROTOCOL!r} to reproduce the defective run on purpose")
+    if budget not in (BUDGET_FIXED, BUDGET_EARLY):
+        raise ProtocolRefusal(
+            f"REFUSED: this design declares no budget rule (training.budget_match={budget!r}). "
+            f"With {BUDGET_EARLY!r} the optimiser-update count is an outcome and the arms may drift "
+            f"apart, as they did by 1 492 updates in RP63; {BUDGET_FIXED!r} gives every cell the same "
+            f"count by construction")
+    return {"monitor": monitor, "budget_match": budget,
+            "monitor_is_arm_independent": True,
+            "budget_is_matched_by_construction": budget == BUDGET_FIXED,
+            "declared": f"{monitor} / {budget}"}
+
+
+def budget_audit(cells: dict) -> dict:
+    """Per-arm optimiser-update totals, and whether the arms are matched.
+
+    `cells` is a mapping of cell_id -> {"arm", "updates", ...}, which is the shape both the runner's
+    own report and the retained RP63 report carry, so this rule reads a published run without
+    reformatting it.
+    """
+    per_arm: dict = {}
+    for cid, c in cells.items():
+        arm = c.get("arm")
+        u = int(c.get("updates") or 0)
+        e = per_arm.setdefault(arm, {"cells": [], "updates_per_cell": [], "total_updates": 0})
+        e["cells"].append(cid)
+        e["updates_per_cell"].append(u)
+        e["total_updates"] += u
+    totals = {a: e["total_updates"] for a, e in per_arm.items()}
+    per_cell_sets = {a: sorted(e["updates_per_cell"]) for a, e in per_arm.items()}
+    matched_totals = len(set(totals.values())) <= 1
+    matched_per_seed = len({tuple(v) for v in per_cell_sets.values()}) <= 1
+    spread = (max(totals.values()) - min(totals.values())) if totals else 0
+    return {"per_arm": per_arm, "total_updates_by_arm": totals,
+            "matched_on_totals": matched_totals, "matched_per_seed": matched_per_seed,
+            "largest_total_minus_smallest": int(spread),
+            "relative_spread": (spread / min(totals.values())) if totals and min(totals.values()) else None,
+            "rule": ("two arms compared on their mean error must have been given the same number of "
+                     "optimiser updates; an arm that ran longer has an advantage that is not its recipe")}
+
+
+def require_budget_match(cells: dict) -> dict:
+    """Refuse to report a contrast whose arms were given different budgets."""
+    a = budget_audit(cells)
+    if not a["matched_on_totals"]:
+        raise ProtocolRefusal(
+            "REFUSED: the arms of this contrast are not budget-matched: "
+            + ", ".join(f"{arm} {tot} updates" for arm, tot in sorted(a["total_updates_by_arm"].items()))
+            + f" (a spread of {a['largest_total_minus_smallest']} updates). The difference between "
+              "these arms mixes the recipe with the budget and is not a recipe effect")
+    return a
+
 
 def _module(name: str):
     if name in sys.modules:
@@ -73,8 +181,14 @@ def now_iso() -> str:
 
 
 def seal(source_run: Path, *, max_updates: int = 4000, batch: int = 64, patience: int = 3,
-         lr: float = 0.003, pilot_updates: int = 200) -> dict:
-    """The phase, fixed before it runs, digested by its own content."""
+         lr: float = 0.003, pilot_updates: int = 200, monitor: str = FIXED_MONITOR,
+         budget_match: str = BUDGET_FIXED) -> dict:
+    """The phase, fixed before it runs, digested by its own content.
+
+    `monitor` and `budget_match` are part of the sealed identity, so two runs that differ in either
+    cannot share a design digest. The defaults are the REPAIRED protocol; the defective one is
+    reachable by passing ``budget_match=LEGACY_PROTOCOL`` and is then named in the design itself.
+    """
     E = _module("df_mod_e0")
     source = Path(source_run)
     source_design = json.loads((source/"DESIGN.json").read_text())
@@ -86,8 +200,11 @@ def seal(source_run: Path, *, max_updates: int = 4000, batch: int = 64, patience
                         "finished run already used; it is not a new experiment on new data and it "
                         "does not revisit pretraining",
         "factors_moved": ["training_and_loss", "architecture"],
-        "factors_held": ["input_information", "train_volume", "pretraining", "data", "rows",
-                         "labels", "scaler", "batch", "update_ceiling", "patience", "seeds"],
+        "factors_held": (["input_information", "train_volume", "pretraining", "data", "rows",
+                          "labels", "scaler", "batch", "update_ceiling", "patience", "seeds",
+                          "monitor", "optimiser_updates"] if budget_match == BUDGET_FIXED else
+                         ["input_information", "train_volume", "pretraining", "data", "rows",
+                          "labels", "scaler", "batch", "update_ceiling", "patience", "seeds"]),
         "source_run": {"root": str(source), "design_sha256": source_design["design_sha256"],
                        "data_sha256": data_json["data_sha256"], "panel_sha256": data_json["panel_sha256"],
                        "reading": "the prepared DATA of that run is consumed by digest; nothing is "
@@ -95,7 +212,12 @@ def seal(source_run: Path, *, max_updates: int = 4000, batch: int = 64, patience
         "task": source_design["task"], "graph": source_design["graph"],
         "training": {"batch": batch, "max_updates": max_updates, "learning_rate": lr,
                      "early_stopping": {"patience_epochs": patience, "restore_best": True},
-                     "monitor": "each arm monitors the loss it trains on; the arm's identifier says which"},
+                     # the two fields the RP63 defect lived in: an arm-independent monitor, and a
+                     # budget rule that says whether the update count is fixed or is an outcome
+                     "monitor": monitor, "budget_match": budget_match,
+                     "monitor_declaration": (MONITOR_DECLARATION if budget_match != LEGACY_PROTOCOL else
+                                             "LEGACY: each arm monitors the loss it trains on, and its "
+                                             "budget is whatever early stopping gave it")},
         "reference_model": _module("df_tcn_reference").REFERENCE,
         "arms": [{"arm": a, "what_differs": why} for a, why in ARMS],
         "replicas": {"seeds": list(SEEDS), "pairing": "every arm of a seed starts from the same "
@@ -110,6 +232,11 @@ def seal(source_run: Path, *, max_updates: int = 4000, batch: int = 64, patience
         "governance": "one campaign and one verified delivery per unit before it runs; a terminal "
                       "through the outbox and a reconciled campaign after it",
         "reading_rules": ["three seeds on one task are development evidence, not a confirmation",
+                          ("every arm ran the same number of optimiser updates, so no difference "
+                           "between arms carries a budget the others did not get"
+                           if budget_match == BUDGET_FIXED else
+                           "the arms' budgets are outcomes of early stopping and MAY DIFFER; a "
+                           "difference between arms mixes the recipe with the budget"),
                           "an arm that stops at the update ceiling is CENSORED: what it would reach "
                           "with more budget is unknown, in either direction",
                           "no cell is removed after its score is seen"],
@@ -141,14 +268,35 @@ def _arm_model(arm: str, design: dict, data: dict, seed: int):
                                core=design["graph"]["core_kind"])
 
 
-def _fit(arm: str, model, train_ds, val_ds, *, max_updates, patience, lr, seed) -> dict:
-    """The run's own loop, with the arm's own loss and monitor."""
+def _fit(arm: str, model, train_ds, val_ds, *, max_updates, patience, lr, seed,
+         monitor: str, budget_match: str, ckpt_dir: Path | None = None) -> dict:
+    """One cell's fit, with the arm's own loss and an explicitly declared monitor and budget rule.
+
+    `monitor` and `budget_match` are REQUIRED. There is no default, because the defect this signature
+    repairs was a default: the previous version hard-coded ``monitor="val_loss"``, which is the arm's
+    own trained loss, and let the stopping epoch and the restored checkpoint follow the recipe under
+    test. A caller must now say which arm-independent quantity decides those two things.
+
+    Under ``budget_match=FIXED_UPDATES`` early stopping is not installed at all: every cell runs
+    exactly `max_updates` optimiser updates and the monitor's only job is to choose which checkpoint
+    is restored. That is what makes two arms comparable -- not an equal *ceiling*, which RP63 already
+    had, but an equal *count*.
+    """
     E = _module("df_mod_e0")
     tf = E._tf()
     import math
     tf.keras.utils.set_random_seed(int(seed))
     loss = "mae" if arm.endswith("mae") else "mse"
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss)
+    if monitor == LEGACY_MONITOR:
+        metrics = []                                     # the defect, reproduced only when named
+    elif monitor in MONITORS:
+        name = monitor[len("val_"):]
+        metrics = [tf.keras.metrics.MeanAbsoluteError(name="mae") if name == "mae"
+                   else tf.keras.metrics.MeanSquaredError(name="mse")]
+    else:
+        raise ProtocolRefusal(f"REFUSED: {monitor!r} is not an arm-independent monitor; "
+                              f"one of {MONITORS} or the named legacy {LEGACY_MONITOR!r}")
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=lr), loss=loss, metrics=metrics)
     steps = len(train_ds)
     max_epochs = max(1, math.ceil(max_updates/steps))
 
@@ -164,28 +312,76 @@ def _fit(arm: str, model, train_ds, val_ds, *, max_updates, patience, lr, seed) 
                 self.model.stop_training = True
 
     counter = Counter()
-    es = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=int(patience),
-                                          restore_best_weights=True)
+    callbacks = [counter]
+    es = None
+    if budget_match == BUDGET_EARLY:
+        es = tf.keras.callbacks.EarlyStopping(monitor=monitor, mode="min", patience=int(patience),
+                                             restore_best_weights=True)
+        callbacks.append(es)
+    elif budget_match != BUDGET_FIXED:
+        raise ProtocolRefusal(f"REFUSED: {budget_match!r} is not a budget rule; "
+                              f"one of {(BUDGET_FIXED, BUDGET_EARLY)}")
+    else:
+        # the monitor still chooses the checkpoint; it no longer chooses the budget
+        ckpt = Path(ckpt_dir or ".")/"_monitor_best.weights.h5"
+        ckpt.parent.mkdir(parents=True, exist_ok=True)
+        callbacks.append(tf.keras.callbacks.ModelCheckpoint(
+            filepath=str(ckpt), monitor=monitor, mode="min", save_best_only=True,
+            save_weights_only=True, verbose=0))
     t0 = time.process_time()
     hist = model.fit(train_ds, validation_data=val_ds, epochs=max_epochs, verbose=0,
-                     callbacks=[counter, es])
+                     callbacks=callbacks)
     fit_s = time.process_time()-t0
-    va = [float(v) for v in hist.history["val_loss"]]
-    stop = "UPDATE_BUDGET" if counter.budget_stop else ("EARLY_STOPPING" if es.stopped_epoch else "EPOCH_BUDGET")
+    if monitor not in hist.history:
+        raise ProtocolRefusal(f"REFUSED: the monitor {monitor!r} is not in the fitted history "
+                              f"{sorted(hist.history)}; a monitor that is not measured cannot select")
+    curve = [float(v) for v in hist.history[monitor]]
+    best = int(np.argmin(curve))+1
+    # The update count is READ BEFORE any checkpoint is restored. Keras 3's `save_weights` carries the
+    # optimizer's variables, so restoring the argmin checkpoint also rewinds `optimizer.iterations` to
+    # the value it held at that epoch: reading it afterwards would report the restored epoch's count as
+    # the run's budget, and two arms restoring different epochs would look budget-mismatched when they
+    # are not. The counter is the number of updates PERFORMED; the accounting must come from it.
     iterations = int(model.optimizer.iterations.numpy())
-    return {"loss_trained": loss, "monitor": f"validation {loss}",
+    if budget_match == BUDGET_FIXED:
+        restored_iterations = None
+        if ckpt.is_file():
+            model.load_weights(ckpt)                     # the argmin of the FIXED monitor, every arm
+            restored_iterations = int(model.optimizer.iterations.numpy())
+            ckpt.unlink()
+        stop = "FIXED_UPDATE_BUDGET"
+        early_stopped = False
+    else:
+        restored_iterations = None
+        stop = "UPDATE_BUDGET" if counter.budget_stop else ("EARLY_STOPPING" if es.stopped_epoch else "EPOCH_BUDGET")
+        early_stopped = bool(es.stopped_epoch)
+    return {"loss_trained": loss, "monitor": monitor,
+            "monitor_is_arm_independent": monitor != LEGACY_MONITOR,
+            "budget_match": budget_match,
+            "budget_is_matched_by_construction": budget_match == BUDGET_FIXED,
+            "monitor_chose_the_budget": budget_match == BUDGET_EARLY,
             "updates": int(counter.updates), "optimizer_iterations": iterations,
             "updates_are_optimizer_iterations": iterations == counter.updates,
-            "epochs": len(va), "steps_per_epoch": steps,
-            "curve": {"train": [float(v) for v in hist.history["loss"]], "validation": va},
-            "stop_reason": stop, "restored_checkpoint_epoch": int(np.argmin(va))+1,
+            "optimizer_iterations_after_restore": restored_iterations,
+            "restore_rewound_the_optimizer": (restored_iterations is not None
+                                              and restored_iterations != iterations),
+            "epochs": len(curve), "steps_per_epoch": steps,
+            "curve": {"train": [float(v) for v in hist.history["loss"]],
+                      "validation": [float(v) for v in hist.history["val_loss"]],
+                      "monitor": curve, "monitor_name": monitor},
+            "stop_reason": stop, "restored_checkpoint_epoch": best,
+            "restored_checkpoint_chosen_on": monitor,
             "censoring": {"budget_reached": bool(counter.budget_stop), "stopped_by": stop,
-                          "best_epoch": int(np.argmin(va))+1, "epochs": len(va),
+                          "best_epoch": best, "epochs": len(curve),
                           "updates_used_of_ceiling": [int(counter.updates), int(max_updates)],
-                          "verdict": "CENSORED_BY_BUDGET" if counter.budget_stop else
-                                     "STOPPED_ON_VALIDATION" if es.stopped_epoch else "EPOCH_BUDGET_REACHED",
-                          "criterion": "a fit that stops at the ceiling says what was explored, not "
-                                       "what is reachable"},
+                          "verdict": ("BUDGET_MATCHED_BY_CONSTRUCTION" if budget_match == BUDGET_FIXED
+                                      else "CENSORED_BY_BUDGET" if counter.budget_stop
+                                      else "STOPPED_ON_VALIDATION" if early_stopped else "EPOCH_BUDGET_REACHED"),
+                          "criterion": ("every cell ran the same number of updates, so no arm's mean "
+                                        "carries a budget the others did not get"
+                                        if budget_match == BUDGET_FIXED else
+                                        "a fit that stops at the ceiling says what was explored, not "
+                                        "what is reachable")},
             "fit_seconds": round(fit_s, 3)}
 
 
@@ -206,9 +402,13 @@ def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, max_updates
     model = _arm_model(cell["arm"], design, data, seed)
     params = int(sum(int(w.shape.num_elements()) for w in model.trainable_weights))
     t0 = time.process_time()
+    protocol = resolve_protocol(design)
     training = _fit(cell["arm"], model, train, val, max_updates=max_updates,
                     patience=design["training"]["early_stopping"]["patience_epochs"],
-                    lr=design["training"]["learning_rate"], seed=seed)
+                    lr=design["training"]["learning_rate"], seed=seed,
+                    monitor=protocol["monitor"], budget_match=protocol["budget_match"],
+                    ckpt_dir=out_dir)
+    training["protocol"] = protocol
     pred_s = P._predict(model, val).reshape(-1)
     m, s = float(data["scaler_mean"][j]), float(data["scaler_sd"][j])
     pred = pred_s*s + m
