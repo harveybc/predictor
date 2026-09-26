@@ -328,6 +328,15 @@ CPU only, no GPU — `cuInit` fails in the log and that is the proof. Every job 
 replay sets (18 cells × 10 020 origins, inference), a 15-mutant battery and one causal-battery
 mechanics sample (12.5 s). The 52 rules run in 0.7 s. No training, no allocation, no new campaign, no
 warehouse or governance contact, no host touched, no sample overwritten, no reserved split reopened.
+The audit's own rules run beside the batteries they check: `tests/test_rp49_rp64_audit.py` with
+`test_df_e1_seal`, `test_df_e1_close`, `test_df_e1_chronology`, `test_df_e1_first_child`,
+`test_df_e1_receipt_concurrency`, `test_stl_norm_contract`, `test_df_e1_governed_route`,
+`test_df_e1_governing_report`, `test_df_e1_pilot`, `test_df_e1_regimes` and `test_df_e1_loader` —
+**202 passed** on a clean checkout. One defect of the audit's own making was found and repaired
+on the way: loading a tool into `sys.modules` let two governed-route rules pick up this audit's
+copy of a module and fail while passing in isolation. Every tool is now loaded under a private
+name and registered nowhere. A battery that only passes when it runs alone is not a battery.
+
 
 Five refusals:
 
