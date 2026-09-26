@@ -446,7 +446,7 @@ sixteen neighbouring ones the two dispositions name — `test_df_closure_table`,
 `test_df_e1_close`, `test_df_e1_pilot`, `test_df_e1_regimes`, `test_df_e1_loader`,
 `test_stl_norm_contract`, `test_df_e1_chronology`, `test_df_e1_first_child`,
 `test_df_e1_receipt_concurrency`, `test_df_e1_governed_route`, `test_df_e1_governing_report`,
-`test_df_ecl_closure_boundaries` — **424 passed, 0 failed**
+`test_df_ecl_closure_boundaries` — **428 passed, 0 failed**
 ([`NEIGHBOUR_BATTERIES.txt`](../evidence/CORE_PRETRAIN_RESOLUTION_20260926/NEIGHBOUR_BATTERIES.txt)).
 The same set on a **dirty** checkout fails 11 rules of `test_df_e1_governed_route`, all with
 *"governing run requires a clean checkout"* — the guard doing its job, not a regression.
