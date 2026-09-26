@@ -1,0 +1,12 @@
+=== PRE: the rule the launcher carried until 2026-09-26 ===
+    req <= MemAvailable - 3G, and req <= slice MemoryMax.  Nothing is written between the
+    reading and the launch, so every caller sees the same 12 GiB.
+  request 8589934592: ADMITTED
+  request 8589934592: ADMITTED
+    -> 16 GiB admitted against 12 GiB available.  This is Musashi F1.
+
+=== POST: tools/crispdm_admission.py, same simulated host ===
+  first   exit=0   ADMITTED ADMITTED -- reserved
+  second  exit=75  QUEUED HOST_HEADROOM -- 8.00G requested; 1.00G free (MemAvailable 12.00G - 3.00G desktop reserve - 8.00G held by 1 live reservation(s))
+    live reservations after both calls:
+      1 lease(s); host_free_for_new_bytes = 1073741824

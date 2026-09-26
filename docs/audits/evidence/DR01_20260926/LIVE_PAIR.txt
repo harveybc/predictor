@@ -1,0 +1,7 @@
+### live pair, 2026-09-26T19:54:05Z; each request 3465M, host_free_for_new 6055915520 bytes
+B: crispdm-run: QUEUED HOST_HEADROOM -- 3.38G requested; 2.29G free (MemAvailable 12.52G - 3.00G desktop reserve - 7.24G held by 2 live reservation(s))
+B: crispdm-run: REFUSED nothing was started, and no limit, slice or kernel setting was changed
+B exit=0
+A: A completed at its normal boundary
+--- state after A finished ---
+live leases: 0 | host_free_for_new: 10332250112
