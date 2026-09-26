@@ -179,13 +179,26 @@ def test_unit_names_are_deterministic_from_the_job_identity():
     assert D.unit_name(job("det", 2)) != n
 
 
-def test_start_script_is_a_user_service_in_the_batch_slice_behind_the_admission_check():
+def test_start_script_is_a_user_service_in_the_batch_slice_behind_the_atomic_reservation():
+    """DR01 (2026-09-26): the generated script no longer carries an admission rule of its own.
+
+    It calls the role's copy of crispdm_admission.py -- the same authority crispdm-run uses,
+    under the same exclusive per-host lock -- which WRITES a reservation before anything starts,
+    and binds it to this unit's cgroup because the unit outlives the ssh command that made it.
+    The old two lines (MemAvailable minus 3G, and the request against the slice ceiling) read
+    capacity and then launched, which is exactly how two 8 GiB requests were both admitted.
+    """
     j = job("svc", 2)
     s = D.build_start_script(j, {"request_bytes": PL.request_bytes(j["cpu_bytes"], PL.default_policy())},
                              "Documents/GitHub/.worktrees/predictor-c146")
     req = 2560 << 20
-    assert f"REQ={req}" in s and "MemAvailable" in s and f"AVAIL - {3 << 30}" in s and "exit 75" in s
-    assert "systemctl --user show crispdm-batch.slice -p MemoryMax --value" in s
+    assert f"REQ={req}" in s and "exit 75" in s
+    assert 'ADM="$HOME"/.local/libexec/crispdm/crispdm_admission.py' in s
+    assert 'python3 "$ADM" acquire' in s and '--cap-bytes "$REQ"' in s and "--detached" in s
+    assert 'python3 "$ADM" arm "$LEASE" --cgroup' in s and f"{D.unit_name(j)}.service" in s
+    assert "MemAvailable" not in s, "no launch path may keep its own capacity reading"
+    assert "-p MemoryMax --value" not in s, "the ceiling is the admission module's business"
+    assert "systemctl --user show crispdm-batch.slice -p ControlGroup --value" in s
     assert f"systemctl --user show {D.unit_name(j)}.service -p LoadState --value" in s and "exit 76" in s
     run = s.strip().splitlines()[-1]
     assert run.startswith(f"exec systemd-run --user --quiet --unit={D.unit_name(j)} --slice=crispdm-batch.slice ")
@@ -234,7 +247,8 @@ def test_systemd_backend_runs_locally_or_over_ssh_and_never_leaks_the_alias():
     assert b.start("COORDINATOR", script)["rc"] == 0 and calls[-1] == ["bash", "-c", script]
     b.start("WORKER_A", script)
     assert calls[-1][0] == "ssh" and calls[-1][5] == "secret-alias-a"
-    assert calls[-1][6].startswith("bash -c ") and "MemAvailable" in calls[-1][6] and "systemd-run --user" in calls[-1][6]
+    assert calls[-1][6].startswith("bash -c ") and "crispdm_admission.py" in calls[-1][6] \
+        and "systemd-run --user" in calls[-1][6]
     refused = b.start("WORKER_B", script)
     assert refused["rc"] == 255 and "secret-alias" not in refused["message"] and "10.9.8.7" not in refused["message"]
     shown = b.show("COORDINATOR", ["c174-probe-ok", "c174-probe-slow", "missing-unit"])

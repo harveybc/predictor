@@ -37,6 +37,9 @@ import tempfile
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import crispdm_admission as ADM   # DR01: the one atomic per-host reservation, shared with crispdm-run
+
 HERE = Path(__file__).resolve().parent
 PAGE = os.sysconf("SC_PAGE_SIZE")
 SCHEMA = "crispdm.data_foundation.memory_calibration.v1"
@@ -307,12 +310,27 @@ def child_main(case_id: str) -> int:
 
 
 def launch(case_id: str, cap: int, slice_: str) -> dict:
+    """DR01 (order 2026-09-26): a calibration probe is a compute launch like any other, so it
+    takes the SAME atomic reservation from tools/crispdm_admission.py that crispdm-run takes,
+    holds it for the whole child, and is refused rather than started when the host cannot hold
+    it beside the reservations already standing.  A refusal is recorded as a refusal; it is
+    never retried with a larger cap."""
     env_cmd = ["env", "-u", "PYTHONPATH", "CUDA_VISIBLE_DEVICES=", "OMP_NUM_THREADS=1", "OPENBLAS_NUM_THREADS=1",
                "MKL_NUM_THREADS=1"]
     cmd = ["systemd-run", "--user", "--scope", "--quiet", "--collect", f"--slice={slice_}",
            "-p", f"MemoryMax={cap}", "-p", "MemorySwapMax=0", *env_cmd,
            sys.executable, "-B", str(Path(__file__).resolve()), "--child", case_id]
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
+    reservation = ADM.Reservation(name=f"memcal-{case_id}"[:64], cap_bytes=int(cap), wall_seconds=1800,
+                                  label=f"df_memory_calibrate:{case_id}", slice_name=slice_)
+    try:
+        reservation.open()
+    except ADM.AdmissionRefused as exc:
+        return {"case": case_id, "error": f"NOT_STARTED {exc.verdict} {exc.code}",
+                "admission": exc.decision, "cap_bytes": cap}
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
+    finally:
+        reservation.close()
     if r.returncode != 0:
         return {"case": case_id, "error": f"exit {r.returncode}", "stderr_tail": r.stderr[-800:], "cap_bytes": cap}
     out = json.loads(r.stdout.strip().splitlines()[-1])

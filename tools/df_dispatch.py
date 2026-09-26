@@ -16,8 +16,10 @@ through `bash -c` locally for the COORDINATOR and `ssh <alias> bash -c` for a wo
   a failed unit stays loaded with its Result until reset-failed. RemainAfterExit=yes keeps a
   successful unit loaded (active/exited) with ExecMainStatus and MemoryPeak until it is
   stopped. Verified on this host: an exited unit is not timed out by RuntimeMaxSec.
-* Admission (same rule as crispdm-run, on the target host): refuse with exit 75 when the
-  request exceeds MemAvailable - 3G or the slice MemoryMax -> REFUSED_AT_LAUNCH (requeued,
+* Admission (DR01: the SAME authority crispdm-run uses, tools/crispdm_admission.py on the
+  target host, under its exclusive per-host lock, which WRITES a reservation held until this
+  unit's cgroup is gone): a request the host cannot hold alongside the reservations already
+  standing is refused with exit 75 -> REFUSED_AT_LAUNCH (requeued,
   at most max_launch_refusals times). A unit of that name already loaded -> exit 76 ->
   re-attached, never started twice.
 * Polling (batched per role): systemctl --user show <units> -p Id -p LoadState -p ActiveState
@@ -80,7 +82,10 @@ RESUME_SKIP = ("COMPLETED", "FAILED", "RESOURCE_EXCEEDED", "UNPLACEABLE", "SPLIT
 REQUEUE = ("REFUSED_AT_LAUNCH", "LAUNCH_NOT_FOUND")
 SLICE = "crispdm-batch.slice"
 UNIT_PREFIX = "crispdm-dispatch-"
-ADMISSION_RESERVE_BYTES = 3 * PL.GIB          # crispdm-run's host reserve
+ADMISSION_RESERVE_BYTES = 3 * PL.GIB          # crispdm-run's host reserve (declared here only for
+                                              # the placement estimate; DR01 moved the DECISION to
+                                              # tools/crispdm_admission.py, the one authority)
+ADMISSION_MODULE_REL = ".local/libexec/crispdm/crispdm_admission.py"   # the role's deployed copy
 EXIT_REFUSED = 75
 EXIT_UNIT_LOADED = 76
 POLL_PROPS = ("Id", "LoadState", "ActiveState", "SubState", "Result", "ExecMainCode", "ExecMainStatus",
@@ -155,17 +160,29 @@ def build_start_script(job: dict, decision: dict, checkout_rel: str, unit: str |
            f"-p MemoryHigh={req * 9 // 10}", "-p MemorySwapMax=0", f"-p RuntimeMaxSec={wall}",
            "-p RemainAfterExit=yes", "-p Type=exec", '--working-directory="$HOME"/' + shlex.quote(checkout_rel),
            "env -u PYTHONPATH", *THREAD_ENV, f"CUDA_VISIBLE_DEVICES={cuda}", *(q(str(a)) for a in job["argv"])]
+    # DR01 (order 2026-09-26): admission is NOT re-implemented here.  The role's own copy of
+    # crispdm_admission.py decides, under its exclusive per-host lock, and WRITES a reservation
+    # that lives until this unit's cgroup is gone (--detached: the unit outlives this ssh
+    # command, so its cgroup, not a holder pid, is the witness).  Reading MemAvailable here and
+    # launching afterwards is exactly the defect that let two 8 GiB requests both start.
+    wall_seconds = int(wall[:-1]) * {"s": 1, "m": 60, "h": 3600, "d": 86400}[wall[-1]] \
+        if wall[-1] in "smhd" else int(wall)
     return "\n".join([
         "set -u",
         f"REQ={req}",
-        "AVAIL=$(( $(awk '/^MemAvailable:/ {print $2}' /proc/meminfo) * 1024 ))",
-        f'if [ "$REQ" -gt $(( AVAIL - {ADMISSION_RESERVE_BYTES} )) ]; then '
-        f'echo "REFUSED_AT_LAUNCH: request exceeds MemAvailable - 3G" >&2; exit {EXIT_REFUSED}; fi',
-        f"SLICE_MAX=$(systemctl --user show {SLICE} -p MemoryMax --value)",
-        f'if [ -n "$SLICE_MAX" ] && [ "$SLICE_MAX" != infinity ] && [ "$REQ" -gt "$SLICE_MAX" ]; then '
-        f'echo "REFUSED_AT_LAUNCH: request exceeds the batch slice MemoryMax" >&2; exit {EXIT_REFUSED}; fi',
+        f'ADM="$HOME"/{shlex.quote(ADMISSION_MODULE_REL)}',
+        'if [ ! -f "$ADM" ]; then echo "REFUSED_AT_LAUNCH: the shared admission module is not '
+        f'installed on this role" >&2; exit {EXIT_REFUSED}; fi',
         f'if [ "$(systemctl --user show {unit}.service -p LoadState --value)" = loaded ]; then '
         f'echo "UNIT_ALREADY_LOADED" >&2; exit {EXIT_UNIT_LOADED}; fi',
+        f'DEC=$(python3 "$ADM" acquire -n {shlex.quote(unit[:64])} --cap-bytes "$REQ" '
+        f'-t {wall_seconds} --label {shlex.quote(unit)} --slice {SLICE} --detached) || {{ '
+        f'echo "REFUSED_AT_LAUNCH: $DEC" >&2; exit {EXIT_REFUSED}; }}',
+        'LEASE=$(printf "%s" "$DEC" | python3 -c '
+        '"import json,sys;print(json.loads(sys.stdin.read().strip().splitlines()[-1])[\'lease_id\'])")',
+        f'SLICE_CG=$(systemctl --user show {SLICE} -p ControlGroup --value 2>/dev/null)',
+        'python3 "$ADM" arm "$LEASE" --cgroup "${SLICE_CG#/}/' + unit + '.service" --unit "'
+        + unit + '.service" >/dev/null 2>&1 || true',
         " ".join(run),
     ]) + "\n"
 

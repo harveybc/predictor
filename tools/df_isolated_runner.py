@@ -6,7 +6,16 @@ Isolation. Each task is started with
     systemd-run --user --scope --quiet --unit=<unique> --slice=<slice> -p MemoryMax=<limit> -p MemorySwapMax=0 ...
 
 (default slice crispdm-batch.slice, so an out-of-memory kill stays inside the
-batch slice and never reaches a desktop scope). When systemd user scopes are
+batch slice and never reaches a desktop scope).
+
+DR01 (order 2026-09-26): before a task is started it takes an ATOMIC RESERVATION
+from tools/crispdm_admission.py -- the same per-host authority crispdm-run uses,
+under the same lock -- and holds it until the task's whole process tree has
+finished. This runner is a launch path, so it must not keep an admission rule of
+its own: a second path that reads capacity and then launches recreates the defect
+of two requests being admitted against one reading. A task that is not admitted
+is refused at its normal boundary; it is never started and never retried with a
+larger limit. When systemd user scopes are
 unavailable the fallback is RLIMIT_AS via setrlimit in the child
 (limit_mechanism PRLIMIT_AS), recorded as such. The child also gets RLIMIT_CPU,
 single-thread BLAS variables, its own session (the whole group is killed on a
@@ -49,8 +58,12 @@ import resource
 import shutil
 import signal
 import subprocess
+import sys
 import time
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import crispdm_admission as ADM   # DR01: the one atomic per-host reservation, shared with crispdm-run
 
 TERMINAL_STATUSES = ("COMPLETED", "FAILED", "INCONCLUSIVE", "REFUSED", "RESOURCE_EXCEEDED", "UNCERTAIN")
 TERMINAL_KEYS = ("run_id", "host_role", "bank", "dataset_id", "contract_sha256", "code_sha256", "status", "reason",
@@ -199,6 +212,7 @@ class Task:
         self.extra_env = dict(extra_env or {})
         self.proc = None
         self.outcome = None
+        self.reservation = None
         self.cg = None
         self.polled_peak = None
         self.polled_oom_kill = 0
@@ -222,10 +236,25 @@ class Task:
             if as_limit is not None:
                 resource.setrlimit(resource.RLIMIT_AS, (as_limit, as_limit))
 
+        # DR01: reserve BEFORE the child exists, under the shared lock, and hold it for the whole
+        # tree.  A refusal raises here, so nothing is started.
+        self.reservation = ADM.Reservation(
+            name=f"df-{self.name}"[:64], cap_bytes=int(self.lim["memory_limit_bytes"]),
+            wall_seconds=int(self.wall), label=self.unit, slice_name=self.slice)
+        self.reservation.open()
+
         self.log = open(self.dir / "child.log", "ab")
         self.t0, self.started_at = time.time(), now_iso()
-        self.proc = subprocess.Popen(cmd, env=env, stdout=self.log, stderr=subprocess.STDOUT, preexec_fn=pre,
-                                     start_new_session=True, cwd=str(self.dir))
+        try:
+            self.proc = subprocess.Popen(cmd, env=env, stdout=self.log, stderr=subprocess.STDOUT, preexec_fn=pre,
+                                         start_new_session=True, cwd=str(self.dir))
+        except BaseException:
+            self.reservation.close()
+            raise
+        cg = _cgroup_dir(self.proc.pid)
+        self.reservation.arm(pid=self.proc.pid,
+                             cgroup=(str(cg).replace("/sys/fs/cgroup/", "", 1) if cg else None),
+                             unit=f"{self.unit}.scope" if self.mechanism == "SYSTEMD_USER_SCOPE" else None)
         return self
 
     def _poll_cgroup(self):
@@ -277,6 +306,12 @@ class Task:
                         "cpu_seconds": round(ru.ru_utime + ru.ru_stime, 3),
                         "wall_seconds": round(time.time() - self.t0, 3), "result": result,
                         "started_at": self.started_at, "ended_at": now_iso()}
+        # DR01: the tree has finished, so the reservation is released now -- with the CGROUP peak,
+        # not the child's maxrss, as the observed footprint.  If the module finds the tree still
+        # alive it keeps the reservation and says so; nothing is forced.
+        if getattr(self, "reservation", None) is not None:
+            self.outcome["admission_release"] = self.reservation.close(
+                observed_peak_bytes=self.polled_peak)
         return True
 
     def wait(self):

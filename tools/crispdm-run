@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+# crispdm-run: the only sanctioned way to start heavy CPU work on this host.
+#
+#   crispdm-run [-m MEM] [-t WALL] [-n NAME] [-q] [-W SECONDS] [-L LABEL]
+#               [-E PEAK_EVIDENCE.json] [-P PEAK_BYTES] [-S SLICE] -- command args...
+#
+# DR01 (order 2026-09-26).  Before this version the launcher READ available memory and then
+# launched, holding nothing: two requests could both be admitted against one reading, and four
+# loads were terminated on the coordinator on 2026-09-26.  This version takes an ATOMIC
+# RESERVATION from crispdm_admission.py -- one exclusive lock covering the reading, the decision
+# and the write -- and HOLDS it until the whole process tree has finished.  It does not exec:
+# this wrapper stays alive because the commitment has to outlive the read.
+#
+#   -q  queue instead of refusing: wait, re-asking under the lock, until admission is granted
+#       (bounded by -W, default 3600s).  Queuing is waiting BEFORE a first start; it is not a
+#       retry.  A rejection is final: an out-of-memory kill never comes back with a bigger cap.
+#   -E  the retained pilot record the footprint is read from; the peak in it must be a cgroup or
+#       whole-tree peak, never one process's RSS.  -P must equal the number that record holds.
+#
+# Runs the command in its own transient scope inside crispdm-batch.slice with a hard per-job
+# MemoryMax (default 4G), no swap, single-threaded BLAS and a wall limit (default 4h).  The cap
+# is ONE integer: MemoryMax, MemoryHigh and the reservation are all derived from it.
+set -euo pipefail
+
+MEM=4G; WALL=4h; NAME=job; QUEUE=0; MAXWAIT=3600; LABEL=""; PEAK_EV=""; PEAK_BYTES=""
+SLICE=crispdm-batch.slice
+while getopts "m:t:n:W:L:E:P:S:qh" o; do
+  case $o in
+    m) MEM=$OPTARG ;; t) WALL=$OPTARG ;; n) NAME=$OPTARG ;;
+    q) QUEUE=1 ;; W) MAXWAIT=$OPTARG ;; L) LABEL=$OPTARG ;;
+    E) PEAK_EV=$OPTARG ;; P) PEAK_BYTES=$OPTARG ;; S) SLICE=$OPTARG ;;
+    h|*) sed -n '2,29p' "$0"; exit 2 ;;
+  esac
+done
+shift $((OPTIND - 1))
+if [ "${1:-}" = "--" ]; then shift; fi
+[ $# -gt 0 ] || { echo "crispdm-run: no command" >&2; exit 2; }
+# Every remaining argument, any interior "--" included, reaches the command verbatim.
+
+# Local travel hold: do not heat the coordinator with new batch work.
+if [ -f "$HOME/.config/crispdm/coordinator-travel-hold" ]; then
+  echo "crispdm-run: REFUSED coordinator travel thermal hold; dispatch heavy CPU/GPU/compression work to an authorized remote worker, never fall back locally" >&2
+  exit 75
+fi
+
+PY=${CRISPDM_PYTHON:-python3}
+CGROOT=${CRISPDM_CGROUP_ROOT:-/sys/fs/cgroup}
+# The admission module: an explicit override, the installed copy beside this script, or the
+# checkout this script lives in.
+here=$(cd -- "$(dirname -- "$(readlink -f -- "$0")")" && pwd)
+ADM=""
+for c in "${CRISPDM_ADMISSION_MODULE:-}" "$here/../libexec/crispdm/crispdm_admission.py" \
+         "$here/crispdm_admission.py"; do
+  if [ -n "$c" ] && [ -f "$c" ]; then ADM=$c; break; fi
+done
+if [ -z "$ADM" ]; then
+  echo "crispdm-run: REFUSED the admission module is not installed; run tools/install_crispdm_launcher.sh" >&2
+  exit 75
+fi
+
+work=$(mktemp -d "${TMPDIR:-/tmp}/crispdm-run.XXXXXX")
+trap 'rm -rf "$work"' EXIT
+
+# argv exactly as it will be run, NUL-delimited: the lease records what was admitted.
+printf '%s\0' "$@" > "$work/argv"
+
+# ONE integer.  Both the cgroup limit and the reservation are derived from it, and the
+# admission module re-derives it from -m and refuses any disagreement.
+CAP_BYTES=$("$PY" "$ADM" size "$MEM") || exit 2
+WALL_SECONDS=$("$PY" "$ADM" seconds "$WALL") || exit 2
+unit="crispdm-${NAME//[^A-Za-z0-9_.-]/_}-$(date +%s)-$$"
+
+# ---- atomic admission: read, decide and reserve under one lock -------------------------------
+acq=("$PY" "$ADM" acquire -n "$NAME" -m "$MEM" --cap-bytes "$CAP_BYTES" -t "$WALL_SECONDS"
+     --label "${LABEL:-$unit}" --slice "$SLICE" --argv-file "$work/argv")
+if [ -n "$PEAK_EV" ]; then acq+=(--peak-evidence "$PEAK_EV"); fi
+if [ -n "$PEAK_BYTES" ]; then acq+=(--peak-bytes "$PEAK_BYTES"); fi
+if [ "$QUEUE" = 1 ]; then acq+=(--queue --max-wait-seconds "$MAXWAIT"); fi
+
+set +e
+"${acq[@]}" > "$work/decision.json" 2> "$work/decision.err"
+arc=$?
+set -e
+cat "$work/decision.err" >&2 || true
+if [ "$arc" != 0 ]; then
+  "$PY" "$ADM" explain "$work/decision.json" >&2 || true
+  echo "crispdm-run: REFUSED nothing was started, and no limit, slice or kernel setting was changed" >&2
+  exit 75
+fi
+LEASE=$("$PY" "$ADM" explain "$work/decision.json" --lease-id)
+
+# ---- launch, then bind the reservation to the load ------------------------------------------
+# --scope, and NOT exec: this shell must outlive the reading so the reservation covers the whole
+# load.  CUDA_VISIBLE_DEVICES is inherited unchanged (unset stays unset), so GPUs are not hidden
+# by accident.
+systemd-run --user --scope --quiet --collect --slice="$SLICE" --unit="$unit" \
+  -p MemoryMax="$CAP_BYTES" -p MemoryHigh="$(( CAP_BYTES * 9 / 10 ))" -p MemorySwapMax=0 \
+  env OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}" OPENBLAS_NUM_THREADS="${OPENBLAS_NUM_THREADS:-1}" \
+      MKL_NUM_THREADS="${MKL_NUM_THREADS:-1}" \
+  timeout --kill-after=30s "$WALL" "$@" &
+child=$!
+
+slice_cg=$(systemctl --user show "$SLICE" -p ControlGroup --value 2>/dev/null || true)
+CG=""
+if [ -n "$slice_cg" ]; then CG="${slice_cg#/}/$unit.scope"; fi
+arm=("$PY" "$ADM" arm "$LEASE" --pid "$child" --unit "$unit.scope")
+if [ -n "$CG" ]; then arm+=(--cgroup "$CG"); fi
+"${arm[@]}" >/dev/null 2>&1 || true
+
+trap 'kill -TERM "$child" 2>/dev/null || true' TERM
+trap 'kill -INT "$child" 2>/dev/null || true' INT
+
+# Sampler: the TREE peak, read from the scope cgroup, never one process's RSS.  It is also the
+# heartbeat that keeps the reservation alive for exactly as long as the load is.
+(
+  best=0
+  while kill -0 "$child" 2>/dev/null; do
+    for f in memory.peak memory.current; do
+      v=$(cat "$CGROOT/${CG}/$f" 2>/dev/null || true)
+      case "$v" in
+        ''|*[!0-9]*) ;;
+        *) if [ "$v" -gt "$best" ]; then best=$v; fi ;;
+      esac
+    done
+    if [ "$best" -gt 0 ]; then printf '%s' "$best" > "$work/peak"; fi
+    "$PY" "$ADM" renew "$LEASE" >/dev/null 2>&1 || true
+    sleep 5
+  done
+) &
+sampler=$!
+
+set +e
+wait "$child"; rc=$?
+set -e
+kill "$sampler" 2>/dev/null || true
+wait "$sampler" 2>/dev/null || true
+
+# The reservation is released only now, after the whole tree has finished.  If the tree is
+# somehow still alive, the admission module refuses the release and keeps the memory held.
+rel=("$PY" "$ADM" release "$LEASE")
+if [ -s "$work/peak" ]; then rel+=(--observed-peak-bytes "$(cat "$work/peak")"); fi
+"${rel[@]}" >/dev/null 2>&1 || true
+exit "$rc"
