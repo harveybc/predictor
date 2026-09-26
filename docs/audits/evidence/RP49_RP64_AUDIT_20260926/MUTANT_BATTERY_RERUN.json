@@ -1,0 +1,143 @@
+{
+ "schema": "df_e1_mutants.v1",
+ "mutants": [
+  {
+   "mutant": "M01_extras_admitted",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "an unforeseen numeric column is admitted",
+   "test": "tests/test_df_e1_loader.py::test_RP27_an_unforeseen_numeric_column_is_refused_and_an_ignored_one_changes_nothing",
+   "returncode": 1,
+   "tail": "1 failed, 30 deselected in 0.40s"
+  },
+  {
+   "mutant": "M02_train_split_covers_every_row",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "the train split reaches later rows, so the scaler is no longer train-only",
+   "test": "tests/test_df_e1_loader.py::test_RP27_the_scaler_is_fitted_on_train_windows_only_and_later_splits_cannot_alter_it",
+   "returncode": 1,
+   "tail": "1 failed, 30 deselected in 0.48s"
+  },
+  {
+   "mutant": "M03_gap_ignored",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "a window whose support crosses a gap is admitted",
+   "test": "tests/test_df_e1_loader.py::test_RP27_a_one_minute_jump_withdraws_every_window_whose_support_crosses_it",
+   "returncode": 1,
+   "tail": "1 failed, 30 deselected in 0.46s"
+  },
+  {
+   "mutant": "M04_activation_at_the_target",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "activity judged with a future row",
+   "test": "tests/test_df_e1_loader.py::test_RP27_electricity_activation_is_causal_and_never_active_clients_are_named",
+   "returncode": 1,
+   "tail": "1 failed, 30 deselected in 0.38s"
+  },
+  {
+   "mutant": "M05_R1_not_frozen",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "R1 does not freeze the detector",
+   "test": "tests/test_df_e1_regimes.py::test_RP29_gradients_weights_resume_and_reload_prove_the_regimes",
+   "returncode": 1,
+   "tail": "1 failed, 3 deselected, 60 warnings in 10.78s"
+  },
+  {
+   "mutant": "M06_arrays_not_reverified",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "altered arrays accepted",
+   "test": "tests/test_df_e1_pilot.py::test_RP30_units_share_the_initial_checkpoint_and_the_ae_and_are_verified_from_arrays",
+   "returncode": 1,
+   "tail": "1 failed, 4 deselected, 114 warnings in 19.00s"
+  },
+  {
+   "mutant": "M07_release_ignored",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "a model acts before its release",
+   "test": "tests/test_e3_weekly_controller.py::test_RP31_release_and_fallback_are_executed_and_weeks_are_by_timestamp",
+   "returncode": 1,
+   "tail": "1 failed, 7 deselected in 0.20s"
+  },
+  {
+   "mutant": "M08_short_emitted",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "flat turns into short",
+   "test": "tests/test_e3_weekly_controller.py::test_RP31_close_to_flat_never_short_and_sizing_from_equity",
+   "returncode": 1,
+   "tail": "1 failed, 7 deselected in 0.20s"
+  },
+  {
+   "mutant": "M09_week_by_counter",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "the week is not the timestamp's week",
+   "test": "tests/test_e3_weekly_controller.py::test_RP31_release_and_fallback_are_executed_and_weeks_are_by_timestamp",
+   "returncode": 1,
+   "tail": "1 failed, 7 deselected in 0.20s"
+  },
+  {
+   "mutant": "M10_pilot_scores_the_test_split",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "a test split exists in the pilot's enumerator",
+   "test": "tests/test_df_e1_pilot.py::test_RP30_prepare_uses_the_real_loader_with_preflight_and_a_train_only_scaler_and_refuses_altered_bytes",
+   "returncode": 1,
+   "tail": "1 failed, 4 deselected in 0.50s"
+  },
+  {
+   "mutant": "M11_deliveries_written_without_the_lock",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "concurrent children can erase each other's deliveries",
+   "test": "tests/test_df_e1_receipt_concurrency.py::test_RP55_concurrent_children_never_erase_each_others_deliveries",
+   "returncode": 1,
+   "tail": "1 failed, 7 deselected in 0.25s"
+  },
+  {
+   "mutant": "M12_terminals_written_without_the_lock",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "concurrent children can erase each other's accepted terminals",
+   "test": "tests/test_df_e1_receipt_concurrency.py::test_RP55_concurrent_children_never_erase_each_others_terminals",
+   "returncode": 1,
+   "tail": "1 failed, 7 deselected in 0.18s"
+  },
+  {
+   "mutant": "M13_chronology_compared_as_text",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "the same instant spelled two ways reads as an inversion",
+   "test": "tests/test_df_e1_chronology.py::test_RP55_the_same_instant_spelled_two_ways_is_not_a_violation",
+   "returncode": 1,
+   "tail": "1 failed, 4 deselected in 0.18s"
+  },
+  {
+   "mutant": "M14_the_first_report_file_wins",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "the table can describe an aborted attempt of the same root",
+   "test": "tests/test_df_e1_governing_report.py::test_RP55_the_report_of_the_run_that_finished_governs",
+   "returncode": 1,
+   "tail": "1 failed, 3 deselected in 0.39s"
+  },
+  {
+   "mutant": "M15_one_spool_for_every_unit",
+   "applied": true,
+   "killed": true,
+   "guard_removed": "parallel children share one spool and flush each other's envelopes",
+   "test": "tests/test_df_e1_governed_route.py::test_RP51_a_destination_that_goes_down_and_comes_back_loses_no_terminal",
+   "returncode": 1,
+   "tail": "1 failed, 11 deselected in 0.95s"
+  }
+ ],
+ "killed": 15,
+ "total": 15,
+ "rule": "every mutation removes one guard; the named test must fail (killed = true). A survivor is an untested guard."
+}

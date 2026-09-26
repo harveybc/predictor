@@ -1,0 +1,21 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1790423203.477117 3995040 cuda_platform.cc:52] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+{
+ "counts": {
+  "VERIFIED": 60,
+  "REFUTED": 9,
+  "UNVERIFIABLE_ARTIFACT_ABSENT": 0
+ },
+ "refuted": [
+  "2 535.5 CPU seconds of an 11 000-second cap",
+  "the retained closure replay covers the rows the published metric is computed on",
+  "Four of nine cells are CENSORED_BY_BUDGET",
+  "the arms of the recipe contrast were trained to the same budget",
+  "core_mse_s1 = 0.5525, reproducing R0_s1 of the finished run exactly through a different runner",
+  "phase 1 carries a closure of its own",
+  "the phase-3 family by 96-97% at one to six hours",
+  "the leak signature subtracts two skills measured on the same rows",
+  "the full-scale negative control is compared against a matched true-label arm"
+ ],
+ "unverifiable": []
+}

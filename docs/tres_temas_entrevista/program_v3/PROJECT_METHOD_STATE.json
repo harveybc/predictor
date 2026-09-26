@@ -14,6 +14,65 @@
   "scientific_gates": "No scrambled-label-delta resolution floor; H-CORE dependency is scoped to its own contrasts, not all E3",
   "confirmatory_candidate_author": "Satoshi drafts; Musashi reviews; no reserve or execution authority conferred"
  },
+ "rp49_rp64_disposition_20260926": {
+  "authority": "the owner's grant of 2026-09-26: the successor technical lead audits the two ranges whose reviews were never written. Published under Satoshi's name; nothing is written or signed in the reviewer's name",
+  "stands_in_for": [
+   "MUSASHI_RP49_RP56_REVIEW",
+   "MUSASHI_RP57_RP64_REVIEW"
+  ],
+  "documents": [
+   "../../audits/work_plan/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md",
+   "../../audits/work_plan/SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md"
+  ],
+  "evidence": "../../audits/evidence/RP49_RP64_AUDIT_20260926/AUDIT.json",
+  "instrument": [
+   "tools/df_rp49_rp64_audit.py",
+   "tests/test_rp49_rp64_audit.py"
+  ],
+  "audited_commit": "941eb5b3",
+  "rule": "a module is unblocked only if its own retained artifacts sustain it; a claim whose artifact is gone is UNVERIFIABLE_ARTIFACT_ABSENT, never accepted",
+  "checks": {
+   "VERIFIED": 60,
+   "REFUTED": 9,
+   "UNVERIFIABLE_ARTIFACT_ABSENT": 0,
+   "rules_passing": 52
+  },
+  "disposition": "BOTH_RANGES_ACCEPTED_WITH_NINE_FINDINGS_MOD_E1_EXTERNAL_REVIEW_DISCHARGED",
+  "recomputed_independently": [
+   "both sealed designs re-derive; the executed successor design is byte-identical to the sealed one",
+   "18 cells replayed from their saved weights on all 10 020 evaluation origins, max |diff| 1.31e-06 kW",
+   "every regime mean, sd, paired difference, control and censoring verdict of both runs",
+   "the three scaled-error denominators on the supports their own formulas state",
+   "192 published metric rows under the publisher's own rule; the report digest binds to retained bytes",
+   "the 85-table flag set, and four legacy tables recomputed from the committed prediction CSVs",
+   "15/15 mutants re-killed and all 10 causal negative controls re-DETECTED"
+  ],
+  "findings": [
+   "the sixteenth governed unit is 'prepare' and the return names it nowhere (presentation)",
+   "the CPU figure quoted against the 11 000 s cap is the root-only 2 535.504; the runner charges 2 785.504",
+   "the retained closure replay covers 5.11% of the rows its metric uses; the audit replayed 100% and it holds",
+   "phase 1 has FIVE cells CENSORED_BY_BUDGET, not four",
+   "the winning core_mae arm ran 11 762 optimiser updates against core_mse's 10 270",
+   "'reproducing R0_s1 exactly' is 5.0e-07 in the mean and 6.5e-05 per row, above the 1e-05 tolerance",
+   "phase 1 was never closed: no CLOSE.json, no closure_replays; the audit performed the replay",
+   "'the phase-3 family by 96-97%' is the top four of 24 tables spanning 27.7-97.2%; the flag base is 113, not 167",
+   "the leak signature subtracts skills measured on 1 512 and 1 525 rows",
+   "the published autocorrelations re-derive under a biased ACF whose shrinkage is 0.7492 at a week; bias-corrected the weekly lag (0.367) is ABOVE the daily (0.335), reversing the published order"
+  ],
+  "module_rulings": {
+   "MOD-FROZEN-PREFIX": "UNBLOCKED: the prefix it must generalise is identity-pinned, its refusals fire by name and its temporal support is measured. First two items: restate the RP59 lag table with its estimator and its bias, and verify governed sequence materialization PER SPLIT, which neither range does",
+   "MOD-CORE-PRETRAIN": "BLOCKED: the instrument's resolution. A scrambled-label fit loses 0.049 kW, five times the ~0.01 effect to be resolved, and the one recipe contrast was not budget-matched. Must exist first: a measured resolution for this protocol on this task (no new training), budget-matched arms with the monitor fixed, and MOD-FROZEN-PREFIX",
+   "MOD-CONF": "BLOCKED: the reserve is intact and provably so, but the method was still moving through both ranges and the Huber/AdamW v2 design that pins the standing recipe is not retained (four arms rest on digest be2e776e... with no document). Must exist first: that document, and one sealed design freezing the confirmatory method. Its co-owner is Musashi and no grant replaces him",
+   "MOD-E3": "BLOCKED: no governed forecasting result exists on the domain it trades (every retained E1 measurement is a household-electricity panel; the only price-series tables are CAUSALITY_UNVERIFIED with both lineages UNBOUND), BUSINESS-CONTRACT is DESIGNED not EXECUTED, and the H-CORE design it is the RL counterpart of is blocked above"
+  },
+  "not_reached": [
+   "both legacy lineages stay UNBOUND: the producer of the decomposed inputs is not in this repository",
+   "the Huber/AdamW v2 design document is still not retained; retaining it is the cheapest repair here",
+   "the two workers' CPU cost of RP49-RP56 stays UNMEASURED and declared so",
+   "nothing was recomputed under today's code for the four blocks closed under drifted code"
+  ],
+  "no_training_no_allocation_no_gpu": true
+ },
  "classification_first_20260924": {
   "public_interface": "Required Laya-like experience across all five families: data/context + natural-language questions -> typed engine answers; not a plugin catalog",
   "RAG": "Consider bounded documentation retrieval evaluation; market-context RAG separate and point-in-time; optional, not implemented, not a classification prerequisite",
@@ -838,9 +897,14 @@
    "depends_on": [
     "MOD-E1"
    ],
-   "evidence": [],
+   "evidence": [
+    "../../audits/work_plan/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md",
+    "../../audits/work_plan/SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md"
+   ],
    "next_action": "After extractor regime comparison, fix all preprocessing/grouping/D/I/A/fusion states and verify governed sequence materialization per split",
-   "deliverable": "Versioned derived dataset with direct/cache parity, temporal support and complete prefix lineage"
+   "deliverable": "Versioned derived dataset with direct/cache parity, temporal support and complete prefix lineage",
+   "blocked_by_external_review": false,
+   "review_disposition": "UNBLOCKED by SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79 (owner's grant)"
   },
   {
    "id": "MOD-CORE-PRETRAIN",
@@ -850,9 +914,14 @@
     "MOD-E1",
     "MOD-FROZEN-PREFIX"
    ],
-   "evidence": [],
+   "evidence": [
+    "../../audits/work_plan/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md",
+    "../../audits/work_plan/SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md"
+   ],
    "next_action": "Design H-CORE then compare random, pretrained-finetuned and pretrained-frozen core with actual task heads and full cost; no active-run changes",
-   "deliverable": "Independent H-CORE effects on forecasting, total cost and limitations; RL counterpart in MOD-E3"
+   "deliverable": "Independent H-CORE effects on forecasting, total cost and limitations; RL counterpart in MOD-E3",
+   "blocked_by_external_review": false,
+   "review_disposition": "STILL BLOCKED by its own prerequisites, not by the absent review: see SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79"
   },
   {
    "id": "MOD-CONF",
@@ -861,9 +930,14 @@
    "depends_on": [
     "MOD-E1"
    ],
-   "evidence": [],
+   "evidence": [
+    "../../audits/work_plan/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md",
+    "../../audits/work_plan/SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md"
+   ],
    "next_action": "Review fixed method before independent E0 synthetic and E2 public reserves",
-   "deliverable": "H1/H2/H3 effects under the proposal's reserved protocol"
+   "deliverable": "H1/H2/H3 effects under the proposal's reserved protocol",
+   "blocked_by_external_review": false,
+   "review_disposition": "STILL BLOCKED by its own prerequisites, not by the absent review: see SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79"
   },
   {
    "id": "BUSINESS-CONTRACT",
@@ -897,10 +971,14 @@
     "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
     "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md",
     "../../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md",
-    "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md"
+    "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md",
+    "../../audits/work_plan/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md",
+    "../../audits/work_plan/SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md"
    ],
    "next_action": "RP56 reports offline nonfill repair; preserve for external acceptance, not scientific RL. Weekly forecasting/RL remains mandatory after data and E1 prerequisites",
-   "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost"
+   "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost",
+   "blocked_by_external_review": false,
+   "review_disposition": "STILL BLOCKED by its own prerequisites, not by the absent review: see SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79"
   },
   {
    "id": "L2-PUBLIC-RL",
@@ -1455,7 +1533,7 @@
    "selector": "v4: A reported, B within each loss x optimizer over the same 3 LRs (configuration level, paired seeds), C/D paired sensitivity contrasts; identity/custody rejections",
    "uncertainty": "usable-population estimand; isolated weeks = named support limitation; confirmatory intervals only under a predeclared coverage certificate (none at 26 positions / block 2)",
    "design": "../../audits/evidence/d3_k5_20260917/RP82/FIN_LOSS_OPT_DESIGN_SEALED_v4.json",
-   "cost_pilot": "SEALED (../../audits/evidence/d3_k5_20260917/RP82/fin_cost_pilot/DESIGN.json); NOT_EXECUTED: HTTP 422 'resource availability contract required' on the governed ranged download of the EURUSD 1h resource — the lake declares no resource contract for it (operator metadata); campaign satoshi-fin-cost-pilot-20260921-prepare-data left open without delivery; 0 bytes read"
+   "cost_pilot": "SEALED (../../audits/evidence/d3_k5_20260917/RP82/fin_cost_pilot/DESIGN.json); NOT_EXECUTED: HTTP 422 'resource availability contract required' on the governed ranged download of the EURUSD 1h resource \u2014 the lake declares no resource contract for it (operator metadata); campaign satoshi-fin-cost-pilot-20260921-prepare-data left open without delivery; 0 bytes read"
   },
   "reads_of_reserved_test_rows": 0,
   "dev_weeks_read_by_finance": 0,
@@ -1570,7 +1648,7 @@
    "status": "DONE_PENDING_FINAL_CLOSURE",
    "route_trace": "three T=96 cells, nine batches holding the most discrepant windows, CPU vs GPU with identical batching: 0 route flips out of 59,351,616 routes per block, 0 cut-index changes, gating probability differences <= 8e-5, min distance to the top-p threshold ~8e-5; same-device repeat 0.0 on both devices -> classification NUMERICAL_ONLY (kernel-level tensor differences amplified through the network; the top-p routing hypothesis is NOT supported on the traced batches)",
    "evidence": "docs/audits/evidence/d3_k5_20260917/RP98/ROUTE_TRACE.*.json",
-   "replay_policy": "no cached adoption; outputs validated in full; same-device (GPU UUID a8bd1b2c… for dragon-trained cells) vs cross-device fields; old CPU failures preserved as failures of the original rule"
+   "replay_policy": "no cached adoption; outputs validated in full; same-device (GPU UUID a8bd1b2c\u2026 for dragon-trained cells) vs cross-device fields; old CPU failures preserved as failures of the original rule"
   },
   "RP101": {
    "status": "DONE",
@@ -1586,7 +1664,7 @@
   },
   "RP102": {
    "status": "ALL_12_CELLS_EXECUTED; 9 terminals accepted; 3 T=720 terminals pending the owner's warehouse restart; consolidated closure RUNNING on gamma",
-   "placement": "gamma rebooted by the owner (kernel memory leak cleared: 11 GiB available; the 5090's phantom 100 % utilization gone); governed preflight on the RTX 5090 (UUID a9f35631…): 55-64 s/epoch, <= 0.27 h per cell, VRAM 4.8 GiB, 49 C after preflight; execute --bounded --author-metric-budget-gib 4, -m 8G, one cell at a time, thermal guard between cells",
+   "placement": "gamma rebooted by the owner (kernel memory leak cleared: 11 GiB available; the 5090's phantom 100 % utilization gone); governed preflight on the RTX 5090 (UUID a9f35631\u2026): 55-64 s/epoch, <= 0.27 h per cell, VRAM 4.8 GiB, 49 C after preflight; execute --bounded --author-metric-budget-gib 4, -m 8G, one cell at a time, thermal guard between cells",
    "cells": [
     "L96_h192_s2022",
     "L96_h192_s2023",
@@ -1616,10 +1694,10 @@
     "L96_h720_s2023": "MSE 0.185368 / MAE 0.285684 (float64 basis), 15/15 epochs, best 11, 20 min, RSS 2.7 GiB; terminal REFUSED likewise (warehouse INT32)"
    },
    "oom_event": "L96_h336_s2021 on gamma: scope killed by systemd-oomd at 13:28 local at a 7.1 GB scope peak (host memory pressure from file-backed pages of the bounded evaluation; gamma has 14 GB with another workload); FAILED terminal, attempt retired; fix: predictions/targets streamed through file handles with posix_fadvise(DONTNEED), artifact/digests/float64 streamed from files (commit after 4662ca5); re-profiled before relaunch",
-   "streaming_fix": "bounded evaluation now streams predictions/targets through file handles with posix_fadvise(DONTNEED) and streams the artifact, digests and float64 reduction from the files; a first version re-created the files per batch and was caught by the parity tests (predictions/targets misaligned) — fixed; tool suite 31 passed + 1 skipped on gamma; re-profiles on gamma under an 8 GiB request: T=336 cgroup peak 1.89 GB (file 146 MB), T=720 2.32 GB (file 148 MB), T=96 with dragon's checkpoint 4.15 GB with the author metric executed",
-   "relaunch": "2026-09-22 ~14:05 local: execute --horizons 336 720 on the 5090 (run-id …-gamma2), one cell at a time, thermal guard, watcher",
+   "streaming_fix": "bounded evaluation now streams predictions/targets through file handles with posix_fadvise(DONTNEED) and streams the artifact, digests and float64 reduction from the files; a first version re-created the files per batch and was caught by the parity tests (predictions/targets misaligned) \u2014 fixed; tool suite 31 passed + 1 skipped on gamma; re-profiles on gamma under an 8 GiB request: T=336 cgroup peak 1.89 GB (file 146 MB), T=720 2.32 GB (file 148 MB), T=96 with dragon's checkpoint 4.15 GB with the author metric executed",
+   "relaunch": "2026-09-22 ~14:05 local: execute --horizons 336 720 on the 5090 (run-id \u2026-gamma2), one cell at a time, thermal guard, watcher",
    "oom_event_2": "second T=336 attempt on gamma (streamed path): systemd-oomd killed the scope at 14:07 local after a 24-min stall at epoch 2 (scope peak 7 GB, host memory pressure of the user slice > 50 %); FAILED terminal, attempt retired; relaunched with a host+scope memory monitor every 15 s (first samples: scope 2.3 GB, anon 1.9 GB, file 0.4 GB during training; host 8.6 GB available)",
-   "memory_diagnosis": "monitor (host + scope every 15 s): during training the scope oscillated 3.9-5.8 GB and reached 7.1 GB at epoch 7 of T=336 — main process ~4.9 GB plus the DataLoader worker (a fork whose private pages grew to 4.5 GB) — right at MemoryHigh (7.2 GB) with host pressure rising: the pattern that produced the two systemd-oomd kills (stall, then kill). Attempt 3 stopped by the operator at epoch 7 and retired; run 4 launched with the declared operational option num_workers=0 (batch order and contents unchanged, tested; host memory only): scope 2.0 GB at start",
+   "memory_diagnosis": "monitor (host + scope every 15 s): during training the scope oscillated 3.9-5.8 GB and reached 7.1 GB at epoch 7 of T=336 \u2014 main process ~4.9 GB plus the DataLoader worker (a fork whose private pages grew to 4.5 GB) \u2014 right at MemoryHigh (7.2 GB) with host pressure rising: the pattern that produced the two systemd-oomd kills (stall, then kill). Attempt 3 stopped by the operator at epoch 7 and retired; run 4 launched with the declared operational option num_workers=0 (batch order and contents unchanged, tested; host memory only): scope 2.0 GB at start",
    "t720_diagnosis": {
     "symptom": "run 4: L96_h720_s2021 trained epoch 1 (1100 iters, 0.0456 s/iter, 50.7 s) then the main process grew from 2.4 to 7.3 GB anonymous RSS within 15 s at the end-of-epoch validation and sat throttled at the slice ceiling (memory.high 7.73 GB, wchan mem_cgroup_handle_over_high, GPU 0 %, PSI rising toward the oomd threshold); interrupted, FAILED, retired; the loop had already started s2022 (same fate) before the execute loop was stopped",
     "cause": "the author's vali() moves every batch's outputs and targets to the host (T=720: 14.8 MB each, 120 val + 284 test batches ~ 6 GB in a few seconds); with glibc's dynamic mmap threshold those buffers are carved from the heap and the freed pages stay resident. Confirmed by profile runs on gamma (scratch, nothing kept): default allocator -> RSS jump 2.4 -> 7.6 GB at ~57 s and stall; GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 -> RSS flat at 2.4 GB through epoch 1 + validation. The CPU loader alone is fine (0.014 s/batch, 0.9 GB). Two profile runs with faulthandler periodic stack dumps segfaulted inside the interpreter (dump-related); the runs without dumps did not",
@@ -1628,13 +1706,13 @@
    },
    "warehouse_blocker": {
     "symptom": "run 5: L96_h720_s2021 trained and evaluated in full (arrays 4,198,064,038 bytes, record and checkpoint written, allocator patch held the scope at ~2.1 GB) and its COMPLETED terminal was refused by the warehouse: gov_terminal_artifact.bytes is a 32-bit INTEGER on the DuckDB host (DuckDB ConversionException, value out of range for INT32), relayed by data-gov as http 400",
-    "fix": "93a25d10: predictor-olap-store 0.1.2 / predictor-duckdb-store 0.1.1 — `bytes` BIGINT in the DDL and an in-place widening of an existing 32-bit column at start-up (DuckDB provider: ALTER COLUMN + CHECKPOINT so the write-ahead log never carries DDL; the lake plugin copy carries the same change); store suite 106 passed + 1 skipped on dragon with DuckDB (throwaway venv), incl. the reopen of a migrated file",
+    "fix": "93a25d10: predictor-olap-store 0.1.2 / predictor-duckdb-store 0.1.1 \u2014 `bytes` BIGINT in the DDL and an in-place widening of an existing 32-bit column at start-up (DuckDB provider: ALTER COLUMN + CHECKPOINT so the write-ahead log never carries DDL; the lake plugin copy carries the same change); store suite 106 passed + 1 skipped on dragon with DuckDB (throwaway venv), incl. the reopen of a migrated file",
     "deployment": "both packages installed into the DuckDB host's environment on omega (~/.venvs/store-hosts-duckdb-prod) at 16:05 local; the running service (crispdm-data-warehouse-olap.service, PID since 2026-09-17) still executes the old code: my restart of the service was refused by the execution environment (interfere-with-workloads) and is NOT bypassed. OWNER ACTION: `systemctl --user restart crispdm-data-warehouse-olap.service` on omega (optionally copy ~/.local/state/crispdm-duckdb/prod/cube.duckdb* aside first); the migration runs at the service's first engine use",
     "consequence": "the three T=720 cells finish training/evaluation on gamma (records, arrays, checkpoints on disk) but their terminals stay unaccepted until the restart; then `report --unit L96_h720_s202X` re-sends each COMPLETED terminal from its record; until then their closure rows are custody-UNANCHORED (values shown as executed_unverified, never pooled) and their arrays are retained"
    }
   },
   "RP103": {
-   "status": "DONE_PARTIAL: consolidated closure on WORKER_B (4 runs; final pre-deletion report sha256 fbe2cd4c…), 6 cells verified (T=192 x3, T=336 x3) and their arrays deleted on WORKER_B (7 paths, 11.16 GB) and WORKER_A (2 paths, 2.29 GB) with receipts; T=96 unverified here (cross-GPU pointwise fail 4090->5090, metrics bit-identical; same-device replays on WORKER_A pending the owner), T=720 custody pending the warehouse restart; omega copies untouched (hold)",
+   "status": "DONE_PARTIAL: consolidated closure on WORKER_B (4 runs; final pre-deletion report sha256 fbe2cd4c\u2026), 6 cells verified (T=192 x3, T=336 x3) and their arrays deleted on WORKER_B (7 paths, 11.16 GB) and WORKER_A (2 paths, 2.29 GB) with receipts; T=96 unverified here (cross-GPU pointwise fail 4090->5090, metrics bit-identical; same-device replays on WORKER_A pending the owner), T=720 custody pending the warehouse restart; omega copies untouched (hold)",
    "agreement": {
     "192": "OPERATIONAL_AGREEMENT mean 0.157645/0.252163 vs 0.154/0.248 (+0.0036/+0.0042)",
     "336": "OPERATIONAL_AGREEMENT mean 0.164480/0.262985 vs 0.162/0.261 (+0.0025/+0.0020), float64 basis",
@@ -1669,7 +1747,7 @@
   "orders": "docs/handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md (c779711; review MUSASHI_RP98_RP105_REVIEW_2026_09_22.md of 55a339ce)",
   "base": "55a339ce",
   "updated_on": "2026-09-24",
-  "placement": "owner 22-sep: the ONLY device eligible for new GPU work is WORKER_B's EXTERNAL RTX 5090 (GPU-a9f35631…), admitted by physical UUID before every dispatch; WORKER_B's internal 5070 Ti, WORKER_A's GPU and coordinator heavy work remain held with no automatic release; host CPU bounded and host thermals monitored separately (the external cooler does not cool the laptop)",
+  "placement": "owner 22-sep: the ONLY device eligible for new GPU work is WORKER_B's EXTERNAL RTX 5090 (GPU-a9f35631\u2026), admitted by physical UUID before every dispatch; WORKER_B's internal 5070 Ti, WORKER_A's GPU and coordinator heavy work remain held with no automatic release; host CPU bounded and host thermals monitored separately (the external cooler does not cool the laptop)",
   "RP106": {
    "status": "DONE",
    "pre": "docs/audits/evidence/d3_k5_20260917/RP106/PROBE_RESULTS_PRE.json (Musashi's probe unchanged at 55a339ce: different-identity copy deleted, rewritten metrics verified as zero, forged report accepted)",
@@ -1686,7 +1764,7 @@
   },
   "RP109": {
    "status": "DONE",
-   "exact_scorer": "author_metric_exact() reproduces utils.metrics.metric BIT FOR BIT within ~64 MB of temporaries: element-wise float32 differences chunk by chunk, numpy's pairwise summation tree replicated over the flattened population (leaves >= 128 elements reduced by numpy), mean = float32(sum)/float32(N); verified against np.add.reduce for n = 7 … 6.3e6 and on the real author fixture; the author's own function runs beside it whenever its full-size temporaries fit and must agree bitwise (refusal otherwise)",
+   "exact_scorer": "author_metric_exact() reproduces utils.metrics.metric BIT FOR BIT within ~64 MB of temporaries: element-wise float32 differences chunk by chunk, numpy's pairwise summation tree replicated over the flattened population (leaves >= 128 elements reduced by numpy), mean = float32(sum)/float32(N); verified against np.add.reduce for n = 7 \u2026 6.3e6 and on the real author fixture; the author's own function runs beside it whenever its full-size temporaries fit and must agree bitwise (refusal otherwise)",
    "regeneration": "T=336 x3 regenerated by INFERENCE from the retained checkpoints on the admitted RTX 5090: all three BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL (pred and true digests equal the record's), author float32 now available: s2021 0.1625940501689911/0.2606664299964905, s2022 0.16817493736743927/0.26741331815719604, s2023 0.16267016530036926/0.26087433099746704 (mean 0.164479718/0.262984693; float64 basis differed by <= 3.6e-8)"
   },
   "RP110": {
@@ -1696,7 +1774,7 @@
   },
   "RP111": {
    "status": "DONE",
-   "closure": "REPORT sha256 bc9d3388f1f21d28…, replays on the admitted RTX 5090 only (UUID asserted in every child)",
+   "closure": "REPORT sha256 bc9d3388f1f21d28\u2026, replays on the admitted RTX 5090 only (UUID asserted in every child)",
    "results": {
     "96": "NO_MEASUREMENT: cross-device replay (4090 L -> 5090) fails the frozen pointwise rule (max|delta| 1.9e-4 / 2.2e-4 / 2.7e-4 > 1e-4); author float32 recomputed 0.13332/0.14008/0.13309; preserved same-device evidence on WORKER_A (max|delta| 0.0) is HISTORICAL_RECORD_ONLY and its GPU stays held",
     "192": "OPERATIONAL_AGREEMENT mean 0.157645/0.252163 vs 0.154/0.248, three seeds, historically bound to the original closure fbe2cd4c (author float32)",
@@ -1710,13 +1788,13 @@
    "status": "DONE",
    "what": "accept_regenerated(): the retained catalog re-derived from the regenerated bytes through the author's loader and compared with the retained METRICS_VAULT.json, numeric oracles (global vs author <= 1e-6, per-step and per-channel means vs global <= 1e-9, float64 vs author <= 1e-6), catalog states and population; all three T=336 cells PASS with catalog_recomputed_equals_retained true; the regenerated temporaries then deleted with per-path receipts (6 files, ~12.7 GB), catalogs/records/checkpoints and the acceptance records retained",
    "catalog_acceptance": "accept-catalog on all twelve: nine PASS with every oracle exactly 0.0 (per-step/per-channel/per-window/time-block means against the global, skill and rmse identities, denominators, population, required families and states); the three T=96 catalogs are refused only because the current closure does not verify those cells",
-   "deletion": "T=720 x3 deleted under the corrected per-content path with the approval bound to REPORT bc9d3388… and to the metadata backup manifest (84 files, 25.2 MB, metadata only): 12,594,204,672 bytes reclaimed, measured free disk 210.3 GiB afterwards; T=96 arrays retained (unverified), WORKER_A and omega copies untouched"
+   "deletion": "T=720 x3 deleted under the corrected per-content path with the approval bound to REPORT bc9d3388\u2026 and to the metadata backup manifest (84 files, 25.2 MB, metadata only): 12,594,204,672 bytes reclaimed, measured free disk 210.3 GiB afterwards; T=96 arrays retained (unverified), WORKER_A and omega copies untouched"
   },
   "RP113": {
    "status": "RETURNED",
    "return": "docs/audits/work_plan/SATOSHI_RP106_RP113_RETURN_2026_09_23.md",
    "head": "74024c0b",
-   "final_closure": "REPORT sha256 b84a7767… (after the authorized T=720 deletion; the nine deleted cells are historically bound, three of them through accepted bit-identical regenerations); the closure that verified T=720 with its arrays is bc9d3388…",
+   "final_closure": "REPORT sha256 b84a7767\u2026 (after the authorized T=720 deletion; the nine deleted cells are historically bound, three of them through accepted bit-identical regenerations); the closure that verified T=720 with its arrays is bc9d3388\u2026",
    "ledger": "19 attempts (12 with records, 7 retired or interrupted with an explicit NONE_RECORDED cost), 5.37 h measured wall time, 210.3 GiB free disk after the cleanup",
    "open_for_owner": [
     "cooling confirmation for WORKER_A's GPU: ~66 s of same-device replays would verify T=96 and unlock the four-horizon average",
@@ -1745,7 +1823,7 @@
   "RP115": {
    "status": "DONE_IN_CODE",
    "what": "publish_acceptance() reports closure, catalog and regeneration evidence as governed COMPLETED terminals (acquire + terminal + ACCEPTED_EVIDENCE registry); accepted_artifact() answers from the receipt and the warehouse row, never from the local registry alone; historical verification requires the resolved report to be accepted evidence; regeneration_evidence() requires both its record and its acceptance to be accepted AND consistent (identity, digests, device, population, finite metric, agreement with the retained catalog); a refused successor is reported and ignored, never used and never destructive",
-   "dated_successor_acceptances": "the two retained closure reports the deletion markers name were given dated successor acceptances on WORKER_B (fbe2cd4c… of 2026-09-22 and bc9d3388… of 2026-09-23), each carrying the explicit scope that acceptance starts at that date and earlier local availability proves nothing"
+   "dated_successor_acceptances": "the two retained closure reports the deletion markers name were given dated successor acceptances on WORKER_B (fbe2cd4c\u2026 of 2026-09-22 and bc9d3388\u2026 of 2026-09-23), each carrying the explicit scope that acceptance starts at that date and earlier local availability proves nothing"
   },
   "RP116": {
    "status": "DONE_IN_CODE",
@@ -1765,7 +1843,7 @@
    "status": "DONE",
    "reporting": "a horizon measured on the accepted chain without an accepted replay is reported MEASURED_REPLAY_UNVERIFIED with its values explicitly unpooled; the four-horizon average names the horizons missing per seed over a fixed denominator",
    "catalog_acceptance": "all twelve catalogs accepted and published as governed evidence; worst internal oracle across the population 1.1e-16; the three T=96 acceptances refuse only on the missing accepted replay",
-   "report": "sha256 9c491f38… on WORKER_B (successor; earlier reports retained and accepted)",
+   "report": "sha256 9c491f38\u2026 on WORKER_B (successor; earlier reports retained and accepted)",
    "results": {
     "96": "MEASURED_REPLAY_UNVERIFIED: author float32 0.13332/0.14008/0.13309 and 0.23055/0.23778/0.23032, custody accepted, catalog independently recomputed family by family over 159,164,640 elements (all differences 0.0), cross-device replay on the 5090 FAILS the frozen pointwise rule (1.9e-4/2.2e-4/2.7e-4) with bit-identical replayed metrics; values never pooled",
     "192": "VERIFIED, OPERATIONAL_AGREEMENT: 0.157645 (SD 0.00380) / 0.252163 (SD 0.00396) vs 0.154/0.248; mixed-host dispersion (coordinator + WORKER_B) stated",
@@ -1812,7 +1890,7 @@
   },
   "RP124": {
    "status": "DONE_IN_CODE",
-   "what": "CATALOG_ESTIMATORS declares the finite approved catalog before measurement (population, axis, orientation, reduction, parameters, undefined condition, tolerance per family); independent_estimators implements every declared family on the same population — ACF over window origins per fixed forecast step, quantiles from the declared histogram CDF, baselines from the author's loader inputs — and compare_catalog_to_reference compares field by field under each family's tolerance, treating a value present on one side only as a disagreement and reporting coverage"
+   "what": "CATALOG_ESTIMATORS declares the finite approved catalog before measurement (population, axis, orientation, reduction, parameters, undefined condition, tolerance per family); independent_estimators implements every declared family on the same population \u2014 ACF over window origins per fixed forecast step, quantiles from the declared histogram CDF, baselines from the author's loader inputs \u2014 and compare_catalog_to_reference compares field by field under each family's tolerance, treating a value present on one side only as a disagreement and reporting coverage"
   },
   "RP125": {
    "status": "DONE_IN_CODE",
@@ -1827,7 +1905,7 @@
    "status": "RETURNED",
    "return": "docs/audits/work_plan/SATOSHI_RP122_RP127_RETURN_2026_09_23.md",
    "head": "c7c354e9",
-   "closure": "report sha256 211e6231… (successor; scores unchanged: T=192 0.157645/0.252163, T=336 0.164480/0.262985, T=720 0.190226/0.290617 OPERATIONAL_AGREEMENT; T=96 MEASURED_REPLAY_UNVERIFIED; average NOT_COMPUTED over a denominator of four)",
+   "closure": "report sha256 211e6231\u2026 (successor; scores unchanged: T=192 0.157645/0.252163, T=336 0.164480/0.262985, T=720 0.190226/0.290617 OPERATIONAL_AGREEMENT; T=96 MEASURED_REPLAY_UNVERIFIED; average NOT_COMPUTED over a denominator of four)",
    "evidence": "docs/audits/evidence/d3_k5_20260917/{RP122,RP127}/",
    "accepted_evidence_registry": "56 entries (4 closure reports, 18 catalog acceptances, 34 regeneration records)",
    "errata": "the RP114-RP121 return keeps its text and carries dated errata for its 'every family', 'cannot be skipped' and 'acceptance, not resolution' claims",
@@ -1844,7 +1922,7 @@
   "updated_on": "2026-09-23",
   "RP128": {
    "status": "DONE_IN_CODE",
-   "what": "a catalog acceptance now carries an explicit CLASS and certificate derived from its own recorded content (FULL_INDEPENDENT_NUMERIC only when every declared family was compared, nothing unchecked and no disagreement; otherwise DOMAIN_AND_INTERNAL_ONLY with a restricted-scope note); the deletion reads that certificate — class, catalog digest, population against the record's shape, inventory version and digest — instead of a bare pass. The catalog acceptance certifies the CATALOG (the closure recomputed and read it back); the cell's own verification is a separate fact the deletion gate enforces",
+   "what": "a catalog acceptance now carries an explicit CLASS and certificate derived from its own recorded content (FULL_INDEPENDENT_NUMERIC only when every declared family was compared, nothing unchecked and no disagreement; otherwise DOMAIN_AND_INTERNAL_ONLY with a restricted-scope note); the deletion reads that certificate \u2014 class, catalog digest, population against the record's shape, inventory version and digest \u2014 instead of a bare pass. The catalog acceptance certifies the CATALOG (the closure recomputed and read it back); the cell's own verification is a separate fact the deletion gate enforces",
    "pre_post": "docs/audits/evidence/d3_k5_20260917/RP128/ (PRE on WORKER_B at a73e55b2: the data-less acceptance authorised a deletion that removed the array; POST at the repaired head: REFUSED with the array intact)"
   },
   "RP129": {
