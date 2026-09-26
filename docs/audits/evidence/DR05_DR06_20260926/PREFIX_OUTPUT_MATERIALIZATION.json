@@ -1,0 +1,681 @@
+{
+ "schema": "df_dr05_prefix_output.v1",
+ "what_this_is": "the materialized OUTPUT of the frozen prefix, with four proofs",
+ "what_parity_of_inputs_is_not": "agreement between the delivered CSV and the prepared panel is parity of the prefix's INPUTS. It says nothing about the prefix's OUTPUT, which is what a consumer downstream of the fusion reads. This artifact is that output; it is not implied by that agreement and was not implied by it",
+ "prefix_ends_at": "fusion_seq",
+ "run_root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3",
+ "donor_cell": "R1_s1",
+ "store": "/home/harveybc/.local/state/crispdm-data-foundation/dr05_prefix_store_20260926",
+ "reserve": "NOT_OPENED",
+ "code_identity": {
+  "revision": "6820fcae2b28c93f223b830791b585d7f9f43649",
+  "worktree_has_uncommitted_changes": true,
+  "module_sha256": {
+   "df_dr05_prefix_output.py": "5c77ef8fdb1e8ea819317ee435537ea420e108bf0b1502a4478f1dc6104e8c9c",
+   "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+   "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c",
+   "df_e1_block.py": "b2fb1e9ec96e9a105d6c75f1606c62aa31436b7d3c69ddec489e061082e10e3b",
+   "df_e1_regimes.py": "c36421d435e25b29332f6cc2211bdb8dea8d617b7dda58286d29281fa945a282"
+  }
+ },
+ "version": {
+  "version": "dr05.prefix.57970b5e4d0aa302",
+  "derived_from": {
+   "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+   "design_sha256": "143abb57d97daa07e3f5228eadf4e3f1a0deb5fe30eb95ca065663f76ff888a7",
+   "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "donor_cell": "R1_s1",
+   "donor_weights_sha256": "c374076c49c9631803bd16f85b4a577a67466a38e60371040af7d4ebe4ae3845",
+   "prefix_ends_at": "fusion_seq",
+   "code_module_sha256": {
+    "df_dr05_prefix_output.py": "5c77ef8fdb1e8ea819317ee435537ea420e108bf0b1502a4478f1dc6104e8c9c",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c",
+    "df_e1_block.py": "b2fb1e9ec96e9a105d6c75f1606c62aa31436b7d3c69ddec489e061082e10e3b",
+    "df_e1_regimes.py": "c36421d435e25b29332f6cc2211bdb8dea8d617b7dda58286d29281fa945a282"
+   }
+  },
+  "a_different_donor_is_a_different_version": true
+ },
+ "the_cut": {
+  "layers_in_the_prefix": [
+   "x",
+   "g0_select",
+   "g1_select",
+   "g2_select",
+   "g0_det1_conv",
+   "g0_det1_proj",
+   "g1_det1_conv",
+   "g1_det1_proj",
+   "g2_det1_conv",
+   "g2_det1_proj",
+   "g0_det1_res",
+   "g1_det1_res",
+   "g2_det1_res",
+   "g0_det2_conv",
+   "g1_det2_conv",
+   "g2_det2_conv",
+   "g0_det2_res",
+   "g1_det2_res",
+   "g2_det2_res",
+   "g0_adapt",
+   "g1_adapt",
+   "g2_adapt",
+   "fusion_seq"
+  ],
+  "downstream_layers_found_inside": [],
+  "the_cut_is_at_the_fusion": true,
+  "clean": true
+ },
+ "clock": {
+  "state": "VERIFIED",
+  "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "slice_panel_rows": [
+   1412361,
+   1462761
+  ],
+  "first": "2009-08-23T12:45:00",
+  "last": "2009-09-27T12:44:00",
+  "declared_step_seconds": 60,
+  "distinct_steps_observed_seconds": [
+   60
+  ],
+  "timezone": "UNKNOWN (the producer never declared one; the labels are wall clock and the delivery's availability is UNDECLARED / UNKNOWN). Carried, not resolved"
+ },
+ "splits": {
+  "train": {
+   "split": "train",
+   "n_origins": 40080,
+   "origin_span": [
+    59,
+    40199
+   ],
+   "input_row_span": [
+    0,
+    40199
+   ],
+   "panel_row_span": [
+    1412361,
+    1452560
+   ],
+   "state": "TO_MATERIALIZE"
+  },
+  "validation": {
+   "split": "validation",
+   "n_origins": 10020,
+   "origin_span": [
+    40320,
+    50339
+   ],
+   "input_row_span": [
+    40261,
+    50339
+   ],
+   "panel_row_span": [
+    1452622,
+    1462700
+   ],
+   "state": "TO_MATERIALIZE"
+  },
+  "test": {
+   "split": "test",
+   "n_origins": 0,
+   "state": "REFUSED_UNMATERIALIZED_BY_DESIGN",
+   "why": "nothing was materialized for the reserve and nothing is materialized here. Its ABSENCE is what is verified: the consumed slice ends at panel row 1462761, and the family's test block begins far after it. MOD-CONF owns the reserve",
+   "materialization": null
+  }
+ },
+ "arrays": {
+  "train": {
+   "array": "prefix_output_train.npy",
+   "origins": "origins_train.npy",
+   "shape": [
+    40080,
+    60,
+    24
+   ],
+   "dtype": "float32",
+   "bytes": 230860928,
+   "sha256": "8a24071667bfedbeaf882b2869f3482b289e42f06ff3d3adb8d531745c382522",
+   "origins_sha256": "6f76b30bbc4cef3a40df066bf3e7453bb203ffd084ce85c91bbfcc3f843c504a",
+   "batch_used": 256
+  },
+  "validation": {
+   "array": "prefix_output_validation.npy",
+   "origins": "origins_validation.npy",
+   "shape": [
+    10020,
+    60,
+    24
+   ],
+   "dtype": "float32",
+   "bytes": 57715328,
+   "sha256": "0e6dd5bb871553621fa1f5b12343dfce7fff6425c5bf3d5d203defc894e17432",
+   "origins_sha256": "ee2e01ce8793b059727bf468159c3b19bc79d9eeeabff59b447c43cecbcfbd1f",
+   "batch_used": 256
+  }
+ },
+ "stages": [
+  {
+   "stage": "preprocessing",
+   "kind": "LEARNED",
+   "what": "the stored scaler applied to the panel's seven columns; fitted on TRAIN windows only",
+   "learned_state": {
+    "mean": [
+     0.16394039569874333,
+     241.13327788719684,
+     3.979902281204715,
+     1.2482722486963898,
+     0.8695229659938625,
+     6.320571675690061,
+     0.926139629748496
+    ],
+    "sd": [
+     0.12462470429263597,
+     2.20610330333974,
+     3.8047190184746955,
+     6.578895446497683,
+     3.6476937059712364,
+     8.382971207465904,
+     0.9125164391265214
+    ],
+    "digest": "8e546ccc53ccabb139a878559b4e5bb49293a3bf7354b0963518676a039b2bb2",
+    "fitted_on": "train windows only",
+    "fitted_on_rows": 2404860
+   },
+   "shape": {
+    "in": [
+     null,
+     7
+    ],
+    "out": [
+     null,
+     7
+    ]
+   },
+   "clock": {
+    "state": "VERIFIED",
+    "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "slice_panel_rows": [
+     1412361,
+     1462761
+    ],
+    "first": "2009-08-23T12:45:00",
+    "last": "2009-09-27T12:44:00",
+    "declared_step_seconds": 60,
+    "distinct_steps_observed_seconds": [
+     60
+    ],
+    "timezone": "UNKNOWN (the producer never declared one; the labels are wall clock and the delivery's availability is UNDECLARED / UNKNOWN). Carried, not resolved"
+   },
+   "rows_and_splits": {
+    "train": {
+     "split": "train",
+     "input_row_span": [
+      0,
+      40199
+     ],
+     "origins": 40080
+    },
+    "validation": {
+     "split": "validation",
+     "input_row_span": [
+      40261,
+      50339
+     ],
+     "origins": 10020
+    }
+   },
+   "version": "dr05.prefix.57970b5e4d0aa302"
+  },
+  {
+   "stage": "groups",
+   "kind": "CONSTANT_BY_DESIGN",
+   "what": "the held-constant physical channel assignment; one gather per group",
+   "learned_state": {
+    "assignment": [
+     0,
+     1,
+     0,
+     2,
+     2,
+     2,
+     0
+    ],
+    "digest": "e7083008f6025a79e635c214585fb0eb18dd825d6f33f7a5a2ffd296230629ef",
+    "learned": false,
+    "why_not_learned": "the design holds the grouping constant; profile-based grouping is a separate factor and is not varied here"
+   },
+   "layers": [
+    "g0_select",
+    "g1_select",
+    "g2_select"
+   ],
+   "shape": {
+    "in": [
+     null,
+     60,
+     7
+    ],
+    "out": {
+     "g0_select": [
+      null,
+      60,
+      3
+     ],
+     "g1_select": [
+      null,
+      60,
+      1
+     ],
+     "g2_select": [
+      null,
+      60,
+      3
+     ]
+    }
+   },
+   "clock": {
+    "state": "VERIFIED",
+    "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "slice_panel_rows": [
+     1412361,
+     1462761
+    ],
+    "first": "2009-08-23T12:45:00",
+    "last": "2009-09-27T12:44:00",
+    "declared_step_seconds": 60,
+    "distinct_steps_observed_seconds": [
+     60
+    ],
+    "timezone": "UNKNOWN (the producer never declared one; the labels are wall clock and the delivery's availability is UNDECLARED / UNKNOWN). Carried, not resolved"
+   },
+   "rows_and_splits": {
+    "train": {
+     "split": "train",
+     "input_row_span": [
+      0,
+      40199
+     ],
+     "origins": 40080
+    },
+    "validation": {
+     "split": "validation",
+     "input_row_span": [
+      40261,
+      50339
+     ],
+     "origins": 10020
+    }
+   },
+   "version": "dr05.prefix.57970b5e4d0aa302"
+  },
+  {
+   "stage": "detector",
+   "kind": "LEARNED",
+   "what": "two residual causal Conv1D blocks per branch, 16 filters, kernel 3, dilation 1, elu",
+   "learned_state": {
+    "layers": [
+     "g0_det1_conv",
+     "g0_det1_proj",
+     "g0_det1_res",
+     "g0_det2_conv",
+     "g0_det2_res",
+     "g1_det1_conv",
+     "g1_det1_proj",
+     "g1_det1_res",
+     "g1_det2_conv",
+     "g1_det2_res",
+     "g2_det1_conv",
+     "g2_det1_proj",
+     "g2_det1_res",
+     "g2_det2_conv",
+     "g2_det2_res"
+    ],
+    "digest": "633740a0cfd9da025fd548c90de65fc53cde61840145caf20b0b238b9021d89f",
+    "origin": "imported from the auto-encoder donor and FROZEN for this cell (weight change 0.0 on every detector layer in the retained record)"
+   },
+   "shape": {
+    "in": "per branch [None, W, group channels]",
+    "out": "[None, W, 16]"
+   },
+   "clock": {
+    "state": "VERIFIED",
+    "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "slice_panel_rows": [
+     1412361,
+     1462761
+    ],
+    "first": "2009-08-23T12:45:00",
+    "last": "2009-09-27T12:44:00",
+    "declared_step_seconds": 60,
+    "distinct_steps_observed_seconds": [
+     60
+    ],
+    "timezone": "UNKNOWN (the producer never declared one; the labels are wall clock and the delivery's availability is UNDECLARED / UNKNOWN). Carried, not resolved"
+   },
+   "rows_and_splits": {
+    "train": {
+     "split": "train",
+     "input_row_span": [
+      0,
+      40199
+     ],
+     "origins": 40080
+    },
+    "validation": {
+     "split": "validation",
+     "input_row_span": [
+      40261,
+      50339
+     ],
+     "origins": 10020
+    }
+   },
+   "version": "dr05.prefix.57970b5e4d0aa302"
+  },
+  {
+   "stage": "adapter",
+   "kind": "LEARNED",
+   "what": "TimeDistributed Dense(8), linear, one per branch",
+   "learned_state": {
+    "layers": [
+     "g0_adapt",
+     "g1_adapt",
+     "g2_adapt"
+    ],
+    "digest": "c492b5154dc52c912b8277d772450fb7b97fe9f15a591cf1ee6c2dac5bbb4ebc",
+    "origin": "fitted in this cell"
+   },
+   "shape": {
+    "per_branch_out": {
+     "g0_adapt": [
+      null,
+      60,
+      8
+     ],
+     "g1_adapt": [
+      null,
+      60,
+      8
+     ],
+     "g2_adapt": [
+      null,
+      60,
+      8
+     ]
+    }
+   },
+   "clock": {
+    "state": "VERIFIED",
+    "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "slice_panel_rows": [
+     1412361,
+     1462761
+    ],
+    "first": "2009-08-23T12:45:00",
+    "last": "2009-09-27T12:44:00",
+    "declared_step_seconds": 60,
+    "distinct_steps_observed_seconds": [
+     60
+    ],
+    "timezone": "UNKNOWN (the producer never declared one; the labels are wall clock and the delivery's availability is UNDECLARED / UNKNOWN). Carried, not resolved"
+   },
+   "rows_and_splits": {
+    "train": {
+     "split": "train",
+     "input_row_span": [
+      0,
+      40199
+     ],
+     "origins": 40080
+    },
+    "validation": {
+     "split": "validation",
+     "input_row_span": [
+      40261,
+      50339
+     ],
+     "origins": 10020
+    }
+   },
+   "version": "dr05.prefix.57970b5e4d0aa302"
+  },
+  {
+   "stage": "fusion",
+   "kind": "CONFIGURATION",
+   "what": "channel concatenation of the aligned branch sequences, axis 2, branches in sorted group order. No weights: a configuration, and the prefix's last stage",
+   "learned_state": {
+    "layers": [
+     "fusion_seq"
+    ],
+    "digest": "1703c060aae38f6048455ca68b0de06194432192e7bb07fa0ccef0e8f841c419",
+    "learned": false
+   },
+   "shape": {
+    "in": [
+     null,
+     60,
+     7
+    ],
+    "out": [
+     null,
+     60,
+     24
+    ]
+   },
+   "clock": {
+    "state": "VERIFIED",
+    "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "slice_panel_rows": [
+     1412361,
+     1462761
+    ],
+    "first": "2009-08-23T12:45:00",
+    "last": "2009-09-27T12:44:00",
+    "declared_step_seconds": 60,
+    "distinct_steps_observed_seconds": [
+     60
+    ],
+    "timezone": "UNKNOWN (the producer never declared one; the labels are wall clock and the delivery's availability is UNDECLARED / UNKNOWN). Carried, not resolved"
+   },
+   "rows_and_splits": {
+    "train": {
+     "split": "train",
+     "input_row_span": [
+      0,
+      40199
+     ],
+     "origins": 40080
+    },
+    "validation": {
+     "split": "validation",
+     "input_row_span": [
+      40261,
+      50339
+     ],
+     "origins": 10020
+    }
+   },
+   "version": "dr05.prefix.57970b5e4d0aa302"
+  }
+ ],
+ "manifest_sha256": "c7a8e9e68661fe20a84f8d2002f8864832ba43fff5cd3c4ca9ee869c6d0456ff",
+ "proofs": {
+  "direct_against_cache": {
+   "proof": "direct_against_cache",
+   "per_split": {
+    "train": {
+     "origins_sampled": 64,
+     "elements_compared": 92160,
+     "identical_element_by_element": true,
+     "max_absolute_difference": 0.0,
+     "bytes_identical": true
+    },
+    "validation": {
+     "origins_sampled": 64,
+     "elements_compared": 92160,
+     "identical_element_by_element": true,
+     "max_absolute_difference": 0.0,
+     "bytes_identical": true
+    }
+   },
+   "state": "VERIFIED",
+   "what_it_shows": "the cache is the prefix, not a copy of something near it. The comparison is element by element and on the bytes, with no tolerance: a tolerance here would hide exactly the drift it is supposed to catch"
+  },
+  "fresh_process_reload": {
+   "proof": "fresh_process_reload",
+   "state": "VERIFIED",
+   "interpreter": "/home/harveybc/anaconda3/envs/trading-stack/bin/python",
+   "pid_differs": true,
+   "report": {
+    "store": "/home/harveybc/.local/state/crispdm-data-foundation/dr05_prefix_store_20260926",
+    "version": "dr05.prefix.57970b5e4d0aa302",
+    "per_split": {
+     "train": {
+      "file_sha256": "8a24071667bfedbeaf882b2869f3482b289e42f06ff3d3adb8d531745c382522",
+      "file_sha256_matches_manifest": true,
+      "shape": [
+       40080,
+       60,
+       24
+      ],
+      "shape_matches_manifest": true,
+      "dtype": "float32",
+      "origins_sha256_matches_manifest": true,
+      "origins": 40080,
+      "first_window_digest": "6f95247bf5d10610474da13d03c49ae3f6ac3d07773cbc32bfebe2390085ab77",
+      "last_window_digest": "9ff12182205d7a37b48534b74f52260e1284a5852e877033e74d2029b80ad56c",
+      "finite": true
+     },
+     "validation": {
+      "file_sha256": "0e6dd5bb871553621fa1f5b12343dfce7fff6425c5bf3d5d203defc894e17432",
+      "file_sha256_matches_manifest": true,
+      "shape": [
+       10020,
+       60,
+       24
+      ],
+      "shape_matches_manifest": true,
+      "dtype": "float32",
+      "origins_sha256_matches_manifest": true,
+      "origins": 10020,
+      "first_window_digest": "38a0bc97010a175b7b3146acf6c8d1aee6a2188d9275cd3311c386b68d84094e",
+      "last_window_digest": "40ecc32540a157205b1c29e1f1143b1abb5bdb84c6219e29677842b915971be9",
+      "finite": true
+     }
+    },
+    "all_digests_match": true
+   },
+   "what_it_shows": "the store is readable and self-consistent outside the process that wrote it. A digest recomputed in the writing process proves far less"
+  },
+  "mutation": {
+   "proof": "mutation_of_weights_and_of_state",
+   "cases": {
+    "detector_weight": {
+     "what_was_perturbed": "one scalar of g0_det1_conv, +1e-2",
+     "output_changed": true,
+     "max_absolute_change": 0.013853311538696289,
+     "identity_changed": true,
+     "restored_bit_for_bit": true,
+     "detected": true
+    },
+    "adapter_weight": {
+     "what_was_perturbed": "one scalar of g0_adapt, +1e-2",
+     "output_changed": true,
+     "max_absolute_change": 0.029703140258789062,
+     "identity_changed": true,
+     "restored_bit_for_bit": true,
+     "detected": true
+    },
+    "preprocessing_state": {
+     "what_was_perturbed": "scaler sd[0] x 1.01, applied by inverting the stored scaling and re-applying the perturbed one",
+     "output_changed": true,
+     "max_absolute_change": 0.017128348350524902,
+     "identity_changed": true,
+     "detected": true
+    },
+    "group_assignment": {
+     "what_was_perturbed": "channels 0 and 1 exchanged between groups",
+     "identity_changed": true,
+     "output_changed": null,
+     "why_the_output_is_not_recomputed": "a different grouping is a different GRAPH, not a different weight: it would require building a second prefix, which this proof deliberately does not do. What must hold here is that the version binds the assignment, so a store made under another grouping cannot be mistaken for this one",
+     "detected": true
+    }
+   },
+   "state": "VERIFIED",
+   "what_it_shows": "every learned state the prefix carries is load-bearing and is bound by the store's version. None of these perturbations is written to any run root: each is applied in memory and restored bit for bit"
+  },
+  "causality": {
+   "proof": "causality",
+   "declared_branch_reach": 5,
+   "measured_reach_at_the_last_position": 5,
+   "reach_matches_the_declaration": true,
+   "rows_that_move_the_last_position": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "a_future_row_leaves_this_window_untouched": true,
+   "and_that_same_row_does_move_the_window_that_contains_it": true,
+   "future_row_panel_index": 40199,
+   "state": "VERIFIED",
+   "what_it_shows": "the materialized representation at a row is a function of that row and its declared predecessors, and of nothing after it. The reach is MEASURED here, not read from the design's note",
+   "scope": "the last position of the fused sequence for one origin. Earlier positions of the same sequence see fewer rows, never more: the causal padding is left-sided"
+  }
+ },
+ "window_invariance": {
+  "property": "the same panel row gets the same representation in every window that places it at or beyond the reach",
+  "positions_compared": 1393,
+  "largest_absolute_discrepancy": 0.0,
+  "exactly_equal": true,
+  "reach_used": 5,
+  "why_it_matters": "it is what makes the store row-addressable: a consumer can read the representation of a row without knowing which window it came from, for positions at or beyond the reach. It is measured, not assumed"
+ },
+ "reserve_untouched": {
+  "consumed_slice_panel_rows": [
+   1412361,
+   1462761
+  ],
+  "materialized_panel_row_spans": {
+   "train": [
+    1412361,
+    1452560
+   ],
+   "validation": [
+    1452622,
+    1462700
+   ]
+  },
+  "every_row_read_is_inside_the_consumed_slice": true,
+  "test_split": "REFUSED_UNMATERIALIZED_BY_DESIGN",
+  "family_usable_windows_declared": {
+   "train": 1440653,
+   "validation": 305221,
+   "test": 298224
+  },
+  "exposure_of_the_donor_cell": "NO_TEST_ACCESS",
+  "state": "VERIFIED",
+  "what_was_refused": "the reserve was not opened to build this store, and no array was written for the test split. Its absence is verified; its materialization is not, because there is none"
+ },
+ "checks": {
+  "the_cut_is_at_the_fusion": true,
+  "five_stages_manifested": true,
+  "every_stage_carries_state_clock_rows_shape_version": true,
+  "clock_verified": true,
+  "reserve_untouched": true,
+  "proof_direct_against_cache": true,
+  "proof_fresh_process_reload": true,
+  "proof_mutation": true,
+  "proof_causality": true
+ },
+ "state": "VERIFIED",
+ "what_this_does_not_deliver": [
+  "a claim that this prefix is the RIGHT prefix. The donor cell is named, not chosen on evidence: which learned state MOD-FROZEN-PREFIX should freeze is a design decision the module still owes",
+  "a second panel or a second family. One panel, one donor, two splits",
+  "anything about the reserve beyond its absence",
+  "any H-CORE comparison. The core is downstream of the cut and nothing here fits one"
+ ]
+}

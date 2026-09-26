@@ -46,10 +46,10 @@
    "the published autocorrelations re-derive under a biased ACF whose shrinkage is 0.7492 at a week; bias-corrected the weekly lag (0.367) is ABOVE the daily (0.335), reversing the published order"
   ],
   "module_rulings": {
-   "MOD-FROZEN-PREFIX": "UNBLOCKED: the prefix it must generalise is identity-pinned, its refusals fire by name and its temporal support is measured. First two items: restate the RP59 lag table with its estimator and its bias, and verify governed sequence materialization PER SPLIT, which neither range does",
+   "MOD-FROZEN-PREFIX": "UNBLOCKED: the prefix it must generalise is identity-pinned, its refusals fire by name and its temporal support is measured. First two items: restate the RP59 lag table with its estimator and its bias, and verify governed sequence materialization PER SPLIT, which neither range does. NARROWED by dr05_dr06_corrections_20260926: still UNBLOCKED and still NOT DELIVERED, and parity of the delivered CSV with the prepared panel was never what delivered it",
    "MOD-CORE-PRETRAIN": "BLOCKED: the instrument's resolution. A scrambled-label fit loses 0.049 kW, five times the ~0.01 effect to be resolved, and the one recipe contrast was not budget-matched. Must exist first: a measured resolution for this protocol on this task (no new training), budget-matched arms with the monitor fixed, and MOD-FROZEN-PREFIX",
    "MOD-CONF": "BLOCKED: the reserve is intact and provably so, but the method was still moving through both ranges and the Huber/AdamW v2 design that pins the standing recipe is not retained (four arms rest on digest be2e776e... with no document). Must exist first: that document, and one sealed design freezing the confirmatory method. Its co-owner is Musashi and no grant replaces him",
-   "MOD-E3": "BLOCKED: no governed forecasting result exists on the domain it trades (every retained E1 measurement is a household-electricity panel; the only price-series tables are CAUSALITY_UNVERIFIED with both lineages UNBOUND), BUSINESS-CONTRACT is DESIGNED not EXECUTED, and the H-CORE design it is the RL counterpart of is blocked above"
+   "MOD-E3": "BLOCKED: no governed forecasting result exists on the domain it trades (every retained E1 measurement is a household-electricity panel; the only price-series tables are CAUSALITY_UNVERIFIED with both lineages UNBOUND), BUSINESS-CONTRACT is DESIGNED not EXECUTED, and the H-CORE design it is the RL counterpart of is blocked above. NARROWED by dr05_dr06_corrections_20260926: the H-CORE clause was too wide and is withdrawn as a prerequisite of the WHOLE module; it conditions the RL comparison only"
   },
   "not_reached": [
    "both legacy lineages stay UNBOUND: the producer of the decomposed inputs is not in this repository",
@@ -58,6 +58,91 @@
    "nothing was recomputed under today's code for the four blocks closed under drifted code"
   ],
   "no_training_no_allocation_no_gpu": true
+ },
+ "dr05_dr06_corrections_20260926": {
+  "authority": "the owner's grant of 2026-09-26, carrying the day review's DR05 and DR06. Published under Satoshi's name, successor technical lead; nothing is written or signed in the reviewer's name",
+  "document": "../../audits/work_plan/SATOSHI_DR05_DR06_CORRECTIONS_2026_09_26.md",
+  "instrument": [
+   "tools/df_dr06_lag_clock.py",
+   "tests/test_dr06_lag_clock.py",
+   "tools/df_dr05_prefix_output.py",
+   "tests/test_dr05_prefix_output.py"
+  ],
+  "evidence": [
+   "../../audits/evidence/DR05_DR06_20260926/LAG_TABLE_ON_THE_CLOCK.json",
+   "../../audits/evidence/DR05_DR06_20260926/PREFIX_OUTPUT_MATERIALIZATION.json"
+  ],
+  "scope": "three claims narrowed, none widened. No model was fitted, no allocation taken, no reserve opened, no service touched and no heavy job dispatched to the coordinator",
+  "lag_table": {
+   "what_changed": "recomputed with the lag offsets applied on the retained one-minute clock under a FINITE-PAIR MASK, instead of deleting the single non-finite position before applying them. 40 200 clock positions, one non-finite at slice row 30 590",
+   "estimators_named_apart": [
+    "autocorrelation function with one whole-series denominator",
+    "Pearson correlation over lag-truncated pairs"
+   ],
+   "the_label_bias_corrected_is_withdrawn": "the Pearson correlation over lag-truncated pairs is NOT the published autocorrelation function rescaled by n/(n-k): at a weekly offset the rescaled autocorrelation function is 0.35447973 and the Pearson on the clock is 0.36660132, a difference of 0.01212159",
+   "pearson_on_the_clock": {
+    "1": 0.9633609325848432,
+    "60": 0.403268670397138,
+    "1440": 0.3350848380053089,
+    "10080": 0.36660131854284517
+   },
+   "ordering_strongest_first": "one minute, one hour, ONE WEEK, one day",
+   "inversion": "the day-versus-week inversion PERSISTS under the Pearson correlation over lag-truncated pairs on the corrected clock. It does NOT appear under the published autocorrelation function even on the corrected clock, so it is a statement under one named estimator and not an estimator-free fact",
+   "not_a_window_selector": "the table orders marginal linear dependence between the target and its own past at four offsets. It ranks no candidate window, measures no conditional contribution of a lag to a predictor, and licenses no claim that a weekly context improves a forecast. A consumer that reads it as a choice is reading it wrong, and tests/test_dr06_lag_clock.py rejects an artifact that presents it as one",
+   "supersedes": [
+    "the four-row autocorrelation list of SATOSHI_PROGRAM_RP57_RP64_RETURN_2026_09_21 (RP59) and the autocorrelation.autocorrelation_by_lag_minutes block of docs/audits/evidence/d3_k5_20260917/RP59/DATA_TARGET_PREPROCESSING_AUDIT.json",
+    "the bias_corrected column of docs/audits/evidence/RP59_LAG_AND_SPLITS_20260926/LAG_TABLE_AND_SPLIT_MATERIALIZATION.json and the table of SATOSHI_RP59_LAG_TABLE_AND_MATERIALIZATION_2026_09_26.md section 1.2, at satoshi/rp59-lag-table-restatement-20260926 tip 6820fcae",
+    "finding 10 of rp49_rp64_disposition_20260926, whose 0.367/0.335 pair is the clock-compressed population's"
+   ],
+   "withdrawn": "no value. Both superseded columns are carried in the artifact, each with its estimator and its row population named"
+  },
+  "frozen_prefix_output": {
+   "what_changed": "MOD-FROZEN-PREFIX is no longer treated as delivered because the delivered CSV and the prepared panel agree. Parity of INPUTS is not the module; the OUTPUT of the fixed prefix is now materialized",
+   "store_version": "dr05.prefix.57970b5e4d0aa302",
+   "store": "$HOME/.local/state/crispdm-data-foundation/dr05_prefix_store_20260926 (288.6 MB, outside the repository)",
+   "prefix_ends_at": "fusion_seq; the core, head and persistence skip are downstream of the cut and are not materialized",
+   "stages_each_with_learned_state_clock_rows_split_shape_and_version": [
+    "preprocessing (LEARNED: the stored scaler, fitted on train windows only)",
+    "groups (CONSTANT_BY_DESIGN: the held-constant physical assignment)",
+    "detector (LEARNED: imported from the auto-encoder donor and frozen)",
+    "adapter (LEARNED: fitted in the donor cell)",
+    "fusion (CONFIGURATION: channel concatenation, axis 2, sorted group order)"
+   ],
+   "proofs": {
+    "direct_against_cache": "VERIFIED: 64 origins per split, 92 160 elements each, identical element by element and on the bytes, no tolerance",
+    "fresh_process_reload": "VERIFIED: a separate interpreter given only the store directory re-derived every digest and both terminal window digests",
+    "mutation_of_weights_and_of_state": "VERIFIED: a detector weight, an adapter weight and the scaler state each moved the output and the bound identity; the group assignment moved the identity, and the graph was deliberately not rebuilt. Every perturbation restored bit for bit and none was written to a run root",
+    "causality": "VERIFIED: measured reach 5 equals the declared branch reach; a future row leaves the window untouched while moving the window that contains it"
+   },
+   "window_invariance_measured": "1 393 positions compared, largest absolute discrepancy exactly 0.0, so the store is row-addressable at or beyond the reach",
+   "reserve": "NOT_OPENED. The test split is REFUSED_UNMATERIALIZED_BY_DESIGN, every materialized row lies inside the consumed slice, and the donor cell's exposure is NO_TEST_ACCESS",
+   "still_owed_before_it_is_delivered": [
+    "which learned state to freeze, decided on evidence rather than named: the donor cell R1_s1 was named, not chosen",
+    "a second family and a second panel; one panel, one donor and two splits are not a versioned derived dataset for the programme",
+    "the prefix lineage for any panel other than this one"
+   ]
+  },
+  "e3_dependency_narrowed": {
+   "what_changed": "H-CORE is withdrawn as a prerequisite of ALL of MOD-E3. It conditions the RL comparison it is the counterpart of, and nothing else",
+   "what_keeps_its_real_dependencies": "the H-CORE reinforcement-learning comparisons. Those are not loosened here, and MOD-CORE-PRETRAIN's own ruling is untouched by this narrowing",
+   "what_may_proceed_on_its_own_data_contracts_and_risks": [
+    "preparing the financial reference: the resource contract fields, the producing revision of the retained bytes, candidate reference methods, and the schema/row-count inspection that needs no fit",
+    "preparing the weekly forecasting/RL protocol: the cycle clocks, release and fallback, latency, sizing and cost accrual are implemented and tested on synthetic bars",
+    "sealing BUSINESS-CONTRACT as an artifact rather than prose, with its data gaps enumerated"
+   ],
+   "the_hard_rule": "household electricity is NEVER a substitute for financial validation. No electricity result may be carried across the domain gap, and no runner may be written that avoids a missing financial dependency",
+   "named_missing_dependencies": [
+    "an operator-declared resource availability contract for financial_files market_data/forex/g10/eurusd/1h.parquet: the files lake refuses a ranged delivery without it (HTTP 422) and zero bytes have been delivered",
+    "available time and maximum completion lag for that resource: absent, and a completion lag must not be assumed to be zero",
+    "the timezone of that resource's labels: disputed, and the producing revision of the retained bytes unestablished",
+    "a matched financial reference method for fx.eurusd.1h.FIN-LOSS-OPT: NOT_COMPARABLE until one is re-executed, and nothing in the electricity work supplies it",
+    "BUSINESS-CONTRACT as an executed artifact: its content exists as prose in 13C and 13D and as no sealed record",
+    "the asset universe, real capital, exposure limits, funding schedule, operating release schedule and macro-series availability delays, all OWNER_DECISION or UNKNOWN in the contract's own gap list"
+   ],
+   "what_stays_blocked_and_why": "MOD-E3's own comparison still has no governed forecasting result on the domain it trades, the legacy price-series route is NOT_DISCHARGEABLE_BY_ARTIFACTS because the producer of the decomposed inputs is not in this repository, and BUSINESS-CONTRACT is DESIGNED not EXECUTED"
+  },
+  "no_training_no_allocation_no_gpu": true,
+  "coordinator_protection": "CPU only, CUDA_VISIBLE_DEVICES='', every job under crispdm-run -m 2G; no heavy fit was dispatched to the coordinator and none was launched on a read of available memory"
  },
  "classification_first_20260924": {
   "public_interface": "Required Laya-like experience across all five families: data/context + natural-language questions -> typed engine answers; not a plugin catalog",
@@ -879,18 +964,20 @@
   {
    "id": "MOD-FROZEN-PREFIX",
    "owner": "Satoshi",
-   "status": "NOT_STARTED",
+   "status": "IN_PROGRESS",
    "depends_on": [
     "MOD-E1"
    ],
    "evidence": [
     "../../audits/work_plan/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md",
-    "../../audits/work_plan/SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md"
+    "../../audits/work_plan/SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md",
+    "../../audits/work_plan/SATOSHI_DR05_DR06_CORRECTIONS_2026_09_26.md",
+    "../../audits/evidence/DR05_DR06_20260926/PREFIX_OUTPUT_MATERIALIZATION.json"
    ],
-   "next_action": "After extractor regime comparison, fix all preprocessing/grouping/D/I/A/fusion states and verify governed sequence materialization per split",
+   "next_action": "Choose WHICH learned state to freeze on evidence rather than by name (store dr05.prefix.57970b5e4d0aa302 was built from the named donor R1_s1), then repeat the prefix-output materialization and its four proofs on a second family. The five stages' output, learned state, clock, rows/split, shape and version exist for this panel; DELIVERY is not implied by them and parity of the delivered CSV with the panel never was the module",
    "deliverable": "Versioned derived dataset with direct/cache parity, temporal support and complete prefix lineage",
    "blocked_by_external_review": false,
-   "review_disposition": "UNBLOCKED by SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79 (owner's grant)"
+   "review_disposition": "UNBLOCKED by SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79 (owner's grant); its first two items are discharged and the prefix OUTPUT is materialized and proved four ways by SATOSHI_DR05_DR06_CORRECTIONS_2026_09_26 \u00a73, which also records why that is not delivery"
   },
   {
    "id": "MOD-CORE-PRETRAIN",
@@ -959,12 +1046,13 @@
     "../../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md",
     "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md",
     "../../audits/work_plan/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md",
-    "../../audits/work_plan/SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md"
+    "../../audits/work_plan/SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md",
+    "../../audits/work_plan/SATOSHI_DR05_DR06_CORRECTIONS_2026_09_26.md"
    ],
-   "next_action": "RP56 reports offline nonfill repair; preserve for external acceptance, not scientific RL. Weekly forecasting/RL remains mandatory after data and E1 prerequisites",
+   "next_action": "Two lanes, separately. The RL comparison waits on its real dependencies, H-CORE among them. The FINANCIAL lane proceeds now on its own data, contracts and risks: name the missing resource availability contract fields to the operator, establish the producing revision of the retained EURUSD 1h bytes, select candidate reference methods, and seal BUSINESS-CONTRACT as an artifact. Household electricity is never a substitute for financial validation, no electricity result crosses the domain gap, and no runner may be written that avoids a missing financial dependency",
    "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost",
    "blocked_by_external_review": false,
-   "review_disposition": "STILL BLOCKED by its own prerequisites, not by the absent review: see SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79"
+   "review_disposition": "STILL BLOCKED by its own prerequisites, not by the absent review: see SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79. NARROWED by SATOSHI_DR05_DR06_CORRECTIONS_2026_09_26 \u00a74: H-CORE conditions the RL comparison only and is withdrawn as a prerequisite of the whole module; preparing the financial reference and the weekly forecasting/RL protocol is not blocked by it"
   },
   {
    "id": "L2-PUBLIC-RL",

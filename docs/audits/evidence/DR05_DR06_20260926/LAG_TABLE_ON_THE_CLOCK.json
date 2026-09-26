@@ -1,0 +1,268 @@
+{
+ "schema": "df_dr06_lag_clock.v1",
+ "scope": "the retained training support of the household panel. No reserved split is read",
+ "estimators": {
+  "acf": {
+   "name": "autocorrelation function with one whole-series denominator",
+   "formula": "sum over the admitted offsets of (x_i - xbar)(x_{i+k} - xbar), divided by the sum over every admitted position of (x_i - xbar)^2, with xbar the mean of the admitted positions. The denominator does not shrink with k while the numerator does",
+   "retained_implementation": "tools/df_e1_data_audit.py::autocorrelation \u2014 the estimator the published four-row list was produced by"
+  },
+  "pearson": {
+   "name": "Pearson correlation over lag-truncated pairs",
+   "formula": "the two legs of the admitted pairs, each centred and scaled on its own pair count: cov(a, b) / (sd(a) sd(b)). Every admitted pair is weighted once and nothing is divided by a population it was not measured on",
+   "retained_implementation": "np.corrcoef(v[:-k], v[k:]) as tools/df_rp49_rp64_audit.py::data_audit computes it"
+  }
+ },
+ "estimator_names_share_no_word": {
+  "acf_words": [
+   "autocorrelation",
+   "denominator",
+   "function",
+   "one",
+   "series",
+   "whole",
+   "with"
+  ],
+  "pearson_words": [
+   "correlation",
+   "lag",
+   "over",
+   "pairs",
+   "pearson",
+   "truncated"
+  ],
+  "shared_words": [],
+  "disjoint": true
+ },
+ "populations": {
+  "positions_deleted_before_the_offsets": "the non-finite position is removed from the series and the offsets are applied to what remains, so every pair straddling the removal is really k+1 minutes apart and is counted as k. This is the population BOTH superseded versions used",
+  "offsets_on_the_retained_clock_under_a_finite_pair_mask": "the retained one-minute grid is left intact, the offsets are applied on it, and a pair is admitted only when both of its legs are finite. An index separation of k IS a separation of k minutes for every admitted pair"
+ },
+ "supersedes": [
+  {
+   "version": "as published",
+   "what": "the four-row autocorrelation list of SATOSHI_PROGRAM_RP57_RP64_RETURN_2026_09_21 (RP59) and the `autocorrelation.autocorrelation_by_lag_minutes` block of docs/audits/evidence/d3_k5_20260917/RP59/DATA_TARGET_PREPROCESSING_AUDIT.json",
+   "estimator": "autocorrelation function with one whole-series denominator",
+   "population": "positions_deleted_before_the_offsets",
+   "defect": "two defects. The estimator was not named, and its denominator does not shrink with the offset while its numerator does, so the printed sequence reads as a decay that is partly the estimator. And the population deleted a position before applying the offsets, so some pairs counted as k minutes apart are k+1",
+   "withdrawn": "nothing. The values are correct arithmetic on the population and estimator they used, both of which are now named beside them"
+  },
+  {
+   "version": "today's restatement",
+   "what": "the `bias_corrected` column of docs/audits/evidence/RP59_LAG_AND_SPLITS_20260926/LAG_TABLE_AND_SPLIT_MATERIALIZATION.json and the table of SATOSHI_RP59_LAG_TABLE_AND_MATERIALIZATION_2026_09_26.md \u00a71.2, at satoshi/rp59-lag-table-restatement-20260926 tip 6820fcae",
+   "estimator": "Pearson correlation over lag-truncated pairs",
+   "population": "positions_deleted_before_the_offsets",
+   "defect": "two defects. It kept the deleting population it inherited, so it corrected an estimator while leaving the clock compressed; and it called its column 'bias-corrected', which names a Pearson correlation as if it were the published autocorrelation function rescaled. It is not: the rescaled autocorrelation function and the Pearson correlation differ, and this tool publishes both so the claim can be checked rather than believed",
+   "withdrawn": "the label 'bias-corrected' is withdrawn. The numbers are retained, labelled by the estimator and the population that produced them"
+  }
+ ],
+ "not_a_window_selector": {
+  "this_table_is": "an ordering of the LINEAR dependence between the target and its own past at four offsets, measured on the retained training support of one household panel",
+  "this_table_is_not": "a context-window selector. It does not rank candidate windows, it does not measure the conditional contribution of a lag to a predictor, and it does not say that a weekly context improves a forecast. No model was fitted to produce any number in it",
+  "the_inversion_specifically": "the week standing above the day is a fact about marginal linear dependence at two offsets. A prefix that includes a weekly offset must be justified by measured skill under the programme's own protocol, not by this ordering",
+  "a_consumer_that_reads_this_as_a_choice_is_reading_it_wrong": true
+ },
+ "is_this_training": "no. Reanalysis of retained bytes: nothing is fitted, built or scored",
+ "published_artifact": "/home/harveybc/Documents/GitHub/.worktrees/predictor-dr056-20260926/docs/audits/evidence/d3_k5_20260917/RP59/DATA_TARGET_PREPROCESSING_AUDIT.json",
+ "run_root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_household_successor_v3",
+ "as_published_values": {
+  "1": 0.9633449780917276,
+  "60": 0.4030024231300615,
+  "1440": 0.31718580057541035,
+  "10080": 0.2655930481297192
+ },
+ "as_published_support_rows": 40199,
+ "data_sha256": "70485ac9d1a41ac86d0910d23928a15c1aa88737c6261343e4c7dc248e30c194",
+ "support": {
+  "clock_positions": 40200,
+  "clock_row_span_in_the_slice": [
+   0,
+   40199
+  ],
+  "non_finite_positions": 1,
+  "non_finite_at_slice_row": [
+   30590
+  ],
+  "positions_the_deleting_population_kept": 40199,
+  "the_published_support_is_the_deleted_one": true,
+  "note": "the deleting population's row count is the published support. The clock has one more position than that, and the correction keeps it"
+ },
+ "retained_acf_implementation_reproduces": {
+  "1": true,
+  "60": true,
+  "1440": true,
+  "10080": true
+ },
+ "rows": [
+  {
+   "lag_minutes": 1,
+   "lag_named": "one minute",
+   "acf_positions_deleted": 0.9633449780917276,
+   "acf_positions_deleted_rescaled_n_over_n_minus_k": 0.9633689430894413,
+   "acf_clock_with_finite_pair_mask": 0.9633401886564712,
+   "pearson_positions_deleted": 0.9633610997536324,
+   "pearson_clock_with_finite_pair_mask": 0.9633609325848432,
+   "pairs_positions_deleted": 40198,
+   "pairs_clock_with_finite_pair_mask": 40197,
+   "pairs_the_deleting_population_mislabels": 1,
+   "pearson_minus_rescaled_acf": -8.010504598088275e-06,
+   "clock_minus_deleted_pearson": -1.6716878914468936e-07
+  },
+  {
+   "lag_minutes": 60,
+   "lag_named": "one hour",
+   "acf_positions_deleted": 0.4030024231300615,
+   "acf_positions_deleted_rescaled_n_over_n_minus_k": 0.4036048333891064,
+   "acf_clock_with_finite_pair_mask": 0.40298752869106264,
+   "pearson_positions_deleted": 0.40328253345218784,
+   "pearson_clock_with_finite_pair_mask": 0.403268670397138,
+   "pairs_positions_deleted": 40139,
+   "pairs_clock_with_finite_pair_mask": 40138,
+   "pairs_the_deleting_population_mislabels": 60,
+   "pearson_minus_rescaled_acf": -0.00033616299196842503,
+   "clock_minus_deleted_pearson": -1.386305504985641e-05
+  },
+  {
+   "lag_minutes": 1440,
+   "lag_named": "one day",
+   "acf_positions_deleted": 0.31718580057541035,
+   "acf_positions_deleted_rescaled_n_over_n_minus_k": 0.3289700971988679,
+   "acf_clock_with_finite_pair_mask": 0.3171121484363741,
+   "pearson_positions_deleted": 0.3351571550096535,
+   "pearson_clock_with_finite_pair_mask": 0.3350848380053089,
+   "pairs_positions_deleted": 38759,
+   "pairs_clock_with_finite_pair_mask": 38758,
+   "pairs_the_deleting_population_mislabels": 1440,
+   "pearson_minus_rescaled_acf": 0.0061147408064410325,
+   "clock_minus_deleted_pearson": -7.231700434456867e-05
+  },
+  {
+   "lag_minutes": 10080,
+   "lag_named": "one week",
+   "acf_positions_deleted": 0.2655930481297192,
+   "acf_positions_deleted_rescaled_n_over_n_minus_k": 0.35447972846929116,
+   "acf_clock_with_finite_pair_mask": 0.2654000614135471,
+   "pearson_positions_deleted": 0.36686408713442276,
+   "pearson_clock_with_finite_pair_mask": 0.36660131854284517,
+   "pairs_positions_deleted": 30119,
+   "pairs_clock_with_finite_pair_mask": 30119,
+   "pairs_the_deleting_population_mislabels": 9609,
+   "pearson_minus_rescaled_acf": 0.012121590073554012,
+   "clock_minus_deleted_pearson": -0.00026276859157758903
+  }
+ ],
+ "as_published_re_derives": true,
+ "pearson_is_not_the_rescaled_autocorrelation": {
+  "claim": "the Pearson correlation over lag-truncated pairs is NOT the autocorrelation function with one whole-series denominator rescaled by n/(n-k). The earlier restatement's 'bias-corrected' label asserted an equivalence that does not hold",
+  "per_lag": {
+   "1": {
+    "rescaled_acf": 0.9633689430894413,
+    "pearson_on_the_clock": 0.9633609325848432,
+    "difference": -8.010504598088275e-06
+   },
+   "60": {
+    "rescaled_acf": 0.4036048333891064,
+    "pearson_on_the_clock": 0.403268670397138,
+    "difference": -0.00033616299196842503
+   },
+   "1440": {
+    "rescaled_acf": 0.3289700971988679,
+    "pearson_on_the_clock": 0.3350848380053089,
+    "difference": 0.0061147408064410325
+   },
+   "10080": {
+    "rescaled_acf": 0.35447972846929116,
+    "pearson_on_the_clock": 0.36660131854284517,
+    "difference": 0.012121590073554012
+   }
+  },
+  "largest_absolute_difference": 0.012121590073554012,
+  "at_lag_minutes": 10080,
+  "state": "VERIFIED"
+ },
+ "what_the_deleting_population_cost": {
+  "mislabelled_pairs_per_lag": {
+   "1": 1,
+   "60": 60,
+   "1440": 1440,
+   "10080": 9609
+  },
+  "shift_in_the_pearson_per_lag": {
+   "1": -1.6716878914468936e-07,
+   "60": -1.386305504985641e-05,
+   "1440": -7.231700434456867e-05,
+   "10080": -0.00026276859157758903
+  },
+  "largest_shift": 0.00026276859157758903,
+  "reading": "the shift is small in magnitude and it is not the point: a population that counts pairs at the wrong offset is wrong whatever the size of the consequence, and its size could not be known before it was measured"
+ },
+ "ordering_by_strength": {
+  "acf_positions_deleted": [
+   1,
+   60,
+   1440,
+   10080
+  ],
+  "acf_clock_with_finite_pair_mask": [
+   1,
+   60,
+   1440,
+   10080
+  ],
+  "pearson_positions_deleted": [
+   1,
+   60,
+   10080,
+   1440
+  ],
+  "pearson_clock_with_finite_pair_mask": [
+   1,
+   60,
+   10080,
+   1440
+  ]
+ },
+ "day_versus_week_inversion": {
+  "claim": "the day-versus-week inversion: the weekly offset carries MORE marginal linear dependence than the daily one, reversing the order the published list printed",
+  "under_the_published_acf": "0.26559305 < 0.31718580 \u2014 no inversion",
+  "under_the_acf_on_the_clock": "0.26540006 vs 0.31711215",
+  "under_the_pearson_on_the_clock": "0.36660132 > 0.33508484",
+  "persists_on_the_corrected_clock": true,
+  "persists_under_the_published_estimator_too": false,
+  "and_still_not_a_selector": "the week standing above the day is a fact about marginal linear dependence at two offsets. A prefix that includes a weekly offset must be justified by measured skill under the programme's own protocol, not by this ordering"
+ },
+ "the_reading_that_survives_unchanged": {
+  "claim": "the daily offset carries less marginal linear dependence than the hourly one, so a daily context remains a hypothesis and not a certainty",
+  "under_every_column": true
+ },
+ "clock": {
+  "state": "VERIFIED",
+  "panel_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "clock_rows": 40200,
+  "first_stamp": "2009-08-23T12:45:00",
+  "last_stamp": "2009-09-20T10:44:00",
+  "declared_step_seconds": 60,
+  "distinct_steps_observed_seconds": [
+   60
+  ],
+  "strictly_increasing": true,
+  "duplicated_stamps": 0,
+  "an_index_offset_of_k_is_k_minutes": true,
+  "why_this_check_exists": "a finite-pair mask keeps the offsets honest only if the retained rows are a gapless grid at the declared step. If they were not, the repair would have to carry the stamps, not the indices"
+ },
+ "checks": {
+  "as_published_re_derives": true,
+  "retained_acf_implementation_reproduced": true,
+  "estimator_names_disjoint": true,
+  "pearson_differs_from_the_rescaled_acf": true,
+  "the_inversion_persists": true,
+  "the_surviving_reading_holds_everywhere": true,
+  "clock_is_a_gapless_minute_grid": true,
+  "both_superseded_versions_carried": true,
+  "not_a_window_selector_note_present": true
+ },
+ "state": "VERIFIED",
+ "admissibility": {
+  "reasons_it_would_be_inadmissible": []
+ }
+}
