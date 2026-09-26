@@ -1,4 +1,35 @@
-# Start here: reconcile ALL active assignments, not only M5PHET
+# Start here: the one dispatch index, and the lanes it carries
+
+**Superseded as a state document, 2026-09-26.** State now lives in ONE place, one row
+per lane: [`EXPERIMENT_EXECUTION_QUEUE.json`](../tres_temas_entrevista/program_v3/EXPERIMENT_EXECUTION_QUEUE.json)
+(`research_dispatch_index.v2`), summarized in
+[`SATOSHI_DR02_DISPATCH_INDEX_2026_09_26.md`](../audits/work_plan/SATOSHI_DR02_DISPATCH_INDEX_2026_09_26.md).
+Nobody should have to infer a lane's state from prose again, this index included: where
+the table below and a row disagree, **the row governs**. Everything under
+"Current assignments (2026-09-24 snapshot, history)" is a dated photograph.
+
+## The lanes, at a glance
+
+Eleven lanes have a current row: the ten DR02 names, plus `E1-Q2-CONTEXT`, which was
+added because it holds the only live compute in the programme.
+
+| lane | real dependency, from artifacts | next eligible work |
+|---|---|---|
+| A/B | none outstanding | nothing to dispatch. **Do not reactivate**: the twelve-cell queue finished |
+| R0/R1/R2-ECL | none | nothing to dispatch. **Do not reactivate**: closed 9 of 9 on 2026-09-26T01:28:52Z |
+| E1-Q2-CONTEXT | two: the shared admission guard itself (the gate logs `crispdm_run_would_accept_the_cap` false while the request fits available memory plus margin), and a data-gov service key for any cell to be governed — the issuing script is named, not waited on | DR01 atomic reservation; smoke delivery → terminal on one small unit. The attempt closed at its own boundary; six of eighteen units were never admitted |
+| H-CORE | MOD-FROZEN-PREFIX's own deliverable — the materialized prefix **output** with real parity. Not the scrambled-label floor, which is withdrawn | materialize that output and its four parity/causality tests. CPU, no reserve |
+| M4 | six named verifier repairs, and one record the executor must not write | freeze the audit's probes as PRE, turn them into tests of the real public path, then repair. **Not authorized to run CONFIRMATION** |
+| FIN-LOSS-OPT/E3 | a registered availability contract for the EURUSD 1h resource; BUSINESS-CONTRACT executed. **H-CORE is not a blocker of this lane as a whole** | register the resource and re-attempt the sealed cost pilot; prepare the weekly reference and protocol |
+| calendar | a consensus source that also carries an observed publication instant — an owner entitlement decision, named | prospective point-in-time capture; extend absence/placebo reporting. UNKNOWN stays UNKNOWN |
+| M5PHET five families + chat | one per family, and none of them is another family | six items that may run at once, one per family plus the chat router repair; three bookkeeping contradictions to fix |
+| news | a licensed feed entitlement the package does not hold | the pinned-weight smoke **with a retained receipt**, which also settles a README-vs-state contradiction |
+| MT5 demo | a readable copy of the off-host bridge store, then an operator attestation | dry-run the migration against that copy; reconcile "never placed an order" with the remote 48/5 |
+| Alpaca paper | nothing for monitoring; for progress, the commit-pinned deployment F3 requires | that deployment with rehearsal, window and rollback; adoption tests; a zero-network shadow sink |
+
+Five rows could not establish a **remaining cost** from artifacts and say so by name:
+news, MT5 demo, Alpaca paper, M5PHET and calendar.
+
 
 **2026-09-26 successor:** [DR01-DR08](SATOSHI_DAY_REVIEW_CONTINUATION_2026_09_26.md)
 and the [independent day review](../audits/work_plan/MUSASHI_DAY_REVIEW_2026_09_26.md).
@@ -61,7 +92,9 @@ These are published/report snapshots, NOT a fresh reading of running processes,
 accepted warehouse content, account entitlements or unpublished worktrees. Check
 those before dispatch; absence from a return is not proof no local work exists.
 
-## Current assignments
+## Current assignments (2026-09-24 snapshot, history)
+
+Preserved for its detail, not for dispatch. Read the row first.
 
 | Order / lane | Last evidenced state | Remaining action, without repeating completed work |
 |---|---|---|

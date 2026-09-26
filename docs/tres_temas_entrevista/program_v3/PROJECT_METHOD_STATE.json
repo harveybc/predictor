@@ -1,5 +1,35 @@
 {
  "schema": "research_program_method_state.v1",
+ "dr02_dispatch_index_20260926": {
+  "what": "DR02: one dispatch index, current, one row per lane. The queue, this state and the assignment index now say the same thing, and the row -- not a paragraph -- is where state lives",
+  "index": "EXPERIMENT_EXECUTION_QUEUE.json (schema research_dispatch_index.v2)",
+  "report": "../../audits/work_plan/SATOSHI_DR02_DISPATCH_INDEX_2026_09_26.md",
+  "assignment_index": "../../handoffs/SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md",
+  "lanes_with_a_current_row": 11,
+  "lanes_ordered_by_DR02": [
+   "A/B",
+   "R0/R1/R2-ECL",
+   "H-CORE",
+   "M4",
+   "FIN-LOSS-OPT/E3",
+   "calendar",
+   "M5PHET-5F-CHAT",
+   "news",
+   "MT5-demo",
+   "Alpaca-paper"
+  ],
+  "lane_added_beyond_the_order": "E1-Q2-CONTEXT, because it holds the only live compute in the programme and is the seal's one UNMET measurement condition; omitting it would have hidden a running job",
+  "do_not_reactivate": [
+   "A/B twelve-cell fit queue: finished, service inactive",
+   "the nine-cell R0/R1/R2-ECL contrast: CLOSED 9 of 9 at 2026-09-26T01:28:52Z"
+  ],
+  "snapshots": "classified as history inside the index; a stale row is not an invitation",
+  "two_maps": "M5PHET product and doctoral/business, linked and kept distinct. The framework makes the tasks easier; it does not certify usefulness and it does not replace the experiments' own trials. A correction in one family holds no other family",
+  "dependencies_not_establishable_from_artifacts": 5,
+  "documentary_vs_scientific": "check_plan.py returns documentary_coverage PASS beside scientific_approval false. A PASS is coverage of the paperwork and never an authorization",
+  "consumer_reconciled": "tools/df_e1_seal.py no longer returns OUTSIDE unconditionally for MOD_E1_EXTERNAL_REVIEW: the row is derived from the retained ruling, its recomputed identity and this state block, with absence answered by OUTSIDE and contradiction by refusal. The verdict stays E1_PARTIAL_SEAL",
+  "no_training_no_allocation_no_service_touched": true
+ },
  "external_day_review_20260926": {
   "request_commit": "cf2fdb0c",
   "verdict": "CHANGES_REQUIRED_SCOPED_REVIEW_NOT_ALL_ELEVEN_TIPS_CERTIFIED",
@@ -904,7 +934,9 @@
    "next_action": "After extractor regime comparison, fix all preprocessing/grouping/D/I/A/fusion states and verify governed sequence materialization per split",
    "deliverable": "Versioned derived dataset with direct/cache parity, temporal support and complete prefix lineage",
    "blocked_by_external_review": false,
-   "review_disposition": "UNBLOCKED by SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79 (owner's grant)"
+   "review_disposition": "UNBLOCKED by SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79 (owner's grant). Its first two items are DELIVERED at 6820fcae: the RP59 lag table restated under both estimators, and governed sequence materialization verified per split. Its DELIVERABLE is not delivered: enabling implementation is not accepting delivery, and the materialized prefix OUTPUT with real parity is still owed before H-CORE may consume it",
+   "real_dependency_20260926": "none blocking a start. What it must produce: the materialized output of preprocessing/groups/detector/adapter/fusion with learned states, clock, row/split, shape and version, plus direct-vs-cache, fresh-process reload, weight/state mutation and causality tests. CPU; no reserve",
+   "lag_table_caveat_20260926": "the restated table at 6820fcae must itself be corrected: it dropped the non-finite row before applying offsets, so some pairs k indices apart are no longer k minutes apart, and it labelled a per-segment centred Pearson as bias-corrected. The day>week inversion survives the correction. This is reanalysis, not a blocker and not training"
   },
   {
    "id": "MOD-CORE-PRETRAIN",
@@ -921,7 +953,21 @@
    "next_action": "Design H-CORE then compare random, pretrained-finetuned and pretrained-frozen core with actual task heads and full cost; no active-run changes",
    "deliverable": "Independent H-CORE effects on forecasting, total cost and limitations; RL counterpart in MOD-E3",
    "blocked_by_external_review": false,
-   "review_disposition": "STILL BLOCKED by its own prerequisites, not by the absent review: see SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79"
+   "review_disposition": "STILL BLOCKED, and the reason has changed. Two of its three prerequisites are SUPPLIED at 458d22cb: a measured resolution derived from retained artifacts with no new training, and budget-matched arms with the monitor fixed. The third, MOD-FROZEN-PREFIX's own deliverable, is not",
+   "real_dependency_20260926": "MOD-FROZEN-PREFIX's materialized prefix output with real parity. Separately, if the module's effect is to be resolved on this protocol: 23 seeds per arm, which no allocation grants. WITHDRAWN as a dependency: the scrambled-label difference of 0.049 kW as a resolution floor or as this contrast's noise",
+   "measured_resolution_20260926": {
+    "evidence": "../../audits/evidence/CORE_PRETRAIN_RESOLUTION_20260926/RESOLUTION.json",
+    "sigma_kW": 0.01136346,
+    "df": 6,
+    "resolution_kW": 0.031106,
+    "resolution_band_kW": "0.031106 - 0.049762 over three defensible estimators, the most favourable quoted",
+    "effect_to_resolve_kW": 0.009805,
+    "ratio": 3.17,
+    "seeds_per_arm_required": 23,
+    "verdict": "UNANSWERABLE_BY_THIS_PROTOCOL_AT_THIS_SEED_COUNT",
+    "pooling": "the module's own three arms, which Bartlett's test allows at p=0.74 where pooling all five does not at p=0.0086",
+    "training": "NONE: every arm mean recomputed in float64 from the cells' own arrays.npz"
+   }
   },
   {
    "id": "MOD-CONF",
@@ -937,7 +983,8 @@
    "next_action": "Review fixed method before independent E0 synthetic and E2 public reserves",
    "deliverable": "H1/H2/H3 effects under the proposal's reserved protocol",
    "blocked_by_external_review": false,
-   "review_disposition": "STILL BLOCKED by its own prerequisites, not by the absent review: see SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79"
+   "review_disposition": "STILL BLOCKED, with one of its two items DISCHARGED. The Huber/AdamW v2 design bytes are recovered and retained at 76650ce8 and independently verified: the canonical digest re-derives to be2e776e..., equal to the digest the published report pinned. Those bytes no longer block. The remaining item is the sealed design that freezes the confirmatory method",
+   "real_dependency_20260926": "one sealed design freezing the confirmatory method, with hypotheses, estimands, tasks, partitions and reserves, multiplicity, precision, budget and stopping. Satoshi DRAFTS it; the auditor reviews it. Authoring the candidate is neither the auditor's signature nor permission to execute, and no grant replaces the co-owner. No reserve is opened to choose it"
   },
   {
    "id": "BUSINESS-CONTRACT",
@@ -978,7 +1025,23 @@
    "next_action": "RP56 reports offline nonfill repair; preserve for external acceptance, not scientific RL. Weekly forecasting/RL remains mandatory after data and E1 prerequisites",
    "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost",
    "blocked_by_external_review": false,
-   "review_disposition": "STILL BLOCKED by its own prerequisites, not by the absent review: see SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79"
+   "review_disposition": "BLOCKED IN PART ONLY, corrected 2026-09-26. The disposition had added H-CORE as a global prerequisite; that is withdrawn. H-CORE conditions E3's RL comparison and nothing else",
+   "depends_on_by_subitem": {
+    "financial_reference_preparation": [
+     "BUSINESS-CONTRACT"
+    ],
+    "weekly_forecasting_protocol": [
+     "BUSINESS-CONTRACT",
+     "MOD-E1"
+    ],
+    "weekly_RL_comparison": [
+     "BUSINESS-CONTRACT",
+     "MOD-E1",
+     "MOD-CORE-PRETRAIN"
+    ]
+   },
+   "h_core_scope_correction_20260926": "the programme contract lists this task's prerequisites as MOD-E1 and BUSINESS-CONTRACT; the master plan's row for E3 requires its own evaluation 'aunque H1-H3 no sean positivos'. Preparing the financial reference, the reference models and the weekly protocol continues on its own data, contracts and risks. Electricity is never a substitute for financial validation",
+   "real_dependency_20260926": "BUSINESS-CONTRACT executed, and one governed forecasting result on the domain it trades. Every retained E1 measurement is a household-electricity panel and the only price-series tables are 114 CAUSALITY_UNVERIFIED with both lineages UNBOUND"
   },
   {
    "id": "L2-PUBLIC-RL",
@@ -1053,7 +1116,8 @@
    "status_detail": {
     "DESIGNED": "Executable synthetic runner exists, zero xfails; RP73 audit demonstrates 60 nonfinite consumed windows and a degenerate two-fold interval; repairs required before real data",
     "NOT_STARTED": "no financial scientific campaign or winning recipe; synthetic fits are software acceptance only"
-   }
+   },
+   "real_dependency_20260926": "a registered resource availability contract for the EURUSD 1h resource in the data-gov lake. The sealed cost pilot was refused with HTTP 422 'resource availability contract required' and read 0 bytes; the registration mechanism now exists at data-gov 7eec868 (data_gov/resource_registration.py, tools/register_calendar_resources.py), so this is reachable work and not a wait. Also: close the open campaign satoshi-fin-cost-pilot-20260921-prepare-data at its normal boundary. H-CORE is NOT a dependency of this lane"
   },
   {
    "id": "INC-SIMULATION",

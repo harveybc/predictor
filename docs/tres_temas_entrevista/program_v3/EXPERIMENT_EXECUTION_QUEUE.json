@@ -1,11 +1,305 @@
 {
-  "schema": "research_execution_queue.v1",
-  "updated_on": "2026-09-26",
-  "dispatcher": "Satoshi",
-  "policy": "CONCURRENT_EXECUTION_2026_09_23.md",
-  "runtime_enforcement": "Existing runners/admission; this is a persistent ordered manifest, not a newly installed scheduler",
-  "next_orders": "../../handoffs/SATOSHI_DAY_REVIEW_CONTINUATION_2026_09_26.md",
-  "external_review_20260926": {
+ "schema": "research_dispatch_index.v2",
+ "updated_on": "2026-09-26",
+ "dispatcher": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+ "supersedes": "research_execution_queue.v1 at this same path: one RP135-shaped campaign document with other lanes appended around it, whose cell list a reader could mistake for a live queue. That document is preserved verbatim under `history.superseded_queue_v1`",
+ "what_this_is": "ONE row per lane, current, so that no one has to infer state from prose. Every row carries a commit, an artifact or receipt, an observed state with the date it was observed, the REAL dependency, the next eligible work, the resource, the remaining cost and the lease. Dependencies are derived from artifacts; where a row's dependency could not be established from artifacts the row says so in those words rather than guessing",
+ "orders": "../../handoffs/SATOSHI_DAY_REVIEW_CONTINUATION_2026_09_26.md (DR01-DR08)",
+ "external_review": "../../audits/work_plan/MUSASHI_DAY_REVIEW_2026_09_26.md",
+ "report": "../../audits/work_plan/SATOSHI_DR02_DISPATCH_INDEX_2026_09_26.md",
+ "policy": "CONCURRENT_EXECUTION_2026_09_23.md",
+ "reading_rules": {
+  "one_row_per_lane": "if a lane has two current rows anywhere, this file is wrong and this file is the one to fix",
+  "snapshots_are_history": "anything under `history` is a dated photograph. It is not a dispatch manifest and a stale row is not an invitation",
+  "do_not_reactivate": [
+   "A/B: the twelve-cell fit queue finished and its service is inactive",
+   "R0/R1/R2-ECL: the nine-cell contrast is CLOSED, 9 of 9, at 2026-09-26T01:28:52Z"
+  ],
+  "documentary_is_not_scientific": "check_plan.py returns documentary_coverage PASS and scientific_approval false in the same object, and that is the whole point: a PASS is coverage of the paperwork. It never says a measurement is admissible, it never accepts a number, and nothing in this index may be read as an authorization to fit",
+  "a_correction_in_one_family_does_not_hold_the_others": "the two maps are linked and kept distinct. A defect found in one M5PHET family is a row in that family and nowhere else, and no framework adapter completing confirms any scientific hypothesis",
+  "heavy_coordinator_work": "HELD until DR01's shared admission reservation exists; admitted worker and application work continues",
+  "M4_CONFIRMATION": "NOT AUTHORIZED. No unit may be fitted",
+  "real_capital": "NOT AUTHORIZED anywhere in this index; no mutating broker call is ordered by it"
+ },
+ "maps": {
+  "note": "two maps, linked by the rows that appear in both, never merged into one ranking",
+  "M5PHET_PRODUCT": {
+   "what_it_is": "a product lane with its own work plan (M5PHET/docs/WORK_PLAN_2026_09_24.md)",
+   "what_it_is_not": "it does not replace the doctoral programme or the financial validation, it does not certify usefulness, and it does not substitute for the experiments' own trials. Five adapters completing is five adapters, not five confirmed hypotheses",
+   "lanes": [
+    "M5PHET-5F-CHAT",
+    "news",
+    "MT5-demo",
+    "Alpaca-paper"
+   ],
+   "families_are_independent": "classification, forecast, regimes, causal and RL each hold their own dependency; verified absent on 2026-09-26: no cross-family hold is written in the M5PHET artifacts",
+   "links_to_the_other_map": {
+    "forecast family": "consumes predictor/prediction_provider bundles; the WP26 outer confirmation is a predictor artifact",
+    "causal family": "shares the calendar lane's missing publication clock",
+    "RL family": "its profitability number needs an execution record, which is the broker lanes' business"
+   }
+  },
+  "DOCTORAL_AND_BUSINESS": {
+   "what_it_is": "the scientific programme and its financial validation, governed by MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md and PROGRAM_METRICS_CONTRACT_v1.md",
+   "lanes": [
+    "A/B",
+    "R0/R1/R2-ECL",
+    "E1-Q2-CONTEXT",
+    "H-CORE",
+    "M4",
+    "FIN-LOSS-OPT/E3",
+    "calendar"
+   ],
+   "framework_relation": "the framework makes these tasks easier to run and to serve. It does not supply their evidence, and household electricity is never a substitute for financial validation"
+  }
+ },
+ "row_contract": [
+  "lane",
+  "title",
+  "map",
+  "commit",
+  "artifact_or_receipt",
+  "observed_state",
+  "observed_at",
+  "real_dependency",
+  "dependency_derivation",
+  "next_eligible_work",
+  "resource",
+  "remaining_cost",
+  "lease"
+ ],
+ "dependency_corrections_20260926": [
+  {
+   "correction": "H-CORE is NOT a blocker of all of E3",
+   "where_it_landed": "lane FIN-LOSS-OPT/E3 real_dependency, and PROJECT_METHOD_STATE.json MOD-E3",
+   "authority": "the programme contract lists MOD-E3's prerequisites as MOD-E1 and BUSINESS-CONTRACT; the master plan's own E3 row requires its evaluation even if H1-H3 are not positive. H-CORE conditions E3's RL comparison and nothing else"
+  },
+  {
+   "correction": "the two absent reviews no longer block four modules; one module is unblocked",
+   "where_it_landed": "lanes H-CORE and FIN-LOSS-OPT/E3, and the df_e1_seal consumer",
+   "authority": "SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79 under the owner's grant: MOD-FROZEN-PREFIX UNBLOCKED, the other three blocked by their OWN prerequisites. Enabling implementation is not accepting delivery: the materialized prefix output is still owed"
+  },
+  {
+   "correction": "the scrambled-label difference is withdrawn as a resolution floor",
+   "where_it_landed": "lane H-CORE real_dependency",
+   "authority": "changing the labels changes the task; the measured resolution at 458d22cb reads that control as read and derives sigma from the module's own three arms, the pooling Bartlett's test allows at p=0.74 where pooling all five does not at p=0.0086"
+  },
+  {
+   "correction": "the zero-impact claim for the lts checkout change is withdrawn",
+   "where_it_landed": "lane Alpaca-paper real_dependency",
+   "authority": "18 files differ between 9090f49 and 12bce5f; the import chain into app.broker_refusal is read in source"
+  },
+  {
+   "correction": "'this lane has never placed an order' is scoped to the local path, not the lane",
+   "where_it_landed": "lane MT5-demo observed_state",
+   "authority": "the watchdog prefers a remote status endpoint, which reports 48 succeeded and 5 failed commands"
+  }
+ ],
+ "dependencies_that_could_not_be_established_from_artifacts": [
+  {
+   "row": "news",
+   "field": "remaining_cost",
+   "why": "no numeric budget is declared anywhere in the lane; only a 256-token per-record cap"
+  },
+  {
+   "row": "MT5-demo",
+   "field": "remaining_cost",
+   "why": "no money or CPU budget in any artifact; only a domain-level five-slot daily entry budget"
+  },
+  {
+   "row": "Alpaca-paper",
+   "field": "remaining_cost",
+   "why": "no numeric budget declared; the shadow lane's NAV is simulated and is not a budget"
+  },
+  {
+   "row": "M5PHET-5F-CHAT",
+   "field": "remaining_cost",
+   "why": "no CPU-second ledger exists in the family artifacts; only a 175-second per-call wall timeout"
+  },
+  {
+   "row": "calendar",
+   "field": "remaining_cost",
+   "why": "no numeric budget declared in the registration artifacts"
+  }
+ ],
+ "lanes": [
+  {
+   "lane": "A/B",
+   "title": "SOTA-REPRO protocols A and B, published-recipe ECL L512 reference",
+   "map": "DOCTORAL_AND_BUSINESS",
+   "commit": "A: e36c1c6d (composition) \u00b7 B: 07140d03 (closure tool); both carried in predictor master 941eb5b3",
+   "artifact_or_receipt": "docs/audits/evidence/d3_k5_20260917/RP144/EVIDENCE_COMPOSITION.1790220949.json and COMPOSED_TABLE.1790220949.json; docs/audits/evidence/d3_k5_20260917/RP145/CLOSURE_RECONCILIATION.md, SOTA_TABLE.L512.json",
+   "observed_state": "CLOSED. A: 12 cells composed, all twelve with a bound exact replay, with_measured_same_device_replay EMPTY and device attribution UNKNOWN by name; four-horizon mean MSE 0.161962 / MAE 0.259662. B: 12/12 VERIFIED, every replay bit-exact (max_abs_prediction_difference 0.0), four-horizon mean MSE 0.150307 / MAE 0.246397, per-horizon OPERATIONAL_AGREEMENT under the predeclared band",
+   "observed_at": "2026-09-24T03:35:45Z (A) / 2026-09-24T03:57:43Z (B), closure narrative same day",
+   "real_dependency": "NONE OUTSTANDING FOR THIS LANE. Its only open item is other people's reading of a finished artifact",
+   "dependency_derivation": "derived from the two evidence files: reconciliation complete, problems [], no cell in a QUEUED or RUNNING state anywhere in them",
+   "next_eligible_work": "NOTHING TO DISPATCH. Independent review of the retained closure, and nothing else. DO NOT REACTIVATE: the twelve-cell fit queue finished, its service is inactive, and the cell-by-cell snapshot below in `history` is a 2026-09-23 photograph, not a queue",
+   "resource": "none",
+   "remaining_cost": "16,167 of the 24,000 CPU s continuation allocation consumed (14,011 fits + 2,156 closure). Remainder is NOT a licence to spend",
+   "lease": "none held; crispdm-rp135-continuation-20260923.service observed inactive on 2026-09-24"
+  },
+  {
+   "lane": "R0/R1/R2-ECL",
+   "title": "Modular learning-regime development contrast on the ECL panel",
+   "map": "DOCTORAL_AND_BUSINESS",
+   "commit": "69739b11 (offline closure) on satoshi/musashi-audit-request-20260926, ancestor of master 941eb5b3",
+   "artifact_or_receipt": "docs/audits/evidence/RP159_CLOSURE_20260925/RP159_CLOSURE.json (df_ecl_modular_closure_publication.v1); inputs bound by digest: RP155/CONTRAST.json ddb53331\u2026, RP159/DESIGN.json a265bb6d\u2026, RP158_SCORING.json 3802ca82\u2026",
+   "observed_state": "COMPLETE, 9 of 9 cells scored, identity_failures [], problems []. Label-disjoint population 1,802 windows: R0 0.371174, R1 0.374584, R2 0.368596 mean MAE kW against a matched persistence 0.868283. Closure cost 0.002 CPU s, 0 model replays, 0 processes started; metric values SELF_REPORTED_BY_THE_CHILD_RECORDS by its own authority block",
+   "observed_at": "2026-09-26T01:28:52Z",
+   "real_dependency": "NONE. This is the contrast the orders name as already finished. Its remaining honesty limits are stated inside the closure and are not dependencies: metric custody is the children's, and population is authenticated from the run record",
+   "dependency_derivation": "derived from RP159_CLOSURE.json: status COMPLETE, cells_expected == cells_scored == 9",
+   "next_eligible_work": "NOTHING TO DISPATCH. DO NOT REACTIVATE THE CONTRAST THAT ALREADY FINISHED. Eligible only: independent review, and the separate metric-custody question, which is a governance item and not a refit",
+   "resource": "none",
+   "remaining_cost": "the fits' own cost stands unchanged in RP155/CONTRAST.json; the closure spent 0.002 CPU s",
+   "lease": "run root ~/.local/state/crispdm-data-foundation/ecl-modular-closure-20260925; no live process"
+  },
+  {
+   "lane": "E1-Q2-CONTEXT",
+   "title": "E1 household context separation, Q2_CONTEXT and Q2_CONTEXT_DEEP",
+   "map": "DOCTORAL_AND_BUSINESS",
+   "added_beyond_the_ordered_ten": "DR02 names ten lanes; this eleventh row exists because it holds the only live compute in the programme and because it is the seal's one UNMET measurement condition. Leaving it out would have hidden a running job",
+   "commit": "7d2b1c83 and c74f910b (Q2_CONTEXT v1, defect repairs) \u00b7 b1a13928, 82c633e8, 91ad13a5 (Q2_CONTEXT_DEEP seal, memory gate, asymmetric reading) on satoshi/e1-seal-q2-context-20260926, satoshi/defect-repairs-and-fred-20260926 and satoshi/q2-context-deep-arms-20260926",
+   "artifact_or_receipt": "run root ~/.local/state/crispdm-data-foundation/e1_block_q2_context_deep_v1/ : DESIGN.json, EXTENSION_SEAL.json, BLOCK_DATA.json, MEMORY_GATE.jsonl, UNGOVERNED_RUN.json, attempts/<unit>/{cell.json,arrays.npz,weights.weights.h5}; ASYMMETRIC_READING.json at 91ad13a5; REPORT.json, REPLAYS.json, UNANCHORED_MEASUREMENT_TABLE.json and the closing step of UNGOVERNED_RUN.json, all written 2026-09-26 14:31-14:33 local",
+   "observed_state": "CLOSED AT ITS OWN BOUNDARY, TWELVE OF EIGHTEEN UNITS IN EXISTENCE, NO LIVE COMPUTE. DESIGN.json declares six arms at three seeds. Twelve cells exist with arrays and weights: modular_w60, daily_lag, long_window_crop60 and short_window_deep_core. The two W1440 full-depth arms -- long_window_local_support_67 and long_window_own_depth -- have NO cell and no attempt directory: six units were never admitted. The memory gate held long_window_own_depth_s1 for 1440 s at attempt1, opened attempt2 at 19:28:06Z and the run then ended; every gate line carries fits_measured_peak_plus_margin true beside crispdm_run_would_accept_the_cap FALSE, against required_bytes 9,532,141,568. The block's own closure then REFUSED at 19:31:55Z: verified false, 'closure FAILED: no verified comparator, no selected arm and no scientific proposal are emitted', because all eighteen registered units have NO accepted terminal receipt -- the NON_GOVERNING consequence the runner declares, not a numerical failure. disposition HISTORICAL_DEV_ONLY, 522.833 CPU s, 12 rows, custody UNCHECKED on every row. This is DR01's 'close each attempt at its normal boundary and record the failure', done.",
+   "observed_at": "2026-09-26T19:31:55Z (closure refusal); gate 19:28:06Z; cells 13:53-13:59 local",
+   "real_dependency": "TWO, AND THEY ARE DIFFERENT THINGS. (1) For the six missing W1440 units: the shared admission guard itself. Derivation is the gate's own log -- the request fits MemAvailable plus margin and crispdm-run would still refuse the cap -- so the blocker is DR01's atomic per-host reservation, not data, design or budget. The alternative that removes the dependency without repairing it is an admitted host that is not the coordinator. (2) For any of the twelve existing cells to count as governed: a data-gov service key, hence an accepted terminal receipt. The concrete reference EXISTS and is named rather than waited on: data-gov scripts/issue_service_key.py at d07695b issues one principal's key with data-gov's own hashing implementation, writing the plaintext to a key file at mode 600 and never into a checkout. Until a key is issued and the delivery-to-terminal path is smoked, every measurement in this lane stays NON_GOVERNING by construction, which is what the runner says of itself",
+   "dependency_derivation": "read out of MEMORY_GATE.jsonl, not from any document: the same line carries fits_measured_peak_plus_margin true and crispdm_run_would_accept_the_cap false",
+   "next_eligible_work": "1. DR01's atomic reservation -- CPU-only code and tests against a simulated clock. The six missing units are ITS dependents, not the other way round; 2. resolve identity and client through the documented reference above and smoke delivery -> reader -> terminal -> warehouse on one small mechanical unit BEFORE any further scientific fit; 3. nothing else belongs here: ASYMMETRIC_READING.json already fixed the reading in advance, and a long-context arm that lands worse is CONFOUNDED_WITH_BUDGET and identifies nothing. Do not relaunch the W1440 arms into the same refusal",
+   "resource": "2 000-4 000 updates per cell at 4.165 CPU s per update, 15-30 h wall for the six W1440 cells at a 7.4 GiB resident set \u2014 declared in ASYMMETRIC_READING.json from measurement, not estimate",
+   "remaining_cost": "Q2_CONTEXT v1 spent 1,012.7 CPU s for 12 fits; Q2_CONTEXT_DEEP spent 522.833 CPU s and produced 12 of 18 units. The six W1440 units have no approved allocation, and their measured price is in `resource`. DR01 holds new heavy coordinator work",
+   "lease": "NONE HELD. The gated child of tools/df_memory_gated_run.py --name q2deep ended at its own boundary; no df_memory_gated_run or df_e1_block process is alive, verified after the closure was written. Owner of the closed attempt: Satoshi"
+  },
+  {
+   "lane": "H-CORE",
+   "title": "MOD-FROZEN-PREFIX and MOD-CORE-PRETRAIN, the owner's core-pretraining hypothesis",
+   "map": "DOCTORAL_AND_BUSINESS",
+   "commit": "e97b286a/a84a913c (the two module rulings) \u00b7 6820fcae (lag table restated, materialization per split) \u00b7 458d22cb (measured resolution, repaired monitor, matched contrast)",
+   "artifact_or_receipt": "docs/audits/work_plan/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md \u00a79 \u00b7 docs/audits/evidence/CORE_PRETRAIN_RESOLUTION_20260926/{RESOLUTION.json,RESOLUTION.md,MATCHED_DESIGN.json,MATCHED_CONTRAST.json,CLOSURE_TABLE.json} at 458d22cb",
+   "observed_state": "MOD-FROZEN-PREFIX UNBLOCKED, DELIVERABLE NOT DELIVERED. MOD-CORE-PRETRAIN's first two prerequisites are now SUPPLIED and the third is not. Resolution measured with no new training: sigma 0.01136346 kW on 6 df, smallest defensible resolution 0.031106 kW quoted deliberately, against an R1-R0 effect of 0.009805 kW \u2014 3.17x the effect, verdict UNANSWERABLE_BY_THIS_PROTOCOL_AT_THIS_SEED_COUNT, 23 seeds per arm required. Matched contrast e1_phase1_matched_v1 ran 9 cells at 19:04:34Z with one val_mae monitor and 12000 updates per arm, every cell replaying bitwise, and every row of its closure table UNANCHORED_NO_TERMINAL \u2014 measured, not governed",
+   "observed_at": "2026-09-26T18:07:18Z (resolution) / 19:04:34Z (matched contrast)",
+   "real_dependency": "MOD-FROZEN-PREFIX's OWN DELIVERABLE: a materialized prefix OUTPUT \u2014 preprocessing, groups, detector, adapter, fusion, with learned states, clock, row/split, shape and version \u2014 with direct-vs-cache parity, reload in a fresh process, weight/state mutation and causality shown. Parity of a CSV or a panel is NOT that artifact. Second, and only if the module's own effect is to be resolved on this protocol: 23 seeds per arm, which is a budget nobody has granted. WITHDRAWN AS A DEPENDENCY: the scrambled-label difference of 0.049 kW as a resolution floor or as this contrast's noise \u2014 it is read and labelled as read, and it does not estimate the contrast's error distribution",
+   "dependency_derivation": "the two supplied prerequisites are read from RESOLUTION.json and MATCHED_CONTRAST.json; the remaining one from the disposition's own \u00a79 text plus the day review's ruling that enabling implementation is not accepting delivery",
+   "next_eligible_work": "materialize the frozen prefix OUTPUT and its four parity/causality tests. CPU, and it needs no reserve: nothing in it opens a held-out split",
+   "resource": "CPU only for the materialization and its tests; no GPU, no reserve, no allocation",
+   "remaining_cost": "458d22cb's matched contrast cost is recorded in MATCHED_CONTRAST.json; the materialization has no declared budget yet",
+   "lease": "none"
+  },
+  {
+   "lane": "M4",
+   "title": "M4 CONFIRMATION screen, the 3024-unit census",
+   "map": "DOCTORAL_AND_BUSINESS",
+   "commit": "b8865058 (predictor, satoshi/m4-confirmation-execution-20260926) \u00b7 0de54534 (agent-multi, execution body)",
+   "artifact_or_receipt": "the M4 return at b8865058; the auditor's own probe docs/audits/evidence/DAY_REVIEW_2026_09_26/{M4_PROBE.txt,M4_FINDINGS.md,m4_probe.py}",
+   "observed_state": "NO_NEW_MEASUREMENT, 0 of 3024 units fitted; neither ADVANCES nor DOES_NOT_ADVANCE, because all 16 cells of the Holm family read UNDETERMINED_NO_OBSERVATION and Holm is a step-down over p-values that do not exist. Census 12cfd9ad78\u2026 re-derived 28/28. The screen had been marked ready for sixteen days and could not run: its execution function verified the gates, wrote the pre-ledger and returned",
+   "observed_at": "2026-09-26T06:53 local (return) / day review probes same day",
+   "real_dependency": "SIX NAMED VERIFIER REPAIRS, NOT AN APPROVAL. Authority bound to the reviewed implementation rather than a recorded HEAD; exact census with distinct seeds and full family/noise/generator identity; raw authenticated evidence and numeric re-derivation before VERIFIED; attrition and full population for ALL contrasts including the fifteenth; resume with complete schema, arms, lineage, state and disjointness; cumulative accounting with no double execution. And one thing the executor must NOT supply: the external design-review record the gate requires, which is the auditor's to write",
+   "dependency_derivation": "derived from the auditor's reproduced probes over agent-multi@0de54534, naming tools/m4_confirmation_runner.py:270,385,557,719,754,766,785 and tools/m4_confirmation_protocol.py:629 \u2014 not from the return's own claims",
+   "next_eligible_work": "freeze the day review's probes as PRE and turn them into tests of the real public path; then the six repairs, with positives and negatives under DEVELOPMENT fixtures including the full entrypoint; and correct the 'zero arrays' sentence to what was actually checked, resolving the declared disjointness-test exception by name",
+   "resource": "CPU only. Measured cost of the execution body is 0.36 s and 102.8 MiB per unit, about 18 minutes of one CPU for the census",
+   "remaining_cost": "no allocation is taken; M4 CONFIRMATION is NOT AUTHORIZED and no unit may be fitted",
+   "lease": "none"
+  },
+  {
+   "lane": "FIN-LOSS-OPT/E3",
+   "title": "Financial loss x optimizer factorial, and the weekly forecasting/RL cycle",
+   "map": "DOCTORAL_AND_BUSINESS",
+   "commit": "RP82 seal in master 941eb5b3; the registration mechanism that unblocks it is data-gov 7eec868 and 8a5d2f9",
+   "artifact_or_receipt": "docs/audits/evidence/d3_k5_20260917/RP82/FIN_LOSS_OPT_DESIGN_SEALED_v4.json and RP82/fin_cost_pilot/DESIGN.json; PROJECT_METHOD_STATE.json:rp82_rp89.financial",
+   "observed_state": "FIN-LOSS-OPT DESIGNED, v4 SEALED, COST PILOT NOT_EXECUTED. The governed ranged download of the EURUSD 1h resource returned HTTP 422 'resource availability contract required' \u2014 the lake declares no resource contract for it; 0 bytes were read and campaign satoshi-fin-cost-pilot-20260921-prepare-data was left open without delivery. MOD-E3: BUSINESS-CONTRACT is DESIGNED, not EXECUTED; every retained E1 measurement is a household-electricity panel and the only price-series tables are 114 CAUSALITY_UNVERIFIED with both lineages UNBOUND",
+   "observed_at": "2026-09-21 (pilot refusal, retained in state) / 2026-09-26 (registration mechanism)",
+   "real_dependency": "FIN-LOSS-OPT: a registered resource availability contract for the EURUSD 1h resource in the data-gov lake. That is now a concrete, reachable item, because data_gov/resource_registration.py and tools/register_calendar_resources.py at 7eec868 are exactly the mechanism that registers one. Also: close the open prepare-data campaign at its normal boundary. MOD-E3: BUSINESS-CONTRACT executed, plus one governed forecasting result on the domain it trades. H-CORE IS NOT A DEPENDENCY OF THIS LANE AS A WHOLE \u2014 the correction of 2026-09-26. It gates E3's RL comparison and nothing else; the master plan's own row for E3 requires its evaluation 'aunque H1-H3 no sean positivos', and the programme contract lists MOD-E3's prerequisites as MOD-E1 and BUSINESS-CONTRACT only. Preparing the financial reference and the weekly protocol proceeds on its own data, contracts and risks",
+   "dependency_derivation": "the 422 and the open campaign are read from the retained pilot record; the H-CORE correction from the programme contract's own depends_on list and the master plan's own E3 row, against the disposition text that had added H-CORE globally",
+   "next_eligible_work": "register the financial resource's availability contract and re-attempt the SEALED cost pilot through the governed path \u2014 no scientific selection, no held-out access; and prepare the weekly reference and protocol, which need no electricity result and must not use one as a substitute for financial validation",
+   "resource": "CPU only; data-gov lake and warehouse reachable; no reserve read; no broker call",
+   "remaining_cost": "no allocation taken; the fit remains PREPARE_NOT_AUTHORIZED_TO_FIT",
+   "lease": "open campaign satoshi-fin-cost-pilot-20260921-prepare-data, no delivery, must be closed at its boundary"
+  },
+  {
+   "lane": "calendar",
+   "title": "Economic calendar registration and the event-study clock",
+   "map": "BOTH: it is the causal family's data dependency in the product map and E3's reference input in the programme map",
+   "commit": "data-gov 7eec868 (five calendar resources) and 8a5d2f9 (nine FRED siblings), both pushed",
+   "artifact_or_receipt": "data-gov docs/audits/evidence/CALENDAR_REGISTRATION_2026_09_26/{registrations.v1.json,calendar_inventory.v1.redacted.json,registration_run.v1.redacted.json,wp22_measured_calendar_clock.redacted.json} and docs/audits/work_plan/SATOSHI_CALENDAR_DATA_GOV_REGISTRATION_2026_09_26.md; FRED_REGISTRATION_2026_09_26/registrations.v1.json",
+   "observed_state": "REGISTERED AND REFUSING, WHICH IS THE CORRECT OUTCOME. Five calendar resources registered with their absences, 41 absence rows over 17 codes, replay ALL_ROWS_RE_DERIVED; nine of nine FRED siblings registered, 0 rejected. Exactly one resource carries consensus and exactly one observed the publication instant, and their windows are 1,326 days apart, so the consensus archive stands at study_refusal = CONSENSUS_WITHOUT_OBSERVED_PUBLICATION_CLOCK and the CATALOG refuses the event study. Upstream, the observed-clock study was deliberately left unregistered: placebo passes 8 of 660",
+   "observed_at": "2026-09-26T06:46 and 13:36 local",
+   "real_dependency": "A CONSENSUS SOURCE THAT ALSO CARRIES AN OBSERVED PUBLICATION INSTANT OVER THE SAME BAR SPAN. The artifacts name it as a purchasing/entitlement decision and name the providers; nothing on disk supplies it, and no code can. UNKNOWN stays UNKNOWN and is never read as zero lag",
+   "dependency_derivation": "derived by comparing coverage between the two registered archives \u2014 the 1,326-day gap is measured, not asserted \u2014 and from the placebo count of the unregistered study",
+   "next_eligible_work": "mechanical work that does not pretend to the missing identification: prospective point-in-time capture, and extending the absence/placebo reporting over the newly registered resources. Do not stop mechanical improvement for want of the dataset, and do not manufacture the identification",
+   "resource": "CPU only; an entitlement decision is owner-only and is named, not assumed",
+   "remaining_cost": "no numeric budget declared in the artifacts",
+   "lease": "none"
+  },
+  {
+   "lane": "M5PHET-5F-CHAT",
+   "title": "M5PHET product: five families and the chat/NL interface",
+   "map": "M5PHET_PRODUCT",
+   "commit": "M5PHET master 8a6d1a3 (2026-09-26, an index that states it contains no measurement); newest family work 2026-09-25: e2eddd6 chat/route, 92bb224 forecast, 790843f regimes, 6bcf631 causal, f5b129f classification; providers news-signal e4476e5, prediction_provider c5ada4e, feature-eng 3de34fd, causal-inference bb11d64, agent-multi 87a40de4",
+   "artifact_or_receipt": "per family: ~/.local/state/m5phet/wp09-quality-20260925/, docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/, ~/.local/state/m5phet/regimes-wp19-20260925/ and wp29-calibration-20260925/, M5PHET docs/evidence/WP22_DML_2026_09_25/, agent-multi docs/audits/evidence/WP21_LAYA_FIRST_LAYER_2026_09_25/, M5PHET docs/evidence/{ROUTE_RELIABILITY_2026_09_25,INTERPRETER_RELIABILITY_2026_09_25}/",
+   "observed_state": "FIVE FAMILIES ANSWER; ONE CARRIES A QUALITY NUMBER AND FOUR PUBLISH A REFUSAL OR A NULL. classification macro-F1 0.37776 with skill 0.25331 over majority class on 450 independently labelled rows, ECE 0.13151 UNCALIBRATED, and a recorded finding that the same checkpoint as a chooser abstained 28/28 and ranked the same option first on all 28 distinct state digests. forecast: outer confirmation sealed d4ac73f0\u2026, searched family beats the hand window by 0.034412 kW with both intervals excluding zero, champion ORDERING NOT confirmed; served bundle MAE 0.565838 skill 0.151888, quantile bundle coverage 0.926 at nominal 0.95. regimes: NO_NEW_MEASUREMENT / NOT_RANKED, the served reference collapses 10,080 holdout rows into one cluster so the internal indices are INDEX_NOT_DEFINED. causal: NOT_IDENTIFIED, placebo 8 of 660, the study deliberately unregistered. RL: NO_NEW_MEASUREMENT, abstained 256/256, UNDERPOWERED 256/500. chat: route 81/95 = 0.8526 with WRONG_AREA 0 and WRONG_TYPE 12, interpreter 50/60 = 0.8333, one malformed envelope refused by check_proposal; 634 passed, 1 skipped",
+   "observed_at": "2026-09-25 per family artifact; the 2026-09-26 M5PHET commit adds no measurement",
+   "real_dependency": "ONE PER FAMILY, AND NONE OF THEM IS ANOTHER FAMILY. classification: an independently labelled corpus for any new task, plus the Laya worker's external 5090 for inference. forecast: rows untouched in every sense, which nested_split.json states do not exist inside the 50,400-row slice, hence a different source file with its own provenance. regimes: a fitted reference the running instance actually serves whose holdout has at least two non-empty clusters. causal: the consensus-plus-observed-clock source of the calendar lane \u2014 an owner entitlement decision. RL: at least 500 sealed rows against the pre-declared minimum, and a non-abstaining decision path. chat: nothing external; a wider corpus needs sentences nobody has written yet. VERIFIED ABSENT: no cross-family hold is written anywhere in the M5PHET artifacts, and the one figure-scoped qualification (WP26 over WP06 stage 5) was discharged on 2026-09-25",
+   "dependency_derivation": "each read from that family's own evidence file; the absence of a cross-family hold from a direct search of the M5PHET artifacts, including the CL20-CL24 line's global_hold false",
+   "next_eligible_work": "five items that may proceed at the same time and in any order: diagnose the classification chooser's state-independence on one of the 28 retained corpora; a second-series outer confirmation for forecast; refit and install one regimes reference with two or more clusters; prospective capture for causal (WP32, the only work-plan item with no artifact); extend the RL seal past 500 bars; repair the chat router's twelve WRONG_TYPE under-answers. Plus three bookkeeping repairs the artifacts contradict: M5PHET PROJECT_METHOD_STATE.json still says model_performance_measured false and four families planned; README says 491 tests against a 634 receipt, and says no area carries a measured quality number and that no bundle has a quantile head, against WP09 and the shipped quantile bundle; and WP26's twenty fits ran on the coordinator's own GPU against the plan's standing rule, with no admission record \u2014 either the exception or the admission is missing",
+   "resource": "CPU for every analysis and for serving; the worker's external 5090 for any Laya inference through tools/chat_laya_worker.sh; a cloud-interpreter entitlement for the chat measurements",
+   "remaining_cost": "175-second per-call wall timeout is the only declared per-call bound; no CPU-second ledger exists in these artifacts",
+   "lease": "declared GPU lease path ~/.local/state/m5phet/chat-gpu.lock, ABSENT, therefore unheld. Live user units: m5phet-chat.service, m5phet-tailnet-forward.service, data-gov-m5phet.service. Verification instances on their own ports and state dirs; one 2026-09-24 audit instance still listening with pid file /tmp/retsu-audit/server.pid"
+  },
+  {
+   "lane": "news",
+   "title": "News collection and shadow (news-signal)",
+   "map": "M5PHET_PRODUCT",
+   "commit": "news-signal b08a99f (2026-09-26, satoshi/rp148-news-collection-20260926, identical to origin/master)",
+   "artifact_or_receipt": "news-signal tests/test_rp148_collection_boundary.py (35 CPU tests), PROJECT_METHOD_STATE.json, docs/INSTALL_VERIFICATION.json (news_install_verification.v2), examples/eurusd/SEAL.json (20 labelled files, sealed_before_any_scoring_run true), examples/eurusd/collection/0{0,1,2}_*.json",
+   "observed_state": "BOUNDARIES IMPLEMENTED AND TESTED; NO LIVE INPUT, NO BROKER EVIDENCE, QUALITY NOT_MEASURED. stage integration_verification; real_weights_measured false, governed_live_inputs false, broker_connections_accepted [], real_capital_authorized false. The installed entry point answers a user-authored question end to end with backend_kind NON_MODEL_FIXTURE, inference_performed false. Receipt clocks, NOT_PROVIDED_BY_SOURCE, duplicate-vs-revision, known_at over five instants, interrupted-collection replay, STALE_AT_COLLECTION and AGE_NOT_MEASURABLE_WITHOUT_PUBLICATION_CLOCK are all exercised on recorded fixtures",
+   "observed_at": "2026-09-26T03:57 local (state) / 2026-09-24 (install verification)",
+   "real_dependency": "A LICENSED FEED ENTITLEMENT THE PACKAGE DOES NOT HOLD, plus data-gov registration of what is collected. Neither is code. Nothing in this lane depends on the classification family's quality number or on any predictor experiment",
+   "dependency_derivation": "read from PROJECT_METHOD_STATE.json next_allowed_actions and the empty broker_connections_accepted list",
+   "next_eligible_work": "an isolated pinned-weight batch-1 smoke with cold-load RSS, warm latency and a RETAINED receipt \u2014 which also settles a bookkeeping contradiction: the README's prose claims a real-weight GPU measurement of 2026-09-24 for which NO receipt JSON is retained, while the state says real_weights_measured false. Until the receipt exists, the prose is UNVERIFIED and the state governs",
+   "resource": "CPU for the suite; weights plus a GPU (or a declared, recorded CPU refusal) for the smoke; an entitlement for real arrival",
+   "remaining_cost": "CANNOT BE ESTABLISHED FROM ARTIFACTS: no numeric budget is declared anywhere in the lane; only a 256-token per-record cap",
+   "lease": "none: no news unit is installed and no lock file exists"
+  },
+  {
+   "lane": "MT5-demo",
+   "title": "MT5 demo policy, risk and unknown-outcome accounting (lts)",
+   "map": "M5PHET_PRODUCT",
+   "commit": "lts 12bce5f (2026-09-26, satoshi/mt5-unknown-outcome-20260926, the primary live checkout) after fcea94e (RP149)",
+   "artifact_or_receipt": "lts docs/audits/evidence/mt5_unknown_outcome_20260926/{NOTE.md,dry_run_recorded_corpus.txt,dry_run_recorded_corpus.json}, docs/audits/work_plan/SATOSHI_MT5_UNKNOWN_OUTCOME_2026_09_26.md; runtime ~/.local/state/lts/paper-execution-watchdog/latest.json key mt5 and paper-execution-monitor.sqlite table monitor_events",
+   "observed_state": "INTERFACES AND MIGRATION IMPLEMENTED OVER A RECORDED CORPUS; THE LIVE BRIDGE IS STALE AND ITS STORE IS NOT ON THIS HOST. The dry migration ran read-only over a 9-row synthetic corpus built by the committed test helper. The local default bridge database does not exist \u2014 I re-verified that \u2014 but the watchdog reads a REMOTE status endpoint by preference, and that endpoint reports command_counts succeeded 48 / failed 5 with execution_enabled true, against a heartbeat last received 2026-09-08 and now about 17.9 days stale. monitor_events' latest entry is mt5_bridge_stale, severity critical, and it is the only active event key in the fleet. Exposure reconciles at 0 orders and 0 positions, all_authorized true. CORRECTION THIS INDEX MAKES: the retained note's 'this lane has never placed an order' is true of the local path only and is NOT a lane-level fact",
+   "observed_at": "2026-09-26T19:31:25Z (watchdog) / 19:06:21Z (monitor event)",
+   "real_dependency": "A READABLE COPY OF THE OFF-HOST BRIDGE DATABASE \u2014 the configured path does not exist here and the tool exits 'no such database'; then an operator attestation that the bridge is stopped before any --apply. For a canary, and separately: a confirmed demo account and the standing risk mandate. NO PER-ORDER ACKNOWLEDGEMENT, RETCODE, TICKET OR FILL IS RETAINED ON THIS HOST \u2014 only the two aggregate counters read live",
+   "dependency_derivation": "derived by attempting to locate the configured database and by reading the watchdog's own preference order in tools/paper_execution_watchdog.py, not from the note's summary",
+   "next_eligible_work": "dry-run the migration against a read-only COPY of the remote store and publish its result; reconcile the note's sentence with the remote 48/5; and the two named fix-forwards \u2014 reconcile_completed_lifecycles still reading state='succeeded' from the column, and exposure_reconciliation not adopting a reconciled order's ticket. DO NOT restore a branch under live timers",
+   "resource": "CPU for migration and tests; a file copy for real counts; demo account plus risk mandate for any canary",
+   "remaining_cost": "CANNOT BE ESTABLISHED FROM ARTIFACTS as money or CPU. The only budget present is domain-level: five daily entry slots reclaimed and now held, with BUDGET_RELEASING_STATES == {'failed'}, deny by default",
+   "lease": "no MT5 unit is installed on this host; the lane is observed by lts-paper-execution-watchdog.timer/.service, which holds an exclusive non-blocking flock on ~/.local/state/lts/paper-execution-watchdog/state.lock"
+  },
+  {
+   "lane": "Alpaca-paper",
+   "title": "Alpaca paper execution lane (lts)",
+   "map": "M5PHET_PRODUCT",
+   "commit": "lts 889c5f2 (2026-09-25, satoshi/rp157-broker-refusal-recovery-20260925), whose work is carried in 12bce5f \u2014 which is what the live 5-minute preflight has been executing since 2026-09-26 06:15 local",
+   "artifact_or_receipt": "~/.local/state/lts/alpaca-paper-lab.sqlite and alpaca-model-execution.sqlite; alpaca-model-runner-heartbeat.json; paper-execution-watchdog/latest.json key alpaca; examples/configs/alpaca_paper_execution_lab_v1.json; tests/unit/test_broker_refusal_recovery.py",
+   "observed_state": "LIVE, READ-ONLY SINCE 2026-09-25 16:03Z, AND THE ONLY LANE WITH REAL BROKER ACKNOWLEDGEMENTS AND FILLS RETAINED. Latest preflight session complete: account ACTIVE, environment paper, trading_blocked false, equity_market_open false, open_orders 1, open_positions 1, orders_submitted 0, protected_execution_eligible false, quotes for six crypto symbols, missing_cells []. Retained venue facts: 27 call_attempt / 27 submit_response / 27 ack_snapshot, one effect acknowledged and 26 terminal_flat with venue-issued order ids, 54 execution report receipts, and 67,695 rows carrying filled_qty and filled_avg_price. RP157's refusal surface is LIVE BUT UNEXERCISED: zero retained structured refusals in production, so it is evidenced only by its tests. Two code versions are touching the same paper account: the model runner has been resident since 2026-09-23 with pre-9090f49 code while the preflight executes 12bce5f",
+   "observed_at": "2026-09-26T19:28:10Z (preflight) / 19:32:32Z (runner heartbeat)",
+   "real_dependency": "NOTHING FOR MONITORING \u2014 the lane is already running. For safe progress: the F3 remediation, a commit-pinned deployment with its own directory and pinned dependencies, a rehearsal, a window and a rollback. F3 is CONFIRMED here and the zero-impact claim is WITHDRAWN: 18 files differ between 9090f49 and 12bce5f, four of them in broker lanes under live timers, and the import chain is real \u2014 the observer unit runs run_alpaca_paper_preflight.sh, which runs app.alpaca_paper_cli, which imports app.alpaca_paper_lab at line 10, which now imports app.broker_refusal at line 19 and wraps the non-2xx branch. An identical CLI file does not make an identical runtime",
+   "dependency_derivation": "derived from the diff, the import chain read in source, and the reflog timestamp of the checkout move \u2014 and cross-checked against the day review's own recorded lts_timer_dependency_hashes for the two commits",
+   "next_eligible_work": "the commit-pinned deployment with rehearsal, window and rollback; adoption tests for account shorting eligibility and close semantics; and a zero-network sink for shadow tests, kept out of the paper-canary profile. NO MUTATING BROKER CALL BY THIS ORDER, and no service started, stopped or restarted",
+   "resource": "paper account already bound and verified; CPU; network reachability to the paper venue. No missing entitlement",
+   "remaining_cost": "CANNOT BE ESTABLISHED FROM ARTIFACTS: no numeric budget is declared. orders.enabled is false in the lab config. The shadow lane's reported NAV is simulated and is not a budget",
+   "lease": "lts-alpaca-paper-observer.timer every 5 minutes; lts-alpaca-model-runner.service resident since 2026-09-23; lts-paper-execution-watchdog.timer holding state.lock; lts-multi-venue-shadow.timer holding multi-venue-shadow.lock. None of these is to be touched"
+  }
+ ],
+ "history": {
+  "reading": "every entry here is a dated photograph, preserved so the numbers are not lost, and explicitly not a dispatch manifest. Nothing below may be relaunched from this file",
+  "superseded_queue_v1": {
+   "schema": "research_execution_queue.v1",
+   "updated_on": "2026-09-26",
+   "dispatcher": "Satoshi",
+   "policy": "CONCURRENT_EXECUTION_2026_09_23.md",
+   "runtime_enforcement": "Existing runners/admission; this is a persistent ordered manifest, not a newly installed scheduler",
+   "next_orders": "../../handoffs/SATOSHI_DAY_REVIEW_CONTINUATION_2026_09_26.md",
+   "external_review_20260926": {
     "verdict": "CHANGES_REQUIRED",
     "scope": "Scoped day audit, not a fresh acceptance of every cell or all eleven repository tips",
     "review": "../../audits/work_plan/MUSASHI_DAY_REVIEW_2026_09_26.md",
@@ -15,30 +309,34 @@
     "M4_CONFIRMATION": "NOT_APPROVED_VERIFIER_AND_RESUME_DEFECTS",
     "confirmed_recovery": "Huber v2 retained content matches earlier published digest; not a new measurement",
     "no_new_allocation": true
-  },
-  "latest_return": {
+   },
+   "latest_return": {
     "commit": "e36c1c6d",
     "status": "REPORTED_NOT_FRESHLY_REMEASURED_BY_THIS_UPDATE",
     "A": "12-cell consolidation reported, MSE0.161962/MAE0.259662; composition audit scoped separately",
     "B": "RP145 closure reports 12/12 verified, MSE/MAE 0.150307/0.246397, 16167/24000CPU; review retained closure, no duplicate fit queue",
     "doctoral": "RP158 retained metrics equal RP157; primary design/count fixes pass focused cases. Finish typed elements and derived-metric validation in a pure retained-evidence closure; no routine inference or retraining",
     "historical_executor_fields_below": "Executor AND cells preserve the last direct RP139 observation, not current dispatch authority; rederive current per-cell state from accepted records before any dispatch"
-  },
-  "parallel_news_lane": {
+   },
+   "parallel_news_lane": {
     "orders": "RP147-RP151",
     "repository": "https://github.com/harveybc/news-signal",
     "state": "CLASSIFICATION_FIRST_EURUSD_RELEVANCE_ASSIGNED_REAL_SDK_PARITY_NOT_YET_VERIFIED",
     "current_orders": "../../handoffs/SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md",
     "first_host_candidate": "External5090 preferred for eligible GPU work; use admitted COORDINATOR4070 only when measuring the planned small-model residency on that device",
     "blocks_RP135_or_doctoral": false,
-    "modes": ["SHADOW", "MT5_DEMO", "ALPACA_PAPER"],
+    "modes": [
+     "SHADOW",
+     "MT5_DEMO",
+     "ALPACA_PAPER"
+    ],
     "real_capital_authorized": false,
     "dispatch": "Separate service/profile/lease, existing broker risk path; no duplicate scientific executor"
-  },
-  "campaign": "RP135_RELEASED_L512_RECIPE",
-  "state": "REPORTED_CLOSED_TWELVE_CELLS_DO_NOT_REDISPATCH_HISTORICAL_QUEUE",
-  "cells_scope": "HISTORICAL_RP139_SNAPSHOT_NOT_RUNNABLE_QUEUE",
-  "executor": {
+   },
+   "campaign": "RP135_RELEASED_L512_RECIPE",
+   "state": "REPORTED_CLOSED_TWELVE_CELLS_DO_NOT_REDISPATCH_HISTORICAL_QUEUE",
+   "cells_scope": "HISTORICAL_RP139_SNAPSHOT_NOT_RUNNABLE_QUEUE",
+   "executor": {
     "kind": "USER_SYSTEMD_NATIVE_BATCH_WITH_FLOCK",
     "superseded_task_id": "t_28e5c655",
     "service": "crispdm-rp135-continuation-20260923.service",
@@ -48,39 +346,119 @@
     "lease": "~/.local/state/crispdm-data-foundation/dispatch/rp135.lock on GPU host",
     "duplicate_policy": "Satoshi observes the native service/real flock; expired Hermes task remains BLOCKED; never launch another RP135 executor",
     "gpu_child_receipt": "23:57Z PID900129 H336s2021 external5090; six records/terminal receipts retained; live scope MemoryMax7GiB MemoryHigh6GiB parent8GiB, no restart"
-  },
-  "design_sha256": "bcc7e3d3c09c6744829ca4685e200cdd7c70255097823cf45cd439f3e8145c67",
-  "producer_commit": "9d01871a82d043b016ee4d3bf7c2b622265927b5",
-  "author_revision": "dffde87e",
-  "device_policy": "RP135 stays on its sealed external5090; other GPUs now eligible for independent work after owner cooling confirmation and admission",
-  "continuation_allocation": {"cpu_seconds": 24000, "wall_hours": 8, "prior_costs": "Preserve separately and report cumulative cost; no retroactive cap waiver"},
-  "seq_len": 512,
-  "patch_len": 128,
-  "channels": 321,
-  "cells": [
-    {"horizon": 96, "seed": 2021, "status": "TRAINED_TERMINAL_ACCEPTED_REPLAY_PENDING", "receipt": "9e6c0a80763e860f8051a45de0bb61249da95aa3f0162023d05c45010ce7759f"},
-    {"horizon": 96, "seed": 2022, "status": "TRAINED_TERMINAL_ACCEPTED_REPLAY_PENDING_PROVENANCE_ERRATUM", "receipt": "4d12fafe8bcb79475979f74c89218ee62396342804dc4d38bb7300e14bc09631"},
-    {"horizon": 96, "seed": 2023, "status": "TRAINED_RECEIPT_REPLAY_PENDING", "receipt": "d95f519abb7b74c85eadfea2f218c7e83a9f6418eb1da16e44f70b6930c301b5"},
-    {"horizon": 192, "seed": 2021, "status": "TRAINED_RECEIPT_REPLAY_PENDING", "receipt": "2e6fc3ba14c200c6880e6695b15169c8f95cef0c59f01a024f223f3a0e92a840"},
-    {"horizon": 192, "seed": 2022, "status": "TRAINED_RECEIPT_REPLAY_PENDING", "receipt": "4ad3004501a6e1d8e3a2d849ee0e1c44115724c620ade16bac00a375daff191e"},
-    {"horizon": 192, "seed": 2023, "status": "TRAINED_RECEIPT_REPLAY_PENDING", "receipt": "5631428a7d1b624c89d13f3603da4af5015f0b8b962332faaad126bd94185eac"},
-    {"horizon": 336, "seed": 2021, "status": "RUNNING_OBSERVED_2357Z", "receipt": null},
-    {"horizon": 336, "seed": 2022, "status": "QUEUED", "receipt": null},
-    {"horizon": 336, "seed": 2023, "status": "QUEUED", "receipt": null},
-    {"horizon": 720, "seed": 2021, "status": "QUEUED", "receipt": null},
-    {"horizon": 720, "seed": 2022, "status": "QUEUED", "receipt": null},
-    {"horizon": 720, "seed": 2023, "status": "QUEUED", "receipt": null}
-  ],
-  "independent_repair_lane": {
+   },
+   "design_sha256": "bcc7e3d3c09c6744829ca4685e200cdd7c70255097823cf45cd439f3e8145c67",
+   "producer_commit": "9d01871a82d043b016ee4d3bf7c2b622265927b5",
+   "author_revision": "dffde87e",
+   "device_policy": "RP135 stays on its sealed external5090; other GPUs now eligible for independent work after owner cooling confirmation and admission",
+   "continuation_allocation": {
+    "cpu_seconds": 24000,
+    "wall_hours": 8,
+    "prior_costs": "Preserve separately and report cumulative cost; no retroactive cap waiver"
+   },
+   "seq_len": 512,
+   "patch_len": 128,
+   "channels": 321,
+   "cells": [
+    {
+     "horizon": 96,
+     "seed": 2021,
+     "status": "TRAINED_TERMINAL_ACCEPTED_REPLAY_PENDING",
+     "receipt": "9e6c0a80763e860f8051a45de0bb61249da95aa3f0162023d05c45010ce7759f"
+    },
+    {
+     "horizon": 96,
+     "seed": 2022,
+     "status": "TRAINED_TERMINAL_ACCEPTED_REPLAY_PENDING_PROVENANCE_ERRATUM",
+     "receipt": "4d12fafe8bcb79475979f74c89218ee62396342804dc4d38bb7300e14bc09631"
+    },
+    {
+     "horizon": 96,
+     "seed": 2023,
+     "status": "TRAINED_RECEIPT_REPLAY_PENDING",
+     "receipt": "d95f519abb7b74c85eadfea2f218c7e83a9f6418eb1da16e44f70b6930c301b5"
+    },
+    {
+     "horizon": 192,
+     "seed": 2021,
+     "status": "TRAINED_RECEIPT_REPLAY_PENDING",
+     "receipt": "2e6fc3ba14c200c6880e6695b15169c8f95cef0c59f01a024f223f3a0e92a840"
+    },
+    {
+     "horizon": 192,
+     "seed": 2022,
+     "status": "TRAINED_RECEIPT_REPLAY_PENDING",
+     "receipt": "4ad3004501a6e1d8e3a2d849ee0e1c44115724c620ade16bac00a375daff191e"
+    },
+    {
+     "horizon": 192,
+     "seed": 2023,
+     "status": "TRAINED_RECEIPT_REPLAY_PENDING",
+     "receipt": "5631428a7d1b624c89d13f3603da4af5015f0b8b962332faaad126bd94185eac"
+    },
+    {
+     "horizon": 336,
+     "seed": 2021,
+     "status": "RUNNING_OBSERVED_2357Z",
+     "receipt": null
+    },
+    {
+     "horizon": 336,
+     "seed": 2022,
+     "status": "QUEUED",
+     "receipt": null
+    },
+    {
+     "horizon": 336,
+     "seed": 2023,
+     "status": "QUEUED",
+     "receipt": null
+    },
+    {
+     "horizon": 720,
+     "seed": 2021,
+     "status": "QUEUED",
+     "receipt": null
+    },
+    {
+     "horizon": 720,
+     "seed": 2022,
+     "status": "QUEUED",
+     "receipt": null
+    },
+    {
+     "horizon": 720,
+     "seed": 2023,
+     "status": "QUEUED",
+     "receipt": null
+    }
+   ],
+   "independent_repair_lane": {
     "orders": "RP132-RP134",
     "status": "RETURN_PUBLISHED_d0fb9acd_NARROW_LINEAGE_REVIEWED_NO_NEW_DELETION_PERMISSION",
     "cpu_seconds_cap": 1800,
     "blocks_this_campaign": false,
     "production_deletions_allowed": false
+   },
+   "upcoming_design_work": [
+    {
+     "task": "Doctoral extractor/pretraining intervention against accepted reference",
+     "status": "RP156_SCORES_RETAINED_AUTHORITY_AND_CHILD_VALIDATION_REQUIRED",
+     "requires": "Revalidate retained results against accepted design and complete typed child contracts; no routine re-inference, only specific missing-evidence repair within budget. RP147 actual Laya pilot independent and due"
+    },
+    {
+     "task": "FIN-LOSS-OPT",
+     "status": "PREPARE_NOT_AUTHORIZED_TO_FIT",
+     "requires": "Financial resource temporal contract, matched financial reference and existing finance design; no heldout access"
+    },
+    {
+     "task": "Weekly forecasting and RL",
+     "status": "PREPARE_NOT_AUTHORIZED_TO_FIT",
+     "requires": "Existing E3 business/data/execution contracts and domain-specific model reference; keep RL separate from forecasting metrics"
+    }
+   ]
   },
-  "upcoming_design_work": [
-    {"task": "Doctoral extractor/pretraining intervention against accepted reference", "status": "RP156_SCORES_RETAINED_AUTHORITY_AND_CHILD_VALIDATION_REQUIRED", "requires": "Revalidate retained results against accepted design and complete typed child contracts; no routine re-inference, only specific missing-evidence repair within budget. RP147 actual Laya pilot independent and due"},
-    {"task": "FIN-LOSS-OPT", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Financial resource temporal contract, matched financial reference and existing finance design; no heldout access"},
-    {"task": "Weekly forecasting and RL", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Existing E3 business/data/execution contracts and domain-specific model reference; keep RL separate from forecasting metrics"}
-  ]
+  "rp57_rp63_rows": "history, per the master plan's section 5. They are not a second dispatch queue and were never one",
+  "rp135_cell_snapshot": "the twelve-cell list inside `superseded_queue_v1.cells` is the last direct RP139 observation of 2026-09-23. The fits have since FINISHED; see lane A/B"
+ }
 }
