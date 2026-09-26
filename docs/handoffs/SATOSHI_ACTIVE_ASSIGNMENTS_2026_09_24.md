@@ -1,5 +1,14 @@
 # Start here: reconcile ALL active assignments, not only M5PHET
 
+**2026-09-26 successor:** [DR01-DR08](SATOSHI_DAY_REVIEW_CONTINUATION_2026_09_26.md)
+and the [independent day review](../audits/work_plan/MUSASHI_DAY_REVIEW_2026_09_26.md).
+The dated snapshots below are history, not a current dispatch manifest. Reconcile
+the published supplements and live leases before launching. M5PHET remains a
+parallel product lane, not a replacement for the scientific/financial programme.
+Do not launch new heavy coordinator work until shared memory admission is repaired;
+independent admitted worker/application work continues. No M4 confirmation approval
+is granted by the day review.
+
 **Owner clarification:** the public M5PHET interface must match Laya's experience:
 data/context and natural-language questions in, task-specific structured answers
 out. This is required across the five families, not a later optional frontend.

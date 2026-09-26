@@ -1,0 +1,131 @@
+{
+  "huber": {
+    "observed_at": "2026-09-26T19:04:47.131870+00:00",
+    "retained_raw_sha256": "cdd1611c41d7822169e481e585278ab9c5f59e68ab049c6bf411b01f303599a1",
+    "canonical_sha256": "be2e776e5c64a8422a6411447a4cbeba6e5607c7158456f9a64f89a4244b6965",
+    "canonical_equals_previous_digest": true,
+    "runroot_byte_identical": true,
+    "historical_report_revision": "3bb65960",
+    "historical_report_digest_matches": true,
+    "sources_at_execution": {
+      "df_e1_governed.py": true,
+      "df_e1_huber.py": true,
+      "df_e1_phase1.py": true,
+      "df_e1_pilot.py": true,
+      "df_mod_e0.py": true
+    },
+    "cell_identity_matches": {
+      "huber_adam_s1": true,
+      "huber_adam_s2": true,
+      "huber_adam_s3": true,
+      "huber_adamw_s1": true,
+      "huber_adamw_s2": true,
+      "huber_adamw_s3": true,
+      "mae_adam_s1": true,
+      "mae_adam_s2": true,
+      "mae_adam_s3": true,
+      "mae_adamw_s1": true,
+      "mae_adamw_s2": true,
+      "mae_adamw_s3": true
+    },
+    "limits": [
+      "No new inference, fitting or holdout read",
+      "Filesystem timestamps do not prove immutable chronology",
+      "This verifies content identity against prior recorded digest, not unique physical-file provenance"
+    ]
+  },
+  "lags": {
+    "scope": "retained training support only; no reserve read",
+    "clock_rows": 40200,
+    "missing_rows": 1,
+    "rows": [
+      {
+        "lag_minutes": 1,
+        "published_fixed_denominator_acf": 0.9633449780917295,
+        "n_over_n_minus_k_rescaled_acf": 0.9633689430894431,
+        "compressed_pearson": 0.9633610997536344,
+        "clock_preserving_pearson": 0.9633609325848398,
+        "clock_preserving_pairs": 40197
+      },
+      {
+        "lag_minutes": 60,
+        "published_fixed_denominator_acf": 0.4030024231300629,
+        "n_over_n_minus_k_rescaled_acf": 0.40360483338910785,
+        "compressed_pearson": 0.4032825334521872,
+        "clock_preserving_pearson": 0.4032686703971385,
+        "clock_preserving_pairs": 40138
+      },
+      {
+        "lag_minutes": 1440,
+        "published_fixed_denominator_acf": 0.3171858005754113,
+        "n_over_n_minus_k_rescaled_acf": 0.3289700971988689,
+        "compressed_pearson": 0.33515715500965243,
+        "clock_preserving_pearson": 0.3350848380053091,
+        "clock_preserving_pairs": 38758
+      },
+      {
+        "lag_minutes": 10080,
+        "published_fixed_denominator_acf": 0.26559304812972,
+        "n_over_n_minus_k_rescaled_acf": 0.35447972846929227,
+        "compressed_pearson": 0.3668640871344225,
+        "clock_preserving_pearson": 0.3666013185428444,
+        "clock_preserving_pairs": 30119
+      }
+    ],
+    "claim": "Lag-truncated Pearson is not merely n/(n-k) scaling of fixed-denominator ACF"
+  },
+  "memory_gate": {
+    "real_processes_started": 0,
+    "mock_mem_available_gib": 12,
+    "requested_gib_per_caller": 8,
+    "aggregate_requested_gib": 16,
+    "launches_accepted_before_either_finished": 2,
+    "return_codes": [
+      0,
+      0
+    ],
+    "claim": "The new wrapper does not serialize or reserve admission across callers"
+  },
+  "journal_kills": [
+    {
+      "journal_timestamp_us": "1790427595068708",
+      "message": "Memory cgroup out of memory: Killed process 4121109 (python) total-vm:8450096kB, anon-rss:954844kB, file-rss:412684kB, shmem-rss:0kB, UID:1000 pgtables:4300kB oom_score_adj:100"
+    },
+    {
+      "journal_timestamp_us": "1790428446996043",
+      "message": "Memory cgroup out of memory: Killed process 4121118 (python) total-vm:17737364kB, anon-rss:2028920kB, file-rss:707340kB, shmem-rss:0kB, UID:1000 pgtables:8100kB oom_score_adj:100"
+    },
+    {
+      "journal_timestamp_us": "1790446254080548",
+      "message": "Killed /user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-huntdgst-1790445652-429546.scope due to memory pressure for /user.slice/user-1000.slice/user@1000.service being 55.11% > 50.00% for > 20s with reclaim activity"
+    },
+    {
+      "journal_timestamp_us": "1790447686330237",
+      "message": "Killed /user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-q2deep-1790446297-443210.scope due to memory pressure for /user.slice/user-1000.slice/user@1000.service being 55.45% > 50.00% for > 20s with reclaim activity"
+    }
+  ],
+  "lts_changed_files": [
+    "app/alpaca_l1.py",
+    "app/alpaca_paper_lab.py",
+    "app/broker_refusal.py",
+    "app/capital_demo_lab.py",
+    "app/mt5_execution_bridge.py",
+    "app/mt5_model_runner.py",
+    "app/mt5_policy_risk.py",
+    "app/mt5_refusal.py",
+    "app/mt5_unknown_outcome.py",
+    "app/oanda_practice_lab.py",
+    "docs/audits/evidence/mt5_unknown_outcome_20260926/NOTE.md",
+    "docs/audits/evidence/mt5_unknown_outcome_20260926/dry_run_recorded_corpus.json",
+    "docs/audits/evidence/mt5_unknown_outcome_20260926/dry_run_recorded_corpus.txt",
+    "docs/audits/work_plan/SATOSHI_MT5_UNKNOWN_OUTCOME_2026_09_26.md",
+    "tests/unit/test_broker_refusal_recovery.py",
+    "tests/unit/test_mt5_refusal_recovery.py",
+    "tests/unit/test_mt5_unknown_outcome.py",
+    "tools/mt5_unknown_outcome_migration.py"
+  ],
+  "lts_timer_dependency_hashes": {
+    "9090f49": "e87ace7e1c9d9894c82edf4d8c56877aa4b2bcbc78ca723f9d81b924bcc36138",
+    "12bce5f": "1d5b4aeae405b1e57fb96bfa2162e1902fcf1daf2c18987a7f9ba907939f45b3"
+  }
+}

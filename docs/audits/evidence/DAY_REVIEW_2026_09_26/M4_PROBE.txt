@@ -1,0 +1,11 @@
+EXACT_CENSUS 3024 12cfd9ad785b41e788ffce575ec575ab2a78ab772151b5e3b94c8f0c71169ea0
+F1_SUMMARIES_WITHOUT_RAW_LOGS_OR_AUTHORITY {"records_verified": 234, "n_generators": 39, "p_holm": 5.4399453636652144e-33, "reject": true, "raw_logs": 0, "record_hashes": 0, "gates": {}}
+F2_DUPLICATE_S0_AND_OUT_OF_CENSUS_G9000 {"n_generators": 39, "reject": true, "unique_seeds": 1, "gi_min": 9000}
+F3_CHECKPOINT_CONTRAST_IGNORES_ATTRITION_FLOOR {"incomplete_slots": 21, "n_generators": 30, "p_holm": 4.1244935474544496e-25, "reject": true}
+F3_DISTINCT_GENERATORS_COLLAPSE_BY_G_INDEX {"distinct_family_generators": 60, "all_missing_seed_2": true, "reported_n": 30, "reject": true}
+F4_RESUME_ACCEPTS_UID_AND_HASH_ONLY {"units_complete": 1, "units_new_this_session": 0, "census_complete": true, "generators_disjointness_verified": 0}
+F5_SAME_AUTHORITY_SENTINELS_ACCEPT_DIFFERENT_CODE_HEADS ['1111111111111111111111111111111111111111', '2222222222222222222222222222222222222222']
+CONTROL_ABSENT_RECORD_REFUSES_BEFORE_WRITES True
+CONTROL_ARRAY_COMPARATOR_REJECTS_COLLISION True
+PEAK_RSS_MIB 102.68
+NO_TRAINING_NO_GENERATORS_NO_REAL_RECORDS_NO_FILESYSTEM_WRITES

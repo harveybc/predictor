@@ -1,5 +1,19 @@
 {
  "schema": "research_program_method_state.v1",
+ "external_day_review_20260926": {
+  "request_commit": "cf2fdb0c",
+  "verdict": "CHANGES_REQUIRED_SCOPED_REVIEW_NOT_ALL_ELEVEN_TIPS_CERTIFIED",
+  "review": "../../audits/work_plan/MUSASHI_DAY_REVIEW_2026_09_26.md",
+  "next_orders": "../../handoffs/SATOSHI_DAY_REVIEW_CONTINUATION_2026_09_26.md",
+  "snapshot_policy": "Older state entries retain their dated scope, not current dispatch authority; executor must reconcile supplements and live leases",
+  "global_experiment_hold": false,
+  "new_heavy_coordinator_work": "WAIT_FOR_SHARED_RESOURCE_ADMISSION_REPAIR_USE_ADMITTED_WORKERS",
+  "M4_confirmation": "NOT_APPROVED_VERIFIER_AND_RESUME_FINDINGS",
+  "huber_design_retention": "INDEPENDENTLY_VERIFIED_CANONICAL_AND_RAW_IDENTITY",
+  "M5PHET": "PARALLEL_PRODUCT_NOT_REPLACEMENT_FOR_DOCTORAL_OR_FINANCIAL_EXPERIMENTS",
+  "scientific_gates": "No scrambled-label-delta resolution floor; H-CORE dependency is scoped to its own contrasts, not all E3",
+  "confirmatory_candidate_author": "Satoshi drafts; Musashi reviews; no reserve or execution authority conferred"
+ },
  "classification_first_20260924": {
   "public_interface": "Required Laya-like experience across all five families: data/context + natural-language questions -> typed engine answers; not a plugin catalog",
   "RAG": "Consider bounded documentation retrieval evaluation; market-context RAG separate and point-in-time; optional, not implemented, not a classification prerequisite",

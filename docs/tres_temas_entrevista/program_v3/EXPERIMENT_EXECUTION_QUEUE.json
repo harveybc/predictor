@@ -1,10 +1,21 @@
 {
   "schema": "research_execution_queue.v1",
-  "updated_on": "2026-09-24",
+  "updated_on": "2026-09-26",
   "dispatcher": "Satoshi",
   "policy": "CONCURRENT_EXECUTION_2026_09_23.md",
   "runtime_enforcement": "Existing runners/admission; this is a persistent ordered manifest, not a newly installed scheduler",
-  "next_orders": "../../handoffs/SATOSHI_RP155_REVIEW_AND_EXECUTION_2026_09_24.md",
+  "next_orders": "../../handoffs/SATOSHI_DAY_REVIEW_CONTINUATION_2026_09_26.md",
+  "external_review_20260926": {
+    "verdict": "CHANGES_REQUIRED",
+    "scope": "Scoped day audit, not a fresh acceptance of every cell or all eleven repository tips",
+    "review": "../../audits/work_plan/MUSASHI_DAY_REVIEW_2026_09_26.md",
+    "dispatch": "Reconcile supplements, live leases and cumulative budgets before launch; historical rows below remain non-runnable snapshots",
+    "new_heavy_coordinator_work": "HELD_FOR_SHARED_RESOURCE_ADMISSION_REPAIR",
+    "independent_worker_and_product_work": "CONTINUE_WITH_OWN_ADMISSION_AND_EXISTING_AUTHORITY",
+    "M4_CONFIRMATION": "NOT_APPROVED_VERIFIER_AND_RESUME_DEFECTS",
+    "confirmed_recovery": "Huber v2 retained content matches earlier published digest; not a new measurement",
+    "no_new_allocation": true
+  },
   "latest_return": {
     "commit": "e36c1c6d",
     "status": "REPORTED_NOT_FRESHLY_REMEASURED_BY_THIS_UPDATE",
