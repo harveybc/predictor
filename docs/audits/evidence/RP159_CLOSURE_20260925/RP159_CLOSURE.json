@@ -1,0 +1,199 @@
+{
+ "at": "2026-09-26T01:28:52Z",
+ "authority": {
+  "checkpoint_identity": "AUTHENTICATED_FROM_RUN_RECORD: each child's scored checkpoint digest must be the cell's",
+  "design": "AUTHENTICATED: the retained design reproduces the digest the run recorded",
+  "metric_values": "SELF_REPORTED_BY_THE_CHILD_RECORDS: a coherent rewrite of a metric and its baseline cannot be detected here. Detecting that needs custody over the child records themselves, which this closure does not have and does not claim",
+  "population": "AUTHENTICATED_FROM_RUN_RECORD: the counts are derived from the accepted CONTRAST.json through label_disjoint_origins, and the scoring file's own restatement is only cross-checked"
+ },
+ "by_regime": {
+  "R0": {
+   "complete_validation": {
+    "author_float32": {
+     "mae_mean": 0.3719642460346222,
+     "mae_sd": 0.0010809182101176086,
+     "mse_mean": 0.28950310746828717,
+     "mse_sd": 0.001598140603524393
+    },
+    "independent_float64": {
+     "mae_mean": 0.3719642360038911,
+     "mae_sd": 0.0010809362966656662,
+     "mse_mean": 0.2895031095819951,
+     "mse_sd": 0.001598144381116732
+    },
+    "matched_persistence_author_float32_mae": 0.8879448175430298,
+    "seeds": 3
+   },
+   "label_disjoint_from_selection": {
+    "author_float32": {
+     "mae_mean": 0.37117380897204083,
+     "mae_sd": 0.0015336464318612875,
+     "mse_mean": 0.28153570493062335,
+     "mse_sd": 0.0022037419542444577
+    },
+    "independent_float64": {
+     "mae_mean": 0.37117380202586586,
+     "mae_sd": 0.00153365827975423,
+     "mse_mean": 0.28153571071361233,
+     "mse_sd": 0.00220372860306974
+    },
+    "matched_persistence_author_float32_mae": 0.8682830929756165,
+    "seeds": 3
+   }
+  },
+  "R1": {
+   "complete_validation": {
+    "author_float32": {
+     "mae_mean": 0.37491169571876526,
+     "mae_sd": 0.0010400003009382983,
+     "mse_mean": 0.29493197798728943,
+     "mse_sd": 0.0015849924450109156
+    },
+    "independent_float64": {
+     "mae_mean": 0.3749116963242762,
+     "mae_sd": 0.0010400063679736715,
+     "mse_mean": 0.2949319651358317,
+     "mse_sd": 0.0015849983780542544
+    },
+    "matched_persistence_author_float32_mae": 0.8879448175430298,
+    "seeds": 3
+   },
+   "label_disjoint_from_selection": {
+    "author_float32": {
+     "mae_mean": 0.3745835026105245,
+     "mae_sd": 0.0007333176580871724,
+     "mse_mean": 0.28705349564552307,
+     "mse_sd": 0.0005688680951019846
+    },
+    "independent_float64": {
+     "mae_mean": 0.3745834904139122,
+     "mae_sd": 0.0007333113703644627,
+     "mse_mean": 0.28705348719205154,
+     "mse_sd": 0.0005688656826008032
+    },
+    "matched_persistence_author_float32_mae": 0.8682830929756165,
+    "seeds": 3
+   }
+  },
+  "R2": {
+   "complete_validation": {
+    "author_float32": {
+     "mae_mean": 0.3702337145805359,
+     "mae_sd": 0.00015561975738044218,
+     "mse_mean": 0.2877115209897359,
+     "mse_sd": 0.00024662231257235103
+    },
+    "independent_float64": {
+     "mae_mean": 0.3702337068933061,
+     "mae_sd": 0.00015561896703376077,
+     "mse_mean": 0.28771151595597666,
+     "mse_sd": 0.00024664758581242576
+    },
+    "matched_persistence_author_float32_mae": 0.8879448175430298,
+    "seeds": 3
+   },
+   "label_disjoint_from_selection": {
+    "author_float32": {
+     "mae_mean": 0.3685964345932007,
+     "mae_sd": 0.0006488872403592787,
+     "mse_mean": 0.27876002589861554,
+     "mse_sd": 0.001115964345734905
+    },
+    "independent_float64": {
+     "mae_mean": 0.36859643181563523,
+     "mae_sd": 0.0006488892170538076,
+     "mse_mean": 0.2787600382893501,
+     "mse_sd": 0.0011159714863707
+    },
+    "matched_persistence_author_float32_mae": 0.8682830929756165,
+    "seeds": 3
+   }
+  }
+ },
+ "child_binding": {
+  "bound": true,
+  "expected_windows_from_contract": {
+   "complete_validation": 2537,
+   "label_disjoint_from_selection": 1802
+  },
+  "reading": "every child is bound to its expected cell, seed, regime, horizon, populations and typed finite reductions before any aggregate is formed",
+  "windows_per_population": {
+   "complete_validation": 2537,
+   "label_disjoint_from_selection": 1802
+  }
+ },
+ "cost": {
+  "child_cpu_seconds": 0.0,
+  "closure_cpu_seconds": 0.002,
+  "closure_wall_seconds": 0.002,
+  "gpu_seconds": 0.0,
+  "model_replays": 0,
+  "reading": "the cost of the closure itself; the contrast's own fit cost stands in CONTRAST.json unchanged"
+ },
+ "design_authentication": {
+  "authenticated": "the digest was recomputed over this SCHEMA's canonical fields, equals what the design claims, equals the digest the run recorded, and its task arguments match the dispatch",
+  "canonical_fields": [
+   "reference",
+   "task",
+   "channel_order",
+   "architecture",
+   "regimes",
+   "factorial",
+   "pretraining",
+   "optimisation",
+   "exposure"
+  ],
+  "cells": [
+   "R0_s2021",
+   "R0_s2022",
+   "R0_s2023",
+   "R1_s2021",
+   "R1_s2022",
+   "R1_s2023",
+   "R2_s2021",
+   "R2_s2022",
+   "R2_s2023"
+  ],
+  "design_sha256": "b5d5eee1b5fce981f4627352ed516d5745b1e16996507a8c63fffc53518cadd9",
+  "pred_len": 96,
+  "seeds": [
+   2021,
+   2022,
+   2023
+  ]
+ },
+ "inference_calls_blocked": [
+  "subprocess.run",
+  "subprocess.Popen",
+  "subprocess.check_output",
+  "subprocess.call",
+  "subprocess.check_call",
+  "df_ecl_modular.score_cell",
+  "df_ecl_modular.author_datasets"
+ ],
+ "inputs": {
+  "CONTRAST.json": {
+   "sha256": "ddb533313989e57de0c15e84bac7bdbc6ced8c4dcbeb2555aadcaca4927e91a1",
+   "source": "docs/audits/evidence/d3_k5_20260917/RP155/CONTRAST.json"
+  },
+  "DESIGN.json": {
+   "sha256": "a265bb6d7611dff4917cb247b58a93641e030929ed8063c6b25acccda86146ba",
+   "source": "docs/audits/evidence/d3_k5_20260917/RP159/DESIGN.json"
+  },
+  "SCORING.json": {
+   "sha256": "3802ca82988b472d66ec5d5e6c196fcd494d34ea852535edc52b8b4636b34aaa",
+   "source": "docs/audits/evidence/d3_k5_20260917/RP158_SCORING.json"
+  }
+ },
+ "problems": [],
+ "reconciliation": {
+  "cells_expected": 9,
+  "cells_scored": 9,
+  "complete": true,
+  "identity_failures": []
+ },
+ "run_dir": "/home/harveybc/.local/state/crispdm-data-foundation/ecl-modular-closure-20260925",
+ "schema": "df_ecl_modular_closure_publication.v1",
+ "scope": "an offline validation-and-aggregation pass over RETAINED child evidence. No model was loaded, no dataset was built and no process was started: every route to inference was a raising double for the whole call. This re-closes numbers that already exist; it does not measure a model again",
+ "status": "COMPLETE"
+}

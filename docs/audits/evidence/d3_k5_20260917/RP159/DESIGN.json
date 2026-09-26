@@ -1,0 +1,142 @@
+{
+ "schema": "df_ecl_modular_contrast.v1",
+ "at": "2026-09-26T01:20:28Z",
+ "reference": {
+  "model": "TimeFilter",
+  "revision": "dffde87e4fff0fdeeebbacde03dc1e432e15b3a1",
+  "protocol": "A (Table 8, L=96)",
+  "status": "the contrast is matched to the ACCEPTED protocol-A reference; protocol B is not a dependency of it"
+ },
+ "task": {
+  "dataset": "official processed ECL (TSL), 321 channels, hourly",
+  "features": "M",
+  "seq_len": 96,
+  "label_len": 48,
+  "pred_len": 96,
+  "channels": 321,
+  "target": "all 321 channels over the full horizon, in the author's normalized space",
+  "split": "the author's 7/1/2 boundaries",
+  "scaler": "the author's StandardScaler fitted on TRAIN rows only",
+  "reduction": "the author's float32 MSE/MAE over windows x steps x channels"
+ },
+ "channel_order": {
+  "n_channels": 321,
+  "first": [
+   "0",
+   "1",
+   "2"
+  ],
+  "last": [
+   "318",
+   "319",
+   "OT"
+  ],
+  "sha256": "a40fb3cf35aa2e653d26b605ebe14cf2002d942f33b770bdf497730b3ff7d8a9"
+ },
+ "architecture": {
+  "family": "the approved modular model",
+  "arch": "B",
+  "fusion": "sequence",
+  "grouping": "one branch over all 321 channels; grouping is held constant across the regimes",
+  "detector": "2 residual dilated causal Conv1D blocks, 16 filters, kernel 3, dilation 1, elu",
+  "integrator_dilations": [
+   2,
+   4,
+   8,
+   16
+  ],
+  "receptive_field": 65,
+  "core": "Conv1D 16, kernel 3, causal, elu; read = last timestep",
+  "readout": "Dense(96 x 321) reshaped, added to the last observation broadcast over the horizon",
+  "shapes": {
+   "input": [
+    null,
+    96,
+    321
+   ],
+   "output": [
+    null,
+    96,
+    321
+   ],
+   "output_is_full_horizon_by_channels": true,
+   "detector_layers": [
+    "g0_det1_conv",
+    "g0_det1_proj",
+    "g0_det2_conv"
+   ],
+   "receptive_field_samples": 65,
+   "receptive_field_within_window": true,
+   "params": {
+    "total": 548904,
+    "trainable": 548904,
+    "frozen": 0
+   }
+  }
+ },
+ "regimes": {
+  "R0": "from scratch: detector trainable from the shared random initial checkpoint",
+  "R1": "pre-trained and frozen: detector weights imported and fixed; rest trainable",
+  "R2": "pre-trained and adjustable: the same imported detector weights, adjusted with the full model"
+ },
+ "factorial": {
+  "seeds": [
+   2021,
+   2022,
+   2023
+  ],
+  "regimes": [
+   "R0",
+   "R1",
+   "R2"
+  ],
+  "cells": [
+   "R0_s2021",
+   "R0_s2022",
+   "R0_s2023",
+   "R1_s2021",
+   "R1_s2022",
+   "R1_s2023",
+   "R2_s2021",
+   "R2_s2022",
+   "R2_s2023"
+  ],
+  "pairing": "one auto-encoder per seed; R1 and R2 of a seed consume that seed's detector, R0 shares the seed's initial checkpoint",
+  "no_best_seed_choice": "every seed is reported; no seed is selected by its score"
+ },
+ "pretraining": {
+  "objective": "masked reconstruction of the preprocessed input; the loss counts masked positions only",
+  "data": "outer TRAIN windows only",
+  "internal_validation": "a chronological tail of the outer TRAIN origins, separated from the AE's training origins by seq_len + pred_len",
+  "internal_validation_fraction": 0.2,
+  "decoder": "a separate per-branch 1x1 Conv1D stack, saved apart, never connected at inference",
+  "diagnostic_only": "reconstruction error is never a result of the task"
+ },
+ "optimisation": {
+  "loss": "MSE on the normalized target",
+  "optimizer": "Adam",
+  "checkpoint_rule": "the outer validation selects the downstream forecasting checkpoint and nothing else",
+  "max_updates": null,
+  "cost_readings": [
+   "the downstream fit alone",
+   "the auto-encoder plus the downstream fit",
+   "an equal-total-cost reading in which R0 receives the AE's budget as extra updates"
+  ]
+ },
+ "exposure": {
+  "outer_test": "NO_ACCESS during any fit or selection",
+  "public_test_scoring": "not performed by the pilot and not used to choose anything"
+ },
+ "identity_covers": [
+  "reference",
+  "task",
+  "channel_order",
+  "architecture",
+  "regimes",
+  "factorial",
+  "pretraining",
+  "optimisation",
+  "exposure"
+ ],
+ "design_sha256": "b5d5eee1b5fce981f4627352ed516d5745b1e16996507a8c63fffc53518cadd9"
+}
