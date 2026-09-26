@@ -1,0 +1,843 @@
+{
+ "steps": [
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:05:53Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "prepare",
+   "data_sha256": "2b50b777dab1cf5ba9443b9b08533c6c819150a22b1d515c99914b44aeb71ff9",
+   "common_evaluation": {
+    "n": 10020,
+    "first_row": 41700,
+    "last_row": 51719
+   },
+   "binding_to_source": {
+    "baseline_arm_checked": "modular_w60",
+    "train_origins_equal_source": true,
+    "common_train_origins": 38700,
+    "common_train_subset_of_source": true,
+    "common_evaluation_equals_source": true,
+    "common_evaluation_subset_of_source": true
+   }
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:08:17Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "pilot_modular_w60",
+     "mae_z": 0.6276298230729058,
+     "mae_kw": 0.5727225312400966,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 200,
+     "cpu_seconds": 18.030859868,
+     "peak_rss_bytes": 931495936,
+     "ok": true
+    },
+    {
+     "unit": "pilot_daily_lag",
+     "mae_z": 0.5748439277501417,
+     "mae_kw": 0.5245545340040626,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 200,
+     "cpu_seconds": 17.740638785999998,
+     "peak_rss_bytes": 936951808,
+     "ok": true
+    },
+    {
+     "unit": "pilot_long_window_crop60",
+     "mae_z": 0.641076791062543,
+     "mae_kw": 0.5849931105870487,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 200,
+     "cpu_seconds": 20.451067051,
+     "peak_rss_bytes": 934809600,
+     "ok": true
+    },
+    {
+     "unit": "pilot_short_window_deep_core",
+     "mae_z": 0.6301009512539849,
+     "mae_kw": 0.5749774763285201,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 200,
+     "cpu_seconds": 29.741344559,
+     "peak_rss_bytes": 963256320,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:53:42Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "modular_w60_s1",
+     "mae_z": 0.5593102677860099,
+     "mae_kw": 0.5103798139269908,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 600,
+     "cpu_seconds": 27.347962421,
+     "peak_rss_bytes": 940163072,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:54:07Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "daily_lag_s1",
+     "mae_z": 0.550660868822158,
+     "mae_kw": 0.5024870951839121,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 600,
+     "cpu_seconds": 28.219079501,
+     "peak_rss_bytes": 937943040,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:54:35Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "long_window_crop60_s1",
+     "mae_z": 0.5593102677860099,
+     "mae_kw": 0.5103798139269908,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 600,
+     "cpu_seconds": 31.781136477,
+     "peak_rss_bytes": 942608384,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:55:15Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "short_window_deep_core_s1",
+     "mae_z": 0.5707342063094131,
+     "mae_kw": 0.520804345629167,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 600,
+     "cpu_seconds": 51.883380949999996,
+     "peak_rss_bytes": 975888384,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:55:40Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "modular_w60_s2",
+     "mae_z": 0.5664993617074118,
+     "mae_kw": 0.5169399803126946,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 600,
+     "cpu_seconds": 27.902128128999998,
+     "peak_rss_bytes": 937226240,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:56:04Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "daily_lag_s2",
+     "mae_z": 0.5607148576585326,
+     "mae_kw": 0.5116615252758985,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 600,
+     "cpu_seconds": 28.312421233000002,
+     "peak_rss_bytes": 941989888,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:56:33Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "long_window_crop60_s2",
+     "mae_z": 0.5664993617074118,
+     "mae_kw": 0.5169399803126946,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 600,
+     "cpu_seconds": 32.384252098,
+     "peak_rss_bytes": 942120960,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:57:18Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "short_window_deep_core_s2",
+     "mae_z": 0.5681774190758729,
+     "mae_kw": 0.5184712352472128,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 600,
+     "cpu_seconds": 57.451582191,
+     "peak_rss_bytes": 974139392,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:57:43Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "modular_w60_s3",
+     "mae_z": 0.5655769500833683,
+     "mae_kw": 0.5160982645421135,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 600,
+     "cpu_seconds": 28.870536959000002,
+     "peak_rss_bytes": 937111552,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:58:10Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "daily_lag_s3",
+     "mae_z": 0.5632196114304687,
+     "mae_kw": 0.5139471542687544,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 600,
+     "cpu_seconds": 30.245330614,
+     "peak_rss_bytes": 937578496,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:58:40Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "long_window_crop60_s3",
+     "mae_z": 0.5655769500833683,
+     "mae_kw": 0.5160982645421135,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 600,
+     "cpu_seconds": 34.279484468,
+     "peak_rss_bytes": 941330432,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T18:59:25Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "run",
+   "units": [
+    {
+     "unit": "short_window_deep_core_s3",
+     "mae_z": 0.5567631929009631,
+     "mae_kw": 0.5080555662226993,
+     "stop": "UPDATE_BUDGET",
+     "censoring": "CENSORED_BY_BUDGET",
+     "updates": 600,
+     "cpu_seconds": 58.191895632,
+     "peak_rss_bytes": 973692928,
+     "ok": true
+    }
+   ]
+  },
+  {
+   "schema": "df_e1_block_ungoverned_run.v1",
+   "at": "2026-09-26T19:31:55Z",
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "block": "Q2_CONTEXT_DEEP",
+   "classification": "NON_GOVERNING",
+   "governance": {
+    "data_gov_acquisition": "ABSENT",
+    "accepted_terminal": "ABSENT",
+    "receipt": "ABSENT",
+    "warehouse_read": "ABSENT",
+    "why": "no data-gov service key is held on this host; the governed runner refuses before opening data, so this driver ran instead and its results promote nothing"
+   },
+   "consequences": [
+    "every closure row's custody is UNCHECKED: no accepted payload anchors the score",
+    "the preparation's custody is PREPARATION_LOCAL_ONLY",
+    "the closure's `verified` flag is False for that reason and for no other unless it names one",
+    "these numbers are DEVELOPMENT measurements and cannot select, rank or promote anything"
+   ],
+   "delivery": {
+    "path": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_v1/cache/public_panels/b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db.parquet",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "bytes": 10890295,
+    "custody": "BYTES_IDENTITY_ONLY",
+    "why": "the file's sha256 equals the design's source_run.panel_sha256, which a previous GOVERNED acquisition recorded as VERIFIED_TRANSFER; this driver re-verified the BYTES, not the transfer, and holds no delivery id, no availability contract and no acceptance"
+   },
+   "interpreter": {
+    "python": "3.12.13",
+    "executable": "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
+   },
+   "sealed_code": {
+    "df_e1_block.py": "2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6",
+    "df_e1_calendar.py": "a6ef3c7d008e5eb733e89db0514778d9bffe0f49c4ce7a6cc41684195d7ac21c",
+    "df_e1_governed.py": "8c05ce38b5cffca615ccfad941475433747552553ec8d3f507c39da7755dfbf6",
+    "df_e1_pilot.py": "12a31e3cd14555e91c6b78e9f53054858fe5849fbf422bc5c7c159147e369a05",
+    "df_gru_reference.py": "72e85a0232742dd90b9feddbb79ee0a86c01cea78a88d6ae3110f45840cbabba",
+    "df_mod_e0.py": "034745160f278c26959fa62812336ef6f356715edf236d201472c24b32b0ef8c"
+   },
+   "step": "close",
+   "closure_verified": false,
+   "closure_problems": [
+    "daily_lag_s1: a registered forecast unit has NO accepted terminal receipt",
+    "daily_lag_s2: a registered forecast unit has NO accepted terminal receipt",
+    "daily_lag_s3: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_crop60_s1: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_crop60_s2: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_crop60_s3: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_local_support_67_s1: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_local_support_67_s2: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_local_support_67_s3: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_own_depth_s1: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_own_depth_s2: a registered forecast unit has NO accepted terminal receipt",
+    "long_window_own_depth_s3: a registered forecast unit has NO accepted terminal receipt",
+    "modular_w60_s1: a registered forecast unit has NO accepted terminal receipt",
+    "modular_w60_s2: a registered forecast unit has NO accepted terminal receipt",
+    "modular_w60_s3: a registered forecast unit has NO accepted terminal receipt",
+    "short_window_deep_core_s1: a registered forecast unit has NO accepted terminal receipt",
+    "short_window_deep_core_s2: a registered forecast unit has NO accepted terminal receipt",
+    "short_window_deep_core_s3: a registered forecast unit has NO accepted terminal receipt",
+    "closure without a warehouse read: no accepted custody, nothing is verified"
+   ],
+   "verdict": "refused: REFUSED: closure failed: ['daily_lag_s1: a registered forecast unit has NO accepted terminal receipt', 'daily_lag_s2: a registered forecast unit has NO accepted terminal receipt', 'daily_lag_s3: a registered forecast unit has NO accepted terminal receipt', 'long_window_crop60_s1: a registered forecast unit has NO accepted terminal receipt', 'long_window_crop60_s2: a registered forecast unit has NO accepted terminal receipt']"
+  }
+ ]
+}

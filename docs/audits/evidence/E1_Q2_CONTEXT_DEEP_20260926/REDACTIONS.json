@@ -1,0 +1,74 @@
+{
+ "schema": "df_e1_publish_evidence.v1",
+ "run_root": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_deep_v1",
+ "files": {
+  "BLOCK_DATA.json": {
+   "from": "BLOCK_DATA.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "REPORT.json": {
+   "from": "REPORT.json",
+   "host_name_occurrences_replaced": 12
+  },
+  "BASELINES.json": {
+   "from": "BASELINES.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "UNGOVERNED_RUN.json": {
+   "from": "UNGOVERNED_RUN.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "REPLAYS.json": {
+   "from": "REPLAYS.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "CLOSURE_TABLE.json": {
+   "from": "CLOSURE_TABLE.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "UNANCHORED_MEASUREMENT_TABLE.json": {
+   "from": "UNANCHORED_MEASUREMENT_TABLE.json",
+   "host_name_occurrences_replaced": 0
+  },
+  "CLOSURE_TABLE.md": {
+   "from": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_deep_v1/CLOSURE_TABLE.md",
+   "host_name_occurrences_replaced": 0
+  },
+  "TABLES.md": {
+   "from": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_deep_v1/TABLES.md",
+   "host_name_occurrences_replaced": 1
+  },
+  "MEMORY_GATE.jsonl": {
+   "from": "/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_deep_v1/MEMORY_GATE.jsonl",
+   "host_name_occurrences_replaced": 0
+  },
+  "DESIGN.json": {
+   "from": "DESIGN.json",
+   "host_name_occurrences_replaced": 0,
+   "published_BYTE_EXACT_and_why": "a sealed design is addressed by the sha256 of its own body; redacting one word would make the published copy's digest fail to recompute, which is the only thing that makes the seal checkable. It is therefore published byte-exact."
+  },
+  "EXTENSION_SEAL.json": {
+   "from": "EXTENSION_SEAL.json",
+   "host_name_occurrences_replaced": 0,
+   "published_BYTE_EXACT_and_why": "it quotes the sealed design's fields verbatim, including `informed_by`, so redacting it would make it disagree with the design it records."
+  }
+ },
+ "rule": "every occurrence of this host's name replaced by the literal '<worker-host>'; nothing else changed",
+ "why": "this repository is public and AGENTS.md forbids a machine host name in it",
+ "defect_i_introduced": {
+  "what": "the sealed design's `factorial.informed_by` field, which I wrote, names the coordinator host by name, and the field is copied verbatim into DESIGN.json and EXTENSION_SEAL.json",
+  "why_it_is_a_defect": "AGENTS.md: 'Never write account identifiers, broker credentials, private IP addresses or machine host names into files here. Use placeholders such as <your-host>.' I violated that rule when I wrote the block definition in tools/df_e1_block.py",
+  "why_it_is_REPORTED_and_not_repaired": "three reasons, all structural. (1) The text is inside the body the design's sha256 covers, so editing it in the published copy breaks the digest that makes the seal verifiable. (2) Editing tools/df_e1_block.py to remove the word changes that file's sha256, which the design pins in `source_code`, and `validate(strict_code=True)` - which prepare, pilot and execute all call - would then REFUSE this design. The block is deliberately incomplete: its two W1440 full-depth arms are to be run later under shared admission control, and they must still be runnable. (3) Re-sealing is not available either: cells of this block already have scores, and a design is never re-sealed after a score.",
+  "mitigation_applied": "every OTHER published artifact is redacted by tools/df_e1_publish_evidence.py (REPORT.json 12 occurrences, TABLES.md 1), and every file of mine whose digest is not load-bearing - TERMINATIONS.json, FOOTPRINT_BASIS.json - says 'the coordinator host' instead",
+  "already_public_in_this_repository_before_this_round": [
+   "docs/RETSU_TO_MUSASHI_DATA_GOV_G5_2026_09_13.md",
+   "docs/RETSU_TO_MUSASHI_EQUALIZATION_STEP08_2026_09_05.md",
+   "docs/audits/evidence/E1_SEAL_20260926/E1_SEAL.json",
+   "docs/audits/evidence/M5PHET_ROUND6_20260925/README.md",
+   "docs/audits/evidence/RP89_MUSASHI_REVIEW_2026_09_21/reproduce.py",
+   "docs/audits/evidence/STORAGE_CAPACITY_2026_09_22/inventory.py",
+   "docs/audits/evidence/archive_contract_20260915/README.md"
+  ],
+  "reading": "that the name was already committed elsewhere does not excuse adding it; it is listed so the owner can decide one policy for all of them rather than one for this round"
+ }
+}

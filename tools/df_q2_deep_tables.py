@@ -108,7 +108,7 @@ def main(argv=None) -> int:
     design = json.loads((R / "DESIGN.json").read_text())
     seal = json.loads((R / "EXTENSION_SEAL.json").read_text())
     data = json.loads((R / "BLOCK_DATA.json").read_text())
-    pilot = json.loads((R / "REPORT.pilot.json").read_text())
+    pilot = json.loads((R / "REPORT.pilot.json").read_text()) if (R / "REPORT.pilot.json").is_file() else None
     report = json.loads((R / "REPORT.json").read_text())
     base = json.loads((R / "BASELINES.json").read_text())
     table = json.loads(a.table.read_text())
@@ -204,23 +204,65 @@ def main(argv=None) -> int:
     L.append("**The budget declaration, verbatim from the sealed recipe:** " + design["recipe"]["budget_declaration"])
     L.append("")
 
-    L.append("### N2. The cost projection the block executed on\n")
-    p = pilot["projection"]
-    L.append(f"* {len(design['pilots'])} cost pilots spent {pilot['spent_cpu_seconds']:.1f} CPU s; projection at the "
-             f"{ceiling}-update ceiling {p['total_at_ceiling_seconds']:.1f} CPU s, with 25 % headroom "
-             f"{p['with_headroom_25_percent']:.1f} CPU s; campaign ceiling "
-             f"{design['limits']['campaign_cpu_seconds']} CPU s, closure reserve "
-             f"{design['limits']['closure_reserve_seconds']} CPU s")
-    L.append(f"* decision **{pilot['decision']}** (`fits_the_ceiling`: {pilot['fits_the_ceiling']})")
-    L.append("")
-    L.append(f"| arm | CPU s per train update (pilot) | peak RSS GiB (pilot) | projected CPU s per cell at the "
-             f"{ceiling}-update ceiling | the same projection at a 4 000-update ceiling |")
-    L.append("|---|---:|---:|---:|---:|")
-    for arm, v in p["per_arm"].items():
-        at_ceiling = p["per_cell_at_ceiling_seconds"][f"{arm}_s{seeds[0]}"]
-        L.append(f"| `{arm}` | {v['seconds_per_update']:.4f} | {v['peak_rss_bytes']/2**30:.2f} | {at_ceiling:.1f} | "
-                 f"{v['seconds_per_update']*4000 + (at_ceiling - v['seconds_per_update']*ceiling)*4000/ceiling:.1f} |")
-    L.append("")
+    L.append("### N2. The cost basis, and the projection that could not be produced\n")
+    if pilot is None:
+        L.append("**There is no `REPORT.pilot.json` for this block, and the reason is part of the result.** "
+                 "`tools/df_e1_block_ungoverned.py pilot-report` builds its projection from EVERY pilot the design "
+                 "registers, and two of the six were never recorded: `pilot_long_window_own_depth` was terminated by "
+                 "systemd-oomd for user-session memory pressure after 1 292.106 CPU s, and "
+                 "`pilot_long_window_local_support_67` never launched. Under the stand-down neither was retried, so no "
+                 "projection over six arms exists and none is invented here. What follows is each pilot that DID land, "
+                 "read straight from its own cell record, beside the retained Q2_CONTEXT v1 measurements for the two arms "
+                 "that did not.\n")
+        L.append("**Every peak figure in this section and in N3 is `MAIN_PROCESS_RSS_ONLY`** — "
+                 "`resource.getrusage(RUSAGE_SELF).ru_maxrss` as `df_e1_block.run_cell` records it. It is NOT a process "
+                 "tree or cgroup peak, and a placement decision needs the latter. See "
+                 "[`FOOTPRINT_BASIS.json`](FOOTPRINT_BASIS.json), which lists every figure with what measured it and the "
+                 "cgroup peaks systemd recorded for the same scopes.\n")
+        L.append("| arm | pilot | CPU s per train update | peak RSS GiB (MAIN_PROCESS_RSS_ONLY) | projected CPU s per "
+                 "cell at this block's ceiling | source |")
+        L.append("|---|---|---:|---:|---:|---|")
+        for x in design["arms"]:
+            arm = x["arm"]
+            f_ = R / "attempts" / f"pilot_{arm}" / "cell.json"
+            if f_.is_file():
+                rec = json.loads(f_.read_text())
+                tr, cost = rec["training"], rec["cost"]
+                spu = tr["cpu"]["train_update_seconds"] / max(1, tr["updates"]) if tr.get("cpu") else \
+                    (tr["fit_cpu_seconds"] - tr["validation_cpu_seconds"]) / max(1, tr["updates"])
+                L.append(f"| `{arm}` | landed | {spu:.4f} | {cost['peak_rss_bytes']/2**30:.2f} | {spu*ceiling:.1f} | "
+                         f"this block's own pilot |")
+            else:
+                ret = {"long_window_own_depth": (4.165, 8458399744), "long_window_local_support_67": (4.4427, 10279276544)}
+                if arm in ret:
+                    spu, pk = ret[arm]
+                    L.append(f"| `{arm}` | **NOT RECORDED** | {spu:.4f} | {pk/2**30:.2f} | {spu*ceiling:.1f} | "
+                             f"RETAINED Q2_CONTEXT v1 pilot, same host, 2026-09-21 |")
+                else:
+                    L.append(f"| `{arm}` | **NOT RECORDED** | — | — | — | — |")
+        L.append("")
+        L.append(f"* campaign ceiling {design['limits']['campaign_cpu_seconds']} CPU s, closure reserve "
+                 f"{design['limits']['closure_reserve_seconds']} CPU s, per-child CPU ceiling "
+                 f"{design['limits']['child_cpu_seconds']} s, per-child wall ceiling "
+                 f"{design['limits']['child_wall_seconds']} s, parallel_children "
+                 f"{design['limits']['parallel_children']}")
+        L.append("")
+    else:
+        p = pilot["projection"]
+        L.append(f"* {len(design['pilots'])} cost pilots spent {pilot['spent_cpu_seconds']:.1f} CPU s; projection at the "
+                 f"{ceiling}-update ceiling {p['total_at_ceiling_seconds']:.1f} CPU s, with 25 % headroom "
+                 f"{p['with_headroom_25_percent']:.1f} CPU s; campaign ceiling "
+                 f"{design['limits']['campaign_cpu_seconds']} CPU s, closure reserve "
+                 f"{design['limits']['closure_reserve_seconds']} CPU s")
+        L.append(f"* decision **{pilot['decision']}** (`fits_the_ceiling`: {pilot['fits_the_ceiling']})")
+        L.append("")
+        L.append(f"| arm | CPU s per train update (pilot) | peak RSS GiB, MAIN_PROCESS_RSS_ONLY | projected CPU s per cell "
+                 f"at the {ceiling}-update ceiling |")
+        L.append("|---|---:|---:|---:|")
+        for arm, v in p["per_arm"].items():
+            at_ceiling = p["per_cell_at_ceiling_seconds"][f"{arm}_s{seeds[0]}"]
+            L.append(f"| `{arm}` | {v['seconds_per_update']:.4f} | {v['peak_rss_bytes']/2**30:.2f} | {at_ceiling:.1f} |")
+        L.append("")
 
     L.append("### N3. Every fit, as it landed\n")
     L.append("Errors recomputed here from each cell's retained `arrays.npz`, each cross-checked against the value the cell "
@@ -228,7 +270,7 @@ def main(argv=None) -> int:
              "the IDENTICAL origin array.\n")
     L.append("| cell | arm | seed | MAE_z | MAE kW | naive MAE kW, same rows | skill vs naive | worse than naive | stop | "
              "censoring | updates | best update | val MAE_z improvement over the last 200 updates | CPU s | "
-             "peak RSS GiB | reload max err | fresh-process replay |")
+             "peak RSS GiB (MAIN_PROCESS_RSS_ONLY) | reload max err | fresh-process replay |")
     L.append("|---|---|---:|---:|---:|---:|---:|---|---|---|---:|---:|---:|---:|---:|---:|---|")
     for s in seeds:
         for arm in arms:
@@ -324,8 +366,8 @@ def main(argv=None) -> int:
     L.append("| declared contrast | what it isolates | per-seed Δ MAE_z | mean Δ | signs (+ / −) |")
     L.append("|---|---|---|---:|---|")
     for key, expr in contrasts.items():
-        if " - " not in str(expr):
-            continue
+        if key == "interaction" or str(expr).count(" - ") != 1:
+            continue                                  # the interaction is a difference OF differences, taken below
         aa, bb = [s.strip() for s in str(expr).split(" - ")]
         bb = bb.split(",")[0].strip()
         if aa not in arms or bb not in arms:
@@ -570,7 +612,7 @@ def main(argv=None) -> int:
     L.append("")
     reps = {u: r for u, r in report["replays"].items() if "allclose_1e_6" in r}
     if reps:
-        diffs = [r.get("max_abs_difference") for r in reps.values() if r.get("max_abs_difference") is not None]
+        diffs = [r.get("max_abs_prediction_difference") for r in reps.values() if r.get("max_abs_prediction_difference") is not None]
         L.append(f"**Fresh-process replays: {sum(1 for r in reps.values() if r.get('allclose_1e_6'))} of {len(reps)} pass "
                  f"`allclose(1e-6, 1e-6)`"
                  + (f"; the maximum absolute difference over every replayed cell is {max(diffs):.3e} kW.**" if diffs
@@ -584,7 +626,7 @@ def main(argv=None) -> int:
                 if u not in m:
                     continue
                 r = reps.get(u) or {}
-                d = r.get("max_abs_difference")
+                d = r.get("max_abs_prediction_difference")
                 L.append(f"| `{u}` | {'allclose(1e-6) PASS' if r.get('allclose_1e_6') else 'FAIL/absent'} | "
                          f"{'—' if d is None else f'{d:.3e}'} |")
         L.append("")
@@ -667,7 +709,9 @@ def main(argv=None) -> int:
                       "owner_table_rows": len(table["rows"]), "owner_table_verified": table["verified_rows"],
                       "closure_verified": report["verified"], "worse_than_naive": nworse,
                       "undertrained_arms": flagged, "cells_never_fitted": missing, "arms_complete": complete,
-                      "contrasts": {k: {"mean": v["mean"], "signs": f"{v['positive']}/{v['negative']}"}
+                      "contrasts": {k: ({"status": v["status"], "missing_cells": v["missing_cells"]}
+                                        if v.get("status") == "NOT_MEASURED" else
+                                        {"mean": v["mean"], "signs": f"{v['positive']}/{v['negative']}"})
                                     for k, v in computed.items()}}, indent=1))
     return 0
 
