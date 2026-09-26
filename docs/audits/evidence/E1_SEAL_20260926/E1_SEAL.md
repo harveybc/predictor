@@ -1,6 +1,6 @@
 # E1 seal — `E1_PARTIAL_SEAL`
 
-Generated 2026-09-26T09:13:46Z by `tools/df_e1_seal.py` from retained artifacts only. Nothing was fitted, loaded, scored or replayed.
+Generated 2026-09-26T19:40:45Z by `tools/df_e1_seal.py` from retained artifacts only. Nothing was fitted, loaded, scored or replayed.
 
 **Verdict rule.** E1_SEALED only when every condition is DISCHARGED or PROHIBITION_OBSERVED; E1_PARTIAL_SEAL otherwise. Identity, rules and numbers are sealed either way — they are facts about bytes
 
@@ -14,9 +14,25 @@ Generated 2026-09-26T09:13:46Z by `tools/df_e1_seal.py` from retained artifacts 
 | `HUBER_NO_RETURN_TO_R0_R1_R2_YET` | MUSASHI_HUBER_ADAMW_RESULTS_2026_09_21.md | **PROHIBITION_OBSERVED** | no post-Huber block carries an R0/R1/R2 arm; the arms measured are calendar, daily_lag, gru_adapted_w60, gru_calendar_w60, modular_w60, randomised_calendar_control, volume_112d, volume_56d |
 | `POST_HUBER_PHASE2_CORRECTED` | MUSASHI_POST_HUBER_REVIEW_2026_09_21.md | **DISCHARGED** | v1 6b47509400ef… (df_e1_phase2_design.v1, state SEALED_NOT_EXECUTED) is preserved and superseded by v2 0dcb92b9c05a… (df_e1_phase2_design.v2, state SEALED_NOT_EXECUTED); both digests re-derive |
 | `POST_HUBER_EXTERNAL_ACCEPTANCE` | MUSASHI_POST_HUBER_REVIEW_2026_09_21.md | **NOT_DISCHARGEABLE_BY_ARTIFACTS** | the correction is an artifact; its acceptance is a review |
-| `MOD_E1_EXTERNAL_REVIEW` | SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md | **NOT_DISCHARGEABLE_BY_ARTIFACTS** | the return declares it itself; and no external review of the E1 rounds exists: absent ['MUSASHI_RP49_RP56_REVIEW_2026_09_20.md', 'MUSASHI_RP57_RP64_REVIEW_2026_09_21.md'] |
+| `MOD_E1_EXTERNAL_REVIEW` | SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md | **DISCHARGED_BY_OWNER_GRANTED_DISPOSITION_NOT_BY_EXTERNAL_REVIEW** | the return declares it itself; the two reviews are still absent ['MUSASHI_RP49_RP56_REVIEW_2026_09_20.md', 'MUSASHI_RP57_RP64_REVIEW_2026_09_21.md']; the ruling that stands in their place is ['SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md', 'SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md'], each one's identity recomputed here from its own bytes, each one declaring the owner's grant it acts under, that nothing in it is written in the reviewer's name, and the requirement it rules on; and rp49_rp64_disposition_20260926 names exactly those documents, exactly those two absent reviews, and counts the documents print |
 | `OWNER_CLOSURE_TABLE_FROM_ARTIFACTS` | owner standing order, 2026-09-21 | **DISCHARGED** | docs/audits/evidence/d3_k5_20260917/RP82/CLOSURE_TABLE_RP89.json (owner_closure_table.v2, 2026-09-21T18:45:16Z) covers 70 rows over 8 runs with problems []; 39 verified and 31 preserved with a qualified scope; every row carries all thirteen required columns and every run's design identity recomputes |
 | `RP136_RP139_MATCHED_ECL_ADAPTER` | MUSASHI_RP136_RP139_REVIEW_2026_09_23.md | **UNMET** | every retained block design still names a single-target, single-offset contract: REGISTRY household_W60_h60; no full-output adapter artifact is retained |
+
+**Gaps in the seal.** `ML_BASELINES_CAUSALITY_UNVERIFIED`, `ML_BASELINES_SEPARATE_VOLUME_CONTEXT_CALENDAR`, `POST_HUBER_EXTERNAL_ACCEPTANCE`, `MOD_E1_EXTERNAL_REVIEW`, `RP136_RP139_MATCHED_ECL_ADAPTER`
+
+**Gaps that still block dispatch.** `ML_BASELINES_CAUSALITY_UNVERIFIED`, `ML_BASELINES_SEPARATE_VOLUME_CONTEXT_CALENDAR`, `POST_HUBER_EXTERNAL_ACCEPTANCE`, `RP136_RP139_MATCHED_ECL_ADAPTER`
+
+`gaps` is what the SEAL lacks; `dispatch_blocking_gaps` is what still holds WORK back. They differ by exactly the conditions a retained ruling discharged for dispatch under a named authority without being the reviewer's signature. Neither list is an authorization: a documentary check that passes says nothing about whether a measurement is scientifically admissible
+
+## The ruling on the reserved external review
+
+- **ruling** — `BOTH_RANGES_ACCEPTED_WITH_NINE_FINDINGS_MOD_E1_EXTERNAL_REVIEW_DISCHARGED`
+- **scope** — this discharges the requirement as a BLOCKER OF MODULE DISPATCH, on the four modules the ruling names and on the audited commit it names — and nothing else. It is not the reviewer's signature, it does not make E1 sealed, it does not accept any measurement, and it does not reach the items the ruling itself leaves with the reviewer (MOD-CONF's sealed confirmatory design, whose owner is Musashi + Satoshi)
+- **identity recomputed** — `docs/audits/work_plan/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md` `4045fce07a201754…` (23930 bytes)
+- **identity recomputed** — `docs/audits/work_plan/SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md` `83d2b437a3507ff6…` (25794 bytes)
+- **audited commit** — `941eb5b3`
+- **what would discharge it fully** — the reviewer's own review of the RP49-RP56 and RP57-RP64 returns. The grant replaced the wait, not the reviewer
+
 
 ## Sealed identities
 

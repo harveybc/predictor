@@ -1,6 +1,6 @@
 {
  "schema": "df_e1_seal.v1",
- "at": "2026-09-26T09:13:46Z",
+ "at": "2026-09-26T19:40:45Z",
  "what_this_is": "the E1 seal built only from retained artifacts: identities recomputed, rules copied as stated, numbers copied as measured, and every condition of the review chain typed. Nothing was fitted, loaded, scored or replayed to produce it",
  "verdict": "E1_PARTIAL_SEAL",
  "gaps": [
@@ -10,7 +10,14 @@
   "MOD_E1_EXTERNAL_REVIEW",
   "RP136_RP139_MATCHED_ECL_ADAPTER"
  ],
+ "dispatch_blocking_gaps": [
+  "ML_BASELINES_CAUSALITY_UNVERIFIED",
+  "ML_BASELINES_SEPARATE_VOLUME_CONTEXT_CALENDAR",
+  "POST_HUBER_EXTERNAL_ACCEPTANCE",
+  "RP136_RP139_MATCHED_ECL_ADAPTER"
+ ],
  "verdict_rule": "E1_SEALED only when every condition is DISCHARGED or PROHIBITION_OBSERVED; E1_PARTIAL_SEAL otherwise. Identity, rules and numbers are sealed either way \u2014 they are facts about bytes",
+ "two_lists_reading": "`gaps` is what the SEAL lacks; `dispatch_blocking_gaps` is what still holds WORK back. They differ by exactly the conditions a retained ruling discharged for dispatch under a named authority without being the reviewer's signature. Neither list is an authorization: a documentary check that passes says nothing about whether a measurement is scientifically admissible",
  "sealed": {
   "identity": {
    "docs/audits/evidence/d3_k5_20260917/RP30/E1_PILOT_DESIGN.json": {
@@ -1804,9 +1811,38 @@
    "id": "MOD_E1_EXTERNAL_REVIEW",
    "source": "docs/audits/work_plan/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md",
    "quote": "MOD-E1 is **VERIFIED, not externally reviewed**",
-   "state": "NOT_DISCHARGEABLE_BY_ARTIFACTS",
-   "evidence": "the return declares it itself; and no external review of the E1 rounds exists: absent ['MUSASHI_RP49_RP56_REVIEW_2026_09_20.md', 'MUSASHI_RP57_RP64_REVIEW_2026_09_21.md']",
-   "what_would_discharge_it": "a review of the RP49-RP56 and RP57-RP64 returns. Only Musashi writes it; no agent can substitute for it"
+   "state": "DISCHARGED_BY_OWNER_GRANTED_DISPOSITION_NOT_BY_EXTERNAL_REVIEW",
+   "evidence": "the return declares it itself; the two reviews are still absent ['MUSASHI_RP49_RP56_REVIEW_2026_09_20.md', 'MUSASHI_RP57_RP64_REVIEW_2026_09_21.md']; the ruling that stands in their place is ['SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md', 'SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md'], each one's identity recomputed here from its own bytes, each one declaring the owner's grant it acts under, that nothing in it is written in the reviewer's name, and the requirement it rules on; and rp49_rp64_disposition_20260926 names exactly those documents, exactly those two absent reviews, and counts the documents print",
+   "ruling": {
+    "ruling": "BOTH_RANGES_ACCEPTED_WITH_NINE_FINDINGS_MOD_E1_EXTERNAL_REVIEW_DISCHARGED",
+    "authority": "the owner's grant of 2026-09-26: the successor technical lead audits the two ranges whose reviews were never written. Published under Satoshi's name; nothing is written or signed in the reviewer's name",
+    "identity": {
+     "docs/audits/work_plan/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md": {
+      "file_sha256": "4045fce07a2017541504fc65fe1a49d22abeeebf3a4491f29079083132a7f906",
+      "bytes": 23930
+     },
+     "docs/audits/work_plan/SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md": {
+      "file_sha256": "83d2b437a3507ff6dbc1af59b6007d782181adc8a763c57ebcab1e81aaa1b54a",
+      "bytes": 25794
+     }
+    },
+    "audited_commit": "941eb5b3",
+    "checks": {
+     "VERIFIED": 60,
+     "REFUTED": 9,
+     "UNVERIFIABLE_ARTIFACT_ABSENT": 0,
+     "rules_passing": 52
+    },
+    "absent_reviews": [
+     "docs/audits/work_plan/MUSASHI_RP49_RP56_REVIEW_2026_09_20.md",
+     "docs/audits/work_plan/MUSASHI_RP57_RP64_REVIEW_2026_09_21.md"
+    ],
+    "scope": "this discharges the requirement as a BLOCKER OF MODULE DISPATCH, on the four modules the ruling names and on the audited commit it names \u2014 and nothing else. It is not the reviewer's signature, it does not make E1 sealed, it does not accept any measurement, and it does not reach the items the ruling itself leaves with the reviewer (MOD-CONF's sealed confirmatory design, whose owner is Musashi + Satoshi)",
+    "what_would_discharge_it_fully": "the reviewer's own review of the RP49-RP56 and RP57-RP64 returns. The grant replaced the wait, not the reviewer"
+   },
+   "blocks_module_dispatch": false,
+   "note": "this row is derived from the retained ruling and the programme state, not from a constant. A state that declares the requirement discharged while its documents are absent, or a ruling published in the reviewer's name, is a refusal rather than a row",
+   "what_would_discharge_it_fully": "the reviewer's own review of the RP49-RP56 and RP57-RP64 returns. The grant replaced the wait, not the reviewer"
   },
   {
    "id": "OWNER_CLOSURE_TABLE_FROM_ARTIFACTS",

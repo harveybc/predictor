@@ -50,7 +50,22 @@ def repo(S, tmp_path) -> Path:
         dst.mkdir(parents=True, exist_ok=True)
         for p in src.glob("REPORT*.json"):
             shutil.copy2(p, dst / p.name)
+    # the ruling on the reserved external review is read from these, so the
+    # throwaway repository carries them too: the fixture declares everything the
+    # seal reads, and nothing it does not.
+    for rel in (*S.STANDING_IN_DISPOSITIONS, S.PROGRAMME_STATE):
+        dst = root / rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPO / rel, dst)
     return root
+
+
+def _state(repo: Path, S):
+    return json.loads((repo / S.PROGRAMME_STATE).read_text())
+
+
+def _put_state(repo: Path, S, doc) -> None:
+    (repo / S.PROGRAMME_STATE).write_text(json.dumps(doc, indent=1))
 
 
 def _write_json(path: Path, doc) -> None:
@@ -75,16 +90,18 @@ def test_the_seal_over_the_real_repository_is_partial_and_names_its_gaps(S):
         "HUBER_NO_RETURN_TO_R0_R1_R2_YET": S.OBSERVED,
         "POST_HUBER_PHASE2_CORRECTED": S.DISCHARGED,
         "POST_HUBER_EXTERNAL_ACCEPTANCE": S.OUTSIDE,
-        "MOD_E1_EXTERNAL_REVIEW": S.OUTSIDE,
+        "MOD_E1_EXTERNAL_REVIEW": S.BY_GRANT,
         "OWNER_CLOSURE_TABLE_FROM_ARTIFACTS": S.DISCHARGED,
         "RP136_RP139_MATCHED_ECL_ADAPTER": S.UNMET,
     }
     assert doc["gaps"] == [c["id"] for c in doc["conditions"]
-                           if c["state"] in (S.UNMET, S.OUTSIDE)]
+                           if c["state"] in (S.UNMET, S.OUTSIDE, S.BY_GRANT)]
     # every gap says what would discharge it, so the reader is never left guessing
     for c in doc["conditions"]:
-        if c["state"] in (S.UNMET, S.OUTSIDE):
-            assert c.get("what_would_discharge_it") or c.get("evidence")
+        if c["state"] in (S.UNMET, S.OUTSIDE, S.BY_GRANT):
+            assert (c.get("what_would_discharge_it")
+                    or c.get("what_would_discharge_it_fully")
+                    or c.get("evidence"))
 
 
 def test_every_declared_identity_is_recomputed_not_read_back(S):
@@ -291,19 +308,161 @@ def test_an_r0_r1_r2_arm_after_huber_turns_the_prohibition_to_unmet(S, repo):
     assert state["HUBER_NO_RETURN_TO_R0_R1_R2_YET"] == S.UNMET
 
 
+def _cond(S, repo):
+    return next(c for c in S.seal(repo)["conditions"]
+                if c["id"] == "MOD_E1_EXTERNAL_REVIEW")
+
+
 def test_the_missing_external_review_condition_reads_the_absence(S, repo):
     for rel in S.EXPECTED_ABSENT_REVIEWS:
         p = repo / rel
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text("# a review that did not exist when the seal was written\n")
-    doc = S.seal(repo)
-    cond = next(c for c in doc["conditions"]
-                if c["id"] == "MOD_E1_EXTERNAL_REVIEW")
-    # the state stays OUTSIDE — only a review's CONTENT can discharge it, and
-    # this seal never reads a review's content as acceptance — but the evidence
-    # line must stop claiming they are absent
+    cond = _cond(S, repo)
+    # the state goes back to OUTSIDE — only a review's CONTENT can discharge it,
+    # and this seal never reads a review's content as acceptance — but the
+    # evidence line must stop claiming they are absent
     assert cond["state"] == S.OUTSIDE
     assert "absent []" in cond["evidence"]
+    assert cond["blocks_module_dispatch"] is True
+
+
+# ------------- the reserved external review: the ruling, its scope, its limits --
+
+def test_the_current_ruling_is_derived_from_bytes_not_from_a_constant(S, repo):
+    """The defect this replaces: the row was the literal OUTSIDE, so a programme
+    state that declared the requirement discharged could not change it."""
+    cond = _cond(S, repo)
+    assert cond["state"] == S.BY_GRANT
+    r = cond["ruling"]
+    assert "MOD_E1_EXTERNAL_REVIEW_DISCHARGED" in r["ruling"]
+    # identity, recomputed here from the documents' own bytes
+    for rel in S.STANDING_IN_DISPOSITIONS:
+        ident = r["identity"][rel]
+        assert ident["file_sha256"] == S.sha_file(repo / rel)
+        assert ident["bytes"] == (repo / rel).stat().st_size
+    assert r["audited_commit"]
+    # the scope is stated, and it stops where the reviewer begins
+    assert "not the reviewer's signature" in r["scope"]
+    assert "MOD-CONF" in r["scope"]
+    assert r["what_would_discharge_it_fully"]
+
+
+def test_the_grant_discharges_dispatch_and_never_promotes_the_seal(S, repo):
+    doc = S.seal(repo)
+    assert doc["verdict"] == S.PARTIAL
+    assert "MOD_E1_EXTERNAL_REVIEW" in doc["gaps"]
+    assert "MOD_E1_EXTERNAL_REVIEW" not in doc["dispatch_blocking_gaps"]
+    assert set(doc["dispatch_blocking_gaps"]) < set(doc["gaps"])
+    # and a documentary pass is never an authorization
+    assert "Neither list is an" in doc["two_lists_reading"]
+
+
+def test_every_condition_other_than_the_ruling_still_blocks_dispatch(S, repo):
+    doc = S.seal(repo)
+    assert doc["dispatch_blocking_gaps"] == [
+        g for g in doc["gaps"] if g != "MOD_E1_EXTERNAL_REVIEW"]
+
+
+# --- absence: answered with OUTSIDE and a named remedy, never with a refusal ---
+
+def test_a_ruling_that_is_not_retained_leaves_the_requirement_outside(S, repo):
+    for rel in S.STANDING_IN_DISPOSITIONS:
+        (repo / rel).unlink()
+    doc = json.loads((repo / S.PROGRAMME_STATE).read_text())
+    doc.pop(S.DISPOSITION_BLOCK)
+    _put_state(repo, S, doc)
+    cond = _cond(S, repo)
+    assert cond["state"] == S.OUTSIDE
+    assert cond["ruling"]["ruling"] == "NO_RULING_RETAINED"
+    assert "no standing-in ruling is retained either" in cond["evidence"]
+    assert "Only Musashi" in cond["what_would_discharge_it"]
+    assert cond["blocks_module_dispatch"] is True
+
+
+def test_a_retained_ruling_the_programme_never_declared_is_not_promoted(S, repo):
+    doc = json.loads((repo / S.PROGRAMME_STATE).read_text())
+    doc.pop(S.DISPOSITION_BLOCK)
+    _put_state(repo, S, doc)
+    cond = _cond(S, repo)
+    assert cond["state"] == S.OUTSIDE
+    assert "does not declare" in cond["evidence"]
+
+
+def test_an_absent_programme_state_is_absence_not_contradiction(S, repo):
+    (repo / S.PROGRAMME_STATE).unlink()
+    cond = _cond(S, repo)
+    assert cond["state"] == S.OUTSIDE
+
+
+# --- contradiction: a seal that would mislead is not emitted -------------------
+
+def test_a_declared_discharge_whose_documents_are_gone_is_a_refusal(S, repo):
+    (repo / S.STANDING_IN_DISPOSITIONS[0]).unlink()
+    with pytest.raises(S.SealRefusal, match="are not retained"):
+        S.seal(repo)
+
+
+def test_a_declared_discharge_naming_other_documents_is_a_refusal(S, repo):
+    doc = _state(repo, S)
+    doc[S.DISPOSITION_BLOCK]["documents"] = ["../../audits/work_plan/OTHER.md"]
+    _put_state(repo, S, doc)
+    with pytest.raises(S.SealRefusal, match="own evidence disagree"):
+        S.seal(repo)
+
+
+def test_a_ruling_that_stands_in_for_a_different_review_is_a_refusal(S, repo):
+    doc = _state(repo, S)
+    doc[S.DISPOSITION_BLOCK]["stands_in_for"] = ["MUSASHI_RP1_RP8_REVIEW"]
+    _put_state(repo, S, doc)
+    with pytest.raises(S.SealRefusal, match="does not reach this requirement"):
+        S.seal(repo)
+
+
+def test_counts_the_documents_do_not_print_are_a_refusal(S, repo):
+    doc = _state(repo, S)
+    doc[S.DISPOSITION_BLOCK]["checks"]["REFUTED"] = 1234
+    _put_state(repo, S, doc)
+    with pytest.raises(S.SealRefusal, match="no retained disposition prints"):
+        S.seal(repo)
+
+
+def test_a_ruling_that_hides_its_authority_is_a_refusal(S, repo):
+    p = repo / S.STANDING_IN_DISPOSITIONS[0]
+    p.write_text(p.read_text().replace("owner's grant of 2026-09-26", "somehow"))
+    with pytest.raises(S.SealRefusal, match="the authority it acts under"):
+        S.seal(repo)
+
+
+def test_a_ruling_written_in_the_reviewers_name_is_a_refusal(S, repo):
+    p = repo / S.STANDING_IN_DISPOSITIONS[1]
+    p.write_text(p.read_text().replace(
+        "signed, quoted or attributed to Musashi", "written by the auditor"))
+    with pytest.raises(S.SealRefusal,
+                       match="not written in the reviewer's name"):
+        S.seal(repo)
+
+
+def test_a_ruling_signed_by_the_reviewer_is_a_refusal(S, repo):
+    p = repo / S.STANDING_IN_DISPOSITIONS[0]
+    p.write_text(p.read_text() + "\n— Musashi\n")
+    with pytest.raises(S.SealRefusal, match="in the reviewer's name"):
+        S.seal(repo)
+
+
+def test_a_ruling_that_never_names_the_requirement_is_a_refusal(S, repo):
+    for rel in S.STANDING_IN_DISPOSITIONS:
+        p = repo / rel
+        p.write_text(p.read_text().replace("MOD_E1_EXTERNAL_REVIEW", "something"))
+    with pytest.raises(S.SealRefusal, match="the requirement ruled on"):
+        S.seal(repo)
+
+
+def test_the_markdown_carries_the_ruling_and_its_scope(S):
+    md = S.markdown(S.seal(REPO))
+    assert "## The ruling on the reserved external review" in md
+    assert "Gaps that still block dispatch" in md
+    assert "identity recomputed" in md
 
 
 # --------------------------------------------------- the verdict rule itself --

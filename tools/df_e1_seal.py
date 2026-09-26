@@ -69,6 +69,14 @@ DISCHARGED = "DISCHARGED"
 OBSERVED = "PROHIBITION_OBSERVED"
 UNMET = "UNMET"
 OUTSIDE = "NOT_DISCHARGEABLE_BY_ARTIFACTS"
+#: a fifth state, and the only one that is neither "satisfied" nor "out of
+#: reach": a requirement reserved to an external reviewer that a RULING standing
+#: in his place has discharged for dispatch purposes, under a named authority.
+#: It is still a gap in the SEAL — the reviewer's signature does not exist — and
+#: it is deliberately NOT counted as a blocker of the module it names, because
+#: the ruling that discharged it says so in its own bytes. Two different
+#: questions, two different lists: ``gaps`` and ``dispatch_blocking_gaps``.
+BY_GRANT = "DISCHARGED_BY_OWNER_GRANTED_DISPOSITION_NOT_BY_EXTERNAL_REVIEW"
 SEALED, PARTIAL = "E1_SEALED", "E1_PARTIAL_SEAL"
 
 
@@ -210,6 +218,42 @@ EXPECTED_ABSENT_REVIEWS = (
     f"{WP}/MUSASHI_RP49_RP56_REVIEW_2026_09_20.md",
     f"{WP}/MUSASHI_RP57_RP64_REVIEW_2026_09_21.md",
 )
+
+#: the documents that, under the owner's grant of 2026-09-26, were written where
+#: the two reviews above are missing. They are NOT those reviews and do not
+#: pretend to be: each one says so in its own bytes, and the sentences below are
+#: checked, not trusted.
+STANDING_IN_DISPOSITIONS = (
+    f"{WP}/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md",
+    f"{WP}/SATOSHI_RP57_RP64_DISPOSITION_2026_09_26.md",
+)
+
+#: sentences a standing-in disposition must carry in its own bytes. A document
+#: that stands in for an absent review and does NOT say whose it is not, or that
+#: signs in the reviewer's name, is a refusal — never a quiet downgrade.
+DISPOSITION_MUST_DECLARE = (
+    ("owner's grant of 2026-09-26",
+     "the authority it acts under, named in its own text"),
+    ("signed, quoted or attributed to Musashi",
+     "that it is not written in the reviewer's name"),
+)
+
+#: and the set of them, together, must name the requirement being ruled on and
+#: the review it stands in place of. Required of the corpus, not of each file:
+#: the ruling lives in one document and the second supplies its evidence.
+DISPOSITION_CORPUS_MUST_NAME = (
+    ("MOD_E1_EXTERNAL_REVIEW", "the requirement ruled on, by its identifier"),
+    ("in place of the review that was never written",
+     "what it stands in place of"),
+)
+
+#: a standing-in disposition may not be signed by the reviewer it stands in for.
+FORBIDDEN_SIGNATURES = ("\n— Musashi", "\n-- Musashi", "\n**Musashi**")
+
+#: where the programme declares the ruling, and the block that carries it
+PROGRAMME_STATE = f"{PROG}/PROJECT_METHOD_STATE.json"
+DISPOSITION_BLOCK = "rp49_rp64_disposition_20260926"
+DISPOSITION_CLAIM = "MOD_E1_EXTERNAL_REVIEW_DISCHARGED"
 
 
 # --- identity --------------------------------------------------------------------
@@ -522,6 +566,178 @@ def _tally(values) -> dict:
     return dict(sorted(out.items()))
 
 
+# --- the current ruling on the requirement reserved to the external reviewer -----
+
+def e1_external_review_ruling(repo: Path = REPO) -> dict:
+    """What rules on ``MOD_E1_EXTERNAL_REVIEW`` *today*, and how far it reaches.
+
+    This function exists because the requirement used to be answered by a
+    constant. A constant cannot be wrong about the world, which is exactly the
+    problem: the programme state came to declare the requirement discharged while
+    this consumer went on returning ``NOT_DISCHARGEABLE_BY_ARTIFACTS``
+    unconditionally, and a reader had no way to tell which of the two was stale.
+
+    The ruling is derived, in this order, from bytes:
+
+    1. do the two reviews that were never written exist now? If either does, the
+       requirement is back in the reviewer's hands. This seal does not read a
+       review's CONTENT as acceptance and never will, so the state stays
+       ``OUTSIDE`` — but the evidence stops saying they are absent.
+    2. are the two standing-in dispositions retained, and does each one declare,
+       in its own text, the authority it acts under, that it is not written in the
+       reviewer's name, and the requirement it rules on? Their identity is
+       recomputed from their bytes here, not quoted.
+    3. does the programme state declare the discharge, name exactly those
+       documents, name exactly the two reviews it stands in for, and report counts
+       that the documents themselves print?
+
+    A mismatch between (2) and (3) is a CONTRADICTION and raises: a seal that
+    would mislead is not emitted. Absence is not a contradiction — it is answered
+    with ``OUTSIDE`` and a named remedy. Nothing here is refused by default."""
+    present_reviews = [rel for rel in EXPECTED_ABSENT_REVIEWS
+                       if (repo / rel).is_file()]
+    absent_reviews = [rel for rel in EXPECTED_ABSENT_REVIEWS
+                      if not (repo / rel).is_file()]
+
+    retained, missing, texts = {}, [], {}
+    for rel in STANDING_IN_DISPOSITIONS:
+        p = repo / rel
+        if not p.is_file():
+            missing.append(rel)
+            continue
+        texts[rel] = p.read_text()
+        retained[rel] = {"file_sha256": sha_file(p), "bytes": p.stat().st_size}
+
+    state_path = repo / PROGRAMME_STATE
+    block = None
+    if state_path.is_file():
+        block = json.loads(state_path.read_text()).get(DISPOSITION_BLOCK)
+    claimed = bool(block) and DISPOSITION_CLAIM in str(block.get("disposition"))
+
+    # --- contradictions. Each one is a real reason, named -------------------------
+    if claimed and missing:
+        raise SealRefusal(
+            f"{PROGRAMME_STATE}:{DISPOSITION_BLOCK} declares "
+            f"{DISPOSITION_CLAIM}, but the documents that would carry that "
+            f"ruling are not retained: {[Path(m).name for m in missing]}. A "
+            "discharge whose document is absent is not a discharge")
+    if claimed:
+        named = {str(d).split("/")[-1] for d in (block.get("documents") or ())}
+        want = {Path(rel).name for rel in STANDING_IN_DISPOSITIONS}
+        if named != want:
+            raise SealRefusal(
+                f"{DISPOSITION_BLOCK} names {sorted(named)} as the documents of "
+                f"the ruling; the retained standing-in dispositions are "
+                f"{sorted(want)}. The state and its own evidence disagree")
+        stands_in = list(block.get("stands_in_for") or ())
+        expect_in = [Path(rel).name.removesuffix(".md").removesuffix(
+            "_2026_09_20").removesuffix("_2026_09_21")
+            for rel in EXPECTED_ABSENT_REVIEWS]
+        if stands_in != expect_in:
+            raise SealRefusal(
+                f"{DISPOSITION_BLOCK} says it stands in for {stands_in}; the "
+                f"reviews this condition is about are {expect_in}. A ruling that "
+                "replaces a different document does not reach this requirement")
+        for rel, text in texts.items():
+            for needle, why in DISPOSITION_MUST_DECLARE:
+                if needle not in text:
+                    raise SealRefusal(
+                        f"{rel} is offered as the ruling on "
+                        f"MOD_E1_EXTERNAL_REVIEW but does not declare {why} "
+                        f"(missing: {needle!r})")
+            for sig in FORBIDDEN_SIGNATURES:
+                if sig in text:
+                    raise SealRefusal(
+                        f"{rel} stands in for the reviewer's own review and is "
+                        f"signed {sig.strip()!r}. Nothing may be published in "
+                        "the reviewer's name")
+        printed = " ".join(texts.values())
+        for needle, why in DISPOSITION_CORPUS_MUST_NAME:
+            if needle not in printed:
+                raise SealRefusal(
+                    "the retained dispositions are offered as the ruling on "
+                    f"MOD_E1_EXTERNAL_REVIEW but none of them names {why} "
+                    f"(missing: {needle!r})")
+        checks = block.get("checks") or {}
+        for key in ("VERIFIED", "REFUTED"):
+            if key in checks and f"{checks[key]} " not in printed.replace(
+                    "**", ""):
+                raise SealRefusal(
+                    f"{DISPOSITION_BLOCK} reports {checks[key]} {key} checks; "
+                    "no retained disposition prints that count. The state's "
+                    "summary is not derived from its own documents")
+
+    # --- the ruling ---------------------------------------------------------------
+    if present_reviews:
+        return {
+            "state": OUTSIDE,
+            "ruling": "THE_RESERVED_REVIEW_EXISTS_AND_IS_NOT_ADJUDICATED_HERE",
+            "identity": retained,
+            "absent_reviews": absent_reviews,
+            "evidence": (
+                f"absent {[Path(a).name for a in absent_reviews]}; "
+                f"present {[Path(p).name for p in present_reviews]}. This seal "
+                "reads identities and numbers, never a review's content as "
+                "acceptance, so the presence of the file does not discharge it"),
+            "scope": "none: the requirement is back with its reviewer",
+            "what_would_discharge_it": (
+                "a ruling that cites that review and states its effect; this "
+                "module will not infer acceptance from a file existing"),
+        }
+    if claimed:
+        return {
+            "state": BY_GRANT,
+            "ruling": str(block.get("disposition")),
+            "authority": str(block.get("authority")),
+            "identity": retained,
+            "audited_commit": block.get("audited_commit"),
+            "checks": block.get("checks"),
+            "absent_reviews": absent_reviews,
+            "evidence": (
+                f"the two reviews are still absent "
+                f"{[Path(a).name for a in absent_reviews]}; the ruling that "
+                f"stands in their place is "
+                f"{[Path(r).name for r in retained]}, each one's identity "
+                "recomputed here from its own bytes, each one declaring the "
+                "owner's grant it acts under, that nothing in it is written in "
+                "the reviewer's name, and the requirement it rules on; and "
+                f"{DISPOSITION_BLOCK} names exactly those documents, exactly "
+                "those two absent reviews, and counts the documents print"),
+            "scope": (
+                "this discharges the requirement as a BLOCKER OF MODULE "
+                "DISPATCH, on the four modules the ruling names and on the "
+                "audited commit it names — and nothing else. It is not the "
+                "reviewer's signature, it does not make E1 sealed, it does not "
+                "accept any measurement, and it does not reach the items the "
+                "ruling itself leaves with the reviewer (MOD-CONF's sealed "
+                "confirmatory design, whose owner is Musashi + Satoshi)"),
+            "what_would_discharge_it_fully": (
+                "the reviewer's own review of the RP49-RP56 and RP57-RP64 "
+                "returns. The grant replaced the wait, not the reviewer"),
+        }
+    return {
+        "state": OUTSIDE,
+        "ruling": "NO_RULING_RETAINED",
+        "identity": retained,
+        "absent_reviews": absent_reviews,
+        "evidence": (
+            f"no external review of the E1 rounds exists: absent "
+            f"{[Path(a).name for a in absent_reviews]}"
+            + ("; and no standing-in ruling is retained either"
+               if missing else
+               f"; the standing-in dispositions {[Path(r).name for r in retained]}"
+               " are retained but "
+               f"{PROGRAMME_STATE} does not declare {DISPOSITION_CLAIM}, so "
+               "this module does not promote them on its own")),
+        "scope": "none",
+        "what_would_discharge_it": (
+            "a review of the RP49-RP56 and RP57-RP64 returns. Only Musashi "
+            "writes it; no agent can substitute for it. Failing that, a ruling "
+            "published under a named authority, retained here, and declared in "
+            "the programme state — which discharges dispatch, not the review"),
+    }
+
+
 # --- the conditions of the review chain ------------------------------------------
 
 def conditions(inv: dict, numbers: dict, repo: Path = REPO) -> list:
@@ -642,26 +858,35 @@ def conditions(inv: dict, numbers: dict, repo: Path = REPO) -> list:
             "guarantees"),
     })
 
-    # 6 -- the missing external review of E1 itself
-    absent = [rel for rel in EXPECTED_ABSENT_REVIEWS
-              if not (repo / rel).is_file()]
+    # 6 -- the requirement reserved to the external reviewer, as ruled on TODAY
     rp49 = (repo / f"{WP}/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md"
             ).read_text()
     self_declared = "VERIFIED, not externally reviewed" in rp49
-    out.append({
+    ruling = e1_external_review_ruling(repo)
+    cond = {
         "id": "MOD_E1_EXTERNAL_REVIEW",
         "source": f"{WP}/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md",
         "quote": "MOD-E1 is **VERIFIED, not externally reviewed**",
-        "state": OUTSIDE,
+        "state": ruling["state"],
         "evidence": (
             ("the return declares it itself; " if self_declared else
              "the quoted sentence was not found — re-read the return; ")
-            + f"and no external review of the E1 rounds exists: absent "
-              f"{[Path(a).name for a in absent]}"),
-        "what_would_discharge_it": (
-            "a review of the RP49-RP56 and RP57-RP64 returns. Only Musashi "
-            "writes it; no agent can substitute for it"),
-    })
+            + ruling["evidence"]),
+        "ruling": {k: v for k, v in ruling.items()
+                   if k not in ("state", "evidence")},
+        "blocks_module_dispatch": ruling["state"] != BY_GRANT,
+        "note": (
+            "this row is derived from the retained ruling and the programme "
+            "state, not from a constant. A state that declares the requirement "
+            "discharged while its documents are absent, or a ruling published "
+            "in the reviewer's name, is a refusal rather than a row"),
+    }
+    if "what_would_discharge_it" in ruling:
+        cond["what_would_discharge_it"] = ruling["what_would_discharge_it"]
+    if "what_would_discharge_it_fully" in ruling:
+        cond["what_would_discharge_it_fully"] = ruling[
+            "what_would_discharge_it_fully"]
+    out.append(cond)
 
     # 6b -- the owner's standing closure-table rule
     tbl = numbers["owner_closure_table"]
@@ -715,8 +940,21 @@ def conditions(inv: dict, numbers: dict, repo: Path = REPO) -> list:
 
 
 def verdict(conds: list) -> tuple[str, list]:
-    gaps = [c["id"] for c in conds if c["state"] in (UNMET, OUTSIDE)]
+    """A gap for the SEAL. ``BY_GRANT`` is a gap here on purpose: a ruling under
+    the owner's grant is not the reviewer's signature, and no bookkeeping change
+    may promote ``E1_PARTIAL_SEAL`` to ``E1_SEALED``."""
+    gaps = [c["id"] for c in conds if c["state"] in (UNMET, OUTSIDE, BY_GRANT)]
     return (PARTIAL if gaps else SEALED), gaps
+
+
+def dispatch_blocking_gaps(conds: list) -> list:
+    """The strictly smaller list a dispatcher may act on: the conditions that
+    still hold work back. A condition a retained ruling has discharged for
+    dispatch is not in it; it remains in ``gaps`` above. The two lists answer two
+    different questions and are never merged."""
+    return [c["id"] for c in conds
+            if c["state"] in (UNMET, OUTSIDE)
+            and c.get("blocks_module_dispatch", True)]
 
 
 # --- the seal --------------------------------------------------------------------
@@ -744,10 +982,18 @@ def seal(repo: Path = REPO) -> dict:
             "fitted, loaded, scored or replayed to produce it"),
         "verdict": v,
         "gaps": gaps,
+        "dispatch_blocking_gaps": dispatch_blocking_gaps(conds),
         "verdict_rule": (
             "E1_SEALED only when every condition is DISCHARGED or "
             "PROHIBITION_OBSERVED; E1_PARTIAL_SEAL otherwise. Identity, rules "
             "and numbers are sealed either way — they are facts about bytes"),
+        "two_lists_reading": (
+            "`gaps` is what the SEAL lacks; `dispatch_blocking_gaps` is what "
+            "still holds WORK back. They differ by exactly the conditions a "
+            "retained ruling discharged for dispatch under a named authority "
+            "without being the reviewer's signature. Neither list is an "
+            "authorization: a documentary check that passes says nothing about "
+            "whether a measurement is scientifically admissible"),
         "sealed": {
             "identity": identity,
             "rules_as_stated": rules_as_stated(inv),
@@ -782,6 +1028,29 @@ def markdown(doc: dict) -> str:
     for c in doc["conditions"]:
         L.append(f"| `{c['id']}` | {Path(c['source']).name} | "
                  f"**{c['state']}** | {c['evidence']} |")
+    L += ["", f"**Gaps in the seal.** {', '.join(f'`{g}`' for g in doc['gaps'])}",
+          "", f"**Gaps that still block dispatch.** "
+          + (", ".join(f"`{g}`" for g in doc["dispatch_blocking_gaps"])
+             or "none"),
+          "", doc["two_lists_reading"], ""]
+    rul = next((c["ruling"] for c in doc["conditions"]
+                if c["id"] == "MOD_E1_EXTERNAL_REVIEW" and "ruling" in c), None)
+    if rul:
+        L += ["## The ruling on the reserved external review", "",
+              f"- **ruling** — `{rul.get('ruling')}`",
+              f"- **scope** — {rul.get('scope')}"]
+        for rel, ident in (rul.get("identity") or {}).items():
+            L.append(f"- **identity recomputed** — `{rel}` "
+                     f"`{ident['file_sha256'][:16]}…` ({ident['bytes']} bytes)")
+        if rul.get("audited_commit"):
+            L.append(f"- **audited commit** — `{rul['audited_commit']}`")
+        if rul.get("what_would_discharge_it_fully"):
+            L.append("- **what would discharge it fully** — "
+                     + rul["what_would_discharge_it_fully"])
+        if rul.get("what_would_discharge_it"):
+            L.append("- **what would discharge it** — "
+                     + rul["what_would_discharge_it"])
+        L.append("")
     L += ["", "## Sealed identities", "",
           "| artifact | kind | identity |", "|---|---|---|"]
     for rel, e in doc["sealed"]["identity"].items():
@@ -854,6 +1123,8 @@ def main(argv=None) -> int:
         a.markdown.parent.mkdir(parents=True, exist_ok=True)
         a.markdown.write_text(markdown(doc))
     print(json.dumps({"verdict": doc["verdict"], "gaps": doc["gaps"],
+                      "dispatch_blocking_gaps":
+                          doc["dispatch_blocking_gaps"],
                       "conditions": {c["id"]: c["state"]
                                      for c in doc["conditions"]},
                       "artifacts_sealed": len(doc["sealed"]["identity"])},
