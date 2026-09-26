@@ -293,10 +293,11 @@ artifact** (§8.4).
 
 ## 6. Tests
 
-`tests/test_df_e1_seal.py` — 25 passed; with the adjacent E1 batteries
-(`test_m4_c32_c38_reverify.py`, `test_df_e1_phase2_acceptance.py`, `test_df_e1_chronology.py`) — 65 passed. Re-run today
-against the bounded block's code change, together with `tests/test_df_e1_block.py` and the `df_` and data batteries, in the
-anaconda env `trading-stack`; the exact counts are in §4 of
+Re-run today in the anaconda env `trading-stack` against both repairs. `test_df_e1_seal.py`, `test_df_e1_block.py`,
+`test_m4_c32_c38_reverify.py`, `test_df_e1_phase2_acceptance.py` and `test_df_e1_chronology.py` — **85 passed**;
+`test_df_closure_table.py` including the new repair test — **37 passed**. The exact counts, the two new tests and a fourth
+defect found while running the batteries (fourteen tests in two files go red whenever the checkout is not byte-clean, which
+the suite can cause itself under `docs/audits/evidence/`, and which a concurrent edit also causes) are in §4 and §5 of
 [`SATOSHI_E1_SEAL_AND_Q2_CONTEXT_2026_09_26.md`](SATOSHI_E1_SEAL_AND_Q2_CONTEXT_2026_09_26.md).
 
 ## 7. What stays REFUSED, by name

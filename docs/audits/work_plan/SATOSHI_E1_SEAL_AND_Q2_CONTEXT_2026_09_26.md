@@ -116,6 +116,31 @@ unchanged.
 | **D2** | **`tools/df_closure_table.py`'s authoritative verifier crashed with `FileNotFoundError` on a run with no accepted terminal at all.** `rows_from_run` read `TERMINAL_RECEIPTS.json` unguarded while its two sibling readers guard it, dying before a single row was built instead of reaching its own typed branch one line below. An absent receipts file is the same state as an empty one. **REPAIRED** (one guard, matching its siblings) **and tested** — the test pins both halves, including that the tool still reports **no number** for an unanchored unit |
 | **D3** | **The block closure's initial-weight pairing check reported a FALSE problem.** Its key was `(seed, family, channels, window)`, omitting `dilations` and `crop`, the fields that change the built graph; `modular_w60` (8,127 parameters) and `short_window_deep_core` (12,047 parameters) collided and were required to share initial weights they cannot share. **REPAIRED** (the key now names every graph field) **and tested**, with the check's real intent — same graph, same seed, different input **data** must share initial weights (`calendar` vs `randomised_calendar_control`) — unchanged. No previously closed block combined such arms, so **no closed block's verdict moves** |
 
+**D4 — found while running the batteries, and it explains a standing symptom precisely.** **Fourteen** tests fail
+whenever the checkout is not byte-clean — 11 in `tests/test_df_e1_governed_route.py` and 3 in
+`tests/test_df_sota_lake_adopt.py` (`test_RP92_a_bound_rehearsal_adopts_additively…`,
+`test_RP92_a_failed_post_check_restores_the_previous_configuration`,
+`test_RP92_the_cli_inspection_modes_never_write_and_adopt_exits_non_zero_when_refused`). **One cause, in both files:**
+`governed_run.strict_code_identity` runs `git status --porcelain --untracked-files=all` and raises
+`GovernedRunError("governing run requires a clean checkout")` on any non-empty result — for a *tracked* modification or an
+*untracked* file alike.
+
+The suite can create such a file itself: `.gitignore` line 197 is `!docs/audits/evidence/**`, which **un-ignores**
+everything under the evidence tree, so the moment a test imports a reproducer stored there, Python writes a
+`__pycache__/` directory that git then reports as untracked, and every clean-checkout-dependent test after it fails.
+`PYTHONDONTWRITEBYTECODE=1` avoids that.
+
+Verified in both directions on this host, in `trading-stack`: with the tree not clean, `test_df_e1_governed_route.py`
+gives **11 failed**; with the tree clean, the same file gives **12 passed in 2.15 s**. The three `test_df_sota_lake_adopt.py`
+failures in this round were caused by **my own two modified documents** sitting in the tree while the shard ran — my
+mistake, not a defect in those tests, and the traceback names it: `strict_code_identity` on
+`predictor-e1q2-20260926`.
+
+**REPORTED, not repaired** — the fix is a `.gitignore` re-exception, or a `conftest.py` that disables bytecode writing, or
+a fixture that isolates the repo path these tests read; all three are policy choices about the evidence tree. Worth stating
+plainly because a red governance battery here is **not** evidence of a governance defect and **not** an interpreter
+problem: it is the checkout not being clean, and a concurrent edit is enough to cause it.
+
 D3 was repaired after the design was sealed, so the closure ran under a later revision of `df_e1_block.py` than the fits
 did. The report records that as `closure_code_drift` (sealed `24fdb67fca3c9878…`, now `0708a56f71e9e997…`) exactly as the
 earlier blocks do: **the twelve fits ran under the sealed code; the closure did not, and nothing claims otherwise.**
@@ -137,7 +162,10 @@ no warehouse write, no governance contact, no host other than this one, no servi
 | `test_df_e1_seal.py`, `test_df_e1_block.py`, `test_m4_c32_c38_reverify.py`, `test_df_e1_phase2_acceptance.py`, `test_df_e1_chronology.py` | **85 passed** in 318.67 s, before the two repairs |
 | `test_df_closure_table.py` incl. the new D2 test | **37 passed** |
 | `test_df_e1_block.py::test_2026_09_26_the_initial_weight_pairing_key_names_every_graph_field` (D3) | **1 passed** |
-| `tests/test_df_*.py` + `test_m4_c32_c38_reverify.py` + `test_per_variable_design_v5.py`, after both repairs | see the line appended at the end of this section |
+| `tests/test_df_e1_governed_route.py` on a clean checkout, after the commits | **12 passed** in 2.15 s — and **11 failed** on a checkout that is not clean, which is D4 |
+| the remaining 79 `df_`/`data` files, run as four memory-capped shards (`-m 2G` each, `PYTHONDONTWRITEBYTECODE=1`): shard A, 21 files | **306 passed, 0 failed** in 262.70 s |
+| shard D, 18 files | **458 passed, 3 failed** — all three D4, from my own two modified documents sitting in the tree while the shard ran |
+| shards B and C, 40 files (the heavy training batteries: `df_e1_huber`, `df_e1_loader`, `df_mod_e0_run`, `df_profile_*`, `df_public_*` …) | **still running when this round returned, 0 failures up to that point.** They are memory-capped at 2 GiB each and finish on their own; the counts are not claimed here because they were not observed. Re-run with `PYTHONDONTWRITEBYTECODE=1` on a clean checkout to complete the sweep |
 
 New tests added, both required by the corpus rule that a generator or verifier change carries its test:
 
