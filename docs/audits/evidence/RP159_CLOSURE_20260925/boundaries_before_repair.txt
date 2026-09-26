@@ -1,0 +1,17 @@
+.FF..............FF..F..FFF.....F..........FFF.F........................ [ 67%]
+................................ss                                       [100%]
+=========================== short test summary info ============================
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B1_design_refuses_absent_coverage
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B1_design_refuses_empty_coverage
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B2_dispatch_task_positive_is_taken_from_the_validated_contract
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B2_dispatch_refuses_a_caller_horizon_that_conflicts_with_the_design
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B2_dispatch_refuses_a_duplicate_declared_cell
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B2_dispatch_refuses_data_whose_channel_order_is_not_the_designs
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B2_dispatch_refuses_a_monitor_support_the_run_record_does_not_declare
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B2_dispatch_refuses_a_silent_reseal_of_the_retained_design
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B3_population_refuses_an_extra_population
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B4_checkpoint_refuses_a_missing_digest[model_sha256_recorded]
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B4_checkpoint_refuses_a_missing_digest[model_sha256_on_disk]
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B4_checkpoint_refuses_a_run_record_that_declares_no_digest_for_an_expected_cell
+FAILED tests/test_df_ecl_closure_boundaries.py::test_B4_checkpoint_refuses_a_recorded_digest_that_is_not_the_observed_one
+13 failed, 91 passed, 2 skipped in 0.26s

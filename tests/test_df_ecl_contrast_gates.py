@@ -238,6 +238,9 @@ def _full_design(cells, *, sha="d" * 64, pred_len=96, seeds=(2021,)):
               "channel_order": {"sha256": "c" * 64}, "architecture": {"arch": "B"}, "regimes": {"R0": "", "R1": "", "R2": ""},
               "factorial": {"cells": sorted(cells), "seeds": list(seeds)}, "pretraining": {"mask_ratio": 0.25},
               "optimisation": {"loss": "mse"}, "exposure": {"outer_test": "NO_ACCESS"}}
+    # RP159: this schema requires a design to declare that its identity covers the canonical scientific fields, so the helper
+    # states it once and each test below still moves exactly one factor.
+    design["identity_covers"] = list(M.CANONICAL_DESIGN_FIELDS)
     design["design_sha256"] = sha
     return design
 
@@ -547,7 +550,8 @@ def _retained_run(tmp_path, *, seeds=(2021, 2022, 2023)):
     for cell in cells:
         regime, _, seed = cell.partition("_s")
         children[cell] = {"cell": cell, "seed": int(seed), "regime": regime, "pred_len": 96,
-                          "model_identity_reconciled": True, "model_sha256_on_disk": "a" * 64,
+                          "model_identity_reconciled": True, "model_sha256_recorded": "a" * 64,
+                          "model_sha256_on_disk": "a" * 64,
                           "populations": {"complete_validation": _population(),
                                           "label_disjoint_from_selection": _population(windows=1802,
                                                                                        elements=1802 * 96 * 321)}}
@@ -615,6 +619,9 @@ def test_RP158_a_scoring_retains_the_design_it_authenticated_so_a_later_closure_
     design["design_sha256"] = hashlib.sha256(_json.dumps(
         {k: design[k] for k in M.CANONICAL_DESIGN_FIELDS}, sort_keys=True, default=str).encode()).hexdigest()
     run_dir = _fake_run(tmp_path / "r", cells, design_sha=design["design_sha256"], seeds=(2021,))
+    # RP159: the dispatch binds the channel order before it builds anything, so THAT is the first data touch to stop at.
+    monkeypatch.setattr(M, "channel_order_digest",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("stop after retention")))
     monkeypatch.setattr(M, "author_datasets", lambda *a, **k: (_ for _ in ()).throw(AssertionError("stop after retention")))
     with pytest.raises(AssertionError):
         M.score_contrast(Path("/nonexistent"), run_dir, design=design)
