@@ -1,0 +1,111 @@
+M4 C32-C38 CONFIRMATION preparation -- independent re-verification
+repo            : /home/harveybc/Documents/GitHub/agent-multi
+order           : agent-multi@889320ee P2 (C32-C38)
+reviewed tip    : 5e7a8fd430c8231a049baf03f00e720ba24ec994
+PRE / cycle / packet : d8b45eb4 / 89a3781f / 0e99ad1a
+
+-- 0. refs
+[PASS] reviewed tip 5e7a8fd4 is a commit in this repo
+[PASS] PRE d8b45eb4 is a commit in this repo
+[PASS] cycle 89a3781f is a commit in this repo
+[PASS] return packet 0e99ad1a is a commit in this repo
+[PASS] branch tip is the return packet commit -- 0e99ad1add3635dd4f0e151936d6fe4bf6379592
+[PASS] the packet is PUSHED (origin tip equals it) -- 0e99ad1add3635dd4f0e151936d6fe4bf6379592
+
+-- 1. deliverables at the return tip
+[PASS] docs/audits/evidence/MUSASHI_M4_CONFIRMATION_DESIGN_REVIEW_TEMPLATE_2026_09_10.json -- 2dfd326600ca8ae3560fb23340d91167cf877e16e3356b9713d320a27ea3344b
+[PASS] docs/audits/evidence/OWNER_M4_CONFIRMATION_EXECUTION_TEMPLATE_2026_09_10.json -- 62885899f3b40645583273d93113733634724a53224dcad749bda2b5a7b38d87
+[PASS] docs/audits/evidence/repro_runs/m4_c32_c38_post_2026_09_10.out -- 9fefb91b821fdf816c88a6d453c01a5d6e77574e9eb6a7fdd61cf6f991422964
+[PASS] docs/audits/evidence/repro_runs/m4_c32_c38_post_2026_09_10.py -- 58ffbf558bc1178e386c475fb969f3f1769da1f22120695d7d08f9acd16c469d
+[PASS] docs/handoffs/GENERAL_SATOSHI_TO_MUSASHI_M4_C32_C38_RETURN_2026_09_10.md -- 54027aa3a68f2339e2650c6b3442d34557bf8fe9dd7bbdfa6667ada17916a432
+[PASS] docs/research/model_capacity/M4_CONFIRMATION_SUCCESSOR_2026_09_10.json -- 0b257a98efca1a946a1c7ca378d8977036a758290d6c2111301bd2574bddf6c2
+[PASS] tests/test_m4_confirmation_protocol.py -- 454bc8b33eb0ff350d877a5b46416f6a24e08bc1487ef3bd6fa645801d8ade5d
+[PASS] tools/m4_confirmation_protocol.py -- ddc180e285232f53ae639579296d2f0ba01d0630c132490e457e3f5764688e52
+[PASS] tools/m4_confirmation_runner.py -- f4545bef7876e355b492110df51a2710e1c91d91178acc73e6453ef2791c3a1e
+
+-- 2. accepted calibration evidence, file digests (Musashi audit section 1)
+[PASS] docs/audits/evidence/M4_V5_CALIBRATION_ADJUDICATION_ATTEMPT3_GOVERNING_2026_09_09.json -- 51247b7853f7da1d5e549810f6b680183e7f4a4c77a4c787188030b6e560ff4c
+[PASS] docs/research/model_capacity/M4_SEALED_DESIGN_V5_2026_09_09.json -- 0a0fb757d847749373259031cf99f0844d13fb37a8d135462c9f926b1930700a
+[PASS] docs/research/model_capacity/M4_V5_NUMERIC_VALIDITY_AMENDMENT_1_2026_09_09.json -- 49c363953641ea7be2eff124654cf861d4214402ab921b7276d7a768ced61566
+
+-- 3. self-identities recomputed from the bytes
+[PASS] M4_SEALED_DESIGN_V5_2026_09_09.json: declared design_sha256 is the pin
+[PASS] M4_SEALED_DESIGN_V5_2026_09_09.json: design_sha256 RE-DERIVES from the bytes -- d7280a92047d98898418fb7cd750b22c506a621eb381d9847e0fe926b7df69b9
+[PASS] M4_V5_NUMERIC_VALIDITY_AMENDMENT_1_2026_09_09.json: declared amendment_sha256 is the pin
+[PASS] M4_V5_NUMERIC_VALIDITY_AMENDMENT_1_2026_09_09.json: amendment_sha256 RE-DERIVES from the bytes -- 43e0804e1e6e583b10ddbe46b7d4cd752838b0473ccbc6496f0e458c49aedd4b
+[PASS] M4_V5_CALIBRATION_ADJUDICATION_ATTEMPT3_GOVERNING_2026_09_09.json: declared record_sha256 is the pin
+[PASS] M4_V5_CALIBRATION_ADJUDICATION_ATTEMPT3_GOVERNING_2026_09_09.json: record_sha256 RE-DERIVES from the bytes -- b35b6fd969aa162047bdfb55b8f9fcce01aa76864c388d29a1c36642ab051ade
+[PASS] M4_CONFIRMATION_SUCCESSOR_2026_09_10.json: declared successor_sha256 is the pin
+[PASS] M4_CONFIRMATION_SUCCESSOR_2026_09_10.json: successor_sha256 RE-DERIVES from the bytes -- 6a50d97ddfb3a8e8dd1b5fbc83ebd95e60e1c087b3fc5e01697c2d783a50608c
+
+-- 4. C32 order facts re-derived from adjudication structures
+[PASS] 28 reserved family/noise/width slots -- 28
+[PASS] 21 eligible slots -- 21
+[PASS] 7 typed ineligible slots -- 7
+[PASS] exactly two incomplete generators, kept in the denominator -- intervention::CALIBRATION::state_space::clean::w64::g0, intervention::CALIBRATION::state_space::clean::w64::g6
+[PASS] zero calibration-incomplete cells -- 0
+[PASS] M2 minus M1 paired gain is the accepted -0.41982887 -- -0.41982887
+[PASS] the adjudication claims NO confirmation authority of its own -- CANDIDATE_FOR_MUSASHI_REVIEW_NO_CONFIRMATION_AUTHORITY
+
+-- 5. C33 frozen policy in the successor
+[PASS] eligibility threshold is 12
+[PASS] out of 16 calibration generators
+[PASS] and zero NUMERICALLY_INVALID permitted
+[PASS] 48 CONFIRMATION generators per eligible slot
+[PASS] 3 nested seeds per generator
+[PASS] attrition allowance 0.20
+[PASS] attrition floor 39 = max(3, ceil(48*0.8))
+[PASS] the floor re-derives from the formula, not from the field
+[PASS] the rule is labelled CALIBRATION_DERIVED_AND_REVIEWED, never predeclared
+[PASS] classified SCIENTIFIC_ANALYSIS_FREEZE, not 'scientific_change: NONE'
+[PASS] M2 is DOES_NOT_ADVANCE_FROM_CALIBRATION
+[PASS] and carries the measured gain, not a re-estimate
+[PASS] the successor copies the exact 21 + 7 slot population
+[PASS] and copies them BY IDENTITY from the governing adjudication
+[PASS] the successor binds the reviewed tip
+[PASS] supersedes the sealed v5 by digest (v5 bytes untouched)
+
+-- 6. C34 sixteen contrasts, topology re-derived from the eligible slots
+[PASS] the family has exactly 16 slots
+[PASS] the 15th slot is checkpoint_effect::primary_pair
+[PASS] the 16th slot is the M2 placeholder, kept so the family does not shrink
+[PASS] 14 family/noise intervention contrasts
+[PASS] 10 contrasts have both frozen widths -- am::clean, am::white, chirp::clean, chirp::white, dnf3::clean, identity::clean, majority::clean, sine::clean, sine::white, state_space::white
+[PASS] state_space::clean is single-width and the width is named: w16
+[PASS] three contrasts have no eligible width -> NOT_EVALUABLE p=1 -- discontinuity::clean, discontinuity::white, parity4::clean
+[PASS] the arithmetic closes: 10*2 + 1 = 21 eligible slots
+[PASS] the independent unit is the generator
+[PASS] Holm runs over ALL 16 slots including placeholders
+[PASS] the Holm-supersedes-Bonferroni override is DECLARED, not slipped through
+[PASS] width-specific effects are secondary heterogeneity only
+[PASS] no eligible width gives a non-rejecting NOT_EVALUABLE
+
+-- 7. the plan is still unexecuted
+[PASS] the only M4-CONFIRMATION paths are the plan, the two non-authorizing templates, the two tools and the battery -- 6 paths: M4_CONFIRMATION_SUCCESSOR_2026_09_10.json, MUSASHI_M4_CONFIRMATION_DESIGN_REVIEW_TEMPLATE_2026_09_10.json, OWNER_M4_CONFIRMATION_EXECUTION_TEMPLATE_2026_09_10.json, m4_confirmation_protocol.py, m4_confirmation_runner.py, test_m4_confirmation_protocol.py
+[PASS] no CONFIRMATION array, arm record, ledger or verdict is tracked at the return tip -- []
+[PASS] every ::CONFIRMATION:: occurrence in a data file is a RESERVED:: reservation, never an observation -- RUN_LEDGER.json: 1344 total / 1344 reserved
+[PASS] the C32-C38 cycle added no CONFIRMATION record: the reserved census is byte-identical at the reviewed tip and the return tip -- 1344 reservations, unchanged
+[PASS] the reservation count is 28 slots x 48 = 1344 -- reservations over ALL slots; the plan will use the 21 eligible (21x48x3 = 3024 units)
+[PASS] the sealed POST is retained: m4_c32_c38_post_2026_09_10.py
+[PASS] the sealed POST is retained: m4_c32_c38_post_2026_09_10.out
+[PASS] the Musashi design review TEMPLATE still carries placeholders (it grants nothing)
+[PASS] the owner execution TEMPLATE still carries placeholders (it grants nothing)
+[PASS] no authority record installed at /home/harveybc/.local/state/m4_confirmation_authority
+[PASS] no authority record installed at /var/lib/m4_confirmation_authority
+
+-- 8. live checkout (the git-reading guards)
+checkout: /home/harveybc/Documents/GitHub/.worktrees/tmp-m4-reverify-20260926
+[PASS] the checkout is at the return tip -- 0e99ad1add3635dd4f0e151936d6fe4bf6379592
+[PASS] the C37 acceptance battery is 28 passed -- 28 passed, 2 warnings in 4.91s
+[PASS] the planner reports 3024 units = 21 x 48 x 3 -- 3024
+[PASS] and the slot / generator / seed / checkpoint census is the frozen one
+[PASS] execution_open is false and BOTH records are absent
+[PASS] the planner's own mode is PLAN_ONLY_NO_AUTHORITY -- PLAN_ONLY_NO_AUTHORITY
+       census_sha256 = 12cfd9ad785b41e788ffce575ec575ab2a78ab772151b5e3b94c8f0c71169ea0
+[PASS] execute REFUSES at the two-record gate -- REFUSED: Musashi design-review record is ABSENT — planning may report counts, execution refuses before any CONFIRMATION array or ledger
+[PASS] and refuses BEFORE creating the output root -- no directory, array or ledger
+
+-- summary
+checks: 81   passed: 81   failed: 0
+VERDICT: the M4 C32-C38 CONFIRMATION plan is intact, its identities re-derive, and it remains PREPARED AND NOT EXECUTED.
+BLOCKED ON: the Musashi design-review record and the owner execution record. Neither exists. Only both together open execution.
