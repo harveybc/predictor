@@ -329,7 +329,11 @@ audit identities across the corpus is the kind of damage that cannot be walked b
 3. **Separately and first, because it is the worst single item:** the committed LibreOffice lock file carrying
    `user@host`, present on both `master` and `main`. Deleting a build artifact at the tip is an ordinary commit, not
    a history rewrite. I did not do it — it is on `master` and `main` and that scope is the owner's — and I recommend
-   it be the first thing done.
+   it be the first thing done. **Related live risk, not acted on:** the owner's own `predictor` checkout currently
+   holds an untracked LibreOffice lock file of the same kind beside a presentation draft. It is untracked and it is
+   his, so it was not touched; a single `git add -A` would publish a `user@host` string. This is one more reason the
+   pattern guard of Option 2 should refuse the commit rather than rely on anyone noticing. `.gitignore` should also
+   carry `.~lock.*#`, which it does not.
 4. **Never Option 4** on `master` or `main`. It does not un-publish, it breaks every open branch and every commit
    identity the audit corpus depends on, and it buys nothing that steps 1–3 do not.
 
@@ -353,6 +357,8 @@ audit identities across the corpus is the kind of damage that cannot be walked b
   admission is broken and under repair. Everything run here was CPU-only under
   `$HOME/.local/bin/crispdm-run -m … -t … -n hostfix --`, and the guard refused three oversized requests, which were
   re-issued smaller rather than bypassed.
+- **The owner's untracked files were not touched**, in this checkout or any other. The lock file named in §3.9(3) is
+  reported, not removed, and `.gitignore` was not edited: both are on `master`'s side of the line.
 - **A force-push does not retract what was already fetched.** Anyone who fetched this branch in the hours before the
   rewrite still holds v1's bytes locally, and the forge keeps the unreachable objects addressable for a period. No
   fork or clone of this branch is known outside the fleet.
