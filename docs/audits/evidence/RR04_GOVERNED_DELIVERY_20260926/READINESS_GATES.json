@@ -1,0 +1,96 @@
+{
+ "schema": "rr04_readiness_gates.v1",
+ "assessed_at": "2026-09-26T21:15:00-05:00",
+ "question": "which task in the DOCTORAL_AND_BUSINESS programme has its OWN governance, scientific design, resource and budget gates all satisfied, so it can be dispatched now",
+ "rule": "a gate is satisfied only from an artifact or a first-hand reading. 'the mechanism exists' is not a satisfied gate; a deployed store that serves zero rows is not a reachable input",
+ "source_of_lanes": "research_dispatch_index.v2 at predictor b790cd12 (eleven current rows)",
+ "lanes": [
+  {
+   "lane": "A/B",
+   "verdict": "NOTHING_TO_DISPATCH",
+   "why": "closed; 12/12 composed and 12/12 verified, its service inactive. Its own row says DO NOT REACTIVATE"
+  },
+  {
+   "lane": "R0/R1/R2-ECL",
+   "verdict": "NOTHING_TO_DISPATCH",
+   "why": "closed; 9 of 9 cells scored, identity_failures [] and problems []"
+  },
+  {
+   "lane": "E1-Q2-CONTEXT",
+   "verdict": "NOT_READY",
+   "gates": {
+    "governance": "FAILED",
+    "scientific_design": "SEALED",
+    "resource": "FAILED",
+    "budget": "FAILED"
+   },
+   "governance_blocker": "the E1 panel lake public_panels serves ZERO resources. data-gov 5055 routes public_panels to http://127.0.0.1:5059; nothing listens on 5059; the user unit crispdm-data-lake-public-panels.service exists but is UnitFileState=disabled, ActiveState=inactive, Result=success - a clean, deliberate stop, not a crash. A governed discover of public_panels through the worker's own identity returns HTTP 200 with 0 resources. The panel bytes themselves DO exist on this host under public_panels_c126_v2/uci_235_individual_household_power/panel.parquet",
+   "resource_blocker": "the six W1440 units need a cap the launcher refuses everywhere available today: measured MemAvailable is 6.5-7.1 GiB on one worker and 6.7 GiB on the other, against a 3 GiB desktop reserve, so host_free_for_new is 3.4-4.1 GiB; the recorded request was 9,532,141,568 bytes",
+   "memory_basis_correction": "the 7.4 GiB figure in ASYMMETRIC_READING.json and the 8,458,399,744-byte measured_pilot_peak_bytes in MEMORY_GATE.jsonl are a RESIDENT SET, not a cgroup peak: Q2 ran through df_memory_gated_run and never took a crispdm-run scope, so no memory.peak exists for any Q2 cell. A cap for a W1440 successor cannot be declared from these numbers; one bounded pilot under crispdm-run must measure the scope peak first",
+   "budget_blocker": "at the measured 4.165 CPU s per train update and 2,000-4,000 updates per cell, the six W1440 cells cost of the order of 50,000-100,000 CPU s and 15-30 h wall. No allocation grants it",
+   "estimand_limit": "the executed 600-update design cannot answer a converged-accuracy question. Its twelve cells stay CENSORED_BY_BUDGET and are carried as a limited estimand under ASYMMETRIC_READING.json, which was declared before the long-window term existed",
+   "not_relaunched": [
+    "the refused W1440 attempt",
+    "Q2_CONTEXT v1"
+   ]
+  },
+  {
+   "lane": "H-CORE (MOD-FROZEN-PREFIX)",
+   "verdict": "NOT_READY",
+   "gates": {
+    "governance": "FAILED",
+    "scientific_design": "PARTIAL",
+    "resource": "SATISFIED",
+    "budget": "UNDECLARED"
+   },
+   "why": "its next eligible work is the materialized prefix OUTPUT over the same household panel, so it inherits the public_panels failure above; its own budget is undeclared in the artifacts; and RR03, not RR04, owns naming the remaining requirements from the DR05/06 return at c2d4388b"
+  },
+  {
+   "lane": "H-CORE (MOD-CORE-PRETRAIN)",
+   "verdict": "NOT_READY",
+   "why": "the measured resolution is 0.031106 kW against a 0.009805 kW effect, verdict UNANSWERABLE_BY_THIS_PROTOCOL_AT_THIS_SEED_COUNT; 23 seeds per arm would be needed and no allocation grants them"
+  },
+  {
+   "lane": "M4",
+   "verdict": "EXCLUDED_BY_THIS_ORDER",
+   "why": "M4 CONFIRMATION is NOT AUTHORIZED, six named verifier repairs are owed, and RR04 says not to wait for the M4 review. No unit may be fitted"
+  },
+  {
+   "lane": "FIN-LOSS-OPT",
+   "verdict": "NOT_READY",
+   "gates": {
+    "governance": "FAILED",
+    "scientific_design": "SEALED_v4",
+    "resource": "SATISFIED",
+    "budget": "PILOT_ONLY"
+   },
+   "governance_blocker": "the deployed financial store carries resource_contracts {} in its startup parameters (5056.host.json backend.settings), so the sealed cost pilot's RANGED download of market_data/forex/g10/eurusd/1h.parquet stays HTTP 422 'resource availability contract required'",
+   "correction_to_the_dr02_row": "the DR02 row derived that data-gov resource_registration.py removes this dependency. It does not. That module's own docstring states 'Registering a resource does not open it: a resource with no availability contract stays closed', and the contract is read from self.params at startup (financial-data lake/inventory_plugins/fs_inventory.py:476), so it cannot be registered hot. The operator-configuration route writes a PENDING file that an operator applies with a restart",
+   "why_it_is_not_merely_operator_metadata": "the repository's own derivation tool was run for this return: financial-data _scripts/derive_availability_scope.py assessed 420 families and instantiated 0. Every family is missing available_from_ts_col, min_latency_minutes, revision_policy, timezone and license_scope. For the EURUSD resource specifically, its provenance.json states source, description, acquired_at and file digests and NOTHING about the bar-label convention or the provider's publication lag; the parquet carries one time column, datetime, tz-aware UTC. The resampler at financial-data _scripts/workers/stage13_*_light_worker.py:125 uses pandas resample defaults, so the label is WINDOW_START by source evidence - but completion_lag_max, which availability_scope() requires and refuses to default, is a producer fact no artifact on this host states. A truthful ranged contract therefore cannot be authored from source evidence, and inventing the lag is exactly what is forbidden",
+   "owner_question": "the HistData FX archive's bar-label convention and maximum publication lag, or a substitute source that carries an observed availability instant. This is a genuinely missing external fact",
+   "what_is_dispatchable_in_this_lane_today": "nothing that reads the resource. Closing the open campaign satoshi-fin-cost-pilot-20260921-prepare-data at its boundary is NOT available to me either: data-gov refuses a terminal from any actor other than the campaign's own (web_plugins/default_web.py:667), and that campaign was opened under a different identity from the one this return resolved"
+  },
+  {
+   "lane": "calendar",
+   "verdict": "NOT_READY_OWNER_DECISION",
+   "why": "a consensus source that also carries an observed publication instant over the same bar span; the two registered archives are 1,326 days apart. An entitlement decision, not code"
+  },
+  {
+   "lane": "M5PHET-5F-CHAT / news / MT5-demo / Alpaca-paper",
+   "verdict": "OUT_OF_SCOPE_FOR_RR04",
+   "why": "product-map lanes; RR05 and RR06 own them"
+  }
+ ],
+ "conclusion": {
+  "dispatched": null,
+  "verdict": "NO_PROGRAMME_TASK_IS_READY",
+  "smallest_missing_prerequisite": "a store that actually serves the public_panels lake. It is the single smallest item because it blocks two lanes at once (E1-Q2-CONTEXT and MOD-FROZEN-PREFIX's materialization), the bytes are already on this host, and its unit file already exists - what is missing is a decision to run it again or to repoint the public_panels entry in the 5055 configuration at a deployed store. Both are an operator apply plus a restart of a production service, which RR02 and RR06 forbid me to perform, and the unit is DISABLED by a deliberate act I will not override",
+  "second_prerequisite_independent_of_the_first": "the EURUSD 1h availability contract, whose missing field is an external producer fact (above), measured with the repository's own derivation tool rather than asserted",
+  "what_was_executed_instead": [
+   "the governed chain proved end to end on two bounded mechanical units plus a negative control, which is the prerequisite the whole scientific lane was waiting on",
+   "the availability derivation run with the existing tool, turning 'operator metadata' into a measured 420-families / 0-instantiable verdict and one named owner question",
+   "a closure-table generator for governed units, with ten tests including the forged-prediction, absent-warehouse and no-retained-rows negatives"
+  ],
+  "no_new_measurement_for_the_programme": true
+ }
+}

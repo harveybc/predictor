@@ -1,0 +1,127 @@
+{
+    "window_size": 33,
+    "predicted_horizons": [
+        9,
+        12,
+        15,
+        18,
+        21,
+        24
+    ],
+    "targets_are_denormalized": true,
+    "anti_naive_lock_enabled": true,
+    "feature_preprocessing_strategy": "selective",
+    "add_window_stats": false,
+    "window_stats_periods": [
+        12,
+        48
+    ],
+    "reverse_time_axis": false,
+    "add_multi_scale_returns": false,
+    "multi_scale_return_periods": [
+        6,
+        24,
+        72
+    ],
+    "use_log1p_features": null,
+    "use_temporal_features": true,
+    "hod_encoding": "sincos",
+    "dow_encoding": "sincos",
+    "moy_encoding": "sincos",
+    "epochs": 2,
+    "loss_plot_file": "/home/harveybc/work/rr04-smoke/out/unit2/phase_1_ann_1575_1d_loss_plot.png",
+    "output_file": "/home/harveybc/work/rr04-smoke/out/unit2/phase_1_ann_1575_1d_prediction.csv",
+    "uncertainties_file": "/home/harveybc/work/rr04-smoke/out/unit2/phase_1_ann_1575_1d_uncertanties.csv",
+    "model_plot_file": "/home/harveybc/work/rr04-smoke/out/unit2/phase_1_ann_1d_model_plot.png",
+    "predictions_plot_file": "/home/harveybc/work/rr04-smoke/out/unit2/phase_1_ann_1575_1d_predictions_plot.png",
+    "results_file": "/home/harveybc/work/rr04-smoke/out/unit2/phase_1_ann_1575_1d_results.csv",
+    "plot_points": 1728,
+    "plotted_horizon": 24,
+    "normalize_features": true,
+    "use_normalization_json": "examples/data_downsampled/phase_1/normalization_config_b.json",
+    "mc_samples": 2,
+    "population_size": 20,
+    "n_generations": 10,
+    "cxpb": 0.5,
+    "mutpb": 0.2,
+    "optimization_patience": 3,
+    "hyperparameter_bounds": {
+        "learning_rate": [
+            1e-05,
+            0.01
+        ],
+        "num_layers": [
+            1,
+            5
+        ],
+        "layer_size": [
+            16,
+            256
+        ],
+        "positional_encoding": [
+            0,
+            1
+        ],
+        "l2_reg": [
+            1e-07,
+            0.001
+        ],
+        "mmd_lambda": [
+            1e-05,
+            0.01
+        ],
+        "early_patience": [
+            10,
+            100
+        ]
+    },
+    "activation": "tanh",
+    "mmd_lambda": 0.001,
+    "early_patience": 100,
+    "kl_anneal_epochs": 40,
+    "x_train_file": "/home/harveybc/.cache/data-gov/predictor_examples/6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee.csv",
+    "y_train_file": "/home/harveybc/.cache/data-gov/predictor_examples/6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee.csv",
+    "x_validation_file": "/home/harveybc/.cache/data-gov/predictor_examples/42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372.csv",
+    "y_validation_file": "/home/harveybc/.cache/data-gov/predictor_examples/42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372.csv",
+    "save_model": "/home/harveybc/work/rr04-smoke/out/unit2/predictor_model.keras",
+    "load_config": "/home/harveybc/work/rr04-smoke/out/unit2/governed_config.json",
+    "save_config": "/home/harveybc/work/rr04-smoke/out/unit2/config_out.json",
+    "save_log": "/home/harveybc/work/rr04-smoke/out/unit2/debug_out.json",
+    "l2_reg": 2e-05,
+    "max_steps_train": 300,
+    "max_steps_test": 300,
+    "use_log1p_targets": false,
+    "min_delta": 1e-08,
+    "start_from_epoch": 15,
+    "plot_color_predicted": "red",
+    "x_test_file": "/home/harveybc/.cache/data-gov/predictor_examples/439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb.csv",
+    "y_test_file": "/home/harveybc/.cache/data-gov/predictor_examples/439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb.csv",
+    "stl_plot_file": "/home/harveybc/work/rr04-smoke/out/unit2/phase_1_1575_1d_stl_decomposition_plot.png",
+    "wavelet_plot_file": "/home/harveybc/work/rr04-smoke/out/unit2/phase_1_1575_1d_wavelet_decomposition_plot.png",
+    "tapper_plot_file": "/home/harveybc/work/rr04-smoke/out/unit2/phase_1_1575_1d_multi_tapper_decomposition_plot.png",
+    "predictor_plugin": "ann",
+    "optimizer_plugin": "default_optimizer",
+    "pipeline_plugin": "stl_pipeline",
+    "preprocessor_plugin": "stl_preprocessor",
+    "intermediate_layers": 4,
+    "initial_layer_size": 78,
+    "layer_size_divisor": 12,
+    "encoder_lstm_units": 20,
+    "plot_color_target": "orange",
+    "stl_period": 24,
+    "use_stl": false,
+    "use_wavelets": false,
+    "use_multi_tapper": false,
+    "use_predicted_decompositions": false,
+    "use_real_decompositions": false,
+    "use_ideal_predictions": false,
+    "column_roles_migration": "LEGACY_ALL_COLUMNS_ARE_FEATURES",
+    "eligibility_stamp": {
+        "eligibility_status": "LEGACY_NON_AUTHORITATIVE",
+        "execution_purpose": "ARCHIVAL_REPLAY_NON_AUTHORITATIVE",
+        "consumer": "predictor.main",
+        "reason": "this run declared execution_purpose=ARCHIVAL_REPLAY_NON_AUTHORITATIVE; it reproduces historical work and is NOT gated evidence",
+        "subjects_derived": 2,
+        "dataset_id": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb.csv"
+    }
+}

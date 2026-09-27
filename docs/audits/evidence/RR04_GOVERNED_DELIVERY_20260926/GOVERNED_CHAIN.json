@@ -1,0 +1,315 @@
+{
+ "schema": "rr04_governed_chain.v1",
+ "what_this_is": "the five hops of the governed path, proved on two bounded mechanical units and one negative control, with the receipt of each hop. No scientific claim is made by any of it.",
+ "runner": "tools/governed_run.py (the decision-bearing Flow v3 client), unchanged",
+ "launcher": "$HOME/.local/bin/crispdm-run on the worker; every unit took an atomic reservation",
+ "identity_resolution": {
+  "question": "which service key the governed runner may resolve without reading anyone's secret",
+  "answer": "the dedicated worker credential documented in predictor docs/handoffs/MUSASHI_WORKER_ACTIVATION_AND_R1_R6_COMPLETION_2026_09_15.md \u00a71: one key file per worker at ~/work/gov/worker.key, installed privately on the worker, matched to that worker's own service principal in the effective data-gov configuration",
+  "verified": "both workers hold that file; the runner was pointed at it with --api-key-file and the accepted terminals name the worker's own principal as actor, not the older shared predictor credential",
+  "not_done": "no key was issued, rotated, read, copied or printed; scripts/issue_service_key.py at data-gov d07695b was NOT needed because the documented key file already exists, and issuing into the live configuration would not have taken effect without restarting a production service"
+ },
+ "units": [
+  {
+   "label": "rr04-gov-smoke-u1",
+   "status": "FAILED",
+   "reason": "PREDICTOR_EXIT_1",
+   "classification": "NON_GOVERNING",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "0ee0999868e0f5438a0e2fb34ac769116caf38c9"
+   },
+   "config_sha256": "2deda7d65216dd4ea3ae280748b109065c75a624a9dfe6dc74994a027be2437a",
+   "campaign_sha256": "e0d552de9f916d4ad5cdd4f5f0b25b3a75028534d4430d9cae6c293f4b90284b",
+   "campaign_receipt": {
+    "already_stored": false,
+    "campaign_sha256": "e0d552de9f916d4ad5cdd4f5f0b25b3a75028534d4430d9cae6c293f4b90284b",
+    "classification": "NON_GOVERNING",
+    "stored": true
+   },
+   "hop_1_delivery": [
+    {
+     "role": "x_train_file",
+     "resource": "phase_1/normalized_d4.csv",
+     "lake": "predictor_examples",
+     "delivery_id": "ca842e019a0c4095afc63d9aa60b0ae7",
+     "source_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+     "delivered_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+     "bytes": 247741,
+     "verification_state": "VERIFIED_TRANSFER",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5"
+    },
+    {
+     "role": "y_train_file",
+     "resource": "phase_1/normalized_d4.csv",
+     "lake": "predictor_examples",
+     "delivery_id": "ff5086e285ce4bf79145d6f1b7e70eaa",
+     "source_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+     "delivered_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+     "bytes": 247741,
+     "verification_state": "VERIFIED_CACHE",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5"
+    },
+    {
+     "role": "x_validation_file",
+     "resource": "phase_1/normalized_d5.csv",
+     "lake": "predictor_examples",
+     "delivery_id": "65a12ea4e0af4e3c968367659c990c7d",
+     "source_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+     "delivered_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+     "bytes": 62823,
+     "verification_state": "VERIFIED_TRANSFER",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5"
+    },
+    {
+     "role": "y_validation_file",
+     "resource": "phase_1/normalized_d5.csv",
+     "lake": "predictor_examples",
+     "delivery_id": "c0c6a2a2101049b2af078d714e4e0212",
+     "source_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+     "delivered_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+     "bytes": 62823,
+     "verification_state": "VERIFIED_CACHE",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5"
+    },
+    {
+     "role": "x_test_file",
+     "resource": "phase_1/normalized_d6.csv",
+     "lake": "predictor_examples",
+     "delivery_id": "f0993e5a2e064886bdb2f69e6747a5c0",
+     "source_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+     "delivered_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+     "bytes": 69257,
+     "verification_state": "VERIFIED_TRANSFER",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5"
+    },
+    {
+     "role": "y_test_file",
+     "resource": "phase_1/normalized_d6.csv",
+     "lake": "predictor_examples",
+     "delivery_id": "63f833738d79443f862d983d24045510",
+     "source_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+     "delivered_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+     "bytes": 69257,
+     "verification_state": "VERIFIED_CACHE",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5"
+    }
+   ],
+   "hop_2_reader": {
+    "effective_input_paths": {
+     "x_test_file": "/home/harveybc/.cache/data-gov/predictor_examples/439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb.csv",
+     "x_train_file": "/home/harveybc/.cache/data-gov/predictor_examples/6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee.csv",
+     "x_validation_file": "/home/harveybc/.cache/data-gov/predictor_examples/42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372.csv",
+     "y_test_file": "/home/harveybc/.cache/data-gov/predictor_examples/439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb.csv",
+     "y_train_file": "/home/harveybc/.cache/data-gov/predictor_examples/6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee.csv",
+     "y_validation_file": "/home/harveybc/.cache/data-gov/predictor_examples/42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372.csv"
+    },
+    "claim": "the generated config names the content-addressed cache, never the checkout copy"
+   },
+   "hop_3_consumed_bytes": {
+    "checked": "sha256 of each file the config names, on the worker, equals the delivered and the source digest",
+    "all_match": true
+   },
+   "hop_4_terminal": {
+    "outbox_envelope": "/home/harveybc/.local/state/data-gov/terminal-outbox/pending/4278bb5c589a51777909d72d4406507010b8d5df033ef96efd573a40044d11fb.json",
+    "outbox_flush": {
+     "sent": 1,
+     "pending": 0,
+     "failures": {}
+    },
+    "terminal_pending": false,
+    "status": "FAILED",
+    "generation": 1,
+    "costs": {
+     "wall_seconds": 5.450164442008827
+    },
+    "metrics": 0,
+    "artifacts": {
+     "governed_config": "f4fd421ba1b6e9dd312bc3c38024978c095ff195c6df0bcbdb22d468754b64f7"
+    }
+   },
+   "hop_5_live_warehouse": {
+    "terminal_sha256": "ddf81e8b4aa7ae67b8682026c1a36ab8de3874b16c061d328a40369b763d67fa",
+    "actor": "<WORKER_A_SERVICE_PRINCIPAL>",
+    "project": "predictor",
+    "classification": "NON_GOVERNING",
+    "status": "FAILED",
+    "received_at": "2026-09-27T01:51:38.227539+00:00",
+    "reconciliation": {
+     "accounting_only": [],
+     "campaign_sha256": "e0d552de9f916d4ad5cdd4f5f0b25b3a75028534d4430d9cae6c293f4b90284b",
+     "lake_only": [],
+     "missing_units": []
+    },
+    "read_back_through": "GET /api/v1/query on lake olap_cube, by the same worker identity, over the existing governance tunnel"
+   }
+  },
+  {
+   "label": "rr04-gov-smoke-u2",
+   "status": "COMPLETED",
+   "reason": null,
+   "classification": "NON_GOVERNING",
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "0ee0999868e0f5438a0e2fb34ac769116caf38c9"
+   },
+   "config_sha256": "60e15302a626b03e8ff1eb3a8410c1405b30878f81d6b511e285c434bc1a6529",
+   "campaign_sha256": "c9b60e72093e1cc30baab3e6d87125a1cd64381fdaf0f929a0b5495b7a28b3e4",
+   "campaign_receipt": {
+    "already_stored": false,
+    "campaign_sha256": "c9b60e72093e1cc30baab3e6d87125a1cd64381fdaf0f929a0b5495b7a28b3e4",
+    "classification": "NON_GOVERNING",
+    "stored": true
+   },
+   "hop_1_delivery": [
+    {
+     "role": "x_train_file",
+     "resource": "phase_1/normalized_d4.csv",
+     "lake": "predictor_examples",
+     "delivery_id": "4ba79751551242ec80e143d55ac7f453",
+     "source_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+     "delivered_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+     "bytes": 247741,
+     "verification_state": "VERIFIED_CACHE",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5"
+    },
+    {
+     "role": "y_train_file",
+     "resource": "phase_1/normalized_d4.csv",
+     "lake": "predictor_examples",
+     "delivery_id": "6e5fd88f3cb3424592c34268f106a6b0",
+     "source_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+     "delivered_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+     "bytes": 247741,
+     "verification_state": "VERIFIED_CACHE",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5"
+    },
+    {
+     "role": "x_validation_file",
+     "resource": "phase_1/normalized_d5.csv",
+     "lake": "predictor_examples",
+     "delivery_id": "9c9c506246f547328db3a3aa3f7ef2cc",
+     "source_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+     "delivered_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+     "bytes": 62823,
+     "verification_state": "VERIFIED_CACHE",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5"
+    },
+    {
+     "role": "y_validation_file",
+     "resource": "phase_1/normalized_d5.csv",
+     "lake": "predictor_examples",
+     "delivery_id": "c91ad8fc483a40e38b4e133cc569a0d1",
+     "source_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+     "delivered_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+     "bytes": 62823,
+     "verification_state": "VERIFIED_CACHE",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5"
+    },
+    {
+     "role": "x_test_file",
+     "resource": "phase_1/normalized_d6.csv",
+     "lake": "predictor_examples",
+     "delivery_id": "94f16857017c4db1920cb7365f90f934",
+     "source_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+     "delivered_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+     "bytes": 69257,
+     "verification_state": "VERIFIED_CACHE",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5"
+    },
+    {
+     "role": "y_test_file",
+     "resource": "phase_1/normalized_d6.csv",
+     "lake": "predictor_examples",
+     "delivery_id": "303f62e73ac248e0a8f9e71523969031",
+     "source_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+     "delivered_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+     "bytes": 69257,
+     "verification_state": "VERIFIED_CACHE",
+     "availability_use": "OFFLINE_DAY_GRANULAR",
+     "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5"
+    }
+   ],
+   "hop_2_reader": {
+    "effective_input_paths": {
+     "x_test_file": "/home/harveybc/.cache/data-gov/predictor_examples/439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb.csv",
+     "x_train_file": "/home/harveybc/.cache/data-gov/predictor_examples/6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee.csv",
+     "x_validation_file": "/home/harveybc/.cache/data-gov/predictor_examples/42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372.csv",
+     "y_test_file": "/home/harveybc/.cache/data-gov/predictor_examples/439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb.csv",
+     "y_train_file": "/home/harveybc/.cache/data-gov/predictor_examples/6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee.csv",
+     "y_validation_file": "/home/harveybc/.cache/data-gov/predictor_examples/42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372.csv"
+    },
+    "claim": "the generated config names the content-addressed cache, never the checkout copy"
+   },
+   "hop_3_consumed_bytes": {
+    "checked": "sha256 of each file the config names, on the worker, equals the delivered and the source digest",
+    "all_match": true
+   },
+   "hop_4_terminal": {
+    "outbox_envelope": "/home/harveybc/.local/state/data-gov/terminal-outbox/pending/48c929cc3e1038a376d6d23dd8c986c8059bbbe529c6060a3220e68b5385afcd.json",
+    "outbox_flush": {
+     "sent": 1,
+     "pending": 0,
+     "failures": {}
+    },
+    "terminal_pending": false,
+    "status": "COMPLETED",
+    "generation": 1,
+    "costs": {
+     "wall_seconds": 10.142911023984198
+    },
+    "metrics": 90,
+    "artifacts": {
+     "governed_config": "58ace33b7a8bd54ada50e99a264b5ed3e3e3c9c751ddaf5f7c8f9e6b9090e0f2",
+     "effective_config": "d63e9f68eab2e5f64f3b99046f400626dd8f3fee2c386e384763a6a899d70304",
+     "results": "26bedc123b6d34121b649d21aa6ddf6c7c437411e9f9063e667b32330c2ab0d8",
+     "predictions": "ed0583b68fc40f3def0474440efa05bbcd6343c792443b351fa39cc00a9520cd",
+     "uncertainties": "bcf8c7ef7bf3126a1d0f0dc2f34f4526721c651bfafc20ea1ef2566a0fe92181",
+     "model": "6a8115ec4d09c3d38bf13be7ec385ae90ac9f2c1c689e38227aa7b379b045fe9"
+    }
+   },
+   "hop_5_live_warehouse": {
+    "terminal_sha256": "e0c1a2b28162bd905844e6184aabfb3ffc84165c3b06060e06a5dccd219438d5",
+    "actor": "<WORKER_A_SERVICE_PRINCIPAL>",
+    "project": "predictor",
+    "classification": "NON_GOVERNING",
+    "status": "COMPLETED",
+    "received_at": "2026-09-27T01:53:11.551650+00:00",
+    "reconciliation": {
+     "accounting_only": [],
+     "campaign_sha256": "c9b60e72093e1cc30baab3e6d87125a1cd64381fdaf0f929a0b5495b7a28b3e4",
+     "lake_only": [],
+     "missing_units": []
+    },
+    "read_back_through": "GET /api/v1/query on lake olap_cube, by the same worker identity, over the existing governance tunnel"
+   }
+  }
+ ],
+ "negative_control": {
+  "label": "rr04-gov-smoke-u3-negctl",
+  "change": "--gov-url pointed at a closed loopback port; everything else identical",
+  "observed": "governed_run: data-gov unreachable at 127.0.0.1:15999: [Errno 111] Connection refused; exit 1",
+  "output_namespace": "created empty: zero prediction, results, uncertainty or model files",
+  "meaning": "the reader does not open data when governance is unreachable, so the chain is not decoration"
+ },
+ "cache_reuse": "unit 1 transferred three resources (VERIFIED_TRANSFER) and reused three (VERIFIED_CACHE); unit 2 reused all six. Transfer and reuse are measured, not assumed.",
+ "measured_full_process_memory": {
+  "basis": "the scope cgroup's memory.peak, sampled by the launcher and recorded at release (observed_tree_peak_bytes, peak_scope cgroup) - not one process's RSS",
+  "rr04-gov-smoke-u1": 418959360,
+  "rr04-gov-smoke-u2": 640290816,
+  "rr04-gov-smoke-u3-negctl": 11415552,
+  "cap_requested_bytes": 3221225472,
+  "cap_justification": "3 GiB is the smallest cap for which a retained cgroup peak of a TensorFlow-importing scope existed on this fleet (2.9 G under a 3 G cap, DR01 verification attempt 1); this unit then measured 0.6 GiB, which is the basis recorded for its successors"
+ }
+}

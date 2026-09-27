@@ -1,0 +1,325 @@
+{
+  "status": "FAILED",
+  "experiment_key": "rr04-gov-smoke-u1",
+  "experiment_set_key": null,
+  "gov_url": "http://127.0.0.1:15055",
+  "lake": "predictor_examples",
+  "metrics_lake": "olap_cube",
+  "config": "/home/harveybc/work/rr04-smoke/predictor/examples/config/phase_1_daily/phase_1_ann_1575_1d_config.json",
+  "cache_dir": "~/.cache/data-gov",
+  "out_dir": "/home/harveybc/work/rr04-smoke/out/unit1",
+  "range": {
+    "from": null,
+    "to": null
+  },
+  "code_identity": {
+    "kind": "git_commit",
+    "value": "0ee0999868e0f5438a0e2fb34ac769116caf38c9"
+  },
+  "execution_spec": {
+    "config": {
+      "activation": "tanh",
+      "batch_size": 32,
+      "early_patience": 100,
+      "encoder_lstm_units": 20,
+      "epochs": 10000,
+      "initial_layer_size": 78,
+      "intermediate_layers": 4,
+      "kl_anneal_epochs": 40,
+      "kl_weight": 0.001,
+      "l2_reg": 2e-05,
+      "layer_size_divisor": 12,
+      "learning_rate": 0.001,
+      "loss_plot_file": "phase_1_ann_1575_1d_loss_plot.png",
+      "max_steps_test": 6300,
+      "max_steps_train": 1575,
+      "mc_samples": 20,
+      "min_delta": 1e-08,
+      "mmd_lambda": 0.001,
+      "model_plot_file": "phase_1_ann_1d_model_plot.png",
+      "optimizer_plugin": "default_optimizer",
+      "output_file": "phase_1_ann_1575_1d_prediction.csv",
+      "pipeline_plugin": "stl_pipeline",
+      "plot_color_predicted": "red",
+      "plot_color_target": "orange",
+      "plot_color_true": "blue",
+      "plot_color_uncertainty": "green",
+      "plot_points": 1728,
+      "plotted_horizon": 24,
+      "positional_encoding": false,
+      "predicted_horizons": [
+        9,
+        12,
+        15,
+        18,
+        21,
+        24
+      ],
+      "predictions_plot_file": "phase_1_ann_1575_1d_predictions_plot.png",
+      "predictor_plugin": "ann",
+      "preprocessor_plugin": "stl_preprocessor",
+      "results_file": "phase_1_ann_1575_1d_results.csv",
+      "start_from_epoch": 15,
+      "stl_period": 24,
+      "stl_plot_file": "phase_1_1575_1d_stl_decomposition_plot.png",
+      "tapper_plot_file": "phase_1_1575_1d_multi_tapper_decomposition_plot.png",
+      "target_column": "typical_price",
+      "uncertainties_file": "phase_1_ann_1575_1d_uncertanties.csv",
+      "uncertainty_color_alpha": 0.01,
+      "use_ideal_predictions": false,
+      "use_log1p_features": null,
+      "use_log1p_targets": false,
+      "use_multi_tapper": false,
+      "use_normalization_json": "examples/data_downsampled/phase_1/normalization_config_b.json",
+      "use_predicted_decompositions": false,
+      "use_real_decompositions": false,
+      "use_returns": false,
+      "use_stl": false,
+      "use_strategy": false,
+      "use_wavelets": false,
+      "wavelet_plot_file": "phase_1_1575_1d_wavelet_decomposition_plot.png",
+      "window_size": 33
+    },
+    "datasets": [
+      {
+        "from": null,
+        "lake": "predictor_examples",
+        "resource": "phase_1/normalized_d4.csv",
+        "role": "x_train_file",
+        "to": null
+      },
+      {
+        "from": null,
+        "lake": "predictor_examples",
+        "resource": "phase_1/normalized_d4.csv",
+        "role": "y_train_file",
+        "to": null
+      },
+      {
+        "from": null,
+        "lake": "predictor_examples",
+        "resource": "phase_1/normalized_d5.csv",
+        "role": "x_validation_file",
+        "to": null
+      },
+      {
+        "from": null,
+        "lake": "predictor_examples",
+        "resource": "phase_1/normalized_d5.csv",
+        "role": "y_validation_file",
+        "to": null
+      },
+      {
+        "from": null,
+        "lake": "predictor_examples",
+        "resource": "phase_1/normalized_d6.csv",
+        "role": "x_test_file",
+        "to": null
+      },
+      {
+        "from": null,
+        "lake": "predictor_examples",
+        "resource": "phase_1/normalized_d6.csv",
+        "role": "y_test_file",
+        "to": null
+      }
+    ],
+    "extra_arguments": [
+      "--epochs",
+      "2",
+      "--max_steps_train",
+      "300",
+      "--max_steps_test",
+      "300",
+      "--mc_samples",
+      "2",
+      "--execution_purpose",
+      "ARCHIVAL_REPLAY_NON_AUTHORITATIVE"
+    ],
+    "schema": "predictor_execution_spec.v1"
+  },
+  "config_sha256": "2deda7d65216dd4ea3ae280748b109065c75a624a9dfe6dc74994a027be2437a",
+  "classification": "NON_GOVERNING",
+  "campaign_sha256": "e0d552de9f916d4ad5cdd4f5f0b25b3a75028534d4430d9cae6c293f4b90284b",
+  "campaign_receipt": {
+    "already_stored": false,
+    "campaign_sha256": "e0d552de9f916d4ad5cdd4f5f0b25b3a75028534d4430d9cae6c293f4b90284b",
+    "classification": "NON_GOVERNING",
+    "stored": true
+  },
+  "prior_outbox_flush": {
+    "sent": 0,
+    "pending": 0,
+    "failures": {}
+  },
+  "inputs": [
+    {
+      "role": "x_train_file",
+      "resource": "phase_1/normalized_d4.csv",
+      "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+      "bytes": 247741,
+      "cached": false,
+      "source_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+      "delivery": "AS_IS",
+      "time_column": "DATE_TIME",
+      "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "availability_label": "WINDOW_END",
+      "availability_completion_lag_max": "1h",
+      "timezone_evidence": "UNKNOWN",
+      "delivery_id": "ca842e019a0c4095afc63d9aa60b0ae7",
+      "verification_state": "VERIFIED_TRANSFER"
+    },
+    {
+      "role": "y_train_file",
+      "resource": "phase_1/normalized_d4.csv",
+      "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+      "bytes": 247741,
+      "cached": true,
+      "source_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+      "delivery": "AS_IS",
+      "time_column": "DATE_TIME",
+      "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "availability_label": "WINDOW_END",
+      "availability_completion_lag_max": "1h",
+      "timezone_evidence": "UNKNOWN",
+      "delivery_id": "ff5086e285ce4bf79145d6f1b7e70eaa",
+      "verification_state": "VERIFIED_CACHE"
+    },
+    {
+      "role": "x_validation_file",
+      "resource": "phase_1/normalized_d5.csv",
+      "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+      "bytes": 62823,
+      "cached": false,
+      "source_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+      "delivery": "AS_IS",
+      "time_column": "DATE_TIME",
+      "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "availability_label": "WINDOW_END",
+      "availability_completion_lag_max": "1h",
+      "timezone_evidence": "UNKNOWN",
+      "delivery_id": "65a12ea4e0af4e3c968367659c990c7d",
+      "verification_state": "VERIFIED_TRANSFER"
+    },
+    {
+      "role": "y_validation_file",
+      "resource": "phase_1/normalized_d5.csv",
+      "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+      "bytes": 62823,
+      "cached": true,
+      "source_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+      "delivery": "AS_IS",
+      "time_column": "DATE_TIME",
+      "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "availability_label": "WINDOW_END",
+      "availability_completion_lag_max": "1h",
+      "timezone_evidence": "UNKNOWN",
+      "delivery_id": "c0c6a2a2101049b2af078d714e4e0212",
+      "verification_state": "VERIFIED_CACHE"
+    },
+    {
+      "role": "x_test_file",
+      "resource": "phase_1/normalized_d6.csv",
+      "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+      "bytes": 69257,
+      "cached": false,
+      "source_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+      "delivery": "AS_IS",
+      "time_column": "DATE_TIME",
+      "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "availability_label": "WINDOW_END",
+      "availability_completion_lag_max": "1h",
+      "timezone_evidence": "UNKNOWN",
+      "delivery_id": "f0993e5a2e064886bdb2f69e6747a5c0",
+      "verification_state": "VERIFIED_TRANSFER"
+    },
+    {
+      "role": "y_test_file",
+      "resource": "phase_1/normalized_d6.csv",
+      "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+      "bytes": 69257,
+      "cached": true,
+      "source_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+      "delivery": "AS_IS",
+      "time_column": "DATE_TIME",
+      "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "availability_label": "WINDOW_END",
+      "availability_completion_lag_max": "1h",
+      "timezone_evidence": "UNKNOWN",
+      "delivery_id": "63f833738d79443f862d983d24045510",
+      "verification_state": "VERIFIED_CACHE"
+    }
+  ],
+  "governed_config": "/home/harveybc/work/rr04-smoke/out/unit1/governed_config.json",
+  "command": [
+    "/home/harveybc/anaconda3/envs/trading-stack/bin/python",
+    "app/main.py",
+    "--load_config",
+    "/home/harveybc/work/rr04-smoke/out/unit1/governed_config.json",
+    "--epochs",
+    "2",
+    "--max_steps_train",
+    "300",
+    "--max_steps_test",
+    "300",
+    "--mc_samples",
+    "2",
+    "--execution_purpose",
+    "ARCHIVAL_REPLAY_NON_AUTHORITATIVE"
+  ],
+  "exit_code": 1,
+  "terminal_outbox": "/home/harveybc/.local/state/data-gov/terminal-outbox/pending/4278bb5c589a51777909d72d4406507010b8d5df033ef96efd573a40044d11fb.json",
+  "terminal": {
+    "schema": "governed_terminal.v1",
+    "generation": 1,
+    "status": "FAILED",
+    "reason": "PREDICTOR_EXIT_1",
+    "started_at": "2026-09-27T01:51:32.785549Z",
+    "finished_at": "2026-09-27T01:51:38.235702Z",
+    "costs": {
+      "wall_seconds": 5.450164442008827
+    },
+    "deliveries": [
+      "ca842e019a0c4095afc63d9aa60b0ae7",
+      "ff5086e285ce4bf79145d6f1b7e70eaa",
+      "65a12ea4e0af4e3c968367659c990c7d",
+      "c0c6a2a2101049b2af078d714e4e0212",
+      "f0993e5a2e064886bdb2f69e6747a5c0",
+      "63f833738d79443f862d983d24045510"
+    ],
+    "artifacts": [
+      {
+        "role": "governed_config",
+        "sha256": "f4fd421ba1b6e9dd312bc3c38024978c095ff195c6df0bcbdb22d468754b64f7",
+        "bytes": 3400
+      }
+    ],
+    "metrics": [],
+    "tags": {
+      "phase": "phase_1_daily",
+      "experiment_set_key": "",
+      "plugin": "ann",
+      "exit_code": "1",
+      "availability_use": "OFFLINE_DAY_GRANULAR"
+    }
+  },
+  "reason": "PREDICTOR_EXIT_1",
+  "outbox_flush": {
+    "sent": 1,
+    "pending": 0,
+    "failures": {}
+  },
+  "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "e0d552de9f916d4ad5cdd4f5f0b25b3a75028534d4430d9cae6c293f4b90284b",
+    "lake_only": [],
+    "missing_units": []
+  },
+  "terminal_pending": false
+}

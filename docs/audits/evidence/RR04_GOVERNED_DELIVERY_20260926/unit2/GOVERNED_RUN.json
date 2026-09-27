@@ -1,0 +1,1256 @@
+{
+  "status": "COMPLETED",
+  "experiment_key": "rr04-gov-smoke-u2",
+  "experiment_set_key": null,
+  "gov_url": "http://127.0.0.1:15055",
+  "lake": "predictor_examples",
+  "metrics_lake": "olap_cube",
+  "config": "/home/harveybc/work/rr04-smoke/predictor/examples/config/phase_1_daily/phase_1_ann_1575_1d_config.json",
+  "cache_dir": "~/.cache/data-gov",
+  "out_dir": "/home/harveybc/work/rr04-smoke/out/unit2",
+  "range": {
+    "from": null,
+    "to": null
+  },
+  "code_identity": {
+    "kind": "git_commit",
+    "value": "0ee0999868e0f5438a0e2fb34ac769116caf38c9"
+  },
+  "execution_spec": {
+    "config": {
+      "activation": "tanh",
+      "batch_size": 32,
+      "early_patience": 100,
+      "encoder_lstm_units": 20,
+      "epochs": 10000,
+      "initial_layer_size": 78,
+      "intermediate_layers": 4,
+      "kl_anneal_epochs": 40,
+      "kl_weight": 0.001,
+      "l2_reg": 2e-05,
+      "layer_size_divisor": 12,
+      "learning_rate": 0.001,
+      "loss_plot_file": "phase_1_ann_1575_1d_loss_plot.png",
+      "max_steps_test": 6300,
+      "max_steps_train": 1575,
+      "mc_samples": 20,
+      "min_delta": 1e-08,
+      "mmd_lambda": 0.001,
+      "model_plot_file": "phase_1_ann_1d_model_plot.png",
+      "optimizer_plugin": "default_optimizer",
+      "output_file": "phase_1_ann_1575_1d_prediction.csv",
+      "pipeline_plugin": "stl_pipeline",
+      "plot_color_predicted": "red",
+      "plot_color_target": "orange",
+      "plot_color_true": "blue",
+      "plot_color_uncertainty": "green",
+      "plot_points": 1728,
+      "plotted_horizon": 24,
+      "positional_encoding": false,
+      "predicted_horizons": [
+        9,
+        12,
+        15,
+        18,
+        21,
+        24
+      ],
+      "predictions_plot_file": "phase_1_ann_1575_1d_predictions_plot.png",
+      "predictor_plugin": "ann",
+      "preprocessor_plugin": "stl_preprocessor",
+      "results_file": "phase_1_ann_1575_1d_results.csv",
+      "start_from_epoch": 15,
+      "stl_period": 24,
+      "stl_plot_file": "phase_1_1575_1d_stl_decomposition_plot.png",
+      "tapper_plot_file": "phase_1_1575_1d_multi_tapper_decomposition_plot.png",
+      "target_column": "typical_price",
+      "uncertainties_file": "phase_1_ann_1575_1d_uncertanties.csv",
+      "uncertainty_color_alpha": 0.01,
+      "use_ideal_predictions": false,
+      "use_log1p_features": null,
+      "use_log1p_targets": false,
+      "use_multi_tapper": false,
+      "use_normalization_json": "examples/data_downsampled/phase_1/normalization_config_b.json",
+      "use_predicted_decompositions": false,
+      "use_real_decompositions": false,
+      "use_returns": false,
+      "use_stl": false,
+      "use_strategy": false,
+      "use_wavelets": false,
+      "wavelet_plot_file": "phase_1_1575_1d_wavelet_decomposition_plot.png",
+      "window_size": 33
+    },
+    "datasets": [
+      {
+        "from": null,
+        "lake": "predictor_examples",
+        "resource": "phase_1/normalized_d4.csv",
+        "role": "x_train_file",
+        "to": null
+      },
+      {
+        "from": null,
+        "lake": "predictor_examples",
+        "resource": "phase_1/normalized_d4.csv",
+        "role": "y_train_file",
+        "to": null
+      },
+      {
+        "from": null,
+        "lake": "predictor_examples",
+        "resource": "phase_1/normalized_d5.csv",
+        "role": "x_validation_file",
+        "to": null
+      },
+      {
+        "from": null,
+        "lake": "predictor_examples",
+        "resource": "phase_1/normalized_d5.csv",
+        "role": "y_validation_file",
+        "to": null
+      },
+      {
+        "from": null,
+        "lake": "predictor_examples",
+        "resource": "phase_1/normalized_d6.csv",
+        "role": "x_test_file",
+        "to": null
+      },
+      {
+        "from": null,
+        "lake": "predictor_examples",
+        "resource": "phase_1/normalized_d6.csv",
+        "role": "y_test_file",
+        "to": null
+      }
+    ],
+    "extra_arguments": [
+      "--epochs",
+      "2",
+      "--max_steps_train",
+      "300",
+      "--max_steps_test",
+      "300",
+      "--mc_samples",
+      "2",
+      "--column_roles_migration",
+      "LEGACY_ALL_COLUMNS_ARE_FEATURES",
+      "--execution_purpose",
+      "ARCHIVAL_REPLAY_NON_AUTHORITATIVE"
+    ],
+    "schema": "predictor_execution_spec.v1"
+  },
+  "config_sha256": "60e15302a626b03e8ff1eb3a8410c1405b30878f81d6b511e285c434bc1a6529",
+  "classification": "NON_GOVERNING",
+  "campaign_sha256": "c9b60e72093e1cc30baab3e6d87125a1cd64381fdaf0f929a0b5495b7a28b3e4",
+  "campaign_receipt": {
+    "already_stored": false,
+    "campaign_sha256": "c9b60e72093e1cc30baab3e6d87125a1cd64381fdaf0f929a0b5495b7a28b3e4",
+    "classification": "NON_GOVERNING",
+    "stored": true
+  },
+  "prior_outbox_flush": {
+    "sent": 0,
+    "pending": 0,
+    "failures": {}
+  },
+  "inputs": [
+    {
+      "role": "x_train_file",
+      "resource": "phase_1/normalized_d4.csv",
+      "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+      "bytes": 247741,
+      "cached": true,
+      "source_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+      "delivery": "AS_IS",
+      "time_column": "DATE_TIME",
+      "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "availability_label": "WINDOW_END",
+      "availability_completion_lag_max": "1h",
+      "timezone_evidence": "UNKNOWN",
+      "delivery_id": "4ba79751551242ec80e143d55ac7f453",
+      "verification_state": "VERIFIED_CACHE"
+    },
+    {
+      "role": "y_train_file",
+      "resource": "phase_1/normalized_d4.csv",
+      "sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+      "bytes": 247741,
+      "cached": true,
+      "source_sha256": "6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee",
+      "delivery": "AS_IS",
+      "time_column": "DATE_TIME",
+      "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "availability_label": "WINDOW_END",
+      "availability_completion_lag_max": "1h",
+      "timezone_evidence": "UNKNOWN",
+      "delivery_id": "6e5fd88f3cb3424592c34268f106a6b0",
+      "verification_state": "VERIFIED_CACHE"
+    },
+    {
+      "role": "x_validation_file",
+      "resource": "phase_1/normalized_d5.csv",
+      "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+      "bytes": 62823,
+      "cached": true,
+      "source_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+      "delivery": "AS_IS",
+      "time_column": "DATE_TIME",
+      "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "availability_label": "WINDOW_END",
+      "availability_completion_lag_max": "1h",
+      "timezone_evidence": "UNKNOWN",
+      "delivery_id": "9c9c506246f547328db3a3aa3f7ef2cc",
+      "verification_state": "VERIFIED_CACHE"
+    },
+    {
+      "role": "y_validation_file",
+      "resource": "phase_1/normalized_d5.csv",
+      "sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+      "bytes": 62823,
+      "cached": true,
+      "source_sha256": "42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372",
+      "delivery": "AS_IS",
+      "time_column": "DATE_TIME",
+      "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "availability_label": "WINDOW_END",
+      "availability_completion_lag_max": "1h",
+      "timezone_evidence": "UNKNOWN",
+      "delivery_id": "c91ad8fc483a40e38b4e133cc569a0d1",
+      "verification_state": "VERIFIED_CACHE"
+    },
+    {
+      "role": "x_test_file",
+      "resource": "phase_1/normalized_d6.csv",
+      "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+      "bytes": 69257,
+      "cached": true,
+      "source_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+      "delivery": "AS_IS",
+      "time_column": "DATE_TIME",
+      "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "availability_label": "WINDOW_END",
+      "availability_completion_lag_max": "1h",
+      "timezone_evidence": "UNKNOWN",
+      "delivery_id": "94f16857017c4db1920cb7365f90f934",
+      "verification_state": "VERIFIED_CACHE"
+    },
+    {
+      "role": "y_test_file",
+      "resource": "phase_1/normalized_d6.csv",
+      "sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+      "bytes": 69257,
+      "cached": true,
+      "source_sha256": "439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb",
+      "delivery": "AS_IS",
+      "time_column": "DATE_TIME",
+      "availability_contract_sha256": "5a521473f80a65ef542daf628ba72ead39984eb1bdfd265294feba3c294e88c5",
+      "availability_use": "OFFLINE_DAY_GRANULAR",
+      "availability_label": "WINDOW_END",
+      "availability_completion_lag_max": "1h",
+      "timezone_evidence": "UNKNOWN",
+      "delivery_id": "303f62e73ac248e0a8f9e71523969031",
+      "verification_state": "VERIFIED_CACHE"
+    }
+  ],
+  "governed_config": "/home/harveybc/work/rr04-smoke/out/unit2/governed_config.json",
+  "command": [
+    "/home/harveybc/anaconda3/envs/trading-stack/bin/python",
+    "app/main.py",
+    "--load_config",
+    "/home/harveybc/work/rr04-smoke/out/unit2/governed_config.json",
+    "--epochs",
+    "2",
+    "--max_steps_train",
+    "300",
+    "--max_steps_test",
+    "300",
+    "--mc_samples",
+    "2",
+    "--column_roles_migration",
+    "LEGACY_ALL_COLUMNS_ARE_FEATURES",
+    "--execution_purpose",
+    "ARCHIVAL_REPLAY_NON_AUTHORITATIVE"
+  ],
+  "exit_code": 0,
+  "config_canonical": "{\"activation\":\"tanh\",\"add_multi_scale_returns\":false,\"add_window_stats\":false,\"anti_naive_lock_enabled\":true,\"column_roles_migration\":\"LEGACY_ALL_COLUMNS_ARE_FEATURES\",\"cxpb\":0.5,\"dow_encoding\":\"sincos\",\"early_patience\":100,\"eligibility_stamp\":{\"consumer\":\"predictor.main\",\"dataset_id\":\"439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb.csv\",\"eligibility_status\":\"LEGACY_NON_AUTHORITATIVE\",\"execution_purpose\":\"ARCHIVAL_REPLAY_NON_AUTHORITATIVE\",\"reason\":\"this run declared execution_purpose=ARCHIVAL_REPLAY_NON_AUTHORITATIVE; it reproduces historical work and is NOT gated evidence\",\"subjects_derived\":2},\"encoder_lstm_units\":20,\"epochs\":2,\"feature_preprocessing_strategy\":\"selective\",\"hod_encoding\":\"sincos\",\"hyperparameter_bounds\":{\"early_patience\":[10,100],\"l2_reg\":[1e-07,0.001],\"layer_size\":[16,256],\"learning_rate\":[1e-05,0.01],\"mmd_lambda\":[1e-05,0.01],\"num_layers\":[1,5],\"positional_encoding\":[0,1]},\"initial_layer_size\":78,\"intermediate_layers\":4,\"kl_anneal_epochs\":40,\"l2_reg\":2e-05,\"layer_size_divisor\":12,\"loss_plot_file\":\"phase_1_ann_1575_1d_loss_plot.png\",\"max_steps_test\":300,\"max_steps_train\":300,\"mc_samples\":2,\"min_delta\":1e-08,\"mmd_lambda\":0.001,\"model_plot_file\":\"phase_1_ann_1d_model_plot.png\",\"moy_encoding\":\"sincos\",\"multi_scale_return_periods\":[6,24,72],\"mutpb\":0.2,\"n_generations\":10,\"normalize_features\":true,\"optimization_patience\":3,\"optimizer_plugin\":\"default_optimizer\",\"output_file\":\"phase_1_ann_1575_1d_prediction.csv\",\"pipeline_plugin\":\"stl_pipeline\",\"plot_color_predicted\":\"red\",\"plot_color_target\":\"orange\",\"plot_points\":1728,\"plotted_horizon\":24,\"population_size\":20,\"predicted_horizons\":[9,12,15,18,21,24],\"predictions_plot_file\":\"phase_1_ann_1575_1d_predictions_plot.png\",\"predictor_plugin\":\"ann\",\"preprocessor_plugin\":\"stl_preprocessor\",\"results_file\":\"phase_1_ann_1575_1d_results.csv\",\"reverse_time_axis\":false,\"save_model\":\"predictor_model.keras\",\"start_from_epoch\":15,\"stl_period\":24,\"stl_plot_file\":\"phase_1_1575_1d_stl_decomposition_plot.png\",\"tapper_plot_file\":\"phase_1_1575_1d_multi_tapper_decomposition_plot.png\",\"targets_are_denormalized\":true,\"uncertainties_file\":\"phase_1_ann_1575_1d_uncertanties.csv\",\"use_ideal_predictions\":false,\"use_log1p_features\":null,\"use_log1p_targets\":false,\"use_multi_tapper\":false,\"use_normalization_json\":\"examples/data_downsampled/phase_1/normalization_config_b.json\",\"use_predicted_decompositions\":false,\"use_real_decompositions\":false,\"use_stl\":false,\"use_temporal_features\":true,\"use_wavelets\":false,\"wavelet_plot_file\":\"phase_1_1575_1d_wavelet_decomposition_plot.png\",\"window_size\":33,\"window_stats_periods\":[12,48],\"x_test_file\":\"gov:predictor_examples/phase_1/normalized_d6.csv@439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb\",\"x_train_file\":\"gov:predictor_examples/phase_1/normalized_d4.csv@6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee\",\"x_validation_file\":\"gov:predictor_examples/phase_1/normalized_d5.csv@42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372\",\"y_test_file\":\"gov:predictor_examples/phase_1/normalized_d6.csv@439fdd1b2611806983364ef447210109fb055852acc67dd6ea1f2459f7fc25cb\",\"y_train_file\":\"gov:predictor_examples/phase_1/normalized_d4.csv@6412c3cdc42942be2a4de5ba893682a33cfe63613f63ab94571a1ead523c18ee\",\"y_validation_file\":\"gov:predictor_examples/phase_1/normalized_d5.csv@42181b0e995d733642bbcb3ffd30eeae7ef912bea29dee1b3fb8573ef9ab7372\"}",
+  "effective_config_sha256": "aab40ab9b0af91ff856da7a6db9ca71cab9d5ceb516c72ca8e2dad64cdca5b01",
+  "terminal_outbox": "/home/harveybc/.local/state/data-gov/terminal-outbox/pending/48c929cc3e1038a376d6d23dd8c986c8059bbbe529c6060a3220e68b5385afcd.json",
+  "terminal": {
+    "schema": "governed_terminal.v1",
+    "generation": 1,
+    "status": "COMPLETED",
+    "reason": null,
+    "started_at": "2026-09-27T01:53:01.413809Z",
+    "finished_at": "2026-09-27T01:53:11.556716Z",
+    "costs": {
+      "wall_seconds": 10.142911023984198
+    },
+    "deliveries": [
+      "4ba79751551242ec80e143d55ac7f453",
+      "6e5fd88f3cb3424592c34268f106a6b0",
+      "9c9c506246f547328db3a3aa3f7ef2cc",
+      "c91ad8fc483a40e38b4e133cc569a0d1",
+      "94f16857017c4db1920cb7365f90f934",
+      "303f62e73ac248e0a8f9e71523969031"
+    ],
+    "artifacts": [
+      {
+        "role": "governed_config",
+        "sha256": "58ace33b7a8bd54ada50e99a264b5ed3e3e3c9c751ddaf5f7c8f9e6b9090e0f2",
+        "bytes": 3400
+      },
+      {
+        "role": "effective_config",
+        "sha256": "d63e9f68eab2e5f64f3b99046f400626dd8f3fee2c386e384763a6a899d70304",
+        "bytes": 5020
+      },
+      {
+        "role": "results",
+        "sha256": "26bedc123b6d34121b649d21aa6ddf6c7c437411e9f9063e667b32330c2ab0d8",
+        "bytes": 5173
+      },
+      {
+        "role": "predictions",
+        "sha256": "ed0583b68fc40f3def0474440efa05bbcd6343c792443b351fa39cc00a9520cd",
+        "bytes": 36934
+      },
+      {
+        "role": "uncertainties",
+        "sha256": "bcf8c7ef7bf3126a1d0f0dc2f34f4526721c651bfafc20ea1ef2566a0fe92181",
+        "bytes": 19310
+      },
+      {
+        "role": "model",
+        "sha256": "6a8115ec4d09c3d38bf13be7ec385ae90ac9f2c1c689e38227aa7b379b045fe9",
+        "bytes": 4057237
+      }
+    ],
+    "metrics": [
+      {
+        "metric": "MAE",
+        "value": 2.805775,
+        "split": "train",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": 2.805775,
+        "max_value": 2.805775,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.59374,
+        "split": "train",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": 2.59374,
+        "max_value": 2.59374,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.650561,
+        "split": "train",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": 2.650561,
+        "max_value": 2.650561,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.576582,
+        "split": "train",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": 2.576582,
+        "max_value": 2.576582,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.790392,
+        "split": "train",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": 2.790392,
+        "max_value": 2.790392,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.156338,
+        "split": "train",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": 2.156338,
+        "max_value": 2.156338,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.006902,
+        "split": "train",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": 0.006902,
+        "max_value": 0.006902,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.008297,
+        "split": "train",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": 0.008297,
+        "max_value": 0.008297,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.009282,
+        "split": "train",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": 0.009282,
+        "max_value": 0.009282,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.010487,
+        "split": "train",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": 0.010487,
+        "max_value": 0.010487,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.011827,
+        "split": "train",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": 0.011827,
+        "max_value": 0.011827,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.013021,
+        "split": "train",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": 0.013021,
+        "max_value": 0.013021,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -37981.519531,
+        "split": "train",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": -37981.519531,
+        "max_value": -37981.519531,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -34523.691406,
+        "split": "train",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": -34523.691406,
+        "max_value": -34523.691406,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -33314.90625,
+        "split": "train",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": -33314.90625,
+        "max_value": -33314.90625,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -29106.751953,
+        "split": "train",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": -29106.751953,
+        "max_value": -29106.751953,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -33247.335938,
+        "split": "train",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": -33247.335938,
+        "max_value": -33247.335938,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -19081.861328,
+        "split": "train",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": -19081.861328,
+        "max_value": -19081.861328,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.608674,
+        "split": "train",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": 3.608674,
+        "max_value": 3.608674,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.79228,
+        "split": "train",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": 3.79228,
+        "max_value": 3.79228,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.851363,
+        "split": "train",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": 3.851363,
+        "max_value": 3.851363,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.599424,
+        "split": "train",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": 3.599424,
+        "max_value": 3.599424,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 4.124856,
+        "split": "train",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": 4.124856,
+        "max_value": 4.124856,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.201554,
+        "split": "train",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": 3.201554,
+        "max_value": 3.201554,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": 0.010617,
+        "split": "train",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": 0.010617,
+        "max_value": 0.010617,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": 0.113441,
+        "split": "train",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": 0.113441,
+        "max_value": 0.113441,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": 0.126907,
+        "split": "train",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": 0.126907,
+        "max_value": 0.126907,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": 0.026747,
+        "split": "train",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": 0.026747,
+        "max_value": 0.026747,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": 0.219324,
+        "split": "train",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": 0.219324,
+        "max_value": 0.219324,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": 0.199087,
+        "split": "train",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": 0.199087,
+        "max_value": 0.199087,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.642495,
+        "split": "validation",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": 2.642495,
+        "max_value": 2.642495,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.813376,
+        "split": "validation",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": 2.813376,
+        "max_value": 2.813376,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.597245,
+        "split": "validation",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": 2.597245,
+        "max_value": 2.597245,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.612341,
+        "split": "validation",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": 2.612341,
+        "max_value": 2.612341,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.789415,
+        "split": "validation",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": 2.789415,
+        "max_value": 2.789415,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.672734,
+        "split": "validation",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": 2.672734,
+        "max_value": 2.672734,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.005627,
+        "split": "validation",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": 0.005627,
+        "max_value": 0.005627,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.006584,
+        "split": "validation",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": 0.006584,
+        "max_value": 0.006584,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.007358,
+        "split": "validation",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": 0.007358,
+        "max_value": 0.007358,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.008024,
+        "split": "validation",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": 0.008024,
+        "max_value": 0.008024,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.008564,
+        "split": "validation",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": 0.008564,
+        "max_value": 0.008564,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.009091,
+        "split": "validation",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": 0.009091,
+        "max_value": 0.009091,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -10209.277344,
+        "split": "validation",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": -10209.277344,
+        "max_value": -10209.277344,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -11510.805664,
+        "split": "validation",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": -11510.805664,
+        "max_value": -11510.805664,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -10245.478516,
+        "split": "validation",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": -10245.478516,
+        "max_value": -10245.478516,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -9824.738281,
+        "split": "validation",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": -9824.738281,
+        "max_value": -9824.738281,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -11548.349609,
+        "split": "validation",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": -11548.349609,
+        "max_value": -11548.349609,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -10517.051758,
+        "split": "validation",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": -10517.051758,
+        "max_value": -10517.051758,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.509453,
+        "split": "validation",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": 3.509453,
+        "max_value": 3.509453,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.755686,
+        "split": "validation",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": 3.755686,
+        "max_value": 3.755686,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.49232,
+        "split": "validation",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": 3.49232,
+        "max_value": 3.49232,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.523995,
+        "split": "validation",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": 3.523995,
+        "max_value": 3.523995,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.487554,
+        "split": "validation",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": 3.487554,
+        "max_value": 3.487554,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.646259,
+        "split": "validation",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": 3.646259,
+        "max_value": 3.646259,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": 0.014017,
+        "split": "validation",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": 0.014017,
+        "max_value": 0.014017,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": 0.024532,
+        "split": "validation",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": 0.024532,
+        "max_value": 0.024532,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": 0.010981,
+        "split": "validation",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": 0.010981,
+        "max_value": 0.010981,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": -0.006907,
+        "split": "validation",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": -0.006907,
+        "max_value": -0.006907,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": 0.012167,
+        "split": "validation",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": 0.012167,
+        "max_value": 0.012167,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": 0.028042,
+        "split": "validation",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": 0.028042,
+        "max_value": 0.028042,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.62221,
+        "split": "test",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": 2.62221,
+        "max_value": 2.62221,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.83471,
+        "split": "test",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": 2.83471,
+        "max_value": 2.83471,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.838075,
+        "split": "test",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": 2.838075,
+        "max_value": 2.838075,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.8179,
+        "split": "test",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": 2.8179,
+        "max_value": 2.8179,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 2.878128,
+        "split": "test",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": 2.878128,
+        "max_value": 2.878128,
+        "unit": null
+      },
+      {
+        "metric": "MAE",
+        "value": 3.009466,
+        "split": "test",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": 3.009466,
+        "max_value": 3.009466,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.004253,
+        "split": "test",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": 0.004253,
+        "max_value": 0.004253,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.004877,
+        "split": "test",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": 0.004877,
+        "max_value": 0.004877,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.0054,
+        "split": "test",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": 0.0054,
+        "max_value": 0.0054,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.00589,
+        "split": "test",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": 0.00589,
+        "max_value": 0.00589,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.006355,
+        "split": "test",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": 0.006355,
+        "max_value": 0.006355,
+        "unit": null
+      },
+      {
+        "metric": "Naive_MAE",
+        "value": 0.006873,
+        "split": "test",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": 0.006873,
+        "max_value": 0.006873,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -215076.515625,
+        "split": "test",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": -215076.515625,
+        "max_value": -215076.515625,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -235815.328125,
+        "split": "test",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": -235815.328125,
+        "max_value": -235815.328125,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -240223.296875,
+        "split": "test",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": -240223.296875,
+        "max_value": -240223.296875,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -227141.28125,
+        "split": "test",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": -227141.28125,
+        "max_value": -227141.28125,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -238848.46875,
+        "split": "test",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": -238848.46875,
+        "max_value": -238848.46875,
+        "unit": null
+      },
+      {
+        "metric": "R2",
+        "value": -263685.46875,
+        "split": "test",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": -263685.46875,
+        "max_value": -263685.46875,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.906886,
+        "split": "test",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": 3.906886,
+        "max_value": 3.906886,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.659984,
+        "split": "test",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": 3.659984,
+        "max_value": 3.659984,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.652338,
+        "split": "test",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": 3.652338,
+        "max_value": 3.652338,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.535849,
+        "split": "test",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": 3.535849,
+        "max_value": 3.535849,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.90244,
+        "split": "test",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": 3.90244,
+        "max_value": 3.90244,
+        "unit": null
+      },
+      {
+        "metric": "Uncertainty",
+        "value": 3.813196,
+        "split": "test",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": 3.813196,
+        "max_value": 3.813196,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": 0.062572,
+        "split": "test",
+        "horizon": 9,
+        "std_dev": 0.0,
+        "min_value": 0.062572,
+        "max_value": 0.062572,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": -0.066007,
+        "split": "test",
+        "horizon": 12,
+        "std_dev": 0.0,
+        "min_value": -0.066007,
+        "max_value": -0.066007,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": -0.052527,
+        "split": "test",
+        "horizon": 15,
+        "std_dev": 0.0,
+        "min_value": -0.052527,
+        "max_value": -0.052527,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": -0.037404,
+        "split": "test",
+        "horizon": 18,
+        "std_dev": 0.0,
+        "min_value": -0.037404,
+        "max_value": -0.037404,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": -0.066849,
+        "split": "test",
+        "horizon": 21,
+        "std_dev": 0.0,
+        "min_value": -0.066849,
+        "max_value": -0.066849,
+        "unit": null
+      },
+      {
+        "metric": "SNR",
+        "value": -0.090786,
+        "split": "test",
+        "horizon": 24,
+        "std_dev": 0.0,
+        "min_value": -0.090786,
+        "max_value": -0.090786,
+        "unit": null
+      }
+    ],
+    "tags": {
+      "phase": "phase_1_daily",
+      "experiment_set_key": "",
+      "plugin": "ann",
+      "exit_code": "0",
+      "availability_use": "OFFLINE_DAY_GRANULAR"
+    }
+  },
+  "outbox_flush": {
+    "sent": 1,
+    "pending": 0,
+    "failures": {}
+  },
+  "reconciliation": {
+    "accounting_only": [],
+    "campaign_sha256": "c9b60e72093e1cc30baab3e6d87125a1cd64381fdaf0f929a0b5495b7a28b3e4",
+    "lake_only": [],
+    "missing_units": []
+  },
+  "terminal_pending": false
+}
