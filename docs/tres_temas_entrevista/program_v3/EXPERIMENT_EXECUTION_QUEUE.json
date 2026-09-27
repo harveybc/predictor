@@ -1,6 +1,6 @@
 {
  "schema": "research_dispatch_index.v2",
- "updated_on": "2026-09-26",
+ "updated_on": "2026-09-26 (RR03/RR06 reconciliation; the DR02 index of the same day is updated in place, not replaced)",
  "dispatcher": "Satoshi III (Mujuro Utsutsu), successor technical lead",
  "supersedes": "research_execution_queue.v1 at this same path: one RP135-shaped campaign document with other lanes appended around it, whose cell list a reader could mistake for a live queue. That document is preserved verbatim under `history.superseded_queue_v1`",
  "what_this_is": "ONE row per lane, current, so that no one has to infer state from prose. Every row carries a commit, an artifact or receipt, an observed state with the date it was observed, the REAL dependency, the next eligible work, the resource, the remaining cost and the lease. Dependencies are derived from artifacts; where a row's dependency could not be established from artifacts the row says so in those words rather than guessing",
@@ -19,7 +19,10 @@
   "a_correction_in_one_family_does_not_hold_the_others": "the two maps are linked and kept distinct. A defect found in one M5PHET family is a row in that family and nowhere else, and no framework adapter completing confirms any scientific hypothesis",
   "heavy_coordinator_work": "HELD until DR01's shared admission reservation exists; admitted worker and application work continues",
   "M4_CONFIRMATION": "NOT AUTHORIZED. No unit may be fitted",
-  "real_capital": "NOT AUTHORIZED anywhere in this index; no mutating broker call is ordered by it"
+  "real_capital": "NOT AUTHORIZED anywhere in this index; no mutating broker call is ordered by it",
+  "an_update_preserves_what_it_supersedes": "this file was updated under RR03, not rewritten. Every row whose state moved carries its previous observed_state and observed_at unchanged in observation_history. If a row's history is empty, its observation did not move today.",
+  "units_live_in_this_file": "every number quoted in a row carries its unit and, where the number is derived, the transformation that produced it. See metrics_units_and_source_transformations. A bare number in a row is a defect in this file.",
+  "an_active_service_is_not_a_result": "evidence that a service is running is evidence about a process, never about a model decision or a fill. restarted_services_20260926 records identity and posture only."
  },
  "maps": {
   "note": "two maps, linked by the rows that appear in both, never merged into one ranking",
@@ -66,7 +69,9 @@
   "next_eligible_work",
   "resource",
   "remaining_cost",
-  "lease"
+  "lease",
+  "observation_history  -- every superseded observation, verbatim, WITH the date it was observed. An update never deletes what was seen; it demotes it",
+  "rr03_correction      -- which RR03 bullet moved this row, in the row itself, so no reader has to diff two files to learn that a state changed"
  ],
  "dependency_corrections_20260926": [
   {
@@ -77,7 +82,7 @@
   {
    "correction": "the two absent reviews no longer block four modules; one module is unblocked",
    "where_it_landed": "lanes H-CORE and FIN-LOSS-OPT/E3, and the df_e1_seal consumer",
-   "authority": "SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 \u00a79 under the owner's grant: MOD-FROZEN-PREFIX UNBLOCKED, the other three blocked by their OWN prerequisites. Enabling implementation is not accepting delivery: the materialized prefix output is still owed"
+   "authority": "SATOSHI_RP49_RP56_DISPOSITION_2026_09_26 §9 under the owner's grant: MOD-FROZEN-PREFIX UNBLOCKED, the other three blocked by their OWN prerequisites. Enabling implementation is not accepting delivery: the materialized prefix output is still owed"
   },
   {
    "correction": "the scrambled-label difference is withdrawn as a resolution floor",
@@ -124,80 +129,158 @@
  ],
  "lanes": [
   {
+   "lane": "ADMISSION",
+   "title": "Shared memory admission: the atomic gate (DR01) and its follow-on deployment",
+   "map": "ENABLING: it belongs to neither map's science. It is the resource gate both maps pass through, and it is the named blocker of six E1-Q2-CONTEXT units",
+   "added_beyond_the_ordered_ten": "RR03 requires this lane's state to be recorded and the eleven-row index had NO row for it, while RR01's own per-lane manifest carries two. One row is added rather than two, so that the file's one-row-per-lane rule still holds. This is an update of the existing index, NOT a second scheduler.",
+   "commit": "ee30935a (satoshi/dr01-atomic-admission-20260926, the atomic gate) · f66ee25d (satoshi/dr01-followon-deploy-20260926, the follow-on)",
+   "artifact_or_receipt": "the PRE/POST proof and incident register at ee30935a with 30 tests; the follow-on's own return document at f66ee25d (five commits, clean tree); ~/.local/state/crispdm/admission/{ledger.jsonl,leases/}; docs/audits/work_plan/SATOSHI_RR01_RESTART_MANIFEST_2026_09_26.md and docs/audits/evidence/RR01_RESTART_20260926/INTERRUPTED_ATTEMPTS.json at 0ee09998",
+   "observed_state": "IMPLEMENTED; OPERATIONAL RECOVERY STILL BEING CHECKED; NOT VERIFIED. The gate is deployed and closes double admission AT ENTRY: $HOME/.local/bin/crispdm-run takes one exclusive reservation covering the reading, the decision and the write, and holds it for the whole process tree. The follow-on at f66ee25d deployed the launcher to both worker roles with remote dispatch proven to reserve, four of the eight fit runners refusing a bare invocation and the other four deferred with the pinning seal named. ITS TWO PYTEST SELECTIONS ARE NOT PASSED: both verification attempts ended at 16:27:49 local when the session died, their pipes did not survive, and they are INTERRUPTED_RESULT_NOT_RETAINED -- 1,997.051 CPU s over 1,477.71 s wall, spent and not recovered, not re-budgeted and not reset. What the day also established is the gate's limit: admission is an entry gate with no monitor after it, so the two already-admitted scopes ran to the end while the desktop was killed. Post-reboot the ledger shows 2 leases reclaimed LEASE_RECLAIMED_WITNESS_DEAD and 0 held; today's own three rr0306 admissions were each admitted at 2 GiB and released within seconds, and no lease is held now.",
+   "observed_at": "2026-09-27T01:49:57Z (ledger, own admissions released) / 2026-09-26T16:27:49Z (the two interrupted attempts) / 0ee09998 (manifest)",
+   "real_dependency": "NONE EXTERNAL. Three pieces of its own work: a monitor AFTER admission with hysteresis over a window derived from retained observations; boot identity plus process start identity inside the lease; and lease bodies preserved when reclaimed, because the store currently deletes the body and keeps only a ledger line. Plus an admitted host that is not the coordinator for the two interrupted selections.",
+   "dependency_derivation": "read from the admission ledger and the reclaim behaviour observed at this boot, and from the follow-on's own residual sentence -- not from either return's summary.",
+   "next_eligible_work": "1. Re-run ONLY the two interrupted pytest selections, in bounded sequential shards, ON AN ADMITTED WORKER, retaining exit code, revision, selection and resources -- this is what 'operational recovery' means here and until it lands the follow-on is NOT VERIFIED. 2. The monitor, the lease identity fields and the lease-body retention, validated on simulated /proc and clocks, NEVER by exhausting the owner's desktop.",
+   "resource": "CPU only. The two selections go to an admitted worker, not to the coordinator, which lost the owner's browser and editor once today.",
+   "remaining_cost": "1,997.051 CPU s over 1,477.71 s wall already spent on the two interrupted attempts and NOT recovered. No new allocation is taken and none is reset because a process died. The re-run's own cost is not yet measured because it has not run.",
+   "lease": "none held. 2 leases were reclaimed at this boot as LEASE_RECLAIMED_WITNESS_DEAD; 0 held unrealised bytes.",
+   "rr03_correction": "RR03 (post-reboot orders 2026-09-26, 0d6f6f7e): THE ADMISSION FOLLOW-ON IS IMPLEMENTED AND ITS OPERATIONAL RECOVERY IS STILL BEING CHECKED. IT IS NOT MARKED VERIFIED, and the two interrupted selections are INTERRUPTED_RESULT_NOT_RETAINED, not PASSED. Published focused results from other commands stay scoped to their own command and revision."
+  },
+  {
    "lane": "A/B",
    "title": "SOTA-REPRO protocols A and B, published-recipe ECL L512 reference",
    "map": "DOCTORAL_AND_BUSINESS",
-   "commit": "A: e36c1c6d (composition) \u00b7 B: 07140d03 (closure tool); both carried in predictor master 941eb5b3",
+   "commit": "A: e36c1c6d (composition) · B: 07140d03 (closure tool); both carried in predictor master 941eb5b3",
    "artifact_or_receipt": "docs/audits/evidence/d3_k5_20260917/RP144/EVIDENCE_COMPOSITION.1790220949.json and COMPOSED_TABLE.1790220949.json; docs/audits/evidence/d3_k5_20260917/RP145/CLOSURE_RECONCILIATION.md, SOTA_TABLE.L512.json",
-   "observed_state": "CLOSED. A: 12 cells composed, all twelve with a bound exact replay, with_measured_same_device_replay EMPTY and device attribution UNKNOWN by name; four-horizon mean MSE 0.161962 / MAE 0.259662. B: 12/12 VERIFIED, every replay bit-exact (max_abs_prediction_difference 0.0), four-horizon mean MSE 0.150307 / MAE 0.246397, per-horizon OPERATIONAL_AGREEMENT under the predeclared band",
-   "observed_at": "2026-09-24T03:35:45Z (A) / 2026-09-24T03:57:43Z (B), closure narrative same day",
+   "observed_state": "CLOSED, AND RE-CONFIRMED CLOSED AFTER THE REBOOT. No new measurement. The 2026-09-24 numbers below in observation_history are unchanged and are the governing ones. Re-read today: no crispdm scope, no crispdm-batch.slice cgroup, no rp135 or ECL unit, no df_* process, and zero admission leases held. A: 12 cells composed, four-horizon mean MSE 0.161962 and MAE 0.259662 in the panel's own normalized units, with_measured_same_device_replay EMPTY and device attribution UNKNOWN by name. B: 12/12 VERIFIED, every replay bit-exact, four-horizon mean MSE 0.150307 / MAE 0.246397.",
+   "observed_at": "2026-09-27T01:52Z (re-read of the live host; the closure observations of 2026-09-24 stand unchanged)",
    "real_dependency": "NONE OUTSTANDING FOR THIS LANE. Its only open item is other people's reading of a finished artifact",
    "dependency_derivation": "derived from the two evidence files: reconciliation complete, problems [], no cell in a QUEUED or RUNNING state anywhere in them",
    "next_eligible_work": "NOTHING TO DISPATCH. Independent review of the retained closure, and nothing else. DO NOT REACTIVATE: the twelve-cell fit queue finished, its service is inactive, and the cell-by-cell snapshot below in `history` is a 2026-09-23 photograph, not a queue",
    "resource": "none",
    "remaining_cost": "16,167 of the 24,000 CPU s continuation allocation consumed (14,011 fits + 2,156 closure). Remainder is NOT a licence to spend",
-   "lease": "none held; crispdm-rp135-continuation-20260923.service observed inactive on 2026-09-24"
+   "lease": "none held; crispdm-rp135-continuation-20260923.service observed inactive on 2026-09-24",
+   "observation_history": [
+    {
+     "observed_state": "CLOSED. A: 12 cells composed, all twelve with a bound exact replay, with_measured_same_device_replay EMPTY and device attribution UNKNOWN by name; four-horizon mean MSE 0.161962 / MAE 0.259662. B: 12/12 VERIFIED, every replay bit-exact (max_abs_prediction_difference 0.0), four-horizon mean MSE 0.150307 / MAE 0.246397, per-horizon OPERATIONAL_AGREEMENT under the predeclared band",
+     "observed_at": "2026-09-24T03:35:45Z (A) / 2026-09-24T03:57:43Z (B), closure narrative same day",
+     "recorded_in": "research_dispatch_index.v2 at b790cd12 (DR02, 2026-09-26)",
+     "superseded_by": "the RR03 reconciliation of 2026-09-26; this text is preserved unchanged and is not a live row"
+    }
+   ],
+   "rr03_correction": "RR03 (post-reboot orders 2026-09-26, 0d6f6f7e): A/B STAYS CLOSED. Re-observation is not reactivation and creates no dispatchable work. This lane belongs to the DOCTORAL_AND_BUSINESS map only; nothing in the M5PHET product map depends on it."
   },
   {
    "lane": "R0/R1/R2-ECL",
    "title": "Modular learning-regime development contrast on the ECL panel",
    "map": "DOCTORAL_AND_BUSINESS",
    "commit": "69739b11 (offline closure) on satoshi/musashi-audit-request-20260926, ancestor of master 941eb5b3",
-   "artifact_or_receipt": "docs/audits/evidence/RP159_CLOSURE_20260925/RP159_CLOSURE.json (df_ecl_modular_closure_publication.v1); inputs bound by digest: RP155/CONTRAST.json ddb53331\u2026, RP159/DESIGN.json a265bb6d\u2026, RP158_SCORING.json 3802ca82\u2026",
-   "observed_state": "COMPLETE, 9 of 9 cells scored, identity_failures [], problems []. Label-disjoint population 1,802 windows: R0 0.371174, R1 0.374584, R2 0.368596 mean MAE kW against a matched persistence 0.868283. Closure cost 0.002 CPU s, 0 model replays, 0 processes started; metric values SELF_REPORTED_BY_THE_CHILD_RECORDS by its own authority block",
-   "observed_at": "2026-09-26T01:28:52Z",
+   "artifact_or_receipt": "docs/audits/evidence/RP159_CLOSURE_20260925/RP159_CLOSURE.json (df_ecl_modular_closure_publication.v1); inputs bound by digest: RP155/CONTRAST.json ddb53331…, RP159/DESIGN.json a265bb6d…, RP158_SCORING.json 3802ca82…",
+   "observed_state": "CLOSED AND STAYS CLOSED. COMPLETE, 9 of 9 cells scored, identity_failures [], problems []. Label-disjoint population 1,802 windows; mean MAE in kW on the ECL panel: R0 0.371174, R1 0.374584, R2 0.368596, against a matched persistence of 0.868283 kW on the same rows. Metric custody remains SELF_REPORTED_BY_THE_CHILD_RECORDS by the closure's own authority block. Re-read today: no live process, no lease.",
+   "observed_at": "2026-09-27T01:52Z (re-read of the live host; the closure of 2026-09-26T01:28:52Z stands unchanged)",
    "real_dependency": "NONE. This is the contrast the orders name as already finished. Its remaining honesty limits are stated inside the closure and are not dependencies: metric custody is the children's, and population is authenticated from the run record",
    "dependency_derivation": "derived from RP159_CLOSURE.json: status COMPLETE, cells_expected == cells_scored == 9",
    "next_eligible_work": "NOTHING TO DISPATCH. DO NOT REACTIVATE THE CONTRAST THAT ALREADY FINISHED. Eligible only: independent review, and the separate metric-custody question, which is a governance item and not a refit",
    "resource": "none",
    "remaining_cost": "the fits' own cost stands unchanged in RP155/CONTRAST.json; the closure spent 0.002 CPU s",
-   "lease": "run root ~/.local/state/crispdm-data-foundation/ecl-modular-closure-20260925; no live process"
+   "lease": "run root ~/.local/state/crispdm-data-foundation/ecl-modular-closure-20260925; no live process",
+   "observation_history": [
+    {
+     "observed_state": "COMPLETE, 9 of 9 cells scored, identity_failures [], problems []. Label-disjoint population 1,802 windows: R0 0.371174, R1 0.374584, R2 0.368596 mean MAE kW against a matched persistence 0.868283. Closure cost 0.002 CPU s, 0 model replays, 0 processes started; metric values SELF_REPORTED_BY_THE_CHILD_RECORDS by its own authority block",
+     "observed_at": "2026-09-26T01:28:52Z",
+     "recorded_in": "research_dispatch_index.v2 at b790cd12 (DR02, 2026-09-26)",
+     "superseded_by": "the RR03 reconciliation of 2026-09-26; this text is preserved unchanged and is not a live row"
+    }
+   ],
+   "rr03_correction": "RR03 (post-reboot orders 2026-09-26, 0d6f6f7e): R0/R1/R2-ECL STAYS CLOSED. The metric-custody limit is a governance item, not a refit, and this contrast is NOT the doctoral MOD-CORE-PRETRAIN contrast measured on the household panel -- the two use different panels and different units and must never be pooled."
   },
   {
    "lane": "E1-Q2-CONTEXT",
    "title": "E1 household context separation, Q2_CONTEXT and Q2_CONTEXT_DEEP",
    "map": "DOCTORAL_AND_BUSINESS",
    "added_beyond_the_ordered_ten": "DR02 names ten lanes; this eleventh row exists because it holds the only live compute in the programme and because it is the seal's one UNMET measurement condition. Leaving it out would have hidden a running job",
-   "commit": "7d2b1c83 and c74f910b (Q2_CONTEXT v1, defect repairs) \u00b7 b1a13928, 82c633e8, 91ad13a5 (Q2_CONTEXT_DEEP seal, memory gate, asymmetric reading) on satoshi/e1-seal-q2-context-20260926, satoshi/defect-repairs-and-fred-20260926 and satoshi/q2-context-deep-arms-20260926",
+   "commit": "7d2b1c83 and c74f910b (Q2_CONTEXT v1, defect repairs) · b1a13928, 82c633e8, 91ad13a5 (Q2_CONTEXT_DEEP seal, memory gate, asymmetric reading) on satoshi/e1-seal-q2-context-20260926, satoshi/defect-repairs-and-fred-20260926 and satoshi/q2-context-deep-arms-20260926",
    "artifact_or_receipt": "run root ~/.local/state/crispdm-data-foundation/e1_block_q2_context_deep_v1/ : DESIGN.json, EXTENSION_SEAL.json, BLOCK_DATA.json, MEMORY_GATE.jsonl, UNGOVERNED_RUN.json, attempts/<unit>/{cell.json,arrays.npz,weights.weights.h5}; ASYMMETRIC_READING.json at 91ad13a5; REPORT.json, REPLAYS.json, UNANCHORED_MEASUREMENT_TABLE.json and the closing step of UNGOVERNED_RUN.json, all written 2026-09-26 14:31-14:33 local",
-   "observed_state": "CLOSED AT ITS OWN BOUNDARY, TWELVE OF EIGHTEEN UNITS IN EXISTENCE, NO LIVE COMPUTE. DESIGN.json declares six arms at three seeds. Twelve cells exist with arrays and weights: modular_w60, daily_lag, long_window_crop60 and short_window_deep_core. The two W1440 full-depth arms -- long_window_local_support_67 and long_window_own_depth -- have NO cell and no attempt directory: six units were never admitted. The memory gate held long_window_own_depth_s1 for 1440 s at attempt1, opened attempt2 at 19:28:06Z and the run then ended; every gate line carries fits_measured_peak_plus_margin true beside crispdm_run_would_accept_the_cap FALSE, against required_bytes 9,532,141,568. The block's own closure then REFUSED at 19:31:55Z: verified false, 'closure FAILED: no verified comparator, no selected arm and no scientific proposal are emitted', because all eighteen registered units have NO accepted terminal receipt -- the NON_GOVERNING consequence the runner declares, not a numerical failure. disposition HISTORICAL_DEV_ONLY, 522.833 CPU s, 12 rows, custody UNCHECKED on every row. This is DR01's 'close each attempt at its normal boundary and record the failure', done.",
-   "observed_at": "2026-09-26T19:31:55Z (closure refusal); gate 19:28:06Z; cells 13:53-13:59 local",
+   "observed_state": "TWO GENERATIONS, AND THEY ARE NOT INTERCHANGEABLE. (1) Q2_CONTEXT v1 is HISTORICAL: 12 fits, 1,012.7 CPU s, retained for the record only, not relaunched and not a source of authority. (2) Q2_CONTEXT_DEEP is the SEALED SUCCESSOR and AS A GOVERNING MEASUREMENT IT IS NOT EXECUTED. Its EXTENSION_SEAL.json declares six arms at three seeds = 18 units. What exists on disk is twelve attempt directories from an UNGOVERNED run (UNGOVERNED_RUN.json), 0 of them verified, in an UNANCHORED_MEASUREMENT_TABLE, and the block's own closure REFUSED because no unit holds an accepted terminal receipt. The two W1440 full-depth arms -- long_window_local_support_67 and long_window_own_depth -- have no cell and no attempt directory: six units were never admitted. No live compute.",
+   "observed_at": "2026-09-26T19:31:55Z (closure refusal, unchanged) / reconciled against the order 2026-09-27T01:52Z",
    "real_dependency": "TWO, AND THEY ARE DIFFERENT THINGS. (1) For the six missing W1440 units: the shared admission guard itself. Derivation is the gate's own log -- the request fits MemAvailable plus margin and crispdm-run would still refuse the cap -- so the blocker is DR01's atomic per-host reservation, not data, design or budget. The alternative that removes the dependency without repairing it is an admitted host that is not the coordinator. (2) For any of the twelve existing cells to count as governed: a data-gov service key, hence an accepted terminal receipt. The concrete reference EXISTS and is named rather than waited on: data-gov scripts/issue_service_key.py at d07695b issues one principal's key with data-gov's own hashing implementation, writing the plaintext to a key file at mode 600 and never into a checkout. Until a key is issued and the delivery-to-terminal path is smoked, every measurement in this lane stays NON_GOVERNING by construction, which is what the runner says of itself",
    "dependency_derivation": "read out of MEMORY_GATE.jsonl, not from any document: the same line carries fits_measured_peak_plus_margin true and crispdm_run_would_accept_the_cap false",
-   "next_eligible_work": "1. DR01's atomic reservation -- CPU-only code and tests against a simulated clock. The six missing units are ITS dependents, not the other way round; 2. resolve identity and client through the documented reference above and smoke delivery -> reader -> terminal -> warehouse on one small mechanical unit BEFORE any further scientific fit; 3. nothing else belongs here: ASYMMETRIC_READING.json already fixed the reading in advance, and a long-context arm that lands worse is CONFOUNDED_WITH_BUDGET and identifies nothing. Do not relaunch the W1440 arms into the same refusal",
-   "resource": "2 000-4 000 updates per cell at 4.165 CPU s per update, 15-30 h wall for the six W1440 cells at a 7.4 GiB resident set \u2014 declared in ASYMMETRIC_READING.json from measurement, not estimate",
+   "next_eligible_work": "UNCHANGED IN SUBSTANCE, RESTATED: 1. DR01's post-admission monitoring and atomic reservation -- CPU-only code and tests against a simulated clock; the six missing W1440 units are ITS dependents. 2. Resolve the runner identity and the data-gov service key through the documented reference, then prove delivery -> consumed bytes -> terminal -> live warehouse on ONE small bounded mechanical unit BEFORE any further scientific fit. 3. Only then reconcile the successor v2 against the new runner identity, the actual full-process memory and the residual budget; a changed scientific dimension needs an explicitly justified successor, declared before scores. NOT ELIGIBLE: relabelling the twelve existing cells, relaunching v1, relaunching the refused W1440 attempt.",
+   "resource": "2 000-4 000 updates per cell at 4.165 CPU s per update, 15-30 h wall for the six W1440 cells at a 7.4 GiB resident set — declared in ASYMMETRIC_READING.json from measurement, not estimate",
    "remaining_cost": "Q2_CONTEXT v1 spent 1,012.7 CPU s for 12 fits; Q2_CONTEXT_DEEP spent 522.833 CPU s and produced 12 of 18 units. The six W1440 units have no approved allocation, and their measured price is in `resource`. DR01 holds new heavy coordinator work",
-   "lease": "NONE HELD. The gated child of tools/df_memory_gated_run.py --name q2deep ended at its own boundary; no df_memory_gated_run or df_e1_block process is alive, verified after the closure was written. Owner of the closed attempt: Satoshi"
+   "lease": "NONE HELD. The gated child of tools/df_memory_gated_run.py --name q2deep ended at its own boundary; no df_memory_gated_run or df_e1_block process is alive, verified after the closure was written. Owner of the closed attempt: Satoshi",
+   "observation_history": [
+    {
+     "observed_state": "CLOSED AT ITS OWN BOUNDARY, TWELVE OF EIGHTEEN UNITS IN EXISTENCE, NO LIVE COMPUTE. DESIGN.json declares six arms at three seeds. Twelve cells exist with arrays and weights: modular_w60, daily_lag, long_window_crop60 and short_window_deep_core. The two W1440 full-depth arms -- long_window_local_support_67 and long_window_own_depth -- have NO cell and no attempt directory: six units were never admitted. The memory gate held long_window_own_depth_s1 for 1440 s at attempt1, opened attempt2 at 19:28:06Z and the run then ended; every gate line carries fits_measured_peak_plus_margin true beside crispdm_run_would_accept_the_cap FALSE, against required_bytes 9,532,141,568. The block's own closure then REFUSED at 19:31:55Z: verified false, 'closure FAILED: no verified comparator, no selected arm and no scientific proposal are emitted', because all eighteen registered units have NO accepted terminal receipt -- the NON_GOVERNING consequence the runner declares, not a numerical failure. disposition HISTORICAL_DEV_ONLY, 522.833 CPU s, 12 rows, custody UNCHECKED on every row. This is DR01's 'close each attempt at its normal boundary and record the failure', done.",
+     "observed_at": "2026-09-26T19:31:55Z (closure refusal); gate 19:28:06Z; cells 13:53-13:59 local",
+     "recorded_in": "research_dispatch_index.v2 at b790cd12 (DR02, 2026-09-26)",
+     "superseded_by": "the RR03 reconciliation of 2026-09-26; this text is preserved unchanged and is not a live row"
+    }
+   ],
+   "rr03_correction": "RR03 (post-reboot orders 2026-09-26, 0d6f6f7e): Q2 v1 IS HISTORICAL AND v2 IS SEALED AND NOT EXECUTED. THE OLD TWELVE CELLS CANNOT ACQUIRE GOVERNING AUTHORITY OR A NEW SEAL BY RELABELLING. Twelve ungoverned attempt directories are not twelve results of the sealed successor, and renaming them under the successor's seal would be forgery of custody, not progress. The sealed design's own arm count is 18; any table that reports 12 is reporting a different thing and must say so. Neither generation may be relaunched into the same refusal."
   },
   {
    "lane": "H-CORE",
    "title": "MOD-FROZEN-PREFIX and MOD-CORE-PRETRAIN, the owner's core-pretraining hypothesis",
    "map": "DOCTORAL_AND_BUSINESS",
-   "commit": "e97b286a/a84a913c (the two module rulings) \u00b7 6820fcae (lag table restated, materialization per split) \u00b7 458d22cb (measured resolution, repaired monitor, matched contrast)",
-   "artifact_or_receipt": "docs/audits/work_plan/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md \u00a79 \u00b7 docs/audits/evidence/CORE_PRETRAIN_RESOLUTION_20260926/{RESOLUTION.json,RESOLUTION.md,MATCHED_DESIGN.json,MATCHED_CONTRAST.json,CLOSURE_TABLE.json} at 458d22cb",
-   "observed_state": "MOD-FROZEN-PREFIX UNBLOCKED, DELIVERABLE NOT DELIVERED. MOD-CORE-PRETRAIN's first two prerequisites are now SUPPLIED and the third is not. Resolution measured with no new training: sigma 0.01136346 kW on 6 df, smallest defensible resolution 0.031106 kW quoted deliberately, against an R1-R0 effect of 0.009805 kW \u2014 3.17x the effect, verdict UNANSWERABLE_BY_THIS_PROTOCOL_AT_THIS_SEED_COUNT, 23 seeds per arm required. Matched contrast e1_phase1_matched_v1 ran 9 cells at 19:04:34Z with one val_mae monitor and 12000 updates per arm, every cell replaying bitwise, and every row of its closure table UNANCHORED_NO_TERMINAL \u2014 measured, not governed",
-   "observed_at": "2026-09-26T18:07:18Z (resolution) / 19:04:34Z (matched contrast)",
-   "real_dependency": "MOD-FROZEN-PREFIX's OWN DELIVERABLE: a materialized prefix OUTPUT \u2014 preprocessing, groups, detector, adapter, fusion, with learned states, clock, row/split, shape and version \u2014 with direct-vs-cache parity, reload in a fresh process, weight/state mutation and causality shown. Parity of a CSV or a panel is NOT that artifact. Second, and only if the module's own effect is to be resolved on this protocol: 23 seeds per arm, which is a budget nobody has granted. WITHDRAWN AS A DEPENDENCY: the scrambled-label difference of 0.049 kW as a resolution floor or as this contrast's noise \u2014 it is read and labelled as read, and it does not estimate the contrast's error distribution",
-   "dependency_derivation": "the two supplied prerequisites are read from RESOLUTION.json and MATCHED_CONTRAST.json; the remaining one from the disposition's own \u00a79 text plus the day review's ruling that enabling implementation is not accepting delivery",
-   "next_eligible_work": "materialize the frozen prefix OUTPUT and its four parity/causality tests. CPU, and it needs no reserve: nothing in it opens a held-out split",
+   "commit": "e97b286a/a84a913c (the two module rulings) · 6820fcae (lag table restated, materialization per split) · 458d22cb (measured resolution, repaired monitor, matched contrast) · c2d4388b (DR05/06: the prefix OUTPUT materialized and reproduced from a clean pinned checkout at ed27bb89) · 4168ebdc (the three-seed resolution report, of which 458d22cb is an ancestor)",
+   "artifact_or_receipt": "docs/audits/work_plan/SATOSHI_RP49_RP56_DISPOSITION_2026_09_26.md §9 · docs/audits/evidence/CORE_PRETRAIN_RESOLUTION_20260926/{RESOLUTION.json,RESOLUTION.md,MATCHED_DESIGN.json,MATCHED_CONTRAST.json,CLOSURE_TABLE.json} at 458d22cb · docs/audits/evidence/DR05_DR06_20260926/{PREFIX_OUTPUT_MATERIALIZATION.json,LAG_TABLE_ON_THE_CLOCK.json} and docs/audits/work_plan/SATOSHI_DR05_DR06_CORRECTIONS_2026_09_26.md at c2d4388b",
+   "observed_state": "MOD-FROZEN-PREFIX's DELIVERABLE IS NOW MATERIALIZED AND VERIFIED -- this row previously said it was not. PREFIX_OUTPUT_MATERIALIZATION.json is state VERIFIED with reasons_it_would_be_inadmissible []: the cut is at the fusion with 23 layers inside and 0 downstream layers found inside; five stages manifested (preprocessing LEARNED, groups CONSTANT_BY_DESIGN, detector LEARNED, adapter LEARNED, fusion CONFIGURATION), each carrying learned state, clock, rows, shape and version; prefix_output_train.npy (40080, 60, 24) float32 8a240716... and prefix_output_validation.npy (10020, 60, 24) float32 0e6dd5bb...; store version dr05.prefix.fd0fde9b2a913257. FOUR PROOFS VERIFIED: direct-against-cache (64 origins per split, 92,160 elements each, element-by-element AND byte-identical, max |diff| 0.0), reload in a fresh interpreter (all_digests_match true), mutation of weights and state (four perturbations, each moved the output and the bound identity, weight cases restored bit for bit, nothing written to a run root), and causality (measured reach 5 = declared reach 5; a future panel row leaves the earlier window untouched and moves the window containing it). Window invariance measured over 1,393 positions, largest absolute discrepancy 0.0. The reserve was NOT opened: the test split is REFUSED_UNMATERIALIZED_BY_DESIGN and its absence is what is verified. MOD-CORE-PRETRAIN's third prerequisite is still NOT supplied. No training was performed for either artifact.",
+   "observed_at": "2026-09-26T18:07:18Z (resolution) / 19:04:34Z (matched contrast) / c2d4388b (prefix output, reproduced at ed27bb89 with an empty git status)",
+   "real_dependency": "NO LONGER 'MATERIALIZE THE PREFIX OUTPUT' -- that is delivered. What remains, named from the DR05/06 return's own what_this_does_not_deliver rather than from a schedule: (A) DATASET -- one panel, one donor cell, two splits, float32; a second panel or a second family is not delivered, and the clock's timezone is UNKNOWN because the producer never declared one (carried, not resolved), with delivery availability UNDECLARED. (B) DELIVERY -- the donor cell R1_s1 is NAMED, NOT CHOSEN ON EVIDENCE: which learned state MOD-FROZEN-PREFIX should freeze is a design decision the module still owes, and the store's version binds the donor so a different donor is a different version. (C) CONSUMER -- nothing downstream of the fusion yet reads the store; row-addressable reads are licensed only at or beyond the measured reach of 5, and NO H-CORE comparison is delivered because the core is downstream of the cut and nothing here fits one. Separately, and only if the module's own effect is to be RESOLVED on this protocol: 23 seeds per arm, a budget nobody has granted. WITHDRAWN AS A DEPENDENCY, unchanged: the scrambled-label difference as a resolution floor.",
+   "dependency_derivation": "the two supplied prerequisites are read from RESOLUTION.json and MATCHED_CONTRAST.json; the remaining one from the disposition's own §9 text plus the day review's ruling that enabling implementation is not accepting delivery",
+   "next_eligible_work": "NOT A DUPLICATE FIT, AND NOT A REFIT OF THE PREFIX. In order: 1. settle (B) -- the donor selection criterion for MOD-FROZEN-PREFIX, written as a design decision with its evidence, since a named donor is not a justified donor; 2. build (C) -- one consumer that reads the materialized store row-addressably at or beyond reach 5 and shows it gets the same representation the producer wrote; 3. declare (A)'s limits in the module's delivery record, including the UNKNOWN timezone and the single panel/donor/splits scope. All CPU, none of it opens a held-out split, and none of it requires fitting a model.",
    "resource": "CPU only for the materialization and its tests; no GPU, no reserve, no allocation",
    "remaining_cost": "458d22cb's matched contrast cost is recorded in MATCHED_CONTRAST.json; the materialization has no declared budget yet",
-   "lease": "none"
+   "lease": "none",
+   "observation_history": [
+    {
+     "observed_state": "MOD-FROZEN-PREFIX UNBLOCKED, DELIVERABLE NOT DELIVERED. MOD-CORE-PRETRAIN's first two prerequisites are now SUPPLIED and the third is not. Resolution measured with no new training: sigma 0.01136346 kW on 6 df, smallest defensible resolution 0.031106 kW quoted deliberately, against an R1-R0 effect of 0.009805 kW — 3.17x the effect, verdict UNANSWERABLE_BY_THIS_PROTOCOL_AT_THIS_SEED_COUNT, 23 seeds per arm required. Matched contrast e1_phase1_matched_v1 ran 9 cells at 19:04:34Z with one val_mae monitor and 12000 updates per arm, every cell replaying bitwise, and every row of its closure table UNANCHORED_NO_TERMINAL — measured, not governed",
+     "observed_at": "2026-09-26T18:07:18Z (resolution) / 19:04:34Z (matched contrast)",
+     "recorded_in": "research_dispatch_index.v2 at b790cd12 (DR02, 2026-09-26)",
+     "superseded_by": "the RR03 reconciliation of 2026-09-26; this text is preserved unchanged and is not a live row"
+    }
+   ],
+   "rr03_correction": "RR03 (post-reboot orders 2026-09-26, 0d6f6f7e): DR05/06 at c2d4388b ALREADY MATERIALIZED PREFIX OUTPUTS. This row's previous next_eligible_work asked for exactly that work and is therefore retired, not repeated. The remaining dataset, delivery and consumer requirements above are read from that return's own artifacts. NO DUPLICATE FIT IS SCHEDULED.",
+   "resolution_report_caveat": {
+    "what_the_report_is": "docs/audits/evidence/CORE_PRETRAIN_RESOLUTION_20260926/RESOLUTION.json at 4168ebdc (458d22cb is its ancestor): a measured resolution for this protocol from retained artifacts, training_performed false, problems [].",
+    "status_under_the_order": "AN INPUT FOR REVIEW. IT IS NOT AUTHORITY TO LAUNCH 69 FITS, and no such launch is dispatchable from this index.",
+    "where_69_comes_from": "ruling.fits_required_for_the_three_arm_design = 69 = 3 arms x n_per_arm 23, sized at alpha 0.05, power 0.80, sigma 0.011363459833619234 kW (pooled within-arm SD of R0/R1/R2, df 6).",
+    "caveat_1_paired_vs_independent_arm_variance": "The 23-seed figure is computed with paired: false -- it is sized on INDEPENDENT-ARM dispersion (the pooled within-arm SD, 0.011363 kW, df 6). The realized PAIRED dispersion of the module's own contrast is a different quantity and it is LARGER: sd_of_differences for R1-R0 is 0.016644 kW against sqrt(2)*sigma = 0.016069 kW. The report's own seed_main_effect finds no shared seed effect (F 0.0148, p 0.9853), so pairing buys nothing here. Consequence: sizing a successor on the paired dispersion would require MORE seeds than 69, not fewer, and the two variances must be stated separately before any n is quoted. The report's estimator band already spans 0.031106 kW (unpaired, sigma at pooled df) to 0.049762 kW (paired), and it governs by the most favourable of the three estimators.",
+    "caveat_2_censoring_is_not_a_lower_bound": "Censored optimization does NOT by itself prove that the observed seed variance is a lower bound. 8 of the 15 retained cells stopped on UPDATE_BUDGET (censored_by_budget true); the within-arm pooled slope is +1.1481697636690154e-05 kW per update with r 0.6346, i.e. in these cells MORE updates went with a WORSE error, so lifting a short arm to the common ceiling would move its mean UP. The report's own caveat states the update counts are themselves outcomes of early stopping, that the relation is observational within the retained cells, and that ONLY a budget-matched re-run measures the causal effect of budget. Censoring could therefore inflate or deflate the observed dispersion; neither direction is established.",
+    "caveat_3_estimand": "The declared estimand is equal_updates, declared before the comparison. Under equal_updates the retained run's unequal consumed updates (core_mae 11,762 / tcn_mse 11,762 / core_mse 10,270) invalidate the comparison; under recipe_under_early_stopping they do not. A successor must carry its estimand, and equal_updates is explicitly NOT equal cost.",
+    "consequence_for_dispatch": "NO BLANKET RESTART ON AN UNREVIEWED POWER CALCULATION. Any successor that cites 69 fits must first distinguish paired-contrast variance from independent-arm variance and state which one it sized on, and must justify the budget as a treatment rather than inherit a censored one. Until the auditor has reviewed the report, the governing verdict stays UNANSWERABLE_BY_THIS_PROTOCOL_AT_THIS_SEED_COUNT."
+   }
   },
   {
    "lane": "M4",
    "title": "M4 CONFIRMATION screen, the 3024-unit census",
    "map": "DOCTORAL_AND_BUSINESS",
-   "commit": "b8865058 (predictor, satoshi/m4-confirmation-execution-20260926) \u00b7 0de54534 (agent-multi, execution body)",
+   "commit": "b8865058 (predictor, satoshi/m4-confirmation-execution-20260926) · 0de54534 (agent-multi, execution body) · agent-multi 4b009c35 (satoshi/dr04-m4-verifiability-20260926, the verifiability delivery)",
    "artifact_or_receipt": "the M4 return at b8865058; the auditor's own probe docs/audits/evidence/DAY_REVIEW_2026_09_26/{M4_PROBE.txt,M4_FINDINGS.md,m4_probe.py}",
-   "observed_state": "NO_NEW_MEASUREMENT, 0 of 3024 units fitted; neither ADVANCES nor DOES_NOT_ADVANCE, because all 16 cells of the Holm family read UNDETERMINED_NO_OBSERVATION and Holm is a step-down over p-values that do not exist. Census 12cfd9ad78\u2026 re-derived 28/28. The screen had been marked ready for sixteen days and could not run: its execution function verified the gates, wrote the pre-ledger and returned",
-   "observed_at": "2026-09-26T06:53 local (return) / day review probes same day",
+   "observed_state": "TWO DISTINCT THINGS, AND THIS ROW NOW SEPARATES THEM. (1) M4 EXECUTION at b8865058 + body 0de54534: NO_NEW_MEASUREMENT, 0 of 3024 units fitted, neither ADVANCES nor DOES_NOT_ADVANCE, because all 16 cells of the Holm family read UNDETERMINED_NO_OBSERVATION and Holm is a step-down over p-values that do not exist; census 12cfd9ad78... re-derived 28/28. (2) M4 VERIFIABILITY at agent-multi 4b009c35: DELIVERED_FOR_EXTERNAL_REVIEW -- six repairs delivered, PRE reproduced the auditor's p-values through the public path, 153 tests. IT IS NEITHER STILL UNWRITTEN NOR APPROVED.",
+   "observed_at": "2026-09-26T06:53 local (execution return) / day review probes same day / 4b009c35 (verifiability delivery)",
    "real_dependency": "SIX NAMED VERIFIER REPAIRS, NOT AN APPROVAL. Authority bound to the reviewed implementation rather than a recorded HEAD; exact census with distinct seeds and full family/noise/generator identity; raw authenticated evidence and numeric re-derivation before VERIFIED; attrition and full population for ALL contrasts including the fifteenth; resume with complete schema, arms, lineage, state and disjointness; cumulative accounting with no double execution. And one thing the executor must NOT supply: the external design-review record the gate requires, which is the auditor's to write",
-   "dependency_derivation": "derived from the auditor's reproduced probes over agent-multi@0de54534, naming tools/m4_confirmation_runner.py:270,385,557,719,754,766,785 and tools/m4_confirmation_protocol.py:629 \u2014 not from the return's own claims",
+   "dependency_derivation": "derived from the auditor's reproduced probes over agent-multi@0de54534, naming tools/m4_confirmation_runner.py:270,385,557,719,754,766,785 and tools/m4_confirmation_protocol.py:629 — not from the return's own claims",
    "next_eligible_work": "freeze the day review's probes as PRE and turn them into tests of the real public path; then the six repairs, with positives and negatives under DEVELOPMENT fixtures including the full entrypoint; and correct the 'zero arrays' sentence to what was actually checked, resolving the declared disjointness-test exception by name",
    "resource": "CPU only. Measured cost of the execution body is 0.36 s and 102.8 MiB per unit, about 18 minutes of one CPU for the census",
    "remaining_cost": "no allocation is taken; M4 CONFIRMATION is NOT AUTHORIZED and no unit may be fitted",
-   "lease": "none"
+   "lease": "none",
+   "observation_history": [
+    {
+     "observed_state": "NO_NEW_MEASUREMENT, 0 of 3024 units fitted; neither ADVANCES nor DOES_NOT_ADVANCE, because all 16 cells of the Holm family read UNDETERMINED_NO_OBSERVATION and Holm is a step-down over p-values that do not exist. Census 12cfd9ad78… re-derived 28/28. The screen had been marked ready for sixteen days and could not run: its execution function verified the gates, wrote the pre-ledger and returned",
+     "observed_at": "2026-09-26T06:53 local (return) / day review probes same day",
+     "recorded_in": "research_dispatch_index.v2 at b790cd12 (DR02, 2026-09-26)",
+     "superseded_by": "the RR03 reconciliation of 2026-09-26; this text is preserved unchanged and is not a live row"
+    }
+   ],
+   "verifiability_delivery": {
+    "commit": "agent-multi 4b009c35 on satoshi/dr04-m4-verifiability-20260926, published",
+    "state": "DELIVERED_FOR_EXTERNAL_REVIEW",
+    "who_owns_the_verdict": "THE AUDITOR. Not the executor, and not this index.",
+    "what_we_own": "SUPPLEMENTARY EVIDENCE ONLY: freezing the day review's probes as PRE and turning them into tests of the real public path; positives and negatives under DEVELOPMENT fixtures including the full entrypoint; and the correction of the 'zero arrays' sentence to what was actually checked, with the declared disjointness-test exception resolved by name.",
+    "what_this_state_does_not_mean": "it does not mean approved, it does not discharge the six named verifier repairs, and it does not create the external design-review record the gate requires -- that record is the auditor's to write and NO FORM OF IT MAY BE MANUFACTURED HERE."
+   },
+   "rr03_correction": "RR03 (post-reboot orders 2026-09-26, 0d6f6f7e): DR04 AT 4b009c35 IS DELIVERED_FOR_EXTERNAL_REVIEW -- neither still unwritten nor approved. The auditor owns the verdict; we own supplementary evidence. M4 CONFIRMATION remains NOT AUTHORIZED and no unit may be fitted."
   },
   {
    "lane": "FIN-LOSS-OPT/E3",
@@ -205,11 +288,11 @@
    "map": "DOCTORAL_AND_BUSINESS",
    "commit": "RP82 seal in master 941eb5b3; the registration mechanism that unblocks it is data-gov 7eec868 and 8a5d2f9",
    "artifact_or_receipt": "docs/audits/evidence/d3_k5_20260917/RP82/FIN_LOSS_OPT_DESIGN_SEALED_v4.json and RP82/fin_cost_pilot/DESIGN.json; PROJECT_METHOD_STATE.json:rp82_rp89.financial",
-   "observed_state": "FIN-LOSS-OPT DESIGNED, v4 SEALED, COST PILOT NOT_EXECUTED. The governed ranged download of the EURUSD 1h resource returned HTTP 422 'resource availability contract required' \u2014 the lake declares no resource contract for it; 0 bytes were read and campaign satoshi-fin-cost-pilot-20260921-prepare-data was left open without delivery. MOD-E3: BUSINESS-CONTRACT is DESIGNED, not EXECUTED; every retained E1 measurement is a household-electricity panel and the only price-series tables are 114 CAUSALITY_UNVERIFIED with both lineages UNBOUND",
+   "observed_state": "FIN-LOSS-OPT DESIGNED, v4 SEALED, COST PILOT NOT_EXECUTED. The governed ranged download of the EURUSD 1h resource returned HTTP 422 'resource availability contract required' — the lake declares no resource contract for it; 0 bytes were read and campaign satoshi-fin-cost-pilot-20260921-prepare-data was left open without delivery. MOD-E3: BUSINESS-CONTRACT is DESIGNED, not EXECUTED; every retained E1 measurement is a household-electricity panel and the only price-series tables are 114 CAUSALITY_UNVERIFIED with both lineages UNBOUND",
    "observed_at": "2026-09-21 (pilot refusal, retained in state) / 2026-09-26 (registration mechanism)",
-   "real_dependency": "FIN-LOSS-OPT: a registered resource availability contract for the EURUSD 1h resource in the data-gov lake. That is now a concrete, reachable item, because data_gov/resource_registration.py and tools/register_calendar_resources.py at 7eec868 are exactly the mechanism that registers one. Also: close the open prepare-data campaign at its normal boundary. MOD-E3: BUSINESS-CONTRACT executed, plus one governed forecasting result on the domain it trades. H-CORE IS NOT A DEPENDENCY OF THIS LANE AS A WHOLE \u2014 the correction of 2026-09-26. It gates E3's RL comparison and nothing else; the master plan's own row for E3 requires its evaluation 'aunque H1-H3 no sean positivos', and the programme contract lists MOD-E3's prerequisites as MOD-E1 and BUSINESS-CONTRACT only. Preparing the financial reference and the weekly protocol proceeds on its own data, contracts and risks",
+   "real_dependency": "FIN-LOSS-OPT: a registered resource availability contract for the EURUSD 1h resource in the data-gov lake. That is now a concrete, reachable item, because data_gov/resource_registration.py and tools/register_calendar_resources.py at 7eec868 are exactly the mechanism that registers one. Also: close the open prepare-data campaign at its normal boundary. MOD-E3: BUSINESS-CONTRACT executed, plus one governed forecasting result on the domain it trades. H-CORE IS NOT A DEPENDENCY OF THIS LANE AS A WHOLE — the correction of 2026-09-26. It gates E3's RL comparison and nothing else; the master plan's own row for E3 requires its evaluation 'aunque H1-H3 no sean positivos', and the programme contract lists MOD-E3's prerequisites as MOD-E1 and BUSINESS-CONTRACT only. Preparing the financial reference and the weekly protocol proceeds on its own data, contracts and risks",
    "dependency_derivation": "the 422 and the open campaign are read from the retained pilot record; the H-CORE correction from the programme contract's own depends_on list and the master plan's own E3 row, against the disposition text that had added H-CORE globally",
-   "next_eligible_work": "register the financial resource's availability contract and re-attempt the SEALED cost pilot through the governed path \u2014 no scientific selection, no held-out access; and prepare the weekly reference and protocol, which need no electricity result and must not use one as a substitute for financial validation",
+   "next_eligible_work": "register the financial resource's availability contract and re-attempt the SEALED cost pilot through the governed path — no scientific selection, no held-out access; and prepare the weekly reference and protocol, which need no electricity result and must not use one as a substitute for financial validation",
    "resource": "CPU only; data-gov lake and warehouse reachable; no reserve read; no broker call",
    "remaining_cost": "no allocation taken; the fit remains PREPARE_NOT_AUTHORIZED_TO_FIT",
    "lease": "open campaign satoshi-fin-cost-pilot-20260921-prepare-data, no delivery, must be closed at its boundary"
@@ -223,7 +306,7 @@
    "observed_state": "REGISTERED AND REFUSING, WHICH IS THE CORRECT OUTCOME. Five calendar resources registered with their absences, 41 absence rows over 17 codes, replay ALL_ROWS_RE_DERIVED; nine of nine FRED siblings registered, 0 rejected. Exactly one resource carries consensus and exactly one observed the publication instant, and their windows are 1,326 days apart, so the consensus archive stands at study_refusal = CONSENSUS_WITHOUT_OBSERVED_PUBLICATION_CLOCK and the CATALOG refuses the event study. Upstream, the observed-clock study was deliberately left unregistered: placebo passes 8 of 660",
    "observed_at": "2026-09-26T06:46 and 13:36 local",
    "real_dependency": "A CONSENSUS SOURCE THAT ALSO CARRIES AN OBSERVED PUBLICATION INSTANT OVER THE SAME BAR SPAN. The artifacts name it as a purchasing/entitlement decision and name the providers; nothing on disk supplies it, and no code can. UNKNOWN stays UNKNOWN and is never read as zero lag",
-   "dependency_derivation": "derived by comparing coverage between the two registered archives \u2014 the 1,326-day gap is measured, not asserted \u2014 and from the placebo count of the unregistered study",
+   "dependency_derivation": "derived by comparing coverage between the two registered archives — the 1,326-day gap is measured, not asserted — and from the placebo count of the unregistered study",
    "next_eligible_work": "mechanical work that does not pretend to the missing identification: prospective point-in-time capture, and extending the absence/placebo reporting over the newly registered resources. Do not stop mechanical improvement for want of the dataset, and do not manufacture the identification",
    "resource": "CPU only; an entitlement decision is owner-only and is named, not assumed",
    "remaining_cost": "no numeric budget declared in the artifacts",
@@ -235,14 +318,23 @@
    "map": "M5PHET_PRODUCT",
    "commit": "M5PHET master 8a6d1a3 (2026-09-26, an index that states it contains no measurement); newest family work 2026-09-25: e2eddd6 chat/route, 92bb224 forecast, 790843f regimes, 6bcf631 causal, f5b129f classification; providers news-signal e4476e5, prediction_provider c5ada4e, feature-eng 3de34fd, causal-inference bb11d64, agent-multi 87a40de4",
    "artifact_or_receipt": "per family: ~/.local/state/m5phet/wp09-quality-20260925/, docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/, ~/.local/state/m5phet/regimes-wp19-20260925/ and wp29-calibration-20260925/, M5PHET docs/evidence/WP22_DML_2026_09_25/, agent-multi docs/audits/evidence/WP21_LAYA_FIRST_LAYER_2026_09_25/, M5PHET docs/evidence/{ROUTE_RELIABILITY_2026_09_25,INTERPRETER_RELIABILITY_2026_09_25}/",
-   "observed_state": "FIVE FAMILIES ANSWER; ONE CARRIES A QUALITY NUMBER AND FOUR PUBLISH A REFUSAL OR A NULL. classification macro-F1 0.37776 with skill 0.25331 over majority class on 450 independently labelled rows, ECE 0.13151 UNCALIBRATED, and a recorded finding that the same checkpoint as a chooser abstained 28/28 and ranked the same option first on all 28 distinct state digests. forecast: outer confirmation sealed d4ac73f0\u2026, searched family beats the hand window by 0.034412 kW with both intervals excluding zero, champion ORDERING NOT confirmed; served bundle MAE 0.565838 skill 0.151888, quantile bundle coverage 0.926 at nominal 0.95. regimes: NO_NEW_MEASUREMENT / NOT_RANKED, the served reference collapses 10,080 holdout rows into one cluster so the internal indices are INDEX_NOT_DEFINED. causal: NOT_IDENTIFIED, placebo 8 of 660, the study deliberately unregistered. RL: NO_NEW_MEASUREMENT, abstained 256/256, UNDERPOWERED 256/500. chat: route 81/95 = 0.8526 with WRONG_AREA 0 and WRONG_TYPE 12, interpreter 50/60 = 0.8333, one malformed envelope refused by check_proposal; 634 passed, 1 skipped",
-   "observed_at": "2026-09-25 per family artifact; the 2026-09-26 M5PHET commit adds no measurement",
-   "real_dependency": "ONE PER FAMILY, AND NONE OF THEM IS ANOTHER FAMILY. classification: an independently labelled corpus for any new task, plus the Laya worker's external 5090 for inference. forecast: rows untouched in every sense, which nested_split.json states do not exist inside the 50,400-row slice, hence a different source file with its own provenance. regimes: a fitted reference the running instance actually serves whose holdout has at least two non-empty clusters. causal: the consensus-plus-observed-clock source of the calendar lane \u2014 an owner entitlement decision. RL: at least 500 sealed rows against the pre-declared minimum, and a non-abstaining decision path. chat: nothing external; a wider corpus needs sentences nobody has written yet. VERIFIED ABSENT: no cross-family hold is written anywhere in the M5PHET artifacts, and the one figure-scoped qualification (WP26 over WP06 stage 5) was discharged on 2026-09-25",
+   "observed_state": "FIVE FAMILIES ANSWER; ONE CARRIES A QUALITY NUMBER AND FOUR PUBLISH A REFUSAL OR A NULL. classification macro-F1 0.37776 with skill 0.25331 over majority class on 450 independently labelled rows, ECE 0.13151 UNCALIBRATED, and a recorded finding that the same checkpoint as a chooser abstained 28/28 and ranked the same option first on all 28 distinct state digests. forecast: outer confirmation sealed d4ac73f0…, searched family beats the hand window by 0.034412 kW with both intervals excluding zero, champion ORDERING NOT confirmed; served bundle MAE 0.565838 skill 0.151888, quantile bundle coverage 0.926 at nominal 0.95. regimes: NO_NEW_MEASUREMENT / NOT_RANKED, the served reference collapses 10,080 holdout rows into one cluster so the internal indices are INDEX_NOT_DEFINED. causal: NOT_IDENTIFIED, placebo 8 of 660, the study deliberately unregistered. RL: NO_NEW_MEASUREMENT, abstained 256/256, UNDERPOWERED 256/500. chat: route 81/95 = 0.8526 with WRONG_AREA 0 and WRONG_TYPE 12, interpreter 50/60 = 0.8333, one malformed envelope refused by check_proposal; 634 passed, 1 skipped RR06 ADDITION, 2026-09-27T01:45Z: m5phet-chat.service RESTARTED WITH THE MACHINE and is running a 2026-09-25 SNAPSHOT, not master. See restarted_services_20260926.m5phet_chat for the runtime checkout, the imported module and package identities and the process start time. No family measurement changed; a live service is not a result.",
+   "observed_at": "2026-09-25 per family artifact (measurements unchanged) / 2026-09-27T01:45Z (service identity after the reboot)",
+   "real_dependency": "ONE PER FAMILY, AND NONE OF THEM IS ANOTHER FAMILY. classification: an independently labelled corpus for any new task, plus the Laya worker's external 5090 for inference. forecast: rows untouched in every sense, which nested_split.json states do not exist inside the 50,400-row slice, hence a different source file with its own provenance. regimes: a fitted reference the running instance actually serves whose holdout has at least two non-empty clusters. causal: the consensus-plus-observed-clock source of the calendar lane — an owner entitlement decision. RL: at least 500 sealed rows against the pre-declared minimum, and a non-abstaining decision path. chat: nothing external; a wider corpus needs sentences nobody has written yet. VERIFIED ABSENT: no cross-family hold is written anywhere in the M5PHET artifacts, and the one figure-scoped qualification (WP26 over WP06 stage 5) was discharged on 2026-09-25",
    "dependency_derivation": "each read from that family's own evidence file; the absence of a cross-family hold from a direct search of the M5PHET artifacts, including the CL20-CL24 line's global_hold false",
-   "next_eligible_work": "five items that may proceed at the same time and in any order: diagnose the classification chooser's state-independence on one of the 28 retained corpora; a second-series outer confirmation for forecast; refit and install one regimes reference with two or more clusters; prospective capture for causal (WP32, the only work-plan item with no artifact); extend the RL seal past 500 bars; repair the chat router's twelve WRONG_TYPE under-answers. Plus three bookkeeping repairs the artifacts contradict: M5PHET PROJECT_METHOD_STATE.json still says model_performance_measured false and four families planned; README says 491 tests against a 634 receipt, and says no area carries a measured quality number and that no bundle has a quantile head, against WP09 and the shipped quantile bundle; and WP26's twenty fits ran on the coordinator's own GPU against the plan's standing rule, with no admission record \u2014 either the exception or the admission is missing",
+   "next_eligible_work": "five items that may proceed at the same time and in any order: diagnose the classification chooser's state-independence on one of the 28 retained corpora; a second-series outer confirmation for forecast; refit and install one regimes reference with two or more clusters; prospective capture for causal (WP32, the only work-plan item with no artifact); extend the RL seal past 500 bars; repair the chat router's twelve WRONG_TYPE under-answers. Plus three bookkeeping repairs the artifacts contradict: M5PHET PROJECT_METHOD_STATE.json still says model_performance_measured false and four families planned; README says 491 tests against a 634 receipt, and says no area carries a measured quality number and that no bundle has a quantile head, against WP09 and the shipped quantile bundle; and WP26's twenty fits ran on the coordinator's own GPU against the plan's standing rule, with no admission record — either the exception or the admission is missing",
    "resource": "CPU for every analysis and for serving; the worker's external 5090 for any Laya inference through tools/chat_laya_worker.sh; a cloud-interpreter entitlement for the chat measurements",
    "remaining_cost": "175-second per-call wall timeout is the only declared per-call bound; no CPU-second ledger exists in these artifacts",
-   "lease": "declared GPU lease path ~/.local/state/m5phet/chat-gpu.lock, ABSENT, therefore unheld. Live user units: m5phet-chat.service, m5phet-tailnet-forward.service, data-gov-m5phet.service. Verification instances on their own ports and state dirs; one 2026-09-24 audit instance still listening with pid file /tmp/retsu-audit/server.pid"
+   "lease": "declared GPU lease path ~/.local/state/m5phet/chat-gpu.lock, ABSENT, therefore unheld. Live user units: m5phet-chat.service, m5phet-tailnet-forward.service, data-gov-m5phet.service. Verification instances on their own ports and state dirs; one 2026-09-24 audit instance still listening with pid file /tmp/retsu-audit/server.pid",
+   "observation_history": [
+    {
+     "observed_state": "FIVE FAMILIES ANSWER; ONE CARRIES A QUALITY NUMBER AND FOUR PUBLISH A REFUSAL OR A NULL. classification macro-F1 0.37776 with skill 0.25331 over majority class on 450 independently labelled rows, ECE 0.13151 UNCALIBRATED, and a recorded finding that the same checkpoint as a chooser abstained 28/28 and ranked the same option first on all 28 distinct state digests. forecast: outer confirmation sealed d4ac73f0…, searched family beats the hand window by 0.034412 kW with both intervals excluding zero, champion ORDERING NOT confirmed; served bundle MAE 0.565838 skill 0.151888, quantile bundle coverage 0.926 at nominal 0.95. regimes: NO_NEW_MEASUREMENT / NOT_RANKED, the served reference collapses 10,080 holdout rows into one cluster so the internal indices are INDEX_NOT_DEFINED. causal: NOT_IDENTIFIED, placebo 8 of 660, the study deliberately unregistered. RL: NO_NEW_MEASUREMENT, abstained 256/256, UNDERPOWERED 256/500. chat: route 81/95 = 0.8526 with WRONG_AREA 0 and WRONG_TYPE 12, interpreter 50/60 = 0.8333, one malformed envelope refused by check_proposal; 634 passed, 1 skipped",
+     "observed_at": "2026-09-25 per family artifact; the 2026-09-26 M5PHET commit adds no measurement",
+     "recorded_in": "research_dispatch_index.v2 at b790cd12 (DR02, 2026-09-26)",
+     "superseded_by": "the RR03 reconciliation of 2026-09-26; this text is preserved unchanged and is not a live row"
+    }
+   ],
+   "rr03_correction": "RR03 (post-reboot orders 2026-09-26, 0d6f6f7e) and RR06: M5PHET IS THE PRODUCT LANE and this row stays in the M5PHET_PRODUCT map. The doctoral modules and the financial evaluation are the scientific and business lane and stay in the other map. The two maps remain LINKED (the calendar lane appears in both) AND DISTINCT (no ranking merges them, and a correction in one family holds none of the others). Evidence that this service is active is not evidence that its model decisions are correct."
   },
   {
    "lane": "news",
@@ -254,7 +346,7 @@
    "observed_at": "2026-09-26T03:57 local (state) / 2026-09-24 (install verification)",
    "real_dependency": "A LICENSED FEED ENTITLEMENT THE PACKAGE DOES NOT HOLD, plus data-gov registration of what is collected. Neither is code. Nothing in this lane depends on the classification family's quality number or on any predictor experiment",
    "dependency_derivation": "read from PROJECT_METHOD_STATE.json next_allowed_actions and the empty broker_connections_accepted list",
-   "next_eligible_work": "an isolated pinned-weight batch-1 smoke with cold-load RSS, warm latency and a RETAINED receipt \u2014 which also settles a bookkeeping contradiction: the README's prose claims a real-weight GPU measurement of 2026-09-24 for which NO receipt JSON is retained, while the state says real_weights_measured false. Until the receipt exists, the prose is UNVERIFIED and the state governs",
+   "next_eligible_work": "an isolated pinned-weight batch-1 smoke with cold-load RSS, warm latency and a RETAINED receipt — which also settles a bookkeeping contradiction: the README's prose claims a real-weight GPU measurement of 2026-09-24 for which NO receipt JSON is retained, while the state says real_weights_measured false. Until the receipt exists, the prose is UNVERIFIED and the state governs",
    "resource": "CPU for the suite; weights plus a GPU (or a declared, recorded CPU refusal) for the smoke; an entitlement for real arrival",
    "remaining_cost": "CANNOT BE ESTABLISHED FROM ARTIFACTS: no numeric budget is declared anywhere in the lane; only a 256-token per-record cap",
    "lease": "none: no news unit is installed and no lock file exists"
@@ -263,31 +355,49 @@
    "lane": "MT5-demo",
    "title": "MT5 demo policy, risk and unknown-outcome accounting (lts)",
    "map": "M5PHET_PRODUCT",
-   "commit": "lts 12bce5f (2026-09-26, satoshi/mt5-unknown-outcome-20260926, the primary live checkout) after fcea94e (RP149)",
+   "commit": "lts d631f4a (2026-09-26, satoshi/mt5-corrections-20260926) -- PUBLISHED, NOT DEMONSTRATED DEPLOYED; preceded by 12bce5f (satoshi/mt5-unknown-outcome-20260926, the branch the primary live checkout is on) and f1109ba (satoshi/mt5-five-failures-forensics-20260926), after fcea94e (RP149)",
    "artifact_or_receipt": "lts docs/audits/evidence/mt5_unknown_outcome_20260926/{NOTE.md,dry_run_recorded_corpus.txt,dry_run_recorded_corpus.json}, docs/audits/work_plan/SATOSHI_MT5_UNKNOWN_OUTCOME_2026_09_26.md; runtime ~/.local/state/lts/paper-execution-watchdog/latest.json key mt5 and paper-execution-monitor.sqlite table monitor_events",
-   "observed_state": "INTERFACES AND MIGRATION IMPLEMENTED OVER A RECORDED CORPUS; THE LIVE BRIDGE IS STALE AND ITS STORE IS NOT ON THIS HOST. The dry migration ran read-only over a 9-row synthetic corpus built by the committed test helper. The local default bridge database does not exist \u2014 I re-verified that \u2014 but the watchdog reads a REMOTE status endpoint by preference, and that endpoint reports command_counts succeeded 48 / failed 5 with execution_enabled true, against a heartbeat last received 2026-09-08 and now about 17.9 days stale. monitor_events' latest entry is mt5_bridge_stale, severity critical, and it is the only active event key in the fleet. Exposure reconciles at 0 orders and 0 positions, all_authorized true. CORRECTION THIS INDEX MAKES: the retained note's 'this lane has never placed an order' is true of the local path only and is NOT a lane-level fact",
-   "observed_at": "2026-09-26T19:31:25Z (watchdog) / 19:06:21Z (monitor event)",
-   "real_dependency": "A READABLE COPY OF THE OFF-HOST BRIDGE DATABASE \u2014 the configured path does not exist here and the tool exits 'no such database'; then an operator attestation that the bridge is stopped before any --apply. For a canary, and separately: a confirmed demo account and the standing risk mandate. NO PER-ORDER ACKNOWLEDGEMENT, RETCODE, TICKET OR FILL IS RETAINED ON THIS HOST \u2014 only the two aggregate counters read live",
+   "observed_state": "PUBLISHED, NOT DEMONSTRATED DEPLOYED. d631f4a carries the corrections; NOTHING SHOWS THEM RUNNING. No MT5 unit is installed on this host, the local default bridge database still does not exist, and the new MT5 code is NOT ADOPTED -- it is present in the candidate pinned tree only because a commit exports whole, and no MT5 lane is switched. Live watchdog reading of 2026-09-27T01:41:55Z: bridge_version lts.mt5.bridge.execution.v2, execution_enabled true, read_only false, command_counts succeeded 48 / failed 5, heartbeat received 2026-09-08T22:28:55Z and now 1,566,806.998 s stale = 18.13 days, connected true and trade_allowed true in that stale heartbeat, terminal_build 6140, latest snapshot orders_total 0 / positions_total 0 / symbols_total 8 also from 2026-09-08, exposure_reconciliation all_authorized true over ZERO positions. NO PER-ORDER ACKNOWLEDGEMENT, RETCODE, TICKET OR FILL IS RETAINED ON THIS HOST -- only the two aggregate counters.",
+   "observed_at": "2026-09-27T01:41:55Z (watchdog, read live) / 2026-09-26T19:06:21Z (monitor event)",
+   "real_dependency": "A READABLE COPY OF THE OFF-HOST BRIDGE DATABASE — the configured path does not exist here and the tool exits 'no such database'; then an operator attestation that the bridge is stopped before any --apply. For a canary, and separately: a confirmed demo account and the standing risk mandate. NO PER-ORDER ACKNOWLEDGEMENT, RETCODE, TICKET OR FILL IS RETAINED ON THIS HOST — only the two aggregate counters read live",
    "dependency_derivation": "derived by attempting to locate the configured database and by reading the watchdog's own preference order in tools/paper_execution_watchdog.py, not from the note's summary",
-   "next_eligible_work": "dry-run the migration against a read-only COPY of the remote store and publish its result; reconcile the note's sentence with the remote 48/5; and the two named fix-forwards \u2014 reconcile_completed_lifecycles still reading state='succeeded' from the column, and exposure_reconciliation not adopting a reconciled order's ticket. DO NOT restore a branch under live timers",
+   "next_eligible_work": "dry-run the migration against a read-only COPY of the remote store and publish its result; reconcile the note's sentence with the remote 48/5; and the two named fix-forwards — reconcile_completed_lifecycles still reading state='succeeded' from the column, and exposure_reconciliation not adopting a reconciled order's ticket. DO NOT restore a branch under live timers",
    "resource": "CPU for migration and tests; a file copy for real counts; demo account plus risk mandate for any canary",
    "remaining_cost": "CANNOT BE ESTABLISHED FROM ARTIFACTS as money or CPU. The only budget present is domain-level: five daily entry slots reclaimed and now held, with BUDGET_RELEASING_STATES == {'failed'}, deny by default",
-   "lease": "no MT5 unit is installed on this host; the lane is observed by lts-paper-execution-watchdog.timer/.service, which holds an exclusive non-blocking flock on ~/.local/state/lts/paper-execution-watchdog/state.lock"
+   "lease": "no MT5 unit is installed on this host; the lane is observed by lts-paper-execution-watchdog.timer/.service, which holds an exclusive non-blocking flock on ~/.local/state/lts/paper-execution-watchdog/state.lock",
+   "observation_history": [
+    {
+     "observed_state": "INTERFACES AND MIGRATION IMPLEMENTED OVER A RECORDED CORPUS; THE LIVE BRIDGE IS STALE AND ITS STORE IS NOT ON THIS HOST. The dry migration ran read-only over a 9-row synthetic corpus built by the committed test helper. The local default bridge database does not exist — I re-verified that — but the watchdog reads a REMOTE status endpoint by preference, and that endpoint reports command_counts succeeded 48 / failed 5 with execution_enabled true, against a heartbeat last received 2026-09-08 and now about 17.9 days stale. monitor_events' latest entry is mt5_bridge_stale, severity critical, and it is the only active event key in the fleet. Exposure reconciles at 0 orders and 0 positions, all_authorized true. CORRECTION THIS INDEX MAKES: the retained note's 'this lane has never placed an order' is true of the local path only and is NOT a lane-level fact",
+     "observed_at": "2026-09-26T19:31:25Z (watchdog) / 19:06:21Z (monitor event)",
+     "recorded_in": "research_dispatch_index.v2 at b790cd12 (DR02, 2026-09-26)",
+     "superseded_by": "the RR03 reconciliation of 2026-09-26; this text is preserved unchanged and is not a live row"
+    }
+   ],
+   "rr03_correction": "RR03 (post-reboot orders 2026-09-26, 0d6f6f7e): MT5 AT d631f4a IS PUBLISHED, NOT DEMONSTRATED DEPLOYED. THE UNKNOWN OUTCOMES KEEP THEIR EXPOSURE AND BUDGET DISPOSITION UNTIL ACTUAL RECONCILIATION EVIDENCE EXISTS: the five daily entry slots stay reclaimed and held, BUDGET_RELEASING_STATES == {'failed'}, deny by default. An aggregate 48/5 read from a remote status endpoint is not per-order reconciliation, and a stale heartbeat that still says trade_allowed is not evidence of a stopped bridge. Under RR06 the new MT5 code is NOT ADOPTED."
   },
   {
    "lane": "Alpaca-paper",
    "title": "Alpaca paper execution lane (lts)",
    "map": "M5PHET_PRODUCT",
-   "commit": "lts 889c5f2 (2026-09-25, satoshi/rp157-broker-refusal-recovery-20260925), whose work is carried in 12bce5f \u2014 which is what the live 5-minute preflight has been executing since 2026-09-26 06:15 local",
+   "commit": "lts 12bce5f (the primary live checkout's HEAD, on satoshi/mt5-unknown-outcome-20260926 since 06:15:11 local today), which carries the work of 889c5f2 (satoshi/rp157-broker-refusal-recovery-20260925). THE RESIDENT RUNNER IS RUNNING THIS COMMIT: it restarted with the machine at 17:41:03 local, hours after the checkout moved, so the earlier claim that it still held pre-checkout-change code has EXPIRED.",
    "artifact_or_receipt": "~/.local/state/lts/alpaca-paper-lab.sqlite and alpaca-model-execution.sqlite; alpaca-model-runner-heartbeat.json; paper-execution-watchdog/latest.json key alpaca; examples/configs/alpaca_paper_execution_lab_v1.json; tests/unit/test_broker_refusal_recovery.py",
-   "observed_state": "LIVE, READ-ONLY SINCE 2026-09-25 16:03Z, AND THE ONLY LANE WITH REAL BROKER ACKNOWLEDGEMENTS AND FILLS RETAINED. Latest preflight session complete: account ACTIVE, environment paper, trading_blocked false, equity_market_open false, open_orders 1, open_positions 1, orders_submitted 0, protected_execution_eligible false, quotes for six crypto symbols, missing_cells []. Retained venue facts: 27 call_attempt / 27 submit_response / 27 ack_snapshot, one effect acknowledged and 26 terminal_flat with venue-issued order ids, 54 execution report receipts, and 67,695 rows carrying filled_qty and filled_avg_price. RP157's refusal surface is LIVE BUT UNEXERCISED: zero retained structured refusals in production, so it is evidenced only by its tests. Two code versions are touching the same paper account: the model runner has been resident since 2026-09-23 with pre-9090f49 code while the preflight executes 12bce5f",
-   "observed_at": "2026-09-26T19:28:10Z (preflight) / 19:32:32Z (runner heartbeat)",
-   "real_dependency": "NOTHING FOR MONITORING \u2014 the lane is already running. For safe progress: the F3 remediation, a commit-pinned deployment with its own directory and pinned dependencies, a rehearsal, a window and a rollback. F3 is CONFIRMED here and the zero-impact claim is WITHDRAWN: 18 files differ between 9090f49 and 12bce5f, four of them in broker lanes under live timers, and the import chain is real \u2014 the observer unit runs run_alpaca_paper_preflight.sh, which runs app.alpaca_paper_cli, which imports app.alpaca_paper_lab at line 10, which now imports app.broker_refusal at line 19 and wraps the non-2xx branch. An identical CLI file does not make an identical runtime",
-   "dependency_derivation": "derived from the diff, the import chain read in source, and the reflog timestamp of the checkout move \u2014 and cross-checked against the day review's own recorded lts_timer_dependency_hashes for the two commits",
+   "observed_state": "LIVE, ORDER-CAPABLE BY CONFIGURATION, WITH NO ORDER PRODUCED SINCE 2026-09-25T16:03:56Z. The previous row said 'READ-ONLY SINCE 2026-09-25 16:03Z' and THAT CONFLATED TWO PATHS. Measured from source and retained state, not from a claim: the OBSERVER path is read-only by configuration -- adapter_version lts.alpaca.paper.readonly.v1, orders.enabled false in examples/configs/alpaca_paper_execution_lab_v1.json, orders_submitted 0, and its latest preflight is complete (account ACTIVE, environment paper, trading_blocked false, equity_market_open false, open_orders 1, open_positions 1, protected_execution_eligible false, six crypto quotes, missing_cells [], 16,268 complete sessions). The MODEL RUNNER path is NOT read-only: its heartbeat writes read_only false literally, and AlpacaL1Profile.load REFUSES to start unless orders.enabled is true, which examples/configs/alpaca_spy_l1_profile_v1.json sets, with quantity_ceiling 1 and max_orders_per_day 4. What is true is EMPIRICAL, not configured: in alpaca-model-execution.sqlite the latest l1_effects and l1_effect_contracts rows are both 2026-09-25T16:03:56Z, the latest execution_report_receipts and lifecycle_events are 2026-09-25T16:04:57Z, and the latest live_model_inferences row is 2026-09-26T00:00:03Z -- all BEFORE the reboot -- while l1_broker_facts keeps growing to 68,094 rows with the latest at 2026-09-27T01:45:43Z. Retained venue facts are unchanged: 27 call_attempt / 27 submit_response / 27 ack_snapshot, one effect acknowledged and 26 terminal_flat with venue-issued order ids, 54 execution report receipts.",
+   "observed_at": "2026-09-27T01:41:55Z (observer preflight) / 01:45:43Z (runner heartbeat and broker facts) / 2026-09-27T01:45Z (process identity)",
+   "real_dependency": "NOTHING FOR MONITORING — the lane is already running. For safe progress: the F3 remediation, a commit-pinned deployment with its own directory and pinned dependencies, a rehearsal, a window and a rollback. F3 is CONFIRMED here and the zero-impact claim is WITHDRAWN: 18 files differ between 9090f49 and 12bce5f, four of them in broker lanes under live timers, and the import chain is real — the observer unit runs run_alpaca_paper_preflight.sh, which runs app.alpaca_paper_cli, which imports app.alpaca_paper_lab at line 10, which now imports app.broker_refusal at line 19 and wraps the non-2xx branch. An identical CLI file does not make an identical runtime RR06 UPDATE: the commit-pinned deployment is now PREPARED, rehearsed and given a rollback (see restarted_services_20260926.pinned_deployment). It is NOT ACTIVATED: the live checkout was not switched, no drop-in was installed, no unit was restarted and no timer was touched. What remains before any activation is an owner window, a decision on the two editable dependencies that the pin does NOT freeze, and the adoption tests.",
+   "dependency_derivation": "derived from the diff, the import chain read in source, and the reflog timestamp of the checkout move — and cross-checked against the day review's own recorded lts_timer_dependency_hashes for the two commits",
    "next_eligible_work": "the commit-pinned deployment with rehearsal, window and rollback; adoption tests for account shorting eligibility and close semantics; and a zero-network sink for shadow tests, kept out of the paper-canary profile. NO MUTATING BROKER CALL BY THIS ORDER, and no service started, stopped or restarted",
    "resource": "paper account already bound and verified; CPU; network reachability to the paper venue. No missing entitlement",
    "remaining_cost": "CANNOT BE ESTABLISHED FROM ARTIFACTS: no numeric budget is declared. orders.enabled is false in the lab config. The shadow lane's reported NAV is simulated and is not a budget",
-   "lease": "lts-alpaca-paper-observer.timer every 5 minutes; lts-alpaca-model-runner.service resident since 2026-09-23; lts-paper-execution-watchdog.timer holding state.lock; lts-multi-venue-shadow.timer holding multi-venue-shadow.lock. None of these is to be touched"
+   "lease": "lts-alpaca-paper-observer.timer every 5 minutes; lts-alpaca-model-runner.service RESIDENT SINCE 2026-09-26T22:41:04Z (17:41:04 local), NRestarts 0 -- CORRECTED: it is NOT resident since 2026-09-23, and the 68-hour-resident claim is withdrawn; lts-paper-execution-watchdog.timer holding state.lock; lts-multi-venue-shadow.timer holding multi-venue-shadow.lock. None of these was touched.",
+   "observation_history": [
+    {
+     "observed_state": "LIVE, READ-ONLY SINCE 2026-09-25 16:03Z, AND THE ONLY LANE WITH REAL BROKER ACKNOWLEDGEMENTS AND FILLS RETAINED. Latest preflight session complete: account ACTIVE, environment paper, trading_blocked false, equity_market_open false, open_orders 1, open_positions 1, orders_submitted 0, protected_execution_eligible false, quotes for six crypto symbols, missing_cells []. Retained venue facts: 27 call_attempt / 27 submit_response / 27 ack_snapshot, one effect acknowledged and 26 terminal_flat with venue-issued order ids, 54 execution report receipts, and 67,695 rows carrying filled_qty and filled_avg_price. RP157's refusal surface is LIVE BUT UNEXERCISED: zero retained structured refusals in production, so it is evidenced only by its tests. Two code versions are touching the same paper account: the model runner has been resident since 2026-09-23 with pre-9090f49 code while the preflight executes 12bce5f",
+     "observed_at": "2026-09-26T19:28:10Z (preflight) / 19:32:32Z (runner heartbeat)",
+     "recorded_in": "research_dispatch_index.v2 at b790cd12 (DR02, 2026-09-26)",
+     "superseded_by": "the RR03 reconciliation of 2026-09-26; this text is preserved unchanged and is not a live row"
+    }
+   ],
+   "rr03_correction": "RR03 (post-reboot orders 2026-09-26, 0d6f6f7e) and RR06: the expired claim is CORRECTED, NOT DROPPED -- the runner restarted with the machine and now has the post-checkout-change code resident, app/broker_refusal.py included. The read-only description is CORRECTED: read-only holds for the observer path by configuration and does NOT hold for the model runner path, where the absence of new orders is an empirical observation of retained rows and not a configured prohibition. Evidence of an active service is not evidence of correct model decisions or of correct fills."
   }
  ],
  "history": {
@@ -460,5 +570,209 @@
   },
   "rp57_rp63_rows": "history, per the master plan's section 5. They are not a second dispatch queue and were never one",
   "rp135_cell_snapshot": "the twelve-cell list inside `superseded_queue_v1.cells` is the last direct RP139 observation of 2026-09-23. The fits have since FINISHED; see lane A/B"
+ },
+ "rr03_reconciliation_20260926": {
+  "order": "../../handoffs/SATOSHI_POST_REBOOT_ORDERS_2026_09_26.md sections RR03 and RR06 (0d6f6f7e)",
+  "restart_manifest": "../../audits/work_plan/SATOSHI_RR01_RESTART_MANIFEST_2026_09_26.md at 0ee09998, whose section 4 carries every published tip and section 5 the per-lane state",
+  "report": "../../audits/work_plan/SATOSHI_RR03_RR06_INDEX_AND_SERVICES_2026_09_26.md",
+  "reconciled_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+  "reconciled_at": "2026-09-26",
+  "this_is_an_update_not_a_replacement": "the eleven DR02 rows are still the same rows. Eight of them moved, one lane that had no row got one, and three did not move because no artifact of theirs moved: FIN-LOSS-OPT/E3, calendar and news are untouched on purpose.",
+  "rows_changed": 9,
+  "rows_unchanged": 3,
+  "rows_total": 12,
+  "no_second_scheduler": "no new queue, no new file, no parallel manifest. research_dispatch_index.v2 remains the one index and EXPERIMENT_EXECUTION_QUEUE.json remains its one path.",
+  "corrections_applied": [
+   {
+    "bullet": "the admission follow-on is implemented but its operational recovery is still being checked",
+    "row": "ADMISSION (added)",
+    "result": "recorded as IMPLEMENTED / OPERATIONAL RECOVERY STILL BEING CHECKED / NOT VERIFIED; the two pytest selections stay INTERRUPTED_RESULT_NOT_RETAINED"
+   },
+   {
+    "bullet": "M4 verifiability at 4b009c35 is DELIVERED_FOR_EXTERNAL_REVIEW",
+    "row": "M4",
+    "result": "a verifiability_delivery block separates it from the execution's NO_NEW_MEASUREMENT; the auditor owns the verdict, we own supplementary evidence"
+   },
+   {
+    "bullet": "the lag and prefix work at c2d4388b already materialized prefix outputs",
+    "row": "H-CORE",
+    "result": "the previous next_eligible_work asked for exactly that and is retired; the remaining dataset, delivery and consumer requirements are named from that return's own artifacts; no duplicate fit is scheduled"
+   },
+   {
+    "bullet": "Q2 v1 is historical, v2 is sealed and not executed, and the old twelve cells cannot acquire governing authority or a new seal by relabelling",
+    "row": "E1-Q2-CONTEXT",
+    "result": "the two generations are separated in the row and the relabelling prohibition is written into it"
+   },
+   {
+    "bullet": "MT5 at d631f4a is published, not demonstrated deployed",
+    "row": "MT5-demo",
+    "result": "d631f4a named as published-not-deployed; the unknown outcomes keep their exposure and budget disposition; the new MT5 code is not adopted"
+   },
+   {
+    "bullet": "A/B and R0/R1/R2-ECL stay closed; M5PHET is the product lane and the doctoral modules and the financial evaluation are the scientific and business lane",
+    "row": "A/B, R0/R1/R2-ECL, M5PHET-5F-CHAT",
+    "result": "both closures re-confirmed against the live host without reactivating anything; the two maps are restated as linked and distinct"
+   },
+   {
+    "bullet": "the three-seed resolution report is an input for review, not authority to launch 69 fits",
+    "row": "H-CORE.resolution_report_caveat",
+    "result": "paired-contrast variance distinguished from independent-arm variance with both numbers; censoring recorded as not establishing a lower bound in either direction; no blanket restart on an unreviewed power calculation"
+   },
+   {
+    "bullet": "keep metric units and source transformations explicit in the index itself",
+    "row": "metrics_units_and_source_transformations (added) plus every number quoted in a moved row",
+    "result": "added"
+   },
+   {
+    "bullet": "RR06: account for what the reboot actually restarted",
+    "row": "restarted_services_20260926 (added), M5PHET-5F-CHAT, Alpaca-paper",
+    "result": "both services' runtime checkout, module and package identities and start times recorded; one expired claim of mine corrected in the row that carried it"
+   }
+  ]
+ },
+ "metrics_units_and_source_transformations": {
+  "why_this_is_here": "so that a reader of a row never has to open a result table to learn what a number means. Where a row quotes a number, the unit is beside it; the transformation that produced it is here.",
+  "kW": {
+   "what": "kilowatts of household active power, the panel's own physical unit",
+   "used_by": "H-CORE (resolution, module effects, matched contrast) and R0/R1/R2-ECL",
+   "transformation": "predictions and targets are produced in the scaled space of a stored scaler fitted on TRAIN windows only, then inverted to kW before any error is formed. MAE in kW is the mean absolute error over the run's own evaluation origins in kW.",
+   "two_panels_never_mixed": "the doctoral household panel (minute-level active power, window 60, horizon 60 steps, 10,020 evaluation rows, matched persistence 0.6173720558882235 kW) and the ECL panel (1,802 label-disjoint windows, matched persistence 0.868283 kW) are DIFFERENT DATASETS. Their kW numbers are never pooled, averaged or compared."
+  },
+  "persistence_scaled_error": {
+   "what": "dimensionless: model MAE in kW divided by a matched persistence MAE in kW on the identical evaluation origins",
+   "example": "0.8078107364839635 = 0.4978227182589842 kW / 0.6162615768463073 kW for core_mae_s1",
+   "never_mixed_with_kW": "a kW quantity and a scaled quantity are never subtracted from or divided by one another. The resolution report states this rule explicitly and the earlier violation of it is retracted there."
+  },
+  "MSE_and_MAE_on_the_SOTA_panels": {
+   "what": "A/B report four-horizon mean MSE and MAE in the published recipe's own normalized units, NOT in a physical unit, because the published ECL L512 reference is defined in that space",
+   "consequence": "these numbers are comparable to that reference and to each other, and to nothing in kW"
+  },
+  "resolution_kW": {
+   "what": "the smallest two-arm difference in mean MAE, in kW, that this protocol could detect at alpha 0.05 and power 0.80 with the retained seed count",
+   "governing_value": "0.031106321266674578 kW, from sigma 0.011363459833619234 kW pooled within-arm over R0/R1/R2 at df 6",
+   "estimator_band": "0.031106321266674578 kW (unpaired, sigma at pooled df) to 0.04976202975433696 kW (paired); the report governs by the most favourable of the three so the ruling cannot be blamed on a pessimistic test",
+   "scaled_equivalent": "0.050475840836710716, dimensionless, reported separately and never mixed"
+  },
+  "classification_metrics": {
+   "macro_F1": "unweighted mean of per-class F1 over the labelled classes; 0.37776 on 450 independently labelled rows",
+   "skill": "dimensionless improvement over the majority-class baseline on the same rows; 0.25331",
+   "ECE": "expected calibration error, dimensionless, 0.13151, state UNCALIBRATED"
+  },
+  "operational_counters": {
+   "CPU_s": "process CPU seconds as systemd or the run record reports them, never wall seconds",
+   "wall_s": "elapsed seconds, reported separately from CPU s and never substituted for it",
+   "GiB_and_G": "binary multiples; a memory cap written 2G means 2 GiB = 2147483648 bytes, which is the integer the admission reservation records",
+   "staleness": "seconds between a received_at and the reading instant, converted to days only for readability; 1,566,806.998 s = 18.13 days for the MT5 heartbeat",
+   "broker_counters": "counts of retained rows or of remote aggregate counters, never money. No monetary unit appears in any row of this index."
+  }
+ },
+ "restarted_services_20260926": {
+  "why_this_block_exists": "RR06. Two user services came back with the machine, and an earlier claim of mine about one of them expired the moment it did. The claim is corrected here rather than quietly dropped.",
+  "host_boot": "2026-09-26T17:40:56 local; boot id ae653632... . Host memory 30 GiB total, 23 GiB available; memory pressure some avg10 0.00, full avg10 0.00 at the time of reading.",
+  "method": "read-only: systemd unit properties, /proc/<pid>/{cwd,exe,cmdline,stat,maps,fd}, package dist-info and direct_url.json, a static transitive import closure over the entrypoint compared against the committed blob of every file in it, and the lanes' own retained stores. NO PROCESS ENVIRONMENT WAS READ, no EnvironmentFile was opened, no credential was read or printed, and no broker call of any kind was made.",
+  "the_expired_claim": {
+   "what_I_said": "that the Alpaca model runner still held the pre-checkout-change code resident because it had been running for 68 hours.",
+   "status": "EXPIRED AND WITHDRAWN. It was true of the process that existed before 2026-09-26T17:40:56 local; that process is gone.",
+   "what_is_true_now": "lts-alpaca-model-runner.service started at 2026-09-26T22:41:04Z (17:41:04 local) with NRestarts 0, eight seconds after the machine came up, and imported the post-checkout-change code.",
+   "what_does_not_change": "the F3 finding itself stands: the unit carries NO commit pin, so a restart adopts whatever the mutable checkout holds. The reboot did not fix that; it demonstrated it."
+  },
+  "alpaca_model_runner": {
+   "unit": "lts-alpaca-model-runner.service (user), fragment ~/.config/systemd/user/lts-alpaca-model-runner.service",
+   "process_start_time": "2026-09-26T22:41:04Z / 17:41:04 local (systemd ExecMainStartTimestamp); ps lstart 17:41:03; NRestarts 0",
+   "runtime_checkout": "/home/harveybc/Documents/GitHub/lts, read from /proc/<pid>/cwd, which is the PRIMARY LIVE CHECKOUT. Its HEAD is 12bce5f2c4fe2ab0e6a7433d7208d9e05a9cffaa on satoshi/mt5-unknown-outcome-20260926, moved there by the reflog at 06:15:11 local and committed at 06:32:00, both hours BEFORE the process started.",
+   "interpreter": "/home/harveybc/anaconda3/envs/trading-stack/bin/python3.12 (Python 3.12), from /proc/<pid>/exe",
+   "entrypoint": "python -m app.alpaca_model_runner --config examples/configs/alpaca_spy_model_runner_v1.json",
+   "imported_module_identity": {
+    "method": "static transitive import closure from app.alpaca_model_runner over the checkout's own packages; each file's git hash-object compared against rev-parse HEAD:<path>",
+    "modules_in_closure": 10,
+    "files": [
+     "app/alpaca_model_runner.py",
+     "app/alpaca_l1.py",
+     "app/alpaca_paper_lab.py",
+     "app/broker_refusal.py",
+     "app/demo_execution_service.py",
+     "app/ibkr_l1_journal.py",
+     "app/live_model_selection.py",
+     "app/model_position_control.py",
+     "app/model_runner_heartbeat.py",
+     "app/runner_retry_taxonomy.py"
+    ],
+    "all_match_HEAD": true,
+    "uncommitted_changes_under_app_or_examples_configs": 0,
+    "newest_mtime_in_app": "2026-09-26T06:28:22 local, i.e. every module file predates the process start, so what is resident is what is on disk at 12bce5f",
+    "the_point": "app/broker_refusal.py IS in the resident closure. It did not exist at 9090f49. The runner is therefore running the changed broker path, which is exactly what the expired claim denied.",
+    "caveat": "this is an IMPORT closure. Anything a module reaches by subprocess is outside it; the watchdog, for instance, imports only the standard library and calls out by subprocess."
+   },
+   "imported_package_identity": {
+    "resident_extension_modules_from_site_packages": [
+     "pydantic_core",
+     "charset_normalizer",
+     "a mypyc-compiled module"
+    ],
+    "numpy_pandas_resident": false,
+    "prediction_provider_mechanics": "0.1.0, EDITABLE, resolving to /home/harveybc/Documents/GitHub/prediction_provider/mechanics/src/..., revision 316c315, 0 tracked files differing from HEAD",
+    "trading_contracts": "0.1.0, EDITABLE, resolving to /home/harveybc/Documents/GitHub/trading-contracts/src/..., revision 3d531f6, 0 tracked files differing from HEAD",
+    "requests": "2.34.2",
+    "pydantic": "2.13.4",
+    "certifi": "2026.6.17",
+    "the_gap_this_exposes": "two of the runner's own dependencies are editable installs in MUTABLE checkouts. Pinning the lts tree alone does not pin them, and a commit-pinned deployment that ignores this is not pinned."
+   },
+   "resource_footprint": "MemoryCurrent 41,463,808 B, MemoryPeak 42,614,784 B, CPUUsageNSec 3,641,086,000 at the time of reading",
+   "open_files": "exactly one non-socket descriptor: ~/.local/state/lts/alpaca-model-execution.sqlite",
+   "no_new_order_read_only_posture": {
+    "verdict": "PARTIALLY IN FORCE, AND THE INDEX'S PREVIOUS WORDING WAS WRONG. Read-only is configured on the observer path and is NOT configured on the model-runner path.",
+    "observer_path": "examples/configs/alpaca_paper_execution_lab_v1.json sets orders.enabled false; the live preflight reports adapter_version lts.alpaca.paper.readonly.v1 and orders_submitted 0.",
+    "model_runner_path": "examples/configs/alpaca_spy_l1_profile_v1.json sets orders.enabled TRUE, and AlpacaL1Profile.load REFUSES to load a profile where it is not true, so the runner cannot even start with orders disabled. Its heartbeat writes read_only false literally.",
+    "what_actually_bounds_it": "quantity_ceiling 1, max_orders_per_day 4, max_risk_fraction_at_stop 5e-05, gross_notional_fraction_max 0.01, margin_fraction_max 0.01, daily_loss_budget_fraction 0.001, max_concurrent_positions 1, an owner_issuer allowlist of one, and the L0 risk layer -- bounds, not a prohibition.",
+    "empirical_absence_of_new_orders": "in alpaca-model-execution.sqlite the latest l1_effects and l1_effect_contracts rows are 2026-09-25T16:03:56Z, execution_report_receipts and lifecycle_events 2026-09-25T16:04:57Z, live_model_inferences 2026-09-26T00:00:03Z; l1_broker_facts continues to grow, 68,094 rows, latest 2026-09-27T01:45:43Z. NO order effect has been created since before the reboot.",
+    "how_this_was_checked": "by reading configuration, source and retained rows. NO BROKER MUTATION OF ANY KIND WAS USED TO TEST IT, and no read-only broker call was made either.",
+    "current_declared_state": "state monitoring, control target_preserves_open_exposure, orders 1, positions 1, equity_market_open false, protected_execution_eligible false, last closed bar 2026-09-25T04:00:00Z, inference action short with probability_up 0.41917197764782277",
+    "what_this_is_not_evidence_of": "that the short signal is correct, that a fill would be correct, or that acting on a 2026-09-25 bar on 2026-09-26 is sound. A live service is a process fact."
+   }
+  },
+  "m5phet_chat": {
+   "unit": "m5phet-chat.service (user), fragment ~/.config/systemd/user/m5phet-chat.service",
+   "process_start_time": "2026-09-26T22:41:04Z / 17:41:04 local (ExecMainStartTimestamp); ps lstart 17:41:03; NRestarts 0",
+   "runtime_checkout": "NONE. THIS SERVICE DOES NOT RUN FROM A CHECKOUT. Its WorkingDirectory is the home directory and its code is a NON-EDITABLE pip copy inside ~/.local/share/m5phet/chat-venv: there is no .pth editable hook in that venv's site-packages. The runtime code is therefore a SNAPSHOT, and its provenance is the wheel's direct_url.json, not a live branch.",
+   "snapshot_provenance": "m5phet 0.1.0 installed 2026-09-25T13:59:02 local from file:///home/harveybc/Documents/GitHub/.worktrees/m5phet-chat, whose HEAD is f532ee5 (2026-09-25T13:59:00 local) on satoshi/wp22-dml-20260925.",
+   "consequence": "THE RUNNING CHAT IS NOT MASTER. M5PHET master is 8a6d1a3 (2026-09-26T06:17:17 local). The service is running 2026-09-25 code and will keep running it across restarts until the venv is reinstalled -- a restart does NOT pick up newer commits here, which is the opposite of the Alpaca runner's failure mode.",
+   "imported_package_identity": {
+    "provider_wheels_in_the_venv_with_their_sources_and_install_times": [
+     "m5phet 0.1.0 <- .worktrees/m5phet-chat, 2026-09-25 13:59:02",
+     "m5phet_evaluation 0.1.0 <- M5PHET/evaluation, 2026-09-25 03:17:13",
+     "feature_eng 0.1.0 <- .worktrees/feature-eng-m5phet-hierarchical, 2026-09-25 13:19:09",
+     "prediction_provider_forecast 0.1.0 <- .worktrees/prediction-provider-m5phet-forecast/forecast, 2026-09-25 13:26:05",
+     "causal_inference_m5phet 0.1.0 <- causal-inference-m5phet-provider/provider, 2026-09-25 04:43:09",
+     "agent_multi_m5phet 0.1.0 <- agent-multi/m5phet_policy, 2026-09-25 06:17:36",
+     "news_signal 0.2.0 <- news-signal, 2026-09-26 04:00:39",
+     "data_gov 0.1.0 <- data-gov, 2026-09-25 03:18:01",
+     "provider 0.11.0, no direct_url recorded"
+    ],
+    "scientific_stack_resident": "numpy 2.5.3, pandas 3.0.6, scipy 1.18.1, scikit-learn 1.9.1, pyarrow 25.0.1, statsmodels 0.15.0, pydantic 2.13.5, fastapi 0.141.1, starlette 1.7.0, uvicorn 0.53.0 -- all present as mapped extension modules in the live process, so these are resident identities and not merely installed ones",
+    "interpreter": "the venv's python, whose exe symlink resolves to /home/harveybc/anaconda3/bin/python3.12",
+    "one_provider_is_newer_than_the_app": "news_signal was reinstalled at 2026-09-26 04:00:39, after the app snapshot. The venv is therefore not a single coherent point in time and should not be described as one."
+   },
+   "resource_footprint": "MemoryCurrent 255,737,856 B, MemoryPeak 303,271,936 B, CPUUsageNSec 19,443,313,000 at the time of reading",
+   "listener_posture": "loopback plus two explicitly allowed hosts supplied from an EnvironmentFile that was NOT opened; the allowed values are referred to here by role only and are not written into this repository. NoNewPrivileges true, LimitCORE 0.",
+   "no_new_order_read_only_posture": "NOT APPLICABLE IN THE BROKER SENSE and verified absent: this venv contains no broker package, the process holds exactly one non-socket descriptor, ~/.local/state/m5phet/chat/chat.sqlite3, and it opens no venue. Its only mutable state is that conversation store, whose mtime is 2026-09-25 06:06 -- PRESERVED AND UNREAD. I did not open it, and nothing in this work wrote to it.",
+   "declared_gpu_lease": "~/.local/state/m5phet/chat-gpu.lock, ABSENT, therefore unheld -- unchanged by the reboot",
+   "what_this_is_not_evidence_of": "that any family's answer is correct, that the quality numbers in the M5PHET-5F-CHAT row were produced by THIS snapshot, or that four refusing families are fixed."
+  },
+  "pinned_deployment": {
+   "state": "PREPARED, REHEARSED, REVERSIBLE, AND NOT ACTIVATED",
+   "under": "RR06, which forbids switching the live LTS checkout, merging beneath its five-minute timers, restarting any service and adopting the new MT5 code. None of those was done.",
+   "directory": "~/.local/state/lts/pinned-deploys/ -- OUTSIDE every repository and every checkout",
+   "pins": [
+    "candidate-12bce5f2c4fe/tree at 12bce5f2c4fe2ab0e6a7433d7208d9e05a9cffaa, 379 files, export verified bit-exact against the commit -- this is the code the resident runner actually imported",
+    "rollback-9090f49ae53b/tree at 9090f49ae53bca047c4f3f39848fe8d457eab77d, 367 files, export verified bit-exact -- the code the timers executed until 06:15:11 local today"
+   ],
+   "immutability": "both trees and their manifests are mode-immutable (a-w, verified by two refused writes: an overwrite and a new file). This is mode immutability, not chattr +i, which needs root; the owner can still lift it.",
+   "per_pin_contents": "MANIFEST.json (commit, tree sha, per-file sha256, interpreter, dependency pin), PIP_FREEZE.txt with local paths redacted, REHEARSAL.json, REHEARSAL.txt; plus VERIFY.py and ROLLBACK.md beside them",
+   "rehearsal": "run under $HOME/.local/bin/crispdm-run -m 2G -t 900 -n rr0306 with CUDA_VISIBLE_DEVICES='': integrity INTACT before; the three entrypoint modules imported from the pinned tree and resolving to it; tools/paper_execution_watchdog.py AST-parsed; app.alpaca_paper_cli --help rc 0; 75 tests passed in tests/unit/test_broker_refusal_recovery.py in the candidate pin, ABSENT_IN_THIS_PIN in the rollback pin because that commit predates the file; integrity INTACT after, so the rehearsal wrote nothing into the tree. Aggregate rc 0 for both pins. No venue was contacted and no credential was read.",
+   "rollback": "ROLLBACK.md, prepared and NOT executed. It also records what a rollback cannot restore: 9090f49 does not contain app/broker_refusal.py, so rolling back REMOVES the refusal-recovery behaviour the resident runner is loading. Neither direction is a no-op and neither is a convenience.",
+   "activation_artifact": "candidate-12bce5f2c4fe/ACTIVATION.not-installed.conf -- the drop-in text that WOULD pin the unit, written down and NOT INSTALLED. No systemd drop-in was created, no daemon-reload was run.",
+   "what_it_reveals_about_the_units": "all four lts entrypoints resolve into the mutable checkout: the runner by WorkingDirectory with Restart=always, the observer and the shadow by absolute path in ExecStart, the watchdog by absolute path. Not one carries a commit pin. Measured against the 18 files that differ between the two pins, the changed files inside each import closure are: model runner 3 (app/alpaca_l1.py, app/alpaca_paper_lab.py, app/broker_refusal.py), observer 2 (app/alpaca_paper_lab.py, app/broker_refusal.py), watchdog 0, shadow 0.",
+   "mt5_not_adopted": "the candidate tree contains the new MT5 files because a commit exports whole. No MT5 unit exists on this host, no MT5 lane is switched, and nothing here adopts them. Stated in ROLLBACK.md as well."
+  }
  }
 }

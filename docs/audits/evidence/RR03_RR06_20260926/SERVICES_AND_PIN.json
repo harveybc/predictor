@@ -1,0 +1,372 @@
+{
+ "schema": "rr03_rr06_service_and_pin_evidence.v1",
+ "at": "2026-09-27T01:52Z",
+ "author": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+ "order": "RR03 and RR06 of docs/handoffs/SATOSHI_POST_REBOOT_ORDERS_2026_09_26.md (0d6f6f7e)",
+ "report": "docs/audits/work_plan/SATOSHI_RR03_RR06_INDEX_AND_SERVICES_2026_09_26.md",
+ "no_new_measurement": true,
+ "redaction": "host names, tailnet addresses, account identifiers and account fingerprints are deliberately ABSENT. Roles are named instead. No credential was read, so none could be recorded.",
+ "method": [
+  "systemd unit properties",
+  "/proc/<pid>/{cwd,exe,cmdline,stat,maps,fd} -- NEVER environ",
+  "package dist-info and direct_url.json",
+  "static transitive import closure compared against committed blobs",
+  "the lanes' own retained SQLite stores and JSON state, read-only",
+  "no broker call of any kind; no service started, stopped or restarted"
+ ],
+ "host": {
+  "boot_local": "2026-09-26T17:40:56",
+  "memory_total_GiB": 30,
+  "memory_available_GiB": 23,
+  "pressure_some_avg10": 0.0,
+  "pressure_full_avg10": 0.0
+ },
+ "restarted_services": {
+  "lts-alpaca-model-runner.service": {
+   "start_utc": "2026-09-26T22:41:04Z",
+   "start_local": "17:41:04",
+   "ps_lstart_local": "17:41:03",
+   "NRestarts": 0,
+   "runtime_checkout": "/home/harveybc/Documents/GitHub/lts (the primary live checkout)",
+   "checkout_head": "12bce5f2c4fe2ab0e6a7433d7208d9e05a9cffaa",
+   "checkout_moved_local": "06:15:11 (reflog), committed 06:32:00 -- both BEFORE the process started",
+   "interpreter": "trading-stack env python3.12",
+   "entrypoint": "python -m app.alpaca_model_runner --config examples/configs/alpaca_spy_model_runner_v1.json",
+   "import_closure_modules": 10,
+   "import_closure_files": [
+    "app/alpaca_l1.py",
+    "app/alpaca_model_runner.py",
+    "app/alpaca_paper_lab.py",
+    "app/broker_refusal.py",
+    "app/demo_execution_service.py",
+    "app/ibkr_l1_journal.py",
+    "app/live_model_selection.py",
+    "app/model_position_control.py",
+    "app/model_runner_heartbeat.py",
+    "app/runner_retry_taxonomy.py"
+   ],
+   "every_file_matches_HEAD_blob": true,
+   "broker_refusal_in_closure": true,
+   "uncommitted_files_under_app_and_examples_configs": 0,
+   "newest_mtime_in_app_local": "2026-09-26T06:28:22",
+   "resident_site_packages_extension_modules": [
+    "pydantic_core",
+    "charset_normalizer",
+    "one mypyc-compiled module"
+   ],
+   "numpy_or_pandas_resident": false,
+   "editable_dependencies": {
+    "prediction_provider_mechanics": {
+     "version": "0.1.0",
+     "revision": "316c315",
+     "dirty_tracked_files": 0
+    },
+    "trading_contracts": {
+     "version": "0.1.0",
+     "revision": "3d531f6",
+     "dirty_tracked_files": 0
+    }
+   },
+   "third_party": {
+    "requests": "2.34.2",
+    "pydantic": "2.13.4",
+    "certifi": "2026.6.17"
+   },
+   "MemoryCurrent_bytes": 41463808,
+   "MemoryPeak_bytes": 42614784,
+   "CPUUsageNSec": 3641086000,
+   "open_non_socket_fds": [
+    "~/.local/state/lts/alpaca-model-execution.sqlite"
+   ],
+   "read_only_posture": {
+    "verdict": "PARTIALLY_IN_FORCE",
+    "observer_path": "orders.enabled false in the paper-lab config; adapter lts.alpaca.paper.readonly.v1; orders_submitted 0",
+    "model_runner_path": "orders.enabled TRUE in the L1 profile and AlpacaL1Profile.load refuses any profile where it is not; heartbeat writes read_only false",
+    "bounds_not_prohibition": {
+     "quantity_ceiling": 1,
+     "max_orders_per_day": 4,
+     "max_risk_fraction_at_stop": 5e-05,
+     "gross_notional_fraction_max": 0.01,
+     "margin_fraction_max": 0.01,
+     "daily_loss_budget_fraction": 0.001,
+     "max_concurrent_positions": 1,
+     "owner_issuer_allowlist_size": 1
+    },
+    "empirical_latest_rows": {
+     "l1_effects": "2026-09-25T16:03:56Z",
+     "l1_effect_contracts": "2026-09-25T16:03:56Z",
+     "execution_report_receipts": "2026-09-25T16:04:57Z",
+     "lifecycle_events": "2026-09-25T16:04:57Z",
+     "live_model_inferences": "2026-09-26T00:00:03Z",
+     "l1_broker_facts": "2026-09-27T01:45:43Z over 68094 rows"
+    },
+    "no_order_effect_since_the_reboot": true,
+    "tested_with_a_broker_mutation": false
+   },
+   "declared_runtime_state": {
+    "state": "monitoring",
+    "control": "target_preserves_open_exposure",
+    "orders": 1,
+    "positions": 1,
+    "equity_market_open": false,
+    "protected_execution_eligible": false,
+    "last_closed_bar": "2026-09-25T04:00:00Z",
+    "inference_action": "short",
+    "probability_up": 0.41917197764782277
+   },
+   "expired_claim": {
+    "what_I_said": "that it still held pre-checkout-change code because it had run for 68 hours",
+    "status": "EXPIRED_AND_WITHDRAWN",
+    "what_is_true_now": "it restarted with the machine and imported the post-change code, app/broker_refusal.py included",
+    "what_still_stands": "the unit carries NO commit pin: WorkingDirectory is the mutable checkout and Restart=always"
+   }
+  },
+  "m5phet-chat.service": {
+   "start_utc": "2026-09-26T22:41:04Z",
+   "start_local": "17:41:04",
+   "ps_lstart_local": "17:41:03",
+   "NRestarts": 0,
+   "runtime_checkout": "NONE -- a non-editable pip copy in ~/.local/share/m5phet/chat-venv; no editable .pth hook",
+   "snapshot_source": "file:///home/harveybc/Documents/GitHub/.worktrees/m5phet-chat",
+   "snapshot_source_head": "f532ee5 (2026-09-25T13:59:00 local)",
+   "installed_at_local": "2026-09-25T13:59:02",
+   "m5phet_master_for_comparison": "8a6d1a3 (2026-09-26T06:17:17 local)",
+   "running_master": false,
+   "provider_wheels": {
+    "m5phet": "0.1.0 <- .worktrees/m5phet-chat, 2026-09-25 13:59:02",
+    "m5phet_evaluation": "0.1.0 <- M5PHET/evaluation, 2026-09-25 03:17:13",
+    "feature_eng": "0.1.0 <- .worktrees/feature-eng-m5phet-hierarchical, 2026-09-25 13:19:09",
+    "prediction_provider_forecast": "0.1.0 <- .worktrees/prediction-provider-m5phet-forecast/forecast, 2026-09-25 13:26:05",
+    "causal_inference_m5phet": "0.1.0 <- causal-inference-m5phet-provider/provider, 2026-09-25 04:43:09",
+    "agent_multi_m5phet": "0.1.0 <- agent-multi/m5phet_policy, 2026-09-25 06:17:36",
+    "news_signal": "0.2.0 <- news-signal, 2026-09-26 04:00:39 (NEWER than the app snapshot)",
+    "data_gov": "0.1.0 <- data-gov, 2026-09-25 03:18:01",
+    "provider": "0.11.0, no direct_url recorded"
+   },
+   "resident_scientific_stack": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.1",
+    "pyarrow": "25.0.1",
+    "statsmodels": "0.15.0",
+    "pydantic": "2.13.5",
+    "fastapi": "0.141.1",
+    "starlette": "1.7.0",
+    "uvicorn": "0.53.0"
+   },
+   "MemoryCurrent_bytes": 255737856,
+   "MemoryPeak_bytes": 303271936,
+   "CPUUsageNSec": 19443313000,
+   "open_non_socket_fds": [
+    "~/.local/state/m5phet/chat/chat.sqlite3"
+   ],
+   "conversation_store": "PRESERVED AND UNREAD; mtime 2026-09-25 06:06; not opened by this work",
+   "listener_posture": "loopback plus two allowed values supplied by an EnvironmentFile that was NOT opened; the values are referred to by role only and are not recorded here. NoNewPrivileges true, LimitCORE 0",
+   "broker_exposure": "NONE: no broker package in the venv, one non-socket descriptor, no venue opened",
+   "declared_gpu_lease": "~/.local/state/m5phet/chat-gpu.lock ABSENT, therefore unheld"
+  }
+ },
+ "pinned_deployment": {
+  "state": "PREPARED_REHEARSED_REVERSIBLE_NOT_ACTIVATED",
+  "base_directory": "/home/harveybc/.local/state/lts/pinned-deploys",
+  "immutability": "mode-immutable (a-w); two writes refused (an overwrite and a new file). Not chattr +i, which needs root",
+  "activation_artifact": "candidate-…/ACTIVATION.not-installed.conf -- written, NOT installed; no drop-in created, no daemon-reload",
+  "live_checkout_switched": false,
+  "services_restarted": false,
+  "timers_touched": false,
+  "mt5_code_adopted": false,
+  "pins": [
+   {
+    "role": "candidate",
+    "directory": "/home/harveybc/.local/state/lts/pinned-deploys/candidate-12bce5f2c4fe",
+    "pinned_commit": "12bce5f2c4fe2ab0e6a7433d7208d9e05a9cffaa",
+    "pinned_tree": "ab25573d427e1c594f8c6d3705f99609f1c2dfcd",
+    "pinned_commit_date": "2026-09-26T06:32:00-05:00",
+    "file_count": 379,
+    "export_matches_commit": true,
+    "export_mismatches": [],
+    "dependency_pin": {
+     "note": "the app tree is pinned by commit; these two dependencies resolve to EDITABLE installs in mutable checkouts, so pinning the tree alone does NOT pin them. Their revisions at preparation time are recorded here and a real activation must pin or vendor them too.",
+     "prediction_provider": {
+      "path": "/home/harveybc/Documents/GitHub/prediction_provider",
+      "revision": "316c3157506df58de72da802fc61e17adae2a6ab",
+      "dirty_tracked_files": 0
+     },
+     "trading_contracts": {
+      "path": "/home/harveybc/Documents/GitHub/trading-contracts",
+      "revision": "3d531f6964a7c4bf3b46dfded69cba5c56bfe58d",
+      "dirty_tracked_files": 0
+     },
+     "third_party_lock_file": "PIP_FREEZE.txt"
+    },
+    "rehearsal": {
+     "schema": "lts.pinned_deploy.rehearsal.v1",
+     "pin": "candidate-12bce5f2c4fe",
+     "rehearsed_at": "2026-09-27T01:49:57.945986+00:00",
+     "rehearsed_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+     "under_order": "RR06 (2026-09-26)",
+     "ran_under": "$HOME/.local/bin/crispdm-run -m 2G -t 900 -n rr0306",
+     "environment": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTEST_ADDOPTS": "-p no:cacheprovider"
+     },
+     "steps": [
+      {
+       "step": 1,
+       "what": "sha256 of every pinned file against MANIFEST.json BEFORE",
+       "result": "INTACT"
+      },
+      {
+       "step": 2,
+       "what": "import app.alpaca_model_runner / app.alpaca_paper_cli / app.multi_venue_shadow_cli from the pinned tree; AST-parse tools/paper_execution_watchdog.py",
+       "result": "all resolved to <PIN>/app/*.py, rc 0"
+      },
+      {
+       "step": 3,
+       "what": "python -m app.alpaca_paper_cli --help (argparse exits before any I/O)",
+       "result": "rc 0"
+      },
+      {
+       "step": 4,
+       "what": "offline battery tests/unit/test_broker_refusal_recovery.py",
+       "result": "75 passed (tests/unit/test_broker_refusal_recovery.py)"
+      },
+      {
+       "step": 5,
+       "what": "sha256 of every pinned file AFTER the rehearsal",
+       "result": "INTACT — the rehearsal wrote nothing into the tree"
+      }
+     ],
+     "aggregate_rc": 0,
+     "what_this_rehearsal_does_NOT_show": [
+      "no venue was contacted and no order was placed, so nothing here shows that a fill would be correct",
+      "no credential was read and none is needed by these steps, so nothing here shows that the pinned tree can authenticate",
+      "an import and an offline battery show loadability, not model-decision correctness",
+      "the two editable dependencies still resolve to mutable checkouts; this pin does not freeze them"
+     ],
+     "services_touched": "NONE. No unit was started, stopped, restarted, enabled or reloaded. The live checkout was not switched.",
+     "broker_calls": "NONE, of any kind, mutating or read-only."
+    }
+   },
+   {
+    "role": "rollback",
+    "directory": "/home/harveybc/.local/state/lts/pinned-deploys/rollback-9090f49ae53b",
+    "pinned_commit": "9090f49ae53bca047c4f3f39848fe8d457eab77d",
+    "pinned_tree": "2f07ea31364e868dbb29c52110df50bb22a649fb",
+    "pinned_commit_date": "2026-09-24T22:01:42-05:00",
+    "file_count": 367,
+    "export_matches_commit": true,
+    "export_mismatches": [],
+    "dependency_pin": {
+     "note": "the app tree is pinned by commit; these two dependencies resolve to EDITABLE installs in mutable checkouts, so pinning the tree alone does NOT pin them. Their revisions at preparation time are recorded here and a real activation must pin or vendor them too.",
+     "prediction_provider": {
+      "path": "/home/harveybc/Documents/GitHub/prediction_provider",
+      "revision": "316c3157506df58de72da802fc61e17adae2a6ab",
+      "dirty_tracked_files": 0
+     },
+     "trading_contracts": {
+      "path": "/home/harveybc/Documents/GitHub/trading-contracts",
+      "revision": "3d531f6964a7c4bf3b46dfded69cba5c56bfe58d",
+      "dirty_tracked_files": 0
+     },
+     "third_party_lock_file": "PIP_FREEZE.txt"
+    },
+    "rehearsal": {
+     "schema": "lts.pinned_deploy.rehearsal.v1",
+     "pin": "rollback-9090f49ae53b",
+     "rehearsed_at": "2026-09-27T01:49:57.946176+00:00",
+     "rehearsed_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+     "under_order": "RR06 (2026-09-26)",
+     "ran_under": "$HOME/.local/bin/crispdm-run -m 2G -t 900 -n rr0306",
+     "environment": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTEST_ADDOPTS": "-p no:cacheprovider"
+     },
+     "steps": [
+      {
+       "step": 1,
+       "what": "sha256 of every pinned file against MANIFEST.json BEFORE",
+       "result": "INTACT"
+      },
+      {
+       "step": 2,
+       "what": "import app.alpaca_model_runner / app.alpaca_paper_cli / app.multi_venue_shadow_cli from the pinned tree; AST-parse tools/paper_execution_watchdog.py",
+       "result": "all resolved to <PIN>/app/*.py, rc 0"
+      },
+      {
+       "step": 3,
+       "what": "python -m app.alpaca_paper_cli --help (argparse exits before any I/O)",
+       "result": "rc 0"
+      },
+      {
+       "step": 4,
+       "what": "offline battery tests/unit/test_broker_refusal_recovery.py",
+       "result": "NOT_PRESENT_IN_THIS_PIN"
+      },
+      {
+       "step": 5,
+       "what": "sha256 of every pinned file AFTER the rehearsal",
+       "result": "INTACT — the rehearsal wrote nothing into the tree"
+      }
+     ],
+     "aggregate_rc": 0,
+     "what_this_rehearsal_does_NOT_show": [
+      "no venue was contacted and no order was placed, so nothing here shows that a fill would be correct",
+      "no credential was read and none is needed by these steps, so nothing here shows that the pinned tree can authenticate",
+      "an import and an offline battery show loadability, not model-decision correctness",
+      "the two editable dependencies still resolve to mutable checkouts; this pin does not freeze them"
+     ],
+     "services_touched": "NONE. No unit was started, stopped, restarted, enabled or reloaded. The live checkout was not switched.",
+     "broker_calls": "NONE, of any kind, mutating or read-only."
+    }
+   }
+  ],
+  "changed_files_between_the_two_pins": 18,
+  "changed_files_inside_each_timer_or_service_import_closure": {
+   "model_runner": [
+    "app/alpaca_l1.py",
+    "app/alpaca_paper_lab.py",
+    "app/broker_refusal.py"
+   ],
+   "alpaca_paper_cli_observer": [
+    "app/alpaca_paper_lab.py",
+    "app/broker_refusal.py"
+   ],
+   "paper_execution_watchdog": [],
+   "multi_venue_shadow_cli": []
+  },
+  "no_unit_carries_a_commit_pin": true,
+  "rollback_cannot_restore": "9090f49 has no app/broker_refusal.py, so a rollback REMOVES the refusal-recovery behaviour the resident runner loads. Neither direction is a no-op"
+ },
+ "admissions_taken": [
+  {
+   "name": "rr0306",
+   "cap": "2G",
+   "admitted": "2026-09-27T01:49:22Z",
+   "released": "2026-09-27T01:49:24Z"
+  },
+  {
+   "name": "rr0306",
+   "cap": "2G",
+   "admitted": "2026-09-27T01:49:35Z",
+   "released": "2026-09-27T01:49:36Z"
+  },
+  {
+   "name": "rr0306",
+   "cap": "2G",
+   "admitted": "2026-09-27T01:49:55Z",
+   "released": "2026-09-27T01:49:57Z"
+  }
+ ],
+ "leases_held_now": 0,
+ "refusals": [],
+ "what_this_evidence_is_not": [
+  "evidence that any model decision is correct",
+  "evidence that any fill is or would be correct",
+  "evidence that the pinned deployment is authorized",
+  "a measurement of anything scientific"
+ ]
+}
