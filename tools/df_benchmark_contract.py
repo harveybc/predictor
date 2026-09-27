@@ -388,8 +388,38 @@ def require(design: dict, *, purpose: str = "scientific training") -> BenchmarkC
     return contract
 
 
+#: RR02 (order 2026-09-26): the version of the reservation proof this module requires on a fit path.
+#: Versioned integration, deliberately: the guard lives HERE, in a file no scientific design seals,
+#: so the four seal-pinned per-cell runners are covered without one of their bytes changing and
+#: without any old seal being superseded, re-sealed or invalidated.
+BIND_ADMISSION_GUARD_VERSION = "rr02.1"
+
+
+def _require_reserved_scope_for_fit(purpose: str) -> dict:
+    """A fit may not begin outside a live memory reservation.
+
+    ``bind()`` is the last thing that happens before a runner consumes the prepared data: it is the
+    one point on every fit path of ``df_e1_block``, ``df_e1_huber``, ``df_fin_runner`` and
+    ``df_e1_phase1`` that is reached when, and only when, real training is about to start, and this
+    module is pinned by no design's ``source_code`` set and is not a member of
+    ``df_d2_design.D2_CODE_FILES``.  So the proof can be required here while every sealed runner
+    keeps its exact bytes and every retained replay keeps its identity.
+
+    The proof is a read: ``crispdm_admission.py inside-scope``, through ``df_admission_guard``.  No
+    reservation is taken -- these runners spawn their children in their own cgroup and share their
+    own ``MemoryMax``, so a second reservation would count the same bytes twice -- and nothing is
+    started, signalled or changed.  A missing admission module refuses: an unenforceable cap is not
+    a cap.
+    """
+    guard = _module("df_admission_guard")
+    return guard.require_reserved_scope(
+        "a benchmark-contract fit", f"bind {purpose}", mem="<the cell's measured need>",
+        wall="<the cell's wall>", name="fit")
+
+
 def bind(contract: BenchmarkContract, data_json: dict, *, purpose: str = "scientific training") -> dict:
     """The contract against the RUNTIME preparation: what the runner will actually consume."""
+    _require_reserved_scope_for_fit(purpose)
     p = []
     inputs = data_json.get("input_columns") or []
     j = data_json.get("target_channel")

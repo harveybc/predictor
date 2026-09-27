@@ -1,0 +1,83 @@
+{
+ "schema": "satoshi.fit_entry_census.v1",
+ "recorded_at": "2026-09-26",
+ "recorded_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+ "purpose": "Every entry point on this fleet that can start heavy compute, and what stands between it and an unreserved launch. Written so a reader can check the claim against the code rather than take a summary on trust. Roles only: no host name, address, account identifier or token appears here.",
+ "authority": "predictor/tools/crispdm_admission.py, deployed fleet-wide at ~/.local/libexec/crispdm/crispdm_admission.py with the launcher ~/.local/bin/crispdm-run",
+ "states": {
+  "GATED": "the entry point itself calls df_admission_guard.require_reserved_scope and refuses a bare invocation",
+  "COVERED_BY_BIND": "the entry point is refused by the versioned proof inside df_benchmark_contract.bind(), which its fit path must pass; its own bytes are untouched, so every seal against it still verifies",
+  "SEAL_PINNED_OPEN": "still open: every module on its fit path is byte-pinned by a live seal, so there is no unpinned place on that path to put the proof",
+  "READ_ONLY_UNGATED": "deliberately not gated: it reads retained files and starts no compute",
+  "OUT_OF_REPO": "another repository or another resource; named, not hidden"
+ },
+ "entry_points": [
+  {"entry_point": "crispdm-run", "repo": "predictor", "state": "GATED",
+   "mechanism": "it IS the launcher: atomic reservation before the launch, mandatory arm, post-admission monitor, release only when its own scope is empty",
+   "rr02_change": "arming is now mandatory; the blind sampler is now the pressure monitor; the release waits a bounded moment for the scope to drain"},
+  {"entry_point": "df_isolated_runner", "repo": "predictor", "state": "GATED",
+   "mechanism": "takes a crispdm_admission.Reservation for each child (DR01 §3.4)"},
+  {"entry_point": "df_dispatch", "repo": "predictor", "state": "GATED",
+   "mechanism": "remote dispatch through the worker role's deployed launcher; refuses at launch when the role cannot admit"},
+  {"entry_point": "df_d2_r4_replay --replay", "repo": "predictor", "state": "GATED",
+   "mechanism": "df_admission_guard.require_reserved_scope (DR01 follow-on §3)"},
+  {"entry_point": "df_e1_close (replay worker, and a close that will replay)", "repo": "predictor", "state": "GATED",
+   "mechanism": "df_admission_guard.require_reserved_scope"},
+  {"entry_point": "df_mod_e0_close (a close that will replay)", "repo": "predictor", "state": "GATED",
+   "mechanism": "df_admission_guard.require_reserved_scope"},
+  {"entry_point": "df_sota_repro execute/child/pilot/regenerate/profile-eval/route-trace/close", "repo": "predictor", "state": "GATED",
+   "mechanism": "df_admission_guard.require_reserved_scope"},
+
+  {"entry_point": "df_e1_block", "repo": "predictor", "state": "COVERED_BY_BIND",
+   "seal_that_pins_its_bytes": "code_drift(design) plus replay_identity().replay_code_sha256 = sha_file(__file__)",
+   "mechanism": "its fit path calls df_benchmark_contract.bind(), which now requires the reservation proof; not one byte of df_e1_block.py changed",
+   "verified_by": "tests/test_df_rr02_fit_coverage.py"},
+  {"entry_point": "df_e1_huber", "repo": "predictor", "state": "COVERED_BY_BIND",
+   "seal_that_pins_its_bytes": "validate() -> 'scientific source changed: df_e1_huber.py'",
+   "mechanism": "same: bind() on the fit path; bytes unchanged"},
+  {"entry_point": "df_fin_runner", "repo": "predictor", "state": "COVERED_BY_BIND",
+   "seal_that_pins_its_bytes": "validate() -> FinRefusal('scientific source changed: df_fin_runner.py')",
+   "mechanism": "same: bind() on the fit path; bytes unchanged"},
+  {"entry_point": "df_e1_phase1", "repo": "predictor", "state": "COVERED_BY_BIND",
+   "seal_that_pins_its_bytes": "member of the huber sealed source set",
+   "mechanism": "same: bind() on the fit path. It was not on the DR01 follow-on's list of eight and is closed here as a consequence, not as a claim of extra scope."},
+
+  {"entry_point": "df_d2_unit_worker run_units (invoked bare)", "repo": "predictor", "state": "SEAL_PINNED_OPEN",
+   "seal_that_pins_its_bytes": "df_d2_design.lab_code_sha256 over D2_CODE_FILES, compared on resume against RUN_MANIFEST.json code_sha256_at_creation and every D2 terminal",
+   "why_it_is_still_open": "its fit path touches df_d2_design, df_lab_evaluation, df_isolated_runner, df_snr, df_operators, df_snapshot and df_contract, and every one of those is inside D2_CODE_FILES. There is no unpinned module on that path in which the proof could live, and it does not use df_benchmark_contract at all. Closing it needs the D2 seal superseded by the order that supersedes it, never by me to make an edit convenient.",
+   "partial_controls_in_force": [
+    "its unit children are started through df_isolated_runner, which DOES take a reservation",
+    "the operator's PreToolUse hook ~/.claude/hooks/require-capped-compute.sh blocks a bare invocation from a shell tool"],
+   "exposure": "the parent run_units process's own footprint when invoked bare, and the df_snr subprocess it spawns inside an already-reserved child"},
+
+  {"entry_point": "df_d2_r4_replay --compare, df_e1_close --no-replay, df_mod_e0_close --no-replay/--local-from, df_sota_repro seal/report/lock/ledger/accept-*", "repo": "predictor", "state": "READ_ONLY_UNGATED",
+   "why": "they read retained files and start no compute; a refusal there would block accounting and review",
+   "maintenance_obligation": "a --no-replay path that someone later extends into real compute would slip through"},
+
+  {"entry_point": "eth_curriculum_fleet.start", "repo": "agent-multi", "state": "GATED",
+   "mechanism": "RR02: tools/host_admission.py asks the deployed authority on the target role BEFORE systemd-run, arms the lease to the unit's own cgroup after the launch, releases it if the launch failed, and refuses outright without a declared measured cap",
+   "verified_by": "agent-multi tests/test_rr02_fleet_admission.py"},
+  {"entry_point": "project3_weekly_supervisor (dashboard, worker and phase-orchestrator service starts)", "repo": "agent-multi", "state": "OUT_OF_REPO",
+   "why_not_gated": "these three systemd-run calls START SERVICES, not compute. Gating a service start behind memory admission would introduce a new way for a production service to fail to come up, which the order forbids touching. The compute those services eventually run is launched further down, in project3_weekly_worker's subjob launch (subprocess.Popen), which is the correct place for the gate and is NOT closed by this return.",
+   "exact_change_when_ordered": "wrap project3_weekly_worker's subjob Popen in tools/host_admission.reserve_or_refuse with the subjob's measured cap, arm to the subjob pid, release when it exits"},
+  {"entry_point": "m5phet/web/worker.py admit_gpu()", "repo": "M5PHET", "state": "OUT_OF_REPO",
+   "what_it_is": "a per-request gate on a worker role that reads nvidia-smi and then /proc/meminfo with a 4 GiB MemAvailable floor, and launches. It holds nothing between the reading and the launch: it is the DR01 read-then-run defect, for host RAM, once per inference request.",
+   "what_it_does_not_do": "it does not consult the host RAM reservation, and the host RAM reservation says nothing about VRAM. Nothing today coordinates the two, and two hosts' reservations do not coordinate at all.",
+   "exact_change_when_ordered": "keep the VRAM and temperature checks exactly as they are and replace the MemAvailable floor with a reservation from the deployed authority for the request's measured host-RAM footprint, armed to the worker process and released when the request ends",
+   "not_changed_here": "M5PHET is the product lane's repository and its chat and model runner are live services restarted by the reboot; a launch-path change there belongs in that repository under its own order"},
+  {"entry_point": "crispdm-memguard, agent-multi/tools/memory_pressure_watchdog.py", "repo": "predictor / agent-multi", "state": "OUT_OF_REPO",
+   "what_they_are": "reactive guards, not launchers. Both still read MemAvailable rather than PSI. Neither was disabled, retuned or touched. Admission now stops before memguard's soft stop would act, so memguard remains a backstop."}
+ ],
+ "bypasses_remaining": [
+  "a BARE invocation of df_d2_unit_worker: seal-pinned, named above, partially controlled",
+  "any NEW tool that spawns children in its own cgroup and neither goes through crispdm-run nor reaches df_benchmark_contract.bind(). tests/test_df_rr02_fit_coverage.py pins the set of bind() call sites so a fit path that stops using it trips a test, but nothing forces the proof on an entry point nobody has written yet.",
+  "project3_weekly_worker's subjob launch in agent-multi: not closed here, exact change named",
+  "M5PHET's admit_gpu(): not closed here, exact change named",
+  "loads started before the launcher was deployed hold no lease on the worker roles. Their USED bytes are still counted through MemAvailable and the slice's memory.current; only their unrealised headroom is invisible. Conservative in one direction only, and it resolves as they finish.",
+  "the reservation is per host. Nothing here coordinates two hosts, and nothing here says anything about VRAM."
+ ],
+ "what_this_census_does_not_claim": [
+  "that coverage is sufficiency: a runner inside a 2 GiB reservation that needs 8 GiB is covered and will still be killed by its own cgroup limit. Sizing remains the caller's duty.",
+  "that the gates were exercised against a real fit. They were exercised against bounded synthetic children and simulated hosts; the order forbids repeating a scientific fit to test software."
+ ]
+}

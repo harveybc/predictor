@@ -25,6 +25,10 @@ import pytest
 
 TOOLS = Path(__file__).resolve().parents[1] / "tools"
 GIB = 1 << 30
+# RR02: this module's subject is the ABSENCE of a covering reservation, so it opts out of the
+# session-level declared coverage that tests/conftest.py writes for every other test.
+pytestmark = pytest.mark.crispdm_uncovered
+
 GUARD_EXIT = 75
 
 
