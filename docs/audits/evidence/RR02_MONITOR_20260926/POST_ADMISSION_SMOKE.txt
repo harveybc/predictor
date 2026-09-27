@@ -1,0 +1,53 @@
+=== policy in force (derived; see RETAINED_PRESSURE_SERIES.json) ===
+{
+ "derivations": {
+  "elevated_budget_seconds": "half the 529 s the retained ledger series shows between the first sample above 37.50 and the first owner-application kill",
+  "pressure_respond_at": "midpoint of the admission limit (25.00, DR01) and the host's own oomd limit (50.00, read from the journal lines retained in OOM_INCIDENT_REGISTER.json)",
+  "recovery_window_seconds": "twice the longest run of consecutive samples at or below 25.00 observed inside that window (3 samples, 60 s), which was followed by 47.85 within 90 s",
+  "respond_window_seconds": "the oomd duration the host's own policy declares",
+  "sample_seconds": "the launcher's existing heartbeat period; unchanged",
+  "term_grace_seconds": "the launcher's existing timeout --kill-after grace"
+ },
+ "elevated_budget_seconds": 240,
+ "host_oomd_duration_seconds_observed": 20,
+ "host_oomd_limit_observed": 50.0,
+ "pressure_admit_max": 25.0,
+ "pressure_respond_at": 37.5,
+ "recovery_min_samples": 24,
+ "recovery_window_seconds": 120,
+ "respond_min_samples": 4,
+ "respond_window_seconds": 20,
+ "sample_seconds": 5,
+ "term_grace_seconds": 30
+}
+
+=== case 1: a calm host.  The child ends on its own terms. ===
+  wall 10.35s
+  exit=0
+  live leases: 0 | retained bodies: 1
+
+=== case 2: admitted on a calm host, then pressure rises.  The real sequence: on the
+===         previous boot the second scope was admitted at PSI 24.50 and the host went to 74.96. ===
+crispdm-run: this job's own scope was STOPPED under sustained memory pressure before the host's oomd would have acted.
+crispdm-run: partial evidence is kept and the exit cause is recorded; nothing outside this job's scope was signalled.
+crispdm-run:   rule SUSTAINED_ABOVE_RESPOND -- every one of 4 samples in the trailing 20s is above 37.50
+crispdm-run:   record rr02stop-1790476018-194266-a61bae: see the admission store's incidents/ directory
+  exit=124 (the status the launcher's own timeout wrapper reports when the job is terminated; 124 on this coreutils)
+  incident: PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND | SUSTAINED_ABOVE_RESPOND
+  detail  : every one of 4 samples in the trailing 20s is above 37.50
+  samples : 5 | scope_only: True | partial evidence retained: True
+  acted on: {"kill_cgroup": [], "refused": [], "term_cgroup": [], "term_leader": 194269}
+  live leases after: 0
+
+=== case 3: pressure rises, dips below the admission limit, and returns. ===
+crispdm-run: this job's own scope was STOPPED under sustained memory pressure before the host's oomd would have acted.
+crispdm-run: partial evidence is kept and the exit cause is recorded; nothing outside this job's scope was signalled.
+crispdm-run:   rule SUSTAINED_ABOVE_RESPOND -- every one of 4 samples in the trailing 20s is above 37.50
+crispdm-run:   record rr02dip-1790476041-194881-563eae: see the admission store's incidents/ directory
+  exit=124 (still stopped: one dip is not a recovery)
+  incident: PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND | samples at or below 25.00 during the run: 3
+  recoveries confirmed: 0 (a confirmed recovery needs 120 s)
+
+=== nothing outside the smoke's own scopes was touched ===
+  the fleet store was not used: CRISPDM_ADMISSION_DIR=/tmp/rr02-smoke.NbFmND/store
+  no limit, ceiling, cache, swap or oomd setting was read into a change

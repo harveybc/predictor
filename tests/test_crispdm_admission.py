@@ -602,14 +602,24 @@ def test_2026_09_26_an_inherited_ancestor_cgroup_may_not_witness_a_reservation(h
 
 
 def test_2026_09_26_a_supervised_child_that_has_been_reaped_frees_its_reservation_at_once(host):
-    """When a holder waited for its own child, the child's death is the whole answer: the scope
-    cgroup may still list tasks winding down for a few milliseconds, and letting that speak made
-    the launcher refuse to release its own reservation the instant its load finished."""
+    """When a holder waited for its own child and this load's own scope is EMPTY, the child's death
+    is the whole answer and the reservation is freed at that instant.
+
+    RR02 amends this test, and says so.  As written on 2026-09-26 it asserted that a reaped child
+    frees the reservation *even while its own scope cgroup still holds a task*, because a scope
+    tearing down still lists tasks winding down and the launcher was observed refusing to release
+    its own reservation.  That symptom now has its own fix -- `cgroup_alive` checks each listed task
+    and a zombie holds no memory -- and the old assertion also covered the case the RR02 order
+    names: a detached descendant still running in this scope after the direct child exited.
+    Releasing there hands a second admission the bytes a live descendant is using.  So the empty
+    scope is asserted here and the live descendant in
+    tests/test_crispdm_rr02_monitor.py; the reversal is reported in the RR02 return.
+    """
     unit = "crispdm-x.scope"
     cg = f"user.slice/crispdm-batch.slice/{unit}"
     lease_id = host.acquire("supervised", 2 * GIB)["lease_id"]
     A.arm(host.store, host.res, lease_id, host.now, pid=888003, cgroup=cg, unit=unit)
-    host.patch(alive={"888003": False, cg: True})          # reaped, cgroup still winding down
+    host.patch(alive={"888003": False, cg: False})         # reaped, and its scope holds no task
     out = A.release(host.store, host.res, lease_id, host.now)
     assert out["ok"] is True and out["code"] == "RELEASED"
     assert host.live_lease_ids() == []

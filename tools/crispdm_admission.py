@@ -79,6 +79,54 @@ DEFAULT_SLICE = "crispdm-batch.slice"
 TREE_PEAK_SCOPES = ("cgroup", "tree") # the only footprint scopes that may size an admission
 REFUSED_EXIT = 75                     # EX_TEMPFAIL, the code crispdm-run has always used
 
+# ---- RR02 (order 2026-09-26): what happens AFTER admission -----------------------------------
+# Admission was a gate at entry.  On 2026-09-26 at 16:27 it refused new work correctly while
+# pressure climbed (ledger refusals at PSI some/avg10 38.76, 60.48, 61.20 against 25.00) and the
+# two scopes already admitted ran to the end, because nothing re-examined a reservation once it
+# was granted.  These constants close that, and EVERY ONE OF THEM IS DERIVED -- from the host's
+# own oomd policy as recorded in docs/audits/evidence/DR01_20260926/OOM_INCIDENT_REGISTER.json,
+# from DR01's existing admission limit, or from the retained pressure series in the admission
+# ledger of the previous boot.  Nothing here was tuned by putting a host under pressure.
+PRESSURE_OOMD_LIMIT = 50.0            # the HOST's policy, not mine: systemd-oomd killed the user
+                                      # slice "being 55.11% > 50.00% for > 20s with reclaim
+                                      # activity" (incidents 3 and 4 of the register).  Recorded
+                                      # so the monitor can act BEFORE it, never to change it.
+PRESSURE_OOMD_DURATION_SECONDS = 20   # same source: "> 20s".
+# PRESSURE_ADMIT_MAX (25.00) is DR01's existing limit, half the oomd limit: the level below which
+# the host is calm enough to admit NEW work.  The response threshold is the midpoint of the only
+# two thresholds policy already declares.  It must be strictly above the admission limit -- a load
+# legitimately admitted at 24.5 must not stop itself the instant it starts -- and strictly below
+# the oomd limit, so the response happens before the kill.
+PRESSURE_RESPOND_AT = (PRESSURE_ADMIT_MAX + PRESSURE_OOMD_LIMIT) / 2.0            # 37.50
+PRESSURE_RESPOND_WINDOW_SECONDS = PRESSURE_OOMD_DURATION_SECONDS                  # 20
+PRESSURE_SAMPLE_SECONDS = 5           # the launcher's existing heartbeat period; unchanged
+PRESSURE_RESPOND_MIN_SAMPLES = 4      # 20s / 5s: a window is never judged on fewer
+# The oscillation path.  In the retained series the first sample above 37.50 is 47.85 at
+# 21:18:21Z and the first owner application was killed at 21:27:10Z: 529 s of elevation ending in
+# an owner-visible kill, during which pressure fell below 25.00 on single samples seven times.
+# The budget is half that observed interval, so a response happens at least halfway along the
+# path the host was actually observed to take.
+PRESSURE_ELEVATED_BUDGET_SECONDS = 240
+# Hysteresis.  The longest run of CONSECUTIVE samples at or below 25.00 inside that window is
+# three samples spanning 60 s (21:15:51 -> 21:16:51Z), after which pressure returned to 47.85
+# within 90 s: 60 s of calm was observed to be false recovery.  The recovery window is twice that
+# observed false-recovery span.  The crossing the order names, 52.18 -> 24.5, is ONE sample and
+# fails this by a factor of four.
+PRESSURE_RECOVERY_WINDOW_SECONDS = 120
+PRESSURE_RECOVERY_MIN_SAMPLES = PRESSURE_RECOVERY_WINDOW_SECONDS // PRESSURE_SAMPLE_SECONDS   # 24
+PRESSURE_STOP_TERM_GRACE_SECONDS = 30 # the launcher's existing `timeout --kill-after=30s` grace:
+                                      # a pressure stop gets the same courtesy the wall limit has
+
+CALM = "CALM"
+ELEVATED = "ELEVATED"
+RULE_SUSTAINED = "SUSTAINED_ABOVE_RESPOND"
+RULE_BUDGET = "ELEVATED_BUDGET_EXHAUSTED"
+
+# A refusal is answered by waiting or by moving the work to an admitted host -- never by asking
+# again for less than the work needs.  A name that was refused remembers that refusal for as long
+# as the launcher's own default bounded wait (-W 3600), after which the refusal is stale.
+LOWERED_CAP_MEMORY_SECONDS = 3600
+
 ADMITTED = "ADMITTED"
 QUEUED = "QUEUED"
 REFUSED = "REFUSED"
@@ -150,6 +198,75 @@ class SystemResources:
                             if field_.startswith("avg10="):
                                 return float(field_.split("=", 1)[1])
         return 0.0
+
+    def pressure_full_avg10(self) -> float:
+        """The field systemd-oomd itself acts on.  Recorded beside `some` so a stop can be read
+        against the host's own policy; the decision still uses `some`, which is never lower."""
+        for candidate in (self._user_slice_pressure(), Path("/proc/pressure/memory")):
+            if candidate and candidate.exists():
+                for line in candidate.read_text().splitlines():
+                    if line.startswith("full "):
+                        for field_ in line.split():
+                            if field_.startswith("avg10="):
+                                return float(field_.split("=", 1)[1])
+        return 0.0
+
+    def cgroup_pressure_some_avg10(self, cgroup):
+        """This load's OWN memory pressure.  A reservation must be answerable for the cgroup it
+        covers, not only for the host, so both are sampled."""
+        if not cgroup:
+            return None
+        f = self.cgroup_root / str(cgroup).lstrip("/") / "memory.pressure"
+        try:
+            for line in f.read_text().splitlines():
+                if line.startswith("some "):
+                    for field_ in line.split():
+                        if field_.startswith("avg10="):
+                            return float(field_.split("=", 1)[1])
+        except OSError:
+            return None
+        return None
+
+    # -- identity.  A pid start time is measured in clock ticks SINCE BOOT, so it is meaningless
+    # across a reboot; and a lease written on one host says nothing about another.
+    def boot_id(self):
+        try:
+            return Path("/proc/sys/kernel/random/boot_id").read_text().strip()
+        except OSError:
+            return None
+
+    def boot_time(self):
+        """CLOCK_REALTIME seconds at boot (/proc/stat btime).  With it, a pid's start time in
+        ticks becomes an absolute instant and can be compared at all."""
+        try:
+            for line in Path("/proc/stat").read_text().splitlines():
+                if line.startswith("btime "):
+                    return int(line.split()[1])
+        except (OSError, IndexError, ValueError):
+            return None
+        return None
+
+    def host_key(self):
+        """An OPAQUE per-host key: sha256 of the machine id, truncated.  Never a host name, an
+        address or an account identifier -- those may not be written anywhere in this repository."""
+        for p in ("/etc/machine-id", "/var/lib/dbus/machine-id"):
+            try:
+                raw = Path(p).read_text().strip()
+            except OSError:
+                continue
+            if raw:
+                return hashlib.sha256(raw.encode()).hexdigest()[:16]
+        return None
+
+    def cgroup_procs(self, cgroup) -> list:
+        """The pids this cgroup holds, for a response that may touch NOTHING else."""
+        if not cgroup:
+            return []
+        f = self.cgroup_root / str(cgroup).lstrip("/") / "cgroup.procs"
+        try:
+            return [int(x) for x in f.read_text().split() if x.isdigit()]
+        except OSError:
+            return []
 
     def _user_slice_pressure(self):
         p = self.slice_cgroup_path()
@@ -285,6 +402,25 @@ class FileResources:
     def pressure_some_avg10(self):
         return float(self.d.get("pressure_some_avg10", 0.0))
 
+    def pressure_full_avg10(self):
+        return float(self.d.get("pressure_full_avg10", 0.0))
+
+    def cgroup_pressure_some_avg10(self, cgroup):
+        v = self.d.get("cgroup_pressure", {}).get(str(cgroup))
+        return None if v is None else float(v)
+
+    def boot_id(self):
+        return self.d.get("boot_id", "simulated-boot-0")
+
+    def boot_time(self):
+        return self.d.get("boot_time", 1790000000)
+
+    def host_key(self):
+        return self.d.get("host_key", "simulatedhost0000")
+
+    def cgroup_procs(self, cgroup):
+        return [int(x) for x in self.d.get("cgroup_procs", {}).get(str(cgroup), [])]
+
     def slice_memory_max(self):
         v = self.d.get("slice_memory_max", None)
         return None if v in (None, "infinity") else int(v)
@@ -355,6 +491,29 @@ class Lease:
     recovered: int = 0
     armed_at: float | None = None
     notes: list = field(default_factory=list)
+    # RR02: the identity a pid and a start time are only meaningful inside.  `pid_starttime` is in
+    # clock ticks since boot, so without `boot_id` a post-reboot process can in principle match a
+    # dead lease's pid and start time and make that lease read as live; and without `host_key` a
+    # coordinator's sweep cannot tell a worker's lease from its own.
+    boot_id: str | None = None
+    boot_time: int | None = None
+    host_key: str | None = None
+
+    # -- identity questions, each answered before liveness is even asked
+    def foreign_host(self, res) -> bool:
+        """A lease written on ANOTHER host.  This sweep may not judge it and may never reclaim it:
+        a coordinator reboot says nothing about a worker's load.  It is also not counted against
+        this host's capacity, because the bytes it reserves are not this host's bytes."""
+        mine = res.host_key() if hasattr(res, "host_key") else None
+        return bool(self.host_key and mine and self.host_key != mine)
+
+    def old_boot(self, res) -> bool:
+        """A lease written before this host booted.  Its local load cannot have survived, and its
+        pid/start-time witness is not comparable across the boot, so it is never read as live."""
+        if self.foreign_host(res):
+            return False
+        mine = res.boot_id() if hasattr(res, "boot_id") else None
+        return bool(self.boot_id and mine and self.boot_id != mine)
 
     def witness_alive(self, res, now: float) -> bool:
         """Is the load this reservation is for still running?
@@ -375,9 +534,32 @@ class Lease:
         3. **The arming grace window**, while a lease has no witness yet -- it is written before
            the unit exists, and a unit takes a moment to create its cgroup.  This errs toward
            HOLDING memory, never toward over-admitting.
+        4. **Boot and host identity first.**  A lease from an earlier boot of THIS host holds no
+           live load -- the reboot ended it -- and its pid/start-time witness is not comparable,
+           so it is never read as live (and its body is kept as a historical record, not deleted).
+           A lease from ANOTHER host is not judged here at all: its liveness is not this host's
+           question, and a coordinator reboot must never reclaim a worker's lease.
         """
+        if self.foreign_host(res):
+            return False                    # not judged here; reclaim() also never removes it
+        if self.old_boot(res):
+            return False                    # the boot that held this load is gone
         if self.armed and self.pid:
-            return bool(res.pid_alive(self.pid, self.pid_starttime))
+            if res.pid_alive(self.pid, self.pid_starttime):
+                return True
+            # RR02, and a deliberate reversal of one DR01 decision, reported as such.  DR01 read
+            # the holder's reaped child as the whole answer, because the scope cgroup still listed
+            # tasks that were winding down and the launcher therefore refused to release its own
+            # reservation.  That symptom is now handled where it belongs -- `cgroup_alive` checks
+            # each listed task and a zombie holds no memory -- and reading the pid alone leaves the
+            # case the order names: a DETACHED DESCENDANT still running in this load's own scope
+            # after the direct child exited.  Releasing there would hand a second admission the
+            # bytes a live descendant is using.  So a dead pid is not the end while this load's own
+            # scope still holds a live task.  The launcher waits a bounded moment for the scope to
+            # drain, so the ordinary case still frees the reservation at once.
+            if self.cgroup and self._cgroup_is_my_own() and res.cgroup_alive(self.cgroup):
+                return True
+            return False
         if self.cgroup and self._cgroup_is_my_own() and res.cgroup_alive(self.cgroup):
             return True
         return now < (self.armed_at or self.created_at) + ARM_GRACE_SECONDS
@@ -412,6 +594,9 @@ class Store:
                          or (Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state"))
                              / "crispdm/admission"))
         self.leases = self.root / "leases"
+        self.retained = self.root / "retained"          # RR02: lease BODIES, kept after the end
+        self.requests = self.root / "requests"          # RR02: what was asked for, and refused
+        self.incidents = self.root / "incidents"        # RR02: why a load was stopped
         self.lock_path = self.root / "admission.lock"
         self.ledger_path = self.root / "ledger.jsonl"
         self.queue_path = self.root / "queue.jsonl"
@@ -419,6 +604,7 @@ class Store:
 
     def prepare(self):
         self.leases.mkdir(parents=True, exist_ok=True)
+        self.retained.mkdir(parents=True, exist_ok=True)
 
     # -- the lock.  Held across read, decide and write: that is what makes admission atomic.
     def __enter__(self):
@@ -461,6 +647,60 @@ class Store:
             self.path_of(lease_id).unlink()
         except FileNotFoundError:
             pass
+
+    # -- RR02: a lease that ends keeps its BODY ------------------------------------------------
+    def retire(self, lease: Lease, cause: str, now: float, **extra) -> Path:
+        """End a lease WITHOUT destroying the record of what it was.
+
+        Before RR02 the store deleted the lease file and kept only a ledger line carrying the
+        lease id, so cap, cgroup, argv digest, wall and expiry -- exactly the fields an incident
+        review needs -- were gone.  Two bodies survived the 2026-09-26 reboot only because they
+        were transcribed by hand into
+        docs/audits/evidence/RR01_RESTART_20260926/INTERRUPTED_ATTEMPTS.json.  Now every end
+        writes the whole body here first, and only then removes it from the live set.
+        """
+        self.prepare()
+        body = {"schema": "crispdm.retained_lease.v1", "reclaim_cause": cause,
+                "retired_at_epoch": now, "lease": asdict(lease), **extra}
+        p = self.retained / f"{lease.lease_id}.json"
+        tmp = p.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(body, indent=1, sort_keys=True))
+        os.replace(tmp, p)
+        self.drop(lease.lease_id)
+        return p
+
+    def retained_body(self, lease_id):
+        p = self.retained / f"{lease_id}.json"
+        try:
+            return json.loads(p.read_text())
+        except (OSError, ValueError):
+            return None
+
+    # -- RR02: the register that makes a lowered re-ask visible ---------------------------------
+    def request_path(self, name) -> Path:
+        stem = re.sub(r"[^A-Za-z0-9_-]", "_", str(name))[:80] or "job"
+        return self.requests / f"{stem}.json"
+
+    def read_request(self, name):
+        try:
+            return json.loads(self.request_path(name).read_text())
+        except (OSError, ValueError):
+            return None
+
+    def write_request(self, name, record: dict):
+        self.requests.mkdir(parents=True, exist_ok=True)
+        p = self.request_path(name)
+        tmp = p.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(record, indent=1, sort_keys=True))
+        os.replace(tmp, p)
+
+    def write_incident(self, lease_id, record: dict) -> Path:
+        self.incidents.mkdir(parents=True, exist_ok=True)
+        p = self.incidents / f"{lease_id}.json"
+        tmp = p.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(record, indent=1, sort_keys=True))
+        os.replace(tmp, p)
+        return p
 
     def log(self, record: dict):
         self.prepare()
@@ -532,9 +772,43 @@ class Refusal(Exception):
 def reclaim(store: Store, res, now: float) -> dict:
     """The sweep.  A lease is freed only when its witness is DEAD; an expired lease whose child
     is still alive is extended.  This is how a lease survives a crash of whatever held it
-    without ever releasing the memory of a load that is still running."""
-    freed, extended, live = [], [], []
+    without ever releasing the memory of a load that is still running.
+
+    RR02 adds the two identity questions that come before liveness, and keeps every body:
+
+    * a lease from ANOTHER host is **never reclaimed and never judged** -- a coordinator reboot
+      must not touch a worker's lease -- and it does not count against this host's capacity,
+      because its bytes are not this host's bytes;
+    * a lease from an earlier boot of THIS host is retired as a **historical record**: the reboot
+      ended its local load, so its reservation is released, but its body is preserved and the
+      cause says which of the two things happened;
+    * every end -- old boot, dead witness, release -- writes the body to ``retained/`` first.
+    """
+    freed, extended, live, foreign, old_boot = [], [], [], [], []
     for lease in store.all_leases():
+        if lease.foreign_host(res):
+            foreign.append(lease.lease_id)
+            if "FOREIGN_HOST_NOT_JUDGED" not in lease.notes:
+                lease.notes.append("FOREIGN_HOST_NOT_JUDGED")
+                store.write(lease)
+                store.log({"_now": now, "event": "LEASE_FOREIGN_HOST_NOT_JUDGED",
+                           "lease_id": lease.lease_id, "cap_bytes": lease.cap_bytes,
+                           "note": "written on another host; this sweep neither reclaims it nor "
+                                   "counts it against this host's capacity"})
+            continue
+        if lease.old_boot(res):
+            old_boot.append(lease.lease_id)
+            store.retire(lease, "LEASE_RETIRED_OLD_BOOT", now,
+                         boot_id_at_retirement=res.boot_id() if hasattr(res, "boot_id") else None,
+                         observed_peak_bytes=res.cgroup_peak_bytes(lease.cgroup) if lease.cgroup else None,
+                         reading="its boot ended its local load; pid_starttime is ticks since boot "
+                                 "and is not comparable across a reboot, so no post-reboot process "
+                                 "was allowed to witness it")
+            store.log({"_now": now, "event": "LEASE_RETIRED_OLD_BOOT", "lease_id": lease.lease_id,
+                       "cap_bytes": lease.cap_bytes, "lease_boot_id": lease.boot_id,
+                       "armed": lease.armed, "pid": lease.pid, "cgroup": lease.cgroup,
+                       "body_retained": str(store.retained / f"{lease.lease_id}.json")})
+            continue
         alive = lease.witness_alive(res, now)
         if alive:
             live.append(lease)
@@ -548,12 +822,19 @@ def reclaim(store: Store, res, now: float) -> dict:
                            "cap_bytes": lease.cap_bytes, "pid": lease.pid, "cgroup": lease.cgroup})
         else:
             freed.append(lease.lease_id)
-            store.drop(lease.lease_id)
+            cause = ("LEASE_RECLAIMED_UNARMED_GRACE_EXPIRED" if not lease.armed
+                     else "LEASE_RECLAIMED_WITNESS_DEAD")
+            peak = res.cgroup_peak_bytes(lease.cgroup) if lease.cgroup else None
+            store.retire(lease, cause, now, observed_peak_bytes=peak,
+                         expired=lease.expires_at <= now)
             store.log({"_now": now, "event": "LEASE_RECLAIMED_WITNESS_DEAD", "lease_id": lease.lease_id,
                        "cap_bytes": lease.cap_bytes, "expired": lease.expires_at <= now,
                        "armed": lease.armed, "pid": lease.pid, "cgroup": lease.cgroup,
-                       "observed_peak_bytes": res.cgroup_peak_bytes(lease.cgroup) if lease.cgroup else None})
-    return {"freed": freed, "extended": extended, "live": live}
+                       "reclaim_cause": cause,
+                       "observed_peak_bytes": peak,
+                       "body_retained": str(store.retained / f"{lease.lease_id}.json")})
+    return {"freed": freed, "extended": extended, "live": live,
+            "foreign": foreign, "old_boot": old_boot}
 
 
 def evaluate(store: Store, res, req: Request, now: float) -> dict:
@@ -586,6 +867,12 @@ def evaluate(store: Store, res, req: Request, now: float) -> dict:
         "aggregate_committed_bytes": aggregate_committed,
         "request_cap_bytes": req.cap_bytes,
         "reclaimed_lease_ids": swept["freed"], "extended_lease_ids": swept["extended"],
+        "old_boot_retired_lease_ids": swept.get("old_boot", []),
+        "foreign_host_lease_ids": swept.get("foreign", []),
+        "pressure_full_avg10": (float(res.pressure_full_avg10())
+                                if hasattr(res, "pressure_full_avg10") else None),
+        "boot_id": res.boot_id() if hasattr(res, "boot_id") else None,
+        "host_key": res.host_key() if hasattr(res, "host_key") else None,
     }
 
     # ceilings first: a request that fits nothing is terminal, never queued
@@ -632,9 +919,79 @@ def evaluate(store: Store, res, req: Request, now: float) -> dict:
     return {"verdict": ADMITTED, "code": "ADMITTED", "reason": "reserved", "readings": readings}
 
 
+def lowered_after_refusal(store: Store, req: Request, now: float):
+    """RR02 defect 4.  A refused request answered by asking again for LESS.
+
+    The retained queue log of 2026-09-26 alternates cap 3 GiB and 1 GiB under one name while the
+    host was under pressure.  Lowering a request below its measured need in order to pass a gate
+    is forbidden: it converts a refusal into an under-capped launch, which is the same defect the
+    cap exists to prevent.  The only two correct answers to a refusal are to WAIT or to move the
+    work to a host that admits it.
+
+    Returns a Refusal-shaped dict when this request is a lowered re-ask of a refused one, else
+    None.  Genuinely different, smaller work is not blocked: it is asked to carry its own name,
+    which costs nothing and keeps the record readable.  A name whose earlier request was ADMITTED
+    never poisons a later smaller one -- nothing was dodged there.
+    """
+    prior = store.read_request(req.name)
+    if not prior:
+        return None
+    refused = prior.get("last_refused") or {}
+    cap = refused.get("cap_bytes")
+    at = refused.get("at_epoch")
+    if not cap or at is None:
+        return None
+    if now - float(at) > LOWERED_CAP_MEMORY_SECONDS:
+        return None                                  # the refusal is stale; waiting has expired
+    if int(req.cap_bytes) >= int(cap):
+        return None
+    same_argv = bool(req.argv_sha256 and req.argv_sha256 == refused.get("argv_sha256"))
+    return {
+        "code": "CAP_LOWERED_AFTER_REFUSAL",
+        "reason": (f"{human(req.cap_bytes)} is LESS than the {human(cap)} this name was refused "
+                   f"{int(now - float(at))}s ago ({refused.get('code')}); "
+                   + ("the command is byte-identical to the refused one. " if same_argv else
+                      "the command differs from the refused one. ")
+                   + "A refusal is answered by waiting for capacity or by moving the work to a "
+                     "host that admits it, never by asking for less than the work needs. If this "
+                     "is genuinely different, smaller work, give it its own -n name."),
+        "prior_refusal": refused, "same_argv": same_argv,
+    }
+
+
+def _note_request(store: Store, req: Request, decision: dict, now: float):
+    """The register the check above reads.  One record per name; refusals are what it remembers."""
+    rec = store.read_request(req.name) or {"schema": "crispdm.request_register.v1", "name": req.name}
+    entry = {"at_epoch": now, "cap_bytes": req.cap_bytes, "verdict": decision["verdict"],
+             "code": decision["code"], "label": req.label, "argv_sha256": req.argv_sha256}
+    rec["last"] = entry
+    rec["seen"] = int(rec.get("seen", 0)) + 1
+    rec["max_cap_bytes_ever_asked"] = max(int(rec.get("max_cap_bytes_ever_asked", 0)), int(req.cap_bytes))
+    if decision["verdict"] in (QUEUED, REFUSED):
+        # A CAP_LOWERED refusal must NOT become the remembered refusal: if it did, the remembered
+        # cap would drift downwards with every lowered re-ask and the rule would erode itself.
+        if decision["code"] != "CAP_LOWERED_AFTER_REFUSAL":
+            rec["last_refused"] = entry
+    elif decision["verdict"] == ADMITTED:
+        rec["last_admitted"] = entry
+        rec.pop("last_refused", None)     # capacity was found: the refusal no longer stands
+    store.write_request(req.name, rec)
+
+
 def acquire(store: Store, res, req: Request, now: float) -> dict:
     """One atomic admission: under the lock, decide and (on ADMITTED) write the reservation."""
     with store:
+        lowered = lowered_after_refusal(store, req, now)
+        if lowered:
+            decision = {"verdict": REFUSED, "code": lowered["code"], "reason": lowered["reason"],
+                        "readings": {"prior_refusal": lowered["prior_refusal"],
+                                     "same_argv_as_refused": lowered["same_argv"],
+                                     "request_cap_bytes": req.cap_bytes}}
+            _note_request(store, req, decision, now)
+            store.log({"_now": now, "event": "ADMISSION_REFUSED", "name": req.name,
+                       "label": req.label, "code": decision["code"], "reason": decision["reason"],
+                       "cap_bytes": req.cap_bytes, "readings": decision["readings"]})
+            return decision
         decision = evaluate(store, res, req, now)
         if decision["verdict"] == ADMITTED:
             # the id is one filesystem segment: a caller's name may carry slashes and dots
@@ -649,10 +1006,15 @@ def acquire(store: Store, res, req: Request, now: float) -> dict:
                 peak_bytes=req.peak_bytes, peak_scope=req.peak_scope,
                 peak_evidence_path=req.peak_evidence_path,
                 peak_evidence_sha256=req.peak_evidence_sha256,
-                argv_sha256=req.argv_sha256)
+                argv_sha256=req.argv_sha256,
+                # RR02: the identity that makes pid + pid_starttime mean anything at all
+                boot_id=res.boot_id() if hasattr(res, "boot_id") else None,
+                boot_time=res.boot_time() if hasattr(res, "boot_time") else None,
+                host_key=res.host_key() if hasattr(res, "host_key") else None)
             store.write(lease)
             decision["lease_id"] = lease.lease_id
             decision["lease"] = asdict(lease)
+        _note_request(store, req, decision, now)
         store.log({"_now": now, "event": "ADMISSION_" + decision["verdict"], "name": req.name,
                    "label": req.label, "code": decision["code"], "reason": decision["reason"],
                    "cap_bytes": req.cap_bytes, "lease_id": decision.get("lease_id"),
@@ -698,14 +1060,44 @@ def renew(store: Store, res, lease_id: str, now: float) -> dict:
         return {"ok": True, "expires_at": lease.expires_at}
 
 
-def release(store: Store, res, lease_id: str, now: float, observed_peak_bytes=None) -> dict:
+def release(store: Store, res, lease_id: str, now: float, observed_peak_bytes=None,
+            witness_pid=None) -> dict:
     """Release, but never under a live child.  A release asked for while the witness is still
-    alive RENEWS the lease and says so: that is the crash-recovery guarantee."""
+    alive RENEWS the lease and says so: that is the crash-recovery guarantee.
+
+    ``witness_pid`` is for the one case a holder cannot otherwise answer: its lease could not be
+    armed, so the lease carries no witness at all and is protected by the arming grace, yet the
+    holder has stopped the child it started and knows the load is over.  The pid is not taken on
+    trust -- it is CHECKED.  If that process is still alive the release is refused exactly as any
+    other; only a dead pid, on a lease that was never armed, releases early.
+    """
     with store:
         p = store.path_of(lease_id)
         if not p.exists():
             return {"ok": True, "code": "ALREADY_RELEASED", "lease_id": lease_id}
         lease = Lease(**json.loads(p.read_text()))
+        if witness_pid and not lease.armed and not lease.cgroup:
+            if res.pid_alive(int(witness_pid)):
+                lease.expires_at = now + LEASE_TTL_SECONDS
+                lease.notes.append("RELEASE_REFUSED_UNARMED_WITNESS_PID_ALIVE")
+                store.write(lease)
+                store.log({"_now": now, "event": "RELEASE_REFUSED_CHILD_ALIVE", "lease_id": lease_id,
+                           "witness_pid": int(witness_pid), "cap_bytes": lease.cap_bytes})
+                return {"ok": False, "code": "CHILD_STILL_ALIVE", "lease_id": lease_id,
+                        "reason": "the reservation is kept: the pid offered as the witness is alive"}
+            lease.notes.append("RELEASED_UNARMED_WITNESS_PID_DEAD")
+            peak = observed_peak_bytes
+            store.retire(lease, "LEASE_RELEASED_NEVER_ARMED", now, observed_peak_bytes=peak,
+                         witness_pid=int(witness_pid))
+            store.log({"_now": now, "event": "LEASE_RELEASED", "lease_id": lease_id,
+                       "name": lease.name, "label": lease.label, "cap_bytes": lease.cap_bytes,
+                       "unit": lease.unit, "observed_tree_peak_bytes": peak,
+                       "peak_scope": "unobserved",
+                       "code": "LEASE_RELEASED_NEVER_ARMED", "witness_pid": int(witness_pid),
+                       "note": "the lease could never be armed; the holder's own child pid was "
+                               "checked dead before the bytes were given back"})
+            return {"ok": True, "code": "RELEASED_NEVER_ARMED", "lease_id": lease_id,
+                    "observed_tree_peak_bytes": peak}
         if lease.witness_alive(res, now):
             lease.expires_at = now + LEASE_TTL_SECONDS
             lease.notes.append("RELEASE_REFUSED_CHILD_STILL_ALIVE")
@@ -717,7 +1109,10 @@ def release(store: Store, res, lease_id: str, now: float, observed_peak_bytes=No
         peak = observed_peak_bytes
         if peak is None and lease.cgroup:
             peak = res.cgroup_peak_bytes(lease.cgroup)
-        store.drop(lease_id)
+        # RR02: the body is kept.  A released lease is as much an incident-review record as a
+        # reclaimed one -- the cap, the cgroup, the argv digest and the wall it ran under are the
+        # fields a later review needs, and the ledger line alone does not carry them.
+        store.retire(lease, "LEASE_RELEASED", now, observed_peak_bytes=peak)
         store.log({"_now": now, "event": "LEASE_RELEASED", "lease_id": lease_id, "name": lease.name,
                    "label": lease.label, "cap_bytes": lease.cap_bytes, "unit": lease.unit,
                    "observed_tree_peak_bytes": peak,
@@ -749,8 +1144,331 @@ def state(store: Store, res, now: float) -> dict:
             "slice_memory_max": slice_max,
             "slice_memory_current": res.slice_memory_current(),
             "pressure_some_avg10": res.pressure_some_avg10(),
+            "pressure_full_avg10": (res.pressure_full_avg10()
+                                    if hasattr(res, "pressure_full_avg10") else None),
+            "pressure_admit_max": PRESSURE_ADMIT_MAX,
+            "pressure_respond_at": PRESSURE_RESPOND_AT,
+            "boot_id": res.boot_id() if hasattr(res, "boot_id") else None,
+            "host_key": res.host_key() if hasattr(res, "host_key") else None,
             "reclaimed_lease_ids": swept["freed"], "extended_lease_ids": swept["extended"],
+            "old_boot_retired_lease_ids": swept.get("old_boot", []),
+            "foreign_host_lease_ids": swept.get("foreign", []),
+            "retained_bodies": len(list(store.retained.glob("*.json"))) if store.retained.exists() else 0,
         }
+
+
+# ---- RR02: the monitor that watches a reservation AFTER it was granted ------------------------
+
+class PressureMonitor:
+    """Pure decision logic: a series of pressure samples in, a verdict out.
+
+    This is the defect RR01 named RR-C: "admission is a gate at entry with no monitor after it".
+    On the previous boot two scopes, each inside its own 3 GiB cap, kept running while the user
+    slice's PSI rose past 60 and systemd-oomd killed the owner's browser and then the owner's
+    editor.  Admission refused everything NEW correctly.  Nothing re-examined what was already
+    admitted.
+
+    Two rules stop a load, both derived (see the constants above), and one rule -- hysteresis --
+    decides when the host has actually recovered:
+
+    * ``SUSTAINED_ABOVE_RESPOND``: every sample in the trailing 20 s (at least 4 of them) is above
+      the 37.50 midpoint of the two thresholds policy declares.  The fast path: a genuine,
+      unambiguous crossing.
+    * ``ELEVATED_BUDGET_EXHAUSTED``: cumulative time spent above the 25.00 admission limit since
+      elevation began, without a CONFIRMED recovery, exceeds 240 s.  This is the path the host was
+      actually observed to take: pressure oscillated between 4.9 and 74.96 for 529 s and then the
+      owner lost two applications.  A rule that demanded every sample be high would have watched
+      that happen.
+    * recovery is confirmed only by 120 s (>= 24 samples) with NO sample above 25.00.  The
+      crossing the order names -- 52.18 down to 24.5 -- is one sample, and the sample after it was
+      7.04 and the one after that 54.03.  It does not clear anything.
+
+    What it may do about it: stop ITS OWN identified experiment scope, keeping partial evidence
+    and recording the exit cause.  It never targets another lease, another cgroup, a process that
+    is not in its own scope's ``cgroup.procs``, an unrelated user application or any service.  It
+    never changes a limit, a ceiling, a swap setting or oomd.
+    """
+
+    def __init__(self, *, respond_at=PRESSURE_RESPOND_AT, admit_max=PRESSURE_ADMIT_MAX,
+                 respond_window=PRESSURE_RESPOND_WINDOW_SECONDS,
+                 respond_min_samples=PRESSURE_RESPOND_MIN_SAMPLES,
+                 budget_seconds=PRESSURE_ELEVATED_BUDGET_SECONDS,
+                 recovery_window=PRESSURE_RECOVERY_WINDOW_SECONDS,
+                 recovery_min_samples=PRESSURE_RECOVERY_MIN_SAMPLES):
+        self.respond_at = float(respond_at)
+        self.admit_max = float(admit_max)
+        self.respond_window = float(respond_window)
+        self.respond_min_samples = int(respond_min_samples)
+        self.budget_seconds = float(budget_seconds)
+        self.recovery_window = float(recovery_window)
+        self.recovery_min_samples = int(recovery_min_samples)
+        self.state = CALM
+        self.samples = []                 # (at, host_pressure, cgroup_pressure)
+        self.elevated_since = None
+        self.elevated_seconds = 0.0
+        self.recovery_since = None
+        self.recovery_samples = 0
+        self.recoveries_confirmed = 0
+        self.last_at = None
+        self.last_pressure = None
+        self.verdict = None
+
+    # -- the series
+    def feed(self, at: float, host_pressure: float, cgroup_pressure=None) -> dict:
+        """One sample.  Returns {"stop": bool, "rule": str|None, ...}; never signals anything."""
+        at = float(at)
+        host_pressure = float(host_pressure)
+        delta = 0.0 if self.last_at is None else max(0.0, at - float(self.last_at))
+        prev = self.last_pressure
+        self.last_at = at
+        self.last_pressure = host_pressure
+        self.samples.append((at, host_pressure, cgroup_pressure))
+        # The interval between two samples counts as elevated only when BOTH of its ends are above
+        # the admission limit.  Crediting an interval whose earlier end was calm would charge a
+        # load for time the host was not under pressure -- in the retained series the sample before
+        # the first crossing was 16.07 -- and a monitor that over-counts stops good runs.
+        elevated_interval = (delta if (host_pressure > self.admit_max
+                                       and prev is not None and prev > self.admit_max) else 0.0)
+
+        if self.state == CALM and host_pressure > self.respond_at:
+            self.state = ELEVATED
+            self.elevated_since = at
+            self.elevated_seconds = 0.0
+            self._cancel_recovery()
+
+        if self.state == ELEVATED:
+            if host_pressure > self.admit_max:
+                # Time spent above the level at which the host is calm enough to admit new work
+                # is time this load is riding pressure.  A single dip does not give it back.
+                self.elevated_seconds += elevated_interval
+                self._cancel_recovery()
+            else:
+                if self.recovery_since is None:
+                    self.recovery_since = at
+                    self.recovery_samples = 0
+                self.recovery_samples += 1
+                if (at - self.recovery_since >= self.recovery_window
+                        and self.recovery_samples >= self.recovery_min_samples):
+                    self.state = CALM
+                    self.recoveries_confirmed += 1
+                    self.elevated_since = None
+                    self.elevated_seconds = 0.0
+                    self._cancel_recovery()
+
+        return self.decide(at)
+
+    def _cancel_recovery(self):
+        self.recovery_since = None
+        self.recovery_samples = 0
+
+    # -- the verdict
+    def decide(self, at: float) -> dict:
+        out = {"stop": False, "rule": None, "state": self.state,
+               "elevated_seconds": round(self.elevated_seconds, 3),
+               "recovery_seconds": (0.0 if self.recovery_since is None
+                                    else round(float(at) - self.recovery_since, 3)),
+               "recovery_samples": self.recovery_samples,
+               "recoveries_confirmed": self.recoveries_confirmed}
+        if self.state != ELEVATED:
+            return out
+        # Coverage is a property of the SERIES: we must HAVE observations reaching back a full
+        # window.  Requiring the samples INSIDE the window to span it instead was wrong and a real
+        # run found it: the sample period is exactly a quarter of the window, so a few
+        # milliseconds of drift per tick left the window permanently one sample short and this rule
+        # could never fire at all.
+        covered = (float(at) - self.samples[0][0]) >= self.respond_window - 1e-9
+        window = [s for s in self.samples if s[0] >= float(at) - self.respond_window - 1e-9]
+        if (covered and len(window) >= self.respond_min_samples
+                and all(s[1] > self.respond_at for s in window)):
+            return dict(out, stop=True, rule=RULE_SUSTAINED,
+                        detail=(f"every one of {len(window)} samples in the trailing "
+                                f"{self.respond_window:.0f}s is above {self.respond_at:.2f}"))
+        if self.elevated_seconds >= self.budget_seconds:
+            return dict(out, stop=True, rule=RULE_BUDGET,
+                        detail=(f"{self.elevated_seconds:.0f}s above {self.admit_max:.2f} since "
+                                f"elevation began, with no confirmed recovery; the budget is "
+                                f"{self.budget_seconds:.0f}s, half the 529s the host was observed "
+                                f"to take from elevation to an owner-visible kill"))
+        return out
+
+    def series(self) -> list:
+        return [{"at": a, "host_some_avg10": h, "cgroup_some_avg10": c} for a, h, c in self.samples]
+
+
+def _monitor_clock():
+    """Real elapsed time, or a file the tests advance by hand.  The monitor's WINDOWS are policy
+    constants and are never injectable; only the reading of the clock is, exactly as the readings
+    of memory already are, so reboot/pressure logic can be proved without pressuring a host."""
+    p = os.environ.get("CRISPDM_ADMISSION_MONITOR_CLOCK")
+    if p:
+        try:
+            return float(Path(p).read_text().strip())
+        except (OSError, ValueError):
+            return 0.0
+    return time.monotonic()
+
+
+def _scope_stop(res, lease: Lease, self_pid: int, signals, log, on_step=None) -> dict:
+    """Stop THIS load's own scope and nothing else.
+
+    Order of escalation, each step bounded to this lease's own witnesses:
+      1. SIGTERM the scope leader this launcher started (the pid recorded in the lease), so the
+         child's own `timeout`/handlers run and its partial evidence is written;
+      2. after the grace the launcher's wall limit already grants, SIGTERM anything still in THIS
+         unit's own cgroup -- that is how a detached grandchild is reached;
+      3. SIGKILL the same, still only this unit's own cgroup.
+    A pid that is not the recorded leader and not listed in this lease's own ``cgroup.procs`` is
+    never signalled.  pid 1 and this monitor itself are excluded unconditionally.
+    """
+    acted = {"term_leader": None, "term_cgroup": [], "kill_cgroup": [], "refused": []}
+
+    def allowed(pid):
+        if not pid or int(pid) <= 1 or int(pid) == int(self_pid):
+            return False
+        return True
+
+    def step():
+        if on_step:
+            on_step(dict(acted))
+
+    if lease.pid and allowed(lease.pid):
+        acted["term_leader"] = int(lease.pid)
+        signals(int(lease.pid), "TERM")
+        step()                      # durable before the grace, not after it
+    elif lease.pid:
+        acted["refused"].append({"pid": lease.pid, "why": "not a signalable own-scope pid"})
+
+    if lease.cgroup and lease._cgroup_is_my_own():
+        signals(None, "GRACE")
+        for pid in res.cgroup_procs(lease.cgroup):
+            if allowed(pid):
+                acted["term_cgroup"].append(int(pid))
+                signals(int(pid), "TERM")
+        step()
+        signals(None, "GRACE")
+        for pid in res.cgroup_procs(lease.cgroup):
+            if allowed(pid):
+                acted["kill_cgroup"].append(int(pid))
+                signals(int(pid), "KILL")
+    elif lease.cgroup:
+        acted["refused"].append({"cgroup": lease.cgroup,
+                                 "why": "not this unit's own cgroup; an inherited ancestor is "
+                                        "never signalled"})
+    log(acted)
+    return acted
+
+
+def monitor(store: Store, res, lease_id: str, *, self_pid=None, peak_file=None, cause_file=None,
+            sample_seconds=PRESSURE_SAMPLE_SECONDS, max_samples=0, clock=None, signals=None,
+            child_alive=None) -> dict:
+    """The loop crispdm-run runs beside its child: heartbeat, tree peak, pressure, response.
+
+    It replaces the launcher's shell sampler, which renewed the lease and read the tree peak but
+    never looked at pressure.  Reads only, except for the lease heartbeat, the peak file, the
+    ledger and -- when a rule fires -- signals to its own scope.
+    """
+    clock = clock or _monitor_clock
+    self_pid = int(self_pid or os.getpid())
+    mon = PressureMonitor()
+    p = store.path_of(lease_id)
+    if not p.exists():
+        return {"ok": False, "code": "NO_SUCH_LEASE", "lease_id": lease_id}
+    lease = Lease(**json.loads(p.read_text()))
+
+    def default_alive():
+        return res.pid_alive(lease.pid, lease.pid_starttime) if lease.pid else \
+            res.cgroup_alive(lease.cgroup)
+    alive = child_alive or default_alive
+
+    def default_signals(pid, what):
+        if what == "GRACE":
+            time.sleep(PRESSURE_STOP_TERM_GRACE_SECONDS if not os.environ.get(
+                "CRISPDM_ADMISSION_MONITOR_CLOCK") else 0.05)
+            return
+        try:
+            os.kill(int(pid), {"TERM": 15, "KILL": 9}[what])
+        except (OSError, ProcessLookupError):
+            pass
+    signals = signals or default_signals
+
+    best_peak, n, stopped = 0, 0, None
+    while alive():
+        at = clock()
+        host_p = float(res.pressure_some_avg10())
+        cg_p = (res.cgroup_pressure_some_avg10(lease.cgroup)
+                if hasattr(res, "cgroup_pressure_some_avg10") else None)
+        verdict = mon.feed(at, host_p, cg_p)
+
+        cur = res.cgroup_peak_bytes(lease.cgroup) or res.cgroup_current_bytes(lease.cgroup) or 0
+        if int(cur) > best_peak:
+            best_peak = int(cur)
+            if peak_file:
+                Path(peak_file).write_text(str(best_peak))
+        renew(store, res, lease_id, now_from_env())
+
+        if verdict["stop"]:
+            # A response may act only on a load that actually holds memory here: a scope holding
+            # nothing cannot be part of the problem, and stopping it would buy the host nothing.
+            holds = res.cgroup_current_bytes(lease.cgroup) if lease.cgroup else None
+            if holds is not None and int(holds) <= 0:
+                verdict = dict(verdict, stop=False, rule=None,
+                               withheld="this scope holds no memory; stopping it would free none")
+            else:
+                stopped = verdict
+                break
+        n += 1
+        if max_samples and n >= max_samples:
+            break
+        if not os.environ.get("CRISPDM_ADMISSION_MONITOR_CLOCK"):
+            time.sleep(max(0.05, float(sample_seconds)))
+        else:
+            time.sleep(0.01)
+
+    record = {"schema": "crispdm.pressure_incident.v1", "lease_id": lease_id,
+              "name": lease.name, "label": lease.label, "unit": lease.unit,
+              "cgroup": lease.cgroup, "cap_bytes": lease.cap_bytes,
+              "argv_sha256": lease.argv_sha256, "boot_id": lease.boot_id,
+              "host_key": lease.host_key,
+              "observed_tree_peak_bytes": best_peak,
+              "samples": mon.series(),
+              "policy": {"pressure_admit_max": PRESSURE_ADMIT_MAX,
+                         "pressure_respond_at": PRESSURE_RESPOND_AT,
+                         "respond_window_seconds": PRESSURE_RESPOND_WINDOW_SECONDS,
+                         "elevated_budget_seconds": PRESSURE_ELEVATED_BUDGET_SECONDS,
+                         "recovery_window_seconds": PRESSURE_RECOVERY_WINDOW_SECONDS,
+                         "oomd_limit_read_from_host_policy": PRESSURE_OOMD_LIMIT},
+              "state": mon.state, "elevated_seconds": round(mon.elevated_seconds, 3),
+              "recoveries_confirmed": mon.recoveries_confirmed}
+    if stopped:
+        record["exit_cause"] = "PRESSURE_STOP_" + stopped["rule"]
+        record["rule"] = stopped["rule"]
+        record["detail"] = stopped.get("detail")
+        record["partial_evidence_retained"] = True
+        record["scope_only"] = True
+        # The cause is made DURABLE BEFORE anything is signalled.  RR01's lesson was that a record
+        # which exists only in a process's pipes does not survive the event it describes.
+        store.write_incident(lease_id, record)
+        if cause_file:
+            Path(cause_file).write_text(json.dumps(record, indent=1, sort_keys=True))
+        def _durable(a):
+            record["acted"] = a
+            store.write_incident(lease_id, record)
+            if cause_file:
+                Path(cause_file).write_text(json.dumps(record, indent=1, sort_keys=True))
+
+        acted = _scope_stop(res, lease, self_pid, signals, on_step=_durable,
+                            log=lambda a: store.log({"event": "PRESSURE_STOP_OWN_SCOPE",
+                                                 "lease_id": lease_id, "rule": stopped["rule"],
+                                                 "unit": lease.unit, "cgroup": lease.cgroup,
+                                                 "cap_bytes": lease.cap_bytes,
+                                                 "acted": a,
+                                                 "note": "only this load's own experiment scope "
+                                                         "was stopped; no unrelated process and no "
+                                                         "service was signalled, and no limit, "
+                                                         "ceiling, cache or swap was touched"}))
+        record["acted"] = acted
+        store.write_incident(lease_id, record)          # again, now carrying what it acted on
+    return {"ok": True, "stopped": bool(stopped), "record": record}
 
 
 # ---- in-process use: the same authority, for launch paths written in Python -------------------
@@ -899,6 +1617,26 @@ def main(argv=None) -> int:
             p.add_argument("--unit", default=None)
         if name == "release":
             p.add_argument("--observed-peak-bytes", type=int, default=None)
+            p.add_argument("--witness-pid", type=int, default=None,
+                           help="for a lease that could never be armed: the holder's own child "
+                                "pid, CHECKED dead before the bytes are given back")
+
+    mon = sub.add_parser("monitor",
+                         help="watch a reservation AFTER it was granted: heartbeat, tree peak, and "
+                              "host plus cgroup memory pressure with hysteresis.  On a sustained "
+                              "crossing it stops THIS load's own scope only, keeping its partial "
+                              "evidence and writing the exit cause.")
+    mon.add_argument("lease_id")
+    mon.add_argument("--peak-file", default=None, help="where to keep the running tree peak")
+    mon.add_argument("--cause-file", default=None,
+                     help="where to write the exit cause, BEFORE anything is signalled")
+    mon.add_argument("--sample-seconds", type=int, default=PRESSURE_SAMPLE_SECONDS)
+    mon.add_argument("--max-samples", type=int, default=0, help="0 = until the load ends")
+
+    pol = sub.add_parser("policy", help="the derived post-admission thresholds and where each comes from")
+
+    ret = sub.add_parser("retained", help="a retained lease body, or all of their ids")
+    ret.add_argument("lease_id", nargs="?", default=None)
 
     sub.add_parser("inside-scope",
                    help="is THIS process inside a cgroup a live reservation covers?  A runner that "
@@ -959,11 +1697,53 @@ def main(argv=None) -> int:
             print(json.dumps(renew(store, res, a.lease_id, now), sort_keys=True))
             return 0
         if a.cmd == "release":
-            d = release(store, res, a.lease_id, now, a.observed_peak_bytes)
+            d = release(store, res, a.lease_id, now, a.observed_peak_bytes,
+                        witness_pid=a.witness_pid)
             print(json.dumps(d, sort_keys=True))
             return 0 if d["ok"] else 1
         if a.cmd == "state":
             print(json.dumps(state(store, res, now), indent=1, sort_keys=True))
+            return 0
+        if a.cmd == "monitor":
+            out = monitor(store, res, a.lease_id, peak_file=a.peak_file, cause_file=a.cause_file,
+                          sample_seconds=a.sample_seconds, max_samples=a.max_samples)
+            print(json.dumps(out, sort_keys=True))
+            return 0 if out.get("ok") else 1
+        if a.cmd == "policy":
+            print(json.dumps({
+                "pressure_admit_max": PRESSURE_ADMIT_MAX,
+                "pressure_respond_at": PRESSURE_RESPOND_AT,
+                "respond_window_seconds": PRESSURE_RESPOND_WINDOW_SECONDS,
+                "respond_min_samples": PRESSURE_RESPOND_MIN_SAMPLES,
+                "sample_seconds": PRESSURE_SAMPLE_SECONDS,
+                "elevated_budget_seconds": PRESSURE_ELEVATED_BUDGET_SECONDS,
+                "recovery_window_seconds": PRESSURE_RECOVERY_WINDOW_SECONDS,
+                "recovery_min_samples": PRESSURE_RECOVERY_MIN_SAMPLES,
+                "term_grace_seconds": PRESSURE_STOP_TERM_GRACE_SECONDS,
+                "host_oomd_limit_observed": PRESSURE_OOMD_LIMIT,
+                "host_oomd_duration_seconds_observed": PRESSURE_OOMD_DURATION_SECONDS,
+                "derivations": {
+                    "pressure_respond_at": "midpoint of the admission limit (25.00, DR01) and the "
+                                           "host's own oomd limit (50.00, read from the journal "
+                                           "lines retained in OOM_INCIDENT_REGISTER.json)",
+                    "respond_window_seconds": "the oomd duration the host's own policy declares",
+                    "elevated_budget_seconds": "half the 529 s the retained ledger series shows "
+                                               "between the first sample above 37.50 and the first "
+                                               "owner-application kill",
+                    "recovery_window_seconds": "twice the longest run of consecutive samples at or "
+                                               "below 25.00 observed inside that window (3 samples, "
+                                               "60 s), which was followed by 47.85 within 90 s",
+                    "sample_seconds": "the launcher's existing heartbeat period; unchanged",
+                    "term_grace_seconds": "the launcher's existing timeout --kill-after grace",
+                }}, indent=1, sort_keys=True))
+            return 0
+        if a.cmd == "retained":
+            if a.lease_id:
+                body = store.retained_body(a.lease_id)
+                print(json.dumps(body, indent=1, sort_keys=True) if body else "{}")
+                return 0 if body else 1
+            ids = sorted(p.stem for p in store.retained.glob("*.json")) if store.retained.exists() else []
+            print(json.dumps({"retained": ids}, indent=1, sort_keys=True))
             return 0
         if a.cmd == "inside-scope":
             try:

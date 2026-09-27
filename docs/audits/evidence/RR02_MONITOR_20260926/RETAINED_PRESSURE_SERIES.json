@@ -1,0 +1,593 @@
+{
+ "constants_derived": {
+  "PRESSURE_ADMIT_MAX": {
+   "origin": "DR01, unchanged: half the host's own oomd limit",
+   "value": 25.0
+  },
+  "PRESSURE_ELEVATED_BUDGET_SECONDS": {
+   "origin": "half of the 529s observed between the first sample above the respond threshold and the first owner-application kill",
+   "value": 240
+  },
+  "PRESSURE_RECOVERY_WINDOW_SECONDS": {
+   "origin": "twice the 60s longest observed run at or below the admission limit, which was followed 90s later by pressure above the respond threshold: 60s of calm was OBSERVED to be false recovery",
+   "value": 120
+  },
+  "PRESSURE_RESPOND_AT": {
+   "origin": "midpoint of the admission limit and the host's oomd limit; strictly above the first, so a load legitimately admitted at 24.5 does not stop itself, and strictly below the second, so the response precedes the kill",
+   "value": 37.5
+  },
+  "PRESSURE_RESPOND_WINDOW_SECONDS": {
+   "origin": "the duration the host's own oomd policy declares",
+   "value": 20
+  },
+  "PRESSURE_SAMPLE_SECONDS": {
+   "origin": "the launcher's existing heartbeat period, unchanged",
+   "value": 5
+  },
+  "PRESSURE_STOP_TERM_GRACE_SECONDS": {
+   "origin": "the launcher's existing timeout --kill-after grace",
+   "value": 30
+  }
+ },
+ "limits_of_this_derivation": [
+  "the retained series was sampled by the queue poll at 15 s and 30 s, so it bounds nothing finer than 15 s; the 5 s sample period is inherited from the launcher's existing heartbeat and is not derived from this series",
+  "one host, one window, two admitted scopes: an observed path, not a distribution",
+  "nothing here attributes the kills to our two scopes; the two killed applications were themselves the largest memory holders on the host",
+  "a response that stops our own scope earlier does not prove the owner's applications would have survived; it removes our contribution, it does not control the host"
+ ],
+ "observations_the_constants_come_from": {
+  "first_sample_above_respond_threshold": {
+   "at_utc": "2026-09-26T21:18:21Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "HOST_HEADROOM",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 8986988544,
+   "some_avg10": 47.85
+  },
+  "longest_run_of_consecutive_samples_at_or_below_admit_max": {
+   "samples": [
+    {
+     "at_utc": "2026-09-26T21:15:51Z",
+     "cap_bytes_requested": 3221225472,
+     "code": "HOST_HEADROOM",
+     "event": "ADMISSION_QUEUED",
+     "live_leases": 2,
+     "mem_available_bytes": 8428220416,
+     "some_avg10": 24.2
+    },
+    {
+     "at_utc": "2026-09-26T21:16:21Z",
+     "cap_bytes_requested": 3221225472,
+     "code": "HOST_HEADROOM",
+     "event": "ADMISSION_QUEUED",
+     "live_leases": 2,
+     "mem_available_bytes": 7625994240,
+     "some_avg10": 18.34
+    },
+    {
+     "at_utc": "2026-09-26T21:16:51Z",
+     "cap_bytes_requested": 3221225472,
+     "code": "HOST_HEADROOM",
+     "event": "ADMISSION_QUEUED",
+     "live_leases": 2,
+     "mem_available_bytes": 8023891968,
+     "some_avg10": 4.9
+    }
+   ],
+   "seconds_until_pressure_was_above_the_respond_threshold_again": 90,
+   "span_seconds": 60
+  },
+  "seconds_from_that_sample_to_the_first_owner_kill": 529,
+  "seconds_from_that_sample_to_the_second_owner_kill": 568,
+  "single_samples_at_or_below_admit_max_after_elevation_began": [
+   "2026-09-26T21:20:21Z 24.5",
+   "2026-09-26T21:21:37Z 7.04",
+   "2026-09-26T21:26:07Z 24.87"
+  ],
+  "the_crossing_the_order_names": {
+   "from": 52.18,
+   "reading": "one sample below the admission limit is not recovery",
+   "to": 24.5,
+   "what_followed": "7.04 at 21:21:37Z, then 54.03 at 21:22:07Z"
+  }
+ },
+ "recorded_at": "2026-09-26",
+ "recorded_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+ "reference_events": {
+  "host_oomd_policy_read_from_the_journal": "killed ... due to memory pressure for the user slice being 55.11% > 50.00% for > 20s with reclaim activity",
+  "metric_note": "admission reads memory.pressure 'some' avg10; systemd-oomd acts on 'full' avg10. 'some' is never lower than 'full', so a limit expressed on 'some' sits on the conservative side of the host's own policy.",
+  "owner_browser_killed_utc": "2026-09-26T21:27:10Z",
+  "owner_editor_killed_utc": "2026-09-26T21:27:49Z"
+ },
+ "replay_of_the_retained_series_through_the_monitor": {
+  "first_stop": {
+   "at_utc": "2026-09-26T21:24:37Z",
+   "elevated_seconds": 240.0,
+   "recovery_samples": 0,
+   "rule": "ELEVATED_BUDGET_EXHAUSTED",
+   "some_avg10": 55.82,
+   "state": "ELEVATED",
+   "stop": true
+  },
+  "reading": "the rule that fires is the oscillation budget, not the sustained window: with 30 s between samples no 20 s window holds four samples. That is why both rules exist.",
+  "samples": [
+   {
+    "at_utc": "2026-09-26T21:15:51Z",
+    "elevated_seconds": 0.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 24.2,
+    "state": "CALM",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:16:21Z",
+    "elevated_seconds": 0.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 18.34,
+    "state": "CALM",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:16:51Z",
+    "elevated_seconds": 0.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 4.9,
+    "state": "CALM",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:17:21Z",
+    "elevated_seconds": 0.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 35.75,
+    "state": "CALM",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:17:51Z",
+    "elevated_seconds": 0.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 16.07,
+    "state": "CALM",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:18:21Z",
+    "elevated_seconds": 0.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 47.85,
+    "state": "ELEVATED",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:18:51Z",
+    "elevated_seconds": 30.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 35.17,
+    "state": "ELEVATED",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:19:21Z",
+    "elevated_seconds": 60.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 47.18,
+    "state": "ELEVATED",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:19:51Z",
+    "elevated_seconds": 90.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 52.18,
+    "state": "ELEVATED",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:20:21Z",
+    "elevated_seconds": 90.0,
+    "recovery_samples": 1,
+    "rule": null,
+    "some_avg10": 24.5,
+    "state": "ELEVATED",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:21:37Z",
+    "elevated_seconds": 90.0,
+    "recovery_samples": 2,
+    "rule": null,
+    "some_avg10": 7.04,
+    "state": "ELEVATED",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:22:07Z",
+    "elevated_seconds": 90.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 54.03,
+    "state": "ELEVATED",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:22:37Z",
+    "elevated_seconds": 120.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 32.77,
+    "state": "ELEVATED",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:23:07Z",
+    "elevated_seconds": 150.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 29.4,
+    "state": "ELEVATED",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:23:37Z",
+    "elevated_seconds": 180.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 45.14,
+    "state": "ELEVATED",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:24:07Z",
+    "elevated_seconds": 210.0,
+    "recovery_samples": 0,
+    "rule": null,
+    "some_avg10": 32.19,
+    "state": "ELEVATED",
+    "stop": false
+   },
+   {
+    "at_utc": "2026-09-26T21:24:37Z",
+    "elevated_seconds": 240.0,
+    "recovery_samples": 0,
+    "rule": "ELEVATED_BUDGET_EXHAUSTED",
+    "some_avg10": 55.82,
+    "state": "ELEVATED",
+    "stop": true
+   },
+   {
+    "at_utc": "2026-09-26T21:25:07Z",
+    "elevated_seconds": 270.0,
+    "recovery_samples": 0,
+    "rule": "ELEVATED_BUDGET_EXHAUSTED",
+    "some_avg10": 56.56,
+    "state": "ELEVATED",
+    "stop": true
+   },
+   {
+    "at_utc": "2026-09-26T21:25:37Z",
+    "elevated_seconds": 300.0,
+    "recovery_samples": 0,
+    "rule": "ELEVATED_BUDGET_EXHAUSTED",
+    "some_avg10": 57.23,
+    "state": "ELEVATED",
+    "stop": true
+   },
+   {
+    "at_utc": "2026-09-26T21:26:07Z",
+    "elevated_seconds": 300.0,
+    "recovery_samples": 1,
+    "rule": "ELEVATED_BUDGET_EXHAUSTED",
+    "some_avg10": 24.87,
+    "state": "ELEVATED",
+    "stop": true
+   },
+   {
+    "at_utc": "2026-09-26T21:26:22Z",
+    "elevated_seconds": 300.0,
+    "recovery_samples": 0,
+    "rule": "ELEVATED_BUDGET_EXHAUSTED",
+    "some_avg10": 38.76,
+    "state": "ELEVATED",
+    "stop": true
+   },
+   {
+    "at_utc": "2026-09-26T21:26:37Z",
+    "elevated_seconds": 315.0,
+    "recovery_samples": 0,
+    "rule": "ELEVATED_BUDGET_EXHAUSTED",
+    "some_avg10": 42.99,
+    "state": "ELEVATED",
+    "stop": true
+   },
+   {
+    "at_utc": "2026-09-26T21:26:52Z",
+    "elevated_seconds": 330.0,
+    "recovery_samples": 0,
+    "rule": "ELEVATED_BUDGET_EXHAUSTED",
+    "some_avg10": 60.48,
+    "state": "ELEVATED",
+    "stop": true
+   },
+   {
+    "at_utc": "2026-09-26T21:27:07Z",
+    "elevated_seconds": 345.0,
+    "recovery_samples": 0,
+    "rule": "ELEVATED_BUDGET_EXHAUSTED",
+    "some_avg10": 74.96,
+    "state": "ELEVATED",
+    "stop": true
+   },
+   {
+    "at_utc": "2026-09-26T21:27:22Z",
+    "elevated_seconds": 360.0,
+    "recovery_samples": 0,
+    "rule": "ELEVATED_BUDGET_EXHAUSTED",
+    "some_avg10": 61.2,
+    "state": "ELEVATED",
+    "stop": true
+   },
+   {
+    "at_utc": "2026-09-26T21:27:37Z",
+    "elevated_seconds": 375.0,
+    "recovery_samples": 0,
+    "rule": "ELEVATED_BUDGET_EXHAUSTED",
+    "some_avg10": 59.94,
+    "state": "ELEVATED",
+    "stop": true
+   }
+  ],
+  "seconds_of_lead_over_the_first_owner_kill": 153,
+  "seconds_of_lead_over_the_second_owner_kill": 192
+ },
+ "schema": "satoshi.rr02_pressure_derivation.v1",
+ "series": [
+  {
+   "at_utc": "2026-09-26T21:15:51Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "HOST_HEADROOM",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 8428220416,
+   "some_avg10": 24.2
+  },
+  {
+   "at_utc": "2026-09-26T21:16:21Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "HOST_HEADROOM",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 7625994240,
+   "some_avg10": 18.34
+  },
+  {
+   "at_utc": "2026-09-26T21:16:51Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "HOST_HEADROOM",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 8023891968,
+   "some_avg10": 4.9
+  },
+  {
+   "at_utc": "2026-09-26T21:17:21Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "HOST_HEADROOM",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 8358182912,
+   "some_avg10": 35.75
+  },
+  {
+   "at_utc": "2026-09-26T21:17:51Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "HOST_HEADROOM",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 7267020800,
+   "some_avg10": 16.07
+  },
+  {
+   "at_utc": "2026-09-26T21:18:21Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "HOST_HEADROOM",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 8986988544,
+   "some_avg10": 47.85
+  },
+  {
+   "at_utc": "2026-09-26T21:18:51Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "MEMORY_PRESSURE",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 1,
+   "mem_available_bytes": 9948610560,
+   "some_avg10": 35.17
+  },
+  {
+   "at_utc": "2026-09-26T21:19:21Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "MEMORY_PRESSURE",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 1,
+   "mem_available_bytes": 10148085760,
+   "some_avg10": 47.18
+  },
+  {
+   "at_utc": "2026-09-26T21:19:51Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "MEMORY_PRESSURE",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 1,
+   "mem_available_bytes": 9949028352,
+   "some_avg10": 52.18
+  },
+  {
+   "at_utc": "2026-09-26T21:20:21Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "ADMITTED",
+   "event": "ADMISSION_ADMITTED",
+   "live_leases": 1,
+   "mem_available_bytes": 10624536576,
+   "some_avg10": 24.5
+  },
+  {
+   "at_utc": "2026-09-26T21:21:37Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "HOST_HEADROOM",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 8687202304,
+   "some_avg10": 7.04
+  },
+  {
+   "at_utc": "2026-09-26T21:22:07Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 8427765760,
+   "some_avg10": 54.03
+  },
+  {
+   "at_utc": "2026-09-26T21:22:37Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "HOST_HEADROOM",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 7961264128,
+   "some_avg10": 32.77
+  },
+  {
+   "at_utc": "2026-09-26T21:23:07Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 8163684352,
+   "some_avg10": 29.4
+  },
+  {
+   "at_utc": "2026-09-26T21:23:37Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "HOST_HEADROOM",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 7586963456,
+   "some_avg10": 45.14
+  },
+  {
+   "at_utc": "2026-09-26T21:24:07Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "HOST_HEADROOM",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 7756525568,
+   "some_avg10": 32.19
+  },
+  {
+   "at_utc": "2026-09-26T21:24:37Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 6947692544,
+   "some_avg10": 55.82
+  },
+  {
+   "at_utc": "2026-09-26T21:25:07Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 6872899584,
+   "some_avg10": 56.56
+  },
+  {
+   "at_utc": "2026-09-26T21:25:37Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 6861012992,
+   "some_avg10": 57.23
+  },
+  {
+   "at_utc": "2026-09-26T21:26:07Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 7233478656,
+   "some_avg10": 24.87
+  },
+  {
+   "at_utc": "2026-09-26T21:26:22Z",
+   "cap_bytes_requested": 1073741824,
+   "code": "MEMORY_PRESSURE",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 7113940992,
+   "some_avg10": 38.76
+  },
+  {
+   "at_utc": "2026-09-26T21:26:37Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "HOST_HEADROOM",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 7692582912,
+   "some_avg10": 42.99
+  },
+  {
+   "at_utc": "2026-09-26T21:26:52Z",
+   "cap_bytes_requested": 1073741824,
+   "code": "MEMORY_PRESSURE",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 6885613568,
+   "some_avg10": 60.48
+  },
+  {
+   "at_utc": "2026-09-26T21:27:07Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 6811389952,
+   "some_avg10": 74.96
+  },
+  {
+   "at_utc": "2026-09-26T21:27:22Z",
+   "cap_bytes_requested": 1073741824,
+   "code": "MEMORY_PRESSURE",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 13424721920,
+   "some_avg10": 61.2
+  },
+  {
+   "at_utc": "2026-09-26T21:27:37Z",
+   "cap_bytes_requested": 3221225472,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "event": "ADMISSION_QUEUED",
+   "live_leases": 2,
+   "mem_available_bytes": 12991156224,
+   "some_avg10": 59.94
+  }
+ ],
+ "source": "the per-host admission ledger of the PREVIOUS boot, $XDG_STATE_HOME/crispdm/admission/ledger.jsonl, field readings.pressure_some_avg10 of every ADMISSION_* event in the window 2026-09-26T21:15:00Z..2026-09-26T21:28:00Z. No host name, address or account identifier appears in that file or in this one.",
+ "what_this_is_not": "not a measurement made for this purpose and not a controlled experiment. It is the record of what the host did while two admitted scopes ran, read afterwards. No host was put under pressure to produce any number here and no threshold was tuned by trying it on a host.",
+ "window_bound_deliberately": "the incident window of the previous boot only. Samples from the current boot are calm and would make the longest observed run of low pressure look arbitrarily long; the derivation must use the window in which the kills happened."
+}

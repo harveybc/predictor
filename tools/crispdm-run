@@ -105,33 +105,42 @@ CG=""
 if [ -n "$slice_cg" ]; then CG="${slice_cg#/}/$unit.scope"; fi
 arm=("$PY" "$ADM" arm "$LEASE" --pid "$child" --unit "$unit.scope")
 if [ -n "$CG" ]; then arm+=(--cgroup "$CG"); fi
-"${arm[@]}" >/dev/null 2>&1 || true
+# RR02: arming is MANDATORY, not best-effort.  An unarmed lease is protected only by the arming
+# grace window; once that expires the sweep reclaims it and a second admission of the same bytes
+# becomes possible while this child is still running.  `|| true` here was that hole.  If the lease
+# cannot be bound to this load, this load cannot be accounted for, so it is stopped -- its own
+# scope and nothing else -- and the reservation is given back.
+armed=0
+for attempt in 1 2 3; do
+  if "${arm[@]}" >/dev/null 2>&1; then armed=1; break; fi
+  sleep 1
+done
+if [ "$armed" != 1 ]; then
+  echo "crispdm-run: REFUSED the reservation could not be armed to this load after 3 attempts; stopping this job's own scope rather than running it unaccounted" >&2
+  kill -TERM "$child" 2>/dev/null || true
+  wait "$child" 2>/dev/null || true
+  "$PY" "$ADM" release "$LEASE" --witness-pid "$child" >/dev/null 2>&1 || true
+  exit 75
+fi
 
 trap 'kill -TERM "$child" 2>/dev/null || true' TERM
 trap 'kill -INT "$child" 2>/dev/null || true' INT
 
-# Sampler: the TREE peak, read from the scope cgroup, never one process's RSS.  It is also the
-# heartbeat that keeps the reservation alive for exactly as long as the load is.
-(
-  best=0
-  while kill -0 "$child" 2>/dev/null; do
-    for f in memory.peak memory.current; do
-      v=$(cat "$CGROOT/${CG}/$f" 2>/dev/null || true)
-      case "$v" in
-        ''|*[!0-9]*) ;;
-        *) if [ "$v" -gt "$best" ]; then best=$v; fi ;;
-      esac
-    done
-    if [ "$best" -gt 0 ]; then printf '%s' "$best" > "$work/peak"; fi
-    "$PY" "$ADM" renew "$LEASE" >/dev/null 2>&1 || true
-    sleep 5
-  done
-) &
+# RR02: the monitor.  It is the heartbeat and the TREE-peak sampler the shell loop used to be --
+# read from the scope cgroup, never one process's RSS -- and it also watches host AND cgroup memory
+# pressure after admission, with hysteresis.  On a sustained crossing it stops THIS job's own scope,
+# keeps its partial evidence and records the exit cause.  It never signals anything outside this
+# job's own scope and it changes no limit, ceiling, cache, swap or oomd setting.
+mon=("$PY" "$ADM" monitor "$LEASE" --peak-file "$work/peak" --cause-file "$work/cause.json")
+"${mon[@]}" > "$work/monitor.json" 2>/dev/null &
 sampler=$!
 
 set +e
 wait "$child"; rc=$?
 set -e
+# Give the monitor a bounded moment to finish on its own.  Its exit cause is already durable in the
+# admission store before it signals anything, so nothing is lost if it has to be stopped here.
+for _ in 1 2 3 4 5 6 7 8 9 10; do kill -0 "$sampler" 2>/dev/null || break; sleep 0.2; done
 kill "$sampler" 2>/dev/null || true
 wait "$sampler" 2>/dev/null || true
 
@@ -139,5 +148,28 @@ wait "$sampler" 2>/dev/null || true
 # somehow still alive, the admission module refuses the release and keeps the memory held.
 rel=("$PY" "$ADM" release "$LEASE")
 if [ -s "$work/peak" ]; then rel+=(--observed-peak-bytes "$(cat "$work/peak")"); fi
-"${rel[@]}" >/dev/null 2>&1 || true
+# RR02: the direct child is reaped, but a descendant it detached can still be in this job's own
+# scope, and releasing then would hand a second admission the bytes that descendant is using.  The
+# admission module refuses the release while this scope still holds a live task, so wait a bounded
+# moment for the scope to drain -- the ordinary case releases on the first attempt -- and if a
+# descendant genuinely outlives us, leave the reservation held: the sweep frees it when the scope
+# is finally empty, and nothing is over-admitted in the meantime.
+for _ in $(seq 1 40); do
+  if "${rel[@]}" >/dev/null 2>&1; then break; fi
+  sleep 0.25
+done
+
+# If the monitor stopped this job under pressure, say so on the way out: the exit code alone would
+# read as a scientific failure.  The incident record is kept in the admission store, outside this
+# temporary directory, so the cause survives this process.
+if [ -s "$work/cause.json" ]; then
+  echo "crispdm-run: this job's own scope was STOPPED under sustained memory pressure before the host's oomd would have acted." >&2
+  echo "crispdm-run: partial evidence is kept and the exit cause is recorded; nothing outside this job's scope was signalled." >&2
+  "$PY" - "$work/cause.json" >&2 <<'PYEOF' || true
+import json, sys
+r = json.load(open(sys.argv[1]))
+print(f"crispdm-run:   rule {r.get('rule')} -- {r.get('detail')}")
+print(f"crispdm-run:   record {r.get('lease_id')}: see the admission store's incidents/ directory")
+PYEOF
+fi
 exit "$rc"
