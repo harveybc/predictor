@@ -1,0 +1,140 @@
+{
+  "schema": "satoshi.interrupted_attempts.v1",
+  "recorded_at": "2026-09-26",
+  "recorded_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+  "why_this_file_exists": "The admission store deletes a lease body when it reclaims the lease; the ledger keeps only an event line carrying the lease id. These two lease bodies were read before the reclaim removed them and are preserved here verbatim, because cap, cgroup, argv digest, wall and expiry are not recoverable from the ledger event alone.",
+  "outcome_rule": "An attempt whose pytest result was not retained is INTERRUPTED_RESULT_NOT_RETAINED. It is never PASSED.",
+  "boot": {
+    "attempts_ran_on_boot": "previous (journalctl --user -b -1)",
+    "coordinator_rebooted_at": "2026-09-26 17:40:56",
+    "note": "A coordinator reboot does not imply either worker rebooted."
+  },
+  "attempts": [
+    {
+      "lease_id": "dr01deploy-1790457040-724287-9422e7",
+      "unit": "crispdm-dr01deploy-1790457010-724279.scope",
+      "label": "crispdm-dr01deploy-1790457010-724279",
+      "name": "dr01deploy",
+      "started_at": "2026-09-26T16:10:40-05:00",
+      "ended_at": "2026-09-26T16:27:49-05:00",
+      "command": "timeout --kill-after=30s 30m python3 -m pytest tests/test_crispdm_admission.py tests/test_df_admission_guard.py tests/test_df_d2_r4_comparator_guard.py tests/test_df_e1_close.py tests/test_df_mod_e0_close.py tests/test_df_sota_repro.py -q",
+      "env": "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1",
+      "declared_cap_bytes": 3221225472,
+      "host_reserve_bytes": 3221225472,
+      "wall_seconds_declared": 1800,
+      "observed_cpu_seconds": 1227.957,
+      "observed_wall_seconds": 1029.496,
+      "observed_scope_memory_peak": "2.9G",
+      "within_its_own_cap": true,
+      "peak_bytes_recorded_in_lease": null,
+      "peak_evidence_path": null,
+      "argv_sha256": "e5be23cdd5fe6a9270c299538cca768ce79ff42ff193ccd95af58c91b43d99ca",
+      "pid": 727767,
+      "pid_starttime": 25685600,
+      "boot_identity_in_lease": "ABSENT",
+      "created_at_epoch": 1790457040.2788663,
+      "armed_at_epoch": 1790457040.4005635,
+      "expires_at_epoch": 1790458968.9404502,
+      "recovered_count": 0,
+      "outcome": "INTERRUPTED_RESULT_NOT_RETAINED",
+      "outcome_reason": "The scope ended in the same second as the desktop kills. pytest wrote to the orchestrating agent's pipes, which did not survive the session, so no exit code and no suite counts were retained. The published focused results of other commands remain scoped to their own command and revision and do not cover this selection."
+    },
+    {
+      "lease_id": "dr01deploy-1790457621-780648-837b07",
+      "unit": "crispdm-dr01deploy-1790457351-780621.scope",
+      "label": "crispdm-dr01deploy-1790457351-780621",
+      "name": "dr01deploy",
+      "started_at": "2026-09-26T16:20:21-05:00",
+      "ended_at": "2026-09-26T16:27:49-05:00",
+      "command": "timeout --kill-after=30s 40m python3 -m pytest tests/test_crispdm_admission.py tests/test_df_d2_r4_comparator_guard.py tests/test_df_e1_close.py tests/test_df_mod_e0_close.py tests/test_df_sota_repro.py -q",
+      "env": "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1",
+      "declared_cap_bytes": 3221225472,
+      "host_reserve_bytes": 3221225472,
+      "wall_seconds_declared": 2400,
+      "observed_cpu_seconds": 769.094,
+      "observed_wall_seconds": 448.214,
+      "observed_scope_memory_peak": "2.8G",
+      "within_its_own_cap": true,
+      "peak_bytes_recorded_in_lease": null,
+      "peak_evidence_path": null,
+      "argv_sha256": "e71865596ee829d17898620c0631f23261566e43c537cdd2bfd758bbe14bfcfd",
+      "pid": 812761,
+      "pid_starttime": 25743738,
+      "boot_identity_in_lease": "ABSENT",
+      "created_at_epoch": 1790457621.6588871,
+      "armed_at_epoch": 1790457621.7819896,
+      "expires_at_epoch": 1790458967.4103372,
+      "recovered_count": 0,
+      "outcome": "INTERRUPTED_RESULT_NOT_RETAINED",
+      "outcome_reason": "As above. This selection overlaps the first attempt's but is not identical to it: the first also carried tests/test_df_admission_guard.py."
+    }
+  ],
+  "cumulative_cost": {
+    "cpu_seconds": 1997.051,
+    "wall_seconds": 1477.71,
+    "reading": "Cost spent and not recovered. It is not re-budgeted and it is not reset because a process died."
+  },
+  "concurrency_observed": {
+    "admitted_memory_heavy_verifications_at_once": 2,
+    "sum_of_observed_peaks": "5.7G",
+    "sum_of_declared_caps_bytes": 6442450944,
+    "reading": "Both attempts were admitted and both stayed inside their own caps. The two together are the increment that the host did not have."
+  },
+  "what_the_host_did_in_the_same_window": [
+    {
+      "at": "2026-09-26T16:27:10-05:00",
+      "unit": "snap.firefox.firefox",
+      "event": "systemd-oomd killed some process(es) in this unit",
+      "result": "oom-kill",
+      "unit_memory_peak": "10.8G",
+      "unit_memory_swap_peak": "1.7G",
+      "classification": "OWNER_APPLICATION_KILLED"
+    },
+    {
+      "at": "2026-09-26T16:27:49-05:00",
+      "unit": "snap.code.code",
+      "event": "systemd-oomd killed some process(es) in this unit",
+      "result": "oom-kill",
+      "unit_memory_peak": "13.5G",
+      "unit_memory_swap_peak": "2.2G",
+      "classification": "OWNER_APPLICATION_KILLED"
+    }
+  ],
+  "attribution": {
+    "rule": "Do not confuse victims with sole causes.",
+    "largest_consumers": "The two killed owner applications were themselves the largest memory holders on the host: 13.5G and 10.8G peaks, with 3.9G of swap between them.",
+    "our_contribution": "Two of our verifications held 5.7G of observed peak concurrently, inside their declared caps, under a 3G desktop reserve.",
+    "what_is_NOT_established": "That either attempt alone would have triggered the kills, or that no kill would have occurred without them. Neither is measured and neither is claimed.",
+    "what_IS_established": "Admission refused further work correctly while pressure was high (ledger entries at PSI some/avg10 38.76, 60.48, 61.20 against the 25.00 limit), and the two already-admitted scopes kept running to the end. Admission has no post-admission monitoring: once a reservation is granted, rising pressure does not reach it."
+  },
+  "defects_this_recovery_establishes": [
+    {
+      "id": "RR-A",
+      "claim": "A lease carries no boot identity.",
+      "evidence": "Neither preserved lease body contains a boot id, and the deployed module matches nothing for boot_id, btime or /proc/stat. Liveness rests on cgroup existence plus pid with pid_starttime.",
+      "why_it_matters": "pid_starttime is measured in clock ticks since boot, so across a reboot it is not comparable. A post-reboot process can in principle match a dead lease's pid and starttime and make that lease read as live. In this instance both leases were correctly reclaimed as LEASE_RECLAIMED_WITNESS_DEAD because their cgroups were gone, so the latent defect did not fire.",
+      "state": "OPEN"
+    },
+    {
+      "id": "RR-B",
+      "claim": "Reclaiming a lease destroys its body.",
+      "evidence": "Both files were present when read and absent after the reclaim; the ledger retains only LEASE_RECLAIMED_WITNESS_DEAD with the lease id. Cap, cgroup, argv digest, wall and expiry survive only in this file, transcribed by hand.",
+      "why_it_matters": "An old-boot lease is supposed to be preserved as a historical record. Deleting the body loses exactly the fields an incident review needs.",
+      "state": "OPEN"
+    },
+    {
+      "id": "RR-C",
+      "claim": "Admission is a gate at entry with no monitor after it.",
+      "evidence": "Pressure rose to PSI 60+ while two admitted scopes continued; the only effect was that further requests queued.",
+      "why_it_matters": "This is the mechanism by which an in-cap workload participates in an owner-visible kill.",
+      "state": "OPEN"
+    },
+    {
+      "id": "RR-D",
+      "claim": "A rejected request was re-asked at a lower cap.",
+      "evidence": "The queue log alternates cap_bytes 3221225472 and 1073741824 under the same name, and the ledger shows repeated ADMISSION_QUEUED for the same work.",
+      "why_it_matters": "Lowering a request below its measured need to get past a gate is forbidden; the correct response to a refusal is to wait or to move the work to an admitted host.",
+      "state": "OPEN"
+    }
+  ]
+}
