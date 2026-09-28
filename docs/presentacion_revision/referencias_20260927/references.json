@@ -1,0 +1,108 @@
+[
+  {
+    "n": 1,
+    "text": "H. Bastidas, A. Caicedo y C. Sarmiento, \"Predicción de la tasa de cambio EUR/USD: comparación de modelos de deep learning con diversos tipos y cantidades de datos de entrenamiento\", proyecto aplicado de Maestría en Ciencia de Datos, Pontificia Universidad Javeriana, Cali, Colombia, jun. 2025, fig. 43.",
+    "url": "https://github.com/harveybc/predictor/blob/80a1513a/docs/tesis_maestria_ds/tesis_maestria_ciencia_datos_2025.docx",
+    "link_text": "[En línea]. Disponible: https://github.com/harveybc/predictor/blob/80a1513a/docs/tesis_maestria_ds/tesis_maestria_ciencia_datos_2025.docx",
+    "supports": "Figura 1 de la diapositiva 5 y resultado histórico del extractor CNN preentrenado; portada y sección 16 verificadas en el DOCX original.",
+    "limits": "No es nueva validación causal de los experimentos. El círculo y la flecha son anotaciones posteriores de la presentación."
+  },
+  {
+    "n": 2,
+    "text": "H. Bastidas, \"heuristic-strategy: fuentes del barrido de ruido de la presentación y resultados posteriores\", código y datos, GitHub, rev. f2d3922, sep. 2026. Consultado: 27-sep-2026.",
+    "url": "https://github.com/harveybc/heuristic-strategy/tree/f2d3922/docs/presentation_noise_20260927",
+    "link_text": "[En línea]. Disponible: https://github.com/harveybc/heuristic-strategy/tree/f2d3922/docs/presentation_noise_20260927",
+    "supports": "Figura 2: 20 puntos noise_std/profit del CSV histórico; PNG embebido conservado exactamente. Incluye por separado datos y resultados del último barrido nativo H6/H144.",
+    "limits": "La imagen elegida es un oráculo DIRECCIONAL, no el último barrido de precios. El cambio de signo no equivale al naive; el swap no se restó al profit histórico."
+  },
+  {
+    "n": 3,
+    "text": "R. J. Hyndman y G. Athanasopoulos, Forecasting: Principles and Practice, 3.ª ed. Melbourne, Australia: OTexts, 2021, caps. 4 y 9. Consultado: 27-sep-2026.",
+    "url": "https://otexts.com/fpp3/",
+    "link_text": "[En línea]. Disponible: https://otexts.com/fpp3/",
+    "checked_pages": ["https://otexts.com/fpp3/stlfeatures.html", "https://otexts.com/fpp3/other-features.html"],
+    "supports": "STL para fuerza estacional; ACF/PACF, entropía espectral, estadísticos por bloques y KPSS como características.",
+    "limits": "No establece una regla que elija automáticamente una arquitectura por una sola métrica."
+  },
+  {
+    "n": 4,
+    "text": "Desarrolladores de statsmodels, \"Stationarity and detrending (ADF/KPSS)\", documentación de statsmodels. Consultado: 27-sep-2026.",
+    "url": "https://www.statsmodels.org/stable/examples/notebooks/generated/stationarity_detrending_adf_kpss.html",
+    "link_text": "[En línea]. Disponible: https://www.statsmodels.org/stable/examples/notebooks/generated/stationarity_detrending_adf_kpss.html",
+    "supports": "Uso de pruebas ADF y KPSS para investigar estacionariedad.",
+    "limits": "No rechazar una hipótesis nula no prueba estacionariedad; especificación de tendencia, rezagos y rupturas importa."
+  },
+  {
+    "n": 5,
+    "text": "Comunidad SciPy, \"Signal processing (scipy.signal)\", documentación de SciPy: hilbert, correlate y coherence. Consultado: 27-sep-2026.",
+    "url": "https://docs.scipy.org/doc/scipy/reference/signal.html",
+    "link_text": "[En línea]. Disponible: https://docs.scipy.org/doc/scipy/reference/signal.html",
+    "checked_pages": ["https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.hilbert.html"],
+    "supports": "Señal analítica, fase/frecuencia instantánea, correlación y coherencia.",
+    "limits": "Periodo local interpretable en bandas apropiadas, no periodo universal de cualquier señal; FFT sobre el registro completo no es un transformador causal para producción."
+  },
+  {
+    "n": 6,
+    "text": "C. H. Lubba, S. S. Sethi, P. Knaute, S. R. Schultz, B. D. Fulcher y N. S. Jones, \"catch22: CAnonical Time-series CHaracteristics\", Data Min. Knowl. Discov., vol. 33, pp. 1821–1852, 2019.",
+    "url": "https://doi.org/10.1007/s10618-019-00647-x",
+    "link_text": "doi: 10.1007/s10618-019-00647-x",
+    "supports": "Representación por perfiles estadísticos compactos de series temporales.",
+    "limits": "Antecedente de caracterización, no demostración de nuestras hipótesis H1–H3 ni selección óptima de extractor."
+  },
+  {
+    "n": 7,
+    "text": "P. Montero-Manso, G. Athanasopoulos, R. J. Hyndman y T. S. Talagala, \"FFORMA: Feature-based forecast model averaging\", Int. J. Forecast., vol. 36, n.º 1, pp. 86–92, 2020.",
+    "url": "https://doi.org/10.1016/j.ijforecast.2019.02.011",
+    "link_text": "doi: 10.1016/j.ijforecast.2019.02.011",
+    "supports": "Características de series para orientar ponderaciones de modelos de pronóstico.",
+    "limits": "FFORMA combina pronósticos; no selecciona directamente ramas Conv1D/LSTM de nuestra arquitectura."
+  },
+  {
+    "n": 8,
+    "text": "S. Bai, J. Z. Kolter y V. Koltun, \"An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling\", arXiv:1803.01271, 2018.",
+    "url": "https://arxiv.org/abs/1803.01271",
+    "link_text": "doi: 10.48550/arXiv.1803.01271",
+    "supports": "Candidatos convolucionales y recurrentes; dilatación, campo receptivo y memoria de secuencias.",
+    "limits": "No prueba que una arquitectura sea mejor para toda serie financiera o para un indicador concreto."
+  },
+  {
+    "n": 9,
+    "text": "A. Vaswani et al., \"Attention Is All You Need\", en Advances in Neural Information Processing Systems, vol. 30, pp. 5998–6008, 2017.",
+    "url": "https://proceedings.neurips.cc/paper/7181-attention-is-all-you-need",
+    "link_text": "[En línea]. Disponible: https://proceedings.neurips.cc/paper/7181-attention-is-all-you-need",
+    "supports": "Atención multi-cabezal y arquitectura Transformer como familia candidata.",
+    "limits": "El artículo original es de traducción; la aplicación multivariada a series se apoya además en [11] y [12]."
+  },
+  {
+    "n": 10,
+    "text": "Z. Li, Z. Rao, L. Pan, P. Wang y Z. Xu, \"Ti-MAE: Self-Supervised Masked Time Series Autoencoders\", arXiv:2301.08871, 2023.",
+    "url": "https://arxiv.org/abs/2301.08871",
+    "link_text": "doi: 10.48550/arXiv.2301.08871",
+    "supports": "Preentrenamiento de representaciones temporales mediante reconstrucción enmascarada.",
+    "limits": "Antecedente del autoencoder; las tres modalidades R0/R1/R2 y su emparejamiento son el diseño de esta propuesta, no un resultado atribuido a Ti-MAE."
+  },
+  {
+    "n": 11,
+    "text": "Y. Nie, N. H. Nguyen, P. Sinthong y J. Kalagnanam, \"A Time Series is Worth 64 Words: Long-term Forecasting with Transformers\", en Proc. ICLR, 2023.",
+    "url": "https://arxiv.org/abs/2211.14730",
+    "link_text": "Prepublicación: doi: 10.48550/arXiv.2211.14730",
+    "supports": "PatchTST: bancos públicos, protocolos y métricas de pronóstico multivariado; también preentrenamiento.",
+    "limits": "No confundir ECL/Electricity con UCI Household; comparabilidad exige el protocolo completo, no solo el nombre del dominio."
+  },
+  {
+    "n": 12,
+    "text": "Y. Liu et al., \"iTransformer: Inverted Transformers Are Effective for Time Series Forecasting\", en Proc. ICLR, 2024.",
+    "url": "https://arxiv.org/abs/2310.06625",
+    "link_text": "Prepublicación: doi: 10.48550/arXiv.2310.06625",
+    "supports": "Pronóstico multivariado y evaluación en Electricity, Weather y Traffic mediante MSE/MAE.",
+    "limits": "Estas referencias no demuestran superioridad de nuestra propuesta ni constituyen una afirmación de SOTA vigente."
+  },
+  {
+    "n": 13,
+    "text": "G. C. Cawley y N. L. C. Talbot, \"On Over-fitting in Model Selection and Subsequent Selection Bias in Performance Evaluation\", J. Mach. Learn. Res., vol. 11, pp. 2079–2107, 2010.",
+    "url": "https://jmlr.org/papers/v11/cawley10a.html",
+    "link_text": "[En línea]. Disponible: https://jmlr.org/papers/v11/cawley10a.html",
+    "supports": "Separar selección de modelos y evaluación final para evitar sesgo de selección.",
+    "limits": "No prescribe por sí solo bloques temporales, un calendario semanal o un bootstrap concreto."
+  }
+]
