@@ -1,0 +1,183 @@
+{
+  "source_sha256": "23c8121696c0618ccf053c17b63480466b6b2a565f9a8320c2606af09f5f2d60",
+  "output_sha256": "6ea707f79408e3263acebe097c66f907072a7da464dce28ba059878b65f56314",
+  "original_slides": 16,
+  "output_slides": 17,
+  "all_media_byte_identical": true,
+  "unrelated_existing_shapes_unchanged": true,
+  "untouched_slides_byte_identical": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    7,
+    15
+  ],
+  "citation_first_appearance": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+  ],
+  "changes": [
+    {
+      "slide": 5,
+      "shape": 74,
+      "old": "M.DS[1]",
+      "new": "M.DS [1, fig. 43]"
+    },
+    {
+      "slide": 5,
+      "shape": 74,
+      "old": "plazo[2]",
+      "new": "plazo [2]"
+    },
+    {
+      "slide": 5,
+      "shape": 75,
+      "old": "Figura 2. - Barrido de ruido a pronósticos ideales usados en estrategia heurística de trading basada en predicciones de corto y largo plazo[2]",
+      "new": "Figura 2. Barrido de ruido gaussiano sobre un oráculo direccional: resultados y datos históricos de heuristic-strategy [2]."
+    },
+    {
+      "slide": 8,
+      "shape": 126,
+      "old": "Fuentes: Hyndman y Athanasopoulos, FPP3, 3.ª ed., 2021, caps. 4 y 9; SciPy, scipy.signal.hilbert.",
+      "new": "Fuentes: perfil y estacionalidad [3]; ADF/KPSS [4]; Hilbert, correlación y coherencia [5]."
+    },
+    {
+      "slide": 11,
+      "shape": 195,
+      "old": "[1], [2]",
+      "new": "[6], [7]"
+    },
+    {
+      "slide": 12,
+      "shape": 204,
+      "old": "[3]",
+      "new": "[10]"
+    },
+    {
+      "slide": 13,
+      "shape": 232,
+      "old": "[4], [5]",
+      "new": "[11], [12]"
+    },
+    {
+      "slide": 14,
+      "shape": 265,
+      "old": "[4], [5]",
+      "new": "[11], [12]"
+    },
+    {
+      "slide": 14,
+      "shape": 269,
+      "old": "[6]",
+      "new": "[13]"
+    }
+  ],
+  "bibliography_layout": [
+    {
+      "slide": 16,
+      "reference": 1,
+      "y": 1.65,
+      "height": 0.8883333333333334
+    },
+    {
+      "slide": 16,
+      "reference": 2,
+      "y": 2.5883333333333334,
+      "height": 0.6633333333333333
+    },
+    {
+      "slide": 16,
+      "reference": 3,
+      "y": 3.3016666666666667,
+      "height": 0.6633333333333333
+    },
+    {
+      "slide": 16,
+      "reference": 4,
+      "y": 4.015000000000001,
+      "height": 0.6633333333333333
+    },
+    {
+      "slide": 16,
+      "reference": 5,
+      "y": 4.7283333333333335,
+      "height": 0.6633333333333333
+    },
+    {
+      "slide": 16,
+      "reference": 6,
+      "y": 5.441666666666666,
+      "height": 0.6633333333333333
+    },
+    {
+      "slide": 16,
+      "reference": 7,
+      "y": 6.154999999999999,
+      "height": 0.6633333333333333
+    },
+    {
+      "slide": 17,
+      "reference": 8,
+      "y": 1.65,
+      "height": 0.6633333333333333
+    },
+    {
+      "slide": 17,
+      "reference": 9,
+      "y": 2.3633333333333333,
+      "height": 0.6633333333333333
+    },
+    {
+      "slide": 17,
+      "reference": 10,
+      "y": 3.0766666666666667,
+      "height": 0.4383333333333333
+    },
+    {
+      "slide": 17,
+      "reference": 11,
+      "y": 3.565,
+      "height": 0.6633333333333333
+    },
+    {
+      "slide": 17,
+      "reference": 12,
+      "y": 4.278333333333333,
+      "height": 0.4383333333333333
+    },
+    {
+      "slide": 17,
+      "reference": 13,
+      "y": 4.766666666666667,
+      "height": 0.6633333333333333
+    }
+  ],
+  "changed_parts": [
+    "ppt/presentation.xml",
+    "ppt/_rels/presentation.xml.rels",
+    "ppt/slides/_rels/slide16.xml.rels",
+    "ppt/slides/slide12.xml",
+    "ppt/slides/slide14.xml",
+    "ppt/slides/slide16.xml",
+    "ppt/slides/slide13.xml",
+    "ppt/slides/slide9.xml",
+    "ppt/slides/slide5.xml",
+    "ppt/slides/slide11.xml",
+    "ppt/slides/slide10.xml",
+    "ppt/slides/slide8.xml",
+    "[Content_Types].xml"
+  ]
+}
