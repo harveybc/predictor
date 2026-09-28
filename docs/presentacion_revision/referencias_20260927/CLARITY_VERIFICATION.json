@@ -1,0 +1,46 @@
+{
+  "input_sha256": "6ea707f79408e3263acebe097c66f907072a7da464dce28ba059878b65f56314",
+  "output_sha256": "65f9e3c9bc5d32c9cae5987d61d08e84626b8c4296b6ce6f6e2201131e48ecd1",
+  "changed_parts": [
+    "ppt/slides/slide14.xml",
+    "ppt/slides/slide13.xml"
+  ],
+  "other_parts_byte_identical": true,
+  "text_changes": {
+    "13": {
+      "224": "EXPERIMENTOS",
+      "225": "Qué vamos a probar y en qué datos",
+      "231": "Probar cada componente, después el sistema completo.",
+      "232": "Datos de electricidad, clima y tráfico de la literatura [11], [12], además de datos financieros.",
+      "233": "1",
+      "234": "Señales controladas",
+      "235": "Crear series con ciclos, ruido y retardos.\nComparar cómo agruparlas y fusionarlas.",
+      "236": "2",
+      "237": "Comparar alternativas",
+      "238": "Comparar modelos y transformaciones,\ncon y sin extractores preentrenados.",
+      "239": "3",
+      "240": "Probar en otros datos",
+      "241": "Evaluar la solución elegida sin reajustarla\nen datos no usados para elegirla.",
+      "242": "4",
+      "243": "Evaluar en trading",
+      "244": "Predecir precios y aprender decisiones.\nSimular costes y actualización semanal.",
+      "245": "Dos preguntas distintas: ¿mejora la predicción? ¿mejora también el resultado del trading?"
+    },
+    "14": {
+      "247": "EVALUACIÓN",
+      "248": "Cómo sabremos si nuestra propuesta mejora",
+      "254": "Reproducir un modelo publicado y compararlo con nuestra propuesta.",
+      "256": "LOS MISMOS DATOS",
+      "257": "Mismas variables y fechas\npara entrenar y evaluar.",
+      "259": "LA MISMA PREDICCIÓN",
+      "260": "Mismo valor a predecir,\nhorizonte e información disponible.",
+      "262": "EL MISMO ERROR",
+      "263": "Misma fórmula y normalización\nque el estudio de referencia.",
+      "265": "Predicción [11], [12]",
+      "266": "Comparar MAE y MSE con el modelo publicado\ny con la predicción de referencia:\nque el valor actual no cambia.",
+      "267": "Trading y aprendizaje por refuerzo",
+      "268": "Comparar beneficio neto, Sharpe y caída máxima.\nUsar las mismas fechas, costes\ny reglas de ejecución.",
+      "269": "Elegir la configuración sin consultar los datos de prueba final [13]. Repetir entrenamientos.\nSi cambia la tarea del artículo, ejecutar también su modelo en nuestra tarea."
+    }
+  }
+}
