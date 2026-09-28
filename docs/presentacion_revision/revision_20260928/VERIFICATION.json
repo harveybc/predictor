@@ -1,0 +1,36 @@
+{
+  "source_sha256": "ae0b1b0f9cabd81db71583a1619d282e81b699a51e148114aa4780021c93b4a4",
+  "output_sha256": "2490d23c2f915b691830708359a14ed5f334e9229b126d6bf623cebf61076993",
+  "changed_parts": [
+    "ppt/slides/slide15.xml"
+  ],
+  "all_other_parts_identical": true,
+  "slides_1_to_14_byte_identical": true,
+  "all_media_identical": true,
+  "first_citation_order": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+  ],
+  "text_changes": {
+    "275": "Qué aportará esta investigación",
+    "281": "Un método para elegir cómo procesar cada grupo de series\ny comprobar cuándo esa elección mejora los resultados.",
+    "282": "Cómo elegir",
+    "283": "Relacionar las propiedades\nde las series con las\ntransformaciones y modelos\nque funcionan mejor.",
+    "284": "Cuánto mejora",
+    "285": "Medir la mejora frente\na los modelos de referencia,\nsu coste de entrenamiento\ny cuándo deja de ayudar.",
+    "286": "Cómo reutilizarlo",
+    "287": "Publicar código,\nconfiguraciones y resultados\npara repetir las pruebas\nen pronóstico y trading.",
+    "289": "Comprobar la mejora en datos no usados para elegir la configuración [13].\nDespués: evaluar si también ayuda preentrenar el núcleo temporal."
+  }
+}
