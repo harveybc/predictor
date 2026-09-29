@@ -1,6 +1,6 @@
 # QRM02 — TRAIN-only cost pilot for the six missing W1440 cells
 
-**Status: DESIGN, revision 3. SEALING CONDITION MET on the runner; still awaiting the allocation of §7.**
+**Status: DESIGN, revision 4. NOT APPROVED. The auditor withholds approval against `c1033dc6` until F1–F3 are repaired.**
 **Author:** Satoshi III (Mujuro Utsutsu), successor technical lead
 **Date:** 2026-09-29
 **Supersedes:** revision 1 at `8a31ba1f`, which was reviewed at `8fc61cf0` and found **not ready for
@@ -184,3 +184,46 @@ are treated as inputs to be re-measured, not as authority.
 not a gap to fill with a number.
 
 — Satoshi
+
+
+---
+
+## 10. Revision 4 — what the audit at `56ca1a84` took out of this design
+
+Three findings landed on it and **two are errors in this document**, not in someone else's code. They are
+recorded here rather than quietly patched, because a design that hides its own corrections teaches nothing.
+
+**F3 — the device envelope was to be watched by an API that cannot see the memory.** §3 declared a 12 GiB
+device envelope monitored through `torch.cuda.max_memory_allocated` and `max_memory_reserved`. **Q2's model
+is TensorFlow/Keras**, and the instrument queries **exclusively the PyTorch allocator**, which **does not
+account for TensorFlow allocations**. So the envelope named a number and watched nothing. Worse, the runner
+**forces `CUDA_VISIBLE_DEVICES` empty**, so sealing it **does not establish a GPU pilot at all**.
+**Repair, owned by lane B:** declare and verify the device actually used, keep the TensorFlow recipe, and
+measure **its** allocator through an appropriate API. Process memory and whole-device telemetry, if used at
+all, carry **separate scopes** and are never merged with the framework figure. **An unavailable API yields
+`UNKNOWN`.** Neither PyTorch is imported to measure TensorFlow, nor is the model ported to suit the
+instrument.
+
+**A sentence of mine that was simply false.** §3 said the child "raises **before** allocating past the
+envelope". **A statistics check performed after the fact cannot promise that.** What is enforceable here is
+the host side, through the cgroup; the device side is **observed after an allocation has already happened**.
+The document now says that, and **CPU, wall and every stage get an executable stop** rather than a row in a
+table.
+
+**A mechanism §6 got wrong.** The kernel documents that a reset of `memory.peak` affects reads **through the
+same open file descriptor**. Writing and then reading opens a **different** descriptor, so the per-stage
+reset scheme as written **does not establish that experiment**. The descriptor behaviour needs its own test,
+and the **lifetime watermark is kept separately** regardless.
+
+**Two claims retired, both mine.** Lane A's two different charges do **not** by themselves prove distinct
+scopes — the same scope can show different maxima at two instants; identity, membership, scope lifetime and
+reservation are the proof, and the observation of distinct scopes stands while that inference does not. And
+I withdraw "**the first exact reproduction of the campaign**": the agreement is verified, the superlative
+was never censused.
+
+**The authority position, unchanged and now explicit.** QRM02 is **not approved** against `c1033dc6`; the
+finite request of §7 is re-evaluated only after F1–F3. The separate 18 GiB service request is **unapproved**
+and must be **re-admitted against current state with the residual's owner identified** — the worker's
+residual is **no longer 4.9–5.1 GiB**, and a later reading gives file 2 506 440 704 B with shmem
+806 244 352 B **inside** it, so **shmem is not added twice** and not all of `file` is discardable cache.
+**Never clear shared memory, never reduce a reservation to pass, never move a ceiling.**
