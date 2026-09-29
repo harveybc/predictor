@@ -1,5 +1,37 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+## Actualizacion operativa: 28 de septiembre de 2026
+
+Mandato vigente: [RB01-RB07](../handoffs/SATOSHI_RESUME_AND_BENCHMARK_ORDERS_2026_09_28.md).
+El estado por carril vive en el mismo
+[indice de ejecucion](program_v3/EXPERIMENT_EXECUTION_QUEUE.json), actualizado con
+las entregas RR01-RR06, los reinicios y el trabajo RR05 sin publicar. Las notas
+fechadas anteriores no son permiso para repetir experimentos cerrados.
+
+- **Experimentos y producto avanzan en paralelo.** M5PHET facilita el programa;
+  no lo sustituye. A/B y el contraste R0/R1/R2 de ECL siguen cerrados.
+- **Comparacion con literatura:** Electricity, Weather y Traffic estan listos
+  en el lago gobernado. El warehouse admite el contrato MSE/MAE del autor,
+  normalizacion/reduccion/poblacion explicitas y naive pareado. Esto no significa
+  que los nuevos modelos hayan sido medidos ni que todos los runners lo emitan.
+  Siguiente trabajo: receta oficial ejecutable y piloto de costo TRAIN de Weather,
+  seguido de Traffic, con asignacion valida y sin ajustar mirando test.
+- **Recursos:** 5090 externa preferente, admision por RAM del anfitrion ademas
+  de VRAM. Tras errores NVIDIA observados, probarla de forma acotada; usar el
+  trabajador alternativo para cargas elegibles mientras se resuelve su capacidad.
+  Coordinador reservado para trabajo ligero y servicios.
+- **M5PHET:** integrar RR05 conservado con la correccion `44130ae`, completar
+  contratos de salida y reevaluar el corpus completo; servicio activo no equivale
+  a version actualizada ni a calidad demostrada.
+- **Finanzas y confirmacion:** no inventar disponibilidad de recursos, no abrir
+  reservas ni ejecutar M4 sin su revision. Resolver dependencias propias sin
+  bloquear Weather/Traffic, producto u otros carriles independientes.
+
+Los resultados previos y sus limitaciones se conservan. Esta actualizacion no
+declara nueva evidencia cientifica ni aprueba las propuestas de entrenamiento
+grande pendientes de revision. Las descripciones de implementacion que siguen
+son notas historicas fechadas; el indice gobierna el estado actual.
+
 **Nombre y alcance general aprobados: M5PHET (24-sep UTC).**
 [M5PHET](https://github.com/harveybc/M5PHET) es un framework de tareas ML tipadas,
 no un programa generico de investigacion. Sus cinco familias de tareas son:

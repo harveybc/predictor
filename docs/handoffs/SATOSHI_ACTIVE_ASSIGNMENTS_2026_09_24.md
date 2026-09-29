@@ -1,5 +1,13 @@
 # Start here: the one dispatch index, and the lanes it carries
 
+**Current orders, 2026-09-28:**
+[RB01-RB07](SATOSHI_RESUME_AND_BENCHMARK_ORDERS_2026_09_28.md).
+The canonical index now has **13 lanes**, including ADMISSION and
+TSL-WEATHER-TRAFFIC. RR02 deployment and RR04 governed delivery are delivered;
+preserve/integrate dirty RR05 rather than starting it again. The following
+September 26 table is HISTORY, not current prerequisites. In particular its
+missing-monitor/key/prefix claims must not trigger duplicate work.
+
 **Superseded as a state document, 2026-09-26.** State now lives in ONE place, one row
 per lane: [`EXPERIMENT_EXECUTION_QUEUE.json`](../tres_temas_entrevista/program_v3/EXPERIMENT_EXECUTION_QUEUE.json)
 (`research_dispatch_index.v2`), summarized in
@@ -8,7 +16,7 @@ Nobody should have to infer a lane's state from prose again, this index included
 the table below and a row disagree, **the row governs**. Everything under
 "Current assignments (2026-09-24 snapshot, history)" is a dated photograph.
 
-## The lanes, at a glance
+## The lanes, at September 26 (historical snapshot)
 
 Eleven lanes have a current row: the ten DR02 names, plus `E1-Q2-CONTEXT`, which was
 added because it holds the only live compute in the programme.

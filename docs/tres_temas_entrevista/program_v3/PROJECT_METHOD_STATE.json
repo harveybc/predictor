@@ -1,11 +1,26 @@
 {
  "schema": "research_program_method_state.v1",
+ "resource_and_dispatch_reconciliation_20260928": {
+  "observed_at": "2026-09-29T02:31Z",
+  "status": "NO_NEW_MEASUREMENT",
+  "index": "EXPERIMENT_EXECUTION_QUEUE.json",
+  "current_lane_count": 13,
+  "orders": "../../handoffs/SATOSHI_RESUME_AND_BENCHMARK_ORDERS_2026_09_28.md",
+  "report": "../../audits/work_plan/MUSASHI_RESOURCE_AND_PLAN_RECONCILIATION_2026_09_28.md",
+  "data": "Electricity, Weather and Traffic registered and verified in sota_benchmarks; whole-resource benchmark scope, not financial point-in-time availability",
+  "metrics": "../../contracts/tsl_literature_metrics.v1.json; deployed provider tested in temporary database; upcoming producers still need contract integration",
+  "product": "Preserve dirty RR05; integrate isolated M5PHET correction 44130ae and rescore before claiming full-corpus improvement",
+  "admission": "RR02 launcher/module match all three deployments; primary accelerator host requires CUDA/RAM preflight after observed NVIDIA allocation errors",
+  "scientific_approval": false,
+  "history_rule": "Earlier dated state blocks remain historical observations. Current dispatch is the single index, not an older prose table."
+ },
  "dr02_dispatch_index_20260926": {
   "what": "DR02: one dispatch index, current, one row per lane. The queue, this state and the assignment index now say the same thing, and the row -- not a paragraph -- is where state lives",
   "index": "EXPERIMENT_EXECUTION_QUEUE.json (schema research_dispatch_index.v2)",
   "report": "../../audits/work_plan/SATOSHI_DR02_DISPATCH_INDEX_2026_09_26.md",
   "assignment_index": "../../handoffs/SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md",
-  "lanes_with_a_current_row": 11,
+  "lanes_with_a_current_row": 13,
+  "historical_lane_count_20260926_dr02": 11,
   "lanes_ordered_by_DR02": [
    "A/B",
    "R0/R1/R2-ECL",
