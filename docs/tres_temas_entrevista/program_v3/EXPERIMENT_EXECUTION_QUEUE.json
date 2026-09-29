@@ -1,6 +1,6 @@
 {
  "schema": "research_dispatch_index.v2",
- "updated_on": "2026-09-28 America/Bogota; TSL-WEATHER-TRAFFIC row updated by the RB02 return, pilot 2026-09-29T03:16Z",
+ "updated_on": "2026-09-28: classification literature lane added; RB02 Weather delivery preserved; RB04 product return recorded",
  "dispatcher": "Satoshi III (Mujuro Utsutsu), successor technical lead",
  "supersedes": "research_execution_queue.v1 at this same path: one RP135-shaped campaign document with other lanes appended around it, whose cell list a reader could mistake for a live queue. That document is preserved verbatim under `history.superseded_queue_v1`",
  "what_this_is": "ONE row per lane, current, so that no one has to infer state from prose. Every row carries a commit, an artifact or receipt, an observed state with the date it was observed, the REAL dependency, the next eligible work, the resource, the remaining cost and the lease. Dependencies are derived from artifacts; where a row's dependency could not be established from artifacts the row says so in those words rather than guessing",
@@ -33,7 +33,8 @@
     "M5PHET-5F-CHAT",
     "news",
     "MT5-demo",
-    "Alpaca-paper"
+    "Alpaca-paper",
+    "CLASSIFICATION-REFERENCE"
    ],
    "families_are_independent": "classification, forecast, regimes, causal and RL each hold their own dependency; verified absent on 2026-09-26: no cross-family hold is written in the M5PHET artifacts",
    "links_to_the_other_map": {
@@ -52,7 +53,8 @@
     "M4",
     "FIN-LOSS-OPT/E3",
     "calendar",
-    "TSL-WEATHER-TRAFFIC"
+    "TSL-WEATHER-TRAFFIC",
+    "CLASSIFICATION-REFERENCE"
    ],
    "framework_relation": "the framework makes these tasks easier to run and to serve. It does not supply their evidence, and household electricity is never a substitute for financial validation"
   }
@@ -345,13 +347,13 @@
    "lane": "M5PHET-5F-CHAT",
    "title": "M5PHET product: five families and the chat/NL interface",
    "map": "M5PHET_PRODUCT",
-   "commit": "8a6d1a3 plus uncommitted RR05; 44130ae",
+   "commit": "M5PHET d17f377 (satoshi/rb04-m5phet-integration-20260928)",
    "artifact_or_receipt": "per family: ~/.local/state/m5phet/wp09-quality-20260925/, docs/audits/evidence/M5PHET_WP26_OUTER_CONFIRMATION_20260925/, ~/.local/state/m5phet/regimes-wp19-20260925/ and wp29-calibration-20260925/, M5PHET docs/evidence/WP22_DML_2026_09_25/, agent-multi docs/audits/evidence/WP21_LAYA_FIRST_LAYER_2026_09_25/, M5PHET docs/evidence/{ROUTE_RELIABILITY_2026_09_25,INTERPRETER_RELIABILITY_2026_09_25}/",
-   "observed_state": "RR05 has uncommitted code/tests/evidence, preserved. Isolated correction 44130ae is committed, integration/full successor scoring pending. Chat is active after reboot, NRestarts=0; this does not establish installed code identity or quality.",
-   "observed_at": "2026-09-29T02:31Z / cited retained deliveries",
-   "real_dependency": "Preserve/integrate RR05 and isolated router correction; complete and rescore output handling, then inspect installed identities before deployment.",
+   "observed_state": "RB04 DELIVERED: preserved RR05 integrated with 44130ae. Router completion ON 79/95, OFF 85/95; 19 prompts x 5 repeats, not 95 independent cases. Default OFF; no fresh provider-quality measurement in this return. Staged deployment NOT ADOPTED. Explicit fixture/remote-worker configuration conflict still needs correction.",
+   "observed_at": "2026-09-29T04:16Z: retained RB04 per-run verdicts independently recounted, not re-executed",
+   "real_dependency": "Remaining router/type errors, unseen-prompt evaluation, unambiguous effective backend and pinned adoption rehearsal. No duplicate RR05 integration and no quality promotion from retained declarations.",
    "dependency_derivation": "each read from that family's own evidence file; the absence of a cross-family hold from a direct search of the M5PHET artifacts, including the CL20-CL24 line's global_hold false",
-   "next_eligible_work": "RB04: integrate 44130ae without reverting RR05 in isolated tree; finish typed output/routing, full corpus rescore, usable five-family chat paths and actual installed-version check. No cross-family block.",
+   "next_eligible_work": "CB05: correct backend-mode ambiguity in the actual startup/API path, retain default completion OFF, prepare untouched paraphrase evaluation and coherent pinned deployment. CB01-CB04 independently evaluate classification references; they are not router tests.",
    "resource": "CPU for every analysis and for serving; the worker's external 5090 for any Laya inference through tools/chat_laya_worker.sh; a cloud-interpreter entitlement for the chat measurements",
    "remaining_cost": "175-second per-call wall timeout is the only declared per-call bound; no CPU-second ledger exists in these artifacts",
    "lease": "declared GPU lease path ~/.local/state/m5phet/chat-gpu.lock, ABSENT, therefore unheld. Live user units: m5phet-chat.service, m5phet-tailnet-forward.service, data-gov-m5phet.service. Verification instances on their own ports and state dirs; one 2026-09-24 audit instance still listening with pid file /tmp/retsu-audit/server.pid",
@@ -368,6 +370,13 @@
      "commit": "M5PHET master 8a6d1a3 (2026-09-26, an index that states it contains no measurement); newest family work 2026-09-25: e2eddd6 chat/route, 92bb224 forecast, 790843f regimes, 6bcf631 causal, f5b129f classification; providers news-signal e4476e5, prediction_provider c5ada4e, feature-eng 3de34fd, causal-inference bb11d64, agent-multi 87a40de4",
      "real_dependency": "ONE PER FAMILY, AND NONE OF THEM IS ANOTHER FAMILY. classification: an independently labelled corpus for any new task, plus the Laya worker's external 5090 for inference. forecast: rows untouched in every sense, which nested_split.json states do not exist inside the 50,400-row slice, hence a different source file with its own provenance. regimes: a fitted reference the running instance actually serves whose holdout has at least two non-empty clusters. causal: the consensus-plus-observed-clock source of the calendar lane — an owner entitlement decision. RL: at least 500 sealed rows against the pre-declared minimum, and a non-abstaining decision path. chat: nothing external; a wider corpus needs sentences nobody has written yet. VERIFIED ABSENT: no cross-family hold is written anywhere in the M5PHET artifacts, and the one figure-scoped qualification (WP26 over WP06 stage 5) was discharged on 2026-09-25",
      "next_eligible_work": "five items that may proceed at the same time and in any order: diagnose the classification chooser's state-independence on one of the 28 retained corpora; a second-series outer confirmation for forecast; refit and install one regimes reference with two or more clusters; prospective capture for causal (WP32, the only work-plan item with no artifact); extend the RL seal past 500 bars; repair the chat router's twelve WRONG_TYPE under-answers. Plus three bookkeeping repairs the artifacts contradict: M5PHET PROJECT_METHOD_STATE.json still says model_performance_measured false and four families planned; README says 491 tests against a 634 receipt, and says no area carries a measured quality number and that no bundle has a quantile head, against WP09 and the shipped quantile bundle; and WP26's twenty fits ran on the coordinator's own GPU against the plan's standing rule, with no admission record — either the exception or the admission is missing"
+    },
+    {
+     "observed_at": "2026-09-29T02:31Z / cited retained deliveries",
+     "observed_state": "RR05 has uncommitted code/tests/evidence, preserved. Isolated correction 44130ae is committed, integration/full successor scoring pending. Chat is active after reboot, NRestarts=0; this does not establish installed code identity or quality.",
+     "commit": "8a6d1a3 plus uncommitted RR05; 44130ae",
+     "next_eligible_work": "RB04: integrate 44130ae without reverting RR05 in isolated tree; finish typed output/routing, full corpus rescore, usable five-family chat paths and actual installed-version check. No cross-family block.",
+     "real_dependency": "Preserve/integrate RR05 and isolated router correction; complete and rescore output handling, then inspect installed identities before deployment."
     }
    ],
    "rr03_correction": "RR03 (post-reboot orders 2026-09-26, 0d6f6f7e) and RR06: M5PHET IS THE PRODUCT LANE and this row stays in the M5PHET_PRODUCT map. The doctoral modules and the financial evaluation are the scientific and business lane and stay in the other map. The two maps remain LINKED (the calendar lane appears in both) AND DISTINCT (no ranking merges them, and a correction in one family holds none of the others). Evidence that this service is active is not evidence that its model decisions are correct.",
@@ -476,6 +485,22 @@
      "superseded_by": "RB02 return on satoshi/rb02-weather-matched-20260928"
     }
    ]
+  },
+  {
+   "lane": "CLASSIFICATION-REFERENCE",
+   "title": "Public classification reference replication and M5PHET parity",
+   "map": "DOCTORAL_AND_BUSINESS + M5PHET_PRODUCT",
+   "commit": "this classification-plan change; no experiment commit yet",
+   "artifact_or_receipt": "CLASSIFICATION_REFERENCE_PLAN_2026_09_28.md; SATOSHI_CLASSIFICATION_REFERENCE_ORDERS_2026_09_28.md",
+   "observed_state": "SOURCE_REVIEWED_SHORTLIST. FOMC/Financial PhraseBank, BANKING77, AG News; MASSIVE en/es second stage. Papers 2025-2026 and official implementation sources reviewed. No data registration, model evaluation or current-SOTA ranking established by this plan.",
+   "observed_at": "2026-09-28 America/Bogota",
+   "real_dependency": "Per-task strongest reproducible reference under identical protocol; accessible weights/data/license; governed population; author scorer and downstream head; bounded resource/budget admission.",
+   "dependency_derivation": "Modern source review is not an executable seal. FOMC original resources declare noncommercial license. Zero-shot and trained-head evaluation must remain distinct.",
+   "next_eligible_work": "CB01-CB04: AG News native Laya reproduction plus financial reference qualification; register allowed data, pin native evaluator, reproduce published result then adapter parity. BANKING77 full-label stress test next. Never truncate labels or alter test population to fit the provider.",
+   "resource": "External 5090 preferred after actual RAM/CUDA admission; independent CPU/protocol work in parallel; no displacement of an admitted Weather job.",
+   "remaining_cost": "UNKNOWN; predeclare pilot and reconcile allocation before model work. No implicit full-training budget or foundation-model pretraining.",
+   "lease": "Recheck at dispatch; no lease claimed by this documentary addition.",
+   "observation_history": []
   }
  ],
  "history": {
@@ -859,5 +884,6 @@
   "report": "../../audits/work_plan/MUSASHI_RESOURCE_AND_PLAN_RECONCILIATION_2026_09_28.md",
   "scope": "Live health, published delivery reconciliation, preservation of dirty RR05, TSL data and metric readiness. Not a full new audit of scientific results.",
   "sessions": "Two coordinator agent sessions exist; their identity/progress is not established by process names. No GPU compute applications or admission lease files observed on the three hosts."
- }
+ },
+ "classification_orders": "../../handoffs/SATOSHI_CLASSIFICATION_REFERENCE_ORDERS_2026_09_28.md"
 }

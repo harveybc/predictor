@@ -1,5 +1,12 @@
 # Start here: the one dispatch index, and the lanes it carries
 
+**Classification addendum, same day:**
+[CB01-CB06](SATOSHI_CLASSIFICATION_REFERENCE_ORDERS_2026_09_28.md).
+The index now has **14 lanes**. RB04 is delivered in M5PHET `d17f377`:
+do not repeat RR05 integration. Keep the completion pass OFF, address the
+backend-mode contradiction, and evaluate public classifiers separately from
+router reliability. Preserve the RB02 Weather pilot delivery and continue it.
+
 **Current orders, 2026-09-28:**
 [RB01-RB07](SATOSHI_RESUME_AND_BENCHMARK_ORDERS_2026_09_28.md).
 The canonical index now has **13 lanes**, including ADMISSION and

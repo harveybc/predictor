@@ -2,6 +2,14 @@
 
 ## Actualizacion operativa: 28 de septiembre de 2026
 
+**Clasificacion tambien parte de referencias reproducidas.** Se incorpora
+[CLASSIFICATION-REFERENCE](program_v3/CLASSIFICATION_REFERENCE_PLAN_2026_09_28.md)
+y las [ordenes CB01-CB06](../handoffs/SATOSHI_CLASSIFICATION_REFERENCE_ORDERS_2026_09_28.md):
+datasets financieros y generales de literatura reciente, modelo/evaluador nativo,
+paridad del adaptador y validacion de negocio como pruebas distintas. La precision
+del router no sustituye a la del clasificador; Laya no se presume SOTA universal.
+Esta ampliacion conserva el trabajo Weather entregado y los carriles paralelos.
+
 Mandato vigente: [RB01-RB07](../handoffs/SATOSHI_RESUME_AND_BENCHMARK_ORDERS_2026_09_28.md).
 El estado por carril vive en el mismo
 [indice de ejecucion](program_v3/EXPERIMENT_EXECUTION_QUEUE.json), actualizado con

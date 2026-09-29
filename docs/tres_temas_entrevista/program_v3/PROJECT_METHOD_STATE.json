@@ -1,5 +1,14 @@
 {
  "schema": "research_program_method_state.v1",
+ "classification_reference_20260928": {
+  "state": "SOURCE_REVIEWED_SHORTLIST_NOT_EXECUTED",
+  "plan": "CLASSIFICATION_REFERENCE_PLAN_2026_09_28.md",
+  "orders": "../../handoffs/SATOSHI_CLASSIFICATION_REFERENCE_ORDERS_2026_09_28.md",
+  "current_lane_count": 14,
+  "rb04": "d17f377; stored router verdict recount 79/95 ON, 85/95 OFF; 19 prompts repeated five times; not classifier accuracy",
+  "adoption": "NOT_AUTHORIZED; resolve fixture/remote backend contradiction and preserve conversations",
+  "scientific_approval": false
+ },
  "resource_and_dispatch_reconciliation_20260928": {
   "observed_at": "2026-09-29T02:31Z",
   "status": "NO_NEW_MEASUREMENT",
@@ -19,7 +28,7 @@
   "index": "EXPERIMENT_EXECUTION_QUEUE.json (schema research_dispatch_index.v2)",
   "report": "../../audits/work_plan/SATOSHI_DR02_DISPATCH_INDEX_2026_09_26.md",
   "assignment_index": "../../handoffs/SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md",
-  "lanes_with_a_current_row": 13,
+  "lanes_with_a_current_row": 14,
   "historical_lane_count_20260926_dr02": 11,
   "lanes_ordered_by_DR02": [
    "A/B",
