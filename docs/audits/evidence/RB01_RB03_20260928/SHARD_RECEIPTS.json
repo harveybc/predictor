@@ -1,0 +1,474 @@
+{
+ "at": "2026-09-28",
+ "host_role": "WORKER_A",
+ "note": "Roles only.  Every shard held its own atomic reservation at a 6 GiB cap sized from the whole-cgroup peak evidence; the cap was never lowered, and the one refusal was waited out at the same cap.  The interpreter is the pinned 3.12.13 environment by absolute path, which is the single named deviation from the verbatim commands: `python3` on this host is 3.14.4 and the suite does not support it.",
+ "per_file_shards": [
+  {
+   "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+   "cpu_system_seconds": 1.24,
+   "cpu_user_seconds": 5.37,
+   "deselected": null,
+   "errors": null,
+   "exit_code": 0,
+   "failed": null,
+   "fatal_signal": false,
+   "gpu_post": [
+    "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 14 MiB, 35"
+   ],
+   "gpu_pre": [
+    "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 16376 MiB, 14 MiB, 35"
+   ],
+   "host_role": "WORKER_A",
+   "lease": {
+    "argv_sha256": "a97da448a9290a4aea04db7b2c718644e4e21597f61c4b156d4e26a8d3812d4d",
+    "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+    "boot_time": 1790634839,
+    "cap_bytes": 6442450944,
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-rb01stests_test_crispdm_admission_py-1790652838-307322.scope",
+    "label": "rb01-tests_test_crispdm_admission_py-0ea5bff4",
+    "lease_id": "rb01stests_test_crispdm_admission_py-1790652838-307330-63a689",
+    "pid": 307335,
+    "pid_starttime": 1799922,
+    "wall_seconds": 3600
+   },
+   "main_process_max_rss_bytes": 43499520,
+   "mem_pre": [
+    "MemTotal:       32062312 kB",
+    "MemAvailable:   20840608 kB",
+    "SUnreclaim:       772872 kB"
+   ],
+   "passed": 30,
+   "pytest_last_lines": [
+    "..............................                                           [100%]",
+    "30 passed in 5.97s"
+   ],
+   "reclaim_cause": "LEASE_RELEASED",
+   "revision": "0ea5bff48006a78cc245777161197398d43f75dd",
+   "schema": "satoshi.rb01_rerun_shard.v2",
+   "selection": [
+    "tests/test_crispdm_admission.py"
+   ],
+   "shard": "tests_test_crispdm_admission_py",
+   "skipped": null,
+   "wall_seconds": 8.905,
+   "whole_cgroup_peak_bytes": 62590976
+  },
+  {
+   "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+   "cpu_system_seconds": 0.92,
+   "cpu_user_seconds": 6.65,
+   "deselected": null,
+   "errors": null,
+   "exit_code": 0,
+   "failed": null,
+   "fatal_signal": false,
+   "gpu_post": [
+    "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 14 MiB, 35"
+   ],
+   "gpu_pre": [
+    "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 16376 MiB, 14 MiB, 35"
+   ],
+   "host_role": "WORKER_A",
+   "lease": {
+    "argv_sha256": "91de59361417398f63763a7dd27c78e0e399c6be64db686f1dd868fd9ba5f00c",
+    "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+    "boot_time": 1790634839,
+    "cap_bytes": 6442450944,
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-rb01stests_test_df_admission_guard_py-1790652847-307657.scope",
+    "label": "rb01-tests_test_df_admission_guard_py-0ea5bff4",
+    "lease_id": "rb01stests_test_df_admission_guard_py-1790652847-307665-dea819",
+    "pid": 307670,
+    "pid_starttime": 1800836,
+    "wall_seconds": 3600
+   },
+   "main_process_max_rss_bytes": 108154880,
+   "mem_pre": [
+    "MemTotal:       32062312 kB",
+    "MemAvailable:   20781216 kB",
+    "SUnreclaim:       773352 kB"
+   ],
+   "passed": 22,
+   "pytest_last_lines": [
+    "......................                                                   [100%]",
+    "22 passed in 6.51s"
+   ],
+   "reclaim_cause": "LEASE_RELEASED",
+   "revision": "0ea5bff48006a78cc245777161197398d43f75dd",
+   "schema": "satoshi.rb01_rerun_shard.v2",
+   "selection": [
+    "tests/test_df_admission_guard.py"
+   ],
+   "shard": "tests_test_df_admission_guard_py",
+   "skipped": null,
+   "wall_seconds": 9.496,
+   "whole_cgroup_peak_bytes": 111648768
+  },
+  {
+   "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+   "cpu_system_seconds": 0.23,
+   "cpu_user_seconds": 2.07,
+   "deselected": null,
+   "errors": 17,
+   "exit_code": 1,
+   "failed": null,
+   "fatal_signal": false,
+   "gpu_post": [
+    "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 14 MiB, 35"
+   ],
+   "gpu_pre": [
+    "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 16376 MiB, 14 MiB, 35"
+   ],
+   "host_role": "WORKER_A",
+   "lease": {
+    "argv_sha256": "e580e909810a51822c408b2422a77d08097060c94cb47072b4eeb6349e6b9527",
+    "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+    "boot_time": 1790634839,
+    "cap_bytes": 6442450944,
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-rb01stests_test_df_d2_r4_comparator_guard_py-1790652857-307766.scope",
+    "label": "rb01-tests_test_df_d2_r4_comparator_guard_py-0ea5bff4",
+    "lease_id": "rb01stests_test_df_d2_r4_comparator_guard_py-1790652857-307777-f1f6ca",
+    "pid": 307782,
+    "pid_starttime": 1801811,
+    "wall_seconds": 3600
+   },
+   "main_process_max_rss_bytes": 53309440,
+   "mem_pre": [
+    "MemTotal:       32062312 kB",
+    "MemAvailable:   20765992 kB",
+    "SUnreclaim:       773328 kB"
+   ],
+   "passed": null,
+   "pytest_last_lines": [
+    "ERROR tests/test_df_d2_r4_comparator_guard.py::test_a_nonfinite_replayed_value_is_not_an_estimate",
+    "ERROR tests/test_df_d2_r4_comparator_guard.py::test_a_zero_difference_is_still_a_comparison",
+    "ERROR tests/test_df_d2_r4_comparator_guard.py::test_a_complete_population_reports_its_denominators",
+    "17 errors in 1.27s"
+   ],
+   "reclaim_cause": "LEASE_RELEASED",
+   "revision": "0ea5bff48006a78cc245777161197398d43f75dd",
+   "schema": "satoshi.rb01_rerun_shard.v2",
+   "selection": [
+    "tests/test_df_d2_r4_comparator_guard.py"
+   ],
+   "shard": "tests_test_df_d2_r4_comparator_guard_py",
+   "skipped": null,
+   "wall_seconds": 4.205,
+   "whole_cgroup_peak_bytes": 21458944
+  },
+  {
+   "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+   "cpu_system_seconds": 0.21,
+   "cpu_user_seconds": 0.93,
+   "deselected": null,
+   "errors": null,
+   "exit_code": 0,
+   "failed": null,
+   "fatal_signal": false,
+   "gpu_post": [
+    "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 14 MiB, 35"
+   ],
+   "gpu_pre": [
+    "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 16376 MiB, 14 MiB, 35"
+   ],
+   "host_role": "WORKER_A",
+   "lease": {
+    "argv_sha256": "624d6d7889558592eba737acbb5d07ecac610649c2b190d2b0ee09e6282eda7f",
+    "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+    "boot_time": 1790634839,
+    "cap_bytes": 6442450944,
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-rb01stests_test_df_e1_close_py-1790652862-307834.scope",
+    "label": "rb01-tests_test_df_e1_close_py-0ea5bff4",
+    "lease_id": "rb01stests_test_df_e1_close_py-1790652862-307842-15cc20",
+    "pid": 307847,
+    "pid_starttime": 1802255,
+    "wall_seconds": 3600
+   },
+   "main_process_max_rss_bytes": 53567488,
+   "mem_pre": [
+    "MemTotal:       32062312 kB",
+    "MemAvailable:   20785928 kB",
+    "SUnreclaim:       773332 kB"
+   ],
+   "passed": null,
+   "pytest_last_lines": [
+    "sssssssssssssssssssssssssssssssssss                                      [100%]",
+    "35 skipped in 0.11s"
+   ],
+   "reclaim_cause": "LEASE_RELEASED",
+   "revision": "0ea5bff48006a78cc245777161197398d43f75dd",
+   "schema": "satoshi.rb01_rerun_shard.v2",
+   "selection": [
+    "tests/test_df_e1_close.py"
+   ],
+   "shard": "tests_test_df_e1_close_py",
+   "skipped": 35,
+   "wall_seconds": 3.09,
+   "whole_cgroup_peak_bytes": 20410368
+  },
+  {
+   "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+   "cpu_system_seconds": 153.36,
+   "cpu_user_seconds": 1951.44,
+   "deselected": null,
+   "errors": null,
+   "exit_code": 0,
+   "failed": null,
+   "fatal_signal": false,
+   "gpu_post": [
+    "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 14 MiB, 41"
+   ],
+   "gpu_pre": [
+    "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 16376 MiB, 14 MiB, 35"
+   ],
+   "host_role": "WORKER_A",
+   "lease": {
+    "argv_sha256": "d81e26c1df1c7b04c7689fc50252a3f07fc914413aa3aacc62dbc37e9f83c37a",
+    "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+    "boot_time": 1790634839,
+    "cap_bytes": 6442450944,
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-rb01stests_test_df_mod_e0_close_py-1790652865-307897.scope",
+    "label": "rb01-tests_test_df_mod_e0_close_py-0ea5bff4",
+    "lease_id": "rb01stests_test_df_mod_e0_close_py-1790652865-307905-cf567e",
+    "pid": 307914,
+    "pid_starttime": 1802585,
+    "wall_seconds": 3600
+   },
+   "main_process_max_rss_bytes": 1602138112,
+   "mem_pre": [
+    "MemTotal:       32062312 kB",
+    "MemAvailable:   20800240 kB",
+    "SUnreclaim:       773344 kB"
+   ],
+   "passed": 19,
+   "pytest_last_lines": [
+    "  /home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/keras/src/backend/tensorflow/core.py:172: DeprecationWarning: __array__ implementation doesn't accept a copy keyword, so passing copy=False failed. __array__ must implement 'dtype' and 'copy' keyword arguments. To learn more, see the migration guide https://numpy.org/devdocs/numpy_2_0_migration_guide.html#adapting-to-change \u2026(truncated)",
+    "    return np.array(x)",
+    "-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html",
+    "19 passed, 1584 warnings in 820.03s (0:13:40)"
+   ],
+   "reclaim_cause": "LEASE_RELEASED",
+   "revision": "0ea5bff48006a78cc245777161197398d43f75dd",
+   "schema": "satoshi.rb01_rerun_shard.v2",
+   "selection": [
+    "tests/test_df_mod_e0_close.py"
+   ],
+   "shard": "tests_test_df_mod_e0_close_py",
+   "skipped": null,
+   "wall_seconds": 826.671,
+   "whole_cgroup_peak_bytes": 3140186112
+  },
+  {
+   "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+   "cpu_system_seconds": 1.1,
+   "cpu_user_seconds": 13.71,
+   "deselected": null,
+   "errors": 105,
+   "exit_code": 1,
+   "failed": null,
+   "fatal_signal": false,
+   "gpu_post": [
+    "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 14 MiB, 41"
+   ],
+   "gpu_pre": [
+    "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 16376 MiB, 14 MiB, 41"
+   ],
+   "host_role": "WORKER_A",
+   "lease": {
+    "argv_sha256": "f6554729cdcbf2ccbe8f38c4631b9b8e0f37d90a05d202b3860060417d0238c5",
+    "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+    "boot_time": 1790634839,
+    "cap_bytes": 6442450944,
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-rb01stests_test_df_sota_repro_py-1790653692-412761.scope",
+    "label": "rb01-tests_test_df_sota_repro_py-0ea5bff4",
+    "lease_id": "rb01stests_test_df_sota_repro_py-1790653692-412769-fa1499",
+    "pid": 412774,
+    "pid_starttime": 1885277,
+    "wall_seconds": 3600
+   },
+   "main_process_max_rss_bytes": 1424728064,
+   "mem_pre": [
+    "MemTotal:       32062312 kB",
+    "MemAvailable:   20463156 kB",
+    "SUnreclaim:       803128 kB"
+   ],
+   "passed": null,
+   "pytest_last_lines": [
+    "ERROR tests/test_df_sota_repro.py::test_RP130_a_boolean_is_never_a_numeric_count_in_the_real_acceptance",
+    "ERROR tests/test_df_sota_repro.py::test_RP131_revalidation_reads_the_retained_evidence_under_the_repaired_gates_without_recomputing",
+    "ERROR tests/test_df_sota_repro.py::test_RP128_the_catalog_acceptance_certifies_the_catalog_while_the_cell_verification_stays_a_separate_fact",
+    "105 errors in 12.91s"
+   ],
+   "reclaim_cause": "LEASE_RELEASED",
+   "revision": "0ea5bff48006a78cc245777161197398d43f75dd",
+   "schema": "satoshi.rb01_rerun_shard.v2",
+   "selection": [
+    "tests/test_df_sota_repro.py"
+   ],
+   "shard": "tests_test_df_sota_repro_py",
+   "skipped": null,
+   "wall_seconds": 15.879,
+   "whole_cgroup_peak_bytes": 660680704
+  }
+ ],
+ "recorded_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+ "revision": "0ea5bff48006a78cc245777161197398d43f75dd",
+ "schema": "satoshi.rb01_shard_receipts.v1",
+ "verbatim_selection_1": {
+  "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+  "exit_code": 139,
+  "gnu_time": {
+   "Elapsed (wall clock) time (h:mm:ss or m:ss)": null,
+   "Exit status": "139",
+   "Maximum resident set size (kbytes)": "2168536",
+   "System time (seconds)": "163.84",
+   "User time (seconds)": "1960.27"
+  },
+  "gpu_post": [
+   "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 14 MiB, 40"
+  ],
+  "gpu_pre": [
+   "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 16376 MiB, 14 MiB, 33"
+  ],
+  "host_role": "WORKER_A",
+  "lease": {
+   "argv_sha256": "1e0c882992cb496913b4c8e40e424486f770c24a4217a3b092285e6aaa791422",
+   "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+   "boot_time": 1790634839,
+   "cap_bytes": 6442450944,
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-rb01shard1-1790650765-86850.scope",
+   "label": "rb01-shard1-0ea5bff4",
+   "lease_id": "rb01shard1-1790650765-86858-641e27",
+   "pid": 86863,
+   "pid_starttime": 1592593,
+   "wall_seconds_declared": 3600
+  },
+  "mem_pre": [
+   "MemTotal:       32062312 kB",
+   "MemAvailable:   20669592 kB",
+   "SUnreclaim:       708564 kB"
+  ],
+  "pytest_last_lines": [],
+  "pytest_summary_lines": [
+   "File \"/home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/_pytest/runner.py\", line 118 in pytest_runtest_protocol",
+   "File \"/home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/pluggy/_callers.py\", line 121 in _multicall",
+   "...",
+   "",
+   "Extension modules: numpy._core._multiarray_umath, numpy.linalg._umath_linalg, pyarrow.lib, numpy.random._common, numpy.random.bit_generator, numpy.random._bounded_integers, numpy.random._pcg64, numpy.random._generator, numpy.random._mt19937, numpy.random._philox, numpy.random._sfc64, numpy.random.mtrand, _cyutility, pandas._libs._cyutility, pandas._libs.tslibs.ccalendar, pandas._libs.tslibs.np_datetime, pandas._libs.tslibs.dtypes, pandas._libs.tslibs.base, pandas._libs.tslibs.nattype, pandas._libs.tslibs.timezones, pandas._libs.properties, pandas._libs.tslibs.fields, pandas._libs.tslibs.timedeltas, pandas._libs.tslibs.tzconversion, pandas._libs.tslibs.timestamps, pandas._libs.tslibs.offsets, pandas._libs.tslibs.strptime, pandas._libs.tslibs.parsing, pandas._libs.tslibs.conversion, pandas._libs.tslibs.period, pandas._libs.tslibs.vectorized, pandas._libs.ops_dispatch, pandas._libs.missing, pandas._libs.hashtable, pandas._libs.algos, pandas._libs.interval, pandas._libs.lib, pyarrow._compute, pandas._libs.ops, pandas._libs.hashing, pandas._libs.arrays, pandas._libs.tslib, pandas._libs.sparse, pandas._libs.internals, pandas._libs.indexing, pandas._libs.index, pandas._libs.writers, pandas._libs.join, pandas._libs.window.aggregations, pandas._libs.window.indexers, pandas._libs.reshape, pandas._libs.groupby, pandas._libs.json, pandas._libs.parsers, pandas._libs.testing, cython.cimports.libc.math, scipy._cyutility, scipy._lib._ccallback_c, scipy.linalg._fblas, scipy.linalg._flapack, scipy.linalg._batched_linalg, charset_normalizer.md, charset_normalizer.cd, scipy.linalg._cythonized_array_utils, scipy.linalg._solve_toeplitz, scipy.linalg._internal_matfuncs, scipy.linalg._linalg_pythran, scipy.linalg.cython_blas, scipy.linalg.cython_lapack, scipy.linalg._decomp_update, scipy.sparse._sparsetools, _csparsetools, scipy.sparse._csparsetools, scipy.sparse.linalg._dsolve._superlu, scipy.sparse.linalg._eigen.arpack._arpacklib, scipy.sparse.linalg._propack, scipy.optimize._group_columns, scipy._lib.messagestream, scipy.optimize._trlib._trlib, scipy.optimize._lbfgsb, _moduleTNC, scipy.optimize._moduleTNC, scipy.optimize._slsqplib, scipy.optimize._minpack, scipy.optimize._lsq.givens_elimination, scipy.optimize._zeros, scipy._lib._uarray._uarray, scipy.special._ufuncs_cxx, scipy.special._ellip_harm_2, scipy.special._special_ufuncs, scipy.special._gufuncs, scipy.special._ufuncs, scipy.special._specfun, scipy.special._comb, scipy.linalg._decomp_interpolative, scipy.optimize._bglu_dense, scipy.optimize._lsap, scipy.spatial._ckdtree, scipy.spatial._hausdorff, scipy.spatial._distance_wrap, scipy.spatial._qhull, scipy.spatial._voronoi, scipy.spatial.transform._rotation_cy, scipy.spatial.transform._rigid_transform_cy, scipy.optimize._direct, scipy.signal._sigtools, scipy.signal._max_len_seq_inner, scipy.signal._upfirdn_apply, scipy.signal._spline, scipy.interpolate._fitpack, scipy.interpolate._dierckx, scipy.interpolate._ppoly, scipy.interpolate._interpnd, scipy.interpolate._rbfinterp_pythran, scipy.interpolate._rgi_cython, scipy.ndimage._nd_image, scipy.ndimage._rank_filter_1d, _ni_label, scipy.ndimage._ni_label, scipy.signal._sosfilt, scipy.integrate._odepack, scipy.integrate._quadpack, scipy.integrate._vode, scipy.integrate._dop, scipy.special.cython_special, scipy.stats._stats, scipy.stats._biasedurn, scipy.stats._levy_stable.levyst, scipy.stats._stats_pythran, scipy.stats._ansari_swilk_statistics, scipy.sparse.csgraph._tools, scipy.sparse.csgraph._shortest_path, scipy.sparse.csgraph._traversal, scipy.sparse.csgraph._min_spanning_tree, scipy.sparse.csgraph._flow, scipy.sparse.csgraph._matching, scipy.sparse.csgraph._reordering, scipy.stats._sobol, scipy.stats._qmc_cy, scipy.stats._rcont.rcont, scipy.stats._qmvnt_cy, scipy.signal._peak_finding_utils, google._upb._message, requests.packages.charset_normalizer.md, requests.packages.chardet.md, requests.packages.charset_normalizer.cd, requests.packages.chardet.cd, h5py._errors, h5py.defs, h5py._objects, h5py.h5, h5py.utils, h5py.h5t, h5py.h5s, h5py.h5ac, h5py.h5p, h5py.h5r, h5py._npystrings, h5py._proxy, h5py._conv, h5py.h5z, h5py.h5a, h5py.h5d, h5py.h5ds, h5py.h5g, h5py.h5i, h5py.h5o, h5py.h5f, h5py.h5fd, h5py.h5pl, h5py.h5l, h5py._selector, PIL._imaging, psutil._psutil_linux, kiwisolver._cext, sklearn.__check_build._check_build, sklearn._cyutility, sklearn.utils._isfinite, sklearn.utils.sparsefuncs_fast, sklearn.utils.murmurhash, sklearn.utils._openmp_helpers, torch._C, torch._C._dynamo.autograd_compiler, torch._C._dynamo.eval_frame, torch._C._dynamo.guards, torch._C._dynamo.utils, torch._C._fft, torch._C._linalg, torch._C._nested, torch._C._nn, torch._C._sparse, torch._C._special, cuda.bindings._bindings.cydriver, cuda.bindings.cydriver, cuda.bindings.driver, cuda.bindings._bindings.cyruntime_ptds, cuda.bindings._bindings.cyruntime, cuda.bindings.cyruntime, cuda.bindings.runtime, sklearn.preprocessing._csr_polynomial_expansion, sklearn.preprocessing._target_encoder_fast (total: 201)",
+   "/home/harveybc/.local/bin/crispdm-run: line 139: 86863 Segmentation fault         (core dumped) systemd-run --user --scope --quiet --collect --slice=\"$SLICE\" --unit=\"$unit\" -p MemoryMax=\"$CAP_BYTES\" -p MemoryHigh=\"$(( CAP_BYTES * 9 / 10 ))\" -p MemorySwapMax=0 env OMP_NUM_THREADS=\"${OMP_NUM_THREADS:-1}\" OPENBLAS_NUM_THREADS=\"${OPENBLAS_NUM_THREADS:-1}\" MKL_NUM_THREADS=\"${MKL_NUM_THREADS:-1}\" timeout --kill-after=30s \"$WALL\" \"$@\""
+  ],
+  "reclaim_cause": "LEASE_RELEASED",
+  "revision": "0ea5bff48006a78cc245777161197398d43f75dd",
+  "schema": "satoshi.rb01_rerun_shard.v1",
+  "selection": [
+   "tests/test_crispdm_admission.py",
+   "tests/test_df_admission_guard.py",
+   "tests/test_df_d2_r4_comparator_guard.py",
+   "tests/test_df_e1_close.py",
+   "tests/test_df_mod_e0_close.py",
+   "tests/test_df_sota_repro.py"
+  ],
+  "shard": 1,
+  "wall_seconds": 851.891,
+  "whole_cgroup_peak_bytes": 3540209664
+ },
+ "verbatim_selection_1_note": "run under the first revision of the shard runner, which wrote a v1 receipt; its counts were read from the retained progress stream because the interpreter died before pytest's summary line",
+ "verbatim_selection_2": {
+  "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+  "cpu_system_seconds": 161.71,
+  "cpu_user_seconds": 1958.51,
+  "deselected": null,
+  "errors": null,
+  "exit_code": 139,
+  "failed": null,
+  "fatal_signal": true,
+  "gpu_post": [
+   "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 14 MiB, 41"
+  ],
+  "gpu_pre": [
+   "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 16376 MiB, 14 MiB, 35"
+  ],
+  "host_role": "WORKER_A",
+  "lease": {
+   "argv_sha256": "9c0c01d04f4d2ae9d9aaaffb98f9a3781b03388fe9df8ce7f8760c549676d462",
+   "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+   "boot_time": 1790634839,
+   "cap_bytes": 6442450944,
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-rb01s2-1790651824-192386.scope",
+   "label": "rb01-2-0ea5bff4",
+   "lease_id": "rb01s2-1790651824-192394-470857",
+   "pid": 192399,
+   "pid_starttime": 1698509,
+   "wall_seconds": 3600
+  },
+  "lease_lookup_note": "the runner did not see the retained body on its first ls; it was attached afterwards from the same lease id",
+  "main_process_max_rss_bytes": 2197450752,
+  "mem_pre": [
+   "MemTotal:       32062312 kB",
+   "MemAvailable:   20212928 kB",
+   "SUnreclaim:       746708 kB"
+  ],
+  "passed": null,
+  "pytest_last_lines": [
+   "  File \"/home/harveybc/anaconda3/envs/trading-stack/lib/python3.12/site-packages/pluggy/_callers.py\", line 121 in _multicall",
+   "  ...",
+   "Extension modules: numpy._core._multiarray_umath, numpy.linalg._umath_linalg, pyarrow.lib, numpy.random._common, numpy.random.bit_generator, numpy.random._bounded_integers, numpy.random._pcg64, numpy.random._generator, numpy.random._mt19937, numpy.random._philox, numpy.random._sfc64, numpy.random.mtrand, _cyutility, pandas._libs._cyutility, pandas._libs.tslibs.ccalendar, pandas._libs.tslibs.np_dat \u2026(truncated)",
+   "/home/harveybc/.local/bin/crispdm-run: line 139: 192399 Segmentation fault         (core dumped) systemd-run --user --scope --quiet --collect --slice=\"$SLICE\" --unit=\"$unit\" -p MemoryMax=\"$CAP_BYTES\" -p MemoryHigh=\"$(( CAP_BYTES * 9 / 10 ))\" -p MemorySwapMax=0 env OMP_NUM_THREADS=\"${OMP_NUM_THREADS:-1}\" OPENBLAS_NUM_THREADS=\"${OPENBLAS_NUM_THREADS:-1}\" MKL_NUM_THREADS=\"${MKL_NUM_THREADS:-1}\" timeo \u2026(truncated)"
+  ],
+  "reclaim_cause": "LEASE_RECLAIMED_WITNESS_DEAD",
+  "revision": "0ea5bff48006a78cc245777161197398d43f75dd",
+  "schema": "satoshi.rb01_rerun_shard.v2",
+  "selection": [
+   "tests/test_crispdm_admission.py",
+   "tests/test_df_d2_r4_comparator_guard.py",
+   "tests/test_df_e1_close.py",
+   "tests/test_df_mod_e0_close.py",
+   "tests/test_df_sota_repro.py"
+  ],
+  "shard": "2",
+  "skipped": null,
+  "wall_seconds": 840.711,
+  "whole_cgroup_peak_bytes": null
+ },
+ "verbatim_selection_2_refused_attempt": {
+  "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+  "exit_code": 75,
+  "gnu_time": {
+   "Elapsed (wall clock) time (h:mm:ss or m:ss)": null,
+   "Exit status": "75",
+   "Maximum resident set size (kbytes)": "25512",
+   "System time (seconds)": "0.07",
+   "User time (seconds)": "0.30"
+  },
+  "gpu_post": [
+   "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 14 MiB, 38"
+  ],
+  "gpu_pre": [
+   "0, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 16376 MiB, 14 MiB, 38"
+  ],
+  "host_role": "WORKER_A",
+  "lease": null,
+  "mem_pre": [
+   "MemTotal:       32062312 kB",
+   "MemAvailable:   20217352 kB",
+   "SUnreclaim:       744436 kB"
+  ],
+  "pytest_last_lines": [],
+  "pytest_summary_lines": [
+   "crispdm-run: QUEUED SLICE_AGGREGATE_BUDGET -- the observed aggregate budget would be 15.04G against the crispdm-batch.slice ceiling 14.00G (in use 1.04G, unrealised reservations 8.00G)",
+   "crispdm-run: REFUSED nothing was started, and no limit, slice or kernel setting was changed"
+  ],
+  "revision": "0ea5bff48006a78cc245777161197398d43f75dd",
+  "schema": "satoshi.rb01_rerun_shard.v1",
+  "selection": [
+   "tests/test_crispdm_admission.py",
+   "tests/test_df_d2_r4_comparator_guard.py",
+   "tests/test_df_e1_close.py",
+   "tests/test_df_mod_e0_close.py",
+   "tests/test_df_sota_repro.py"
+  ],
+  "shard": 2,
+  "wall_seconds": 0.401,
+  "whole_cgroup_peak_bytes": null
+ },
+ "verbatim_selection_2_refused_attempt_note": "exit 75 SLICE_AGGREGATE_BUDGET.  The 8 GiB of unrealised reservations belonged to a CONCURRENT LANE on this host, not to my own draining lease; nothing was started and no cap was lowered"
+}

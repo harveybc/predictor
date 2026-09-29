@@ -166,20 +166,30 @@ The verbatim form cannot produce counts, so the union of both selections was run
 file**, sequentially, same 6 GiB cap, same revision. This is what "bounded sequential shards" was for, and
 it is where the numbers are.
 
-| shard | exit | passed | skipped | errors | wall | whole-cgroup peak |
-|---|---|---|---|---|---|---|
-| `tests/test_crispdm_admission.py` | **0** | **30** | — | — | 5.97 s | |
-| `tests/test_df_admission_guard.py` | **0** | **22** | — | — | 6.51 s | |
-| `tests/test_df_d2_r4_comparator_guard.py` | **1** | 0 | — | **17** | 1.27 s | 21 458 944 B |
-| `tests/test_df_e1_close.py` | **0** | 0 | **35** | — | 0.11 s | |
-| `tests/test_df_mod_e0_close.py` | *(below)* | | | | | |
-| `tests/test_df_sota_repro.py` | *(below)* | | | | | |
+| shard | exit | passed | skipped | errors | CPU s | wall s | whole-cgroup peak |
+|---|---|---|---|---|---|---|---|
+| `tests/test_crispdm_admission.py` | **0** | **30** | — | — | 6.61 | 8.91 | 62 590 976 B |
+| `tests/test_df_admission_guard.py` | **0** | **22** | — | — | 7.57 | 9.50 | 111 648 768 B |
+| `tests/test_df_d2_r4_comparator_guard.py` | **1** | 0 | — | **17** | 2.30 | 4.21 | 21 458 944 B |
+| `tests/test_df_e1_close.py` | **0** | 0 | **35** | — | 1.14 | 3.09 | 20 410 368 B |
+| `tests/test_df_mod_e0_close.py` | **0** | **19** | — | — | **2104.80** | **826.67** | **3 140 186 112 B** |
+| `tests/test_df_sota_repro.py` | **1** | 0 | — | **105** | 14.81 | 15.88 | 660 680 704 B |
+| **total collected** | | | | | | | 30 + 22 + 17 + 35 + 19 + 105 = **228** ✓ |
 
-**The shard counts and the verbatim counts reconcile exactly, which localises both deaths to one file.**
-Selection 1 died having recorded 89 passed and 35 skipped; 30 + 22 + 17 + 20 = 89 and 35 is entirely
-`test_df_e1_close.py`. Selection 2, which omits the admission guard, died at 67 = 30 + 17 + 20. So **both
-verbatim runs completed every file except `tests/test_df_sota_repro.py` and died on its first test** —
-and the 17 tests that *error* in their own shard *pass* when they share a process, which is §3.8.
+**The counts reconcile to the test, which localises both deaths precisely.** Per-file the six files hold
+228 tests, matching the collection smoke exactly. In company, the 17 comparator-guard tests and the 105
+sota tests pass instead of erroring (§3.8), so selection 1 should have shown 30 + 22 + 17 + 19 = 88 passed
+and 35 skipped before reaching sota — it showed **89 and 35**. Selection 2, which omits the admission
+guard, should have shown 30 + 17 + 19 = 66 and 35 — it showed **67 and 35**.
+
+Both are one higher, by the same one. **So both verbatim runs completed all five other files, passed the
+first test of `tests/test_df_sota_repro.py`, and died on its second.** Same file, same test, twice.
+
+**Where the 6 GiB cap was actually needed, and it was not sota.** `test_df_mod_e0_close.py` alone is
+**2104.80 CPU s over 826.67 s wall with a 3 140 186 112 B whole-cgroup peak** — that is essentially the
+whole cost and the whole footprint of both selections. The repository's retained `peak RSS` figure of about
+1.37 GB describes `test_df_sota_repro.py`, whose own shard peaks at 660 680 704 B and costs 14.81 CPU s.
+**The file the cap has to cover was never the file the cap was being sized from.**
 
 ### 3.7 A measurement gap this round found in the launcher itself
 
@@ -204,10 +214,11 @@ obvious suspect and it is not evidence — `coredumpctl` lists nothing on that h
 Proposed, not done: have the monitor persist the running peak into the lease as it samples, so a reclaim
 inherits the last sample instead of `null`.
 
-### 3.8 A repository defect the shards found, which the combined run hides
+### 3.8 A repository defect the shards found, which the combined run hides — and it is RR02's own
 
-`tests/test_df_d2_r4_comparator_guard.py` in its own process is **exit 1, 17 errors, 0 passed**. Every one
-is a setup error in the autouse fixture `_crispdm_declared_coverage` of `tests/conftest.py`:
+`tests/test_df_d2_r4_comparator_guard.py` in its own process is **exit 1, 17 errors, 0 passed**.
+`tests/test_df_sota_repro.py` in its own process is **exit 1, 105 errors, 0 passed**. Every one of the 122
+is the same setup error in the autouse fixture `_crispdm_declared_coverage` of `tests/conftest.py`:
 
 ```
 tests/conftest.py:81: in _crispdm_declared_coverage
@@ -226,13 +237,20 @@ assigns `sys.modules["crispdm_admission"]`**. `dataclasses` resolves a `KW_ONLY`
 *first* such test in a process pays. `tests/test_crispdm_admission.py` imports the module itself, so in any
 selection that includes it **first** the name is already in `sys.modules` and the fixture works;
 `tests/test_df_admission_guard.py` carries `pytest.mark.crispdm_uncovered` and opts out entirely. Both
-verbatim selections begin with `test_crispdm_admission.py`, which is exactly why those 17 tests pass there
-and error alone. **Sharding is what exposed it, and it is the more interesting of the two failures**,
-because the triton segfault is an environment fact and this is ours.
+verbatim selections begin with `test_crispdm_admission.py`, which is exactly why those 122 tests pass there
+and error alone.
+
+**And it is a regression introduced by RR02 itself**, which is what makes it worth the paragraph. The
+fixture is RR02's own declared-reservation coverage gate. The retained RP121 and RP131 returns record
+`tests/test_df_sota_repro.py` **"in its own process"** at **84 passed + 1 skipped** and **104 passed +
+1 skipped**. At `0ea5bff4` the same file in its own process is **105 errors**. So the convention every
+retained return follows — run that file on its own — is precisely the convention this revision broke, and
+it broke silently, because every combined selection that happens to start with the admission suite still
+passes.
 
 **Not repaired here, deliberately.** Editing `tests/conftest.py` would change the revision the two ordered
 selections were measured at, in the same commit that reports the measurement. The repair is one line and
-belongs in its own change:
+belongs in its own change, with its own regression test running a covered file **on its own**:
 
 ```python
 sys.modules["crispdm_admission"] = A      # before spec.loader.exec_module(A)
@@ -242,7 +260,30 @@ sys.modules["crispdm_admission"] = A      # before spec.loader.exec_module(A)
 
 ### 3.9 Both failures, established by experiment
 
-*(filled below)*
+The conftest mechanism is already **established by arithmetic on the two verbatim runs**, before any extra
+run: selection 1 recorded 89 passed, and 89 is only reachable as 30 + 22 + **17** + 19 + 1. The 17
+comparator-guard tests that error alone therefore *did* pass in company, and one sota test passed too. The
+same decomposition holds for selection 2 at 67 = 30 + **17** + 19 + 1.
+
+Two minimal-reproducer runs were nevertheless issued, because a two-file reproducer is worth more to
+whoever repairs this than a six-file one:
+
+* **A —** `test_crispdm_admission.py` + `test_df_d2_r4_comparator_guard.py`: does the admission suite alone
+  repair the 17?
+* **B —** `test_crispdm_admission.py` + `test_df_sota_repro.py`: do **two** files suffice to reproduce the
+  segfault, or does it need the other four?
+
+**A note on their caps, so this does not read as cap-shopping.** The shards' 6 GiB was sized for the
+six-file selection, whose footprint is almost entirely `test_df_mod_e0_close.py` at 3.14 GiB. These two
+commands are different work, and §3.6 now gives each file's own measured whole-cgroup peak: 62 590 976 B
+for the admission suite, 21 458 944 B for the comparator guard, 660 680 704 B for sota. A cap declared
+from *those* numbers is smaller than 6 GiB, and that is not the forbidden move — the forbidden move is
+lowering the cap **of the same work** after a refusal. The first attempt at A was issued at 6 GiB, was
+correctly queued on `SLICE_AGGREGATE_BUDGET` behind the concurrent lane's honest 8.59 GiB weather fit, and
+was **left to wait rather than re-asked smaller**; the re-declaration below is sized from measurement for a
+different command, and it is stated here rather than quietly done.
+
+*(outcomes below)*
 
 ---
 
