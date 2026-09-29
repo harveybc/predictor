@@ -441,7 +441,7 @@ labelled the same way.
 
 Suites, at this tip: **`tools/test_tsl_bounded_eval.py` 21 passed ·
 `tools/test_tsl_execution.py` 23 passed · `tools/test_tsl_producer_contract.py`
-22 passed — 63 passed**, with the production warehouse provider on the path.
+22 passed — 66 passed**, with the production warehouse provider on the path.
 
 ## 10. What the auditor should attack first
 
