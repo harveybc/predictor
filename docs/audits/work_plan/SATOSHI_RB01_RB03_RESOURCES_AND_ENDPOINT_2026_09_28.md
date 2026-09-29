@@ -19,7 +19,7 @@ or account identifier appears in this document or in any evidence file it publis
 |---|---|
 | **selection 1** (six files, verbatim) | **exit 139, SIGSEGV.** No summary line: the interpreter died first. **89 passed, 35 skipped, 0 failed** of 228 collected. Whole-cgroup peak **3 540 209 664 B (3.30 GiB)**; CPU 2124.11 s over 851.89 s wall |
 | **selection 2** (five files, verbatim) | **exit 139, SIGSEGV, same cause.** **67 passed, 35 skipped, 0 failed**. CPU 2120.22 s over 840.71 s wall; main-process peak 2 197 450 752 B; **whole-cgroup peak lost** — see §3.7 |
-| **can the preferred host admit useful work?** | **QUALIFIED NO.** The 5090 itself is healthy and answered three of four probes in ≤11 s. The host has **1.47 GiB** of admissible RAM behind the owner's 3 GiB reserve, 4.6 GB of it lost to unreclaimable kernel slab, 76 NVRM host-memory allocation failures since 2026-09-24 — and one probe held a reservation for its entire 10-minute wall and produced nothing, unexplained. Memory-heavy work went to `WORKER_A` instead; nothing waited for a hardware recovery |
+| **can the preferred host admit useful work?** | **QUALIFIED NO.** The 5090 itself is healthy and answered three of four probes in ≤11 s. But the host holds only **1.47 GiB** of admissible RAM behind the owner's 3 GiB reserve — 4.6 GB of its 14.3 GiB is unreclaimable kernel slab — with 76 NVRM host-memory allocation failures since 2026-09-24, and one probe held a reservation for its entire 10-minute wall and produced nothing, unexplained. Memory-heavy work went to `WORKER_A` instead; nothing waited for a hardware recovery |
 | **what is the household endpoint?** | lake **`public_panels`** at **`http://127.0.0.1:5059`**, registered live in the governance kernel at `:5055`, holdout `2006-12-16`, resource `uci_235_individual_household_power/panel.parquet`, 10 890 295 B, sha256 `b3192c0b…c8db`. Its own service unit is **disabled and inactive**, so the endpoint is **REGISTERED_AND_AUTHORITATIVE_BUT_UNSERVED**. It is **not** the SOTA lake at `:5060`, which is a different registered lake over a different corpus |
 
 ---
@@ -408,6 +408,16 @@ passes `--also-enable`; by default the change does not survive a reboot and `rol
 runs `preflight` again first and refuses on any failure. `verify` then requires the household resource
 listed, the registry digest unchanged and all five other store units in exactly their prior state.
 
+Both remaining stages were exercised as far as they can be without applying anything, because a stage that
+has never run is not a rollback plan:
+
+* **`verify` while the unit is down — exit 1**, `"the endpoint does not answer: [Errno 111] Connection
+  refused"` (`VERIFY_WHILE_DOWN.json`). It fails when it should, rather than passing vacuously.
+* **`rollback` on the already-inactive unit — exit 0**, and it asserted what matters:
+  `port_free: true`, `registry_unchanged: true`, `other_units_unchanged: true`, one step
+  (`stop`), `rc 0` (`ROLLBACK_NOOP.json`). The undo path is proven to run and to change nothing else
+  **before** there is anything to undo.
+
 **What it never touches:** the governance kernel and its registry; any data contract; the lake host
 configuration; the resource contracts, holdout or availability declaration; the panel bytes; any unrelated
 service.
@@ -492,13 +502,15 @@ and it is not mine.
 
 ```
 RB01 — the two interrupted selections, re-run in bounded sequential shards
-repo/branch/tip: predictor / satoshi/rb01-rb03-resources-and-endpoint-20260928 / <tip>
+repo/branch: predictor / satoshi/rb01-rb03-resources-and-endpoint-20260928, cut at 0ea5bff4
+             (tip = this branch's last commit; it is pushed)
 files: tools/df_public_panels_restore.py (new, RB03)
        docs/audits/work_plan/SATOSHI_RB01_RB03_RESOURCES_AND_ENDPOINT_2026_09_28.md
        docs/audits/evidence/RB01_RB03_20260928/{HOST_CAPACITY,GPU_SMOKE,ENDPOINT_RESOLUTION,
                                                HISTORICAL_UNITS_AND_Q2,SHARD_RECEIPTS}.json
-       docs/audits/evidence/RB03_ENDPOINT_20260928/{PREFLIGHT,REHEARSAL}.json
-suites: (filled in §3)
+       docs/audits/evidence/RB03_ENDPOINT_20260928/{PREFLIGHT,REHEARSAL,VERIFY_WHILE_DOWN,
+                                                   ROLLBACK_NOOP}.json
+suites: (filled in §3.6)
 acceptance: recovery of the two retained exits ATTEMPTED AND FAILED -> both stay
             INTERRUPTED_RESULT_NOT_RETAINED; historical 1997.051 CPU s / 1477.71 s wall preserved,
             not re-budgeted; every shard ran on WORKER_A, one at a time, under its own atomic
