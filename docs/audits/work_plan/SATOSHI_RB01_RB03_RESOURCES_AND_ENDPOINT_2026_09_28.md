@@ -273,15 +273,20 @@ whoever repairs this than a six-file one:
 * **B —** `test_crispdm_admission.py` + `test_df_sota_repro.py`: do **two** files suffice to reproduce the
   segfault, or does it need the other four?
 
-**A note on their caps, so this does not read as cap-shopping.** The shards' 6 GiB was sized for the
-six-file selection, whose footprint is almost entirely `test_df_mod_e0_close.py` at 3.14 GiB. These two
-commands are different work, and §3.6 now gives each file's own measured whole-cgroup peak: 62 590 976 B
-for the admission suite, 21 458 944 B for the comparator guard, 660 680 704 B for sota. A cap declared
-from *those* numbers is smaller than 6 GiB, and that is not the forbidden move — the forbidden move is
-lowering the cap **of the same work** after a refusal. The first attempt at A was issued at 6 GiB, was
-correctly queued on `SLICE_AGGREGATE_BUDGET` behind the concurrent lane's honest 8.59 GiB weather fit, and
-was **left to wait rather than re-asked smaller**; the re-declaration below is sized from measurement for a
-different command, and it is stated here rather than quietly done.
+**Both were first issued at the shards' 6 GiB, and both were refused after waiting the full 900 s** —
+`SLICE_AGGREGATE_BUDGET`, *"the observed aggregate budget would be 15.72G against the
+`crispdm-batch.slice` ceiling 14.00G (in use 3.02G, unrealised reservations 6.70G)"* — because the
+concurrent lane was running one honest 8 589 934 592 B weather cell after another, and 3.5 + 8.59 + 6
+does not fit under 14. Exit 75 each time. **Nothing was started, no cap was lowered to get past it, and no
+limit, slice or kernel setting was changed.** They waited, and then they were told no.
+
+**A note on the caps they were then re-declared at, so this does not read as cap-shopping.** The 6 GiB was
+sized for the *six-file* selection, whose footprint is almost entirely `test_df_mod_e0_close.py` at
+3.14 GiB — a file neither of these commands contains. §3.6 now gives each file's own measured whole-cgroup
+peak: **62 590 976 B** for the admission suite, **21 458 944 B** for the comparator guard, **660 680 704 B**
+for sota. A and B are *different work*, and a cap declared from those measurements is the honest cap for
+them. The forbidden move is lowering the cap **of the same work** after a refusal; that was not done — the
+6 GiB requests were left to expire first, and the re-declaration is stated here rather than quietly made.
 
 *(outcomes below)*
 
