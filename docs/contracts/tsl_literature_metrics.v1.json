@@ -1,0 +1,38 @@
+{
+  "schema": "tsl_literature_metrics.v1",
+  "purpose": "Warehouse receipt convention, not proof of scientific comparability",
+  "lake": "sota_benchmarks",
+  "datasets": {
+    "electricity": {"resource": "thuml_tsl_electricity/electricity.csv", "channels": 321, "rows": 26304, "step_seconds": 3600, "sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad"},
+    "weather": {"resource": "thuml_tsl_weather/weather.csv", "channels": 21, "rows": 52696, "step_seconds": 600, "sha256": "34ee981d07313e51da2a50bb600072c8ae4a69cb4b0651f4cb93a069d7a2ba63"},
+    "traffic": {"resource": "thuml_tsl_traffic/traffic.csv", "channels": 862, "rows": 17544, "step_seconds": 3600, "sha256": "cb06463d56fa17d87f47027cd9389ceae82a69eddee51cdb61480e120dab0b16"}
+  },
+  "horizons_steps": [96, 192, 336, 720],
+  "primary_metrics": {
+    "sota.test.mse_normalized": {"formula": "mean((prediction - target)^2)", "unit": "z^2"},
+    "sota.test.mae_normalized": {"formula": "mean(abs(prediction - target))", "unit": "z"}
+  },
+  "paired_baselines": {
+    "sota.test.naive_mse_normalized": {"formula": "mean((last_observed_value - target)^2)", "unit": "z^2"},
+    "sota.test.naive_mae_normalized": {"formula": "mean(abs(last_observed_value - target))", "unit": "z"}
+  },
+  "grain": "one terminal per dataset, model/configuration, protocol, horizon and training seed",
+  "split": "test",
+  "scale": "per-channel training-fitted StandardScaler; no inverse transform for these normalized metric names",
+  "reduction": "mean over all scored window x forecast-step x target-channel elements, not an unweighted average of batch means",
+  "precision": "author reduction and dtype recorded explicitly; independent float64 diagnostics use distinct metric names",
+  "population": "exact ordered origins and targets bound by digest; shared with naive; elements = windows * horizon * target_channels",
+  "required_context_tags": ["metric_contract", "dataset", "resource", "dataset_sha256", "model", "model_commit", "configuration_sha256", "protocol_sha256", "reference_source", "reference_table", "comparison_class", "input_window_steps", "horizon_steps", "horizon_seconds", "seed", "scaler_sha256", "scaler_fit_population_sha256", "evaluation_population_sha256", "windows", "target_channels", "elements", "metric_scale", "metric_reduction", "metric_dtype", "scorer_sha256"],
+  "tag_encoding": "string values in terminal tags; metrics retain the existing nine-field governed metric schema",
+  "published_values": "Only with exact source/table/protocol in a separate reference record; never label a published number as our measured result",
+  "replicas": "Store individual seeds first; report seed mean, sample SD ddof=1 and n separately. Seed SD is not temporal sampling uncertainty.",
+  "horizon_average": "Separate aggregate only for the complete declared horizon population; never mix it with single-horizon records",
+  "optional_metrics": "RMSE may be reported separately. MAPE/MSPE require a declared zero-target policy and finite values; never force them into primary MSE/MAE comparisons.",
+  "compatibility": "No table migration required. Historic MSE rows with unit z remain unchanged; this convention labels new MSE rows z^2.",
+  "enforcement_scope": "Producer contract for upcoming benchmark runs; the general-purpose warehouse is not a scientific verifier and is not changed to reject all other metrics",
+  "sources": [
+    "https://raw.githubusercontent.com/thuml/iTransformer/main/utils/metrics.py",
+    "https://raw.githubusercontent.com/yuqinie98/PatchTST/main/PatchTST_supervised/utils/metrics.py"
+  ],
+  "source_note": "Formula audit on 2026-09-28; each scientific run must pin its actual author commit, preprocessing, split, scorer and protocol before comparison"
+}
