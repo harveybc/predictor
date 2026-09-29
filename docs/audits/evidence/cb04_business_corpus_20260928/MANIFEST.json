@@ -1,0 +1,84 @@
+{
+  "authorises_broker_deployment": false,
+  "built_after_the_protocol": {
+    "claim": "the corpus was assembled after the metric contract was written, so it could not be tuned against",
+    "contract_commit": "02a34033 (contract and schema tests) and 0ab20c80 (implementation)",
+    "contract_sha256": "006d81865b635cc87770942709ce3d3f3dbfd8735346f170a679903f5bd7cb77",
+    "evidence": "the two digests below are the contract and its implementation as they stood when this corpus was written; both precede this file in the branch history",
+    "implementation_sha256": "64fb105d4bd9c26224199db6bc075a65323481f631b4cc7357990708e1ff40c8"
+  },
+  "built_by": "Satoshi, successor technical lead",
+  "built_on": "2026-09-28",
+  "construction_procedure": [
+    "1. The metric contract and its implementation were written and their tests passed.",
+    "2. The three questions were chosen from what a news decision actually asks, not from what an available benchmark happens to label.",
+    "3. Items were written by category, with the separating cases named per item in labels.jsonl -> construction_note: positive-tone irrelevance, items that name the asset while being about something else, restatement chains of one release, a correction reversing a magnitude, an item that looks like a correction and is a restatement, opinion about the pair rather than news about it, a truncated item, and out-of-domain items that must be answered `unrelated` rather than abstained.",
+    "4. Items and labels were written to separate files and sealed separately.",
+    "5. Both seals were recorded here. Nothing was scored against the corpus during construction: no model of any kind was run over it in this work package."
+  ],
+  "corpus_class": "BUSINESS_HELD_OUT",
+  "corpus_id": "cb04_business_news.v1",
+  "execution_authority": "NONE",
+  "holding_rule": "items may be read freely; labels are handed over only against an appended use-ledger entry, so repeated scoring against this corpus is visible in the record instead of being described as untouched validation",
+  "items_file": "items.jsonl",
+  "items_sha256": "913c56e31211c2671fb6c8a6403dc77d862ed1412694ea316233229848c0beb7",
+  "labels_file": "labels.jsonl",
+  "labels_sha256": "21f3a2eeabddfc37492a57a2d702ac8de1deaafc25aa00478847c07a57a7ecc7",
+  "licence": "written for this repository; no third-party text is included and no licence is inherited",
+  "named_refusals": {
+    "INDEPENDENT_THIRD_PARTY_LABELS_UNAVAILABLE_NO_FEED_ENTITLEMENT": "a corpus independent in the full sense needs third-party labels over licensed feed text. This programme holds no such entitlement, so that corpus does not exist here. This one is held out and sealed, which is a different and weaker property. A named refusal is not a completed family."
+  },
+  "questions": {
+    "novelty": {
+      "asks": "is this new information, a restatement of an already published item, or a correction of one",
+      "counts": {
+        "correction": 3,
+        "new": 33,
+        "restatement": 9
+      },
+      "vocabulary": [
+        "new",
+        "restatement",
+        "correction"
+      ]
+    },
+    "relevance": {
+      "asks": "does this item bear directly on the named asset's economics",
+      "counts": {
+        "related": 26,
+        "unclear": 7,
+        "unrelated": 12
+      },
+      "vocabulary": [
+        "related",
+        "unrelated",
+        "unclear"
+      ]
+    },
+    "window": {
+      "asks": "does it matter immediately, within the session, or not at all",
+      "counts": {
+        "immediate": 12,
+        "none": 21,
+        "session": 12
+      },
+      "vocabulary": [
+        "immediate",
+        "session",
+        "none"
+      ]
+    }
+  },
+  "rows": 45,
+  "schema": "business_corpus_manifest.v1",
+  "use_ledger_file": "USE_LEDGER.jsonl",
+  "what_it_is_not": [
+    "not real news: every item is fabricated and marked synthetic true",
+    "not about any real organisation, person, publication or record; institutional actors appear only as generic roles, and no real body is quoted or imitated",
+    "not market data, and not usable as evidence about any real institution",
+    "not independently labelled: the labels are the author's",
+    "not large: 45 items is a screen, and a difference on 45 rows is not a ranking",
+    "not a profitability claim, not a causal claim, and not deployment evidence"
+  ],
+  "why_not_a_public_benchmark": "public sentiment and intent benchmarks measure a task this programme does not need. Tone does not decide relevance, and no public sentiment set asks whether an item is the third restatement of one release or a correction that reverses it."
+}

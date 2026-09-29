@@ -1,0 +1,235 @@
+{
+  "schema": "classification_metrics.v1",
+  "purpose": "Receipt convention for classification evaluations, so that a stored number cannot be read as a different metric, as a different population, or as a quality claim it does not carry",
+  "not_this_contract": "tsl_literature_metrics.v1 is a regression MSE/MAE contract. It is not a classification contract and none of its metric names, units or reductions apply here.",
+  "authorises_broker_deployment": false,
+  "execution_authority": "NONE",
+
+  "required_receipt_fields": [
+    "schema",
+    "receipt_id",
+    "task_id",
+    "corpus_class",
+    "corpus_id",
+    "corpus_sha256",
+    "evidence_class",
+    "supervision_regime",
+    "labelled_rows_fit_head",
+    "provider",
+    "checkpoint",
+    "checkpoint_sha256",
+    "author_primary_metric",
+    "paired_naive",
+    "class_vocabulary",
+    "per_class_confusion",
+    "probability_semantics",
+    "calibrated",
+    "calibration_split",
+    "abstention",
+    "population",
+    "evaluation_split",
+    "evaluation_population_sha256",
+    "protocol_sha256",
+    "scorer_sha256",
+    "seed",
+    "declared_fields",
+    "limitations"
+  ],
+  "field_independence": "Each required field is carried explicitly. No field may be omitted and recomputed from another at read time. Consistency between fields is checked and refused on conflict; a check is not a substitute for the field.",
+
+  "metric_families": {
+    "MAP": {
+      "metric": "classification.map",
+      "author_names": ["MAP", "mean average precision"],
+      "unit": "map_ranking_fraction",
+      "kind": "RANKING_OVER_LABEL_SCORES",
+      "definition": "mean over evaluated rows of the average precision of the ranked label list; the benchmark's own evaluator decides the ranking and truncation",
+      "range": [0.0, 1.0],
+      "derivable_from_confusion": false,
+      "comparable_with": ["MAP"],
+      "refuse_comparison_with": ["ACCURACY", "MACRO_F1", "WEIGHTED_F1", "MCC"]
+    },
+    "ACCURACY": {
+      "metric": "classification.accuracy",
+      "author_names": ["accuracy", "acc"],
+      "unit": "accuracy_fraction",
+      "kind": "TOP_ONE_AGREEMENT",
+      "definition": "fraction of rows in the declared denominator whose single predicted label equals the reference label",
+      "range": [0.0, 1.0],
+      "derivable_from_confusion": true,
+      "comparable_with": ["ACCURACY"],
+      "refuse_comparison_with": ["MAP", "MACRO_F1", "WEIGHTED_F1", "MCC"]
+    },
+    "MACRO_F1": {
+      "metric": "classification.macro_f1",
+      "author_names": ["macro-F1", "macro F1", "F1-macro"],
+      "unit": "macro_f1_fraction",
+      "kind": "UNWEIGHTED_MEAN_OF_PER_CLASS_F1",
+      "definition": "arithmetic mean over the class vocabulary of the per-class F1; every class weighs the same regardless of support",
+      "range": [0.0, 1.0],
+      "derivable_from_confusion": true,
+      "comparable_with": ["MACRO_F1"],
+      "refuse_comparison_with": ["MAP", "ACCURACY", "WEIGHTED_F1", "MCC"]
+    },
+    "WEIGHTED_F1": {
+      "metric": "classification.weighted_f1",
+      "author_names": ["weighted F1", "F1-weighted"],
+      "unit": "weighted_f1_fraction",
+      "kind": "SUPPORT_WEIGHTED_MEAN_OF_PER_CLASS_F1",
+      "definition": "support-weighted mean over the class vocabulary of the per-class F1",
+      "range": [0.0, 1.0],
+      "derivable_from_confusion": true,
+      "comparable_with": ["WEIGHTED_F1"],
+      "refuse_comparison_with": ["MAP", "ACCURACY", "MACRO_F1", "MCC"]
+    },
+    "MCC": {
+      "metric": "classification.mcc",
+      "author_names": ["MCC", "Matthews correlation coefficient"],
+      "unit": "mcc_coefficient",
+      "kind": "CORRELATION",
+      "definition": "Matthews correlation coefficient over the confusion matrix",
+      "range": [-1.0, 1.0],
+      "derivable_from_confusion": true,
+      "comparable_with": ["MCC"],
+      "refuse_comparison_with": ["MAP", "ACCURACY", "MACRO_F1", "WEIGHTED_F1"]
+    }
+  },
+  "metric_confusion_rule": "MAP, ACCURACY and MACRO_F1 all lie in [0,1] and are different metrics. Each carries its own metric key, its own unit token and its own metric_identity_sha256. A reader that asks a receipt for a metric it does not carry is refused by name; a comparison between two different families is refused by name. No default, no coercion, no nearest match.",
+
+  "paired_naive": {
+    "requirement": "Every author primary metric carries a paired naive of the SAME family, fitted on train labels only and scored on exactly the same evaluation rows.",
+    "metric_prefix": "classification.naive_",
+    "policies": {
+      "MAJORITY_CLASS_FROM_TRAIN": "always predict the most frequent train label; ties broken by the declared label order",
+      "STRATIFIED_PRIOR_FROM_TRAIN": "sample labels from the train prior with a declared seed",
+      "UNIFORM_OVER_VOCABULARY": "uniform over the declared class vocabulary; carries no train information and must be declared as such",
+      "DEVELOPMENT_FIXED_KEYWORD_RULE": "a business keyword rule frozen on development data before the evaluation split was opened"
+    },
+    "same_rows": "The naive shares the model receipt's evaluation_population_sha256. A naive scored on a different population is refused.",
+    "train_derived": "MAJORITY_CLASS_FROM_TRAIN and STRATIFIED_PRIOR_FROM_TRAIN carry train_label_population_sha256; it must differ from evaluation_population_sha256."
+  },
+
+  "class_vocabulary": {
+    "fields": ["labels", "label_order_sha256", "size"],
+    "rule": "The ordered label list as the benchmark defines it. Truncating, reordering or merging labels is a new task, not the same task, and changes label_order_sha256."
+  },
+
+  "per_class_confusion": {
+    "orientation": "rows are reference labels, columns are predicted labels, both in class_vocabulary order",
+    "abstention_column": "an extra final column ABSTAINED counts rows the provider refused to answer",
+    "warehouse_rows": {
+      "classification.support.class_<i>": "reference rows of class i, unit rows",
+      "classification.predicted.class_<i>": "rows predicted as class i, unit rows",
+      "classification.correct.class_<i>": "rows of class i predicted as class i, unit rows",
+      "classification.abstained.class_<i>": "rows of class i the provider abstained on, unit rows"
+    },
+    "full_matrix": "The complete matrix lives in the receipt document and is bound by confusion_sha256. It is also placed in the terminal tag confusion_matrix_json when its canonical form is at most 8192 bytes; otherwise the tag reads CONFUSION_IN_RECEIPT_ONLY and confusion_sha256 remains the binding.",
+    "closure": "sum of all confusion cells, including the ABSTAINED column, equals population.answered + population.abstained = population.total"
+  },
+
+  "probability_semantics": {
+    "values": {
+      "NOT_PROBABILISTIC": "the provider emits a label and no score",
+      "RANKING_SCORE_NOT_PROBABILITY": "an ordered score used for ranking metrics; it is not P(label)",
+      "SOFTMAX_POSTERIOR_UNCALIBRATED": "a normalised posterior over the vocabulary, not calibrated against observed frequency",
+      "SOFTMAX_POSTERIOR_TEMPERATURE_CALIBRATED": "a posterior after temperature fitting on the declared calibration split",
+      "ISOTONIC_CALIBRATED": "a posterior after isotonic fitting on the declared calibration split",
+      "ENTROPY_DERIVED_CONFIDENCE_NOT_P_CORRECT": "a confidence built from output entropy; it is not P(correct) and may not carry NLL, Brier or ECE"
+    },
+    "calibrated_values": ["SOFTMAX_POSTERIOR_TEMPERATURE_CALIBRATED", "ISOTONIC_CALIBRATED"],
+    "probability_metrics": {
+      "classification.nll": "nats",
+      "classification.brier": "brier_fraction",
+      "classification.ece": "ece_fraction"
+    },
+    "probability_metric_precondition": "only for SOFTMAX_POSTERIOR_* semantics, with declared ece_bins and calibration_split",
+    "calibrated_field": "calibrated is its own boolean field and is not inferred from the semantics string; a contradiction between the two is refused"
+  },
+
+  "calibration_split": {
+    "fields": ["split_id", "population_sha256", "rows", "fitted_parameters"],
+    "rule": "The calibration split is kept distinct from the evaluation split. Equal split_id or equal population_sha256 is refused. calibrated true with calibration_split NONE is refused.",
+    "none_value": "NONE"
+  },
+
+  "abstention": {
+    "fields": ["abstained", "answered", "coverage", "denominator_policy", "abstention_rule"],
+    "coverage": "abstained / population.total, unit abstained_fraction; an abstention is not a prediction",
+    "denominator_policies": {
+      "ANSWERED_ONLY": "the primary metric's denominator is the answered rows; the receipt must carry coverage so the reader can see what was dropped",
+      "FULL_POPULATION_ABSTENTION_WRONG": "abstained rows count as errors in the primary metric's denominator"
+    },
+    "rule": "Refusals are never removed from the denominator silently. Both the policy and the coverage are stored; a receipt missing either is refused.",
+    "warehouse_rows": {
+      "classification.abstention_coverage": "abstained_fraction",
+      "classification.answered_fraction": "answered_fraction"
+    }
+  },
+
+  "corpus_classes": {
+    "PUBLIC_BENCHMARK": "an official published dataset and split",
+    "BUSINESS_HELD_OUT": "a frozen, independently held business corpus, opened under a use ledger",
+    "PROGRAMME_INTERNAL_DATASET": "this programme's own market or operational data; not a published benchmark and not the held-out business corpus",
+    "SMOKE_FIXTURE": "author-written smoke material; never a quality claim",
+    "ROUTER_PROMPT_CORPUS": "the internal natural-language routing corpus; it measures the router, not any classifier"
+  },
+  "router_corpus": {
+    "corpus_id": "m5phet_router_prompts.v1",
+    "prompts": 19,
+    "repeats": 5,
+    "stored_verdicts": 95,
+    "independent_units": 19,
+    "measures": "ROUTER_ENVELOPE_SELECTION_NOT_CLASSIFIER_QUALITY",
+    "rule": "A receipt whose corpus_class is ROUTER_PROMPT_CORPUS may not carry any metric_families key at all, and may never reach a provider quality badge. 19 prompts repeated 5 times are 19 independent units, not 95 examples; repeats>1 requires independent_units and clustered_by."
+  },
+
+  "evidence_classes": {
+    "MEASUREMENT": "produced by executing the evaluator over the declared population in this programme",
+    "PUBLISHED_REFERENCE": "a value read from a named paper table or result artifact; never our measured result",
+    "DECLARATION": "asserted by a person, a configuration or a provider without a measurement in this programme",
+    "RECOUNT_OF_STORED_VERDICTS": "a re-count of verdicts already stored by an earlier run; not a fresh execution",
+    "TRANSPORT_TEST_NOT_SCIENCE": "fabricated values exercising storage and refusal paths"
+  },
+  "declaration_marking": "declared_fields lists, by name, every receipt field whose content is a declaration rather than a measurement. A receipt whose evidence_class is DECLARATION carries the whole claim as declared.",
+
+  "provider_quality_badge": {
+    "allowed_evidence": ["MEASUREMENT"],
+    "allowed_corpus_classes": ["PUBLIC_BENCHMARK", "BUSINESS_HELD_OUT"],
+    "requires_business_measurement": true,
+    "refusals": {
+      "BADGE_REFUSED_ROUTER_SCORE_IS_NOT_CLASSIFIER_QUALITY": "the evidence is the router prompt corpus",
+      "BADGE_REFUSED_DECLARATION_IS_NOT_MEASUREMENT": "the evidence is a declaration, a recount or a published reference",
+      "BADGE_REFUSED_TRANSPORT_TEST_IS_NOT_SCIENCE": "the evidence is a fabricated transport fixture",
+      "BADGE_REFUSED_NO_BUSINESS_CORPUS_MEASUREMENT": "no measurement on a held-out business corpus supports the claim",
+      "BADGE_REFUSED_NO_PAIRED_NAIVE": "the supporting measurement carries no same-row train-derived naive"
+    },
+    "badge_never_grants": "No badge, at any value, authorises broker deployment, order placement or any execution. execution_authority is the constant NONE."
+  },
+
+  "supervision_regimes": [
+    "ZERO_SHOT_PROMPTED",
+    "FEW_SHOT_PROMPTED",
+    "TRAINED_HEAD_ON_FROZEN_ENCODER",
+    "FULL_FINETUNE"
+  ],
+  "supervision_rule": "If labelled rows fit a downstream head, the regime is TRAINED_HEAD_ON_FROZEN_ENCODER or FULL_FINETUNE. It is not zero-shot, even on the same test rows.",
+
+  "required_context_tags": [
+    "metric_contract", "task_id", "corpus_class", "corpus_id", "corpus_sha256",
+    "evidence_class", "supervision_regime", "provider", "checkpoint", "checkpoint_sha256",
+    "class_vocabulary_size", "label_order_sha256", "evaluation_split",
+    "evaluation_population_sha256", "train_label_population_sha256",
+    "calibration_split", "calibration_population_sha256",
+    "probability_semantics", "calibrated", "denominator_policy",
+    "population_total", "population_answered", "population_abstained",
+    "independent_units", "repeats", "clustered_by",
+    "author_primary_metric_family", "author_primary_metric_name",
+    "naive_policy", "metric_identity_sha256", "confusion_sha256",
+    "protocol_sha256", "scorer_sha256", "seed", "declared_fields"
+  ],
+  "tag_encoding": "every tag value is a string; metrics keep the existing nine-field governed metric schema",
+
+  "enforcement_scope": "Producer contract for classification evaluations in this programme. The general-purpose warehouse stays generic and is not turned into a scientific verifier; nothing here rewrites historical rows or reinterprets an existing number.",
+  "published_values": "A published reference value is stored as its own receipt with evidence_class PUBLISHED_REFERENCE, its source and table, and is never labelled as our measured result.",
+  "source_note": "Written 2026-09-28 against CB04 and CLASSIFICATION_REFERENCE_PLAN_2026_09_28.md. Each scientific run must still pin its own dataset revision, evaluator commit, weights and protocol before any comparison exists."
+}
