@@ -82,7 +82,7 @@ The same arXiv reading was cross-checked against the Electricity row that
 Two independent readings of the same table, months apart, now agree, and a test
 fails if they ever diverge.
 
-### 2. The five paper-versus-code disagreements, resolved before any score
+## 2. The five paper-versus-code disagreements, resolved before any score
 
 | id | disagreement | resolution |
 |---|---|---|
@@ -98,7 +98,7 @@ shims, the replication of `run.py`'s `__main__` so the seed can vary,
 `np.Inf` restored as an alias of `np.inf` for the author's `EarlyStopping`, and
 the wrapper that captures the arrays the author's own `metric` scores.
 
-### 3. Metric space, reduction and the two clocks
+## 3. Metric space, reduction and the two clocks
 
 Bound per dataset in `docs/contracts/tsl_literature_metrics.v1.json` and
 enforced by the producer:
@@ -123,7 +123,7 @@ enforced by the producer:
 No test split was read, no tuning of any kind was performed, and no
 architecture, window or batch was changed to fit the machine.
 
-### 4. The producer path, proved by refusal
+## 4. The producer path, proved by refusal
 
 `tools/test_tsl_warehouse_receipt.py` (pre-existing, re-run here: 2 passed)
 proved the deployed DuckDB provider transports the governed metric schema and
@@ -155,7 +155,7 @@ The design digest, the protocol digest, the configuration digest per horizon,
 the scaler and scaler-fit-population digests and the evaluation-population
 digest all come from artifacts, never from a literal.
 
-### 5. The TRAIN-only cost pilot — measured, on the admitted worker
+## 5. The TRAIN-only cost pilot — measured, on the admitted worker
 
 Placement followed the binding reading: the coordinator took only the seal, the
 characterization and the tests; the **primary accelerator host was not used at
@@ -212,7 +212,7 @@ budget would be 14.07G against the crispdm-batch.slice ceiling 14.00G (in use
 that lease released. Nothing was killed, no cap was raised, no cache or swap
 was touched, no service was restarted.
 
-### 6. The frozen full reproduction and its measured cost
+## 6. The frozen full reproduction and its measured cost
 
 `FULL_COST.weather.L96.json`, digest
 `23e6418486bb570a8fe2e7c854e9b85adf99704b93d63194744a6a50de3b6b31`, priced from
@@ -260,7 +260,7 @@ prints only MSE and MAE, and this producer contract stores only MSE/MAE and
 their paired naive, so nothing non-finite can reach a receipt — and if it were
 ever added, `validate_receipt` refuses it.
 
-### 7. Traffic, planned while Weather waits
+## 7. Traffic, planned while Weather waits
 
 Sealed as a **planning** artifact only (design
 `6cba7e20…85575`, protocol `322262e8…ba520`): 12 cells, `scripts/Traffic.sh`
@@ -291,7 +291,7 @@ inferable from the Weather pilot:
   That is a named capacity deficit, not a licence to chunk, downcast or
   sub-sample the author's metric population.
 
-### 8. What is VERIFIED, what is measured-but-unverified, and what is not measured
+## 8. What is VERIFIED, what is measured-but-unverified, and what is not measured
 
 | claim | class |
 |---|---|
@@ -310,7 +310,7 @@ inferable from the Weather pilot:
 No paired naive was computed, because there is nothing to pair it with yet. The
 receipt shape that will carry it is proved and refused-when-absent.
 
-### 9. Three things the owner or auditor must decide, and two blockers I did not touch
+## 9. Three things the owner or auditor must decide, and two blockers I did not touch
 
 **ONE costed allocation request.** The index carries no numeric allocation for
 this lane (`remaining_cost: UNKNOWN new training cost`), and the only
@@ -364,7 +364,7 @@ was reloaded and no host was rebooted. No committed sample output, no live
 checkout and no presentation work was altered. The live cube was read never and
 written never; every store test used a temporary database file.
 
-### Artifacts
+## Artifacts
 
 Committed on `satoshi/rb02-weather-matched-20260928`:
 
