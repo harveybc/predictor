@@ -288,7 +288,30 @@ for sota. A and B are *different work*, and a cap declared from those measuremen
 them. The forbidden move is lowering the cap **of the same work** after a refusal; that was not done — the
 6 GiB requests were left to expire first, and the re-declaration is stated here rather than quietly made.
 
-*(outcomes below)*
+| check | selection | declared cap | exit | result | whole-cgroup peak |
+|---|---|---|---|---|---|
+| **A** | `test_crispdm_admission.py` + `test_df_d2_r4_comparator_guard.py` | 512 MiB | **0** | **47 passed** in 8.06 s | 62 668 800 B |
+| **B** | `test_crispdm_admission.py` + `test_df_sota_repro.py` | 2 GiB | **0** | **135 passed** in 209.04 s | 1 273 561 088 B |
+
+**A settles the conftest defect outright.** 47 = 30 + **17**. The seventeen comparator-guard tests that
+*error at setup* in their own process *pass* when one file that imports the admission module runs ahead of
+them. Nothing else differs. The cause in §3.8 is established by experiment, not by reading.
+
+**B is the more interesting result, and it corrects what I was about to say.** 135 = 30 + **105**: the whole
+of `tests/test_df_sota_repro.py` passes, in 209 s, with the admission suite ahead of it and nothing else.
+**There is no segfault in two files.** So:
+
+* the historical figure is *recoverable* at this revision — the file is not broken, it simply needs
+  something to register the admission module before conftest's fixture reaches for it;
+* and **the segfault needs more than `admission + sota`.** It requires native stacks that only
+  `test_df_d2_r4_comparator_guard.py`, `test_df_e1_close.py` and/or `test_df_mod_e0_close.py` bring in. I
+  did **not** minimise it further, and I do not claim which of the three is necessary. What is established
+  is that three or more files are involved, that the frame is a `triton` native import, and that neither
+  of the two files nearest the crash is sufficient to cause it.
+
+**Both caps held with room and both leases released cleanly**, which is also the check that the
+re-declaration was honest rather than convenient: A peaked at 62 668 800 B under 512 MiB, B at
+1 273 561 088 B under 2 GiB.
 
 ---
 
@@ -553,10 +576,17 @@ repo/branch: predictor / satoshi/rb01-rb03-resources-and-endpoint-20260928, cut 
 files: tools/df_public_panels_restore.py (new, RB03)
        docs/audits/work_plan/SATOSHI_RB01_RB03_RESOURCES_AND_ENDPOINT_2026_09_28.md
        docs/audits/evidence/RB01_RB03_20260928/{HOST_CAPACITY,GPU_SMOKE,ENDPOINT_RESOLUTION,
-                                               HISTORICAL_UNITS_AND_Q2,SHARD_RECEIPTS}.json
+                                               HISTORICAL_UNITS_AND_Q2,SHARD_RECEIPTS,
+                                               FAILURE_LOCALISATION}.json
        docs/audits/evidence/RB03_ENDPOINT_20260928/{PREFLIGHT,REHEARSAL,VERIFY_WHILE_DOWN,
                                                    ROLLBACK_NOOP}.json
-suites: (filled in §3.6)
+suites (all on WORKER_A, revision 0ea5bff4, 6 GiB cap per shard):
+  verbatim selection 1 (6 files): exit 139 SIGSEGV - 89 passed, 35 skipped, 0 failed of 228
+  verbatim selection 2 (5 files): exit 139 SIGSEGV - 67 passed, 35 skipped, 0 failed
+  per file: test_crispdm_admission 30 passed / test_df_admission_guard 22 passed /
+            test_df_d2_r4_comparator_guard 17 ERRORS / test_df_e1_close 35 skipped /
+            test_df_mod_e0_close 19 passed / test_df_sota_repro 105 ERRORS    (228 collected)
+  reproducers: admission+comparator 47 passed exit 0 / admission+sota 135 passed exit 0
 acceptance: recovery of the two retained exits ATTEMPTED AND FAILED -> both stay
             INTERRUPTED_RESULT_NOT_RETAINED; historical 1997.051 CPU s / 1477.71 s wall preserved,
             not re-budgeted; every shard ran on WORKER_A, one at a time, under its own atomic
@@ -565,8 +595,10 @@ acceptance: recovery of the two retained exits ATTEMPTED AND FAILED -> both stay
             against 6 GiB declared) and never lowered to evade the one refusal, which was waited out
 what is NOT done / refused / not measured:
   - the historical exits are NOT recovered and are NOT claimed as PASSED
-  - both selections in their verbatim form exit 139.  A native triton import segfaults once the
-    other files' stacks share the process.  Environment defect, localised, NOT repaired
+  - both selections in their verbatim form exit 139.  A native triton import segfaults once enough
+    of the other files' stacks share the process.  Environment defect, NOT repaired.  It needs at
+    least THREE of the six files: admission+sota alone is 135 passed, exit 0.  WHICH third file is
+    necessary is NOT established, not minimised further and not guessed
   - tests/conftest.py has a one-line defect (a spec-loaded module never registered in sys.modules)
     that the combined run masks and the per-file shard exposes.  Diagnosed and proven by
     experiment, NOT repaired: repairing it would change the revision being measured

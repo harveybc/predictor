@@ -1,0 +1,77 @@
+{
+ "at": "2026-09-28",
+ "cap_redeclaration_rule": "the 6 GiB was sized for the SIX-file selection, dominated by test_df_mod_e0_close at 3140186112 B, which neither check contains.  A and B are different work and were re-declared from their own files' measured whole-cgroup peaks.  The forbidden move is lowering the cap OF THE SAME WORK after a refusal; the 6 GiB requests were left to expire first",
+ "checks": [
+  {
+   "check": "A",
+   "declared_cap_bytes": 536870912,
+   "establishes": "47 = 30 + 17.  The seventeen comparator-guard tests that ERROR at setup in their own process PASS when a file that imports the admission module runs ahead of them.  The conftest defect is established by experiment",
+   "exit_code": 0,
+   "passed": 47,
+   "reclaim_cause": "LEASE_RELEASED",
+   "selection": [
+    "tests/test_crispdm_admission.py",
+    "tests/test_df_d2_r4_comparator_guard.py"
+   ],
+   "wall_seconds": 8.06,
+   "whole_cgroup_peak_bytes": 62668800
+  },
+  {
+   "check": "B",
+   "declared_cap_bytes": 2147483648,
+   "establishes": "135 = 30 + 105.  The whole of test_df_sota_repro PASSES with the admission suite ahead of it and nothing else.  There is NO segfault in two files",
+   "exit_code": 0,
+   "passed": 135,
+   "reclaim_cause": "LEASE_RELEASED",
+   "refutes": "that admission + sota is sufficient to reproduce the segfault",
+   "selection": [
+    "tests/test_crispdm_admission.py",
+    "tests/test_df_sota_repro.py"
+   ],
+   "wall_seconds": 209.04,
+   "whole_cgroup_peak_bytes": 1273561088
+  }
+ ],
+ "host_role": "WORKER_A",
+ "recorded_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+ "refused_first_attempts": [
+  {
+   "check": "A",
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "declared_cap_bytes": 6442450944,
+   "exit_code": 75,
+   "reason": "a concurrent lane held one honest 8589934592 B weather cell after another",
+   "started": false,
+   "waited_seconds": 900
+  },
+  {
+   "check": "B",
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "declared_cap_bytes": 6442450944,
+   "exit_code": 75,
+   "reason": "as above",
+   "started": false,
+   "waited_seconds": 900
+  }
+ ],
+ "revision": "0ea5bff48006a78cc245777161197398d43f75dd",
+ "schema": "satoshi.rb01_failure_localisation.v1",
+ "what_is_established_about_the_conftest_defect": {
+  "blast_radius": "122 tests error at setup when their file runs alone",
+  "file": "tests/conftest.py, autouse fixture _crispdm_declared_coverage, line 81",
+  "introduced_by": "RR02, which added this fixture",
+  "masked_by": "any selection whose first file imports the admission module",
+  "mechanism": "spec_from_file_location -> module_from_spec -> exec_module without assigning sys.modules['crispdm_admission'], so dataclasses resolves cls.__module__ to None",
+  "regression_against": "the retained RP121 and RP131 returns record test_df_sota_repro 'in its own process' at 84 passed + 1 skipped and 104 passed + 1 skipped; at this revision the same file in its own process is 105 errors",
+  "repair": "one line, in its own change, with a regression test that runs a covered file on its own",
+  "repaired_here": false,
+  "why_not": "it would change the revision the two ordered selections were measured at"
+ },
+ "what_is_established_about_the_segfault": {
+  "classification": "ENVIRONMENT_DEFECT_ON_THIS_HOST, localised, not repaired",
+  "files_required": ">= 3 of the six; two are not enough",
+  "frame": "a native `triton` import, triton/knobs.py line 15, reached from torch.utils._triton.has_triton_package inside torch._dynamo.utils, called from tests/test_df_sota_repro.py:95 through tools/df_sota_repro.py run_cell; 201 extension modules loaded",
+  "reproducible_in_isolation": "no: `import triton.knobs` alone in the same interpreter exits 0",
+  "which_third_file_is_necessary": "NOT ESTABLISHED.  Not minimised further and not guessed"
+ }
+}
