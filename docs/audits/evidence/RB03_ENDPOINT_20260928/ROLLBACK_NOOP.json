@@ -1,0 +1,19 @@
+{
+ "ok": true,
+ "other_units_unchanged": true,
+ "port_free": true,
+ "registry_unchanged": true,
+ "stage": "rollback",
+ "steps": [
+  {
+   "rc": 0,
+   "stderr": "",
+   "step": "stop crispdm-data-lake-public-panels.service"
+  }
+ ],
+ "unit": {
+  "ActiveState": "inactive",
+  "SubState": "dead",
+  "UnitFileState": "disabled"
+ }
+}

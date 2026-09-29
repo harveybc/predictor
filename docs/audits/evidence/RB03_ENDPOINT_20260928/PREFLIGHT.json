@@ -1,0 +1,131 @@
+{
+ "checks": [
+  {
+   "check": "present:RECEIPT.json",
+   "detail": "/home/harveybc/.local/state/crispdm-data-foundation/satoshi-public-lake-adoption-20260920T182539Z/RECEIPT.json",
+   "ok": true
+  },
+  {
+   "check": "present:public-panels.host.json",
+   "detail": "/home/harveybc/.local/state/crispdm-data-foundation/satoshi-public-lake-adoption-20260920T182539Z/public-panels.host.json",
+   "ok": true
+  },
+  {
+   "check": "present:public-panels.service.env",
+   "detail": "/home/harveybc/.local/state/crispdm-data-foundation/satoshi-public-lake-adoption-20260920T182539Z/public-panels.service.env",
+   "ok": true
+  },
+  {
+   "check": "present:crispdm-data-lake-public-panels.service",
+   "detail": "/home/harveybc/.config/systemd/user/crispdm-data-lake-public-panels.service",
+   "ok": true
+  },
+  {
+   "check": "present:5055.runtime.json",
+   "detail": "/home/harveybc/.local/state/crispdm-data-foundation/musashi-store-adoption-20260914T181826Z/5055.runtime.json",
+   "ok": true
+  },
+  {
+   "check": "store_id",
+   "detail": "public_panels",
+   "ok": true
+  },
+  {
+   "check": "root_exists",
+   "detail": "/home/harveybc/.local/state/crispdm-data-foundation/public_panels_c126_v2",
+   "ok": true
+  },
+  {
+   "check": "household_is_registered",
+   "detail": "uci_235_individual_household_power/panel.parquet",
+   "ok": true
+  },
+  {
+   "check": "household_is_untimed",
+   "detail": "whole-resource AS_IS only; every date range is refused by the contract",
+   "ok": true
+  },
+  {
+   "check": "panel_digest:uci_235_individual_household_power/panel.parquet",
+   "detail": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db vs adopted b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+   "ok": true
+  },
+  {
+   "check": "panel_digest:uci_321_electricityloaddiagrams20112014/panel.parquet",
+   "detail": "7cf225c4869e88abcb12b7fd274d532756e41fedbe3094ebc805cc803fc6a6a8 vs adopted 7cf225c4869e88abcb12b7fd274d532756e41fedbe3094ebc805cc803fc6a6a8",
+   "ok": true
+  },
+  {
+   "check": "serving_provider_digest",
+   "detail": "c184664e83df08f5b696a1dda553addf7075fda9af8131d37be333ed68949e73",
+   "ok": true
+  },
+  {
+   "check": "installed_provider_digest",
+   "detail": "3ea4ab5533405a044f71eacabe5d57dde9addf0244af4fbc8bdfd9918acb6a87 at /home/harveybc/.venvs/store-hosts/lib/python3.12/site-packages/financial_data_store/inventory.py",
+   "ok": true
+  },
+  {
+   "check": "registry_entry",
+   "detail": "the governance registry publishes this lake",
+   "ok": true
+  },
+  {
+   "check": "registry_points_here",
+   "detail": "http://127.0.0.1:5059 vs this host's port 5059",
+   "ok": true
+  },
+  {
+   "check": "registry_holdout_unchanged",
+   "detail": "2006-12-16",
+   "ok": true
+  },
+  {
+   "check": "port_free",
+   "detail": "nothing is bound to 5059",
+   "ok": true
+  }
+ ],
+ "host_config_digest": "5d1f0782ec5ebe82b2327ad9330a312a1f670a1f0a05b2b58ff8c256b5073f12",
+ "ok": true,
+ "other_units_before": {
+  "crispdm-data-gov.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "UnitFileState": "enabled"
+  },
+  "crispdm-data-lake-financial.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "UnitFileState": "enabled"
+  },
+  "crispdm-data-lake-sota-benchmarks.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "UnitFileState": "enabled"
+  },
+  "crispdm-data-lake-synthetic.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "UnitFileState": "enabled"
+  },
+  "crispdm-data-warehouse-olap.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "UnitFileState": "enabled"
+  }
+ },
+ "port": 5059,
+ "registered_base_url": "http://127.0.0.1:5059",
+ "registry_digest": "91f1e627a856b8afed1de73dc2f5497ee9521045dd5979ecbe3607615dce01c6",
+ "registry_note": "the restoration does not read, write or restart the governance kernel; this digest is recorded so a later verify can prove it",
+ "root_path": "/home/harveybc/.local/state/crispdm-data-foundation/public_panels_c126_v2",
+ "stage": "preflight",
+ "store_id": "public_panels",
+ "unit_before": {
+  "ActiveState": "inactive",
+  "SubState": "dead",
+  "UnitFileState": "disabled"
+ },
+ "unit_file_digest": "ef8439ff3d7c1a383b926e48c344c93e4b4950d5e554ab5b30a35c65e2632ad3"
+}

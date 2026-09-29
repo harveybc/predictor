@@ -1,0 +1,226 @@
+{
+ "at": "2026-09-28",
+ "nothing_was_erased_and_nothing_was_restarted": true,
+ "q2_context": {
+  "bounded": {
+   "arms": 4,
+   "design_sha256": "47a270eec01f203cdde2812deb1458db525e86d762c2b17f2b79a2ba571e17ea",
+   "fits": 12,
+   "own_verdict": "does NOT separate context from depth and does NOT answer the Q2_CONTEXT question",
+   "the_two_W1440_full_depth_arms": "RESTRICTED BEFORE ANY SCORE on the retained cost pilots"
+  },
+  "deep": {
+   "science_changed_between_v1_and_v2": "none",
+   "the_twelve_landed_fits": {
+    "and_they_are_NOT_re_bound_to_v2": "that would back-date a seal",
+    "binding": "NOT_BOUND_TO_A_SEAL",
+    "closure": "FAILED",
+    "custody": "UNCHECKED",
+    "disposition": "HISTORICAL_DEV_ONLY",
+    "may_promote_select_or_rank": false,
+    "verified_rows": 0
+   },
+   "unanchored_table": {
+    "common_evaluation_rows": 10020,
+    "naive": "persistence at the horizon on the identical evaluation origins",
+    "rows": 12,
+    "update_ceiling": 600
+   },
+   "v1_design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "v1_state": "WITHDRAWN_FOR_CARRYING_A_MACHINE_HOST_NAME",
+   "v2_design_sha256": "27ed712d88e0b1a84a3a7d48d5a8dcd899274389f8cc7341df196705dbb0300d",
+   "v2_state": "SEALED_NOT_EXECUTED"
+  },
+  "the_estimand_named_correctly": {
+   "measured_price_of_the_ceiling": "about +0.015 to +0.017 MAE_z on a W60 arm, from the deep block's own N10 comparison on the arms the two blocks share",
+   "so": "the estimand is MATCHED_BUDGET_DIFFERENCE, never CONVERGED_ACCURACY.  It is not silently redefined here and a converged-accuracy claim cannot be recovered from these rows by any rescaling",
+   "what_a_600_update_design_can_answer": "the paired difference in error between arms at a matched ceiling of 600 observed updates, on identical evaluation rows, against persistence at the horizon on the same origins",
+   "what_it_cannot_answer": "converged accuracy, or any comparison against a published number whose own training ran to convergence.  Every cell of the deep block is CENSORED_BY_BUDGET and the block carries UNDERTRAINED_AT_CEILING per arm, from its own sealed question field"
+  },
+  "the_six_missing_W1440_cells": {
+   "cells": [
+    "long_window_own_depth_s1",
+    "long_window_own_depth_s2",
+    "long_window_own_depth_s3",
+    "long_window_local_support_67_s1",
+    "long_window_local_support_67_s2",
+    "long_window_local_support_67_s3"
+   ],
+   "retained_cost_basis": {
+    "long_window_local_support_67": {
+     "cpu_seconds_per_update": 4.4427,
+     "peak_rss_bytes": 10279276544
+    },
+    "long_window_own_depth": {
+     "cpu_seconds_per_update": 4.165,
+     "peak_rss_bytes": 8458399744
+    }
+   },
+   "retained_record_of_why": {
+    "long_window_local_support_67_s1": "never reached",
+    "long_window_local_support_67_s2": "never reached",
+    "long_window_local_support_67_s3": "never reached",
+    "long_window_own_depth_s1": "held by the gate at cap 10G for 1 395 s of polling, launched never; the stand-down stopped the poller",
+    "long_window_own_depth_s2": "never reached",
+    "long_window_own_depth_s3": "never reached",
+    "pilot_long_window_local_support_67": "held by the gate at cap 11G for 495 s of polling, launched never; stopped",
+    "pilot_long_window_own_depth": "terminated once (n=4 above) and NOT retried",
+    "rule_applied": "an out-of-memory termination was not converted into a retry with a bigger cap, and no arm that had not already started was started"
+   },
+   "state": "NEVER FITTED.  No governed terminal exists for any of them, in any status",
+   "still_missing_today": true,
+   "what_RB01_s_capacity_census_adds": "WORKER_A held 10.5-17.1 GiB of admissible RAM today against a 14 GiB slice ceiling, so a 10 GiB and an 11 GiB declared cap would now be admissible there for the first time.  That is a capacity fact only.  It does not authorise the execution of a sealed-not-executed design, no allocation is reset, and the twelve historical cells are NOT refitted to fill a table"
+  },
+  "v1": {
+   "cells_fitted": 0,
+   "design_sha256": "6d1aaecaf27c581c709a745a4f976c2e9dcc05594815b2ee1a9747595f4398b1",
+   "grid": "5 arms x 3 seeds = 15 cells, ceiling 4000 updates",
+   "state": "BUDGET_LIMITED_BEFORE_ANY_OUTCOME"
+  }
+ },
+ "recorded_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+ "redaction": "retained_reason strings are transcribed verbatim from the governed store EXCEPT that machine host names and the service principals that embed them are replaced by role placeholders (<COORDINATOR>, <WORKER_A>, <WORKER_B>).  No other word of any retained reason is changed.",
+ "rr04_consumed": {
+  "revision": "da22d7f9",
+  "the_worker_key_is_not_a_new_external_blocker": "each worker holds its own key",
+  "what_it_does_NOT_do": "it does not retroactively govern the twelve historical Q2 fits",
+  "what_it_proved": "real worker delivery and warehouse reconciliation"
+ },
+ "schema": "satoshi.rb03_historical_units_and_q2.v1",
+ "september_22_failed_decision_units": {
+  "by_classification": {
+   "DESIGNED_NEGATIVE_CONTROL": 1,
+   "HOST_OOM_KILL": 2,
+   "OPERATOR_INTERRUPT": 4,
+   "OPERATOR_INTERRUPT_THERMAL": 2,
+   "STALE_CHILD_NO_RESULT": 1
+  },
+  "count": 10,
+  "decision_unit_exits_excluding_the_designed_negative_control": 9,
+  "every_decision_unit_holds_a_completed_terminal": true,
+  "reading": "Ten retained FAILED terminals carry the date.  One is the campaign's own designed negative control, for which no completion is expected.  Of the nine real decision-unit exits, eight are superseded by a later COMPLETED terminal for the same unit -- the last two on 2026-09-23 -- and the ninth is a redundant attempt on a unit that already held a completion earlier the same day.  Nothing is left unresolved, so nothing needs restarting, and none of the ten records is removed or rewritten.  Two of the nine are the preferred host's own out-of-memory kills at a 7.1 GB evaluation peak: the same memory condition RB01 measured on that host today.",
+  "rule": "historical evidence, not permission to restart them; every retained exit is classified and kept",
+  "units": [
+   {
+    "any_completed_terminal_for_this_unit": null,
+    "at": "2026-09-22T02:48:44Z",
+    "classification": "DESIGNED_NEGATIVE_CONTROL",
+    "disposition": "DESIGNED_NEGATIVE_CONTROL_NO_COMPLETION_IS_EXPECTED",
+    "retained_reason": "route probe: deliberate failure after its delivery, closed so the campaign has no open unit",
+    "status": "FAILED",
+    "superseded_by_a_completed_terminal_at": null,
+    "unit_id": "route-probe-that-fails"
+   },
+   {
+    "any_completed_terminal_for_this_unit": [
+     "2026-09-22T17:56:22Z"
+    ],
+    "at": "2026-09-22T06:16:20Z",
+    "classification": "OPERATOR_INTERRUPT_THERMAL",
+    "disposition": "HISTORICAL_EVIDENCE_SUPERSEDED_BY_A_LATER_COMPLETION",
+    "retained_reason": "cell interrupted by the operator at the owner's order (<COORDINATOR> GPU at 87 C while travelling; no GPU work on <COORDINATOR> until 2026-09-24); partial attempt preserved under attempts/L96_h192_s2022; the cell will be re-executed on another host under a new unit",
+    "status": "FAILED",
+    "superseded_by_a_completed_terminal_at": "2026-09-22T17:56:22Z",
+    "unit_id": "L96_h192_s2022"
+   },
+   {
+    "any_completed_terminal_for_this_unit": [
+     "2026-09-22T17:56:22Z"
+    ],
+    "at": "2026-09-22T16:15:06Z",
+    "classification": "OPERATOR_INTERRUPT_THERMAL",
+    "disposition": "HISTORICAL_EVIDENCE_SUPERSEDED_BY_A_LATER_COMPLETION",
+    "retained_reason": "cell interrupted by the operator at the owner's concern about <WORKER_A>'s cooling (GPU 83-86 C, driver thermal slowdown active); partial attempt preserved; to be re-executed under a versioned attempt after the owner confirms cooling",
+    "status": "FAILED",
+    "superseded_by_a_completed_terminal_at": "2026-09-22T17:56:22Z",
+    "unit_id": "L96_h192_s2022"
+   },
+   {
+    "any_completed_terminal_for_this_unit": [
+     "2026-09-22T05:00:44Z"
+    ],
+    "at": "2026-09-22T17:40:50Z",
+    "classification": "OPERATOR_INTERRUPT",
+    "disposition": "HISTORICAL_EVIDENCE_REDUNDANT_ATTEMPT_THE_UNIT_ALREADY_HELD_A_COMPLETION",
+    "earlier_completion_at": "2026-09-22T05:00:44Z",
+    "retained_reason": "cell failed: KeyboardInterrupt: ",
+    "status": "FAILED",
+    "superseded_by_a_completed_terminal_at": null,
+    "unit_id": "L96_h192_s2021"
+   },
+   {
+    "any_completed_terminal_for_this_unit": [
+     "2026-09-22T19:35:05Z"
+    ],
+    "at": "2026-09-22T18:34:16Z",
+    "classification": "HOST_OOM_KILL",
+    "disposition": "HISTORICAL_EVIDENCE_SUPERSEDED_BY_A_LATER_COMPLETION",
+    "retained_reason": "scope killed by systemd-oomd on <WORKER_B> at 7.1 GB memory peak (host memory pressure during the bounded evaluation, file-backed pages); partial attempt preserved; evaluation buffering to be corrected before a versioned retry",
+    "status": "FAILED",
+    "superseded_by_a_completed_terminal_at": "2026-09-22T19:35:05Z",
+    "unit_id": "L96_h336_s2021"
+   },
+   {
+    "any_completed_terminal_for_this_unit": [
+     "2026-09-22T19:35:05Z"
+    ],
+    "at": "2026-09-22T19:09:24Z",
+    "classification": "HOST_OOM_KILL",
+    "disposition": "HISTORICAL_EVIDENCE_SUPERSEDED_BY_A_LATER_COMPLETION",
+    "retained_reason": "scope killed by systemd-oomd (host memory pressure on <WORKER_B>) while stalled after epoch 2; attempt preserved",
+    "status": "FAILED",
+    "superseded_by_a_completed_terminal_at": "2026-09-22T19:35:05Z",
+    "unit_id": "L96_h336_s2021"
+   },
+   {
+    "any_completed_terminal_for_this_unit": [
+     "2026-09-22T19:35:05Z"
+    ],
+    "at": "2026-09-22T19:17:38Z",
+    "classification": "OPERATOR_INTERRUPT",
+    "disposition": "HISTORICAL_EVIDENCE_SUPERSEDED_BY_A_LATER_COMPLETION",
+    "retained_reason": "cell failed: KeyboardInterrupt: ",
+    "status": "FAILED",
+    "superseded_by_a_completed_terminal_at": "2026-09-22T19:35:05Z",
+    "unit_id": "L96_h336_s2021"
+   },
+   {
+    "any_completed_terminal_for_this_unit": [
+     "2026-09-22T19:50:34Z"
+    ],
+    "at": "2026-09-22T19:20:30Z",
+    "classification": "STALE_CHILD_NO_RESULT",
+    "disposition": "HISTORICAL_EVIDENCE_SUPERSEDED_BY_A_LATER_COMPLETION",
+    "retained_reason": "stale child of run 3 started after the operator interrupt and killed with the scope; no result",
+    "status": "FAILED",
+    "superseded_by_a_completed_terminal_at": "2026-09-22T19:50:34Z",
+    "unit_id": "L96_h336_s2022"
+   },
+   {
+    "any_completed_terminal_for_this_unit": [
+     "2026-09-23T03:00:37Z"
+    ],
+    "at": "2026-09-22T20:10:51Z",
+    "classification": "OPERATOR_INTERRUPT",
+    "disposition": "HISTORICAL_EVIDENCE_SUPERSEDED_BY_A_LATER_COMPLETION",
+    "retained_reason": "cell failed: KeyboardInterrupt: ",
+    "status": "FAILED",
+    "superseded_by_a_completed_terminal_at": "2026-09-23T03:00:37Z",
+    "unit_id": "L96_h720_s2021"
+   },
+   {
+    "any_completed_terminal_for_this_unit": [
+     "2026-09-23T03:00:41Z"
+    ],
+    "at": "2026-09-22T20:11:20Z",
+    "classification": "OPERATOR_INTERRUPT",
+    "disposition": "HISTORICAL_EVIDENCE_SUPERSEDED_BY_A_LATER_COMPLETION",
+    "retained_reason": "cell failed: KeyboardInterrupt: ",
+    "status": "FAILED",
+    "superseded_by_a_completed_terminal_at": "2026-09-23T03:00:41Z",
+    "unit_id": "L96_h720_s2022"
+   }
+  ],
+  "unresolved": []
+ }
+}

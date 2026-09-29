@@ -1,0 +1,11 @@
+{
+ "error": "the endpoint does not answer: <urlopen error [Errno 111] Connection refused>",
+ "ok": false,
+ "port": 5059,
+ "stage": "verify",
+ "unit": {
+  "ActiveState": "inactive",
+  "SubState": "dead",
+  "UnitFileState": "disabled"
+ }
+}

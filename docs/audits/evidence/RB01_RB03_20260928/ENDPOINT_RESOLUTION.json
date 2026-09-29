@@ -1,0 +1,154 @@
+{
+ "at": "2026-09-28",
+ "note": "Loopback ports and store identifiers only.  No host name, IP, token or account identifier.",
+ "prepared_restoration": {
+  "adoption_binding_reverified_today": {
+   "installed_provider_digest": "MATCH",
+   "panel_digests": "MATCH, both resources",
+   "registry_digest": "CHANGED, additively, by the later SOTA registration; expected and not reverted",
+   "serving_provider_digest": "MATCH"
+  },
+  "applying_is_the_owner_s_step": true,
+  "preflight": "docs/audits/evidence/RB03_ENDPOINT_20260928/PREFLIGHT.json",
+  "rehearsal": "docs/audits/evidence/RB03_ENDPOINT_20260928/REHEARSAL.json",
+  "stages": [
+   "preflight",
+   "rehearse",
+   "apply",
+   "verify",
+   "rollback"
+  ],
+  "the_receipt_s_own_documented_restore_line_is_now_DANGEROUS": "the 2026-09-20 adoption receipt records restore as: copy its 5055 registry backup over the live registry and restart the kernel.  The live registry has since gained the SOTA benchmarks lake, so that line would today DELETE a healthy registered lake.  It must not be used.  The prepared restoration does not touch the registry at all, because the registry already carries this lake unchanged",
+  "tool": "tools/df_public_panels_restore.py",
+  "what_it_changes": "`systemctl --user start` of that one unit.  Not enable unless the owner passes --also-enable, so by default the change does not survive a reboot and the rollback is a stop",
+  "what_it_never_touches": [
+   "the governance kernel and its registry",
+   "any data contract",
+   "the lake host configuration",
+   "the resource contracts, the holdout or the availability declaration",
+   "the panel bytes",
+   "any unrelated service"
+  ]
+ },
+ "recorded_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+ "redaction": "actor and principal names that embed a machine host name are replaced by role placeholders.  No token, key or digest of a credential appears here.",
+ "schema": "satoshi.rb03_household_endpoint.v1",
+ "the_actual_retained_delivery_path": {
+  "a_discovery_preflight_still_passes_though": "http_lake.discover() swallows 'lake unreachable' and returns an empty list, and describe() and storage() degrade to placeholders.  The last event on this lake is a 2026-09-27 discover recorded as ALLOW while the unit was already down.  coverage, read and download do not swallow.  A consumer that preflights with discover alone will believe the lake is healthy and then fail at its first byte",
+  "a_warm_cache_does_NOT_avoid_the_endpoint": "tools/governed_run.py governed_download issues a real GET to the kernel's /api/v2/download on every unit and re-streams and re-verifies the body; the `cached` flag only says the content-addressed target already existed.  data-gov's http_lake proxies that read to the lake's own base_url.  So while the unit is down, every household consumer is refused at the download step, warm cache or not.  The endpoint is a hard prerequisite, not an optimisation",
+  "availability_contract_sha256": [
+   "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e"
+  ],
+  "delivery_kinds": [
+   "AS_IS"
+  ],
+  "delivery_states": {
+   "VERIFIED_CACHE": 100,
+   "VERIFIED_TRANSFER": 19
+  },
+  "events": [
+   {
+    "actor": "predictor",
+    "decision": "allow",
+    "experiment_key": null,
+    "ts": "2026-09-22T01:55:46Z",
+    "verb": "discover"
+   },
+   {
+    "actor": "<service-principal-WORKER_B>",
+    "decision": "allow",
+    "experiment_key": "rr04-gov-smoke-verify",
+    "ts": "2026-09-27T01:59:30Z",
+    "verb": "discover"
+   }
+  ],
+  "every_delivery_digest_identical": true,
+  "first": "2026-09-20T18:23:33Z",
+  "last": "2026-09-21T18:42:05Z",
+  "of_which_the_household_resource": 119,
+  "retained_deliveries_on_this_lake": 123,
+  "run_roots": [
+   "e1_block_arch_x_calendar_v1",
+   "e1_block_context_daily_lag_v1",
+   "e1_block_dev_matched_v1",
+   "e1_block_dev_matched_v2",
+   "e1_block_q1_calendar_v1",
+   "e1_block_q2_context_v1",
+   "e1_block_q3_volume_v1",
+   "e1_household_successor_v3",
+   "e1_phase1_v1b",
+   "e1_reanalysis_rp57b",
+   "huber_adamw_v1",
+   "huber_adamw_v2"
+  ],
+  "shape": "<run root>/cache/public_panels/<source_sha256>.parquet",
+  "warm_caches_holding_the_household_bytes": 12
+ },
+ "the_registered_household_endpoint": {
+  "base_url_as_registered": "http://127.0.0.1:5059",
+  "holdout_start": "2006-12-16",
+  "lake_id": "public_panels",
+  "policies": [
+   {
+    "deny_from": "2006-12-16",
+    "lake": "public_panels",
+    "principal": "predictor",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ]
+   },
+   {
+    "deny_from": "2006-12-16",
+    "lake": "public_panels",
+    "principal": "<service-principal-WORKER_B>",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ]
+   },
+   {
+    "deny_from": "2006-12-16",
+    "lake": "public_panels",
+    "principal": "<service-principal-WORKER_A>",
+    "verbs": [
+     "discover",
+     "coverage",
+     "read",
+     "download"
+    ]
+   }
+  ],
+  "port_probe": "connection refused; nothing is bound",
+  "registry_file_digest": "91f1e627a856b8afed1de73dc2f5497ee9521045dd5979ecbe3607615dce01c6",
+  "registry_is_live": "the governance kernel is active and serves this registry",
+  "resource_bytes": 10890295,
+  "resource_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "serving_unit": "crispdm-data-lake-public-panels.service",
+  "serving_unit_state": {
+   "ActiveState": "inactive",
+   "SubState": "dead",
+   "UnitFileState": "disabled"
+  },
+  "the_household_resource": "uci_235_individual_household_power/panel.parquet",
+  "title": "Public panels (UCI 235 / 321)",
+  "verdict": "REGISTERED_AND_AUTHORITATIVE_BUT_UNSERVED"
+ },
+ "what_it_is_NOT": {
+  "the_healthy_sota_lake": {
+   "base_url": "http://127.0.0.1:5060",
+   "correction_to_the_order": "the order says this store holds only thuml_tsl_electricity.  It now serves three resources, electricity, traffic and weather.  The refutation is unchanged and stronger: it is a different corpus AND a different registered lake",
+   "lake_id": "sota_benchmarks",
+   "resources_served_today": [
+    "thuml_tsl_electricity/electricity.csv",
+    "thuml_tsl_traffic/traffic.csv",
+    "thuml_tsl_weather/weather.csv"
+   ],
+   "why_it_cannot_substitute": "a different registered lake_id with its own holdout and its own policies, over a different root.  It does not hold the household resource at all, so a household request routed there would be a 404, not a silent substitution -- but the substitution would be silent one level up, in any consumer that reads 'a panel arrived' and not 'which lake answered'.  The path is refused"
+  }
+ }
+}
