@@ -186,7 +186,15 @@ on it and the `crispdm-batch.slice` aggregate budget (14 GiB ceiling, 6.98 GiB
 in use plus 4.07 GiB of unrealised reservations) left under 3 GiB free. The cap
 was **not** lowered to fit — the launcher treats a lowered cap after a refusal as
 terminal, and asking again under a different name would be the same evasion by
-another route. The job is a one-command rerun when the worker frees.
+another route. I **withdrew** the queued request at the end rather than leaving
+it to complete unattended after this document was written — an artifact nobody
+was watching appear is not evidence. It is a one-command rerun when the worker
+frees:
+
+```
+crispdm-run -m 4G -t 40m -n tbe-pair-h720 -q -- python df_tsl_bounded_eval.py \
+  target-pairing --horizon 720 --probe BOUNDED_PROBE.traffic.h720.json ...
+```
 
 **(c) The model's outputs under the author's own `test()`.** The strongest form of the proof runs the author's own unchunked
 `test()` and the bounded path **in one child, from one on-disk checkpoint**, and
