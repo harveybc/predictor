@@ -251,32 +251,62 @@ def child(root: Path, unit: str) -> dict:
 
 # --------------------------------------------------------------------------------- the warehouse
 
-def warehouse_readback(url: str, token_file: Path, campaign_sha256: str, unit: str) -> dict:
-    """Read the accepted unit BACK out of the live warehouse by its own identity."""
+REGISTRY = (Path.home() / ".local/state/crispdm-data-foundation"
+            / "musashi-store-adoption-20260914T181826Z/5055.runtime.json")
+
+
+def _warehouse_token(a):
+    """The warehouse credential, read in process from a path an existing client already reads.
+
+    It is never printed, copied into an artifact, written to a second file or logged.
+    """
+    path = getattr(a, "warehouse_token_file", None)
+    if path and Path(path).is_file():
+        text = Path(path).read_text(encoding="utf-8")
+        for line in text.splitlines():                # a deployed systemd EnvironmentFile
+            if line.startswith("DATA_GOV_LAKE_TOKEN="):
+                return line.split("=", 1)[1].strip().strip('"').strip("'")
+        return text.strip().strip('"').strip("'")     # or a bare one-line token file
+    lake_id = getattr(a, "warehouse_token_from_registry", None)
+    if lake_id and REGISTRY.is_file():
+        registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+        entry = next((lake for lake in registry.get("lakes", [])
+                      if lake.get("lake_id") == lake_id), None)
+        if entry and entry.get("lake_service_token"):
+            return entry["lake_service_token"]
+    return None
+
+
+def warehouse_readback(a, campaign_sha256: str, unit: str) -> dict:
+    """Read the accepted unit BACK out of the live warehouse, through the existing close client."""
+    url = a.warehouse_url
     out = {"url_scheme_only": url.split("://", 1)[0], "campaign_sha256": campaign_sha256,
-           "unit": unit, "ok": False}
-    if not token_file or not Path(token_file).is_file():
-        out["state"] = "NOT_ATTEMPTED_NO_WAREHOUSE_TOKEN"
+           "unit": unit, "ok": False,
+           "reader": "tools/df_mod_e0_close.py:warehouse_terminals (the existing close client)"}
+    token = _warehouse_token(a)
+    if not token:
+        out["state"] = "NOT_ATTEMPTED_NO_WAREHOUSE_CREDENTIAL_REACHABLE"
         return out
-    token = Path(token_file).read_text(encoding="utf-8").strip()
-    for name, path in (("terminals", f"/api/v2/gov/terminals?campaign_sha256={campaign_sha256}"),
-                       ("metrics", f"/api/v2/gov/metrics?campaign_sha256={campaign_sha256}"),
-                       ("datasets", f"/api/v2/gov/datasets?campaign_sha256={campaign_sha256}")):
-        req = urllib.request.Request(url.rstrip("/") + path,
-                                     headers={"Authorization": f"Bearer {token}"})
-        try:
-            with urllib.request.urlopen(req, timeout=60) as handle:
-                body = json.loads(handle.read())
-            rows = body.get("rows", body if isinstance(body, list) else [])
-            out[name] = {"http": 200, "rows": len(rows)}
-            if name == "terminals":
-                out["terminal_rows"] = [{k: r.get(k) for k in ("unit_id", "status", "terminal_sha256")}
-                                        for r in rows]
-        except urllib.error.HTTPError as exc:
-            out[name] = {"http": exc.code, "rows": None}
-        except (urllib.error.URLError, OSError) as exc:
-            out[name] = {"http": None, "error": str(exc)[:160]}
-    out["ok"] = bool(out.get("terminals", {}).get("rows"))
+    try:
+        C = _module("df_mod_e0_close")
+        found = C.warehouse_terminals(url, token, campaign_sha256)
+    except Exception as exc:                                     # the read is evidence, not control
+        out["error"] = f"{type(exc).__name__}: {str(exc)[:200]}"
+        return out
+    row = (found.get("current") or {}).get(unit)
+    out["rows_all_generations"] = found.get("rows_all_generations")
+    if row:
+        out["terminal"] = {k: row.get(k) for k in
+                           ("unit_id", "status", "generation", "terminal_sha256", "config_sha256",
+                            "started_at", "finished_at")}
+        out["metric_rows"] = len(row.get("metrics") or [])
+        out["metrics"] = [{k: m.get(k) for k in ("metric", "split", "horizon", "unit", "value")}
+                          for m in (row.get("metrics") or [])]
+        out["artifact_rows"] = len(row.get("artifacts") or [])
+        out["artifacts"] = row.get("artifacts")
+        out["ok"] = row.get("status") == "COMPLETED"
+    else:
+        out["state"] = "NO_TERMINAL_ROW_FOR_THIS_UNIT_IN_THE_WAREHOUSE"
     return out
 
 
@@ -336,8 +366,7 @@ def run_unit(a, unit: str, design: dict) -> dict:
                                  api_key_file=a.api_key_file,
                                  outbox_dir=str(root / "outbox"), started_at=started)
     accepted = not (reported["flushed"]["pending"] or reported["flushed"]["failures"])
-    readback = warehouse_readback(a.warehouse_url, a.warehouse_token_file,
-                                  delivery["campaign_sha256"], unit)
+    readback = warehouse_readback(a, delivery["campaign_sha256"], unit)
     out = {"schema": f"{SCHEMA}.unit", "unit": unit, "design_sha256": design["design_sha256"],
            "child_exit": proc.returncode, "child_ok": ok,
            "delivery": {k: delivery.get(k) for k in
@@ -385,14 +414,19 @@ def cmd_pilot(a) -> int:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0],
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["probe", "pilot", "child"])
+    ap.add_argument("command", choices=["probe", "pilot", "child", "readback"])
     ap.add_argument("--root", type=Path, required=True)
     ap.add_argument("--unit")
     ap.add_argument("--run-id", default=None)
     ap.add_argument("--gov-url", default="http://127.0.0.1:5055")
     ap.add_argument("--api-key-file", type=Path)
     ap.add_argument("--warehouse-url", default="http://127.0.0.1:5057")
-    ap.add_argument("--warehouse-token-file", type=Path)
+    ap.add_argument("--warehouse-token-file", type=Path,
+                    help="a bare token file, or the deployed systemd EnvironmentFile that carries "
+                         "DATA_GOV_LAKE_TOKEN; read in process, never printed, copied or logged")
+    ap.add_argument("--warehouse-token-from-registry", default=None, metavar="LAKE_ID",
+                    help="read the warehouse credential in process from the governance registry "
+                         "entry of this lake id; it is never printed, copied or logged")
     ap.add_argument("--max-windows", type=int, default=20000)
     ap.add_argument("--channels", type=int, default=7)
     ap.add_argument("--child-timeout", type=int, default=1800)
@@ -400,6 +434,14 @@ def main(argv=None) -> int:
     if a.command == "child":
         child(a.root, a.unit)
         return 0
+    if a.command == "readback":
+        held = json.loads((Path(a.root) / f"UNIT.{a.unit}.json").read_text(encoding="utf-8"))
+        out = warehouse_readback(a, held["delivery"]["campaign_sha256"], a.unit)
+        write(Path(a.root) / f"WAREHOUSE.{a.unit}.json", out)
+        held["warehouse"] = out
+        write(Path(a.root) / f"UNIT.{a.unit}.json", held)
+        print(json.dumps(out, indent=1, default=str))
+        return 0 if out["ok"] else 1
     if not a.api_key_file:
         raise SystemExit("REFUSED: --api-key-file is required; the key is read from its file by the "
                          "existing client and is never printed, copied or logged")
