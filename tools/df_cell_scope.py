@@ -71,6 +71,20 @@ RSS_BASIS = ("MAIN_PROCESS_RSS_ONLY: resource.getrusage(RUSAGE_SELF).ru_maxrss o
 CGROUP_BASIS = ("CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete "
                 "process tree charged to it, plus the cgroup's page and kernel memory.  This is "
                 "the only host-RAM basis a MemoryMax or a placement decision may be judged on.")
+FLOOR = "FLOOR_NOT_A_PEAK"
+FLOOR_BASIS = (
+    "SAMPLED_FLOOR: the last memory.peak this cgroup was OBSERVED to hold before its scope was "
+    "removed.  It is a LOWER BOUND, never a footprint: a child that ends between two observations "
+    "-- or before the first -- takes its true high-watermark away with its scope.  Measured on a "
+    "short child by the classification lane: 27,262,976 B retained against 258,584,576 B read from "
+    "inside the same scope, an undercount of 9.5x.  A cap sized on this number would be nine times "
+    "too small, so it never shares a name or a field with a peak.")
+RETAINED_LEASE_PEAK_IS_NOT_READ = (
+    "The admission store's retained observed_peak_bytes is NOT read as a footprint by this "
+    "instrument, in any field.  It is the launcher monitor's SAMPLED series and it was measured to "
+    "undercount a short child by 9.5x (27,262,976 B against 258,584,576 B on the same child).  The "
+    "only host-RAM measurement here is memory.peak read from INSIDE the cell's own scope before the "
+    "scope was removed; anything a sampler saw is carried separately, as a floor.")
 COMPARABILITY = ("NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different "
                  "quantities.  In the one bounded pilot where both were read of the same load the "
                  "resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither "
@@ -442,6 +456,9 @@ def _sanitised(name: str) -> str:
 
 
 def _slice_cgroup(slice_name: str) -> str | None:
+    override = os.environ.get("CRISPDM_CELL_SCOPE_SLICE_CGROUP")
+    if override:
+        return override.strip().lstrip("/")
     try:
         r = subprocess.run(["systemctl", "--user", "show", slice_name, "-p", "ControlGroup", "--value"],
                            capture_output=True, text=True, timeout=10)
@@ -492,7 +509,10 @@ class _ScopeWatcher(threading.Thread):
                     self.identity = scope_identity(rel)
                 p = cgroup_peak(rel)
                 if p["status"] == MEASURED:
-                    self.last_peak = p
+                    self.last_peak = {"bytes": p["bytes"], "status": FLOOR, "basis": FLOOR_BASIS,
+                                      "cgroup": rel, "observed_at": time.time(),
+                                      "observation_index": self.samples + 1,
+                                      "poll_seconds": self.poll_seconds}
                     self.samples += 1
             self.stop.wait(self.poll_seconds)
 
@@ -569,11 +589,13 @@ def supervise(*, cell_id: str, argv: list, cap_bytes: int, wall_seconds: int, su
            "why_lease_unconfirmed": None if lease is not None else lease_why,
            "scope": watcher.identity or {"cgroup": None, "inode": None, "path_exists": False,
                                          "why": "no scope for this cell was observed before it ended"},
-           "supervisor_observed_peak": watcher.last_peak or {
-               "bytes": None, "status": UNKNOWN, "basis": CGROUP_BASIS,
-               "why": ("the supervisor read no memory.peak before this cell's scope was removed; a "
-                       "missing peak is UNKNOWN, not zero")},
-           "supervisor_peak_samples": watcher.samples,
+           "supervisor_sampled_peak_floor": watcher.last_peak or {
+               "bytes": None, "status": UNKNOWN, "basis": FLOOR_BASIS,
+               "why": ("the supervisor observed no memory.peak before this cell's scope was "
+                       "removed -- a child shorter than one observation interval leaves none.  "
+                       "This is UNKNOWN, not zero, and it would not be a peak even if it existed")},
+           "supervisor_peak_observations": watcher.samples,
+           "retained_lease_peak_is_not_read": RETAINED_LEASE_PEAK_IS_NOT_READ,
            "child_record": child_record,
            "host_identity": host_identity()}
 
@@ -582,16 +604,26 @@ def supervise(*, cell_id: str, argv: list, cap_bytes: int, wall_seconds: int, su
     if child_record and child_record.get("host_ram", {}).get("cgroup_peak", {}).get("status") == MEASURED:
         peak = dict(child_record["host_ram"]["cgroup_peak"])
         peak["read_by"] = "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED"
-    elif watcher.last_peak:
-        peak = dict(watcher.last_peak)
-        peak["read_by"] = "THE_EXTERNAL_SUPERVISOR_WHILE_THE_SCOPE_STILL_EXISTED"
     else:
-        peak = {"bytes": None, "status": UNKNOWN, "basis": CGROUP_BASIS,
-                "read_by": None,
-                "why": ("neither the child nor the supervisor read a cgroup peak for this cell "
-                        f"(termination: {term['status']}); a missing peak is UNKNOWN, never zero "
-                        "and never a success")}
-    rec["host_ram"] = {"cgroup_peak": peak, "comparability": COMPARABILITY}
+        # A sampled observation is NOT promoted here, whatever the supervisor saw.  Only a read
+        # taken from inside the scope is a peak; the floor stays in its own field, under its own
+        # name, so no later reader can mistake the two.
+        peak = {"bytes": None, "status": UNKNOWN, "basis": CGROUP_BASIS, "read_by": None,
+                "why": ("this cell wrote no in-scope memory.peak read "
+                        f"(termination: {term['status']}); a missing peak is UNKNOWN, never zero, "
+                        "never a success, and never filled in from a sampled floor or from the "
+                        "launcher's retained lease record")}
+    rec["host_ram"] = {"cgroup_peak": peak,
+                       "cgroup_peak_floor": rec["supervisor_sampled_peak_floor"],
+                       "comparability": COMPARABILITY,
+                       "retained_lease_peak_is_not_read": RETAINED_LEASE_PEAK_IS_NOT_READ}
+    if (peak["status"] == MEASURED and rec["supervisor_sampled_peak_floor"].get("bytes")):
+        f, k = int(rec["supervisor_sampled_peak_floor"]["bytes"]), int(peak["bytes"])
+        rec["host_ram"]["floor_against_in_scope_peak"] = {
+            "floor_bytes": f, "in_scope_peak_bytes": k, "ratio": (k / f) if f else None,
+            "reading": ("one observation of how far a sampled floor fell short of the in-scope "
+                        "read on this cell.  It is an observation, not a correction factor and "
+                        "not an invariant: the shortfall depends on when the child ended")}
     rec["usable_for_costing"] = bool(peak["status"] == MEASURED and term["status"] == "COMPLETED")
 
     if watcher.identity and child_record and child_record.get("scope", {}).get("inode") is not None:

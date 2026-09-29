@@ -17,6 +17,7 @@ there is no scored task here. What follows is a measured *resource* and *mechani
 |---|---|---|
 | Is a reused scope now rejected? | **YES, by name, in two places.** A cell child whose cgroup is the driver's own cgroup refuses `REUSED_DRIVER_SCOPE`; a second cell claiming a scope another cell already holds refuses `SCOPE_ALREADY_CLAIMED_BY_ANOTHER_CELL`. A cgroup that is not a scope refuses `NOT_A_SCOPE`; a scope with `memory.max = max` refuses `NO_KERNEL_LIMIT`; a child started without the external supervisor refuses `CELL_NOT_LAUNCHED_BY_THE_SUPERVISOR`. A refused cell measures nothing and leaves no claim. | `tests/test_df_cell_scope.py` — five refusal tests, each asserting the code by name |
 | Are two concurrent children correctly isolated? | **YES, and measured against the deployed launcher and the real kernel, not only in a fixture.** Two children launched concurrently through `crispdm-run` took two distinct scope cgroups, two distinct scope **inodes** and two distinct admission **lease ids**, each with its own `memory.max`. The two cgroup peaks came out **72 626 176 B** and **198 443 008 B** against known fixture allocations of 62 914 560 B and 188 743 680 B — two different charges, which a shared driver scope cannot produce, because in a shared scope both children read the same charge. | `docs/audits/evidence/QRM01_CELL_SCOPE_20260929/ISOLATION_EVIDENCE.json` |
+| Is a retained lease peak still readable as a footprint? | **NO.** The classification lane's measurement — **27 262 976 B in the lease against 258 584 576 B read from inside the same scope**, a 9.5× undercount on one short child — is adopted as a requirement, not a curiosity. See §2a. |
 | What do the other lanes pin? | The tip of `satoshi/qrm01-cell-scope-instrument-20260929` named in §7. | §7 |
 
 ---
@@ -27,6 +28,39 @@ there is no scored task here. What follows is a measured *resource* and *mechani
 2. **1 463 877 632 B is one 20 000-window data materialization, not a lower bound and not a training cap.** Every record carries a mandatory `stage`, and the stage is carried into the peak evidence, so a `DATA_MATERIALIZATION` floor cannot be read as a `CELL_TRAIN_AND_SCORE` cap. `cell_cap_bytes()` **refuses** rather than defaulting: no retained Q2 figure can become an allocation by omission. QRM01 declares no cap.
 3. **RSS and cgroup accounting measure different quantities; one observed ordering is not an invariant.** The instrument reads cgroup **identity, ancestry and lifetime** — the relative cgroup path, its parent, whether it is a `.scope`, its directory **inode** (a scope *name* repeats; a fresh scope's inode does not), its boot id and its kernel limit — and never infers freshness from a memory reading. Two further observations from this lane's own bounded fixture: RSS exceeded the cgroup peak by 7 536 640 B and by 7 700 480 B. That is consistent with the earlier pilot's 9 158 656 B, and it is reported as **three observations, not an invariant**; neither quantity bounds the other in either direction.
 4. **Reproducible reachability from the selected runner commit, not presence on master.** The instrument at `84bcd605` and the v2 seal are integrated into the published lineage with explicit commit provenance, and the seal is explicitly **not** used to reinterpret old cells — see §3.
+
+### 2a. A sampled floor is not a peak — lane C's measurement, adopted as a requirement
+
+The launcher's retained `observed_peak_bytes` is its monitor's **sampled** series. Lane C measured
+it undercounting a short child **9.5×**: 27 262 976 B retained against 258 584 576 B read from
+inside the same scope. A cap sized on the retained record would have been nine times too small.
+
+So in this instrument the two quantities do not share a name, a status or a field:
+
+- `host_ram.cgroup_peak` is **only ever** the read taken from inside the cell's own scope before
+  the scope was removed. It carries `read_by:
+  THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED`, and if there is no such read it is
+  `UNKNOWN` — a sampled observation is **never promoted into it**, which is a behaviour the earlier
+  draft of this instrument had and which is now forbidden and tested.
+- `host_ram.cgroup_peak_floor` / `supervisor_sampled_peak_floor` carry whatever the external
+  supervisor observed, with status **`FLOOR_NOT_A_PEAK`** — a third status, equal to neither
+  `MEASURED` nor `UNKNOWN` — and a basis that states it is a lower bound and quotes lane C's pair.
+- The instrument **never reads** `observed_peak_bytes` from the admission store into any peak
+  field. That is asserted at source level: the string occurs exactly once in the module, inside
+  the sentence that says it is not read.
+- When both exist they are compared, and the comparison is labelled an **observation, not a
+  correction factor and not an invariant**, because the shortfall depends on when the child ended.
+
+Three tests hold this: a child observed by the supervisor whose floor is *not* promoted; a child
+too short to be observed at all, whose peak is `UNKNOWN` and **not zero**; and the pair 27 262 976
+/ 258 584 576 reproducing a ratio of 9.5 with the observation wording on it.
+
+Two further notes taken from lane C without re-deriving them: nothing here computes an identity
+digest, and if a record ever gains one it must be computed **per row**, not per scope — a
+terminal-level digest was proved to make secondary rows inherit an identity that is not their own.
+And there is **no reconciled authority** for the six W1440 cells this runner unlocks: no approved
+allocation, no lease held. Every test and fixture here is therefore bounded, and nothing in this
+lane assumes a cell follows.
 
 ---
 
@@ -132,9 +166,11 @@ files: tools/df_cell_scope.py (new) · tools/df_e1_block.py (launch path + the 8
        tests/test_df_cell_scope.py (new, 27 tests, committed RED before the implementation)
        docs/audits/evidence/QRM01_CELL_SCOPE_20260929/{PROVENANCE,RUNNER_IDENTITY,ISOLATION_EVIDENCE}.json
        docs/audits/evidence/E1_Q2_CONTEXT_DEEP_20260926/{DESIGN,EXTENSION_SEAL,SEAL_WITHDRAWAL,FOOTPRINT_BASIS,REDACTIONS}.json
-suites: test_df_cell_scope 27/0 · test_df_e1_block + test_df_closure_table + test_crispdm_admission
-        + test_df_admission_guard 108/0 (167 s, unchanged by this integration)
-acceptance: reused scope REJECTED by name (5 refusal codes) · two concurrent children under the
+suites: test_df_cell_scope 31/0 · test_df_e1_block + test_df_closure_table + test_crispdm_admission
+        + test_df_admission_guard 108/0 · combined 139/0 (~175 s, unchanged by this integration)
+acceptance: reused scope REJECTED by name (5 refusal codes) · a sampled floor is FLOOR_NOT_A_PEAK
+        and never promoted into the peak field (lane C's 27,262,976 / 258,584,576 pair, ratio 9.5,
+        labelled an observation) · two concurrent children under the
         DEPLOYED launcher -> distinct cgroups TRUE, distinct inodes TRUE, distinct leases TRUE,
         supervisor agreed with each child TRUE, own kernel limit each 402 653 184 B, peaks
         72 626 176 B vs 198 443 008 B · RUNNER_IDENTITY verdict DEPLOYED_MATCHES_TRACKED
@@ -147,6 +183,9 @@ what is NOT done / refused / not measured:
   - The twelve historical cells are NOT re-bound, NOT re-read and NOT re-costed under v2.
   - The six missing W1440 cells are STILL MISSING; none relaunched.
   - NO training-path footprint exists yet: no model, gradients or optimizer slots were built here.
+  - NO cap may be sized from the launcher's retained lease peak: it is a floor, measured 9.5x low.
+  - NO reconciled authority exists for the six W1440 cells: no approved allocation, no lease held.
+  - NO identity digest is computed here; if one is ever added it must be per row, not per scope.
   - The preferred RTX 5090 host was NOT used and its host-memory restriction is NOT lifted.
   - No host rebooted, no service started or stopped, no broker touched, no worktree removed.
 ```
@@ -163,7 +202,15 @@ not used and its reported host-memory restriction is not lifted by this lane.** 
 displaced: every admission was taken fresh through the shared atomic gate, and no reservation was
 held while waiting for anything.
 
-**Idle time: none.** No eligible unit of this lane was blocked at any point.
+**One admission refusal, taken as designed.** A 3 GiB suite request was refused
+`SLICE_AGGREGATE_BUDGET` — 16.40 G would have been committed against the 14.00 G
+`crispdm-batch.slice` ceiling while another lane held 6 GiB. Nothing was started, no limit was
+changed, and **the cap was not lowered to get past it**: the same request was re-made at the same
+declared size, under the same name, with `-q` — waiting before a first start, not a retry. It was
+admitted when the other reservation ended.
+
+**Idle time: none beyond that queued wait**, whose cause is recorded above: a concurrent lane's
+live 6 GiB reservation against a 14 GiB slice ceiling.
 
 ---
 
@@ -172,7 +219,9 @@ held while waiting for anything.
 - **Pin:** `satoshi/qrm01-cell-scope-instrument-20260929`, the tip recorded in the commit that
   carries this document. Lanes B, C and D take the runner from that revision; this lane owns it.
 - **Unblocked: QRM02.** The mechanism a per-cell training footprint needs now exists and is
-  measured. QRM02 still has to *declare* its stage budgets, host and device caps and remaining
+  measured, and no figure in this document is a training cap — least of all the launcher's
+  retained lease peak, which lane C measured 9.5× low. QRM02 still has to *declare* its stage
+  budgets, host and device caps and remaining
   allocation **before** dispatch, and `cell_cap_bytes()` will refuse it otherwise. It must not
   reduce a cap to pass admission, and it must not take any figure in this document as a training
   cap: **no training-path footprint has been measured anywhere yet**, because no model, gradient

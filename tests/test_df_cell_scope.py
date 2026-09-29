@@ -584,3 +584,105 @@ def test_an_unconfirmed_reservation_says_why_instead_of_reading_as_none(tmp_path
                      wall_seconds=5, supervisor_dir=sup, log_path=tmp_path / "a.log", launcher=launcher)
     assert r["lease_confirmed"] is False
     assert r["why_lease_unconfirmed"], "an unconfirmed reservation must carry its reason"
+
+
+# ---- a sampled floor is not a peak, and never shares a field with one ---------------------------
+
+def _scope_making_launcher(tmp_path: Path, cell: str, *, peak: int, limit: int, hold: float = 1.0,
+                           exit_code: int = 0) -> Path:
+    """A bounded stand-in for the launcher that creates a scope directory with a KNOWN
+    memory.peak, holds it, and then removes it -- the lifetime a real transient scope has."""
+    p = tmp_path / f"scope-launcher-{cell}"
+    p.write_text(
+        "#!/usr/bin/env bash\n"
+        "while getopts \"m:t:n:W:L:E:P:S:qh\" o; do :; done\n"
+        "shift $((OPTIND - 1)); [ \"${1:-}\" = \"--\" ] && shift\n"
+        f"d=\"$CRISPDM_CGROUP_ROOT/$CRISPDM_CELL_SCOPE_SLICE_CGROUP/crispdm-{cell}-1-1.scope\"\n"
+        "mkdir -p \"$d\"\n"
+        f"echo {peak} > \"$d/memory.peak\"\n"
+        f"echo {limit} > \"$d/memory.max\"\n"
+        f"sleep {hold}\n"
+        "rm -rf \"$d\"\n"
+        f"exit {exit_code}\n")
+    p.chmod(0o755)
+    return p
+
+
+def test_a_sampled_observation_is_never_promoted_into_the_peak_field(tmp_path, monkeypatch):
+    """The classification lane's measurement, as a requirement: 27,262,976 B retained against
+    258,584,576 B read from inside the same scope.  A sampled number is a FLOOR.  It may not be
+    reported as the peak, and it may not sit in the peak's field."""
+    root = tmp_path / "cgroup"
+    make_cgroup(root, SLICE_REL)
+    monkeypatch.setenv("CRISPDM_CGROUP_ROOT", str(root))
+    monkeypatch.setenv("CRISPDM_CELL_SCOPE_SLICE_CGROUP", SLICE_REL)
+    launcher = _scope_making_launcher(tmp_path, "cell_short", peak=27_262_976, limit=6 * GIB)
+    r = CS.supervise(cell_id="cell_short", argv=[sys.executable, "-c", "pass"],
+                     cap_bytes=6 * GIB, wall_seconds=60, supervisor_dir=tmp_path / "SUP",
+                     log_path=tmp_path / "s.log", launcher=launcher)
+    assert r["termination"]["status"] == "COMPLETED"
+    # the supervisor DID observe the scope...
+    assert r["supervisor_sampled_peak_floor"]["bytes"] == 27_262_976
+    assert r["supervisor_sampled_peak_floor"]["status"] == CS.FLOOR != CS.MEASURED
+    # ...and that observation is still not a peak, and not in the peak's field
+    assert r["host_ram"]["cgroup_peak"]["status"] == CS.UNKNOWN
+    assert r["host_ram"]["cgroup_peak"]["bytes"] is None
+    assert r["host_ram"]["cgroup_peak_floor"]["bytes"] == 27_262_976
+    assert r["usable_for_costing"] is False
+    assert "9.5x" in r["host_ram"]["retained_lease_peak_is_not_read"]
+
+
+def test_a_child_too_short_to_be_observed_leaves_no_peak_and_no_zero(tmp_path, monkeypatch):
+    """A child that ends before the first observation takes its high-watermark away with its
+    scope.  What is left is UNKNOWN -- not zero, and not a success to be costed."""
+    root = tmp_path / "cgroup"
+    make_cgroup(root, SLICE_REL)
+    monkeypatch.setenv("CRISPDM_CGROUP_ROOT", str(root))
+    monkeypatch.setenv("CRISPDM_CELL_SCOPE_SLICE_CGROUP", SLICE_REL)
+    launcher = _stub_launcher(tmp_path, exit_code=0)       # ends at once; no scope ever appears
+    r = CS.supervise(cell_id="cell_blink", argv=[sys.executable, "-c", "pass"], cap_bytes=1 * GIB,
+                     wall_seconds=30, supervisor_dir=tmp_path / "SUP", log_path=tmp_path / "b.log",
+                     launcher=launcher)
+    assert r["supervisor_peak_observations"] == 0
+    assert r["supervisor_sampled_peak_floor"]["status"] == CS.UNKNOWN
+    assert r["supervisor_sampled_peak_floor"]["bytes"] is None
+    assert r["host_ram"]["cgroup_peak"]["status"] == CS.UNKNOWN
+    assert r["host_ram"]["cgroup_peak"]["bytes"] is None
+    assert r["usable_for_costing"] is False
+
+
+def test_the_shortfall_is_recorded_as_one_observation_not_a_correction_factor(tmp_path, monkeypatch):
+    """When both exist they are compared, and the comparison is labelled an observation.  The
+    numbers here are the classification lane's own pair."""
+    root = tmp_path / "cgroup"
+    make_cgroup(root, SLICE_REL)
+    monkeypatch.setenv("CRISPDM_CGROUP_ROOT", str(root))
+    monkeypatch.setenv("CRISPDM_CELL_SCOPE_SLICE_CGROUP", SLICE_REL)
+    # the child's own in-scope read, written where the supervisor will find it
+    rec_path = tmp_path / "cell.json"
+    rec_path.write_text(json.dumps({
+        "host_ram": {"cgroup_peak": {"bytes": 258_584_576, "status": CS.MEASURED,
+                                     "basis": CS.CGROUP_BASIS}},
+        "scope": {"inode": None}}))
+    launcher = _scope_making_launcher(tmp_path, "cell_pair", peak=27_262_976, limit=6 * GIB)
+    r = CS.supervise(cell_id="cell_pair", argv=[sys.executable, "-c", "pass"], cap_bytes=6 * GIB,
+                     wall_seconds=60, supervisor_dir=tmp_path / "SUP", log_path=tmp_path / "p.log",
+                     launcher=launcher, record_path=rec_path)
+    peak = r["host_ram"]["cgroup_peak"]
+    assert peak["bytes"] == 258_584_576 and peak["status"] == CS.MEASURED
+    assert peak["read_by"] == "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED"
+    cmp = r["host_ram"]["floor_against_in_scope_peak"]
+    assert cmp["floor_bytes"] == 27_262_976 and cmp["in_scope_peak_bytes"] == 258_584_576
+    assert round(cmp["ratio"], 1) == 9.5
+    assert "not an invariant" in cmp["reading"]
+
+
+def test_the_instrument_never_reads_the_launchers_retained_lease_peak_as_a_footprint():
+    """Source-level: the retained observed_peak_bytes is the launcher monitor's SAMPLED series.
+    It must not be read into any peak field of any record here."""
+    src = (TOOLS / "df_cell_scope.py").read_text()
+    hits = [l for l in src.splitlines() if "observed_peak_bytes" in l]
+    assert len(hits) == 1, hits
+    assert hits[0].lstrip().startswith('"') and "NOT read as a footprint" in hits[0], hits[0]
+    assert CS.FLOOR != CS.MEASURED and CS.FLOOR != CS.UNKNOWN
+    assert "FLOOR" in CS.FLOOR_BASIS.split(":")[0]
