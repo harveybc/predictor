@@ -1,0 +1,125 @@
+{
+ "at": "2026-09-28",
+ "hosts": {
+  "COORDINATOR": {
+   "admission": {
+    "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+    "desktop_reserve_bytes": 3221225472,
+    "held_unrealised_bytes": 5973929984,
+    "host_free_for_new_bytes": 14554394624,
+    "host_key": "90e1edbbc6a7e8c2",
+    "mem_available_bytes": 23749550080,
+    "mem_total_bytes": null,
+    "pressure_full_avg10": 0.0,
+    "pressure_some_avg10": 0.0,
+    "retained_bodies": 84,
+    "slice_memory_current": 2383052800,
+    "slice_memory_max": 15032385536
+   },
+   "gpus": [
+    "0, NVIDIA GeForce RTX 4070 Laptop GPU, GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326, 8188 MiB, 856 MiB, 43, 580.178.04"
+   ],
+   "installed_bytes": {
+    "crispdm-run": "499fdc1877750337006de8aad6b30a943acfea7416aa157b7537c4b121c1dfc7",
+    "crispdm_admission.py": "8dc2c03b17e498697d634666309876686d051243ea4b640d65ec92c51ab8ee35"
+   },
+   "kernel_nvrm_no_memory_lines": 0,
+   "kernel_nvrm_xid_errors": 0,
+   "live_leases": [
+    "rb04-fullcorpus",
+    "rb04-verify-workbench",
+    "rbcap"
+   ],
+   "meminfo_kb": {
+    "MemAvailable": "   23191704 kB",
+    "MemTotal": "       32010116 kB",
+    "SReclaimable": "    2034184 kB",
+    "SUnreclaim": "       572520 kB",
+    "SwapFree": "        8388604 kB",
+    "SwapTotal": "       8388604 kB"
+   }
+  },
+  "WORKER_A": {
+   "admission": {
+    "boot_id": "e7cb8a4f-2aab-4391-9b4b-7fc83f8906d0",
+    "desktop_reserve_bytes": 3221225472,
+    "held_unrealised_bytes": 5141356544,
+    "host_free_for_new_bytes": 10495270912,
+    "host_key": "d7b6d7b9082f3692",
+    "mem_available_bytes": 18857852928,
+    "mem_total_bytes": null,
+    "pressure_full_avg10": 0.0,
+    "pressure_some_avg10": 0.0,
+    "retained_bodies": 10,
+    "slice_memory_current": 2405752832,
+    "slice_memory_max": 15032385536
+   },
+   "gpus": [
+    "0, NVIDIA GeForce RTX 4090 Laptop GPU, GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, 16376 MiB, 14 MiB, 38, 580.178.04"
+   ],
+   "installed_bytes": {
+    "crispdm-run": "499fdc1877750337006de8aad6b30a943acfea7416aa157b7537c4b121c1dfc7",
+    "crispdm_admission.py": "8dc2c03b17e498697d634666309876686d051243ea4b640d65ec92c51ab8ee35"
+   },
+   "kernel_nvrm_no_memory_lines": 0,
+   "kernel_nvrm_xid_errors": 0,
+   "live_leases": [
+    "rb01s2"
+   ],
+   "meminfo_kb": {
+    "MemAvailable": "   18410892 kB",
+    "MemTotal": "       32062312 kB",
+    "SReclaimable": "     763536 kB",
+    "SUnreclaim": "       755628 kB",
+    "SwapFree": "        8388604 kB",
+    "SwapTotal": "       8388604 kB"
+   }
+  },
+  "WORKER_B": {
+   "admission": {
+    "boot_id": "31133e4e-afad-4202-8e6e-e27dd7d7d1e2",
+    "desktop_reserve_bytes": 3221225472,
+    "held_unrealised_bytes": 0,
+    "host_free_for_new_bytes": 1575276544,
+    "host_key": "9682d7d3fc64d07b",
+    "mem_available_bytes": 4796502016,
+    "mem_total_bytes": null,
+    "pressure_full_avg10": 0.0,
+    "pressure_some_avg10": 0.0,
+    "retained_bodies": 5,
+    "slice_memory_current": 201179136,
+    "slice_memory_max": 8589934592
+   },
+   "gpus": [
+    "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519, 12227 MiB, 14 MiB, 28, 580.178.04",
+    "1, NVIDIA GeForce RTX 5090, GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8, 32607 MiB, 10 MiB, 36, 580.178.04"
+   ],
+   "installed_bytes": {
+    "crispdm-run": "499fdc1877750337006de8aad6b30a943acfea7416aa157b7537c4b121c1dfc7",
+    "crispdm_admission.py": "8dc2c03b17e498697d634666309876686d051243ea4b640d65ec92c51ab8ee35"
+   },
+   "kernel_nvrm_no_memory_lines": 76,
+   "kernel_nvrm_xid_errors": 0,
+   "live_leases": [],
+   "meminfo_kb": {
+    "MemAvailable": "    4701156 kB",
+    "MemTotal": "       14981196 kB",
+    "SReclaimable": "     438172 kB",
+    "SUnreclaim": "      4609596 kB",
+    "SwapFree": "        4000088 kB",
+    "SwapTotal": "       4194300 kB"
+   }
+  }
+ },
+ "installed_bytes_agree_across_all_three_hosts": true,
+ "note": "Roles only.  No host name, alias, IP, token or account identifier appears here.",
+ "recorded_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+ "schema": "satoshi.rb01_host_capacity.v1",
+ "tracked_bytes_at_revision": {
+  "reading": "the installed bytes on every host are the tracked bytes of this revision; nothing was reinstalled by this round",
+  "revision": "0ea5bff48006a78cc245777161197398d43f75dd",
+  "tools/crispdm-run": "499fdc1877750337006de8aad6b30a943acfea7416aa157b7537c4b121c1dfc7",
+  "tools/crispdm_admission.py": "8dc2c03b17e498697d634666309876686d051243ea4b640d65ec92c51ab8ee35"
+ },
+ "xid_note": "counted as `NVRM: Xid` only.  An earlier count of 1 on each host was a case-insensitive substring match on an unrelated ethernet-controller line and is withdrawn"
+}

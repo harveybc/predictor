@@ -1,0 +1,156 @@
+{
+ "at": "2026-09-28",
+ "attempts": [
+  {
+   "declared_cap_bytes": 1342177280,
+   "device_memory_after_the_kill": "10 MiB on the 5090",
+   "exit_code": 124,
+   "lease": {
+    "argv_sha256": "1b84191b36b756ac65d8ef8f7dbc7cb2f57686c967b05e5f9f511b7e98c6f161",
+    "boot_id": "31133e4e-afad-4202-8e6e-e27dd7d7d1e2",
+    "boot_time": 1790098711,
+    "cap_bytes": 1342177280,
+    "cgroup_recorded": true,
+    "lease_id": "rb02smoke-1790651441-504458-51bb85",
+    "pid": 504463,
+    "pid_starttime": 55273016,
+    "reclaim_cause": "LEASE_RELEASED",
+    "whole_cgroup_peak_bytes": 724312064
+   },
+   "n": 1,
+   "outcome": "WALL_TIMEOUT_NO_OUTPUT",
+   "wall_limit_seconds": 600,
+   "what": "alloc/compute/free smoke, 512 MiB, first attempt",
+   "what_is_NOT_established": "where it stalled.  Output was buffered and nothing was written.  No cause is claimed and no kernel-cache warm-up is claimed either: no file under the compute, torch or triton caches was written in that window",
+   "what_is_established": "the scope reached a whole-cgroup peak of 724312064 B, which is the footprint of a loaded torch with a live CUDA context, so it was well inside the torch path when its wall ran out"
+  },
+  {
+   "declared_cap_bytes": 1342177280,
+   "elapsed_seconds": 0.4,
+   "exit_code": 0,
+   "lease": {
+    "argv_sha256": "cd048e1821f18e46ac1124c810105ff06e26f962d1e860a6981b33496bf55404",
+    "boot_id": "31133e4e-afad-4202-8e6e-e27dd7d7d1e2",
+    "boot_time": 1790098711,
+    "cap_bytes": 1342177280,
+    "cgroup_recorded": true,
+    "lease_id": "rb02stage-1790651536-504887-37671c",
+    "pid": 505408,
+    "pid_starttime": 55282538,
+    "reclaim_cause": "LEASE_RELEASED",
+    "whole_cgroup_peak_bytes": 9400320
+   },
+   "measured_device_name_from_inside_the_child": "NVIDIA GeForce RTX 5090",
+   "measured_device_uuid_from_inside_the_child": "a9f35631d36a6cc6c23beb0b36d50fb8",
+   "n": 2,
+   "outcome": "ALL_RETURN_CODES_ZERO",
+   "what": "raw CUDA driver API: cuInit, device name, device UUID, context, 512 MiB alloc, memset, sync, free, destroy"
+  },
+  {
+   "capability": "12.0",
+   "declared_cap_bytes": 1342177280,
+   "device_vram_bytes": 33668726784,
+   "elapsed_seconds": 1.11,
+   "exit_code": 0,
+   "lease": {
+    "argv_sha256": "9b1aac356f650bf4dabcc87cb18eb7a72824156f12d3321602194f210f268a7c",
+    "boot_id": "31133e4e-afad-4202-8e6e-e27dd7d7d1e2",
+    "boot_time": 1790098711,
+    "cap_bytes": 1342177280,
+    "cgroup_recorded": true,
+    "lease_id": "rb02torch-1790651619-505674-2c0e90",
+    "pid": 506200,
+    "pid_starttime": 55290847,
+    "reclaim_cause": "LEASE_RELEASED",
+    "whole_cgroup_peak_bytes": 92835840
+   },
+   "measured_device_uuid_from_inside_the_child": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+   "n": 3,
+   "outcome": "COMPLETED",
+   "what": "torch, one unbuffered marker per stage, 512 MiB matmul 8192x8192"
+  },
+  {
+   "declared_cap_bytes": 1342177280,
+   "exit_code": 6,
+   "exit_code_reading": "6 is the smoke's own 'PARTIAL' code.  It fired because the residual after empty_cache was exactly 33554432 B and the threshold was written as '< 32 MiB'.  33554432 B IS 32 MiB: that is the cuBLAS workspace, not a leak, and the threshold is one byte too tight.  Recorded, not hidden, and not re-run to produce a nicer code",
+   "lease": {
+    "argv_sha256": "8bac1ced20ac67ec175153ea8f0934003a326b6fe1dd6a2898dc898e2d8f8858",
+    "boot_id": "31133e4e-afad-4202-8e6e-e27dd7d7d1e2",
+    "boot_time": 1790098711,
+    "cap_bytes": 1342177280,
+    "cgroup_recorded": true,
+    "lease_id": "rb02smoke2-1790651706-507122-39aa61",
+    "pid": 507127,
+    "pid_starttime": 55299586,
+    "reclaim_cause": "LEASE_RELEASED",
+    "whole_cgroup_peak_bytes": 686821376
+   },
+   "n": 4,
+   "outcome": "COMPUTED_AND_FREED",
+   "smoke": {
+    "boot_id": "31133e4e-afad-4202-8e6e-e27dd7d7d1e2",
+    "compute": {
+     "checksum": 609014.5,
+     "finite": true,
+     "matmul_n": 8192
+    },
+    "context_and_alloc_seconds": 0.181,
+    "cuda_available": true,
+    "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "device_count_visible": 1,
+    "dwell_seconds": 10,
+    "freed": false,
+    "host_rss_peak_bytes": 1047269376,
+    "import_seconds": 0.665,
+    "measured_device": {
+     "capability": "12.0",
+     "name": "NVIDIA GeForce RTX 5090",
+     "total_vram_bytes": 33668726784,
+     "uuid": "a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+    },
+    "mib_requested": 512,
+    "nvidia_smi_visible": [
+     "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 14 MiB, 28",
+     "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8, NVIDIA GeForce RTX 5090, 640 MiB, 38"
+    ],
+    "pid": 507131,
+    "pid_starttime": 55299588,
+    "result": "PARTIAL",
+    "schema": "satoshi.gpu_smoke.v1",
+    "torch": "2.13.0+cu130",
+    "total_seconds": 11.139,
+    "vram_after_free_bytes": 33554432,
+    "vram_allocated_bytes": 838860800,
+    "vram_reserved_bytes": 1310720000,
+    "vram_residual_bytes": 33554432
+   },
+   "what": "the alloc/compute/free smoke again, unbuffered, 512 MiB, 10 s dwell so the reservation's sampler measures"
+  }
+ ],
+ "driver_errors": {
+  "ecc_uncorrected": "N/A on both devices",
+  "first_seen": "Sep 24 16:13:53",
+  "last_seen": "Sep 28 15:06:24",
+  "nvrm_host_memory_allocation_failures": 76,
+  "nvrm_xid_errors": 0,
+  "reading": "_memdescAllocInternal returning NV_ERR_NO_MEMORY is the driver failing to get HOST memory, not device memory.  It is consistent with the slab condition above and it is not a device fault: there is no Xid and no ECC error on either device"
+ },
+ "host_memory_condition": {
+  "desktop_reserve_bytes": 3221225472,
+  "host_free_for_new_bytes": 1575276544,
+  "mem_available_bytes": 4796502016,
+  "reading": "4.6 GB of the host's 14.3 GiB is unreclaimable kernel slab while the largest user process holds 285 MB.  The memory is in the kernel, not in an application, so it cannot be freed by stopping anything, and no cache, swap or oomd setting was touched",
+  "sunreclaim_kb": 4600076
+ },
+ "host_role": "WORKER_B (the preferred external RTX 5090 host)",
+ "no_driver_reload_no_reboot": true,
+ "recorded_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
+ "schema": "satoshi.rb02_preferred_host_gpu_smoke.v1",
+ "verdict": {
+  "and_one_unexplained_stall": "attempt 1 held a reservation for its whole 10-minute wall and produced nothing.  Until that is explained, a long unattended run on this host is not a sound bet even for work that would fit",
+  "can_the_preferred_host_admit_useful_GPU_work": "QUALIFIED_NO",
+  "consequence": "eligible memory-heavy work goes to WORKER_A, which holds 10.5-17.1 GiB of admissible RAM and a cold idle 16 GiB device.  No driver was reloaded, no host was rebooted, and no hardware recovery was waited for: the RB01 selections ran on WORKER_A while this was being measured",
+  "what_the_device_can_do": "the 5090 answers correctly.  Three of four attempts completed: the raw driver API in 0.40 s, torch in 1.11 s and the full smoke in 11.1 s, each inside a 1.25 GiB reservation, each naming the device by UUID from inside the child, each freeing what it took",
+  "what_the_host_cannot_do": "1.47 GiB of admissible host RAM after the owner's 3 GiB desktop reserve. The smoke itself needed a 655 MiB whole-cgroup peak and a 999 MiB main process for a 512 MiB tensor pair.  A real fit of this programme declares 6-11 GiB.  Nothing of that size can be admitted here, and lowering a cap to fit is forbidden"
+ }
+}
