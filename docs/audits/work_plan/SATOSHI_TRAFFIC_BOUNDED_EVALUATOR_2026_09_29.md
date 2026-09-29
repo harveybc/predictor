@@ -385,11 +385,16 @@ make a campaign request possible — not for the campaign:
 
 ## 8. Not disturbed, for the record
 
-Another lane's job (`cb03pub400`, 6 GiB, the classification reference lane) was
-live on the admitted worker throughout. **Gate admission queued behind it rather
-than displacing it**, and the declared cap was passed once and never shrunk to
-squeeze into the remaining slice room. Fresh aggregate admission was taken per
-child. No service was started, stopped or restarted; the household lake
+**Three other lanes were live on the admitted worker throughout**: the
+classification reference lane's job series and a Weather replay campaign holding
+8 GiB per cell. **Every one of my children queued behind them rather than
+displacing anyone** — the first h96 request waited out a 6 GiB job, then an 8 GiB
+replay, then three more — and **no declared cap was ever shrunk to squeeze into
+the remaining slice room**. Two children were never admitted at all, and that is
+reported as NOT MEASURED in §3 rather than worked around. Fresh aggregate
+admission was taken per child (`crispdm-run -q`, the launcher's own atomic
+reservation), and nothing outside my own jobs' scopes was ever signalled: the one
+process I terminated was my own queued request. No service was started, stopped or restarted; the household lake
 restoration under way elsewhere was not touched. No cap, cache, swap, oomd
 setting or kernel parameter was changed. No driver was reloaded and no host was
 rebooted. The preferred RTX 5090 host was **not used** — it holds about 2.8 GiB
@@ -405,15 +410,30 @@ Committed on `satoshi/traffic-bounded-evaluator-20260929`:
 - `tools/df_tsl_bounded_eval.py` — the TSL driver: the term-by-term split, the
   characterization, the reducer-parity battery and the measured bounded probe.
   It introduces no model, loader, loss, scorer, reduction, recipe or margin.
-- `tools/test_tsl_bounded_eval.py` — 18 tests of the generators.
+- `tools/test_tsl_bounded_eval.py` — **21 tests** of the generators: that this
+  module contains no reduction of its own, that the bounded resident terms do not
+  contain the population size while the disk term does, that the author-path
+  figure is the sealed derivation rather than a second one, the verdict
+  boundaries (an unread number never admits; the cap boundary is inclusive; an
+  undemonstrated parity is labelled inherited, never demonstrated), the disk
+  budget and retention rule, the refusals, and that Traffic's 96 steps are 96
+  hours where Weather's are 16.
 - `docs/audits/work_plan/SATOSHI_TRAFFIC_BOUNDED_EVALUATOR_2026_09_29.md` — this
   document.
 
 Operator-retained, not committed (they carry host detail):
 `~/.local/state/crispdm-data-foundation/tsl_traffic_bounded_20260929/` —
 `CHARACTERIZATION.traffic.json`, `MEMORY_SPLIT.traffic.L96.json`,
-`REDUCER_PARITY.traffic.json`, `BOUNDED_PROBE.traffic.h*.json`, and the design
-copied from the RB02 lane.
+`REDUCER_PARITY.traffic.json`, `BOUNDED_PROBE.traffic.h720.json` (`7abe795a…`),
+`BOUNDED_PROBE.traffic.h96.json` (`b6920e0c…`), and the design copied from the
+RB02 lane. The delivered Traffic bytes were transported to the worker and
+**re-verified by sha256 inside every child** before the loader saw them — the
+same declared transport of governed bytes the Weather execution used, and
+labelled the same way.
+
+Suites, at this tip: **`tools/test_tsl_bounded_eval.py` 21 passed ·
+`tools/test_tsl_execution.py` 23 passed · `tools/test_tsl_producer_contract.py`
+22 passed — 63 passed**, with the production warehouse provider on the path.
 
 ## 10. What the auditor should attack first
 
@@ -423,9 +443,13 @@ copied from the RB02 lane.
    horizons is labelled `ADMISSIBLE_PARITY_INHERITED`, never "in parity". The
    inheritance rests on the reduction being population-independent arithmetic,
    which is an argument, not a measurement at that size.
-2. **A single measurement on a single host, one execution, no replay.** The
-   whole-cgroup peaks below were not reproduced in a fresh process, and nothing
-   here establishes that they would be identical on another host.
+2. **A single measurement on a single host, one execution, no replay.** The two
+   whole-cgroup peaks were not reproduced in a fresh process, and nothing here
+   establishes that they would be identical on another host.
+   `CRISPDM_RESERVATION_BYTES` was not exported by the launcher, so the cap each
+   child compared itself against was read from the cgroup's own `memory.max`
+   rather than from the reservation — the same integer, by construction, but it
+   is a fallback and should be checked.
 3. **The retired 22/37 GiB figures.** I could not reconstruct them and I say so.
    If a baseline exists that produces them, it should be produced, because two
    documents carrying two figures for one quantity is the defect, not the gap.
