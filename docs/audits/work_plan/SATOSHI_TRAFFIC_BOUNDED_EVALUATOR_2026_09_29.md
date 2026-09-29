@@ -153,6 +153,22 @@ statistical. `bounded_test` also runs the author's own function beside the
 bounded route whenever its temporaries fit the declared budget, and **refuses
 the cell** if they disagree — so a silent drift is not reachable.
 
+**That gate was exercised on Traffic itself, at full population.** The h96 probe
+ran with a 5 GiB scorer budget, so `utils.metrics.metric` executed on the
+memmapped arrays beside the bounded route over the complete
+**3 413 × 96 × 862 = 282 432 576**-element test population:
+
+| | MAE | MSE |
+|---|---|---|
+| the author's own `utils.metrics.metric`, unchunked | `0.9714772701263428` | `1.9507478475570679` |
+| `author_metric_exact`, the bounded route | `0.9714772701263428` | `1.9507478475570679` |
+| **bit-equal** | **yes** | **yes** |
+| the independent float64 reduction, reported beside and never instead | `0.9714772367866366` | `1.950747929954006` |
+
+The verdict of that probe is **`ADMISSIBLE`** — the only one of the two that is
+not `_PARITY_INHERITED`. The numbers are an **untrained** model's error and are
+not results; they appear here only as the two sides of the comparison.
+
 **(b) The writer's row placement.** The bounded writer places each batch's block at a running row
 offset inside one loop body, so its output is the author's `np.concatenate` of
 the same blocks unless the placement is wrong. `target-pairing` establishes that
@@ -177,15 +193,22 @@ another route. The job is a one-command rerun when the worker frees.
 compares the sha256 of the arrays and the metric values bitwise. `--native-witness`
 implements exactly that, and `bounded_probe` reports `parity.holds` from it.
 
-**Status: NOT MEASURED at any Traffic horizon.** The child's honest declared cap
-is 12 GiB at h96 (6.313 GiB of arrays derived, times the 1.082 correction gate
-one measured on Weather, plus a baseline), and the worker's slice ceiling is
-14 GiB whose aggregate budget counts current slice usage including file cache. It
-was submitted, queued and never admitted while other lanes held the slice. An
-8 GiB variant that runs the author's own `utils.metrics.metric` beside the
-bounded route over the complete Traffic h96 population — which would establish
-(a) on real Traffic data rather than on the synthetic battery — was also
-submitted and also queued.
+**Status: NOT MEASURED.** The child's honest declared cap is 12 GiB at h96
+(6.313 GiB of arrays derived, times the 1.082 correction gate one measured on
+Weather, plus a baseline), and the worker's slice ceiling is 14 GiB whose
+aggregate budget counts current slice usage including file cache. It was
+submitted, **queued and never admitted** while three other lanes held the slice,
+and the cap was not lowered to fit — the launcher treats a cap lowered after a
+refusal as terminal (`CAP_LOWERED_AFTER_REFUSAL`), and asking again under another
+name would be the same evasion by another route.
+
+What *did* run instead is the 8 GiB probe above, which establishes (a) on the
+real Traffic h96 population. What remains unestablished is narrower than it was:
+that the author's `np.concatenate` of the same per-batch blocks is byte-identical
+to the file the bounded writer produced, and that the author's `test()` drives
+the same forward pass. Both are arrangements of the same loop body rather than
+different arithmetic — but an argument is not a measurement, and it is labelled
+one.
 
 **What this means for the verdict.** It means h720's verdict is
 `ADMISSIBLE_PARITY_INHERITED` and not `ADMISSIBLE`, and the record says so in
@@ -240,6 +263,25 @@ Watched live while the arrays grew from 2.2 to 9.7 GiB on disk, the scope's
 size times the flush window — a constant of the horizon, not of the population —
 which is why h720 costs more resident memory than h96 and why neither costs more
 as the test set lengthens.)
+
+**h96, measured beside it, with the author's own scorer running as a witness.**
+
+| | value |
+|---|---|
+| **measured whole-cgroup peak** | **5 866 139 648 B = 5.463 GiB** |
+| declared cap | 8 589 934 592 B = 8 GiB · headroom 2.537 GiB |
+| **verdict** | **`ADMISSIBLE`** |
+| scored population | 3 413 × 96 × 862 = **282 432 576** elements, complete; 214 batches, 16 … 16, last 5 |
+| bounded evaluation wall | 26.8 s · peak GPU allocated 684 MiB |
+| disk high-water | 2.1315 GiB (derived 2.104; the difference is the `.npy` headers, the checkpoint and the log) |
+| record digest | `b6920e0c…306ce2` |
+
+**That 5.463 GiB is not the bounded path's cost.** This probe deliberately ran
+the author's own unchunked `utils.metrics.metric` on the memmapped arrays beside
+the bounded route, as the parity witness of §3 — three full-size float32
+temporaries over a 1.052 GiB array, on top of both mapped files. The bounded
+route's own derived resident terms at h96 are **0.178 GiB**. h720, which could
+not afford the witness, is the honest reading of the bounded path's own cost.
 
 **h336, the other horizon I called impossible: NOT MEASURED.** Only h720, the
 binding one, was probed — the same choice gate one made for Weather. h336 is
@@ -297,10 +339,14 @@ analogy:
 - **The evaluation side is now priced at its binding horizon**: one bounded pass
   over Traffic's complete h720 test population costs **101.8 s** of wall on the
   admitted 4090, at a **3.600 GiB** whole-cgroup peak and a **12.925 GiB**
-  transient disk high-water. The other three horizons' evaluation passes are
-  **NOT MEASURED**; scaled by element count they would put the twelve cells'
-  evaluation at roughly 0.17 GPU-hours, which is a DERIVED number and is not
-  offered as a price.
+  transient disk high-water. h96 is measured too: **26.8 s**, 5.463 GiB with the
+  author's own scorer running beside it as a parity witness, 2.13 GiB of disk.
+  The two measured points are **sub-linear** in element count — 101.8 s / 26.8 s
+  = 3.80 against an element ratio of 6.13, and h96's number is inflated because it
+  also carries the author's witness scorer. h192 and h336 lie between them and are
+  **NOT MEASURED**; interpolating linearly in elements puts the twelve cells'
+  evaluation at roughly **0.18 GPU-hours**, which is a DERIVED number offered as a
+  bound, not as a price.
 - **The training side is not.** Traffic's per-step cost is **UNMEASURED**.
   Traffic's patch geometry gives 862 graph tokens against Weather's 42, at
   `d_model` 512 against 128, for 30 epochs against 10. The Weather pilot's
@@ -328,7 +374,8 @@ make a campaign request possible — not for the campaign:
 | Traffic activations, optimizer state and training memory | **UNMEASURED.** Named, never derived. Null is not small |
 | `author_metric_exact` is bit-equal to `utils.metrics.metric` | **VERIFIED, bitwise, 4 of 4**, max absolute difference exactly 0.0, on numpy 2.5.1, including a population whose element count is not exactly representable in float32 and one with Traffic's h720 window geometry |
 | An arbitrary chunked average is NOT bit-equal to that reduction | **MEASURED and reported**: it differed by up to 1.69e-05 on MAE, and on one of four populations it coincidentally agreed — which is why the coincidence is reported, not relied on |
-| The bounded writer's array equals the author's `np.concatenate` of the same blocks, and the author's own `test()` gives the same metric on Traffic data | **NOT MEASURED.** Both children were submitted and queued on the worker and never admitted while other lanes held the slice; no cap was lowered to fit. h720's verdict is `ADMISSIBLE_PARITY_INHERITED` for exactly this reason |
+| `author_metric_exact` is bit-equal to `utils.metrics.metric` on the **complete real Traffic h96 population** (282 432 576 elements, the author's own model's outputs) | **VERIFIED, bitwise**, both MAE and MSE; the probe's verdict is `ADMISSIBLE` and `bounded_test` would have refused the cell otherwise |
+| The bounded writer's file equals the author's `np.concatenate` of the same per-batch blocks, and the author's own `test()` drives the same forward pass | **NOT MEASURED.** The 12 GiB native-witness child was submitted, queued and never admitted while other lanes held the worker's slice; no cap was lowered to fit. h720's verdict is `ADMISSIBLE_PARITY_INHERITED` for exactly this reason |
 | The bounded path at Traffic h720 peaks at 3.600 GiB whole-cgroup over the complete 1 730 964 960-element population | **measured**, one execution, one host, in-child `memory.peak`; `NOT_INDEPENDENTLY_VERIFIED` and **not replayed in a fresh process** |
 | The bounded path's resident peak does not grow with the **number of test windows** (it does scale with one window's size × the flush window, which is a constant of the horizon) | **measured** as a live observation on one horizon (the scope's `MemoryPeak` held at 2.776–2.777 GiB while the arrays grew from 2.2 to 9.7 GiB on disk); **derived** in general, and asserted by a test that doubles the window count and requires the resident terms to be unchanged while the disk term doubles |
 | The disk high-water is 12.925 GiB at h720 and the arrays are deleted after their digests are recorded | **measured**; the in-process reading of the reclaim is defective and was corrected by an external reading (§4) |
