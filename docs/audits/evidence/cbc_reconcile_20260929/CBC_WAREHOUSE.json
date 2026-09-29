@@ -1,0 +1,237 @@
+{
+ "acceptance_proved_by": "the terminal digest each row carries, read back out of the live warehouse and compared against the payload sent",
+ "accepted_warehouse_rows": 3,
+ "artifacts_bound": [
+  {
+   "bytes": 144749,
+   "role": "native_published400",
+   "sha256": "6078a7365a606f2c3ba96249e961eaed5d4687986fbe4bc81e4814376fef6d1a"
+  },
+  {
+   "bytes": 82375,
+   "role": "parity_400",
+   "sha256": "aed76fb1953d1f29c1dfbdddd4b8dec5f4fc5c5de809f1a528208b6a27156660"
+  },
+  {
+   "bytes": 4261,
+   "role": "CB03_PARITY_ATTRIBUTION",
+   "sha256": "92491b2df91dfcc812b32459d2d5a92b3e730bddc5428be9f9799726429a9f34"
+  },
+  {
+   "bytes": 5221,
+   "role": "MANIFEST",
+   "sha256": "f40d9d2eb73301dbfc3f5d0649c293b969f5a9e12ccd59e6fe3d1e7385dab7f0"
+  },
+  {
+   "bytes": 52596,
+   "role": "cbc_receipts",
+   "sha256": "fb7e590156a593b28ceba2b4be0826388bcfaea1fcd8cb50a35fd60dc23c6b3b"
+  }
+ ],
+ "campaign_closed": true,
+ "campaign_http": 201,
+ "campaign_key": "cbc-classification-1790719942-agnews-published400",
+ "campaign_sha256": "eee796e2afb0faf9b40b3b17e6cede18c442d3f8b22a9e024987042f82e99386",
+ "code_identity": {
+  "kind": "git_commit",
+  "value": "342f57e3512b20e9fc5ac902f075582b523a3476"
+ },
+ "config_sha256": "283dfaf74cf1aba86feaa97b611f39341fc746cdc5c5d435b2cc4831ebbb1222",
+ "deliveries": {
+  "framework-accuracy": {
+   "availability_label": "UNKNOWN",
+   "availability_use": "UNDECLARED",
+   "bytes": 1234829,
+   "bytes_on_disk_sha256": "71de87ec66bc5737752a2502204dfa6d7fe9856ade3ea444dc6317789a4f13fb",
+   "cached": false,
+   "delivered_bytes_are_the_pinned_bytes": true,
+   "delivery_id": "763f7c616e7a487fa21dc3c4b5ae3ad6",
+   "sha256": "71de87ec66bc5737752a2502204dfa6d7fe9856ade3ea444dc6317789a4f13fb",
+   "verification_state": "VERIFIED_TRANSFER"
+  },
+  "native-accuracy": {
+   "availability_label": "UNKNOWN",
+   "availability_use": "UNDECLARED",
+   "bytes": 1234829,
+   "bytes_on_disk_sha256": "71de87ec66bc5737752a2502204dfa6d7fe9856ade3ea444dc6317789a4f13fb",
+   "cached": true,
+   "delivered_bytes_are_the_pinned_bytes": true,
+   "delivery_id": "810827114ed749fd817635a4c2112949",
+   "sha256": "71de87ec66bc5737752a2502204dfa6d7fe9856ade3ea444dc6317789a4f13fb",
+   "verification_state": "VERIFIED_CACHE"
+  },
+  "native-macro-f1": {
+   "availability_label": "UNKNOWN",
+   "availability_use": "UNDECLARED",
+   "bytes": 1234829,
+   "bytes_on_disk_sha256": "71de87ec66bc5737752a2502204dfa6d7fe9856ade3ea444dc6317789a4f13fb",
+   "cached": true,
+   "delivered_bytes_are_the_pinned_bytes": true,
+   "delivery_id": "f839f64edf4a4a7d9ca7afdd9252f4ea",
+   "sha256": "71de87ec66bc5737752a2502204dfa6d7fe9856ade3ea444dc6317789a4f13fb",
+   "verification_state": "VERIFIED_CACHE"
+  }
+ },
+ "dry_run": false,
+ "reconciliation": {
+  "accounting_only": [],
+  "http": 200,
+  "lake_only": [],
+  "missing_units": []
+ },
+ "schema": "cbc_warehouse.v1",
+ "terminals": {
+  "failures": {},
+  "metric_rows_sent": {
+   "framework-accuracy": 24,
+   "native-accuracy": 24,
+   "native-macro-f1": 24
+  },
+  "pending": 0,
+  "sent": 3
+ },
+ "units": [
+  "framework-accuracy",
+  "native-accuracy",
+  "native-macro-f1"
+ ],
+ "warehouse_readback": {
+  "cube": "http://127.0.0.1:5057",
+  "per_unit": {
+   "framework-accuracy": {
+    "accepted_warehouse_row": true,
+    "artifacts_stored": 5,
+    "costs_match": true,
+    "generation": 1,
+    "metric_identity_in_stored_tags": "1756f8771910067a7162ca869aedd7ca5582ccd0e49621f9de319e2bfbae8665",
+    "metric_rows": {
+     "sent": 24,
+     "stored": 24
+    },
+    "metric_rows_match": true,
+    "receipt_sha256_in_stored_tags": "1d027020cd48dc6d78a47133a7bdea5109ec4d56329cf57df6ee451de4e86e4e",
+    "receipt_sha256_matches": true,
+    "status_matches": true,
+    "status_stored": "COMPLETED",
+    "stored_primary_value": {
+     "classification.abstained.class_0": 0.0,
+     "classification.abstained.class_1": 0.0,
+     "classification.abstained.class_2": 0.0,
+     "classification.abstained.class_3": 0.0,
+     "classification.abstention_coverage": 0.0,
+     "classification.accuracy": 0.935,
+     "classification.answered_fraction": 1.0,
+     "classification.brier": 0.12932672047500002,
+     "classification.correct.class_0": 95.0,
+     "classification.correct.class_1": 122.0,
+     "classification.correct.class_2": 58.0,
+     "classification.correct.class_3": 99.0,
+     "classification.ece": 0.17975200000000002,
+     "classification.macro_f1": 0.9252733932274245,
+     "classification.naive_accuracy": 0.18,
+     "classification.nll": 0.3190552635507928,
+     "classification.predicted.class_0": 98.0,
+     "classification.predicted.class_1": 125.0,
+     "classification.predicted.class_2": 65.0,
+     "classification.predicted.class_3": 112.0,
+     "classification.support.class_0": 103.0,
+     "classification.support.class_1": 123.0,
+     "classification.support.class_2": 72.0,
+     "classification.support.class_3": 102.0
+    },
+    "tags_roundtrip": true,
+    "terminal_sha256": "5a0419f8ceee287d5fd91693024fdccaa55926a55d86c35b69c7b20e9b467ff9"
+   },
+   "native-accuracy": {
+    "accepted_warehouse_row": true,
+    "artifacts_stored": 5,
+    "costs_match": true,
+    "generation": 1,
+    "metric_identity_in_stored_tags": "1756f8771910067a7162ca869aedd7ca5582ccd0e49621f9de319e2bfbae8665",
+    "metric_rows": {
+     "sent": 24,
+     "stored": 24
+    },
+    "metric_rows_match": true,
+    "receipt_sha256_in_stored_tags": "ca748b038133ac92d196c5f48f4173e507a2d43b6c9fac3b0d163b7c70d0c3d7",
+    "receipt_sha256_matches": true,
+    "status_matches": true,
+    "status_stored": "COMPLETED",
+    "stored_primary_value": {
+     "classification.abstained.class_0": 0.0,
+     "classification.abstained.class_1": 0.0,
+     "classification.abstained.class_2": 0.0,
+     "classification.abstained.class_3": 0.0,
+     "classification.abstention_coverage": 0.0,
+     "classification.accuracy": 0.9525,
+     "classification.answered_fraction": 1.0,
+     "classification.brier": 0.1137,
+     "classification.correct.class_0": 99.0,
+     "classification.correct.class_1": 121.0,
+     "classification.correct.class_2": 62.0,
+     "classification.correct.class_3": 99.0,
+     "classification.ece": 0.155,
+     "classification.macro_f1": 0.9467546527629132,
+     "classification.naive_accuracy": 0.18,
+     "classification.nll": 0.2801,
+     "classification.predicted.class_0": 102.0,
+     "classification.predicted.class_1": 124.0,
+     "classification.predicted.class_2": 66.0,
+     "classification.predicted.class_3": 108.0,
+     "classification.support.class_0": 103.0,
+     "classification.support.class_1": 123.0,
+     "classification.support.class_2": 72.0,
+     "classification.support.class_3": 102.0
+    },
+    "tags_roundtrip": true,
+    "terminal_sha256": "ca8cc67ee21e74a550c13e8c80e606bd05508c3924a0a4c3bd8e3b6a1c57bf13"
+   },
+   "native-macro-f1": {
+    "accepted_warehouse_row": true,
+    "artifacts_stored": 5,
+    "costs_match": true,
+    "generation": 1,
+    "metric_identity_in_stored_tags": "a62f184c48a8216d2a425090540f6fa93eaaf16babdf9e66483974cd3bee6d4b",
+    "metric_rows": {
+     "sent": 24,
+     "stored": 24
+    },
+    "metric_rows_match": true,
+    "receipt_sha256_in_stored_tags": "cd97d5b4fe92b47b336f6933bf4b8a3c96e826670d5d2fc19af857dd10d2bd7d",
+    "receipt_sha256_matches": true,
+    "status_matches": true,
+    "status_stored": "COMPLETED",
+    "stored_primary_value": {
+     "classification.abstained.class_0": 0.0,
+     "classification.abstained.class_1": 0.0,
+     "classification.abstained.class_2": 0.0,
+     "classification.abstained.class_3": 0.0,
+     "classification.abstention_coverage": 0.0,
+     "classification.accuracy": 0.9525,
+     "classification.answered_fraction": 1.0,
+     "classification.brier": 0.1137,
+     "classification.correct.class_0": 99.0,
+     "classification.correct.class_1": 121.0,
+     "classification.correct.class_2": 62.0,
+     "classification.correct.class_3": 99.0,
+     "classification.ece": 0.155,
+     "classification.macro_f1": 0.9467546527629132,
+     "classification.naive_macro_f1": 0.07627118644067797,
+     "classification.nll": 0.2801,
+     "classification.predicted.class_0": 102.0,
+     "classification.predicted.class_1": 124.0,
+     "classification.predicted.class_2": 66.0,
+     "classification.predicted.class_3": 108.0,
+     "classification.support.class_0": 103.0,
+     "classification.support.class_1": 123.0,
+     "classification.support.class_2": 72.0,
+     "classification.support.class_3": 102.0
+    },
+    "tags_roundtrip": true,
+    "terminal_sha256": "9b051e353f4d408501ee8a3b2c2949647461bb1052ee0fd4952a9098261e900d"
+   }
+  },
+  "reader": "tools/df_mod_e0_close.warehouse_terminals",
+  "rows_all_generations": 3
+ }
+}
